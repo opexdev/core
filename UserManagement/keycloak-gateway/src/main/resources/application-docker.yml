@@ -1,0 +1,40 @@
+server.port: 8083
+spring:
+  application:
+    name: opex-auth
+  main:
+    allow-bean-definition-overriding: false
+  kafka:
+    bootstrap-servers: ${KAFKA_IP_PORT}
+    consumer:
+       group-id: auth
+  datasource:
+    platform: postgres
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${DB_IP_PORT}/opex_auth
+    username: opex
+    password: hiopex
+    initialization-mode: always
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties.hibernate.jdbc.lob.non_contextual_creation: true
+    open-in-view: false
+  cloud:
+    bootstrap:
+      enabled: true
+    consul:
+      host: ${CONSUL_HOST}
+      port: 8500
+      discovery:
+        #healthCheckPath: ${management.context-path}/health
+        instance-id: ${spring.application.name}:${server.port}
+        healthCheckInterval: 20s
+        prefer-ip-address: true
+keycloak:
+  server:
+    contextPath: /auth
+    adminUser:
+      username: opex-admin
+      password: hiopex
+    realmImportFile: opex-realm.json

@@ -1,0 +1,259 @@
+version: '3.3'
+services:
+  zookeeper:
+    image: 'docker.io/bitnami/zookeeper:3-debian-10'
+    ports:
+      - '2181:2181'
+    volumes:
+      - $PWD/runtime/zookeeper_data:/bitnami
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    networks:
+      - opex
+    deploy:
+      restart_policy:
+        condition: on-failure
+  kafka:
+    image: 'docker.io/bitnami/kafka:2-debian-10'
+    ports:
+      - '9092:9092'
+    volumes:
+      - $PWD/runtime/kafka-data:/bitnami
+    links:
+      - zookeeper:zk
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zk:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+    depends_on:
+      - zookeeper
+    networks:
+      - opex
+    deploy:
+      restart_policy:
+        condition: on-failure
+  consul:
+    image: 'consul'
+    ports:
+      - '8500:8500'
+      - '8300:8300'
+      - '8600:8600'
+    environment:
+      - CONSUL_BIND_INTERFACE=eth0
+    networks:
+      - opex
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  redis:
+    image: "redis:alpine"
+
+    command: redis-server
+
+    ports:
+      - "6379:6379"
+
+    volumes:
+      - $PWD/runtime/redis-data:/var/lib/redis
+      - $PWD/runtime/redis.conf:/usr/local/etc/redis/redis.conf
+
+    environment:
+      - REDIS_REPLICATION_MODE=master
+    networks:
+      - opex
+    deploy:
+      restart_policy:
+        condition: on-failure
+  postgres-accountant:
+    image: "postgres"
+    ports:
+      - 5433:5432
+    environment:
+      - POSTGRES_USER=opex
+      - POSTGRES_PASSWORD=hiopex
+      - POSTGRES_DB=opex_accountant
+    volumes:
+      - $PWD/runtime/accountant-data:/var/lib/postgresql/data/
+    networks:
+      - opex
+  postgres-eventlog:
+    image: "postgres"
+    ports:
+      - 5434:5432
+    environment:
+      - POSTGRES_USER=opex
+      - POSTGRES_PASSWORD=hiopex
+      - POSTGRES_DB=opex_eventlog
+    volumes:
+      - $PWD/runtime/eventlog-data:/var/lib/postgresql/data/
+    networks:
+      - opex
+  postgres-auth:
+    image: "postgres"
+    ports:
+      - 5435:5432
+    environment:
+      - POSTGRES_USER=opex
+      - POSTGRES_PASSWORD=hiopex
+      - POSTGRES_DB=opex_auth
+    volumes:
+      - $PWD/runtime/auth-data:/var/lib/postgresql/data/
+    networks:
+      - opex
+    deploy:
+      restart_policy:
+        condition: on-failure
+  postgres-wallet:
+    image: "postgres"
+    ports:
+      - 5436:5432
+    environment:
+      - POSTGRES_USER=opex
+      - POSTGRES_PASSWORD=hiopex
+      - POSTGRES_DB=opex_wallet
+    volumes:
+      - $PWD/runtime/wallet-data:/var/lib/postgresql/data/
+    networks:
+      - opex
+    deploy:
+      restart_policy:
+        condition: on-failure
+  accountant:
+    container_name: accountant
+    build:
+      context: ../Accountant/accountant-app
+      dockerfile: Dockerfile
+    ports:
+      - 8089:8089
+    environment:
+      - JAVA_OPTS=-Xmx256m
+      - SPRING_PROFILES_ACTIVE=docker
+      - KAFKA_IP_PORT=kafka:9092
+      - REDIS_HOST=redis
+      - CONSUL_HOST=consul
+      - DB_IP_PORT=postgres-accountant
+    networks:
+      - opex
+    depends_on:
+      - zookeeper
+      - kafka
+      - redis
+      - consul
+      - postgres-accountant
+  eventlog:
+    container_name: eventlog
+    build:
+      context: ../EventLog/eventlog-app
+      dockerfile: Dockerfile
+    ports:
+      - 8090:8090
+    environment:
+      - JAVA_OPTS=-Xmx256m
+      - SPRING_PROFILES_ACTIVE=docker
+      - KAFKA_IP_PORT=kafka:9092
+      - REDIS_HOST=redis
+      - CONSUL_HOST=consul
+      - DB_IP_PORT=postgres-eventlog
+    networks:
+      - opex
+    depends_on:
+      - zookeeper
+      - kafka
+      - redis
+      - consul
+      - postgres-eventlog
+  matching-engine:
+    container_name: matching-engine
+    build:
+      context: ../MatchingEngine/matching-app
+      dockerfile: Dockerfile
+    ports:
+      - 8092:8092
+      - 1046:1044
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
+      - SPRING_PROFILES_ACTIVE=docker
+      - KAFKA_IP_PORT=kafka:9092
+      - REDIS_HOST=redis
+    networks:
+      - opex
+    depends_on:
+      - zookeeper
+      - kafka
+      - redis
+  matching-gateway:
+    container_name: matching-gateway
+    build:
+      context: ../MatchingGateway/gateway-app
+      dockerfile: Dockerfile
+    ports:
+      - 8093:8093
+      - 1047:1044
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
+      - SPRING_PROFILES_ACTIVE=docker
+      - KAFKA_IP_PORT=kafka:9092
+      - REDIS_HOST=redis
+      - CONSUL_HOST=consul
+    networks:
+      - opex
+    depends_on:
+      - zookeeper
+      - kafka
+      - consul
+  auth:
+    container_name: auth
+    build:
+      context: ../UserManagement/keycloak-gateway
+      dockerfile: Dockerfile
+    ports:
+      - 8083:8083
+      - 1048:1044
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
+      - SPRING_PROFILES_ACTIVE=docker
+      - KAFKA_IP_PORT=kafka:9092
+      - REDIS_HOST=redis
+      - CONSUL_HOST=consul
+      - DB_IP_PORT=postgres-auth
+    networks:
+      - opex
+    depends_on:
+      - zookeeper
+      - kafka
+      - redis
+      - consul
+      - postgres-auth
+    deploy:
+      restart_policy:
+        condition: on-failure
+  wallet:
+    container_name: wallet
+    build:
+      context: ../Wallet/wallet-app
+      dockerfile: Dockerfile
+    ports:
+      - 8091:8091
+      - 1049:1044
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
+      - SPRING_PROFILES_ACTIVE=docker
+      - KAFKA_IP_PORT=kafka:9092
+      - REDIS_HOST=redis
+      - CONSUL_HOST=consul
+      - DB_IP_PORT=postgres-wallet
+    networks:
+      - opex
+    depends_on:
+      - zookeeper
+      - kafka
+      - redis
+      - consul
+      - postgres-wallet
+    deploy:
+      restart_policy:
+        condition: on-failure
+networks:
+  opex:
+    driver: bridge

@@ -1,0 +1,32 @@
+server.port: 8091
+spring:
+  application:
+    name: opex-wallet
+  main:
+    allow-bean-definition-overriding: false
+  kafka:
+    bootstrap-servers: localhost:2181
+    consumer:
+      group-id: wallet
+  redis:
+    hostname: 127.0.0.1
+    port: 6379
+  r2dbc:
+    url: r2dbc:postgresql://localhost/opex_wallet
+    username: opex
+    password: hiopex
+    initialization-mode: always
+  cloud:
+    bootstrap:
+      enabled: true
+    consul:
+      port: 8500
+      discovery:
+        #healthCheckPath: ${management.context-path}/health
+        instance-id: ${spring.application.name}:${server.port}
+        healthCheckInterval: 20s
+        prefer-ip-address: true
+app:
+  gift:
+    symbol: usdt
+    amount: 1000
