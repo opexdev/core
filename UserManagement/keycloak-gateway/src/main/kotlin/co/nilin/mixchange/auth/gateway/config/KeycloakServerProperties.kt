@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration
 @ConfigurationProperties(prefix = "keycloak.server")
 class KeycloakServerProperties {
     var contextPath = "/auth"
-    var realmImportFile = "opex-realm.json"
+    var realmImportFile = "/opex-realm.json"
     var adminUser = AdminUser()
 
     class AdminUser {

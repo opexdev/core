@@ -4,6 +4,10 @@ spring:
     name: opex-auth
   main:
     allow-bean-definition-overriding: false
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: auth
   datasource:
     platform: postgres
     driver-class-name: org.postgresql.Driver
@@ -14,7 +18,9 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
-    properties.hibernate.jdbc.lob.non_contextual_creation: true
+    properties.hibernate:
+      jdbc.lob.non_contextual_creation: true
+      dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
   cloud:
     bootstrap:
@@ -32,4 +38,9 @@ keycloak:
     adminUser:
       username: opex-admin
       password: hiopex
-    realmImportFile: opex-realm.json
+    realmImportFile: /opex-realm.json
+  migration:
+    action: import
+    provider: singleFile
+    file: classpath:/opex-master-realm.json
+    strategy: OVERWRITE_EXISTING

@@ -135,11 +135,11 @@
 
   "connectionsJpa": {
     "default": {
-      "url": "jdbc:postgresql://postgres-auth/opex_auth",
-      "driver": "org.postgresql.Driver",
-      "driverDialect": "org.hibernate.dialect.PostgreSQLDialect",
-      "user": "opex",
-      "password": "hiopex",
+      "url": "${spring.datasource.url}",
+      "driver": "${spring.datasource.driver-class-name}",
+      "driverDialect": "${spring.jpa.properties.hibernate.dialect}",
+      "user": "${spring.datasource.username}",
+      "password": "${spring.datasource.password}",
       "initializeEmpty": true,
       "migrationStrategy": "update",
       "showSql": "true",

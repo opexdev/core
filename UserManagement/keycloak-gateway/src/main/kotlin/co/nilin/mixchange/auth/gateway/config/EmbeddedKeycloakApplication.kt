@@ -29,15 +29,15 @@ class EmbeddedKeycloakApplication() : KeycloakApplication() {
         var keycloakServerProperties: KeycloakServerProperties? = null
     }
 
+    init {
+        createMasterRealmAdminUser()
+        createMixchangeRealm()
+    }
+
     override fun loadConfig() {
         val factory: JsonConfigProviderFactory = RegularJsonConfigProviderFactory()
         Config.init(factory.create()
             .orElseThrow { NoSuchElementException("No value present") })
-    }
-
-    init {
-        createMasterRealmAdminUser()
-        createMixchangeRealm()
     }
 
     private fun createMasterRealmAdminUser() {
@@ -60,12 +60,12 @@ class EmbeddedKeycloakApplication() : KeycloakApplication() {
         try {
             session.transactionManager.begin()
             val manager = RealmManager(session)
-            val lessonRealmImportFile: Resource = ClassPathResource(
+            val realmImportFile: Resource = ClassPathResource(
                 keycloakServerProperties!!.realmImportFile
             )
             manager.importRealm(
                 JsonSerialization.readValue(
-                    lessonRealmImportFile.getInputStream(),
+                    realmImportFile.getInputStream(),
                     RealmRepresentation::class.java
                 )
             )

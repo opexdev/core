@@ -19,16 +19,16 @@
   "actionTokenGeneratedByAdminLifespan" : 43200,
   "actionTokenGeneratedByUserLifespan" : 300,
   "enabled" : true,
-  "sslRequired" : "external",
-  "registrationAllowed" : false,
+  "sslRequired" : "none",
+  "registrationAllowed" : true,
   "registrationEmailAsUsername" : false,
   "rememberMe" : false,
   "verifyEmail" : false,
   "loginWithEmailAllowed" : true,
   "duplicateEmailsAllowed" : false,
-  "resetPasswordAllowed" : false,
+  "resetPasswordAllowed" : true,
   "editUsernameAllowed" : false,
-  "bruteForceProtected" : false,
+  "bruteForceProtected" : true,
   "permanentLockout" : false,
   "maxFailureWaitSeconds" : 900,
   "minimumQuickLoginWaitSeconds" : 60,
@@ -370,7 +370,7 @@
     "authenticationFlowBindingOverrides" : { },
     "fullScopeAllowed" : false,
     "nodeReRegistrationTimeout" : 0,
-    "defaultClientScopes" : [ "web-origins", "role_list", "roles", "profile", "email" ],
+    "defaultClientScopes" : [ "web-origins", "role_list", "roles", "profile", "email", "trust" ],
     "optionalClientScopes" : [ "address", "phone", "offline_access", "microprofile-jwt" ]
   }, {
     "id" : "13d76feb-d762-4409-bb84-7a75bc395a61",
@@ -396,7 +396,7 @@
     "authenticationFlowBindingOverrides" : { },
     "fullScopeAllowed" : false,
     "nodeReRegistrationTimeout" : 0,
-    "defaultClientScopes" : [ "web-origins", "role_list", "roles", "profile", "email" ],
+    "defaultClientScopes" : [ "web-origins", "role_list", "roles", "profile", "email", "trust" ],
     "optionalClientScopes" : [ "address", "phone", "offline_access", "microprofile-jwt" ]
   }, {
     "id" : "4b9609f0-48d1-4e71-9381-2ecec08616f9",
@@ -422,7 +422,7 @@
     "authenticationFlowBindingOverrides" : { },
     "fullScopeAllowed" : false,
     "nodeReRegistrationTimeout" : 0,
-    "defaultClientScopes" : [ "web-origins", "role_list", "roles", "profile", "email" ],
+    "defaultClientScopes" : [ "web-origins", "role_list", "roles", "profile", "email", "trust" ],
     "optionalClientScopes" : [ "address", "phone", "offline_access", "microprofile-jwt" ]
   }, {
     "id" : "b88ce206-63d6-43b6-87c9-ea09d8c02f32",
@@ -463,7 +463,7 @@
     "authenticationFlowBindingOverrides" : { },
     "fullScopeAllowed" : true,
     "nodeReRegistrationTimeout" : -1,
-    "defaultClientScopes" : [ "role_list", "profile" ],
+    "defaultClientScopes" : [ "role_list", "profile", "trust" ],
     "optionalClientScopes" : [ "web-origins", "address", "read", "phone", "roles", "offline_access", "microprofile-jwt", "write", "email" ]
   }, {
     "id" : "6a4bfbd0-576d-4778-af56-56f876647355",
@@ -992,8 +992,17 @@
       "include.in.token.scope" : "true",
       "display.on.consent.screen" : "true"
     }
-  } ],
-  "defaultDefaultClientScopes" : [ "roles", "role_list", "web-origins", "email", "profile" ],
+  },
+    {
+      "id" : "d4e253fb-7361-47cf-9d4a-86245686fdf2",
+      "name" : "trust",
+      "protocol" : "openid-connect",
+      "attributes" : {
+        "include.in.token.scope" : "true",
+        "display.on.consent.screen" : "true"
+      }
+    }],
+  "defaultDefaultClientScopes" : [ "roles", "role_list", "web-origins", "email", "profile", "trust" ],
   "defaultOptionalClientScopes" : [ "offline_access", "address", "phone", "microprofile-jwt" ],
   "browserSecurityHeaders" : {
     "contentSecurityPolicyReportOnly" : "",
@@ -1004,9 +1013,16 @@
     "xXSSProtection" : "1; mode=block",
     "strictTransportSecurity" : "max-age=31536000; includeSubDomains"
   },
-  "smtpServer" : { },
+  "smtpServer" : {
+    "host": "smtp.elasticemail.com",
+    "port": 2525,
+    "from": "for.demo.purpose.only@opex.dev",
+    "auth": true,
+    "user": "for.demo.purpose.only@opex.dev",
+    "password": "642467973026C6F093FB1E39C4BFC0D15042"
+  },
   "eventsEnabled" : false,
-  "eventsListeners" : [ "jboss-logging" ],
+  "eventsListeners" : [ "jboss-logging", "pl_event_listener" ],
   "enabledEventTypes" : [ ],
   "adminEventsEnabled" : false,
   "adminEventsDetailsEnabled" : false,

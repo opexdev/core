@@ -13,6 +13,7 @@ import org.springframework.boot.runApplication
 import org.springframework.context.ApplicationListener
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
+import org.springframework.core.io.ClassPathResource
 
 @SpringBootApplication(exclude = [LiquibaseAutoConfiguration::class])
 @ComponentScan(basePackages = arrayOf("co.nilin.mixchange.auth.gateway"))
