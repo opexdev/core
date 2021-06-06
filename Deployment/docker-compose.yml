@@ -3,7 +3,7 @@ services:
   zookeeper:
     image: 'docker.io/bitnami/zookeeper:3-debian-10'
     ports:
-      - '2181:2181'
+      - '127.0.0.1:2181:2181'
     volumes:
       - $PWD/runtime/zookeeper_data:/bitnami
     environment:
@@ -16,13 +16,11 @@ services:
   kafka:
     image: 'docker.io/bitnami/kafka:2-debian-10'
     ports:
-      - '9092:9092'
+      - '127.0.0.1:9092:9092'
     volumes:
       - $PWD/runtime/kafka-data:/bitnami
-    links:
-      - zookeeper:zk
     environment:
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zk:2181
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
     depends_on:
@@ -35,9 +33,9 @@ services:
   consul:
     image: 'consul'
     ports:
-      - '8500:8500'
-      - '8300:8300'
-      - '8600:8600'
+      - '127.0.0.1:8500:8500'
+      - '127.0.0.1:8300:8300'
+      - '127.0.0.1:8600:8600'
     environment:
       - CONSUL_BIND_INTERFACE=eth0
     networks:
@@ -45,14 +43,13 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-
   redis:
     image: "redis:alpine"
 
     command: redis-server
 
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
 
     volumes:
       - $PWD/runtime/redis-data:/var/lib/redis
@@ -68,7 +65,7 @@ services:
   postgres-accountant:
     image: "postgres"
     ports:
-      - 5433:5432
+      - 127.0.0.1:5433:5432
     environment:
       - POSTGRES_USER=opex
       - POSTGRES_PASSWORD=hiopex
@@ -80,7 +77,7 @@ services:
   postgres-eventlog:
     image: "postgres"
     ports:
-      - 5434:5432
+      - 127.0.0.1:5434:5432
     environment:
       - POSTGRES_USER=opex
       - POSTGRES_PASSWORD=hiopex
@@ -92,7 +89,7 @@ services:
   postgres-auth:
     image: "postgres"
     ports:
-      - 5435:5432
+      - 127.0.0.1:5435:5432
     environment:
       - POSTGRES_USER=opex
       - POSTGRES_PASSWORD=hiopex
@@ -107,7 +104,7 @@ services:
   postgres-wallet:
     image: "postgres"
     ports:
-      - 5436:5432
+      - 127.0.0.1:5436:5432
     environment:
       - POSTGRES_USER=opex
       - POSTGRES_PASSWORD=hiopex
@@ -125,7 +122,7 @@ services:
       context: ../Accountant/accountant-app
       dockerfile: Dockerfile
     ports:
-      - 8089:8089
+      - 127.0.0.1:8089:8089
     environment:
       - JAVA_OPTS=-Xmx256m
       - SPRING_PROFILES_ACTIVE=docker
@@ -147,7 +144,7 @@ services:
       context: ../EventLog/eventlog-app
       dockerfile: Dockerfile
     ports:
-      - 8090:8090
+      - 127.0.0.1:8090:8090
     environment:
       - JAVA_OPTS=-Xmx256m
       - SPRING_PROFILES_ACTIVE=docker
@@ -169,8 +166,8 @@ services:
       context: ../MatchingEngine/matching-app
       dockerfile: Dockerfile
     ports:
-      - 8092:8092
-      - 1046:1044
+      - 127.0.0.1:8092:8092
+      - 127.0.0.1:1046:1044
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_ACTIVE=docker
@@ -188,8 +185,8 @@ services:
       context: ../MatchingGateway/gateway-app
       dockerfile: Dockerfile
     ports:
-      - 8093:8093
-      - 1047:1044
+      - 127.0.0.1:8093:8093
+      - 127.0.0.1:1047:1044
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_ACTIVE=docker
@@ -208,8 +205,8 @@ services:
       context: ../UserManagement/keycloak-gateway
       dockerfile: Dockerfile
     ports:
-      - 8083:8083
-      - 1048:1044
+      - 127.0.0.1:8083:8083
+      - 127.0.0.1:1048:1044
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_ACTIVE=docker
@@ -217,6 +214,8 @@ services:
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-auth
+      - PROXY_ADDRESS_FORWARDING=true
+      - WORKING_DIR=$PWD
     networks:
       - opex
     depends_on:
@@ -234,8 +233,8 @@ services:
       context: ../Wallet/wallet-app
       dockerfile: Dockerfile
     ports:
-      - 8091:8091
-      - 1049:1044
+      - 127.0.0.1:8091:8091
+      - 127.0.0.1:1049:1044
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_ACTIVE=docker
@@ -254,6 +253,20 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  nginx:
+    image: nginx:latest
+    container_name: opex_nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - $PWD/runtime/www:/data/www
+    ports:
+      - 80:80
+    depends_on:
+      - wallet
+      - auth
+      - matching-gateway
+    networks:
+      - opex
 networks:
   opex:
     driver: bridge
