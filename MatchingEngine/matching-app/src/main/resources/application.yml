@@ -7,7 +7,7 @@ spring:
     consumer:
        group-id: engine
   redis:
-    hostname: 127.0.0.1
+    host: 127.0.0.1
     port: 6379
   app:
     symbols: btc_usdt,eth_usdt,eth_btc

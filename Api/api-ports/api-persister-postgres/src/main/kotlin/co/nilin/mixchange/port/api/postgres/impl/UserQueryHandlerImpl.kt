@@ -1,0 +1,133 @@
+package co.nilin.mixchange.port.api.postgres.impl
+
+import co.nilin.mixchange.api.core.inout.*
+import co.nilin.mixchange.api.core.spi.UserQueryHandler
+import co.nilin.mixchange.matching.core.model.OrderDirection
+import co.nilin.mixchange.port.api.postgres.dao.OrderRepository
+import co.nilin.mixchange.port.api.postgres.dao.TradeRepository
+import co.nilin.mixchange.port.api.postgres.model.OrderModel
+import co.nilin.mixchange.port.api.postgres.util.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactive.awaitFirstOrNull
+import org.springframework.stereotype.Component
+import java.math.BigDecimal
+import java.security.Principal
+import java.time.ZoneId
+import java.util.*
+
+@Component
+class UserQueryHandlerImpl(
+        val orderRepository: OrderRepository, val tradeRepository: TradeRepository
+) : UserQueryHandler {
+    override suspend fun queryOrder(principal: Principal, request: QueryOrderRequest): QueryOrderResponse? {
+        val order = (if (request.origClientOrderId != null) {
+            orderRepository.findBySymbolAndClientOrderId(request.symbol, request.origClientOrderId!!)
+        } else {
+            orderRepository.findBySymbolAndOrderId(request.symbol, request.orderId!!)
+
+        }).awaitFirstOrNull()
+        if (order?.constraint != null) {
+            if (order.uuid != principal.name)
+                throw RuntimeException("Forbidden")
+            return orderToQueryResponse(order)
+        }
+        return null
+    }
+
+    override suspend fun openOrders(principal: Principal, symbol: String?): Flow<QueryOrderResponse> {
+        return orderRepository.findByUuidAndSymbolAndStatus(
+                principal.name,
+                symbol,
+                listOf(OrderStatus.NEW.ordinal, OrderStatus.PARTIALLY_FILLED.ordinal)
+        ).filter { orderModel -> orderModel.constraint != null }
+                .map { order -> orderToQueryResponse(order) }
+    }
+
+    override suspend fun allOrders(principal: Principal, allOrderRequest: AllOrderRequest): Flow<QueryOrderResponse> {
+        return orderRepository.findByUuidAndSymbolAndTimeBetween(
+                principal.name,
+                allOrderRequest.symbol,
+                allOrderRequest.startTime,
+                allOrderRequest.endTime
+        ).filter { orderModel -> orderModel.constraint != null }
+                .map { order -> orderToQueryResponse(order) }
+    }
+
+    override suspend fun allTrades(principal: Principal, request: TradeRequest): Flow<TradeResponse> {
+        return tradeRepository.findByUuidAndSymbolAndTimeBetweenAndTradeIdGreaterThan(
+                principal.name, request.symbol, request.fromTrade, request.startTime, request.endTime
+        ).map { trade ->
+            val takerOrder = orderRepository.findByOuid(trade.takerOuid).awaitFirst()
+            val makerOrder = orderRepository.findByOuid(trade.makerOuid).awaitFirst()
+            val isMakerBuyer = makerOrder.direction == OrderDirection.ASK
+            TradeResponse(
+                    trade.symbol,
+                    trade.tradeId,
+                    if (trade.takerUuid == principal.name) {
+                        takerOrder.orderId!!
+                    } else {
+                        makerOrder.orderId!!
+                    },
+                    -1,
+                    if (trade.takerUuid == principal.name) {
+                        trade.takerPrice.toBigDecimal()
+                    } else {
+                        trade.makerPrice.toBigDecimal()
+                    },
+                    trade.matchedQuantity.toBigDecimal(),
+                    if (isMakerBuyer) {
+                        makerOrder.quoteQuantity!!.toBigDecimal()
+                    } else {
+                        takerOrder.quoteQuantity!!.toBigDecimal()
+                    },
+                    if (trade.takerUuid == principal.name) {
+                        trade.takerCommision!!.toBigDecimal()
+                    } else {
+                        trade.makerCommision!!.toBigDecimal()
+                    },
+                    if (trade.takerUuid == principal.name) {
+                        trade.takerCommisionAsset!!
+                    } else {
+                        trade.makerCommisionAsset!!
+                    },
+                    Date.from(
+                            trade.createDate.atZone(ZoneId.systemDefault()).toInstant()
+                    ),
+                    if (trade.takerUuid == principal.name) {
+                        OrderDirection.ASK == takerOrder.direction
+                    } else {
+                        OrderDirection.ASK == makerOrder.direction
+                    },
+                    trade.makerUuid == principal.name,
+                    true
+            )
+        }
+    }
+
+
+    private fun orderToQueryResponse(order: OrderModel) = QueryOrderResponse(
+            order.symbol,
+            order.orderId ?: -1,
+            -1,
+            order.clientOrderId ?: "",
+            BigDecimal(order.price!!),
+            BigDecimal(order.quantity!!),
+            BigDecimal(order.executedQuantity!!),
+            BigDecimal(order.accumulativeQuoteQty ?: 0.0),
+            order.status!!.toOrderStatus(),
+            order.constraint!!.toTimeInForce(),
+            order.type!!.toApiOrderType(),
+            order.direction!!.toOrderSide(),
+            null,
+            null,
+            Date.from(
+                    order.createDate!!.atZone(ZoneId.systemDefault()).toInstant()
+            ),
+            Date.from(
+                    order.updateDate.atZone(ZoneId.systemDefault()).toInstant()
+            ), order.status.toOrderStatus().isWorking(), order.quoteQuantity!!.toBigDecimal()
+    )
+}

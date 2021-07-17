@@ -13,9 +13,6 @@ class PostgresConfig(db: DatabaseClient) {
     init {
         val initDb = db.sql {
             """ 
-                drop table IF EXISTS wallet_owner;
-                drop table IF EXISTS wallet;
-                drop table IF EXISTS transaction;
                 CREATE TABLE IF NOT EXISTS currency (
                     name VARCHAR(25) PRIMARY KEY,
                     symbol VARCHAR(25) NOT NULL UNIQUE,

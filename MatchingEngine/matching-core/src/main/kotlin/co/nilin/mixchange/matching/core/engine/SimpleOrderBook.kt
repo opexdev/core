@@ -18,6 +18,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
     var bestBidOrder: SimpleOrder? = null
 
     val orderCounter = AtomicLong()
+    val tradeCounter = AtomicLong()
 
     var lastOrder: SimpleOrder? = null
 
@@ -52,7 +53,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                 }
                 // try to match instantly
                 val queueOrder = matchInstantly(order)
-                //if remained quantity > 0 add to queue
+                // if remained quantity > 0 add to queue
                 if (queueOrder.filledQuantity != queueOrder.quantity) {
                     putGtcInQueue(queueOrder)
                 }
@@ -260,7 +261,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
             currentMaker.filledQuantity += instantMatchQuantity
             currentMaker.bucket!!.totalQuantity -= instantMatchQuantity
             if (!replayMode) {
-                EventDispatcher.emit(TradeEvent(pair, order.ouid, order.uuid, order.id
+                EventDispatcher.emit(TradeEvent(tradeCounter.incrementAndGet(), pair, order.ouid, order.uuid, order.id
                         ?: 0, order.direction, order.price, order.remainedQuantity(), currentMaker.ouid, currentMaker.uuid, currentMaker.id!!, currentMaker.direction, currentMaker.price, currentMaker.remainedQuantity(), instantMatchQuantity))
             }
             if (currentMaker.remainedQuantity() == 0L) {

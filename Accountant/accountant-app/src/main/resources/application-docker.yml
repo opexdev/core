@@ -1,34 +1,12 @@
-server.port: 8089
 spring:
-  application:
-    name: opex-accountant
-  main:
-      allow-bean-definition-overriding: false
   kafka:
     bootstrap-servers: ${KAFKA_IP_PORT}
-    consumer:
-       group-id: accountant
   redis:
-    hostname: ${REDIS_HOST}
-    port: 6379
+    host: ${REDIS_HOST}
   r2dbc:
     url: r2dbc:postgresql://${DB_IP_PORT}/opex_accountant
     username: opex
     password: hiopex
-    initialization-mode: always
   cloud:
-    bootstrap:
-      enabled: true
     consul:
       host: ${CONSUL_HOST}
-      port: 8500
-      discovery:
-        #healthCheckPath: ${management.context-path}/health
-        instance-id: ${spring.application.name}:${server.port}
-        healthCheckInterval: 20s
-        prefer-ip-address: true
-app:
-  coin: nln
-  address:  1
-  wallet:
-    url: lb://opex-wallet/

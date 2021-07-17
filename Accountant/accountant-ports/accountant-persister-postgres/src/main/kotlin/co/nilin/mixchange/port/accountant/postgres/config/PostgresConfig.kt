@@ -1,15 +1,9 @@
 package co.nilin.mixchange.port.order.kafka.config
 
 
-import co.nilin.mixchange.matching.core.model.OrderDirection
 import org.springframework.context.annotation.Configuration
-import org.springframework.data.annotation.Id
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories
-import org.springframework.data.relational.core.mapping.Column
-import org.springframework.data.relational.core.mapping.Table
 import org.springframework.r2dbc.core.DatabaseClient
-import java.math.BigDecimal
-import java.time.LocalDateTime
 
 
 @Configuration
@@ -19,12 +13,6 @@ class PostgresConfig(db: DatabaseClient) {
     init {
 
          val sql =  """ 
-             drop table IF EXISTS orders;
-             drop table IF EXISTS fi_actions;
-             drop table IF EXISTS pair_config;
-             drop table IF EXISTS pair_fee_config;
-             drop table IF EXISTS temp_events;
-             
                 CREATE TABLE IF NOT EXISTS orders (
                     id SERIAL PRIMARY KEY,
                     ouid VARCHAR(72) NOT NULL UNIQUE,
@@ -37,9 +25,14 @@ class PostgresConfig(db: DatabaseClient) {
                     right_side_fraction decimal,
                     user_level VARCHAR(20),
                     direction VARCHAR(20),
+                    match_constraint VARCHAR(30),
+                    order_type VARCHAR(30),
                     price numeric,
                     quantity numeric,
                     filled_quantity numeric,
+                    orig_price decimal,
+                    orig_quantity decimal,
+                    filled_orig_quantity decimal,
                     first_transfer_amount numeric,
                     remained_transfer_amount numeric,
                     status integer,

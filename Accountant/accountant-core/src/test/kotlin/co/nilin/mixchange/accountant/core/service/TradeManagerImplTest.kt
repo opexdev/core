@@ -16,6 +16,7 @@ import co.nilin.mixchange.matching.core.model.Pair
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers
 
 import org.mockito.Mock
 import org.mockito.Mockito
@@ -46,6 +47,12 @@ internal class TradeManagerImplTest() {
     @Mock
     lateinit var tempEventRepublisher: TempEventRepublisher
 
+    @Mock
+    lateinit var richOrderPublisher: RichOrderPublisher
+
+    @Mock
+    lateinit var richTradePublisher: RichTradePublisher
+
     val orderManager: OrderManager
 
     val tradeManager: TradeManager
@@ -54,11 +61,28 @@ internal class TradeManagerImplTest() {
     init {
         MockitoAnnotations.openMocks(this)
         orderManager = OrderManagerImpl(
-            pairConfigLoader, financialActionPersister, financeActionLoader, orderPersister, tempEventPersister, tempEventRepublisher
+                pairConfigLoader,
+                financialActionPersister,
+                financeActionLoader,
+                orderPersister,
+                tempEventPersister,
+                tempEventRepublisher,
+                richOrderPublisher
         )
         tradeManager = TradeManagerImpl(
-            pairStaticRateLoader, financialActionPersister, financeActionLoader, orderPersister, tempEventPersister, walletProxy, "pcoin", "0x0"
+                pairStaticRateLoader,
+                financialActionPersister,
+                financeActionLoader,
+                orderPersister,
+                tempEventPersister,
+                richTradePublisher,
+                walletProxy,
+                "pcoin",
+                "0x0"
         )
+        runBlocking {
+            Mockito.`when`(tempEventPersister.loadTempEvents(ArgumentMatchers.anyString())).thenReturn(emptyList())
+        }
     }
 
     @Test
@@ -137,20 +161,21 @@ internal class TradeManagerImplTest() {
         makerSubmitOrderEvent: SubmitOrderEvent
     ): TradeEvent {
         val tradeEvent = TradeEvent(
-            pair,
-            takerSubmitOrderEvent.ouid,
-            takerSubmitOrderEvent.uuid,
-            takerSubmitOrderEvent.orderId ?: -1,
-            takerSubmitOrderEvent.direction,
-            takerSubmitOrderEvent.price,
-            0,
-            makerSubmitOrderEvent.ouid,
-            makerSubmitOrderEvent.uuid,
-            makerSubmitOrderEvent.orderId ?: 1,
-            makerSubmitOrderEvent.direction,
-            makerSubmitOrderEvent.price,
-            makerSubmitOrderEvent.quantity - takerSubmitOrderEvent.quantity,
-            takerSubmitOrderEvent.quantity
+                0,
+                pair,
+                takerSubmitOrderEvent.ouid,
+                takerSubmitOrderEvent.uuid,
+                takerSubmitOrderEvent.orderId ?: -1,
+                takerSubmitOrderEvent.direction,
+                takerSubmitOrderEvent.price,
+                0,
+                makerSubmitOrderEvent.ouid,
+                makerSubmitOrderEvent.uuid,
+                makerSubmitOrderEvent.orderId ?: 1,
+                makerSubmitOrderEvent.direction,
+                makerSubmitOrderEvent.price,
+                makerSubmitOrderEvent.quantity - takerSubmitOrderEvent.quantity,
+                takerSubmitOrderEvent.quantity
         )
         return tradeEvent
     }
@@ -178,22 +203,27 @@ internal class TradeManagerImplTest() {
             val orderTakerFee = orderPairFeeConfig.takerFee * 1 //user level formula
             Mockito.`when`(orderPersister.load(submitOrderEvent.ouid)).thenReturn(
                 Order(
-                    submitOrderEvent.pair.toString(),
-                    submitOrderEvent.ouid,
-                    null,
-                    orderMakerFee,
-                    orderTakerFee,
-                    orderPairFeeConfig.pairConfig.leftSideFraction,
-                    orderPairFeeConfig.pairConfig.rightSideFraction,
-                    submitOrderEvent.uuid,
-                    "",
-                    submitOrderEvent.direction,
-                    submitOrderEvent.price,
-                    submitOrderEvent.quantity,
-                    submitOrderEvent.quantity - submitOrderEvent.remainedQuantity,
-                    financialActions[0].amount,
-                    financialActions[0].amount,
-                    0
+                        submitOrderEvent.pair.toString(),
+                        submitOrderEvent.ouid,
+                        null,
+                        orderMakerFee,
+                        orderTakerFee,
+                        orderPairFeeConfig.pairConfig.leftSideFraction,
+                        orderPairFeeConfig.pairConfig.rightSideFraction,
+                        submitOrderEvent.uuid,
+                        "",
+                        submitOrderEvent.direction,
+                        submitOrderEvent.matchConstraint,
+                        submitOrderEvent.orderType,
+                        submitOrderEvent.price,
+                        submitOrderEvent.quantity,
+                        submitOrderEvent.quantity - submitOrderEvent.remainedQuantity,
+                        submitOrderEvent.price.toBigDecimal(),
+                        submitOrderEvent.quantity.toBigDecimal(),
+                        (submitOrderEvent.quantity - submitOrderEvent.remainedQuantity).toBigDecimal(),
+                        financialActions[0].amount,
+                        financialActions[0].amount,
+                        0
                 )
             )
         }

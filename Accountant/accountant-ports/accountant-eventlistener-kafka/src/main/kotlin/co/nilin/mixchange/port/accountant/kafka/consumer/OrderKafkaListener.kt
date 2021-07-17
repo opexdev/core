@@ -2,14 +2,11 @@ package co.nilin.mixchange.port.accountant.kafka.consumer
 
 import co.nilin.mixchange.port.accountant.kafka.spi.OrderSubmitRequestListener
 import co.nilin.mixchange.port.order.kafka.inout.OrderSubmitRequest
-import kotlinx.coroutines.ExecutorCoroutineDispatcher
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.kafka.listener.MessageListener
 import org.springframework.stereotype.Component
 
-
+@Component
 class OrderKafkaListener() :
     MessageListener<String, OrderSubmitRequest> {
     val orderListeners = arrayListOf<OrderSubmitRequestListener>()

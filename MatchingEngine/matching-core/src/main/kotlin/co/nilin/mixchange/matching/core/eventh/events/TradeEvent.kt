@@ -3,6 +3,7 @@ package co.nilin.mixchange.matching.core.eventh.events
 import co.nilin.mixchange.matching.core.model.OrderDirection
 
 class TradeEvent() : CoreEvent() {
+    var tradeId: Long = 0
     var takerOuid: String = ""
     var takerUuid: String = ""
     var takerOrderId: Long = 0
@@ -18,7 +19,8 @@ class TradeEvent() : CoreEvent() {
     var matchedQuantity: Long = 0
 
 
-    constructor(pair: co.nilin.mixchange.matching.core.model.Pair,
+    constructor(tradeId: Long,
+                pair: co.nilin.mixchange.matching.core.model.Pair,
                 takerOuid: String,
                 takerUuid: String,
                 takerOrderId: Long,
@@ -34,6 +36,7 @@ class TradeEvent() : CoreEvent() {
                 matchedQuantity: Long
     )
             : this() {
+        this.tradeId = tradeId
         this.takerOuid = takerOuid
         this.takerUuid = takerUuid
         this.pair = pair

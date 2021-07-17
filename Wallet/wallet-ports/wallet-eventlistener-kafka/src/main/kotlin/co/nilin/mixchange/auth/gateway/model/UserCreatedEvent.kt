@@ -15,4 +15,8 @@ class UserCreatedEvent: AuthEvent {
     }
 
     constructor() : super()
+
+    override fun toString(): String {
+        return "UserCreatedEvent(uuid='$uuid', firstName='$firstName', lastName='$lastName', email='$email')"
+    }
 }

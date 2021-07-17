@@ -23,7 +23,6 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.EnableScheduling
-import java.lang.IllegalArgumentException
 
 @Configuration
 @EnableScheduling
@@ -39,43 +38,47 @@ class AppConfig {
 
     @Bean
     fun orderManager(
-        pairConfigLoader: PairConfigLoader,
-        financialActionPersister: FinancialActionPersister,
-        financeActionLoader: FinancialActionLoader,
-        orderPersister: OrderPersister,
-        tempEventPersister: TempEventPersister,
-        tempEventRepublisher: TempEventRepublisher
+            pairConfigLoader: PairConfigLoader,
+            financialActionPersister: FinancialActionPersister,
+            financeActionLoader: FinancialActionLoader,
+            orderPersister: OrderPersister,
+            tempEventPersister: TempEventPersister,
+            tempEventRepublisher: TempEventRepublisher,
+            richOrderPublisher: RichOrderPublisher
     ): OrderManager {
         return OrderManagerImpl(
-            pairConfigLoader,
-            financialActionPersister,
-            financeActionLoader,
-            orderPersister,
-            tempEventPersister,
-            tempEventRepublisher
+                pairConfigLoader,
+                financialActionPersister,
+                financeActionLoader,
+                orderPersister,
+                tempEventPersister,
+                tempEventRepublisher,
+                richOrderPublisher
         )
     }
 
     @Bean
     fun tradeManager(
-        pairStaticRateLoader: PairStaticRateLoader,
-        financeActionPersister: FinancialActionPersister,
-        financeActionLoader: FinancialActionLoader,
-        orderPersister: OrderPersister,
-        tempEventPersister: TempEventPersister,
-        walletProxy: WalletProxy,
-        @Value("\${app.coin}") platformCoin: String,
-        @Value("\${app.address}") platformAddress: String
+            pairStaticRateLoader: PairStaticRateLoader,
+            financeActionPersister: FinancialActionPersister,
+            financeActionLoader: FinancialActionLoader,
+            orderPersister: OrderPersister,
+            tempEventPersister: TempEventPersister,
+            richTradePublisher: RichTradePublisher,
+            walletProxy: WalletProxy,
+            @Value("\${app.coin}") platformCoin: String,
+            @Value("\${app.address}") platformAddress: String
     ): TradeManager {
         return TradeManagerImpl(
-            pairStaticRateLoader,
-            financeActionPersister,
-            financeActionLoader,
-            orderPersister,
-            tempEventPersister,
-            walletProxy,
-            platformCoin,
-            platformAddress
+                pairStaticRateLoader,
+                financeActionPersister,
+                financeActionLoader,
+                orderPersister,
+                tempEventPersister,
+                richTradePublisher,
+                walletProxy,
+                platformCoin,
+                platformAddress
         )
     }
 
@@ -102,11 +105,6 @@ class AppConfig {
         tradeManager: TradeManager
     ): AccountantTempEventListener {
         return AccountantTempEventListener(orderManager, tradeManager)
-    }
-
-    @Bean
-    fun orderKafkaListener(): OrderKafkaListener {
-        return OrderKafkaListener()
     }
 
     @Autowired
@@ -148,16 +146,16 @@ class AppConfig {
             runBlocking(AppDispatchers.kafkaExecutor) {
                 orderManager.handleRequestOrder(
                     SubmitOrderEvent(
-                        order.ouid,
-                        order.uuid,
-                        order.orderId,
-                        order.pair,
-                        order.price,
-                        order.quantity,
-                        0,
-                        order.direction,
-                        order.matchConstraint,
-                        order.orderType
+                            order.ouid,
+                            order.uuid,
+                            order.orderId,
+                            order.pair,
+                            order.price,
+                            order.quantity,
+                            order.quantity,
+                            order.direction,
+                            order.matchConstraint,
+                            order.orderType
                     )
                 )
             }
@@ -196,7 +194,7 @@ class AppConfig {
                 else if (coreEvent is CancelOrderEvent)
                     orderManager.handleCancelOrder(coreEvent)
                 else {
-                    throw IllegalArgumentException("Event is not accepted ${coreEvent::class.java}")
+                    println("Event is not accepted ${coreEvent::class.java}")
                 }
             }
             println("onEvent")

@@ -4,7 +4,6 @@ import co.nilin.mixchange.auth.gateway.ApplicationContextHolder
 import co.nilin.mixchange.auth.gateway.model.AuthEvent
 import co.nilin.mixchange.auth.gateway.model.UserCreatedEvent
 import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.keycloak.events.Event
 import org.keycloak.events.EventListenerProvider
 import org.keycloak.events.EventType
@@ -80,9 +79,11 @@ class ExtendedEventListenerProvider(private val session: KeycloakSession) : Even
             logger.info("A new user has been created")
             val userData = objectMapper.readValue(adminEvent.representation, UserData::class.java)
             val uuid = adminEvent.resourcePath.substringAfter("/")
+            val kafkaEvent = UserCreatedEvent(uuid, userData.firstName, userData.lastName, userData.email)
             (ApplicationContextHolder.getCurrentContext()!!
-                .getBean("authKafkaTemplate") as KafkaTemplate<String, AuthEvent>)
-                .send("auth_user_created", UserCreatedEvent(uuid, userData.firstName, userData.lastName, userData.email))
+                    .getBean("authKafkaTemplate") as KafkaTemplate<String, AuthEvent>)
+                    .send("auth_user_created", kafkaEvent)
+            logger.info("{} produced in kafka topic", kafkaEvent)
         }
         logger.info("-----------------------------------------------------------")
     }

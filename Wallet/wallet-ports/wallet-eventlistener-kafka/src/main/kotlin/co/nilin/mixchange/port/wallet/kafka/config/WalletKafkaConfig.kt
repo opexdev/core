@@ -20,7 +20,6 @@ import org.springframework.kafka.listener.ConcurrentMessageListenerContainer
 import org.springframework.kafka.listener.ContainerProperties
 import org.springframework.kafka.support.serializer.JsonDeserializer
 import org.springframework.kafka.support.serializer.JsonSerializer
-import java.util.*
 import java.util.regex.Pattern
 
 
@@ -44,7 +43,7 @@ class WalletKafkaConfig {
     }
 
     @Bean("walletConsumerFactory")
-    fun consumerFactory(@Qualifier("walletConsumerConfig")consumerConfigs: Map<String, Any?>): ConsumerFactory<String, UserCreatedEvent> {
+    fun consumerFactory(@Qualifier("walletConsumerConfig") consumerConfigs: Map<String, Any?>): ConsumerFactory<String, UserCreatedEvent> {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
 
@@ -70,8 +69,7 @@ class WalletKafkaConfig {
 
     @Autowired
     @ConditionalOnBean(UserCreatedKafkaListener::class)
-    fun configureUserCreatedListener(listener: UserCreatedKafkaListener
-                               , @Qualifier("walletConsumerFactory") consumerFactory: ConsumerFactory<String, UserCreatedEvent>) {
+    fun configureUserCreatedListener(listener: UserCreatedKafkaListener, @Qualifier("walletConsumerFactory") consumerFactory: ConsumerFactory<String, UserCreatedEvent>) {
         val containerProps = ContainerProperties(Pattern.compile("auth_user_created"))
         containerProps.messageListener = listener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
@@ -80,10 +78,9 @@ class WalletKafkaConfig {
     }
 
 
-
     @Autowired
-    fun createUserCreatedTopics(applicationContext: GenericApplicationContext){
-        applicationContext.registerBean("topic_auth_user_created", NewTopic::class.java, "auth_user_created", 1 ,1)
+    fun createUserCreatedTopics(applicationContext: GenericApplicationContext) {
+        applicationContext.registerBean("topic_auth_user_created", NewTopic::class.java, "auth_user_created", 1, 1)
     }
 
 }

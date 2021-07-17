@@ -13,7 +13,7 @@
         <module>accountant-app</module>
         <module>accountant-ports/accountant-persister-postgres</module>
         <module>accountant-ports/accountant-wallet-proxy</module>
-        <module>accountant-ports/accountant-tempsubmitter-kafka</module>
+        <module>accountant-ports/accountant-submitter-kafka</module>
         <module>accountant-ports/accountant-eventlistener-kafka</module>
     </modules>
 </project>

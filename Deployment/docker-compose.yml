@@ -1,11 +1,11 @@
-version: '3.3'
+version: '3.8'
 services:
   zookeeper:
     image: 'docker.io/bitnami/zookeeper:3-debian-10'
     ports:
       - '127.0.0.1:2181:2181'
-    volumes:
-      - $PWD/runtime/zookeeper_data:/bitnami
+    #    volumes:
+    #      - $PWD/runtime/zookeeper_data:/bitnami
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
     networks:
@@ -13,12 +13,30 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  #  kafka:
+  #    image: 'wurstmeister/kafka'
+  #    ports:
+  #      - '29092:29092'
+  #    environment:
+  #      - KAFKA_BROKER_ID=0
+  #      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+  #      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+  #      - KAFKA_ADVERTISED_LISTENERS=INSIDE://kafka:9092,OUTSIDE://192.168.178.26:29092
+  #      - KAFKA_LISTENERS=INSIDE://:9092,OUTSIDE://:29092
+  #      - KAFKA_INTER_BROKER_LISTENER_NAME=INSIDE
+  #    depends_on:
+  #      - zookeeper
+  #    networks:
+  #      - opex
+  #    deploy:
+  #      restart_policy:
+  #        condition: on-failure
   kafka:
     image: 'docker.io/bitnami/kafka:2-debian-10'
     ports:
       - '127.0.0.1:9092:9092'
-    volumes:
-      - $PWD/runtime/kafka-data:/bitnami
+    #    volumes:
+    #      - $PWD/runtime/kafka-data:/bitnami
     environment:
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
       - ALLOW_PLAINTEXT_LISTENER=yes
@@ -74,18 +92,18 @@ services:
       - $PWD/runtime/accountant-data:/var/lib/postgresql/data/
     networks:
       - opex
-  postgres-eventlog:
-    image: "postgres"
-    ports:
-      - 127.0.0.1:5434:5432
-    environment:
-      - POSTGRES_USER=opex
-      - POSTGRES_PASSWORD=hiopex
-      - POSTGRES_DB=opex_eventlog
-    volumes:
-      - $PWD/runtime/eventlog-data:/var/lib/postgresql/data/
-    networks:
-      - opex
+  #  postgres-eventlog:
+  #    image: "postgres"
+  #    ports:
+  #      - 127.0.0.1:5434:5432
+  #    environment:
+  #      - POSTGRES_USER=opex
+  #      - POSTGRES_PASSWORD=hiopex
+  #      - POSTGRES_DB=opex_eventlog
+  #    volumes:
+  #      - $PWD/runtime/eventlog-data:/var/lib/postgresql/data/
+  #    networks:
+  #      - opex
   postgres-auth:
     image: "postgres"
     ports:
@@ -116,6 +134,21 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  postgres-api:
+    image: "postgres"
+    ports:
+      - 127.0.0.1:5437:5432
+    environment:
+      - POSTGRES_USER=opex
+      - POSTGRES_PASSWORD=hiopex
+      - POSTGRES_DB=opex_api
+    volumes:
+      - $PWD/runtime/api-data:/var/lib/postgresql/data/
+    networks:
+      - opex
+    deploy:
+      restart_policy:
+        condition: on-failure
   accountant:
     container_name: accountant
     build:
@@ -123,8 +156,9 @@ services:
       dockerfile: Dockerfile
     ports:
       - 127.0.0.1:8089:8089
+      - 127.0.0.1:1051:1044
     environment:
-      - JAVA_OPTS=-Xmx256m
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_ACTIVE=docker
       - KAFKA_IP_PORT=kafka:9092
       - REDIS_HOST=redis
@@ -138,28 +172,28 @@ services:
       - redis
       - consul
       - postgres-accountant
-  eventlog:
-    container_name: eventlog
-    build:
-      context: ../EventLog/eventlog-app
-      dockerfile: Dockerfile
-    ports:
-      - 127.0.0.1:8090:8090
-    environment:
-      - JAVA_OPTS=-Xmx256m
-      - SPRING_PROFILES_ACTIVE=docker
-      - KAFKA_IP_PORT=kafka:9092
-      - REDIS_HOST=redis
-      - CONSUL_HOST=consul
-      - DB_IP_PORT=postgres-eventlog
-    networks:
-      - opex
-    depends_on:
-      - zookeeper
-      - kafka
-      - redis
-      - consul
-      - postgres-eventlog
+  #  eventlog:
+  #    container_name: eventlog
+  #    build:
+  #      context: ../EventLog/eventlog-app
+  #      dockerfile: Dockerfile
+  #    ports:
+  #      - 127.0.0.1:8090:8090
+  #    environment:
+  #      - JAVA_OPTS=-Xmx256m
+  #      - SPRING_PROFILES_ACTIVE=docker
+  #      - KAFKA_IP_PORT=kafka:9092
+  #      - REDIS_HOST=redis
+  #      - CONSUL_HOST=consul
+  #      - DB_IP_PORT=postgres-eventlog
+  #    networks:
+  #      - opex
+  #    depends_on:
+  #      - zookeeper
+  #      - kafka
+  #      - redis
+  #      - consul
+  #      - postgres-eventlog
   matching-engine:
     container_name: matching-engine
     build:
@@ -253,20 +287,47 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-  nginx:
-    image: nginx:latest
-    container_name: opex_nginx
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - $PWD/runtime/www:/data/www
+  api:
+    container_name: API
+    build:
+      context: ../Api/api-app
+      dockerfile: Dockerfile
     ports:
-      - 80:80
-    depends_on:
-      - wallet
-      - auth
-      - matching-gateway
+      - 127.0.0.1:8094:8094
+      - 127.0.0.1:1050:1044
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
+      - SPRING_PROFILES_ACTIVE=docker
+      - KAFKA_IP_PORT=kafka:9092
+      - REDIS_HOST=redis
+      - CONSUL_HOST=consul
+      - DB_IP_PORT=postgres-api
     networks:
       - opex
+    depends_on:
+      - zookeeper
+      - kafka
+      - redis
+      - consul
+      - postgres-api
+    deploy:
+      restart_policy:
+        condition: on-failure
+#  nginx:
+#    image: nginx:latest
+#    container_name: opex_nginx
+#    volumes:
+#      - ./nginx.conf:/etc/nginx/nginx.conf
+#      - $PWD/runtime/www:/data/www
+#    ports:
+#      - 80:80
+#    depends_on:
+#      - wallet
+#      - auth
+#      - matching-gateway
+#      - api
+#    networks:
+#      - opex
 networks:
   opex:
     driver: bridge

@@ -1,6 +1,8 @@
 package co.nilin.mixchange.accountant.core.service
 
 import co.nilin.mixchange.accountant.core.api.OrderManager
+import co.nilin.mixchange.accountant.core.inout.OrderStatus
+import co.nilin.mixchange.accountant.core.inout.RichOrder
 import co.nilin.mixchange.accountant.core.model.FinancialAction
 import co.nilin.mixchange.accountant.core.model.Order
 import co.nilin.mixchange.accountant.core.spi.*
@@ -11,12 +13,13 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 open class OrderManagerImpl(
-    val pairConfigLoader: PairConfigLoader,
-    val financialActionPersister: FinancialActionPersister,
-    val financeActionLoader: FinancialActionLoader,
-    val orderPersister: OrderPersister,
-    val tempEventPersister: TempEventPersister,
-    val tempEventRepublisher: TempEventRepublisher
+        val pairConfigLoader: PairConfigLoader,
+        val financialActionPersister: FinancialActionPersister,
+        val financeActionLoader: FinancialActionLoader,
+        val orderPersister: OrderPersister,
+        val tempEventPersister: TempEventPersister,
+        val tempEventRepublisher: TempEventRepublisher,
+        val richOrderPublisher: RichOrderPublisher
 ) : OrderManager {
     @Transactional
     override suspend fun handleRequestOrder(submitOrderEvent: SubmitOrderEvent): List<FinancialAction> {
@@ -38,73 +41,114 @@ open class OrderManagerImpl(
         amount for buy (bid): quantity * price
          */
         val financialAction =
-            FinancialAction(
-                null,
-                SubmitOrderEvent::class.simpleName!!,
-                submitOrderEvent.ouid,
-                symbol,
-                if (submitOrderEvent.direction == OrderDirection.ASK) {
-                    BigDecimal(submitOrderEvent.quantity).multiply(pairFeeConfig.pairConfig.leftSideFraction.toBigDecimal())
-                } else {
-                    BigDecimal(submitOrderEvent.quantity).multiply(pairFeeConfig.pairConfig.leftSideFraction.toBigDecimal())
-                        .multiply(submitOrderEvent.price.toBigDecimal())
-                        .multiply(pairFeeConfig.pairConfig.rightSideFraction.toBigDecimal())
-                },
-                submitOrderEvent.uuid,
-                "main",
-                submitOrderEvent.uuid,
-                "exchange",
-                LocalDateTime.now()
-            )
+                FinancialAction(
+                        null,
+                        SubmitOrderEvent::class.simpleName!!,
+                        submitOrderEvent.ouid,
+                        symbol,
+                        if (submitOrderEvent.direction == OrderDirection.ASK) {
+                            BigDecimal(submitOrderEvent.quantity).multiply(pairFeeConfig.pairConfig.leftSideFraction.toBigDecimal())
+                        } else {
+                            BigDecimal(submitOrderEvent.quantity).multiply(pairFeeConfig.pairConfig.leftSideFraction.toBigDecimal())
+                                    .multiply(submitOrderEvent.price.toBigDecimal())
+                                    .multiply(pairFeeConfig.pairConfig.rightSideFraction.toBigDecimal())
+                        },
+                        submitOrderEvent.uuid,
+                        "main",
+                        submitOrderEvent.uuid,
+                        "exchange",
+                        LocalDateTime.now()
+                )
         //store order (ouid, uuid, fees, userlevel, pair, direction, price, quantity, filledQ, status, transfered)
         orderPersister.save(
-            Order(
-                submitOrderEvent.pair.toString(),
-                submitOrderEvent.ouid,
-                null,
-                makerFee,
-                takerFee,
-                pairFeeConfig.pairConfig.leftSideFraction,
-                pairFeeConfig.pairConfig.rightSideFraction,
-                submitOrderEvent.uuid,
-                "",
-                submitOrderEvent.direction,
-                submitOrderEvent.price,
-                submitOrderEvent.quantity,
-                submitOrderEvent.quantity - submitOrderEvent.remainedQuantity,
-                financialAction.amount,
-                financialAction.amount,
-                0
-            )
+                Order(
+                        submitOrderEvent.pair.toString(),
+                        submitOrderEvent.ouid,
+                        null,
+                        makerFee,
+                        takerFee,
+                        pairFeeConfig.pairConfig.leftSideFraction,
+                        pairFeeConfig.pairConfig.rightSideFraction,
+                        submitOrderEvent.uuid,
+                        "",
+                        submitOrderEvent.direction,
+                        submitOrderEvent.matchConstraint,
+                        submitOrderEvent.orderType,
+                        submitOrderEvent.price,
+                        submitOrderEvent.quantity,
+                        submitOrderEvent.quantity - submitOrderEvent.remainedQuantity,
+                        submitOrderEvent.price.toBigDecimal()
+                                .multiply(pairFeeConfig.pairConfig.rightSideFraction.toBigDecimal()),
+                        submitOrderEvent.quantity.toBigDecimal()
+                                .multiply(pairFeeConfig.pairConfig.leftSideFraction.toBigDecimal()),
+                        BigDecimal(submitOrderEvent.quantity - submitOrderEvent.remainedQuantity).multiply(pairFeeConfig.pairConfig.leftSideFraction.toBigDecimal()),
+                        financialAction.amount,
+                        financialAction.amount,
+                        OrderStatus.REQUESTED.code
+                )
         )
-        val ret = financialActionPersister.persist(listOf(financialAction))
-        println("republish " + submitOrderEvent.ouid)
-        tempEventRepublisher.republish(tempEventPersister.loadTempEvents(submitOrderEvent.ouid))
-        println("remove temp " + submitOrderEvent.ouid)
-        tempEventPersister.removeTempEvents(submitOrderEvent.ouid)
-        return ret
+        return financialActionPersister.persist(listOf(financialAction))
     }
 
+    @Transactional
     override suspend fun handleNewOrder(createOrderEvent: CreateOrderEvent): List<FinancialAction> {
         //update order add id to other fields
         val order = orderPersister.load(createOrderEvent.ouid)
-        if ( order != null) {
+        if (order != null) {
             order.matchingEngineId = createOrderEvent.orderId
             orderPersister.save(order)
+            //new order accepted by engine
+            publishRichOrder(order, createOrderEvent.remainedQuantity.toBigDecimal())
         } else {
             tempEventPersister.saveTempEvent(createOrderEvent.ouid, createOrderEvent)
         }
         return emptyList()
     }
 
+    private suspend fun publishRichOrder(
+            order: Order, remainedQuantity: BigDecimal, status: OrderStatus? = null
+    ) {
+        richOrderPublisher.publish(
+                RichOrder(
+                        order.id,
+                        order.pair,
+                        order.ouid,
+                        order.uuid,
+                        order.userLevel,
+                        order.makerFee.toBigDecimal(),
+                        order.takerFee.toBigDecimal(),
+                        order.leftSideFraction.toBigDecimal(),
+                        order.rightSideFraction.toBigDecimal(),
+                        order.direction,
+                        order.matchConstraint,
+                        order.orderType,
+                        order.origPrice,
+                        order.origQuantity,
+                        order.origPrice.multiply(order.origQuantity),
+                        order.quantity.toBigDecimal().subtract(remainedQuantity).multiply(order.leftSideFraction.toBigDecimal()),
+                        order.origPrice.multiply(
+                                order.quantity.toBigDecimal().subtract(remainedQuantity)
+                        ),
+                        (status ?: if (remainedQuantity.compareTo(BigDecimal.ZERO) == 0) {
+                            OrderStatus.FILLED.code
+                        } else if (remainedQuantity.compareTo(order.quantity.toBigDecimal()) == 0) {
+                            OrderStatus.NEW.code
+                        } else {
+                            OrderStatus.PARTIALLY_FILLED.code
+                        }) as Int
+                )
+        )
+    }
+
     override suspend fun handleUpdateOrder(updatedOrderEvent: UpdatedOrderEvent): List<FinancialAction> {
         TODO("Not yet implemented")
     }
 
+    @Transactional
     override suspend fun handleRejectOrder(rejectOrderEvent: RejectOrderEvent): List<FinancialAction> {
         //order by ouid
         val order = orderPersister.load(rejectOrderEvent.ouid)
-        if ( order == null ){
+        if (order == null) {
             tempEventPersister.saveTempEvent(rejectOrderEvent.ouid, rejectOrderEvent)
             return emptyList()
         }
@@ -118,27 +162,29 @@ open class OrderManagerImpl(
         val parentFinancialAction = financeActionLoader.findLast(rejectOrderEvent.uuid, rejectOrderEvent.ouid)
         //create fa for transfer remaining transfered uuid symbol exchange wallet to uuid main exchange wallet
         val financialAction = FinancialAction(
-            parentFinancialAction,
-            RejectOrderEvent::class.simpleName!!,
-            rejectOrderEvent.ouid,
-            symbol,
-            order.remainedTransferAmount,
-            rejectOrderEvent.uuid,
-            "exchange",
-            rejectOrderEvent.uuid,
-            "main",
-            LocalDateTime.now()
+                parentFinancialAction,
+                RejectOrderEvent::class.simpleName!!,
+                rejectOrderEvent.ouid,
+                symbol,
+                order.remainedTransferAmount,
+                rejectOrderEvent.uuid,
+                "exchange",
+                rejectOrderEvent.uuid,
+                "main",
+                LocalDateTime.now()
         )
         //update order status
-        order.status = 3
+        order.status = OrderStatus.REJECTED.code
         orderPersister.save(order)
+        publishRichOrder(order, order.quantity.toBigDecimal(), OrderStatus.REJECTED)
         return financialActionPersister.persist(listOf(financialAction))
     }
 
+    @Transactional
     override suspend fun handleCancelOrder(cancelOrderEvent: CancelOrderEvent): List<FinancialAction> {
         //order by ouid
         val order = orderPersister.load(cancelOrderEvent.ouid)
-        if ( order == null ){
+        if (order == null) {
             tempEventPersister.saveTempEvent(cancelOrderEvent.ouid, cancelOrderEvent)
             return emptyList()
         }
@@ -152,20 +198,21 @@ open class OrderManagerImpl(
         val parentFinancialAction = financeActionLoader.findLast(cancelOrderEvent.uuid, cancelOrderEvent.ouid)
         //create fa for transfer remaining transfered uuid symbol exchange wallet to uuid main exchange wallet
         val financialAction = FinancialAction(
-            parentFinancialAction,
-            RejectOrderEvent::class.simpleName!!,
-            cancelOrderEvent.ouid,
-            symbol,
-            order.remainedTransferAmount,
-            cancelOrderEvent.uuid,
-            "exchange",
-            cancelOrderEvent.uuid,
-            "main",
-            LocalDateTime.now()
+                parentFinancialAction,
+                RejectOrderEvent::class.simpleName!!,
+                cancelOrderEvent.ouid,
+                symbol,
+                order.remainedTransferAmount,
+                cancelOrderEvent.uuid,
+                "exchange",
+                cancelOrderEvent.uuid,
+                "main",
+                LocalDateTime.now()
         )
         //update order status
-        order.status = 2
+        order.status = OrderStatus.CANCELED.code
         orderPersister.save(order)
+        publishRichOrder(order, cancelOrderEvent.quantity.toBigDecimal(), OrderStatus.CANCELED)
         return financialActionPersister.persist(listOf(financialAction))
     }
 }

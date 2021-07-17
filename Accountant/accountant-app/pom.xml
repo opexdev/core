@@ -53,7 +53,7 @@
         </dependency>
         <dependency>
             <groupId>co.nilin.mixchange</groupId>
-            <artifactId>accountant-temp-submitter-kafka</artifactId>
+            <artifactId>accountant-submitter-kafka</artifactId>
             <version>${accountant.version}</version>
         </dependency>
         <dependency>
