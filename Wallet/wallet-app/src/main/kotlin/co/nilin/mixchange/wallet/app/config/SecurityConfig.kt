@@ -1,8 +1,8 @@
 package co.nilin.mixchange.wallet.app.config
 
+import org.springframework.context.annotation.Bean
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.Resource
-import org.springframework.context.annotation.Bean
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder
@@ -34,6 +34,7 @@ class SecurityConfig {
     fun reactiveJwtDecoder(): ReactiveJwtDecoder? {
         val resource: Resource = ClassPathResource("/public.cert")
         val publicKey = String(FileCopyUtils.copyToByteArray(resource.inputStream))
+                .replace("\r", "")
                 .replace("-----BEGIN PUBLIC KEY-----\n", "")
                 .replace("\n-----END PUBLIC KEY-----", "")
         val spec = X509EncodedKeySpec(Base64Utils.decodeFromString(publicKey))
