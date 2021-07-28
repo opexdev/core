@@ -7,7 +7,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
-inline fun <reified T : Any> typeRef(): ParameterizedTypeReference<T> = object : ParameterizedTypeReference<T>() {}
+private inline fun <reified T : Any> typeRef(): ParameterizedTypeReference<T> = object : ParameterizedTypeReference<T>() {}
 data class TransferResult(val date: LocalDateTime, val sourceBalanceBeforeAction: Amount, val sourceBalanceAfterAction: Amount, val amount: Amount)
 data class Amount(val currency: Currency, val amount: BigDecimal)
 data class Currency(val name: String, val symbol: String, val precision: Int)

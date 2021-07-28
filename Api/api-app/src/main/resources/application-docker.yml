@@ -11,3 +11,7 @@ spring:
     consul:
       host: ${CONSUL_HOST}
       port: 8500
+
+app:
+  matching-gateway:
+    url: lb://opex-gateway

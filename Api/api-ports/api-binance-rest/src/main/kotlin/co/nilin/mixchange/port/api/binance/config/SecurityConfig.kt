@@ -1,5 +1,6 @@
 package co.nilin.mixchange.port.api.binance.config
 
+import co.nilin.mixchange.port.api.binance.security.AuthenticationConverter
 import org.springframework.context.annotation.Bean
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.Resource
@@ -27,6 +28,7 @@ class SecurityConfig {
                 .and()
                 .oauth2ResourceServer()
                 .jwt()
+                .jwtAuthenticationConverter(AuthenticationConverter())
         return http.build()
     }
 
