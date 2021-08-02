@@ -3,7 +3,10 @@ package co.nilin.mixchange.port.api.binance.controller
 import co.nilin.mixchange.api.core.inout.*
 import co.nilin.mixchange.api.core.spi.MEGatewayProxy
 import co.nilin.mixchange.api.core.spi.UserQueryHandler
+import co.nilin.mixchange.api.core.spi.WalletProxy
+import co.nilin.mixchange.port.api.binance.data.AccountInfoResponse
 import co.nilin.mixchange.port.api.binance.security.CustomAuthToken
+import co.nilin.mixchange.port.api.binance.util.BalanceParser
 import co.nilin.mixchange.port.api.binance.util.asMatchConstraint
 import co.nilin.mixchange.port.api.binance.util.asMatchingOrderType
 import co.nilin.mixchange.port.api.binance.util.asOrderDirection
@@ -17,13 +20,16 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import reactor.core.publisher.Mono
 import java.math.BigDecimal
 import java.security.Principal
 import java.util.*
 
 @RestController
-class AccountController(val queryHandler: UserQueryHandler, val matchingGatewayProxy: MEGatewayProxy) {
+class AccountController(
+    val queryHandler: UserQueryHandler,
+    val matchingGatewayProxy: MEGatewayProxy,
+    val walletProxy: WalletProxy
+) {
 
     data class FillsData(
         val price: BigDecimal,
@@ -344,6 +350,40 @@ class AccountController(val queryHandler: UserQueryHandler, val matchingGatewayP
                     response.isMaker, response.isBestMatch
                 )
             }
+    }
+
+    @GetMapping(
+        "/api/v3/account",
+        consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
+    suspend fun accountInfo(
+        @AuthenticationPrincipal
+        auth: CustomAuthToken,
+        @RequestParam(name = "recvWindow", required = false)
+        recvWindow: Long?, //The value cannot be greater than 60000
+        @RequestParam(name = "timestamp")
+        timestamp: Long
+    ): AccountInfoResponse {
+        val wallets = walletProxy.getWallets(auth.uuid, auth.tokenValue)
+        val limits = walletProxy.getOwnerLimits(auth.uuid, auth.tokenValue)
+        val parsedBalances = BalanceParser.parse(wallets)
+        val accountType = "SPOT"
+
+        //TODO replace commissions and accountType with actual data
+        return AccountInfoResponse(
+            0,
+            0,
+            0,
+            0,
+            limits.canTrade,
+            limits.canWithdraw,
+            limits.canDeposit,
+            Date().time,
+            accountType,
+            parsedBalances,
+            listOf(accountType)
+        )
     }
 
 }

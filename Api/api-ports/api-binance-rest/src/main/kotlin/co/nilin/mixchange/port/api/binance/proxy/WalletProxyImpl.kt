@@ -1,59 +1,52 @@
 package co.nilin.mixchange.port.api.binance.proxy
 
+import co.nilin.mixchange.api.core.inout.OwnerLimitsResponse
+import co.nilin.mixchange.api.core.inout.Wallet
 import co.nilin.mixchange.api.core.spi.WalletProxy
+import co.nilin.mixchange.port.api.binance.util.LoggerDelegate
+import kotlinx.coroutines.reactive.awaitSingle
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.ParameterizedTypeReference
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
-private inline fun <reified T : Any> typeRef(): ParameterizedTypeReference<T> = object : ParameterizedTypeReference<T>() {}
-data class TransferResult(val date: LocalDateTime, val sourceBalanceBeforeAction: Amount, val sourceBalanceAfterAction: Amount, val amount: Amount)
-data class Amount(val currency: Currency, val amount: BigDecimal)
-data class Currency(val name: String, val symbol: String, val precision: Int)
+private inline fun <reified T : Any> typeRef(): ParameterizedTypeReference<T> =
+    object : ParameterizedTypeReference<T>() {}
 
 @Component
-class WalletProxyImpl(val webClient: WebClient
-) : WalletProxy {
-    /*override suspend fun transfer(
-        symbol: String,
-        senderWalletType: String,
-        senderUuid: String,
-        receiverWalletType: String,
-        receiverUuid: String,
-        amount: BigDecimal,
-        description: String?,
-        transferRef: String?
-    ) {
-        webClient.post()
-            .uri(URI.create("$walletBaseUrl/transfer/${amount}_${symbol}/from/${senderUuid}_${senderWalletType}/to/${receiverUuid}_${receiverWalletType}"))
-            .header("Content-Type", "application/json")
-            .retrieve()
-            .onStatus({ t -> t.isError }, { p ->
-                *//*
-                p.bodyToMono(typeRef<SejamResponse<Any>>()).map { t -> KycSejamException(p.statusCode().value().toString(), t.error?.errorCode.toString()
-                        + "-" + t.error?.customMessage) }
-                        *//*
-                throw RuntimeException()
-            })
-            .bodyToMono(typeRef<TransferResult>())
-            .log()
-            .awaitFirst()
+class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
 
+    private val logger by LoggerDelegate()
+
+    @Value("\${app.wallet.url}")
+    private lateinit var baseUrl: String
+
+    override suspend fun getWallets(uuid: String?, token: String?): List<Wallet> {
+        logger.info("fetching wallets for $uuid")
+        return webClient.get()
+            .uri("$baseUrl/owner/wallet/all")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { throw RuntimeException() })
+            .bodyToFlux(typeRef<Wallet>())
+            .collectList()
+            .awaitSingle()
     }
 
-    override suspend fun canFulfil(symbol: String, walletType: String, uuid: String, amount: BigDecimal): Boolean {
-        data class BooleanResponse(val result: Boolean)
+    override suspend fun getOwnerLimits(uuid: String?, token: String?): OwnerLimitsResponse {
+        logger.info("fetching owner limits for $uuid")
         return webClient.get()
-            .uri(URI.create("$walletBaseUrl/$uuid/wallet_type/${walletType}/can_withdraw/${amount}_${symbol}"))
-            .header("Content-Type", "application/json")
+            .uri("$baseUrl/owner/limits")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .retrieve()
-            .onStatus({ t -> t.isError }, { p ->
-                throw RuntimeException()
-            })
-            .bodyToMono(typeRef<BooleanResponse>())
-            .log()
-            .awaitFirst()
-            .result
-    }*/
+            .onStatus({ t -> t.isError }, { throw RuntimeException() })
+            .bodyToMono(typeRef<OwnerLimitsResponse>())
+            .awaitSingle()
+    }
 }

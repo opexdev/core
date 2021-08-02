@@ -12,6 +12,8 @@ interface WalletManager {
     suspend fun increaseBalance(wallet: Wallet, amount: BigDecimal)
     suspend fun decreaseBalance(wallet: Wallet, amount: BigDecimal)
     suspend fun findWalletByOwnerAndCurrencyAndType(owner: WalletOwner, walletType: String, currency: Currency): Wallet?
+    suspend fun findWalletsByOwnerAndType(owner: WalletOwner, walletType: String): List<Wallet>
+    suspend fun findWalletsByOwner(owner: WalletOwner): List<Wallet>
     suspend fun createWallet(
         owner: WalletOwner,
         balance: Amount,

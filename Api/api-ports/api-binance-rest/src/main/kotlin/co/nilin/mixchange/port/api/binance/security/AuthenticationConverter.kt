@@ -14,14 +14,14 @@ class AuthenticationConverter : Converter<Jwt, Mono<out AbstractAuthenticationTo
     override fun convert(source: Jwt): Mono<out AbstractAuthenticationToken>? {
         return try {
             Mono.just(
-                    CustomAuthToken(
-                            source.claims[IdTokenClaimNames.SUB] as String?,
-                            source.claims["name"] as String?,
-                            source.claims["preferred_username"] as String?,
-                            source.claims["email"] as String?,
-                            source.tokenValue,
-                            authoritiesConverter.convert(source) ?: arrayListOf()
-                    )
+                CustomAuthToken(
+                    source.claims[IdTokenClaimNames.SUB] as String?,
+                    source.claims["name"] as String?,
+                    source.claims["preferred_username"] as String?,
+                    source.claims["email"] as String?,
+                    source.tokenValue,
+                    authoritiesConverter.convert(source) ?: arrayListOf()
+                )
             )
         } catch (e: Exception) {
             null

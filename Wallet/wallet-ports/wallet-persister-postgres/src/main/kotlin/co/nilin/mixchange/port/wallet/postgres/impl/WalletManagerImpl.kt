@@ -10,6 +10,7 @@ import co.nilin.mixchange.wallet.core.model.WalletOwner
 import co.nilin.mixchange.wallet.core.spi.WalletManager
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.time.LocalDateTime
@@ -138,8 +139,43 @@ class WalletManagerImpl(
         )
     }
 
+    override suspend fun findWalletsByOwnerAndType(owner: WalletOwner, walletType: String): List<Wallet> {
+        val ownerModel = walletOwnerRepository.findById(owner.id()!!).awaitFirst()
+        return walletRepository.findByOwnerAndType(owner.id()!!, walletType)
+            .collectList()
+            .awaitSingle()
+            .map {
+                val currency = currencyRepository.findById(it.currency).awaitFirst()
+                SavedWallet(
+                    it.id!!,
+                    ownerModel,
+                    Amount(currency, it.balance),
+                    currency,
+                    it.type
+                )
+            }
+    }
+
+    override suspend fun findWalletsByOwner(owner: WalletOwner): List<Wallet> {
+        val ownerModel = walletOwnerRepository.findById(owner.id()!!).awaitFirst()
+        return walletRepository.findByOwner(owner.id()!!)
+            .collectList()
+            .awaitSingle()
+            .map {
+                val currency = currencyRepository.findById(it.currency).awaitFirst()
+                SavedWallet(
+                    it.id!!,
+                    ownerModel,
+                    Amount(currency, it.balance),
+                    currency,
+                    it.type
+                )
+            }
+    }
+
     override suspend fun createWallet(owner: WalletOwner, balance: Amount, currency: Currency, type: String): Wallet {
-        val walletModel = walletRepository.save(WalletModel(null, owner.id()!!, type, currency.getName(), balance.amount))
+        val walletModel = walletRepository
+            .save(WalletModel(null, owner.id()!!, type, currency.getName(), balance.amount))
             .awaitFirst()
         val wallet = SavedWallet(
             walletModel.id!!,

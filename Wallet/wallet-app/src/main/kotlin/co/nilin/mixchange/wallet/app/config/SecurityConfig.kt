@@ -21,6 +21,7 @@ class SecurityConfig {
         http.csrf().disable()
                 .authorizeExchange()
                 .pathMatchers("/balanceOf/**").hasAuthority("SCOPE_trust")
+                .pathMatchers("/owner/**").hasAuthority("SCOPE_trust")
                 .pathMatchers("/**").permitAll()
                 .anyExchange().authenticated()
                 .and()

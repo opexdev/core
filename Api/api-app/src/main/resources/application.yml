@@ -30,3 +30,5 @@ spring:
 app:
   matching-gateway:
     url: lb://opex-gateway
+  wallet:
+    url: lb://opex-wallet

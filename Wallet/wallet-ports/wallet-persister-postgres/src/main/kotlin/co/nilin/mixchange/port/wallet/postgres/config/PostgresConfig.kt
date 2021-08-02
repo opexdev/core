@@ -41,7 +41,10 @@ class PostgresConfig(db: DatabaseClient) {
                     id SERIAL PRIMARY KEY,
                     uuid VARCHAR(36) NOT NULL UNIQUE,
                     title VARCHAR(70) NOT NULL,
-                    level VARCHAR(10) NOT NULL
+                    level VARCHAR(10) NOT NULL,
+                    trade_allowed BOOLEAN NOT NULL DEFAULT true,
+                    withdraw_allowed BOOLEAN NOT NULL DEFAULT true,
+                    deposit_allowed BOOLEAN NOT NULL DEFAULT true
                 );  
                 
                 CREATE TABLE IF NOT EXISTS wallet (
