@@ -8,11 +8,11 @@
 		<version>2.4.4</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>co.nilin.mixchange</groupId>
+	<groupId>co.nilin.opex</groupId>
 	<artifactId>wallet-eventlistener-kafka</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>wallet-eventlistener-kafka</name>
-	<description>Wallet kafka listener of Mixchange</description>
+	<description>Wallet kafka listener of Opex</description>
 
 	<properties>
 		<java.version>1.8</java.version>

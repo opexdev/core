@@ -8,11 +8,11 @@
 		<version>2.4.4</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>co.nilin.mixchange</groupId>
+	<groupId>co.nilin.opex</groupId>
 	<artifactId>wallet-app</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>wallet-app</name>
-	<description>Wallet managment app of Mixchange</description>
+	<description>Wallet managment app of Opex</description>
 
 	<properties>
 		<java.version>1.8</java.version>
@@ -72,17 +72,17 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>co.nilin.mixchange</groupId>
+			<groupId>co.nilin.opex</groupId>
 			<artifactId>wallet-core</artifactId>
 			<version>${wallet.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>co.nilin.mixchange</groupId>
+			<groupId>co.nilin.opex</groupId>
 			<artifactId>wallet-persister-postgres</artifactId>
 			<version>${wallet.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>co.nilin.mixchange</groupId>
+			<groupId>co.nilin.opex</groupId>
 			<artifactId>wallet-eventlistener-kafka</artifactId>
 			<version>${wallet.version}</version>
 		</dependency>

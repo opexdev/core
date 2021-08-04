@@ -8,11 +8,11 @@
         <version>2.4.4</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>co.nilin.mixchange</groupId>
+    <groupId>co.nilin.opex</groupId>
     <artifactId>api-core</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>api-core</name>
-    <description>Api logic of Mixchange</description>
+    <description>Api logic of Opex</description>
 
     <properties>
         <java.version>1.8</java.version>
@@ -47,12 +47,12 @@
             <artifactId>kotlinx-coroutines-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.mixchange</groupId>
+            <groupId>co.nilin.opex</groupId>
             <artifactId>matching-core</artifactId>
             <version>${matching.version}</version>
         </dependency>
         <dependency>
-            <groupId>co.nilin.mixchange</groupId>
+            <groupId>co.nilin.opex</groupId>
             <artifactId>accountant-core</artifactId>
             <version>${accountant.version}</version>
             <scope>provided</scope>

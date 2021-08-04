@@ -2,12 +2,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>co.nilin.mixchange</groupId>
+	<groupId>co.nilin.opex</groupId>
 	<artifactId>matching-gateway-root</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>matching-gateway-root</name>
 	<packaging>pom</packaging>
-	<description>Matching Api Gateway root of Mixchange</description>
+	<description>Matching Api Gateway root of Opex</description>
 	<modules>
 		<module>gateway-app</module>
 		<module>gateway-port/order-submitter-kafka</module>

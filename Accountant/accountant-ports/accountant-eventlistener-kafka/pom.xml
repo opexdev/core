@@ -8,11 +8,11 @@
 		<version>2.4.4</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>co.nilin.mixchange</groupId>
+	<groupId>co.nilin.opex</groupId>
 	<artifactId>accountant-eventlistener-kafka</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>accountant-eventlistener-kafka</name>
-	<description>Accountant kafka listener of Mixchange</description>
+	<description>Accountant kafka listener of Opex</description>
 
 	<properties>
 		<java.version>1.8</java.version>
@@ -31,13 +31,13 @@
 			<artifactId>spring-boot-starter-webflux</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>co.nilin.mixchange</groupId>
+			<groupId>co.nilin.opex</groupId>
 			<artifactId>matching-core</artifactId>
 			<version>${matching.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>co.nilin.mixchange</groupId>
+			<groupId>co.nilin.opex</groupId>
 			<artifactId>accountant-core</artifactId>
 			<version>${accountant.version}</version>
 			<scope>provided</scope>

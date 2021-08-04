@@ -8,11 +8,11 @@
         <version>2.4.4</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>co.nilin.mixchange</groupId>
+    <groupId>co.nilin.opex</groupId>
     <artifactId>keycloak-gateway</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>keycloak-gateway</name>
-    <description>Keycloak gateway app Mixchange</description>
+    <description>Keycloak gateway app Opex</description>
 
     <properties>
         <maven.compiler.target>13</maven.compiler.target>

@@ -8,11 +8,11 @@
         <version>2.4.4</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>co.nilin.mixchange</groupId>
+    <groupId>co.nilin.opex</groupId>
     <artifactId>matching-app</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>matching-app</name>
-    <description>Matching engine running app Mixchange</description>
+    <description>Matching engine running app Opex</description>
 
     <properties>
         <java.version>1.8</java.version>
@@ -42,22 +42,22 @@
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.mixchange</groupId>
+            <groupId>co.nilin.opex</groupId>
             <artifactId>matching-core</artifactId>
             <version>${matching.version}</version>
         </dependency>
         <dependency>
-            <groupId>co.nilin.mixchange</groupId>
+            <groupId>co.nilin.opex</groupId>
             <artifactId>matching-submitter-kafka</artifactId>
             <version>${matching.version}</version>
         </dependency>
         <dependency>
-            <groupId>co.nilin.mixchange</groupId>
+            <groupId>co.nilin.opex</groupId>
             <artifactId>matching-eventlistener-kafka</artifactId>
             <version>${matching.version}</version>
         </dependency>
         <dependency>
-            <groupId>co.nilin.mixchange</groupId>
+            <groupId>co.nilin.opex</groupId>
             <artifactId>matching-snapshots-redis</artifactId>
             <version>${matching.version}</version>
         </dependency>
