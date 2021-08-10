@@ -9,6 +9,9 @@ import co.nilin.mixchange.matching.core.model.Pair
 import co.nilin.mixchange.port.order.kafka.inout.OrderSubmitRequest
 import co.nilin.mixchange.port.order.kafka.inout.OrderSubmitResult
 import co.nilin.mixchange.port.order.kafka.service.OrderSubmitter
+import io.swagger.annotations.ApiResponse
+import io.swagger.annotations.Example
+import io.swagger.annotations.ExampleProperty
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -20,7 +23,20 @@ import java.util.*
 class OrderController(val orderService: OrderService) {
 
     @PostMapping("/order")
-    suspend fun submitNewOrder(principal: Principal, @RequestBody createOrderRequest: CreateOrderRequest): OrderSubmitResult {
+    @ApiResponse(
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = "{ }",
+                mediaType = "application/json"
+            )
+        )
+    )
+    suspend fun submitNewOrder(
+        principal: Principal,
+        @RequestBody createOrderRequest: CreateOrderRequest
+    ): OrderSubmitResult {
         createOrderRequest.uuid = principal.name
         return orderService.submitNewOrder(createOrderRequest)
     }

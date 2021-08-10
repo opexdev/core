@@ -6,6 +6,9 @@ import co.nilin.mixchange.wallet.core.model.Amount
 import co.nilin.mixchange.wallet.core.service.TransferService
 import co.nilin.mixchange.wallet.core.spi.WalletManager
 import co.nilin.mixchange.wallet.core.spi.WalletOwnerManager
+import io.swagger.annotations.ApiResponse
+import io.swagger.annotations.Example
+import io.swagger.annotations.ExampleProperty
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
@@ -17,6 +20,16 @@ class TransferController(
     val transferService: TransferService, val walletManager: WalletManager, val walletOwnerManager: WalletOwnerManager
 ) {
     @PostMapping("/transfer/{amount}_{symbol}/from/{senderUuid}_{senderWalletType}/to/{receiverUuid}_{receiverWalletType}")
+    @ApiResponse(
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = "{ }",
+                mediaType = "application/json"
+            )
+        )
+    )
     suspend fun transfer(
         @PathVariable("symbol") symbol: String,
         @PathVariable("senderWalletType") senderWalletType: String,

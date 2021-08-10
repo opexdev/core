@@ -2,6 +2,9 @@ package co.nilin.mixchange.wallet.app.controller
 
 import co.nilin.mixchange.wallet.core.spi.WalletManager
 import co.nilin.mixchange.wallet.core.spi.WalletOwnerManager
+import io.swagger.annotations.ApiResponse
+import io.swagger.annotations.Example
+import io.swagger.annotations.ExampleProperty
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -18,6 +21,16 @@ class BalanceController(
     data class BalanceResponse(val balance: BigDecimal)
 
     @GetMapping("/balanceOf/wallet_type/{wallet_type}/currency/{currency}")
+    @ApiResponse(
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = "{ \"balance\": 990 }",
+                mediaType = "application/json"
+            )
+        )
+    )
     suspend fun getBalance(
         principal: Principal,
         @PathVariable("currency") currency: String,
