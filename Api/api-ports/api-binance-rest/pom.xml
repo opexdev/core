@@ -8,7 +8,7 @@
         <version>2.4.4</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>co.nilin.mixchange</groupId>
+    <groupId>co.nilin.opex</groupId>
     <artifactId>api-binance-rest</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>api-binance-rest</name>
@@ -24,13 +24,13 @@
 
     <dependencies>
         <dependency>
-            <groupId>co.nilin.mixchange</groupId>
+            <groupId>co.nilin.opex</groupId>
             <artifactId>matching-core</artifactId>
             <version>${matching.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>co.nilin.mixchange</groupId>
+            <groupId>co.nilin.opex</groupId>
             <artifactId>api-core</artifactId>
             <version>${api.version}</version>
             <scope>provided</scope>

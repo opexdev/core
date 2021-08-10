@@ -8,11 +8,11 @@
 		<version>2.4.4</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>co.nilin.mixchange</groupId>
+	<groupId>co.nilin.opex</groupId>
 	<artifactId>eventlog-core</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>eventlog-core</name>
-	<description>Event log of Mixchange</description>
+	<description>Event log of Opex</description>
 
 	<properties>
 		<java.version>1.8</java.version>
@@ -22,7 +22,7 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>co.nilin.mixchange</groupId>
+			<groupId>co.nilin.opex</groupId>
 			<artifactId>matching-core</artifactId>
 			<version>${matching.version}</version>
 			<scope>provided</scope>

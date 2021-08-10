@@ -8,11 +8,11 @@
         <version>2.4.4</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>co.nilin.mixchange</groupId>
+    <groupId>co.nilin.opex</groupId>
     <artifactId>api-app</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>api-app</name>
-    <description>Api app Mixchange</description>
+    <description>Api app Opex</description>
 
     <properties>
         <java.version>1.8</java.version>
@@ -40,27 +40,27 @@
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.mixchange</groupId>
+            <groupId>co.nilin.opex</groupId>
             <artifactId>accountant-core</artifactId>
             <version>${accountant.version}</version>
         </dependency>
         <dependency>
-            <groupId>co.nilin.mixchange</groupId>
+            <groupId>co.nilin.opex</groupId>
             <artifactId>api-core</artifactId>
             <version>${api.version}</version>
         </dependency>
         <dependency>
-            <groupId>co.nilin.mixchange</groupId>
+            <groupId>co.nilin.opex</groupId>
             <artifactId>api-eventlistener-kafka</artifactId>
             <version>${api.version}</version>
         </dependency>
         <dependency>
-            <groupId>co.nilin.mixchange</groupId>
+            <groupId>co.nilin.opex</groupId>
             <artifactId>api-binance-rest</artifactId>
             <version>${api.version}</version>
         </dependency>
         <dependency>
-            <groupId>co.nilin.mixchange</groupId>
+            <groupId>co.nilin.opex</groupId>
             <artifactId>api-persister-postgres</artifactId>
             <version>${api.version}</version>
         </dependency>

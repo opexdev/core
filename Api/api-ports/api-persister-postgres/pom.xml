@@ -8,11 +8,11 @@
         <version>2.4.4</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>co.nilin.mixchange</groupId>
+    <groupId>co.nilin.opex</groupId>
     <artifactId>api-persister-postgres</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>api-persister-postgres</name>
-    <description>Persist items of Mixchange api on Postgres</description>
+    <description>Persist items of Opex api on Postgres</description>
 
     <properties>
         <java.version>1.8</java.version>
@@ -24,19 +24,19 @@
 
     <dependencies>
         <dependency>
-            <groupId>co.nilin.mixchange</groupId>
+            <groupId>co.nilin.opex</groupId>
             <artifactId>matching-core</artifactId>
             <version>${matching.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>co.nilin.mixchange</groupId>
+            <groupId>co.nilin.opex</groupId>
             <artifactId>api-core</artifactId>
             <version>${api.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>co.nilin.mixchange</groupId>
+            <groupId>co.nilin.opex</groupId>
             <artifactId>accountant-core</artifactId>
             <version>${accountant.version}</version>
             <scope>provided</scope>

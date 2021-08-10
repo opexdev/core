@@ -8,11 +8,11 @@
 		<version>2.4.4</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>co.nilin.mixchange</groupId>
+	<groupId>co.nilin.opex</groupId>
 	<artifactId>eventlog-eventlistener-kafka</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>eventlog-eventlistener-kafka</name>
-	<description>Matching engine kafka trade handler of Mixchange</description>
+	<description>Matching engine kafka trade handler of Opex</description>
 
 	<properties>
 		<java.version>1.8</java.version>
@@ -30,7 +30,7 @@
 			<artifactId>spring-boot-starter-webflux</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>co.nilin.mixchange</groupId>
+			<groupId>co.nilin.opex</groupId>
 			<artifactId>matching-core</artifactId>
 			<version>${matching.version}</version>
 			<scope>provided</scope>
