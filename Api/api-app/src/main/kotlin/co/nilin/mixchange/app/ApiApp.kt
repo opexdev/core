@@ -4,6 +4,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import springfox.documentation.builders.*
 import springfox.documentation.builders.PathSelectors.regex
 import springfox.documentation.service.*
@@ -13,6 +14,7 @@ import springfox.documentation.spring.web.plugins.Docket
 import springfox.documentation.swagger.web.SecurityConfiguration
 import springfox.documentation.swagger.web.SecurityConfigurationBuilder
 import springfox.documentation.swagger2.annotations.EnableSwagger2
+import java.security.Principal
 import java.util.Collections.singletonList
 
 
@@ -38,6 +40,8 @@ class ApiApp {
                         .build()
                 )
             )
+            .ignoredParameterTypes(AuthenticationPrincipal::class.java, Principal::class.java)
+            .useDefaultResponseMessages(false)
             .securitySchemes(singletonList(oauth()))
             .securityContexts(singletonList(securityContext()))
     }
