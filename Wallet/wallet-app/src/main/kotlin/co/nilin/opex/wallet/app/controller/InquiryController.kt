@@ -3,6 +3,9 @@ package co.nilin.opex.wallet.app.controller
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
+import io.swagger.annotations.ApiResponse
+import io.swagger.annotations.Example
+import io.swagger.annotations.ExampleProperty
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -17,6 +20,16 @@ class InquiryController(
 
     data class BooleanResponse(val result: Boolean)
     @GetMapping("{uuid}/wallet_type/{wallet_type}/can_withdraw/{amount}_{currency}")
+    @ApiResponse(
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = "{ }",
+                mediaType = "application/json"
+            )
+        )
+    )
     suspend fun canFulfill(
         @PathVariable("uuid") uuid: String,
         @PathVariable("currency") currency: String,

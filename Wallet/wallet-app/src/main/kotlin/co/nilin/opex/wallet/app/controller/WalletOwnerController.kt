@@ -2,6 +2,9 @@ package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
+import io.swagger.annotations.ApiResponse
+import io.swagger.annotations.Example
+import io.swagger.annotations.ExampleProperty
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import java.math.BigDecimal
@@ -26,6 +29,16 @@ class WalletOwnerController(
     )
 
     @GetMapping("/owner/wallet/all")
+    @ApiResponse(
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = "{ }",
+                mediaType = "application/json"
+            )
+        )
+    )
     suspend fun getAllWallets(principal: Principal): List<WalletData> {
         val owner = walletOwnerManager.findWalletOwner(principal.name)
         if (owner != null) {
@@ -38,6 +51,16 @@ class WalletOwnerController(
     }
 
     @GetMapping("/owner/limits")
+    @ApiResponse(
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = "{ }",
+                mediaType = "application/json"
+            )
+        )
+    )
     suspend fun getWalletOwnerLimits(principal: Principal): OwnerLimitsResponse {
         val owner = walletOwnerManager.findWalletOwner(principal.name)
         return if (owner != null)
@@ -45,5 +68,4 @@ class WalletOwnerController(
         else
             OwnerLimitsResponse(canTrade = false, canWithdraw = false, canDeposit = false)
     }
-
 }

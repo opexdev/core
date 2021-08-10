@@ -12,15 +12,13 @@ import co.nilin.opex.port.api.binance.util.asMatchingOrderType
 import co.nilin.opex.port.api.binance.util.asOrderDirection
 import co.nilin.opex.api.core.inout.*
 import com.fasterxml.jackson.annotation.JsonInclude
+import io.swagger.annotations.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 import java.security.Principal
 import java.util.*
@@ -108,6 +106,16 @@ class AccountController(
         consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE],
         produces = [MediaType.APPLICATION_JSON_VALUE]
     )
+    @ApiResponse(
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = "{ \"symbol\": \"btc_usdt\", \"orderId\": -1, \"orderListId\": -1, \"transactTime\": \"2021-08-03T11:09:23.190+00:00\" }",
+                mediaType = "application/json"
+            )
+        )
+    )
     suspend fun createNewOrder(
         @RequestParam(name = "symbol")
         symbol: String,
@@ -123,16 +131,24 @@ class AccountController(
         quoteOrderQty: BigDecimal?,
         @RequestParam(name = "price", required = false)
         price: BigDecimal?,
+        @ApiParam(
+            value = "A unique id among open orders. Automatically generated if not sent.\n" +
+                    "Orders with the same newClientOrderID can be accepted only when the previous one is filled, otherwise the order will be rejected."
+        )
         @RequestParam(name = "newClientOrderId", required = false)
         newClientOrderId: String?,    /* A unique id among open orders. Automatically generated if not sent.
     Orders with the same newClientOrderID can be accepted only when the previous one is filled, otherwise the order will be rejected.
     */
+        @ApiParam(value = "Used with STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, and TAKE_PROFIT_LIMIT orders.")
         @RequestParam(name = "stopPrice", required = false)
         stopPrice: BigDecimal?, //Used with STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, and TAKE_PROFIT_LIMIT orders.
         @RequestParam(name = "icebergQty", required = false)
+        @ApiParam(value = "Used with LIMIT, STOP_LOSS_LIMIT, and TAKE_PROFIT_LIMIT to create an iceberg order.")
         icebergQty: BigDecimal?, //Used with LIMIT, STOP_LOSS_LIMIT, and TAKE_PROFIT_LIMIT to create an iceberg order.
         @RequestParam(name = "newOrderRespType", required = false)
+        @ApiParam(value = "Set the response JSON. ACK, RESULT, or FULL; MARKET and LIMIT order types default to FULL, all other orders default to ACK.")
         newOrderRespType: OrderResponseType?,  //Set the response JSON. ACK, RESULT, or FULL; MARKET and LIMIT order types default to FULL, all other orders default to ACK.
+        @ApiParam(value = "The value cannot be greater than 60000")
         @RequestParam(name = "recvWindow", required = false)
         recvWindow: Long?, //The value cannot be greater than 60000
         @RequestParam(name = "timestamp")
@@ -179,6 +195,16 @@ class AccountController(
         consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE],
         produces = [MediaType.APPLICATION_JSON_VALUE]
     )
+    @ApiResponse(
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = "{ \"symbol\": \"btc_usdt\", \"orderId\": 12, \"orderListId\": -1, \"clientOrderId\": \"\", \"price\": 1, \"origQty\": 10, \"executedQty\": 0, \"cummulativeQuoteQty\": 0, \"status\": \"NEW\", \"timeInForce\": \"GTC\", \"type\": \"LIMIT\", \"side\": \"SELL\", \"time\": \"2021-08-04T12:10:13.488+00:00\", \"updateTime\": \"2021-08-04T12:10:13.488+00:00\", \"isWorking\": true, \"origQuoteOrderQty\": 10 }",
+                mediaType = "application/json"
+            )
+        )
+    )
     suspend fun queryOrder(
         principal: Principal,
         @RequestParam(name = "symbol")
@@ -187,6 +213,7 @@ class AccountController(
         orderId: Long?,
         @RequestParam(name = "origClientOrderId", required = false)
         origClientOrderId: String?,
+        @ApiParam(value = "The value cannot be greater than 60000")
         @RequestParam(name = "recvWindow", required = false)
         recvWindow: Long?, //The value cannot be greater than 60000
         @RequestParam(name = "timestamp")
@@ -230,10 +257,21 @@ class AccountController(
         consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE],
         produces = [MediaType.APPLICATION_JSON_VALUE]
     )
+    @ApiResponse(
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = "[ { \"symbol\": \"btc_usdt\", \"orderId\": 12, \"orderListId\": -1, \"clientOrderId\": \"\", \"price\": 1, \"origQty\": 10, \"executedQty\": 0, \"cummulativeQuoteQty\": 0, \"status\": \"NEW\", \"timeInForce\": \"GTC\", \"type\": \"LIMIT\", \"side\": \"SELL\", \"time\": \"2021-08-04T12:10:13.488+00:00\", \"updateTime\": \"2021-08-04T12:10:13.488+00:00\", \"isWorking\": true, \"origQuoteOrderQty\": 10 } ]",
+                mediaType = "application/json"
+            )
+        )
+    )
     suspend fun fetchOpenOrders(
         principal: Principal,
         @RequestParam(name = "symbol", required = false)
         symbol: String?,
+        @ApiParam(value = "The value cannot be greater than 60000")
         @RequestParam(name = "recvWindow", required = false)
         recvWindow: Long?, //The value cannot be greater than 60000
         @RequestParam(name = "timestamp")
@@ -274,6 +312,16 @@ class AccountController(
         consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE],
         produces = [MediaType.APPLICATION_JSON_VALUE]
     )
+    @ApiResponse(
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = "{ }",
+                mediaType = "application/json"
+            )
+        )
+    )
     suspend fun fetchAllOrders(
         principal: Principal,
         @RequestParam(name = "symbol", required = false)
@@ -282,8 +330,10 @@ class AccountController(
         startTime: Date?,
         @RequestParam(name = "endTime", required = false)
         endTime: Date?,
+        @ApiParam(value = "Default 500; max 1000.")
         @RequestParam(name = "limit", required = false)
         limit: Int? = 500, //Default 500; max 1000.
+        @ApiParam(value = "The value cannot be greater than 60000")
         @RequestParam(name = "recvWindow", required = false)
         recvWindow: Long?, //The value cannot be greater than 60000
         @RequestParam(name = "timestamp")
@@ -325,6 +375,16 @@ class AccountController(
         consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE],
         produces = [MediaType.APPLICATION_JSON_VALUE]
     )
+    @ApiResponse(
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = "{ }",
+                mediaType = "application/json"
+            )
+        )
+    )
     suspend fun fetchAllTrades(
         principal: Principal,
         @RequestParam(name = "symbol")
@@ -333,10 +393,13 @@ class AccountController(
         startTime: Date?,
         @RequestParam(name = "endTime", required = false)
         endTime: Date?,
+        @ApiParam(value = "TradeId to fetch from. Default gets most recent trades.")
         @RequestParam(name = "fromId", required = false)
         fromId: Long?,//TradeId to fetch from. Default gets most recent trades.
+        @ApiParam(value = "Default 500; max 1000.")
         @RequestParam(name = "limit", required = false)
         limit: Int? = 500, //Default 500; max 1000.
+        @ApiParam(value = "The value cannot be greater than 60000")
         @RequestParam(name = "recvWindow", required = false)
         recvWindow: Long?, //The value cannot be greater than 60000
         @RequestParam(name = "timestamp")
@@ -358,9 +421,20 @@ class AccountController(
         consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE],
         produces = [MediaType.APPLICATION_JSON_VALUE]
     )
+    @ApiResponse(
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = "{ \"makerCommission\": 0, \"takerCommission\": 0, \"buyerCommission\": 0, \"sellerCommission\": 0, \"canTrade\": true, \"canWithdraw\": true, \"canDeposit\": true, \"updateTime\": 1628420513843, \"accountType\": \"SPOT\", \"balances\": [ { \"asset\": \"usdt\", \"free\": 1000, \"locked\": 0 } ], \"permissions\": [ \"SPOT\" ] }",
+                mediaType = "application/json"
+            )
+        )
+    )
     suspend fun accountInfo(
         @AuthenticationPrincipal
         auth: CustomAuthToken,
+        @ApiParam(value = "The value cannot be greater than 60000")
         @RequestParam(name = "recvWindow", required = false)
         recvWindow: Long?, //The value cannot be greater than 60000
         @RequestParam(name = "timestamp")
