@@ -21,3 +21,5 @@ spring:
 app:
   accountant:
     url: lb://opex-accountant
+
+swagger.authUrl: https://api.opex.dev

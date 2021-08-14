@@ -32,3 +32,5 @@ app:
     url: lb://opex-gateway
   wallet:
     url: lb://opex-wallet
+
+swagger.authUrl: https://api.opex.dev
