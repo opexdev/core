@@ -33,3 +33,5 @@ app:
 logging:
   level:
     org.apache.kafka: DEBUG
+
+swagger.authUrl: https://api.opex.dev
