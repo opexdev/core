@@ -1,5 +1,6 @@
 package co.nilin.opex.app
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
@@ -22,6 +23,9 @@ import java.util.Collections.singletonList
 @ComponentScan("co.nilin.opex")
 @EnableSwagger2
 class ApiApp {
+    @Value("\${swagger.authUrl}")
+    val authUrl: String = ""
+
     @Bean
     fun opexApi(): Docket? {
         return Docket(DocumentationType.SWAGGER_2)
@@ -70,7 +74,7 @@ class ApiApp {
     }
 
     fun grantTypes(): List<GrantType?>? {
-        val tokenUrl = "http://localhost:8083/auth/realms/mixchange/protocol/openid-connect/token"
+        val tokenUrl = "${authUrl}/auth/realms/mixchange/protocol/openid-connect/token"
         val grantType = ResourceOwnerPasswordCredentialsGrant(tokenUrl)
         return singletonList(grantType)
     }
