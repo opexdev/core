@@ -20,6 +20,7 @@ class SecurityConfig {
     @Bean
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
         http.csrf().disable()
+            .cors().and()
             .authorizeExchange()
             .pathMatchers("/hello").permitAll()
             .pathMatchers("/actuator/**").permitAll()

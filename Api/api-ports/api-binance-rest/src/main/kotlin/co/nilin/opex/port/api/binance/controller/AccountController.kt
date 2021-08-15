@@ -24,6 +24,7 @@ import java.security.Principal
 import java.util.*
 
 @RestController
+@CrossOrigin(origins = ["https://opex.dev", "http://localhost:3000"], allowedHeaders = ["*"])
 class AccountController(
     val queryHandler: UserQueryHandler,
     val matchingGatewayProxy: MEGatewayProxy,
@@ -102,7 +103,7 @@ class AccountController(
    Data Source: Matching Engine
     */
     @PostMapping(
-        "/api/v3/order",
+        "/v3/order",
         consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE],
         produces = [MediaType.APPLICATION_JSON_VALUE]
     )
@@ -191,7 +192,7 @@ class AccountController(
   Data Source: Database
   */
     @GetMapping(
-        "/api/v3/order",
+        "/v3/order",
         consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE],
         produces = [MediaType.APPLICATION_JSON_VALUE]
     )
@@ -253,7 +254,7 @@ class AccountController(
       Data Source: Database
     */
     @GetMapping(
-        "/api/v3/openOrders",
+        "/v3/openOrders",
         consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE],
         produces = [MediaType.APPLICATION_JSON_VALUE]
     )
@@ -308,7 +309,7 @@ class AccountController(
    Data Source: Database
    */
     @GetMapping(
-        "/api/v3/allOrders",
+        "/v3/allOrders",
         consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE],
         produces = [MediaType.APPLICATION_JSON_VALUE]
     )
@@ -371,7 +372,7 @@ class AccountController(
     Data Source: Database
     */
     @GetMapping(
-        "/api/v3/myTrades",
+        "/v3/myTrades",
         consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE],
         produces = [MediaType.APPLICATION_JSON_VALUE]
     )
@@ -417,7 +418,7 @@ class AccountController(
     }
 
     @GetMapping(
-        "/api/v3/account",
+        "/v3/account",
         consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE],
         produces = [MediaType.APPLICATION_JSON_VALUE]
     )
