@@ -23,7 +23,7 @@ class SwaggerConfig {
     val authUrl: String = ""
 
     @Bean
-    fun opexApi(): Docket? {
+    fun opexApi(): Docket {
         return Docket(DocumentationType.SWAGGER_2)
             .groupName("opex-api")
             .apiInfo(apiInfo())
@@ -46,7 +46,7 @@ class SwaggerConfig {
             .securityContexts(Collections.singletonList(securityContext()))
     }
 
-    private fun apiInfo(): ApiInfo? {
+    private fun apiInfo(): ApiInfo {
         return ApiInfoBuilder()
             .title("OPEX API")
             .description("Backend for opex exchange.")
@@ -56,7 +56,7 @@ class SwaggerConfig {
             .build()
     }
 
-    private fun oauth(): SecurityScheme? {
+    private fun oauth(): SecurityScheme {
         return OAuthBuilder()
             .name("opex")
             .grantTypes(grantTypes())
@@ -64,17 +64,17 @@ class SwaggerConfig {
             .build()
     }
 
-    private fun scopes(): List<AuthorizationScope?>? {
+    private fun scopes(): List<AuthorizationScope?> {
         return listOf(AuthorizationScope("openid", "OpenId"))
     }
 
-    private fun grantTypes(): List<GrantType?>? {
+    private fun grantTypes(): List<GrantType?> {
         val tokenUrl = "$authUrl/auth/realms/opex/protocol/openid-connect/token"
         val grantType = ResourceOwnerPasswordCredentialsGrant(tokenUrl)
         return Collections.singletonList(grantType)
     }
 
-    private fun securityContext(): SecurityContext? {
+    private fun securityContext(): SecurityContext {
         val securityReference = SecurityReference.builder()
             .reference("opex")
             .scopes(emptyArray())
@@ -86,7 +86,7 @@ class SwaggerConfig {
     }
 
     @Bean
-    fun securityInfo(): SecurityConfiguration? {
+    fun securityInfo(): SecurityConfiguration {
         return SecurityConfigurationBuilder.builder()
             .clientId("admin-cli")
             .realm("opex")
