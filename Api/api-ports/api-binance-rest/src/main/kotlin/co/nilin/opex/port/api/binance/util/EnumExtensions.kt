@@ -8,8 +8,8 @@ import co.nilin.opex.matching.core.model.OrderDirection
 
 fun OrderSide.asOrderDirection(): OrderDirection {
     if (this == OrderSide.BUY)
-        return OrderDirection.ASK
-    return OrderDirection.BID
+        return OrderDirection.BID
+    return OrderDirection.ASK
 }
 
 fun TimeInForce.asMatchConstraint(): MatchConstraint {
