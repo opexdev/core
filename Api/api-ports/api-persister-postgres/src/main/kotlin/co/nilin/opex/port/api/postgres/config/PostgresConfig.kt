@@ -55,7 +55,7 @@ class PostgresConfig(db: DatabaseClient) {
             );
             CREATE TABLE IF NOT EXISTS pair_maps (
                 pair VARCHAR(72) PRIMARY KEY,
-                map VARCHAR(72) UNIQUE NOT NULL,
+                map VARCHAR(72) UNIQUE NOT NULL
             );
             INSERT INTO pair_maps(pair, map) VALUES('btc_usdt', 'BTCUSDT') ON CONFLICT DO NOTHING; 
             INSERT INTO pair_maps(pair, map) VALUES('eth_usdt', 'ETHUSDT') ON CONFLICT DO NOTHING; 

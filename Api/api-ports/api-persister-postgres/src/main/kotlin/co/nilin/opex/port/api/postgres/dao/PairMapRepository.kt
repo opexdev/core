@@ -10,9 +10,9 @@ import reactor.core.publisher.Mono
 @Repository
 interface PairMapRepository : ReactiveCrudRepository<PairMapModel, Long> {
 
-    @Query("select * from pair_maps where pair=:pair")
+    @Query("select * from pair_maps where pair = :pair")
     fun findByPair(@Param("pair") pair: String): Mono<PairMapModel>
 
-    @Query("select * from pair_maps where map=:map")
+    @Query("select * from pair_maps where map = :map")
     fun findByMap(@Param("map") map: String): Mono<PairMapModel>
 }
