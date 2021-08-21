@@ -172,7 +172,7 @@ class AccountController(
 
         matchingGatewayProxy.createNewOrder(request, auth.tokenValue)
         return NewOrderResponse(
-            pairSymbol,
+            symbol,
             -1,
             -1,
             null,
