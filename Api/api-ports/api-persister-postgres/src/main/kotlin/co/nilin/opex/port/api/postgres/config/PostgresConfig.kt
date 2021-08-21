@@ -53,9 +53,9 @@ class PostgresConfig(db: DatabaseClient) {
                 taker_uuid VARCHAR(72) NOT NULL,
                 create_date TIMESTAMP
             );
-            CREATE TABLE IF NOT EXISTS pair_map (
+            CREATE TABLE IF NOT EXISTS pair_maps (
                 pair VARCHAR(72) PRIMARY KEY,
-                binance VARCHAR(72) UNIQUE,
+                map VARCHAR(72) UNIQUE,
             );
             INSERT INTO pair_map(pair, binance) values('btc_usdt', 'BTCUSDT') ON CONFLICT DO NOTHING; 
             INSERT INTO pair_map(pair, binance) values('eth_usdt', 'ETHUSDT') ON CONFLICT DO NOTHING; 
