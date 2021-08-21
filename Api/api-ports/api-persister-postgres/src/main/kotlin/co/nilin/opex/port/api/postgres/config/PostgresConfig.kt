@@ -57,9 +57,9 @@ class PostgresConfig(db: DatabaseClient) {
                 pair VARCHAR(72) PRIMARY KEY,
                 map VARCHAR(72) UNIQUE,
             );
-            INSERT INTO pair_maps(pair, binance) values('btc_usdt', 'BTCUSDT') ON CONFLICT DO NOTHING; 
-            INSERT INTO pair_maps(pair, binance) values('eth_usdt', 'ETHUSDT') ON CONFLICT DO NOTHING; 
-            INSERT INTO pair_maps(pair, binance) values('eth_btc', 'ETHBTC') ON CONFLICT DO NOTHING; 
+            INSERT INTO pair_maps(pair, map) values('btc_usdt', 'BTCUSDT') ON CONFLICT DO NOTHING; 
+            INSERT INTO pair_maps(pair, map) values('eth_usdt', 'ETHUSDT') ON CONFLICT DO NOTHING; 
+            INSERT INTO pair_maps(pair, map) values('eth_btc', 'ETHBTC') ON CONFLICT DO NOTHING; 
         """
         val initDb = db.sql { sql }
         initDb // initialize the database
