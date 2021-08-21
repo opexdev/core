@@ -11,6 +11,7 @@ import co.nilin.opex.port.api.binance.util.asMatchConstraint
 import co.nilin.opex.port.api.binance.util.asMatchingOrderType
 import co.nilin.opex.port.api.binance.util.asOrderDirection
 import co.nilin.opex.api.core.inout.*
+import co.nilin.opex.api.core.spi.SymbolAdapter
 import com.fasterxml.jackson.annotation.JsonInclude
 import io.swagger.annotations.*
 import kotlinx.coroutines.flow.Flow
@@ -28,7 +29,8 @@ import java.util.*
 class AccountController(
     val queryHandler: UserQueryHandler,
     val matchingGatewayProxy: MEGatewayProxy,
-    val walletProxy: WalletProxy
+    val walletProxy: WalletProxy,
+    val symbolAdapter: SymbolAdapter
 ) {
 
     data class FillsData(
@@ -156,9 +158,10 @@ class AccountController(
         timestamp: Long,
         @AuthenticationPrincipal auth: CustomAuthToken
     ): NewOrderResponse {
+        val pairSymbol = symbolAdapter.mapFrom(symbol)!!
         val request = MEGatewayProxy.CreateOrderRequest(
             auth.uuid,
-            symbol,
+            pairSymbol,
             price ?: BigDecimal.ZERO, // Maybe make this nullable as well?
             quantity ?: BigDecimal.ZERO,
             side.asOrderDirection(),
@@ -168,7 +171,7 @@ class AccountController(
 
         matchingGatewayProxy.createNewOrder(request, auth.tokenValue)
         return NewOrderResponse(
-            symbol,
+            pairSymbol,
             -1,
             -1,
             null,
@@ -220,11 +223,12 @@ class AccountController(
         @RequestParam(name = "timestamp")
         timestamp: Long
     ): QueryOrderResponse {
-        val response = queryHandler.queryOrder(principal, QueryOrderRequest(symbol, orderId, origClientOrderId))
+        val pairSymbol = symbolAdapter.mapFrom(symbol)!!
+        val response = queryHandler.queryOrder(principal, QueryOrderRequest(pairSymbol, orderId, origClientOrderId))
         if (response == null)
             throw IllegalArgumentException("no order found")
         return QueryOrderResponse(
-            response.symbol,
+            symbolAdapter.mapFrom(response.symbol)!!,
             response.orderId,
             response.orderListId,
             response.clientOrderId,
@@ -278,10 +282,11 @@ class AccountController(
         @RequestParam(name = "timestamp")
         timestamp: Long
     ): Flow<QueryOrderResponse> {
-        return queryHandler.openOrders(principal, symbol)
+        val pairSymbol = symbolAdapter.mapFrom(symbol)
+        return queryHandler.openOrders(principal, pairSymbol)
             .map { response ->
                 QueryOrderResponse(
-                    response.symbol,
+                    symbolAdapter.mapFrom(response.symbol)!!,
                     response.orderId,
                     response.orderListId,
                     response.clientOrderId,
@@ -340,10 +345,11 @@ class AccountController(
         @RequestParam(name = "timestamp")
         timestamp: Long
     ): Flow<QueryOrderResponse> {
-        return queryHandler.allOrders(principal, AllOrderRequest(symbol, startTime, endTime, limit))
+        val pairSymbol = symbolAdapter.mapFrom(symbol)
+        return queryHandler.allOrders(principal, AllOrderRequest(pairSymbol, startTime, endTime, limit))
             .map { response ->
                 QueryOrderResponse(
-                    response.symbol,
+                    symbolAdapter.mapFrom(response.symbol)!!,
                     response.orderId,
                     response.orderListId,
                     response.clientOrderId,
@@ -406,10 +412,11 @@ class AccountController(
         @RequestParam(name = "timestamp")
         timestamp: Long
     ): Flow<TradeResponse> {
-        return queryHandler.allTrades(principal, TradeRequest(symbol, fromId, startTime, endTime, limit))
+        val pairSymbol = symbolAdapter.mapFrom(symbol)
+        return queryHandler.allTrades(principal, TradeRequest(pairSymbol, fromId, startTime, endTime, limit))
             .map { response ->
                 TradeResponse(
-                    response.symbol, response.id,
+                    symbolAdapter.mapFrom(response.symbol)!!, response.id,
                     response.orderId, -1, response.price, response.qty, response.quoteQty,
                     response.commission, response.commissionAsset, response.time, response.isBuyer,
                     response.isMaker, response.isBestMatch
