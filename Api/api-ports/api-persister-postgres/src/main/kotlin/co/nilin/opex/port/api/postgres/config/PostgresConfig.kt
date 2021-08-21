@@ -55,11 +55,11 @@ class PostgresConfig(db: DatabaseClient) {
             );
             CREATE TABLE IF NOT EXISTS pair_maps (
                 pair VARCHAR(72) PRIMARY KEY,
-                map VARCHAR(72) UNIQUE,
+                map VARCHAR(72) UNIQUE NOT NULL,
             );
-            INSERT INTO pair_maps(pair, map) values('btc_usdt', 'BTCUSDT') ON CONFLICT DO NOTHING; 
-            INSERT INTO pair_maps(pair, map) values('eth_usdt', 'ETHUSDT') ON CONFLICT DO NOTHING; 
-            INSERT INTO pair_maps(pair, map) values('eth_btc', 'ETHBTC') ON CONFLICT DO NOTHING; 
+            INSERT INTO pair_maps(pair, map) VALUES('btc_usdt', 'BTCUSDT') ON CONFLICT DO NOTHING; 
+            INSERT INTO pair_maps(pair, map) VALUES('eth_usdt', 'ETHUSDT') ON CONFLICT DO NOTHING; 
+            INSERT INTO pair_maps(pair, map) VALUES('eth_btc', 'ETHBTC') ON CONFLICT DO NOTHING; 
         """
         val initDb = db.sql { sql }
         initDb // initialize the database
