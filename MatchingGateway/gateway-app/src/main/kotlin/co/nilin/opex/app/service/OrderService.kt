@@ -1,6 +1,5 @@
 package co.nilin.opex.app.service
 
-import co.nilin.opex.app.exception.NotAllowedToSubmitOrderException
 import co.nilin.opex.app.inout.CreateOrderRequest
 import co.nilin.opex.app.spi.AccountantApiProxy
 import co.nilin.opex.app.spi.PairConfigLoader
@@ -9,6 +8,8 @@ import co.nilin.opex.matching.core.model.Pair
 import co.nilin.opex.port.order.kafka.inout.OrderSubmitRequest
 import co.nilin.opex.port.order.kafka.inout.OrderSubmitResult
 import co.nilin.opex.port.order.kafka.service.OrderSubmitter
+import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.utility.error.data.throwError
 import org.springframework.stereotype.Service
 import java.util.*
 
@@ -33,7 +34,7 @@ class OrderService(
                             createOrderRequest.quantity.multiply(createOrderRequest.price)
                 )
         ) {
-            throw NotAllowedToSubmitOrderException()
+            throwError(OpexError.SubmitOrderForbiddenByAccountant)
         }
         val pairFeeConfig = pairConfigLoader.load(
                 createOrderRequest.pair, createOrderRequest.direction, ""

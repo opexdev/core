@@ -11,6 +11,8 @@ import co.nilin.opex.port.api.binance.util.asMatchConstraint
 import co.nilin.opex.port.api.binance.util.asMatchingOrderType
 import co.nilin.opex.port.api.binance.util.asOrderDirection
 import co.nilin.opex.api.core.inout.*
+import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.api.core.spi.SymbolAdapter
 import com.fasterxml.jackson.annotation.JsonInclude
 import io.swagger.annotations.*
@@ -225,8 +227,7 @@ class AccountController(
     ): QueryOrderResponse {
         val pairSymbol = symbolAdapter.mapFrom(symbol)!!
         val response = queryHandler.queryOrder(principal, QueryOrderRequest(pairSymbol, orderId, origClientOrderId))
-        if (response == null)
-            throw IllegalArgumentException("no order found")
+            ?: throw OpexException(OpexError.OrderNotFound)
         return QueryOrderResponse(
             symbolAdapter.mapFrom(response.symbol)!!,
             response.orderId,

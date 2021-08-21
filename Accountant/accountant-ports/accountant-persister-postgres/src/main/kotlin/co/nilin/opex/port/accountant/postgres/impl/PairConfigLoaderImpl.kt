@@ -7,11 +7,11 @@ import co.nilin.opex.matching.core.model.OrderDirection
 import co.nilin.opex.port.accountant.postgres.dao.PairConfigRepository
 import co.nilin.opex.port.accountant.postgres.dao.PairFeeConfigRepository
 import co.nilin.opex.port.accountant.postgres.model.PairFeeConfigModel
+import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.stereotype.Component
-import org.springframework.util.StringUtils
-import java.lang.IllegalArgumentException
 
 @Component
 class PairConfigLoaderImpl(
@@ -20,12 +20,18 @@ class PairConfigLoaderImpl(
 
     override suspend fun load(pair: String, direction: OrderDirection, userLevel: String): PairFeeConfig {
         val pairConfig = pairConfigRepository
-            .findById(pair).awaitFirstOrElse { throw IllegalArgumentException("$pair is not available") }
+            .findById(pair).awaitFirstOrElse {
+                val error = OpexError.InvalidPair
+                throw OpexException(error, String.format(error.message!!, pair))
+            }
         var pairFeeConfig: PairFeeConfigModel?
         if (userLevel.isEmpty()) {
             pairFeeConfig = pairFeeConfigRepository
                 .findByPairAndDirectionAndUserLevel(pair, direction, "*")
-                .awaitFirstOrElse { throw IllegalArgumentException("$pair fee is not available") }
+                .awaitFirstOrElse {
+                    val error = OpexError.InvalidPair
+                    throw OpexException(error, String.format(error.message!!, pair))
+                }
         } else {
             pairFeeConfig = pairFeeConfigRepository
                 .findByPairAndDirectionAndUserLevel(pair, direction, userLevel)
@@ -33,7 +39,10 @@ class PairConfigLoaderImpl(
             if (pairFeeConfig == null) {
                 pairFeeConfig = pairFeeConfigRepository
                     .findByPairAndDirectionAndUserLevel(pair, direction, "*")
-                    .awaitFirstOrElse { throw IllegalArgumentException("$pair fee is not available") }
+                    .awaitFirstOrElse {
+                        val error = OpexError.InvalidPairFee
+                        throw OpexException(error, String.format(error.message!!, pair))
+                    }
             }
         }
 

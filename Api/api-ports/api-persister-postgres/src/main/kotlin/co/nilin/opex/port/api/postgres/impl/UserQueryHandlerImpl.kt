@@ -8,6 +8,8 @@ import co.nilin.opex.port.api.postgres.dao.TradeRepository
 import co.nilin.opex.port.api.postgres.model.OrderModel
 import co.nilin.opex.port.api.postgres.util.*
 import co.nilin.opex.api.core.inout.*
+import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
@@ -34,7 +36,7 @@ class UserQueryHandlerImpl(
         }).awaitFirstOrNull()
         if (order?.constraint != null) {
             if (order.uuid != principal.name)
-                throw RuntimeException("Forbidden")
+                throw OpexException(OpexError.Forbidden)
             return orderToQueryResponse(order)
         }
         return null

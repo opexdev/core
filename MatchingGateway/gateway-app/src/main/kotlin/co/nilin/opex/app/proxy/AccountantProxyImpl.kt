@@ -23,9 +23,7 @@ class AccountantProxyImpl(
             .uri(URI.create("$accountantBaseUrl/$uuid/create_order/${value}_${symbol}/allowed"))
             .header("Content-Type", "application/json")
             .retrieve()
-            .onStatus({ t -> t.isError }, { p ->
-                throw RuntimeException()
-            })
+            .onStatus({ t -> t.isError }, { it.createException()})
             .bodyToMono(typeRef<BooleanResponse>())
             .log()
             .awaitFirst()
@@ -45,9 +43,7 @@ class AccountantProxyImpl(
             )
             .header("Content-Type", "application/json")
             .retrieve()
-            .onStatus({ t -> t.isError }, { p ->
-                throw RuntimeException()
-            })
+            .onStatus({ t -> t.isError }, { it.createException()})
             .bodyToMono(typeRef<PairFeeConfig>())
             .log()
             .awaitFirst()

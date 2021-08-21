@@ -11,7 +11,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import java.nio.charset.StandardCharsets
 import java.util.*
 
-@RestControllerAdvice
+//@RestControllerAdvice
 class ControllerExceptionHandler {
 
     data class ErrorResponse(

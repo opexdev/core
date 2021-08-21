@@ -11,14 +11,20 @@ import java.net.URI
 import java.time.LocalDateTime
 
 inline fun <reified T : Any> typeRef(): ParameterizedTypeReference<T> = object : ParameterizedTypeReference<T>() {}
-data class TransferResult(val date: LocalDateTime, val sourceBalanceBeforeAction: Amount, val sourceBalanceAfterAction: Amount, val amount: Amount)
+data class TransferResult(
+    val date: LocalDateTime,
+    val sourceBalanceBeforeAction: Amount,
+    val sourceBalanceAfterAction: Amount,
+    val amount: Amount
+)
+
 data class Amount(val currency: Currency, val amount: BigDecimal)
 data class Currency(val name: String, val symbol: String, val precision: Int)
 
 @Component
-class WalletProxyImpl(@Value("\${app.wallet.url}") val walletBaseUrl: String
-,     val webClient: WebClient
-): WalletProxy {
+class WalletProxyImpl(
+    @Value("\${app.wallet.url}") val walletBaseUrl: String, val webClient: WebClient
+) : WalletProxy {
     override suspend fun transfer(
         symbol: String,
         senderWalletType: String,
@@ -52,9 +58,7 @@ class WalletProxyImpl(@Value("\${app.wallet.url}") val walletBaseUrl: String
             .uri(URI.create("$walletBaseUrl/$uuid/wallet_type/${walletType}/can_withdraw/${amount}_${symbol}"))
             .header("Content-Type", "application/json")
             .retrieve()
-            .onStatus({ t -> t.isError }, { p ->
-                throw RuntimeException()
-            })
+            .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono(typeRef<BooleanResponse>())
             .log()
             .awaitFirst()
