@@ -1,5 +1,8 @@
 package co.nilin.opex.wallet.app.controller
 
+import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.utility.error.data.OpexException
+import co.nilin.opex.utility.error.data.throwError
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import io.swagger.annotations.ApiResponse
@@ -41,13 +44,11 @@ class WalletOwnerController(
     )
     suspend fun getAllWallets(principal: Principal): List<WalletData> {
         val owner = walletOwnerManager.findWalletOwner(principal.name)
-        if (owner != null) {
-            val wallets = walletManager.findWalletsByOwner(owner)
-            return wallets.map {
-                WalletData(it.currency().getSymbol(), it.balance().amount, it.type())
-            }
+            ?: throw OpexException(OpexError.WalletOwnerNotFound)
+        val wallets = walletManager.findWalletsByOwner(owner)
+        return wallets.map {
+            WalletData(it.currency().getSymbol(), it.balance().amount, it.type())
         }
-        return arrayListOf()
     }
 
     @GetMapping("/owner/limits")
@@ -63,9 +64,7 @@ class WalletOwnerController(
     )
     suspend fun getWalletOwnerLimits(principal: Principal): OwnerLimitsResponse {
         val owner = walletOwnerManager.findWalletOwner(principal.name)
-        return if (owner != null)
-            OwnerLimitsResponse(owner.isTradeAllowed(), owner.isWithdrawAllowed(), owner.isDepositAllowed())
-        else
-            OwnerLimitsResponse(canTrade = false, canWithdraw = false, canDeposit = false)
+            ?: throw OpexException(OpexError.WalletOwnerNotFound)
+        return OwnerLimitsResponse(owner.isTradeAllowed(), owner.isWithdrawAllowed(), owner.isDepositAllowed())
     }
 }

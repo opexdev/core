@@ -29,7 +29,7 @@ fun OrderType.toApiOrderType(): co.nilin.opex.api.core.inout.OrderType {
 }
 
 fun OrderDirection.toOrderSide(): OrderSide {
-    if (this == OrderDirection.ASK)
+    if (this == OrderDirection.BID)
         return OrderSide.BUY
     return OrderSide.SELL
 }

@@ -11,6 +11,8 @@ import co.nilin.opex.port.api.binance.util.asMatchConstraint
 import co.nilin.opex.port.api.binance.util.asMatchingOrderType
 import co.nilin.opex.port.api.binance.util.asOrderDirection
 import co.nilin.opex.api.core.inout.*
+import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.utility.error.data.OpexException
 import com.fasterxml.jackson.annotation.JsonInclude
 import io.swagger.annotations.*
 import kotlinx.coroutines.flow.Flow
@@ -221,8 +223,8 @@ class AccountController(
         timestamp: Long
     ): QueryOrderResponse {
         val response = queryHandler.queryOrder(principal, QueryOrderRequest(symbol, orderId, origClientOrderId))
-        if (response == null)
-            throw IllegalArgumentException("no order found")
+            ?: throw OpexException(OpexError.OrderNotFound)
+
         return QueryOrderResponse(
             response.symbol,
             response.orderId,

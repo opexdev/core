@@ -33,7 +33,7 @@ class MEGatewayProxyImpl(private val client: WebClient) : MEGatewayProxy {
             .header("Authorization", "Bearer $token")
             .body(Mono.just(order))
             .retrieve()
-            .onStatus({ t -> t.isError }, { throw RuntimeException() })
+            .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono(typeRef<OrderSubmitResult>())
             .awaitSingleOrNull()
     }

@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.app
 
+import co.nilin.opex.utility.error.EnableOpexErrorHandler
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -23,6 +24,7 @@ import java.util.Collections.singletonList
 @SpringBootApplication
 @ComponentScan("co.nilin.opex")
 @EnableSwagger2
+@EnableOpexErrorHandler
 class WalletApp
 
 fun main(args: Array<String>) {

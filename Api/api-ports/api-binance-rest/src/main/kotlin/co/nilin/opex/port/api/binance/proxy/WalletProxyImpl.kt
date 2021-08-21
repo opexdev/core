@@ -32,7 +32,7 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .retrieve()
-            .onStatus({ t -> t.isError }, { throw RuntimeException() })
+            .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToFlux(typeRef<Wallet>())
             .collectList()
             .awaitSingle()
@@ -45,7 +45,7 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .retrieve()
-            .onStatus({ t -> t.isError }, { throw RuntimeException() })
+            .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono(typeRef<OwnerLimitsResponse>())
             .awaitSingle()
     }
