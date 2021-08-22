@@ -12,7 +12,7 @@ import co.nilin.opex.port.api.binance.util.asMatchingOrderType
 import co.nilin.opex.port.api.binance.util.asOrderDirection
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
-import co.nilin.opex.api.core.spi.SymbolAdapter
+import co.nilin.opex.api.core.spi.SymbolMapper
 import com.fasterxml.jackson.annotation.JsonInclude
 import io.swagger.annotations.*
 import kotlinx.coroutines.flow.Flow
@@ -31,7 +31,7 @@ class AccountController(
     val queryHandler: UserQueryHandler,
     val matchingGatewayProxy: MEGatewayProxy,
     val walletProxy: WalletProxy,
-    val symbolAdapter: SymbolAdapter
+    val symbolMapper: SymbolMapper
 ) {
 
     data class FillsData(
@@ -159,17 +159,16 @@ class AccountController(
         timestamp: Long,
         @AuthenticationPrincipal auth: CustomAuthToken
     ): NewOrderResponse {
-        val pairSymbol = symbolAdapter.mapFrom(symbol)!!
+        val internalSymbol = symbolMapper.unmap(symbol)!!
         val request = MEGatewayProxy.CreateOrderRequest(
             auth.uuid,
-            pairSymbol,
+            internalSymbol,
             price ?: BigDecimal.ZERO, // Maybe make this nullable as well?
             quantity ?: BigDecimal.ZERO,
             side.asOrderDirection(),
             timeInForce?.asMatchConstraint(),
             type.asMatchingOrderType()
         )
-
         matchingGatewayProxy.createNewOrder(request, auth.tokenValue)
         return NewOrderResponse(
             symbol,
@@ -224,11 +223,11 @@ class AccountController(
         @RequestParam(name = "timestamp")
         timestamp: Long
     ): QueryOrderResponse {
-        val pairSymbol = symbolAdapter.mapFrom(symbol)!!
-        val response = queryHandler.queryOrder(principal, QueryOrderRequest(pairSymbol, orderId, origClientOrderId))
+        val internalSymbol = symbolMapper.unmap(symbol)!!
+        val response = queryHandler.queryOrder(principal, QueryOrderRequest(internalSymbol, orderId, origClientOrderId))
             ?: throw OpexException(OpexError.OrderNotFound)
         return QueryOrderResponse(
-            symbolAdapter.mapFrom(response.symbol)!!,
+            symbolMapper.map(response.symbol)!!,
             response.orderId,
             response.orderListId,
             response.clientOrderId,
@@ -282,11 +281,11 @@ class AccountController(
         @RequestParam(name = "timestamp")
         timestamp: Long
     ): Flow<QueryOrderResponse> {
-        val pairSymbol = symbolAdapter.mapFrom(symbol)
-        return queryHandler.openOrders(principal, pairSymbol)
+        val internalSymbol = symbolMapper.unmap(symbol)
+        return queryHandler.openOrders(principal, internalSymbol)
             .map { response ->
                 QueryOrderResponse(
-                    symbolAdapter.mapFrom(response.symbol)!!,
+                    symbolMapper.map(response.symbol)!!,
                     response.orderId,
                     response.orderListId,
                     response.clientOrderId,
@@ -345,11 +344,11 @@ class AccountController(
         @RequestParam(name = "timestamp")
         timestamp: Long
     ): Flow<QueryOrderResponse> {
-        val pairSymbol = symbolAdapter.mapFrom(symbol)
-        return queryHandler.allOrders(principal, AllOrderRequest(pairSymbol, startTime, endTime, limit))
+        val internalSymbol = symbolMapper.unmap(symbol)
+        return queryHandler.allOrders(principal, AllOrderRequest(internalSymbol, startTime, endTime, limit))
             .map { response ->
                 QueryOrderResponse(
-                    symbolAdapter.mapFrom(response.symbol)!!,
+                    symbolMapper.map(response.symbol)!!,
                     response.orderId,
                     response.orderListId,
                     response.clientOrderId,
@@ -412,11 +411,11 @@ class AccountController(
         @RequestParam(name = "timestamp")
         timestamp: Long
     ): Flow<TradeResponse> {
-        val pairSymbol = symbolAdapter.mapFrom(symbol)
-        return queryHandler.allTrades(principal, TradeRequest(pairSymbol, fromId, startTime, endTime, limit))
+        val internalSymbol = symbolMapper.unmap(symbol)
+        return queryHandler.allTrades(principal, TradeRequest(internalSymbol, fromId, startTime, endTime, limit))
             .map { response ->
                 TradeResponse(
-                    symbolAdapter.mapFrom(response.symbol)!!, response.id,
+                    symbolMapper.map(response.symbol)!!, response.id,
                     response.orderId, -1, response.price, response.qty, response.quoteQty,
                     response.commission, response.commissionAsset, response.time, response.isBuyer,
                     response.isMaker, response.isBestMatch
