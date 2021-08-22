@@ -14,6 +14,6 @@ class SymbolMapperImpl(val symbolMapRepository: SymbolMapRepository) : SymbolMap
 
     override suspend fun unmap(value: String?): String? {
         if (value == null) return null
-        return symbolMapRepository.findByMapValue(value).awaitFirstOrNull()?.symbol
+        return symbolMapRepository.findByValue(value).awaitFirstOrNull()?.symbol
     }
 }
