@@ -1,5 +1,6 @@
 package co.nilin.opex.bcgateway.app.config
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.Resource
@@ -10,12 +11,17 @@ import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder
 import org.springframework.security.web.server.SecurityWebFilterChain
 import org.springframework.util.Base64Utils
 import org.springframework.util.FileCopyUtils
+import org.springframework.web.reactive.function.client.WebClient
 import java.security.KeyFactory
 import java.security.interfaces.RSAPublicKey
 import java.security.spec.X509EncodedKeySpec
 
 @EnableWebFluxSecurity
-class SecurityConfig {
+class SecurityConfig(private val webClient: WebClient) {
+
+    @Value("\${app.auth.cert-url}")
+    private lateinit var jwkUrl: String
+
     @Bean
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
         http.csrf().disable()
@@ -32,13 +38,8 @@ class SecurityConfig {
     @Bean
     @Throws(Exception::class)
     fun reactiveJwtDecoder(): ReactiveJwtDecoder? {
-        val resource: Resource = ClassPathResource("/public.cert")
-        val publicKey = String(FileCopyUtils.copyToByteArray(resource.inputStream))
-                .replace("\r", "")
-                .replace("-----BEGIN PUBLIC KEY-----\n", "")
-                .replace("\n-----END PUBLIC KEY-----", "")
-        val spec = X509EncodedKeySpec(Base64Utils.decodeFromString(publicKey))
-        val kf = KeyFactory.getInstance("RSA")
-        return NimbusReactiveJwtDecoder(kf.generatePublic(spec) as RSAPublicKey)
+        return NimbusReactiveJwtDecoder.withJwkSetUri(jwkUrl)
+            .webClient(webClient)
+            .build()
     }
 }

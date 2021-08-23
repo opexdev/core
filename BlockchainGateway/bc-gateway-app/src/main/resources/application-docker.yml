@@ -17,3 +17,6 @@ spring:
       host: ${CONSUL_HOST}
       port: 8500
 
+app:
+  auth:
+    cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs

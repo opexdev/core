@@ -17,3 +17,5 @@ app:
     url: lb://opex-gateway
   wallet:
     url: lb://opex-wallet
+  auth:
+    cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs

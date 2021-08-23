@@ -22,6 +22,7 @@
         <keycloak.version>12.0.4</keycloak.version>
         <keycloak.resteasy.version>3.13.2.Final</keycloak.resteasy.version>
         <infinispan.version>11.0.10.Final</infinispan.version>
+        <spring-cloud.version>2020.0.2</spring-cloud.version>
     </properties>
 
     <dependencies>
@@ -53,6 +54,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-consul-all</artifactId>
         </dependency>
 
         <!-- persistence -->
@@ -107,6 +113,18 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>

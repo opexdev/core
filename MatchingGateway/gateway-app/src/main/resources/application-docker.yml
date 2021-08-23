@@ -3,11 +3,11 @@ spring:
   application:
     name: opex-gateway
   main:
-      allow-bean-definition-overriding: false
+    allow-bean-definition-overriding: false
   kafka:
     bootstrap-servers: ${KAFKA_IP_PORT}
     consumer:
-       group-id: gateway
+      group-id: gateway
   cloud:
     bootstrap:
       enabled: true
@@ -22,3 +22,5 @@ spring:
 app:
   accountant:
     url: lb://opex-accountant
+  auth:
+    cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs

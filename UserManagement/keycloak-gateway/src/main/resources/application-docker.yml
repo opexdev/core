@@ -8,6 +8,8 @@ spring:
   cloud:
     consul:
       host: ${CONSUL_HOST}
+      port: 8500
+
 keycloak:
   migration:
     file: /opex-master-realm.json
