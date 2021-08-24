@@ -12,6 +12,7 @@
 
     <modules>
         <module>error-handler</module>
+        <module>logging-handler</module>
         <module>interceptors</module>
     </modules>
 </project>

@@ -47,6 +47,17 @@
         </dependency>
         <dependency>
             <groupId>co.nilin.opex</groupId>
+            <artifactId>error-handler</artifactId>
+            <version>${utility.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>co.nilin.opex</groupId>
+            <artifactId>interceptors</artifactId>
+            <version>${utility.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>co.nilin.opex</groupId>
             <artifactId>accountant-core</artifactId>
             <version>${accountant.version}</version>
         </dependency>
