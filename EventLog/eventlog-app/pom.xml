@@ -10,7 +10,7 @@
     </parent>
     <groupId>co.nilin.opex</groupId>
     <artifactId>eventlog-app</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0-SNAPSHOT</version>
     <name>eventlog-app</name>
     <description>Event log running app Opex</description>
 

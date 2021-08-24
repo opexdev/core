@@ -10,7 +10,7 @@
     </parent>
     <groupId>co.nilin.opex</groupId>
     <artifactId>keycloak-gateway</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0-SNAPSHOT</version>
     <name>keycloak-gateway</name>
     <description>Keycloak gateway app Opex</description>
 

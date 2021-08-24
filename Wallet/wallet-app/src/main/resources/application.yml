@@ -33,5 +33,7 @@ app:
 logging:
   level:
     org.apache.kafka: DEBUG
+    co.nilin: DEBUG
+    reactor.netty.http.client: DEBUG
 
 swagger.authUrl: https://api.opex.dev
