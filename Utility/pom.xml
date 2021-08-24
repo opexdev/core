@@ -12,5 +12,6 @@
 
     <modules>
         <module>error-handler</module>
+        <module>interceptors</module>
     </modules>
 </project>

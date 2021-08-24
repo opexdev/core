@@ -1,9 +1,11 @@
 package co.nilin.opex.port.api.binance.config
 
+import co.nilin.opex.utility.interceptor.FormDataWorkaroundFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.format.Formatter
 import java.util.*
+import org.springframework.web.server.WebFilter
 
 @Configuration
 class RestConfig {
@@ -18,5 +20,10 @@ class RestConfig {
                 return Date(date.toLong())
             }
         }
+    }
+
+    @Bean
+    fun formDataWebFilter(): WebFilter {
+        return FormDataWorkaroundFilter()
     }
 }

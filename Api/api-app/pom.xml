@@ -10,7 +10,7 @@
     </parent>
     <groupId>co.nilin.opex</groupId>
     <artifactId>api-app</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0-SNAPSHOT</version>
     <name>api-app</name>
     <description>Api app Opex</description>
 
@@ -20,6 +20,7 @@
         <api.version>${version}</api.version>
         <matching.version>${version}</matching.version>
         <accountant.version>${version}</accountant.version>
+        <utility.version>${version}</utility.version>
     </properties>
 
     <dependencies>
@@ -41,6 +42,17 @@
         </dependency>
         <dependency>
             <groupId>co.nilin.opex</groupId>
+            <artifactId>error-handler</artifactId>
+            <version>${utility.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>co.nilin.opex</groupId>
+            <artifactId>interceptors</artifactId>
+            <version>${utility.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>co.nilin.opex</groupId>
             <artifactId>accountant-core</artifactId>
             <version>${accountant.version}</version>
         </dependency>
@@ -49,7 +61,7 @@
             <artifactId>api-core</artifactId>
             <version>${api.version}</version>
         </dependency>
-        <dependency>
+       <dependency>
             <groupId>co.nilin.opex</groupId>
             <artifactId>api-eventlistener-kafka</artifactId>
             <version>${api.version}</version>
