@@ -15,6 +15,7 @@ import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
+import java.util.Date
 
 @Service
 class TransferService(
@@ -69,6 +70,6 @@ class TransferService(
         //post transfer hook(dispatch post transfer event)
 
         //notify balance change
-        return TransferResult(LocalDateTime.now(), srcWalletBalance, srcWallet.balance(), balance)
+        return TransferResult(Date().time, srcWalletBalance, srcWallet.balance(), balance)
     }
 }

@@ -12,7 +12,7 @@ import java.time.LocalDateTime
 
 inline fun <reified T : Any> typeRef(): ParameterizedTypeReference<T> = object : ParameterizedTypeReference<T>() {}
 data class TransferResult(
-    val date: LocalDateTime,
+    val date: Long,
     val sourceBalanceBeforeAction: Amount,
     val sourceBalanceAfterAction: Amount,
     val amount: Amount
