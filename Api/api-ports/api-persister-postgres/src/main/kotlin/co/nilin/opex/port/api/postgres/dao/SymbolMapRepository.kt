@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository
 import reactor.core.publisher.Mono
 
 @Repository
-interface SymbolMapRepository : ReactiveCrudRepository<SymbolMapModel, Long> {
+interface SymbolMapRepository : ReactiveCrudRepository<SymbolMapModel, String> {
 
     @Query("select * from symbol_maps where symbol = :symbol")
     fun findBySymbol(@Param("symbol") symbol: String): Mono<SymbolMapModel>
