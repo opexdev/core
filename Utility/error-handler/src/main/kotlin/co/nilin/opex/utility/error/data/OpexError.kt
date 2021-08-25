@@ -28,7 +28,10 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     WalletOwnerNotFound(6001, null, HttpStatus.NOT_FOUND),
 
     // code 7000: api
-    OrderNotFound(7001, "No order found", HttpStatus.NOT_FOUND);
+    OrderNotFound(7001, "No order found", HttpStatus.NOT_FOUND),
+    SymbolNotFound(7002, "No symbol found", HttpStatus.NOT_FOUND),
+    InvalidLimitForOrderBook(7003, "Valid limits: [5, 10, 20, 50, 100, 500, 1000, 5000]", HttpStatus.BAD_REQUEST),
+    InvalidLimitForRecentTrades(7004, "Valid limits: 1 min - 1000 max", HttpStatus.BAD_REQUEST);
 
     companion object {
         fun findByCode(code: Int?): OpexError? {

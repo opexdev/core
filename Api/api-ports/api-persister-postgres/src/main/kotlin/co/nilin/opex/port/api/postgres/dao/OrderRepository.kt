@@ -1,16 +1,19 @@
 package co.nilin.opex.port.api.postgres.dao
 
+import co.nilin.opex.matching.core.model.OrderDirection
 import co.nilin.opex.port.api.postgres.model.OrderModel
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.util.*
 
 @Repository
 interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
+
     @Query("select * from orders where ouid = :ouid")
     fun findByOuid(@Param("ouid") ouid: String): Mono<OrderModel>
 
@@ -53,4 +56,28 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
         @Param("endTime")
         endTime: Date?
     ): Flow<OrderModel>
+
+    @Query("select * from orders where symbol = :symbol and side = :direction and status in (:statuses) order by price asc limit :limit")
+    fun findBySymbolAndDirectionAndStatusSortAscendingByPrice(
+        @Param("symbol")
+        symbol: String,
+        @Param("direction")
+        direction: OrderDirection,
+        @Param("limit")
+        limit: Int,
+        @Param("statuses")
+        status: Collection<Int>
+    ): Flux<OrderModel>
+
+    @Query("select * from orders where symbol = :symbol and side = :direction and status in (:statuses) order by price desc limit :limit")
+    fun findBySymbolAndDirectionAndStatusSortDescendingByPrice(
+        @Param("symbol")
+        symbol: String,
+        @Param("direction")
+        direction: OrderDirection,
+        @Param("limit")
+        limit: Int,
+        @Param("statuses")
+        status: Collection<Int>
+    ): Flux<OrderModel>
 }
