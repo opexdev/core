@@ -7,9 +7,11 @@ import co.nilin.opex.bcgateway.core.spi.ChainLoader
 import co.nilin.opex.port.bcgateway.postgres.dao.AddressTypeRepository
 import co.nilin.opex.port.bcgateway.postgres.dao.AssignedAddressChainRepository
 import co.nilin.opex.port.bcgateway.postgres.dao.AssignedAddressRepository
+import co.nilin.opex.port.bcgateway.postgres.model.AssignedAddressModel
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.stereotype.Service
 
 @Service
@@ -42,10 +44,18 @@ class AssignedAddressHandlerImpl(
     }
 
     override suspend fun persist(assignedAddress: AssignedAddress) {
-        TODO("Not yet implemented")
+        assignedAddressRepository.save(
+            AssignedAddressModel(
+                null,
+                assignedAddress.uuid,
+                assignedAddress.address,
+                assignedAddress.memo,
+                assignedAddress.type.id
+            )
+        )
     }
 
     override suspend fun findUuid(address: String, memo: String?): String? {
-        TODO("Not yet implemented")
+        return assignedAddressRepository.findByAddressAndMemo(address, memo).awaitFirstOrNull()?.uuid
     }
 }
