@@ -10,16 +10,17 @@
 	</parent>
 	<groupId>co.nilin.opex</groupId>
 	<artifactId>accountant-wallet-proxy</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0-SNAPSHOT</version>
 	<name>accountant-wallet-proxy</name>
 	<description>Opex wallet proxy</description>
 
 	<properties>
 		<java.version>1.8</java.version>
 		<kotlin.version>1.4.31</kotlin.version>
+		<spring-cloud.version>2020.0.2</spring-cloud.version>
 		<matching.version>${version}</matching.version>
 		<accountant.version>${version}</accountant.version>
-		<spring-cloud.version>2020.0.2</spring-cloud.version>
+		<utility.version>${version}</utility.version>
 	</properties>
 
 	<dependencies>
@@ -33,6 +34,12 @@
 			<groupId>co.nilin.opex</groupId>
 			<artifactId>accountant-core</artifactId>
 			<version>${accountant.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>co.nilin.opex</groupId>
+			<artifactId>logging-handler</artifactId>
+			<version>${utility.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>

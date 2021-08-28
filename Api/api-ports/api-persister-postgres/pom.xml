@@ -10,7 +10,7 @@
     </parent>
     <groupId>co.nilin.opex</groupId>
     <artifactId>api-persister-postgres</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0-SNAPSHOT</version>
     <name>api-persister-postgres</name>
     <description>Persist items of Opex api on Postgres</description>
 
@@ -20,6 +20,7 @@
         <matching.version>${version}</matching.version>
         <accountant.version>${version}</accountant.version>
         <api.version>${version}</api.version>
+        <utility.version>${version}</utility.version>
     </properties>
 
     <dependencies>
@@ -39,6 +40,12 @@
             <groupId>co.nilin.opex</groupId>
             <artifactId>accountant-core</artifactId>
             <version>${accountant.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>co.nilin.opex</groupId>
+            <artifactId>error-handler</artifactId>
+            <version>${utility.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

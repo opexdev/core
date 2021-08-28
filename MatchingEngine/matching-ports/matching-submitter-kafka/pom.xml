@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>co.nilin.opex</groupId>
 	<artifactId>matching-submitter-kafka</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0-SNAPSHOT</version>
 	<name>matching-submitter-kafka</name>
 	<description>Matching engine kafka order submitter of Opex</description>
 

@@ -1,4 +1,8 @@
 server.port: 8089
+logging:
+  level:
+    co.nilin: DEBUG
+    reactor.netty.http.client: DEBUG
 spring:
   application:
     name: opex-accountant

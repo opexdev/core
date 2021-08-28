@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>co.nilin.opex</groupId>
 	<artifactId>matching-snapshots-redis</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0-SNAPSHOT</version>
 	<name>matching-snapshots-redis</name>
 	<description>Persist Matching engine snapshot of Opex on Redis</description>
 

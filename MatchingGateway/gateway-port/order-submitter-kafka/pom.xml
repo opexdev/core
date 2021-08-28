@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>co.nilin.opex</groupId>
 	<artifactId>gateway-order-submitter-kafka</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0-SNAPSHOT</version>
 	<name>gateway-order-submitter-kafka</name>
 	<description>Matching gateway kafka order submitter of Opex</description>
 

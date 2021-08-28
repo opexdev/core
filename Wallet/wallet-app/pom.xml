@@ -10,15 +10,16 @@
 	</parent>
 	<groupId>co.nilin.opex</groupId>
 	<artifactId>wallet-app</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0-SNAPSHOT</version>
 	<name>wallet-app</name>
 	<description>Wallet managment app of Opex</description>
 
 	<properties>
 		<java.version>1.8</java.version>
 		<kotlin.version>1.4.31</kotlin.version>
-		<wallet.version>${version}</wallet.version>
 		<spring-cloud.version>2020.0.2</spring-cloud.version>
+		<wallet.version>${version}</wallet.version>
+		<utility.version>${version}</utility.version>
 	</properties>
 
 	<dependencies>
@@ -87,6 +88,16 @@
 			<version>${wallet.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>co.nilin.opex</groupId>
+			<artifactId>error-handler</artifactId>
+			<version>${utility.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>co.nilin.opex</groupId>
+			<artifactId>logging-handler</artifactId>
+			<version>${utility.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-consul-all</artifactId>
 		</dependency>
@@ -111,11 +122,6 @@
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-boot-starter</artifactId>
 			<version>3.0.0</version>
-		</dependency>
-		<dependency>
-			<groupId>co.nilin.opex</groupId>
-			<artifactId>error-handler</artifactId>
-			<version>1.0-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 

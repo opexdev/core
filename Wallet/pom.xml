@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>co.nilin.opex</groupId>
 	<artifactId>wallets</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0-SNAPSHOT</version>
 	<name>wallets</name>
 	<packaging>pom</packaging>
 	<description>Wallet managment root of Opex</description>

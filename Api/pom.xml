@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>co.nilin.opex</groupId>
     <artifactId>api-root</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0-SNAPSHOT</version>
     <name>api-root</name>
     <packaging>pom</packaging>
     <description>Api root of Opex</description>

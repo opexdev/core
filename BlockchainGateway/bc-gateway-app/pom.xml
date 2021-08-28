@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>co.nilin.opex.external</groupId>
 	<artifactId>bc-gateway-app</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0-SNAPSHOT</version>
 	<name>bc-gateway-app</name>
 	<description>Blockchain gateway app of Opex</description>
 

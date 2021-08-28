@@ -2,28 +2,30 @@ package co.nilin.opex.port.api.binance.controller
 
 import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.MEGatewayProxy
+import co.nilin.opex.api.core.spi.SymbolMapper
 import co.nilin.opex.api.core.spi.UserQueryHandler
 import co.nilin.opex.api.core.spi.WalletProxy
 import co.nilin.opex.port.api.binance.data.AccountInfoResponse
-import co.nilin.opex.port.api.binance.security.CustomAuthToken
 import co.nilin.opex.port.api.binance.util.BalanceParser
+import co.nilin.opex.port.api.binance.util.LoggerDelegate
 import co.nilin.opex.port.api.binance.util.asMatchConstraint
 import co.nilin.opex.port.api.binance.util.asMatchingOrderType
 import co.nilin.opex.port.api.binance.util.asOrderDirection
+import co.nilin.opex.port.api.binance.util.jwtAuthentication
+import co.nilin.opex.port.api.binance.util.tokenValue
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
-import co.nilin.opex.api.core.spi.SymbolMapper
 import com.fasterxml.jackson.annotation.JsonInclude
 import io.swagger.annotations.*
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
-import org.slf4j.LoggerFactory
-import org.springframework.http.MediaType
-import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 import java.security.Principal
 import java.util.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import org.springframework.http.MediaType
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @CrossOrigin(origins = ["https://opex.dev", "http://localhost:3000"], allowedHeaders = ["*"])
@@ -98,7 +100,7 @@ class AccountController(
         val isBestMatch: Boolean
     )
 
-    private val logger = LoggerFactory.getLogger(AccountController::class.java)
+    private val logger by LoggerDelegate()
 
     /*
    Send in a new order.
@@ -157,11 +159,12 @@ class AccountController(
         recvWindow: Long?, //The value cannot be greater than 60000
         @RequestParam(name = "timestamp")
         timestamp: Long,
-        @AuthenticationPrincipal auth: CustomAuthToken
+        @CurrentSecurityContext securityContext: SecurityContext
     ): NewOrderResponse {
+
         val internalSymbol = symbolMapper.unmap(symbol)!!
         val request = MEGatewayProxy.CreateOrderRequest(
-            auth.uuid,
+            securityContext.jwtAuthentication().name,
             internalSymbol,
             price ?: BigDecimal.ZERO, // Maybe make this nullable as well?
             quantity ?: BigDecimal.ZERO,
@@ -169,7 +172,8 @@ class AccountController(
             timeInForce?.asMatchConstraint(),
             type.asMatchingOrderType()
         )
-        matchingGatewayProxy.createNewOrder(request, auth.tokenValue)
+
+        matchingGatewayProxy.createNewOrder(request, securityContext.jwtAuthentication().tokenValue())
         return NewOrderResponse(
             symbol,
             -1,
@@ -439,16 +443,16 @@ class AccountController(
         )
     )
     suspend fun accountInfo(
-        @AuthenticationPrincipal
-        auth: CustomAuthToken,
+        @CurrentSecurityContext securityContext: SecurityContext,
         @ApiParam(value = "The value cannot be greater than 60000")
         @RequestParam(name = "recvWindow", required = false)
         recvWindow: Long?, //The value cannot be greater than 60000
         @RequestParam(name = "timestamp")
         timestamp: Long
     ): AccountInfoResponse {
-        val wallets = walletProxy.getWallets(auth.uuid, auth.tokenValue)
-        val limits = walletProxy.getOwnerLimits(auth.uuid, auth.tokenValue)
+        val auth = securityContext.jwtAuthentication()
+        val wallets = walletProxy.getWallets(auth.name, auth.tokenValue())
+        val limits = walletProxy.getOwnerLimits(auth.name, auth.tokenValue())
         val parsedBalances = BalanceParser.parse(wallets)
         val accountType = "SPOT"
 

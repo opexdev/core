@@ -32,4 +32,12 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
             @Param("endTime")
             endTime: Date?
     ): Flow<TradeModel>
+
+    @Query("select * from trades where symbol = :symbol order by create_date desc limit :limit")
+    fun findBySymbolSortDescendingByCreateDate(
+        @Param("symbol")
+        symbol: String,
+        @Param("limit")
+        limit:Int
+    ): Flow<TradeModel>
 }

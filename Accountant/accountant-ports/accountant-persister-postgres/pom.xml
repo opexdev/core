@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>co.nilin.opex</groupId>
 	<artifactId>accountant-persister-postgres</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0-SNAPSHOT</version>
 	<name>accountant-persister-postgres</name>
 	<description>Persist items of Opex accountant on Postgres</description>
 

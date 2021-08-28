@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>co.nilin.opex</groupId>
 	<artifactId>eventlog-core</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0-SNAPSHOT</version>
 	<name>eventlog-core</name>
 	<description>Event log of Opex</description>
 

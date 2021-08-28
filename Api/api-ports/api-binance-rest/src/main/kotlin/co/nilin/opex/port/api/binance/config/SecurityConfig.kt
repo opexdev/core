@@ -1,6 +1,5 @@
 package co.nilin.opex.port.api.binance.config
 
-import co.nilin.opex.port.api.binance.security.AuthenticationConverter
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.http.HttpMethod
@@ -33,7 +32,6 @@ class SecurityConfig(private val webClient: WebClient) {
             .and()
             .oauth2ResourceServer()
             .jwt()
-            .jwtAuthenticationConverter(AuthenticationConverter())
         return http.build()
     }
 
