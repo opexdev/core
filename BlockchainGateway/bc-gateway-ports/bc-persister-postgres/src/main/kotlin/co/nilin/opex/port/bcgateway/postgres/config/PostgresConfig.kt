@@ -19,11 +19,11 @@ class PostgresConfig(db: DatabaseClient) {
                 );
                 CREATE TABLE IF NOT EXISTS assigned_addresses (
                     id SERIAL PRIMARY KEY,
-                    uuid VARCHAR(72) UNIQUE,
+                    uuid VARCHAR(72),
                     address VARCHAR(72),
                     memo VARCHAR(72),
                     addr_type_id numeric,
-                    UNIQUE (address, memo)
+                    UNIQUE (uuid, address, memo)
                 );
                 CREATE TABLE IF NOT EXISTS assigned_address_chains (
                     id SERIAL PRIMARY KEY,
