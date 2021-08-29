@@ -5,4 +5,4 @@ import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface AddressTypeRepository: ReactiveCrudRepository<AddressTypeModel, Long>
+interface AddressTypeRepository : ReactiveCrudRepository<AddressTypeModel, Long>

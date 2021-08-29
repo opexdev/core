@@ -118,21 +118,18 @@ class UserQueryHandlerImpl(
         order.orderId ?: -1,
         -1,
         order.clientOrderId ?: "",
-        BigDecimal(order.price!!),
-        BigDecimal(order.quantity!!),
-        BigDecimal(order.executedQuantity!!),
-        BigDecimal(order.accumulativeQuoteQty ?: 0.0),
+        order.price!!.toBigDecimal(),
+        order.quantity!!.toBigDecimal(),
+        order.executedQuantity!!.toBigDecimal(),
+        (order.accumulativeQuoteQty ?: 0.0).toBigDecimal(),
         order.status!!.toOrderStatus(),
         order.constraint!!.toTimeInForce(),
         order.type!!.toApiOrderType(),
         order.direction!!.toOrderSide(),
         null,
         null,
-        Date.from(
-            order.createDate!!.atZone(ZoneId.systemDefault()).toInstant()
-        ),
-        Date.from(
-            order.updateDate.atZone(ZoneId.systemDefault()).toInstant()
-        ), order.status.toOrderStatus().isWorking(), order.quoteQuantity!!.toBigDecimal()
+        Date.from(order.createDate!!.atZone(ZoneId.systemDefault()).toInstant()),
+        Date.from(order.updateDate.atZone(ZoneId.systemDefault()).toInstant()),
+        order.status.toOrderStatus().isWorking(), order.quoteQuantity!!.toBigDecimal()
     )
 }

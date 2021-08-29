@@ -28,7 +28,6 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@CrossOrigin(origins = ["https://opex.dev", "http://localhost:3000"], allowedHeaders = ["*"])
 class AccountController(
     val queryHandler: UserQueryHandler,
     val matchingGatewayProxy: MEGatewayProxy,

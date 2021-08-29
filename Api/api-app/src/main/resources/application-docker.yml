@@ -13,6 +13,8 @@ spring:
       port: 8500
 
 app:
+  cors:
+    allowed-hosts: https://opex.dev, http://localhost:3000
   matching-gateway:
     url: lb://opex-gateway
   wallet:

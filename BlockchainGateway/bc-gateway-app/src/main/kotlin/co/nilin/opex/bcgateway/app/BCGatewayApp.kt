@@ -5,9 +5,9 @@ import org.springframework.boot.runApplication
 import org.springframework.context.annotation.ComponentScan
 
 @SpringBootApplication
-@ComponentScan("co.nilin.mixchange")
-class WalletApp
+@ComponentScan("co.nilin.opex")
+class BCGatewayApp
 
 fun main(args: Array<String>) {
-	runApplication<WalletApp>(*args)
+    runApplication<BCGatewayApp>(*args)
 }
