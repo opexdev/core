@@ -11,11 +11,13 @@ data class SyncScheduleModel(
 )
 
 @Table("chain_sync_record")
-data class SyncRecord(@Id @Column("chain") val chain: String
-, val time: LocalDateTime
-, @Column("endpoint_url") val endpointUrl: String
-, @Column("latest_block") val latestBlock: Long?
-, val success: Boolean
-, val error: String?)
+data class SyncRecord(
+    @Id @Column("chain") val chain: String,
+    val time: LocalDateTime,
+    @Column("endpoint_url") val endpointUrl: String,
+    @Column("latest_block") val latestBlock: Long?,
+    val success: Boolean,
+    val error: String?
+)
 
 
