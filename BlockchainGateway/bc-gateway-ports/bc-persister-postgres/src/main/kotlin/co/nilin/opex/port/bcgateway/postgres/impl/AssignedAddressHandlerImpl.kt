@@ -52,7 +52,7 @@ class AssignedAddressHandlerImpl(
                 assignedAddress.memo,
                 assignedAddress.type.id
             )
-        )
+        ).awaitFirst()
     }
 
     override suspend fun findUuid(address: String, memo: String?): String? {
