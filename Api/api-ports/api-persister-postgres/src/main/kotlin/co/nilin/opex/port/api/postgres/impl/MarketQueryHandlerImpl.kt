@@ -1,5 +1,6 @@
 package co.nilin.opex.port.api.postgres.impl
 
+import co.nilin.opex.api.core.inout.MarketTradeResponse
 import co.nilin.opex.api.core.inout.OrderStatus
 import co.nilin.opex.api.core.inout.QueryOrderResponse
 import co.nilin.opex.api.core.inout.TradeResponse
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrElse
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
 import java.security.Principal
@@ -47,52 +49,30 @@ class MarketQueryHandlerImpl(
             .map { it.asQueryOrderResponse() }
     }
 
-    override suspend fun recentTrades(principal: Principal, symbol: String, limit: Int): Flow<TradeResponse> {
+    override suspend fun lastOrder(symbol: String): QueryOrderResponse? {
+        return orderRepository.findLastOrderBySymbol(symbol)
+            .awaitFirstOrNull()
+            ?.asQueryOrderResponse()
+    }
+
+    override suspend fun recentTrades(principal: Principal, symbol: String, limit: Int): Flow<MarketTradeResponse> {
         return tradeRepository.findBySymbolSortDescendingByCreateDate(symbol, limit)
             .map {
                 val takerOrder = orderRepository.findByOuid(it.takerOuid).awaitFirst()
                 val makerOrder = orderRepository.findByOuid(it.makerOuid).awaitFirst()
-                val isMakerBuyer = makerOrder.direction == OrderDirection.ASK
-                TradeResponse(
+                val isMakerBuyer = makerOrder.direction == OrderDirection.BID
+                MarketTradeResponse(
                     it.symbol,
                     it.tradeId,
-                    if (it.takerUuid == principal.name) {
-                        takerOrder.orderId!!
-                    } else {
-                        makerOrder.orderId!!
-                    },
-                    -1,
-                    if (it.takerUuid == principal.name) {
-                        it.takerPrice.toBigDecimal()
-                    } else {
-                        it.makerPrice.toBigDecimal()
-                    },
+                    if (isMakerBuyer) it.makerPrice.toBigDecimal() else it.takerPrice.toBigDecimal(),
                     it.matchedQuantity.toBigDecimal(),
-                    if (isMakerBuyer) {
+                    if (isMakerBuyer)
                         makerOrder.quoteQuantity!!.toBigDecimal()
-                    } else {
-                        takerOrder.quoteQuantity!!.toBigDecimal()
-                    },
-                    if (it.takerUuid == principal.name) {
-                        it.takerCommision!!.toBigDecimal()
-                    } else {
-                        it.makerCommision!!.toBigDecimal()
-                    },
-                    if (it.takerUuid == principal.name) {
-                        it.takerCommisionAsset!!
-                    } else {
-                        it.makerCommisionAsset!!
-                    },
-                    Date.from(
-                        it.createDate.atZone(ZoneId.systemDefault()).toInstant()
-                    ),
-                    if (it.takerUuid == principal.name) {
-                        OrderDirection.ASK == takerOrder.direction
-                    } else {
-                        OrderDirection.ASK == makerOrder.direction
-                    },
-                    it.makerUuid == principal.name,
-                    true
+                    else
+                        takerOrder.quoteQuantity!!.toBigDecimal(),
+                    Date.from(it.createDate.atZone(ZoneId.systemDefault()).toInstant()),
+                    true,
+                    isMakerBuyer
                 )
             }
     }

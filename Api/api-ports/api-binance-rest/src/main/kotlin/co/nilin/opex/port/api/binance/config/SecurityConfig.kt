@@ -26,6 +26,8 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/swagger-ui/**").permitAll()
             .pathMatchers("/swagger-resources/**").permitAll()
             .pathMatchers("/v2/api-docs").permitAll()
+            .pathMatchers("/v3/depth").permitAll()
+            .pathMatchers("/v3/trades").permitAll()
             .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .pathMatchers("/**").hasAuthority("SCOPE_trust")
             .anyExchange().authenticated()

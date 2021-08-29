@@ -63,7 +63,8 @@ class MarketController(
             mappedAskOrders.add(mapped)
         }
 
-        return OrderBookResponse(-1, mappedBidOrders, mappedAskOrders)
+        val lastOrder = marketQueryHandler.lastOrder(localSymbol)
+        return OrderBookResponse(lastOrder?.orderId ?: -1, mappedBidOrders, mappedAskOrders)
     }
 
     @GetMapping("/v3/trades")
@@ -87,7 +88,7 @@ class MarketController(
                     it.qty,
                     it.quoteQty,
                     it.time.time,
-                    it.isMaker && it.isBuyer,
+                    it.isMakerBuyer,
                     it.isBestMatch
                 )
             }

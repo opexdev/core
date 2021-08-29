@@ -80,4 +80,7 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
         @Param("statuses")
         status: Collection<Int>
     ): Flux<OrderModel>
+
+    @Query("select * from orders where symbol = :symbol order by create_date desc limit 1")
+    fun findLastOrderBySymbol(@Param("symbol") symbol: String): Mono<OrderModel>
 }
