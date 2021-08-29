@@ -30,7 +30,7 @@ class PostgresConfig(db: DatabaseClient) {
                     assigned_address_id numeric,
                     chain VARCHAR(72) 
                 );
-                CREATE TABLE IF NOT EXISTS cached_addresses (
+                CREATE TABLE IF NOT EXISTS reserved_addresses (
                     id SERIAL PRIMARY KEY,
                     address VARCHAR(72),
                     memo VARCHAR(72),
