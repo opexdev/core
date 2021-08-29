@@ -34,7 +34,8 @@ class PostgresConfig(db: DatabaseClient) {
                     id SERIAL PRIMARY KEY,
                     address VARCHAR(72),
                     memo VARCHAR(72),
-                    address_type VARCHAR(72) 
+                    address_type VARCHAR(72),
+                    UNIQUE (address, memo)
                 );
                 CREATE TABLE IF NOT EXISTS chain (
                     name VARCHAR(72) PRIMARY KEY
