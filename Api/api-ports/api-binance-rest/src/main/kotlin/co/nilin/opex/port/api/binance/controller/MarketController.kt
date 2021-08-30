@@ -49,16 +49,16 @@ class MarketController(
 
         bidOrders.forEach {
             val mapped = arrayListOf<BigDecimal>().apply {
-                add(it.price)
-                add(it.origQty)
+                add(it.price ?: BigDecimal.ZERO)
+                add(it.quantity ?: BigDecimal.ZERO)
             }
             mappedBidOrders.add(mapped)
         }
 
         askOrders.forEach {
             val mapped = arrayListOf<BigDecimal>().apply {
-                add(it.price)
-                add(it.origQty)
+                add(it.price ?: BigDecimal.ZERO)
+                add(it.quantity ?: BigDecimal.ZERO)
             }
             mappedAskOrders.add(mapped)
         }

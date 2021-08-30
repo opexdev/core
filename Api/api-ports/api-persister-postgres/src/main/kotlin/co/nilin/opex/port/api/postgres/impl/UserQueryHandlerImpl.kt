@@ -46,7 +46,7 @@ class UserQueryHandlerImpl(
         return orderRepository.findByUuidAndSymbolAndStatus(
             principal.name,
             symbol,
-            listOf(OrderStatus.NEW.ordinal, OrderStatus.PARTIALLY_FILLED.ordinal)
+            listOf(OrderStatus.NEW.code, OrderStatus.PARTIALLY_FILLED.code)
         ).filter { orderModel -> orderModel.constraint != null }
             .map { order -> orderToQueryResponse(order) }
     }

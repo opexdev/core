@@ -1,6 +1,7 @@
 package co.nilin.opex.port.api.postgres.dao
 
 import co.nilin.opex.matching.core.model.OrderDirection
+import co.nilin.opex.port.api.postgres.model.AggregatedOrderPriceModel
 import co.nilin.opex.port.api.postgres.model.OrderModel
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.r2dbc.repository.Query
@@ -57,7 +58,15 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
         endTime: Date?
     ): Flow<OrderModel>
 
-    @Query("select * from orders where symbol = :symbol and side = :direction and status in (:statuses) order by price asc limit :limit")
+    @Query(
+        """
+        select price, sum(quantity) as quantity from orders 
+        where symbol = :symbol and side = :direction and status in (:statuses) 
+        group by price 
+        order by price asc 
+        limit :limit
+    """
+    )
     fun findBySymbolAndDirectionAndStatusSortAscendingByPrice(
         @Param("symbol")
         symbol: String,
@@ -67,9 +76,17 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
         limit: Int,
         @Param("statuses")
         status: Collection<Int>
-    ): Flux<OrderModel>
+    ): Flux<AggregatedOrderPriceModel>
 
-    @Query("select * from orders where symbol = :symbol and side = :direction and status in (:statuses) order by price desc limit :limit")
+    @Query(
+        """
+        select price, sum(quantity) as quantity from orders 
+        where symbol = :symbol and side = :direction and status in (:statuses) 
+        group by price 
+        order by price desc
+        limit :limit
+    """
+    )
     fun findBySymbolAndDirectionAndStatusSortDescendingByPrice(
         @Param("symbol")
         symbol: String,
@@ -79,7 +96,7 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
         limit: Int,
         @Param("statuses")
         status: Collection<Int>
-    ): Flux<OrderModel>
+    ): Flux<AggregatedOrderPriceModel>
 
     @Query("select * from orders where symbol = :symbol order by create_date desc limit 1")
     fun findLastOrderBySymbol(@Param("symbol") symbol: String): Mono<OrderModel>

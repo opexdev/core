@@ -1,9 +1,6 @@
 package co.nilin.opex.port.api.postgres.impl
 
-import co.nilin.opex.api.core.inout.MarketTradeResponse
-import co.nilin.opex.api.core.inout.OrderStatus
-import co.nilin.opex.api.core.inout.QueryOrderResponse
-import co.nilin.opex.api.core.inout.TradeResponse
+import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.MarketQueryHandler
 import co.nilin.opex.matching.core.model.OrderDirection
 import co.nilin.opex.port.api.postgres.dao.OrderRepository
@@ -27,26 +24,26 @@ class MarketQueryHandlerImpl(
     private val tradeRepository: TradeRepository,
 ) : MarketQueryHandler {
 
-    override suspend fun openBidOrders(symbol: String, limit: Int): List<QueryOrderResponse> {
+    override suspend fun openBidOrders(symbol: String, limit: Int): List<OrderBookResponse> {
         return orderRepository.findBySymbolAndDirectionAndStatusSortDescendingByPrice(
             symbol,
             OrderDirection.BID,
             limit,
-            listOf(OrderStatus.NEW.ordinal, OrderStatus.PARTIALLY_FILLED.ordinal)
+            listOf(OrderStatus.NEW.code, OrderStatus.PARTIALLY_FILLED.code)
         ).collectList()
             .awaitFirstOrElse { emptyList() }
-            .map { it.asQueryOrderResponse() }
+            .map { OrderBookResponse(it.price?.toBigDecimal(), it.quantity?.toBigDecimal()) }
     }
 
-    override suspend fun openAskOrders(symbol: String, limit: Int): List<QueryOrderResponse> {
+    override suspend fun openAskOrders(symbol: String, limit: Int): List<OrderBookResponse> {
         return orderRepository.findBySymbolAndDirectionAndStatusSortAscendingByPrice(
             symbol,
             OrderDirection.ASK,
             limit,
-            listOf(OrderStatus.NEW.ordinal, OrderStatus.PARTIALLY_FILLED.ordinal)
+            listOf(OrderStatus.NEW.code, OrderStatus.PARTIALLY_FILLED.code)
         ).collectList()
             .awaitFirstOrElse { emptyList() }
-            .map { it.asQueryOrderResponse() }
+            .map { OrderBookResponse(it.price?.toBigDecimal(), it.quantity?.toBigDecimal()) }
     }
 
     override suspend fun lastOrder(symbol: String): QueryOrderResponse? {

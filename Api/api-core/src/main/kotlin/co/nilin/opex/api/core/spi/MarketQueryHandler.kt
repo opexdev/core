@@ -1,15 +1,16 @@
 package co.nilin.opex.api.core.spi
 
 import co.nilin.opex.api.core.inout.MarketTradeResponse
+import co.nilin.opex.api.core.inout.OrderBookResponse
 import co.nilin.opex.api.core.inout.QueryOrderResponse
 import kotlinx.coroutines.flow.Flow
 import java.security.Principal
 
 interface MarketQueryHandler {
 
-    suspend fun openBidOrders(symbol: String, limit: Int): List<QueryOrderResponse>
+    suspend fun openBidOrders(symbol: String, limit: Int): List<OrderBookResponse>
 
-    suspend fun openAskOrders(symbol: String, limit: Int): List<QueryOrderResponse>
+    suspend fun openAskOrders(symbol: String, limit: Int): List<OrderBookResponse>
 
     suspend fun lastOrder(symbol: String): QueryOrderResponse?
 
