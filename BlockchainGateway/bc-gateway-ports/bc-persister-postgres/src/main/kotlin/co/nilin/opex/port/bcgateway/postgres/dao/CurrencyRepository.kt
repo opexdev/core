@@ -10,9 +10,6 @@ import reactor.core.publisher.Mono
 
 @Repository
 interface CurrencyRepository : ReactiveCrudRepository<CurrencyModel, Long> {
-    @Query("select * from currency where symbol = :symbol")
-    fun findBySymbol(@Param("symbol") symbol: String): Mono<CurrencyModel>
 
-    @Query("select * from currency where name = :name")
-    fun findByName(@Param("name") name: String): Mono<CurrencyModel>
+    fun findBySymbol(symbol: String): Mono<CurrencyModel>
 }
