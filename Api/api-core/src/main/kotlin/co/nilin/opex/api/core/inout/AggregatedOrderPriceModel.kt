@@ -1,4 +1,4 @@
-package co.nilin.opex.port.api.postgres.model
+package co.nilin.opex.api.core.inout
 
 data class AggregatedOrderPriceModel(
     val price: Double?,

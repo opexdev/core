@@ -3,6 +3,7 @@ package co.nilin.opex.port.api.binance.controller
 import co.nilin.opex.api.core.spi.MarketQueryHandler
 import co.nilin.opex.api.core.spi.SymbolMapper
 import co.nilin.opex.port.api.binance.data.OrderBookResponse
+import co.nilin.opex.api.core.inout.PriceChangeResponse
 import co.nilin.opex.port.api.binance.data.RecentTradeResponse
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
@@ -10,10 +11,16 @@ import co.nilin.opex.utility.error.data.throwError
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.math.BigDecimal
 import java.security.Principal
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.util.*
+import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 
 @RestController
@@ -23,6 +30,7 @@ class MarketController(
 ) {
 
     private val orderBookValidLimits = arrayListOf(5, 10, 20, 50, 100, 500, 1000, 5000)
+    private val validDurations = arrayListOf("24h", "7d", "1m")
 
     // Limit - Weight
     // 5, 10, 20, 50, 100 - 1
@@ -80,7 +88,7 @@ class MarketController(
         if (validLimit !in 1..1000)
             throwError(OpexError.InvalidLimitForRecentTrades)
 
-        return marketQueryHandler.recentTrades(principal, localSymbol, validLimit)
+        return marketQueryHandler.recentTrades(localSymbol, validLimit)
             .map {
                 RecentTradeResponse(
                     it.id,
@@ -92,6 +100,38 @@ class MarketController(
                     it.isBestMatch
                 )
             }
+    }
+
+    @GetMapping("/v3/ticker/{duration}")
+    suspend fun priceChange(
+        @PathVariable("duration")
+        duration: String,
+        @RequestParam("symbol", required = false)
+        symbol: String?,
+    ): List<PriceChangeResponse> {
+        val localSymbol = if (symbol.isNullOrEmpty())
+            null
+        else
+            symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+
+        if (!validDurations.contains(duration))
+            throwError(OpexError.InvalidPriceChangeDuration)
+
+        val now = Date().time
+        val before = when (duration) {
+            "24h" -> Date(now - TimeUnit.DAYS.toMillis(1))
+            "7d" -> Date(now - TimeUnit.DAYS.toMillis(7))
+            "1m" -> Date(now - TimeUnit.DAYS.toMillis(31))
+            else -> Date(now - TimeUnit.DAYS.toMillis(1))
+        }
+
+        val instant = Instant.ofEpochMilli(before.time)
+        val startDate = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+
+        return if (symbol.isNullOrEmpty())
+            marketQueryHandler.getTradeTickerData(startDate)
+        else
+            listOf(marketQueryHandler.getTradeTickerDataBySymbol(localSymbol!!, startDate))
     }
 
 }
