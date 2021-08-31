@@ -7,7 +7,6 @@ import org.springframework.data.relational.core.mapping.Table
 
 @Table("currency")
 class CurrencyModel(
-    @Id val id: Long?,
-    @Column("symbol") val symbol: String,
+    @Id @Column("symbol") val symbol: String,
     @Column("name") val name: String
 )
