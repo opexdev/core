@@ -3,7 +3,9 @@ package co.nilin.opex.port.bcgateway.postgres.impl
 import co.nilin.opex.bcgateway.core.model.AddressType
 import co.nilin.opex.bcgateway.core.model.ReservedAddress
 import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
+import org.springframework.stereotype.Component
 
+@Component
 class ReservedAddressHandlerImpl: ReservedAddressHandler {
     override suspend fun peekReservedAddress(addressType: AddressType): ReservedAddress? {
         TODO("Not yet implemented")
