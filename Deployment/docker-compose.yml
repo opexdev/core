@@ -138,7 +138,7 @@ services:
     environment:
       - POSTGRES_USER=opex
       - POSTGRES_PASSWORD=hiopex
-      - POSTGRES_DB=opex_api
+      - POSTGRES_DB=opex_bc_gateway
     volumes:
       - $PWD/runtime/bc-gateway-data:/var/lib/postgresql/data/
     networks:
