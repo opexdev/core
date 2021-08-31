@@ -65,6 +65,20 @@ class PostgresConfig(db: DatabaseClient) {
                     success BOOLEAN NOT NULL,
                     error VARCHAR(100)
                 );
+                CREATE TABLE IF NOT EXISTS currency (
+                    symbol VARCHAR(72) PRIMARY KEY,
+                    name VARCHAR(72) NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS currency_implementations (
+                    symbol VARCHAR(72) PRIMARY KEY,
+                    chain VARCHAR(72) NOT NULL,
+                    token BOOLEAN NOT NULL,
+                    token_address VARCHAR(72),
+                    token_name VARCHAR(72),
+                    withdraw_enabled BOOLEAN NOT NULL,
+                    withdraw_fee NUMERIC NOT NULL,
+                    withdraw_min NUMERIC NOT NULL,
+                );
             """
         }
         initDb // initialize the database
