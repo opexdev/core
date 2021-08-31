@@ -331,8 +331,8 @@ services:
       context: ../BlockchainGateway/bc-gateway-app
       dockerfile: Dockerfile
     ports:
-      - 127.0.0.1:8094:8094
-      - 127.0.0.1:1050:1044
+      - 127.0.0.1:8095:8095
+      - 127.0.0.1:1051:1044
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_ACTIVE=docker
