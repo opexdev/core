@@ -23,7 +23,7 @@ class PostgresConfig(db: DatabaseClient) {
                     address VARCHAR(72) NOT NULL,
                     memo VARCHAR(72),
                     addr_type_id NUMERIC NOT NULL,
-                    UNIQUE (address, memo),
+                    UNIQUE (address, memo)
                 );
                 CREATE TABLE IF NOT EXISTS assigned_address_chains (
                     id SERIAL PRIMARY KEY,
@@ -77,7 +77,7 @@ class PostgresConfig(db: DatabaseClient) {
                     token_name VARCHAR(72),
                     withdraw_enabled BOOLEAN NOT NULL,
                     withdraw_fee NUMERIC NOT NULL,
-                    withdraw_min NUMERIC NOT NULL,
+                    withdraw_min NUMERIC NOT NULL
                 );
             """
         }
