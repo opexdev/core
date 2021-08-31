@@ -339,7 +339,7 @@ services:
       - KAFKA_IP_PORT=kafka:9092
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
-      - DB_IP_PORT=postgres-api
+      - DB_IP_PORT=postgres-bc-gateway
     networks:
       - opex
     depends_on:
