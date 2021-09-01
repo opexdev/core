@@ -37,7 +37,7 @@ class PostgresConfig(db: DatabaseClient) {
                     address_type VARCHAR(72) NOT NULL,
                     UNIQUE (address, memo)
                 );
-                CREATE TABLE IF NOT EXISTS chain (
+                CREATE TABLE IF NOT EXISTS chains (
                     name VARCHAR(72) PRIMARY KEY
                 );
                 CREATE TABLE IF NOT EXISTS chain_address_types (
@@ -52,12 +52,12 @@ class PostgresConfig(db: DatabaseClient) {
                     endpoint_user VARCHAR(72),
                     endpoint_password VARCHAR(72)
                 );
-                CREATE TABLE IF NOT EXISTS chain_sync_schedule (
+                CREATE TABLE IF NOT EXISTS chain_sync_schedules (
                     chain VARCHAR(72) PRIMARY KEY,
                     retry_time TIMESTAMP,
                     delay NUMERIC
                 );
-                CREATE TABLE IF NOT EXISTS chain_sync_record (
+                CREATE TABLE IF NOT EXISTS chain_sync_records (
                     chain VARCHAR(72) PRIMARY KEY,
                     time TIMESTAMP NOT NULL,
                     endpoint_url VARCHAR(72) NOT NULL,
