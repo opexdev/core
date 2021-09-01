@@ -73,10 +73,10 @@ class TradePersisterImpl(val tradeRepository: TradeRepository, val orderReposito
                 trade.takerPrice.multiply(
                     (trade.takerQuantity.minus(trade.takerRemainedQuantity))
                 ).toDouble(),
-                if (trade.takerRemainedQuantity == BigDecimal.ZERO) {
-                    OrderStatus.PARTIALLY_FILLED.code
-                } else {
+                if (trade.takerRemainedQuantity.compareTo(BigDecimal.ZERO) == 0) {
                     OrderStatus.FILLED.code
+                } else {
+                    OrderStatus.PARTIALLY_FILLED.code
                 },
                 existingOrder?.createDate,
                 LocalDateTime.now()
@@ -111,10 +111,10 @@ class TradePersisterImpl(val tradeRepository: TradeRepository, val orderReposito
                 trade.makerPrice.multiply(
                     (trade.makerQuantity.minus(trade.makerRemainedQuantity))
                 ).toDouble(),
-                if (trade.makerRemainedQuantity == BigDecimal.ZERO) {
-                    OrderStatus.PARTIALLY_FILLED.code
-                } else {
+                if (trade.makerRemainedQuantity.compareTo(BigDecimal.ZERO) == 0) {
                     OrderStatus.FILLED.code
+                } else {
+                    OrderStatus.PARTIALLY_FILLED.code
                 },
                 existingOrder?.createDate ?: LocalDateTime.now(),
                 LocalDateTime.now()
