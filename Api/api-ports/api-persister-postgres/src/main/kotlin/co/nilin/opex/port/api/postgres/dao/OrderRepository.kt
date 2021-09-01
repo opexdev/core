@@ -60,7 +60,7 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
 
     @Query(
         """
-        select price, sum(quantity) as quantity from orders 
+        select price, (sum(quantity) - sum(executed_qty)) as quantity from orders 
         where symbol = :symbol and side = :direction and status in (:statuses) 
         group by price 
         order by price asc 
@@ -80,7 +80,7 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
 
     @Query(
         """
-        select price, sum(quantity) as quantity from orders 
+        select price, (sum(quantity) - sum(executed_qty)) as quantity from orders 
         where symbol = :symbol and side = :direction and status in (:statuses) 
         group by price 
         order by price desc
