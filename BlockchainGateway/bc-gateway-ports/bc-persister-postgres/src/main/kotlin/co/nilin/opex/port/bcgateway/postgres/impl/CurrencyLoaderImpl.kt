@@ -10,9 +10,10 @@ import co.nilin.opex.port.bcgateway.postgres.dao.CurrencyRepository
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirstOrNull
-import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactive.awaitSingleOrNull
+import org.springframework.stereotype.Component
 
+@Component
 class CurrencyLoaderImpl(
     private val currencyRepository: CurrencyRepository,
     private val currencyImplementationRepository: CurrencyImplementationRepository
@@ -36,7 +37,7 @@ class CurrencyLoaderImpl(
     }
 
     override suspend fun findSymbol(chain: String, address: String?): String? {
-        return currencyImplementationRepository.findByChainAndAddress(chain, address)
+        return currencyImplementationRepository.findByChainAndTokenAddress(chain, address)
             .awaitFirstOrNull()?.symbol
     }
 
