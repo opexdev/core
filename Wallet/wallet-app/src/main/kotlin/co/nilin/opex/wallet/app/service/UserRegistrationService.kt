@@ -24,6 +24,16 @@ class UserRegistrationService(
     suspend fun registerNewUser(event: UserCreatedEvent): Wallet {
         val owner =
             walletOwnerManager.createWalletOwner(event.uuid, "${event.firstName} ${event.lastName}", "1")
+
+        val btcSymbol = Symbol("btc")
+        //TODO REMOVE LATER
+        walletManager.createWallet(
+            owner,
+            Amount(btcSymbol, BigDecimal.ONE),
+            btcSymbol,
+            "main"
+        )
+
         return walletManager.createWallet(
             owner,
             Amount(symbol, amount),

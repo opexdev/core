@@ -46,7 +46,7 @@ class UserQueryHandlerImpl(
         return orderRepository.findByUuidAndSymbolAndStatus(
             principal.name,
             symbol,
-            listOf(OrderStatus.NEW.ordinal, OrderStatus.PARTIALLY_FILLED.ordinal)
+            listOf(OrderStatus.NEW.code, OrderStatus.PARTIALLY_FILLED.code)
         ).filter { orderModel -> orderModel.constraint != null }
             .map { order -> orderToQueryResponse(order) }
     }
@@ -67,7 +67,7 @@ class UserQueryHandlerImpl(
         ).map { trade ->
             val takerOrder = orderRepository.findByOuid(trade.takerOuid).awaitFirst()
             val makerOrder = orderRepository.findByOuid(trade.makerOuid).awaitFirst()
-            val isMakerBuyer = makerOrder.direction == OrderDirection.ASK
+            val isMakerBuyer = makerOrder.direction == OrderDirection.BID
             TradeResponse(
                 trade.symbol,
                 trade.tradeId,
@@ -107,7 +107,8 @@ class UserQueryHandlerImpl(
                     OrderDirection.ASK == makerOrder.direction
                 },
                 trade.makerUuid == principal.name,
-                true
+                true,
+                isMakerBuyer
             )
         }
     }

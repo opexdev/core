@@ -31,7 +31,8 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     OrderNotFound(7001, "No order found", HttpStatus.NOT_FOUND),
     SymbolNotFound(7002, "No symbol found", HttpStatus.NOT_FOUND),
     InvalidLimitForOrderBook(7003, "Valid limits: [5, 10, 20, 50, 100, 500, 1000, 5000]", HttpStatus.BAD_REQUEST),
-    InvalidLimitForRecentTrades(7004, "Valid limits: 1 min - 1000 max", HttpStatus.BAD_REQUEST);
+    InvalidLimitForRecentTrades(7004, "Valid limits: 1 min - 1000 max", HttpStatus.BAD_REQUEST),
+    InvalidPriceChangeDuration(7005, "Valid durations: [24h, 7d, 1m]", HttpStatus.BAD_REQUEST);
 
     companion object {
         fun findByCode(code: Int?): OpexError? {

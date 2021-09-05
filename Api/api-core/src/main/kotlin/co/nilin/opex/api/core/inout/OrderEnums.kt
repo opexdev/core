@@ -6,15 +6,15 @@ enum class TimeInForce {
     FOK,    //Fill or Kill, An order will expire if the full order cannot be filled upon execution.
 }
 
-enum class OrderStatus {
+enum class OrderStatus(val code: Int) {
 
-    NEW,    //The order has been accepted by the engine.
-    PARTIALLY_FILLED, //A part of the order has been filled.
-    FILLED,    //The order has been completed.
-    CANCELED,    //The order has been canceled by the user.
-    PENDING_CANCEL,    //Currently unused
-    REJECTED,    //The order was not accepted by the engine and not processed.
-    EXPIRED  //The order was canceled according to the order type's rules (e.g. LIMIT FOK orders with no fill, LIMIT IOC or MARKET orders that partially fill) or by the exchange, (e.g. orders canceled during liquidation, orders canceled during maintenance)
+    NEW(1),    //The order has been accepted by the engine.
+    PARTIALLY_FILLED(4), //A part of the order has been filled.
+    FILLED(5),    //The order has been completed.
+    CANCELED(2),    //The order has been canceled by the user.
+    PENDING_CANCEL(7),    //Currently unused
+    REJECTED(3),    //The order was not accepted by the engine and not processed.
+    EXPIRED(6)  //The order was canceled according to the order type's rules (e.g. LIMIT FOK orders with no fill, LIMIT IOC or MARKET orders that partially fill) or by the exchange, (e.g. orders canceled during liquidation, orders canceled during maintenance)
 }
 
 enum class OrderType {

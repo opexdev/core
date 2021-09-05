@@ -1,16 +1,21 @@
 package co.nilin.opex.api.core.spi
 
-import co.nilin.opex.api.core.inout.QueryOrderResponse
-import co.nilin.opex.api.core.inout.TradeResponse
+import co.nilin.opex.api.core.inout.*
 import kotlinx.coroutines.flow.Flow
-import java.security.Principal
+import java.time.LocalDateTime
 
 interface MarketQueryHandler {
 
-    suspend fun openBidOrders(symbol: String, limit: Int): List<QueryOrderResponse>
+    suspend fun getTradeTickerData(startFrom: LocalDateTime): List<PriceChangeResponse>
 
-    suspend fun openAskOrders(symbol: String, limit: Int): List<QueryOrderResponse>
+    suspend fun getTradeTickerDataBySymbol(symbol: String, startFrom: LocalDateTime): PriceChangeResponse
 
-    suspend fun recentTrades(principal: Principal, symbol: String, limit: Int): Flow<TradeResponse>
+    suspend fun openBidOrders(symbol: String, limit: Int): List<OrderBookResponse>
+
+    suspend fun openAskOrders(symbol: String, limit: Int): List<OrderBookResponse>
+
+    suspend fun lastOrder(symbol: String): QueryOrderResponse?
+
+    suspend fun recentTrades(symbol: String, limit: Int): Flow<MarketTradeResponse>
 
 }

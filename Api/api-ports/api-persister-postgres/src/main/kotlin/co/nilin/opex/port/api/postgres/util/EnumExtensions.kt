@@ -35,7 +35,7 @@ fun OrderDirection.toOrderSide(): OrderSide {
 }
 
 fun OrderStatus.isWorking(): Boolean {
-    return listOf<OrderStatus>(OrderStatus.NEW, OrderStatus.PARTIALLY_FILLED).contains(this)
+    return listOf(OrderStatus.NEW, OrderStatus.PARTIALLY_FILLED).contains(this)
 }
 
 fun Int.toOrderStatus(): OrderStatus {
