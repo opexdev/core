@@ -5,10 +5,13 @@ import co.nilin.opex.matching.core.eventh.events.*
 import co.nilin.opex.matching.core.inout.*
 import co.nilin.opex.matching.core.model.*
 import exchange.core2.collections.art.LongAdaptiveRadixTreeMap
+import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 
 class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
+
+    private val logger =LoggerFactory.getLogger(SimpleOrderBook::class.java)
 
     val askOrders = LongAdaptiveRadixTreeMap<Bucket>()
     val bidOrders = LongAdaptiveRadixTreeMap<Bucket>()
@@ -37,6 +40,14 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
     data class Bucket(val price: Long, var totalQuantity: Long, var ordersCount: Long, var lastOrder: SimpleOrder)
 
     override fun handleNewOrderCommand(orderCommand: OrderCreateCommand): Order? {
+        logger.info("****************** new order received *******************")
+        logger.info("** order id: ${orderCommand.ouid}")
+        logger.info("** price: ${orderCommand.price}")
+        logger.info("** quantity: ${orderCommand.quantity}")
+        logger.info("** direction: ${orderCommand.direction}")
+        logger.info("*********************************************************")
+        println()
+
         val order = when (orderCommand.matchConstraint) {
             MatchConstraint.GTC -> {
                 if (orderCommand.orderType == OrderType.MARKET_ORDER) {
@@ -116,6 +127,17 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
             }
         }
         lastOrder = order
+
+        logger.info("******************** command handled ********************")
+        logger.info("** ask orders size: ${askOrders.entriesList().size}")
+        logger.info("** bid orders size: ${bidOrders.entriesList().size}")
+        logger.info("** orders size: ${orders.size}")
+        logger.info("** bestAskOrder: ${bestAskOrder?.ouid}")
+        logger.info("** bestBidOrder: ${bestBidOrder?.ouid}")
+        logger.info("** lastOrder: ${lastOrder?.ouid}")
+        logger.info("********************************************************")
+        println()
+
         return order
     }
 
