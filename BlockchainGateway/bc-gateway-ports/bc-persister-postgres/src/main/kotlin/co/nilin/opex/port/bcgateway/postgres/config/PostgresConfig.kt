@@ -22,12 +22,12 @@ class PostgresConfig(db: DatabaseClient) {
                     uuid VARCHAR(72) NOT NULL,
                     address VARCHAR(72) NOT NULL,
                     memo VARCHAR(72),
-                    addr_type_id NUMERIC NOT NULL,
+                    addr_type_id INTEGER NOT NULL,
                     UNIQUE (address, memo)
                 );
                 CREATE TABLE IF NOT EXISTS assigned_address_chains (
                     id SERIAL PRIMARY KEY,
-                    assigned_address_id NUMERIC NOT NULL,
+                    assigned_address_id INTEGER NOT NULL,
                     chain VARCHAR(72) NOT NULL
                 );
                 CREATE TABLE IF NOT EXISTS reserved_addresses (
@@ -42,8 +42,8 @@ class PostgresConfig(db: DatabaseClient) {
                 );
                 CREATE TABLE IF NOT EXISTS chain_address_types (
                     id SERIAL PRIMARY KEY,
-                    chain_name VARCHAR(72) NOT NULL,
-                    addr_type_id NUMERIC NOT NULL
+                    chain_name VARCHAR(72) NOT NULL REFERENCES chains (name),
+                    addr_type_id INTEGER NOT NULL REFERENCES address_types (id)
                 );
                 CREATE TABLE IF NOT EXISTS chain_endpoints (
                     id SERIAL PRIMARY KEY,
@@ -61,7 +61,7 @@ class PostgresConfig(db: DatabaseClient) {
                     chain VARCHAR(72) PRIMARY KEY,
                     time TIMESTAMP NOT NULL,
                     endpoint_url VARCHAR(72) NOT NULL,
-                    latest_block NUMERIC NOT NULL,
+                    latest_block INTEGER NOT NULL,
                     success BOOLEAN NOT NULL,
                     error VARCHAR(100)
                 );
