@@ -1,10 +1,8 @@
 package co.nilin.opex.port.bcgateway.postgres.impl
 
-import co.nilin.opex.bcgateway.core.model.Chain
-import co.nilin.opex.bcgateway.core.model.Currency
-import co.nilin.opex.bcgateway.core.model.CurrencyImplementation
-import co.nilin.opex.bcgateway.core.model.CurrencyInfo
+import co.nilin.opex.bcgateway.core.model.*
 import co.nilin.opex.bcgateway.core.spi.CurrencyLoader
+import co.nilin.opex.port.bcgateway.postgres.dao.ChainRepository
 import co.nilin.opex.port.bcgateway.postgres.dao.CurrencyImplementationRepository
 import co.nilin.opex.port.bcgateway.postgres.dao.CurrencyRepository
 import kotlinx.coroutines.flow.map
@@ -15,6 +13,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class CurrencyLoaderImpl(
+    private val chainRepository: ChainRepository,
     private val currencyRepository: CurrencyRepository,
     private val currencyImplementationRepository: CurrencyImplementationRepository
 ) : CurrencyLoader {
@@ -23,9 +22,17 @@ class CurrencyLoaderImpl(
         val currencyImplDao = currencyImplementationRepository.findBySymbol(symbol)
         val currency = Currency(currencyDao.symbol, currencyDao.name)
         return CurrencyInfo(currency, currencyImplDao.map {
+            val addressTypesDao = chainRepository.findAddressTypesByName(it.chain)
+            val addressTypes = addressTypesDao.map { addressType ->
+                AddressType(addressType.id!!, addressType.type, addressType.addressRegex, addressType.memoRegex)
+            }
+            val endpointsDao = chainRepository.findEndpointsByName(it.chain)
+            val endpoints = endpointsDao.map { endpoint ->
+                Endpoint(endpoint.url)
+            }
             CurrencyImplementation(
                 currency,
-                Chain(it.chain, emptyList(), emptyList()),
+                Chain(it.chain, addressTypes.toList(), endpoints.toList()),
                 it.token,
                 it.tokenAddress,
                 it.tokenName,
@@ -45,9 +52,17 @@ class CurrencyLoaderImpl(
         return currencyImplementationRepository.findByChain(chain).map {
             val currencyDao = currencyRepository.findBySymbol(it.symbol).awaitSingleOrNull()
             val currency = Currency(currencyDao.symbol, currencyDao.name)
+            val addressTypesDao = chainRepository.findAddressTypesByName(it.chain)
+            val addressTypes = addressTypesDao.map { addressType ->
+                AddressType(addressType.id!!, addressType.type, addressType.addressRegex, addressType.memoRegex)
+            }
+            val endpointsDao = chainRepository.findEndpointsByName(it.chain)
+            val endpoints = endpointsDao.map { endpoint ->
+                Endpoint(endpoint.url)
+            }
             CurrencyImplementation(
                 currency,
-                Chain(it.chain, emptyList(), emptyList()),
+                Chain(it.chain, addressTypes.toList(), endpoints.toList()),
                 it.token,
                 it.tokenAddress,
                 it.tokenName,
