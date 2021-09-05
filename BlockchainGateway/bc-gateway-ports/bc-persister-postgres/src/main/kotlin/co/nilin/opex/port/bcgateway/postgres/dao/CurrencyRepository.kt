@@ -10,6 +10,5 @@ import reactor.core.publisher.Mono
 
 @Repository
 interface CurrencyRepository : ReactiveCrudRepository<CurrencyModel, String> {
-
     fun findBySymbol(symbol: String): Mono<CurrencyModel>
 }
