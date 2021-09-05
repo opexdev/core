@@ -14,7 +14,7 @@ interface ChainRepository : ReactiveCrudRepository<ChainModel, String> {
 
     @Query(
         """
-            select chain_address_types.chain_name, address_types.address_type, address_types.address_regex, address_types.memo_regex
+            select address_types.id, chain_address_types.chain_name, address_types.address_type, address_types.address_regex, address_types.memo_regex
             from chain_address_types
             join address_types
             on address_types.id = chain_address_types.addr_type_id
