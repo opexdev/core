@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.util.concurrent.Executors
+import org.slf4j.LoggerFactory
 
 @Configuration
 class AppConfig {
@@ -84,11 +85,14 @@ class AppConfig {
 
     class EventlogTradeListener(val tradePersister: TradePersister) : TradeListener {
 
+        private val log = LoggerFactory.getLogger(EventlogTradeListener::class.java)
+
         override fun id(): String {
             return "TradeListener"
         }
 
         override fun onTrade(tradeEvent: TradeEvent, partition: Int, offset: Long, timestamp: Long) {
+            log.debug("Receive TradeEvent {}", tradeEvent)
             runBlocking {
                 tradePersister.saveTrade(tradeEvent)
             }
@@ -99,11 +103,14 @@ class AppConfig {
         val orderPersister: OrderPersister, val eventPersister: EventPersister
     ) : EventListener {
 
+        private val log = LoggerFactory.getLogger(EventlogEventListener::class.java)
+
         override fun id(): String {
             return "EventListener"
         }
 
         override fun onEvent(coreEvent: CoreEvent, partition: Int, offset: Long, timestamp: Long) {
+            log.debug("Receive CoreEvent {}", coreEvent)
             runBlocking {
                 if (coreEvent is CreateOrderEvent)
                     orderPersister.saveOrder(coreEvent)
@@ -115,7 +122,6 @@ class AppConfig {
                     orderPersister.cancelOrder(coreEvent)
                 eventPersister.saveEvent(coreEvent)
             }
-            println("onEvent")
         }
     }
 }
