@@ -295,13 +295,13 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
 
     private fun putGtcInQueue(order: SimpleOrder): SimpleOrder {
         if (order.direction == OrderDirection.BID) {
-            return putGtcInQueue(order, bidOrders, { price, queue ->
+            return putGtcInQueue(order, bidOrders, bestBidOrder, { price, queue ->
                 queue.getHigherValue(price)
             }) { newMakerOrder: SimpleOrder? ->
                 bestBidOrder = newMakerOrder
             }
         } else {
-            return putGtcInQueue(order, askOrders, { price, queue ->
+            return putGtcInQueue(order, askOrders, bestAskOrder, { price, queue ->
                 queue.getLowerValue(price)
             }) { newMakerOrder: SimpleOrder? ->
                 bestAskOrder = newMakerOrder
@@ -356,6 +356,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
 
     fun putGtcInQueue(order: SimpleOrder,
                       queue: LongAdaptiveRadixTreeMap<Bucket>,
+                      bestOrder: SimpleOrder?,
                       betterBucketSelector: (price: Long, queue: LongAdaptiveRadixTreeMap<Bucket>) -> Bucket?,
                       setNewMarkerOrder: (SimpleOrder?) -> Unit
     ): SimpleOrder {
@@ -396,9 +397,9 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                 order.better = aboveBucketLastOrder
                 order.worse = worseOrder
             } else {
-                if (bestBidOrder != null)
-                    bestBidOrder!!.better = order
-                order.worse = bestBidOrder
+                if (bestOrder != null)
+                    bestOrder.better = order
+                order.worse = bestOrder
                 setNewMarkerOrder(order)
             }
         }
