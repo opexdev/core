@@ -5,6 +5,8 @@ import co.nilin.opex.bcgateway.core.spi.CurrencyLoader
 import co.nilin.opex.port.bcgateway.postgres.dao.ChainRepository
 import co.nilin.opex.port.bcgateway.postgres.dao.CurrencyImplementationRepository
 import co.nilin.opex.port.bcgateway.postgres.dao.CurrencyRepository
+import co.nilin.opex.port.bcgateway.postgres.model.CurrencyImplementationModel
+import co.nilin.opex.port.bcgateway.postgres.model.CurrencyModel
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirstOrNull
@@ -19,28 +21,13 @@ class CurrencyLoaderImpl(
 ) : CurrencyLoader {
     override suspend fun fetchCurrencyInfo(symbol: String): CurrencyInfo? {
         val currencyDao = currencyRepository.findBySymbol(symbol).awaitSingleOrNull()
-        if (currencyDao !== null) {
+        return if (currencyDao !== null) {
             val currencyImplDao = currencyImplementationRepository.findBySymbol(symbol)
             val currency = Currency(currencyDao.symbol, currencyDao.name)
-            val implementations = currencyImplDao.map { impl ->
-                val addressTypesDao = chainRepository.findAddressTypesByName(impl.chain)
-                val addressTypes = addressTypesDao.map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }
-                val endpointsDao = chainRepository.findEndpointsByName(impl.chain)
-                val endpoints = endpointsDao.map { Endpoint(it.url) }
-                CurrencyImplementation(
-                    currency,
-                    Chain(impl.chain, addressTypes.toList(), endpoints.toList()),
-                    impl.token,
-                    impl.tokenAddress,
-                    impl.tokenName,
-                    impl.withdrawEnabled,
-                    impl.withdrawFee,
-                    impl.withdrawMin
-                )
-            }
-            return CurrencyInfo(currency, implementations.toList())
+            val implementations = currencyImplDao.map { projectCurrencyImplementation(it, currencyDao) }
+            CurrencyInfo(currency, implementations.toList())
         } else {
-            return null
+            null
         }
     }
 
@@ -50,23 +37,28 @@ class CurrencyLoaderImpl(
     }
 
     override suspend fun findImplementationsWithTokenOnChain(chain: String): List<CurrencyImplementation> {
-        return currencyImplementationRepository.findByChain(chain).map { impl ->
-            val currencyDao = currencyRepository.findBySymbol(impl.symbol).awaitSingleOrNull()
-            val currency = Currency(currencyDao.symbol, currencyDao.name)
-            val addressTypesDao = chainRepository.findAddressTypesByName(impl.chain)
-            val addressTypes = addressTypesDao.map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }
-            val endpointsDao = chainRepository.findEndpointsByName(impl.chain)
-            val endpoints = endpointsDao.map { Endpoint(it.url) }
-            CurrencyImplementation(
-                currency,
-                Chain(impl.chain, addressTypes.toList(), endpoints.toList()),
-                impl.token,
-                impl.tokenAddress,
-                impl.tokenName,
-                impl.withdrawEnabled,
-                impl.withdrawFee,
-                impl.withdrawMin
-            )
-        }.toList()
+        return currencyImplementationRepository.findByChain(chain).map { projectCurrencyImplementation(it) }.toList()
+    }
+
+    private suspend fun projectCurrencyImplementation(
+        implDao: CurrencyImplementationModel,
+        currencyDao: CurrencyModel? = null
+    ): CurrencyImplementation {
+        val addressTypesDao = chainRepository.findAddressTypesByName(implDao.chain)
+        val addressTypes = addressTypesDao.map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }
+        val endpointsDao = chainRepository.findEndpointsByName(implDao.chain)
+        val endpoints = endpointsDao.map { Endpoint(it.url) }
+        val currencyDao2 = currencyDao ?: currencyRepository.findBySymbol(implDao.symbol).awaitSingleOrNull()
+        val currency = Currency(currencyDao2.symbol, currencyDao2.name)
+        return CurrencyImplementation(
+            currency,
+            Chain(implDao.chain, addressTypes.toList(), endpoints.toList()),
+            implDao.token,
+            implDao.tokenAddress,
+            implDao.tokenName,
+            implDao.withdrawEnabled,
+            implDao.withdrawFee,
+            implDao.withdrawMin
+        )
     }
 }
