@@ -20,16 +20,12 @@ class CurrencyLoaderImpl(
     private val currencyRepository: CurrencyRepository,
     private val currencyImplementationRepository: CurrencyImplementationRepository
 ) : CurrencyLoader {
-    override suspend fun fetchCurrencyInfo(symbol: String): CurrencyInfo? {
+    override suspend fun fetchCurrencyInfo(symbol: String): CurrencyInfo {
         val currencyDao = currencyRepository.findBySymbol(symbol).awaitSingleOrNull()
-        return if (currencyDao !== null) {
-            val currencyImplDao = currencyImplementationRepository.findBySymbol(symbol)
-            val currency = Currency(currencyDao.symbol, currencyDao.name)
-            val implementations = currencyImplDao.map { projectCurrencyImplementation(it, currencyDao) }
-            CurrencyInfo(currency, implementations.toList())
-        } else {
-            null
-        }
+        val currencyImplDao = currencyImplementationRepository.findBySymbol(symbol)
+        val currency = Currency(currencyDao.symbol, currencyDao.name)
+        val implementations = currencyImplDao.map { projectCurrencyImplementation(it, currencyDao) }
+        return CurrencyInfo(currency, implementations.toList())
     }
 
     override suspend fun findSymbol(chain: String, address: String?): String? {
