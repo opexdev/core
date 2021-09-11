@@ -2,13 +2,13 @@ package co.nilin.opex.bcgateway.core.service
 
 import co.nilin.opex.bcgateway.core.model.AddressType
 import co.nilin.opex.bcgateway.core.model.AssignedAddress
-import co.nilin.opex.bcgateway.core.model.CachedAddress
+import co.nilin.opex.bcgateway.core.model.ReservedAddress
 import co.nilin.opex.bcgateway.core.model.Chain
 import co.nilin.opex.bcgateway.core.model.Currency
 import co.nilin.opex.bcgateway.core.model.CurrencyImplementation
 import co.nilin.opex.bcgateway.core.model.CurrencyInfo
 import co.nilin.opex.bcgateway.core.spi.AssignedAddressHandler
-import co.nilin.opex.bcgateway.core.spi.CachedAddressHandler
+import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
 import co.nilin.opex.bcgateway.core.spi.CurrencyLoader
 import java.lang.RuntimeException
 import java.math.BigDecimal
@@ -16,7 +16,6 @@ import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.function.Executable
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
@@ -29,7 +28,7 @@ class AssignAddressServiceImplUnitTest {
     lateinit var assignedAddressHandler: AssignedAddressHandler
 
     @Mock
-    lateinit var cachedAddressHandler: CachedAddressHandler
+    lateinit var reservedAddressHandler: ReservedAddressHandler
 
     val assignAddressServiceImpl: AssignAddressServiceImpl
 
@@ -43,7 +42,7 @@ class AssignAddressServiceImplUnitTest {
     init {
         MockitoAnnotations.openMocks(this)
         assignAddressServiceImpl = AssignAddressServiceImpl(
-            currencyLoader, assignedAddressHandler, cachedAddressHandler
+            currencyLoader, assignedAddressHandler, reservedAddressHandler
         )
         runBlocking {
             val eth =
@@ -67,17 +66,17 @@ class AssignAddressServiceImplUnitTest {
     }
 
     @Test
-    fun givenCachedAddressAndUserWithNoAssignedAddress_whenAssignAddress_thenCachedAddressAssigned() {
+    fun givenReservedAddressAndUserWithNoAssignedAddress_whenAssignAddress_thenReservedAddressAssigned() {
         runBlocking {
             val user = UUID.randomUUID().toString()
             Mockito.`when`(assignedAddressHandler.fetchAssignedAddresses(user, listOf(ethAddressType, ethMemoAddressType))).thenReturn(
                 emptyList()
             )
-            Mockito.`when`(cachedAddressHandler.peekCachedAddress(ethAddressType)).thenReturn(
-                CachedAddress("0x1", null, ethAddressType)
+            Mockito.`when`(reservedAddressHandler.peekReservedAddress(ethAddressType)).thenReturn(
+                ReservedAddress("0x1", null, ethAddressType)
             )
-            Mockito.`when`(cachedAddressHandler.peekCachedAddress(ethMemoAddressType)).thenReturn(
-                CachedAddress("0x2", "Memo", ethMemoAddressType)
+            Mockito.`when`(reservedAddressHandler.peekReservedAddress(ethMemoAddressType)).thenReturn(
+                ReservedAddress("0x2", "Memo", ethMemoAddressType)
             )
             val assignedAddress = assignAddressServiceImpl.assignAddress(user, currency)
             Assertions.assertEquals(
@@ -102,13 +101,13 @@ class AssignAddressServiceImplUnitTest {
     }
 
     @Test
-    fun givenNoCachedAddressAndUserWithNoAssignedAddress_whenAssignAddress_thenExcpetion() {
+    fun givenNoReservedAddressAndUserWithNoAssignedAddress_whenAssignAddress_thenExcpetion() {
         runBlocking {
             val user = UUID.randomUUID().toString()
             Mockito.`when`(assignedAddressHandler.fetchAssignedAddresses(user, listOf(ethAddressType, ethMemoAddressType))).thenReturn(
                 emptyList()
             )
-            Mockito.`when`(cachedAddressHandler.peekCachedAddress(ethAddressType)).thenReturn(null)
+            Mockito.`when`(reservedAddressHandler.peekReservedAddress(ethAddressType)).thenReturn(null)
 
             Assertions.assertThrows(RuntimeException::class.java) {
                 runBlocking {
@@ -119,7 +118,7 @@ class AssignAddressServiceImplUnitTest {
     }
 
     @Test
-    fun givenCachedAddressAndUserOneAssignedAddress_whenAssignAddress_thenCachedAddressAssigned() {
+    fun givenReservedAddressAndUserOneAssignedAddress_whenAssignAddress_thenReservedAddressAssigned() {
         runBlocking {
             val user = UUID.randomUUID().toString()
             Mockito.`when`(assignedAddressHandler.fetchAssignedAddresses(user, listOf(ethAddressType, ethMemoAddressType))).thenReturn(
@@ -132,11 +131,11 @@ class AssignAddressServiceImplUnitTest {
                     )
                 )
             )
-            Mockito.`when`(cachedAddressHandler.peekCachedAddress(ethAddressType)).thenReturn(
-                CachedAddress("0x1", null, ethAddressType)
+            Mockito.`when`(reservedAddressHandler.peekReservedAddress(ethAddressType)).thenReturn(
+                ReservedAddress("0x1", null, ethAddressType)
             )
-            Mockito.`when`(cachedAddressHandler.peekCachedAddress(ethMemoAddressType)).thenReturn(
-                CachedAddress("0x2", "Memo", ethMemoAddressType)
+            Mockito.`when`(reservedAddressHandler.peekReservedAddress(ethMemoAddressType)).thenReturn(
+                ReservedAddress("0x2", "Memo", ethMemoAddressType)
             )
             val assignedAddress = assignAddressServiceImpl.assignAddress(user, currency)
             Assertions.assertEquals(

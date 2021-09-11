@@ -45,16 +45,12 @@ services:
         condition: on-failure
   redis:
     image: "redis:alpine"
-
     command: redis-server
-
     ports:
       - "127.0.0.1:6379:6379"
-
     volumes:
       - $PWD/runtime/redis-data:/var/lib/redis
       - $PWD/runtime/redis.conf:/usr/local/etc/redis/redis.conf
-
     environment:
       - REDIS_REPLICATION_MODE=master
     networks:
@@ -126,6 +122,21 @@ services:
       - POSTGRES_DB=opex_api
     volumes:
       - $PWD/runtime/api-data:/var/lib/postgresql/data/
+    networks:
+      - opex
+    deploy:
+      restart_policy:
+        condition: on-failure
+  postgres-bc-gateway:
+    image: "postgres"
+    ports:
+      - 127.0.0.1:5438:5432
+    environment:
+      - POSTGRES_USER=opex
+      - POSTGRES_PASSWORD=hiopex
+      - POSTGRES_DB=opex_bc_gateway
+    volumes:
+      - $PWD/runtime/bc-gateway-data:/var/lib/postgresql/data/
     networks:
       - opex
     deploy:
@@ -310,6 +321,32 @@ services:
       - api
     networks:
       - opex
+  bc-gateway:
+    container_name: bc-gateway
+    build:
+      context: ../BlockchainGateway/bc-gateway-app
+      dockerfile: Dockerfile
+    ports:
+      - 127.0.0.1:8095:8095
+      - 127.0.0.1:1051:1044
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
+      - SPRING_PROFILES_ACTIVE=docker
+      - KAFKA_IP_PORT=kafka:9092
+      - REDIS_HOST=redis
+      - CONSUL_HOST=consul
+      - DB_IP_PORT=postgres-bc-gateway
+    networks:
+      - opex
+    depends_on:
+      - zookeeper
+      - kafka
+      - redis
+      - consul
+      - postgres-bc-gateway
+    deploy:
+      restart_policy:
+        condition: on-failure
 networks:
   opex:
     driver: bridge

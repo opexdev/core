@@ -21,9 +21,9 @@ class AppConfig {
     fun assignAddressService(
         currencyLoader: CurrencyLoader,
         assignedAddressHandler: AssignedAddressHandler,
-        cachedAddressHandler: CachedAddressHandler
+        reservedAddressHandler: ReservedAddressHandler
     ): AssignAddressService {
-        return AssignAddressServiceImpl(currencyLoader, assignedAddressHandler, cachedAddressHandler)
+        return AssignAddressServiceImpl(currencyLoader, assignedAddressHandler, reservedAddressHandler)
     }
 
     @Bean
