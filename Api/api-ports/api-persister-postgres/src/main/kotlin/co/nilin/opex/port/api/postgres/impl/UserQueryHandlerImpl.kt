@@ -116,6 +116,7 @@ class UserQueryHandlerImpl(
 
     private fun orderToQueryResponse(order: OrderModel) = QueryOrderResponse(
         order.symbol,
+        order.ouid,
         order.orderId ?: -1,
         -1,
         order.clientOrderId ?: "",

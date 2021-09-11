@@ -97,6 +97,7 @@ class MarketQueryHandlerImpl(
 
     private fun OrderModel.asQueryOrderResponse() = QueryOrderResponse(
         symbol,
+        ouid,
         orderId ?: -1,
         -1,
         clientOrderId ?: "",

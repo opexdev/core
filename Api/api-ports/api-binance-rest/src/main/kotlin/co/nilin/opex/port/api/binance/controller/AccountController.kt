@@ -15,6 +15,7 @@ import co.nilin.opex.port.api.binance.util.jwtAuthentication
 import co.nilin.opex.port.api.binance.util.tokenValue
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
+import co.nilin.opex.utility.error.data.throwError
 import com.fasterxml.jackson.annotation.JsonInclude
 import io.swagger.annotations.*
 import java.math.BigDecimal
@@ -58,6 +59,23 @@ class AccountController(
         val type: OrderType?,
         val side: OrderSide?,
         val fills: List<FillsData>?
+    )
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    data class CancelOrderResponse(
+        val symbol: String,
+        val origClientOrderId: String?,
+        val orderId: Long?,
+        val orderListId: Long, //Unless OCO, value will be -1
+        val clientOrderId: String?,
+        val price: BigDecimal?,
+        val origQty: BigDecimal?,
+        val executedQty: BigDecimal?,
+        val cummulativeQuoteQty: BigDecimal?,
+        val status: OrderStatus?,
+        val timeInForce: TimeInForce?,
+        val type: OrderType?,
+        val side: OrderSide?
     )
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -188,6 +206,55 @@ class AccountController(
             null,
             null,
             null
+        )
+    }
+
+    @DeleteMapping(
+        "/v3/order",
+        consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
+    suspend fun cancelOrder(
+        principal: Principal,
+        @RequestParam(name = "symbol")
+        symbol: String,
+        @RequestParam(name = "orderId", required = false)
+        orderId: Long?, //Either orderId or origClientOrderId must be sent.
+        @RequestParam(name = "origClientOrderId", required = false)
+        origClientOrderId: String?,
+        @RequestParam(name = "newClientOrderId", required = false)
+        newClientOrderId: String?,
+        @ApiParam(value = "The value cannot be greater than 60000")
+        @RequestParam(name = "recvWindow", required = false)
+        recvWindow: Long?, //The value cannot be greater than 60000
+        @RequestParam(name = "timestamp")
+        timestamp: Long,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): CancelOrderResponse {
+        val localSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+        if (orderId == null && origClientOrderId == null)
+            throw OpexException(OpexError.BadRequest, message = "'orderId' or 'origClientOrderId' must be sent")
+
+        val order = queryHandler.queryOrder(principal, QueryOrderRequest(localSymbol, orderId, origClientOrderId))
+            ?: throw OpexException(OpexError.OrderNotFound)
+
+        val request = CancelOrderRequest(order.ouid, principal.name, order.orderId, localSymbol)
+        matchingGatewayProxy.cancelOrder(request, securityContext.jwtAuthentication().tokenValue())
+
+        return CancelOrderResponse(
+            symbol,
+            origClientOrderId,
+            orderId,
+            -1,
+            null,
+            order.price,
+            order.origQty,
+            order.executedQty,
+            order.cummulativeQuoteQty,
+            order.status,
+            order.timeInForce,
+            order.type,
+            order.side
         )
     }
 

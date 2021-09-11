@@ -1,5 +1,6 @@
 package co.nilin.opex.api.core.spi
 
+import co.nilin.opex.api.core.inout.CancelOrderRequest
 import co.nilin.opex.api.core.inout.OrderSubmitResult
 import co.nilin.opex.matching.core.model.MatchConstraint
 import co.nilin.opex.matching.core.model.OrderDirection
@@ -19,4 +20,6 @@ interface MEGatewayProxy {
     )
 
     suspend fun createNewOrder(order: CreateOrderRequest, token: String?): OrderSubmitResult?
+
+    suspend fun cancelOrder(request: CancelOrderRequest, token: String?): OrderSubmitResult?
 }

@@ -127,21 +127,16 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
             }
         }
         lastOrder = order
-
-        logger.info("******************** command handled ********************")
-        logger.info("** ask orders size: ${askOrders.entriesList().size}")
-        logger.info("** bid orders size: ${bidOrders.entriesList().size}")
-        logger.info("** orders size: ${orders.size}")
-        logger.info("** bestAskOrder: ${bestAskOrder?.ouid}")
-        logger.info("** bestBidOrder: ${bestBidOrder?.ouid}")
-        logger.info("** lastOrder: ${lastOrder?.ouid}")
-        logger.info("********************************************************")
-        println()
-
+        logCurrentState()
         return order
     }
 
     override fun handleCancelCommand(orderCommand: OrderCancelCommand) {
+        logger.info("********************* order cancel **********************")
+        logger.info("** order id: ${orderCommand.ouid}")
+        logger.info("*********************************************************")
+        println()
+
         val order = orders.remove(orderCommand.orderId)
         if (order == null /*check for userid*/) {
             if (!replayMode) {
@@ -166,6 +161,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                 order.matchConstraint, order.orderType
             ))
         }
+        logCurrentState()
     }
 
     override fun handleEditCommand(orderCommand: OrderEditCommand): Order? {
@@ -449,5 +445,17 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
         }?.filter { order -> order.matchConstraint == MatchConstraint.GTC
         }?.forEach { order -> putGtcInQueue(order) }
         orderCounter.set(persistentOrderBook.lastOrder?.id?:0)
+    }
+
+    private fun logCurrentState(){
+        logger.info("******************** command handled ********************")
+        logger.info("** ask orders size: ${askOrders.entriesList().size}")
+        logger.info("** bid orders size: ${bidOrders.entriesList().size}")
+        logger.info("** orders size: ${orders.size}")
+        logger.info("** bestAskOrder: ${bestAskOrder?.ouid}")
+        logger.info("** bestBidOrder: ${bestBidOrder?.ouid}")
+        logger.info("** lastOrder: ${lastOrder?.ouid}")
+        logger.info("*********************************************************")
+        println()
     }
 }

@@ -1,7 +1,6 @@
 package co.nilin.opex.port.order.kafka.config
 
-
-
+import co.nilin.opex.matching.core.eventh.events.CoreEvent
 import co.nilin.opex.port.order.kafka.inout.OrderSubmitRequest
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringSerializer
@@ -15,9 +14,9 @@ import org.springframework.kafka.core.ProducerFactory
 import org.springframework.kafka.support.serializer.JsonSerializer
 import java.util.*
 
-
 @Configuration
-class OrderKafkaConfig() {
+class OrderKafkaConfig {
+
     @Value("\${spring.kafka.bootstrap-servers}")
     private lateinit var bootstrapServers: String
 
@@ -40,5 +39,14 @@ class OrderKafkaConfig() {
         return KafkaTemplate(producerFactory)
     }
 
+    @Bean("gatewayEventProducerFactory")
+    fun eventProducerFactory(@Qualifier("orderProducerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, CoreEvent> {
+        return DefaultKafkaProducerFactory(producerConfigs)
+    }
+
+    @Bean("gatewayEventKafkaTemplate")
+    fun eventKafkaTemplate(@Qualifier("gatewayEventProducerFactory") producerFactory: ProducerFactory<String?, CoreEvent>): KafkaTemplate<String?, CoreEvent> {
+        return KafkaTemplate(producerFactory)
+    }
 
 }
