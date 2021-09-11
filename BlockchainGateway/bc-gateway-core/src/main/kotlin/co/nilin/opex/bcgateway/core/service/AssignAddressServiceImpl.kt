@@ -6,14 +6,14 @@ import co.nilin.opex.bcgateway.core.model.AssignedAddress
 import co.nilin.opex.bcgateway.core.model.Chain
 import co.nilin.opex.bcgateway.core.model.Currency
 import co.nilin.opex.bcgateway.core.spi.AssignedAddressHandler
-import co.nilin.opex.bcgateway.core.spi.CachedAddressHandler
+import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
 import co.nilin.opex.bcgateway.core.spi.CurrencyLoader
 import java.lang.RuntimeException
 
 class AssignAddressServiceImpl(
     val currencyLoader: CurrencyLoader,
     val assignedAddressHandler: AssignedAddressHandler,
-    val cachedAddressHandler: CachedAddressHandler
+    val reservedAddressHandler: ReservedAddressHandler
 ) : AssignAddressService {
 
     override suspend fun assignAddress(user: String, currency: Currency): List<AssignedAddress> {
@@ -42,19 +42,19 @@ class AssignAddressServiceImpl(
                 }
                 result.add(assigned)
             } else {
-                val cachedAddress = cachedAddressHandler.peekCachedAddress(addressType)
-                if (cachedAddress != null) {
+                val reservedAddress = reservedAddressHandler.peekReservedAddress(addressType)
+                if (reservedAddress != null) {
                     val newAssigned = AssignedAddress(
                         user,
-                        cachedAddress.address,
-                        cachedAddress.memo,
+                        reservedAddress.address,
+                        reservedAddress.memo,
                         addressType,
                         chainAddressTypeMap.get(addressType)!!
                     )
-                    cachedAddressHandler.remove(cachedAddress)
+                    reservedAddressHandler.remove(reservedAddress)
                     result.add(newAssigned)
                 } else
-                    throw RuntimeException("No cached address available for $addressType")
+                    throw RuntimeException("No reserved address available for $addressType")
 
             }
         }

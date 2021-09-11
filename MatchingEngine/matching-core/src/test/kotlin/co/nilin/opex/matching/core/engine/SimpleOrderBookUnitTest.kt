@@ -266,13 +266,48 @@ class SimpleOrderBookUnitTest {
     }
 
     @Test
-    fun givenOrderBookWithGtcAskOrder_whenGtcBidLimitOrderWithLessPriceCreated_then() {
-        //given
+    fun whenSample1SequenceOfOrdersOccurs_thenAllSuccess() {
+
         val orderBook = SimpleOrderBook(ETH_BTC_PAIR, false)
-        orderBook.handleNewOrderCommand(OrderCreateCommand(UUID.randomUUID().toString(), uuid, ETH_BTC_PAIR, 33333, 1000000, OrderDirection.ASK, MatchConstraint.GTC, OrderType.LIMIT_ORDER))
-        //when
-        orderBook.handleNewOrderCommand(OrderCreateCommand(UUID.randomUUID().toString(), uuid, ETH_BTC_PAIR, 34482, 5000000, OrderDirection.BID, MatchConstraint.GTC, OrderType.LIMIT_ORDER)) as SimpleOrderBook.SimpleOrder
-        //then
+        orderBook.handleNewOrderCommand(OrderCreateCommand(UUID.randomUUID().toString(), uuid, ETH_BTC_PAIR, 5000000, 10000, OrderDirection.BID, MatchConstraint.GTC, OrderType.LIMIT_ORDER)) as SimpleOrderBook.SimpleOrder
+        Assertions.assertNotNull(orderBook.bestBidOrder)
+        Assertions.assertEquals(1, orderBook.bidOrders.entriesList().size)
+        Assertions.assertEquals(1, orderBook.orders.size)
+
+        orderBook.handleNewOrderCommand(OrderCreateCommand(UUID.randomUUID().toString(), uuid, ETH_BTC_PAIR, 4900000, 20000, OrderDirection.ASK, MatchConstraint.GTC, OrderType.LIMIT_ORDER)) as SimpleOrderBook.SimpleOrder
+        Assertions.assertNull(orderBook.bestBidOrder)
+        Assertions.assertNotNull(orderBook.bestAskOrder)
+        Assertions.assertEquals(0, orderBook.bidOrders.entriesList().size)
+        Assertions.assertEquals(1, orderBook.askOrders.entriesList().size)
+        Assertions.assertEquals(1, orderBook.orders.size)
+
+        orderBook.handleNewOrderCommand(OrderCreateCommand(UUID.randomUUID().toString(), uuid, ETH_BTC_PAIR, 4800000, 10000, OrderDirection.ASK, MatchConstraint.GTC, OrderType.LIMIT_ORDER)) as SimpleOrderBook.SimpleOrder
+        Assertions.assertNull(orderBook.bestBidOrder)
+        Assertions.assertNotNull(orderBook.bestAskOrder)
+        Assertions.assertEquals(0, orderBook.bidOrders.entriesList().size)
+        Assertions.assertEquals(2, orderBook.askOrders.entriesList().size)
+        Assertions.assertEquals(2, orderBook.orders.size)
+
+        orderBook.handleNewOrderCommand(OrderCreateCommand(UUID.randomUUID().toString(), uuid, ETH_BTC_PAIR, 4850000, 20000, OrderDirection.BID, MatchConstraint.GTC, OrderType.LIMIT_ORDER)) as SimpleOrderBook.SimpleOrder
+        Assertions.assertEquals(1, orderBook.bidOrders.entriesList().size)
+        Assertions.assertEquals(1, orderBook.askOrders.entriesList().size)
+        Assertions.assertEquals(2, orderBook.orders.size)
+        Assertions.assertNotNull(orderBook.bestBidOrder)
+        Assertions.assertNotNull(orderBook.bestAskOrder)
+
+        orderBook.handleNewOrderCommand(OrderCreateCommand(UUID.randomUUID().toString(), uuid, ETH_BTC_PAIR, 4850100, 10000, OrderDirection.ASK, MatchConstraint.GTC, OrderType.LIMIT_ORDER)) as SimpleOrderBook.SimpleOrder
+        Assertions.assertEquals(1, orderBook.bidOrders.entriesList().size)
+        Assertions.assertEquals(2, orderBook.askOrders.entriesList().size)
+        Assertions.assertEquals(3, orderBook.orders.size)
+        Assertions.assertNotNull(orderBook.bestBidOrder)
+        Assertions.assertNotNull(orderBook.bestAskOrder)
+
+        orderBook.handleNewOrderCommand(OrderCreateCommand(UUID.randomUUID().toString(), uuid, ETH_BTC_PAIR, 4849900, 10000, OrderDirection.BID, MatchConstraint.GTC, OrderType.LIMIT_ORDER)) as SimpleOrderBook.SimpleOrder
+        Assertions.assertEquals(2, orderBook.bidOrders.entriesList().size)
+        Assertions.assertEquals(2, orderBook.askOrders.entriesList().size)
+        Assertions.assertEquals(4, orderBook.orders.size)
+        Assertions.assertNotNull(orderBook.bestBidOrder)
+        Assertions.assertNotNull(orderBook.bestAskOrder)
     }
 
 }

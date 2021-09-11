@@ -4,7 +4,7 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 
-@Table("chain")
+@Table("chains")
 data class ChainModel(@Id val name: String)
 
 @Table("chain_address_types")
