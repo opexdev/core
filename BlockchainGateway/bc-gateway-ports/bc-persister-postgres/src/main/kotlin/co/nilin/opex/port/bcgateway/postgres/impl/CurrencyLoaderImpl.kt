@@ -17,30 +17,31 @@ class CurrencyLoaderImpl(
     private val currencyRepository: CurrencyRepository,
     private val currencyImplementationRepository: CurrencyImplementationRepository
 ) : CurrencyLoader {
-    override suspend fun fetchCurrencyInfo(symbol: String): CurrencyInfo {
+    override suspend fun fetchCurrencyInfo(symbol: String): CurrencyInfo? {
         val currencyDao = currencyRepository.findBySymbol(symbol).awaitSingleOrNull()
-        val currencyImplDao = currencyImplementationRepository.findBySymbol(symbol)
-        val currency = Currency(currencyDao.symbol, currencyDao.name)
-        return CurrencyInfo(currency, currencyImplDao.map {
-            val addressTypesDao = chainRepository.findAddressTypesByName(it.chain)
-            val addressTypes = addressTypesDao.map { addressType ->
-                AddressType(addressType.id!!, addressType.type, addressType.addressRegex, addressType.memoRegex)
+        if (currencyDao !== null) {
+            val currencyImplDao = currencyImplementationRepository.findBySymbol(symbol)
+            val currency = Currency(currencyDao.symbol, currencyDao.name)
+            val implementations = currencyImplDao.map { impl ->
+                val addressTypesDao = chainRepository.findAddressTypesByName(impl.chain)
+                val addressTypes = addressTypesDao.map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }
+                val endpointsDao = chainRepository.findEndpointsByName(impl.chain)
+                val endpoints = endpointsDao.map { Endpoint(it.url) }
+                CurrencyImplementation(
+                    currency,
+                    Chain(impl.chain, addressTypes.toList(), endpoints.toList()),
+                    impl.token,
+                    impl.tokenAddress,
+                    impl.tokenName,
+                    impl.withdrawEnabled,
+                    impl.withdrawFee,
+                    impl.withdrawMin
+                )
             }
-            val endpointsDao = chainRepository.findEndpointsByName(it.chain)
-            val endpoints = endpointsDao.map { endpoint ->
-                Endpoint(endpoint.url)
-            }
-            CurrencyImplementation(
-                currency,
-                Chain(it.chain, addressTypes.toList(), endpoints.toList()),
-                it.token,
-                it.tokenAddress,
-                it.tokenName,
-                it.withdrawEnabled,
-                it.withdrawFee,
-                it.withdrawMin
-            )
-        }.toList())
+            return CurrencyInfo(currency, implementations.toList())
+        } else {
+            return null
+        }
     }
 
     override suspend fun findSymbol(chain: String, address: String?): String? {
@@ -49,26 +50,22 @@ class CurrencyLoaderImpl(
     }
 
     override suspend fun findImplementationsWithTokenOnChain(chain: String): List<CurrencyImplementation> {
-        return currencyImplementationRepository.findByChain(chain).map {
-            val currencyDao = currencyRepository.findBySymbol(it.symbol).awaitSingleOrNull()
+        return currencyImplementationRepository.findByChain(chain).map { impl ->
+            val currencyDao = currencyRepository.findBySymbol(impl.symbol).awaitSingleOrNull()
             val currency = Currency(currencyDao.symbol, currencyDao.name)
-            val addressTypesDao = chainRepository.findAddressTypesByName(it.chain)
-            val addressTypes = addressTypesDao.map { addressType ->
-                AddressType(addressType.id!!, addressType.type, addressType.addressRegex, addressType.memoRegex)
-            }
-            val endpointsDao = chainRepository.findEndpointsByName(it.chain)
-            val endpoints = endpointsDao.map { endpoint ->
-                Endpoint(endpoint.url)
-            }
+            val addressTypesDao = chainRepository.findAddressTypesByName(impl.chain)
+            val addressTypes = addressTypesDao.map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }
+            val endpointsDao = chainRepository.findEndpointsByName(impl.chain)
+            val endpoints = endpointsDao.map { Endpoint(it.url) }
             CurrencyImplementation(
                 currency,
-                Chain(it.chain, addressTypes.toList(), endpoints.toList()),
-                it.token,
-                it.tokenAddress,
-                it.tokenName,
-                it.withdrawEnabled,
-                it.withdrawFee,
-                it.withdrawMin
+                Chain(impl.chain, addressTypes.toList(), endpoints.toList()),
+                impl.token,
+                impl.tokenAddress,
+                impl.tokenName,
+                impl.withdrawEnabled,
+                impl.withdrawFee,
+                impl.withdrawMin
             )
         }.toList()
     }
