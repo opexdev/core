@@ -1,4 +1,4 @@
-server.port: 8091
+server.port: 8095
 spring:
   application:
     name: opex-bc-gateway

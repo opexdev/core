@@ -26,9 +26,9 @@ class WalletSyncServiceImpl(
                 deposits.map { deposit ->
                     async(dispatcher) {
                         val uuid = assignedAddressHandler.findUuid(deposit.depositor, deposit.depositorMemo)
-                        if ( uuid != null ) {
+                        if (uuid != null) {
                             val symbol = currencyLoader.findSymbol(deposit.chain!!, deposit.tokenAddress)
-                            walletProxy.transfer(uuid, symbol, deposit.amount)
+                            if (symbol != null) walletProxy.transfer(uuid, symbol, deposit.amount)
                         }
                     }
                 }
