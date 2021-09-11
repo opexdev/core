@@ -10,6 +10,7 @@ import co.nilin.opex.port.bcgateway.postgres.model.CurrencyModel
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactive.awaitSingleOrNull
 import org.springframework.stereotype.Component
 
@@ -48,8 +49,8 @@ class CurrencyLoaderImpl(
         val addressTypes = addressTypesDao.map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }
         val endpointsDao = chainRepository.findEndpointsByName(implDao.chain)
         val endpoints = endpointsDao.map { Endpoint(it.url) }
-        val currencyDao2 = currencyDao ?: currencyRepository.findBySymbol(implDao.symbol).awaitSingleOrNull()
-        val currency = Currency(currencyDao2.symbol, currencyDao2.name)
+        val currencyDaoVal = currencyDao ?: currencyRepository.findBySymbol(implDao.symbol).awaitSingle()
+        val currency = Currency(currencyDaoVal.symbol, currencyDaoVal.name)
         return CurrencyImplementation(
             currency,
             Chain(implDao.chain, addressTypes.toList(), endpoints.toList()),
