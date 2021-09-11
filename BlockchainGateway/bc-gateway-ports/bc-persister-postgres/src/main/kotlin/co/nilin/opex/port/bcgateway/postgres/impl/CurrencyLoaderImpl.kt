@@ -22,6 +22,7 @@ class CurrencyLoaderImpl(
 ) : CurrencyLoader {
     override suspend fun fetchCurrencyInfo(symbol: String): CurrencyInfo {
         val currencyDao = currencyRepository.findBySymbol(symbol).awaitSingleOrNull()
+        if (currencyDao === null) return CurrencyInfo(Currency("", symbol), emptyList())
         val currencyImplDao = currencyImplementationRepository.findBySymbol(symbol)
         val currency = Currency(currencyDao.symbol, currencyDao.name)
         val implementations = currencyImplDao.map { projectCurrencyImplementation(it, currencyDao) }
