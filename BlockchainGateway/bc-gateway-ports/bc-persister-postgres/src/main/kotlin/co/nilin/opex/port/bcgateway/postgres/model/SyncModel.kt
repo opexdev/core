@@ -11,7 +11,7 @@ data class SyncScheduleModel(
 )
 
 @Table("chain_sync_record")
-data class SyncRecord(
+data class SyncRecordModel(
     @Id @Column("chain") val chain: String,
     val time: LocalDateTime,
     @Column("endpoint_url") val endpointUrl: String,
