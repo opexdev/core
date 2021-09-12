@@ -54,8 +54,8 @@ class PostgresConfig(db: DatabaseClient) {
                 );
                 CREATE TABLE IF NOT EXISTS chain_sync_schedules (
                     chain VARCHAR(72) PRIMARY KEY,
-                    retry_time TIMESTAMP,
-                    delay NUMERIC
+                    retry_time TIMESTAMP NOT NULL,
+                    delay INTEGER NOT NULL
                 );
                 CREATE TABLE IF NOT EXISTS chain_sync_records (
                     chain VARCHAR(72) PRIMARY KEY,
@@ -82,7 +82,7 @@ class PostgresConfig(db: DatabaseClient) {
                 CREATE TABLE IF NOT EXISTS wallet_sync_schedules (
                     id SERIAL PRIMARY KEY,
                     retry_time TIMESTAMP NOT NULL,
-                    delay NUMERIC NOT NULL,
+                    delay INTEGER NOT NULL,
                     batch_size INTEGER
                 );
             """
