@@ -1,6 +1,5 @@
 package co.nilin.opex.port.bcgateway.postgres.dao
 
-import co.nilin.opex.port.bcgateway.postgres.model.AddressTypeModel
 import co.nilin.opex.port.bcgateway.postgres.model.DepositModel
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
