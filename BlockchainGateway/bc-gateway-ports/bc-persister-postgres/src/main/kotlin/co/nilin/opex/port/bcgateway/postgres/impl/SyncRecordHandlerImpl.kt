@@ -8,12 +8,14 @@ import co.nilin.opex.port.bcgateway.postgres.dao.ChainSyncRecordRepository
 import co.nilin.opex.port.bcgateway.postgres.dao.DepositRepository
 import co.nilin.opex.port.bcgateway.postgres.model.DepositModel
 import co.nilin.opex.port.bcgateway.postgres.model.SyncRecordModel
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitSingleOrNull
+import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Component
-import reactor.core.publisher.Mono
+import org.springframework.transaction.annotation.Transactional
 
 @Component
 class SyncRecordHandlerImpl(
@@ -22,6 +24,7 @@ class SyncRecordHandlerImpl(
 ) : SyncRecordHandler {
     override suspend fun loadLastSuccessRecord(chainName: String): ChainSyncRecord? {
         val chainSyncRecordDao = chainSyncRecordRepository.findByChain(chainName).awaitSingleOrNull()
+
         return if (chainSyncRecordDao !== null) {
             val deposits = depositRepository.findByChain(chainName).map {
                 Deposit(it.depositor, it.depositorMemo, it.amount, it.chain, it.token, it.tokenAddress)
@@ -40,6 +43,7 @@ class SyncRecordHandlerImpl(
         }
     }
 
+    @Transactional
     override suspend fun saveSyncRecord(syncRecord: ChainSyncRecord) {
         val chainSyncRecordDao =
             SyncRecordModel(
@@ -50,6 +54,7 @@ class SyncRecordHandlerImpl(
                 syncRecord.success,
                 syncRecord.error
             )
+        chainSyncRecordRepository.save(chainSyncRecordDao).awaitFirst()
         val deposits = syncRecord.records.map {
             DepositModel(
                 null,
@@ -61,7 +66,6 @@ class SyncRecordHandlerImpl(
                 it.tokenAddress
             )
         }
-        Mono.`when`(chainSyncRecordRepository.save(chainSyncRecordDao), depositRepository.saveAll(deposits))
-            .awaitFirst()
+        depositRepository.saveAll(deposits).awaitFirst()
     }
 }
