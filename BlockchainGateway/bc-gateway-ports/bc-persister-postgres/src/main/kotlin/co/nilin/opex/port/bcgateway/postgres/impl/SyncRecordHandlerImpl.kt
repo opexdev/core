@@ -22,7 +22,6 @@ class SyncRecordHandlerImpl(
 ) : SyncRecordHandler {
     override suspend fun loadLastSuccessRecord(chainName: String): ChainSyncRecord? {
         val chainSyncRecordDao = chainSyncRecordRepository.findByChain(chainName).awaitSingleOrNull()
-
         return if (chainSyncRecordDao !== null) {
             val deposits = depositRepository.findByChain(chainName).map {
                 Deposit(it.depositor, it.depositorMemo, it.amount, it.chain, it.token, it.tokenAddress)
@@ -53,7 +52,7 @@ class SyncRecordHandlerImpl(
                 syncRecord.error
             )
         chainSyncRecordRepository.save(chainSyncRecordDao).awaitFirst()
-        val deposits = syncRecord.records.map {
+        val depositsDao = syncRecord.records.map {
             DepositModel(
                 null,
                 it.depositor,
@@ -64,6 +63,6 @@ class SyncRecordHandlerImpl(
                 it.tokenAddress
             )
         }
-        depositRepository.saveAll(deposits).awaitFirst()
+        depositRepository.saveAll(depositsDao).awaitFirst()
     }
 }
