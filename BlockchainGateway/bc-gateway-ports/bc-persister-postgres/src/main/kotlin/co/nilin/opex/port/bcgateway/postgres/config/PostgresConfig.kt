@@ -79,6 +79,14 @@ class PostgresConfig(db: DatabaseClient) {
                     withdraw_fee NUMERIC NOT NULL,
                     withdraw_min NUMERIC NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS deposits (
+                    id SERIAL PRIMARY KEY,
+                    chain VARCHAR(72),
+                    token_address VARCHAR(72),
+                    amount NUMERIC NOT NULL,
+                    depositor VARCHAR(72) NOT NULL,
+                    depositorMemo VARCHAR(72)
+                );
             """
         }
         initDb // initialize the database
