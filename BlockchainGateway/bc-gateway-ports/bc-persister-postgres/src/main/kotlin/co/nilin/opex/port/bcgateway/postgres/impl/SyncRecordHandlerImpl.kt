@@ -6,10 +6,14 @@ import co.nilin.opex.bcgateway.core.model.Endpoint
 import co.nilin.opex.bcgateway.core.spi.SyncRecordHandler
 import co.nilin.opex.port.bcgateway.postgres.dao.ChainSyncRecordRepository
 import co.nilin.opex.port.bcgateway.postgres.dao.DepositRepository
+import co.nilin.opex.port.bcgateway.postgres.model.DepositModel
+import co.nilin.opex.port.bcgateway.postgres.model.SyncRecordModel
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitSingleOrNull
 import org.springframework.stereotype.Component
+import reactor.core.publisher.Mono
 
 @Component
 class SyncRecordHandlerImpl(
@@ -20,7 +24,7 @@ class SyncRecordHandlerImpl(
         val chainSyncRecordDao = chainSyncRecordRepository.findByChain(chainName).awaitSingleOrNull()
         return if (chainSyncRecordDao !== null) {
             val deposits = depositRepository.findByChain(chainName).map {
-                Deposit(it.depositor, it.depositorMemo, it.amount, it.chain, it.tokenAddress)
+                Deposit(it.depositor, it.depositorMemo, it.amount, it.chain, it.token, it.tokenAddress)
             }
             ChainSyncRecord(
                 chainSyncRecordDao.chain,
@@ -37,6 +41,27 @@ class SyncRecordHandlerImpl(
     }
 
     override suspend fun saveSyncRecord(syncRecord: ChainSyncRecord) {
-        TODO("Not yet implemented")
+        val chainSyncRecordDao =
+            SyncRecordModel(
+                syncRecord.chainName,
+                syncRecord.time,
+                syncRecord.endpoint.url,
+                syncRecord.latestBlock,
+                syncRecord.success,
+                syncRecord.error
+            )
+        val deposits = syncRecord.records.map {
+            DepositModel(
+                null,
+                it.depositor,
+                it.depositorMemo,
+                it.amount,
+                it.chain,
+                it.token,
+                it.tokenAddress
+            )
+        }
+        Mono.`when`(chainSyncRecordRepository.save(chainSyncRecordDao), depositRepository.saveAll(deposits))
+            .awaitFirst()
     }
 }
