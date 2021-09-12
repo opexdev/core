@@ -82,6 +82,7 @@ class PostgresConfig(db: DatabaseClient) {
                 CREATE TABLE IF NOT EXISTS deposits (
                     id SERIAL PRIMARY KEY,
                     chain VARCHAR(72),
+                    token BOOLEAN NOT NULL,
                     token_address VARCHAR(72),
                     amount NUMERIC NOT NULL,
                     depositor VARCHAR(72) NOT NULL,

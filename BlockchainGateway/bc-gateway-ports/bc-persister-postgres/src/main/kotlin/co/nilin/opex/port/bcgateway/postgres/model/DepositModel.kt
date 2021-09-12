@@ -12,5 +12,6 @@ data class DepositModel(
     val depositorMemo: String?,
     val amount: BigDecimal,
     val chain: String?,
+    val token: Boolean,
     val tokenAddress: String?
 )
