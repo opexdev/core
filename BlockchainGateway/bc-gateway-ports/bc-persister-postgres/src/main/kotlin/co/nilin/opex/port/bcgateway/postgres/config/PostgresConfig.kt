@@ -79,6 +79,12 @@ class PostgresConfig(db: DatabaseClient) {
                     withdraw_fee NUMERIC NOT NULL,
                     withdraw_min NUMERIC NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS wallet_sync_schedules (
+                    id SERIAL PRIMARY KEY,
+                    retry_time TIMESTAMP NOT NULL,
+                    delay NUMERIC NOT NULL,
+                    batch_size INTEGER
+                );
             """
         }
         initDb // initialize the database
