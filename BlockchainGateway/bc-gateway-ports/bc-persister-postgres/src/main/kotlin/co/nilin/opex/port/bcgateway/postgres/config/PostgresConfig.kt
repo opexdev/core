@@ -54,14 +54,14 @@ class PostgresConfig(db: DatabaseClient) {
                 );
                 CREATE TABLE IF NOT EXISTS chain_sync_schedules (
                     chain VARCHAR(72) PRIMARY KEY,
-                    retry_time TIMESTAMP,
-                    delay NUMERIC
+                    retry_time TIMESTAMP NOT NULL,
+                    delay NUMERIC NOT NULL
                 );
                 CREATE TABLE IF NOT EXISTS chain_sync_records (
                     chain VARCHAR(72) PRIMARY KEY,
                     time TIMESTAMP NOT NULL,
                     endpoint_url VARCHAR(72) NOT NULL,
-                    latest_block INTEGER NOT NULL,
+                    latest_block INTEGER,
                     success BOOLEAN NOT NULL,
                     error VARCHAR(100)
                 );
