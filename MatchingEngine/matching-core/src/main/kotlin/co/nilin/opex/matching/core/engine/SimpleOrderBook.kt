@@ -137,13 +137,17 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
         logger.info("*********************************************************")
         println()
 
-        val order = orders.remove(orderCommand.orderId)
+        val simpleOrder = orders.entries.find { it.value.ouid == orderCommand.ouid }
+        val order = simpleOrder?.value
         if (order == null /*check for userid*/) {
             if (!replayMode) {
                 EventDispatcher.emit(RejectOrderEvent(orderCommand.ouid, orderCommand.uuid,orderCommand.orderId, orderCommand.pair, RequestedOperation.CANCEL_ORDER, RejectReason.ORDER_NOT_FOUND))
             }
             return
+        } else {
+            orders.remove(simpleOrder.key)
         }
+
         if (order.direction == OrderDirection.BID) {
             handleCancelOrder(order, bidOrders, bestBidOrder) { newBestOrder: SimpleOrder? ->
                 bestBidOrder = newBestOrder
@@ -448,9 +452,9 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
     }
 
     private fun logCurrentState(){
-        logger.info("******************** command handled ********************")
-        logger.info("** ask orders size: ${askOrders.entriesList().size}")
-        logger.info("** bid orders size: ${bidOrders.entriesList().size}")
+        logger.info("******************** ${pair.leftSideName}-${pair.rightSideName} ********************")
+        logger.info("** askOrders size: ${askOrders.entriesList().size}")
+        logger.info("** bidOrders size: ${bidOrders.entriesList().size}")
         logger.info("** orders size: ${orders.size}")
         logger.info("** bestAskOrder: ${bestAskOrder?.ouid}")
         logger.info("** bestBidOrder: ${bestBidOrder?.ouid}")

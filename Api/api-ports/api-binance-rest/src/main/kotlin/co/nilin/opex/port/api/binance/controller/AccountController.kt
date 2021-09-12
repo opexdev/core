@@ -6,16 +6,9 @@ import co.nilin.opex.api.core.spi.SymbolMapper
 import co.nilin.opex.api.core.spi.UserQueryHandler
 import co.nilin.opex.api.core.spi.WalletProxy
 import co.nilin.opex.port.api.binance.data.AccountInfoResponse
-import co.nilin.opex.port.api.binance.util.BalanceParser
-import co.nilin.opex.port.api.binance.util.LoggerDelegate
-import co.nilin.opex.port.api.binance.util.asMatchConstraint
-import co.nilin.opex.port.api.binance.util.asMatchingOrderType
-import co.nilin.opex.port.api.binance.util.asOrderDirection
-import co.nilin.opex.port.api.binance.util.jwtAuthentication
-import co.nilin.opex.port.api.binance.util.tokenValue
+import co.nilin.opex.port.api.binance.util.*
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
-import co.nilin.opex.utility.error.data.throwError
 import com.fasterxml.jackson.annotation.JsonInclude
 import io.swagger.annotations.*
 import java.math.BigDecimal
@@ -238,10 +231,7 @@ class AccountController(
         val order = queryHandler.queryOrder(principal, QueryOrderRequest(localSymbol, orderId, origClientOrderId))
             ?: throw OpexException(OpexError.OrderNotFound)
 
-        val request = CancelOrderRequest(order.ouid, principal.name, order.orderId, localSymbol)
-        matchingGatewayProxy.cancelOrder(request, securityContext.jwtAuthentication().tokenValue())
-
-        return CancelOrderResponse(
+        val response = CancelOrderResponse(
             symbol,
             origClientOrderId,
             orderId,
@@ -251,11 +241,22 @@ class AccountController(
             order.origQty,
             order.executedQty,
             order.cummulativeQuoteQty,
-            order.status,
+            OrderStatus.CANCELED,
             order.timeInForce,
             order.type,
             order.side
         )
+
+        if (order.status == OrderStatus.CANCELED)
+            return response
+
+        if (order.status.equalsAny(OrderStatus.REJECTED, OrderStatus.EXPIRED, OrderStatus.FILLED))
+            throw OpexException(OpexError.CancelOrderNotAllowed)
+
+
+        val request = CancelOrderRequest(order.ouid, principal.name, order.orderId, localSymbol)
+        matchingGatewayProxy.cancelOrder(request, securityContext.jwtAuthentication().tokenValue())
+        return response
     }
 
     /*

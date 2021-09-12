@@ -27,3 +27,10 @@ fun co.nilin.opex.api.core.inout.OrderType.asMatchingOrderType(): OrderType {
         else -> OrderType.LIMIT_ORDER
     }
 }
+
+fun <T, R : Enum<T>> R.equalsAny(vararg equals: R): Boolean {
+    for (e in equals)
+        if (this == e)
+            return true
+    return false
+}
