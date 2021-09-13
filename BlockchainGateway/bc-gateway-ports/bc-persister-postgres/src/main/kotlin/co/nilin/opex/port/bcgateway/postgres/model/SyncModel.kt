@@ -5,13 +5,13 @@ import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import java.time.LocalDateTime
 
-@Table("chain_sync_schedule")
+@Table("chain_sync_schedules")
 data class SyncScheduleModel(
     @Id @Column("chain") val chain: String, @Column("retry_time") val retryTime: LocalDateTime, val delay: Long
 )
 
-@Table("chain_sync_record")
-data class SyncRecord(
+@Table("chain_sync_records")
+data class SyncRecordModel(
     @Id @Column("chain") val chain: String,
     val time: LocalDateTime,
     @Column("endpoint_url") val endpointUrl: String,
