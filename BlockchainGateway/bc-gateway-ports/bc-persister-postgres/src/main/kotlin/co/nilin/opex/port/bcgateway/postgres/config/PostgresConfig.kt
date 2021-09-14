@@ -66,7 +66,7 @@ class PostgresConfig(db: DatabaseClient) {
                     error VARCHAR(100)
                 );
                 CREATE TABLE IF NOT EXISTS wallet_sync_schedules (
-                    id SERIAL PRIMARY KEY,
+                    id INTEGER PRIMARY KEY DEFAULT(1) CHECK(id = 1),
                     retry_time TIMESTAMP NOT NULL,
                     delay INTEGER NOT NULL,
                     batch_size INTEGER
