@@ -15,6 +15,7 @@ class CorsConfig : WebFluxConfigurer {
         registry.addMapping("/**")
             .allowedOrigins(*hosts)
             .allowedHeaders("*")
+            .allowedMethods("*")
     }
 
 }

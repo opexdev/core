@@ -6,13 +6,7 @@ import co.nilin.opex.api.core.spi.SymbolMapper
 import co.nilin.opex.api.core.spi.UserQueryHandler
 import co.nilin.opex.api.core.spi.WalletProxy
 import co.nilin.opex.port.api.binance.data.AccountInfoResponse
-import co.nilin.opex.port.api.binance.util.BalanceParser
-import co.nilin.opex.port.api.binance.util.LoggerDelegate
-import co.nilin.opex.port.api.binance.util.asMatchConstraint
-import co.nilin.opex.port.api.binance.util.asMatchingOrderType
-import co.nilin.opex.port.api.binance.util.asOrderDirection
-import co.nilin.opex.port.api.binance.util.jwtAuthentication
-import co.nilin.opex.port.api.binance.util.tokenValue
+import co.nilin.opex.port.api.binance.util.*
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -58,6 +52,23 @@ class AccountController(
         val type: OrderType?,
         val side: OrderSide?,
         val fills: List<FillsData>?
+    )
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    data class CancelOrderResponse(
+        val symbol: String,
+        val origClientOrderId: String?,
+        val orderId: Long?,
+        val orderListId: Long, //Unless OCO, value will be -1
+        val clientOrderId: String?,
+        val price: BigDecimal?,
+        val origQty: BigDecimal?,
+        val executedQty: BigDecimal?,
+        val cummulativeQuoteQty: BigDecimal?,
+        val status: OrderStatus?,
+        val timeInForce: TimeInForce?,
+        val type: OrderType?,
+        val side: OrderSide?
     )
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -160,8 +171,8 @@ class AccountController(
         timestamp: Long,
         @CurrentSecurityContext securityContext: SecurityContext
     ): NewOrderResponse {
+        val internalSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
 
-        val internalSymbol = symbolMapper.unmap(symbol)!!
         val request = MEGatewayProxy.CreateOrderRequest(
             securityContext.jwtAuthentication().name,
             internalSymbol,
@@ -189,6 +200,63 @@ class AccountController(
             null,
             null
         )
+    }
+
+    @DeleteMapping(
+        "/v3/order",
+        consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
+    suspend fun cancelOrder(
+        principal: Principal,
+        @RequestParam(name = "symbol")
+        symbol: String,
+        @RequestParam(name = "orderId", required = false)
+        orderId: Long?, //Either orderId or origClientOrderId must be sent.
+        @RequestParam(name = "origClientOrderId", required = false)
+        origClientOrderId: String?,
+        @RequestParam(name = "newClientOrderId", required = false)
+        newClientOrderId: String?,
+        @ApiParam(value = "The value cannot be greater than 60000")
+        @RequestParam(name = "recvWindow", required = false)
+        recvWindow: Long?, //The value cannot be greater than 60000
+        @RequestParam(name = "timestamp")
+        timestamp: Long,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): CancelOrderResponse {
+        val localSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+        if (orderId == null && origClientOrderId == null)
+            throw OpexException(OpexError.BadRequest, message = "'orderId' or 'origClientOrderId' must be sent")
+
+        val order = queryHandler.queryOrder(principal, QueryOrderRequest(localSymbol, orderId, origClientOrderId))
+            ?: throw OpexException(OpexError.OrderNotFound)
+
+        val response = CancelOrderResponse(
+            symbol,
+            origClientOrderId,
+            orderId,
+            -1,
+            null,
+            order.price,
+            order.origQty,
+            order.executedQty,
+            order.cummulativeQuoteQty,
+            OrderStatus.CANCELED,
+            order.timeInForce,
+            order.type,
+            order.side
+        )
+
+        if (order.status == OrderStatus.CANCELED)
+            return response
+
+        if (order.status.equalsAny(OrderStatus.REJECTED, OrderStatus.EXPIRED, OrderStatus.FILLED))
+            throw OpexException(OpexError.CancelOrderNotAllowed)
+
+
+        val request = CancelOrderRequest(order.ouid, principal.name, order.orderId, localSymbol)
+        matchingGatewayProxy.cancelOrder(request, securityContext.jwtAuthentication().tokenValue())
+        return response
     }
 
     /*
@@ -226,11 +294,13 @@ class AccountController(
         @RequestParam(name = "timestamp")
         timestamp: Long
     ): QueryOrderResponse {
-        val internalSymbol = symbolMapper.unmap(symbol)!!
+        val internalSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+
         val response = queryHandler.queryOrder(principal, QueryOrderRequest(internalSymbol, orderId, origClientOrderId))
             ?: throw OpexException(OpexError.OrderNotFound)
+
         return QueryOrderResponse(
-            symbolMapper.map(response.symbol)!!,
+            symbol,
             response.orderId,
             response.orderListId,
             response.clientOrderId,
@@ -284,11 +354,12 @@ class AccountController(
         @RequestParam(name = "timestamp")
         timestamp: Long
     ): Flow<QueryOrderResponse> {
-        val internalSymbol = symbolMapper.unmap(symbol)
+        val internalSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+
         return queryHandler.openOrders(principal, internalSymbol)
             .map { response ->
                 QueryOrderResponse(
-                    symbolMapper.map(response.symbol)!!,
+                    symbol ?: "",
                     response.orderId,
                     response.orderListId,
                     response.clientOrderId,
@@ -347,11 +418,12 @@ class AccountController(
         @RequestParam(name = "timestamp")
         timestamp: Long
     ): Flow<QueryOrderResponse> {
-        val internalSymbol = symbolMapper.unmap(symbol)
+        val internalSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+
         return queryHandler.allOrders(principal, AllOrderRequest(internalSymbol, startTime, endTime, limit))
             .map { response ->
                 QueryOrderResponse(
-                    symbolMapper.map(response.symbol)!!,
+                    symbol ?: "",
                     response.orderId,
                     response.orderListId,
                     response.clientOrderId,
@@ -414,14 +486,24 @@ class AccountController(
         @RequestParam(name = "timestamp")
         timestamp: Long
     ): Flow<TradeResponse> {
-        val internalSymbol = symbolMapper.unmap(symbol)
+        val internalSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+
         return queryHandler.allTrades(principal, TradeRequest(internalSymbol, fromId, startTime, endTime, limit))
             .map { response ->
                 TradeResponse(
-                    symbolMapper.map(response.symbol)!!, response.id,
-                    response.orderId, -1, response.price, response.qty, response.quoteQty,
-                    response.commission, response.commissionAsset, response.time, response.isBuyer,
-                    response.isMaker, response.isBestMatch
+                    symbol ?: "",
+                    response.id,
+                    response.orderId,
+                    -1,
+                    response.price,
+                    response.qty,
+                    response.quoteQty,
+                    response.commission,
+                    response.commissionAsset,
+                    response.time,
+                    response.isBuyer,
+                    response.isMaker,
+                    response.isBestMatch
                 )
             }
     }

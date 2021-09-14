@@ -1,5 +1,6 @@
 package co.nilin.opex.port.api.binance.proxy
 
+import co.nilin.opex.api.core.inout.CancelOrderRequest
 import co.nilin.opex.api.core.inout.OrderSubmitResult
 import co.nilin.opex.api.core.spi.MEGatewayProxy
 import co.nilin.opex.port.api.binance.util.LoggerDelegate
@@ -32,6 +33,20 @@ class MEGatewayProxyImpl(private val client: WebClient) : MEGatewayProxy {
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer $token")
             .body(Mono.just(order))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono(typeRef<OrderSubmitResult>())
+            .awaitSingleOrNull()
+    }
+
+    override suspend fun cancelOrder(request: CancelOrderRequest, token: String?): OrderSubmitResult? {
+        logger.info("calling matching-gateway order cancel")
+        return client.post()
+            .uri(URI.create("$baseUrl/order/cancel"))
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer $token")
+            .body(Mono.just(request))
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono(typeRef<OrderSubmitResult>())

@@ -22,7 +22,7 @@ class WalletSyncRecordHandlerImpl(
     override suspend fun saveReadyToSyncTransfers(chainName: String, deposits: List<Deposit>) {
         val depositsDao = deposits.map {
             DepositModel(
-                it.id,
+                null,
                 null,
                 it.depositor,
                 it.depositorMemo,

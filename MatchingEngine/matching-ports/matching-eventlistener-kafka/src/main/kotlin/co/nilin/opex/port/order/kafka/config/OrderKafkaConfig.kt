@@ -1,5 +1,7 @@
 package co.nilin.opex.port.order.kafka.config
 
+import co.nilin.opex.matching.core.eventh.events.CoreEvent
+import co.nilin.opex.port.order.kafka.consumer.EventKafkaListener
 import co.nilin.opex.port.order.kafka.consumer.OrderKafkaListener
 import co.nilin.opex.port.order.kafka.inout.OrderSubmitRequest
 import org.apache.kafka.clients.admin.NewTopic
@@ -21,14 +23,17 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory
 import org.springframework.kafka.core.KafkaAdmin
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.core.ProducerFactory
+import org.springframework.kafka.listener.ConcurrentMessageListenerContainer
 import org.springframework.kafka.listener.ContainerProperties
 import org.springframework.kafka.listener.KafkaMessageListenerContainer
 import org.springframework.kafka.support.serializer.JsonDeserializer
 import org.springframework.kafka.support.serializer.JsonSerializer
 import java.util.*
+import java.util.regex.Pattern
 
 @Configuration
-class OrderKafkaConfig() {
+class OrderKafkaConfig {
+
     @Value("\${spring.kafka.bootstrap-servers}")
     private lateinit var bootstrapServers: String
 
@@ -42,11 +47,11 @@ class OrderKafkaConfig() {
     private val applicationContext: GenericApplicationContext? = null
 
     @Autowired
-    fun createTopics(){
+    fun createTopics() {
         symbols!!.split(",").map { s -> "orders_$s" }
-                .map { topic ->
-                    applicationContext?.registerBean("topic_${topic}", NewTopic::class.java, topic, 1 ,1)
-                }
+            .map { topic ->
+                applicationContext?.registerBean("topic_${topic}", NewTopic::class.java, topic, 1, 1)
+            }
     }
 
     @Bean("orderProducerConfigs")
@@ -84,14 +89,34 @@ class OrderKafkaConfig() {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
 
+    @Bean("eventConsumerFactory")
+    fun eventConsumerFactory(@Qualifier("orderConsumerConfigs") consumerConfigs: Map<String, Any>): ConsumerFactory<String, CoreEvent> {
+        return DefaultKafkaConsumerFactory(consumerConfigs)
+    }
 
     @Autowired
-    fun configureListener(orderKafkaListener: OrderKafkaListener, @Qualifier("orderConsumerFactory") consumerFactory: ConsumerFactory<String, OrderSubmitRequest>, kafkaAdmin: KafkaAdmin) {
+    fun configureListener(
+        orderKafkaListener: OrderKafkaListener,
+        @Qualifier("orderConsumerFactory") consumerFactory: ConsumerFactory<String, OrderSubmitRequest>,
+        kafkaAdmin: KafkaAdmin
+    ) {
         val topics = symbols!!.split(",").map { s -> "orders_$s" }.toTypedArray()
         val containerProps = ContainerProperties(*topics)
         containerProps.messageListener = orderKafkaListener
         val container = KafkaMessageListenerContainer(consumerFactory, containerProps)
-        container.setBeanName("OrderKafkaListenerContainer")
+        container.beanName = "OrderKafkaListenerContainer"
+        container.start()
+    }
+
+    @Autowired
+    fun configureEventListener(
+        eventListener: EventKafkaListener,
+        @Qualifier("eventConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>
+    ) {
+        val containerProps = ContainerProperties(Pattern.compile("events_.*"))
+        containerProps.messageListener = eventListener
+        val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
+        container.beanName = "EventKafkaListenerContainer"
         container.start()
     }
 
