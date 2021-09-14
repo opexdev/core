@@ -9,6 +9,6 @@ import java.time.LocalDateTime
 
 @Repository
 interface WalletSyncScheduleRepository : ReactiveCrudRepository<WalletSyncScheduleModel, Long> {
-    @Query("select * from wallet_sync_schedules where retryTime <= :time")
+    @Query("select * from wallet_sync_schedules where retry_time <= :time")
     fun findActiveSchedule(time: LocalDateTime): Mono<WalletSyncScheduleModel>
 }
