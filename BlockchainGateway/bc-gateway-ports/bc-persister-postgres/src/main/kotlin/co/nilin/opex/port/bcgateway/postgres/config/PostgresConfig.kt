@@ -79,8 +79,18 @@ class PostgresConfig(db: DatabaseClient) {
                     withdraw_fee NUMERIC NOT NULL,
                     withdraw_min NUMERIC NOT NULL
                 );
-                CREATE TABLE IF NOT EXISTS deposits (
+                CREATE TABLE IF NOT EXISTS chain_sync_deposits (
                     id SERIAL PRIMARY KEY,
+                    chain VARCHAR(72),
+                    token BOOLEAN NOT NULL,
+                    token_address VARCHAR(72),
+                    amount NUMERIC NOT NULL,
+                    depositor VARCHAR(72) NOT NULL,
+                    depositorMemo VARCHAR(72)
+                );
+                CREATE TABLE IF NOT EXISTS wallet_sync_deposits (
+                    id SERIAL PRIMARY KEY,
+                    wallet_sync_record INTEGER NOT NULL,
                     chain VARCHAR(72),
                     token BOOLEAN NOT NULL,
                     token_address VARCHAR(72),
@@ -93,6 +103,15 @@ class PostgresConfig(db: DatabaseClient) {
                     retry_time TIMESTAMP NOT NULL,
                     delay INTEGER NOT NULL,
                     batch_size INTEGER
+                );
+                CREATE TABLE IF NOT EXISTS wallet_sync_records (
+                    id SERIAL PRIMARY KEY,
+                    chain VARCHAR(72),
+                    time TIMESTAMP NOT NULL,
+                    endpoint_url VARCHAR(72) NOT NULL,
+                    latest_block INTEGER,
+                    success BOOLEAN NOT NULL,
+                    error VARCHAR(100)
                 );
             """
         }

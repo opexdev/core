@@ -2,20 +2,20 @@ package co.nilin.opex.port.bcgateway.postgres.impl
 
 import co.nilin.opex.bcgateway.core.model.Deposit
 import co.nilin.opex.bcgateway.core.spi.WalletSyncRecordHandler
-import co.nilin.opex.port.bcgateway.postgres.dao.DepositRepository
-import co.nilin.opex.port.bcgateway.postgres.model.DepositModel
+import co.nilin.opex.port.bcgateway.postgres.dao.ChainSyncDepositRepository
+import co.nilin.opex.port.bcgateway.postgres.model.ChainSyncDepositModel
 import kotlinx.coroutines.reactive.awaitFirst
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
 @Component
 class WalletSyncRecordHandlerImpl(
-    private val depositRepository: DepositRepository
+    private val chainSyncDepositRepository: ChainSyncDepositRepository
 ) : WalletSyncRecordHandler {
     @Transactional
     override suspend fun saveReadyToSyncTransfers(chainName: String, deposits: List<Deposit>) {
         val depositsDao = deposits.map {
-            DepositModel(
+            ChainSyncDepositModel(
                 null,
                 it.depositor,
                 it.depositorMemo,
@@ -25,7 +25,7 @@ class WalletSyncRecordHandlerImpl(
                 it.tokenAddress
             )
         }
-        depositRepository.saveAll(depositsDao).awaitFirst()
+        chainSyncDepositRepository.saveAll(depositsDao).awaitFirst()
     }
 
     override suspend fun findReadyToSyncTransfers(count: Long?): List<Deposit> {

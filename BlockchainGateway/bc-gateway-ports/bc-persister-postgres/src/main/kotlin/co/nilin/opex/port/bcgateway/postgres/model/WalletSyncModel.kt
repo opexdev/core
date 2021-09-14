@@ -1,10 +1,22 @@
 package co.nilin.opex.port.bcgateway.postgres.model
 
 import org.springframework.data.annotation.Id
+import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import java.time.LocalDateTime
 
 @Table("wallet_sync_schedules")
 data class WalletSyncScheduleModel(
     @Id val id: Long?, val retryTime: LocalDateTime, val delay: Long, val batchSize: Long?
+)
+
+@Table("wallet_sync_records")
+data class WalletSyncRecordModel(
+    @Id val id: Long?,
+    val chain: String,
+    val time: LocalDateTime,
+    val endpointUrl: String,
+    val latestBlock: Long?,
+    val success: Boolean,
+    val error: String?
 )
