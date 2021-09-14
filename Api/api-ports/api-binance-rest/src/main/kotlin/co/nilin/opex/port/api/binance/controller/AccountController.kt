@@ -171,8 +171,8 @@ class AccountController(
         timestamp: Long,
         @CurrentSecurityContext securityContext: SecurityContext
     ): NewOrderResponse {
+        val internalSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
 
-        val internalSymbol = symbolMapper.unmap(symbol)!!
         val request = MEGatewayProxy.CreateOrderRequest(
             securityContext.jwtAuthentication().name,
             internalSymbol,
@@ -294,11 +294,13 @@ class AccountController(
         @RequestParam(name = "timestamp")
         timestamp: Long
     ): QueryOrderResponse {
-        val internalSymbol = symbolMapper.unmap(symbol)!!
+        val internalSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+
         val response = queryHandler.queryOrder(principal, QueryOrderRequest(internalSymbol, orderId, origClientOrderId))
             ?: throw OpexException(OpexError.OrderNotFound)
+
         return QueryOrderResponse(
-            symbolMapper.map(response.symbol)!!,
+            symbol,
             response.orderId,
             response.orderListId,
             response.clientOrderId,
@@ -352,11 +354,12 @@ class AccountController(
         @RequestParam(name = "timestamp")
         timestamp: Long
     ): Flow<QueryOrderResponse> {
-        val internalSymbol = symbolMapper.unmap(symbol)
+        val internalSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+
         return queryHandler.openOrders(principal, internalSymbol)
             .map { response ->
                 QueryOrderResponse(
-                    symbolMapper.map(response.symbol)!!,
+                    symbol ?: "",
                     response.orderId,
                     response.orderListId,
                     response.clientOrderId,
@@ -415,11 +418,12 @@ class AccountController(
         @RequestParam(name = "timestamp")
         timestamp: Long
     ): Flow<QueryOrderResponse> {
-        val internalSymbol = symbolMapper.unmap(symbol)
+        val internalSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+
         return queryHandler.allOrders(principal, AllOrderRequest(internalSymbol, startTime, endTime, limit))
             .map { response ->
                 QueryOrderResponse(
-                    symbolMapper.map(response.symbol)!!,
+                    symbol ?: "",
                     response.orderId,
                     response.orderListId,
                     response.clientOrderId,
@@ -482,14 +486,24 @@ class AccountController(
         @RequestParam(name = "timestamp")
         timestamp: Long
     ): Flow<TradeResponse> {
-        val internalSymbol = symbolMapper.unmap(symbol)
+        val internalSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+
         return queryHandler.allTrades(principal, TradeRequest(internalSymbol, fromId, startTime, endTime, limit))
             .map { response ->
                 TradeResponse(
-                    symbolMapper.map(response.symbol)!!, response.id,
-                    response.orderId, -1, response.price, response.qty, response.quoteQty,
-                    response.commission, response.commissionAsset, response.time, response.isBuyer,
-                    response.isMaker, response.isBestMatch
+                    symbol ?: "",
+                    response.id,
+                    response.orderId,
+                    -1,
+                    response.price,
+                    response.qty,
+                    response.quoteQty,
+                    response.commission,
+                    response.commissionAsset,
+                    response.time,
+                    response.isBuyer,
+                    response.isMaker,
+                    response.isBestMatch
                 )
             }
     }
