@@ -1,6 +1,5 @@
 package co.nilin.opex.bcgateway.core.model
 
-import java.math.BigDecimal
 import java.time.LocalDateTime
 
 data class Endpoint(val url: String)
@@ -15,4 +14,3 @@ data class ChainSyncRecord(
     val error: String?,
     val records: List<Deposit>
 )
-
