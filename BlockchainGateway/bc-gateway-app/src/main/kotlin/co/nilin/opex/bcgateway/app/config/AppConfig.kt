@@ -28,17 +28,17 @@ class AppConfig {
 
     @Bean
     fun chainSyncService(
-        syncSchedulerHandler: SyncSchedulerHandler,
+        chainSyncSchedulerHandler: ChainSyncSchedulerHandler,
         chainEndpointProxyFinder: ChainEndpointProxyFinder,
-        syncRecordHandler: SyncRecordHandler,
+        chainSyncRecordHandler: ChainSyncRecordHandler,
         walletSyncRecordHandler: WalletSyncRecordHandler,
         currencyLoader: CurrencyLoader,
         operator: TransactionalOperator
     ): ChainSyncService {
        return ChainSyncServiceImpl(
-           syncSchedulerHandler,
+           chainSyncSchedulerHandler,
            chainEndpointProxyFinder,
-           syncRecordHandler,
+           chainSyncRecordHandler,
            walletSyncRecordHandler,
            currencyLoader,
            operator,

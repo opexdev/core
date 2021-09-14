@@ -1,13 +1,8 @@
 package co.nilin.opex.port.bcgateway.postgres.dao
 
-import co.nilin.opex.port.bcgateway.postgres.model.AssignedAddressChainModel
-import co.nilin.opex.port.bcgateway.postgres.model.ChainModel
-import co.nilin.opex.port.bcgateway.postgres.model.SyncScheduleModel
-import kotlinx.coroutines.flow.Flow
-import org.springframework.data.r2dbc.repository.Query
-import org.springframework.data.repository.query.Param
+import co.nilin.opex.port.bcgateway.postgres.model.ChainSyncScheduleModel
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface ChainSyncScheduleRepository : ReactiveCrudRepository<SyncScheduleModel, String>
+interface ChainSyncScheduleRepository : ReactiveCrudRepository<ChainSyncScheduleModel, String>
