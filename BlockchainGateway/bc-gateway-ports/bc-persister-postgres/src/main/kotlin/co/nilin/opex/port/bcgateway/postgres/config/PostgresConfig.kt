@@ -54,14 +54,14 @@ class PostgresConfig(db: DatabaseClient) {
                 );
                 CREATE TABLE IF NOT EXISTS chain_sync_schedules (
                     chain VARCHAR(72) PRIMARY KEY,
-                    retry_time TIMESTAMP,
-                    delay NUMERIC
+                    retry_time TIMESTAMP NOT NULL,
+                    delay NUMERIC NOT NULL
                 );
                 CREATE TABLE IF NOT EXISTS chain_sync_records (
                     chain VARCHAR(72) PRIMARY KEY,
                     time TIMESTAMP NOT NULL,
                     endpoint_url VARCHAR(72) NOT NULL,
-                    latest_block INTEGER NOT NULL,
+                    latest_block INTEGER,
                     success BOOLEAN NOT NULL,
                     error VARCHAR(100)
                 );
@@ -78,6 +78,15 @@ class PostgresConfig(db: DatabaseClient) {
                     withdraw_enabled BOOLEAN NOT NULL,
                     withdraw_fee NUMERIC NOT NULL,
                     withdraw_min NUMERIC NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS deposits (
+                    id SERIAL PRIMARY KEY,
+                    chain VARCHAR(72),
+                    token BOOLEAN NOT NULL,
+                    token_address VARCHAR(72),
+                    amount NUMERIC NOT NULL,
+                    depositor VARCHAR(72) NOT NULL,
+                    depositorMemo VARCHAR(72)
                 );
             """
         }
