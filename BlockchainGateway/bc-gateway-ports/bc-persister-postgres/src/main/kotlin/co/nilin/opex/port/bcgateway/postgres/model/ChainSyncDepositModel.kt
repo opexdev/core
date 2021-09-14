@@ -11,7 +11,7 @@ data class ChainSyncDepositModel(
     val depositor: String,
     val depositorMemo: String?,
     val amount: BigDecimal,
-    val chain: String?,
+    val chain: String,
     val token: Boolean,
     val tokenAddress: String?
 )

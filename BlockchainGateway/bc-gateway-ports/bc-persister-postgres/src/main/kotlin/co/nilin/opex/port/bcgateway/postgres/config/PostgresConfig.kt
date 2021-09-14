@@ -81,7 +81,7 @@ class PostgresConfig(db: DatabaseClient) {
                 );
                 CREATE TABLE IF NOT EXISTS chain_sync_deposits (
                     id SERIAL PRIMARY KEY,
-                    chain VARCHAR(72),
+                    chain VARCHAR(72) NOT NULL,
                     token BOOLEAN NOT NULL,
                     token_address VARCHAR(72),
                     amount NUMERIC NOT NULL,
@@ -91,7 +91,7 @@ class PostgresConfig(db: DatabaseClient) {
                 CREATE TABLE IF NOT EXISTS wallet_sync_deposits (
                     id SERIAL PRIMARY KEY,
                     wallet_sync_record INTEGER NOT NULL,
-                    chain VARCHAR(72),
+                    chain VARCHAR(72) NOT NULL,
                     token BOOLEAN NOT NULL,
                     token_address VARCHAR(72),
                     amount NUMERIC NOT NULL,
@@ -106,7 +106,7 @@ class PostgresConfig(db: DatabaseClient) {
                 );
                 CREATE TABLE IF NOT EXISTS wallet_sync_records (
                     id SERIAL PRIMARY KEY,
-                    chain VARCHAR(72),
+                    chain VARCHAR(72) NOT NULL,
                     time TIMESTAMP NOT NULL,
                     endpoint_url VARCHAR(72) NOT NULL,
                     latest_block INTEGER,
