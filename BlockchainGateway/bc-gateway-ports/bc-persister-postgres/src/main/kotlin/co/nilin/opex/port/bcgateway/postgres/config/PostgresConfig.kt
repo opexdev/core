@@ -65,19 +65,17 @@ class PostgresConfig(db: DatabaseClient) {
                     success BOOLEAN NOT NULL,
                     error VARCHAR(100)
                 );
-                CREATE TABLE IF NOT EXISTS currency (
-                    symbol VARCHAR(72) PRIMARY KEY,
-                    name VARCHAR(72) NOT NULL
+                CREATE TABLE IF NOT EXISTS wallet_sync_schedules (
+                    id SERIAL PRIMARY KEY,
+                    retry_time TIMESTAMP NOT NULL,
+                    delay INTEGER NOT NULL,
+                    batch_size INTEGER
                 );
-                CREATE TABLE IF NOT EXISTS currency_implementations (
-                    symbol VARCHAR(72) PRIMARY KEY,
-                    chain VARCHAR(72) NOT NULL,
-                    token BOOLEAN NOT NULL,
-                    token_address VARCHAR(72),
-                    token_name VARCHAR(72),
-                    withdraw_enabled BOOLEAN NOT NULL,
-                    withdraw_fee NUMERIC NOT NULL,
-                    withdraw_min NUMERIC NOT NULL
+                CREATE TABLE IF NOT EXISTS wallet_sync_records (
+                    id SERIAL PRIMARY KEY,
+                    time TIMESTAMP NOT NULL,
+                    success BOOLEAN NOT NULL,
+                    error VARCHAR(100)
                 );
                 CREATE TABLE IF NOT EXISTS chain_sync_deposits (
                     id SERIAL PRIMARY KEY,
@@ -98,20 +96,19 @@ class PostgresConfig(db: DatabaseClient) {
                     depositor VARCHAR(72) NOT NULL,
                     depositorMemo VARCHAR(72)
                 );
-                CREATE TABLE IF NOT EXISTS wallet_sync_schedules (
-                    id SERIAL PRIMARY KEY,
-                    retry_time TIMESTAMP NOT NULL,
-                    delay INTEGER NOT NULL,
-                    batch_size INTEGER
+                CREATE TABLE IF NOT EXISTS currency (
+                    symbol VARCHAR(72) PRIMARY KEY,
+                    name VARCHAR(72) NOT NULL
                 );
-                CREATE TABLE IF NOT EXISTS wallet_sync_records (
-                    id SERIAL PRIMARY KEY,
+                CREATE TABLE IF NOT EXISTS currency_implementations (
+                    symbol VARCHAR(72) PRIMARY KEY,
                     chain VARCHAR(72) NOT NULL,
-                    time TIMESTAMP NOT NULL,
-                    endpoint_url VARCHAR(72) NOT NULL,
-                    latest_block INTEGER,
-                    success BOOLEAN NOT NULL,
-                    error VARCHAR(100)
+                    token BOOLEAN NOT NULL,
+                    token_address VARCHAR(72),
+                    token_name VARCHAR(72),
+                    withdraw_enabled BOOLEAN NOT NULL,
+                    withdraw_fee NUMERIC NOT NULL,
+                    withdraw_min NUMERIC NOT NULL
                 );
             """
         }

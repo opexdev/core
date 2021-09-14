@@ -13,10 +13,7 @@ data class WalletSyncScheduleModel(
 @Table("wallet_sync_records")
 data class WalletSyncRecordModel(
     @Id val id: Long?,
-    val chain: String,
     val time: LocalDateTime,
-    val endpointUrl: String,
-    val latestBlock: Long?,
     val success: Boolean,
     val error: String?
 )
