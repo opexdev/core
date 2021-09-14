@@ -77,16 +77,7 @@ class PostgresConfig(db: DatabaseClient) {
                     success BOOLEAN NOT NULL,
                     error VARCHAR(100)
                 );
-                CREATE TABLE IF NOT EXISTS chain_sync_deposits (
-                    id SERIAL PRIMARY KEY,
-                    chain VARCHAR(72) NOT NULL,
-                    token BOOLEAN NOT NULL,
-                    token_address VARCHAR(72),
-                    amount NUMERIC NOT NULL,
-                    depositor VARCHAR(72) NOT NULL,
-                    depositorMemo VARCHAR(72)
-                );
-                CREATE TABLE IF NOT EXISTS wallet_sync_deposits (
+                CREATE TABLE IF NOT EXISTS deposits (
                     id SERIAL PRIMARY KEY,
                     wallet_sync_record INTEGER NOT NULL,
                     chain VARCHAR(72) NOT NULL,
@@ -94,7 +85,7 @@ class PostgresConfig(db: DatabaseClient) {
                     token_address VARCHAR(72),
                     amount NUMERIC NOT NULL,
                     depositor VARCHAR(72) NOT NULL,
-                    depositorMemo VARCHAR(72)
+                    depositor_memo VARCHAR(72)
                 );
                 CREATE TABLE IF NOT EXISTS currency (
                     symbol VARCHAR(72) PRIMARY KEY,

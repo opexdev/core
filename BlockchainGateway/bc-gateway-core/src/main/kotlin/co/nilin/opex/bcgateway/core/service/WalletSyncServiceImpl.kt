@@ -1,6 +1,7 @@
 package co.nilin.opex.bcgateway.core.service
 
 import co.nilin.opex.bcgateway.core.api.WalletSyncService
+import co.nilin.opex.bcgateway.core.model.WalletSyncRecord
 import co.nilin.opex.bcgateway.core.spi.*
 import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import kotlinx.coroutines.async
@@ -27,8 +28,16 @@ class WalletSyncServiceImpl(
                     async(dispatcher) {
                         val uuid = assignedAddressHandler.findUuid(deposit.depositor, deposit.depositorMemo)
                         if (uuid != null) {
-                            val symbol = currencyLoader.findSymbol(deposit.chain!!, deposit.tokenAddress)
+                            val symbol = currencyLoader.findSymbol(deposit.chain, deposit.tokenAddress)
                             if (symbol != null) walletProxy.transfer(uuid, symbol, deposit.amount)
+                            walletSyncRecordHandler.saveWalletSyncRecord(
+                                WalletSyncRecord(
+                                    LocalDateTime.now(),
+                                    true,
+                                    null,
+                                    deposit
+                                )
+                            )
                         }
                     }
                 }

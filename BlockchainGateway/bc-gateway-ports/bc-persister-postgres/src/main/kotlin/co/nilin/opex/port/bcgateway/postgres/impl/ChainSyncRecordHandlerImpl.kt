@@ -5,8 +5,7 @@ import co.nilin.opex.bcgateway.core.model.Deposit
 import co.nilin.opex.bcgateway.core.model.Endpoint
 import co.nilin.opex.bcgateway.core.spi.ChainSyncRecordHandler
 import co.nilin.opex.port.bcgateway.postgres.dao.ChainSyncRecordRepository
-import co.nilin.opex.port.bcgateway.postgres.dao.ChainSyncDepositRepository
-import co.nilin.opex.port.bcgateway.postgres.model.ChainSyncDepositModel
+import co.nilin.opex.port.bcgateway.postgres.dao.DepositRepository
 import co.nilin.opex.port.bcgateway.postgres.model.ChainSyncRecordModel
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -18,13 +17,13 @@ import org.springframework.transaction.annotation.Transactional
 @Component
 class ChainSyncRecordHandlerImpl(
     private val chainSyncRecordRepository: ChainSyncRecordRepository,
-    private val chainSyncDepositRepository: ChainSyncDepositRepository
+    private val depositRepository: DepositRepository
 ) : ChainSyncRecordHandler {
     override suspend fun loadLastSuccessRecord(chainName: String): ChainSyncRecord? {
         val chainSyncRecordDao = chainSyncRecordRepository.findByChain(chainName).awaitSingleOrNull()
         return if (chainSyncRecordDao !== null) {
-            val deposits = chainSyncDepositRepository.findByChain(chainName).map {
-                Deposit(it.depositor, it.depositorMemo, it.amount, it.chain, it.token, it.tokenAddress)
+            val deposits = depositRepository.findByChainWhereNotSynced(chainName).map {
+                Deposit(it.id, it.depositor, it.depositorMemo, it.amount, it.chain, it.token, it.tokenAddress)
             }
             ChainSyncRecord(
                 chainSyncRecordDao.chain,
@@ -52,17 +51,5 @@ class ChainSyncRecordHandlerImpl(
                 syncRecord.error
             )
         chainSyncRecordRepository.save(chainSyncRecordDao).awaitFirst()
-        val depositsDao = syncRecord.records.map {
-            ChainSyncDepositModel(
-                null,
-                it.depositor,
-                it.depositorMemo,
-                it.amount,
-                it.chain,
-                it.token,
-                it.tokenAddress
-            )
-        }
-        chainSyncDepositRepository.saveAll(depositsDao).awaitFirst()
     }
 }
