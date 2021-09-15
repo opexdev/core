@@ -55,7 +55,7 @@ class PostgresConfig(db: DatabaseClient) {
                 CREATE TABLE IF NOT EXISTS chain_sync_schedules (
                     chain VARCHAR(72) PRIMARY KEY,
                     retry_time TIMESTAMP NOT NULL,
-                    delay NUMERIC NOT NULL
+                    delay INTEGER NOT NULL
                 );
                 CREATE TABLE IF NOT EXISTS chain_sync_records (
                     chain VARCHAR(72) PRIMARY KEY,
@@ -64,6 +64,28 @@ class PostgresConfig(db: DatabaseClient) {
                     latest_block INTEGER,
                     success BOOLEAN NOT NULL,
                     error VARCHAR(100)
+                );
+                CREATE TABLE IF NOT EXISTS wallet_sync_schedules (
+                    id INTEGER PRIMARY KEY DEFAULT(1) CHECK(id = 1),
+                    retry_time TIMESTAMP NOT NULL,
+                    delay INTEGER NOT NULL,
+                    batch_size INTEGER
+                );
+                CREATE TABLE IF NOT EXISTS wallet_sync_records (
+                    id SERIAL PRIMARY KEY,
+                    time TIMESTAMP NOT NULL,
+                    success BOOLEAN NOT NULL,
+                    error VARCHAR(100)
+                );
+                CREATE TABLE IF NOT EXISTS deposits (
+                    id SERIAL PRIMARY KEY,
+                    wallet_sync_record INTEGER NOT NULL,
+                    chain VARCHAR(72) NOT NULL,
+                    token BOOLEAN NOT NULL,
+                    token_address VARCHAR(72),
+                    amount NUMERIC NOT NULL,
+                    depositor VARCHAR(72) NOT NULL,
+                    depositor_memo VARCHAR(72)
                 );
                 CREATE TABLE IF NOT EXISTS currency (
                     symbol VARCHAR(72) PRIMARY KEY,
@@ -78,15 +100,6 @@ class PostgresConfig(db: DatabaseClient) {
                     withdraw_enabled BOOLEAN NOT NULL,
                     withdraw_fee NUMERIC NOT NULL,
                     withdraw_min NUMERIC NOT NULL
-                );
-                CREATE TABLE IF NOT EXISTS deposits (
-                    id SERIAL PRIMARY KEY,
-                    chain VARCHAR(72),
-                    token BOOLEAN NOT NULL,
-                    token_address VARCHAR(72),
-                    amount NUMERIC NOT NULL,
-                    depositor VARCHAR(72) NOT NULL,
-                    depositorMemo VARCHAR(72)
                 );
             """
         }

@@ -3,11 +3,10 @@ package co.nilin.opex.port.bcgateway.postgres.impl
 import co.nilin.opex.bcgateway.core.model.ChainSyncRecord
 import co.nilin.opex.bcgateway.core.model.Deposit
 import co.nilin.opex.bcgateway.core.model.Endpoint
-import co.nilin.opex.bcgateway.core.spi.SyncRecordHandler
+import co.nilin.opex.bcgateway.core.spi.ChainSyncRecordHandler
 import co.nilin.opex.port.bcgateway.postgres.dao.ChainSyncRecordRepository
 import co.nilin.opex.port.bcgateway.postgres.dao.DepositRepository
-import co.nilin.opex.port.bcgateway.postgres.model.DepositModel
-import co.nilin.opex.port.bcgateway.postgres.model.SyncRecordModel
+import co.nilin.opex.port.bcgateway.postgres.model.ChainSyncRecordModel
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
@@ -16,15 +15,15 @@ import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
 @Component
-class SyncRecordHandlerImpl(
+class ChainSyncRecordHandlerImpl(
     private val chainSyncRecordRepository: ChainSyncRecordRepository,
     private val depositRepository: DepositRepository
-) : SyncRecordHandler {
+) : ChainSyncRecordHandler {
     override suspend fun loadLastSuccessRecord(chainName: String): ChainSyncRecord? {
         val chainSyncRecordDao = chainSyncRecordRepository.findByChain(chainName).awaitSingleOrNull()
         return if (chainSyncRecordDao !== null) {
-            val deposits = depositRepository.findByChain(chainName).map {
-                Deposit(it.depositor, it.depositorMemo, it.amount, it.chain, it.token, it.tokenAddress)
+            val deposits = depositRepository.findByChainWhereNotSynced(chainName).map {
+                Deposit(it.id, it.depositor, it.depositorMemo, it.amount, it.chain, it.token, it.tokenAddress)
             }
             ChainSyncRecord(
                 chainSyncRecordDao.chain,
@@ -43,7 +42,7 @@ class SyncRecordHandlerImpl(
     @Transactional
     override suspend fun saveSyncRecord(syncRecord: ChainSyncRecord) {
         val chainSyncRecordDao =
-            SyncRecordModel(
+            ChainSyncRecordModel(
                 syncRecord.chainName,
                 syncRecord.time,
                 syncRecord.endpoint.url,
@@ -52,17 +51,5 @@ class SyncRecordHandlerImpl(
                 syncRecord.error
             )
         chainSyncRecordRepository.save(chainSyncRecordDao).awaitFirst()
-        val depositsDao = syncRecord.records.map {
-            DepositModel(
-                null,
-                it.depositor,
-                it.depositorMemo,
-                it.amount,
-                it.chain,
-                it.token,
-                it.tokenAddress
-            )
-        }
-        depositRepository.saveAll(depositsDao).awaitFirst()
     }
 }

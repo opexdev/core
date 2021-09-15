@@ -6,12 +6,12 @@ import org.springframework.data.relational.core.mapping.Table
 import java.time.LocalDateTime
 
 @Table("chain_sync_schedules")
-data class SyncScheduleModel(
+data class ChainSyncScheduleModel(
     @Id @Column("chain") val chain: String, @Column("retry_time") val retryTime: LocalDateTime, val delay: Long
 )
 
 @Table("chain_sync_records")
-data class SyncRecordModel(
+data class ChainSyncRecordModel(
     @Id @Column("chain") val chain: String,
     val time: LocalDateTime,
     @Column("endpoint_url") val endpointUrl: String,
@@ -19,5 +19,3 @@ data class SyncRecordModel(
     val success: Boolean,
     val error: String?
 )
-
-
