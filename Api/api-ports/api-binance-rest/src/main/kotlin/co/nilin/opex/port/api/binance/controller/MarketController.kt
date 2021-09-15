@@ -4,6 +4,7 @@ import co.nilin.opex.api.core.spi.MarketQueryHandler
 import co.nilin.opex.api.core.spi.SymbolMapper
 import co.nilin.opex.port.api.binance.data.OrderBookResponse
 import co.nilin.opex.api.core.inout.PriceChangeResponse
+import co.nilin.opex.api.core.inout.PriceTickerResponse
 import co.nilin.opex.port.api.binance.data.RecentTradeResponse
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
@@ -102,7 +103,7 @@ class MarketController(
             }
     }
 
-    @GetMapping("/v3/ticker/{duration}")
+    @GetMapping("/v3/ticker/{duration:24h|7d|1m}")
     suspend fun priceChange(
         @PathVariable("duration")
         duration: String,
@@ -132,6 +133,18 @@ class MarketController(
             marketQueryHandler.getTradeTickerData(startDate)
         else
             listOf(marketQueryHandler.getTradeTickerDataBySymbol(localSymbol!!, startDate))
+    }
+
+    // Weight
+    // 1 for a single symbol
+    // 2 when the symbol parameter is omitted
+    @GetMapping("/v3/ticker/price")
+    suspend fun priceTicker(@RequestParam("symbol", required = false) symbol: String?): List<PriceTickerResponse> {
+        val localSymbol = if (symbol == null)
+            null
+        else
+            symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+        return marketQueryHandler.lastPrice(localSymbol)
     }
 
 }

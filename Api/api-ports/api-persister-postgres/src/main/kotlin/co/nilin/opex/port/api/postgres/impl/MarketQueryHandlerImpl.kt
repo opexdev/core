@@ -2,6 +2,7 @@ package co.nilin.opex.port.api.postgres.impl
 
 import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.MarketQueryHandler
+import co.nilin.opex.api.core.spi.SymbolMapper
 import co.nilin.opex.matching.core.model.OrderDirection
 import co.nilin.opex.port.api.postgres.dao.OrderRepository
 import co.nilin.opex.port.api.postgres.dao.TradeRepository
@@ -14,16 +15,19 @@ import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.stereotype.Component
+import java.lang.Exception
 import java.time.LocalDateTime
-import java.math.BigDecimal
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.util.*
+import kotlin.math.max
+import kotlin.math.min
 
 @Component
 class MarketQueryHandlerImpl(
     private val orderRepository: OrderRepository,
     private val tradeRepository: TradeRepository,
+    private val symbolMapper: SymbolMapper,
 ) : MarketQueryHandler {
 
     override suspend fun getTradeTickerData(startFrom: LocalDateTime): List<PriceChangeResponse> {
@@ -93,6 +97,32 @@ class MarketQueryHandlerImpl(
                     isMakerBuyer
                 )
             }
+    }
+
+    override suspend fun lastPrice(symbol: String?): List<PriceTickerResponse> {
+        val list = if (symbol.isNullOrEmpty())
+            tradeRepository.findAllGroupBySymbol()
+        else
+            tradeRepository.findBySymbolGroupBySymbol(symbol)
+        return list.collectList()
+            .awaitFirstOrElse { emptyList() }
+            .map {
+                val makerOrder = orderRepository.findByOuid(it.makerOuid).awaitFirst()
+                val apiSymbol = try {
+                    symbolMapper.map(it.symbol)
+                } catch (e: Exception) {
+                    it.symbol
+                }
+                val isMakerBuyer = makerOrder.direction == OrderDirection.BID
+                PriceTickerResponse(
+                    apiSymbol,
+                    if (isMakerBuyer)
+                        min(it.takerPrice, it.makerPrice).toString()
+                    else
+                        max(it.takerPrice, it.makerPrice).toString()
+                )
+            }
+
     }
 
     private fun OrderModel.asQueryOrderResponse() = QueryOrderResponse(
