@@ -29,6 +29,7 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/v3/depth").permitAll()
             .pathMatchers("/v3/trades").permitAll()
             .pathMatchers("/v3/ticker/**").permitAll()
+            .pathMatchers("/v3/exchangeInfo").permitAll()
             .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .pathMatchers("/**").hasAuthority("SCOPE_trust")
             .anyExchange().authenticated()

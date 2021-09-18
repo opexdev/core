@@ -1,5 +1,6 @@
 package co.nilin.opex.app.controller
 
+import co.nilin.opex.accountant.core.model.PairConfig
 import co.nilin.opex.accountant.core.model.PairFeeConfig
 import co.nilin.opex.accountant.core.spi.FinancialActionLoader
 import co.nilin.opex.accountant.core.spi.PairConfigLoader
@@ -41,6 +42,11 @@ class AccountantController(
         @PathVariable("userLevel") level: String?
     ): PairFeeConfig {
         return pairConfigLoader.load(pair, direction, level ?: "")
+    }
+
+    @GetMapping("/config/all")
+    suspend fun fetchPairConfigs():List<PairConfig>{
+        return pairConfigLoader.loadPairConfigs()
     }
 
 }

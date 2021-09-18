@@ -18,4 +18,6 @@ interface MarketQueryHandler {
 
     suspend fun recentTrades(symbol: String, limit: Int): Flow<MarketTradeResponse>
 
+    suspend fun lastPrice(symbol: String?): List<PriceTickerResponse>
+
 }

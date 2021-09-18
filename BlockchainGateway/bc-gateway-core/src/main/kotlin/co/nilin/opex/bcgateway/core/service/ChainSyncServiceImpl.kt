@@ -10,9 +10,9 @@ import java.time.temporal.ChronoUnit
 import kotlin.coroutines.coroutineContext
 
 open class ChainSyncServiceImpl(
-    private val syncSchedulerHandler: SyncSchedulerHandler,
+    private val chainSyncSchedulerHandler: ChainSyncSchedulerHandler,
     private val chainEndpointProxyFinder: ChainEndpointProxyFinder,
-    private val syncRecordHandler: SyncRecordHandler,
+    private val chainSyncRecordHandler: ChainSyncRecordHandler,
     private val walletSyncRecordHandler: WalletSyncRecordHandler,
     private val currencyLoader: CurrencyLoader,
     private val operator: TransactionalOperator,
@@ -21,11 +21,11 @@ open class ChainSyncServiceImpl(
 
     override suspend fun startSyncWithChain() {
         withContext(coroutineContext) {
-            val schedules = syncSchedulerHandler.fetchActiveSchedules(currentTime())
+            val schedules = chainSyncSchedulerHandler.fetchActiveSchedules(currentTime())
             schedules.map { syncSchedule ->
                 async(dispatcher) {
                     val syncHandler = chainEndpointProxyFinder.findChainEndpointProxy(syncSchedule.chainName)
-                    val lastSync = syncRecordHandler.loadLastSuccessRecord(syncSchedule.chainName)
+                    val lastSync = chainSyncRecordHandler.loadLastSuccessRecord(syncSchedule.chainName)
                     val tokens = currencyLoader.findImplementationsWithTokenOnChain(syncSchedule.chainName)
                         .map { impl -> impl.tokenAddress!! }
                         .toList()
@@ -37,9 +37,9 @@ open class ChainSyncServiceImpl(
                         )
                     operator.executeAndAwait {
                         walletSyncRecordHandler.saveReadyToSyncTransfers(syncResult.chainName, syncResult.records)
-                        syncRecordHandler.saveSyncRecord(syncResult)
+                        chainSyncRecordHandler.saveSyncRecord(syncResult)
                         if (syncResult.success) {
-                            syncSchedulerHandler.prepareScheduleForNextTry(
+                            chainSyncSchedulerHandler.prepareScheduleForNextTry(
                                 syncSchedule,
                                 currentTime().plus(syncSchedule.delay, ChronoUnit.SECONDS)
                             )

@@ -19,11 +19,13 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
     fun findByOuid(@Param("ouid") ouid: String): Flow<TradeModel>
 
     @Query(
-        "select * from trades where :uuid in (taker_uuid, maker_uuid) " +
-                "and (:fromTrade is null or id > :fromTrade) " +
-                "and (:symbol is null or symbol = :symbol) " +
-                "and (:startTime is null or trade_date >= :startTime) " +
-                "and (:endTime is null or trade_date < :endTime)"
+        """
+        select * from trades where :uuid in (taker_uuid, maker_uuid) 
+            and (:fromTrade is null or id > :fromTrade) 
+            and (:symbol is null or symbol = :symbol) 
+            and (:startTime is null or trade_date >= :startTime) 
+            and (:endTime is null or trade_date < :endTime)
+        """
     )
     fun findByUuidAndSymbolAndTimeBetweenAndTradeIdGreaterThan(
         @Param("uuid")
@@ -98,4 +100,10 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         @Param("date")
         createDate: LocalDateTime,
     ): Mono<TradeTickerData>
+
+    @Query("select * from trades where create_date in (select max(create_date) from trades group by symbol) and symbol = :symbol")
+    fun findBySymbolGroupBySymbol(@Param("symbol") symbol: String): Flux<TradeModel>
+
+    @Query("select * from trades where create_date in (select max(create_date) from trades group by symbol)")
+    fun findAllGroupBySymbol(): Flux<TradeModel>
 }

@@ -131,13 +131,13 @@ open class OrderManagerImpl(
                 order.origPrice.multiply(
                     order.quantity.toBigDecimal().subtract(remainedQuantity)
                 ),
-                (status ?: if (remainedQuantity.compareTo(BigDecimal.ZERO) == 0) {
+                status?.code ?: if (remainedQuantity.compareTo(BigDecimal.ZERO) == 0) {
                     OrderStatus.FILLED.code
                 } else if (remainedQuantity.compareTo(order.quantity.toBigDecimal()) == 0) {
                     OrderStatus.NEW.code
                 } else {
                     OrderStatus.PARTIALLY_FILLED.code
-                }) as Int
+                }
             )
         )
     }

@@ -4,6 +4,10 @@ import co.nilin.opex.api.core.spi.MarketQueryHandler
 import co.nilin.opex.api.core.spi.SymbolMapper
 import co.nilin.opex.port.api.binance.data.OrderBookResponse
 import co.nilin.opex.api.core.inout.PriceChangeResponse
+import co.nilin.opex.api.core.inout.PriceTickerResponse
+import co.nilin.opex.api.core.spi.AccountantProxy
+import co.nilin.opex.port.api.binance.data.ExchangeInfoResponse
+import co.nilin.opex.port.api.binance.data.ExchangeInfoSymbol
 import co.nilin.opex.port.api.binance.data.RecentTradeResponse
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
@@ -25,6 +29,7 @@ import kotlin.collections.ArrayList
 
 @RestController
 class MarketController(
+    private val accountantProxy: AccountantProxy,
     private val marketQueryHandler: MarketQueryHandler,
     private val symbolMapper: SymbolMapper,
 ) {
@@ -102,7 +107,7 @@ class MarketController(
             }
     }
 
-    @GetMapping("/v3/ticker/{duration}")
+    @GetMapping("/v3/ticker/{duration:24h|7d|1m}")
     suspend fun priceChange(
         @PathVariable("duration")
         duration: String,
@@ -132,6 +137,40 @@ class MarketController(
             marketQueryHandler.getTradeTickerData(startDate)
         else
             listOf(marketQueryHandler.getTradeTickerDataBySymbol(localSymbol!!, startDate))
+    }
+
+    // Weight
+    // 1 for a single symbol
+    // 2 when the symbol parameter is omitted
+    @GetMapping("/v3/ticker/price")
+    suspend fun priceTicker(@RequestParam("symbol", required = false) symbol: String?): List<PriceTickerResponse> {
+        val localSymbol = if (symbol == null)
+            null
+        else
+            symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+        return marketQueryHandler.lastPrice(localSymbol)
+    }
+
+    @GetMapping("/v3/exchangeInfo")
+    suspend fun pairInfo(
+        @RequestParam("symbol", required = false)
+        symbol: String?,
+        @RequestParam("symbols", required = false)
+        symbols: String?
+    ): ExchangeInfoResponse {
+        val symbolsMap = symbolMapper.getKeyValues()
+        val pairConfigs = accountantProxy.getPairConfigs()
+            .map {
+                ExchangeInfoSymbol(
+                    symbolsMap[it.pair] ?: it.pair,
+                    "TRADING",
+                    it.leftSideWalletSymbol.toUpperCase(),
+                    BigDecimal.valueOf(it.leftSideFraction).scale(),
+                    it.rightSideWalletSymbol.toUpperCase(),
+                    BigDecimal.valueOf(it.rightSideFraction).scale()
+                )
+            }
+        return ExchangeInfoResponse(symbols = pairConfigs)
     }
 
 }

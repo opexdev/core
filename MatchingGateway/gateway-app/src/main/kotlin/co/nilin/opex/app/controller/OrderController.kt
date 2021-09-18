@@ -1,5 +1,6 @@
 package co.nilin.opex.app.controller
 
+import co.nilin.opex.app.inout.CancelOrderRequest
 import co.nilin.opex.app.inout.CreateOrderRequest
 import co.nilin.opex.app.service.OrderService
 import co.nilin.opex.port.order.kafka.inout.OrderSubmitResult
@@ -31,5 +32,21 @@ class OrderController(val orderService: OrderService) {
     ): OrderSubmitResult {
         createOrderRequest.uuid = principal.name
         return orderService.submitNewOrder(createOrderRequest)
+    }
+
+    @PostMapping("/order/cancel")
+    @ApiResponse(
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = "{ }",
+                mediaType = "application/json"
+            )
+        )
+    )
+    suspend fun cancelOrder(principal: Principal, @RequestBody request: CancelOrderRequest): OrderSubmitResult {
+        request.uuid = principal.name
+        return orderService.cancelOrder(request)
     }
 }

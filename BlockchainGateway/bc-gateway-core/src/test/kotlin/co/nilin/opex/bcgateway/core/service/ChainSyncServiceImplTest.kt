@@ -6,8 +6,8 @@ import co.nilin.opex.bcgateway.core.model.Endpoint
 import co.nilin.opex.bcgateway.core.spi.ChainEndpointProxy
 import co.nilin.opex.bcgateway.core.spi.ChainEndpointProxyFinder
 import co.nilin.opex.bcgateway.core.spi.CurrencyLoader
-import co.nilin.opex.bcgateway.core.spi.SyncRecordHandler
-import co.nilin.opex.bcgateway.core.spi.SyncSchedulerHandler
+import co.nilin.opex.bcgateway.core.spi.ChainSyncRecordHandler
+import co.nilin.opex.bcgateway.core.spi.ChainSyncSchedulerHandler
 import co.nilin.opex.bcgateway.core.spi.WalletSyncRecordHandler
 import co.nilin.opex.bcgateway.test.OPERATOR
 import java.time.LocalDateTime
@@ -23,7 +23,6 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.verifyZeroInteractions
 
 internal class ChainSyncServiceImplTest {
@@ -34,13 +33,13 @@ internal class ChainSyncServiceImplTest {
     val syncService: ChainSyncServiceImpl
 
     @Mock
-    lateinit var syncSchedulerHandler: SyncSchedulerHandler
+    lateinit var chainSyncSchedulerHandler: ChainSyncSchedulerHandler
 
     @Mock
     lateinit var chainEndpointProxyFinder: ChainEndpointProxyFinder
 
     @Mock
-    lateinit var syncRecordHandler: SyncRecordHandler
+    lateinit var chainSyncRecordHandler: ChainSyncRecordHandler
 
     @Mock
     lateinit var walletSyncRecordHandler: WalletSyncRecordHandler
@@ -59,9 +58,9 @@ internal class ChainSyncServiceImplTest {
         }
 
         syncService = object : ChainSyncServiceImpl(
-            syncSchedulerHandler,
+            chainSyncSchedulerHandler,
             chainEndpointProxyFinder,
-            syncRecordHandler,
+            chainSyncRecordHandler,
             walletSyncRecordHandler,
             currencyLoader,
             OPERATOR,
@@ -75,7 +74,7 @@ internal class ChainSyncServiceImplTest {
     fun givenNoActiveSchedules_whenStartSync_thenNoOp() {
         runBlocking {
             //given
-            Mockito.`when`(syncSchedulerHandler.fetchActiveSchedules(any())).thenReturn(emptyList())
+            Mockito.`when`(chainSyncSchedulerHandler.fetchActiveSchedules(any())).thenReturn(emptyList())
 
             //when
             syncService.startSyncWithChain()
@@ -83,7 +82,7 @@ internal class ChainSyncServiceImplTest {
             //then
             verifyZeroInteractions(
                 chainEndpointProxyFinder,
-                syncRecordHandler,
+                chainSyncRecordHandler,
                 walletSyncRecordHandler,
                 currencyLoader
             )
@@ -96,7 +95,7 @@ internal class ChainSyncServiceImplTest {
             //given
             val delay = 100L
             val syncSchedule = ChainSyncSchedule(ethChain, time, delay)
-            Mockito.`when`(syncSchedulerHandler.fetchActiveSchedules(any()))
+            Mockito.`when`(chainSyncSchedulerHandler.fetchActiveSchedules(any()))
                 .thenReturn(listOf(syncSchedule))
             Mockito.`when`(endpointProxy.syncTransfers(any())).thenReturn(
                 ChainSyncRecord(
@@ -108,9 +107,9 @@ internal class ChainSyncServiceImplTest {
             syncService.startSyncWithChain()
 
             //then
-            verify(syncRecordHandler).saveSyncRecord(any())
+            verify(chainSyncRecordHandler).saveSyncRecord(any())
             verify(walletSyncRecordHandler).saveReadyToSyncTransfers(any(), any())
-            verify(syncSchedulerHandler).prepareScheduleForNextTry(syncSchedule, time.plus(delay, ChronoUnit.SECONDS))
+            verify(chainSyncSchedulerHandler).prepareScheduleForNextTry(syncSchedule, time.plus(delay, ChronoUnit.SECONDS))
         }
     }
 
@@ -120,7 +119,7 @@ internal class ChainSyncServiceImplTest {
             //given
             val delay = 100L
             val syncSchedule = ChainSyncSchedule(ethChain, time, delay)
-            Mockito.`when`(syncSchedulerHandler.fetchActiveSchedules(any()))
+            Mockito.`when`(chainSyncSchedulerHandler.fetchActiveSchedules(any()))
                 .thenReturn(listOf(syncSchedule))
             Mockito.`when`(endpointProxy.syncTransfers(any())).thenReturn(
                 ChainSyncRecord(
@@ -132,9 +131,9 @@ internal class ChainSyncServiceImplTest {
             syncService.startSyncWithChain()
 
             //then
-            verify(syncRecordHandler).saveSyncRecord(any())
+            verify(chainSyncRecordHandler).saveSyncRecord(any())
             verify(walletSyncRecordHandler).saveReadyToSyncTransfers(any(), any())
-            verify(syncSchedulerHandler, times(0)).prepareScheduleForNextTry(any(), any())
+            verify(chainSyncSchedulerHandler, times(0)).prepareScheduleForNextTry(any(), any())
         }
     }
 

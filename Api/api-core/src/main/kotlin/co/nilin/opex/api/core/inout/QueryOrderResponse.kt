@@ -5,6 +5,7 @@ import java.util.*
 
 data class QueryOrderResponse(
     val symbol: String,
+    val ouid: String,
     val orderId: Long,
     val orderListId: Long, //Unless part of an OCO, the value will always be -1.
     val clientOrderId: String,
