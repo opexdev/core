@@ -32,6 +32,8 @@ spring:
         prefer-ip-address: true
 
 app:
+  accountant:
+    url: lb://opex-accountant
   matching-gateway:
     url: lb://opex-gateway
   wallet:

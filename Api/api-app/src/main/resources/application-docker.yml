@@ -15,6 +15,8 @@ spring:
 app:
   cors:
     allowed-hosts: https://opex.dev, http://localhost:3000
+  accountant:
+    url: lb://opex-accountant
   matching-gateway:
     url: lb://opex-gateway
   wallet:

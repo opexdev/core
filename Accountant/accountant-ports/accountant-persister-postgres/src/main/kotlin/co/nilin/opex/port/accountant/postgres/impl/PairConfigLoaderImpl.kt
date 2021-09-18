@@ -18,6 +18,21 @@ class PairConfigLoaderImpl(
     val pairConfigRepository: PairConfigRepository, val pairFeeConfigRepository: PairFeeConfigRepository
 ) : PairConfigLoader {
 
+    override suspend fun loadPairConfigs(): List<PairConfig> {
+        return pairConfigRepository.findAll()
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+            .map {
+                PairConfig(
+                    it.pair,
+                    it.leftSideWalletSymbol,
+                    it.rightSideWalletSymbol,
+                    it.leftSideFraction,
+                    it.rightSideFraction
+                )
+            }
+    }
+
     override suspend fun load(pair: String, direction: OrderDirection, userLevel: String): PairFeeConfig {
         val pairConfig = pairConfigRepository
             .findById(pair).awaitFirstOrElse {

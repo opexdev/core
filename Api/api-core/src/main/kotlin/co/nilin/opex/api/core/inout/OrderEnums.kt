@@ -24,7 +24,11 @@ enum class OrderType {
     STOP_LOSS_LIMIT, // 	timeInForce, quantity, price, stopPrice
     TAKE_PROFIT, // 	quantity, stopPrice
     TAKE_PROFIT_LIMIT, // 	timeInForce, quantity, price, stopPrice
-    LIMIT_MAKER, // 	quantity, price
+    LIMIT_MAKER; // 	quantity, price
+
+    companion object {
+        fun activeTypes() = listOf(LIMIT, MARKET)
+    }
 }
 
 enum class OrderSide {
