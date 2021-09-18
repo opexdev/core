@@ -1,0 +1,13 @@
+server.port: 8092
+spring:
+  main:
+    allow-bean-definition-overriding: false
+  kafka:
+    bootstrap-servers: ${KAFKA_IP_PORT}
+    consumer:
+      group-id: engine
+  redis:
+    host: ${REDIS_HOST}
+    port: 6379
+  app:
+    symbols: btc_usdt,eth_usdt,eth_btc

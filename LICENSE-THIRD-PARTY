@@ -1,0 +1,6 @@
+The Opex source code itself does not bundle any third party libraries, but it
+depends on a number of libraries which carry their own copyright notices and
+license terms. These libraries are normally all linked static into the binary
+distributions of Opex:
+exchange-core/collection - https://github.com/exchange-core/collections/blob/master/LICENSE
+

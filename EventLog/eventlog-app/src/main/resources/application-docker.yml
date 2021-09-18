@@ -1,0 +1,11 @@
+server.port: 8090
+spring:
+  kafka:
+    bootstrap-servers: ${KAFKA_IP_PORT}
+    consumer:
+      group-id: eventlog
+  r2dbc:
+    url: r2dbc:postgresql://${DB_IP_PORT}/opex_eventlog
+    username: opex
+    password: hiopex
+    initialization-mode: always

@@ -1,0 +1,17 @@
+spring:
+  kafka:
+    bootstrap-servers: ${KAFKA_IP_PORT}
+  datasource:
+    url: jdbc:postgresql://${DB_IP_PORT}/opex_auth
+    username: opex
+    password: hiopex
+  cloud:
+    consul:
+      host: ${CONSUL_HOST}
+      port: 8500
+
+keycloak:
+  migration:
+    file: /opex-master-realm.json
+  adminUrl: https://api.opex.dev/auth
+  frontendUrl: https://api.opex.dev/auth

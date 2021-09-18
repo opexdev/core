@@ -1,0 +1,25 @@
+spring:
+  kafka:
+    bootstrap-servers: ${KAFKA_IP_PORT}
+  redis:
+    host: ${REDIS_HOST}
+  r2dbc:
+    url: r2dbc:postgresql://${DB_IP_PORT}/opex_api
+    username: opex
+    password: hiopex
+  cloud:
+    consul:
+      host: ${CONSUL_HOST}
+      port: 8500
+
+app:
+  cors:
+    allowed-hosts: https://opex.dev, http://localhost:3000
+  accountant:
+    url: lb://opex-accountant
+  matching-gateway:
+    url: lb://opex-gateway
+  wallet:
+    url: lb://opex-wallet
+  auth:
+    cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>co.nilin.opex</groupId>
+    <artifactId>api-root</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <name>api-root</name>
+    <packaging>pom</packaging>
+    <description>Api root of Opex</description>
+    <modules>
+        <module>api-core</module>
+        <module>api-app</module>
+        <module>api-ports/api-persister-postgres</module>
+        <module>api-ports/api-binance-rest</module>
+        <module>api-ports/api-eventlistener-kafka</module>
+    </modules>
+</project>
