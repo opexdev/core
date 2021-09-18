@@ -38,6 +38,10 @@ pipeline {
                     dir("Api") {
                         sh 'mvn -B  clean install'
                     }
+
+                    dir("BlockchainGateway") {
+                        sh 'mvn -B  clean install'
+                    }
                 }
 
             }
