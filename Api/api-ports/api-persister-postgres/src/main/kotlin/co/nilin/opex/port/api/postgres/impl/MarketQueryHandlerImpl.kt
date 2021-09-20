@@ -16,6 +16,7 @@ import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.stereotype.Component
 import java.lang.Exception
+import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -123,6 +124,49 @@ class MarketQueryHandlerImpl(
                 )
             }
 
+    }
+
+    override suspend fun getCandleInfo(
+        symbol: String,
+        interval: String,
+        startTime: Long?,
+        endTime: Long?,
+        limit: Int
+    ): List<CandleData> {
+        val st = if (startTime == null)
+            tradeRepository.findFirstByCreateDate().awaitFirstOrNull()?.createDate
+                ?: LocalDateTime.now()
+        else
+            with(Instant.ofEpochMilli(startTime)) {
+                LocalDateTime.ofInstant(this, ZoneId.systemDefault())
+            }
+
+        val et = if (endTime == null)
+            tradeRepository.findLastByCreateDate().awaitFirstOrNull()?.createDate
+                ?: LocalDateTime.now()
+        else
+            with(Instant.ofEpochMilli(endTime)) {
+                LocalDateTime.ofInstant(this, ZoneId.systemDefault())
+            }
+
+        return tradeRepository.candleData(symbol, interval, st, et, limit)
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+            .map {
+                CandleData(
+                    it.openTime,
+                    it.closeTime,
+                    it.open ?: 0.0,
+                    it.close ?: 0.0,
+                    it.high ?: 0.0,
+                    it.low ?: 0.0,
+                    it.volume ?: 0.0,
+                    0.0,
+                    it.trades,
+                    0.0,
+                    0.0
+                )
+            }
     }
 
     private fun OrderModel.asQueryOrderResponse() = QueryOrderResponse(

@@ -60,6 +60,18 @@ class PostgresConfig(db: DatabaseClient) {
             INSERT INTO symbol_maps(symbol, value) VALUES('btc_usdt', 'BTCUSDT') ON CONFLICT DO NOTHING; 
             INSERT INTO symbol_maps(symbol, value) VALUES('eth_usdt', 'ETHUSDT') ON CONFLICT DO NOTHING; 
             INSERT INTO symbol_maps(symbol, value) VALUES('eth_btc', 'ETHBTC') ON CONFLICT DO NOTHING; 
+            
+            create or replace function interval_generator(start_ts timestamp without TIME ZONE, end_ts timestamp without TIME ZONE, round_interval INTERVAL)
+                returns TABLE(start_time timestamp without TIME ZONE, end_time timestamp without TIME ZONE) as $$
+            BEGIN
+            return query
+                SELECT
+                    (n)       start_time,
+                    (n + round_interval) end_time
+                FROM generate_series(date_trunc('minute', start_ts), end_ts, round_interval) n;
+            END
+            $$
+                LANGUAGE 'plpgsql';
         """
         val initDb = db.sql { sql }
         initDb // initialize the database
