@@ -13,5 +13,6 @@
 		<module>bc-gateway-core</module>
 		<module>bc-gateway-app</module>
 		<module>bc-gateway-ports/bc-persister-postgres</module>
+		<module>bc-gateway-ports/bc-chain-proxy</module>
 	</modules>
 </project>
