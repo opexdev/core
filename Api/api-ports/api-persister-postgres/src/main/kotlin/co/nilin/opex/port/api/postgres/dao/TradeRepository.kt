@@ -1,5 +1,6 @@
 package co.nilin.opex.port.api.postgres.dao
 
+import co.nilin.opex.port.api.postgres.model.CandleInfoData
 import co.nilin.opex.port.api.postgres.model.TradeModel
 import co.nilin.opex.port.api.postgres.model.TradeTickerData
 import kotlinx.coroutines.flow.Flow
@@ -106,4 +107,44 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
 
     @Query("select * from trades where create_date in (select max(create_date) from trades group by symbol)")
     fun findAllGroupBySymbol(): Flux<TradeModel>
+
+    @Query(
+        """
+        with intervals as (select * from interval_generator((:startTime), (:endTime), :interval ::INTERVAL))
+        select 
+            f.start_time as open_time,
+            f.end_time as close_time, 
+            (select taker_price from trades tt where tt.create_date >= f.start_time and tt.create_date < f.end_time order by tt.create_date asc limit 1) as open,
+            max(t.taker_price) as high,
+            min(t.taker_price) as low,
+            (select taker_price from trades tt where tt.create_date >= f.start_time and tt.create_date < f.end_time order by tt.create_date desc limit 1) as close,
+            sum(t.matched_quantity) as volume,
+            count(id) as trades
+        from trades t
+        right join intervals f
+        on t.create_date >= f.start_time and t.create_date < f.end_time
+        where symbol = :symbol or symbol is null
+        group by f.start_time, f.end_time
+        order by f.end_time desc
+        limit :limit
+        """
+    )
+    suspend fun candleData(
+        @Param("symbol")
+        symbol: String,
+        @Param("interval")
+        interval: String,
+        @Param("startTime")
+        startTime: LocalDateTime,
+        @Param("endTime")
+        endTime: LocalDateTime,
+        @Param("limit")
+        limit: Int,
+    ): Flux<CandleInfoData>
+
+    @Query("select * from trades order by create_date desc limit 1")
+    suspend fun findLastByCreateDate(): Mono<TradeModel>
+
+    @Query("select * from trades order by create_date asc limit 1")
+    suspend fun findFirstByCreateDate(): Mono<TradeModel>
 }

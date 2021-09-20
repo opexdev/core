@@ -33,7 +33,8 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     InvalidLimitForOrderBook(7003, "Valid limits: [5, 10, 20, 50, 100, 500, 1000, 5000]", HttpStatus.BAD_REQUEST),
     InvalidLimitForRecentTrades(7004, "Valid limits: 1 min - 1000 max", HttpStatus.BAD_REQUEST),
     InvalidPriceChangeDuration(7005, "Valid durations: [24h, 7d, 1m]", HttpStatus.BAD_REQUEST),
-    CancelOrderNotAllowed(7006, "Canceling this order is not allowed", HttpStatus.FORBIDDEN);
+    CancelOrderNotAllowed(7006, "Canceling this order is not allowed", HttpStatus.FORBIDDEN),
+    InvalidInterval(7007, "Invalid interval", HttpStatus.BAD_REQUEST);
 
     companion object {
         fun findByCode(code: Int?): OpexError? {

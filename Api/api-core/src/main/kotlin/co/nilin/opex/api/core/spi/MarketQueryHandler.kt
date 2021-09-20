@@ -20,4 +20,12 @@ interface MarketQueryHandler {
 
     suspend fun lastPrice(symbol: String?): List<PriceTickerResponse>
 
+    suspend fun getCandleInfo(
+        symbol: String,
+        interval: String,
+        startTime: Long?,
+        endTime: Long?,
+        limit: Int
+    ): List<CandleData>
+
 }

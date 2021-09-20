@@ -2,13 +2,10 @@ package co.nilin.opex.port.api.binance.controller
 
 import co.nilin.opex.api.core.spi.MarketQueryHandler
 import co.nilin.opex.api.core.spi.SymbolMapper
-import co.nilin.opex.port.api.binance.data.OrderBookResponse
 import co.nilin.opex.api.core.inout.PriceChangeResponse
 import co.nilin.opex.api.core.inout.PriceTickerResponse
 import co.nilin.opex.api.core.spi.AccountantProxy
-import co.nilin.opex.port.api.binance.data.ExchangeInfoResponse
-import co.nilin.opex.port.api.binance.data.ExchangeInfoSymbol
-import co.nilin.opex.port.api.binance.data.RecentTradeResponse
+import co.nilin.opex.port.api.binance.data.*
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.utility.error.data.throwError
@@ -23,8 +20,6 @@ import java.security.Principal
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.util.*
-import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 
 @RestController
@@ -35,7 +30,7 @@ class MarketController(
 ) {
 
     private val orderBookValidLimits = arrayListOf(5, 10, 20, 50, 100, 500, 1000, 5000)
-    private val validDurations = arrayListOf("24h", "7d", "1m")
+    private val validDurations = arrayListOf("24h", "7d", "1M")
 
     // Limit - Weight
     // 5, 10, 20, 50, 100 - 1
@@ -107,7 +102,7 @@ class MarketController(
             }
     }
 
-    @GetMapping("/v3/ticker/{duration:24h|7d|1m}")
+    @GetMapping("/v3/ticker/{duration:24h|7d|1M}")
     suspend fun priceChange(
         @PathVariable("duration")
         duration: String,
@@ -122,16 +117,7 @@ class MarketController(
         if (!validDurations.contains(duration))
             throwError(OpexError.InvalidPriceChangeDuration)
 
-        val now = Date().time
-        val before = when (duration) {
-            "24h" -> Date(now - TimeUnit.DAYS.toMillis(1))
-            "7d" -> Date(now - TimeUnit.DAYS.toMillis(7))
-            "1m" -> Date(now - TimeUnit.DAYS.toMillis(31))
-            else -> Date(now - TimeUnit.DAYS.toMillis(1))
-        }
-
-        val instant = Instant.ofEpochMilli(before.time)
-        val startDate = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+        val startDate = Interval.findByLabel(duration)?.getLocalDateTime() ?: Interval.Day.getLocalDateTime()
 
         return if (symbol.isNullOrEmpty())
             marketQueryHandler.getTradeTickerData(startDate)
@@ -171,6 +157,50 @@ class MarketController(
                 )
             }
         return ExchangeInfoResponse(symbols = pairConfigs)
+    }
+
+    // Weight(IP): 1
+    @GetMapping("/v3/klines")
+    suspend fun klines(
+        @RequestParam("symbol")
+        symbol: String,
+        @RequestParam("interval")
+        interval: String,
+        @RequestParam("startTime", required = false)
+        startTime: Long?,
+        @RequestParam("endTime", required = false)
+        endTime: Long?,
+        @RequestParam("limit", required = false)
+        limit: Int? // Default 500; max 1000.
+    ): List<List<Any>> {
+        val validLimit = limit ?: 500
+        val localSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+        if (validLimit !in 1..1000)
+            throwError(OpexError.InvalidLimitForRecentTrades)
+
+        val i = Interval.findByLabel(interval) ?: throw OpexException(OpexError.InvalidInterval)
+
+        val list = ArrayList<ArrayList<Any>>()
+        marketQueryHandler.getCandleInfo(localSymbol, "${i.duration} ${i.unit}", startTime, endTime, validLimit)
+            .forEach {
+                list.add(
+                    arrayListOf(
+                        it.openTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+                        it.open.toString(),
+                        it.high.toString(),
+                        it.low.toString(),
+                        it.close.toString(),
+                        it.volume.toString(),
+                        it.closeTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+                        it.quoteAssetVolume.toString(),
+                        it.trades,
+                        it.takerBuyBaseAssetVolume.toString(),
+                        it.takerBuyQuoteAssetVolume.toString(),
+                        "0.0"
+                    )
+                )
+            }
+        return list
     }
 
 }
