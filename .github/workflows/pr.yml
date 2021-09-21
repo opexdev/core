@@ -1,0 +1,53 @@
+name: Build Opex pull request
+
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        java: [ 13 ]
+    name: Opex with java ${{ matrix.java }} build
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v2
+      - name: Setup Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-package: jdk
+          java-version: ${{ matrix.java }}
+          cache: maven
+      - name: Build Utility
+        working-directory: ./Utility
+        run: mvn -B clean install
+      - name: Build Engine
+        working-directory: ./MatchingEngine
+        run: mvn -B clean install
+      - name: Build Gateway
+        working-directory: ./MatchingGateway
+        run: mvn -B clean install
+      - name: Build EventLog
+        working-directory: ./EventLog
+        run: mvn -B clean install
+      - name: Build Accountant
+        working-directory: ./Accountant
+        run: mvn -B clean install
+      - name: Build Accountant
+        working-directory: ./Accountant
+        run: mvn -B clean install
+      - name: Build Wallet
+        working-directory: ./Wallet
+        run: mvn -B clean install
+      - name: Build UserManagement
+        working-directory: ./UserManagement
+        run: mvn -B clean install
+      - name: Build Api
+        working-directory: ./Api
+        run: mvn -B clean install
+      - name: Build BlockchainGateway
+        working-directory: ./BlockchainGateway
+        run: mvn -B clean install
