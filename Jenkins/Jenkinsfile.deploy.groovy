@@ -47,15 +47,15 @@ pipeline {
             }
         }
         stage('Deliver') {
-            steps {
-                dir("Deployment") {
-                    sh 'docker-compose build'
-                }
-
-                dir("Deployment") {
-                    sh 'docker-compose up -d'
-                }
-            }
+           environment {
+              DATA = '/var/opex/runtime'
+           }
+           steps {
+              dir("Deployment") {
+                sh 'docker-compose build'
+                sh 'docker-compose up -d'
+              }
+           }
         }
     }
 }
