@@ -4,6 +4,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
+                setBuildStatus("?", "PENDING");
                 withMaven(
                         maven: 'maven-latest'
                 ) {
@@ -58,4 +59,36 @@ pipeline {
            }
         }
     }
+    
+    post {
+        always {
+            echo 'One way or another, I have finished'
+            deleteDir() /* clean up our workspace */
+        }
+        success {
+            echo ':)'
+	        setBuildStatus(":)", "SUCCESS");
+        }
+        unstable {
+            echo ':/'
+	        setBuildStatus(":/", "UNSTABLE");
+        }
+        failure {
+            echo ':('
+	        setBuildStatus(":(", "FAILURE");
+        }
+        changed {
+            echo 'Things were different before...'
+        }
+    }
+}
+
+void setBuildStatus(String message, String state) {
+  step([
+      $class: "GitHubCommitStatusSetter",
+      reposSource: [$class: "ManuallyEnteredRepositorySource", url: "https://github.com/maryarm/test-jenkins"],
+      contextSource: [$class: "ManuallyEnteredCommitContextSource", context: "ci/jenkins/build-status"],
+      errorHandlers: [[$class: "ChangingBuildStatusErrorHandler", result: "UNSTABLE"]],
+      statusResultSource: [ $class: "ConditionalStatusResultSource", results: [[$class: "AnyBuildResult", message: message, state: state]] ]
+  ]);
 }
