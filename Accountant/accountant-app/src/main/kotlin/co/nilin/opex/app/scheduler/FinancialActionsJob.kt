@@ -3,10 +3,12 @@ package co.nilin.opex.app.scheduler
 import co.nilin.opex.accountant.core.api.FinancialActionJobManager
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
+import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
 @Service
+@Profile("scheduled")
 class FinancialActionsJob(
     val financialActionJobManager: FinancialActionJobManager
 ) {

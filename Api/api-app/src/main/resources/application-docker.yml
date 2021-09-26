@@ -11,6 +11,8 @@ spring:
     consul:
       host: ${CONSUL_HOST}
       port: 8500
+  main:
+    allow-bean-definition-overriding: true
 
 app:
   cors:

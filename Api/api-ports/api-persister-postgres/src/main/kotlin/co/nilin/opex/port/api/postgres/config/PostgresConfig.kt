@@ -57,9 +57,6 @@ class PostgresConfig(db: DatabaseClient) {
                 symbol VARCHAR(72) PRIMARY KEY,
                 value VARCHAR(72) UNIQUE NOT NULL
             );
-            INSERT INTO symbol_maps(symbol, value) VALUES('btc_usdt', 'BTCUSDT') ON CONFLICT DO NOTHING; 
-            INSERT INTO symbol_maps(symbol, value) VALUES('eth_usdt', 'ETHUSDT') ON CONFLICT DO NOTHING; 
-            INSERT INTO symbol_maps(symbol, value) VALUES('eth_btc', 'ETHBTC') ON CONFLICT DO NOTHING; 
             
             create or replace function interval_generator(start_ts timestamp without TIME ZONE, end_ts timestamp without TIME ZONE, round_interval INTERVAL)
                 returns TABLE(start_time timestamp without TIME ZONE, end_time timestamp without TIME ZONE) as $$
