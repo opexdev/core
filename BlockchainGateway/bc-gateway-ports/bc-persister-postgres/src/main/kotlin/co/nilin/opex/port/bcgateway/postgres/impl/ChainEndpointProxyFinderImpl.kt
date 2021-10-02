@@ -8,11 +8,13 @@ import co.nilin.opex.port.bcgateway.postgres.dao.ChainRepository
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import org.springframework.stereotype.Component
+import org.springframework.web.reactive.function.client.WebClient
 
 @Component
-class ChainEndpointProxyFinderImpl(private val chainRepository: ChainRepository) : ChainEndpointProxyFinder {
+class ChainEndpointProxyFinderImpl(private val chainRepository: ChainRepository, private val webClient: WebClient) :
+    ChainEndpointProxyFinder {
     override suspend fun findChainEndpointProxy(chainName: String): ChainEndpointProxy {
         val endpoints = chainRepository.findEndpointsByName(chainName).map { Endpoint(it.url) }.toList()
-        return ChainEndpointProxyImpl(endpoints)
+        return ChainEndpointProxyImpl(chainName, endpoints,webClient)
     }
 }
