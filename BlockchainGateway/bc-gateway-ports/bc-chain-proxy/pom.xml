@@ -51,6 +51,10 @@
             <artifactId>bc-gateway-core</artifactId>
             <version>${bc-gateway.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webflux</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
