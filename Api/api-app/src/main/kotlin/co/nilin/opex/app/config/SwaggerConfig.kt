@@ -20,7 +20,7 @@ import java.util.*
 @Configuration
 class SwaggerConfig {
     @Value("\${swagger.authUrl}")
-    val authUrl: String = ""
+    private lateinit var authUrl: String
 
     @Bean
     fun opexApi(): Docket {

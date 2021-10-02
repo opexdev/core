@@ -1,4 +1,4 @@
-package co.nilin.opex.app.config
+package co.nilin.opex.bcgateway.app.config
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -17,16 +17,15 @@ import springfox.documentation.swagger.web.SecurityConfigurationBuilder
 import java.security.Principal
 import java.util.*
 
-
 @Configuration
 class SwaggerConfig {
     @Value("\${swagger.authUrl}")
     private lateinit var authUrl: String
 
     @Bean
-    fun opexMatchingGateway(): Docket {
+    fun opexBCGateway(): Docket {
         return Docket(DocumentationType.SWAGGER_2)
-            .groupName("opex-matching-gateway")
+            .groupName("opex-bc-gateway")
             .apiInfo(apiInfo())
             .select()
             .paths(PathSelectors.regex("^/actuator.*").negate())
