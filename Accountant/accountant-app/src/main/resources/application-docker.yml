@@ -10,3 +10,5 @@ spring:
   cloud:
     consul:
       host: ${CONSUL_HOST}
+  main:
+    allow-bean-definition-overriding: true

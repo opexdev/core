@@ -152,7 +152,7 @@ services:
       - 127.0.0.1:1045:1044
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
-      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_PROFILES_ACTIVE=docker,demo,scheduled
       - KAFKA_IP_PORT=kafka:9092
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
@@ -174,7 +174,7 @@ services:
       - 127.0.0.1:8090:8090
     environment:
       - JAVA_OPTS=-Xmx256m
-      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_PROFILES_ACTIVE=docker,demo
       - KAFKA_IP_PORT=kafka:9092
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
@@ -197,7 +197,7 @@ services:
       - 127.0.0.1:1046:1044
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
-      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_PROFILES_ACTIVE=docker,demo
       - KAFKA_IP_PORT=kafka:9092
       - REDIS_HOST=redis
     networks:
@@ -216,7 +216,7 @@ services:
       - 127.0.0.1:1047:1044
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
-      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_PROFILES_DEFAULT=docker,demo
       - KAFKA_IP_PORT=kafka:9092
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
@@ -236,7 +236,7 @@ services:
       - 127.0.0.1:1048:1044
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
-      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_PROFILES_ACTIVE=docker,demo
       - KAFKA_IP_PORT=kafka:9092
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
@@ -264,7 +264,7 @@ services:
       - 127.0.0.1:1049:1044
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
-      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_PROFILES_DEFAULT=docker,demo
       - KAFKA_IP_PORT=kafka:9092
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
@@ -290,7 +290,7 @@ services:
       - 127.0.0.1:1050:1044
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
-      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_PROFILES_DEFAULT=docker,demo
       - KAFKA_IP_PORT=kafka:9092
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
@@ -331,7 +331,7 @@ services:
       - 127.0.0.1:1052:1044
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
-      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_PROFILES_DEFAULT=docker,demo,scheduled
       - KAFKA_IP_PORT=kafka:9092
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
