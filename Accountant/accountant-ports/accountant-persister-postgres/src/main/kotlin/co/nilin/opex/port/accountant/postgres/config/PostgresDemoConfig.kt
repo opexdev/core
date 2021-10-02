@@ -7,7 +7,6 @@ import org.springframework.r2dbc.core.DatabaseClient
 
 @Configuration
 @Profile("demo")
-@EnableR2dbcRepositories(basePackages = ["co.nilin.opex"])
 class PostgresDemoConfig(db: DatabaseClient) {
 
     init {
