@@ -26,8 +26,8 @@ class ExtendedEventListenerProvider(private val session: KeycloakSession) : Even
         val username: String,
         val enabled: Boolean,
         val emailVerified: Boolean,
-        val firstName: String,
-        val lastName: String,
+        val firstName: String?,
+        val lastName: String?,
         val email: String
     )
 
