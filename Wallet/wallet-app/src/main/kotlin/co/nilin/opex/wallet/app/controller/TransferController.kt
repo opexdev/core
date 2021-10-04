@@ -4,6 +4,7 @@ import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.service.TransferService
+import co.nilin.opex.wallet.core.spi.CurrencyService
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import io.swagger.annotations.ApiResponse
@@ -11,13 +12,17 @@ import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import java.lang.IllegalArgumentException
 import java.math.BigDecimal
 
 @RestController
 class TransferController(
-    val transferService: TransferService, val walletManager: WalletManager, val walletOwnerManager: WalletOwnerManager
+    val transferService: TransferService
+    , val currencyService: CurrencyService
+    , val walletManager: WalletManager
+    , val walletOwnerManager: WalletOwnerManager
 ) {
     @PostMapping("/transfer/{amount}_{symbol}/from/{senderUuid}_{senderWalletType}/to/{receiverUuid}_{receiverWalletType}")
     @ApiResponse(
@@ -40,21 +45,25 @@ class TransferController(
         @PathVariable("description") description: String?,
         @PathVariable("transferRef") transferRef: String?
     ): TransferResult {
+        if ( senderWalletType.equals("cashout")
+            || receiverWalletType.equals("cashout") )
+            throw IllegalArgumentException("Use withdraw services")
+        val currency = currencyService.getCurrency(symbol)
         val sourceOwner = walletOwnerManager.findWalletOwner(senderUuid) ?: throw IllegalArgumentException()
         val sourceWallet =
-            walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner, senderWalletType, Symbol(symbol))
+            walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner, senderWalletType, currency)
                 ?: throw IllegalArgumentException()
         val receiverOwner = walletOwnerManager.findWalletOwner(receiverUuid) ?: walletOwnerManager.createWalletOwner(
             senderUuid,
-            "noset",
+            "not set",
             ""
         )
         val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(
-            receiverOwner, receiverWalletType, Symbol(symbol)
+            receiverOwner, receiverWalletType, currency
         ) ?: walletManager.createWallet(
             receiverOwner,
-            Amount(Symbol(symbol), BigDecimal.ZERO),
-            Symbol(symbol),
+            Amount(currency, BigDecimal.ZERO),
+            currency,
             receiverWalletType
         )
         return transferService.transfer(
@@ -62,7 +71,7 @@ class TransferController(
                 sourceWallet,
                 receiverWallet,
                 Amount(sourceWallet.currency(), amount),
-                description, transferRef
+                description, transferRef, emptyMap()
             )
         )
     }

@@ -123,6 +123,11 @@
 			<artifactId>springfox-boot-starter</artifactId>
 			<version>3.0.0</version>
 		</dependency>
+		<dependency>
+			<groupId>co.nilin.opex</groupId>
+			<artifactId>interceptors</artifactId>
+			<version>${utility.version}</version>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>

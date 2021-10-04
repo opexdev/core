@@ -30,9 +30,13 @@ app:
   gift:
     symbol: usdt
     amount: 1000
+  auth:
+    cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
+  system:
+    uuid: 1
 logging:
   level:
-    org.apache.kafka: DEBUG
+    org.apache.kafka: ERROR
     co.nilin: DEBUG
     reactor.netty.http.client: DEBUG
 

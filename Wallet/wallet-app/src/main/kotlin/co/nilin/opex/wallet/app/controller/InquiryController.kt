@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.spi.CurrencyService
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import io.swagger.annotations.ApiResponse
@@ -14,7 +15,9 @@ import java.math.BigDecimal
 
 @RestController
 class InquiryController(
-    val walletManager: WalletManager, val walletOwnerManager: WalletOwnerManager
+    val walletManager: WalletManager
+    , val walletOwnerManager: WalletOwnerManager
+    , val currencyService: CurrencyService
 ) {
     val logger =  LoggerFactory.getLogger(InquiryController::class.java)
 
@@ -39,7 +42,7 @@ class InquiryController(
         logger.info("canFullFill: {} {} {} {}", uuid, currency, walletType, amount)
         val owner = walletOwnerManager.findWalletOwner(uuid)
         if (owner != null) {
-            val wallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, walletType, Symbol(currency))
+            val wallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, walletType, currencyService.getCurrency(currency))
             if (wallet != null) {
                 return BooleanResponse(
                     walletManager.isWithdrawAllowed(wallet, amount)

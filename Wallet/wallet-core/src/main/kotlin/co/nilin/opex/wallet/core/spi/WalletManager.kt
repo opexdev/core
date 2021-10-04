@@ -20,4 +20,6 @@ interface WalletManager {
         currency: Currency,
         type: String
     ): Wallet
+
+    suspend fun findWalletById(walletId: Long): Wallet?
 }
