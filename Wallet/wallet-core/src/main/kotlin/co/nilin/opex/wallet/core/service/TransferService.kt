@@ -14,6 +14,7 @@ import co.nilin.opex.wallet.core.spi.WalletListener
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.Date
 
@@ -25,7 +26,7 @@ class TransferService(
     val walletOwnerManager: WalletOwnerManager,
     val transactionManager: TransactionManager
 ) {
-
+    @Transactional
     suspend fun transfer(transferCommand: TransferCommand): TransferResult {
         //pre transfer hook (dispatch pre transfer event)
         val srcWallet = transferCommand.sourceWallet
@@ -64,12 +65,20 @@ class TransferService(
             )
         )
         //get the result and add to return result type
-        walletListener.onDeposit(destWallet, srcWallet, transferCommand.amount, amountToTransfer, tx)
-        walletListener.onWithdraw(srcWallet, destWallet, transferCommand.amount, tx)
-
+        walletListener.onDeposit(destWallet, srcWallet, transferCommand.amount, amountToTransfer, tx, transferCommand.additionalData)
+        walletListener.onWithdraw(srcWallet, destWallet, transferCommand.amount, tx, transferCommand.additionalData)
         //post transfer hook(dispatch post transfer event)
 
         //notify balance change
-        return TransferResult(Date().time, srcWalletBalance, srcWallet.balance(), balance)
+        return TransferResult(
+            Date().time, srcWalletOwner.uuid()
+            , srcWallet.type()
+            , srcWalletBalance
+            , walletManager.findWalletById(srcWallet.id()!!)!!.balance()
+            , transferCommand.amount
+            , destWalletOwner.uuid()
+            , destWallet.type()
+            , Amount(destWallet.currency(), amountToTransfer)
+        )
     }
 }

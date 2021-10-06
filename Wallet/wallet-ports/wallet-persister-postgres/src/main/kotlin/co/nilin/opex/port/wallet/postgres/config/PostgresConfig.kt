@@ -82,6 +82,22 @@ class PostgresConfig(db: DatabaseClient) {
                 CREATE TABLE IF NOT EXISTS wallet_config (
                     name VARCHAR(20) PRIMARY KEY,
                     main_currency VARCHAR(25) NOT NULL
+                );                
+              
+                CREATE TABLE IF NOT EXISTS withdraws (
+                    id SERIAL PRIMARY KEY,
+                    transaction_id VARCHAR(20) NOT NULL UNIQUE,
+                    wallet numeric,
+                    amount decimal,
+                    fee decimal,
+                    net_amount decimal,
+                    dest_currency VARCHAR(20),
+                    dest_address VARCHAR(80),
+                    dest_notes VARCHAR(2000),
+                    dest_transaction_ref VARCHAR(100),
+                    description VARCHAR(2000),
+                    status_reason VARCHAR(2000),
+                    status VARCHAR(20)
                 );
 
                 insert into wallet_owner(id, uuid, title, level) values(1, '1', 'system', 'basic') ON CONFLICT DO NOTHING; 

@@ -1,9 +1,9 @@
 package co.nilin.opex.wallet.app.service
 
 import co.nilin.opex.auth.gateway.model.UserCreatedEvent
-import co.nilin.opex.wallet.app.controller.Symbol
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.Wallet
+import co.nilin.opex.wallet.core.spi.CurrencyService
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import org.springframework.beans.factory.annotation.Value
@@ -15,8 +15,9 @@ import java.math.BigDecimal
 class UserRegistrationService(
     val walletOwnerManager: WalletOwnerManager,
     val walletManager: WalletManager,
+    val currencyService: CurrencyService,
     @Value("\${app.gift.symbol}")
-    val symbol: Symbol,
+    val symbol: String,
     @Value("\${app.gift.amount}")
     val amount: BigDecimal
 ) {
@@ -25,7 +26,7 @@ class UserRegistrationService(
         val owner =
             walletOwnerManager.createWalletOwner(event.uuid, "${event.firstName} ${event.lastName}", "1")
 
-        val btcSymbol = Symbol("btc")
+        val btcSymbol = currencyService.getCurrency("btc")
         //TODO REMOVE LATER
         walletManager.createWallet(
             owner,
@@ -34,10 +35,11 @@ class UserRegistrationService(
             "main"
         )
 
+        val giftSymbol = currencyService.getCurrency(symbol)
         return walletManager.createWallet(
             owner,
-            Amount(symbol, amount),
-            symbol,
+            Amount(giftSymbol, amount),
+            giftSymbol,
             "main"
         )
     }

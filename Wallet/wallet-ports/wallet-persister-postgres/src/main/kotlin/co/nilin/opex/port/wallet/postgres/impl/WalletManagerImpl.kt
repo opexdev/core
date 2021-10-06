@@ -187,4 +187,20 @@ class WalletManagerImpl(
         return wallet
 
     }
+
+    override suspend fun findWalletById(
+        walletId: Long
+    ): Wallet? {
+        val walletModel = walletRepository.findById(walletId).awaitFirstOrNull()
+        if (walletModel == null)
+            return null
+        val existingCurrency = currencyRepository.findById(walletModel.currency).awaitFirst()
+        return SavedWallet(
+            walletModel.id!!,
+            walletOwnerRepository.findById(walletModel.owner).awaitFirst(),
+            Amount(existingCurrency, walletModel.balance),
+            existingCurrency,
+            walletModel.type
+        )
+    }
 }

@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.app.controller
 
+import co.nilin.opex.wallet.core.spi.CurrencyService
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import io.swagger.annotations.ApiResponse
@@ -14,7 +15,9 @@ import java.security.Principal
 
 @RestController
 class BalanceController(
-    val walletManager: WalletManager, val walletOwnerManager: WalletOwnerManager
+    val walletManager: WalletManager
+    , val walletOwnerManager: WalletOwnerManager
+    , val currencyService: CurrencyService
 ) {
     val logger = LoggerFactory.getLogger(BalanceController::class.java)
 
@@ -38,7 +41,7 @@ class BalanceController(
     ): BalanceResponse {
         val owner = walletOwnerManager.findWalletOwner(principal.name)
         if (owner != null) {
-            val wallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, walletType, Symbol(currency))
+            val wallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, walletType, currencyService.getCurrency(currency))
             return BalanceResponse(wallet?.balance()?.amount ?: BigDecimal.ZERO)
         }
         return BalanceResponse(BigDecimal.ZERO)
