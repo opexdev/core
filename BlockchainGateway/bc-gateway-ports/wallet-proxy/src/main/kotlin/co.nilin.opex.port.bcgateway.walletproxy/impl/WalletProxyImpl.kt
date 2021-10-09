@@ -19,7 +19,7 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
 
     override suspend fun transfer(uuid: String, symbol: String, amount: BigDecimal) {
         webClient.post()
-            .uri(URI.create("$baseUrl/deposit/${amount}_$symbol/$uuid"))
+            .uri(URI.create("$baseUrl/deposit/${amount}_$symbol/${uuid}_main"))
             .header("Content-Type", "application/json")
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
