@@ -19,10 +19,10 @@ import java.math.BigDecimal
 
 @RestController
 class TransferController(
-    val transferService: TransferService
-    , val currencyService: CurrencyService
-    , val walletManager: WalletManager
-    , val walletOwnerManager: WalletOwnerManager
+    val transferService: TransferService,
+    val currencyService: CurrencyService,
+    val walletManager: WalletManager,
+    val walletOwnerManager: WalletOwnerManager
 ) {
     @PostMapping("/transfer/{amount}_{symbol}/from/{senderUuid}_{senderWalletType}/to/{receiverUuid}_{receiverWalletType}")
     @ApiResponse(
@@ -45,8 +45,7 @@ class TransferController(
         @PathVariable("description") description: String?,
         @PathVariable("transferRef") transferRef: String?
     ): TransferResult {
-        if ( senderWalletType.equals("cashout")
-            || receiverWalletType.equals("cashout") )
+        if (senderWalletType.equals("cashout") || receiverWalletType.equals("cashout"))
             throw IllegalArgumentException("Use withdraw services")
         val currency = currencyService.getCurrency(symbol)
         val sourceOwner = walletOwnerManager.findWalletOwner(senderUuid) ?: throw IllegalArgumentException()
