@@ -23,12 +23,12 @@ import java.security.Principal
 
 @RestController
 class WithdrawController(
-    val withdrawRepository: WithdrawRepository
-    , val transferService: TransferService
-    , val walletManager: WalletManager
-    , val walletOwnerManager: WalletOwnerManager
-    , val currencyService: CurrencyService
-    , @Value("\${app.system.uuid}") val systemUuid: String
+    val withdrawRepository: WithdrawRepository,
+    val transferService: TransferService,
+    val walletManager: WalletManager,
+    val walletOwnerManager: WalletOwnerManager,
+    val currencyService: CurrencyService,
+    @Value("\${app.system.uuid}") val systemUuid: String
 ) {
 
     @GetMapping("/admin/withdraw")
@@ -73,13 +73,18 @@ class WithdrawController(
         @RequestParam("status", required = false) status: List<String>?
     ): List<WithdrawModel> {
         return withdrawRepository
-            .findByCriteria(principal.name, txRef, destTxRef, destAddress, status?.isEmpty() ?: true, status ?: listOf(""))
+            .findByCriteria(
+                principal.name,
+                txRef,
+                destTxRef,
+                destAddress,
+                status?.isEmpty() ?: true,
+                status ?: listOf("")
+            )
             .toList()
     }
 
-    @PostMapping(
-        "/withdraw/{amount}_{symbol}"
-    )
+    @PostMapping("/withdraw/{amount}_{symbol}")
     @ApiResponse(
         message = "OK",
         code = 200,
@@ -148,7 +153,8 @@ class WithdrawController(
         @RequestParam("statusReason", required = false) statusReason: String?,
         @RequestParam("destNote", required = false) destNote: String?
     ): TransferResult {
-        val withdraw = withdrawRepository.findById(withdrawId).awaitFirstOrElse { throw RuntimeException("No matching withdraw request") }
+        val withdraw = withdrawRepository.findById(withdrawId)
+            .awaitFirstOrElse { throw RuntimeException("No matching withdraw request") }
         val sourceWallet = walletManager.findWalletById(withdraw.wallet) ?: throw RuntimeException("Wallet not found")
         val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(
             sourceWallet.owner(), "main", sourceWallet.currency()
@@ -173,9 +179,7 @@ class WithdrawController(
         )
     }
 
-    @PostMapping(
-        "/admin/withdraw/{id}/accept"
-    )
+    @PostMapping("/admin/withdraw/{id}/accept")
     @ApiResponse(
         message = "OK",
         code = 200,
@@ -192,7 +196,8 @@ class WithdrawController(
         @RequestParam("destNote", required = false) destNote: String?
     ): TransferResult {
         val system = walletOwnerManager.findWalletOwner(systemUuid) ?: throw IllegalArgumentException()
-        val withdraw = withdrawRepository.findById(withdrawId).awaitFirstOrElse { throw RuntimeException("No matching withdraw request") }
+        val withdraw = withdrawRepository.findById(withdrawId)
+            .awaitFirstOrElse { throw RuntimeException("No matching withdraw request") }
         val sourceWallet = walletManager.findWalletById(withdraw.wallet) ?: throw RuntimeException("Wallet not found")
         val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(
             system, "main", sourceWallet.currency()

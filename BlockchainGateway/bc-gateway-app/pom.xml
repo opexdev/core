@@ -104,6 +104,11 @@
             <version>${bc-gateway.version}</version>
         </dependency>
         <dependency>
+            <groupId>co.nilin.opex.external</groupId>
+            <artifactId>wallet-proxy</artifactId>
+            <version>${bc-gateway.version}</version>
+        </dependency>
+        <dependency>
             <groupId>io.springfox</groupId>
             <artifactId>springfox-boot-starter</artifactId>
             <version>3.0.0</version>
