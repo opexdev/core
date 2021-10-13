@@ -19,10 +19,10 @@ import java.math.BigDecimal
 
 @RestController
 class TransferController(
-    val transferService: TransferService
-    , val currencyService: CurrencyService
-    , val walletManager: WalletManager
-    , val walletOwnerManager: WalletOwnerManager
+    val transferService: TransferService,
+    val currencyService: CurrencyService,
+    val walletManager: WalletManager,
+    val walletOwnerManager: WalletOwnerManager
 ) {
     @PostMapping("/transfer/{amount}_{symbol}/from/{senderUuid}_{senderWalletType}/to/{receiverUuid}_{receiverWalletType}")
     @ApiResponse(
@@ -45,8 +45,7 @@ class TransferController(
         @PathVariable("description") description: String?,
         @PathVariable("transferRef") transferRef: String?
     ): TransferResult {
-        if ( senderWalletType.equals("cashout")
-            || receiverWalletType.equals("cashout") )
+        if (senderWalletType == "cashout" || receiverWalletType == "cashout")
             throw IllegalArgumentException("Use withdraw services")
         val currency = currencyService.getCurrency(symbol)
         val sourceOwner = walletOwnerManager.findWalletOwner(senderUuid) ?: throw IllegalArgumentException()
@@ -55,6 +54,55 @@ class TransferController(
                 ?: throw IllegalArgumentException()
         val receiverOwner = walletOwnerManager.findWalletOwner(receiverUuid) ?: walletOwnerManager.createWalletOwner(
             senderUuid,
+            "not set",
+            ""
+        )
+        val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(
+            receiverOwner, receiverWalletType, currency
+        ) ?: walletManager.createWallet(
+            receiverOwner,
+            Amount(currency, BigDecimal.ZERO),
+            currency,
+            receiverWalletType
+        )
+        return transferService.transfer(
+            TransferCommand(
+                sourceWallet,
+                receiverWallet,
+                Amount(sourceWallet.currency(), amount),
+                description, transferRef, emptyMap()
+            )
+        )
+    }
+
+    @PostMapping("/deposit/{amount}_{symbol}/{receiverUuid}_{receiverWalletType}")
+    @ApiResponse(
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = "{ }",
+                mediaType = "application/json"
+            )
+        )
+    )
+    suspend fun deposit(
+        @PathVariable("symbol") symbol: String,
+        @PathVariable("receiverUuid") receiverUuid: String,
+        @PathVariable("receiverWalletType") receiverWalletType: String,
+        @PathVariable("amount") amount: BigDecimal,
+        @PathVariable("description") description: String?,
+        @PathVariable("transferRef") transferRef: String?
+    ): TransferResult {
+        if (receiverWalletType == "cashout") throw IllegalArgumentException("Use withdraw services")
+        val systemUuid = "1"
+        val currency = currencyService.getCurrency(symbol)
+        val sourceOwner = walletOwnerManager.findWalletOwner(systemUuid) ?: throw IllegalArgumentException()
+        val sourceWallet =
+            walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner, "main", currency)
+                ?: throw IllegalArgumentException()
+        val receiverOwner = walletOwnerManager.findWalletOwner(receiverUuid) ?: walletOwnerManager.createWalletOwner(
+            systemUuid,
             "not set",
             ""
         )
