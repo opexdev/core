@@ -5,6 +5,7 @@ import co.nilin.opex.matching.core.model.MatchConstraint
 import co.nilin.opex.matching.core.model.OrderDirection
 import co.nilin.opex.matching.core.model.OrderType
 import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.Version
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import java.time.LocalDateTime
@@ -34,5 +35,8 @@ class OrderModel(
     @Column("accumulative_quote_qty") val accumulativeQuoteQty: Double?,
     @Column("status") val status: Int?,
     @Column("create_date") val createDate: LocalDateTime?,
-    @Column("update_date") val updateDate: LocalDateTime
+    @Column("update_date") val updateDate: LocalDateTime,
+    @Version
+    @Column("version")
+    var version: Long? = null
 )

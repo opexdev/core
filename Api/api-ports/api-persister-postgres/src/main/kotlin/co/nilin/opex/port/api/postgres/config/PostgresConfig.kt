@@ -33,7 +33,8 @@ class PostgresConfig(db: DatabaseClient) {
                 accumulative_quote_qty decimal,
                 status integer,
                 create_date TIMESTAMP,
-                update_date TIMESTAMP
+                update_date TIMESTAMP,
+                version numeric
             );
             CREATE TABLE IF NOT EXISTS trades (
                 id SERIAL PRIMARY KEY,

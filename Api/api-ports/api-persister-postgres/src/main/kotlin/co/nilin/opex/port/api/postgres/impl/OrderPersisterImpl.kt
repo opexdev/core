@@ -78,7 +78,8 @@ class OrderPersisterImpl(val orderRepository: OrderRepository) : OrderPersister 
                         existingOrder.accumulativeQuoteQty,
                         existingOrder.status,
                         existingOrder.createDate ?: LocalDateTime.now(),
-                        existingOrder.updateDate
+                        existingOrder.updateDate,
+                        existingOrder.version
                     )
                 ).awaitFirstOrNull()
             }
