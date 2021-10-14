@@ -36,6 +36,7 @@ class SecurityConfig(private val webClient: WebClient) {
                     AuthorizationDecision(granted)
                 }
             }
+            .pathMatchers("/**").permitAll()
             .anyExchange().authenticated()
             .and()
             .oauth2ResourceServer()
