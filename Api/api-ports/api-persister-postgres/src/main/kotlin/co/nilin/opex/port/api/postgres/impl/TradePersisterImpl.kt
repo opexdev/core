@@ -91,7 +91,8 @@ class TradePersisterImpl(val tradeRepository: TradeRepository, val orderReposito
                         OrderStatus.PARTIALLY_FILLED.code
                     },
                     existingOrder?.createDate,
-                    LocalDateTime.now()
+                    LocalDateTime.now(),
+                    existingOrder?.version
                 )
             ).awaitFirstOrNull()
     }
@@ -140,7 +141,8 @@ class TradePersisterImpl(val tradeRepository: TradeRepository, val orderReposito
                         OrderStatus.PARTIALLY_FILLED.code
                     },
                     existingOrder?.createDate ?: LocalDateTime.now(),
-                    LocalDateTime.now()
+                    LocalDateTime.now(),
+                    existingOrder?.version
                 )
             ).awaitFirstOrNull()
     }
