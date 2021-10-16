@@ -1,0 +1,20 @@
+server.port: 8089
+logging:
+  level:
+    co.nilin: DEBUG
+    reactor.netty.http.client: DEBUG
+spring:
+  application:
+    name: storage
+  main:
+    allow-bean-definition-overriding: false
+  cloud:
+    bootstrap:
+      enabled: true
+    consul:
+      port: 8500
+      discovery:
+        #healthCheckPath: ${management.context-path}/health
+        instance-id: ${spring.application.name}:${server.port}
+        healthCheckInterval: 20s
+        prefer-ip-address: true
