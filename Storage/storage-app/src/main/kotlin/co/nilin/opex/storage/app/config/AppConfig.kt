@@ -1,4 +1,4 @@
-package co.nilin.opex.app.config
+package co.nilin.opex.storage.app.config
 
 import org.springframework.context.annotation.Configuration
 
