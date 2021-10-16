@@ -1,7 +1,7 @@
 package co.nilin.opex.port.bcgateway.walletproxy.impl
 
 import co.nilin.opex.bcgateway.core.spi.WalletProxy
-import co.nilin.opex.wallet.core.inout.TransferResult
+import co.nilin.opex.port.bcgateway.walletproxy.model.TransferResult
 import kotlinx.coroutines.reactive.awaitFirst
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.ParameterizedTypeReference
