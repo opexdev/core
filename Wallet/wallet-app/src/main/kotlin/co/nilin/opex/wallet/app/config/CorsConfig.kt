@@ -1,4 +1,4 @@
-package co.nilin.opex.app.config
+package co.nilin.opex.wallet.app.config
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration

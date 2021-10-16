@@ -16,3 +16,8 @@ spring:
     consul:
       host: ${CONSUL_HOST}
       port: 8500
+
+app:
+  cors:
+    allowed-hosts: https://opex.dev, http://localhost:3000
+    allowed-patterns: http://192.168.*
