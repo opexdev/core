@@ -347,6 +347,25 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  storage:
+    container_name: storage
+    build:
+      context: ../Storage/storage-app
+      dockerfile: Dockerfile
+    ports:
+      - 127.0.0.1:8096:8096
+      - 127.0.0.1:1053:1044
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
+      - SPRING_PROFILES_DEFAULT=docker
+      - CONSUL_HOST=consul
+    networks:
+      - opex
+    depends_on:
+      - consul
+    deploy:
+      restart_policy:
+        condition: on-failure
 networks:
   opex:
     driver: bridge
