@@ -10,19 +10,19 @@ import java.nio.file.Paths
 
 @Service
 class StorageServiceImpl(private val resourceLoader: ResourceLoader) : StorageService {
-    override fun store(path: String, file: MultipartFile) {
+    override suspend fun store(path: String, file: MultipartFile) {
         file.transferTo(Paths.get(path))
     }
 
-    override fun loadAsResource(filename: String): Resource {
+    override suspend fun loadAsResource(filename: String): Resource {
         return resourceLoader.getResource(filename)
     }
 
-    override fun delete(filename: String) {
+    override suspend fun delete(filename: String) {
         Files.deleteIfExists(Paths.get(filename))
     }
 
-    override fun deleteAll(folderName: String) {
+    override suspend fun deleteAll(folderName: String) {
         File(folderName).deleteRecursively()
     }
 }

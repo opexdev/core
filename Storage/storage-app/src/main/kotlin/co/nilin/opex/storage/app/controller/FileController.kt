@@ -9,9 +9,10 @@ import org.springframework.web.multipart.MultipartFile
 
 @RestController
 class FileController(private val storageService: StorageService) {
-    @PostMapping("/{uid}/profile")
+    @PostMapping("/{uid}")
     suspend fun fileUpload(@PathVariable("uid") uid: String, @RequestParam("file") file: MultipartFile) {
         val ext = file.name.replace(Regex(".+(?=\\..+)"), "")
-        storageService.store("/$uid/profile.$ext", file)
+        if (ext !in listOf(".jpg", ".png", ".mp4", ".mov")) throw Exception("Invalid File Format")
+        storageService.store("/opex-storage/$uid/${file.name}", file)
     }
 }
