@@ -11,10 +11,10 @@ object BalanceParser {
 
         for (w in list) {
             result.addOrGet(w.asset).apply {
-                if (w.type == "exchange")
-                    locked = w.balance
-                else
-                    free = w.balance
+                when (w.type) {
+                    "exchange" -> locked = w.balance
+                    "main" -> free = w.balance
+                }
             }
         }
         return result
