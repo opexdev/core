@@ -20,7 +20,7 @@ class FileController(private val storageService: StorageService) {
         @RequestPart("file") file: Mono<FilePart>,
         @CurrentSecurityContext securityContext: SecurityContext
     ): ResponseEntity<String> {
-        if (securityContext.authentication.name !== uid) return ResponseEntity.status(401).build()
+        if (securityContext.authentication.name != uid) return ResponseEntity.status(401).build()
         file.awaitFirst().apply {
             val ext = this.filename().replace(Regex(".+(?=\\..+)"), "")
             if (ext !in listOf(".jpg", ".png", ".mp4", ".mov")) return ResponseEntity.badRequest()
@@ -38,7 +38,7 @@ class FileController(private val storageService: StorageService) {
         @PathVariable("filename") filename: String,
         @CurrentSecurityContext securityContext: SecurityContext
     ): ResponseEntity<ByteArray> {
-        if (securityContext.authentication.name !== uid) return ResponseEntity.status(401).build()
+        if (securityContext.authentication.name != uid) return ResponseEntity.status(401).build()
         val path = Paths.get("").resolve("/opex-storage/$uid/$filename")
         val file = storageService.load(path.toString())
         val mimeType = URLConnection.getFileNameMap().getContentTypeFor(path.fileName.toString())
