@@ -1,8 +1,10 @@
 server.port: 8089
+
 logging:
   level:
     co.nilin: DEBUG
     reactor.netty.http.client: DEBUG
+
 spring:
   application:
     name: storage
@@ -18,3 +20,7 @@ spring:
         instance-id: ${spring.application.name}:${server.port}
         healthCheckInterval: 20s
         prefer-ip-address: true
+
+app:
+  auth:
+    cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs

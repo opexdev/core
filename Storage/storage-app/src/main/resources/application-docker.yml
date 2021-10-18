@@ -4,3 +4,7 @@ spring:
       host: ${CONSUL_HOST}
   main:
     allow-bean-definition-overriding: true
+
+app:
+  auth:
+    cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
