@@ -1,11 +1,13 @@
 package co.nilin.opex.storage.app.service
 
 import org.springframework.core.io.Resource
-import org.springframework.web.multipart.MultipartFile
+import org.springframework.http.codec.multipart.FilePart
+import java.io.File
+import java.io.FileInputStream
 
 interface StorageService {
-    suspend fun store(path: String, file: MultipartFile)
-    suspend fun loadAsResource(filename: String): Resource
+    suspend fun store(path: String, file: FilePart)
+    suspend fun load(filename: String): FileInputStream
     suspend fun delete(filename: String)
     suspend fun deleteAll(folderName: String)
 }
