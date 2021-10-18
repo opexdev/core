@@ -2,6 +2,7 @@ package co.nilin.opex.storage.app.controller
 
 import co.nilin.opex.storage.app.service.StorageService
 import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.http.codec.multipart.FilePart
@@ -21,7 +22,8 @@ class FileController(private val storageService: StorageService) {
         @CurrentSecurityContext securityContext: SecurityContext
     ): ResponseEntity<String> {
         if (securityContext.authentication.name != uid) return ResponseEntity.status(401).build()
-        file.awaitFirst().apply {
+        file.awaitFirstOrNull().apply {
+            if (this == null) return ResponseEntity.badRequest().build()
             val ext = this.filename().replace(Regex(".+(?=\\..+)"), "")
             if (ext !in listOf(".jpg", ".png", ".mp4", ".mov")) return ResponseEntity.badRequest()
                 .body("Invalid File Format")
