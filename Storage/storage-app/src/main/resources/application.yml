@@ -1,4 +1,4 @@
-server.port: 8089
+server.port: 8096
 
 logging:
   level:
