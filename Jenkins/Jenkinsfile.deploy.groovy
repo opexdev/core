@@ -43,6 +43,10 @@ pipeline {
                     dir("BlockchainGateway") {
                         sh 'mvn -B  clean install'
                     }
+
+                    dir("Storage") {
+                        sh 'mvn -B  clean install'
+                    }
                 }
 
             }
