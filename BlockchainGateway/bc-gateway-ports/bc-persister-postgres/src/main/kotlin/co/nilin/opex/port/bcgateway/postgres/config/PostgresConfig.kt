@@ -34,7 +34,7 @@ class PostgresConfig(db: DatabaseClient) {
                     id SERIAL PRIMARY KEY,
                     address VARCHAR(72) NOT NULL,
                     memo VARCHAR(72),
-                    address_type VARCHAR(72) NOT NULL,
+                    address_type INTEGER NOT NULL,
                     UNIQUE (address, memo)
                 );
                 CREATE TABLE IF NOT EXISTS chains (
@@ -79,7 +79,8 @@ class PostgresConfig(db: DatabaseClient) {
                 );
                 CREATE TABLE IF NOT EXISTS deposits (
                     id SERIAL PRIMARY KEY,
-                    wallet_sync_record INTEGER NOT NULL,
+                    hash VARCHAR(300) UNIQUE NOT NULL,
+                    wallet_record_id INTEGER,
                     chain VARCHAR(72) NOT NULL,
                     token BOOLEAN NOT NULL,
                     token_address VARCHAR(72),
@@ -92,7 +93,8 @@ class PostgresConfig(db: DatabaseClient) {
                     name VARCHAR(72) NOT NULL
                 );
                 CREATE TABLE IF NOT EXISTS currency_implementations (
-                    symbol VARCHAR(72) PRIMARY KEY,
+                    id SERIAL PRIMARY KEY,
+                    symbol VARCHAR(72) NOT NULL,
                     chain VARCHAR(72) NOT NULL,
                     token BOOLEAN NOT NULL,
                     token_address VARCHAR(72),

@@ -23,7 +23,7 @@ class ChainSyncRecordHandlerImpl(
         val chainSyncRecordDao = chainSyncRecordRepository.findByChain(chainName).awaitSingleOrNull()
         return if (chainSyncRecordDao !== null) {
             val deposits = depositRepository.findByChainWhereNotSynced(chainName).map {
-                Deposit(it.id, it.depositor, it.depositorMemo, it.amount, it.chain, it.token, it.tokenAddress)
+                Deposit(it.id, it.hash, it.depositor, it.depositorMemo, it.amount, it.chain, it.token, it.tokenAddress)
             }
             ChainSyncRecord(
                 chainSyncRecordDao.chain,

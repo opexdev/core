@@ -3,6 +3,7 @@ package co.nilin.opex.port.bcgateway.walletproxy.impl
 import co.nilin.opex.bcgateway.core.spi.WalletProxy
 import co.nilin.opex.port.bcgateway.walletproxy.model.TransferResult
 import kotlinx.coroutines.reactive.awaitFirst
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.stereotype.Component
@@ -13,7 +14,8 @@ import java.net.URI
 inline fun <reified T : Any> typeRef(): ParameterizedTypeReference<T> = object : ParameterizedTypeReference<T>() {}
 
 @Component
-class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
+class WalletProxyImpl(@Qualifier("loadBalanced") private val webClient: WebClient) : WalletProxy {
+
     @Value("\${app.wallet.url}")
     private lateinit var baseUrl: String
 

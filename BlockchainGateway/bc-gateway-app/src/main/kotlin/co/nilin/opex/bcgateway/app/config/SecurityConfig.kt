@@ -1,5 +1,6 @@
 package co.nilin.opex.bcgateway.app.config
 
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.core.io.ClassPathResource
@@ -17,7 +18,7 @@ import java.security.interfaces.RSAPublicKey
 import java.security.spec.X509EncodedKeySpec
 
 @EnableWebFluxSecurity
-class SecurityConfig(private val webClient: WebClient) {
+class SecurityConfig(@Qualifier("loadBalanced") private val webClient: WebClient) {
 
     @Value("\${app.auth.cert-url}")
     private lateinit var jwkUrl: String
