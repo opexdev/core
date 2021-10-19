@@ -1,7 +1,6 @@
 package co.nilin.opex.storage.app.controller
 
 import co.nilin.opex.storage.app.service.StorageService
-import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
