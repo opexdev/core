@@ -26,6 +26,9 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
 
     // code 6000: wallet
     WalletOwnerNotFound(6001, null, HttpStatus.NOT_FOUND),
+    WalletNotFound(6002, null, HttpStatus.NOT_FOUND),
+    CurrencyNotFound(6003, null, HttpStatus.NOT_FOUND),
+    InvalidCashOutUsage(6004, "Use withdraw services", HttpStatus.BAD_REQUEST),
 
     // code 7000: api
     OrderNotFound(7001, "No order found", HttpStatus.NOT_FOUND),

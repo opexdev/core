@@ -3,6 +3,7 @@ package co.nilin.opex.bcgateway.core.service
 import co.nilin.opex.bcgateway.core.api.ChainSyncService
 import co.nilin.opex.bcgateway.core.spi.*
 import kotlinx.coroutines.*
+import org.slf4j.LoggerFactory
 import org.springframework.transaction.reactive.TransactionalOperator
 import org.springframework.transaction.reactive.executeAndAwait
 import java.time.LocalDateTime
@@ -19,15 +20,18 @@ open class ChainSyncServiceImpl(
     private val dispatcher: ExecutorCoroutineDispatcher
 ) : ChainSyncService {
 
+    private val logger = LoggerFactory.getLogger(ChainSyncServiceImpl::class.java)
+
     override suspend fun startSyncWithChain() {
         withContext(coroutineContext) {
             val schedules = chainSyncSchedulerHandler.fetchActiveSchedules(currentTime())
             schedules.map { syncSchedule ->
+                logger.info("chain syncing for: ${syncSchedule.chainName}")
                 async(dispatcher) {
                     val syncHandler = chainEndpointProxyFinder.findChainEndpointProxy(syncSchedule.chainName)
                     val lastSync = chainSyncRecordHandler.loadLastSuccessRecord(syncSchedule.chainName)
                     val tokens = currencyLoader.findImplementationsWithTokenOnChain(syncSchedule.chainName)
-                        .map { impl -> impl.tokenAddress!! }
+                        .map { impl -> impl.tokenAddress ?: "" }
                         .toList()
                     val syncResult =
                         syncHandler.syncTransfers(

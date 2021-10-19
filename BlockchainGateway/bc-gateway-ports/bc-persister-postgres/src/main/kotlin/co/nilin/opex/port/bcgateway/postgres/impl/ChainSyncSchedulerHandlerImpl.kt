@@ -1,15 +1,12 @@
 package co.nilin.opex.port.bcgateway.postgres.impl
 
 import co.nilin.opex.bcgateway.core.model.ChainSyncSchedule
-import co.nilin.opex.bcgateway.core.model.WalletSyncSchedule
 import co.nilin.opex.bcgateway.core.spi.ChainSyncSchedulerHandler
 import co.nilin.opex.port.bcgateway.postgres.dao.ChainSyncScheduleRepository
 import co.nilin.opex.port.bcgateway.postgres.model.ChainSyncScheduleModel
-import co.nilin.opex.port.bcgateway.postgres.model.WalletSyncScheduleModel
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
-import kotlinx.coroutines.reactive.awaitSingleOrNull
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 

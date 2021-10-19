@@ -2,6 +2,8 @@ package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.port.wallet.postgres.dao.WithdrawRepository
 import co.nilin.opex.port.wallet.postgres.model.WithdrawModel
+import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.Amount
@@ -106,11 +108,12 @@ class WithdrawController(
         @RequestParam("destAddress") destAddress: String?,
         @RequestParam("destNote", required = false) destNote: String?,
     ): TransferResult {
-        val currency = currencyService.getCurrency(symbol)
-        val owner = walletOwnerManager.findWalletOwner(principal.name) ?: throw IllegalArgumentException()
-        val sourceWallet =
-            walletManager.findWalletByOwnerAndCurrencyAndType(owner, "main", currency)
-                ?: throw IllegalArgumentException()
+        val currency = currencyService.getCurrency(symbol)?: throw OpexException(OpexError.CurrencyNotFound)
+        val owner = walletOwnerManager.findWalletOwner(principal.name)
+            ?: throw OpexException(OpexError.WalletOwnerNotFound)
+        val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, "main", currency)
+                ?: throw OpexException(OpexError.WalletNotFound)
+
         val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(
             owner, "cashout", currency
         ) ?: walletManager.createWallet(

@@ -2,12 +2,16 @@ package co.nilin.opex.port.bcgateway.chainproxy.impl
 
 import co.nilin.opex.bcgateway.core.model.ChainSyncRecord
 import co.nilin.opex.bcgateway.core.model.Deposit
+import co.nilin.opex.bcgateway.core.model.DepositResult
 import co.nilin.opex.bcgateway.core.model.Endpoint
 import co.nilin.opex.bcgateway.core.spi.ChainEndpointProxy
 import kotlinx.coroutines.reactive.awaitFirstOrElse
+import kotlinx.coroutines.reactive.awaitFirstOrNull
+import org.slf4j.LoggerFactory
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
+import org.springframework.web.reactive.function.client.body
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
 import java.net.URI
@@ -36,27 +40,49 @@ class ChainEndpointProxyImpl(
         var amount: BigDecimal
     )
 
-    private suspend fun requestTransferList(baseUrl: String, request: TransfersRequest): List<Deposit> {
-        return webClient.post()
+    data class TransferResponse(
+        val latestBlock: Long,
+        val transfers: List<Transfer>
+    )
+
+    private val logger = LoggerFactory.getLogger(ChainEndpointProxyImpl::class.java)
+
+    private suspend fun requestTransferList(baseUrl: String, request: TransfersRequest): DepositResult {
+        logger.info("request transfers: base=$baseUrl")
+        val response = webClient.post()
             .uri(URI.create("$baseUrl/transfers"))
             .header("Content-Type", "application/json")
-            .body(Mono.just(request), TransfersRequest::class.java)
+            .body(Mono.just(request))
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
-            .bodyToFlux(typeRef<Transfer>())
-            .log().map { Deposit(null, it.to, null, it.amount, chain, it.isTokenTransfer, it.token) }
-            .collectList()
-            .awaitFirstOrElse { emptyList() }
+            .bodyToMono(typeRef<TransferResponse>())
+            .awaitFirstOrNull()
+
+        return DepositResult(
+            response?.latestBlock ?: request.startBlock ?: 0,
+            response?.transfers
+                ?.map { Deposit(null, it.txHash, it.to, null, it.amount, chain, it.isTokenTransfer, it.token) }
+                ?: emptyList()
+        )
     }
 
     private suspend fun roundRobin(i: Int, request: TransfersRequest): ChainSyncRecord {
         return try {
-            val deposits =
+            val response =
                 requestTransferList(
                     endpoints[i].url,
                     request
                 )
-            ChainSyncRecord(chain, LocalDateTime.now(), endpoints[i], request.endBlock, true, null, deposits)
+            logger.info("fetched transactions: ${response.deposits.size} transaction received")
+            ChainSyncRecord(
+                chain,
+                LocalDateTime.now(),
+                endpoints[i],
+                response.latestBlock,
+                true,
+                null,
+                response.deposits
+            )
         } catch (error: WebClientResponseException) {
             if (i < endpoints.size - 1) {
                 roundRobin(i + 1, request)

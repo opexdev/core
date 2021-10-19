@@ -1,6 +1,8 @@
 package co.nilin.opex.wallet.app.service
 
 import co.nilin.opex.auth.gateway.model.UserCreatedEvent
+import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.Wallet
 import co.nilin.opex.wallet.core.spi.CurrencyService
@@ -26,7 +28,7 @@ class UserRegistrationService(
         val owner =
             walletOwnerManager.createWalletOwner(event.uuid, "${event.firstName} ${event.lastName}", "1")
 
-        val btcSymbol = currencyService.getCurrency("btc")
+        val btcSymbol = currencyService.getCurrency("btc") ?: throw OpexException(OpexError.CurrencyNotFound)
         //TODO REMOVE LATER
         walletManager.createWallet(
             owner,
@@ -35,7 +37,7 @@ class UserRegistrationService(
             "main"
         )
 
-        val giftSymbol = currencyService.getCurrency(symbol)
+        val giftSymbol = currencyService.getCurrency(symbol) ?: throw OpexException(OpexError.CurrencyNotFound)
         return walletManager.createWallet(
             owner,
             Amount(giftSymbol, amount),

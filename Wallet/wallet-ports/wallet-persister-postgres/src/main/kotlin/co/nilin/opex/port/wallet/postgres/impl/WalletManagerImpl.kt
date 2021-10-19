@@ -125,10 +125,11 @@ class WalletManagerImpl(
         currency: Currency
     ): Wallet? {
         val walletModel = walletRepository.findByOwnerAndTypeAndCurrency(
-            owner.id()!!, walletType, currency.getName()
-        ).awaitFirstOrNull()
-        if (walletModel == null)
-            return null
+            owner.id()!!,
+            walletType,
+            currency.getName()
+        ).awaitFirstOrNull() ?: return null
+
         val existingCurrency = currencyRepository.findById(walletModel.currency).awaitFirst()
         return SavedWallet(
             walletModel.id!!,
