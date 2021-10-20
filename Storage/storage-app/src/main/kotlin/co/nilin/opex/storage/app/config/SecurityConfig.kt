@@ -22,7 +22,7 @@ class SecurityConfig(private val webClient: WebClient) {
     @Bean
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
         http.csrf().disable()
-            .cors().and()
+            .cors().disable()
             .authorizeExchange()
             .pathMatchers("/hello").permitAll()
             .pathMatchers("/actuator/**").permitAll()
