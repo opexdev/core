@@ -22,5 +22,8 @@ spring:
         prefer-ip-address: true
 
 app:
+  cors:
+    allowed-hosts: https://opex.dev, http://localhost:3000
+    allowed-patterns: http://192.168.*
   auth:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs

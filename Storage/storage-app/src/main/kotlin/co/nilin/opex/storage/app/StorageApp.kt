@@ -8,8 +8,8 @@ import org.springframework.context.annotation.ComponentScan
 @SpringBootApplication
 @ComponentScan("co.nilin.opex")
 @EnableOpexErrorHandler
-class AccountantApp
+class StorageApp
 
 fun main(args: Array<String>) {
-    runApplication<AccountantApp>(*args)
+    runApplication<StorageApp>(*args)
 }
