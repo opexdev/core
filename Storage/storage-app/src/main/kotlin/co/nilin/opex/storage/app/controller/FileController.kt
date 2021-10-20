@@ -28,7 +28,7 @@ class FileController(private val storageService: StorageService) {
         file.awaitFirstOrNull().apply {
             if (this == null) throw OpexException(OpexError.BadRequest, "File Not Provided")
             val ext = this.filename().replace(Regex(".+(?=\\..+)"), "")
-            if (ext !in listOf(".jpg", ".jpeg", ".png", ".mp4", ".mov", ".pdf", ".svg"))
+            if (ext.toLowerCase() !in listOf(".jpg", ".jpeg", ".png", ".mp4", ".mov", ".pdf", ".svg"))
                 throw OpexException(OpexError.BadRequest, "Invalid File Format")
             val path = Paths.get("").resolve("/opex-storage/$uid/${this.filename()}").toString()
             storageService.store(path, this)
