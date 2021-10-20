@@ -49,4 +49,17 @@ class FileController(private val storageService: StorageService) {
         val mimeType = URLConnection.getFileNameMap().getContentTypeFor(path.fileName.toString())
         return ResponseEntity.ok().contentType(MediaType.parseMediaType(mimeType)).body(file.readBytes())
     }
+
+    @GetMapping("/admin/download/{uid}/{filename}")
+    @ResponseBody
+    suspend fun adminFileDownload(
+        @PathVariable("uid") uid: String,
+        @PathVariable("filename") filename: String,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): ResponseEntity<ByteArray> {
+        val path = Paths.get("").resolve("/opex-storage/$uid/$filename")
+        val file = storageService.load(path.toString())
+        val mimeType = URLConnection.getFileNameMap().getContentTypeFor(path.fileName.toString())
+        return ResponseEntity.ok().contentType(MediaType.parseMediaType(mimeType)).body(file.readBytes())
+    }
 }
