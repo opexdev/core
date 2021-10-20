@@ -1,23 +1,34 @@
 package co.nilin.opex.port.api.binance.controller
 
+import co.nilin.opex.api.core.inout.TransactionHistoryResponse
 import co.nilin.opex.api.core.spi.BlockchainGatewayProxy
+import co.nilin.opex.api.core.spi.WalletProxy
 import co.nilin.opex.port.api.binance.data.AssignAddressResponse
+import co.nilin.opex.port.api.binance.data.DepositResponse
+import co.nilin.opex.port.api.binance.data.Interval
+import co.nilin.opex.port.api.binance.data.WithdrawResponse
 import co.nilin.opex.port.api.binance.util.jwtAuthentication
+import co.nilin.opex.port.api.binance.util.tokenValue
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.ZoneId
+import java.util.*
 
 @RestController
-class WalletController(private val bcGatewayProxy: BlockchainGatewayProxy) {
+class WalletController(
+    private val walletProxy: WalletProxy,
+    private val bcGatewayProxy: BlockchainGatewayProxy
+) {
 
     @GetMapping("/v1/capital/deposit/address")
     suspend fun assignAddress(
         @RequestParam("coin")
         coin: String,
         @RequestParam("network", required = false)
-        network: String,
+        network: String?,
         @RequestParam(name = "recvWindow", required = false)
         recvWindow: Long?, //The value cannot be greater than 60000
         @RequestParam(name = "timestamp")
@@ -27,6 +38,103 @@ class WalletController(private val bcGatewayProxy: BlockchainGatewayProxy) {
         val response = bcGatewayProxy.assignAddress(securityContext.jwtAuthentication().name, coin)
         val address = if (response.addresses.isNotEmpty()) response.addresses[0] else null
         return AssignAddressResponse(address?.address ?: "", coin, "", "")
+    }
+
+    @GetMapping("/v1/capital/deposit/hisrec")
+    suspend fun getDepositTransactions(
+        @RequestParam("coin", required = false)
+        coin: String?,
+        @RequestParam("network", required = false)
+        status: Int?,
+        @RequestParam("startTime", required = false)
+        startTime: Long?,
+        @RequestParam("endTime", required = false)
+        endTime: Long?,
+        @RequestParam("offset", required = false)
+        offset: Int?,
+        @RequestParam("limit", required = false)
+        limit: Int?,
+        @RequestParam(name = "recvWindow", required = false)
+        recvWindow: Long?, //The value cannot be greater than 60000
+        @RequestParam(name = "timestamp")
+        timestamp: Long,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): List<DepositResponse> {
+        val validLimit = limit ?: 1000
+        val response = walletProxy.getDepositTransactions(
+            securityContext.jwtAuthentication().name,
+            securityContext.jwtAuthentication().tokenValue(),
+            coin,
+            startTime ?: Interval.ThreeMonth.getDate().time,
+            endTime ?: Date().time,
+            if (validLimit > 1000 || validLimit < 1) 1000 else validLimit,
+            offset ?: 0
+        )
+        return response.map {
+            DepositResponse(
+                it.amount,
+                it.currency,
+                "",
+                1,
+                "user_address",
+                null,
+                it.id.toString(),
+                it.date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+                0,
+                "1/1",
+                "1/1"
+            )
+        }
+    }
+
+    @GetMapping("/v1/capital/withdraw/history")
+    suspend fun getWithdrawTransactions(
+        @RequestParam("coin", required = false)
+        coin: String,
+        @RequestParam("withdrawOrderId", required = false)
+        withdrawOrderId: String,
+        @RequestParam("network", required = false)
+        status: Int,
+        @RequestParam("offset", required = false)
+        offset: Int?,
+        @RequestParam("limit", required = false)
+        limit: Int?,
+        @RequestParam("startTime", required = false)
+        startTime: Long?,
+        @RequestParam("endTime", required = false)
+        endTime: Long?,
+        @RequestParam(name = "recvWindow", required = false)
+        recvWindow: Long?, //The value cannot be greater than 60000
+        @RequestParam(name = "timestamp")
+        timestamp: Long,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): List<WithdrawResponse> {
+        val validLimit = limit ?: 1000
+        val response = walletProxy.getWithdrawTransactions(
+            securityContext.jwtAuthentication().name,
+            securityContext.jwtAuthentication().tokenValue(),
+            coin,
+            startTime ?: Interval.ThreeMonth.getDate().time,
+            endTime ?: Date().time,
+            if (validLimit > 1000 || validLimit < 1) 1000 else validLimit,
+            offset ?: 0
+        )
+        return response.map {
+            WithdrawResponse(
+                "user_wallet",
+                it.amount,
+                it.date.toString().replace("T", " "),
+                it.currency,
+                it.id.toString(),
+                "",
+                "",
+                0,
+                1,
+                "0.001",
+                1,
+                it.id.toString()
+            )
+        }
     }
 
 }

@@ -27,6 +27,7 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/owner/**").hasAuthority("SCOPE_trust")
             .pathMatchers("/withdraw").hasAuthority("SCOPE_trust")
             .pathMatchers("/withdraw/**").hasAuthority("SCOPE_trust")
+            .pathMatchers("/transaction/**").hasAuthority("SCOPE_trust")
             .pathMatchers("/admin/**").access { mono, authorizationContext ->
                 mono.map { auth ->
                     auth.authorities.any { authority -> authority.authority == "SCOPE_trust" }
