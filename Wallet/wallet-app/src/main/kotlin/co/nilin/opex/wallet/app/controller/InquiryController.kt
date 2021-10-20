@@ -1,5 +1,7 @@
 package co.nilin.opex.wallet.app.controller
 
+import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.spi.CurrencyService
 import co.nilin.opex.wallet.core.spi.WalletManager
@@ -15,13 +17,12 @@ import java.math.BigDecimal
 
 @RestController
 class InquiryController(
-    val walletManager: WalletManager
-    , val walletOwnerManager: WalletOwnerManager
-    , val currencyService: CurrencyService
+    val walletManager: WalletManager, val walletOwnerManager: WalletOwnerManager, val currencyService: CurrencyService
 ) {
-    val logger =  LoggerFactory.getLogger(InquiryController::class.java)
+    val logger = LoggerFactory.getLogger(InquiryController::class.java)
 
     data class BooleanResponse(val result: Boolean)
+
     @GetMapping("{uuid}/wallet_type/{wallet_type}/can_withdraw/{amount}_{currency}")
     @ApiResponse(
         message = "OK",
@@ -42,11 +43,13 @@ class InquiryController(
         logger.info("canFullFill: {} {} {} {}", uuid, currency, walletType, amount)
         val owner = walletOwnerManager.findWalletOwner(uuid)
         if (owner != null) {
-            val wallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, walletType, currencyService.getCurrency(currency))
+            val c = currencyService.getCurrency(currency) ?: throw OpexException(OpexError.CurrencyNotFound)
+            val wallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, walletType, c)
             if (wallet != null) {
                 return BooleanResponse(
                     walletManager.isWithdrawAllowed(wallet, amount)
-                            && walletOwnerManager.isWithdrawAllowed(owner, Amount(wallet.currency(), amount)) )
+                            && walletOwnerManager.isWithdrawAllowed(owner, Amount(wallet.currency(), amount))
+                )
             }
         }
         return BooleanResponse(false)

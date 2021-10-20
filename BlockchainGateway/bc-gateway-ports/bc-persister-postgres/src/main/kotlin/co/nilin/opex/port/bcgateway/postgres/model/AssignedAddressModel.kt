@@ -6,7 +6,7 @@ import org.springframework.data.relational.core.mapping.Table
 
 @Table("assigned_addresses")
 data class AssignedAddressModel(
-    val id: Long?,
+    @Id val id: Long?,
     val uuid: String,
     val address: String,
     val memo: String?,

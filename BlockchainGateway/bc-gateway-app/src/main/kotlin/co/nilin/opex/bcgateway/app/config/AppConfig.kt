@@ -35,15 +35,15 @@ class AppConfig {
         currencyLoader: CurrencyLoader,
         operator: TransactionalOperator
     ): ChainSyncService {
-       return ChainSyncServiceImpl(
-           chainSyncSchedulerHandler,
-           chainEndpointProxyFinder,
-           chainSyncRecordHandler,
-           walletSyncRecordHandler,
-           currencyLoader,
-           operator,
-           AppDispatchers.chainSyncExecutor
-       )
+        return ChainSyncServiceImpl(
+            chainSyncSchedulerHandler,
+            chainEndpointProxyFinder,
+            chainSyncRecordHandler,
+            walletSyncRecordHandler,
+            currencyLoader,
+            operator,
+            AppDispatchers.chainSyncExecutor
+        )
     }
 
     @Bean
@@ -54,11 +54,18 @@ class AppConfig {
         assignedAddressHandler: AssignedAddressHandler,
         currencyLoader: CurrencyLoader
     ): WalletSyncService {
-        return WalletSyncServiceImpl(syncSchedulerHandler, walletProxy, walletSyncRecordHandler, assignedAddressHandler, currencyLoader, AppDispatchers.walletSyncExecutor)
+        return WalletSyncServiceImpl(
+            syncSchedulerHandler,
+            walletProxy,
+            walletSyncRecordHandler,
+            assignedAddressHandler,
+            currencyLoader,
+            AppDispatchers.walletSyncExecutor
+        )
     }
 
     @Bean
     fun infoService(): InfoService {
-      return InfoServiceImpl()
+        return InfoServiceImpl()
     }
 }

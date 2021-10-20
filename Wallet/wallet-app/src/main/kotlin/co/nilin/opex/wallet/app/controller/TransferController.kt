@@ -1,5 +1,7 @@
 package co.nilin.opex.wallet.app.controller
 
+import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.Amount
@@ -46,12 +48,13 @@ class TransferController(
         @PathVariable("transferRef") transferRef: String?
     ): TransferResult {
         if (senderWalletType == "cashout" || receiverWalletType == "cashout")
-            throw IllegalArgumentException("Use withdraw services")
-        val currency = currencyService.getCurrency(symbol)
-        val sourceOwner = walletOwnerManager.findWalletOwner(senderUuid) ?: throw IllegalArgumentException()
-        val sourceWallet =
-            walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner, senderWalletType, currency)
-                ?: throw IllegalArgumentException()
+            throw OpexException(OpexError.InvalidCashOutUsage)
+        val currency = currencyService.getCurrency(symbol) ?: throw OpexException(OpexError.CurrencyNotFound)
+        val sourceOwner = walletOwnerManager.findWalletOwner(senderUuid)
+            ?: throw OpexException(OpexError.WalletOwnerNotFound)
+        val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner, senderWalletType, currency)
+            ?: throw OpexException(OpexError.WalletNotFound)
+
         val receiverOwner = walletOwnerManager.findWalletOwner(receiverUuid) ?: walletOwnerManager.createWalletOwner(
             senderUuid,
             "not set",
@@ -94,13 +97,15 @@ class TransferController(
         @PathVariable("description") description: String?,
         @PathVariable("transferRef") transferRef: String?
     ): TransferResult {
-        if (receiverWalletType == "cashout") throw IllegalArgumentException("Use withdraw services")
+        if (receiverWalletType == "cashout") throw OpexException(OpexError.InvalidCashOutUsage)
         val systemUuid = "1"
-        val currency = currencyService.getCurrency(symbol)
-        val sourceOwner = walletOwnerManager.findWalletOwner(systemUuid) ?: throw IllegalArgumentException()
-        val sourceWallet =
-            walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner, "main", currency)
-                ?: throw IllegalArgumentException()
+        val currency = currencyService.getCurrency(symbol) ?: throw OpexException(OpexError.CurrencyNotFound)
+        val sourceOwner = walletOwnerManager.findWalletOwner(systemUuid)
+            ?: throw OpexException(OpexError.WalletOwnerNotFound)
+        val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner, "main", currency)
+            ?: throw OpexException(OpexError.WalletNotFound)
+        //TODO create source wallet if does not exist?
+
         val receiverOwner = walletOwnerManager.findWalletOwner(receiverUuid) ?: walletOwnerManager.createWalletOwner(
             systemUuid,
             "not set",

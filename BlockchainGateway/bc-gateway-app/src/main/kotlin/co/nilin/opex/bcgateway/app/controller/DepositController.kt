@@ -12,7 +12,7 @@ class DepositController(val assignAddressService: AssignAddressService) {
     data class AssignAddressRequest(val uuid: String, val currency: String)
     data class AssignAddressResponse(val addresses: List<AssignedAddress>)
 
-    @PostMapping("deposits/assign")
+    @PostMapping("/deposits/assign")
     suspend fun assignAddress(@RequestBody assignAddressRequest: AssignAddressRequest): AssignAddressResponse {
         val assignedAddress = assignAddressService
             .assignAddress(assignAddressRequest.uuid,

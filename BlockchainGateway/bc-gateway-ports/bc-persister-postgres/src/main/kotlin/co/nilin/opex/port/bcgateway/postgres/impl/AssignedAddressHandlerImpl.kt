@@ -44,15 +44,19 @@ class AssignedAddressHandlerImpl(
     }
 
     override suspend fun persist(assignedAddress: AssignedAddress) {
-        assignedAddressRepository.save(
-            AssignedAddressModel(
-                null,
-                assignedAddress.uuid,
-                assignedAddress.address,
-                assignedAddress.memo,
-                assignedAddress.type.id
-            )
-        ).awaitFirst()
+        try {
+            assignedAddressRepository.save(
+                AssignedAddressModel(
+                    null,
+                    assignedAddress.uuid,
+                    assignedAddress.address,
+                    assignedAddress.memo,
+                    assignedAddress.type.id
+                )
+            ).awaitFirst()
+        } catch (e: Exception) {
+
+        }
     }
 
     override suspend fun findUuid(address: String, memo: String?): String? {
