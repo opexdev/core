@@ -16,6 +16,8 @@ import java.nio.file.Paths
 
 @RestController
 class FileController(private val storageService: StorageService) {
+    data class FileUploadResponse(val path: String)
+
     @PostMapping("/{uid}")
     suspend fun fileUpload(
         @PathVariable("uid") uid: String,
@@ -24,14 +26,13 @@ class FileController(private val storageService: StorageService) {
     ): Any {
         if (securityContext.authentication.name != uid) throw OpexException(OpexError.UnAuthorized)
         file.awaitFirstOrNull().apply {
-            data class Response(val uri: String)
             if (this == null) throw OpexException(OpexError.BadRequest, "File Not Provided")
             val ext = this.filename().replace(Regex(".+(?=\\..+)"), "")
-            if (ext !in listOf(".jpg", ".jpeg", ".png", ".mp4", ".mov"))
+            if (ext !in listOf(".jpg", ".jpeg", ".png", ".mp4", ".mov", ".pdf", ".svg"))
                 throw OpexException(OpexError.BadRequest, "Invalid File Format")
             val path = Paths.get("").resolve("/opex-storage/$uid/${this.filename()}").toString()
             storageService.store(path, this)
-            return Response(path)
+            return FileUploadResponse("/$uid/${this.filename()}\"")
         }
     }
 
