@@ -37,8 +37,8 @@ class SecurityConfig(private val webClient: WebClient) {
                     AuthorizationDecision(granted)
                 }
             }
-            .pathMatchers("/**").hasAuthority("SCOPE_trust")
             .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+            .pathMatchers("/**").hasAuthority("SCOPE_trust")
             .anyExchange().authenticated()
             .and()
             .oauth2ResourceServer()
