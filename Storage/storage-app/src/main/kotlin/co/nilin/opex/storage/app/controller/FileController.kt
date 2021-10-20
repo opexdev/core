@@ -32,7 +32,7 @@ class FileController(private val storageService: StorageService) {
                 throw OpexException(OpexError.BadRequest, "Invalid File Format")
             val path = Paths.get("").resolve("/opex-storage/$uid/${this.filename()}").toString()
             storageService.store(path, this)
-            return FileUploadResponse("/$uid/${this.filename()}\"")
+            return FileUploadResponse("/$uid/${this.filename()}")
         }
     }
 
