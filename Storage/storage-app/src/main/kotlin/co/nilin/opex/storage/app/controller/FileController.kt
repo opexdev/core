@@ -1,6 +1,8 @@
 package co.nilin.opex.storage.app.controller
 
 import co.nilin.opex.storage.app.service.StorageService
+import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -19,16 +21,17 @@ class FileController(private val storageService: StorageService) {
         @PathVariable("uid") uid: String,
         @RequestPart("file") file: Mono<FilePart>,
         @CurrentSecurityContext securityContext: SecurityContext
-    ): ResponseEntity<String> {
-        if (securityContext.authentication.name != uid) return ResponseEntity.status(401).build()
+    ): Any {
+        if (securityContext.authentication.name != uid) throw OpexException(OpexError.UnAuthorized)
         file.awaitFirstOrNull().apply {
-            if (this == null) return ResponseEntity.badRequest().build()
+            data class Response(val uri: String)
+            if (this == null) throw OpexException(OpexError.BadRequest, "File Not Provided")
             val ext = this.filename().replace(Regex(".+(?=\\..+)"), "")
-            if (ext !in listOf(".jpg", ".png", ".mp4", ".mov")) return ResponseEntity.badRequest()
-                .body("Invalid File Format")
+            if (ext !in listOf(".jpg", ".jpeg", ".png", ".mp4", ".mov"))
+                throw OpexException(OpexError.BadRequest, "Invalid File Format")
             val path = Paths.get("").resolve("/opex-storage/$uid/${this.filename()}").toString()
             storageService.store(path, this)
-            return ResponseEntity.ok().build()
+            return Response(path)
         }
     }
 
@@ -39,7 +42,7 @@ class FileController(private val storageService: StorageService) {
         @PathVariable("filename") filename: String,
         @CurrentSecurityContext securityContext: SecurityContext
     ): ResponseEntity<ByteArray> {
-        if (securityContext.authentication.name != uid) return ResponseEntity.status(401).build()
+        if (securityContext.authentication.name != uid) throw OpexException(OpexError.UnAuthorized)
         val path = Paths.get("").resolve("/opex-storage/$uid/$filename")
         val file = storageService.load(path.toString())
         val mimeType = URLConnection.getFileNameMap().getContentTypeFor(path.fileName.toString())
