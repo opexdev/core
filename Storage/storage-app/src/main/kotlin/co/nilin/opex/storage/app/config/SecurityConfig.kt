@@ -1,10 +1,13 @@
 package co.nilin.opex.storage.app.config
 
+import net.minidev.json.JSONArray
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.http.HttpMethod
+import org.springframework.security.authorization.AuthorizationDecision
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.ServerHttpSecurity
+import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder
 import org.springframework.security.web.server.SecurityWebFilterChain
@@ -25,6 +28,15 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/actuator/**").permitAll()
             .pathMatchers("/swagger-ui/**").permitAll()
             .pathMatchers("/swagger-resources/**").permitAll()
+            .pathMatchers("/admin/**").access { mono, authorizationContext ->
+                mono.map { auth ->
+                    auth.authorities.any { authority -> authority.authority == "SCOPE_trust" }
+                            && ((auth.principal as Jwt)
+                        .claims.get("groups") as JSONArray).contains("finance-admin")
+                }.map { granted ->
+                    AuthorizationDecision(granted)
+                }
+            }
             .pathMatchers("/**").hasAuthority("SCOPE_trust")
             .anyExchange().authenticated()
             .and()
