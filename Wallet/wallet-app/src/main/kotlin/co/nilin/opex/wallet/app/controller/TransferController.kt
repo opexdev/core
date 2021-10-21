@@ -14,9 +14,7 @@ import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import java.lang.IllegalArgumentException
 import java.math.BigDecimal
 
 @RestController
@@ -75,7 +73,7 @@ class TransferController(
                 Amount(sourceWallet.currency(), amount),
                 description, transferRef, emptyMap()
             )
-        )
+        ).transferResult
     }
 
     @PostMapping("/deposit/{amount}_{symbol}/{receiverUuid}_{receiverWalletType}")
@@ -126,6 +124,6 @@ class TransferController(
                 Amount(sourceWallet.currency(), amount),
                 description, transferRef, emptyMap()
             )
-        )
+        ).transferResult
     }
 }

@@ -9,5 +9,5 @@ data class AddressTypeModel(
     @Id val id: Long?,
     @Column("address_type") val type: String,
     @Column("address_regex") val addressRegex: String,
-    @Column("memo_regex") val memoRegex: String
+    @Column("memo_regex") val memoRegex: String?
 )

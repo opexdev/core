@@ -10,7 +10,7 @@ class PostgresConfig(db: DatabaseClient) {
 
     init {
         val initDb = db.sql {
-            """ 
+            """  
                 CREATE TABLE IF NOT EXISTS currency (
                     name VARCHAR(25) PRIMARY KEY,
                     symbol VARCHAR(25) NOT NULL UNIQUE,
@@ -32,7 +32,7 @@ class PostgresConfig(db: DatabaseClient) {
                     dest_amount decimal NOT NULL,
                     description VARCHAR(100),
                     transfer_ref VARCHAR(25),
-                    transaction_date DATE NOT NULL DEFAULT CURRENT_DATE
+                    transaction_date TIMESTAMP NOT NULL DEFAULT CURRENT_DATE
                 ); 
                 
                 CREATE TABLE IF NOT EXISTS wallet_owner (
@@ -86,12 +86,16 @@ class PostgresConfig(db: DatabaseClient) {
               
                 CREATE TABLE IF NOT EXISTS withdraws (
                     id SERIAL PRIMARY KEY,
-                    transaction_id VARCHAR(20) NOT NULL UNIQUE,
+                    uuid VARCHAR(36) NOT NULL,
+                    req_transaction_id VARCHAR(20) NOT NULL UNIQUE,
+                    final_transaction_id VARCHAR(20) UNIQUE,
                     wallet numeric,
                     amount decimal,
-                    fee decimal,
+                    accepted_fee decimal,
+                    applied_fee decimal,
                     net_amount decimal,
                     dest_currency VARCHAR(20),
+                    dest_network VARCHAR(20),
                     dest_address VARCHAR(80),
                     dest_notes VARCHAR(2000),
                     dest_transaction_ref VARCHAR(100),
