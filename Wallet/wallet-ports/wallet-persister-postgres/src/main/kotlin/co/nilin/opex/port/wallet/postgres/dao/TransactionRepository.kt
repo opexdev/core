@@ -91,33 +91,33 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
 
     @Query(
         """
-        select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transaction_date as date
+        select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
         from wallet as w
         inner join wallet_owner as wo on (w.owner = wo.id)
         inner join transaction as t on (w.id = t.dest_wallet)
-        where wo.uuid = :uuid
+        where t.transfer_ref is not null and wo.uuid = :uuid
         """
     )
-    fun findDepositTransactionsByUUID(@Param("uuid") uuid: String): Flux<DepositWithdrawTransaction>
+    suspend fun findDepositTransactionsByUUID(@Param("uuid") uuid: String): Flux<DepositWithdrawTransaction>
 
     @Query(
         """
-        select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transaction_date as date
+        select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
         from wallet as w
         inner join wallet_owner as wo on (w.owner = wo.id)
         inner join transaction as t on (w.id = t.source_wallet)
         where wo.uuid = :uuid
         """
     )
-    fun findWithdrawTransactionsByUUID(@Param("uuid") uuid: String): Flux<DepositWithdrawTransaction>
+    suspend fun findWithdrawTransactionsByUUID(@Param("uuid") uuid: String): Flux<DepositWithdrawTransaction>
 
     @Query(
         """
-        select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transaction_date as date
+        select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
         from wallet as w
         inner join wallet_owner as wo on (w.owner = wo.id)
         inner join transaction as t on (w.id = t.dest_wallet)
-        where wo.uuid = :uuid and w.currency = :currency
+        where t.transfer_ref is not null and wo.uuid = :uuid and w.currency = :currency
         """
     )
     suspend fun findDepositTransactionsByUUIDAndCurrency(
@@ -127,7 +127,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
 
     @Query(
         """
-        select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transaction_date as date
+        select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
         from wallet as w
         inner join wallet_owner as wo on (w.owner = wo.id)
         inner join transaction as t on (w.id = t.source_wallet)

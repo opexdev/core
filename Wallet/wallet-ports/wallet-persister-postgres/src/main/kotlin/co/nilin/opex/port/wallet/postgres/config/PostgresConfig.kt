@@ -32,7 +32,7 @@ class PostgresConfig(db: DatabaseClient) {
                     dest_amount decimal NOT NULL,
                     description VARCHAR(100),
                     transfer_ref VARCHAR(25),
-                    transaction_date DATE NOT NULL DEFAULT CURRENT_DATE
+                    transaction_date TIMESTAMP NOT NULL DEFAULT CURRENT_DATE
                 ); 
                 
                 CREATE TABLE IF NOT EXISTS wallet_owner (
