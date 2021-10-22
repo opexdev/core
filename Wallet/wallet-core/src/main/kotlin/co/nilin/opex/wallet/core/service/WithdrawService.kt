@@ -83,7 +83,7 @@ class WithdrawService(
             TransferCommand(
                 sourceWallet,
                 receiverWallet,
-                Amount(sourceWallet.currency(), withdraw.amount.subtract(acceptCommand.appliedFee)),
+                Amount(sourceWallet.currency(), withdraw.amount),
                 null, null, emptyMap()
             )
         )

@@ -93,7 +93,7 @@ class PostgresConfig(db: DatabaseClient) {
                     amount decimal,
                     accepted_fee decimal,
                     applied_fee decimal,
-                    net_amount decimal,
+                    dest_amount decimal,
                     dest_currency VARCHAR(20),
                     dest_network VARCHAR(20),
                     dest_address VARCHAR(80),

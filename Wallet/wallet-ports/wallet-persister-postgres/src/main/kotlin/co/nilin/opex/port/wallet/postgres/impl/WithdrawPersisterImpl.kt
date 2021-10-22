@@ -6,10 +6,8 @@ import co.nilin.opex.port.wallet.postgres.model.WithdrawModel
 import co.nilin.opex.wallet.core.inout.WithdrawResponse
 import co.nilin.opex.wallet.core.model.Withdraw
 import co.nilin.opex.wallet.core.spi.WithdrawPersister
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.stereotype.Service
@@ -38,7 +36,7 @@ class WithdrawPersisterImpl(
                     else
                         Date.from(
                             finalTx.txDate.atZone(ZoneId.systemDefault()).toInstant()
-                        ), reqTx.id.toString(), finalTx?.id.toString(), wm.acceptedFee, wm.appliedFee, wm.amount, wm.netAmount, wm.destCurrency, wm.destAddress, wm.destNetwork, wm.destNote, wm.destTransactionRef, wm.statusReason, wm.status
+                        ), reqTx.id.toString(), finalTx?.id.toString(), wm.acceptedFee, wm.appliedFee, wm.amount, wm.destAmount, wm.destCurrency, wm.destAddress, wm.destNetwork, wm.destNote, wm.destTransactionRef, wm.statusReason, wm.status
                 )
             }
             .toList()
@@ -55,7 +53,7 @@ class WithdrawPersisterImpl(
                 withdraw.finalizedTransaction,
                 withdraw.acceptedFee,
                 withdraw.appliedFee,
-                withdraw.netAmount,
+                withdraw.destAmount,
                 withdraw.destCurrency,
                 withdraw.destNetwork,
                 withdraw.destAddress,
@@ -74,7 +72,7 @@ class WithdrawPersisterImpl(
             withdraw.finalizedTransaction,
             withdraw.acceptedFee,
             withdraw.appliedFee,
-            withdraw.netAmount,
+            withdraw.destAmount,
             withdraw.destCurrency,
             withdraw.destNetwork,
             withdraw.destAddress,
@@ -97,7 +95,7 @@ class WithdrawPersisterImpl(
                     withdraw.finalizedTransaction,
                     withdraw.acceptedFee,
                     withdraw.appliedFee,
-                    withdraw.netAmount,
+                    withdraw.destAmount,
                     withdraw.destCurrency,
                     withdraw.destNetwork,
                     withdraw.destAddress,
