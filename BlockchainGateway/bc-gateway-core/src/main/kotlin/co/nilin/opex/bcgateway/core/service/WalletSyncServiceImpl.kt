@@ -36,7 +36,7 @@ class WalletSyncServiceImpl(
                             val symbol = currencyLoader.findSymbol(deposit.chain, deposit.tokenAddress)
                             if (symbol != null) {
                                 logger.info("sending deposit to $uuid - ${deposit.amount} $symbol")
-                                walletProxy.transfer(uuid, symbol, deposit.amount)
+                                walletProxy.transfer(uuid, symbol, deposit.amount, deposit.hash)
                             }
                         }
                         walletSyncRecordHandler.saveWalletSyncRecord(
