@@ -14,6 +14,7 @@ object BalanceParser {
                 when (w.type) {
                     "exchange" -> locked = w.balance
                     "main" -> free = w.balance
+                    "cashout" -> withdraw = w.balance
                 }
             }
         }
@@ -25,7 +26,7 @@ object BalanceParser {
             if (w.asset == symbol)
                 return w
 
-        add(BalanceResponse(symbol, BigDecimal.ZERO, BigDecimal.ZERO))
+        add(BalanceResponse(symbol, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO))
         return this.last()
     }
 

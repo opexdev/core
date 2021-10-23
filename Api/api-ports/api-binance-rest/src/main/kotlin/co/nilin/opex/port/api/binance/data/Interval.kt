@@ -23,7 +23,8 @@ enum class Interval(val label: String, val unit: TimeUnit, val duration: Long) {
     Day("1d", TimeUnit.DAYS, 1),
     ThreeDays("3d", TimeUnit.DAYS, 3),
     Week("1w", TimeUnit.DAYS, 7),
-    Month("1M", TimeUnit.DAYS, 31);
+    Month("1M", TimeUnit.DAYS, 31),
+    ThreeMonth("3M",TimeUnit.DAYS, 90);
 
     private fun getOffsetTime() = unit.toMillis(duration)
 
