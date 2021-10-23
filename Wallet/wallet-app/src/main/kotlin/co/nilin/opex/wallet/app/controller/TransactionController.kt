@@ -24,7 +24,7 @@ class TransactionController(private val manager: TransactionManager) {
         )
     }
 
-    @GetMapping("/withdraw/{uuid}")
+    @PostMapping("/withdraw/{uuid}")
     suspend fun getWithdrawTransactionsForUser(
         @PathVariable("uuid") uuid: String,
         @RequestBody request: TransactionRequest

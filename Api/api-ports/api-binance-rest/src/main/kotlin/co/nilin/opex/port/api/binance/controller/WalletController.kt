@@ -14,6 +14,8 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.Instant
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
 
@@ -78,8 +80,8 @@ class WalletController(
                 1,
                 "user_address",
                 null,
-                it.ref?:it.id.toString(),
-                it.date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+                it.ref ?: it.id.toString(),
+                it.date,
                 0,
                 "1/1",
                 "1/1"
@@ -92,9 +94,9 @@ class WalletController(
         @RequestParam("coin", required = false)
         coin: String,
         @RequestParam("withdrawOrderId", required = false)
-        withdrawOrderId: String,
-        @RequestParam("network", required = false)
-        status: Int,
+        withdrawOrderId: String?,
+        @RequestParam("status", required = false)
+        status: Int?,
         @RequestParam("offset", required = false)
         offset: Int?,
         @RequestParam("limit", required = false)
@@ -123,7 +125,9 @@ class WalletController(
             WithdrawResponse(
                 "user_wallet",
                 it.amount,
-                it.date.toString().replace("T", " "),
+                LocalDateTime.ofInstant(Instant.ofEpochMilli(it.date), TimeZone.getDefault().toZoneId())
+                    .toString()
+                    .replace("T", " "),
                 it.currency,
                 it.id.toString(),
                 "",

@@ -9,6 +9,7 @@ import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
+import java.time.ZoneId
 
 @Service
 class TransactionManagerImpl(val transactionRepository: TransactionRepository) : TransactionManager {
@@ -43,7 +44,13 @@ class TransactionManagerImpl(val transactionRepository: TransactionRepository) :
             .collectList()
             .awaitFirstOrElse { emptyList() }
             .map {
-                TransactionHistory(it.id, it.currency, it.amount, it.description, it.date)
+                TransactionHistory(
+                    it.id,
+                    it.currency,
+                    it.amount,
+                    it.description,
+                    it.date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                )
             }
     }
 
@@ -62,7 +69,13 @@ class TransactionManagerImpl(val transactionRepository: TransactionRepository) :
             .collectList()
             .awaitFirstOrElse { emptyList() }
             .map {
-                TransactionHistory(it.id, it.currency, it.amount, it.description, it.date)
+                TransactionHistory(
+                    it.id,
+                    it.currency,
+                    it.amount,
+                    it.description,
+                    it.date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                )
             }
     }
 }

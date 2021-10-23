@@ -9,5 +9,5 @@ data class TransactionHistoryResponse(
     val amount: BigDecimal,
     val description: String?,
     val ref: String?,
-    val date: LocalDateTime
+    val date: Long
 )
