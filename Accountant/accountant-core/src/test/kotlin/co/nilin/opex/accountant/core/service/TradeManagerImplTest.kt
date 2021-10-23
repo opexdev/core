@@ -61,24 +61,24 @@ internal class TradeManagerImplTest() {
     init {
         MockitoAnnotations.openMocks(this)
         orderManager = OrderManagerImpl(
-                pairConfigLoader,
-                financialActionPersister,
-                financeActionLoader,
-                orderPersister,
-                tempEventPersister,
-                tempEventRepublisher,
-                richOrderPublisher
+            pairConfigLoader,
+            financialActionPersister,
+            financeActionLoader,
+            orderPersister,
+            tempEventPersister,
+            tempEventRepublisher,
+            richOrderPublisher
         )
         tradeManager = TradeManagerImpl(
-                pairStaticRateLoader,
-                financialActionPersister,
-                financeActionLoader,
-                orderPersister,
-                tempEventPersister,
-                richTradePublisher,
-                walletProxy,
-                "pcoin",
-                "0x0"
+            pairStaticRateLoader,
+            financialActionPersister,
+            financeActionLoader,
+            orderPersister,
+            tempEventPersister,
+            richTradePublisher,
+            walletProxy,
+            "pcoin",
+            "0x0"
         )
         runBlocking {
             Mockito.`when`(tempEventPersister.loadTempEvents(ArgumentMatchers.anyString())).thenReturn(emptyList())
@@ -86,20 +86,20 @@ internal class TradeManagerImplTest() {
     }
 
     @Test
-    fun givenMatchOrders_whenTradeCreated_thenFAMatched() {
+    fun givenSellOrder_WhenMatchBuyOrderCome_thenFAMatched() {
         runBlocking {
             //given
             val pair = Pair("eth", "btc")
-            val pairConfig = co.nilin.opex.accountant.core.model.PairConfig(
-                pair.toString(), pair.leftSideName, pair.rightSideName, 1.0, 0.001
+            val pairConfig = PairConfig(
+                pair.toString(), pair.leftSideName, pair.rightSideName, 1.0, 0.01
             )
             val makerSubmitOrderEvent = SubmitOrderEvent(
-                "mouid", "muuid", null, pair, 29, 60, 0, OrderDirection.ASK, MatchConstraint.GTC, OrderType.LIMIT_ORDER
+                "mouid", "muuid", null, pair, 60000, 1, 0, OrderDirection.ASK, MatchConstraint.GTC, OrderType.LIMIT_ORDER
             )
             prepareOrder(pair, pairConfig, makerSubmitOrderEvent, 0.1, 0.12)
 
             val takerSubmitOrderEvent = SubmitOrderEvent(
-                "touid", "tuuid", null, pair, 30, 14, 0, OrderDirection.BID, MatchConstraint.GTC, OrderType.LIMIT_ORDER
+                "touid", "tuuid", null, pair, 70000, 1, 0, OrderDirection.BID, MatchConstraint.GTC, OrderType.LIMIT_ORDER
             )
 
             prepareOrder(pair, pairConfig, takerSubmitOrderEvent, 0.08, 0.1)
@@ -107,51 +107,37 @@ internal class TradeManagerImplTest() {
             val tradeEvent = makeTradeEvent(pair, takerSubmitOrderEvent, makerSubmitOrderEvent)
             //when
             val tradeFinancialActions = tradeManager.handleTrade(tradeEvent)
+
             Assertions.assertEquals(4, tradeFinancialActions.size)
+            Assertions.assertEquals( (makerSubmitOrderEvent.price * pairConfig.rightSideFraction), tradeFinancialActions[0].amount.toDouble())
         }
     }
 
     @Test
-    fun givenMatchOrders2_whenTradeCreated_thenFAMatched() {
+    fun givenBuyOrder_WhenMatchSellOrderCome_thenFAMatched() {
         runBlocking {
             //given
             val pair = Pair("eth", "btc")
-            val pairConfig = co.nilin.opex.accountant.core.model.PairConfig(
-                pair.toString(), pair.leftSideName, pair.rightSideName, 0.000001, 0.000001
+            val pairConfig = PairConfig(
+                pair.toString(), pair.leftSideName, pair.rightSideName, 1.0, 0.001
             )
             val makerSubmitOrderEvent = SubmitOrderEvent(
-                "mouid",
-                "muuid",
-                null,
-                pair,
-                33333,
-                5000000,
-                0,
-                OrderDirection.ASK,
-                MatchConstraint.GTC,
-                OrderType.LIMIT_ORDER
+                "mouid", "muuid", null, pair, 70000, 1, 0, OrderDirection.BID, MatchConstraint.GTC, OrderType.LIMIT_ORDER
             )
-            prepareOrder(pair, pairConfig, makerSubmitOrderEvent, 0.8 * 0.001, 1.0 * 0.001)
+            prepareOrder(pair, pairConfig, makerSubmitOrderEvent, 0.1, 0.12)
 
             val takerSubmitOrderEvent = SubmitOrderEvent(
-                "touid",
-                "tuuid",
-                null,
-                pair,
-                34482,
-                1000000,
-                0,
-                OrderDirection.BID,
-                MatchConstraint.GTC,
-                OrderType.LIMIT_ORDER
+                "touid", "tuuid", null, pair, 60000, 1, 0, OrderDirection.ASK, MatchConstraint.GTC, OrderType.LIMIT_ORDER
             )
 
-            prepareOrder(pair, pairConfig, takerSubmitOrderEvent, 0.8 * 0.001, 1.0 * 0.001)
+            prepareOrder(pair, pairConfig, takerSubmitOrderEvent, 0.08, 0.1)
 
             val tradeEvent = makeTradeEvent(pair, takerSubmitOrderEvent, makerSubmitOrderEvent)
             //when
             val tradeFinancialActions = tradeManager.handleTrade(tradeEvent)
+
             Assertions.assertEquals(4, tradeFinancialActions.size)
+            Assertions.assertEquals( makerSubmitOrderEvent.price * pairConfig.rightSideFraction, tradeFinancialActions[2].amount.toDouble())
         }
     }
 
@@ -161,28 +147,28 @@ internal class TradeManagerImplTest() {
         makerSubmitOrderEvent: SubmitOrderEvent
     ): TradeEvent {
         val tradeEvent = TradeEvent(
-                0,
-                pair,
-                takerSubmitOrderEvent.ouid,
-                takerSubmitOrderEvent.uuid,
-                takerSubmitOrderEvent.orderId ?: -1,
-                takerSubmitOrderEvent.direction,
-                takerSubmitOrderEvent.price,
-                0,
-                makerSubmitOrderEvent.ouid,
-                makerSubmitOrderEvent.uuid,
-                makerSubmitOrderEvent.orderId ?: 1,
-                makerSubmitOrderEvent.direction,
-                makerSubmitOrderEvent.price,
-                makerSubmitOrderEvent.quantity - takerSubmitOrderEvent.quantity,
-                takerSubmitOrderEvent.quantity
+            0,
+            pair,
+            takerSubmitOrderEvent.ouid,
+            takerSubmitOrderEvent.uuid,
+            takerSubmitOrderEvent.orderId ?: -1,
+            takerSubmitOrderEvent.direction,
+            takerSubmitOrderEvent.price,
+            0,
+            makerSubmitOrderEvent.ouid,
+            makerSubmitOrderEvent.uuid,
+            makerSubmitOrderEvent.orderId ?: 1,
+            makerSubmitOrderEvent.direction,
+            makerSubmitOrderEvent.price,
+            makerSubmitOrderEvent.quantity - takerSubmitOrderEvent.quantity,
+            takerSubmitOrderEvent.quantity
         )
         return tradeEvent
     }
 
     private fun prepareOrder(
         pair: Pair,
-        pairConfig: co.nilin.opex.accountant.core.model.PairConfig,
+        pairConfig: PairConfig,
         submitOrderEvent: SubmitOrderEvent,
         makerFee: Double,
         takerFee: Double
@@ -190,7 +176,7 @@ internal class TradeManagerImplTest() {
         runBlocking {
             Mockito.`when`(pairConfigLoader.load(pair.toString(), submitOrderEvent.direction, ""))
                 .thenReturn(
-                    co.nilin.opex.accountant.core.model.PairFeeConfig(
+                    PairFeeConfig(
                         pairConfig,
                         submitOrderEvent.direction.toString(),
                         "",

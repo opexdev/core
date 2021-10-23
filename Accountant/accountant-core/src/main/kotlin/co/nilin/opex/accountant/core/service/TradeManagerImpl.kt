@@ -66,7 +66,7 @@ open class TradeManagerImpl(
             trade.matchedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction.toBigDecimal())
         } else {
             trade.matchedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction.toBigDecimal())
-                .multiply(trade.takerPrice.toBigDecimal()).multiply(makerOrder.rightSideFraction.toBigDecimal())
+                .multiply(trade.makerPrice.toBigDecimal()).multiply(makerOrder.rightSideFraction.toBigDecimal())
         }
 
         val makerPCFeeCoefficient: Double = if (makerOrder.direction == OrderDirection.ASK) {
@@ -233,7 +233,7 @@ open class TradeManagerImpl(
         orderPersister.save(makerOrder)
         log.info("maker order saved {}", makerOrder)
         richTradePublisher.publish(
-            co.nilin.opex.accountant.core.inout.RichTrade(
+            RichTrade(
                 trade.tradeId,
                 trade.pair.toString(),
                 trade.takerOuid,
