@@ -307,7 +307,7 @@ services:
       restart_policy:
         condition: on-failure
   nginx:
-    image: nginx:latest
+    image: jboesl/docker-nginx-headers-more
     container_name: opex_nginx
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
