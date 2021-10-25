@@ -1,5 +1,6 @@
 package co.nilin.opex.port.wallet.postgres.dao
 
+import co.nilin.opex.port.wallet.postgres.dto.DepositWithdrawTransaction
 import co.nilin.opex.port.wallet.postgres.dto.TransactionStat
 import co.nilin.opex.port.wallet.postgres.model.CurrencyModel
 import co.nilin.opex.port.wallet.postgres.model.CurrencyRateModel
@@ -11,62 +12,131 @@ import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 import java.util.*
 
 @Repository
-interface TransactionRepository: ReactiveCrudRepository<TransactionModel, Long> {
-    @Query("SELECT count(1) cnt, COALESCE(sum(source_amount * crm.rate), 0) total" +
-            " FROM transaction tm " +
-            " join wallet wm on wm.id = tm.source_wallet " +
-            " join currency_rate crm on wm.currency = crm.source_currency " +
-            " WHERE wm.owner = :owner " +
-            " and wm.wallet_type = :walletType " +
-            " and crm.dest_currency = :currency " +
-            " and tm.transaction_date >= :startDate " +
-            " and tm.transaction_date <= :endDate")
-    fun calculateWithdrawStatisticsBasedOnCurrency(@Param("owner") owner: Long
-                            ,@Param("walletType") walletType: String
-                            ,@Param("startDate") startDate: LocalDateTime
-                            ,@Param("endDate") endDate: LocalDateTime
-                            ,@Param("currency") currency: String): Mono<TransactionStat>
-    @Query("SELECT count(1) cnt, COALESCE(sum(source_amount), 0) total " +
-            " FROM TransactionModel tm " +
-            " join WalletModel wm on wm.id = tm.sourceWallet " +
-            " WHERE wm.owner = :owner " +
-            " and wm.id = :id " +
-            " and tm.transaction_date >= :startDate " +
-            " and tm.transaction_date <= :endDate")
-    fun calculateWithdrawStatistics(@Param("owner") owner: Long
-                                    ,@Param("walletId") wallet: Long
-                                    ,@Param("startDate") startDate: LocalDateTime
-                                    ,@Param("endDate") endDate: LocalDateTime): Mono<TransactionStat>
+interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long> {
+    @Query(
+        "SELECT count(1) cnt, COALESCE(sum(source_amount * crm.rate), 0) total" +
+                " FROM transaction tm " +
+                " join wallet wm on wm.id = tm.source_wallet " +
+                " join currency_rate crm on wm.currency = crm.source_currency " +
+                " WHERE wm.owner = :owner " +
+                " and wm.wallet_type = :walletType " +
+                " and crm.dest_currency = :currency " +
+                " and tm.transaction_date >= :startDate " +
+                " and tm.transaction_date <= :endDate"
+    )
+    fun calculateWithdrawStatisticsBasedOnCurrency(
+        @Param("owner") owner: Long,
+        @Param("walletType") walletType: String,
+        @Param("startDate") startDate: LocalDateTime,
+        @Param("endDate") endDate: LocalDateTime,
+        @Param("currency") currency: String
+    ): Mono<TransactionStat>
 
-    @Query("SELECT count(1) cnt, COALESCE(sum(dest_amount),0) total " +
-            " FROM transaction tm " +
-            " join wallet wm on wm.id = tm.dest_wallet " +
-            " join currency_rate crm on wm.currency = crm.source_currency " +
-            " WHERE wm.owner = :owner " +
-            " and wm.wallet_type = :walletType " +
-            " and crm.dest_currency = :currency " +
-            " and tm.transaction_date >= :startDate " +
-            " and tm.transaction_date <= :endDate")
-    fun calculateDepositStatisticsBasedOnCurrency(@Param("owner") owner: Long
-                                                  ,@Param("walletType") walletType: String
-                                                  ,@Param("startDate") startDate: LocalDateTime
-                                                  ,@Param("endDate") endDate: LocalDateTime
-                                                  ,@Param("currency") currency: String): Mono<TransactionStat>
-    @Query("SELECT count(1) cnt, COALESCE(sum(dest_amount * crm.rate), 0) total" +
-            " FROM transaction tm " +
-            " join wallet wm on wm.id = tm.dest_wallet " +
-            " WHERE wm.owner = :owner " +
-            " and wm.id = :walletId " +
-            " and tm.transaction_date >= :startDate " +
-            " and tm.transaction_date <= :endDate")
-    fun calculateDepositStatistics(@Param("owner") owner: Long
-                                   ,@Param("walletId") wallet: Long
-                                   ,@Param("startDate") startDate: LocalDateTime
-                                   ,@Param("endDate") endDate: LocalDateTime): Mono<TransactionStat>
+    @Query(
+        "SELECT count(1) cnt, COALESCE(sum(source_amount), 0) total " +
+                " FROM TransactionModel tm " +
+                " join WalletModel wm on wm.id = tm.sourceWallet " +
+                " WHERE wm.owner = :owner " +
+                " and wm.id = :id " +
+                " and tm.transaction_date >= :startDate " +
+                " and tm.transaction_date <= :endDate"
+    )
+    fun calculateWithdrawStatistics(
+        @Param("owner") owner: Long,
+        @Param("walletId") wallet: Long,
+        @Param("startDate") startDate: LocalDateTime,
+        @Param("endDate") endDate: LocalDateTime
+    ): Mono<TransactionStat>
+
+    @Query(
+        "SELECT count(1) cnt, COALESCE(sum(dest_amount),0) total " +
+                " FROM transaction tm " +
+                " join wallet wm on wm.id = tm.dest_wallet " +
+                " join currency_rate crm on wm.currency = crm.source_currency " +
+                " WHERE wm.owner = :owner " +
+                " and wm.wallet_type = :walletType " +
+                " and crm.dest_currency = :currency " +
+                " and tm.transaction_date >= :startDate " +
+                " and tm.transaction_date <= :endDate"
+    )
+    fun calculateDepositStatisticsBasedOnCurrency(
+        @Param("owner") owner: Long,
+        @Param("walletType") walletType: String,
+        @Param("startDate") startDate: LocalDateTime,
+        @Param("endDate") endDate: LocalDateTime,
+        @Param("currency") currency: String
+    ): Mono<TransactionStat>
+
+    @Query(
+        "SELECT count(1) cnt, COALESCE(sum(dest_amount * crm.rate), 0) total" +
+                " FROM transaction tm " +
+                " join wallet wm on wm.id = tm.dest_wallet " +
+                " WHERE wm.owner = :owner " +
+                " and wm.id = :walletId " +
+                " and tm.transaction_date >= :startDate " +
+                " and tm.transaction_date <= :endDate"
+    )
+    fun calculateDepositStatistics(
+        @Param("owner") owner: Long,
+        @Param("walletId") wallet: Long,
+        @Param("startDate") startDate: LocalDateTime,
+        @Param("endDate") endDate: LocalDateTime
+    ): Mono<TransactionStat>
+
+    @Query(
+        """
+        select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
+        from wallet as w
+        inner join wallet_owner as wo on (w.owner = wo.id)
+        inner join transaction as t on (w.id = t.dest_wallet)
+        where t.transfer_ref is not null and wo.uuid = :uuid
+        """
+    )
+    suspend fun findDepositTransactionsByUUID(@Param("uuid") uuid: String): Flux<DepositWithdrawTransaction>
+
+    @Query(
+        """
+        select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
+        from wallet as w
+        inner join wallet_owner as wo on (w.owner = wo.id)
+        inner join transaction as t on (w.id = t.source_wallet)
+        where wo.uuid = :uuid
+        """
+    )
+    suspend fun findWithdrawTransactionsByUUID(@Param("uuid") uuid: String): Flux<DepositWithdrawTransaction>
+
+    @Query(
+        """
+        select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
+        from wallet as w
+        inner join wallet_owner as wo on (w.owner = wo.id)
+        inner join transaction as t on (w.id = t.dest_wallet)
+        where t.transfer_ref is not null and wo.uuid = :uuid and w.currency = :currency
+        """
+    )
+    suspend fun findDepositTransactionsByUUIDAndCurrency(
+        @Param("uuid") uuid: String,
+        @Param("currency") currency: String
+    ): Flux<DepositWithdrawTransaction>
+
+    @Query(
+        """
+        select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
+        from wallet as w
+        inner join wallet_owner as wo on (w.owner = wo.id)
+        inner join transaction as t on (w.id = t.source_wallet)
+        where wo.uuid = :uuid and w.currency = :currency
+        """
+    )
+    suspend fun findWithdrawTransactionsByUUIDAndCurrency(
+        @Param("uuid") uuid: String,
+        @Param("currency") currency: String
+    ): Flux<DepositWithdrawTransaction>
 
 }

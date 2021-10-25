@@ -9,37 +9,36 @@ import reactor.core.publisher.*;
 
 import java.util.*;
 
-
 public class FormDataWorkaroundFilter implements WebFilter {
 
-	@Override
-	public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-		final ServerHttpRequest request = exchange.getRequest();
+    @Override
+    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+        final ServerHttpRequest request = exchange.getRequest();
 
-		final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
+        final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
 
-		//add all content from form data to query params
-		exchange.getFormData().subscribe(queryParams::putAll);
+        return exchange.getFormData()
+          .doOnNext(queryParams::putAll)
+          .flatMap(  it ->
+            exchange.getMultipartData().map(map -> {
+            map.forEach((key, value) -> {
+                value.forEach(item -> {
+                    //add each form field parts to query params
+                    if (item instanceof FormFieldPart) {
+                        final FormFieldPart formFieldPart = (FormFieldPart) item;
+                        queryParams.add(key, formFieldPart.value());
+                    }
+                });
 
-		exchange.getMultipartData().subscribe(map -> {
-			map.forEach((key, value) -> {
-				List<?> list = value;
-				list.forEach(item -> {
-					//add each form field parts to query params
-					if (item instanceof FormFieldPart) {
-						final FormFieldPart formFieldPart = (FormFieldPart) item;
-						queryParams.add(key, formFieldPart.value());
-					}
-				});
-
-			});
-		});
-
-		//add original query params to win identical name war
-		queryParams.putAll(request.getQueryParams());
-
-		return chain.filter(new FormDataServerWebExchangeDecorator(queryParams, exchange));
-	}
-
+            });
+            return map;
+        })
+          )
+          .doOnNext(it ->
+            queryParams.putAll(request.getQueryParams()))
+          .flatMap(it ->
+            chain.filter(new FormDataServerWebExchangeDecorator(queryParams, exchange))
+          );
+    }
 
 }

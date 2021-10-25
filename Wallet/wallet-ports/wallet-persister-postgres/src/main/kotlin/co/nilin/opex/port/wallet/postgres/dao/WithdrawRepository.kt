@@ -29,14 +29,17 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, String> {
                 " join wallet wm on wm.id = wth.wallet   " +
                 " join wallet_owner wo on wm.owner = wo.id  " +
                 " where ( :owner is null or wo.uuid = :owner) " +
-                " and (:tx_id is null or wth.transaction_id = :tx_id )" +
+                " and (:withdraw_id is null or wth.id = :withdraw_id )" +
                 " and (:dest_transaction_ref is null or wth.dest_transaction_ref = :dest_transaction_ref)"+
                 " and (:dest_address is null or wth.dest_address = :dest_address)"+
-                " and (:no_status IS TRUE or wth.status in (:status))"
+                " and (:no_status IS TRUE or wth.status in (:status))" +
+                " and (:currency is null or wm.currency in (:currency))" +
+                " order by wth.id asc"
     )
     fun findByCriteria(
         @Param("owner") ownerUuid: String?,
-        @Param("tx_id") withdrawId: String?,
+        @Param("withdraw_id") withdrawId: Long?,
+        @Param("currency") currency: String?,
         @Param("dest_transaction_ref") destTxRef: String?,
         @Param("dest_address") destAddress: String?,
         @Param("no_status") noStatus: Boolean,
