@@ -8,7 +8,7 @@ import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 
 @Table("currency")
-class CurrencyModel(
+data class CurrencyModel(
     @JsonIgnore @Id @Column("name") val name_: String,
     @JsonIgnore @Column("symbol") val symbol_: String,
     @JsonIgnore @Column("precision") val precision_: Int

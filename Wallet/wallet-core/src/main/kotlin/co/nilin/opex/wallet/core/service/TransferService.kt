@@ -6,6 +6,7 @@ import co.nilin.opex.wallet.core.exc.NotEnoughBalanceException
 import co.nilin.opex.wallet.core.exc.WithdrawLimitExceededException
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
+import co.nilin.opex.wallet.core.inout.TransferResultDetailed
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.Transaction
 import co.nilin.opex.wallet.core.spi.CurrencyRateService
@@ -27,7 +28,7 @@ class TransferService(
     val transactionManager: TransactionManager
 ) {
     @Transactional
-    suspend fun transfer(transferCommand: TransferCommand): TransferResult {
+    suspend fun transfer(transferCommand: TransferCommand): TransferResultDetailed {
         //pre transfer hook (dispatch pre transfer event)
         val srcWallet = transferCommand.sourceWallet
         val srcWalletOwner = srcWallet.owner()
@@ -43,7 +44,6 @@ class TransferService(
 
         val destWallet = transferCommand.destWallet
         val destWalletOwner = destWallet.owner()
-        val balance = destWallet.balance()
         //check wallet if can accept the value type
         val amountToTransfer = currencyRateService.convert(transferCommand.amount, destWallet.currency())
 
@@ -61,7 +61,8 @@ class TransferService(
                 transferCommand.amount.amount,
                 amountToTransfer,
                 transferCommand.description,
-                transferCommand.transferRef
+                transferCommand.transferRef,
+                LocalDateTime.now()
             )
         )
         //get the result and add to return result type
@@ -70,15 +71,18 @@ class TransferService(
         //post transfer hook(dispatch post transfer event)
 
         //notify balance change
-        return TransferResult(
-            Date().time, srcWalletOwner.uuid()
-            , srcWallet.type()
-            , srcWalletBalance
-            , walletManager.findWalletById(srcWallet.id()!!)!!.balance()
-            , transferCommand.amount
-            , destWalletOwner.uuid()
-            , destWallet.type()
-            , Amount(destWallet.currency(), amountToTransfer)
+        return TransferResultDetailed(
+            TransferResult(
+                Date().time,
+                srcWalletOwner.uuid(),
+                srcWallet.type(),
+                srcWalletBalance,
+                walletManager.findWalletById(srcWallet.id()!!)!!.balance(),
+                transferCommand.amount,
+                destWalletOwner.uuid(),
+                destWallet.type(),
+                Amount(destWallet.currency(), amountToTransfer)
+            ), tx
         )
     }
 }
