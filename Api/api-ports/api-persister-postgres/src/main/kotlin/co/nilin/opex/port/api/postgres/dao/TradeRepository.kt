@@ -114,10 +114,10 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         select 
             f.start_time as open_time,
             f.end_time as close_time, 
-            (select taker_price from trades tt where tt.create_date >= f.start_time and tt.create_date < f.end_time order by tt.create_date asc limit 1) as open,
+            (select taker_price from trades tt where symbol = :symbol and tt.create_date >= f.start_time and tt.create_date < f.end_time order by tt.create_date asc limit 1) as open,
             max(t.taker_price) as high,
             min(t.taker_price) as low,
-            (select taker_price from trades tt where tt.create_date >= f.start_time and tt.create_date < f.end_time order by tt.create_date desc limit 1) as close,
+            (select taker_price from trades tt where symbol = :symbol and tt.create_date >= f.start_time and tt.create_date < f.end_time order by tt.create_date desc limit 1) as close,
             sum(t.matched_quantity) as volume,
             count(id) as trades
         from trades t

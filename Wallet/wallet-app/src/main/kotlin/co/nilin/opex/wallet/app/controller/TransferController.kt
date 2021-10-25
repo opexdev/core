@@ -12,9 +12,8 @@ import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
+import java.lang.IllegalArgumentException
 import java.math.BigDecimal
 
 @RestController
@@ -92,8 +91,8 @@ class TransferController(
         @PathVariable("receiverUuid") receiverUuid: String,
         @PathVariable("receiverWalletType") receiverWalletType: String,
         @PathVariable("amount") amount: BigDecimal,
-        @PathVariable("description") description: String?,
-        @PathVariable("transferRef") transferRef: String?
+        @RequestParam("description") description: String?,
+        @RequestParam("transferRef") transferRef: String?
     ): TransferResult {
         if (receiverWalletType == "cashout") throw OpexException(OpexError.InvalidCashOutUsage)
         val systemUuid = "1"
@@ -102,7 +101,6 @@ class TransferController(
             ?: throw OpexException(OpexError.WalletOwnerNotFound)
         val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner, "main", currency)
             ?: throw OpexException(OpexError.WalletNotFound)
-        //TODO create source wallet if does not exist?
 
         val receiverOwner = walletOwnerManager.findWalletOwner(receiverUuid) ?: walletOwnerManager.createWalletOwner(
             systemUuid,
