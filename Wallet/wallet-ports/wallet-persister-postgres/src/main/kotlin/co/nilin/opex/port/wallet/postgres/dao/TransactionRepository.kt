@@ -95,34 +95,18 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
         from wallet as w
         inner join wallet_owner as wo on (w.owner = wo.id)
         inner join transaction as t on (w.id = t.dest_wallet)
-        where t.transfer_ref is not null and wo.uuid = :uuid
+        where t.transfer_ref is not null 
+            and wo.uuid = :uuid
+            and t.transaction_date > :startTime 
+            and t.transaction_date <= :endTime
+        limit :limit
         """
     )
-    suspend fun findDepositTransactionsByUUID(@Param("uuid") uuid: String): Flux<DepositWithdrawTransaction>
-
-    @Query(
-        """
-        select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
-        from wallet as w
-        inner join wallet_owner as wo on (w.owner = wo.id)
-        inner join transaction as t on (w.id = t.source_wallet)
-        where wo.uuid = :uuid
-        """
-    )
-    suspend fun findWithdrawTransactionsByUUID(@Param("uuid") uuid: String): Flux<DepositWithdrawTransaction>
-
-    @Query(
-        """
-        select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
-        from wallet as w
-        inner join wallet_owner as wo on (w.owner = wo.id)
-        inner join transaction as t on (w.id = t.dest_wallet)
-        where t.transfer_ref is not null and wo.uuid = :uuid and w.currency = :currency
-        """
-    )
-    suspend fun findDepositTransactionsByUUIDAndCurrency(
+    suspend fun findDepositTransactionsByUUID(
         @Param("uuid") uuid: String,
-        @Param("currency") currency: String
+        @Param("startTime") startTime: LocalDateTime,
+        @Param("endTime") endTime: LocalDateTime,
+        @Param("limit") limit: Int,
     ): Flux<DepositWithdrawTransaction>
 
     @Query(
@@ -131,12 +115,60 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
         from wallet as w
         inner join wallet_owner as wo on (w.owner = wo.id)
         inner join transaction as t on (w.id = t.source_wallet)
-        where wo.uuid = :uuid and w.currency = :currency
+        where wo.uuid = :uuid
+            and t.transaction_date > :startTime 
+            and t.transaction_date <= :endTime
+        limit :limit
+        """
+    )
+    suspend fun findWithdrawTransactionsByUUID(
+        @Param("uuid") uuid: String,
+        @Param("startTime") startTime: LocalDateTime,
+        @Param("endTime") endTime: LocalDateTime,
+        @Param("limit") limit: Int,
+    ): Flux<DepositWithdrawTransaction>
+
+    @Query(
+        """
+        select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
+        from wallet as w
+        inner join wallet_owner as wo on (w.owner = wo.id)
+        inner join transaction as t on (w.id = t.dest_wallet)
+        where t.transfer_ref is not null 
+            and wo.uuid = :uuid 
+            and w.currency = :currency
+            and t.transaction_date > :startTime 
+            and t.transaction_date <= :endTime
+        limit :limit
+        """
+    )
+    suspend fun findDepositTransactionsByUUIDAndCurrency(
+        @Param("uuid") uuid: String,
+        @Param("currency") currency: String,
+        @Param("startTime") startTime: LocalDateTime,
+        @Param("endTime") endTime: LocalDateTime,
+        @Param("limit") limit: Int,
+    ): Flux<DepositWithdrawTransaction>
+
+    @Query(
+        """
+        select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
+        from wallet as w
+        inner join wallet_owner as wo on (w.owner = wo.id)
+        inner join transaction as t on (w.id = t.source_wallet)
+        where wo.uuid = :uuid 
+            and w.currency = :currency
+            and t.transaction_date > :startTime 
+            and t.transaction_date <= :endTime
+        limit :limit
         """
     )
     suspend fun findWithdrawTransactionsByUUIDAndCurrency(
         @Param("uuid") uuid: String,
-        @Param("currency") currency: String
+        @Param("currency") currency: String,
+        @Param("startTime") startTime: LocalDateTime,
+        @Param("endTime") endTime: LocalDateTime,
+        @Param("limit") limit: Int,
     ): Flux<DepositWithdrawTransaction>
 
 }

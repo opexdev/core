@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Mono
+import java.time.LocalDateTime
 
 @Repository
 interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, String> {
@@ -30,8 +31,8 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, String> {
                 " join wallet_owner wo on wm.owner = wo.id  " +
                 " where ( :owner is null or wo.uuid = :owner) " +
                 " and (:withdraw_id is null or wth.id = :withdraw_id )" +
-                " and (:dest_transaction_ref is null or wth.dest_transaction_ref = :dest_transaction_ref)"+
-                " and (:dest_address is null or wth.dest_address = :dest_address)"+
+                " and (:dest_transaction_ref is null or wth.dest_transaction_ref = :dest_transaction_ref)" +
+                " and (:dest_address is null or wth.dest_address = :dest_address)" +
                 " and (:no_status IS TRUE or wth.status in (:status))" +
                 " and (:currency is null or wm.currency in (:currency))" +
                 " order by wth.id asc"
@@ -48,7 +49,42 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, String> {
 
     @Query("select * from withdraws where wallet = :wallet and transaction_id = :tx_id")
     fun findByWalletAndTransactionId(
-        @Param("wallet") wallet: Long, @Param("tx_id") txId: String
+        @Param("wallet") wallet: Long,
+        @Param("tx_id") txId: String
     ): Mono<WithdrawModel?>
+
+    @Query(
+        """
+        select * from withdraws 
+        where uuid = :uuid
+            and dest_currency = :currency
+            and create_date > :startTime 
+            and create_date <= :endTime
+        limit :limit
+        """
+    )
+    fun findWithdrawHistory(
+        @Param("uuid") uuid: String,
+        @Param("currency") currency: String,
+        @Param("startTime") startTime: LocalDateTime,
+        @Param("endTime") endTime: LocalDateTime,
+        @Param("limit") limit: Int,
+    ): Flow<WithdrawModel>
+
+    @Query(
+        """
+        select * from withdraws 
+        where uuid = :uuid
+            and create_date > :startTime 
+            and create_date <= :endTime
+        limit :limit
+        """
+    )
+    fun findWithdrawHistory(
+        @Param("uuid") uuid: String,
+        @Param("startTime") startTime: LocalDateTime,
+        @Param("endTime") endTime: LocalDateTime,
+        @Param("limit") limit: Int,
+    ): Flow<WithdrawModel>
 
 }

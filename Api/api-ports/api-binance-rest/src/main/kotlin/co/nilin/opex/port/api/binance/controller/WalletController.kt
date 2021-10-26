@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.Instant
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.*
 
 @RestController
@@ -84,7 +85,7 @@ class WalletController(
         @RequestParam("withdrawOrderId", required = false)
         withdrawOrderId: String?,
         @RequestParam("status", required = false)
-        status: Int?,
+        withdrawStatus: Int?,
         @RequestParam("offset", required = false)
         offset: Int?,
         @RequestParam("limit", required = false)
@@ -110,21 +111,29 @@ class WalletController(
             offset ?: 0
         )
         return response.map {
+            val status = when (it.status) {
+                "CREATED" -> 0
+                "DONE" -> 1
+                "REJECTED" -> 2
+                else -> -1
+            }
+
             WithdrawResponse(
-                "user_wallet",
+                it.destAddress ?: "0xusEraDdReS",
                 it.amount,
-                LocalDateTime.ofInstant(Instant.ofEpochMilli(it.date), TimeZone.getDefault().toZoneId())
+                LocalDateTime.ofInstant(Instant.ofEpochMilli(it.createDate), ZoneId.systemDefault())
                     .toString()
                     .replace("T", " "),
-                it.currency,
-                it.id.toString(),
+                it.destCurrency ?: "",
+                it.withdrawId?.toString() ?: "",
                 "",
-                "",
-                0,
+                it.destNetwork ?: "",
                 1,
-                "0.001",
-                1,
-                it.id.toString()
+                status,
+                it.appliedFee.toString(),
+                3,
+                it.withdrawId.toString(),
+                if (status == 1 && it.acceptDate != null) it.acceptDate!! else it.createDate
             )
         }
     }
@@ -140,13 +149,14 @@ class WalletController(
                 deposit.currency,
                 detail?.chain ?: "",
                 1,
-                detail?.address ?: "user_address",
+                detail?.address ?: "0xusEraDdReS",
                 null,
                 deposit.ref ?: deposit.id.toString(),
                 deposit.date,
                 1,
                 "1/1",
-                "1/1"
+                "1/1",
+                deposit.date
             )
         }
     }

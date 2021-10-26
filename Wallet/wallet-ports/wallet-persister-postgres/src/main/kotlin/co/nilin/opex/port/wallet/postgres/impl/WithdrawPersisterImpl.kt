@@ -11,14 +11,25 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
 
 @Service
 class WithdrawPersisterImpl(
-    val withdrawRepository: WithdrawRepository, val transactionRepository: TransactionRepository
+    private val withdrawRepository: WithdrawRepository,
+    private val transactionRepository: TransactionRepository
 ) : WithdrawPersister {
-    override suspend fun findByCriteria(ownerUuid: String?, withdrawId: String?, currency: String?, destTxRef: String?, destAddress: String?, noStatus: Boolean, status: List<String>?): List<WithdrawResponse> {
+
+    override suspend fun findByCriteria(
+        ownerUuid: String?,
+        withdrawId: String?,
+        currency: String?,
+        destTxRef: String?,
+        destAddress: String?,
+        noStatus: Boolean,
+        status: List<String>?
+    ): List<WithdrawResponse> {
         return withdrawRepository
             .findByCriteria(ownerUuid, withdrawId?.toLong(), currency, destTxRef, destAddress, noStatus, status)
             .map { wm ->
@@ -29,14 +40,31 @@ class WithdrawPersisterImpl(
                     transactionRepository.findById(wm.finalizedTransaction.toLong()).awaitFirstOrNull()
                 WithdrawResponse(
                     wm.id!!,
-                    wm.ownerUuid, Date.from(
+                    wm.ownerUuid,
+                    Date.from(
                         reqTx.txDate.atZone(ZoneId.systemDefault()).toInstant()
-                    ), if (finalTx == null)
+                    ),
+                    if (finalTx == null)
                         null
                     else
                         Date.from(
                             finalTx.txDate.atZone(ZoneId.systemDefault()).toInstant()
-                        ), reqTx.id.toString(), finalTx?.id.toString(), wm.acceptedFee, wm.appliedFee, wm.amount, wm.destAmount, wm.destCurrency, wm.destAddress, wm.destNetwork, wm.destNote, wm.destTransactionRef, wm.statusReason, wm.status
+                        ),
+                    reqTx.id.toString(),
+                    finalTx?.id.toString(),
+                    wm.acceptedFee,
+                    wm.appliedFee,
+                    wm.amount,
+                    wm.destAmount,
+                    wm.destCurrency,
+                    wm.destAddress,
+                    wm.destNetwork,
+                    wm.destNote,
+                    wm.destTransactionRef,
+                    wm.statusReason,
+                    wm.status,
+                    wm.createDate,
+                    wm.acceptDate
                 )
             }
             .toList()
@@ -60,7 +88,9 @@ class WithdrawPersisterImpl(
                 withdraw.destNote,
                 withdraw.destTransactionRef,
                 withdraw.statusReason,
-                withdraw.status
+                withdraw.status,
+                withdraw.createDate,
+                withdraw.acceptDate
             )
         ).awaitFirst()
         return Withdraw(
@@ -74,12 +104,14 @@ class WithdrawPersisterImpl(
             withdraw.appliedFee,
             withdraw.destAmount,
             withdraw.destCurrency,
-            withdraw.destNetwork,
             withdraw.destAddress,
+            withdraw.destNetwork,
             withdraw.destNote,
             withdraw.destTransactionRef,
             withdraw.statusReason,
-            withdraw.status
+            withdraw.status,
+            withdraw.createDate,
+            withdraw.acceptDate
         )
     }
 
@@ -97,14 +129,53 @@ class WithdrawPersisterImpl(
                     withdraw.appliedFee,
                     withdraw.destAmount,
                     withdraw.destCurrency,
-                    withdraw.destNetwork,
                     withdraw.destAddress,
+                    withdraw.destNetwork,
                     withdraw.destNote,
                     withdraw.destTransactionRef,
                     withdraw.statusReason,
-                    withdraw.status
+                    withdraw.status,
+                    withdraw.createDate,
+                    withdraw.acceptDate
                 )
             }
             .awaitFirstOrNull()
+    }
+
+    override suspend fun findWithdrawHistory(
+        uuid: String,
+        coin: String?,
+        startTime: LocalDateTime,
+        endTime: LocalDateTime,
+        limit: Int,
+        offset: Int
+    ): List<Withdraw> {
+        val withdraws = if (coin == null)
+            withdrawRepository.findWithdrawHistory(uuid, startTime, endTime, limit)
+        else
+            withdrawRepository.findWithdrawHistory(uuid, coin, startTime, endTime, limit)
+
+        return withdraws.map { withdraw ->
+            Withdraw(
+                withdraw.id,
+                withdraw.ownerUuid,
+                withdraw.wallet,
+                withdraw.amount,
+                withdraw.requestTransaction,
+                withdraw.finalizedTransaction,
+                withdraw.acceptedFee,
+                withdraw.appliedFee,
+                withdraw.destAmount,
+                withdraw.destCurrency,
+                withdraw.destAddress,
+                withdraw.destNetwork,
+                withdraw.destNote,
+                withdraw.destTransactionRef,
+                withdraw.statusReason,
+                withdraw.status,
+                withdraw.createDate,
+                withdraw.acceptDate
+            )
+        }.toList()
     }
 }

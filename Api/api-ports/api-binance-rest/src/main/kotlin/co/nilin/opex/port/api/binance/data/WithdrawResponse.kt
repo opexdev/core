@@ -15,4 +15,5 @@ data class WithdrawResponse(
     val transactionFee: String,
     val confirmNo: Int,
     val txId: String,
+    val time: Long
 )
