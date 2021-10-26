@@ -13,3 +13,15 @@ spring:
       port: 8500
   main:
     allow-bean-definition-overriding: true
+
+app:
+  accountant:
+    url: lb://opex-accountant
+  matching-gateway:
+    url: lb://opex-gateway
+  wallet:
+    url: lb://opex-wallet
+  opex-bc-gateway:
+    url: lb://opex-bc-gateway
+  auth:
+    cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
