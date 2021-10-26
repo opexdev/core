@@ -1,15 +1,11 @@
-package co.nilin.opex.wallet.core.model
+package co.nilin.opex.api.core.inout
 
 import java.math.BigDecimal
-import java.time.LocalDateTime
 
-data class Withdraw(
-    val withdrawId: Long? = null,
-    val ownerUuid: String,
-    val wallet: Long,
+data class WithdrawHistoryResponse(
+    val withdrawId: Long?,
+    val uuid: String,
     val amount: BigDecimal,
-    val requestTransaction: String,
-    val finalizedTransaction: String?,
     val acceptedFee: BigDecimal,
     val appliedFee: BigDecimal?,
     val destAmount: BigDecimal?,
@@ -20,6 +16,6 @@ data class Withdraw(
     var destTransactionRef: String?,
     val statusReason: String?,
     val status: String,
-    val createDate: LocalDateTime = LocalDateTime.now(),
-    val acceptDate: LocalDateTime? = null
+    val createDate: Long,
+    val acceptDate: Long?
 )

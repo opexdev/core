@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.app.controller
 
+import co.nilin.opex.wallet.app.dto.TransactionRequest
 import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.service.WithdrawService
 import io.swagger.annotations.ApiResponse
@@ -9,11 +10,30 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 import java.security.Principal
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 @RestController
-class WithdrawController(
-    val withdrawService: WithdrawService
-) {
+class WithdrawController(private val withdrawService: WithdrawService) {
+
+    data class WithdrawHistoryResponse(
+        val withdrawId: Long? = null,
+        val uuid: String,
+        val amount: BigDecimal,
+        val acceptedFee: BigDecimal,
+        val appliedFee: BigDecimal?,
+        val destAmount: BigDecimal?,
+        val destCurrency: String?,
+        val destAddress: String?,
+        val destNetwork: String?,
+        var destNote: String?,
+        var destTransactionRef: String?,
+        val statusReason: String?,
+        val status: String,
+        val createDate: Long,
+        val acceptDate: Long?
+    )
 
     @GetMapping("/admin/withdraw")
     @ApiResponse(
@@ -35,7 +55,15 @@ class WithdrawController(
         @RequestParam("status", required = false) status: List<String>?
     ): List<WithdrawResponse> {
         return withdrawService
-            .findByCriteria(uuid, withdrawId, currency, destTxRef, destAddress, status?.isEmpty() ?: true, status ?: listOf(""))
+            .findByCriteria(
+                uuid,
+                withdrawId,
+                currency,
+                destTxRef,
+                destAddress,
+                status?.isEmpty() ?: true,
+                status ?: listOf("")
+            )
     }
 
     @GetMapping("/withdraw")
@@ -92,8 +120,12 @@ class WithdrawController(
         @RequestParam("destNetwork") destNetwork: String,
         @RequestParam("destNote", required = false) destNote: String?,
     ): WithdrawResult {
-       return withdrawService.requestWithdraw(WithdrawCommand(principal.name, symbol,
-       amount, description, transferRef, destCurrency, destAddress, destNetwork, destNote, fee))
+        return withdrawService.requestWithdraw(
+            WithdrawCommand(
+                principal.name, symbol,
+                amount, description, transferRef, destCurrency, destAddress, destNetwork, destNote, fee
+            )
+        )
     }
 
     @PostMapping(
@@ -114,7 +146,7 @@ class WithdrawController(
         @RequestParam("statusReason") statusReason: String,
         @RequestParam("destNote", required = false) destNote: String?
     ): WithdrawResult {
-       return withdrawService.rejectWithdraw(WithdrawRejectCommand(withdrawId, statusReason, destNote))
+        return withdrawService.rejectWithdraw(WithdrawRejectCommand(withdrawId, statusReason, destNote))
     }
 
     @PostMapping("/admin/withdraw/{id}/accept")
@@ -134,6 +166,39 @@ class WithdrawController(
         @RequestParam("destNote", required = false) destNote: String?,
         @RequestParam("fee", required = false) fee: BigDecimal = BigDecimal.ZERO,
     ): WithdrawResult {
-       return withdrawService.acceptWithdraw(WithdrawAcceptCommand(withdrawId, destTransactionRef, destNote, fee))
+        return withdrawService.acceptWithdraw(WithdrawAcceptCommand(withdrawId, destTransactionRef, destNote, fee))
+    }
+
+    @PostMapping("/withdraw/history/{uuid}")
+    suspend fun getWithdrawTransactionsForUser(
+        @PathVariable("uuid") uuid: String,
+        @RequestBody request: TransactionRequest
+    ): List<WithdrawHistoryResponse> {
+        return withdrawService.findWithdrawHistory(
+            uuid,
+            request.coin,
+            LocalDateTime.ofInstant(Instant.ofEpochMilli(request.startTime), ZoneId.systemDefault()),
+            LocalDateTime.ofInstant(Instant.ofEpochMilli(request.endTime), ZoneId.systemDefault()),
+            request.limit,
+            request.offset
+        ).map {
+            WithdrawHistoryResponse(
+                it.withdrawId,
+                it.ownerUuid,
+                it.amount,
+                it.acceptedFee,
+                it.appliedFee,
+                it.destAmount,
+                it.destCurrency,
+                it.destAddress,
+                it.destNetwork,
+                it.destNote,
+                it.destTransactionRef,
+                it.statusReason,
+                it.status,
+                it.createDate.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+                it.acceptDate?.atZone(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
+            )
+        }
     }
 }

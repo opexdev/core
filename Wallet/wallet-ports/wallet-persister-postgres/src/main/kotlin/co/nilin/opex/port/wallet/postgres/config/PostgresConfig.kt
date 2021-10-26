@@ -31,7 +31,7 @@ class PostgresConfig(db: DatabaseClient) {
                     source_amount decimal NOT NULL,
                     dest_amount decimal NOT NULL,
                     description VARCHAR(100),
-                    transfer_ref VARCHAR(25),
+                    transfer_ref VARCHAR(500),
                     transaction_date TIMESTAMP NOT NULL DEFAULT CURRENT_DATE
                 ); 
                 
@@ -101,7 +101,9 @@ class PostgresConfig(db: DatabaseClient) {
                     dest_transaction_ref VARCHAR(100),
                     description VARCHAR(2000),
                     status_reason VARCHAR(2000),
-                    status VARCHAR(20)
+                    status VARCHAR(20),
+                    create_date TIMESTAMP NOT NULL,
+                    accept_date TIMESTAMP
                 );
 
                 insert into wallet_owner(id, uuid, title, level) values(1, '1', 'system', 'basic') ON CONFLICT DO NOTHING; 

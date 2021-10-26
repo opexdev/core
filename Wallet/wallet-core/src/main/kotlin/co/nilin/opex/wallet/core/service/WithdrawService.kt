@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.lang.IllegalArgumentException
 import java.lang.RuntimeException
 import java.math.BigDecimal
+import java.time.LocalDateTime
 
 @Service
 class WithdrawService(
@@ -42,7 +43,12 @@ class WithdrawService(
         )
         val transferResultDetailed = transferService.transfer(
             TransferCommand(
-                sourceWallet, receiverWallet, Amount(currency, withdrawCommand.amount), withdrawCommand.description, withdrawCommand.transferRef, emptyMap()
+                sourceWallet,
+                receiverWallet,
+                Amount(currency, withdrawCommand.amount),
+                withdrawCommand.description,
+                withdrawCommand.transferRef,
+                emptyMap()
             )
         )
         val withdraw = withdrawPersister.persist(
@@ -63,7 +69,8 @@ class WithdrawService(
         acceptCommand: WithdrawAcceptCommand
     ): WithdrawResult {
         val system = walletOwnerManager.findWalletOwner(systemUuid) ?: throw IllegalArgumentException()
-        val withdraw = withdrawPersister.findById(acceptCommand.withdrawId) ?: throw RuntimeException("No matching withdraw request")
+        val withdraw = withdrawPersister.findById(acceptCommand.withdrawId)
+            ?: throw RuntimeException("No matching withdraw request")
         if (withdraw.status != "CREATED") {
             throw RuntimeException("This withdraw request processed before")
         }
@@ -90,13 +97,24 @@ class WithdrawService(
 
         val updateWithdraw = withdrawPersister.persist(
             Withdraw(
-                withdraw.withdrawId, withdraw.ownerUuid,
-                withdraw.wallet, withdraw.amount,
-                withdraw.requestTransaction, transferResultDetailed.tx, withdraw.acceptedFee, withdraw.appliedFee,
+                withdraw.withdrawId,
+                withdraw.ownerUuid,
+                withdraw.wallet,
+                withdraw.amount,
+                withdraw.requestTransaction,
+                transferResultDetailed.tx,
+                withdraw.acceptedFee,
+                withdraw.appliedFee,
                 withdraw.amount.subtract(acceptCommand.appliedFee),
                 withdraw.destCurrency,
-                withdraw.destAddress, withdraw.destNetwork,
-                withdraw.destNote ?: "" + "-----------" + (acceptCommand.destNote ?: ""), null, acceptCommand.destTransactionRef!!, "DONE"
+                withdraw.destAddress,
+                withdraw.destNetwork,
+                withdraw.destNote ?: "" + "-----------" + (acceptCommand.destNote ?: ""),
+                null,
+                acceptCommand.destTransactionRef!!,
+                "DONE",
+                withdraw.createDate,
+                LocalDateTime.now()
             )
         )
 
@@ -108,7 +126,8 @@ class WithdrawService(
     suspend fun rejectWithdraw(
         rejectCommand: WithdrawRejectCommand
     ): WithdrawResult {
-        val withdraw = withdrawPersister.findById(rejectCommand.withdrawId) ?: throw RuntimeException("No matching withdraw request")
+        val withdraw = withdrawPersister.findById(rejectCommand.withdrawId)
+            ?: throw RuntimeException("No matching withdraw request")
         if (withdraw.status != "CREATED") {
             throw RuntimeException("This withdraw request processed before")
         }
@@ -131,13 +150,24 @@ class WithdrawService(
         )
         val updateWithdraw = withdrawPersister.persist(
             Withdraw(
-                withdraw.withdrawId, withdraw.ownerUuid,
-                withdraw.wallet, withdraw.amount,
-                withdraw.requestTransaction, transferResultDetailed.tx, withdraw.acceptedFee, null,
+                withdraw.withdrawId,
+                withdraw.ownerUuid,
+                withdraw.wallet,
+                withdraw.amount,
+                withdraw.requestTransaction,
+                transferResultDetailed.tx,
+                withdraw.acceptedFee,
+                null,
                 null,
                 withdraw.destCurrency,
-                withdraw.destAddress, withdraw.destNetwork,
-                withdraw.destNote ?: "" + "-----------" + (rejectCommand.destNote ?: ""), null, rejectCommand.statusReason, "REJECTED"
+                withdraw.destAddress,
+                withdraw.destNetwork,
+                withdraw.destNote ?: "" + "-----------" + (rejectCommand.destNote ?: ""),
+                null,
+                rejectCommand.statusReason,
+                "REJECTED",
+                withdraw.createDate,
+                null
             )
         )
         return WithdrawResult(withdraw.withdrawId!!, updateWithdraw.status)
@@ -154,5 +184,16 @@ class WithdrawService(
     ): List<WithdrawResponse> {
         return withdrawPersister
             .findByCriteria(ownerUuid, withdrawId, currency, destTxRef, destAddress, noStatus, status)
+    }
+
+    suspend fun findWithdrawHistory(
+        uuid: String,
+        coin: String?,
+        startTime: LocalDateTime,
+        endTime: LocalDateTime,
+        limit: Int,
+        offset: Int
+    ): List<Withdraw> {
+        return withdrawPersister.findWithdrawHistory(uuid, coin, startTime, endTime, limit, offset)
     }
 }
