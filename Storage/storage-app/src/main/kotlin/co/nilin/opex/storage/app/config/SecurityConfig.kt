@@ -22,7 +22,6 @@ class SecurityConfig(private val webClient: WebClient) {
     @Bean
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
         http.csrf().disable()
-            .cors().and()
             .authorizeExchange()
             .pathMatchers("/hello").permitAll()
             .pathMatchers("/actuator/**").permitAll()
@@ -37,7 +36,6 @@ class SecurityConfig(private val webClient: WebClient) {
                     AuthorizationDecision(granted)
                 }
             }
-            .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .pathMatchers("/**").hasAuthority("SCOPE_trust")
             .anyExchange().authenticated()
             .and()
