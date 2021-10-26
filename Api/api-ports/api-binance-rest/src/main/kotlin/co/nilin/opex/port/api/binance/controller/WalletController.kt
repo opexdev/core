@@ -1,5 +1,6 @@
 package co.nilin.opex.port.api.binance.controller
 
+import co.nilin.opex.api.core.inout.DepositDetails
 import co.nilin.opex.api.core.inout.TransactionHistoryResponse
 import co.nilin.opex.api.core.spi.BlockchainGatewayProxy
 import co.nilin.opex.api.core.spi.WalletProxy
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.Instant
 import java.time.LocalDateTime
-import java.time.ZoneId
 import java.util.*
 
 @RestController
@@ -63,7 +63,7 @@ class WalletController(
         @CurrentSecurityContext securityContext: SecurityContext
     ): List<DepositResponse> {
         val validLimit = limit ?: 1000
-        val response = walletProxy.getDepositTransactions(
+        val deposits = walletProxy.getDepositTransactions(
             securityContext.jwtAuthentication().name,
             securityContext.jwtAuthentication().tokenValue(),
             coin,
@@ -72,21 +72,9 @@ class WalletController(
             if (validLimit > 1000 || validLimit < 1) 1000 else validLimit,
             offset ?: 0
         )
-        return response.map {
-            DepositResponse(
-                it.amount,
-                it.currency,
-                "",
-                1,
-                "user_address",
-                null,
-                it.ref ?: it.id.toString(),
-                it.date,
-                0,
-                "1/1",
-                "1/1"
-            )
-        }
+
+        val details = bcGatewayProxy.getDepositDetails(deposits.map { it.ref ?: "" })
+        return matchDepositsAndDetails(deposits, details)
     }
 
     @GetMapping("/v1/capital/withdraw/history")
@@ -137,6 +125,28 @@ class WalletController(
                 "0.001",
                 1,
                 it.id.toString()
+            )
+        }
+    }
+
+    private fun matchDepositsAndDetails(
+        deposits: List<TransactionHistoryResponse>,
+        details: List<DepositDetails>
+    ): List<DepositResponse> {
+        return deposits.map { deposit ->
+            val detail = details.find { deposit.ref == it.hash }
+            DepositResponse(
+                deposit.amount,
+                deposit.currency,
+                detail?.chain ?: "",
+                1,
+                detail?.address ?: "user_address",
+                null,
+                deposit.ref ?: deposit.id.toString(),
+                deposit.date,
+                1,
+                "1/1",
+                "1/1"
             )
         }
     }

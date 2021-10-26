@@ -13,18 +13,3 @@ spring:
       port: 8500
   main:
     allow-bean-definition-overriding: true
-
-app:
-  cors:
-    allowed-hosts: https://opex.dev, http://localhost:3000
-    allowed-patterns: http://192.168.*
-  accountant:
-    url: lb://opex-accountant
-  matching-gateway:
-    url: lb://opex-gateway
-  wallet:
-    url: lb://opex-wallet
-  opex-bc-gateway:
-    url: lb://opex-bc-gateway
-  auth:
-    cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs

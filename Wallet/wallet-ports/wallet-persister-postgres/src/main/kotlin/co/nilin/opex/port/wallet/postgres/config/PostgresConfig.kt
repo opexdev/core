@@ -31,7 +31,7 @@ class PostgresConfig(db: DatabaseClient) {
                     source_amount decimal NOT NULL,
                     dest_amount decimal NOT NULL,
                     description VARCHAR(100),
-                    transfer_ref VARCHAR(25),
+                    transfer_ref VARCHAR(200),
                     transaction_date TIMESTAMP NOT NULL DEFAULT CURRENT_DATE
                 ); 
                 

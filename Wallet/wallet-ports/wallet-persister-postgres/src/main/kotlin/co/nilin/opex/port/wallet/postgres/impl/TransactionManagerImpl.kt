@@ -49,6 +49,7 @@ class TransactionManagerImpl(val transactionRepository: TransactionRepository) :
                     it.currency,
                     it.amount,
                     it.description,
+                    it.ref,
                     it.date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
                 )
             }
@@ -74,6 +75,7 @@ class TransactionManagerImpl(val transactionRepository: TransactionRepository) :
                     it.currency,
                     it.amount,
                     it.description,
+                    it.ref,
                     it.date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
                 )
             }
