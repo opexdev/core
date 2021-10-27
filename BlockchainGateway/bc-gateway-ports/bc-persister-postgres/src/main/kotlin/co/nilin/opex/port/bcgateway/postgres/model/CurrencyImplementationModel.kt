@@ -17,4 +17,5 @@ class CurrencyImplementationModel(
     @Column("withdraw_enabled") val withdrawEnabled: Boolean,
     @Column("withdraw_fee") val withdrawFee: BigDecimal,
     @Column("withdraw_min") val withdrawMin: BigDecimal,
+    @Column("decimal") val decimal: Int
 )

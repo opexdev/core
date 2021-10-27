@@ -1,12 +1,15 @@
 package co.nilin.opex.bcgateway.core.service
 
 import co.nilin.opex.bcgateway.core.api.WalletSyncService
+import co.nilin.opex.bcgateway.core.model.CurrencyImplementation
+import co.nilin.opex.bcgateway.core.model.Deposit
 import co.nilin.opex.bcgateway.core.model.WalletSyncRecord
 import co.nilin.opex.bcgateway.core.spi.*
 import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
+import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import kotlin.coroutines.coroutineContext
@@ -33,10 +36,9 @@ class WalletSyncServiceImpl(
                         val uuid = assignedAddressHandler.findUuid(deposit.depositor, deposit.depositorMemo)
                         if (uuid != null) {
                             logger.info("deposit came for $uuid - to ${deposit.depositor}")
-                            val symbol = currencyLoader.findSymbol(deposit.chain, deposit.tokenAddress)
+                            val symbol = currencyLoader.findByChainAndTokenAddress(deposit.chain, deposit.tokenAddress)
                             if (symbol != null) {
-                                logger.info("sending deposit to $uuid - ${deposit.amount} $symbol")
-                                walletProxy.transfer(uuid, symbol, deposit.amount, deposit.hash)
+                                sendDeposit(uuid, symbol, deposit)
                             }
                         }
                         walletSyncRecordHandler.saveWalletSyncRecord(
@@ -55,5 +57,12 @@ class WalletSyncServiceImpl(
                 )
             }
         }
+    }
+
+    private suspend fun sendDeposit(uuid: String, currencyImpl: CurrencyImplementation, deposit: Deposit) {
+        val amount = deposit.amount.divide(BigDecimal(10).pow(currencyImpl.decimal))
+        val symbol = currencyImpl.currency.symbol
+        logger.info("sending deposit to $uuid - $amount $symbol")
+        walletProxy.transfer(uuid, symbol, amount, deposit.hash)
     }
 }
