@@ -1,5 +1,6 @@
 package co.nilin.opex.port.api.binance.controller
 
+import co.nilin.opex.api.core.inout.DepositDetails
 import co.nilin.opex.api.core.inout.TransactionHistoryResponse
 import co.nilin.opex.api.core.spi.BlockchainGatewayProxy
 import co.nilin.opex.api.core.spi.WalletProxy
@@ -63,7 +64,7 @@ class WalletController(
         @CurrentSecurityContext securityContext: SecurityContext
     ): List<DepositResponse> {
         val validLimit = limit ?: 1000
-        val response = walletProxy.getDepositTransactions(
+        val deposits = walletProxy.getDepositTransactions(
             securityContext.jwtAuthentication().name,
             securityContext.jwtAuthentication().tokenValue(),
             coin,
@@ -72,21 +73,9 @@ class WalletController(
             if (validLimit > 1000 || validLimit < 1) 1000 else validLimit,
             offset ?: 0
         )
-        return response.map {
-            DepositResponse(
-                it.amount,
-                it.currency,
-                "",
-                1,
-                "user_address",
-                null,
-                it.ref ?: it.id.toString(),
-                it.date,
-                0,
-                "1/1",
-                "1/1"
-            )
-        }
+
+        val details = bcGatewayProxy.getDepositDetails(deposits.map { it.ref ?: "" })
+        return matchDepositsAndDetails(deposits, details)
     }
 
     @GetMapping("/v1/capital/withdraw/history")
@@ -96,7 +85,7 @@ class WalletController(
         @RequestParam("withdrawOrderId", required = false)
         withdrawOrderId: String?,
         @RequestParam("status", required = false)
-        status: Int?,
+        withdrawStatus: Int?,
         @RequestParam("offset", required = false)
         offset: Int?,
         @RequestParam("limit", required = false)
@@ -122,21 +111,52 @@ class WalletController(
             offset ?: 0
         )
         return response.map {
+            val status = when (it.status) {
+                "CREATED" -> 0
+                "DONE" -> 1
+                "REJECTED" -> 2
+                else -> -1
+            }
+
             WithdrawResponse(
-                "user_wallet",
+                it.destAddress ?: "0xusEraDdReS",
                 it.amount,
-                LocalDateTime.ofInstant(Instant.ofEpochMilli(it.date), TimeZone.getDefault().toZoneId())
+                LocalDateTime.ofInstant(Instant.ofEpochMilli(it.createDate), ZoneId.systemDefault())
                     .toString()
                     .replace("T", " "),
-                it.currency,
-                it.id.toString(),
+                it.destCurrency ?: "",
+                it.withdrawId?.toString() ?: "",
                 "",
-                "",
-                0,
+                it.destNetwork ?: "",
                 1,
-                "0.001",
+                status,
+                it.appliedFee.toString(),
+                3,
+                it.withdrawId.toString(),
+                if (status == 1 && it.acceptDate != null) it.acceptDate!! else it.createDate
+            )
+        }
+    }
+
+    private fun matchDepositsAndDetails(
+        deposits: List<TransactionHistoryResponse>,
+        details: List<DepositDetails>
+    ): List<DepositResponse> {
+        return deposits.map { deposit ->
+            val detail = details.find { deposit.ref == it.hash }
+            DepositResponse(
+                deposit.amount,
+                deposit.currency,
+                detail?.chain ?: "",
                 1,
-                it.id.toString()
+                detail?.address ?: "0xusEraDdReS",
+                null,
+                deposit.ref ?: deposit.id.toString(),
+                deposit.date,
+                1,
+                "1/1",
+                "1/1",
+                deposit.date
             )
         }
     }

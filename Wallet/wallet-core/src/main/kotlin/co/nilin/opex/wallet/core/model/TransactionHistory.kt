@@ -8,5 +8,6 @@ data class TransactionHistory(
     val currency: String,
     val amount: BigDecimal,
     val description: String?,
+    val ref: String?,
     val date: Long
 )

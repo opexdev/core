@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.core.inout
 
 import java.math.BigDecimal
+import java.time.LocalDateTime
 import java.util.*
 
 class WithdrawResponse(
@@ -20,5 +21,7 @@ class WithdrawResponse(
     var destNote: String?,
     var destTransactionRef: String?,
     val statusReason: String?,
-    val status: String
+    val status: String,
+    val createDate: LocalDateTime = LocalDateTime.now(),
+    val acceptDate: LocalDateTime? = null
 )

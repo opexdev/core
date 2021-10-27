@@ -2,8 +2,10 @@ package co.nilin.opex.wallet.core.spi
 
 import co.nilin.opex.wallet.core.inout.WithdrawResponse
 import co.nilin.opex.wallet.core.model.Withdraw
+import java.time.LocalDateTime
 
 interface WithdrawPersister {
+
     suspend fun findByCriteria(
         ownerUuid: String?,
         withdrawId: String?,
@@ -14,6 +16,16 @@ interface WithdrawPersister {
         status: List<String>?
     ): List<WithdrawResponse>
 
-    suspend fun persist(withdraw: Withdraw):Withdraw
+    suspend fun persist(withdraw: Withdraw): Withdraw
+
     suspend fun findById(withdrawId: String): Withdraw?
+
+    suspend fun findWithdrawHistory(
+        uuid: String,
+        coin:String?,
+        startTime: LocalDateTime,
+        endTime: LocalDateTime,
+        limit: Int,
+        offset: Int
+    ): List<Withdraw>
 }
