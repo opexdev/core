@@ -1,37 +1,22 @@
 package co.nilin.opex.port.accountant.postgres.config
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
+import org.springframework.core.io.Resource
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories
 import org.springframework.r2dbc.core.DatabaseClient
 
 @Configuration
 @Profile("demo")
-class PostgresDemoConfig(db: DatabaseClient) {
-
+class PostgresDemoConfig(db: DatabaseClient, @Value("classpath:scheme-demo.sql") private val schemeResource: Resource) {
     init {
-        val sql = """ 
-            insert into pair_config values('btc_usdt', 'btc', 'usdt', 0.000001, 0.01, 55000)ON CONFLICT DO NOTHING;
-            insert into pair_fee_config values(1, 'btc_usdt', 'ASK', '*', 0.01, 0.01) ON CONFLICT DO NOTHING;         
-            insert into pair_fee_config values(2, 'btc_usdt', 'BID', '*', 0.01, 0.01) ON CONFLICT DO NOTHING;
-            
-            insert into pair_config values('eth_usdt', 'eth', 'usdt', 0.00001, 0.01, 3800)ON CONFLICT DO NOTHING;
-            insert into pair_fee_config values(7, 'eth_usdt', 'ASK', '*', 0.01, 0.01) ON CONFLICT DO NOTHING;         
-            insert into pair_fee_config values(8, 'eth_usdt', 'BID', '*', 0.01, 0.01) ON CONFLICT DO NOTHING;
-            
-            insert into pair_config values('nln_usdt', 'nln', 'usdt', 1.0, 0.01, 0.01) ON CONFLICT DO NOTHING;         
-            insert into pair_fee_config values(3, 'nln_usdt', 'ASK', '*', 0.01, 0.01) ON CONFLICT DO NOTHING;         
-            insert into pair_fee_config values(4, 'nln_usdt', 'BID', '*', 0.01, 0.01) ON CONFLICT DO NOTHING;
-            
-            insert into pair_config values('nln_btc', 'nln', 'btc', 1.0, 0.000001, 1/5500000) ON CONFLICT DO NOTHING;         
-            insert into pair_fee_config values(5, 'nln_btc', 'ASK', '*', 0.01, 0.01) ON CONFLICT DO NOTHING;         
-            insert into pair_fee_config values(6, 'nln_btc', 'BID', '*', 0.01, 0.01) ON CONFLICT DO NOTHING;   
-            commit;      
-            """
-        val initDb = db.sql { sql }
+        val reader = schemeResource.inputStream.reader()
+        val scheme = reader.readText().trim()
+        reader.close()
+        val initDb = db.sql { scheme }
         initDb // initialize the database
             .then()
             .subscribe() // execute
     }
-
 }
