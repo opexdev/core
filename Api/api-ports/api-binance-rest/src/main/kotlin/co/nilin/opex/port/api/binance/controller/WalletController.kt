@@ -74,6 +74,9 @@ class WalletController(
             offset ?: 0
         )
 
+        if (deposits.isEmpty())
+            return emptyList()
+
         val details = bcGatewayProxy.getDepositDetails(deposits.map { it.ref ?: "" })
         return matchDepositsAndDetails(deposits, details)
     }

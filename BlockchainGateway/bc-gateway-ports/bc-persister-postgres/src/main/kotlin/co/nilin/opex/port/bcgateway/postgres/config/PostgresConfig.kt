@@ -101,7 +101,8 @@ class PostgresConfig(db: DatabaseClient) {
                     token_name VARCHAR(72),
                     withdraw_enabled BOOLEAN NOT NULL,
                     withdraw_fee NUMERIC NOT NULL,
-                    withdraw_min NUMERIC NOT NULL
+                    withdraw_min NUMERIC NOT NULL,
+                    decimal INTEGER NOT NULL
                 );
             """
         }

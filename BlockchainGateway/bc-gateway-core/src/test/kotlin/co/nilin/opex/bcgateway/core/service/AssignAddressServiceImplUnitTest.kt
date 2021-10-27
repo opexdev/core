@@ -46,7 +46,7 @@ class AssignAddressServiceImplUnitTest {
         )
         runBlocking {
             val eth =
-                CurrencyImplementation(currency, ethChain, false, null, null, true, BigDecimal.ONE, BigDecimal.TEN)
+                CurrencyImplementation(currency, ethChain, false, null, null, true, BigDecimal.ONE, BigDecimal.TEN, 18)
             val wrappedEth = CurrencyImplementation(
                 currency,
                 bscChain,
@@ -55,7 +55,8 @@ class AssignAddressServiceImplUnitTest {
                 "WETH",
                 true,
                 BigDecimal.ONE,
-                BigDecimal.ONE
+                BigDecimal.ONE,
+                18
             )
 
             Mockito.`when`(currencyLoader.fetchCurrencyInfo(currency.symbol))
@@ -69,7 +70,12 @@ class AssignAddressServiceImplUnitTest {
     fun givenReservedAddressAndUserWithNoAssignedAddress_whenAssignAddress_thenReservedAddressAssigned() {
         runBlocking {
             val user = UUID.randomUUID().toString()
-            Mockito.`when`(assignedAddressHandler.fetchAssignedAddresses(user, listOf(ethAddressType, ethMemoAddressType))).thenReturn(
+            Mockito.`when`(
+                assignedAddressHandler.fetchAssignedAddresses(
+                    user,
+                    listOf(ethAddressType, ethMemoAddressType)
+                )
+            ).thenReturn(
                 emptyList()
             )
             Mockito.`when`(reservedAddressHandler.peekReservedAddress(ethAddressType)).thenReturn(
@@ -104,7 +110,12 @@ class AssignAddressServiceImplUnitTest {
     fun givenNoReservedAddressAndUserWithNoAssignedAddress_whenAssignAddress_thenExcpetion() {
         runBlocking {
             val user = UUID.randomUUID().toString()
-            Mockito.`when`(assignedAddressHandler.fetchAssignedAddresses(user, listOf(ethAddressType, ethMemoAddressType))).thenReturn(
+            Mockito.`when`(
+                assignedAddressHandler.fetchAssignedAddresses(
+                    user,
+                    listOf(ethAddressType, ethMemoAddressType)
+                )
+            ).thenReturn(
                 emptyList()
             )
             Mockito.`when`(reservedAddressHandler.peekReservedAddress(ethAddressType)).thenReturn(null)
@@ -121,9 +132,15 @@ class AssignAddressServiceImplUnitTest {
     fun givenReservedAddressAndUserOneAssignedAddress_whenAssignAddress_thenReservedAddressAssigned() {
         runBlocking {
             val user = UUID.randomUUID().toString()
-            Mockito.`when`(assignedAddressHandler.fetchAssignedAddresses(user, listOf(ethAddressType, ethMemoAddressType))).thenReturn(
+            Mockito.`when`(
+                assignedAddressHandler.fetchAssignedAddresses(
+                    user,
+                    listOf(ethAddressType, ethMemoAddressType)
+                )
+            ).thenReturn(
                 mutableListOf(
-                    AssignedAddress( user,
+                    AssignedAddress(
+                        user,
                         "0x1",
                         null,
                         ethAddressType,

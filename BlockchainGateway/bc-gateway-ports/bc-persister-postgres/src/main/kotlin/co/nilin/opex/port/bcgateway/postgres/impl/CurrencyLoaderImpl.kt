@@ -20,6 +20,7 @@ class CurrencyLoaderImpl(
     private val currencyRepository: CurrencyRepository,
     private val currencyImplementationRepository: CurrencyImplementationRepository
 ) : CurrencyLoader {
+
     override suspend fun fetchCurrencyInfo(symbol: String): CurrencyInfo {
         val symbol = symbol.toUpperCase()
         val currencyModel = currencyRepository.findBySymbol(symbol).awaitSingleOrNull()
@@ -32,9 +33,14 @@ class CurrencyLoaderImpl(
         return CurrencyInfo(currency, implementations.toList())
     }
 
-    override suspend fun findSymbol(chain: String, address: String?): String? {
-        return currencyImplementationRepository.findByChainAndTokenAddress(chain, address)
-            .awaitFirstOrNull()?.symbol
+    override suspend fun findByChainAndTokenAddress(chain: String, address: String?): CurrencyImplementation? {
+        val impl = currencyImplementationRepository.findByChainAndTokenAddress(chain, address)
+            .awaitFirstOrNull()
+
+        return if (impl != null)
+            projectCurrencyImplementation(impl)
+        else
+            null
     }
 
     override suspend fun findImplementationsWithTokenOnChain(chain: String): List<CurrencyImplementation> {
@@ -49,7 +55,8 @@ class CurrencyLoaderImpl(
         val addressTypes = addressTypesModel.map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }
         val endpointsModel = chainRepository.findEndpointsByName(currencyImplementationModel.chain)
         val endpoints = endpointsModel.map { Endpoint(it.url) }
-        val currencyModelVal = currencyModel ?: currencyRepository.findBySymbol(currencyImplementationModel.symbol).awaitSingle()
+        val currencyModelVal =
+            currencyModel ?: currencyRepository.findBySymbol(currencyImplementationModel.symbol).awaitSingle()
         val currency = Currency(currencyModelVal.symbol, currencyModelVal.name)
         return CurrencyImplementation(
             currency,
@@ -59,7 +66,8 @@ class CurrencyLoaderImpl(
             currencyImplementationModel.tokenName,
             currencyImplementationModel.withdrawEnabled,
             currencyImplementationModel.withdrawFee,
-            currencyImplementationModel.withdrawMin
+            currencyImplementationModel.withdrawMin,
+            currencyImplementationModel.decimal
         )
     }
 }
