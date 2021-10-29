@@ -3,6 +3,7 @@ package co.nilin.opex.matching.core.eventh
 import co.nilin.opex.matching.core.eventh.events.CoreEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.util.*
 import java.util.concurrent.Executors
@@ -10,7 +11,6 @@ import kotlin.coroutines.suspendCoroutine
 
 object EventDispatcher {
 
-    private val executorService = Executors.newFixedThreadPool(10).asCoroutineDispatcher()
     private val eventsHandler = mutableMapOf<Class<*>, MutableList<EventListener<*>>>()
 
     @JvmStatic
@@ -25,14 +25,12 @@ object EventDispatcher {
     }
 
 
-    fun emit(event: CoreEvent) = CoroutineScope(executorService).launch {
+    fun emit(event: CoreEvent) {
         var type: Class<*>? = event::class.java
         while (type != null) {
             eventsHandler[type]?.forEach { eventsHandler ->
-                suspendCoroutine {
-                    kotlin.runCatching {
-                        eventsHandler(event)
-                    }
+                kotlin.runCatching {
+                    eventsHandler(event)
                 }
             }
             type = type.superclass
@@ -41,7 +39,7 @@ object EventDispatcher {
 
 
     open class EventListener<T>(
-            val lambda: (T) -> Unit
+        val lambda: (T) -> Unit
     ) {
         operator fun invoke(event: Any) {
             lambda(event as T)

@@ -12,5 +12,4 @@ interface OrderBook {
     fun handleNewOrderCommand(orderCommand: OrderCreateCommand): Order?
     fun handleCancelCommand(orderCommand: OrderCancelCommand)
     fun handleEditCommand(orderCommand: OrderEditCommand): Order?
-    fun persistent(): PersistentOrderBook
 }
