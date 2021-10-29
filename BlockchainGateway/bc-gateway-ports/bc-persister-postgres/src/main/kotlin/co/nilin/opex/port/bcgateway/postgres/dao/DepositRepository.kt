@@ -15,6 +15,9 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
 
     fun findByChain(chain: String): Flow<DepositModel>
 
+    @Query("select * from deposits where hash in (:hash)")
+    fun findAllByHash(hash: List<String>):Flow<DepositModel>
+
     @Query("select * from deposits where chain = :chain and wallet_record_id is null")
     fun findByChainWhereNotSynced(chain: String): Flow<DepositModel>
 

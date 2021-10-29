@@ -10,15 +10,10 @@ import reactor.core.publisher.Mono
 
 @Repository
 interface CurrencyImplementationRepository : ReactiveCrudRepository<CurrencyImplementationModel, Long> {
-    fun findBySymbol(
-        symbol: String
-    ): Flow<CurrencyImplementationModel>
 
-    fun findByChain(
-        chain: String
-    ): Flow<CurrencyImplementationModel>
+    fun findBySymbol(symbol: String): Flow<CurrencyImplementationModel>
 
-    fun findByChainAndTokenAddress(
-        chain: String, tokenAddress: String?
-    ): Mono<CurrencyImplementationModel>
+    fun findByChain(chain: String): Flow<CurrencyImplementationModel>
+
+    fun findByChainAndTokenAddress(chain: String, tokenAddress: String?): Mono<CurrencyImplementationModel>
 }

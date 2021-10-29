@@ -1,8 +1,10 @@
 package co.nilin.opex.port.api.binance.proxy
 
 import co.nilin.opex.api.core.inout.AssignResponse
+import co.nilin.opex.api.core.inout.DepositDetails
 import co.nilin.opex.api.core.spi.BlockchainGatewayProxy
 import co.nilin.opex.port.api.binance.util.LoggerDelegate
+import kotlinx.coroutines.reactive.awaitSingleOrElse
 import kotlinx.coroutines.reactive.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.ParameterizedTypeReference
@@ -20,8 +22,11 @@ private inline fun <reified T : Any?> typeRef(): ParameterizedTypeReference<T> =
 class BlockchainGatewayProxyImpl(private val client: WebClient) : BlockchainGatewayProxy {
 
     private data class AssignAddressRequest(
-        val uuid: String, val currency: String
+        val uuid: String,
+        val currency: String
     )
+
+    private data class DepositDetailsRequest(val refs: List<String>)
 
     private val logger by LoggerDelegate()
 
@@ -31,7 +36,7 @@ class BlockchainGatewayProxyImpl(private val client: WebClient) : BlockchainGate
     override suspend fun assignAddress(uuid: String, currency: String): AssignResponse {
         logger.info("calling bc-gateway assign")
         return client.post()
-            .uri(URI.create("$baseUrl/deposits/assign"))
+            .uri(URI.create("$baseUrl/address/assign"))
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .body(Mono.just(AssignAddressRequest(uuid, currency)))
@@ -39,5 +44,18 @@ class BlockchainGatewayProxyImpl(private val client: WebClient) : BlockchainGate
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono(typeRef<AssignResponse>())
             .awaitSingleOrNull()
+    }
+
+    override suspend fun getDepositDetails(refs: List<String>): List<DepositDetails> {
+        logger.info("calling bc-gateway deposit details")
+        return client.post()
+            .uri(URI.create("$baseUrl/deposit/find/all"))
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(Mono.just(DepositDetailsRequest(refs)))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono(typeRef<List<DepositDetails>>())
+            .awaitSingleOrElse { emptyList() }
     }
 }

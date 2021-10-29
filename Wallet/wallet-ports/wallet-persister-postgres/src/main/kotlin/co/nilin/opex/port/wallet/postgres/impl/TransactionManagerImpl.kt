@@ -32,16 +32,17 @@ class TransactionManagerImpl(val transactionRepository: TransactionRepository) :
     override suspend fun findDepositTransactions(
         uuid: String,
         coin: String?,
-        startTime: Long,
-        endTime: Long,
+        startTime: LocalDateTime,
+        endTime: LocalDateTime,
         limit: Int,
         offset: Int
     ): List<TransactionHistory> {
-        return (if (coin != null) transactionRepository.findDepositTransactionsByUUIDAndCurrency(
-            uuid,
-            coin
-        ) else transactionRepository.findDepositTransactionsByUUID(uuid))
-            .collectList()
+        val transactions = if (coin != null)
+            transactionRepository.findDepositTransactionsByUUIDAndCurrency(uuid, coin, startTime, endTime, limit)
+        else
+            transactionRepository.findDepositTransactionsByUUID(uuid, startTime, endTime, limit)
+
+        return transactions.collectList()
             .awaitFirstOrElse { emptyList() }
             .map {
                 TransactionHistory(
@@ -49,6 +50,7 @@ class TransactionManagerImpl(val transactionRepository: TransactionRepository) :
                     it.currency,
                     it.amount,
                     it.description,
+                    it.ref,
                     it.date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
                 )
             }
@@ -57,16 +59,17 @@ class TransactionManagerImpl(val transactionRepository: TransactionRepository) :
     override suspend fun findWithdrawTransactions(
         uuid: String,
         coin: String?,
-        startTime: Long,
-        endTime: Long,
+        startTime: LocalDateTime,
+        endTime: LocalDateTime,
         limit: Int,
         offset: Int
     ): List<TransactionHistory> {
-        return (if (coin != null) transactionRepository.findWithdrawTransactionsByUUIDAndCurrency(
-            uuid,
-            coin
-        ) else transactionRepository.findWithdrawTransactionsByUUID(uuid))
-            .collectList()
+        val transactions = if (coin != null)
+            transactionRepository.findWithdrawTransactionsByUUIDAndCurrency(uuid, coin, startTime, endTime, limit)
+        else
+            transactionRepository.findWithdrawTransactionsByUUID(uuid, startTime, endTime, limit)
+
+        return transactions.collectList()
             .awaitFirstOrElse { emptyList() }
             .map {
                 TransactionHistory(
@@ -74,6 +77,7 @@ class TransactionManagerImpl(val transactionRepository: TransactionRepository) :
                     it.currency,
                     it.amount,
                     it.description,
+                    it.ref,
                     it.date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
                 )
             }

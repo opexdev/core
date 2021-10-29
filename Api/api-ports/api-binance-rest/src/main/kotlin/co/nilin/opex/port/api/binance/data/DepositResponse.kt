@@ -13,5 +13,6 @@ data class DepositResponse(
     val insertTime: Long,
     val transferType: Int,
     val unlockConfirm: String,
-    val confirmTimes: String
+    val confirmTimes: String,
+    val time: Long
 )

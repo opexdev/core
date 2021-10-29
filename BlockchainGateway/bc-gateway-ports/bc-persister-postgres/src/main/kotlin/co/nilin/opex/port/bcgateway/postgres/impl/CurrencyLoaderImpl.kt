@@ -20,18 +20,27 @@ class CurrencyLoaderImpl(
     private val currencyRepository: CurrencyRepository,
     private val currencyImplementationRepository: CurrencyImplementationRepository
 ) : CurrencyLoader {
+
     override suspend fun fetchCurrencyInfo(symbol: String): CurrencyInfo {
-        val currencyDao = currencyRepository.findBySymbol(symbol).awaitSingleOrNull()
-        if (currencyDao === null) return CurrencyInfo(Currency("", symbol), emptyList())
-        val currencyImplDao = currencyImplementationRepository.findBySymbol(symbol)
-        val currency = Currency(currencyDao.symbol, currencyDao.name)
-        val implementations = currencyImplDao.map { projectCurrencyImplementation(it, currencyDao) }
+        val symbol = symbol.toUpperCase()
+        val currencyModel = currencyRepository.findBySymbol(symbol).awaitSingleOrNull()
+        if (currencyModel === null) {
+            return CurrencyInfo(Currency("", symbol), emptyList())
+        }
+        val currencyImplModel = currencyImplementationRepository.findBySymbol(symbol)
+        val currency = Currency(currencyModel.symbol, currencyModel.name)
+        val implementations = currencyImplModel.map { projectCurrencyImplementation(it, currencyModel) }
         return CurrencyInfo(currency, implementations.toList())
     }
 
-    override suspend fun findSymbol(chain: String, address: String?): String? {
-        return currencyImplementationRepository.findByChainAndTokenAddress(chain, address)
-            .awaitFirstOrNull()?.symbol
+    override suspend fun findByChainAndTokenAddress(chain: String, address: String?): CurrencyImplementation? {
+        val impl = currencyImplementationRepository.findByChainAndTokenAddress(chain, address)
+            .awaitFirstOrNull()
+
+        return if (impl != null)
+            projectCurrencyImplementation(impl)
+        else
+            null
     }
 
     override suspend fun findImplementationsWithTokenOnChain(chain: String): List<CurrencyImplementation> {
@@ -39,24 +48,26 @@ class CurrencyLoaderImpl(
     }
 
     private suspend fun projectCurrencyImplementation(
-        implDao: CurrencyImplementationModel,
-        currencyDao: CurrencyModel? = null
+        currencyImplementationModel: CurrencyImplementationModel,
+        currencyModel: CurrencyModel? = null
     ): CurrencyImplementation {
-        val addressTypesDao = chainRepository.findAddressTypesByName(implDao.chain)
-        val addressTypes = addressTypesDao.map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }
-        val endpointsDao = chainRepository.findEndpointsByName(implDao.chain)
-        val endpoints = endpointsDao.map { Endpoint(it.url) }
-        val currencyDaoVal = currencyDao ?: currencyRepository.findBySymbol(implDao.symbol).awaitSingle()
-        val currency = Currency(currencyDaoVal.symbol, currencyDaoVal.name)
+        val addressTypesModel = chainRepository.findAddressTypesByName(currencyImplementationModel.chain)
+        val addressTypes = addressTypesModel.map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }
+        val endpointsModel = chainRepository.findEndpointsByName(currencyImplementationModel.chain)
+        val endpoints = endpointsModel.map { Endpoint(it.url) }
+        val currencyModelVal =
+            currencyModel ?: currencyRepository.findBySymbol(currencyImplementationModel.symbol).awaitSingle()
+        val currency = Currency(currencyModelVal.symbol, currencyModelVal.name)
         return CurrencyImplementation(
             currency,
-            Chain(implDao.chain, addressTypes.toList(), endpoints.toList()),
-            implDao.token,
-            implDao.tokenAddress,
-            implDao.tokenName,
-            implDao.withdrawEnabled,
-            implDao.withdrawFee,
-            implDao.withdrawMin
+            Chain(currencyImplementationModel.chain, addressTypes.toList(), endpoints.toList()),
+            currencyImplementationModel.token,
+            currencyImplementationModel.tokenAddress,
+            currencyImplementationModel.tokenName,
+            currencyImplementationModel.withdrawEnabled,
+            currencyImplementationModel.withdrawFee,
+            currencyImplementationModel.withdrawMin,
+            currencyImplementationModel.decimal
         )
     }
 }

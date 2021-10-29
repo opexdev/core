@@ -72,7 +72,7 @@ class TransferController(
                 Amount(sourceWallet.currency(), amount),
                 description, transferRef, emptyMap()
             )
-        )
+        ).transferResult
     }
 
     @PostMapping("/deposit/{amount}_{symbol}/{receiverUuid}_{receiverWalletType}")
@@ -122,6 +122,6 @@ class TransferController(
                 Amount(sourceWallet.currency(), amount),
                 description, transferRef, emptyMap()
             )
-        )
+        ).transferResult
     }
 }

@@ -14,3 +14,8 @@ data class TransferResult(
     val destWalletType: String,
     val receivedAmount: Amount
 )
+
+data class TransferResultDetailed(
+    val transferResult: TransferResult,
+    val tx: String
+)

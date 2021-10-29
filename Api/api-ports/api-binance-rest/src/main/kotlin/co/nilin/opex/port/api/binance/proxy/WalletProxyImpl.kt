@@ -3,6 +3,7 @@ package co.nilin.opex.port.api.binance.proxy
 import co.nilin.opex.api.core.inout.OwnerLimitsResponse
 import co.nilin.opex.api.core.inout.TransactionHistoryResponse
 import co.nilin.opex.api.core.inout.Wallet
+import co.nilin.opex.api.core.inout.WithdrawHistoryResponse
 import co.nilin.opex.api.core.spi.WalletProxy
 import co.nilin.opex.port.api.binance.data.TransactionRequest
 import co.nilin.opex.port.api.binance.util.LoggerDelegate
@@ -85,16 +86,16 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
         endTime: Long,
         limit: Int,
         offset: Int
-    ): List<TransactionHistoryResponse> {
+    ): List<WithdrawHistoryResponse> {
         logger.info("fetching withdraw transaction history for $uuid")
         return webClient.post()
-            .uri("$baseUrl/transaction/withdraw/$uuid")
+            .uri("$baseUrl/withdraw/history/$uuid")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .body(Mono.just(TransactionRequest(coin, startTime, endTime, limit, offset)))
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
-            .bodyToFlux(typeRef<TransactionHistoryResponse>())
+            .bodyToFlux(typeRef<WithdrawHistoryResponse>())
             .collectList()
             .awaitFirstOrElse { emptyList() }
     }

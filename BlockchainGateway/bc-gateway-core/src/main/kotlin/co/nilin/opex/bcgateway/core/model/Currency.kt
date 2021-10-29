@@ -11,7 +11,8 @@ data class CurrencyImplementation(
     val tokenName: String?,
     val withdrawEnabled: Boolean,
     val withdrawFee: BigDecimal,
-    val withdrawMin: BigDecimal
+    val withdrawMin: BigDecimal,
+    val decimal: Int
 )
 
 data class CurrencyInfo(val currency: Currency, val implementations: List<CurrencyImplementation>)

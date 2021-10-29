@@ -13,9 +13,9 @@ class PostgresConfig(db: DatabaseClient) {
             """ 
                 CREATE TABLE IF NOT EXISTS address_types (
                     id SERIAL PRIMARY KEY,
-                    address_type VARCHAR(72) NOT NULL,
+                    address_type VARCHAR(20) NOT NULL,
                     address_regex VARCHAR(72) NOT NULL,
-                    memo_regex VARCHAR(72) NOT NULL
+                    memo_regex VARCHAR(72)
                 );
                 CREATE TABLE IF NOT EXISTS assigned_addresses (
                     id SERIAL PRIMARY KEY,
@@ -101,7 +101,8 @@ class PostgresConfig(db: DatabaseClient) {
                     token_name VARCHAR(72),
                     withdraw_enabled BOOLEAN NOT NULL,
                     withdraw_fee NUMERIC NOT NULL,
-                    withdraw_min NUMERIC NOT NULL
+                    withdraw_min NUMERIC NOT NULL,
+                    decimal INTEGER NOT NULL
                 );
             """
         }
