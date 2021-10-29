@@ -4,6 +4,7 @@ import co.nilin.opex.matching.core.eventh.EventDispatcher
 import co.nilin.opex.matching.core.eventh.events.*
 import co.nilin.opex.matching.core.inout.*
 import co.nilin.opex.matching.core.model.*
+import co.nilin.opex.matching.core.spi.OrderBookPersister
 import exchange.core2.collections.art.LongAdaptiveRadixTreeMap
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -127,6 +128,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
             }
         }
         lastOrder = order
+        EventDispatcher.emit(OrderBookPublishedEvent(persistent()))
         logCurrentState()
         return order
     }
@@ -165,6 +167,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                 order.matchConstraint, order.orderType
             ))
         }
+        EventDispatcher.emit(OrderBookPublishedEvent(persistent()))
         logCurrentState()
     }
 
@@ -215,6 +218,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                 if (queueOrder.filledQuantity != queueOrder.quantity) {
                     putGtcInQueue(queueOrder)
                 }
+                EventDispatcher.emit(OrderBookPublishedEvent(persistent()))
                 queueOrder
             }
             MatchConstraint.IOC -> {
@@ -232,6 +236,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                         ))
                     }
                 }
+                EventDispatcher.emit(OrderBookPublishedEvent(persistent()))
                 queueOrder
             }
             else -> {
@@ -244,7 +249,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
 
     }
 
-    fun handleCancelOrder(order: SimpleOrder, bucketQueue: LongAdaptiveRadixTreeMap<Bucket>, bestOrder: SimpleOrder?, setBestOrder: (SimpleOrder?) -> Unit) {
+    private fun handleCancelOrder(order: SimpleOrder, bucketQueue: LongAdaptiveRadixTreeMap<Bucket>, bestOrder: SimpleOrder?, setBestOrder: (SimpleOrder?) -> Unit) {
         val bucket = order.bucket!!
         bucket.ordersCount--
         bucket.totalQuantity -= order.remainedQuantity()
@@ -354,7 +359,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
     }
 
 
-    fun putGtcInQueue(order: SimpleOrder,
+    private fun putGtcInQueue(order: SimpleOrder,
                       queue: LongAdaptiveRadixTreeMap<Bucket>,
                       bestOrder: SimpleOrder?,
                       betterBucketSelector: (price: Long, queue: LongAdaptiveRadixTreeMap<Bucket>) -> Bucket?,
@@ -422,7 +427,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
         return lastOrder
     }
 
-    override fun persistent(): PersistentOrderBook {
+    private fun persistent(): PersistentOrderBook {
         val persistent = PersistentOrderBook(pair)
         persistent.lastOrder = lastOrder?.persistent()
         persistent.orders = orders.values
