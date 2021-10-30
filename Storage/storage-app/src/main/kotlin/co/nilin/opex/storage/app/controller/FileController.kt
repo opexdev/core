@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
 import java.net.URLConnection
 import java.nio.file.Paths
+import kotlin.io.path.exists
 
 @RestController
 class FileController(private val storageService: StorageService) {
@@ -20,9 +21,9 @@ class FileController(private val storageService: StorageService) {
 
     @PostMapping("/{uid}")
     suspend fun fileUpload(
-        @PathVariable("uid") uid: String,
-        @RequestPart("file") file: Mono<FilePart>,
-        @CurrentSecurityContext securityContext: SecurityContext
+            @PathVariable("uid") uid: String,
+            @RequestPart("file") file: Mono<FilePart>,
+            @CurrentSecurityContext securityContext: SecurityContext
     ): Any {
         if (securityContext.authentication.name != uid) throw OpexException(OpexError.UnAuthorized)
         file.awaitFirstOrNull().apply {
@@ -39,12 +40,13 @@ class FileController(private val storageService: StorageService) {
     @GetMapping("/{uid}/{filename}")
     @ResponseBody
     suspend fun fileDownload(
-        @PathVariable("uid") uid: String,
-        @PathVariable("filename") filename: String,
-        @CurrentSecurityContext securityContext: SecurityContext
+            @PathVariable("uid") uid: String,
+            @PathVariable("filename") filename: String,
+            @CurrentSecurityContext securityContext: SecurityContext
     ): ResponseEntity<ByteArray> {
         if (securityContext.authentication.name != uid) throw OpexException(OpexError.UnAuthorized)
         val path = Paths.get("").resolve("/opex-storage/$uid/$filename")
+        if (!storageService.exists(path.toString())) throw OpexException(OpexError.NotFound)
         val file = storageService.load(path.toString())
         val mimeType = URLConnection.getFileNameMap().getContentTypeFor(path.fileName.toString())
         return ResponseEntity.ok().contentType(MediaType.parseMediaType(mimeType)).body(file.readBytes())
@@ -53,11 +55,11 @@ class FileController(private val storageService: StorageService) {
     @GetMapping("/admin/download/{uid}/{filename}")
     @ResponseBody
     suspend fun adminFileDownload(
-        @PathVariable("uid") uid: String,
-        @PathVariable("filename") filename: String,
-        @CurrentSecurityContext securityContext: SecurityContext
+            @PathVariable("uid") uid: String,
+            @PathVariable("filename") filename: String
     ): ResponseEntity<ByteArray> {
         val path = Paths.get("").resolve("/opex-storage/$uid/$filename")
+        if (!storageService.exists(path.toString())) throw OpexException(OpexError.NotFound)
         val file = storageService.load(path.toString())
         val mimeType = URLConnection.getFileNameMap().getContentTypeFor(path.fileName.toString())
         return ResponseEntity.ok().contentType(MediaType.parseMediaType(mimeType)).body(file.readBytes())

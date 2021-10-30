@@ -19,6 +19,10 @@ class StorageServiceImpl(private val resourceLoader: ResourceLoader) : StorageSe
         file.transferTo(p).awaitFirstOrNull()
     }
 
+    override suspend fun exists(filename: String): Boolean {
+        return Files.exists(Paths.get(filename))
+    }
+
     override suspend fun load(filename: String): FileInputStream {
         return ResourceUtils.getFile(filename).inputStream()
     }
