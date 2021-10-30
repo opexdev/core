@@ -66,8 +66,8 @@ class AppConfig {
 
 
     @Bean
-    fun orderListener(orderBookPersister: OrderBookPersister): OrderListener {
-        return OrderListener(orderBookPersister)
+    fun orderListener(): OrderListener {
+        return OrderListener()
     }
 
     @Autowired
@@ -76,8 +76,8 @@ class AppConfig {
     }
 
     @Bean
-    fun eventListener(orderBookPersister: OrderBookPersister): MatchingEngineEventListener {
-        return MatchingEngineEventListener(orderBookPersister)
+    fun eventListener(): MatchingEngineEventListener {
+        return MatchingEngineEventListener()
     }
 
     @Autowired
@@ -90,7 +90,7 @@ class AppConfig {
         exchangeEventHandler.register()
     }
 
-    class OrderListener(private val orderBookPersister: OrderBookPersister) : OrderSubmitRequestListener {
+    class OrderListener() : OrderSubmitRequestListener {
 
         override fun id(): String {
             return "OrderListener"
@@ -113,11 +113,10 @@ class AppConfig {
                     order.orderType
                 )
             )
-            orderBookPersister.storeLastState(orderBook.persistent())
         }
     }
 
-    class MatchingEngineEventListener(private val orderBookPersister: OrderBookPersister) : EventListener {
+    class MatchingEngineEventListener() : EventListener {
 
         private val logger = LoggerFactory.getLogger(MatchingEngineEventListener::class.java)
 
@@ -132,7 +131,7 @@ class AppConfig {
                 val orderBook = OrderBooks.lookupOrderBook("${event.pair.leftSideName}_${event.pair.rightSideName}")
 
                 when (event) {
-                    is UpdatedOrderEvent -> orderBook.handleEditCommand(
+                    is EditOrderRequestEvent -> orderBook.handleEditCommand(
                         OrderEditCommand(
                             event.ouid,
                             event.uuid,
@@ -151,9 +150,8 @@ class AppConfig {
                             event.pair
                         )
                     )
+                    else -> null
                 }
-
-                orderBookPersister.storeLastState(orderBook.persistent())
             }
         }
     }
