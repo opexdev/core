@@ -12,6 +12,7 @@ import reactor.core.publisher.Mono
 interface TempEventRepository : ReactiveCrudRepository<TempEventModel, Long> {
 
     fun findByOuid(ouid: String): Flow<TempEventModel>
+
     fun deleteByOuid(ouid: String): Mono<Void>
 
     @Query("select * from temp_events")
