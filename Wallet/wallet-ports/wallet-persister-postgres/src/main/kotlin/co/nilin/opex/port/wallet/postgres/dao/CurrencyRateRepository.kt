@@ -11,8 +11,9 @@ import org.springframework.stereotype.Repository
 import reactor.core.publisher.Mono
 
 @Repository
-interface CurrencyRateRepository: ReactiveCrudRepository<CurrencyRateModel, Long> {
+interface CurrencyRateRepository : ReactiveCrudRepository<CurrencyRateModel, Long> {
     @Query("select * from currency_rate where source_currency = :sourceCurrency and dest_currency = :destCurrency")
-    fun findBySourceAndDest(@Param("source") sourceCurrency: String
-    , @Param("dest") destCurrency: String): Mono<CurrencyRateModel?>
+    fun findBySourceAndDest(
+        @Param("source") sourceCurrency: String, @Param("dest") destCurrency: String
+    ): Mono<CurrencyRateModel?>
 }
