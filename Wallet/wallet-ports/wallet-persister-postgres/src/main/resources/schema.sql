@@ -12,6 +12,24 @@ CREATE TABLE IF NOT EXISTS currency_rate (
    UNIQUE(source_currency, dest_currency)
 );
 
+CREATE TABLE IF NOT EXISTS wallet_owner (
+   id SERIAL PRIMARY KEY,
+   uuid VARCHAR(36) NOT NULL UNIQUE,
+   title VARCHAR(70) NOT NULL,
+   level VARCHAR(10) NOT NULL,
+   trade_allowed BOOLEAN NOT NULL DEFAULT TRUE,
+   withdraw_allowed BOOLEAN NOT NULL DEFAULT TRUE,
+   deposit_allowed BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+CREATE TABLE IF NOT EXISTS wallet (
+   id SERIAL PRIMARY KEY,
+   owner INTEGER NOT NULL REFERENCES wallet_owner (id),
+   wallet_type VARCHAR(10) NOT NULL,
+   currency VARCHAR(25) NOT NULL REFERENCES currency (symbol),
+   balance DECIMAL NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS transaction (
    id SERIAL PRIMARY KEY,
    source_wallet INTEGER NOT NULL REFERENCES wallet (id),
@@ -21,24 +39,6 @@ CREATE TABLE IF NOT EXISTS transaction (
    description TEXT,
    transfer_ref TEXT,
    transaction_date TIMESTAMP NOT NULL DEFAULT CURRENT_DATE
-);
-
-CREATE TABLE IF NOT EXISTS wallet_owner (
-   id SERIAL PRIMARY KEY,
-   uuid VARCHAR(36) NOT NULL UNIQUE,
-   title VARCHAR(70) NOT NULL,
-   level VARCHAR(10) NOT NULL,
-   trade_allowed BOOLEAN NOT NULL DEFAULT true,
-   withdraw_allowed BOOLEAN NOT NULL DEFAULT true,
-   deposit_allowed BOOLEAN NOT NULL DEFAULT true
-);
-
-CREATE TABLE IF NOT EXISTS wallet (
-   id SERIAL PRIMARY KEY,
-   owner INTEGER NOT NULL REFERENCES wallet_owner (id),
-   wallet_type VARCHAR(10) NOT NULL,
-   currency VARCHAR(25) NOT NULL REFERENCES currency (symbol),
-   balance DECIMAL NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS user_limits (
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS withdraws (
    req_transaction_id VARCHAR(20) NOT NULL UNIQUE,
    final_transaction_id VARCHAR(20) UNIQUE,
    wallet INTEGER REFERENCES wallet (id),
-   amount DECIMAL,
+   amount DECIMAL NOT NULL,
    accepted_fee DECIMAL,
    applied_fee DECIMAL,
    dest_amount DECIMAL,
