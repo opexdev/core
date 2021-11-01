@@ -5,5 +5,4 @@ import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface TradeRepository: ReactiveCrudRepository<TradeModel, Long>{
-}
+interface TradeRepository : ReactiveCrudRepository<TradeModel, Long>
