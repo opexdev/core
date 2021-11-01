@@ -50,10 +50,10 @@ VALUES
       1,
       'BTC',
       'Bit',
-      FALSE,
-      NULL,
-      NULL,
-      TRUE,
+      false,
+      null,
+      null,
+      true,
       0.0001,
       0.0001
    ),
@@ -61,10 +61,10 @@ VALUES
       2,
       'BTC',
       'Bsc',
-      TRUE,
+      true,
       '0x1111',
       'WBTC',
-      TRUE,
+      true,
       0.00001,
       0.000001
    ) ON CONFLICT DO NOTHING;
