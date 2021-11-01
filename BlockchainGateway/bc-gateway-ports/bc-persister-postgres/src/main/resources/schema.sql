@@ -14,12 +14,6 @@ CREATE TABLE IF NOT EXISTS assigned_addresses (
    UNIQUE (address, memo)
 );
 
-CREATE TABLE IF NOT EXISTS assigned_address_chains (
-   id SERIAL PRIMARY KEY,
-   assigned_address_id INTEGER NOT NULL REFERENCES assigned_addresses (id),
-   chain VARCHAR(72) NOT NULL REFERENCES chains (name)
-);
-
 CREATE TABLE IF NOT EXISTS reserved_addresses (
    id SERIAL PRIMARY KEY,
    address VARCHAR(72) NOT NULL,
@@ -29,6 +23,12 @@ CREATE TABLE IF NOT EXISTS reserved_addresses (
 );
 
 CREATE TABLE IF NOT EXISTS chains (name VARCHAR(72) PRIMARY KEY);
+
+CREATE TABLE IF NOT EXISTS assigned_address_chains (
+   id SERIAL PRIMARY KEY,
+   assigned_address_id INTEGER NOT NULL REFERENCES assigned_addresses (id),
+   chain VARCHAR(72) NOT NULL REFERENCES chains (name)
+);
 
 CREATE TABLE IF NOT EXISTS chain_address_types (
    id SERIAL PRIMARY KEY,
