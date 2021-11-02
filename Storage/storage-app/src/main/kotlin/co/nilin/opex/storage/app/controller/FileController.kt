@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
 import java.net.URLConnection
 import java.nio.file.Paths
-import kotlin.io.path.exists
+import java.util.zip.CRC32
 
 @RestController
 class FileController(private val storageService: StorageService) {
@@ -21,28 +21,32 @@ class FileController(private val storageService: StorageService) {
 
     @PostMapping("/{uid}")
     suspend fun fileUpload(
-            @PathVariable("uid") uid: String,
-            @RequestPart("file") file: Mono<FilePart>,
-            @CurrentSecurityContext securityContext: SecurityContext
+        @PathVariable("uid") uid: String,
+        @RequestPart("file") file: Mono<FilePart>,
+        @CurrentSecurityContext securityContext: SecurityContext
     ): Any {
         if (securityContext.authentication.name != uid) throw OpexException(OpexError.UnAuthorized)
         file.awaitFirstOrNull().apply {
             if (this == null) throw OpexException(OpexError.BadRequest, "File Not Provided")
-            val ext = this.filename().replace(Regex(".+(?=\\..+)"), "")
-            if (ext.toLowerCase() !in listOf(".jpg", ".jpeg", ".png", ".mp4", ".mov", ".pdf", ".svg"))
+            val ext = this.filename().replace(Regex(".+(?<=\\.)"), "")
+            if (ext.toLowerCase() !in listOf("jpg", "jpeg", "png", "mp4", "mov", "pdf", "svg", "gif"))
                 throw OpexException(OpexError.BadRequest, "Invalid File Format")
-            val path = Paths.get("").resolve("/opex-storage/$uid/${this.filename()}").toString()
+            val crc = CRC32()
+            crc.update(this.filename().toByteArray())
+            val name = String.format("%02x", crc.value)
+            val uri = "$uid/$name.$ext"
+            val path = Paths.get("").resolve("/opex-storage/$uri").toString()
             storageService.store(path, this)
-            return FileUploadResponse("/$uid/${this.filename()}")
+            return FileUploadResponse("/$uri")
         }
     }
 
     @GetMapping("/{uid}/{filename}")
     @ResponseBody
     suspend fun fileDownload(
-            @PathVariable("uid") uid: String,
-            @PathVariable("filename") filename: String,
-            @CurrentSecurityContext securityContext: SecurityContext
+        @PathVariable("uid") uid: String,
+        @PathVariable("filename") filename: String,
+        @CurrentSecurityContext securityContext: SecurityContext
     ): ResponseEntity<ByteArray> {
         if (securityContext.authentication.name != uid) throw OpexException(OpexError.UnAuthorized)
         val path = Paths.get("").resolve("/opex-storage/$uid/$filename")
@@ -55,8 +59,8 @@ class FileController(private val storageService: StorageService) {
     @GetMapping("/admin/download/{uid}/{filename}")
     @ResponseBody
     suspend fun adminFileDownload(
-            @PathVariable("uid") uid: String,
-            @PathVariable("filename") filename: String
+        @PathVariable("uid") uid: String,
+        @PathVariable("filename") filename: String
     ): ResponseEntity<ByteArray> {
         val path = Paths.get("").resolve("/opex-storage/$uid/$filename")
         if (!storageService.exists(path.toString())) throw OpexException(OpexError.NotFound)
