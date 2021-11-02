@@ -20,23 +20,30 @@ import java.util.zip.CRC32
 class FileController(private val storageService: StorageService) {
     data class FileUploadResponse(val path: String)
 
-    private suspend fun fileUpload(uid: String, file: Mono<FilePart>, name: String? = null): FileUploadResponse {
-        file.awaitFirstOrNull().apply {
-            if (this == null) throw OpexException(OpexError.BadRequest, "File Not Provided")
-            val ext = this.filename().replace(Regex(".+(?<=\\.)"), "")
-            if (ext.toLowerCase() !in listOf("jpg", "jpeg", "png", "mp4", "mov", "pdf", "svg", "gif"))
-                throw OpexException(OpexError.BadRequest, "Invalid File Format")
-            val crc = CRC32()
-            crc.update(name?.toByteArray() ?: this.filename().toByteArray())
-            val newName = String.format("%02x", crc.value)
-            val uri = "$uid/$newName.$ext"
-            val path = Paths.get("").resolve("/opex-storage/$uri").toString()
-            storageService.store(path, this)
-            return FileUploadResponse("/$uri")
-        }
+    private val crc32 = CRC32()
+
+    private fun crc32(input: String): String {
+        crc32.update(input.toByteArray())
+        return String.format("%02x", crc32.value)
     }
 
-    private suspend fun fileDownload(uid: String, filename: String? = null): ResponseEntity<ByteArray> {
+    private suspend fun upload(uid: String, file: FilePart?, nameWithoutExtension: String? = null): FileUploadResponse {
+        if (file == null) throw OpexException(OpexError.BadRequest, "File Not Provided")
+        val filename = file.filename()
+        val ext = filename.replace(Regex(".+(?<=\\.)"), "")
+        if (ext.toLowerCase() !in listOf("jpg", "jpeg", "png", "mp4", "mov", "pdf", "svg", "gif"))
+            throw OpexException(OpexError.BadRequest, "Invalid File Format")
+        val uri = if (nameWithoutExtension == null) {
+            "$uid/$filename"
+        } else {
+            "$uid/$nameWithoutExtension.$ext"
+        }
+        val path = Paths.get("").resolve("/opex-storage/$uri").toString()
+        storageService.store(path, file)
+        return FileUploadResponse("/$uri")
+    }
+
+    private suspend fun download(uid: String, filename: String? = null): ResponseEntity<ByteArray> {
         val path = Paths.get("").resolve("/opex-storage/$uid/$filename")
         if (!storageService.exists(path.toString())) throw OpexException(OpexError.NotFound)
         val file = storageService.load(path.toString())
@@ -51,28 +58,18 @@ class FileController(private val storageService: StorageService) {
         @CurrentSecurityContext securityContext: SecurityContext
     ): FileUploadResponse {
         if (securityContext.authentication.name != uid) throw OpexException(OpexError.UnAuthorized)
-        return fileUpload(uid, file, UUID.randomUUID().toString())
-    }
-
-    @PutMapping("/{uid}")
-    suspend fun fileUploadPut(
-        @PathVariable("uid") uid: String,
-        @RequestPart("file") file: Mono<FilePart>,
-        @CurrentSecurityContext securityContext: SecurityContext
-    ): FileUploadResponse {
-        if (securityContext.authentication.name != uid) throw OpexException(OpexError.UnAuthorized)
-        return fileUpload(uid, file)
+        return upload(uid, file.awaitFirstOrNull(), crc32(UUID.randomUUID().toString()))
     }
 
     @GetMapping("/{uid}/{filename}")
     @ResponseBody
-    suspend fun fileDownload(
+    suspend fun download(
         @PathVariable("uid") uid: String,
         @PathVariable("filename") filename: String,
         @CurrentSecurityContext securityContext: SecurityContext
     ): ResponseEntity<ByteArray> {
         if (securityContext.authentication.name != uid) throw OpexException(OpexError.UnAuthorized)
-        return fileDownload(uid, filename)
+        return download(uid, filename)
     }
 
     @GetMapping("/admin/download/{uid}/{filename}")
@@ -81,6 +78,6 @@ class FileController(private val storageService: StorageService) {
         @PathVariable("uid") uid: String,
         @PathVariable("filename") filename: String
     ): ResponseEntity<ByteArray> {
-        return fileDownload(uid, filename)
+        return download(uid, filename)
     }
 }
