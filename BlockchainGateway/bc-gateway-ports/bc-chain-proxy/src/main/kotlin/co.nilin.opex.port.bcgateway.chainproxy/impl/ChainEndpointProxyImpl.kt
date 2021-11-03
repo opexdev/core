@@ -23,8 +23,8 @@ class ChainEndpointProxyImpl(
     private val chain: String,
     private val endpoints: List<Endpoint>,
     private val webClient: WebClient
-) :
-    ChainEndpointProxy {
+) : ChainEndpointProxy {
+
     data class TransfersRequest(
         val startBlock: Long?,
         val endBlock: Long?,
@@ -47,10 +47,10 @@ class ChainEndpointProxyImpl(
 
     private val logger = LoggerFactory.getLogger(ChainEndpointProxyImpl::class.java)
 
-    private suspend fun requestTransferList(baseUrl: String, request: TransfersRequest): DepositResult {
-        logger.info("request transfers: base=$baseUrl")
+    private suspend fun requestTransferList(endpoint: String, request: TransfersRequest): DepositResult {
+        logger.info("request transfers: base=$endpoint")
         val response = webClient.post()
-            .uri(URI.create("$baseUrl/transfers"))
+            .uri(URI.create(endpoint))
             .header("Content-Type", "application/json")
             .body(Mono.just(request))
             .retrieve()
