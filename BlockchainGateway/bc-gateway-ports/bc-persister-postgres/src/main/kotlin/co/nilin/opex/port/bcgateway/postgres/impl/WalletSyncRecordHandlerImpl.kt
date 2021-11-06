@@ -36,7 +36,11 @@ class WalletSyncRecordHandlerImpl(
     }
 
     @Transactional
-    override suspend fun saveWalletSyncRecord(syncRecord: WalletSyncRecord) {
+    override suspend fun saveWalletSyncRecord(
+        syncRecord: WalletSyncRecord,
+        sentDeposits: List<Deposit>,
+        deletingDeposits: List<Deposit>
+    ) {
         val dao = walletSyncRecordRepository.save(
             WalletSyncRecordModel(
                 null,
@@ -45,7 +49,12 @@ class WalletSyncRecordHandlerImpl(
                 syncRecord.error
             )
         ).awaitFirst()
-        depositRepository.updateWalletSyncRecord(syncRecord.deposit.id!!, dao.id!!).awaitFirst()
+
+        if (sentDeposits.isNotEmpty())
+            depositRepository.updateWalletSyncRecords(sentDeposits.map { it.id ?: -1 }, dao.id!!).awaitFirst()
+
+        if (deletingDeposits.isNotEmpty())
+            depositRepository.deleteSyncedDeposits(deletingDeposits.map { it.id ?: -1 }).awaitFirst()
     }
 
     override suspend fun findReadyToSyncTransfers(count: Long?): List<Deposit> {

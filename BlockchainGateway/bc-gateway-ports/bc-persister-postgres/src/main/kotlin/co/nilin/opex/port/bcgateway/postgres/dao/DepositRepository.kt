@@ -16,7 +16,7 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
     fun findByChain(chain: String): Flow<DepositModel>
 
     @Query("select * from deposits where hash in (:hash)")
-    fun findAllByHash(hash: List<String>):Flow<DepositModel>
+    fun findAllByHash(hash: List<String>): Flow<DepositModel>
 
     @Query("select * from deposits where chain = :chain and wallet_record_id is null")
     fun findByChainWhereNotSynced(chain: String): Flow<DepositModel>
@@ -27,6 +27,10 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
     @Modifying
     @Query("update deposits set wallet_record_id = :walletRecordId where id = :id")
     fun updateWalletSyncRecord(id: Long, walletRecordId: Long): Mono<Int>
+
+    @Modifying
+    @Query("update deposits set wallet_record_id = :walletRecordId where id in (:ids)")
+    fun updateWalletSyncRecords(ids: List<Long>, walletRecordId: Long): Mono<Int>
 
     @Modifying
     @Query(
@@ -53,5 +57,9 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
         @Param("memo")
         memo: String?
     ): Mono<DepositModel>
+
+    @Modifying
+    @Query("delete from deposits where id in (:ids)")
+    fun deleteSyncedDeposits(ids: List<Long>): Mono<Int>
 
 }

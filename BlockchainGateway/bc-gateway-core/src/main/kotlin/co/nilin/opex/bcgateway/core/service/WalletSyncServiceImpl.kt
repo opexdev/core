@@ -5,9 +5,7 @@ import co.nilin.opex.bcgateway.core.model.CurrencyImplementation
 import co.nilin.opex.bcgateway.core.model.Deposit
 import co.nilin.opex.bcgateway.core.model.WalletSyncRecord
 import co.nilin.opex.bcgateway.core.spi.*
-import kotlinx.coroutines.ExecutorCoroutineDispatcher
-import kotlinx.coroutines.async
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 import java.time.LocalDateTime
@@ -31,26 +29,33 @@ class WalletSyncServiceImpl(
             if (schedule != null) {
                 val deposits = walletSyncRecordHandler.findReadyToSyncTransfers(schedule.batchSize)
                 logger.info("syncing ${deposits.size} deposits")
-                deposits.map { deposit ->
+
+                val result = deposits.map { deposit ->
                     async(dispatcher) {
+                        var deposited = false
                         val uuid = assignedAddressHandler.findUuid(deposit.depositor, deposit.depositorMemo)
                         if (uuid != null) {
                             logger.info("deposit came for $uuid - to ${deposit.depositor}")
                             val symbol = currencyLoader.findByChainAndTokenAddress(deposit.chain, deposit.tokenAddress)
                             if (symbol != null) {
                                 sendDeposit(uuid, symbol, deposit)
+                                deposited = true
                             }
                         }
-                        walletSyncRecordHandler.saveWalletSyncRecord(
-                            WalletSyncRecord(
-                                LocalDateTime.now(),
-                                true,
-                                null,
-                                deposit
-                            )
-                        )
+                        Pair(deposit, deposited)
                     }
-                }
+                }.awaitAll()
+
+                walletSyncRecordHandler.saveWalletSyncRecord(
+                    WalletSyncRecord(
+                        LocalDateTime.now(),
+                        true,
+                        null
+                    ),
+                    result.filter { it.second }.map { it.first },
+                    result.filter { !it.second }.map { it.first }
+                )
+
                 syncSchedulerHandler.prepareScheduleForNextTry(
                     schedule, LocalDateTime.now()
                         .plus(schedule.delay, ChronoUnit.SECONDS)
