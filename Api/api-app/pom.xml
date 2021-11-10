@@ -82,6 +82,11 @@
             <version>${api.version}</version>
         </dependency>
         <dependency>
+            <groupId>co.nilin.opex</groupId>
+            <artifactId>api-websocket</artifactId>
+            <version>${api.version}</version>
+        </dependency>
+        <dependency>
             <groupId>io.springfox</groupId>
             <artifactId>springfox-boot-starter</artifactId>
             <version>3.0.0</version>
