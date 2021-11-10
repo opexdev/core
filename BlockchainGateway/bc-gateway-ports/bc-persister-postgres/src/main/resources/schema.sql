@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS assigned_addresses (
    id SERIAL PRIMARY KEY,
    uuid VARCHAR(72) NOT NULL,
    address VARCHAR(72) NOT NULL,
-   memo VARCHAR(72),
+   memo VARCHAR(72) NOT NULL,
    addr_type_id INTEGER NOT NULL REFERENCES address_types (id),
    UNIQUE (address, memo)
 );
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS assigned_addresses (
 CREATE TABLE IF NOT EXISTS reserved_addresses (
    id SERIAL PRIMARY KEY,
    address VARCHAR(72) NOT NULL,
-   memo VARCHAR(72),
+   memo VARCHAR(72) NOT NULL,
    address_type INTEGER NOT NULL REFERENCES address_types (id),
    UNIQUE (address, memo)
 );

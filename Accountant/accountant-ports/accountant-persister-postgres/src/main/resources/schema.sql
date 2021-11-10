@@ -61,8 +61,8 @@ CREATE TABLE IF NOT EXISTS pair_config (
 CREATE TABLE IF NOT EXISTS pair_fee_config (
    id SERIAL PRIMARY KEY,
    pair_config_id VARCHAR(72) NOT NULL REFERENCES pair_config (pair),
-   direction VARCHAR(36),
-   user_level VARCHAR(36),
+   direction VARCHAR(36) NOT NULL,
+   user_level VARCHAR(36) NOT NULL,
    maker_fee DECIMAL NOT NULL,
    taker_fee DECIMAL NOT NULL,
    UNIQUE(direction, user_level, pair_config_id)
