@@ -6,9 +6,10 @@ import co.nilin.opex.bcgateway.core.model.AssignedAddress
 import co.nilin.opex.bcgateway.core.model.Chain
 import co.nilin.opex.bcgateway.core.model.Currency
 import co.nilin.opex.bcgateway.core.spi.AssignedAddressHandler
-import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
 import co.nilin.opex.bcgateway.core.spi.CurrencyLoader
-import java.lang.RuntimeException
+import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
+import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.utility.error.data.OpexException
 
 class AssignAddressServiceImpl(
     val currencyLoader: CurrencyLoader,
@@ -53,8 +54,12 @@ class AssignAddressServiceImpl(
                     )
                     reservedAddressHandler.remove(reservedAddress)
                     result.add(newAssigned)
-                } else
-                    throw RuntimeException("No reserved address available for $addressType")
+                } else {
+                    throw OpexException(
+                        OpexError.ReservedAddressNotAvailable,
+                        "No reserved address available for $addressType"
+                    )
+                }
 
             }
         }

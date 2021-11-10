@@ -37,7 +37,10 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     InvalidLimitForRecentTrades(7004, "Valid limits: 1 min - 1000 max", HttpStatus.BAD_REQUEST),
     InvalidPriceChangeDuration(7005, "Valid durations: [24h, 7d, 1m]", HttpStatus.BAD_REQUEST),
     CancelOrderNotAllowed(7006, "Canceling this order is not allowed", HttpStatus.FORBIDDEN),
-    InvalidInterval(7007, "Invalid interval", HttpStatus.BAD_REQUEST);
+    InvalidInterval(7007, "Invalid interval", HttpStatus.BAD_REQUEST),
+
+    // code 8000: bc-gateway
+    ReservedAddressNotAvailable(8001, "No reserved address available", HttpStatus.BAD_REQUEST);
 
     companion object {
         fun findByCode(code: Int?): OpexError? {
