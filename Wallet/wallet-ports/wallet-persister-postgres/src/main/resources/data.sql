@@ -3,6 +3,8 @@ INSERT INTO
 VALUES
    (1, '1', 'system', 'basic') ON CONFLICT DO NOTHING;
 
+SELECT setval(pg_get_serial_sequence('wallet_owner', 'id'), 1);
+
 INSERT INTO
    currency(name, symbol, precision)
 VALUES
@@ -15,9 +17,11 @@ INSERT INTO
    currency_rate(id, source_currency, dest_currency, rate)
 VALUES
    (1, 'btc', 'nln', 5500000),
-   (1, 'usdt', 'nln', 100),
-   (1, 'btc', 'usdt', 55000),
-   (1, 'eth', 'usdt', 3800) ON CONFLICT DO NOTHING;
+   (2, 'usdt', 'nln', 100),
+   (3, 'btc', 'usdt', 55000),
+   (4, 'eth', 'usdt', 3800) ON CONFLICT DO NOTHING;
+
+SELECT setval(pg_get_serial_sequence('currency_rate', 'id'), 4);
 
 INSERT INTO
    wallet(id, owner, wallet_type, currency, balance)
@@ -31,8 +35,10 @@ VALUES
    (7, 1, 'main', 'eth', 10000),
    (8, 1, 'exchange', 'eth', 0) ON CONFLICT DO NOTHING;
 
+SELECT setval(pg_get_serial_sequence('wallet', 'id'), 8);
+
 INSERT INTO
-   user_limits (
+   user_limits(
       id,
       level,
       owner,
@@ -45,3 +51,5 @@ INSERT INTO
    )
 VALUES
    (1, null, 1, 'withdraw', 'main', 1000, 100, 10000, 1000) ON CONFLICT DO NOTHING;
+
+SELECT setval(pg_get_serial_sequence('user_limits', 'id'), 1);

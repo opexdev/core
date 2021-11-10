@@ -16,6 +16,8 @@ VALUES
    (1, 'bitcoin', '.*'),
    (2, 'ethereum', '.*') ON CONFLICT DO NOTHING;
 
+SELECT setval(pg_get_serial_sequence('address_types', 'id'), 2);
+
 INSERT INTO
    chain_address_types(chain_name, addr_type_id)
 VALUES
@@ -38,3 +40,5 @@ INSERT INTO
 VALUES
    (1, 'BTC', 'bitcoin', false, null, null, true, 0.0001, 0.0001, 0),
    (2, 'ETH', 'ethereum', true, null, null, true, 0.00001, 0.000001, 18) ON CONFLICT DO NOTHING;
+
+SELECT setval(pg_get_serial_sequence('currency_implementations', 'id'), 2);
