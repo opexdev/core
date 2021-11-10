@@ -22,6 +22,7 @@ class AssignedAddressHandlerImpl(
     val chainLoader: ChainLoader
 ) : AssignedAddressHandler {
     override suspend fun fetchAssignedAddresses(user: String, addressTypes: List<AddressType>): List<AssignedAddress> {
+        if (addressTypes.isEmpty()) return emptyList()
         return assignedAddressRepository.findByUuidAndAddressType(
             user, addressTypes.map(AddressType::id)
         )
