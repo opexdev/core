@@ -9,7 +9,7 @@ INSERT INTO
    currency(name, symbol, precision)
 VALUES
    ('btc', 'btc', 0.000001),
-   ('eth', 'eth', 0.00001)
+   ('eth', 'eth', 0.00001),
    ('usdt', 'usdt', 0.01),
    ('nln', 'nln', 1) ON CONFLICT DO NOTHING;
 
