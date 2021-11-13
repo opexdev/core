@@ -41,12 +41,13 @@ class ChainSyncRecordHandlerImpl(
 
     @Transactional
     override suspend fun saveSyncRecord(syncRecord: ChainSyncRecord) {
+        val currentRecord = chainSyncRecordRepository.findByChain(syncRecord.chainName).awaitSingleOrNull()
         val chainSyncRecordDao =
             ChainSyncRecordModel(
                 syncRecord.chainName,
                 syncRecord.time,
                 syncRecord.endpoint.url,
-                syncRecord.latestBlock,
+                syncRecord.latestBlock ?: currentRecord?.latestBlock,
                 syncRecord.success,
                 syncRecord.error
             )
