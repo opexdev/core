@@ -2,13 +2,15 @@ INSERT INTO
    currency
 VALUES
    ('BTC', 'Bitcoin'),
-   ('ETH', 'Ethereum') ON CONFLICT DO NOTHING;
+   ('ETH', 'Ethereum'),
+   ('USDT', 'Tether') ON CONFLICT DO NOTHING;
 
 INSERT INTO
    chains
 VALUES
    ('bitcoin'),
-   ('ethereum') ON CONFLICT DO NOTHING;
+   ('ethereum'),
+   ('bsc') ON CONFLICT DO NOTHING;
 
 INSERT INTO
    address_types(id, address_type, address_regex)
@@ -39,9 +41,27 @@ INSERT INTO
    )
 VALUES
    (1, 'BTC', 'bitcoin', false, null, null, true, 0.0001, 0.0001, 0),
-   (2, 'ETH', 'ethereum', false, null, null, true, 0.00001, 0.000001, 18) ON CONFLICT DO NOTHING;
+   (2, 'ETH', 'ethereum', false, null, null, true, 0.00001, 0.000001, 18),
+   (3, 'USDT', 'ethereum', true, '0x110a13fc3efe6a245b50102d2d79b3e76125ae83', 'USDT', true, 0.01, 0.01, 6) ON CONFLICT DO NOTHING;
 
-SELECT setval(pg_get_serial_sequence('currency_implementations', 'id'), 2);
+SELECT setval(pg_get_serial_sequence('currency_implementations', 'id'), 3);
+
+INSERT INTO
+   chain_endpoints(id, chain_name, endpoint_url)
+VALUES
+   (1, 'bitcoin', 'http://host.docker.internal:9990/bitcoin/transfers'),
+   (2, 'ethereum', 'http://host.docker.internal:9990/eth/transfers') ON CONFLICT DO NOTHING;
+
+INSERT INTO
+   chain_sync_schedules
+VALUES
+    ('bitcoin', CURRENT_DATE, 600),
+    ('ethereum', CURRENT_DATE, 90) ON CONFLICT DO NOTHING;
+
+INSERT INTO
+   wallet_sync_schedules
+VALUES
+    (1, CURRENT_DATE, 30, 10000) ON CONFLICT DO NOTHING;
 
 INSERT INTO
     reserved_addresses
