@@ -18,7 +18,7 @@ VALUES
    (1, 'bitcoin', '.*'),
    (2, 'ethereum', '.*') ON CONFLICT DO NOTHING;
 
-SELECT setval(pg_get_serial_sequence('address_types', 'id'), 2);
+SELECT setval(pg_get_serial_sequence('address_types', 'id'), (SELECT MAX(id) FROM address_types));
 
 INSERT INTO
    chain_address_types(chain_name, addr_type_id)
@@ -44,7 +44,7 @@ VALUES
    (2, 'ETH', 'ethereum', false, null, null, true, 0.00001, 0.000001, 18),
    (3, 'USDT', 'ethereum', true, '0x110a13fc3efe6a245b50102d2d79b3e76125ae83', 'USDT', true, 0.01, 0.01, 6) ON CONFLICT DO NOTHING;
 
-SELECT setval(pg_get_serial_sequence('currency_implementations', 'id'), 3);
+SELECT setval(pg_get_serial_sequence('currency_implementations', 'id'), (SELECT MAX(id) FROM currency_implementations));
 
 INSERT INTO
    chain_endpoints(id, chain_name, endpoint_url)
@@ -167,4 +167,4 @@ VALUES
     (99, '0xa2edce267a43e1cf3b58d62f5da75f4ffcec85df', '', 2),
     (100, '0xf6e1ec3f817c8b76b860588dad74354e1772c98c', '', 2) ON CONFLICT DO NOTHING;
 
-SELECT setval(pg_get_serial_sequence('reserved_addresses', 'id'), 100);
+SELECT setval(pg_get_serial_sequence('reserved_addresses', 'id'), (SELECT MAX(id) FROM reserved_addresses));

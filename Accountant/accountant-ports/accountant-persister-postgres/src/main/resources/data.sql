@@ -18,6 +18,6 @@ VALUES
    (7, 'eth_usdt', 'ASK', '*', 0.01, 0.01),
    (8, 'eth_usdt', 'BID', '*', 0.01, 0.01) ON CONFLICT DO NOTHING;
 
-SELECT setval(pg_get_serial_sequence('pair_fee_config', 'id'), 8);
+SELECT setval(pg_get_serial_sequence('pair_fee_config', 'id'), (SELECT MAX(id) FROM pair_fee_config));
 
 COMMIT;
