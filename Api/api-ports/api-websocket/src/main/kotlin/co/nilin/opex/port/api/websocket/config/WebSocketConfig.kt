@@ -25,8 +25,9 @@ class WebSocketConfig : WebSocketMessageBrokerConfigurer {
 
     override fun configureMessageBroker(registry: MessageBrokerRegistry) {
         with(registry) {
-            enableSimpleBroker("/topic/", "/queue/")
-            setApplicationDestinationPrefixes("/app")
+            enableSimpleBroker("/topic", "/secured/user/queue")
+            setApplicationDestinationPrefixes("/secured/app")
+            setUserDestinationPrefix("/secured/user")
         }
     }
 
