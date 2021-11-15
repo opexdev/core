@@ -1,6 +1,6 @@
 package co.nilin.opex.wallet.app.service
 
-import co.nilin.opex.auth.gateway.model.UserCreatedEvent
+import co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.core.model.Amount

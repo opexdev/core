@@ -1,7 +1,7 @@
 package co.nilin.opex.wallet.app.listener
 
-import co.nilin.opex.port.wallet.postgres.dao.WithdrawRepository
-import co.nilin.opex.port.wallet.postgres.model.WithdrawModel
+import co.nilin.opex.wallet.ports.postgres.dao.WithdrawRepository
+import co.nilin.opex.wallet.ports.postgres.model.WithdrawModel
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.Wallet
 import co.nilin.opex.wallet.core.spi.WalletListener
