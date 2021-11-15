@@ -7,7 +7,7 @@
         <groupId>co.nilin.opex</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
-    <groupId>co.nilin.opex.matchingengine</groupId>
+    <groupId>co.nilin.opex.matching.engine</groupId>
     <artifactId>MatchingEngine</artifactId>
     <name>MatchingEngine</name>
     <packaging>pom</packaging>
