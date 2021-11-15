@@ -1,25 +1,25 @@
 package co.nilin.opex.matching.core.engine
 
-import co.nilin.opex.matching.core.inout.OrderCancelCommand
-import co.nilin.opex.matching.core.inout.OrderCreateCommand
-import co.nilin.opex.matching.core.inout.OrderEditCommand
-import co.nilin.opex.matching.core.model.MatchConstraint
-import co.nilin.opex.matching.core.model.OrderDirection
-import co.nilin.opex.matching.core.model.OrderType
+import co.nilin.opex.matching.engine.core.inout.OrderCancelCommand
+import co.nilin.opex.matching.engine.core.inout.OrderCreateCommand
+import co.nilin.opex.matching.engine.core.inout.OrderEditCommand
+import co.nilin.opex.matching.engine.core.model.MatchConstraint
+import co.nilin.opex.matching.engine.core.model.OrderDirection
+import co.nilin.opex.matching.engine.core.model.OrderType
 import kotlinx.coroutines.Dispatchers
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.util.*
 
 class SimpleOrderBookUnitTest {
-    val pair = co.nilin.opex.matching.core.model.Pair("BTC", "USDT")
-    val ETH_BTC_PAIR = co.nilin.opex.matching.core.model.Pair("ETH", "BTC")
+    val pair = co.nilin.opex.matching.engine.core.model.Pair("BTC", "USDT")
+    val ETH_BTC_PAIR = co.nilin.opex.matching.engine.core.model.Pair("ETH", "BTC")
     val uuid = UUID.randomUUID().toString()
 
     @Test
     fun givenEmptyOrderBook_whenGtcBidLimitOrderCreated_then1BucketWithSize1() {
         //given
-        val orderBook = SimpleOrderBook(pair, false)
+        val orderBook = co.nilin.opex.matching.engine.core.engine.SimpleOrderBook(pair, false)
         //when
         val order = orderBook.handleNewOrderCommand(
             OrderCreateCommand(
@@ -42,7 +42,7 @@ class SimpleOrderBookUnitTest {
     @Test
     fun givenOrderBookWithBidOrders_whenGtcBidLimitOrderWithSamePriceCreated_then() {
         //given
-        val orderBook = SimpleOrderBook(pair, false)
+        val orderBook = co.nilin.opex.matching.engine.core.engine.SimpleOrderBook(pair, false)
         orderBook.handleNewOrderCommand(
             OrderCreateCommand(
                 UUID.randomUUID().toString(),
@@ -57,18 +57,19 @@ class SimpleOrderBookUnitTest {
         )
         val bestBidOrder = orderBook.bestBidOrder
         //when
-        val order: SimpleOrderBook.SimpleOrder = orderBook.handleNewOrderCommand(
-            OrderCreateCommand(
-                UUID.randomUUID().toString(),
-                uuid,
-                pair,
-                1,
-                1,
-                OrderDirection.BID,
-                MatchConstraint.GTC,
-                OrderType.LIMIT_ORDER
-            )
-        ) as SimpleOrderBook.SimpleOrder
+        val order: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder =
+            orderBook.handleNewOrderCommand(
+                OrderCreateCommand(
+                    UUID.randomUUID().toString(),
+                    uuid,
+                    pair,
+                    1,
+                    1,
+                    OrderDirection.BID,
+                    MatchConstraint.GTC,
+                    OrderType.LIMIT_ORDER
+                )
+            ) as co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder
         //then
         Assertions.assertEquals(orderBook.bidOrders.entriesList().size, 1)
         Assertions.assertEquals(orderBook.bestBidOrder, bestBidOrder)
@@ -82,7 +83,7 @@ class SimpleOrderBookUnitTest {
     @Test
     fun givenOrderBookWithBidOrders_whenGtcBidLimitOrderWithLowerPriceCreated_thenBestOrderNotChange() {
         //given
-        val orderBook = SimpleOrderBook(pair, false)
+        val orderBook = co.nilin.opex.matching.engine.core.engine.SimpleOrderBook(pair, false)
         orderBook.handleNewOrderCommand(
             OrderCreateCommand(
                 UUID.randomUUID().toString(),
@@ -97,18 +98,19 @@ class SimpleOrderBookUnitTest {
         )
         val bestBidOrder = orderBook.bestBidOrder
         //when
-        val order: SimpleOrderBook.SimpleOrder = orderBook.handleNewOrderCommand(
-            OrderCreateCommand(
-                UUID.randomUUID().toString(),
-                uuid,
-                pair,
-                1,
-                1,
-                OrderDirection.BID,
-                MatchConstraint.GTC,
-                OrderType.LIMIT_ORDER
-            )
-        ) as SimpleOrderBook.SimpleOrder
+        val order: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder =
+            orderBook.handleNewOrderCommand(
+                OrderCreateCommand(
+                    UUID.randomUUID().toString(),
+                    uuid,
+                    pair,
+                    1,
+                    1,
+                    OrderDirection.BID,
+                    MatchConstraint.GTC,
+                    OrderType.LIMIT_ORDER
+                )
+            ) as co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder
         //then
         Assertions.assertEquals(orderBook.bidOrders.entriesList().size, 2)
         Assertions.assertEquals(orderBook.bestBidOrder, bestBidOrder)
@@ -122,7 +124,7 @@ class SimpleOrderBookUnitTest {
     @Test
     fun givenOrderBookWithBidOrders_whenGtcBidLimitOrderWithHigherPriceCreated_thenBestOrderChanged() {
         //given
-        val orderBook = SimpleOrderBook(pair, false)
+        val orderBook = co.nilin.opex.matching.engine.core.engine.SimpleOrderBook(pair, false)
         orderBook.handleNewOrderCommand(
             OrderCreateCommand(
                 UUID.randomUUID().toString(),
@@ -137,18 +139,19 @@ class SimpleOrderBookUnitTest {
         )
         val bestBidOrder = orderBook.bestBidOrder
         //when
-        val order: SimpleOrderBook.SimpleOrder = orderBook.handleNewOrderCommand(
-            OrderCreateCommand(
-                UUID.randomUUID().toString(),
-                uuid,
-                pair,
-                2,
-                1,
-                OrderDirection.BID,
-                MatchConstraint.GTC,
-                OrderType.LIMIT_ORDER
-            )
-        ) as SimpleOrderBook.SimpleOrder
+        val order: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder =
+            orderBook.handleNewOrderCommand(
+                OrderCreateCommand(
+                    UUID.randomUUID().toString(),
+                    uuid,
+                    pair,
+                    2,
+                    1,
+                    OrderDirection.BID,
+                    MatchConstraint.GTC,
+                    OrderType.LIMIT_ORDER
+                )
+            ) as co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder
         //then
         Assertions.assertEquals(orderBook.bidOrders.entriesList().size, 2)
         Assertions.assertEquals(orderBook.bestBidOrder, order)
@@ -162,7 +165,7 @@ class SimpleOrderBookUnitTest {
     @Test
     fun givenOrderBookWithBidOrders_whenGtcAskLimitOrderWithSamePriceCreated_thenInstantMatch() {
         //given
-        val orderBook = SimpleOrderBook(pair, false)
+        val orderBook = co.nilin.opex.matching.engine.core.engine.SimpleOrderBook(pair, false)
         orderBook.handleNewOrderCommand(
             OrderCreateCommand(
                 UUID.randomUUID().toString(),
@@ -187,7 +190,7 @@ class SimpleOrderBookUnitTest {
                 MatchConstraint.GTC,
                 OrderType.LIMIT_ORDER
             )
-        ) as SimpleOrderBook.SimpleOrder
+        ) as co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder
         //then
         Assertions.assertEquals(orderBook.bidOrders.entriesList().size, 0)
         Assertions.assertEquals(orderBook.askOrders.entriesList().size, 0)
@@ -198,7 +201,7 @@ class SimpleOrderBookUnitTest {
     @Test
     fun givenOrderBookWithBidOrders_whenGtcAskLimitOrderWithNotMatchPriceCreated_thenAddToQueue() {
         //given
-        val orderBook = SimpleOrderBook(pair, false)
+        val orderBook = co.nilin.opex.matching.engine.core.engine.SimpleOrderBook(pair, false)
         orderBook.handleNewOrderCommand(
             OrderCreateCommand(
                 UUID.randomUUID().toString(),
@@ -224,18 +227,19 @@ class SimpleOrderBookUnitTest {
             )
         )
         //when
-        val order: SimpleOrderBook.SimpleOrder = orderBook.handleNewOrderCommand(
-            OrderCreateCommand(
-                UUID.randomUUID().toString(),
-                uuid,
-                pair,
-                3,
-                1,
-                OrderDirection.ASK,
-                MatchConstraint.GTC,
-                OrderType.LIMIT_ORDER
-            )
-        ) as SimpleOrderBook.SimpleOrder
+        val order: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder =
+            orderBook.handleNewOrderCommand(
+                OrderCreateCommand(
+                    UUID.randomUUID().toString(),
+                    uuid,
+                    pair,
+                    3,
+                    1,
+                    OrderDirection.ASK,
+                    MatchConstraint.GTC,
+                    OrderType.LIMIT_ORDER
+                )
+            ) as co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder
         //then
         Assertions.assertEquals(orderBook.bidOrders.entriesList().size, 2)
         Assertions.assertEquals(orderBook.askOrders.entriesList().size, 1)
@@ -246,7 +250,7 @@ class SimpleOrderBookUnitTest {
     @Test
     fun givenOrderBookWithBidAndAskOrders_whenGtcAskLimitOrderWithMatchPriceGreaterQuantityCreated_thenAddToQueue() {
         //given
-        val orderBook = SimpleOrderBook(pair, false)
+        val orderBook = co.nilin.opex.matching.engine.core.engine.SimpleOrderBook(pair, false)
         orderBook.handleNewOrderCommand(
             OrderCreateCommand(
                 UUID.randomUUID().toString(),
@@ -284,18 +288,19 @@ class SimpleOrderBookUnitTest {
             )
         )
         //when
-        val order: SimpleOrderBook.SimpleOrder = orderBook.handleNewOrderCommand(
-            OrderCreateCommand(
-                UUID.randomUUID().toString(),
-                uuid,
-                pair,
-                1,
-                3,
-                OrderDirection.ASK,
-                MatchConstraint.GTC,
-                OrderType.LIMIT_ORDER
-            )
-        ) as SimpleOrderBook.SimpleOrder
+        val order: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder =
+            orderBook.handleNewOrderCommand(
+                OrderCreateCommand(
+                    UUID.randomUUID().toString(),
+                    uuid,
+                    pair,
+                    1,
+                    3,
+                    OrderDirection.ASK,
+                    MatchConstraint.GTC,
+                    OrderType.LIMIT_ORDER
+                )
+            ) as co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder
         //then
         Assertions.assertEquals(orderBook.bidOrders.entriesList().size, 0)
         Assertions.assertEquals(orderBook.askOrders.entriesList().size, 2)
@@ -306,7 +311,7 @@ class SimpleOrderBookUnitTest {
     @Test
     fun givenOrderBook_whenCancelBestBidOrder_thenBestBidOrderChange() {
         //given
-        val orderBook = SimpleOrderBook(pair, false)
+        val orderBook = co.nilin.opex.matching.engine.core.engine.SimpleOrderBook(pair, false)
         val firstOrderId = UUID.randomUUID().toString()
         val secondOrderId = UUID.randomUUID().toString()
 
@@ -344,7 +349,7 @@ class SimpleOrderBookUnitTest {
     @Test
     fun givenOrderBookWithMoreBids_whenCancelBestBidOrder_thenBestBidOrderChange() {
         //given
-        val orderBook = SimpleOrderBook(pair, false)
+        val orderBook = co.nilin.opex.matching.engine.core.engine.SimpleOrderBook(pair, false)
         val firstOrderId = UUID.randomUUID().toString()
         val secondOrderId = UUID.randomUUID().toString()
 
@@ -394,7 +399,7 @@ class SimpleOrderBookUnitTest {
     @Test
     fun givenOrderBookWithMoreBids_whenCancelABidOrder_thenBestBidOrderNotChange() {
         //given
-        val orderBook = SimpleOrderBook(pair, false)
+        val orderBook = co.nilin.opex.matching.engine.core.engine.SimpleOrderBook(pair, false)
         val firstOrderId = UUID.randomUUID().toString()
         val secondOrderId = UUID.randomUUID().toString()
 
@@ -445,7 +450,7 @@ class SimpleOrderBookUnitTest {
     @Test
     fun givenOrderBookWithMoreBids_whenEditABidOrder_thenBestBidOrderChange() {
         //given
-        val orderBook = SimpleOrderBook(pair, false)
+        val orderBook = co.nilin.opex.matching.engine.core.engine.SimpleOrderBook(pair, false)
         orderBook.handleNewOrderCommand(
             OrderCreateCommand(
                 UUID.randomUUID().toString(),
@@ -502,7 +507,7 @@ class SimpleOrderBookUnitTest {
     @Test
     fun givenOrderBookWithBidAndAskOrders_whenEditABidOrder_thenRefill() {
         //given
-        val orderBook = SimpleOrderBook(pair, false)
+        val orderBook = co.nilin.opex.matching.engine.core.engine.SimpleOrderBook(pair, false)
         orderBook.handleNewOrderCommand(
             OrderCreateCommand(
                 UUID.randomUUID().toString(),
@@ -540,7 +545,7 @@ class SimpleOrderBookUnitTest {
             )
         )
         //when
-        val order: SimpleOrderBook.SimpleOrder = orderBook.handleEditCommand(
+        val order: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder = orderBook.handleEditCommand(
             OrderEditCommand(
                 UUID.randomUUID().toString(),
                 uuid,
@@ -549,7 +554,7 @@ class SimpleOrderBookUnitTest {
                 3,
                 3
             )
-        ) as SimpleOrderBook.SimpleOrder
+        ) as co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder
         //then
         Assertions.assertEquals(2, orderBook.bidOrders.entriesList().size)
         Assertions.assertEquals(0, orderBook.askOrders.entriesList().size)
@@ -560,7 +565,7 @@ class SimpleOrderBookUnitTest {
     @Test
     fun givenEmptyOrderBook_whenGtcBidMarketOrderCreated_thenRejected() {
         //given
-        val orderBook = SimpleOrderBook(pair, false)
+        val orderBook = co.nilin.opex.matching.engine.core.engine.SimpleOrderBook(pair, false)
         //when
 
         val order = orderBook.handleNewOrderCommand(
@@ -584,7 +589,7 @@ class SimpleOrderBookUnitTest {
     @Test
     fun givenEmptyOrderBook_whenIocBidMarketOrderCreated_thenNoOrderCreated() {
         //given
-        val orderBook = SimpleOrderBook(pair, false)
+        val orderBook = co.nilin.opex.matching.engine.core.engine.SimpleOrderBook(pair, false)
         //when
 
         val order = orderBook.handleNewOrderCommand(
@@ -608,7 +613,7 @@ class SimpleOrderBookUnitTest {
     @Test
     fun givenOrderBookWithBidAndAskOrders_whenIocAskMarketOrderWithGreaterQuantityCreated_thenPartiallyFilled() {
         //given
-        val orderBook = SimpleOrderBook(pair, false)
+        val orderBook = co.nilin.opex.matching.engine.core.engine.SimpleOrderBook(pair, false)
         orderBook.handleNewOrderCommand(
             OrderCreateCommand(
                 UUID.randomUUID().toString(),
@@ -647,18 +652,19 @@ class SimpleOrderBookUnitTest {
         )
         val bestAskOrder = orderBook.bestAskOrder
         //when
-        val order: SimpleOrderBook.SimpleOrder = orderBook.handleNewOrderCommand(
-            OrderCreateCommand(
-                UUID.randomUUID().toString(),
-                uuid,
-                pair,
-                0,
-                3,
-                OrderDirection.ASK,
-                MatchConstraint.IOC,
-                OrderType.MARKET_ORDER
-            )
-        ) as SimpleOrderBook.SimpleOrder
+        val order: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder =
+            orderBook.handleNewOrderCommand(
+                OrderCreateCommand(
+                    UUID.randomUUID().toString(),
+                    uuid,
+                    pair,
+                    0,
+                    3,
+                    OrderDirection.ASK,
+                    MatchConstraint.IOC,
+                    OrderType.MARKET_ORDER
+                )
+            ) as co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder
         //then
         Assertions.assertEquals(2, order.filledQuantity)
         Assertions.assertEquals(orderBook.bidOrders.entriesList().size, 0)
@@ -670,7 +676,7 @@ class SimpleOrderBookUnitTest {
     @Test
     fun givenOrderBookWithBidAndAskOrders_whenIocAskLimitOrderWithHigherPriceAndGreaterQuantityCreated_thenNotFilled() {
         //given
-        val orderBook = SimpleOrderBook(pair, false)
+        val orderBook = co.nilin.opex.matching.engine.core.engine.SimpleOrderBook(pair, false)
         orderBook.handleNewOrderCommand(
             OrderCreateCommand(
                 UUID.randomUUID().toString(),
@@ -710,18 +716,19 @@ class SimpleOrderBookUnitTest {
         val bestAskOrder = orderBook.bestAskOrder
         val bestBidOrder = orderBook.bestBidOrder
         //when
-        val order: SimpleOrderBook.SimpleOrder = orderBook.handleNewOrderCommand(
-            OrderCreateCommand(
-                UUID.randomUUID().toString(),
-                uuid,
-                pair,
-                3,
-                3,
-                OrderDirection.ASK,
-                MatchConstraint.IOC,
-                OrderType.LIMIT_ORDER
-            )
-        ) as SimpleOrderBook.SimpleOrder
+        val order: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder =
+            orderBook.handleNewOrderCommand(
+                OrderCreateCommand(
+                    UUID.randomUUID().toString(),
+                    uuid,
+                    pair,
+                    3,
+                    3,
+                    OrderDirection.ASK,
+                    MatchConstraint.IOC,
+                    OrderType.LIMIT_ORDER
+                )
+            ) as co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder
         //then
         Assertions.assertEquals(0, order.filledQuantity)
         Assertions.assertEquals(orderBook.bidOrders.entriesList().size, 2)
@@ -733,7 +740,7 @@ class SimpleOrderBookUnitTest {
     @Test
     fun whenSample1SequenceOfOrdersOccurs_thenAllSuccess() {
 
-        val orderBook = SimpleOrderBook(ETH_BTC_PAIR, false)
+        val orderBook = co.nilin.opex.matching.engine.core.engine.SimpleOrderBook(ETH_BTC_PAIR, false)
         orderBook.handleNewOrderCommand(
             OrderCreateCommand(
                 UUID.randomUUID().toString(),
@@ -745,7 +752,7 @@ class SimpleOrderBookUnitTest {
                 MatchConstraint.GTC,
                 OrderType.LIMIT_ORDER
             )
-        ) as SimpleOrderBook.SimpleOrder
+        ) as co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder
         Assertions.assertNotNull(orderBook.bestBidOrder)
         Assertions.assertEquals(1, orderBook.bidOrders.entriesList().size)
         Assertions.assertEquals(1, orderBook.orders.size)
@@ -761,7 +768,7 @@ class SimpleOrderBookUnitTest {
                 MatchConstraint.GTC,
                 OrderType.LIMIT_ORDER
             )
-        ) as SimpleOrderBook.SimpleOrder
+        ) as co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder
         Assertions.assertNull(orderBook.bestBidOrder)
         Assertions.assertNotNull(orderBook.bestAskOrder)
         Assertions.assertEquals(0, orderBook.bidOrders.entriesList().size)
@@ -779,7 +786,7 @@ class SimpleOrderBookUnitTest {
                 MatchConstraint.GTC,
                 OrderType.LIMIT_ORDER
             )
-        ) as SimpleOrderBook.SimpleOrder
+        ) as co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder
         Assertions.assertNull(orderBook.bestBidOrder)
         Assertions.assertNotNull(orderBook.bestAskOrder)
         Assertions.assertEquals(0, orderBook.bidOrders.entriesList().size)
@@ -797,7 +804,7 @@ class SimpleOrderBookUnitTest {
                 MatchConstraint.GTC,
                 OrderType.LIMIT_ORDER
             )
-        ) as SimpleOrderBook.SimpleOrder
+        ) as co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder
         Assertions.assertEquals(1, orderBook.bidOrders.entriesList().size)
         Assertions.assertEquals(1, orderBook.askOrders.entriesList().size)
         Assertions.assertEquals(2, orderBook.orders.size)
@@ -815,7 +822,7 @@ class SimpleOrderBookUnitTest {
                 MatchConstraint.GTC,
                 OrderType.LIMIT_ORDER
             )
-        ) as SimpleOrderBook.SimpleOrder
+        ) as co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder
         Assertions.assertEquals(1, orderBook.bidOrders.entriesList().size)
         Assertions.assertEquals(2, orderBook.askOrders.entriesList().size)
         Assertions.assertEquals(3, orderBook.orders.size)
@@ -833,7 +840,7 @@ class SimpleOrderBookUnitTest {
                 MatchConstraint.GTC,
                 OrderType.LIMIT_ORDER
             )
-        ) as SimpleOrderBook.SimpleOrder
+        ) as co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder
         Assertions.assertEquals(2, orderBook.bidOrders.entriesList().size)
         Assertions.assertEquals(2, orderBook.askOrders.entriesList().size)
         Assertions.assertEquals(4, orderBook.orders.size)
