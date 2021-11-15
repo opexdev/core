@@ -1,7 +1,7 @@
 package co.nilin.opex.port.accountant.kafka.service
 
 import co.nilin.opex.accountant.core.spi.TempEventRepublisher
-import co.nilin.opex.matching.core.eventh.events.CoreEvent
+import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Component

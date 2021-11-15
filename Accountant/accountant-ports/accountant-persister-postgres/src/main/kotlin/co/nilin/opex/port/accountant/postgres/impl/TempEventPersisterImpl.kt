@@ -2,7 +2,7 @@ package co.nilin.opex.port.accountant.postgres.impl
 
 import co.nilin.opex.accountant.core.model.TempEvent
 import co.nilin.opex.accountant.core.spi.TempEventPersister
-import co.nilin.opex.matching.core.eventh.events.CoreEvent
+import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
 import co.nilin.opex.port.accountant.postgres.dao.TempEventRepository
 import co.nilin.opex.port.accountant.postgres.model.TempEventModel
 import com.google.gson.Gson

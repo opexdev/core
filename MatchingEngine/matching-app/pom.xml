@@ -42,22 +42,22 @@
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex</groupId>
+            <groupId>co.nilin.opex.matching.engine.core</groupId>
             <artifactId>matching-core</artifactId>
             <version>${matching.version}</version>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex</groupId>
+            <groupId>co.nilin.opex.matching.engine.ports.kafka.submitter</groupId>
             <artifactId>matching-submitter-kafka</artifactId>
             <version>${matching.version}</version>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex</groupId>
+            <groupId>co.nilin.opex.matching.engine.ports.kafka.listener</groupId>
             <artifactId>matching-eventlistener-kafka</artifactId>
             <version>${matching.version}</version>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex</groupId>
+            <groupId>co.nilin.opex.matching.engine.ports.redis</groupId>
             <artifactId>matching-snapshots-redis</artifactId>
             <version>${matching.version}</version>
         </dependency>

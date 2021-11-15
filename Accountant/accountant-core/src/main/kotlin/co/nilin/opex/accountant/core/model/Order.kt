@@ -1,8 +1,8 @@
 package co.nilin.opex.accountant.core.model
 
-import co.nilin.opex.matching.core.model.MatchConstraint
-import co.nilin.opex.matching.core.model.OrderDirection
-import co.nilin.opex.matching.core.model.OrderType
+import co.nilin.opex.matching.engine.core.model.MatchConstraint
+import co.nilin.opex.matching.engine.core.model.OrderDirection
+import co.nilin.opex.matching.engine.core.model.OrderType
 import java.math.BigDecimal
 
 data class Order(

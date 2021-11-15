@@ -1,7 +1,7 @@
 package co.nilin.opex.matching.engine.ports.kafka.submitter.config
 
 
-import co.nilin.opex.matching.core.eventh.events.CoreEvent
+import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
 import org.apache.kafka.clients.admin.AdminClientConfig
 import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.producer.ProducerConfig

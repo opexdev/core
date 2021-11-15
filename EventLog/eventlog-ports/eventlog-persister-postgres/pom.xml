@@ -8,7 +8,7 @@
         <version>2.4.4</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>co.nilin.opex</groupId>
+    <groupId>co.nilin.opex.eventlog.ports.postgres</groupId>
     <artifactId>eventlog-persister-postgres</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>eventlog-persister-postgres</name>
@@ -23,13 +23,13 @@
 
     <dependencies>
         <dependency>
-            <groupId>co.nilin.opex</groupId>
+            <groupId>co.nilin.opex.matching.engine.core</groupId>
             <artifactId>matching-core</artifactId>
             <version>${matching.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex</groupId>
+            <groupId>co.nilin.opex.eventlog.core</groupId>
             <artifactId>eventlog-core</artifactId>
             <version>${eventlog.version}</version>
             <scope>provided</scope>

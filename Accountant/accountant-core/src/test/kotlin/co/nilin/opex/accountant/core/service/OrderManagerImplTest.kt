@@ -5,11 +5,10 @@ import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.PairConfig
 import co.nilin.opex.accountant.core.model.PairFeeConfig
 import co.nilin.opex.accountant.core.spi.*
-import co.nilin.opex.matching.core.eventh.events.SubmitOrderEvent
-import co.nilin.opex.matching.core.model.MatchConstraint
-import co.nilin.opex.matching.core.model.OrderDirection
-import co.nilin.opex.matching.core.model.OrderType
-import co.nilin.opex.matching.core.model.Pair
+import co.nilin.opex.matching.engine.core.eventh.events.SubmitOrderEvent
+import co.nilin.opex.matching.engine.core.model.MatchConstraint
+import co.nilin.opex.matching.engine.core.model.OrderDirection
+import co.nilin.opex.matching.engine.core.model.OrderType
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -64,7 +63,7 @@ internal class OrderManagerImplTest() {
     fun givenAskOrder_whenHandleRequestOrder_thenFAMatch() {
         runBlocking {
             //given
-            val pair = Pair("eth", "btc")
+            val pair = co.nilin.opex.matching.engine.core.model.Pair("eth", "btc")
             val pairConfig = PairConfig(
                 pair.toString(), pair.leftSideName, pair.rightSideName, 1.0, 0.001
             )
@@ -117,7 +116,7 @@ internal class OrderManagerImplTest() {
     fun givenBidOrder_whenHandleRequestOrder_thenFAMatch() {
         runBlocking {
             //given
-            val pair = Pair("eth", "btc")
+            val pair = co.nilin.opex.matching.engine.core.model.Pair("eth", "btc")
             val pairConfig = PairConfig(
                 pair.toString(), pair.leftSideName, pair.rightSideName, 1.0, 0.001
             )

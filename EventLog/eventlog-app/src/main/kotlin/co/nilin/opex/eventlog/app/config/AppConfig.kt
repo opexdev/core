@@ -1,16 +1,16 @@
 package co.nilin.opex.eventlog.app.config
 
-import co.nilin.opex.eventlog.spi.EventPersister
-import co.nilin.opex.eventlog.spi.OrderPersister
-import co.nilin.opex.eventlog.spi.TradePersister
-import co.nilin.opex.matching.core.eventh.events.*
-import co.nilin.opex.port.eventlog.kafka.consumer.EventKafkaListener
-import co.nilin.opex.port.eventlog.kafka.consumer.OrderKafkaListener
-import co.nilin.opex.port.eventlog.kafka.consumer.TradeKafkaListener
-import co.nilin.opex.port.eventlog.kafka.spi.EventListener
-import co.nilin.opex.port.eventlog.kafka.spi.OrderSubmitRequestListener
-import co.nilin.opex.port.eventlog.kafka.spi.TradeListener
-import co.nilin.opex.port.order.kafka.inout.OrderSubmitRequest
+import co.nilin.opex.eventlog.core.spi.EventPersister
+import co.nilin.opex.eventlog.core.spi.OrderPersister
+import co.nilin.opex.eventlog.core.spi.TradePersister
+import co.nilin.opex.matching.engine.core.eventh.events.*
+import co.nilin.opex.eventlog.ports.kafka.listener.consumer.EventKafkaListener
+import co.nilin.opex.eventlog.ports.kafka.listener.consumer.OrderKafkaListener
+import co.nilin.opex.eventlog.ports.kafka.listener.consumer.TradeKafkaListener
+import co.nilin.opex.eventlog.ports.kafka.listener.spi.EventListener
+import co.nilin.opex.eventlog.ports.kafka.listener.spi.OrderSubmitRequestListener
+import co.nilin.opex.eventlog.ports.kafka.listener.spi.TradeListener
+import co.nilin.opex.eventlog.ports.kafka.listener.inout.OrderSubmitRequest
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory

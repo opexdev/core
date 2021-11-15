@@ -1,6 +1,6 @@
 package co.nilin.opex.matching.engine.ports.redis.config
 
-import co.nilin.opex.matching.core.model.PersistentOrderBook
+import co.nilin.opex.matching.engine.core.model.PersistentOrderBook
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.PropertyAccessor
 import com.fasterxml.jackson.databind.ObjectMapper

@@ -1,7 +1,7 @@
 package co.nilin.opex.matching.engine.ports.kafka.submitter.service
 
-import co.nilin.opex.matching.core.eventh.events.CoreEvent
-import co.nilin.opex.matching.core.eventh.events.TradeEvent
+import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
+import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Component
 import kotlin.coroutines.suspendCoroutine

@@ -1,7 +1,7 @@
 package co.nilin.opex.port.api.kafka.consumer
 
 
-import co.nilin.opex.matching.core.eventh.events.CoreEvent
+import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
 import co.nilin.opex.port.api.kafka.spi.EventListener
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.kafka.listener.MessageListener

@@ -68,7 +68,7 @@
             <version>${mockito-kotlin.version}</version>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex</groupId>
+            <groupId>co.nilin.opex.utility.error</groupId>
             <artifactId>error-handler</artifactId>
             <version>${utility.version}</version>
         </dependency>

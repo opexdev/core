@@ -2,7 +2,7 @@ package co.nilin.opex.port.api.postgres.impl
 
 import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.UserQueryHandler
-import co.nilin.opex.matching.core.model.OrderDirection
+import co.nilin.opex.matching.engine.core.model.OrderDirection
 import co.nilin.opex.port.api.postgres.dao.OrderRepository
 import co.nilin.opex.port.api.postgres.dao.TradeRepository
 import co.nilin.opex.port.api.postgres.model.OrderModel

@@ -31,7 +31,7 @@
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex</groupId>
+            <groupId>co.nilin.opex.matching.engine.core</groupId>
             <artifactId>matching-core</artifactId>
             <version>${matching.version}</version>
             <scope>provided</scope>

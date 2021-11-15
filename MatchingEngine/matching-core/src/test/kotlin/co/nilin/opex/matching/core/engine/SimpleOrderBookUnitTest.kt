@@ -1,4 +1,4 @@
-package co.nilin.opex.matching.core.engine
+package co.nilin.opex.matching.engine.core.engine
 
 import co.nilin.opex.matching.engine.core.inout.OrderCancelCommand
 import co.nilin.opex.matching.engine.core.inout.OrderCreateCommand

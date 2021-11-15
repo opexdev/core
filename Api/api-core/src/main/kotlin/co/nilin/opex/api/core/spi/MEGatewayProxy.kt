@@ -2,9 +2,9 @@ package co.nilin.opex.api.core.spi
 
 import co.nilin.opex.api.core.inout.CancelOrderRequest
 import co.nilin.opex.api.core.inout.OrderSubmitResult
-import co.nilin.opex.matching.core.model.MatchConstraint
-import co.nilin.opex.matching.core.model.OrderDirection
-import co.nilin.opex.matching.core.model.OrderType
+import co.nilin.opex.matching.engine.core.model.MatchConstraint
+import co.nilin.opex.matching.engine.core.model.OrderDirection
+import co.nilin.opex.matching.engine.core.model.OrderType
 import java.math.BigDecimal
 
 interface MEGatewayProxy {

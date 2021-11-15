@@ -2,7 +2,7 @@ package co.nilin.opex.accountant.core.spi
 
 import co.nilin.opex.accountant.core.model.PairConfig
 import co.nilin.opex.accountant.core.model.PairFeeConfig
-import co.nilin.opex.matching.core.model.OrderDirection
+import co.nilin.opex.matching.engine.core.model.OrderDirection
 
 interface PairConfigLoader {
 

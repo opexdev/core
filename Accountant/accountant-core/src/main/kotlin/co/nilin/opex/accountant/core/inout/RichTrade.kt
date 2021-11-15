@@ -1,6 +1,6 @@
 package co.nilin.opex.accountant.core.inout
 
-import co.nilin.opex.matching.core.model.OrderDirection
+import co.nilin.opex.matching.engine.core.model.OrderDirection
 import java.math.BigDecimal
 import java.time.LocalDateTime
 

@@ -1,6 +1,6 @@
 package co.nilin.opex.matching.engine.ports.kafka.listener.config
 
-import co.nilin.opex.matching.core.eventh.events.CoreEvent
+import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
 import co.nilin.opex.matching.engine.ports.kafka.listener.consumer.EventKafkaListener
 import co.nilin.opex.matching.engine.ports.kafka.listener.consumer.OrderKafkaListener
 import co.nilin.opex.matching.engine.ports.kafka.listener.inout.OrderSubmitRequest

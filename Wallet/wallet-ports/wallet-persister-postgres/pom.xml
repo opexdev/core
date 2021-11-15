@@ -22,7 +22,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>co.nilin.opex</groupId>
+            <groupId>co.nilin.opex.wallet.core</groupId>
             <artifactId>wallet-core</artifactId>
             <version>${wallet.version}</version>
             <scope>provided</scope>

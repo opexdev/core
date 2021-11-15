@@ -1,9 +1,9 @@
 package co.nilin.opex.port.api.postgres.model
 
 
-import co.nilin.opex.matching.core.model.MatchConstraint
-import co.nilin.opex.matching.core.model.OrderDirection
-import co.nilin.opex.matching.core.model.OrderType
+import co.nilin.opex.matching.engine.core.model.MatchConstraint
+import co.nilin.opex.matching.engine.core.model.OrderDirection
+import co.nilin.opex.matching.engine.core.model.OrderType
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Version
 import org.springframework.data.relational.core.mapping.Column

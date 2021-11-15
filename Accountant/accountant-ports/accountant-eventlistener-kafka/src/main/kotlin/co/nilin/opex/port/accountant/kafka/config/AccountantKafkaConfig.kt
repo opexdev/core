@@ -1,7 +1,7 @@
 package co.nilin.opex.port.accountant.kafka.config
 
 
-import co.nilin.opex.matching.core.eventh.events.CoreEvent
+import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
 import co.nilin.opex.port.accountant.kafka.consumer.EventKafkaListener
 import co.nilin.opex.port.accountant.kafka.consumer.OrderKafkaListener
 import co.nilin.opex.port.accountant.kafka.consumer.TempEventKafkaListener
@@ -24,7 +24,6 @@ import org.springframework.kafka.listener.ContainerProperties
 import org.springframework.kafka.support.serializer.JsonDeserializer
 import org.springframework.kafka.support.serializer.JsonSerializer
 import java.util.regex.Pattern
-
 
 @Configuration
 class AccountantKafkaConfig {

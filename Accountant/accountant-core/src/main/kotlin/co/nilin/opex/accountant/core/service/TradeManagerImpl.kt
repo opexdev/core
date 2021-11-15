@@ -4,8 +4,8 @@ import co.nilin.opex.accountant.core.api.TradeManager
 import co.nilin.opex.accountant.core.inout.RichTrade
 import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.spi.*
-import co.nilin.opex.matching.core.eventh.events.TradeEvent
-import co.nilin.opex.matching.core.model.OrderDirection
+import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
+import co.nilin.opex.matching.engine.core.model.OrderDirection
 import org.slf4j.LoggerFactory
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal

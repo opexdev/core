@@ -1,7 +1,7 @@
 package co.nilin.opex.matching.engine.ports.redis.service
 
-import co.nilin.opex.matching.core.model.PersistentOrderBook
-import co.nilin.opex.matching.core.spi.OrderBookPersister
+import co.nilin.opex.matching.engine.core.model.PersistentOrderBook
+import co.nilin.opex.matching.engine.core.spi.OrderBookPersister
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.stereotype.Component

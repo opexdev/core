@@ -1,6 +1,6 @@
 package co.nilin.opex.port.api.kafka.spi
 
-import co.nilin.opex.matching.core.eventh.events.CoreEvent
+import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
 
 
 interface EventListener {

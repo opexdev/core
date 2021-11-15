@@ -3,9 +3,9 @@ package co.nilin.opex.port.api.postgres.util
 import co.nilin.opex.api.core.inout.OrderSide
 import co.nilin.opex.api.core.inout.OrderStatus
 import co.nilin.opex.api.core.inout.TimeInForce
-import co.nilin.opex.matching.core.model.MatchConstraint
-import co.nilin.opex.matching.core.model.OrderDirection
-import co.nilin.opex.matching.core.model.OrderType
+import co.nilin.opex.matching.engine.core.model.MatchConstraint
+import co.nilin.opex.matching.engine.core.model.OrderDirection
+import co.nilin.opex.matching.engine.core.model.OrderType
 
 fun MatchConstraint.toTimeInForce(): TimeInForce {
     if (this == MatchConstraint.FOK_BUDGET)

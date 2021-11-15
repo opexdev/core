@@ -1,6 +1,6 @@
 package co.nilin.opex.port.accountant.kafka.spi
 
-import co.nilin.opex.matching.core.eventh.events.TradeEvent
+import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
 
 interface TradeListener {
     fun id(): String
