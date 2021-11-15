@@ -22,7 +22,7 @@ interface WithdrawPersister {
 
     suspend fun findWithdrawHistory(
         uuid: String,
-        coin:String?,
+        coin: String?,
         startTime: LocalDateTime,
         endTime: LocalDateTime,
         limit: Int,

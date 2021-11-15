@@ -1,6 +1,5 @@
 package co.nilin.opex.wallet.app.service
 
-import co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.core.model.Amount
@@ -8,6 +7,7 @@ import co.nilin.opex.wallet.core.model.Wallet
 import co.nilin.opex.wallet.core.spi.CurrencyService
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
+import co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional

@@ -1,6 +1,6 @@
 package co.nilin.opex.wallet.ports.kafka.listener.model
 
-class UserCreatedEvent: AuthEvent {
+class UserCreatedEvent : AuthEvent {
     lateinit var uuid: String
     var firstName: String? = null
     var lastName: String? = null

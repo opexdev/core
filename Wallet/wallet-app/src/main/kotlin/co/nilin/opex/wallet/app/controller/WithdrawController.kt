@@ -6,7 +6,6 @@ import co.nilin.opex.wallet.core.service.WithdrawService
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 import java.security.Principal

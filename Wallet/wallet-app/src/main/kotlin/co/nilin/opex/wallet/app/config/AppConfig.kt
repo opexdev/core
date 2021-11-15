@@ -1,9 +1,9 @@
 package co.nilin.opex.wallet.app.config
 
-import co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent
-import co.nilin.opex.wallet.ports.kafka.listener.consumer.UserCreatedKafkaListener
-import co.nilin.opex.wallet.ports.kafka.listener.spi.UserCreatedEventListener
 import co.nilin.opex.wallet.app.service.UserRegistrationService
+import co.nilin.opex.wallet.ports.kafka.listener.consumer.UserCreatedKafkaListener
+import co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent
+import co.nilin.opex.wallet.ports.kafka.listener.spi.UserCreatedEventListener
 import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value

@@ -8,22 +8,22 @@ import org.springframework.kafka.listener.MessageListener
 import org.springframework.stereotype.Component
 
 @Component
-class UserCreatedKafkaListener: MessageListener<String, UserCreatedEvent> {
+class UserCreatedKafkaListener : MessageListener<String, UserCreatedEvent> {
     val eventListeners = arrayListOf<UserCreatedEventListener>()
 
     override fun onMessage(data: ConsumerRecord<String, UserCreatedEvent>) {
-        eventListeners.forEach{
-            tl -> tl.onEvent(data.value(), data.partition(), data.offset(), data.timestamp())
+        eventListeners.forEach { tl ->
+            tl.onEvent(data.value(), data.partition(), data.offset(), data.timestamp())
         }
     }
 
-    fun addEventListener(tl: UserCreatedEventListener){
+    fun addEventListener(tl: UserCreatedEventListener) {
         eventListeners.add(tl)
     }
 
-    fun removeEventListener(tl: UserCreatedEventListener){
-        eventListeners.removeIf {
-            item -> item.id() == tl.id()
+    fun removeEventListener(tl: UserCreatedEventListener) {
+        eventListeners.removeIf { item ->
+            item.id() == tl.id()
         }
     }
 }

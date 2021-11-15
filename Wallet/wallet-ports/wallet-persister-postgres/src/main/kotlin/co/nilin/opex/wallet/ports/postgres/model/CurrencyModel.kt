@@ -12,7 +12,7 @@ data class CurrencyModel(
     @JsonIgnore @Id @Column("name") val name_: String,
     @JsonIgnore @Column("symbol") val symbol_: String,
     @JsonIgnore @Column("precision") val precision_: Int
-): Currency {
+) : Currency {
     override fun getSymbol(): String {
         return symbol_
     }
@@ -22,7 +22,7 @@ data class CurrencyModel(
     }
 
     override fun getPrecision(): Int {
-       return precision_
+        return precision_
     }
 }
 

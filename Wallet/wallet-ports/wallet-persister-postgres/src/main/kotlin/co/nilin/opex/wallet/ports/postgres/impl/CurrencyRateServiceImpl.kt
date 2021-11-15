@@ -1,9 +1,9 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
-import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRateRepository
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.spi.CurrencyRateService
+import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRateRepository
 import kotlinx.coroutines.reactive.awaitFirstOrDefault
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.stereotype.Service

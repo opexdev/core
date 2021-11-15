@@ -14,6 +14,6 @@ class TransactionModel(
     @Column("source_amount") val sourceAmount: BigDecimal,
     @Column("dest_amount") val destAmount: BigDecimal,
     val description: String?,
-    @Column("transfer_ref")  val transferRef: String?,
+    @Column("transfer_ref") val transferRef: String?,
     @Column("transaction_date") val txDate: LocalDateTime
 )

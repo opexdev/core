@@ -10,7 +10,7 @@ interface TransactionManager {
 
     suspend fun findDepositTransactions(
         uuid: String,
-        coin:String?,
+        coin: String?,
         startTime: LocalDateTime,
         endTime: LocalDateTime,
         limit: Int,
@@ -19,7 +19,7 @@ interface TransactionManager {
 
     suspend fun findWithdrawTransactions(
         uuid: String,
-        coin:String?,
+        coin: String?,
         startTime: LocalDateTime,
         endTime: LocalDateTime,
         limit: Int,

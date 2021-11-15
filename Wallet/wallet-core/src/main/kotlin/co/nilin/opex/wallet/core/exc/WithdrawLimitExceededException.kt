@@ -1,3 +1,3 @@
 package co.nilin.opex.wallet.core.exc
 
-class WithdrawLimitExceededException: Exception()
+class WithdrawLimitExceededException : Exception()

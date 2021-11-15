@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<artifactId>OPEX-Core</artifactId>
-		<groupId>co.nilin.opex</groupId>
-		<version>1.0-SNAPSHOT</version>
-	</parent>
-	<groupId>co.nilin.opex.wallet</groupId>
-	<artifactId>Wallet</artifactId>
-	<name>Wallet</name>
-	<packaging>pom</packaging>
-	<description>Wallet managment root of Opex</description>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>OPEX-Core</artifactId>
+        <groupId>co.nilin.opex</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <groupId>co.nilin.opex.wallet</groupId>
+    <artifactId>Wallet</artifactId>
+    <name>Wallet</name>
+    <packaging>pom</packaging>
+    <description>Wallet managment root of Opex</description>
 
-	<modules>
-		<module>wallet-core</module>
-		<module>wallet-app</module>
-		<module>wallet-ports/wallet-persister-postgres</module>
-		<module>wallet-ports/wallet-eventlistener-kafka</module>
-	</modules>
+    <modules>
+        <module>wallet-core</module>
+        <module>wallet-app</module>
+        <module>wallet-ports/wallet-persister-postgres</module>
+        <module>wallet-ports/wallet-eventlistener-kafka</module>
+    </modules>
 </project>

@@ -6,4 +6,4 @@ interface Wallet {
     fun balance(): Amount
     fun currency(): Currency
     fun type(): String
- }
+}

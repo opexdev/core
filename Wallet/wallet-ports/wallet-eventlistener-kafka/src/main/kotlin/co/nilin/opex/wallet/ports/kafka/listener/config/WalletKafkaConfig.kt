@@ -1,7 +1,7 @@
 package co.nilin.opex.wallet.ports.kafka.listener.config
 
-import co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent
 import co.nilin.opex.wallet.ports.kafka.listener.consumer.UserCreatedKafkaListener
+import co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent
 import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
@@ -67,7 +67,10 @@ class WalletKafkaConfig {
 
     @Autowired
     @ConditionalOnBean(UserCreatedKafkaListener::class)
-    fun configureUserCreatedListener(listener: UserCreatedKafkaListener, @Qualifier("walletConsumerFactory") consumerFactory: ConsumerFactory<String, UserCreatedEvent>) {
+    fun configureUserCreatedListener(
+        listener: UserCreatedKafkaListener,
+        @Qualifier("walletConsumerFactory") consumerFactory: ConsumerFactory<String, UserCreatedEvent>
+    ) {
         val containerProps = ContainerProperties(Pattern.compile("auth_user_created"))
         containerProps.messageListener = listener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
