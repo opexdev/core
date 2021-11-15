@@ -1,4 +1,4 @@
-package co.nilin.opex.utility.log.interceptor
+package co.nilin.opex.utility.log
 
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufHolder
@@ -43,7 +43,6 @@ class CustomLogger(clazz: Class<*>?) : LoggingHandler(clazz) {
         }
         return ""
     }
-
 
 
 }

@@ -1,6 +1,6 @@
 package co.nilin.opex.wallet.app.config
 
-import co.nilin.opex.utility.interceptor.FormDataWorkaroundFilter
+import co.nilin.opex.utility.interceptors.FormDataWorkaroundFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.server.WebFilter

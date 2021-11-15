@@ -1,6 +1,6 @@
-package co.nilin.opex.utility.log.interceptor;
+package co.nilin.opex.utility.log;
 
-import co.nilin.opex.utility.log.interceptor.decorator.*;
+import co.nilin.opex.utility.log.decorator.PayloadServerWebExchangeDecorator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
@@ -16,11 +16,11 @@ import java.util.UUID;
 @Order(2)
 public class RequestFilter implements WebFilter {
 
-    private Logger log = LoggerFactory.getLogger( RequestFilter.class);
+    private Logger log = LoggerFactory.getLogger(RequestFilter.class);
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        if ( exchange.getRequest().getPath().toString().startsWith("/actuator/health"))
+        if (exchange.getRequest().getPath().toString().startsWith("/actuator/health"))
             return chain.filter(exchange);
         long startTime = System.currentTimeMillis();
         String tracing = UUID.randomUUID().toString();

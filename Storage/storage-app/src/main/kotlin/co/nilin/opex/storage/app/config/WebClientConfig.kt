@@ -1,6 +1,6 @@
 package co.nilin.opex.storage.app.config
 
-import co.nilin.opex.utility.log.interceptor.CustomLogger
+import co.nilin.opex.utility.log.CustomLogger
 import org.springframework.cloud.client.ServiceInstance
 import org.springframework.cloud.client.loadbalancer.LoadBalancerProperties
 import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalancer

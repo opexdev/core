@@ -4,7 +4,6 @@ import co.nilin.opex.accountant.core.spi.PairStaticRateLoader
 import co.nilin.opex.port.accountant.postgres.dao.PairConfigRepository
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import org.springframework.stereotype.Component
-import java.lang.IllegalArgumentException
 
 @Component
 class PairStaticRateLoaderImpl(val pairConfigRepository: PairConfigRepository) : PairStaticRateLoader {

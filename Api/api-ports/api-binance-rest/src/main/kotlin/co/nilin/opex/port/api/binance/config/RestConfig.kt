@@ -1,6 +1,6 @@
 package co.nilin.opex.port.api.binance.config
 
-import co.nilin.opex.utility.interceptor.FormDataWorkaroundFilter
+import co.nilin.opex.utility.interceptors.FormDataWorkaroundFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.format.Formatter

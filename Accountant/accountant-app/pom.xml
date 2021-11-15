@@ -64,12 +64,12 @@
             <version>${accountant.version}</version>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex</groupId>
+            <groupId>co.nilin.opex.utility.error</groupId>
             <artifactId>error-handler</artifactId>
             <version>${utility.version}</version>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex</groupId>
+            <groupId>co.nilin.opex.utility.log</groupId>
             <artifactId>logging-handler</artifactId>
             <version>${utility.version}</version>
         </dependency>

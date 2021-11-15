@@ -8,18 +8,18 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import java.math.BigDecimal
 import java.net.URI
-import java.time.LocalDateTime
 
 inline fun <reified T : Any> typeRef(): ParameterizedTypeReference<T> = object : ParameterizedTypeReference<T>() {}
-data class TransferResult(val date: Long
-                          , val sourceUuid: String
-                          , val sourceWalletType: String
-                          , val sourceBalanceBeforeAction: Amount
-                          , val sourceBalanceAfterAction: Amount
-                          , val amount: Amount
-                          , val destUuid: String
-                          , val destWalletType: String
-                          , val receivedAmount: Amount
+data class TransferResult(
+    val date: Long,
+    val sourceUuid: String,
+    val sourceWalletType: String,
+    val sourceBalanceBeforeAction: Amount,
+    val sourceBalanceAfterAction: Amount,
+    val amount: Amount,
+    val destUuid: String,
+    val destWalletType: String,
+    val receivedAmount: Amount
 )
 
 data class Amount(val currency: Currency, val amount: BigDecimal)

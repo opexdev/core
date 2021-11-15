@@ -94,12 +94,30 @@ internal class TradeManagerImplTest() {
                 pair.toString(), pair.leftSideName, pair.rightSideName, 1.0, 0.01
             )
             val makerSubmitOrderEvent = SubmitOrderEvent(
-                "mouid", "muuid", null, pair, 60000, 1, 0, OrderDirection.ASK, MatchConstraint.GTC, OrderType.LIMIT_ORDER
+                "mouid",
+                "muuid",
+                null,
+                pair,
+                60000,
+                1,
+                0,
+                OrderDirection.ASK,
+                MatchConstraint.GTC,
+                OrderType.LIMIT_ORDER
             )
             prepareOrder(pair, pairConfig, makerSubmitOrderEvent, 0.1, 0.12)
 
             val takerSubmitOrderEvent = SubmitOrderEvent(
-                "touid", "tuuid", null, pair, 70000, 1, 0, OrderDirection.BID, MatchConstraint.GTC, OrderType.LIMIT_ORDER
+                "touid",
+                "tuuid",
+                null,
+                pair,
+                70000,
+                1,
+                0,
+                OrderDirection.BID,
+                MatchConstraint.GTC,
+                OrderType.LIMIT_ORDER
             )
 
             prepareOrder(pair, pairConfig, takerSubmitOrderEvent, 0.08, 0.1)
@@ -109,7 +127,10 @@ internal class TradeManagerImplTest() {
             val tradeFinancialActions = tradeManager.handleTrade(tradeEvent)
 
             Assertions.assertEquals(4, tradeFinancialActions.size)
-            Assertions.assertEquals( (makerSubmitOrderEvent.price * pairConfig.rightSideFraction), tradeFinancialActions[0].amount.toDouble())
+            Assertions.assertEquals(
+                (makerSubmitOrderEvent.price * pairConfig.rightSideFraction),
+                tradeFinancialActions[0].amount.toDouble()
+            )
         }
     }
 
@@ -122,12 +143,30 @@ internal class TradeManagerImplTest() {
                 pair.toString(), pair.leftSideName, pair.rightSideName, 1.0, 0.001
             )
             val makerSubmitOrderEvent = SubmitOrderEvent(
-                "mouid", "muuid", null, pair, 70000, 1, 0, OrderDirection.BID, MatchConstraint.GTC, OrderType.LIMIT_ORDER
+                "mouid",
+                "muuid",
+                null,
+                pair,
+                70000,
+                1,
+                0,
+                OrderDirection.BID,
+                MatchConstraint.GTC,
+                OrderType.LIMIT_ORDER
             )
             prepareOrder(pair, pairConfig, makerSubmitOrderEvent, 0.1, 0.12)
 
             val takerSubmitOrderEvent = SubmitOrderEvent(
-                "touid", "tuuid", null, pair, 60000, 1, 0, OrderDirection.ASK, MatchConstraint.GTC, OrderType.LIMIT_ORDER
+                "touid",
+                "tuuid",
+                null,
+                pair,
+                60000,
+                1,
+                0,
+                OrderDirection.ASK,
+                MatchConstraint.GTC,
+                OrderType.LIMIT_ORDER
             )
 
             prepareOrder(pair, pairConfig, takerSubmitOrderEvent, 0.08, 0.1)
@@ -137,7 +176,10 @@ internal class TradeManagerImplTest() {
             val tradeFinancialActions = tradeManager.handleTrade(tradeEvent)
 
             Assertions.assertEquals(4, tradeFinancialActions.size)
-            Assertions.assertEquals( makerSubmitOrderEvent.price * pairConfig.rightSideFraction, tradeFinancialActions[2].amount.toDouble())
+            Assertions.assertEquals(
+                makerSubmitOrderEvent.price * pairConfig.rightSideFraction,
+                tradeFinancialActions[2].amount.toDouble()
+            )
         }
     }
 

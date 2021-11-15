@@ -26,24 +26,24 @@ class RichOrder() {
     var status: Int = 0;
 
     constructor(
-            orderId: Long?,
-            pair: String,
-            ouid: String,
-            uuid: String,
-            userLevel: String,
-            makerFee: BigDecimal,
-            takerFee: BigDecimal,
-            leftSideFraction: BigDecimal,
-            rightSideFraction: BigDecimal,
-            direction: OrderDirection,
-            constraint: MatchConstraint,
-            type: OrderType,
-            price: BigDecimal,
-            quantity: BigDecimal,
-            quoteQuantity: BigDecimal,
-            executedQuantity: BigDecimal,
-            accumulativeQuoteQty: BigDecimal,
-            status: Int
+        orderId: Long?,
+        pair: String,
+        ouid: String,
+        uuid: String,
+        userLevel: String,
+        makerFee: BigDecimal,
+        takerFee: BigDecimal,
+        leftSideFraction: BigDecimal,
+        rightSideFraction: BigDecimal,
+        direction: OrderDirection,
+        constraint: MatchConstraint,
+        type: OrderType,
+        price: BigDecimal,
+        quantity: BigDecimal,
+        quoteQuantity: BigDecimal,
+        executedQuantity: BigDecimal,
+        accumulativeQuoteQty: BigDecimal,
+        status: Int
     ) : this() {
         this.orderId = orderId
         this.pair = pair

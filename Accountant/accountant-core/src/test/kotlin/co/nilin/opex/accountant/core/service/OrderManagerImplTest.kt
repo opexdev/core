@@ -47,7 +47,13 @@ internal class OrderManagerImplTest() {
     init {
         MockitoAnnotations.openMocks(this)
         orderManager = OrderManagerImpl(
-                pairConfigLoader, financialActionPersister, financialActionLoader, orderPersister, tempEventPersister, tempEventRepublisher, richOrderPublisher
+            pairConfigLoader,
+            financialActionPersister,
+            financialActionLoader,
+            orderPersister,
+            tempEventPersister,
+            tempEventRepublisher,
+            richOrderPublisher
         )
         runBlocking {
             Mockito.`when`(tempEventPersister.loadTempEvents(anyString())).thenReturn(emptyList())
@@ -63,22 +69,22 @@ internal class OrderManagerImplTest() {
                 pair.toString(), pair.leftSideName, pair.rightSideName, 1.0, 0.001
             )
             val submitOrderEvent = SubmitOrderEvent(
-                    "ouid", "uuid", null, pair, 30, 60, 0, OrderDirection.ASK, MatchConstraint.GTC, OrderType.LIMIT_ORDER
+                "ouid", "uuid", null, pair, 30, 60, 0, OrderDirection.ASK, MatchConstraint.GTC, OrderType.LIMIT_ORDER
             )
             Mockito.`when`(pairConfigLoader.load(pair.toString(), submitOrderEvent.direction, ""))
-                    .thenReturn(
-                        PairFeeConfig(
-                            pairConfig,
-                            submitOrderEvent.direction.toString(),
-                            "",
-                            0.1,
-                            0.12
-                        )
+                .thenReturn(
+                    PairFeeConfig(
+                        pairConfig,
+                        submitOrderEvent.direction.toString(),
+                        "",
+                        0.1,
+                        0.12
                     )
+                )
             Mockito.`when`(financialActionPersister.persist(MockitoHelper.anyObject()))
-                    .then {
-                        return@then it.getArgument<List<FinancialAction>>(0)
-                    }
+                .then {
+                    return@then it.getArgument<List<FinancialAction>>(0)
+                }
 
             //when
             val financialActions = orderManager.handleRequestOrder(submitOrderEvent)
@@ -116,18 +122,18 @@ internal class OrderManagerImplTest() {
                 pair.toString(), pair.leftSideName, pair.rightSideName, 1.0, 0.001
             )
             val submitOrderEvent = SubmitOrderEvent(
-                    "ouid", "uuid", null, pair, 35, 14, 0, OrderDirection.BID, MatchConstraint.GTC, OrderType.LIMIT_ORDER
+                "ouid", "uuid", null, pair, 35, 14, 0, OrderDirection.BID, MatchConstraint.GTC, OrderType.LIMIT_ORDER
             )
             Mockito.`when`(pairConfigLoader.load(pair.toString(), submitOrderEvent.direction, ""))
-                    .thenReturn(
-                        PairFeeConfig(
-                            pairConfig, submitOrderEvent.direction.toString(), "", 0.08, 0.1
-                        )
+                .thenReturn(
+                    PairFeeConfig(
+                        pairConfig, submitOrderEvent.direction.toString(), "", 0.08, 0.1
                     )
+                )
             Mockito.`when`(financialActionPersister.persist(MockitoHelper.anyObject()))
-                    .then {
-                        return@then it.getArgument<List<FinancialAction>>(0)
-                    }
+                .then {
+                    return@then it.getArgument<List<FinancialAction>>(0)
+                }
 
             //when
             val financialActions = runBlocking {

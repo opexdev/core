@@ -27,7 +27,19 @@ class FinancialAction(
         receiver: String,
         receiverWalletType: String,
         createDate: LocalDateTime
-    ) : this(null, parent, eventType, pointer, symbol, amount, sender, senderWalletType, receiver, receiverWalletType, createDate)
+    ) : this(
+        null,
+        parent,
+        eventType,
+        pointer,
+        symbol,
+        amount,
+        sender,
+        senderWalletType,
+        receiver,
+        receiverWalletType,
+        createDate
+    )
 
     override fun toString(): String {
         return "FinancialAction(id=$id, parent=$parent, eventType='$eventType', pointer='$pointer', symbol='$symbol', amount=$amount, sender='$sender', senderWalletType='$senderWalletType', receiver='$receiver', receiverWalletType='$receiverWalletType', createDate=$createDate)"

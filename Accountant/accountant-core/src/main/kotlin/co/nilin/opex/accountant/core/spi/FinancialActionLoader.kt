@@ -1,7 +1,6 @@
 package co.nilin.opex.accountant.core.spi
 
 import co.nilin.opex.accountant.core.model.FinancialAction
-import kotlinx.coroutines.flow.Flow
 
 interface FinancialActionLoader {
     suspend fun findLast(uuid: String, ouid: String): FinancialAction?

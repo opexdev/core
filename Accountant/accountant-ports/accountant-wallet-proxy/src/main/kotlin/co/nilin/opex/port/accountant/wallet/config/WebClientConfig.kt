@@ -1,6 +1,6 @@
 package co.nilin.opex.port.accountant.wallet.config
 
-import co.nilin.opex.utility.log.interceptor.CustomLogger
+import co.nilin.opex.utility.log.CustomLogger
 import org.springframework.cloud.client.ServiceInstance
 import org.springframework.cloud.client.loadbalancer.LoadBalancerProperties
 import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalancer
@@ -16,7 +16,7 @@ class WebClientConfig {
 
     @Bean
     fun webClient(loadBalancerFactory: ReactiveLoadBalancer.Factory<ServiceInstance>): WebClient {
-        val logger =  CustomLogger(HttpClient::class.java)
+        val logger = CustomLogger(HttpClient::class.java)
         return WebClient.builder()
             .clientConnector(
                 ReactorClientHttpConnector(

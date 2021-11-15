@@ -11,7 +11,7 @@ import kotlin.coroutines.suspendCoroutine
 
 @Component
 class TempEventSubmitter(@Qualifier("accountantEventKafkaTemplate") val kafkaTemplate: KafkaTemplate<String, CoreEvent>) :
-        TempEventRepublisher {
+    TempEventRepublisher {
     override suspend fun republish(events: List<CoreEvent>): Unit = suspendCoroutine { cont ->
         println("accountantEventSubmit!")
         events.forEach { event ->

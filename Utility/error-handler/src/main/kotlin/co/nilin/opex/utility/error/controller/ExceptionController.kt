@@ -8,6 +8,7 @@ import co.nilin.opex.utility.error.spi.ExceptionResponse
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
@@ -15,7 +16,6 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import org.springframework.web.server.ServerWebInputException
 import java.nio.charset.StandardCharsets
 import java.util.*
-import org.springframework.http.HttpStatus
 
 @RestControllerAdvice
 class ExceptionController(
@@ -82,7 +82,8 @@ class ExceptionController(
     @ExceptionHandler(Throwable::class)
     fun handle(e: Throwable): ResponseEntity<ExceptionResponse> {
         logger.error("Generic error", e)
-        val opexException = OpexException(status = HttpStatus.INTERNAL_SERVER_ERROR, error = OpexError.InternalServerError)
+        val opexException =
+            OpexException(status = HttpStatus.INTERNAL_SERVER_ERROR, error = OpexError.InternalServerError)
         val error = translator.translate(opexException)
         return response(error)
     }

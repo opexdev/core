@@ -1,4 +1,4 @@
-package co.nilin.opex.utility.log.interceptor.decorator;
+package co.nilin.opex.utility.log.decorator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +9,7 @@ import org.springframework.web.server.ServerWebExchangeDecorator;
 
 public class PayloadServerWebExchangeDecorator extends ServerWebExchangeDecorator {
 
-    private Logger log = LoggerFactory.getLogger( PayloadServerWebExchangeDecorator.class);
+    private Logger log = LoggerFactory.getLogger(PayloadServerWebExchangeDecorator.class);
 
     private PayloadBufferServerHttpRequestDecorator requestDecorator;
 

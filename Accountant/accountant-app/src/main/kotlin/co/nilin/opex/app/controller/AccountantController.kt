@@ -9,7 +9,6 @@ import co.nilin.opex.matching.core.eventh.events.SubmitOrderEvent
 import co.nilin.opex.matching.core.model.OrderDirection
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.math.BigDecimal
 
@@ -45,7 +44,7 @@ class AccountantController(
     }
 
     @GetMapping("/config/all")
-    suspend fun fetchPairConfigs():List<PairConfig>{
+    suspend fun fetchPairConfigs(): List<PairConfig> {
         return pairConfigLoader.loadPairConfigs()
     }
 

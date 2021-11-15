@@ -8,24 +8,24 @@ import org.springframework.kafka.listener.MessageListener
 import org.springframework.stereotype.Component
 
 @Component
-class TempEventKafkaListener: MessageListener<String, CoreEvent> {
+class TempEventKafkaListener : MessageListener<String, CoreEvent> {
 
     val eventListeners = arrayListOf<TempEventListener>()
 
     override fun onMessage(data: ConsumerRecord<String, CoreEvent>) {
         println("TempEvent onMessage")
-        eventListeners.forEach{
-            tl -> tl.onEvent(data.value(), data.partition(), data.offset(), data.timestamp())
+        eventListeners.forEach { tl ->
+            tl.onEvent(data.value(), data.partition(), data.offset(), data.timestamp())
         }
     }
 
-    fun addEventListener(tl: TempEventListener){
+    fun addEventListener(tl: TempEventListener) {
         eventListeners.add(tl)
     }
 
-    fun removeEventListener(tl: TempEventListener){
-        eventListeners.removeIf {
-            item -> item.id() == tl.id()
+    fun removeEventListener(tl: TempEventListener) {
+        eventListeners.removeIf { item ->
+            item.id() == tl.id()
         }
     }
 }

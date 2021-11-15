@@ -7,11 +7,11 @@ spring:
   application:
     name: opex-accountant
   main:
-      allow-bean-definition-overriding: false
+    allow-bean-definition-overriding: false
   kafka:
     bootstrap-servers: 192.168.178.29:9092
     consumer:
-       group-id: accountant
+      group-id: accountant
   redis:
     hostname: 127.0.0.1
     port: 6379
@@ -32,6 +32,6 @@ spring:
         prefer-ip-address: true
 app:
   coin: nln
-  address:  1
+  address: 1
   wallet:
     url: lb://opex-wallet/

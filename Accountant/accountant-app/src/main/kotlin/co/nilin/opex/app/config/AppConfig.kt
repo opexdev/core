@@ -8,15 +8,15 @@ import co.nilin.opex.accountant.core.service.OrderManagerImpl
 import co.nilin.opex.accountant.core.service.TradeManagerImpl
 import co.nilin.opex.accountant.core.spi.*
 import co.nilin.opex.matching.core.eventh.events.*
-import co.nilin.opex.port.accountant.kafka.consumer.OrderKafkaListener
-import co.nilin.opex.port.accountant.kafka.spi.OrderSubmitRequestListener
-import co.nilin.opex.port.order.kafka.inout.OrderSubmitRequest
 import co.nilin.opex.port.accountant.kafka.consumer.EventKafkaListener
+import co.nilin.opex.port.accountant.kafka.consumer.OrderKafkaListener
 import co.nilin.opex.port.accountant.kafka.consumer.TempEventKafkaListener
 import co.nilin.opex.port.accountant.kafka.consumer.TradeKafkaListener
 import co.nilin.opex.port.accountant.kafka.spi.EventListener
+import co.nilin.opex.port.accountant.kafka.spi.OrderSubmitRequestListener
 import co.nilin.opex.port.accountant.kafka.spi.TempEventListener
 import co.nilin.opex.port.accountant.kafka.spi.TradeListener
+import co.nilin.opex.port.order.kafka.inout.OrderSubmitRequest
 import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -43,47 +43,47 @@ class AppConfig {
 
     @Bean
     fun orderManager(
-            pairConfigLoader: PairConfigLoader,
-            financialActionPersister: FinancialActionPersister,
-            financeActionLoader: FinancialActionLoader,
-            orderPersister: OrderPersister,
-            tempEventPersister: TempEventPersister,
-            tempEventRepublisher: TempEventRepublisher,
-            richOrderPublisher: RichOrderPublisher
+        pairConfigLoader: PairConfigLoader,
+        financialActionPersister: FinancialActionPersister,
+        financeActionLoader: FinancialActionLoader,
+        orderPersister: OrderPersister,
+        tempEventPersister: TempEventPersister,
+        tempEventRepublisher: TempEventRepublisher,
+        richOrderPublisher: RichOrderPublisher
     ): OrderManager {
         return OrderManagerImpl(
-                pairConfigLoader,
-                financialActionPersister,
-                financeActionLoader,
-                orderPersister,
-                tempEventPersister,
-                tempEventRepublisher,
-                richOrderPublisher
+            pairConfigLoader,
+            financialActionPersister,
+            financeActionLoader,
+            orderPersister,
+            tempEventPersister,
+            tempEventRepublisher,
+            richOrderPublisher
         )
     }
 
     @Bean
     fun tradeManager(
-            pairStaticRateLoader: PairStaticRateLoader,
-            financeActionPersister: FinancialActionPersister,
-            financeActionLoader: FinancialActionLoader,
-            orderPersister: OrderPersister,
-            tempEventPersister: TempEventPersister,
-            richTradePublisher: RichTradePublisher,
-            walletProxy: WalletProxy,
-            @Value("\${app.coin}") platformCoin: String,
-            @Value("\${app.address}") platformAddress: String
+        pairStaticRateLoader: PairStaticRateLoader,
+        financeActionPersister: FinancialActionPersister,
+        financeActionLoader: FinancialActionLoader,
+        orderPersister: OrderPersister,
+        tempEventPersister: TempEventPersister,
+        richTradePublisher: RichTradePublisher,
+        walletProxy: WalletProxy,
+        @Value("\${app.coin}") platformCoin: String,
+        @Value("\${app.address}") platformAddress: String
     ): TradeManager {
         return TradeManagerImpl(
-                pairStaticRateLoader,
-                financeActionPersister,
-                financeActionLoader,
-                orderPersister,
-                tempEventPersister,
-                richTradePublisher,
-                walletProxy,
-                platformCoin,
-                platformAddress
+            pairStaticRateLoader,
+            financeActionPersister,
+            financeActionLoader,
+            orderPersister,
+            tempEventPersister,
+            richTradePublisher,
+            walletProxy,
+            platformCoin,
+            platformAddress
         )
     }
 
@@ -151,16 +151,16 @@ class AppConfig {
             runBlocking(AppDispatchers.kafkaExecutor) {
                 orderManager.handleRequestOrder(
                     SubmitOrderEvent(
-                            order.ouid,
-                            order.uuid,
-                            order.orderId,
-                            order.pair,
-                            order.price,
-                            order.quantity,
-                            order.quantity,
-                            order.direction,
-                            order.matchConstraint,
-                            order.orderType
+                        order.ouid,
+                        order.uuid,
+                        order.orderId,
+                        order.pair,
+                        order.price,
+                        order.quantity,
+                        order.quantity,
+                        order.direction,
+                        order.matchConstraint,
+                        order.orderType
                     )
                 )
             }

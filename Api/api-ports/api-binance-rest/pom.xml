@@ -37,19 +37,19 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex</groupId>
+            <groupId>co.nilin.opex.utility.log</groupId>
             <artifactId>logging-handler</artifactId>
             <version>${utility.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex</groupId>
+            <groupId>co.nilin.opex.utility.error</groupId>
             <artifactId>error-handler</artifactId>
             <version>${utility.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex</groupId>
+            <groupId>co.nilin.opex.utility.interceptors</groupId>
             <artifactId>interceptors</artifactId>
             <version>${utility.version}</version>
             <scope>provided</scope>

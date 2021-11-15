@@ -1,4 +1,4 @@
-package co.nilin.opex.utility.log.interceptor;
+package co.nilin.opex.utility.log;
 
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.slf4j.Logger;
@@ -22,14 +22,14 @@ public class LogUtils {
             MediaType.TEXT_XML);
 
     public static <T extends DataBuffer> T loggingRequest(Logger log, String tracing, T buffer) {
-        return logging(log,  tracing,"request: ", buffer);
+        return logging(log, tracing, "request: ", buffer);
     }
 
     public static <T extends DataBuffer> T loggingResponse(Logger log, String tracing, T buffer) {
-        return logging(log,  tracing,"response: ", buffer);
+        return logging(log, tracing, "response: ", buffer);
     }
 
-    private static <T extends DataBuffer> T logging(Logger log, String tracing,String inOrOut, T buffer) {
+    private static <T extends DataBuffer> T logging(Logger log, String tracing, String inOrOut, T buffer) {
         InputStream dataBuffer = buffer.asInputStream();
         byte[] bytes = toByteArray(dataBuffer);
         NettyDataBufferFactory nettyDataBufferFactory = new NettyDataBufferFactory(new UnpooledByteBufAllocator(false));
