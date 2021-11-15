@@ -4,6 +4,6 @@ import co.nilin.opex.bcgateway.core.model.Deposit
 
 interface DepositService {
 
-    suspend fun getDepositDetails(refs:List<String>):List<Deposit>
+    suspend fun getDepositDetails(refs: List<String>): List<Deposit>
 
 }

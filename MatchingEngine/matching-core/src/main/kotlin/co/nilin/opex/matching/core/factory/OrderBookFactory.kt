@@ -3,8 +3,6 @@ package co.nilin.opex.matching.core.factory
 import co.nilin.opex.matching.core.engine.SimpleOrderBook
 import co.nilin.opex.matching.core.model.OrderBook
 import co.nilin.opex.matching.core.model.PersistentOrderBook
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 object OrderBookFactory {
     fun createOrderBook(pair: co.nilin.opex.matching.core.model.Pair): OrderBook {

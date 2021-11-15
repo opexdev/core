@@ -15,6 +15,6 @@ class ChainEndpointProxyFinderImpl(private val chainRepository: ChainRepository,
     ChainEndpointProxyFinder {
     override suspend fun findChainEndpointProxy(chainName: String): ChainEndpointProxy {
         val endpoints = chainRepository.findEndpointsByName(chainName).map { Endpoint(it.url) }.toList()
-        return ChainEndpointProxyImpl(chainName, endpoints,webClient)
+        return ChainEndpointProxyImpl(chainName, endpoints, webClient)
     }
 }

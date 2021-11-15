@@ -2,8 +2,8 @@ package co.nilin.opex.app.config
 
 import co.nilin.opex.app.inout.PairConfig
 import co.nilin.opex.app.inout.PairFeeConfig
-import co.nilin.opex.app.spi.PairConfigLoader
 import co.nilin.opex.app.spi.AccountantApiProxy
+import co.nilin.opex.app.spi.PairConfigLoader
 import co.nilin.opex.matching.core.model.OrderDirection
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean

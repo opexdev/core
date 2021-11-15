@@ -1,24 +1,18 @@
 package co.nilin.opex.bcgateway.core.service
 
-import co.nilin.opex.bcgateway.core.model.AddressType
-import co.nilin.opex.bcgateway.core.model.AssignedAddress
-import co.nilin.opex.bcgateway.core.model.ReservedAddress
-import co.nilin.opex.bcgateway.core.model.Chain
+import co.nilin.opex.bcgateway.core.model.*
 import co.nilin.opex.bcgateway.core.model.Currency
-import co.nilin.opex.bcgateway.core.model.CurrencyImplementation
-import co.nilin.opex.bcgateway.core.model.CurrencyInfo
 import co.nilin.opex.bcgateway.core.spi.AssignedAddressHandler
-import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
 import co.nilin.opex.bcgateway.core.spi.CurrencyLoader
-import java.lang.RuntimeException
-import java.math.BigDecimal
-import java.util.UUID
+import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
+import java.math.BigDecimal
+import java.util.*
 
 class AssignAddressServiceImplUnitTest {
     @Mock

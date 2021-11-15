@@ -7,11 +7,11 @@ spring:
   application:
     name: opex-gateway
   main:
-      allow-bean-definition-overriding: false
+    allow-bean-definition-overriding: false
   kafka:
     bootstrap-servers: localhost:9092
     consumer:
-       group-id: gateway
+      group-id: gateway
   cloud:
     bootstrap:
       enabled: true

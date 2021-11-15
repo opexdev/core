@@ -5,7 +5,6 @@ import co.nilin.opex.bcgateway.core.model.Deposit
 import co.nilin.opex.bcgateway.core.model.DepositResult
 import co.nilin.opex.bcgateway.core.model.Endpoint
 import co.nilin.opex.bcgateway.core.spi.ChainEndpointProxy
-import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.core.ParameterizedTypeReference

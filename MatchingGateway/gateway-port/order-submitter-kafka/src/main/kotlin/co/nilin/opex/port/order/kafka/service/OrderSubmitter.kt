@@ -24,5 +24,4 @@ class OrderSubmitter(val kafkaTemplate: KafkaTemplate<String, OrderSubmitRequest
     }
 
 
-
 }

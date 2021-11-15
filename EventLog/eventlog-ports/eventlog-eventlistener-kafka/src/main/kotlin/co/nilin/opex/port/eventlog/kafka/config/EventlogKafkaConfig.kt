@@ -2,8 +2,8 @@ package co.nilin.opex.port.eventlog.kafka.config
 
 
 import co.nilin.opex.matching.core.eventh.events.CoreEvent
-import co.nilin.opex.port.eventlog.kafka.consumer.OrderKafkaListener
 import co.nilin.opex.port.eventlog.kafka.consumer.EventKafkaListener
+import co.nilin.opex.port.eventlog.kafka.consumer.OrderKafkaListener
 import co.nilin.opex.port.eventlog.kafka.consumer.TradeKafkaListener
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
@@ -15,16 +15,11 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.kafka.core.ConsumerFactory
-import org.springframework.kafka.core.DefaultKafkaConsumerFactory
-import org.springframework.kafka.core.DefaultKafkaProducerFactory
-import org.springframework.kafka.core.KafkaTemplate
-import org.springframework.kafka.core.ProducerFactory
+import org.springframework.kafka.core.*
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer
 import org.springframework.kafka.listener.ContainerProperties
 import org.springframework.kafka.support.serializer.JsonDeserializer
 import org.springframework.kafka.support.serializer.JsonSerializer
-import java.util.*
 import java.util.regex.Pattern
 
 
@@ -48,7 +43,7 @@ class EventlogKafkaConfig {
     }
 
     @Bean("eventlogConsumerFactory")
-    fun consumerFactory(@Qualifier("eventlogConsumerConfig")consumerConfigs: Map<String, Any?>): ConsumerFactory<String, CoreEvent> {
+    fun consumerFactory(@Qualifier("eventlogConsumerConfig") consumerConfigs: Map<String, Any?>): ConsumerFactory<String, CoreEvent> {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
 
@@ -74,8 +69,10 @@ class EventlogKafkaConfig {
 
     @Autowired
     @ConditionalOnBean(TradeKafkaListener::class)
-    fun configureTradeListener(tradeListener: TradeKafkaListener
-                               , @Qualifier("eventlogConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>) {
+    fun configureTradeListener(
+        tradeListener: TradeKafkaListener,
+        @Qualifier("eventlogConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>
+    ) {
         val containerProps = ContainerProperties(Pattern.compile("trades_.*"))
         containerProps.messageListener = tradeListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
@@ -85,8 +82,10 @@ class EventlogKafkaConfig {
 
     @Autowired
     @ConditionalOnBean(EventKafkaListener::class)
-    fun configureEventListener(eventListener: EventKafkaListener
-                               , @Qualifier("eventlogConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>) {
+    fun configureEventListener(
+        eventListener: EventKafkaListener,
+        @Qualifier("eventlogConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>
+    ) {
         val containerProps = ContainerProperties(Pattern.compile("events_.*"))
         containerProps.messageListener = eventListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
@@ -96,8 +95,10 @@ class EventlogKafkaConfig {
 
     @Autowired
     @ConditionalOnBean(OrderKafkaListener::class)
-    fun configureOrderListener(orderListener: OrderKafkaListener
-                               , @Qualifier("eventlogConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>) {
+    fun configureOrderListener(
+        orderListener: OrderKafkaListener,
+        @Qualifier("eventlogConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>
+    ) {
         val containerProps = ContainerProperties(Pattern.compile("orders_.*"))
         containerProps.messageListener = orderListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)

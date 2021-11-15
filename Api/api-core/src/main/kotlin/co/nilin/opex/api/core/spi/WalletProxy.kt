@@ -14,7 +14,7 @@ interface WalletProxy {
     suspend fun getDepositTransactions(
         uuid: String,
         token: String?,
-        coin:String?,
+        coin: String?,
         startTime: Long,
         endTime: Long,
         limit: Int,
@@ -24,7 +24,7 @@ interface WalletProxy {
     suspend fun getWithdrawTransactions(
         uuid: String,
         token: String?,
-        coin:String?,
+        coin: String?,
         startTime: Long,
         endTime: Long,
         limit: Int,

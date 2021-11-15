@@ -4,20 +4,20 @@ import co.nilin.opex.eventlog.spi.EventPersister
 import co.nilin.opex.eventlog.spi.OrderPersister
 import co.nilin.opex.eventlog.spi.TradePersister
 import co.nilin.opex.matching.core.eventh.events.*
-import co.nilin.opex.port.eventlog.kafka.consumer.OrderKafkaListener
-import co.nilin.opex.port.eventlog.kafka.spi.OrderSubmitRequestListener
-import co.nilin.opex.port.order.kafka.inout.OrderSubmitRequest
 import co.nilin.opex.port.eventlog.kafka.consumer.EventKafkaListener
+import co.nilin.opex.port.eventlog.kafka.consumer.OrderKafkaListener
 import co.nilin.opex.port.eventlog.kafka.consumer.TradeKafkaListener
 import co.nilin.opex.port.eventlog.kafka.spi.EventListener
+import co.nilin.opex.port.eventlog.kafka.spi.OrderSubmitRequestListener
 import co.nilin.opex.port.eventlog.kafka.spi.TradeListener
+import co.nilin.opex.port.order.kafka.inout.OrderSubmitRequest
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.runBlocking
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.util.concurrent.Executors
-import org.slf4j.LoggerFactory
 
 @Configuration
 class AppConfig {
@@ -40,7 +40,7 @@ class AppConfig {
     }
 
     @Bean
-    fun orderKafkaListener():OrderKafkaListener {
+    fun orderKafkaListener(): OrderKafkaListener {
         return OrderKafkaListener(Executors.newFixedThreadPool(10).asCoroutineDispatcher())
     }
 

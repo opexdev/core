@@ -3,27 +3,18 @@ package co.nilin.opex.bcgateway.core.service
 import co.nilin.opex.bcgateway.core.model.ChainSyncRecord
 import co.nilin.opex.bcgateway.core.model.ChainSyncSchedule
 import co.nilin.opex.bcgateway.core.model.Endpoint
-import co.nilin.opex.bcgateway.core.spi.ChainEndpointProxy
-import co.nilin.opex.bcgateway.core.spi.ChainEndpointProxyFinder
-import co.nilin.opex.bcgateway.core.spi.CurrencyLoader
-import co.nilin.opex.bcgateway.core.spi.ChainSyncRecordHandler
-import co.nilin.opex.bcgateway.core.spi.ChainSyncSchedulerHandler
-import co.nilin.opex.bcgateway.core.spi.WalletSyncRecordHandler
+import co.nilin.opex.bcgateway.core.spi.*
 import co.nilin.opex.bcgateway.test.OPERATOR
-import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
-import java.util.concurrent.Executors
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
-import org.mockito.kotlin.any
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.times
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyZeroInteractions
+import org.mockito.kotlin.*
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
+import java.util.concurrent.Executors
 
 internal class ChainSyncServiceImplTest {
 
@@ -109,7 +100,10 @@ internal class ChainSyncServiceImplTest {
             //then
             verify(chainSyncRecordHandler).saveSyncRecord(any())
             verify(walletSyncRecordHandler).saveReadyToSyncTransfers(any(), any())
-            verify(chainSyncSchedulerHandler).prepareScheduleForNextTry(syncSchedule, time.plus(delay, ChronoUnit.SECONDS))
+            verify(chainSyncSchedulerHandler).prepareScheduleForNextTry(
+                syncSchedule,
+                time.plus(delay, ChronoUnit.SECONDS)
+            )
         }
     }
 

@@ -1,13 +1,11 @@
 package co.nilin.opex.auth.gateway.config
 
-import org.springframework.beans.factory.BeanFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.context.annotation.Configuration
-import org.springframework.core.env.StandardEnvironment
 import org.springframework.core.env.MapPropertySource
+import org.springframework.core.env.StandardEnvironment
 import org.springframework.core.io.ClassPathResource
-import java.io.File
 import java.util.*
 
 

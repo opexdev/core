@@ -8,9 +8,9 @@ import kotlin.coroutines.suspendCoroutine
 
 @Component
 class EventsSubmitter(val kafkaTemplate: KafkaTemplate<String, CoreEvent>) {
-    suspend fun submit(event: CoreEvent): Unit= suspendCoroutine { cont ->
+    suspend fun submit(event: CoreEvent): Unit = suspendCoroutine { cont ->
         println("Submit!")
-        if ( event is TradeEvent)
+        if (event is TradeEvent)
             kafkaTemplate.send("trades_${event.pair.leftSideName}_${event.pair.rightSideName}", event)
         kafkaTemplate.send("events_${event.pair.leftSideName}_${event.pair.rightSideName}", event)
     }

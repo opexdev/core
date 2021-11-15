@@ -1,8 +1,8 @@
 package co.nilin.opex.port.api.kafka.config
 
 import co.nilin.opex.matching.core.eventh.events.CoreEvent
-import co.nilin.opex.port.api.kafka.consumer.OrderKafkaListener
 import co.nilin.opex.port.api.kafka.consumer.EventKafkaListener
+import co.nilin.opex.port.api.kafka.consumer.OrderKafkaListener
 import co.nilin.opex.port.api.kafka.consumer.TradeKafkaListener
 import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -69,7 +69,10 @@ class ApiKafkaConfig {
 
     @Autowired
     @ConditionalOnBean(TradeKafkaListener::class)
-    fun configureTradeListener(tradeListener: TradeKafkaListener, @Qualifier("apiConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>) {
+    fun configureTradeListener(
+        tradeListener: TradeKafkaListener,
+        @Qualifier("apiConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>
+    ) {
         val containerProps = ContainerProperties(Pattern.compile("richTrade"))
         containerProps.messageListener = tradeListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
@@ -79,7 +82,10 @@ class ApiKafkaConfig {
 
     @Autowired
     @ConditionalOnBean(EventKafkaListener::class)
-    fun configureEventListener(eventListener: EventKafkaListener, @Qualifier("apiConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>) {
+    fun configureEventListener(
+        eventListener: EventKafkaListener,
+        @Qualifier("apiConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>
+    ) {
         val containerProps = ContainerProperties(Pattern.compile("events_.*"))
         containerProps.messageListener = eventListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
@@ -89,7 +95,10 @@ class ApiKafkaConfig {
 
     @Autowired
     @ConditionalOnBean(OrderKafkaListener::class)
-    fun configureOrderListener(orderListener: OrderKafkaListener, @Qualifier("apiConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>) {
+    fun configureOrderListener(
+        orderListener: OrderKafkaListener,
+        @Qualifier("apiConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>
+    ) {
         val containerProps = ContainerProperties(Pattern.compile("richOrder"))
         containerProps.messageListener = orderListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)

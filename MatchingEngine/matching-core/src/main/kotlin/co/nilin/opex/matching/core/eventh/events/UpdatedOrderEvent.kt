@@ -4,7 +4,7 @@ import co.nilin.opex.matching.core.model.MatchConstraint
 import co.nilin.opex.matching.core.model.OrderDirection
 import co.nilin.opex.matching.core.model.OrderType
 
-class UpdatedOrderEvent(): CoreEvent() , OneOrderEvent{
+class UpdatedOrderEvent() : CoreEvent(), OneOrderEvent {
     var ouid: String = ""
     var uuid: String = ""
     var orderId: Long = 0
@@ -17,19 +17,21 @@ class UpdatedOrderEvent(): CoreEvent() , OneOrderEvent{
     var matchConstraint: MatchConstraint = MatchConstraint.GTC
     var orderType: OrderType = OrderType.LIMIT_ORDER
 
-    constructor(ouid: String,
-                uuid: String,
-                orderId: Long,
-                pair: co.nilin.opex.matching.core.model.Pair,
-                oldPrice: Long,
-                oldQuantity: Long,
-                price: Long,
-                quantity: Long,
-                remainedQuantity: Long,
-                direction: OrderDirection,
-                matchConstraint: MatchConstraint,
-                orderType: OrderType)
-            : this(){
+    constructor(
+        ouid: String,
+        uuid: String,
+        orderId: Long,
+        pair: co.nilin.opex.matching.core.model.Pair,
+        oldPrice: Long,
+        oldQuantity: Long,
+        price: Long,
+        quantity: Long,
+        remainedQuantity: Long,
+        direction: OrderDirection,
+        matchConstraint: MatchConstraint,
+        orderType: OrderType
+    )
+            : this() {
         this.ouid = ouid
         this.uuid = uuid
         this.orderId = orderId

@@ -81,8 +81,8 @@ class ExtendedEventListenerProvider(private val session: KeycloakSession) : Even
             val uuid = adminEvent.resourcePath.substringAfter("/")
             val kafkaEvent = UserCreatedEvent(uuid, userData.firstName, userData.lastName, userData.email)
             (ApplicationContextHolder.getCurrentContext()!!
-                    .getBean("authKafkaTemplate") as KafkaTemplate<String, AuthEvent>)
-                    .send("auth_user_created", kafkaEvent)
+                .getBean("authKafkaTemplate") as KafkaTemplate<String, AuthEvent>)
+                .send("auth_user_created", kafkaEvent)
             logger.info("{} produced in kafka topic", kafkaEvent)
         }
         logger.info("-----------------------------------------------------------")

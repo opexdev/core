@@ -6,15 +6,14 @@ import co.nilin.opex.matching.core.eventh.events.*
 import co.nilin.opex.matching.core.spi.OrderBookPersister
 import co.nilin.opex.port.order.kafka.service.EventsSubmitter
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.springframework.stereotype.Component
 
 @Component
-class ExchangeEventHandler(eventsSubmitter: EventsSubmitter
-, orderBookPersister: OrderBookPersister)
-{
-    fun register(){
+class ExchangeEventHandler(
+    eventsSubmitter: EventsSubmitter, orderBookPersister: OrderBookPersister
+) {
+    fun register() {
         EventDispatcher.register(CreateOrderEvent::class.java, handler)
         EventDispatcher.register(CancelOrderEvent::class.java, handler)
         EventDispatcher.register(UpdatedOrderEvent::class.java, handler)

@@ -1,7 +1,6 @@
 package co.nilin.opex.port.eventlog.postgres.model
 
 import co.nilin.opex.eventlog.spi.Order
-import co.nilin.opex.eventlog.spi.Trade
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table

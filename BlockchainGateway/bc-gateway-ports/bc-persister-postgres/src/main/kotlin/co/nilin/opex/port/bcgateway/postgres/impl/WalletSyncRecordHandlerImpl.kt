@@ -5,7 +5,6 @@ import co.nilin.opex.bcgateway.core.model.WalletSyncRecord
 import co.nilin.opex.bcgateway.core.spi.WalletSyncRecordHandler
 import co.nilin.opex.port.bcgateway.postgres.dao.DepositRepository
 import co.nilin.opex.port.bcgateway.postgres.dao.WalletSyncRecordRepository
-import co.nilin.opex.port.bcgateway.postgres.model.DepositModel
 import co.nilin.opex.port.bcgateway.postgres.model.WalletSyncRecordModel
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList

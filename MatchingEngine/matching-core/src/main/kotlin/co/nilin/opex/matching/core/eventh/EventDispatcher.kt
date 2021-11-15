@@ -1,13 +1,7 @@
 package co.nilin.opex.matching.core.eventh
 
 import co.nilin.opex.matching.core.eventh.events.CoreEvent
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
 import java.util.*
-import java.util.concurrent.Executors
-import kotlin.coroutines.suspendCoroutine
 
 object EventDispatcher {
 

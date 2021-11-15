@@ -16,7 +16,8 @@ class AddressController(val assignAddressService: AssignAddressService) {
     @PostMapping("/address/assign")
     suspend fun assignAddress(@RequestBody assignAddressRequest: AssignAddressRequest): AssignAddressResponse {
         val assignedAddress = assignAddressService
-            .assignAddress(assignAddressRequest.uuid,
+            .assignAddress(
+                assignAddressRequest.uuid,
                 Currency(assignAddressRequest.currency, assignAddressRequest.currency)
             )
         return AssignAddressResponse(assignedAddress)

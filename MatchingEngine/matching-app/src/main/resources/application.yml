@@ -1,11 +1,11 @@
 server.port: 8092
 spring:
   main:
-      allow-bean-definition-overriding: false
+    allow-bean-definition-overriding: false
   kafka:
     bootstrap-servers: localhost:9092
     consumer:
-       group-id: engine
+      group-id: engine
   redis:
     host: 127.0.0.1
     port: 6379

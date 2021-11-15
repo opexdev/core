@@ -4,8 +4,8 @@ import co.nilin.opex.utility.interceptors.FormDataWorkaroundFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.format.Formatter
-import java.util.*
 import org.springframework.web.server.WebFilter
+import java.util.*
 
 @Configuration
 class RestConfig {

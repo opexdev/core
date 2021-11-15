@@ -6,7 +6,7 @@ import co.nilin.opex.matching.core.model.MatchConstraint
 import co.nilin.opex.matching.core.model.OrderDirection
 import co.nilin.opex.matching.core.model.OrderType
 
-class RejectOrderEvent(): CoreEvent(), OneOrderEvent {
+class RejectOrderEvent() : CoreEvent(), OneOrderEvent {
     var ouid: String = ""
     var uuid: String = ""
     var orderId: Long? = null
@@ -18,36 +18,56 @@ class RejectOrderEvent(): CoreEvent(), OneOrderEvent {
     var requestedOperation: RequestedOperation = RequestedOperation.PLACE_ORDER
     var reason: RejectReason? = null
 
-    constructor(ouid: String,
-                uuid: String,
-                pair: co.nilin.opex.matching.core.model.Pair,
-                price: Long,
-                quantity: Long,
-                direction: OrderDirection,
-                matchConstraint: MatchConstraint,
-                orderType: OrderType,
-                requestedOperation: RequestedOperation,
-                reason: RejectReason?)
-            : this(ouid, uuid, null, pair, price, quantity, direction, matchConstraint, orderType, requestedOperation, reason)
-    constructor(ouid: String,
-                uuid: String,
-                orderId: Long,
-                pair: co.nilin.opex.matching.core.model.Pair,
-                requestedOperation: RequestedOperation,
-                reason: RejectReason?)
+    constructor(
+        ouid: String,
+        uuid: String,
+        pair: co.nilin.opex.matching.core.model.Pair,
+        price: Long,
+        quantity: Long,
+        direction: OrderDirection,
+        matchConstraint: MatchConstraint,
+        orderType: OrderType,
+        requestedOperation: RequestedOperation,
+        reason: RejectReason?
+    )
+            : this(
+        ouid,
+        uuid,
+        null,
+        pair,
+        price,
+        quantity,
+        direction,
+        matchConstraint,
+        orderType,
+        requestedOperation,
+        reason
+    )
+
+    constructor(
+        ouid: String,
+        uuid: String,
+        orderId: Long,
+        pair: co.nilin.opex.matching.core.model.Pair,
+        requestedOperation: RequestedOperation,
+        reason: RejectReason?
+    )
             : this(ouid, uuid, orderId, pair, null, null, null, null, null, requestedOperation, reason)
-    constructor(ouid: String,
-                uuid: String,
-                orderId: Long?,
-                pair: co.nilin.opex.matching.core.model.Pair,
-                price: Long?,
-                quantity: Long?,
-                direction: OrderDirection?,
-                matchConstraint: MatchConstraint?,
-                orderType: OrderType?,
-                requestedOperation: RequestedOperation,
-                reason: RejectReason?)
-            : this(){
+
+    constructor(
+        ouid: String,
+        uuid: String,
+        orderId: Long?,
+        pair: co.nilin.opex.matching.core.model.Pair,
+        price: Long?,
+        quantity: Long?,
+        direction: OrderDirection?,
+        matchConstraint: MatchConstraint?,
+        orderType: OrderType?,
+        requestedOperation: RequestedOperation,
+        reason: RejectReason?
+    )
+            : this() {
         this.ouid = ouid
         this.uuid = uuid
         this.orderId = orderId
@@ -60,6 +80,7 @@ class RejectOrderEvent(): CoreEvent(), OneOrderEvent {
         this.requestedOperation = requestedOperation
         this.reason = reason
     }
+
     override fun ouid(): String {
         return ouid
     }

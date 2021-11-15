@@ -7,10 +7,10 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.kafka.listener.MessageListener
-import org.springframework.stereotype.Component
 
 
-class OrderKafkaListener(private val executorCoroutineDispatcher: ExecutorCoroutineDispatcher) : MessageListener<String, OrderSubmitRequest> {
+class OrderKafkaListener(private val executorCoroutineDispatcher: ExecutorCoroutineDispatcher) :
+    MessageListener<String, OrderSubmitRequest> {
     val orderListeners = arrayListOf<OrderSubmitRequestListener>()
     override fun onMessage(data: ConsumerRecord<String, OrderSubmitRequest>) {
         runBlocking {

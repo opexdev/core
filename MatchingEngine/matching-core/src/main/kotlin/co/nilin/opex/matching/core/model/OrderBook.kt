@@ -1,8 +1,8 @@
 package co.nilin.opex.matching.core.model
 
 import co.nilin.opex.matching.core.inout.OrderCancelCommand
-import co.nilin.opex.matching.core.inout.OrderEditCommand
 import co.nilin.opex.matching.core.inout.OrderCreateCommand
+import co.nilin.opex.matching.core.inout.OrderEditCommand
 
 interface OrderBook {
     fun pair(): Pair

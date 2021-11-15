@@ -17,8 +17,6 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.body
 import reactor.core.publisher.Mono
-import java.math.BigDecimal
-import java.time.LocalDateTime
 
 private inline fun <reified T : Any> typeRef(): ParameterizedTypeReference<T> =
     object : ParameterizedTypeReference<T>() {}
@@ -59,7 +57,7 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
     override suspend fun getDepositTransactions(
         uuid: String,
         token: String?,
-        coin:String?,
+        coin: String?,
         startTime: Long,
         endTime: Long,
         limit: Int,
@@ -81,7 +79,7 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
     override suspend fun getWithdrawTransactions(
         uuid: String,
         token: String?,
-        coin:String?,
+        coin: String?,
         startTime: Long,
         endTime: Long,
         limit: Int,

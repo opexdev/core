@@ -3,7 +3,7 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
     consumer:
-       group-id: eventlog
+      group-id: eventlog
   r2dbc:
     url: r2dbc:postgresql://localhost/opex_eventlog
     username: opex

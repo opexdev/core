@@ -20,7 +20,8 @@ class RedisConfig() {
         val objectMapper = ObjectMapper()
         objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
         jackson2JsonRedisSerializer.setObjectMapper(objectMapper)
-        val serializationContext = RedisSerializationContext.newSerializationContext<String, PersistentOrderBook>(StringRedisSerializer())
+        val serializationContext =
+            RedisSerializationContext.newSerializationContext<String, PersistentOrderBook>(StringRedisSerializer())
                 .hashKey(StringRedisSerializer())
                 .hashValue(jackson2JsonRedisSerializer)
                 .build()

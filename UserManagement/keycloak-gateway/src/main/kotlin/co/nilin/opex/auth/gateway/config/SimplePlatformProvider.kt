@@ -1,8 +1,7 @@
 package co.nilin.opex.auth.gateway.config
 
-import org.keycloak.services.ServicesLogger
-
 import org.keycloak.platform.PlatformProvider
+import org.keycloak.services.ServicesLogger
 
 
 class SimplePlatformProvider : PlatformProvider {

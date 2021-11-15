@@ -16,7 +16,7 @@ class WebClientConfig {
 
     @Bean
     fun webClient(loadBalancerFactory: ReactiveLoadBalancer.Factory<ServiceInstance>): WebClient {
-        val logger =  CustomLogger(HttpClient::class.java)
+        val logger = CustomLogger(HttpClient::class.java)
         return WebClient.builder()
             .clientConnector(
                 ReactorClientHttpConnector(

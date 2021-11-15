@@ -4,7 +4,6 @@ import org.keycloak.common.ClientConnection
 import org.keycloak.models.KeycloakSession
 import org.keycloak.services.filters.AbstractRequestFilter
 import java.io.UnsupportedEncodingException
-import java.lang.Exception
 import javax.servlet.Filter
 import javax.servlet.FilterChain
 import javax.servlet.ServletRequest

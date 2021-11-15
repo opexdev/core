@@ -1,6 +1,6 @@
 package co.nilin.opex.auth.gateway.model
 
-class UserCreatedEvent: AuthEvent {
+class UserCreatedEvent : AuthEvent {
     lateinit var uuid: String
     var firstName: String? = null
     var lastName: String? = null

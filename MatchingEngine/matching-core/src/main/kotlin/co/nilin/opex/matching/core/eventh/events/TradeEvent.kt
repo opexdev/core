@@ -19,21 +19,22 @@ class TradeEvent() : CoreEvent() {
     var matchedQuantity: Long = 0
 
 
-    constructor(tradeId: Long,
-                pair: co.nilin.opex.matching.core.model.Pair,
-                takerOuid: String,
-                takerUuid: String,
-                takerOrderId: Long,
-                takerDirection: OrderDirection,
-                takerPrice: Long,
-                takerRemainedQuantity: Long,
-                makerOuid: String,
-                makerUuid: String,
-                makerOrderId: Long,
-                makerDirection: OrderDirection,
-                makerPrice: Long,
-                makerRemainedQuantity: Long,
-                matchedQuantity: Long
+    constructor(
+        tradeId: Long,
+        pair: co.nilin.opex.matching.core.model.Pair,
+        takerOuid: String,
+        takerUuid: String,
+        takerOrderId: Long,
+        takerDirection: OrderDirection,
+        takerPrice: Long,
+        takerRemainedQuantity: Long,
+        makerOuid: String,
+        makerUuid: String,
+        makerOrderId: Long,
+        makerDirection: OrderDirection,
+        makerPrice: Long,
+        makerRemainedQuantity: Long,
+        matchedQuantity: Long
     )
             : this() {
         this.tradeId = tradeId

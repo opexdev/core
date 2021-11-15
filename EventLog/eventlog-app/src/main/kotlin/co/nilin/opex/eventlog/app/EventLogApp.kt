@@ -7,6 +7,7 @@ import org.springframework.context.annotation.ComponentScan
 @SpringBootApplication
 @ComponentScan("co.nilin.opex")
 class EventLogApp
+
 fun main(args: Array<String>) {
-  runApplication<EventLogApp>(*args)
+    runApplication<EventLogApp>(*args)
 }

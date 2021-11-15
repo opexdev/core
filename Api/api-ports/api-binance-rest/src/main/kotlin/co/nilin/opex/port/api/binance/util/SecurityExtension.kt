@@ -8,5 +8,5 @@ fun SecurityContext.jwtAuthentication(): JwtAuthenticationToken {
 }
 
 fun JwtAuthenticationToken.tokenValue(): String {
-   return this.token.tokenValue
+    return this.token.tokenValue
 }

@@ -1,20 +1,21 @@
 package co.nilin.opex.matching.core.eventh.events
 
-class EditOrderRequestEvent(): CoreEvent() , OneOrderEvent{
+class EditOrderRequestEvent() : CoreEvent(), OneOrderEvent {
     var ouid: String = ""
     var uuid: String = ""
     var orderId: Long = 0
     var price: Long = 0
     var quantity: Long = 0
 
-    constructor(ouid: String,
-                uuid: String,
-                orderId: Long,
-                pair: co.nilin.opex.matching.core.model.Pair,
-                price: Long,
-                quantity: Long,
-                )
-            : this(){
+    constructor(
+        ouid: String,
+        uuid: String,
+        orderId: Long,
+        pair: co.nilin.opex.matching.core.model.Pair,
+        price: Long,
+        quantity: Long,
+    )
+            : this() {
         this.ouid = ouid
         this.uuid = uuid
         this.orderId = orderId

@@ -19,13 +19,13 @@ class SecurityConfig(@Qualifier("loadBalanced") private val webClient: WebClient
     @Bean
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
         http.csrf().disable()
-                .authorizeExchange()
-                .pathMatchers("/filter/**").hasAuthority("SCOPE_trust")
-                .pathMatchers("/**").permitAll()
-                .anyExchange().authenticated()
-                .and()
-                .oauth2ResourceServer()
-                .jwt()
+            .authorizeExchange()
+            .pathMatchers("/filter/**").hasAuthority("SCOPE_trust")
+            .pathMatchers("/**").permitAll()
+            .anyExchange().authenticated()
+            .and()
+            .oauth2ResourceServer()
+            .jwt()
         return http.build()
     }
 

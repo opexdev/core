@@ -4,13 +4,13 @@ class PersistentOrderBook {
 
     lateinit var pair: Pair
     var lastOrder: PersistentOrder? = null
-    var orders : List<PersistentOrder>? = emptyList()
+    var orders: List<PersistentOrder>? = emptyList()
 
-    constructor(){
+    constructor() {
     }
 
-    constructor(pair: Pair){
-       this.pair = pair
+    constructor(pair: Pair) {
+        this.pair = pair
     }
 
 }

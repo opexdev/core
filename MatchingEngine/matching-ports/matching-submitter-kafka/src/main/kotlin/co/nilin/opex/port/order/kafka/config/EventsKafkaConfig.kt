@@ -12,14 +12,11 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.support.GenericApplicationContext
-import org.springframework.kafka.config.TopicBuilder
 import org.springframework.kafka.core.DefaultKafkaProducerFactory
 import org.springframework.kafka.core.KafkaAdmin
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.core.ProducerFactory
 import org.springframework.kafka.support.serializer.JsonSerializer
-import org.springframework.util.StringUtils
-import java.util.*
 
 
 @Configuration
@@ -61,17 +58,17 @@ class EventsKafkaConfig() {
     }
 
     @Autowired
-    fun createTopics(){
+    fun createTopics() {
         symbols!!.split(",")
-                .map { s -> "events_$s" }
-                .map { topic ->
-                    applicationContext?.registerBean("topic_${topic}", NewTopic::class.java, topic, 10, 1)
-                }
+            .map { s -> "events_$s" }
+            .map { topic ->
+                applicationContext?.registerBean("topic_${topic}", NewTopic::class.java, topic, 10, 1)
+            }
         symbols.split(",")
-                .map { s -> "trades_$s" }
-                .map { topic ->
-                    applicationContext?.registerBean("topic_${topic}", NewTopic::class.java, topic, 10, 1)
-                }
+            .map { s -> "trades_$s" }
+            .map { topic ->
+                applicationContext?.registerBean("topic_${topic}", NewTopic::class.java, topic, 10, 1)
+            }
     }
 
 }

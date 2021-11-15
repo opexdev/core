@@ -7,7 +7,6 @@ import org.springframework.boot.web.servlet.ServletRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.util.*
-import java.util.concurrent.Executors
 import javax.naming.*
 import javax.naming.spi.InitialContextFactory
 import javax.naming.spi.NamingManager

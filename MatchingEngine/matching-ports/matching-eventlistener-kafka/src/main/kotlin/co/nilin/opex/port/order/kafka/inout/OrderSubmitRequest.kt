@@ -18,15 +18,17 @@ class OrderSubmitRequest() {
     var orderType: OrderType = OrderType.LIMIT_ORDER
 
 
-    constructor(ouid: String,
-                uuid: String,
-                orderId: Long?,
-                pair: Pair,
-                price: Long,
-                quantity: Long,
-                direction: OrderDirection,
-                matchConstraint: MatchConstraint,
-                orderType: OrderType):this(){
+    constructor(
+        ouid: String,
+        uuid: String,
+        orderId: Long?,
+        pair: Pair,
+        price: Long,
+        quantity: Long,
+        direction: OrderDirection,
+        matchConstraint: MatchConstraint,
+        orderType: OrderType
+    ) : this() {
         this.ouid = ouid
         this.uuid = uuid
         this.orderId = orderId

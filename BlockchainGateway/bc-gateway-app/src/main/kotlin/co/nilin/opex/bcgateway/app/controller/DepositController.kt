@@ -1,7 +1,6 @@
 package co.nilin.opex.bcgateway.app.controller
 
 import co.nilin.opex.bcgateway.core.api.DepositService
-import co.nilin.opex.bcgateway.core.model.Deposit
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController

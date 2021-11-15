@@ -5,8 +5,8 @@ import co.nilin.opex.accountant.core.inout.RichTrade
 import co.nilin.opex.api.core.spi.OrderPersister
 import co.nilin.opex.api.core.spi.TradePersister
 import co.nilin.opex.port.api.kafka.consumer.OrderKafkaListener
-import co.nilin.opex.port.api.kafka.spi.RichOrderListener
 import co.nilin.opex.port.api.kafka.consumer.TradeKafkaListener
+import co.nilin.opex.port.api.kafka.spi.RichOrderListener
 import co.nilin.opex.port.api.kafka.spi.RichTradeListener
 import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Autowired

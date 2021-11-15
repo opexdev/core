@@ -2,8 +2,8 @@ package co.nilin.opex.auth.gateway.config
 
 import co.nilin.opex.auth.gateway.model.AuthEvent
 import org.apache.kafka.clients.admin.NewTopic
-import org.apache.kafka.common.serialization.StringSerializer
 import org.apache.kafka.clients.producer.ProducerConfig
+import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
@@ -14,7 +14,6 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.core.ProducerFactory
 import org.springframework.kafka.support.serializer.JsonSerializer
-import java.util.HashMap
 
 @Configuration
 class KafkaConfig {
@@ -41,7 +40,7 @@ class KafkaConfig {
     }
 
     @Autowired
-    fun createUserCreatedTopics(applicationContext: GenericApplicationContext){
-        applicationContext.registerBean("topic_auth_user_created", NewTopic::class.java, "auth_user_created", 1 ,1)
+    fun createUserCreatedTopics(applicationContext: GenericApplicationContext) {
+        applicationContext.registerBean("topic_auth_user_created", NewTopic::class.java, "auth_user_created", 1, 1)
     }
 }

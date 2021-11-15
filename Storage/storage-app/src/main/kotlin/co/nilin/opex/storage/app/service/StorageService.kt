@@ -1,8 +1,6 @@
 package co.nilin.opex.storage.app.service
 
-import org.springframework.core.io.Resource
 import org.springframework.http.codec.multipart.FilePart
-import java.io.File
 import java.io.FileInputStream
 
 interface StorageService {

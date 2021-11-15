@@ -2,7 +2,9 @@ package co.nilin.opex.app.config
 
 import co.nilin.opex.app.bl.ExchangeEventHandler
 import co.nilin.opex.app.bl.OrderBooks
-import co.nilin.opex.matching.core.eventh.events.*
+import co.nilin.opex.matching.core.eventh.events.CancelOrderEvent
+import co.nilin.opex.matching.core.eventh.events.CoreEvent
+import co.nilin.opex.matching.core.eventh.events.EditOrderRequestEvent
 import co.nilin.opex.matching.core.inout.OrderCancelCommand
 import co.nilin.opex.matching.core.inout.OrderCreateCommand
 import co.nilin.opex.matching.core.inout.OrderEditCommand
