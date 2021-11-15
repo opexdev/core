@@ -1,4 +1,4 @@
-package co.nilin.opex.port.order.redis.config
+package co.nilin.opex.matching.engine.ports.redis.config
 
 import co.nilin.opex.matching.core.model.PersistentOrderBook
 import com.fasterxml.jackson.annotation.JsonAutoDetect

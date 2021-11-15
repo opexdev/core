@@ -1,4 +1,4 @@
-package co.nilin.opex.port.order.redis.service
+package co.nilin.opex.matching.engine.ports.redis.service
 
 import co.nilin.opex.matching.core.model.PersistentOrderBook
 import co.nilin.opex.matching.core.spi.OrderBookPersister
