@@ -8,7 +8,7 @@
         <version>2.4.4</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>co.nilin.opex.external</groupId>
+    <groupId>co.nilin.opex.bcgateway.app</groupId>
     <artifactId>bc-gateway-app</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>bc-gateway-app</name>
@@ -94,7 +94,7 @@
             <version>1.60</version>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.external</groupId>
+            <groupId>co.nilin.opex.bcgateway.core</groupId>
             <artifactId>bc-gateway-core</artifactId>
             <version>${bc-gateway.version}</version>
         </dependency>

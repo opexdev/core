@@ -8,7 +8,7 @@
         <version>2.4.4</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>co.nilin.opex.external</groupId>
+    <groupId>co.nilin.opex.bcgateway.ports.postgres</groupId>
     <artifactId>bc-gateway-persister-postgres</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>bc-gateway-persister-postgres</name>
@@ -58,7 +58,7 @@
             <artifactId>kotlinx-coroutines-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.external</groupId>
+            <groupId>co.nilin.opex.bcgateway.core</groupId>
             <artifactId>bc-gateway-core</artifactId>
             <version>${bc-gateway.version}</version>
         </dependency>
@@ -68,9 +68,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.external</groupId>
+            <groupId>co.nilin.opex.bcgateway.ports.chainproxy</groupId>
             <artifactId>bc-chain-proxy</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${bc-gateway.version}</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
