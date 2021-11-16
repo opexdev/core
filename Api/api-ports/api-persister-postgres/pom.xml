@@ -31,13 +31,13 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex</groupId>
+            <groupId>co.nilin.opex.api.core</groupId>
             <artifactId>api-core</artifactId>
             <version>${api.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex</groupId>
+            <groupId>co.nilin.opex.accountant.core</groupId>
             <artifactId>accountant-core</artifactId>
             <version>${accountant.version}</version>
             <scope>provided</scope>

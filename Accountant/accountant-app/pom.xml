@@ -39,27 +39,27 @@
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex</groupId>
+            <groupId>co.nilin.opex.accountant.core</groupId>
             <artifactId>accountant-core</artifactId>
             <version>${accountant.version}</version>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex</groupId>
+            <groupId>co.nilin.opex.accountant.ports.kafka.listener</groupId>
             <artifactId>accountant-eventlistener-kafka</artifactId>
             <version>${accountant.version}</version>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex</groupId>
+            <groupId>co.nilin.opex.accountant.ports.kafka.submitter</groupId>
             <artifactId>accountant-submitter-kafka</artifactId>
             <version>${accountant.version}</version>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex</groupId>
+            <groupId>co.nilin.opex.accountant.ports.postgres</groupId>
             <artifactId>accountant-persister-postgres</artifactId>
             <version>${accountant.version}</version>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex</groupId>
+            <groupId>co.nilin.opex.accountant.ports.walletproxy</groupId>
             <artifactId>accountant-wallet-proxy</artifactId>
             <version>${accountant.version}</version>
         </dependency>

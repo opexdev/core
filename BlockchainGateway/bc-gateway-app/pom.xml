@@ -99,12 +99,12 @@
             <version>${bc-gateway.version}</version>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.external</groupId>
+            <groupId>co.nilin.opex.bcgateway.ports.postgres</groupId>
             <artifactId>bc-gateway-persister-postgres</artifactId>
             <version>${bc-gateway.version}</version>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.external</groupId>
+            <groupId>co.nilin.opex.bcgateway.ports.walletproxy</groupId>
             <artifactId>wallet-proxy</artifactId>
             <version>${bc-gateway.version}</version>
         </dependency>
