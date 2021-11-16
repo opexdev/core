@@ -1,6 +1,6 @@
-package co.nilin.opex.port.accountant.postgres.dao
+package co.nilin.opex.accountant.ports.postgres.dao
 
-import co.nilin.opex.port.accountant.postgres.model.OrderModel
+import co.nilin.opex.accountant.ports.postgres.model.OrderModel
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.data.repository.reactive.ReactiveCrudRepository

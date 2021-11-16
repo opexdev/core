@@ -1,9 +1,9 @@
-package co.nilin.opex.port.accountant.postgres.impl
+package co.nilin.opex.accountant.ports.postgres.impl
 
 import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.FinancialActionStatus
 import co.nilin.opex.accountant.core.spi.FinancialActionLoader
-import co.nilin.opex.port.accountant.postgres.dao.FinancialActionRepository
+import co.nilin.opex.accountant.ports.postgres.dao.FinancialActionRepository
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList

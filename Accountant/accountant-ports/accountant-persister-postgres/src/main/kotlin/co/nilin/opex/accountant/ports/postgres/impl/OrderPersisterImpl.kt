@@ -1,9 +1,9 @@
-package co.nilin.opex.port.accountant.postgres.impl
+package co.nilin.opex.accountant.ports.postgres.impl
 
 import co.nilin.opex.accountant.core.model.Order
 import co.nilin.opex.accountant.core.spi.OrderPersister
-import co.nilin.opex.port.accountant.postgres.dao.OrderRepository
-import co.nilin.opex.port.accountant.postgres.model.OrderModel
+import co.nilin.opex.accountant.ports.postgres.dao.OrderRepository
+import co.nilin.opex.accountant.ports.postgres.model.OrderModel
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime

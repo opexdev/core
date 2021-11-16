@@ -1,4 +1,4 @@
-package co.nilin.opex.port.accountant.postgres.config
+package co.nilin.opex.accountant.ports.postgres.config
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration

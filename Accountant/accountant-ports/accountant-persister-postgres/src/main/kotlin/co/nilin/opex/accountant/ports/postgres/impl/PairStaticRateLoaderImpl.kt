@@ -1,7 +1,7 @@
-package co.nilin.opex.port.accountant.postgres.impl
+package co.nilin.opex.accountant.ports.postgres.impl
 
 import co.nilin.opex.accountant.core.spi.PairStaticRateLoader
-import co.nilin.opex.port.accountant.postgres.dao.PairConfigRepository
+import co.nilin.opex.accountant.ports.postgres.dao.PairConfigRepository
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import org.springframework.stereotype.Component
 

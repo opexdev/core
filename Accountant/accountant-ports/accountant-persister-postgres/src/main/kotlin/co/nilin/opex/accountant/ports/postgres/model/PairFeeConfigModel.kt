@@ -1,4 +1,4 @@
-package co.nilin.opex.port.accountant.postgres.model
+package co.nilin.opex.accountant.ports.postgres.model
 
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table

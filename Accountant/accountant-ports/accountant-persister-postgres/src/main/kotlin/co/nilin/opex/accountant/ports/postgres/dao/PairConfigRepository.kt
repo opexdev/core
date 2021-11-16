@@ -1,6 +1,6 @@
-package co.nilin.opex.port.accountant.postgres.dao
+package co.nilin.opex.accountant.ports.postgres.dao
 
-import co.nilin.opex.port.accountant.postgres.model.PairConfigModel
+import co.nilin.opex.accountant.ports.postgres.model.PairConfigModel
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
 

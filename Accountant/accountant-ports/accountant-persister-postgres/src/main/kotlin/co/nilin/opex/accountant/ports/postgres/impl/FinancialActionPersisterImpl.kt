@@ -1,10 +1,10 @@
-package co.nilin.opex.port.accountant.postgres.impl
+package co.nilin.opex.accountant.ports.postgres.impl
 
 import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.FinancialActionStatus
 import co.nilin.opex.accountant.core.spi.FinancialActionPersister
-import co.nilin.opex.port.accountant.postgres.dao.FinancialActionRepository
-import co.nilin.opex.port.accountant.postgres.model.FinancialActionModel
+import co.nilin.opex.accountant.ports.postgres.dao.FinancialActionRepository
+import co.nilin.opex.accountant.ports.postgres.model.FinancialActionModel
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitLast

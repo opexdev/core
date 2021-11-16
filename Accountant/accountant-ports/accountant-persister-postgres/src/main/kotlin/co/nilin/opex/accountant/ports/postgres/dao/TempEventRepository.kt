@@ -1,6 +1,6 @@
-package co.nilin.opex.port.accountant.postgres.dao
+package co.nilin.opex.accountant.ports.postgres.dao
 
-import co.nilin.opex.port.accountant.postgres.model.TempEventModel
+import co.nilin.opex.accountant.ports.postgres.model.TempEventModel
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.domain.Pageable
 import org.springframework.data.r2dbc.repository.Query

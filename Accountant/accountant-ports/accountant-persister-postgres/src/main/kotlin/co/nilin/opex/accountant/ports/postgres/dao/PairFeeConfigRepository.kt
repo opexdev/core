@@ -1,7 +1,7 @@
-package co.nilin.opex.port.accountant.postgres.dao
+package co.nilin.opex.accountant.ports.postgres.dao
 
 import co.nilin.opex.matching.engine.core.model.OrderDirection
-import co.nilin.opex.port.accountant.postgres.model.PairFeeConfigModel
+import co.nilin.opex.accountant.ports.postgres.model.PairFeeConfigModel
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.data.repository.reactive.ReactiveCrudRepository

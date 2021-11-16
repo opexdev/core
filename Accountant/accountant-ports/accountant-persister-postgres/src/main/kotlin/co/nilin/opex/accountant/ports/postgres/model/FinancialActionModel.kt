@@ -1,4 +1,4 @@
-package co.nilin.opex.port.accountant.postgres.model
+package co.nilin.opex.accountant.ports.postgres.model
 
 import co.nilin.opex.accountant.core.model.FinancialActionStatus
 import org.springframework.data.annotation.Id
