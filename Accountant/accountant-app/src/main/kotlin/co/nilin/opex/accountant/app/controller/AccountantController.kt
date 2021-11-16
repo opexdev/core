@@ -1,4 +1,4 @@
-package co.nilin.opex.app.controller
+package co.nilin.opex.accountant.app.controller
 
 import co.nilin.opex.accountant.core.model.PairConfig
 import co.nilin.opex.accountant.core.model.PairFeeConfig

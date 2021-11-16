@@ -1,4 +1,4 @@
-package co.nilin.opex.app.scheduler
+package co.nilin.opex.accountant.app.scheduler
 
 import co.nilin.opex.accountant.core.spi.TempEventPersister
 import co.nilin.opex.accountant.core.spi.TempEventRepublisher

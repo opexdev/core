@@ -1,4 +1,4 @@
-package co.nilin.opex.app.config
+package co.nilin.opex.accountant.app.config
 
 import kotlinx.coroutines.asCoroutineDispatcher
 import java.util.concurrent.Executors

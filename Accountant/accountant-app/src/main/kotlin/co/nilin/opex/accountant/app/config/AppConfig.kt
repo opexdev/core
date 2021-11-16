@@ -1,4 +1,4 @@
-package co.nilin.opex.app.config
+package co.nilin.opex.accountant.app.config
 
 import co.nilin.opex.accountant.core.api.FinancialActionJobManager
 import co.nilin.opex.accountant.core.api.OrderManager
