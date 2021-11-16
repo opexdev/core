@@ -1,6 +1,6 @@
-package co.nilin.opex.port.accountant.kafka.spi
+package co.nilin.opex.accountant.ports.kafka.listener.spi
 
-import co.nilin.opex.port.order.kafka.inout.OrderSubmitRequest
+import co.nilin.opex.accountant.ports.kafka.listener.inout.OrderSubmitRequest
 
 interface OrderSubmitRequestListener {
     fun id(): String
