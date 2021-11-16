@@ -8,7 +8,7 @@
         <version>2.4.4</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>co.nilin.opex</groupId>
+    <groupId>co.nilin.opex.api.ports.postgres</groupId>
     <artifactId>api-persister-postgres</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>api-persister-postgres</name>
