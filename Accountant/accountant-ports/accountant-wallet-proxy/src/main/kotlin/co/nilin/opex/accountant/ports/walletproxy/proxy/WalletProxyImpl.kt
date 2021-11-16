@@ -1,4 +1,4 @@
-package co.nilin.opex.port.accountant.wallet.proxy
+package co.nilin.opex.accountant.ports.walletproxy.proxy
 
 import co.nilin.opex.accountant.core.spi.WalletProxy
 import kotlinx.coroutines.reactive.awaitFirst

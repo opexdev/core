@@ -1,4 +1,4 @@
-package co.nilin.opex.port.accountant.wallet.config
+package co.nilin.opex.accountant.ports.walletproxy.config
 
 import co.nilin.opex.utility.log.CustomLogger
 import org.springframework.cloud.client.ServiceInstance
