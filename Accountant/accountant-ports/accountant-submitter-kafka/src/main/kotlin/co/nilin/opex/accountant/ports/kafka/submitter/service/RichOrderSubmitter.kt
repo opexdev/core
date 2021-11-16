@@ -1,4 +1,4 @@
-package co.nilin.opex.port.accountant.kafka.service
+package co.nilin.opex.accountant.ports.kafka.submitter.service
 
 import co.nilin.opex.accountant.core.inout.RichOrder
 import co.nilin.opex.accountant.core.spi.RichOrderPublisher

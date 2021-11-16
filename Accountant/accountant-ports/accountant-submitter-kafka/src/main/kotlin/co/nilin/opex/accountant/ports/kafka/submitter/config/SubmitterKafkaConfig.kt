@@ -1,4 +1,4 @@
-package co.nilin.opex.port.accountant.kafka.config
+package co.nilin.opex.accountant.ports.kafka.submitter.config
 
 import co.nilin.opex.accountant.core.inout.RichOrder
 import co.nilin.opex.accountant.core.inout.RichTrade
