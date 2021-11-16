@@ -11,7 +11,7 @@
     <artifactId>Wallet</artifactId>
     <name>Wallet</name>
     <packaging>pom</packaging>
-    <description>Wallet managment root of Opex</description>
+    <description>Wallet management root of Opex</description>
 
     <modules>
         <module>wallet-core</module>
