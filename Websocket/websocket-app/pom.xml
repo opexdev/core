@@ -6,24 +6,63 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.4.4</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/>
     </parent>
     <groupId>co.nilin.opex</groupId>
-    <artifactId>api-app</artifactId>
+    <artifactId>websocket-app</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>api-app</name>
-    <description>Api app Opex</description>
+    <name>websocket-app</name>
+    <description>Websocket app</description>
 
     <properties>
         <java.version>1.8</java.version>
         <kotlin.version>1.4.31</kotlin.version>
-        <api.version>${version}</api.version>
+        <spring-cloud.version>2020.0.2</spring-cloud.version>
+        <websocket.version>${version}</websocket.version>
         <matching.version>${version}</matching.version>
         <accountant.version>${version}</accountant.version>
         <utility.version>${version}</utility.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-consul-all</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-messaging</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-kotlin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor.kotlin</groupId>
+            <artifactId>reactor-kotlin-extensions</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-reflect</artifactId>
@@ -33,29 +72,10 @@
             <artifactId>kotlin-stdlib-jdk8</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.module</groupId>
-            <artifactId>jackson-module-kotlin</artifactId>
+            <groupId>org.jetbrains.kotlinx</groupId>
+            <artifactId>kotlinx-coroutines-reactor</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>co.nilin.opex</groupId>
-            <artifactId>logging-handler</artifactId>
-            <version>${utility.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>co.nilin.opex</groupId>
-            <artifactId>error-handler</artifactId>
-            <version>${utility.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>co.nilin.opex</groupId>
-            <artifactId>interceptors</artifactId>
-            <version>${utility.version}</version>
-            <scope>provided</scope>
-        </dependency>
+
         <dependency>
             <groupId>co.nilin.opex</groupId>
             <artifactId>accountant-core</artifactId>
@@ -63,42 +83,38 @@
         </dependency>
         <dependency>
             <groupId>co.nilin.opex</groupId>
-            <artifactId>api-core</artifactId>
-            <version>${api.version}</version>
-        </dependency>
-       <dependency>
-            <groupId>co.nilin.opex</groupId>
-            <artifactId>api-eventlistener-kafka</artifactId>
-            <version>${api.version}</version>
+            <artifactId>websocket-core</artifactId>
+            <version>${websocket.version}</version>
         </dependency>
         <dependency>
             <groupId>co.nilin.opex</groupId>
-            <artifactId>api-binance-rest</artifactId>
-            <version>${api.version}</version>
+            <artifactId>websocket-eventlistener-kafka</artifactId>
+            <version>${websocket.version}</version>
         </dependency>
         <dependency>
             <groupId>co.nilin.opex</groupId>
-            <artifactId>api-persister-postgres</artifactId>
-            <version>${api.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-boot-starter</artifactId>
-            <version>3.0.0</version>
+            <artifactId>websocket-persister-postgres</artifactId>
+            <version>${websocket.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-test</artifactId>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.junit.vintage</groupId>
-                    <artifactId>junit-vintage-engine</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
     </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
@@ -208,6 +224,7 @@
                 </executions>
             </plugin>
         </plugins>
-        <finalName>opex-api</finalName>
+        <finalName>opex-websocket</finalName>
     </build>
+
 </project>

@@ -1,0 +1,15 @@
+spring:
+  kafka:
+    bootstrap-servers: ${KAFKA_IP_PORT}
+  redis:
+    host: ${REDIS_HOST}
+  r2dbc:
+    url: r2dbc:postgresql://${DB_IP_PORT}/opex_api
+    username: opex
+    password: hiopex
+  cloud:
+    consul:
+      host: ${CONSUL_HOST}
+      port: 8500
+  main:
+    allow-bean-definition-overriding: true
