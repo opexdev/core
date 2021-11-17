@@ -1,58 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.4.4</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <groupId>co.nilin.opex.api</groupId>
+        <artifactId>Api</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
+
+    <modelVersion>4.0.0</modelVersion>
     <groupId>co.nilin.opex.api.ports.binance</groupId>
     <artifactId>api-binance-rest</artifactId>
-    <version>1.0-SNAPSHOT</version>
     <name>api-binance-rest</name>
     <description>Api Binance Rest</description>
 
     <properties>
-        <java.version>1.8</java.version>
-        <kotlin.version>1.4.31</kotlin.version>
-        <matching.version>${version}</matching.version>
-        <api.version>${version}</api.version>
         <spring-cloud.version>2020.0.2</spring-cloud.version>
-        <utility.version>${version}</utility.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>co.nilin.opex.matching.engine.core</groupId>
             <artifactId>matching-core</artifactId>
-            <version>${matching.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>co.nilin.opex.api.core</groupId>
             <artifactId>api-core</artifactId>
-            <version>${api.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>co.nilin.opex.utility.log</groupId>
             <artifactId>logging-handler</artifactId>
-            <version>${utility.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>co.nilin.opex.utility.error</groupId>
             <artifactId>error-handler</artifactId>
-            <version>${utility.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>co.nilin.opex.utility.interceptors</groupId>
             <artifactId>interceptors</artifactId>
-            <version>${utility.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -85,18 +70,9 @@
             <artifactId>reactor-kotlin-extensions</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-reflect</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib-jdk8</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jetbrains.kotlinx</groupId>
             <artifactId>kotlinx-coroutines-reactor</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
@@ -110,7 +86,6 @@
             <artifactId>bcprov-jdk15on</artifactId>
             <version>1.60</version>
         </dependency>
-
         <dependency>
             <groupId>org.jetbrains.kotlinx</groupId>
             <artifactId>kotlinx-coroutines-core</artifactId>
@@ -126,32 +101,6 @@
             <version>1.5.20</version>
         </dependency>
     </dependencies>
-
-    <build>
-        <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
-        <testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
-        <plugins>
-            <plugin>
-                <groupId>org.jetbrains.kotlin</groupId>
-                <artifactId>kotlin-maven-plugin</artifactId>
-                <configuration>
-                    <args>
-                        <arg>-Xjsr305=strict</arg>
-                    </args>
-                    <compilerPlugins>
-                        <plugin>spring</plugin>
-                    </compilerPlugins>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.jetbrains.kotlin</groupId>
-                        <artifactId>kotlin-maven-allopen</artifactId>
-                        <version>${kotlin.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-        </plugins>
-    </build>
 
     <repositories>
         <repository>
@@ -172,5 +121,4 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
 </project>
