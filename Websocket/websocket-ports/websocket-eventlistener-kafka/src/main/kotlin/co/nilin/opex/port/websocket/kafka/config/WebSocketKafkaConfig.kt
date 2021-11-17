@@ -2,7 +2,6 @@ package co.nilin.opex.port.websocket.kafka.config
 
 import co.nilin.opex.matching.core.eventh.events.CoreEvent
 import co.nilin.opex.port.websocket.kafka.consumer.OrderKafkaListener
-import co.nilin.opex.port.websocket.kafka.consumer.EventKafkaListener
 import co.nilin.opex.port.websocket.kafka.consumer.TradeKafkaListener
 import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -67,7 +66,6 @@ class WebSocketKafkaConfig {
         return KafkaTemplate(producerFactory)
     }
 
-
     @Autowired
     @ConditionalOnBean(TradeKafkaListener::class)
     fun configureTradeListener(tradeListener: TradeKafkaListener, @Qualifier("websocketConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>) {
@@ -75,16 +73,6 @@ class WebSocketKafkaConfig {
         containerProps.messageListener = tradeListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
         container.beanName = "WebsocketTradeKafkaListenerContainer"
-        container.start()
-    }
-
-    @Autowired
-    @ConditionalOnBean(EventKafkaListener::class)
-    fun configureEventListener(eventListener: EventKafkaListener, @Qualifier("websocketConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>) {
-        val containerProps = ContainerProperties(Pattern.compile("events_.*"))
-        containerProps.messageListener = eventListener
-        val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.beanName = "WebsocketEventKafkaListenerContainer"
         container.start()
     }
 

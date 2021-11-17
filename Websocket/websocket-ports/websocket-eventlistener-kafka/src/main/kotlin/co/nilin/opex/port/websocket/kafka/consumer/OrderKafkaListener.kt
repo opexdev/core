@@ -15,7 +15,6 @@ class OrderKafkaListener : MessageListener<String, RichOrder> {
         orderListeners.forEach { tl ->
             tl.onOrder(data.value(), data.partition(), data.offset(), data.timestamp())
         }
-
     }
 
     fun addOrderListener(tl: RichOrderListener) {
