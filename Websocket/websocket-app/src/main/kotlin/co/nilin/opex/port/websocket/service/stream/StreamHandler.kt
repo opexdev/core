@@ -1,22 +1,22 @@
 package co.nilin.opex.port.websocket.service.stream
 
-abstract class StreamHandler<T> {
+abstract class StreamHandler<T>(protected val base: String) {
 
     protected val map = hashMapOf<String, PathPool<T>>()
 
-    fun addSubscription(path: String, pathType: T, sessionId: String) {
+    fun addSubscription(path: String, pathType: T, sessionId: String, data: Array<Any>) {
         if (!isPathSubscribable(path))
             return
 
         if (map[path] == null) {
-            map[path] = PathPool(path, pathType).apply { addSub(sessionId) }
+            map[path] = PathPool(path, pathType, data).apply { addSubscription(sessionId) }
         } else {
-            map[path]?.addSub(sessionId)
+            map[path]?.addSubscription(sessionId)
         }
     }
 
     fun removeSubscription(path: String, sessionId: String) {
-        map[path]?.removeSub(sessionId)
+        map[path]?.removeSubscription(sessionId)
     }
 
     fun countSubscribers(): Int {
@@ -24,6 +24,8 @@ abstract class StreamHandler<T> {
         map.entries.forEach { sum += it.value.numberOfSubscribers() }
         return sum
     }
+
+    fun getPaths() = map.entries.map { it.key }
 
     abstract fun isPathSubscribable(path: String): Boolean
 

@@ -5,9 +5,10 @@ import co.nilin.opex.accountant.core.inout.RichTrade
 import co.nilin.opex.port.websocket.config.AppDispatchers
 import co.nilin.opex.port.websocket.kafka.spi.RichOrderListener
 import co.nilin.opex.port.websocket.kafka.spi.RichTradeListener
+import co.nilin.opex.websocket.core.spi.EventStreamHandler
 import kotlinx.coroutines.runBlocking
 
-class WebSocketKafkaListener : RichTradeListener, RichOrderListener {
+class WebSocketKafkaListener(private val handler: EventStreamHandler) : RichTradeListener, RichOrderListener {
 
     override fun id(): String {
         return "WebSocketKafkaListener"
@@ -20,7 +21,7 @@ class WebSocketKafkaListener : RichTradeListener, RichOrderListener {
         timestamp: Long
     ) {
         runBlocking(AppDispatchers.kafkaExecutor) {
-            //TODO send to user
+            handler.handleTrade(trade)
         }
     }
 
@@ -31,7 +32,7 @@ class WebSocketKafkaListener : RichTradeListener, RichOrderListener {
         timestamp: Long
     ) {
         runBlocking(AppDispatchers.kafkaExecutor) {
-            //TODO send to user
+            handler.handleOrder(order)
         }
     }
 }
