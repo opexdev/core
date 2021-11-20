@@ -15,6 +15,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-reflect</artifactId>
+        </dependency>
+        <dependency>
             <groupId>co.nilin.opex.matching.engine.core</groupId>
             <artifactId>matching-core</artifactId>
         </dependency>
