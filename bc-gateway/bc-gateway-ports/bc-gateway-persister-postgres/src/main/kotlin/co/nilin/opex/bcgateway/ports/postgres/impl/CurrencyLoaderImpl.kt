@@ -22,12 +22,12 @@ class CurrencyLoaderImpl(
 ) : CurrencyLoader {
 
     override suspend fun fetchCurrencyInfo(symbol: String): CurrencyInfo {
-        val symbol = symbol.toUpperCase()
-        val currencyModel = currencyRepository.findBySymbol(symbol).awaitSingleOrNull()
+        val symbolUpperCase = symbol.toUpperCase()
+        val currencyModel = currencyRepository.findBySymbol(symbolUpperCase).awaitSingleOrNull()
         if (currencyModel === null) {
-            return CurrencyInfo(Currency("", symbol), emptyList())
+            return CurrencyInfo(Currency("", symbolUpperCase), emptyList())
         }
-        val currencyImplModel = currencyImplementationRepository.findBySymbol(symbol)
+        val currencyImplModel = currencyImplementationRepository.findBySymbol(symbolUpperCase)
         val currency = Currency(currencyModel.symbol, currencyModel.name)
         val implementations = currencyImplModel.map { projectCurrencyImplementation(it, currencyModel) }
         return CurrencyInfo(currency, implementations.toList())

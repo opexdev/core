@@ -17,9 +17,9 @@
     <modules>
         <module>bc-gateway-core</module>
         <module>bc-gateway-app</module>
-        <module>bc-gateway-ports/bc-persister-postgres</module>
-        <module>bc-gateway-ports/bc-chain-proxy</module>
-        <module>bc-gateway-ports/wallet-proxy</module>
+        <module>bc-gateway-ports/bc-gateway-persister-postgres</module>
+        <module>bc-gateway-ports/bc-gateway-chain-proxy</module>
+        <module>bc-gateway-ports/bc-gateway-wallet-proxy</module>
     </modules>
 
     <dependencies>
