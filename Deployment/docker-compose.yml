@@ -4,8 +4,8 @@ services:
     image: 'docker.io/bitnami/zookeeper:3-debian-10'
     ports:
       - '127.0.0.1:2181:2181'
-    #    volumes:
-    #      - $DATA/zookeeper_data:/bitnami
+    volumes:
+      - $DATA/zookeeper_data:/bitnami
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
     networks:
@@ -17,8 +17,8 @@ services:
     image: 'docker.io/bitnami/kafka:2-debian-10'
     ports:
       - '127.0.0.1:9092:9092'
-    #    volumes:
-    #      - $DATA/kafka-data:/bitnami
+    volumes:
+      - $DATA/kafka-data:/bitnami
     environment:
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
       - ALLOW_PLAINTEXT_LISTENER=yes
