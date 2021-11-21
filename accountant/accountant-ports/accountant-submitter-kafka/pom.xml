@@ -11,7 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>co.nilin.opex.accountant.ports.kafka.submitter</groupId>
     <artifactId>accountant-submitter-kafka</artifactId>
-    <name>accountant-temp-submitter-kafka</name>
+    <name>accountant-submitter-kafka</name>
     <description>Accountant kafka event submitter of Opex</description>
 
     <dependencies>
