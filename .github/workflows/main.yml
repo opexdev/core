@@ -1,14 +1,16 @@
-name: build opex
+name: Deploy OPEX
+
 on:
   push:
     branches:
       - main
+
 jobs:
   jenkinsJob:
     name: build opex new version
     runs-on: ubuntu-latest
     steps:
-      - name: trigger opex build job
+      - name: Trigger opex-build-job on jenkins
         uses: appleboy/jenkins-action@master
         with:
           url: ${{ secrets.JENKINS_URL }}
