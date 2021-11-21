@@ -10,8 +10,8 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>co.nilin.opex.matching.engine.ports.redis</groupId>
-    <artifactId>matching-snapshots-redis</artifactId>
-    <name>matching-snapshots-redis</name>
+    <artifactId>matching-engine-snapshots-redis</artifactId>
+    <name>matching-engine-snapshots-redis</name>
     <description>Persist Matching engine snapshot of Opex on Redis</description>
 
     <dependencies>

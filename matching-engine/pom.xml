@@ -52,17 +52,17 @@
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.matching.engine.ports.kafka.submitter</groupId>
-                <artifactId>matching-submitter-kafka</artifactId>
+                <artifactId>matching-engine-submitter-kafka</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.matching.engine.ports.kafka.listener</groupId>
-                <artifactId>matching-eventlistener-kafka</artifactId>
+                <artifactId>matching-engine-eventlistener-kafka</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.matching.engine.ports.redis</groupId>
-                <artifactId>matching-snapshots-redis</artifactId>
+                <artifactId>matching-engine-snapshots-redis</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

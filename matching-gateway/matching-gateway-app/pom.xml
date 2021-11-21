@@ -40,7 +40,7 @@
         </dependency>
         <dependency>
             <groupId>co.nilin.opex.matching.gateway.ports.kafka.submitter</groupId>
-            <artifactId>gateway-order-submitter-kafka</artifactId>
+            <artifactId>matching-gateway-submitter-kafka</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>

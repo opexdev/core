@@ -10,8 +10,8 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>co.nilin.opex.matching.engine.ports.kafka.submitter</groupId>
-    <artifactId>matching-submitter-kafka</artifactId>
-    <name>matching-submitter-kafka</name>
+    <artifactId>matching-engine-submitter-kafka</artifactId>
+    <name>matching-engine-submitter-kafka</name>
     <description>Matching engine kafka order submitter of Opex</description>
 
     <dependencies>

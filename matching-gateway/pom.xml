@@ -49,7 +49,7 @@
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.matching.gateway.ports.kafka.submitter</groupId>
-                <artifactId>gateway-order-submitter-kafka</artifactId>
+                <artifactId>matching-gateway-submitter-kafka</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
