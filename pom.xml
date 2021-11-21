@@ -15,16 +15,16 @@
     </properties>
 
     <modules>
-        <module>Accountant</module>
-        <module>Api</module>
-        <module>BlockchainGateway</module>
-        <module>EventLog</module>
-        <module>MatchingEngine</module>
-        <module>MatchingGateway</module>
-        <module>Storage</module>
-        <module>UserManagement</module>
-        <module>Utility</module>
-        <module>Wallet</module>
+        <module>accountant</module>
+        <module>api</module>
+        <module>bc-gateway</module>
+        <module>eventlog</module>
+        <module>matching-engine</module>
+        <module>matching-gateway</module>
+        <module>storage</module>
+        <module>user-management</module>
+        <module>utility</module>
+        <module>wallet</module>
     </modules>
 
     <dependencies>
