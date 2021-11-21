@@ -14,11 +14,6 @@
     <packaging>pom</packaging>
     <description>Matching Api Gateway root of Opex</description>
 
-    <properties>
-        <matching.version>${version}</matching.version>
-        <utility.version>${version}</utility.version>
-    </properties>
-
     <modules>
         <module>gateway-app</module>
         <module>gateway-port/order-submitter-kafka</module>
@@ -50,27 +45,27 @@
             <dependency>
                 <groupId>co.nilin.opex.matching.engine.core</groupId>
                 <artifactId>matching-core</artifactId>
-                <version>${matching.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.matching.gateway.ports.kafka.submitter</groupId>
                 <artifactId>gateway-order-submitter-kafka</artifactId>
-                <version>${matching.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.utility.error</groupId>
                 <artifactId>error-handler</artifactId>
-                <version>${utility.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.utility.log</groupId>
                 <artifactId>logging-handler</artifactId>
-                <version>${utility.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.utility.interceptors</groupId>
                 <artifactId>interceptors</artifactId>
-                <version>${utility.version}</version>
+                <version>${project.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

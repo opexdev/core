@@ -14,12 +14,6 @@
     <packaging>pom</packaging>
     <description>Event log root of Opex</description>
 
-    <properties>
-        <matching.version>${version}</matching.version>
-        <eventlog.version>${version}</eventlog.version>
-        <utility.version>${version}</utility.version>
-    </properties>
-
     <modules>
         <module>eventlog-core</module>
         <module>eventlog-ports/eventlog-persister-postgres</module>
@@ -53,37 +47,37 @@
             <dependency>
                 <groupId>co.nilin.opex.matching.engine.core</groupId>
                 <artifactId>matching-core</artifactId>
-                <version>${matching.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.eventlog.core</groupId>
                 <artifactId>eventlog-core</artifactId>
-                <version>${eventlog.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.eventlog.ports.kafka.listener</groupId>
                 <artifactId>eventlog-eventlistener-kafka</artifactId>
-                <version>${eventlog.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.eventlog.ports.postgres</groupId>
                 <artifactId>eventlog-persister-postgres</artifactId>
-                <version>${eventlog.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.utility.error</groupId>
                 <artifactId>error-handler</artifactId>
-                <version>${utility.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.utility.log</groupId>
                 <artifactId>logging-handler</artifactId>
-                <version>${utility.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.utility.interceptors</groupId>
                 <artifactId>interceptors</artifactId>
-                <version>${utility.version}</version>
+                <version>${project.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

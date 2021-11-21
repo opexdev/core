@@ -14,12 +14,6 @@
     <packaging>pom</packaging>
     <description>Blockchain gateway root of opex</description>
 
-    <properties>
-        <wallet.version>${version}</wallet.version>
-        <bcgateway.version>${version}</bcgateway.version>
-        <utility.version>${version}</utility.version>
-    </properties>
-
     <modules>
         <module>bc-gateway-core</module>
         <module>bc-gateway-app</module>
@@ -54,37 +48,37 @@
             <dependency>
                 <groupId>co.nilin.opex.bcgateway.core</groupId>
                 <artifactId>bc-gateway-core</artifactId>
-                <version>${bcgateway.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.bcgateway.ports.postgres</groupId>
                 <artifactId>bc-gateway-persister-postgres</artifactId>
-                <version>${bcgateway.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.bcgateway.ports.walletproxy</groupId>
                 <artifactId>wallet-proxy</artifactId>
-                <version>${bcgateway.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.bcgateway.ports.chainproxy</groupId>
                 <artifactId>bc-chain-proxy</artifactId>
-                <version>${bcgateway.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.utility.error</groupId>
                 <artifactId>error-handler</artifactId>
-                <version>${utility.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.utility.log</groupId>
                 <artifactId>logging-handler</artifactId>
-                <version>${utility.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.utility.interceptors</groupId>
                 <artifactId>interceptors</artifactId>
-                <version>${utility.version}</version>
+                <version>${project.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

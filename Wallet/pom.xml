@@ -21,10 +21,6 @@
         <module>wallet-ports/wallet-eventlistener-kafka</module>
     </modules>
 
-    <properties>
-        <utility.version>${version}</utility.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -51,32 +47,32 @@
             <dependency>
                 <groupId>co.nilin.opex.wallet.ports.postgres</groupId>
                 <artifactId>wallet-persister-postgres</artifactId>
-                <version>${version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.wallet.ports.kafka.listener</groupId>
                 <artifactId>wallet-eventlistener-kafka</artifactId>
-                <version>${version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.wallet.core</groupId>
                 <artifactId>wallet-core</artifactId>
-                <version>${version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.utility.error</groupId>
                 <artifactId>error-handler</artifactId>
-                <version>${version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.utility.log</groupId>
                 <artifactId>logging-handler</artifactId>
-                <version>${version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.utility.interceptors</groupId>
                 <artifactId>interceptors</artifactId>
-                <version>${version}</version>
+                <version>${project.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

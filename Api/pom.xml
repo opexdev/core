@@ -14,13 +14,6 @@
     <packaging>pom</packaging>
     <description>Api root of Opex</description>
 
-    <properties>
-        <api.version>${version}</api.version>
-        <matching.version>${version}</matching.version>
-        <accountant.version>${version}</accountant.version>
-        <utility.version>${version}</utility.version>
-    </properties>
-
     <modules>
         <module>api-core</module>
         <module>api-app</module>
@@ -55,47 +48,47 @@
             <dependency>
                 <groupId>co.nilin.opex.matching.engine.core</groupId>
                 <artifactId>matching-core</artifactId>
-                <version>${matching.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.accountant.core</groupId>
                 <artifactId>accountant-core</artifactId>
-                <version>${accountant.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.api.core</groupId>
                 <artifactId>api-core</artifactId>
-                <version>${api.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.api.ports.kafka.listener</groupId>
                 <artifactId>api-eventlistener-kafka</artifactId>
-                <version>${api.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.api.ports.binance</groupId>
                 <artifactId>api-binance-rest</artifactId>
-                <version>${api.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.api.ports.postgres</groupId>
                 <artifactId>api-persister-postgres</artifactId>
-                <version>${api.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.utility.error</groupId>
                 <artifactId>error-handler</artifactId>
-                <version>${utility.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.utility.log</groupId>
                 <artifactId>logging-handler</artifactId>
-                <version>${utility.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.utility.interceptors</groupId>
                 <artifactId>interceptors</artifactId>
-                <version>${utility.version}</version>
+                <version>${project.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

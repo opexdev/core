@@ -14,10 +14,6 @@
     <packaging>pom</packaging>
     <description>Matching Engine root of Opex</description>
 
-    <properties>
-        <matching.version>${version}</matching.version>
-    </properties>
-
     <modules>
         <module>matching-core</module>
         <module>matching-ports/matching-submitter-kafka</module>
@@ -52,37 +48,37 @@
             <dependency>
                 <groupId>co.nilin.opex.matching.engine.core</groupId>
                 <artifactId>matching-core</artifactId>
-                <version>${matching.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.matching.engine.ports.kafka.submitter</groupId>
                 <artifactId>matching-submitter-kafka</artifactId>
-                <version>${matching.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.matching.engine.ports.kafka.listener</groupId>
                 <artifactId>matching-eventlistener-kafka</artifactId>
-                <version>${matching.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.matching.engine.ports.redis</groupId>
                 <artifactId>matching-snapshots-redis</artifactId>
-                <version>${matching.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.utility.error</groupId>
                 <artifactId>error-handler</artifactId>
-                <version>${utility.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.utility.log</groupId>
                 <artifactId>logging-handler</artifactId>
-                <version>${utility.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.utility.interceptors</groupId>
                 <artifactId>interceptors</artifactId>
-                <version>${utility.version}</version>
+                <version>${project.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

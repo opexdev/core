@@ -14,11 +14,6 @@
     <packaging>pom</packaging>
     <description>File storage service of Opex</description>
 
-    <properties>
-        <accountant.version>${project.version}</accountant.version>
-        <utility.version>${project.version}</utility.version>
-    </properties>
-
     <modules>
         <module>storage-app</module>
     </modules>
@@ -49,17 +44,17 @@
             <dependency>
                 <groupId>co.nilin.opex.utility.error</groupId>
                 <artifactId>error-handler</artifactId>
-                <version>${utility.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.utility.log</groupId>
                 <artifactId>logging-handler</artifactId>
-                <version>${utility.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.utility.interceptors</groupId>
                 <artifactId>interceptors</artifactId>
-                <version>${utility.version}</version>
+                <version>${project.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
