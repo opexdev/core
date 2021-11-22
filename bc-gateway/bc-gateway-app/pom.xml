@@ -83,7 +83,7 @@
         </dependency>
         <dependency>
             <groupId>co.nilin.opex.bcgateway.ports.walletproxy</groupId>
-            <artifactId>wallet-proxy</artifactId>
+            <artifactId>bc-gateway-wallet-proxy</artifactId>
         </dependency>
         <dependency>
             <groupId>io.springfox</groupId>
