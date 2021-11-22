@@ -56,7 +56,7 @@
         </dependency>
         <dependency>
             <groupId>co.nilin.opex.bcgateway.ports.chainproxy</groupId>
-            <artifactId>bc-chain-proxy</artifactId>
+            <artifactId>bc-gateway-chain-proxy</artifactId>
         </dependency>
     </dependencies>
 
