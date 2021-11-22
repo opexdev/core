@@ -1,61 +1,38 @@
 package co.nilin.opex.port.websocket.service
 
-import co.nilin.opex.port.websocket.config.AppDispatchers
-import co.nilin.opex.port.websocket.service.stream.MarketPathType
-import co.nilin.opex.port.websocket.service.stream.StreamHandler
-import kotlinx.coroutines.runBlocking
-import org.springframework.beans.factory.config.ConfigurableBeanFactory
-import org.springframework.context.annotation.Scope
+import co.nilin.opex.port.websocket.dto.Interval
+import co.nilin.opex.port.websocket.service.stream.IntervalStreamHandler
+import co.nilin.opex.port.websocket.service.stream.StreamJob
 import org.springframework.messaging.simp.SimpMessagingTemplate
-import org.springframework.scheduling.annotation.Scheduled
+import org.springframework.messaging.simp.user.SimpUserRegistry
 import org.springframework.stereotype.Component
+import java.util.concurrent.TimeUnit
 
 @Component
-@Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 class MarketStreamHandler(
-    private val service: MarketService,
-    private val template: SimpMessagingTemplate
-) : StreamHandler<MarketPathType>("/market") {
+    private val marketService: MarketService,
+    template: SimpMessagingTemplate,
+    userRegistry: SimpUserRegistry
+) : IntervalStreamHandler<MarketDestinationType>(template, userRegistry) {
 
-    override fun isPathSubscribable(path: String): Boolean {
-        return MarketPathType.isValidPath(path)
-    }
+    override fun getPath(type: MarketDestinationType) = type.path
 
-    fun addOrderBookSub(symbol: String, sessionId: String) {
-        //TODO validate path
-        addSubscription("/depth/$symbol", MarketPathType.Depth, sessionId, arrayOf(symbol))
-    }
-
-    fun addCandleDataSub(symbol: String, sessionId: String) {
-        addSubscription("/kline/$symbol", MarketPathType.Candle, sessionId, arrayOf(symbol))
-    }
-
-    fun priceChange(symbol: String, duration: String, sessionId: String) {
-        addSubscription("/ticker/$symbol-$duration", MarketPathType.Ticker, sessionId, arrayOf(symbol, duration))
-    }
-
-    @Scheduled(fixedDelay = 2000)
-    private fun interval() {
-        for (it in map.entries) {
-            if (!it.value.hasAnySubscriber())
-                continue
-
-            runBlocking(AppDispatchers.websocketExecutor) {
-                when (it.value.pathType) {
-                    MarketPathType.Depth -> orderBook(it.key, it.value.data[0] as String?)
-                    MarketPathType.Candle -> TODO()
-                    MarketPathType.Ticker -> TODO()
-                }
+    override fun createJob(type: MarketDestinationType) = when (type) {
+        is MarketDestinationType.Depth -> StreamJob(2, TimeUnit.SECONDS) {
+            marketService.getOrderBookDepth(type.symbol)
+        }
+        is MarketDestinationType.Price -> StreamJob(2, TimeUnit.SECONDS) {
+            marketService.getPriceChange(type.symbol)
+        }
+        is MarketDestinationType.Candle -> {
+            val i = Interval.findByLabel(type.interval)
+            StreamJob(i?.duration ?: 2, i?.unit ?: TimeUnit.SECONDS) {
+                marketService.getCandleData(type.symbol, type.interval)
             }
         }
-    }
-
-    private suspend fun orderBook(path: String, symbol: String?) {
-        if (symbol == null)
-            return
-
-        val depth = service.getOrderBookDepth(symbol)
-        template.convertAndSend(path, depth)
+        is MarketDestinationType.Overview -> StreamJob(2, TimeUnit.SECONDS) {
+            marketService.getPriceOverview(type.symbol, type.duration)
+        }
     }
 
 }

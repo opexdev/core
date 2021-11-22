@@ -15,8 +15,6 @@ import org.springframework.web.socket.messaging.*
 @EnableWebSocketMessageBroker
 class WebSocketConfig : WebSocketMessageBrokerConfigurer {
 
-    private val logger = LoggerFactory.getLogger(WebSocketConfig::class.java)
-
     override fun registerStompEndpoints(registry: StompEndpointRegistry) {
         registry.addEndpoint("/stream")
             .setAllowedOriginPatterns("*")

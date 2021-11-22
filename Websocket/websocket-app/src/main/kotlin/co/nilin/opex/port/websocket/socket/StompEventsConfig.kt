@@ -1,28 +1,13 @@
-package co.nilin.opex.port.websocket.service.stream
+package co.nilin.opex.port.websocket.socket
 
-import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.context.ApplicationListener
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Scope
 import org.springframework.messaging.simp.broker.BrokerAvailabilityEvent
 import org.springframework.web.socket.messaging.*
 
 @Configuration
-@Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
-class SubscriberManager {
-
-    private val handlers = hashSetOf<StreamHandler<*>>()
-
-    fun register(handler: StreamHandler<*>) {
-        handlers.add(handler)
-    }
-
-    private fun removeSubscription(path: String, sessionId: String) {
-        handlers.forEach {
-            it.removeSubscription(path, sessionId)
-        }
-    }
+class StompEventsConfig {
 
     @Bean
     fun brokerAvailabilityListener() = ApplicationListener<BrokerAvailabilityEvent> { event ->
@@ -46,8 +31,7 @@ class SubscriberManager {
 
     @Bean
     fun sessionSubscribeListener() = ApplicationListener<SessionSubscribeEvent> { event ->
-        val headers = event.message.headers
-        removeSubscription(headers["simpDestination"] as String, headers["simpSessionId"] as String)
+        println("* subscribed: ${event.message}")
     }
 
     @Bean

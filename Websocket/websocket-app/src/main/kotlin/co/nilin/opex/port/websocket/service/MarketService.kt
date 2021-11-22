@@ -1,10 +1,13 @@
 package co.nilin.opex.port.websocket.service
 
 import co.nilin.opex.port.websocket.dto.DepthResponse
-import co.nilin.opex.websocket.core.inout.OrderBookResponse
+import co.nilin.opex.port.websocket.dto.Interval
+import co.nilin.opex.websocket.core.inout.PriceChangeResponse
+import co.nilin.opex.websocket.core.inout.PriceTickerResponse
 import co.nilin.opex.websocket.core.spi.MarketQueryHandler
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
+import java.time.ZoneId
 
 @Service
 class MarketService(private val marketQueryHandler: MarketQueryHandler) {
@@ -34,6 +37,41 @@ class MarketService(private val marketQueryHandler: MarketQueryHandler) {
 
         val lastOrder = marketQueryHandler.lastOrder(symbol)
         return DepthResponse(lastOrder?.orderId ?: -1, mappedBidOrders, mappedAskOrders)
+    }
+
+    suspend fun getCandleData(symbol: String, duration: String): List<List<Any>> {
+        val i = Interval.findByLabel(duration) ?: return emptyList()
+
+        val list = ArrayList<ArrayList<Any>>()
+        marketQueryHandler.getCandleInfo(symbol, "${i.duration} ${i.unit}", null, null, 500)
+            .forEach {
+                list.add(
+                    arrayListOf(
+                        it.openTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+                        it.open.toString(),
+                        it.high.toString(),
+                        it.low.toString(),
+                        it.close.toString(),
+                        it.volume.toString(),
+                        it.closeTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+                        it.quoteAssetVolume.toString(),
+                        it.trades,
+                        it.takerBuyBaseAssetVolume.toString(),
+                        it.takerBuyQuoteAssetVolume.toString(),
+                        "0.0"
+                    )
+                )
+            }
+        return list
+    }
+
+    suspend fun getPriceChange(symbol: String): List<PriceTickerResponse> {
+        return marketQueryHandler.lastPrice(symbol)
+    }
+
+    suspend fun getPriceOverview(symbol: String, duration: String): List<PriceChangeResponse> {
+        val startDate = Interval.findByLabel(duration)?.getLocalDateTime() ?: Interval.Day.getLocalDateTime()
+        return listOf(marketQueryHandler.getTradeTickerDataBySymbol(symbol, startDate))
     }
 
 }
