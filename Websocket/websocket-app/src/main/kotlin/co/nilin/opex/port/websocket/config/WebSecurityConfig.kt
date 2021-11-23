@@ -25,7 +25,7 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
         http.httpBasic().disable()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
             .authorizeRequests()
-            .antMatchers("/stream/**").permitAll()
+            .antMatchers("/ws/**").permitAll()
             .anyRequest().denyAll()
             .and()
             .oauth2ResourceServer()

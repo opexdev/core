@@ -20,9 +20,7 @@ class WebSocketKafkaListener(private val handler: EventStreamHandler) : RichTrad
         offset: Long,
         timestamp: Long
     ) {
-        runBlocking(AppDispatchers.kafkaExecutor) {
-            handler.handleTrade(trade)
-        }
+        handler.handleTrade(trade)
     }
 
     override fun onOrder(
@@ -31,8 +29,6 @@ class WebSocketKafkaListener(private val handler: EventStreamHandler) : RichTrad
         offset: Long,
         timestamp: Long
     ) {
-        runBlocking(AppDispatchers.kafkaExecutor) {
-            handler.handleOrder(order)
-        }
+        handler.handleOrder(order)
     }
 }

@@ -13,3 +13,6 @@ spring:
       port: 8500
   main:
     allow-bean-definition-overriding: true
+app:
+  auth:
+    cert-url: http://auth:8083/auth/realms/opex/protocol/openid-connect/certs

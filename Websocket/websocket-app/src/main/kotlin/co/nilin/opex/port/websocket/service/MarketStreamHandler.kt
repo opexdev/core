@@ -22,7 +22,7 @@ class MarketStreamHandler(
             marketService.getOrderBookDepth(type.symbol)
         }
         is MarketDestinationType.Price -> StreamJob(2, TimeUnit.SECONDS) {
-            marketService.getPriceChange(type.symbol)
+            marketService.getPriceChange()
         }
         is MarketDestinationType.Candle -> {
             val i = Interval.findByLabel(type.interval)
@@ -32,6 +32,9 @@ class MarketStreamHandler(
         }
         is MarketDestinationType.Overview -> StreamJob(2, TimeUnit.SECONDS) {
             marketService.getPriceOverview(type.symbol, type.duration)
+        }
+        is MarketDestinationType.RecentTrades -> StreamJob(2, TimeUnit.SECONDS) {
+            marketService.getRecentTrades(type.symbol)
         }
     }
 

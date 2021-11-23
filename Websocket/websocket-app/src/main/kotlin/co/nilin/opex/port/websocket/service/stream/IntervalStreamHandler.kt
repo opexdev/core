@@ -9,37 +9,47 @@ import org.springframework.messaging.simp.user.SimpUserRegistry
 import org.springframework.scheduling.annotation.Scheduled
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.ScheduledThreadPoolExecutor
 
 abstract class IntervalStreamHandler<T>(
     protected val template: SimpMessagingTemplate,
-    protected val userRegistry: SimpUserRegistry
+    private val userRegistry: SimpUserRegistry
 ) {
 
     private val streamJobs = hashMapOf<T, StreamJob>()
     private val jobs = hashMapOf<T, ScheduledFuture<*>?>()
-    private val intervalExecutor = Executors.newSingleThreadScheduledExecutor()
+    private val intervalExecutor = ScheduledThreadPoolExecutor(1)
     private val governorExecutor = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     private val logger = LoggerFactory.getLogger(IntervalStreamHandler::class.java)
 
+    init {
+        intervalExecutor.removeOnCancelPolicy = true
+    }
+
     fun newSubscription(type: T) {
-        registerJob(type, createJob(type))
+        registerJob(type)
         logger.info("New subscription added for $type")
     }
 
-    private fun registerJob(type: T, job: StreamJob) {
-        streamJobs[type] = job
+    private fun registerJob(type: T) {
         runGovernor {
-            jobs[type] = intervalExecutor.scheduleAtFixedRate(
-                { job.run(type) },
-                0,
-                job.interval,
-                job.timeUnit
-            )
+            if (streamJobs[type] == null)
+                streamJobs[type] = createJob(type)
+
+            val job = streamJobs[type] ?: return@runGovernor
+            if (jobs[type] == null || jobs[type]?.isCancelled == true) {
+                logger.info("job running for $type")
+                jobs[type] = intervalExecutor.scheduleAtFixedRate(
+                    { job.run(type) },
+                    0,
+                    job.interval,
+                    job.timeUnit
+                )
+            }
         }
     }
 
     private fun StreamJob.run(type: T) {
-        logger.info("job running for $type")
         runBlocking(AppDispatchers.websocketExecutor) {
             val data = runnable()
             template.convertAndSend(getPath(type), data)
@@ -53,11 +63,12 @@ abstract class IntervalStreamHandler<T>(
                 val job = j.value
                 val count = userRegistry.findSubscriptions { it.destination == getPath(j.key) }.count()
                 if (count == 0) {
-                    logger.info("No subscriber for ${j.key}. task stopped")
-                    if (job?.isCancelled == false)
+                    if (job?.isCancelled == false) {
+                        logger.info("No subscriber for ${j.key}. task stopped")
                         job.cancel(false)
+                    }
                 } else {
-                    if (job?.isCancelled == true) {
+                    if (job == null || job.isCancelled) {
                         streamJobs[j.key]?.let { s ->
                             jobs[j.key] = intervalExecutor.scheduleAtFixedRate(
                                 { s.run(j.key) },

@@ -2,36 +2,47 @@ package co.nilin.opex.port.websocket.controller
 
 import co.nilin.opex.port.websocket.service.MarketDestinationType
 import co.nilin.opex.port.websocket.service.MarketStreamHandler
+import org.springframework.messaging.handler.annotation.DestinationVariable
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.Payload
+import org.springframework.messaging.simp.annotation.SubscribeMapping
 import org.springframework.stereotype.Controller
 
 @Controller
 class MarketController(private val handler: MarketStreamHandler) {
 
-    data class OrderBookRequest(val symbol: String)
-    data class PriceTickerRequest(val symbol: String)
-    data class OverviewTickerRequest(val symbol: String, val duration: String)
-    data class CandleTickerRequest(val symbol: String, val interval: String)
+    private val validDurations = arrayOf("24h", "7d", "1M")
 
-    @MessageMapping("/market/depth")
-    fun requestOrderBook(@Payload request: OrderBookRequest) {
-        handler.newSubscription(MarketDestinationType.Depth(request.symbol))
+    @SubscribeMapping("/market/depth/{symbol}")
+    fun requestOrderBook(@DestinationVariable("symbol") symbol: String) {
+        handler.newSubscription(MarketDestinationType.Depth(symbol))
     }
 
-    @MessageMapping("/market/price")
-    fun requestPrice(@Payload request: PriceTickerRequest) {
-        handler.newSubscription(MarketDestinationType.Price(request.symbol))
+    @SubscribeMapping("/market/price")
+    fun requestPrice() {
+        handler.newSubscription(MarketDestinationType.Price)
     }
 
-    @MessageMapping("/market/overview")
-    fun requestOverview(@Payload request: OverviewTickerRequest) {
-        handler.newSubscription(MarketDestinationType.Overview(request.symbol, request.duration))
+    @SubscribeMapping("/market/overview/{symbol}-{duration}")
+    fun requestOverview(
+        @DestinationVariable("symbol") symbol: String,
+        @DestinationVariable("duration") duration: String
+    ) {
+        if (validDurations.contains(duration))
+            handler.newSubscription(MarketDestinationType.Overview(symbol, duration))
     }
 
-    @MessageMapping("/market/kline")
-    fun requestCandleData(@Payload request: CandleTickerRequest) {
-        handler.newSubscription(MarketDestinationType.Candle(request.symbol, request.interval))
+    @SubscribeMapping("/market/kline/{symbol}-{interval}")
+    fun requestCandleData(
+        @DestinationVariable("symbol") symbol: String,
+        @DestinationVariable("interval") interval: String
+    ) {
+        handler.newSubscription(MarketDestinationType.Candle(symbol, interval))
+    }
+
+    @SubscribeMapping("/market/recent-trades/{symbol}")
+    fun requestRecentTrades(@DestinationVariable("symbol") symbol: String) {
+        handler.newSubscription(MarketDestinationType.RecentTrades(symbol))
     }
 
 }

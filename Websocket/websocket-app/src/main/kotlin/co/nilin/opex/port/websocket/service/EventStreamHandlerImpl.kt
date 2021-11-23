@@ -2,34 +2,119 @@ package co.nilin.opex.port.websocket.service
 
 import co.nilin.opex.accountant.core.inout.RichOrder
 import co.nilin.opex.accountant.core.inout.RichTrade
+import co.nilin.opex.matching.core.model.OrderDirection
 import co.nilin.opex.port.websocket.config.AppDispatchers
-import co.nilin.opex.websocket.core.dto.EventType
+import co.nilin.opex.port.websocket.dto.OrderResponse
+import co.nilin.opex.port.websocket.postgres.dao.OrderRepository
+import co.nilin.opex.port.websocket.postgres.model.OrderModel
+import co.nilin.opex.port.websocket.utils.*
+import co.nilin.opex.websocket.core.inout.OrderStatus
+import co.nilin.opex.websocket.core.inout.TradeResponse
 import co.nilin.opex.websocket.core.spi.EventStreamHandler
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.springframework.messaging.simp.SimpMessagingTemplate
+import org.springframework.messaging.simp.user.SimpUserRegistry
 import org.springframework.stereotype.Component
+import java.math.BigDecimal
+import java.time.ZoneId
+import java.util.*
 
 @Component
-class EventStreamHandlerImpl(private val template: SimpMessagingTemplate) : EventStreamHandler() {
+class EventStreamHandlerImpl(
+    private val template: SimpMessagingTemplate,
+    private val orderRepository: OrderRepository,
+    private val registry: SimpUserRegistry
+) : EventStreamHandler {
 
-    override suspend fun handleOrder(order: RichOrder) {
-
+    override fun handleOrder(order: RichOrder) {
+        val response = OrderResponse(
+            order.pair,
+            order.orderId ?: -1,
+            -1,
+            null,
+            order.price,
+            order.quantity,
+            order.executedQuantity,
+            order.accumulativeQuoteQty,
+            order.status.toOrderStatus(),
+            order.constraint.toTimeInForce(),
+            order.type.toWebsocketOrderType(),
+            order.direction.toOrderSide(),
+            null,
+            null,
+            Date(),
+            Date(),
+            order.status.toOrderStatus().isWorking(),
+            order.quoteQuantity
+        )
+        run { template.convertAndSendToUser(order.uuid, EventDestinations.Order.path, response) }
     }
 
-    override suspend fun handleTrade(trade: RichTrade) {
+    override fun handleTrade(trade: RichTrade) {
+        run {
+            val takerOrder = orderRepository.findByOuid(trade.takerOuid).awaitFirstOrNull()
+            val makerOrder = orderRepository.findByOuid(trade.makerOuid).awaitFirstOrNull()
+            if (makerOrder==null ||takerOrder==null)
+                return@run
 
-    }
-
-    suspend fun send(path: String, data: Any, eventType: EventType) {
-        withContext(AppDispatchers.websocketExecutor) {
-            template.convertAndSend(path, data)
+            val maker = trade.buildTradeResponse(trade.makerUuid, makerOrder, takerOrder)
+            val taker = trade.buildTradeResponse(trade.takerUuid, makerOrder, takerOrder)
+            template.convertAndSendToUser(trade.makerUuid, EventDestinations.Trade.path, maker)
+            template.convertAndSendToUser(trade.takerUuid, EventDestinations.Trade.path, taker)
         }
     }
 
-    suspend fun sendToUser(path: String, data: Any, uuid: String, eventType: EventType) {
-        withContext(AppDispatchers.websocketExecutor) {
-            template.convertAndSendToUser(uuid, path, data)
+    private fun RichTrade.buildTradeResponse(
+        uuid: String,
+        makerOrder: OrderModel,
+        takerOrder: OrderModel
+    ): TradeResponse {
+        val isMakerBuyer = makerOrder.direction == OrderDirection.BID
+        return TradeResponse(
+            pair,
+            id,
+            if (takerUuid == uuid) takerOrder.orderId!! else makerOrder.orderId!!,
+            -1,
+            if (takerUuid == uuid) takerPrice else makerPrice,
+            matchedQuantity,
+            if (isMakerBuyer)
+                makerOrder.quoteQuantity?.toBigDecimal() ?: BigDecimal.ZERO
+            else
+                takerOrder.quoteQuantity?.toBigDecimal() ?: BigDecimal.ZERO,
+            if (takerUuid == uuid) takerCommision else makerCommision,
+            if (takerUuid == uuid) takerCommisionAsset else makerCommisionAsset,
+            Date(),
+            if (takerUuid == uuid)
+                OrderDirection.ASK == takerOrder.direction
+            else
+                OrderDirection.ASK == makerOrder.direction,
+            makerUuid == uuid,
+            true,
+            isMakerBuyer
+        )
+    }
+
+    private fun run(action: suspend () -> Unit) {
+        runBlocking(AppDispatchers.websocketExecutor) {
+            try {
+                action()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    enum class EventDestinations(val path: String) {
+        Order("/secured/queue/orders"),
+        Trade("/secured/queue/trades");
+
+        companion object {
+            fun findByPath(path: String): EventDestinations? {
+                return values().find { it.path == path }
+            }
         }
     }
 
