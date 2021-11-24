@@ -309,7 +309,7 @@ services:
   websocket:
     container_name: websocket
     build:
-      context: ../Websocket/websocket-app
+      context: ../websocket/websocket-app
       dockerfile: Dockerfile
     ports:
       - 127.0.0.1:8097:8097
