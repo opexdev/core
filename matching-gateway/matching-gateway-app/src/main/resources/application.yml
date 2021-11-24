@@ -1,0 +1,29 @@
+server.port: 8093
+logging:
+  level:
+    co.nilin: DEBUG
+    reactor.netty.http.client: DEBUG
+spring:
+  application:
+    name: opex-gateway
+  main:
+    allow-bean-definition-overriding: false
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: gateway
+  cloud:
+    bootstrap:
+      enabled: true
+    consul:
+      port: 8500
+      discovery:
+        #healthCheckPath: ${management.context-path}/health
+        instance-id: ${spring.application.name}:${server.port}
+        healthCheckInterval: 20s
+        prefer-ip-address: true
+app:
+  accountant:
+    url: lb://opex-accountant
+
+swagger.authUrl: https://api.opex.dev
