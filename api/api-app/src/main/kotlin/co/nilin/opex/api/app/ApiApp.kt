@@ -7,7 +7,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2
 
 
 @SpringBootApplication
-@ComponentScan("co.nilin.opex")
+@ComponentScan("co.nilin.opex.api")
 @EnableSwagger2
 class ApiApp
 

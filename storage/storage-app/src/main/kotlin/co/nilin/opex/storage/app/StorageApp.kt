@@ -6,7 +6,7 @@ import org.springframework.boot.runApplication
 import org.springframework.context.annotation.ComponentScan
 
 @SpringBootApplication
-@ComponentScan("co.nilin.opex")
+@ComponentScan("co.nilin.opex.storage")
 @EnableOpexErrorHandler
 class StorageApp
 

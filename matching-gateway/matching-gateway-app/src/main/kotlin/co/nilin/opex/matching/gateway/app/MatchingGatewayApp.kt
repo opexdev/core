@@ -7,7 +7,7 @@ import org.springframework.context.annotation.ComponentScan
 import springfox.documentation.swagger2.annotations.EnableSwagger2
 
 @SpringBootApplication
-@ComponentScan("co.nilin.opex")
+@ComponentScan("co.nilin.opex.matching.gateway")
 @EnableOpexErrorHandler
 @EnableSwagger2
 class MatchingGatewayApp
