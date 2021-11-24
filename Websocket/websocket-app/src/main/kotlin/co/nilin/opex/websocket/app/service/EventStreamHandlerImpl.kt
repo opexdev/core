@@ -2,14 +2,14 @@ package co.nilin.opex.websocket.app.service
 
 import co.nilin.opex.accountant.core.inout.RichOrder
 import co.nilin.opex.accountant.core.inout.RichTrade
-import co.nilin.opex.matching.core.model.OrderDirection
-import co.nilin.opex.port.websocket.app.config.AppDispatchers
-import co.nilin.opex.port.websocket.app.dto.OrderResponse
-import co.nilin.opex.websocket.ports.postgres.dao.OrderRepository
-import co.nilin.opex.websocket.ports.postgres.model.OrderModel
-import co.nilin.opex.port.websocket.app.utils.*
+import co.nilin.opex.matching.engine.core.model.OrderDirection
+import co.nilin.opex.websocket.app.config.AppDispatchers
+import co.nilin.opex.websocket.app.dto.OrderResponse
+import co.nilin.opex.websocket.app.utils.*
 import co.nilin.opex.websocket.core.inout.TradeResponse
 import co.nilin.opex.websocket.core.spi.EventStreamHandler
+import co.nilin.opex.websocket.ports.postgres.dao.OrderRepository
+import co.nilin.opex.websocket.ports.postgres.model.OrderModel
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.runBlocking
 import org.springframework.messaging.simp.SimpMessagingTemplate
@@ -53,7 +53,7 @@ class EventStreamHandlerImpl(
         run {
             val takerOrder = orderRepository.findByOuid(trade.takerOuid).awaitFirstOrNull()
             val makerOrder = orderRepository.findByOuid(trade.makerOuid).awaitFirstOrNull()
-            if (makerOrder==null ||takerOrder==null)
+            if (makerOrder == null || takerOrder == null)
                 return@run
 
             val maker = trade.buildTradeResponse(trade.makerUuid, makerOrder, takerOrder)

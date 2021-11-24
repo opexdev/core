@@ -1,6 +1,6 @@
 package co.nilin.opex.websocket.app.service.stream
 
-import co.nilin.opex.port.websocket.app.config.AppDispatchers
+import co.nilin.opex.websocket.app.config.AppDispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory

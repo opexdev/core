@@ -1,8 +1,8 @@
 package co.nilin.opex.websocket.app.service
 
-import co.nilin.opex.port.websocket.app.dto.DepthResponse
-import co.nilin.opex.port.websocket.app.dto.Interval
-import co.nilin.opex.port.websocket.app.dto.RecentTradeResponse
+import co.nilin.opex.websocket.app.dto.DepthResponse
+import co.nilin.opex.websocket.app.dto.Interval
+import co.nilin.opex.websocket.app.dto.RecentTradeResponse
 import co.nilin.opex.websocket.core.inout.PriceChangeResponse
 import co.nilin.opex.websocket.core.inout.PriceTickerResponse
 import co.nilin.opex.websocket.core.spi.MarketQueryHandler

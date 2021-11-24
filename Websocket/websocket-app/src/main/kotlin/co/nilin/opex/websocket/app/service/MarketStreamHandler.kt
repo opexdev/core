@@ -1,8 +1,8 @@
 package co.nilin.opex.websocket.app.service
 
-import co.nilin.opex.port.websocket.app.dto.Interval
-import co.nilin.opex.port.websocket.app.service.stream.IntervalStreamHandler
-import co.nilin.opex.port.websocket.app.service.stream.StreamJob
+import co.nilin.opex.websocket.app.dto.Interval
+import co.nilin.opex.websocket.app.service.stream.IntervalStreamHandler
+import co.nilin.opex.websocket.app.service.stream.StreamJob
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.messaging.simp.user.SimpUserRegistry
 import org.springframework.stereotype.Component
