@@ -7,7 +7,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
 
 @SpringBootApplication
 @EnableScheduling
-@ComponentScan("co.nilin.opex.websocket")
+@ComponentScan("co.nilin.opex")
 class WebSocketApp
 
 fun main(args: Array<String>) {

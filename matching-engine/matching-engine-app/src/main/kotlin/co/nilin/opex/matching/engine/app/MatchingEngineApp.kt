@@ -5,7 +5,7 @@ import org.springframework.boot.runApplication
 import org.springframework.context.annotation.ComponentScan
 
 @SpringBootApplication
-@ComponentScan("co.nilin.opex.matching.engine")
+@ComponentScan("co.nilin.opex")
 class MatchingEngineApp
 
 fun main(args: Array<String>) {

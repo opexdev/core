@@ -6,7 +6,7 @@ import org.springframework.context.annotation.ComponentScan
 import org.springframework.scheduling.annotation.EnableScheduling
 
 @SpringBootApplication
-@ComponentScan("co.nilin.opex.bcgateway")
+@ComponentScan("co.nilin.opex")
 @EnableScheduling
 class BCGatewayApp
 

@@ -6,7 +6,7 @@ import org.springframework.boot.runApplication
 import org.springframework.context.annotation.ComponentScan
 
 @SpringBootApplication
-@ComponentScan("co.nilin.opex.accountant")
+@ComponentScan("co.nilin.opex")
 @EnableOpexErrorHandler
 class AccountantApp
 

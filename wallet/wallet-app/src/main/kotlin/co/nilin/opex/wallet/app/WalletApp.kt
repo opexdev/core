@@ -7,7 +7,7 @@ import org.springframework.context.annotation.ComponentScan
 import springfox.documentation.swagger2.annotations.EnableSwagger2
 
 @SpringBootApplication
-@ComponentScan("co.nilin.opex.wallet")
+@ComponentScan("co.nilin.opex")
 @EnableSwagger2
 @EnableOpexErrorHandler
 class WalletApp
