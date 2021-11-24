@@ -168,7 +168,7 @@ services:
   eventlog:
     container_name: eventlog
     build:
-      context: ../eventLog/eventlog-app
+      context: ../eventlog/eventlog-app
       dockerfile: Dockerfile
     ports:
       - 127.0.0.1:8090:8090
