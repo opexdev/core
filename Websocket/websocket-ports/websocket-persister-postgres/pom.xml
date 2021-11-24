@@ -2,50 +2,34 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.4.4</version>
-        <relativePath/>
-    </parent>
-    <groupId>co.nilin.opex</groupId>
-    <artifactId>websocket-persister-postgres</artifactId>
-    <version>1.0-SNAPSHOT</version>
-    <name>websocket-persister-postgres</name>
 
-    <properties>
-        <java.version>1.8</java.version>
-        <kotlin.version>1.4.31</kotlin.version>
-        <matching.version>${version}</matching.version>
-        <accountant.version>${version}</accountant.version>
-        <websocket.version>${version}</websocket.version>
-        <utility.version>${version}</utility.version>
-    </properties>
+    <parent>
+        <groupId>co.nilin.opex.websocket</groupId>
+        <artifactId>websocket</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <groupId>co.nilin.opex.websocket.ports.postgres</groupId>
+    <artifactId>websocket-persister-postgres</artifactId>
+    <name>websocket-persister-postgres</name>
 
     <dependencies>
         <dependency>
-            <groupId>co.nilin.opex</groupId>
-            <artifactId>matching-core</artifactId>
-            <version>${matching.version}</version>
-            <scope>provided</scope>
+            <groupId>co.nilin.opex.matching.engine.core</groupId>
+            <artifactId>matching-engine-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex</groupId>
+            <groupId>co.nilin.opex.websocket.core</groupId>
             <artifactId>websocket-core</artifactId>
-            <version>${websocket.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex</groupId>
+            <groupId>co.nilin.opex.accountant.core</groupId>
             <artifactId>accountant-core</artifactId>
-            <version>${accountant.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex</groupId>
+            <groupId>co.nilin.opex.utility.error</groupId>
             <artifactId>error-handler</artifactId>
-            <version>${utility.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -61,7 +45,6 @@
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
-
         <dependency>
             <groupId>io.projectreactor.kotlin</groupId>
             <artifactId>reactor-kotlin-extensions</artifactId>
@@ -71,14 +54,9 @@
             <artifactId>kotlin-reflect</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib-jdk8</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jetbrains.kotlinx</groupId>
             <artifactId>kotlinx-coroutines-reactor</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.jetbrains.kotlinx</groupId>
             <artifactId>kotlinx-coroutines-core</artifactId>
@@ -93,32 +71,6 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <build>
-        <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
-        <testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
-        <plugins>
-            <plugin>
-                <groupId>org.jetbrains.kotlin</groupId>
-                <artifactId>kotlin-maven-plugin</artifactId>
-                <configuration>
-                    <args>
-                        <arg>-Xjsr305=strict</arg>
-                    </args>
-                    <compilerPlugins>
-                        <plugin>spring</plugin>
-                    </compilerPlugins>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.jetbrains.kotlin</groupId>
-                        <artifactId>kotlin-maven-allopen</artifactId>
-                        <version>${kotlin.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-        </plugins>
-    </build>
 
     <repositories>
         <repository>
