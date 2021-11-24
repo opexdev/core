@@ -1,15 +1,15 @@
-package co.nilin.opex.app
+package co.nilin.opex.port.websocket
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.ComponentScan
-import springfox.documentation.swagger2.annotations.EnableSwagger2
+import org.springframework.scheduling.annotation.EnableScheduling
 
 @SpringBootApplication
+@EnableScheduling
 @ComponentScan("co.nilin.opex")
-@EnableSwagger2
-class ApiApp
+class WebSocketApp
 
 fun main(args: Array<String>) {
-    runApplication<ApiApp>(*args)
+    runApplication<WebSocketApp>(*args)
 }

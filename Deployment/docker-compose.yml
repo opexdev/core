@@ -306,21 +306,30 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-  nginx:
-    image: jboesl/docker-nginx-headers-more
-    container_name: opex_nginx
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - $DATA/www:/data/www
+  websocket:
+    container_name: websocket
+    build:
+      context: ../Websocket/websocket-app
+      dockerfile: Dockerfile
     ports:
-      - 80:80
-    depends_on:
-      - wallet
-      - auth
-      - matching-gateway
-      - api
+      - 127.0.0.1:8097:8097
+      - 127.0.0.1:1054:1044
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
+      - SPRING_PROFILES_DEFAULT=docker
+      - KAFKA_IP_PORT=kafka:9092
+      - CONSUL_HOST=consul
+      - DB_IP_PORT=postgres-api
     networks:
       - opex
+    depends_on:
+      - zookeeper
+      - kafka
+      - consul
+      - postgres-api
+    deploy:
+      restart_policy:
+        condition: on-failure
   bc-gateway:
     container_name: bc-gateway
     build:
@@ -366,6 +375,21 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  nginx:
+    image: jboesl/docker-nginx-headers-more
+    container_name: opex_nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - $DATA/www:/data/www
+    ports:
+      - 80:80
+    depends_on:
+      - wallet
+      - auth
+      - matching-gateway
+      - api
+    networks:
+      - opex
 networks:
   opex:
     driver: bridge

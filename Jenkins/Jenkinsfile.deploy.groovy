@@ -47,6 +47,10 @@ pipeline {
                     dir("Storage") {
                         sh 'mvn -B  clean install'
                     }
+
+                    dir("Websocket") {
+                        sh 'mvn -B  clean install'
+                    }
                 }
 
             }
