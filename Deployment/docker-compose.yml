@@ -79,7 +79,7 @@ services:
       - POSTGRES_PASSWORD=hiopex
       - POSTGRES_DB=opex_eventlog
     volumes:
-      - $PWD/runtime/eventlog-data:/var/lib/postgresql/data/
+      - $DATA/runtime/eventlog-data:/var/lib/postgresql/data/
     networks:
       - opex
   postgres-auth:
@@ -145,7 +145,7 @@ services:
   accountant:
     container_name: accountant
     build:
-      context: ../Accountant/accountant-app
+      context: ../accountant/accountant-app
       dockerfile: Dockerfile
     ports:
       - 127.0.0.1:8089:8089
@@ -168,7 +168,7 @@ services:
   eventlog:
     container_name: eventlog
     build:
-      context: ../EventLog/eventlog-app
+      context: ../eventlog/eventlog-app
       dockerfile: Dockerfile
     ports:
       - 127.0.0.1:8090:8090
@@ -190,7 +190,7 @@ services:
   matching-engine:
     container_name: matching-engine
     build:
-      context: ../MatchingEngine/matching-app
+      context: ../matching-engine/matching-engine-app
       dockerfile: Dockerfile
     ports:
       - 127.0.0.1:8092:8092
@@ -209,7 +209,7 @@ services:
   matching-gateway:
     container_name: matching-gateway
     build:
-      context: ../MatchingGateway/gateway-app
+      context: ../matching-gateway/matching-gateway-app
       dockerfile: Dockerfile
     ports:
       - 127.0.0.1:8093:8093
@@ -229,7 +229,7 @@ services:
   auth:
     container_name: auth
     build:
-      context: ../UserManagement/keycloak-gateway
+      context: ../user-management/keycloak-gateway
       dockerfile: Dockerfile
     ports:
       - 127.0.0.1:8083:8083
@@ -242,7 +242,7 @@ services:
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-auth
       - PROXY_ADDRESS_FORWARDING=true
-      - WORKING_DIR=$PWD
+      - WORKING_DIR=$DATA
     networks:
       - opex
     depends_on:
@@ -257,7 +257,7 @@ services:
   wallet:
     container_name: wallet
     build:
-      context: ../Wallet/wallet-app
+      context: ../wallet/wallet-app
       dockerfile: Dockerfile
     ports:
       - 127.0.0.1:8091:8091
@@ -283,7 +283,7 @@ services:
   api:
     container_name: API
     build:
-      context: ../Api/api-app
+      context: ../api/api-app
       dockerfile: Dockerfile
     ports:
       - 127.0.0.1:8094:8094
@@ -309,7 +309,7 @@ services:
   websocket:
     container_name: websocket
     build:
-      context: ../Websocket/websocket-app
+      context: ../websocket/websocket-app
       dockerfile: Dockerfile
     ports:
       - 127.0.0.1:8097:8097
@@ -333,7 +333,7 @@ services:
   bc-gateway:
     container_name: bc-gateway
     build:
-      context: ../BlockchainGateway/bc-gateway-app
+      context: ../bc-gateway/bc-gateway-app
       dockerfile: Dockerfile
     ports:
       - 127.0.0.1:8095:8095
@@ -359,7 +359,7 @@ services:
   storage:
     container_name: storage
     build:
-      context: ../Storage/storage-app
+      context: ../storage/storage-app
       dockerfile: Dockerfile
     ports:
       - 127.0.0.1:8096:8096

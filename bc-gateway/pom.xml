@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>OPEX-Core</artifactId>
+        <groupId>co.nilin.opex</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>co.nilin.opex.bcgateway</groupId>
+    <artifactId>bc-gateway</artifactId>
+    <name>bc-gateway</name>
+    <packaging>pom</packaging>
+    <description>Blockchain gateway root of opex</description>
+
+    <modules>
+        <module>bc-gateway-core</module>
+        <module>bc-gateway-app</module>
+        <module>bc-gateway-ports/bc-gateway-persister-postgres</module>
+        <module>bc-gateway-ports/bc-gateway-chain-proxy</module>
+        <module>bc-gateway-ports/bc-gateway-wallet-proxy</module>
+    </modules>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+        </dependency>
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>co.nilin.opex.bcgateway.core</groupId>
+                <artifactId>bc-gateway-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.bcgateway.ports.postgres</groupId>
+                <artifactId>bc-gateway-persister-postgres</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.bcgateway.ports.walletproxy</groupId>
+                <artifactId>bc-gateway-wallet-proxy</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.bcgateway.ports.chainproxy</groupId>
+                <artifactId>bc-gateway-chain-proxy</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.utility.error</groupId>
+                <artifactId>error-handler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.utility.log</groupId>
+                <artifactId>logging-handler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.utility.interceptors</groupId>
+                <artifactId>interceptors</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>co.nilin.opex.matching.engine</groupId>
+        <artifactId>matching-engine</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <groupId>co.nilin.opex.matching.engine.app</groupId>
+    <artifactId>matching-engine-app</artifactId>
+    <name>matching-engine-app</name>
+    <description>Matching engine running app Opex</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-reflect</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-kotlin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>co.nilin.opex.matching.engine.core</groupId>
+            <artifactId>matching-engine-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>co.nilin.opex.matching.engine.ports.kafka.submitter</groupId>
+            <artifactId>matching-engine-submitter-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>co.nilin.opex.matching.engine.ports.kafka.listener</groupId>
+            <artifactId>matching-engine-eventlistener-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>co.nilin.opex.matching.engine.ports.redis</groupId>
+            <artifactId>matching-engine-snapshots-redis</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
