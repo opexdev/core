@@ -39,6 +39,7 @@ abstract class IntervalStreamHandler<T>(
             val job = streamJobs[type] ?: return@runGovernor
             if (jobs[type] == null || jobs[type]?.isCancelled == true) {
                 logger.info("job running for $type")
+                job.isRunAllowed = true
                 jobs[type] = intervalExecutor.scheduleAtFixedRate(
                     { job.run(type) },
                     0,
@@ -51,40 +52,65 @@ abstract class IntervalStreamHandler<T>(
 
     private fun StreamJob.run(type: T) {
         runBlocking(AppDispatchers.websocketExecutor) {
-            val data = runnable()
-            template.convertAndSend(getPath(type), data)
+            if (isRunAllowed) {
+                val data = runnable()
+                template.convertAndSend(getPath(type), data)
+            }
         }
     }
 
     @Scheduled(fixedDelay = 60 * 1000)
     private fun govern() {
         runGovernor {
-            jobs.entries.forEach { j ->
-                val job = j.value
-                val count = userRegistry.findSubscriptions { it.destination == getPath(j.key) }.count()
-                if (count == 0) {
-                    if (job?.isCancelled == false) {
-                        logger.info("No subscriber for ${j.key}. task stopped")
-                        job.cancel(false)
+            cancelOrphanJobs()
+            intervalExecutor.purge()
+        }
+    }
+
+    private fun cancelOrphanJobs() {
+        jobs.entries.forEach { j ->
+            val job = j.value
+            val count = userRegistry.findSubscriptions { it.destination == getPath(j.key) }.count()
+            val sJob = streamJobs[j.key]
+            if (count == 0) {
+                if (sJob?.isRunAllowed == true){
+                    logger.info("No subscriber for ${j.key}. stopping task")
+                    sJob.isRunAllowed = false
+                }
+
+                if (job?.isCancelled == false)
+                    job.cancel(false)
+            } else {
+                if (job == null || job.isCancelled || job.isDone) {
+                    sJob?.let { s ->
+                        s.isRunAllowed = true
+                        jobs[j.key] = intervalExecutor.scheduleAtFixedRate(
+                            { s.run(j.key) },
+                            0,
+                            s.interval,
+                            s.timeUnit
+                        )
                     }
-                } else {
-                    if (job == null || job.isCancelled) {
-                        streamJobs[j.key]?.let { s ->
-                            jobs[j.key] = intervalExecutor.scheduleAtFixedRate(
-                                { s.run(j.key) },
-                                0,
-                                s.interval,
-                                s.timeUnit
-                            )
-                        }
-                        logger.info("Starting job")
-                    }
+                    logger.info("Starting job")
                 }
             }
         }
     }
 
-    private fun runGovernor(runnable: () -> Unit) {
+    @Scheduled(initialDelay = 1000, fixedDelay = 60 * 1000)
+    private fun logStatus() {
+        var runningJob = 0
+        jobs.entries.forEach {
+            if (it.value != null && (it.value?.isDone == false || it.value?.isCancelled == false)) {
+                runningJob++
+                logger.info("+ running: ${it.key}")
+            }
+        }
+
+        logger.info("== Total of $runningJob jobs running ==")
+    }
+
+    private fun runGovernor(runnable: suspend () -> Unit) {
         runBlocking(governorExecutor) { runnable() }
     }
 
