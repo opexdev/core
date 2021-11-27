@@ -17,7 +17,6 @@ class OrderSubmitRequest() {
     var matchConstraint: MatchConstraint = MatchConstraint.GTC
     var orderType: OrderType = OrderType.LIMIT_ORDER
 
-
     constructor(
         ouid: String,
         uuid: String,
@@ -39,6 +38,4 @@ class OrderSubmitRequest() {
         this.matchConstraint = matchConstraint
         this.orderType = orderType
     }
-
-
 }
