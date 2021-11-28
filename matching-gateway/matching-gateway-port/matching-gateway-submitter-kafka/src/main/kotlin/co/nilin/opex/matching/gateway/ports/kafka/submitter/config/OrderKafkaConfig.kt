@@ -25,6 +25,7 @@ class OrderKafkaConfig {
         props[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = bootstrapServers
         props[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java
         props[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = JsonSerializer::class.java
+        props[JsonSerializer.TYPE_MAPPINGS] = "order_request:co.nilin.opex.matching.gateway.ports.kafka.submitter.inout.OrderSubmitRequest"
         return props
     }
 

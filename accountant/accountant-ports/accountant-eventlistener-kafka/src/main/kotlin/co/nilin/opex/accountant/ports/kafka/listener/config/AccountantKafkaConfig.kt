@@ -41,6 +41,7 @@ class AccountantKafkaConfig {
         props[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java
         props[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = JsonDeserializer::class.java
         props[JsonDeserializer.TRUSTED_PACKAGES] = "co.nilin.opex.*"
+        props[JsonDeserializer.TYPE_MAPPINGS] = "order_request:co.nilin.opex.accountant.ports.kafka.listener.inout.OrderSubmitRequest"
         return props
     }
 
