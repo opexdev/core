@@ -1,7 +1,7 @@
 pipeline {
     agent any
 
-    stages('Deploy - Production') {
+    stages('Deploy - Stage') {
         stage('Build') {
             steps {
                 setBuildStatus("?", "PENDING")
@@ -14,11 +14,11 @@ pipeline {
         }
         stage('Deliver') {
             environment {
-                DATA = '/var/opex/runtime'
+                DATA = '/var/opex/runtime-stage'
             }
             steps {
                 dir("Deployment") {
-                    sh 'docker-compose up -d --build'
+                    sh 'docker-compose -f docker-compose.yml -f docker-compose.dev.yml  up -d --build'
                 }
             }
         }
