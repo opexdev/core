@@ -2,8 +2,6 @@ version: '3.8'
 services:
   zookeeper:
     image: 'docker.io/bitnami/zookeeper:3-debian-10'
-    ports:
-      - '127.0.0.1:2181:2181'
     volumes:
       - $DATA/zookeeper_data:/bitnami
     environment:
@@ -15,8 +13,6 @@ services:
         condition: on-failure
   kafka:
     image: 'docker.io/bitnami/kafka:2-debian-10'
-    ports:
-      - '127.0.0.1:9092:9092'
     volumes:
       - $DATA/kafka-data:/bitnami
     environment:
@@ -32,10 +28,6 @@ services:
         condition: on-failure
   consul:
     image: 'consul'
-    ports:
-      - '127.0.0.1:8500:8500'
-      - '127.0.0.1:8300:8300'
-      - '127.0.0.1:8600:8600'
     environment:
       - CONSUL_BIND_INTERFACE=eth0
     networks:
@@ -46,8 +38,6 @@ services:
   redis:
     image: "redis:alpine"
     command: redis-server
-    ports:
-      - "127.0.0.1:6379:6379"
     volumes:
       - $DATA/redis-data:/var/lib/redis
       - $DATA/redis.conf:/usr/local/etc/redis/redis.conf
@@ -60,8 +50,6 @@ services:
         condition: on-failure
   postgres-accountant:
     image: "postgres"
-    ports:
-      - 127.0.0.1:5433:5432
     environment:
       - POSTGRES_USER=opex
       - POSTGRES_PASSWORD=hiopex
@@ -72,8 +60,6 @@ services:
       - opex
   postgres-eventlog:
     image: "postgres"
-    ports:
-      - 127.0.0.1:5434:5432
     environment:
       - POSTGRES_USER=opex
       - POSTGRES_PASSWORD=hiopex
@@ -84,8 +70,6 @@ services:
       - opex
   postgres-auth:
     image: "postgres"
-    ports:
-      - 127.0.0.1:5435:5432
     environment:
       - POSTGRES_USER=opex
       - POSTGRES_PASSWORD=hiopex
@@ -99,8 +83,6 @@ services:
         condition: on-failure
   postgres-wallet:
     image: "postgres"
-    ports:
-      - 127.0.0.1:5436:5432
     environment:
       - POSTGRES_USER=opex
       - POSTGRES_PASSWORD=hiopex
@@ -114,8 +96,6 @@ services:
         condition: on-failure
   postgres-api:
     image: "postgres"
-    ports:
-      - 127.0.0.1:5437:5432
     environment:
       - POSTGRES_USER=opex
       - POSTGRES_PASSWORD=hiopex
@@ -129,8 +109,6 @@ services:
         condition: on-failure
   postgres-bc-gateway:
     image: "postgres"
-    ports:
-      - 127.0.0.1:5438:5432
     environment:
       - POSTGRES_USER=opex
       - POSTGRES_PASSWORD=hiopex
@@ -147,9 +125,6 @@ services:
     build:
       context: ../accountant/accountant-app
       dockerfile: Dockerfile
-    ports:
-      - 127.0.0.1:8089:8089
-      - 127.0.0.1:1045:1044
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_ACTIVE=docker,demo,scheduled
@@ -170,8 +145,6 @@ services:
     build:
       context: ../eventlog/eventlog-app
       dockerfile: Dockerfile
-    ports:
-      - 127.0.0.1:8090:8090
     environment:
       - JAVA_OPTS=-Xmx256m
       - SPRING_PROFILES_ACTIVE=docker,demo
@@ -192,9 +165,6 @@ services:
     build:
       context: ../matching-engine/matching-engine-app
       dockerfile: Dockerfile
-    ports:
-      - 127.0.0.1:8092:8092
-      - 127.0.0.1:1046:1044
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_ACTIVE=docker,demo
@@ -211,9 +181,6 @@ services:
     build:
       context: ../matching-gateway/matching-gateway-app
       dockerfile: Dockerfile
-    ports:
-      - 127.0.0.1:8093:8093
-      - 127.0.0.1:1047:1044
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_DEFAULT=docker,demo
@@ -231,9 +198,6 @@ services:
     build:
       context: ../user-management/keycloak-gateway
       dockerfile: Dockerfile
-    ports:
-      - 127.0.0.1:8083:8083
-      - 127.0.0.1:1048:1044
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_ACTIVE=docker,demo
@@ -259,9 +223,6 @@ services:
     build:
       context: ../wallet/wallet-app
       dockerfile: Dockerfile
-    ports:
-      - 127.0.0.1:8091:8091
-      - 127.0.0.1:1049:1044
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_DEFAULT=docker,demo
@@ -285,9 +246,6 @@ services:
     build:
       context: ../api/api-app
       dockerfile: Dockerfile
-    ports:
-      - 127.0.0.1:8094:8094
-      - 127.0.0.1:1050:1044
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_DEFAULT=docker,demo
@@ -311,9 +269,6 @@ services:
     build:
       context: ../websocket/websocket-app
       dockerfile: Dockerfile
-    ports:
-      - 127.0.0.1:8097:8097
-      - 127.0.0.1:1054:1044
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_DEFAULT=docker
@@ -335,9 +290,6 @@ services:
     build:
       context: ../bc-gateway/bc-gateway-app
       dockerfile: Dockerfile
-    ports:
-      - 127.0.0.1:8095:8095
-      - 127.0.0.1:1052:1044
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_DEFAULT=docker,demo,scheduled
@@ -361,9 +313,6 @@ services:
     build:
       context: ../storage/storage-app
       dockerfile: Dockerfile
-    ports:
-      - 127.0.0.1:8096:8096
-      - 127.0.0.1:1053:1044
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_DEFAULT=docker
@@ -381,8 +330,6 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - $DATA/www:/data/www
-    ports:
-      - 80:80
     depends_on:
       - wallet
       - auth
