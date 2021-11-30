@@ -121,7 +121,6 @@ services:
       restart_policy:
         condition: on-failure
   accountant:
-    container_name: accountant
     build:
       context: ../accountant/accountant-app
       dockerfile: Dockerfile
@@ -133,7 +132,9 @@ services:
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-accountant
     networks:
-      - opex
+      opex:
+        aliases:
+          - accountant
     depends_on:
       - zookeeper
       - kafka
@@ -141,7 +142,6 @@ services:
       - consul
       - postgres-accountant
   eventlog:
-    container_name: eventlog
     build:
       context: ../eventlog/eventlog-app
       dockerfile: Dockerfile
@@ -152,8 +152,6 @@ services:
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-eventlog
-    networks:
-      - opex
     depends_on:
       - zookeeper
       - kafka
@@ -161,7 +159,6 @@ services:
       - consul
       - postgres-eventlog
   matching-engine:
-    container_name: matching-engine
     build:
       context: ../matching-engine/matching-engine-app
       dockerfile: Dockerfile
@@ -170,14 +167,11 @@ services:
       - SPRING_PROFILES_ACTIVE=docker,demo
       - KAFKA_IP_PORT=kafka:9092
       - REDIS_HOST=redis
-    networks:
-      - opex
     depends_on:
       - zookeeper
       - kafka
       - redis
   matching-gateway:
-    container_name: matching-gateway
     build:
       context: ../matching-gateway/matching-gateway-app
       dockerfile: Dockerfile
@@ -187,14 +181,11 @@ services:
       - KAFKA_IP_PORT=kafka:9092
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
-    networks:
-      - opex
     depends_on:
       - zookeeper
       - kafka
       - consul
   auth:
-    container_name: auth
     build:
       context: ../user-management/keycloak-gateway
       dockerfile: Dockerfile
@@ -207,8 +198,6 @@ services:
       - DB_IP_PORT=postgres-auth
       - PROXY_ADDRESS_FORWARDING=true
       - WORKING_DIR=$DATA
-    networks:
-      - opex
     depends_on:
       - zookeeper
       - kafka
@@ -219,7 +208,6 @@ services:
       restart_policy:
         condition: on-failure
   wallet:
-    container_name: wallet
     build:
       context: ../wallet/wallet-app
       dockerfile: Dockerfile
@@ -230,8 +218,6 @@ services:
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-wallet
-    networks:
-      - opex
     depends_on:
       - zookeeper
       - kafka
@@ -242,7 +228,6 @@ services:
       restart_policy:
         condition: on-failure
   api:
-    container_name: API
     build:
       context: ../api/api-app
       dockerfile: Dockerfile
@@ -253,8 +238,6 @@ services:
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-api
-    networks:
-      - opex
     depends_on:
       - zookeeper
       - kafka
@@ -265,7 +248,6 @@ services:
       restart_policy:
         condition: on-failure
   websocket:
-    container_name: websocket
     build:
       context: ../websocket/websocket-app
       dockerfile: Dockerfile
@@ -275,8 +257,6 @@ services:
       - KAFKA_IP_PORT=kafka:9092
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-api
-    networks:
-      - opex
     depends_on:
       - zookeeper
       - kafka
@@ -286,7 +266,6 @@ services:
       restart_policy:
         condition: on-failure
   bc-gateway:
-    container_name: bc-gateway
     build:
       context: ../bc-gateway/bc-gateway-app
       dockerfile: Dockerfile
@@ -297,8 +276,6 @@ services:
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-bc-gateway
-    networks:
-      - opex
     depends_on:
       - zookeeper
       - kafka
@@ -309,7 +286,6 @@ services:
       restart_policy:
         condition: on-failure
   storage:
-    container_name: storage
     build:
       context: ../storage/storage-app
       dockerfile: Dockerfile
@@ -317,8 +293,6 @@ services:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_DEFAULT=docker
       - CONSUL_HOST=consul
-    networks:
-      - opex
     depends_on:
       - consul
     deploy:
@@ -326,7 +300,6 @@ services:
         condition: on-failure
   nginx:
     image: jboesl/docker-nginx-headers-more
-    container_name: opex_nginx
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - $DATA/www:/data/www
@@ -335,8 +308,6 @@ services:
       - auth
       - matching-gateway
       - api
-    networks:
-      - opex
 networks:
   opex:
     driver: bridge

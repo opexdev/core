@@ -2,74 +2,141 @@ services:
   zookeeper:
     ports:
       - '127.0.0.1:2181:2181'
+    networks:
+      - opex
   kafka:
     ports:
       - '127.0.0.1:9092:9092'
+    networks:
+      - opex
   consul:
     ports:
       - '127.0.0.1:8500:8500'
       - '127.0.0.1:8300:8300'
       - '127.0.0.1:8600:8600'
+    networks:
+      - opex
   redis:
     ports:
       - "127.0.0.1:6379:6379"
+    networks:
+      - opex
   postgres-accountant:
     ports:
       - 127.0.0.1:5433:5432
+    networks:
+      - opex
   postgres-eventlog:
     ports:
       - 127.0.0.1:5434:5432
+    networks:
+      - opex
   postgres-auth:
     ports:
       - 127.0.0.1:5435:5432
+    networks:
+      - opex
   postgres-wallet:
     ports:
       - 127.0.0.1:5436:5432
+    networks:
+      - opex
   postgres-api:
     ports:
       - 127.0.0.1:5437:5432
+    networks:
+      - opex
   postgres-bc-gateway:
     ports:
       - 127.0.0.1:5438:5432
+    networks:
+      - opex
   accountant:
     ports:
       - 127.0.0.1:8089:8089
       - 127.0.0.1:1045:1044
+    networks:
+      opex:
+        aliases:
+          - accountant
   eventlog:
     ports:
       - 127.0.0.1:8090:8090
+    networks:
+      opex:
+        aliases:
+          - eventlog
   matching-engine:
     ports:
       - 127.0.0.1:8092:8092
       - 127.0.0.1:1046:1044
+    networks:
+      opex:
+        aliases:
+          - matching-engine
   matching-gateway:
     ports:
       - 127.0.0.1:8093:8093
       - 127.0.0.1:1047:1044
+    networks:
+      opex:
+        aliases:
+          - matching-gateway
   auth:
     ports:
       - 127.0.0.1:8083:8083
       - 127.0.0.1:1048:1044
+    networks:
+      opex:
+        aliases:
+          - auth
   wallet:
     ports:
       - 127.0.0.1:8091:8091
       - 127.0.0.1:1049:1044
+    networks:
+      opex:
+        aliases:
+          - wallet
   api:
     ports:
       - 127.0.0.1:8094:8094
       - 127.0.0.1:1050:1044
+    networks:
+      opex:
+        aliases:
+          - api
   websocket:
     ports:
       - 127.0.0.1:8097:8097
       - 127.0.0.1:1054:1044
+    networks:
+      opex:
+        aliases:
+          - websocket
   bc-gateway:
     ports:
       - 127.0.0.1:8095:8095
       - 127.0.0.1:1052:1044
+    networks:
+      opex:
+        aliases:
+          - bc-gateway
   storage:
     ports:
       - 127.0.0.1:8096:8096
       - 127.0.0.1:1053:1044
+    networks:
+      opex:
+        aliases:
+          - storage
   nginx:
     ports:
       - 80:80
+    networks:
+      opex:
+        aliases:
+          - opex_nginx
+networks:
+  opex:
+    driver: bridge
