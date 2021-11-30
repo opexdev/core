@@ -6,8 +6,6 @@ services:
       - $DATA/zookeeper_data:/bitnami
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
-    networks:
-      - opex
     deploy:
       restart_policy:
         condition: on-failure
@@ -21,8 +19,6 @@ services:
       - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
     depends_on:
       - zookeeper
-    networks:
-      - opex
     deploy:
       restart_policy:
         condition: on-failure
@@ -30,8 +26,6 @@ services:
     image: 'consul'
     environment:
       - CONSUL_BIND_INTERFACE=eth0
-    networks:
-      - opex
     deploy:
       restart_policy:
         condition: on-failure
@@ -43,8 +37,6 @@ services:
       - $DATA/redis.conf:/usr/local/etc/redis/redis.conf
     environment:
       - REDIS_REPLICATION_MODE=master
-    networks:
-      - opex
     deploy:
       restart_policy:
         condition: on-failure
@@ -56,8 +48,6 @@ services:
       - POSTGRES_DB=opex_accountant
     volumes:
       - $DATA/accountant-data:/var/lib/postgresql/data/
-    networks:
-      - opex
   postgres-eventlog:
     image: "postgres"
     environment:
@@ -66,8 +56,6 @@ services:
       - POSTGRES_DB=opex_eventlog
     volumes:
       - $DATA/eventlog-data:/var/lib/postgresql/data/
-    networks:
-      - opex
   postgres-auth:
     image: "postgres"
     environment:
@@ -76,8 +64,6 @@ services:
       - POSTGRES_DB=opex_auth
     volumes:
       - $DATA/auth-data:/var/lib/postgresql/data/
-    networks:
-      - opex
     deploy:
       restart_policy:
         condition: on-failure
@@ -89,8 +75,6 @@ services:
       - POSTGRES_DB=opex_wallet
     volumes:
       - $DATA/wallet-data:/var/lib/postgresql/data/
-    networks:
-      - opex
     deploy:
       restart_policy:
         condition: on-failure
@@ -102,8 +86,6 @@ services:
       - POSTGRES_DB=opex_api
     volumes:
       - $DATA/api-data:/var/lib/postgresql/data/
-    networks:
-      - opex
     deploy:
       restart_policy:
         condition: on-failure
@@ -115,8 +97,6 @@ services:
       - POSTGRES_DB=opex_bc_gateway
     volumes:
       - $DATA/bc-gateway-data:/var/lib/postgresql/data/
-    networks:
-      - opex
     deploy:
       restart_policy:
         condition: on-failure
@@ -131,10 +111,6 @@ services:
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-accountant
-    networks:
-      opex:
-        aliases:
-          - accountant
     depends_on:
       - zookeeper
       - kafka
@@ -308,6 +284,3 @@ services:
       - auth
       - matching-gateway
       - api
-networks:
-  opex:
-    driver: bridge
