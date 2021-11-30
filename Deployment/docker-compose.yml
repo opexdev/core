@@ -65,7 +65,7 @@ services:
       - POSTGRES_PASSWORD=hiopex
       - POSTGRES_DB=opex_eventlog
     volumes:
-      - $DATA/runtime/eventlog-data:/var/lib/postgresql/data/
+      - $DATA/eventlog-data:/var/lib/postgresql/data/
     networks:
       - opex
   postgres-auth:
