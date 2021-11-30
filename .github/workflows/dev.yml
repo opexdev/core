@@ -1,13 +1,13 @@
-name: Deploy OPEX - Demo
+name: Deploy OPEX - Dev
 
 on:
   push:
     branches:
-      - main
+      - dev
 
 jobs:
   jenkinsJob:
-    name: Deploy OPEX new demo version
+    name: Build OPEX new dev version
     runs-on: ubuntu-latest
     steps:
       - name: Trigger opex-build-job on jenkins
@@ -16,4 +16,4 @@ jobs:
           url: ${{ secrets.JENKINS_URL }}
           user: ${{ secrets.JENKINS_USER }}
           token: ${{ secrets.JENKINS_TOKEN }}
-          job: "opex-core-demo-deploy"
+          job: "opex-core-dev-deploy"
