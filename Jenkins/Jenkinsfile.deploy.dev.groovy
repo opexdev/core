@@ -14,11 +14,11 @@ pipeline {
         }
         stage('Deliver') {
             environment {
-                DATA = '/var/opex/runtime-stage'
+                DATA = '/var/opex/runtime-dev'
             }
             steps {
                 dir("Deployment") {
-                    sh 'docker-compose -f docker-compose.yml -f docker-compose.dev.yml  up -d --build'
+                    sh 'COMPOSE_PROJECT_NAME=dev docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build'
                 }
             }
         }

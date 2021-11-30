@@ -18,7 +18,7 @@ pipeline {
             }
             steps {
                 dir("Deployment") {
-                    sh 'docker-compose up -d --build'
+                    sh 'COMPOSE_PROJECT_NAME=prod docker-compose up -d --build'
                 }
             }
         }
