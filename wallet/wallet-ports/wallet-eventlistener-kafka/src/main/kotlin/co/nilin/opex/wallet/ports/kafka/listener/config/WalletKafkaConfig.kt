@@ -37,6 +37,7 @@ class WalletKafkaConfig {
         props[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java
         props[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = JsonDeserializer::class.java
         props[JsonDeserializer.TRUSTED_PACKAGES] = "co.nilin.opex.*"
+        props[JsonDeserializer.TYPE_MAPPINGS] = "user_created_event:co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent"
         return props
     }
 

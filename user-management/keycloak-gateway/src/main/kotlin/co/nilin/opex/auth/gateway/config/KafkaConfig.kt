@@ -26,6 +26,7 @@ class KafkaConfig {
         props[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = bootstrapServers
         props[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java
         props[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = JsonSerializer::class.java
+        props[JsonSerializer.TYPE_MAPPINGS] = "user_created_event:co.nilin.opex.auth.gateway.model.UserCreatedEvent"
         return props
     }
 
