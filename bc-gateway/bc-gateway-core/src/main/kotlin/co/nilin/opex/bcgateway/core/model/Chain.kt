@@ -4,7 +4,7 @@ import java.time.LocalDateTime
 
 data class Endpoint(val url: String)
 data class Chain(val name: String, val addressTypes: List<AddressType>, val endpoints: List<Endpoint>)
-data class ChainSyncSchedule(val chainName: String, val retryTime: LocalDateTime, val delay: Long)
+data class ChainSyncSchedule(val chainName: String, val retryTime: LocalDateTime, val delay: Long, val errorDelay: Long)
 data class ChainSyncRecord(
     val chainName: String,
     val time: LocalDateTime,

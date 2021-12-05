@@ -7,7 +7,14 @@ import java.time.LocalDateTime
 
 @Table("chain_sync_schedules")
 data class ChainSyncScheduleModel(
-    @Id @Column("chain") val chain: String, @Column("retry_time") val retryTime: LocalDateTime, val delay: Long
+    @Id
+    @Column("chain")
+    val chain: String,
+    @Column("retry_time")
+    val retryTime: LocalDateTime,
+    val delay: Long,
+    @Column("error_delay")
+    val errorDelay: Long
 )
 
 @Table("chain_sync_records")
