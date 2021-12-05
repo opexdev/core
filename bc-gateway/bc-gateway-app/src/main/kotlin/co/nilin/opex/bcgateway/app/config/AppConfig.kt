@@ -32,6 +32,7 @@ class AppConfig {
         chainEndpointProxyFinder: ChainEndpointProxyFinder,
         chainSyncRecordHandler: ChainSyncRecordHandler,
         walletSyncRecordHandler: WalletSyncRecordHandler,
+        chainSyncRetryHandler: ChainSyncRetryHandler,
         currencyLoader: CurrencyLoader,
         operator: TransactionalOperator
     ): ChainSyncService {
@@ -40,6 +41,7 @@ class AppConfig {
             chainEndpointProxyFinder,
             chainSyncRecordHandler,
             walletSyncRecordHandler,
+            chainSyncRetryHandler,
             currencyLoader,
             operator,
             AppDispatchers.chainSyncExecutor
