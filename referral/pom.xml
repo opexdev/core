@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>OPEX-Core</artifactId>
+        <groupId>co.nilin.opex</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>co.nilin.opex.referral</groupId>
+    <artifactId>referral</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+        <module>referral-app</module>
+        <module>referral-ports/referral-persister-postgres</module>
+    </modules>
+
+</project>

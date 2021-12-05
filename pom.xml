@@ -28,6 +28,7 @@
         <module>utility</module>
         <module>wallet</module>
         <module>websocket</module>
+        <module>referral</module>
     </modules>
 
     <dependencies>
