@@ -31,9 +31,9 @@ class ChainEndpointProxyImpl(
     )
 
     data class Transfer(
-        var txHash: String,
-        var from: String,
-        var to: String,
+        var txHash: String?,
+        var from: String?,
+        var to: String?,
         var isTokenTransfer: Boolean,
         var token: String? = null,
         var amount: BigDecimal
@@ -47,7 +47,6 @@ class ChainEndpointProxyImpl(
     private val logger = LoggerFactory.getLogger(ChainEndpointProxyImpl::class.java)
 
     private suspend fun requestTransferList(endpoint: String, request: TransfersRequest): DepositResult {
-        logger.info("request transfers: base=$endpoint")
         val response = webClient.post()
             .uri(URI.create(endpoint))
             .header("Content-Type", "application/json")
@@ -60,7 +59,18 @@ class ChainEndpointProxyImpl(
         return DepositResult(
             response?.latestBlock ?: request.startBlock ?: 0,
             response?.transfers
-                ?.map { Deposit(null, it.txHash, it.to, null, it.amount, chain, it.isTokenTransfer, it.token) }
+                ?.map {
+                    Deposit(
+                        null,
+                        it.txHash ?: "",
+                        it.to ?: "",
+                        null,
+                        it.amount,
+                        chain,
+                        it.isTokenTransfer,
+                        it.token
+                    )
+                }
                 ?: emptyList()
         )
     }

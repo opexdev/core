@@ -55,8 +55,8 @@ VALUES
 INSERT INTO
    chain_sync_schedules
 VALUES
-    ('bitcoin', CURRENT_DATE, 600),
-    ('ethereum', CURRENT_DATE, 90) ON CONFLICT DO NOTHING;
+    ('bitcoin', CURRENT_DATE, 600, 60),
+    ('ethereum', CURRENT_DATE, 90, 60) ON CONFLICT DO NOTHING;
 
 INSERT INTO
    wallet_sync_schedules
