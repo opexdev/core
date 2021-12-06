@@ -1,0 +1,10 @@
+spring:
+  kafka:
+    bootstrap-servers: ${KAFKA_IP_PORT}
+  r2dbc:
+    url: r2dbc:postgresql://${DB_IP_PORT}/opex_accountant
+    username: opex
+    password: hiopex
+  cloud:
+    consul:
+      host: ${CONSUL_HOST}

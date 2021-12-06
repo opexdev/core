@@ -1,0 +1,29 @@
+server.port: 8089
+logging:
+  level:
+    co.nilin: DEBUG
+    reactor.netty.http.client: DEBUG
+spring:
+  application:
+    name: opex-referral
+  main:
+    allow-bean-definition-overriding: false
+  kafka:
+    bootstrap-servers: 192.168.178.29:9092
+    consumer:
+      group-id: referral
+  r2dbc:
+    url: r2dbc:postgresql://localhost/opex_referral
+    username: opex
+    password: hiopex
+    initialization-mode: always
+  cloud:
+    bootstrap:
+      enabled: true
+    consul:
+      port: 8500
+      discovery:
+        #healthCheckPath: ${management.context-path}/health
+        instance-id: ${spring.application.name}:${server.port}
+        healthCheckInterval: 20s
+        prefer-ip-address: true
