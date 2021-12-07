@@ -100,6 +100,17 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  postgres-referral:
+    image: "postgres"
+    environment:
+      - POSTGRES_USER=opex
+      - POSTGRES_PASSWORD=hiopex
+      - POSTGRES_DB=opex_referral
+    volumes:
+      - $DATA/referral-data:/var/lib/postgresql/data/
+    deploy:
+      restart_policy:
+        condition: on-failure
   accountant:
     build:
       context: ../accountant/accountant-app
@@ -264,6 +275,19 @@ services:
   storage:
     build:
       context: ../storage/storage-app
+      dockerfile: Dockerfile
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
+      - SPRING_PROFILES_DEFAULT=docker
+      - CONSUL_HOST=consul
+    depends_on:
+      - consul
+    deploy:
+      restart_policy:
+        condition: on-failure
+  referral:
+    build:
+      context: ../referral/referral-app
       dockerfile: Dockerfile
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044

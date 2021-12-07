@@ -51,6 +51,11 @@ services:
       - 127.0.0.1:5638:5432
     networks:
       - opex-dev
+  postgres-referral:
+    ports:
+      - 127.0.0.1:5639:5432
+    networks:
+      - opex-dev
   accountant:
     ports:
       - 127.0.0.1:8289:8089
@@ -108,6 +113,12 @@ services:
     ports:
       - 127.0.0.1:8296:8096
       - 127.0.0.1:1153:1044
+    networks:
+      - opex-dev
+  referral:
+    ports:
+      - 127.0.0.1:8297:8097
+      - 127.0.0.1:1154:1044
     networks:
       - opex-dev
   nginx:
