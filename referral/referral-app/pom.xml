@@ -56,6 +56,10 @@
             <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
         </dependency>
         <dependency>
+            <groupId>co.nilin.opex.referral.ports.kafka.listener</groupId>
+            <artifactId>referral-eventlistener-kafka</artifactId>
+        </dependency>
+        <dependency>
             <groupId>co.nilin.opex.referral.ports.postgres</groupId>
             <artifactId>referral-persister-postgres</artifactId>
         </dependency>
