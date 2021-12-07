@@ -2,7 +2,7 @@ spring:
   kafka:
     bootstrap-servers: ${KAFKA_IP_PORT}
   r2dbc:
-    url: r2dbc:postgresql://${DB_IP_PORT}/opex_accountant
+    url: r2dbc:postgresql://${DB_IP_PORT}/opex_referral
     username: opex
     password: hiopex
   cloud:

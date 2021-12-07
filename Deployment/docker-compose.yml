@@ -293,8 +293,12 @@ services:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_DEFAULT=docker
       - CONSUL_HOST=consul
+      - DB_IP_PORT=postgres-referral
+      - KAFKA_IP_PORT=kafka:9092
     depends_on:
       - consul
+      - postgres-referral
+      - kafka
     deploy:
       restart_policy:
         condition: on-failure
