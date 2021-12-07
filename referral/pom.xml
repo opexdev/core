@@ -15,6 +15,7 @@
 
     <modules>
         <module>referral-app</module>
+        <module>referral-core</module>
         <module>referral-ports/referral-persister-postgres</module>
         <module>referral-ports/referral-eventlistener-kafka</module>
     </modules>
@@ -28,6 +29,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>co.nilin.opex.referral.core</groupId>
+                <artifactId>referral-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>co.nilin.opex.accountant.core</groupId>
                 <artifactId>accountant-core</artifactId>
