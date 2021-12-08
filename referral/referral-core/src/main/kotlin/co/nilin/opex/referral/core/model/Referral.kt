@@ -5,6 +5,8 @@ import java.math.BigDecimal
 data class Referral(
     var id: Long?,
     var code: String,
+    var referrerUuid: String,
+    var referentUuid: String,
     var referrerCommission: BigDecimal,
     var referentCommission: BigDecimal
 )
