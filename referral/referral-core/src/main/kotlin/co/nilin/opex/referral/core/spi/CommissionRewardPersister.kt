@@ -1,7 +1,7 @@
 package co.nilin.opex.referral.core.spi
 
-import co.nilin.opex.accountant.core.inout.RichTrade
+import co.nilin.opex.referral.core.model.CommissionReward
 
 interface CommissionRewardPersister {
-    suspend fun save(trade: RichTrade)
+    suspend fun save(commissionReward: CommissionReward)
 }
