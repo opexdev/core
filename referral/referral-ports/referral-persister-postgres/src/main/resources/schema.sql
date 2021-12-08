@@ -5,8 +5,9 @@ CREATE TABLE IF NOT EXISTS configs (
 
 CREATE TABLE IF NOT EXISTS referrals (
     id SERIAL PRIMARY KEY,
+    uuid VARCHAR(72),
     code VARCHAR(255) NOT NULL UNIQUE,
-    parent INTEGER NOT NULL REFERENCES referrals(id),
+    parent INTEGER REFERENCES referrals(id),
     referrer_commission DECIMAL NOT NULL,
     referent_commission DECIMAL NOT NULL
 )

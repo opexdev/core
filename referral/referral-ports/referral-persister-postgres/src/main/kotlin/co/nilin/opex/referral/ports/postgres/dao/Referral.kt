@@ -7,8 +7,9 @@ import java.math.BigDecimal
 @Table("referrals")
 data class Referral(
     @Id var id: Long?,
+    var uuid: String,
     var code: String,
-    var parent: Long,
+    var parent: Long?,
     var referrerCommission: BigDecimal,
     var referentCommission: BigDecimal
 )
