@@ -3,11 +3,11 @@ CREATE TABLE IF NOT EXISTS configs (
     referral_commission_reward DECIMAL NOT NULL
 )
 
-CREATE TABLE IF NOT EXISTS referrals (
+CREATE TABLE IF NOT EXISTS referral_codes (
     id SERIAL PRIMARY KEY,
     uuid VARCHAR(72),
     code VARCHAR(255) NOT NULL UNIQUE,
-    parent INTEGER REFERENCES referrals(id),
+    parent INTEGER REFERENCES referral_codes(id),
     referrer_commission DECIMAL NOT NULL,
     referent_commission DECIMAL NOT NULL
 )

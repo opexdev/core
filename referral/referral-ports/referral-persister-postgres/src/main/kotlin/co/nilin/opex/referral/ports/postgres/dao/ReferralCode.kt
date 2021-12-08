@@ -4,8 +4,8 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
 
-@Table("referrals")
-data class Referral(
+@Table("referral_codes")
+data class ReferralCode(
     @Id var id: Long?,
     var uuid: String,
     var code: String,
