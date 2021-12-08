@@ -1,3 +1,5 @@
 package co.nilin.opex.referral.core.model
 
-data class CommissionReward<T>(var referrerUid: String, var referentUid: String, var tradeId: Long, var data: T)
+import co.nilin.opex.accountant.core.inout.RichTrade
+
+data class CommissionReward(var referrerUuid: String, var referentUuid: String, var richTrade: RichTrade)
