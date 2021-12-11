@@ -1,12 +1,13 @@
 package co.nilin.opex.referral.app.controller
 
 import co.nilin.opex.referral.core.model.Referral
+import co.nilin.opex.referral.core.spi.ReferralCodeHandler
 import com.fasterxml.jackson.annotation.JsonInclude
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 
 @RestController
-class ReferralController {
+class ReferralController(private val referralCodeHandler: ReferralCodeHandler) {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     data class PostReferralBody(
         var referrerCommission: BigDecimal?,
