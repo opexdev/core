@@ -3,7 +3,7 @@ package co.nilin.opex.referral.app.config
 import co.nilin.opex.accountant.core.inout.RichTrade
 import co.nilin.opex.referral.core.api.CommissionRewardCalculator
 import co.nilin.opex.referral.core.spi.CommissionRewardPersister
-import co.nilin.opex.referral.ports.kafka.listener.consumer.TradeKafkaListener
+import co.nilin.opex.referral.ports.kafka.listener.consumer.RichTradeKafkaListener
 import co.nilin.opex.referral.ports.kafka.listener.spi.RichTradeListener
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -24,10 +24,10 @@ class AppConfig {
 
     @Autowired
     fun configureListeners(
-        tradeKafkaListener: TradeKafkaListener,
+        richTradeKafkaListener: RichTradeKafkaListener,
         appListener: ReferralListenerImpl
     ) {
-        tradeKafkaListener.addTradeListener(appListener)
+        richTradeKafkaListener.addTradeListener(appListener)
     }
 
     class ReferralListenerImpl(

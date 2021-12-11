@@ -20,7 +20,7 @@ class PostgresConfig(
         val dataReader = dataResource?.inputStream?.reader()
         val data = dataReader?.readText()?.trim() ?: ""
         dataReader?.close()
-        val initDb = db.sql { schema.plus(data) }
+        val initDb = db.sql { "$schema\n\n$data" }
         initDb // initialize the database
             .then()
             .subscribe() // execute

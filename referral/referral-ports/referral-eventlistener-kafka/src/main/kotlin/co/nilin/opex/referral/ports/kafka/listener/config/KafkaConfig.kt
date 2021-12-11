@@ -1,7 +1,9 @@
 package co.nilin.opex.referral.ports.kafka.listener.config
 
 import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
+import co.nilin.opex.referral.ports.kafka.listener.consumer.RichTradeKafkaListener
 import co.nilin.opex.referral.ports.kafka.listener.spi.RichTradeListener
+import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringDeserializer
@@ -12,8 +14,8 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.kafka.core.ConsumerFactory
-import org.springframework.kafka.core.DefaultKafkaConsumerFactory
+import org.springframework.context.support.GenericApplicationContext
+import org.springframework.kafka.core.*
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer
 import org.springframework.kafka.listener.ContainerProperties
 import org.springframework.kafka.support.serializer.JsonDeserializer
@@ -36,8 +38,6 @@ class KafkaConfig {
         props[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java
         props[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = JsonDeserializer::class.java
         props[JsonDeserializer.TRUSTED_PACKAGES] = "co.nilin.opex.*"
-        props[JsonDeserializer.TYPE_MAPPINGS] =
-            "order_request:co.nilin.opex.referral.ports.kafka.listener.inout.OrderSubmitRequest"
         return props
     }
 
@@ -55,16 +55,31 @@ class KafkaConfig {
         return props
     }
 
+    @Bean("referralProducerFactory")
+    fun producerFactory(@Qualifier("referralProducerConfig") producerConfigs: Map<String, Any?>): ProducerFactory<String?, CoreEvent> {
+        return DefaultKafkaProducerFactory(producerConfigs)
+    }
+
+    @Bean("referralKafkaTemplate")
+    fun kafkaTemplate(@Qualifier("referralProducerFactory") producerFactory: ProducerFactory<String?, CoreEvent>): KafkaTemplate<String?, CoreEvent> {
+        return KafkaTemplate(producerFactory)
+    }
+
     @Autowired
     @ConditionalOnBean(RichTradeListener::class)
     fun configureTradeListener(
-        tradeListener: RichTradeListener,
+        richTradeListener: RichTradeKafkaListener,
         @Qualifier("referralConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>
     ) {
         val containerProps = ContainerProperties(Pattern.compile("richTrade"))
-        containerProps.messageListener = tradeListener
+        containerProps.messageListener = richTradeListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
         container.beanName = "ReferralRichTradeKafkaListenerContainer"
         container.start()
+    }
+
+    @Autowired
+    fun createTopics(applicationContext: GenericApplicationContext) {
+        applicationContext.registerBean("topic_richTrade", NewTopic::class.java, "richTrade", 10, 1)
     }
 }

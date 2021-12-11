@@ -7,7 +7,7 @@ import org.springframework.kafka.listener.MessageListener
 import org.springframework.stereotype.Component
 
 @Component
-class TradeKafkaListener : MessageListener<String, RichTrade> {
+class RichTradeKafkaListener : MessageListener<String, RichTrade> {
     val tradeListeners = arrayListOf<RichTradeListener>()
 
     override fun onMessage(data: ConsumerRecord<String, RichTrade>) {
