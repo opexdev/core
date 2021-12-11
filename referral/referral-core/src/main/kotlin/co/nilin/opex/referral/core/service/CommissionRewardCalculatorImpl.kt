@@ -4,7 +4,9 @@ import co.nilin.opex.accountant.core.inout.RichTrade
 import co.nilin.opex.referral.core.api.CommissionRewardCalculator
 import co.nilin.opex.referral.core.model.CommissionReward
 import co.nilin.opex.referral.core.spi.ReferralCodeHandler
+import org.springframework.stereotype.Service
 
+@Service
 class CommissionRewardCalculatorImpl(
     private val referralCodeHandler: ReferralCodeHandler
 ) : CommissionRewardCalculator {
