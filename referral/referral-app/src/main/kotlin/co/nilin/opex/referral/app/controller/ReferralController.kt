@@ -14,33 +14,33 @@ class ReferralController(private val referralCodeHandler: ReferralCodeHandler) {
         var referentCommission: BigDecimal?
     )
 
-    @PostMapping("referrals")
+    @PostMapping("/")
     suspend fun generateReferralCode(@RequestBody body: PostReferralBody): String {
-        TODO("Not implemented")
+        return referralCodeHandler.generateReferralCode("", body.referrerCommission!!, body.referentCommission!!).code
     }
 
-    @PatchMapping("referrals/{code}")
-    suspend fun updateReferral(@RequestBody body: PostReferralBody) {
-        TODO("Not implemented")
+    @PatchMapping("/{code}")
+    suspend fun updateReferral(@RequestParam code: String, @RequestBody body: PostReferralBody) {
+        referralCodeHandler.updateCommissions(code, body.referrerCommission, body.referentCommission)
     }
 
-    @PutMapping("referrals/{code}/assign/{uuid}")
+    @PutMapping("/{code}/assign/{uuid}")
     suspend fun assignReferrer(@RequestParam code: String, @RequestParam uuid: String) {
-        TODO("Not implemented")
+        referralCodeHandler.assign(code, uuid)
     }
 
-    @GetMapping("referrals/{code}")
-    suspend fun getReferralCode(@RequestParam code: String): Referral {
-        TODO("Not implemented")
+    @GetMapping("/{code}")
+    suspend fun getReferralCode(@RequestParam code: String): Referral? {
+        return referralCodeHandler.findReferralByCode(code)
     }
 
-    @GetMapping("referrals")
+    @GetMapping("/")
     suspend fun getAllReferralCodes(): List<Referral> {
-        TODO("Not implemented")
+        return referralCodeHandler.findAllReferrals()
     }
 
-    @DeleteMapping("referrals/{code}")
+    @DeleteMapping("/{code}")
     suspend fun deleteReferralCode(@RequestParam code: String) {
-        TODO("Not implemented")
+        referralCodeHandler.deleteReferralCode(code)
     }
 }

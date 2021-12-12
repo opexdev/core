@@ -15,6 +15,10 @@ class ReferralCodeHandlerImpl : ReferralCodeHandler {
         TODO("Not yet implemented")
     }
 
+    override fun findReferralByCode(code: String): Referral? {
+        TODO("Not yet implemented")
+    }
+
     override fun generateReferralCode(
         uuid: String,
         referrerCommission: BigDecimal,
@@ -23,11 +27,24 @@ class ReferralCodeHandlerImpl : ReferralCodeHandler {
         TODO("Not yet implemented")
     }
 
+    override fun assign(code: String, referentUuid: String): Referral {
+        TODO("Not yet implemented")
+    }
+
     override fun updateCommissions(
         code: String,
-        referrerCommission: BigDecimal,
-        referentCommission: BigDecimal
+        referrerCommission: BigDecimal?,
+        referentCommission: BigDecimal?
     ): Referral {
         TODO("Not yet implemented")
     }
+
+    override fun deleteReferralCode(code: String) {
+        TODO("Not yet implemented")
+    }
+
+    override fun deleteReferralCodeByUuid(uuid: String) {
+        TODO("Not yet implemented")
+    }
+
 }
