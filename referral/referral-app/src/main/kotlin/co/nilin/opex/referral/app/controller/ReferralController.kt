@@ -10,17 +10,23 @@ import java.math.BigDecimal
 class ReferralController(private val referralCodeHandler: ReferralCodeHandler) {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     data class PostReferralBody(
+        var referrerCommission: BigDecimal,
+        var referentCommission: BigDecimal
+    )
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    data class PatchReferralBody(
         var referrerCommission: BigDecimal?,
         var referentCommission: BigDecimal?
     )
 
     @PostMapping("/")
     suspend fun generateReferralCode(@RequestBody body: PostReferralBody): String {
-        return referralCodeHandler.generateReferralCode("", body.referrerCommission!!, body.referentCommission!!).code
+        return referralCodeHandler.generateReferralCode("", body.referrerCommission, body.referentCommission).code
     }
 
     @PatchMapping("/{code}")
-    suspend fun updateReferral(@RequestParam code: String, @RequestBody body: PostReferralBody) {
+    suspend fun updateReferral(@RequestParam code: String, @RequestBody body: PatchReferralBody) {
         referralCodeHandler.updateCommissions(code, body.referrerCommission, body.referentCommission)
     }
 

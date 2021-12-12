@@ -4,12 +4,12 @@ import co.nilin.opex.referral.core.model.Referral
 import java.math.BigDecimal
 
 interface ReferralCodeHandler {
-    fun findAllReferrals(): List<Referral>
-    fun findReferralByUuid(uuid: String): Referral?
-    fun findReferralByCode(code: String): Referral?
-    fun generateReferralCode(uuid: String, referrerCommission: BigDecimal, referentCommission: BigDecimal): Referral
-    fun assign(code: String, referentUuid: String): Referral
-    fun updateCommissions(code: String, referrerCommission: BigDecimal?, referentCommission: BigDecimal?): Referral
-    fun deleteReferralCode(code: String)
-    fun deleteReferralCodeByUuid(uuid: String)
+    suspend fun generateReferralCode(uuid: String, referrerCommission: BigDecimal, referentCommission: BigDecimal)
+    suspend fun findAllReferrals(): List<Referral>
+    suspend fun findReferralByUuid(uuid: String): Referral?
+    suspend fun findReferralByCode(code: String): Referral?
+    suspend fun assign(code: String, referentUuid: String): Referral
+    suspend fun updateCommissions(code: String, referrerCommission: BigDecimal?, referentCommission: BigDecimal?)
+    suspend fun deleteReferralCode(code: String)
+    suspend fun deleteReferralCodeByUuid(uuid: String)
 }

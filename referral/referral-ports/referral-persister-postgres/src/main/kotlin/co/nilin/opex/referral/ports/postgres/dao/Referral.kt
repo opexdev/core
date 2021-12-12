@@ -2,13 +2,11 @@ package co.nilin.opex.referral.ports.postgres.dao
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
-import java.math.BigDecimal
 
-@Table("referral_codes")
-data class ReferralCode(
+@Table("referrals")
+data class Referral(
     @Id var id: Long?,
     var uuid: String,
     var code: String,
-    var referrerCommission: BigDecimal,
-    var referentCommission: BigDecimal
+    var parent: Long
 )
