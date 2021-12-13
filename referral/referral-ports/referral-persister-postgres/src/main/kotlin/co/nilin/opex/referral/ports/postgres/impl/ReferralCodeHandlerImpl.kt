@@ -39,6 +39,7 @@ class ReferralCodeHandlerImpl(
         referrerCommission: BigDecimal,
         referentCommission: BigDecimal
     ): String {
+        if (referrerCommission + referentCommission != BigDecimal.ONE) throw IllegalArgumentException("Sum of commissions must be 1")
         val lastId = referralCodeRepository.findMaxId().awaitSingleOrDefault(0)
         val codeInteger = BigInteger.TEN.pow(7).toLong() + lastId
         if (codeInteger >= BigInteger.TEN.pow(8).toLong()) throw Exception("No referral code available")
@@ -67,9 +68,10 @@ class ReferralCodeHandlerImpl(
 
     override suspend fun updateCommissions(
         code: String,
-        referrerCommission: BigDecimal?,
-        referentCommission: BigDecimal?
+        referrerCommission: BigDecimal,
+        referentCommission: BigDecimal
     ) {
+        if (referrerCommission + referentCommission != BigDecimal.ONE) throw IllegalArgumentException("Sum of commissions must be 1")
         referralCodeRepository.updateCommissions(code, referrerCommission, referentCommission)
     }
 

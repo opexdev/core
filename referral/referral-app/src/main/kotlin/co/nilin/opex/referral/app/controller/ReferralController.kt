@@ -14,19 +14,13 @@ class ReferralController(private val referralCodeHandler: ReferralCodeHandler) {
         var referentCommission: BigDecimal
     )
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    data class PatchReferralBody(
-        var referrerCommission: BigDecimal?,
-        var referentCommission: BigDecimal?
-    )
-
     @PostMapping("/referrals")
     suspend fun generateReferralCode(@RequestBody body: PostReferralBody): String {
         return referralCodeHandler.generateReferralCode("", body.referrerCommission, body.referentCommission)
     }
 
     @PatchMapping("/referrals/{code}")
-    suspend fun updateReferral(@PathVariable code: String, @RequestBody body: PatchReferralBody) {
+    suspend fun updateReferralCodeByCode(@PathVariable code: String, @RequestBody body: PostReferralBody) {
         referralCodeHandler.updateCommissions(code, body.referrerCommission, body.referentCommission)
     }
 
@@ -36,7 +30,7 @@ class ReferralController(private val referralCodeHandler: ReferralCodeHandler) {
     }
 
     @GetMapping("/referrals/{code}")
-    suspend fun getReferralCode(@PathVariable code: String): Referral? {
+    suspend fun getReferralCodeByCode(@PathVariable code: String): Referral? {
         return referralCodeHandler.findReferralByCode(code)
     }
 
