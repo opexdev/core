@@ -2,6 +2,7 @@ package co.nilin.opex.referral.ports.postgres.impl
 
 import co.nilin.opex.referral.core.model.Referral
 import co.nilin.opex.referral.core.spi.ReferralCodeHandler
+import co.nilin.opex.referral.ports.postgres.dao.Referent
 import co.nilin.opex.referral.ports.postgres.dao.ReferralCode
 import co.nilin.opex.referral.ports.postgres.repository.ReferralCodeRepository
 import co.nilin.opex.referral.ports.postgres.repository.ReferralRepository
@@ -44,8 +45,8 @@ class ReferralCodeHandlerImpl(
     override suspend fun assign(code: String, referentUuid: String): Referral {
         val referralCode = referralCodeRepository.findByCode(code).awaitSingleOrNull()
         if (referralCode != null) {
-            val referral = co.nilin.opex.referral.ports.postgres.dao.Referral(null, code, referentUuid)
-            referralRepository.save(referral)
+            val referent = Referent(null, referentUuid, referralCode.id!!)
+            referralRepository.save(referent)
             return Referral(
                 code,
                 referralCode.uuid,
@@ -53,8 +54,9 @@ class ReferralCodeHandlerImpl(
                 referralCode.referrerCommission,
                 referralCode.referentCommission
             )
+        } else {
+            throw Exception("Referral code doesn't exist")
         }
-        throw Exception("Referral code does exist")
     }
 
     override suspend fun updateCommissions(
