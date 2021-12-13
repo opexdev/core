@@ -45,7 +45,7 @@ class ReferralCodeHandlerImpl(
         if (codeInteger >= BigInteger.TEN.pow(8).toLong()) throw Exception("No referral code available")
         val code = codeInteger.toString()
         val referralCode = ReferralCode(null, code, uuid, referrerCommission, referentCommission)
-        referralCodeRepository.save(referralCode)
+        referralCodeRepository.save(referralCode).awaitSingleOrNull()
         return code
     }
 
@@ -53,7 +53,7 @@ class ReferralCodeHandlerImpl(
         val referralCode = referralCodeRepository.findByCode(code).awaitSingleOrNull()
         if (referralCode != null) {
             val referent = Referent(null, referentUuid, referralCode.id!!)
-            referralRepository.save(referent)
+            referralRepository.save(referent).awaitSingleOrNull()
             return Referral(
                 code,
                 referralCode.uuid,
@@ -72,14 +72,14 @@ class ReferralCodeHandlerImpl(
         referentCommission: BigDecimal
     ) {
         if (referrerCommission + referentCommission != BigDecimal.ONE) throw IllegalArgumentException("Sum of commissions must be 1")
-        referralCodeRepository.updateCommissions(code, referrerCommission, referentCommission)
+        referralCodeRepository.updateCommissions(code, referrerCommission, referentCommission).awaitSingleOrNull()
     }
 
     override suspend fun deleteReferralCodeByCode(code: String) {
-        referralCodeRepository.deleteByCode(code)
+        referralCodeRepository.deleteByCode(code).awaitSingleOrNull()
     }
 
     override suspend fun deleteReferralCodeByUuid(uuid: String) {
-        referralCodeRepository.deleteByUuid(uuid)
+        referralCodeRepository.deleteByUuid(uuid).awaitSingleOrNull()
     }
 }
