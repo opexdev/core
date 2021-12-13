@@ -1,6 +1,6 @@
 package co.nilin.opex.referral.app.controller
 
-import co.nilin.opex.referral.core.model.Referral
+import co.nilin.opex.referral.core.model.ReferralCode
 import co.nilin.opex.referral.core.spi.ReferralCodeHandler
 import com.fasterxml.jackson.annotation.JsonInclude
 import org.springframework.web.bind.annotation.*
@@ -30,12 +30,12 @@ class ReferralController(private val referralCodeHandler: ReferralCodeHandler) {
     }
 
     @GetMapping("/codes/{code}")
-    suspend fun getReferralCodeByCode(@PathVariable code: String): Referral? {
+    suspend fun getReferralCodeByCode(@PathVariable code: String): ReferralCode? {
         return referralCodeHandler.findReferralCodeByCode(code)
     }
 
     @GetMapping("/codes")
-    suspend fun getAllReferralCodes(): List<Referral> {
+    suspend fun getAllReferralCodes(): List<ReferralCode> {
         return referralCodeHandler.findAllReferralCodes()
     }
 
