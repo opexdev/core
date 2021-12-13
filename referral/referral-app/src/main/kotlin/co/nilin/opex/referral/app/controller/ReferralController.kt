@@ -22,7 +22,7 @@ class ReferralController(private val referralCodeHandler: ReferralCodeHandler) {
 
     @PostMapping("/")
     suspend fun generateReferralCode(@RequestBody body: PostReferralBody): String {
-        return referralCodeHandler.generateReferralCode("", body.referrerCommission, body.referentCommission).code
+        return referralCodeHandler.generateReferralCode("", body.referrerCommission, body.referentCommission)
     }
 
     @PatchMapping("/{code}")

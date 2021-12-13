@@ -4,7 +4,7 @@ import co.nilin.opex.referral.core.model.Referral
 import java.math.BigDecimal
 
 interface ReferralCodeHandler {
-    suspend fun generateReferralCode(uuid: String, referrerCommission: BigDecimal, referentCommission: BigDecimal)
+    suspend fun generateReferralCode(uuid: String, referrerCommission: BigDecimal, referentCommission: BigDecimal): String
     suspend fun findAllReferrals(): List<Referral>
     suspend fun findReferralByUuid(uuid: String): Referral?
     suspend fun findReferralByCode(code: String): Referral?

@@ -15,4 +15,7 @@ interface ReferralCodeRepository : ReactiveCrudRepository<ReferralCode, Long> {
 
     fun deleteByUuid(uuid: String)
     fun deleteByCode(code: String)
+
+    @Query("SELECT currval(pg_get_serial_sequence('referral_codes', 'id'))")
+    fun findMaxId(): Mono<Long>
 }

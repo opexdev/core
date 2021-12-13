@@ -7,9 +7,11 @@ import co.nilin.opex.referral.ports.postgres.dao.ReferralCode
 import co.nilin.opex.referral.ports.postgres.repository.ReferralCodeRepository
 import co.nilin.opex.referral.ports.postgres.repository.ReferralRepository
 import kotlinx.coroutines.reactive.awaitSingle
+import kotlinx.coroutines.reactive.awaitSingleOrDefault
 import kotlinx.coroutines.reactive.awaitSingleOrNull
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
+import java.math.BigInteger
 
 @Service
 class ReferralCodeHandlerImpl(
@@ -36,10 +38,14 @@ class ReferralCodeHandlerImpl(
         uuid: String,
         referrerCommission: BigDecimal,
         referentCommission: BigDecimal
-    ) {
-        val code = ""
+    ): String {
+        val lastId = referralCodeRepository.findMaxId().awaitSingleOrDefault(0)
+        val codeInteger = BigInteger.TEN.pow(7).toLong() + lastId
+        if (codeInteger >= BigInteger.TEN.pow(8).toLong()) throw Exception("No referral code available")
+        val code = codeInteger.toString()
         val referralCode = ReferralCode(null, code, uuid, referrerCommission, referentCommission)
         referralCodeRepository.save(referralCode)
+        return code
     }
 
     override suspend fun assign(code: String, referentUuid: String): Referral {
