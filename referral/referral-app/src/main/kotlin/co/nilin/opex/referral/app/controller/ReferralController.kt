@@ -26,17 +26,17 @@ class ReferralController(private val referralCodeHandler: ReferralCodeHandler) {
     }
 
     @PatchMapping("/referrals/{code}")
-    suspend fun updateReferral(@RequestParam code: String, @RequestBody body: PatchReferralBody) {
+    suspend fun updateReferral(@PathVariable code: String, @RequestBody body: PatchReferralBody) {
         referralCodeHandler.updateCommissions(code, body.referrerCommission, body.referentCommission)
     }
 
     @PutMapping("/referrals/{code}/assign/{uuid}")
-    suspend fun assignReferrer(@RequestParam code: String, @RequestParam uuid: String) {
+    suspend fun assignReferrer(@PathVariable code: String, @PathVariable uuid: String) {
         referralCodeHandler.assign(code, uuid)
     }
 
     @GetMapping("/referrals/{code}")
-    suspend fun getReferralCode(@RequestParam code: String): Referral? {
+    suspend fun getReferralCode(@PathVariable code: String): Referral? {
         return referralCodeHandler.findReferralByCode(code)
     }
 
@@ -46,7 +46,7 @@ class ReferralController(private val referralCodeHandler: ReferralCodeHandler) {
     }
 
     @DeleteMapping("/referrals/{code}")
-    suspend fun deleteReferralCode(@RequestParam code: String) {
+    suspend fun deleteReferralCode(@PathVariable code: String) {
         referralCodeHandler.deleteReferralCode(code)
     }
 }
