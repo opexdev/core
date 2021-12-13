@@ -20,32 +20,32 @@ class ReferralController(private val referralCodeHandler: ReferralCodeHandler) {
         var referentCommission: BigDecimal?
     )
 
-    @PostMapping("/")
+    @PostMapping("/referrals")
     suspend fun generateReferralCode(@RequestBody body: PostReferralBody): String {
         return referralCodeHandler.generateReferralCode("", body.referrerCommission, body.referentCommission)
     }
 
-    @PatchMapping("/{code}")
+    @PatchMapping("/referrals/{code}")
     suspend fun updateReferral(@RequestParam code: String, @RequestBody body: PatchReferralBody) {
         referralCodeHandler.updateCommissions(code, body.referrerCommission, body.referentCommission)
     }
 
-    @PutMapping("/{code}/assign/{uuid}")
+    @PutMapping("/referrals/{code}/assign/{uuid}")
     suspend fun assignReferrer(@RequestParam code: String, @RequestParam uuid: String) {
         referralCodeHandler.assign(code, uuid)
     }
 
-    @GetMapping("/{code}")
+    @GetMapping("/referrals/{code}")
     suspend fun getReferralCode(@RequestParam code: String): Referral? {
         return referralCodeHandler.findReferralByCode(code)
     }
 
-    @GetMapping("/")
+    @GetMapping("/referrals")
     suspend fun getAllReferralCodes(): List<Referral> {
         return referralCodeHandler.findAllReferrals()
     }
 
-    @DeleteMapping("/{code}")
+    @DeleteMapping("/referrals/{code}")
     suspend fun deleteReferralCode(@RequestParam code: String) {
         referralCodeHandler.deleteReferralCode(code)
     }
