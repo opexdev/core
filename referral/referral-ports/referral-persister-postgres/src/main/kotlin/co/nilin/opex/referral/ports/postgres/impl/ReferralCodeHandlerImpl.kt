@@ -18,7 +18,7 @@ class ReferralCodeHandlerImpl(
     private val referralCodeRepository: ReferralCodeRepository,
     private val referralRepository: ReferralRepository
 ) : ReferralCodeHandler {
-    override suspend fun findAllReferrals(): List<Referral> {
+    override suspend fun findAllReferralCodes(): List<Referral> {
         return referralCodeRepository.findAll().map {
             Referral(it.code, "", it.uuid, it.referrerCommission, it.referentCommission)
         }.collectList().awaitSingle()
@@ -29,7 +29,7 @@ class ReferralCodeHandlerImpl(
             .map { Referral(it.code, "", it.uuid, it.referrerCommission, it.referentCommission) }.awaitSingle()
     }
 
-    override suspend fun findReferralByCode(code: String): Referral? {
+    override suspend fun findReferralCodeByCode(code: String): Referral? {
         return referralCodeRepository.findByCode(code)
             .map { Referral(it.code, "", it.uuid, it.referrerCommission, it.referentCommission) }.awaitSingle()
     }
@@ -75,7 +75,7 @@ class ReferralCodeHandlerImpl(
         referralCodeRepository.updateCommissions(code, referrerCommission, referentCommission)
     }
 
-    override suspend fun deleteReferralCode(code: String) {
+    override suspend fun deleteReferralCodeByCode(code: String) {
         referralCodeRepository.deleteByCode(code)
     }
 
