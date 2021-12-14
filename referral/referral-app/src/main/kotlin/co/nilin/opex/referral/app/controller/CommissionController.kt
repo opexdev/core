@@ -8,10 +8,17 @@ import org.springframework.web.bind.annotation.*
 class CommissionController(private val commissionRewardHandler: CommissionRewardHandler) {
     @GetMapping("/commissions")
     suspend fun getCommissionsByReferrerAndCode(
-        @RequestParam uuid: String,
+        @RequestParam referrerUuid: String,
         @RequestParam code: String?
     ): List<CommissionReward> {
-        return commissionRewardHandler.findCommissionsByReferrer(uuid, code)
+        return commissionRewardHandler.findCommissions(referrerUuid = referrerUuid, referralCode = code)
+    }
+
+    @GetMapping("/commissions")
+    suspend fun getCommissionsByReferent(
+        @RequestParam referentUuid: String
+    ): List<CommissionReward> {
+        return commissionRewardHandler.findCommissions(referentUuid = referentUuid)
     }
 
     @DeleteMapping("/commissions")
@@ -20,10 +27,7 @@ class CommissionController(private val commissionRewardHandler: CommissionReward
         @RequestParam referrerUuid: String?,
         @RequestParam referentUuid: String?
     ) {
-        if (code != null) commissionRewardHandler.deleteCommissionsByCode(code)
-        else if (referrerUuid != null) commissionRewardHandler.deleteCommissionsByReferrer(referrerUuid)
-        else if (referentUuid != null) commissionRewardHandler.deleteCommissionsByReferent(referentUuid)
-        else commissionRewardHandler.deleteAllCommissions()
+        commissionRewardHandler.deleteCommissions(code, referrerUuid, referentUuid)
     }
 
     @DeleteMapping("/commissions/{id}")

@@ -10,8 +10,16 @@ import org.springframework.stereotype.Service
 class CommissionRewardHandlerImpl(
     private val commissionRewardRepository: CommissionRewardRepository
 ) : CommissionRewardHandler {
-    override suspend fun findAllCommissions(): List<CommissionReward> {
-        return commissionRewardRepository.findAll().map {
+    override suspend fun findCommissions(
+        referralCode: String?,
+        referrerUuid: String?,
+        referentUuid: String?
+    ): List<CommissionReward> {
+        return commissionRewardRepository.findByReferralCodeAndReferrerUuidAndReferentUuid(
+            referralCode,
+            referrerUuid,
+            referentUuid
+        ).map {
             CommissionReward(
                 it.referrerUuid,
                 it.referentUuid,
@@ -23,46 +31,8 @@ class CommissionRewardHandlerImpl(
         }.collectList().awaitSingle()
     }
 
-    override suspend fun findCommissionsByReferrer(uuid: String, code: String?): List<CommissionReward> {
-        return commissionRewardRepository.findByReferrer(uuid).filter { code == null || it.referralCode == code }.map {
-            CommissionReward(
-                it.referrerUuid,
-                it.referentUuid,
-                it.referralCode,
-                null,
-                it.referrerShare,
-                it.referentShare
-            )
-        }.collectList().awaitSingle()
-    }
-
-    override suspend fun findCommissionsByReferent(uuid: String): List<CommissionReward> {
-        return commissionRewardRepository.findByReferent(uuid).map {
-            CommissionReward(
-                it.referrerUuid,
-                it.referentUuid,
-                it.referralCode,
-                null,
-                it.referrerShare,
-                it.referentShare
-            )
-        }.collectList().awaitSingle()
-    }
-
-    override suspend fun deleteCommissionsByReferrer(uuid: String) {
-        commissionRewardRepository.deleteByReferrerUuid(uuid)
-    }
-
-    override suspend fun deleteCommissionsByReferent(uuid: String) {
-        commissionRewardRepository.deleteByReferentUuid(uuid)
-    }
-
-    override suspend fun deleteCommissionsByCode(code: String) {
-        commissionRewardRepository.deleteByReferralCode(code)
-    }
-
-    override suspend fun deleteAllCommissions() {
-        commissionRewardRepository.deleteAll()
+    override suspend fun deleteCommissions(referralCode: String?, referrerUuid: String?, referentUuid: String?) {
+        commissionRewardRepository.deleteByReferralCodeAndReferrerUuidAndReferentUuid(referralCode, referrerUuid, referentUuid)
     }
 
     override suspend fun deleteCommissionById(id: Long) {

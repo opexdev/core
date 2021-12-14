@@ -6,10 +6,15 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 interface CommissionRewardRepository : ReactiveCrudRepository<CommissionReward, Long> {
-    fun findByReferrer(referrerUuid: String): Flux<CommissionReward>
-    fun findByReferent(referentUuid: String): Flux<CommissionReward>
-    fun findByReferralCode(referralCode: String): Flux<CommissionReward>
-    fun deleteByReferrerUuid(referrerUuid: String): Mono<Void>
-    fun deleteByReferentUuid(referentUuid: String): Mono<Void>
-    fun deleteByReferralCode(referentCode: String): Mono<Void>
+    fun findByReferralCodeAndReferrerUuidAndReferentUuid(
+        code: String?,
+        referrerUuid: String?,
+        referentUuid: String?
+    ): Flux<CommissionReward>
+
+    fun deleteByReferralCodeAndReferrerUuidAndReferentUuid(
+        code: String?,
+        referrerUuid: String?,
+        referentUuid: String?
+    ): Mono<Void>
 }
