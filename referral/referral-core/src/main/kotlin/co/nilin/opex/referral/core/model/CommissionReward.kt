@@ -7,7 +7,7 @@ data class CommissionReward(
     var referrerUuid: String,
     var referentUuid: String,
     var referralCode: String,
-    var richTrade: RichTrade,
+    var richTrade: RichTrade?,
     var referrerShare: BigDecimal,
     var referentShare: BigDecimal
 )
