@@ -7,5 +7,5 @@ import org.springframework.data.relational.core.mapping.Table
 data class Referent(
     @Id var id: Long?,
     var uuid: String,
-    var referral_code_id: Long
+    var referralCodeId: Long
 )
