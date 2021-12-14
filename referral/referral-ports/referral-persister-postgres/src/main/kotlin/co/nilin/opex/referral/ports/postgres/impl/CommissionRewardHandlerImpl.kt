@@ -4,6 +4,7 @@ import co.nilin.opex.referral.core.model.CommissionReward
 import co.nilin.opex.referral.core.spi.CommissionRewardHandler
 import co.nilin.opex.referral.ports.postgres.repository.CommissionRewardRepository
 import kotlinx.coroutines.reactive.awaitSingle
+import kotlinx.coroutines.reactive.awaitSingleOrNull
 import org.springframework.stereotype.Service
 
 @Service
@@ -24,7 +25,7 @@ class CommissionRewardHandlerImpl(
                 it.referrerUuid,
                 it.referentUuid,
                 it.referralCode,
-                null,
+                Pair(it.richTradeId, null),
                 it.referrerShare,
                 it.referentShare
             )
@@ -32,10 +33,14 @@ class CommissionRewardHandlerImpl(
     }
 
     override suspend fun deleteCommissions(referralCode: String?, referrerUuid: String?, referentUuid: String?) {
-        commissionRewardRepository.deleteByReferralCodeAndReferrerUuidAndReferentUuid(referralCode, referrerUuid, referentUuid)
+        commissionRewardRepository.deleteByReferralCodeAndReferrerUuidAndReferentUuid(
+            referralCode,
+            referrerUuid,
+            referentUuid
+        ).awaitSingleOrNull()
     }
 
     override suspend fun deleteCommissionById(id: Long) {
-        commissionRewardRepository.deleteById(id)
+        commissionRewardRepository.deleteById(id).awaitSingleOrNull()
     }
 }
