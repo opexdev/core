@@ -17,3 +17,13 @@ CREATE TABLE IF NOT EXISTS referents (
     referral_code_id INTEGER REFERENCES referral_codes(id),
     UNIQUE(uuid, referral_code_id)
 );
+
+CREATE TABLE IF NOT EXISTS commission_rewards (
+    id SERIAL PRIMARY KEY,
+    referrerUuid VARCHAR(72) NOT NULL,
+    referentUuid VARCHAR(72) NOT NULL,
+    referralCode VARCHAR(72) NOT NULL REFERENCES referral_codes(code),
+    richTradeId INTEGER NOT NULL,
+    referrerShare DECIMAL NOT NULL,
+    referentShare DECIMAL NOT NULL
+);
