@@ -31,16 +31,16 @@ class ReferralController(private val referralCodeHandler: ReferralCodeHandler) {
 
     @GetMapping("/codes/{code}")
     suspend fun getReferralCodeByCode(@PathVariable code: String): ReferralCode? {
-        return referralCodeHandler.findReferralCodeByCode(code)
+        return referralCodeHandler.findByCode(code)
     }
 
     @GetMapping("/codes")
     suspend fun getAllReferralCodes(): List<ReferralCode> {
-        return referralCodeHandler.findAllReferralCodes()
+        return referralCodeHandler.findAll()
     }
 
     @DeleteMapping("/codes/{code}")
     suspend fun deleteReferralCode(@PathVariable code: String) {
-        referralCodeHandler.deleteReferralCodeByCode(code)
+        referralCodeHandler.deleteByCode(code)
     }
 }
