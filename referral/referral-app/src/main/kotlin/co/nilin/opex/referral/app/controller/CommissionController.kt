@@ -6,10 +6,10 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 class CommissionController(private val commissionRewardHandler: CommissionRewardHandler) {
-    @GetMapping("/commissions")
+    @GetMapping("/commissions/{code}")
     suspend fun getCommissionsByReferrerAndCode(
-        @RequestParam referrerUuid: String,
-        @RequestParam code: String?
+        @PathVariable code: String?,
+        @RequestParam referrerUuid: String
     ): List<CommissionReward> {
         return commissionRewardHandler.findCommissions(referrerUuid = referrerUuid, referralCode = code)
     }
