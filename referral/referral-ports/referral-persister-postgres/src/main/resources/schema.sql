@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS referral_codes (
     referent_commission DECIMAL NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS referents (
+CREATE TABLE IF NOT EXISTS references (
     id SERIAL PRIMARY KEY,
     uuid VARCHAR(72) NOT NULL UNIQUE,
     referral_code_id INTEGER REFERENCES referral_codes(id),

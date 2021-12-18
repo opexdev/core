@@ -1,10 +1,10 @@
 package co.nilin.opex.referral.ports.postgres.impl
 
 import co.nilin.opex.referral.core.spi.ReferralCodeHandler
-import co.nilin.opex.referral.ports.postgres.dao.Referent
+import co.nilin.opex.referral.ports.postgres.dao.Reference
 import co.nilin.opex.referral.ports.postgres.dao.ReferralCode
 import co.nilin.opex.referral.ports.postgres.repository.ReferralCodeRepository
-import co.nilin.opex.referral.ports.postgres.repository.ReferralRepository
+import co.nilin.opex.referral.ports.postgres.repository.ReferenceRepository
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactive.awaitSingleOrDefault
 import kotlinx.coroutines.reactive.awaitSingleOrNull
@@ -15,7 +15,7 @@ import java.math.BigInteger
 @Service
 class ReferralCodeHandlerImpl(
     private val referralCodeRepository: ReferralCodeRepository,
-    private val referralRepository: ReferralRepository
+    private val referenceRepository: ReferenceRepository
 ) : ReferralCodeHandler {
     override suspend fun generateReferralCode(
         uuid: String,
@@ -37,7 +37,7 @@ class ReferralCodeHandlerImpl(
         return code
     }
 
-    override suspend fun findAllReferralCodes(): List<co.nilin.opex.referral.core.model.ReferralCode> {
+    override suspend fun findAll(): List<co.nilin.opex.referral.core.model.ReferralCode> {
         return referralCodeRepository.findAll().map {
             co.nilin.opex.referral.core.model.ReferralCode(
                 it.uuid,
@@ -48,8 +48,8 @@ class ReferralCodeHandlerImpl(
         }.collectList().awaitSingle()
     }
 
-    override suspend fun findReferralCodeByReferentUuid(uuid: String): co.nilin.opex.referral.core.model.ReferralCode? {
-        val referral = referralRepository.findByUuid(uuid).awaitSingleOrNull() ?: return null
+    override suspend fun findByReferentUuid(uuid: String): co.nilin.opex.referral.core.model.ReferralCode? {
+        val referral = referenceRepository.findByUuid(uuid).awaitSingleOrNull() ?: return null
         return referralCodeRepository.findById(referral.referralCodeId)
             .map {
                 co.nilin.opex.referral.core.model.ReferralCode(
@@ -61,7 +61,7 @@ class ReferralCodeHandlerImpl(
             }.awaitSingleOrNull()
     }
 
-    override suspend fun findReferralCodeByCode(code: String): co.nilin.opex.referral.core.model.ReferralCode? {
+    override suspend fun findByCode(code: String): co.nilin.opex.referral.core.model.ReferralCode? {
         return referralCodeRepository.findByCode(code)
             .map {
                 co.nilin.opex.referral.core.model.ReferralCode(
@@ -76,8 +76,8 @@ class ReferralCodeHandlerImpl(
     override suspend fun assign(code: String, referentUuid: String) {
         val referralCode = referralCodeRepository.findByCode(code).awaitSingleOrNull()
             ?: throw Exception("Referral code doesn't exist")
-        val referent = Referent(null, referentUuid, referralCode.id!!)
-        referralRepository.save(referent).awaitSingleOrNull()
+        val reference = Reference(null, referentUuid, referralCode.id!!)
+        referenceRepository.save(reference).awaitSingleOrNull()
     }
 
     override suspend fun updateCommissions(
@@ -94,11 +94,11 @@ class ReferralCodeHandlerImpl(
         referralCodeRepository.updateCommissions(code, referrerCommission, referentCommission).awaitSingleOrNull()
     }
 
-    override suspend fun deleteReferralCodeByCode(code: String) {
+    override suspend fun deleteByCode(code: String) {
         referralCodeRepository.deleteByCode(code).awaitSingleOrNull()
     }
 
-    override suspend fun deleteReferralCodesByReferrerUuid(uuid: String) {
+    override suspend fun deleteByReferrerUuid(uuid: String) {
         referralCodeRepository.deleteByUuid(uuid).awaitSingleOrNull()
     }
 }

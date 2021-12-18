@@ -10,11 +10,11 @@ interface ReferralCodeHandler {
         referentCommission: BigDecimal
     ): String
 
-    suspend fun findAllReferralCodes(): List<ReferralCode>
-    suspend fun findReferralCodeByReferentUuid(uuid: String): ReferralCode?
-    suspend fun findReferralCodeByCode(code: String): ReferralCode?
+    suspend fun findAll(): List<ReferralCode>
+    suspend fun findByReferentUuid(uuid: String): ReferralCode?
+    suspend fun findByCode(code: String): ReferralCode?
     suspend fun assign(code: String, referentUuid: String)
     suspend fun updateCommissions(code: String, referrerCommission: BigDecimal, referentCommission: BigDecimal)
-    suspend fun deleteReferralCodeByCode(code: String)
-    suspend fun deleteReferralCodesByReferrerUuid(uuid: String)
+    suspend fun deleteByCode(code: String)
+    suspend fun deleteByReferrerUuid(uuid: String)
 }

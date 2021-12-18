@@ -3,9 +3,11 @@ package co.nilin.opex.referral.ports.postgres.repository
 import co.nilin.opex.referral.ports.postgres.dao.ReferralCode
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
+import org.springframework.stereotype.Repository
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
 
+@Repository
 interface ReferralCodeRepository : ReactiveCrudRepository<ReferralCode, Long> {
     fun findByCode(code: String): Mono<ReferralCode>
     fun findByUuid(uuid: String): Mono<ReferralCode>
