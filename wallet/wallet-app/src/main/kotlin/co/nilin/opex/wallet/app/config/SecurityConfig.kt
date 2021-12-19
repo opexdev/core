@@ -37,6 +37,7 @@ class SecurityConfig(private val webClient: WebClient) {
                     AuthorizationDecision(granted)
                 }
             }
+            .pathMatchers("/payment/internal/**").permitAll()
             .pathMatchers("/**").permitAll()
             .anyExchange().authenticated()
             .and()
