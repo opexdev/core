@@ -16,7 +16,7 @@ class CommissionController(private val commissionRewardHandler: CommissionReward
 
     @GetMapping("/commissions")
     suspend fun getCommissionsByReferent(
-        @RequestParam referentUuid: String
+        @RequestParam referentUuid: String?
     ): List<CommissionReward> {
         return commissionRewardHandler.findCommissions(referentUuid = referentUuid)
     }
