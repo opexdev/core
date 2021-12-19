@@ -11,19 +11,19 @@ CREATE TABLE IF NOT EXISTS referral_codes (
     referent_commission DECIMAL NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS references (
+CREATE TABLE IF NOT EXISTS "references" (
     id SERIAL PRIMARY KEY,
     uuid VARCHAR(72) NOT NULL UNIQUE,
-    referral_code_id INTEGER REFERENCES referral_codes(id),
+    referral_code_id INTEGER NOT NULL REFERENCES referral_codes(id),
     UNIQUE(uuid, referral_code_id)
 );
 
 CREATE TABLE IF NOT EXISTS commission_rewards (
     id SERIAL PRIMARY KEY,
-    referrerUuid VARCHAR(72) NOT NULL,
-    referentUuid VARCHAR(72) NOT NULL,
-    referralCode VARCHAR(72) NOT NULL REFERENCES referral_codes(code),
-    richTradeId INTEGER NOT NULL,
-    referrerShare DECIMAL NOT NULL,
-    referentShare DECIMAL NOT NULL
+    referrer_uuid VARCHAR(72) NOT NULL,
+    referent_uuid VARCHAR(72) NOT NULL,
+    referral_code VARCHAR(72) NOT NULL REFERENCES referral_codes(code),
+    rich_trade_id INTEGER NOT NULL,
+    referrer_share DECIMAL NOT NULL,
+    referent_share DECIMAL NOT NULL
 );
