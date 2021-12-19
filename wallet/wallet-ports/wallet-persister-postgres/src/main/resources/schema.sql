@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS transaction (
    source_amount DECIMAL NOT NULL,
    dest_amount DECIMAL NOT NULL,
    description TEXT,
-   transfer_ref TEXT,
+   transfer_ref TEXT UNIQUE,
    transaction_date TIMESTAMP NOT NULL DEFAULT CURRENT_DATE
 );
 
