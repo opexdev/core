@@ -9,6 +9,9 @@ import java.math.BigDecimal
 
 @Repository
 interface ReferralCodeRepository : ReactiveCrudRepository<ReferralCode, Long> {
+
+    @Query("SELECT MAX(id) FROM referral_codes")
+    fun findMaxId(): Mono<Long>
     fun findByCode(code: String): Mono<ReferralCode>
     fun findByUuid(uuid: String): Mono<ReferralCode>
 
@@ -17,7 +20,4 @@ interface ReferralCodeRepository : ReactiveCrudRepository<ReferralCode, Long> {
 
     fun deleteByUuid(uuid: String): Mono<Void>
     fun deleteByCode(code: String): Mono<Void>
-
-    @Query("SELECT currval(pg_get_serial_sequence('referral_codes', 'id'))")
-    fun findMaxId(): Mono<Long>
 }
