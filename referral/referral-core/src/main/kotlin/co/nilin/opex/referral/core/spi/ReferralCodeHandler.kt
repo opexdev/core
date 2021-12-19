@@ -6,7 +6,6 @@ import java.math.BigDecimal
 interface ReferralCodeHandler {
     suspend fun generateReferralCode(
         uuid: String,
-        referrerCommission: BigDecimal,
         referentCommission: BigDecimal
     ): String
 
@@ -14,7 +13,7 @@ interface ReferralCodeHandler {
     suspend fun findByReferentUuid(uuid: String): ReferralCode?
     suspend fun findByCode(code: String): ReferralCode?
     suspend fun assign(code: String, referentUuid: String)
-    suspend fun updateCommissions(code: String, referrerCommission: BigDecimal, referentCommission: BigDecimal)
+    suspend fun updateCommissions(code: String, referentCommission: BigDecimal)
     suspend fun deleteByCode(code: String)
     suspend fun deleteByReferrerUuid(uuid: String)
 }

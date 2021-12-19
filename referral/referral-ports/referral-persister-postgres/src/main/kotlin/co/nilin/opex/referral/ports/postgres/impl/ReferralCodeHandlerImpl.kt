@@ -19,56 +19,36 @@ class ReferralCodeHandlerImpl(
 ) : ReferralCodeHandler {
     override suspend fun generateReferralCode(
         uuid: String,
-        referrerCommission: BigDecimal,
         referentCommission: BigDecimal
     ): String {
-        if (referrerCommission < BigDecimal.ZERO && referentCommission < BigDecimal.ZERO)
-            throw IllegalArgumentException("Commission value must be positive")
-        if (referrerCommission + referentCommission != BigDecimal.ONE)
-            throw IllegalArgumentException("Sum of commissions must be 1")
+        if (referentCommission < BigDecimal.ZERO || referentCommission > BigDecimal.ONE)
+            throw IllegalArgumentException("Commission value must be in range of [0, 1]")
         val lastId = referralCodeRepository.findMaxId().awaitSingleOrDefault(-1) + 1
         val codeInteger = BigInteger.TEN.pow(7).toLong() + lastId
         if (codeInteger >= BigInteger.TEN.pow(8).toLong()) throw Exception("No referral code available")
         val code = codeInteger.toString()
-        val referralCode = ReferralCode(null, uuid, code, referrerCommission, referentCommission)
+        val referralCode = ReferralCode(null, uuid, code, referentCommission)
         referralCodeRepository.save(referralCode).awaitSingleOrNull()
         return code
     }
 
     override suspend fun findAll(): List<co.nilin.opex.referral.core.model.ReferralCode> {
-        return referralCodeRepository.findAll().map {
-            co.nilin.opex.referral.core.model.ReferralCode(
-                it.uuid,
-                it.code,
-                it.referrerCommission,
-                it.referentCommission
-            )
-        }.collectList().awaitSingle()
+        return referralCodeRepository.findAll()
+            .map { it.run { co.nilin.opex.referral.core.model.ReferralCode(uuid, code, referentCommission) } }
+            .collectList().awaitSingle()
     }
 
     override suspend fun findByReferentUuid(uuid: String): co.nilin.opex.referral.core.model.ReferralCode? {
         val referral = referenceRepository.findByUuid(uuid).awaitSingleOrNull() ?: return null
         return referralCodeRepository.findById(referral.referralCodeId)
-            .map {
-                co.nilin.opex.referral.core.model.ReferralCode(
-                    it.uuid,
-                    it.code,
-                    it.referrerCommission,
-                    it.referentCommission
-                )
-            }.awaitSingleOrNull()
+            .map { it.run { co.nilin.opex.referral.core.model.ReferralCode(uuid, code, referentCommission) } }
+            .awaitSingleOrNull()
     }
 
     override suspend fun findByCode(code: String): co.nilin.opex.referral.core.model.ReferralCode? {
         return referralCodeRepository.findByCode(code)
-            .map {
-                co.nilin.opex.referral.core.model.ReferralCode(
-                    it.uuid,
-                    it.code,
-                    it.referrerCommission,
-                    it.referentCommission
-                )
-            }.awaitSingle()
+            .map { it.run { co.nilin.opex.referral.core.model.ReferralCode(uuid, code, referentCommission) } }
+            .awaitSingle()
     }
 
     override suspend fun assign(code: String, referentUuid: String) {
@@ -80,14 +60,11 @@ class ReferralCodeHandlerImpl(
 
     override suspend fun updateCommissions(
         code: String,
-        referrerCommission: BigDecimal,
         referentCommission: BigDecimal
     ) {
-        if (referrerCommission < BigDecimal.ZERO && referentCommission < BigDecimal.ZERO)
-            throw IllegalArgumentException("Commission value must be positive")
-        if (referrerCommission + referentCommission != BigDecimal.ONE)
-            throw IllegalArgumentException("Sum of commissions must be 1")
-        referralCodeRepository.updateCommissions(code, referrerCommission, referentCommission).awaitSingleOrNull()
+        if (referentCommission < BigDecimal.ZERO || referentCommission > BigDecimal.ONE)
+            throw IllegalArgumentException("Commission value must be in range of [0, 1]")
+        referralCodeRepository.updateCommissions(code, referentCommission).awaitSingleOrNull()
     }
 
     override suspend fun deleteByCode(code: String) {

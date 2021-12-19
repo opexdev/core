@@ -17,7 +17,7 @@ class ReferenceHandlerImpl(
         val refs = referenceRepository.findAll().collectList().awaitSingle()
         return refs.map { ref ->
             val referralCode = referralCodeRepository.findById(ref.referralCodeId).map {
-                it.run { ReferralCode(uuid, code, referrerCommission, referentCommission) }
+                it.run { ReferralCode(uuid, code, referentCommission) }
             }.awaitSingle()
             Reference(referralCode, ref.uuid)
         }
@@ -26,7 +26,7 @@ class ReferenceHandlerImpl(
     override suspend fun findByUuid(uuid: String): Reference? {
         val ref = referenceRepository.findByUuid(uuid).awaitSingle()
         val referralCode = referralCodeRepository.findById(ref.referralCodeId).map {
-            it.run { ReferralCode(uuid, code, referrerCommission, referentCommission) }
+            it.run { ReferralCode(uuid, code, referentCommission) }
         }.awaitSingle()
         return Reference(referralCode, ref.uuid)
     }
@@ -34,7 +34,7 @@ class ReferenceHandlerImpl(
     override suspend fun findByCode(code: String): Reference? {
         val ref = referenceRepository.findByCode(code).awaitSingle()
         val referralCode = referralCodeRepository.findById(ref.referralCodeId).map {
-            it.run { ReferralCode(uuid, code, referrerCommission, referentCommission) }
+            it.run { ReferralCode(uuid, code, referentCommission) }
         }.awaitSingle()
         return Reference(referralCode, ref.uuid)
     }

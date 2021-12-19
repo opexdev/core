@@ -7,7 +7,6 @@ CREATE TABLE IF NOT EXISTS referral_codes (
     id SERIAL PRIMARY KEY,
     uuid VARCHAR(72) NOT NULL,
     code VARCHAR(255) NOT NULL UNIQUE,
-    referrer_commission DECIMAL NOT NULL,
     referent_commission DECIMAL NOT NULL
 );
 

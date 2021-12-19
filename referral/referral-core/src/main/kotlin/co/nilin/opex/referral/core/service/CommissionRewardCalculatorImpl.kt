@@ -5,6 +5,7 @@ import co.nilin.opex.referral.core.api.CommissionRewardCalculator
 import co.nilin.opex.referral.core.model.CommissionReward
 import co.nilin.opex.referral.core.spi.ReferenceHandler
 import org.springframework.stereotype.Service
+import java.math.BigDecimal
 
 @Service
 class CommissionRewardCalculatorImpl(
@@ -20,7 +21,7 @@ class CommissionRewardCalculatorImpl(
             reference.referentUuid,
             reference.referralCode.code,
             richTrade.id to richTrade,
-            commission * reference.referralCode.referrerCommission,
+            commission * (BigDecimal.ONE - reference.referralCode.referentCommission),
             commission * reference.referralCode.referentCommission
         )
     }

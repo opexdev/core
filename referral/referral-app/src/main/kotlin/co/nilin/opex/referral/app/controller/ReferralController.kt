@@ -11,13 +11,11 @@ class ReferralController(private val referralCodeHandler: ReferralCodeHandler) {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     data class PostReferralBody(
         var uuid: String,
-        var referrerCommission: BigDecimal,
         var referentCommission: BigDecimal
     )
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     data class PatchReferralBody(
-        var referrerCommission: BigDecimal,
         var referentCommission: BigDecimal
     )
 
@@ -25,14 +23,13 @@ class ReferralController(private val referralCodeHandler: ReferralCodeHandler) {
     suspend fun generateReferralCode(@RequestBody body: PostReferralBody): String {
         return referralCodeHandler.generateReferralCode(
             body.uuid,
-            body.referrerCommission,
             body.referentCommission
         )
     }
 
     @PatchMapping("/codes/{code}")
     suspend fun updateReferralCodeByCode(@PathVariable code: String, @RequestBody body: PatchReferralBody) {
-        referralCodeHandler.updateCommissions(code, body.referrerCommission, body.referentCommission)
+        referralCodeHandler.updateCommissions(code, body.referentCommission)
     }
 
     @PutMapping("/codes/{code}/assign")
