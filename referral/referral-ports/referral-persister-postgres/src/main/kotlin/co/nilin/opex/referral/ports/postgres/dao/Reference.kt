@@ -6,6 +6,6 @@ import org.springframework.data.relational.core.mapping.Table
 @Table("referral_code_references")
 data class Reference(
     @Id var id: Long?,
-    var uuid: String,
+    var referentUuid: String,
     var referralCodeId: Long
 )

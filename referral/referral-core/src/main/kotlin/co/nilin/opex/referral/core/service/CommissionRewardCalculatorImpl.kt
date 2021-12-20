@@ -13,7 +13,7 @@ class CommissionRewardCalculatorImpl(
 ) : CommissionRewardCalculator {
     override suspend fun calculate(uuid: String, richTrade: RichTrade): CommissionReward {
         if (uuid != richTrade.makerUuid && uuid != richTrade.takerUuid) throw IllegalArgumentException("Variable uuid is not in trade")
-        val reference = referenceHandler.findByUuid(uuid)
+        val reference = referenceHandler.findByReferentUuid(uuid)
             ?: throw IllegalArgumentException("No referral entity found for uuid ($uuid)")
         val commission = if (uuid == richTrade.makerUuid) richTrade.makerCommision else richTrade.takerCommision
         return CommissionReward(
