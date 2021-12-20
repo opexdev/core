@@ -13,9 +13,9 @@ class CommissionRewardPersisterImpl(private val commissionRewardRepository: Comm
         commissionRewardRepository.save(
             co.nilin.opex.referral.ports.postgres.dao.CommissionReward(
                 null,
-                commissionReward.referralCode,
                 commissionReward.referrerUuid,
                 commissionReward.referentUuid,
+                commissionReward.referralCode,
                 commissionReward.richTrade.first,
                 commissionReward.referrerShare,
                 commissionReward.referentShare
