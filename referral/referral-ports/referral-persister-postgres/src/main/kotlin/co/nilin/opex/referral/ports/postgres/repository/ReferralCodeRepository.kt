@@ -16,7 +16,7 @@ interface ReferralCodeRepository : ReactiveCrudRepository<ReferralCode, Long> {
     fun findByUuid(uuid: String): Mono<ReferralCode>
 
     @Query("UPDATE referral_codes SET referent_commission = COALESCE(:referentCommission, referent_commission) WHERE code = :code")
-    fun updateCommissions(code: String, referentCommission: BigDecimal?): Mono<Void>
+    fun updateByCode(code: String, referentCommission: BigDecimal?): Mono<Void>
 
     fun deleteByUuid(uuid: String): Mono<Void>
     fun deleteByCode(code: String): Mono<Void>

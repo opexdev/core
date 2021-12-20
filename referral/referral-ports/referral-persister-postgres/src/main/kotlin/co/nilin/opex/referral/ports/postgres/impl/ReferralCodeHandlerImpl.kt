@@ -33,13 +33,12 @@ class ReferralCodeHandlerImpl(
     }
 
     override suspend fun findAll(): List<ReferralCode> {
-        return referralCodeRepository.findAll()
-            .map { ReferralCode(it.uuid, it.code, it.referentCommission) }
+        return referralCodeRepository.findAll().map { ReferralCode(it.uuid, it.code, it.referentCommission) }
             .collectList().awaitSingle()
     }
 
     override suspend fun findByReferentUuid(uuid: String): ReferralCode? {
-        val referral = referenceRepository.findByUuid(uuid).awaitSingleOrNull() ?: return null
+        val referral = referenceRepository.findByReferentUuid(uuid).awaitSingleOrNull() ?: return null
         return referralCodeRepository.findById(referral.referralCodeId)
             .map { ReferralCode(it.uuid, it.code, it.referentCommission) }
             .awaitSingleOrNull()
@@ -65,7 +64,7 @@ class ReferralCodeHandlerImpl(
     ) {
         if (referentCommission < BigDecimal.ZERO || referentCommission > BigDecimal.ONE)
             throw IllegalArgumentException("Commission value must be in range of [0, 1]")
-        referralCodeRepository.updateCommissions(code, referentCommission).awaitSingleOrNull()
+        referralCodeRepository.updateByCode(code, referentCommission).awaitSingleOrNull()
     }
 
     override suspend fun deleteByCode(code: String) {

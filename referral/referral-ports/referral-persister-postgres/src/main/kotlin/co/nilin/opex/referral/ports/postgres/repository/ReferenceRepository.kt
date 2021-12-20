@@ -12,8 +12,8 @@ interface ReferenceRepository : ReactiveCrudRepository<Reference, Long> {
     fun findByCode(code: String): Flux<Reference>
 
     @Query("SELECT * FROM referral_code_references LEFT JOIN referral_codes ON referral_code_id = referral_codes.id WHERE referral_codes.uuid = :uuid")
-    fun findByReferrerUuid(uuid: String): Flux<Reference>
-    fun findByReferentUuid(uuid: String): Flux<Reference>
-    fun deleteByUuid(uuid: String)
+    fun findByReferrerUuid(referrerUuid: String): Flux<Reference>
+    fun findByReferentUuid(referrerUuid: String): Flux<Reference>
+    fun deleteByReferentUuid(referrerUuid: String)
     fun deleteByReferralCodeId(id: Long): Flux<Reference>
 }

@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS referral_code_references (
     id SERIAL PRIMARY KEY,
     referent_uuid VARCHAR(72) NOT NULL UNIQUE,
     referral_code_id INTEGER NOT NULL REFERENCES referral_codes(id),
-    UNIQUE(uuid, referral_code_id)
+    UNIQUE(referent_uuid, referral_code_id)
 );
 
 CREATE TABLE IF NOT EXISTS commission_rewards (
