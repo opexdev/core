@@ -24,7 +24,7 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webflux</artifactId>
+            <artifactId>spring-boot-starter</artifactId>
         </dependency>
         <dependency>
             <groupId>io.projectreactor.kotlin</groupId>
@@ -70,6 +70,18 @@
         <dependency>
             <groupId>co.nilin.opex.referral.ports.postgres</groupId>
             <artifactId>referral-persister-postgres</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>co.nilin.opex.utility.log</groupId>
+            <artifactId>logging-handler</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>co.nilin.opex.utility.error</groupId>
+            <artifactId>error-handler</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>co.nilin.opex.utility.interceptors</groupId>
+            <artifactId>interceptors</artifactId>
         </dependency>
     </dependencies>
 

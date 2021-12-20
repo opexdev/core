@@ -33,7 +33,7 @@ class ReferralController(private val referralCodeHandler: ReferralCodeHandler) {
     }
 
     @PutMapping("/codes/{code}/assign")
-    suspend fun assignReferrer(@PathVariable code: String, @RequestPart uuid: String) {
+    suspend fun assignReferrer(@PathVariable code: String, @RequestParam uuid: String) {
         referralCodeHandler.assign(code, uuid)
     }
 
