@@ -27,11 +27,6 @@ class ReferralController(
         val referentCommission: BigDecimal
     )
 
-    data class ReferenceBody(
-        var referralCode: ReferralCodeBody,
-        var referentUuid: String,
-    )
-
     @PostMapping("/codes")
     suspend fun generateReferralCode(@RequestBody body: PostReferralBody): String {
         return referralCodeHandler.generateReferralCode(body.uuid, body.referentCommission)
@@ -54,12 +49,8 @@ class ReferralController(
     }
 
     @GetMapping("/codes/{code}/references")
-    suspend fun getReferenceByCode(@PathVariable code: String): List<ReferenceBody> {
-        return referenceHandler.findByCode(code).map {
-            val referralCode =
-                ReferralCodeBody(it.referralCode.uuid, it.referralCode.code, it.referralCode.referentCommission)
-            ReferenceBody(referralCode, it.referentUuid)
-        }
+    suspend fun getReferenceByCode(@PathVariable code: String): List<String> {
+        return referenceHandler.findByCode(code).map { it.referentUuid }
     }
 
     @GetMapping("/codes")
