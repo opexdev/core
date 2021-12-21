@@ -19,36 +19,23 @@ class ReportController(
         val code: String,
         val referentCounts: Long,
         val tradeCount: Long,
-        val referrerShare: BigDecimal,
-        val referentShare: BigDecimal
+        val referrerShare: BigDecimal
     )
 
     @GetMapping("/reports/{code}")
     suspend fun getReportByCode(@PathVariable code: String): ReportBody {
-        val references = referenceHandler.findByCode(code)
+        val referencesCount = referenceHandler.findByCode(code).size.toLong()
         val commissions = commissionRewardHandler.findCommissions(referralCode = code)
-        return ReportBody(
-            code,
-            references.size.toLong(),
-            commissions.size.toLong(),
-            commissions.sumOf { it.referrerShare },
-            commissions.sumOf { it.referentShare }
-        )
+        return ReportBody(code, referencesCount, commissions.size.toLong(), commissions.sumOf { it.referrerShare })
     }
 
     @GetMapping("/reports")
     suspend fun getReportByReferrer(@RequestParam referrerUuid: String): List<ReportBody> {
-        val references = referenceHandler.findByReferrerUuid(referrerUuid)
+        val referencesCount = referenceHandler.findByReferrerUuid(referrerUuid).size.toLong()
         val codes = referralCodeHandler.findByReferrerUuid(referrerUuid)
         val commissions = commissionRewardHandler.findCommissions(referrerUuid = referrerUuid)
         return codes.map {
-            ReportBody(
-                it.code,
-                references.size.toLong(),
-                commissions.size.toLong(),
-                commissions.sumOf { c -> c.referrerShare },
-                commissions.sumOf { c -> c.referentShare }
-            )
+            ReportBody(it.code, referencesCount, commissions.size.toLong(), commissions.sumOf { c -> c.referrerShare })
         }
     }
 }
