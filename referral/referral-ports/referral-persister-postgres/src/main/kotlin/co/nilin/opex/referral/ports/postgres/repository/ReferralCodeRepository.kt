@@ -4,6 +4,7 @@ import co.nilin.opex.referral.ports.postgres.dao.ReferralCode
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
 
@@ -13,7 +14,7 @@ interface ReferralCodeRepository : ReactiveCrudRepository<ReferralCode, Long> {
     @Query("SELECT MAX(id) FROM referral_codes")
     fun findMaxId(): Mono<Long>
     fun findByCode(code: String): Mono<ReferralCode>
-    fun findByUuid(uuid: String): Mono<ReferralCode>
+    fun findByUuid(uuid: String): Flux<ReferralCode>
 
     @Query("UPDATE referral_codes SET referent_commission = COALESCE(:referentCommission, referent_commission) WHERE code = :code")
     fun updateByCode(code: String, referentCommission: BigDecimal?): Mono<Void>

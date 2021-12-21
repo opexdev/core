@@ -11,6 +11,7 @@ interface ReferralCodeHandler {
 
     suspend fun findAll(): List<ReferralCode>
     suspend fun findByReferentUuid(uuid: String): ReferralCode?
+    suspend fun findByReferrerUuid(uuid: String): List<ReferralCode>
     suspend fun findByCode(code: String): ReferralCode?
     suspend fun assign(code: String, referentUuid: String)
     suspend fun updateCommissions(code: String, referentCommission: BigDecimal)

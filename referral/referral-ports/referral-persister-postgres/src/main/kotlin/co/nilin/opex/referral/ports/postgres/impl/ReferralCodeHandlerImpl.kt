@@ -44,6 +44,12 @@ class ReferralCodeHandlerImpl(
             .awaitSingleOrNull()
     }
 
+    override suspend fun findByReferrerUuid(uuid: String): List<ReferralCode> {
+        return referralCodeRepository.findByUuid(uuid).map { ReferralCode(it.uuid, it.code, it.referentCommission) }
+            .collectList()
+            .awaitSingleOrNull()
+    }
+
     override suspend fun findByCode(code: String): ReferralCode? {
         return referralCodeRepository.findByCode(code)
             .map { ReferralCode(it.uuid, it.code, it.referentCommission) }
