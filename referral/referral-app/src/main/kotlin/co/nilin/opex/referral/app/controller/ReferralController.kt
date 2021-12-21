@@ -1,21 +1,35 @@
 package co.nilin.opex.referral.app.controller
 
-import co.nilin.opex.referral.core.model.Reference
-import co.nilin.opex.referral.core.model.ReferralCode
 import co.nilin.opex.referral.core.spi.ReferenceHandler
 import co.nilin.opex.referral.core.spi.ReferralCodeHandler
+import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.utility.error.data.OpexException
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 
 @RestController
-class ReferralController(private val referralCodeHandler: ReferralCodeHandler, private val referenceHandler: ReferenceHandler) {
+class ReferralController(
+    private val referralCodeHandler: ReferralCodeHandler,
+    private val referenceHandler: ReferenceHandler
+) {
     data class PostReferralBody(
-        var uuid: String,
-        var referentCommission: BigDecimal
+        val uuid: String,
+        val referentCommission: BigDecimal
     )
 
     data class PatchReferralBody(
-        var referentCommission: BigDecimal
+        val referentCommission: BigDecimal
+    )
+
+    data class ReferralCodeBody(
+        val uuid: String,
+        val code: String,
+        val referentCommission: BigDecimal
+    )
+
+    data class ReferenceBody(
+        var referralCode: ReferralCodeBody,
+        var referentUuid: String,
     )
 
     @PostMapping("/codes")
@@ -34,18 +48,23 @@ class ReferralController(private val referralCodeHandler: ReferralCodeHandler, p
     }
 
     @GetMapping("/codes/{code}")
-    suspend fun getReferralCodeByCode(@PathVariable code: String): ReferralCode? {
-        return referralCodeHandler.findByCode(code)
+    suspend fun getReferralCodeByCode(@PathVariable code: String): ReferralCodeBody {
+        val referralCode = referralCodeHandler.findByCode(code) ?: throw OpexException(OpexError.NotFound)
+        return ReferralCodeBody(referralCode.uuid, referralCode.code, referralCode.referentCommission)
     }
 
     @GetMapping("/codes/{code}/references")
-    suspend fun getReferenceByCode(@PathVariable code: String): List<Reference>? {
-        return referenceHandler.findByCode(code)
+    suspend fun getReferenceByCode(@PathVariable code: String): List<ReferenceBody> {
+        return referenceHandler.findByCode(code).map {
+            val referralCode =
+                ReferralCodeBody(it.referralCode.uuid, it.referralCode.code, it.referralCode.referentCommission)
+            ReferenceBody(referralCode, it.referentUuid)
+        }
     }
 
     @GetMapping("/codes")
-    suspend fun getAllReferralCodes(): List<ReferralCode> {
-        return referralCodeHandler.findAll()
+    suspend fun getAllReferralCodes(): List<ReferralCodeBody> {
+        return referralCodeHandler.findAll().map { ReferralCodeBody(it.uuid, it.code, it.referentCommission) }
     }
 
     @DeleteMapping("/codes/{code}")
