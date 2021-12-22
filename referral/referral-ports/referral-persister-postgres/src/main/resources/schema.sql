@@ -17,16 +17,27 @@ CREATE TABLE IF NOT EXISTS referral_code_references (
     UNIQUE(referent_uuid, referral_code_id)
 );
 
+CREATE TABLE IF NOT EXISTS payment_status (
+    status VARCHAR(20) PRIMARY KEY
+);
+
 CREATE TABLE IF NOT EXISTS commission_rewards (
     id BIGSERIAL PRIMARY KEY,
     referrer_uuid VARCHAR(72) NOT NULL,
     referent_uuid VARCHAR(72) NOT NULL,
     referral_code VARCHAR(72) NOT NULL REFERENCES referral_codes(code),
     rich_trade_id INTEGER NOT NULL,
+    referent_order_side VARCHAR(20) NOT NULL,
     referrer_share DECIMAL NOT NULL,
     referent_share DECIMAL NOT NULL,
-    checkout_date DATE,
-    is_checked_out BOOLEAN NOT NULL GENERATED ALWAYS AS (checkout_date IS NOT NULL) STORED
+    UNIQUE(rich_trade_id, referrer_uuid, referent_uuid, referent_order_side)
 );
 
-CREATE INDEX IF NOT EXISTS is_checked_index ON commission_rewards(is_checked_out);
+CREATE TABLE IF NOT EXISTS payment_records (
+    id BIGSERIAL PRIMARY KEY,
+    commission_rewards_id BIGINTEGER NOT NULL REFERENCES commission_rewards(id),
+    update_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    payment_status VARCHAR(20) NOT NULL REFERENCES payment_status(status) DEFAULT 'pending'
+);
+
+CREATE INDEX IF NOT EXISTS payment_status_index ON payment_records(status);
