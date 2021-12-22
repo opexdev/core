@@ -18,7 +18,8 @@ class CommissionRewardPersisterImpl(private val commissionRewardRepository: Comm
                 commissionReward.referralCode,
                 commissionReward.richTrade.first,
                 commissionReward.referrerShare,
-                commissionReward.referentShare
+                commissionReward.referentShare,
+                null
             )
         ).awaitSingleOrNull()
     }

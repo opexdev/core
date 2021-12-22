@@ -18,11 +18,15 @@ CREATE TABLE IF NOT EXISTS referral_code_references (
 );
 
 CREATE TABLE IF NOT EXISTS commission_rewards (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     referrer_uuid VARCHAR(72) NOT NULL,
     referent_uuid VARCHAR(72) NOT NULL,
     referral_code VARCHAR(72) NOT NULL REFERENCES referral_codes(code),
     rich_trade_id INTEGER NOT NULL,
     referrer_share DECIMAL NOT NULL,
-    referent_share DECIMAL NOT NULL
+    referent_share DECIMAL NOT NULL,
+    checkout_date DATE,
+    is_checked_out BOOLEAN NOT NULL GENERATED ALWAYS AS (checkout_date IS NOT NULL) STORED
 );
+
+CREATE INDEX IF NOT EXISTS is_checked_index ON commission_rewards(is_checked_out);
