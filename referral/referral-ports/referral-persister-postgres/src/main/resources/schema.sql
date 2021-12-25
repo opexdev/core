@@ -35,9 +35,19 @@ CREATE TABLE IF NOT EXISTS commission_rewards (
 
 CREATE TABLE IF NOT EXISTS payment_records (
     id BIGSERIAL PRIMARY KEY,
-    commission_rewards_id BIGINTEGER NOT NULL REFERENCES commission_rewards(id),
-    update_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    commission_rewards_id BIGINT NOT NULL REFERENCES commission_rewards(id),
+    create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     payment_status VARCHAR(20) NOT NULL REFERENCES payment_status(status) DEFAULT 'pending'
 );
 
-CREATE INDEX IF NOT EXISTS payment_status_index ON payment_records(status);
+CREATE INDEX IF NOT EXISTS payment_records_status_index ON payment_records(payment_status);
+
+CREATE OR REPLACE FUNCTION on_insert_commission_rewards() RETURNS TRIGGER AS $$ BEGIN
+    INSERT INTO payment_records(commission_rewards_id) VALUES (NEW.id);
+    RETURN NEW;
+END; $$ LANGUAGE 'plpgsql';
+
+CREATE OR REPLACE TRIGGER commission_rewards_insert AFTER INSERT
+ON commission_rewards
+FOR EACH ROW
+EXECUTE PROCEDURE on_insert_commission_rewards();
