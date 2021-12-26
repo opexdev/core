@@ -1,5 +1,6 @@
 package co.nilin.opex.referral.app.controller
 
+import co.nilin.opex.matching.engine.core.model.OrderDirection
 import co.nilin.opex.referral.core.spi.CommissionRewardHandler
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
@@ -11,6 +12,7 @@ class CommissionController(private val commissionRewardHandler: CommissionReward
         var referentUuid: String,
         var referralCode: String,
         var richTrade: Long,
+        var referentOrderDirection: OrderDirection,
         var referrerShare: BigDecimal,
         var referentShare: BigDecimal,
     )
@@ -25,6 +27,7 @@ class CommissionController(private val commissionRewardHandler: CommissionReward
                 it.referentUuid,
                 it.referralCode,
                 it.richTrade.first,
+                it.referentOrderDirection,
                 it.referrerShare,
                 it.referentShare
             )
@@ -42,6 +45,7 @@ class CommissionController(private val commissionRewardHandler: CommissionReward
                 it.referentUuid,
                 it.referralCode,
                 it.richTrade.first,
+                it.referentOrderDirection,
                 it.referrerShare,
                 it.referentShare
             )

@@ -26,6 +26,7 @@ class CommissionRewardHandlerImpl(
                 it.referentUuid,
                 it.referralCode,
                 Pair(it.richTradeId, null),
+                it.referentOrderDirection,
                 it.referrerShare,
                 it.referentShare
             )
