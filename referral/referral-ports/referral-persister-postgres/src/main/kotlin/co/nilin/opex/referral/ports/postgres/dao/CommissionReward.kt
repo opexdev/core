@@ -15,5 +15,6 @@ data class CommissionReward(
     var referentOrderDirection: OrderDirection,
     var referrerShare: BigDecimal,
     var referentShare: BigDecimal,
+    var paymentAssetSymbol: String
 )
 

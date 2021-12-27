@@ -11,5 +11,6 @@ data class CommissionReward(
     var richTrade: Pair<Long, RichTrade?>,
     var referentOrderDirection: OrderDirection,
     var referrerShare: BigDecimal,
-    var referentShare: BigDecimal
+    var referentShare: BigDecimal,
+    var paymentAssetSymbol: String
 )

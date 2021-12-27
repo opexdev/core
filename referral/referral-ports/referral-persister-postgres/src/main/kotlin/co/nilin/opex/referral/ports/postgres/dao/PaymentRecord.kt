@@ -23,6 +23,7 @@ data class PaymentRecordProjected(
     var referentOrderDirection: OrderDirection,
     var referrerShare: BigDecimal,
     var referentShare: BigDecimal,
+    var paymentAssetSymbol: String,
     var createDate: Long,
     var paymentStatus: PaymentStatuses
 )

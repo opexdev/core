@@ -22,7 +22,8 @@ class CommissionPaymentHandlerImpl(
                     Pair(it.richTradeId, null),
                     it.referentOrderDirection,
                     it.referrerShare,
-                    it.referentShare
+                    it.referentShare,
+                    it.paymentAssetSymbol
                 ),
                 it.paymentStatus
             )

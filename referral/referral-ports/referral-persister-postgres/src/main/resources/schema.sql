@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS configs (
     name VARCHAR(72) PRIMARY KEY,
-    referral_commission_reward DECIMAL NOT NULL
+    referral_commission_reward DECIMAL NOT NULL,
+    payment_asset_symbol VARCHAR(20) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS referral_codes (
@@ -30,6 +31,7 @@ CREATE TABLE IF NOT EXISTS commission_rewards (
     referent_order_direction VARCHAR(20) NOT NULL,
     referrer_share DECIMAL NOT NULL,
     referent_share DECIMAL NOT NULL,
+    payment_asset_symbol VARCHAR(20) NOT NULL,
     CONSTRAINT reward_once_constraint UNIQUE (rich_trade_id, referrer_uuid, referent_uuid, referent_order_direction)
 );
 
