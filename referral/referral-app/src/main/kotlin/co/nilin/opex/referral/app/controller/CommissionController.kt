@@ -8,13 +8,13 @@ import java.math.BigDecimal
 @RestController
 class CommissionController(private val commissionRewardHandler: CommissionRewardHandler) {
     data class CommissionRewardBody(
-        var referrerUuid: String,
+        var rewardedUuid: String,
         var referentUuid: String,
         var referralCode: String,
         var richTrade: Long,
         var referentOrderDirection: OrderDirection,
-        var referrerShare: BigDecimal,
-        var referentShare: BigDecimal,
+        var share: BigDecimal,
+        var createDate: Long
     )
 
     @GetMapping("/commissions/{code}")
@@ -23,13 +23,13 @@ class CommissionController(private val commissionRewardHandler: CommissionReward
     ): List<CommissionRewardBody> {
         return commissionRewardHandler.findCommissions(referralCode = code).map {
             CommissionRewardBody(
-                it.referrerUuid,
+                it.rewardedUuid,
                 it.referentUuid,
                 it.referralCode,
                 it.richTrade.first,
                 it.referentOrderDirection,
-                it.referrerShare,
-                it.referentShare
+                it.share,
+                it.createDate
             )
         }
     }
@@ -41,13 +41,13 @@ class CommissionController(private val commissionRewardHandler: CommissionReward
     ): List<CommissionRewardBody> {
         return commissionRewardHandler.findCommissions(referentUuid = referentUuid, referrerUuid = referrerUuid).map {
             CommissionRewardBody(
-                it.referrerUuid,
+                it.rewardedUuid,
                 it.referentUuid,
                 it.referralCode,
                 it.richTrade.first,
                 it.referentOrderDirection,
-                it.referrerShare,
-                it.referentShare
+                it.share,
+                it.createDate
             )
         }
     }

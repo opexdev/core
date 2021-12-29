@@ -10,20 +10,20 @@ import java.math.BigDecimal
 data class PaymentRecord(
     @Id var id: Long?,
     var commissionRewardsId: Long,
-    var createDate: Long,
+    var updateDate: Long,
     var paymentStatus: PaymentStatuses
 )
 
 data class PaymentRecordProjected(
     @Id var id: Long?,
-    var referrerUuid: String,
+    var rewardedUuid: String,
     var referentUuid: String,
     var referralCode: String,
     var richTradeId: Long,
     var referentOrderDirection: OrderDirection,
-    var referrerShare: BigDecimal,
-    var referentShare: BigDecimal,
+    var share: BigDecimal,
     var paymentAssetSymbol: String,
     var createDate: Long,
+    var updateDate: Long,
     var paymentStatus: PaymentStatuses
 )

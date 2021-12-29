@@ -4,5 +4,5 @@ import co.nilin.opex.accountant.core.inout.RichTrade
 import co.nilin.opex.referral.core.model.CommissionReward
 
 interface CommissionRewardCalculator {
-    suspend fun calculate(ouid: String, richTrade: RichTrade): CommissionReward
+    suspend fun calculate(ouid: String, richTrade: RichTrade): List<CommissionReward>
 }

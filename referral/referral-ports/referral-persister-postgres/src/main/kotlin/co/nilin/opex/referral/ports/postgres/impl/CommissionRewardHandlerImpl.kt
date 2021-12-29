@@ -22,14 +22,14 @@ class CommissionRewardHandlerImpl(
             referentUuid
         ).map {
             CommissionReward(
-                it.referrerUuid,
+                it.rewardedUuid,
                 it.referentUuid,
                 it.referralCode,
                 Pair(it.richTradeId, null),
                 it.referentOrderDirection,
-                it.referrerShare,
-                it.referentShare,
-                it.paymentAssetSymbol
+                it.share,
+                it.paymentAssetSymbol,
+                it.createDate!!
             )
         }.collectList().awaitSingleOrDefault(emptyList())
     }

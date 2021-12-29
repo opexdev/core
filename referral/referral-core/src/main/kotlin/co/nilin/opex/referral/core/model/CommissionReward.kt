@@ -5,12 +5,12 @@ import co.nilin.opex.matching.engine.core.model.OrderDirection
 import java.math.BigDecimal
 
 data class CommissionReward(
-    var referrerUuid: String,
+    var rewardedUuid: String,
     var referentUuid: String,
     var referralCode: String,
     var richTrade: Pair<Long, RichTrade?>,
     var referentOrderDirection: OrderDirection,
-    var referrerShare: BigDecimal,
-    var referentShare: BigDecimal,
-    var paymentAssetSymbol: String
+    var share: BigDecimal,
+    var paymentAssetSymbol: String,
+    var createDate: Long
 )

@@ -8,13 +8,13 @@ import java.math.BigDecimal
 @Table("commission_rewards")
 data class CommissionReward(
     @Id var id: Long?,
-    var referrerUuid: String,
+    var rewardedUuid: String,
     var referentUuid: String,
     var referralCode: String,
     var richTradeId: Long,
     var referentOrderDirection: OrderDirection,
-    var referrerShare: BigDecimal,
-    var referentShare: BigDecimal,
-    var paymentAssetSymbol: String
+    var share: BigDecimal,
+    var paymentAssetSymbol: String,
+    var createDate: Long? = null
 )
 

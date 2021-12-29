@@ -24,16 +24,15 @@ CREATE TABLE IF NOT EXISTS payment_status (
 
 CREATE TABLE IF NOT EXISTS commission_rewards (
     id BIGSERIAL PRIMARY KEY,
-    referrer_uuid VARCHAR(72) NOT NULL,
+    rewarded_uuid VARCHAR(72) NOT NULL,
     referent_uuid VARCHAR(72) NOT NULL,
     referral_code VARCHAR(72) NOT NULL REFERENCES referral_codes(code),
     rich_trade_id BIGINT NOT NULL,
     referent_order_direction VARCHAR(20) NOT NULL,
-    referrer_share DECIMAL NOT NULL,
-    referent_share DECIMAL NOT NULL,
+    share DECIMAL NOT NULL,
     payment_asset_symbol VARCHAR(20) NOT NULL,
     create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT reward_once_constraint UNIQUE (rich_trade_id, referrer_uuid, referent_uuid, referent_order_direction)
+    CONSTRAINT reward_once_constraint UNIQUE (rich_trade_id, rewarded_uuid, referent_order_direction)
 );
 
 CREATE TABLE IF NOT EXISTS payment_records (

@@ -15,7 +15,7 @@ class CommissionRewardCalculatorImpl(
     private val symbolPriceCalculator: SymbolPriceCalculator,
     private val referenceHandler: ReferenceHandler
 ) : CommissionRewardCalculator {
-    override suspend fun calculate(ouid: String, richTrade: RichTrade): CommissionReward {
+    override suspend fun calculate(ouid: String, richTrade: RichTrade): List<CommissionReward> {
         val config = configHandler.findConfig("default")!!
         if (ouid != richTrade.makerOuid && ouid != richTrade.takerOuid) throw IllegalArgumentException("Order is not correct")
         val uuid = if (ouid == richTrade.makerOuid) richTrade.makerUuid else richTrade.takerUuid
@@ -25,15 +25,37 @@ class CommissionRewardCalculatorImpl(
             if (ouid == richTrade.makerOuid) richTrade.makerCommision * symbolPriceCalculator.getPrice(richTrade.makerCommisionAsset)
             else richTrade.takerCommision * symbolPriceCalculator.getPrice(richTrade.takerCommisionAsset)
         val direction = if (ouid == richTrade.makerOuid) richTrade.makerDirection else richTrade.takerDirection
-        return CommissionReward(
-            reference.referralCode.uuid,
-            reference.referentUuid,
-            reference.referralCode.code,
-            richTrade.id to richTrade,
-            direction,
-            commission * (BigDecimal.ONE - reference.referralCode.referentCommission),
-            commission * reference.referralCode.referentCommission,
-            config.paymentAssetSymbol
-        )
+        val ret = mutableListOf<CommissionReward>()
+        if (commission > BigDecimal.ZERO) {
+            if (reference.referralCode.referentCommission < BigDecimal.ONE) {
+                ret.add(
+                    CommissionReward(
+                        reference.referralCode.uuid,
+                        reference.referentUuid,
+                        reference.referralCode.code,
+                        richTrade.id to richTrade,
+                        direction,
+                        commission * (BigDecimal.ONE - reference.referralCode.referentCommission),
+                        config.paymentAssetSymbol,
+                        System.currentTimeMillis() / 1000
+                    )
+                )
+            }
+            if (reference.referralCode.referentCommission > BigDecimal.ZERO) {
+                ret.add(
+                    CommissionReward(
+                        reference.referentUuid,
+                        reference.referentUuid,
+                        reference.referralCode.code,
+                        richTrade.id to richTrade,
+                        direction,
+                        commission * reference.referralCode.referentCommission,
+                        config.paymentAssetSymbol,
+                        System.currentTimeMillis() / 1000
+                    )
+                )
+            }
+        }
+        return ret
     }
 }

@@ -22,6 +22,6 @@ class ReportController(
     suspend fun getReportByCode(@PathVariable code: String): ReportBody {
         val referencesCount = referenceHandler.findByCode(code).size.toLong()
         val commissions = commissionRewardHandler.findCommissions(referralCode = code)
-        return ReportBody(code, referencesCount, commissions.sumOf { it.referrerShare })
+        return ReportBody(code, referencesCount, commissions.sumOf { it.share })
     }
 }

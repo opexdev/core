@@ -8,15 +8,34 @@ import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
+import java.math.BigDecimal
 
 @Repository
-interface PaymentRecordRepository : ReactiveCrudRepository<PaymentRecord, Long> {
+interface PaymentRecordRepository : PaymentRecordProjectedRepository, ReactiveCrudRepository<PaymentRecord, Long> {
     suspend fun findByPaymentStatus(paymentStatus: PaymentStatuses): Flux<PaymentRecord>
-
-    @Query("SELECT * FROM payment_records LEFT JOIN commission_rewards ON commission_rewards_id = commission_rewards.id WHERE payment_status = :paymentStatus")
-    suspend fun findByPaymentStatusProjected(paymentStatus: PaymentStatuses): Flux<PaymentRecordProjected>
+    suspend fun findByPaymentStatusWhereCreateDateLessThan(
+        paymentStatus: PaymentStatuses,
+        createData: Long
+    ): Flux<PaymentRecord>
 
     @Modifying
-    @Query("UPDATE payment_records SET payment_status = :paymentStatus WHERE id = :id")
+    @Query("INSERT INTO payment_records(commission_reward_id, payment_status) VALUES (:id, :paymentStatus)")
     suspend fun updatePaymentStatusById(id: Long, paymentStatus: PaymentStatuses)
+}
+
+interface PaymentRecordProjectedRepository {
+    @Query("SELECT * FROM payment_records_projected WHERE payment_status = :paymentStatus")
+    suspend fun findByPaymentStatusProjected(paymentStatus: PaymentStatuses): Flux<PaymentRecordProjected>
+
+    @Query("SELECT * FROM payment_records_projected WHERE payment_status = :paymentStatus AND create_date < :createDate")
+    suspend fun findByPaymentStatusWhereCreateDateLessThanProjected(
+        paymentStatus: PaymentStatuses,
+        createData: Long
+    ): Flux<PaymentRecordProjected>
+
+    @Query("SELECT *, SUM(share) AS acc_share OVER (PARTITION BY uuid) FROM payment_records_projected WHERE payment_status = 'pending' AND acc_share >= :value")
+    suspend fun findWhereTotalReferrerShareMoreThanProjected(
+        referrerUuid: String,
+        value: BigDecimal
+    ): Flux<PaymentRecordProjected>
 }
