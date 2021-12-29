@@ -32,17 +32,20 @@ CREATE TABLE IF NOT EXISTS commission_rewards (
     referrer_share DECIMAL NOT NULL,
     referent_share DECIMAL NOT NULL,
     payment_asset_symbol VARCHAR(20) NOT NULL,
+    create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT reward_once_constraint UNIQUE (rich_trade_id, referrer_uuid, referent_uuid, referent_order_direction)
 );
 
 CREATE TABLE IF NOT EXISTS payment_records (
     id BIGSERIAL PRIMARY KEY,
     commission_rewards_id BIGINT NOT NULL REFERENCES commission_rewards(id),
-    create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    update_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     payment_status VARCHAR(20) NOT NULL DEFAULT 'pending' REFERENCES payment_status(status)
 );
 
 CREATE INDEX IF NOT EXISTS payment_records_status_index ON payment_records(payment_status);
+
+CREATE OR REPLACE VIEW payment_records_projected SELECT DISTINCT ON (commission_rewards_id) * FROM payment_records LEFT JOIN commission_rewards ON commission_rewards_id = commission_rewards.id ORDER BY create_date DESC;
 
 CREATE OR REPLACE FUNCTION on_insert_commission_rewards() RETURNS TRIGGER AS $$ BEGIN
     INSERT INTO payment_records(commission_rewards_id) VALUES (NEW.id);
