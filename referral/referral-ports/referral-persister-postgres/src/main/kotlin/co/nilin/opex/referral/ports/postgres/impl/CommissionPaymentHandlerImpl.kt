@@ -11,13 +11,13 @@ import org.springframework.stereotype.Service
 import java.math.BigDecimal
 
 @Service
-class CommissionPaymentHandlerImpl(
-    private val paymentRecordRepository: PaymentRecordRepository
-) : CommissionPaymentHandler {
+class CommissionPaymentHandlerImpl(private val paymentRecordRepository: PaymentRecordRepository) :
+    CommissionPaymentHandler {
     override suspend fun findCommissionsByStatus(paymentStatus: PaymentStatuses): List<PaymentRecord> {
         return paymentRecordRepository.findByPaymentStatusProjected(paymentStatus).map {
             PaymentRecord(
                 CommissionReward(
+                    it.id!!,
                     it.rewardedUuid,
                     it.referentUuid,
                     it.referralCode,
@@ -28,6 +28,7 @@ class CommissionPaymentHandlerImpl(
                     it.createDate
                 ),
                 it.paymentStatus,
+                it.transferRef,
                 it.updateDate
             )
         }.collectList().awaitSingleOrDefault(emptyList())
@@ -37,10 +38,11 @@ class CommissionPaymentHandlerImpl(
         uuid: String,
         value: BigDecimal
     ): List<PaymentRecord> {
-        return paymentRecordRepository.findWhereTotalReferrerShareMoreThanProjected(uuid, value)
+        return paymentRecordRepository.findByUuidWhereTotalShareMoreThanProjected(uuid, value)
             .collectList().awaitSingle().map {
                 PaymentRecord(
                     CommissionReward(
+                        it.id!!,
                         it.rewardedUuid,
                         it.referentUuid,
                         it.referralCode,
@@ -51,6 +53,29 @@ class CommissionPaymentHandlerImpl(
                         it.createDate
                     ),
                     it.paymentStatus,
+                    it.transferRef,
+                    it.updateDate
+                )
+            }
+    }
+
+    override suspend fun findAllCommissionsWhereTotalGreaterAndEqualTo(value: BigDecimal): List<PaymentRecord> {
+        return paymentRecordRepository.findAllWhereTotalShareMoreThanProjected(value)
+            .collectList().awaitSingle().map {
+                PaymentRecord(
+                    CommissionReward(
+                        it.id!!,
+                        it.rewardedUuid,
+                        it.referentUuid,
+                        it.referralCode,
+                        Pair(it.richTradeId, null),
+                        it.referentOrderDirection,
+                        it.share,
+                        it.paymentAssetSymbol,
+                        it.createDate
+                    ),
+                    it.paymentStatus,
+                    it.transferRef,
                     it.updateDate
                 )
             }
@@ -63,6 +88,7 @@ class CommissionPaymentHandlerImpl(
         ).collectList().awaitSingle().map {
             PaymentRecord(
                 CommissionReward(
+                    it.id!!,
                     it.rewardedUuid,
                     it.referentUuid,
                     it.referralCode,
@@ -73,6 +99,7 @@ class CommissionPaymentHandlerImpl(
                     it.createDate
                 ),
                 it.paymentStatus,
+                it.transferRef,
                 it.updateDate
             )
         }
@@ -80,5 +107,9 @@ class CommissionPaymentHandlerImpl(
 
     override suspend fun updatePaymentStatus(id: Long, value: PaymentStatuses) {
         paymentRecordRepository.updatePaymentStatusById(id, value)
+    }
+
+    override suspend fun checkout(id: Long, transferRef: String) {
+        paymentRecordRepository.checkout(id, transferRef)
     }
 }

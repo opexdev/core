@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service
 class ConfigHandlerImpl(private val configRepository: ConfigRepository) : ConfigHandler {
     override suspend fun findConfig(name: String): Config? {
         return configRepository.findById(name)
-            .map { Config(it.name, it.referralCommissionReward, it.paymentAssetSymbol) }.awaitSingleOrNull()
+            .map { Config(it.name, it.referralCommissionReward, it.paymentAssetSymbol, it.minPaymentAmount) }
+            .awaitSingleOrNull()
     }
 }

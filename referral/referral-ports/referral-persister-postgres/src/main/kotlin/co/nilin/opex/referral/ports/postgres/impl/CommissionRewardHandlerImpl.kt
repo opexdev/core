@@ -16,12 +16,13 @@ class CommissionRewardHandlerImpl(
         referrerUuid: String?,
         referentUuid: String?
     ): List<CommissionReward> {
-        return commissionRewardRepository.findByReferralCodeAndReferrerUuidAndReferentUuid(
+        return commissionRewardRepository.findByReferralCodeAndRewardedUuidAndReferentUuid(
             referralCode,
             referrerUuid,
             referentUuid
         ).map {
             CommissionReward(
+                it.id!!,
                 it.rewardedUuid,
                 it.referentUuid,
                 it.referralCode,
@@ -35,7 +36,7 @@ class CommissionRewardHandlerImpl(
     }
 
     override suspend fun deleteCommissions(referralCode: String?, referrerUuid: String?, referentUuid: String?) {
-        commissionRewardRepository.deleteByReferralCodeAndReferrerUuidAndReferentUuid(
+        commissionRewardRepository.deleteByReferralCodeAndRewardedUuidAndReferentUuid(
             referralCode,
             referrerUuid,
             referentUuid

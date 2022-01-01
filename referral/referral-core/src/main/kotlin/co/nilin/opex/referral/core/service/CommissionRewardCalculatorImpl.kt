@@ -30,6 +30,7 @@ class CommissionRewardCalculatorImpl(
             if (reference.referralCode.referentCommission < BigDecimal.ONE) {
                 ret.add(
                     CommissionReward(
+                        0,
                         reference.referralCode.uuid,
                         reference.referentUuid,
                         reference.referralCode.code,
@@ -44,6 +45,7 @@ class CommissionRewardCalculatorImpl(
             if (reference.referralCode.referentCommission > BigDecimal.ZERO) {
                 ret.add(
                     CommissionReward(
+                        0,
                         reference.referentUuid,
                         reference.referentUuid,
                         reference.referralCode.code,

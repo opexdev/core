@@ -8,5 +8,6 @@ import java.math.BigDecimal
 data class Config(
     @Id var name: String,
     var referralCommissionReward: BigDecimal,
-    var paymentAssetSymbol: String
+    var paymentAssetSymbol: String,
+    var minPaymentAmount: BigDecimal
 )

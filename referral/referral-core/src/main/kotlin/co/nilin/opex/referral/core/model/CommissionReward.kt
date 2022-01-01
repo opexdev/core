@@ -5,6 +5,7 @@ import co.nilin.opex.matching.engine.core.model.OrderDirection
 import java.math.BigDecimal
 
 data class CommissionReward(
+    var id: Long,
     var rewardedUuid: String,
     var referentUuid: String,
     var referralCode: String,

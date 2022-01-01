@@ -9,17 +9,17 @@ import reactor.core.publisher.Mono
 
 @Repository
 interface CommissionRewardRepository : ReactiveCrudRepository<CommissionReward, Long> {
-    @Query("SELECT * FROM commission_rewards WHERE (:code is null OR referral_code = :code) AND (:referrerUuid is null OR referrer_uuid = :referrerUuid) AND (:referentUuid is null OR referent_uuid = :referentUuid)")
-    fun findByReferralCodeAndReferrerUuidAndReferentUuid(
+    @Query("SELECT * FROM commission_rewards WHERE (:code is null OR referral_code = :code) AND (:rewardedUuid is null OR rewarded_uuid = :rewardedUuid) AND (:referentUuid is null OR referent_uuid = :referentUuid)")
+    fun findByReferralCodeAndRewardedUuidAndReferentUuid(
         code: String?,
-        referrerUuid: String?,
+        rewardedUuid: String?,
         referentUuid: String?
     ): Flux<CommissionReward>
 
-    @Query("DELETE FROM commission_rewards WHERE (:code is null OR referral_code = :code) AND (:referrerUuid is null OR referrer_uuid = :referrer_uuid) AND (:referentUuid is null OR referent_uuid = :referentUuid)")
-    fun deleteByReferralCodeAndReferrerUuidAndReferentUuid(
+    @Query("DELETE FROM commission_rewards WHERE (:code is null OR referral_code = :code) AND (:rewardedUuid is null OR rewarded_uuid = :rewardedUuid) AND (:referentUuid is null OR referent_uuid = :referentUuid)")
+    fun deleteByReferralCodeAndRewardedUuidAndReferentUuid(
         code: String?,
-        referrerUuid: String?,
+        rewardedUuid: String?,
         referentUuid: String?
     ): Mono<Void>
 }

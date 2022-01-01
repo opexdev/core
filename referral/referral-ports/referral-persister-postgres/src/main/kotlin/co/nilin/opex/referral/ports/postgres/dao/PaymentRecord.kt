@@ -10,6 +10,7 @@ import java.math.BigDecimal
 data class PaymentRecord(
     @Id var id: Long?,
     var commissionRewardsId: Long,
+    var transferRef: String?,
     var updateDate: Long,
     var paymentStatus: PaymentStatuses
 )
@@ -23,6 +24,7 @@ data class PaymentRecordProjected(
     var referentOrderDirection: OrderDirection,
     var share: BigDecimal,
     var paymentAssetSymbol: String,
+    var transferRef: String?,
     var createDate: Long,
     var updateDate: Long,
     var paymentStatus: PaymentStatuses

@@ -12,7 +12,7 @@ class CommissionRewardPersisterImpl(private val commissionRewardRepository: Comm
     override suspend fun save(commissionReward: CommissionReward) {
         commissionRewardRepository.save(
             co.nilin.opex.referral.ports.postgres.dao.CommissionReward(
-                null,
+                if (commissionReward.id == 0L) null else commissionReward.id,
                 commissionReward.rewardedUuid,
                 commissionReward.referentUuid,
                 commissionReward.referralCode,

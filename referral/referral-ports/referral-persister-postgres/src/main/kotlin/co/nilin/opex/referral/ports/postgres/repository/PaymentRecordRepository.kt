@@ -21,6 +21,10 @@ interface PaymentRecordRepository : PaymentRecordProjectedRepository, ReactiveCr
     @Modifying
     @Query("INSERT INTO payment_records(commission_reward_id, payment_status) VALUES (:id, :paymentStatus)")
     suspend fun updatePaymentStatusById(id: Long, paymentStatus: PaymentStatuses)
+
+    @Modifying
+    @Query("INSERT INTO payment_records(commission_reward_id, transfer_ref) VALUES (:id, :transferRef)")
+    suspend fun checkout(id: Long, transferRef: String)
 }
 
 interface PaymentRecordProjectedRepository {
@@ -34,8 +38,11 @@ interface PaymentRecordProjectedRepository {
     ): Flux<PaymentRecordProjected>
 
     @Query("SELECT *, SUM(share) AS acc_share OVER (PARTITION BY uuid) FROM payment_records_projected WHERE payment_status = 'pending' AND acc_share >= :value")
-    suspend fun findWhereTotalReferrerShareMoreThanProjected(
-        referrerUuid: String,
+    suspend fun findAllWhereTotalShareMoreThanProjected(value: BigDecimal): Flux<PaymentRecordProjected>
+
+    @Query("SELECT *, SUM(share) AS acc_share OVER (PARTITION BY uuid) FROM payment_records_projected WHERE payment_status = 'pending' AND acc_share >= :value AND uuid = :uuid")
+    suspend fun findByUuidWhereTotalShareMoreThanProjected(
+        uuid: String,
         value: BigDecimal
     ): Flux<PaymentRecordProjected>
 }

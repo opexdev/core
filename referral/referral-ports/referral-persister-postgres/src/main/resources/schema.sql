@@ -1,7 +1,8 @@
 CREATE TABLE IF NOT EXISTS configs (
     name VARCHAR(72) PRIMARY KEY,
     referral_commission_reward DECIMAL NOT NULL,
-    payment_asset_symbol VARCHAR(20) NOT NULL
+    payment_asset_symbol VARCHAR(20) NOT NULL,
+    min_payment_amount DECIMAL NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS referral_codes (
@@ -38,13 +39,16 @@ CREATE TABLE IF NOT EXISTS commission_rewards (
 CREATE TABLE IF NOT EXISTS payment_records (
     id BIGSERIAL PRIMARY KEY,
     commission_rewards_id BIGINT NOT NULL REFERENCES commission_rewards(id),
+    transfer_ref VARCHAR(255),
     update_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     payment_status VARCHAR(20) NOT NULL DEFAULT 'pending' REFERENCES payment_status(status)
 );
 
 CREATE INDEX IF NOT EXISTS payment_records_status_index ON payment_records(payment_status);
 
-CREATE OR REPLACE VIEW payment_records_projected SELECT DISTINCT ON (commission_rewards_id) * FROM payment_records LEFT JOIN commission_rewards ON commission_rewards_id = commission_rewards.id ORDER BY create_date DESC;
+DROP VIEW IF EXISTS payment_records_projected;
+
+CREATE VIEW payment_records_projected SELECT DISTINCT ON (commission_rewards_id) * FROM payment_records LEFT JOIN commission_rewards ON commission_rewards_id = commission_rewards.id ORDER BY create_date DESC;
 
 CREATE OR REPLACE FUNCTION on_insert_commission_rewards() RETURNS TRIGGER AS $$ BEGIN
     INSERT INTO payment_records(commission_rewards_id) VALUES (NEW.id);
