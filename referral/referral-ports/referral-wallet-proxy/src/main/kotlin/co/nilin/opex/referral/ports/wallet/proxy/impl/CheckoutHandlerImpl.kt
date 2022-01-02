@@ -1,4 +1,4 @@
-package co.nilin.opex.referral.ports.postgres.impl
+package co.nilin.opex.referral.ports.wallet.proxy.impl
 
 import co.nilin.opex.referral.core.spi.CheckoutHandler
 import co.nilin.opex.referral.core.spi.CommissionPaymentHandler

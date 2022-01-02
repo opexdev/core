@@ -28,5 +28,7 @@ spring:
         healthCheckInterval: 20s
         prefer-ip-address: true
 app:
+  wallet:
+    url: lb://opex-wallet/
   auth:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
