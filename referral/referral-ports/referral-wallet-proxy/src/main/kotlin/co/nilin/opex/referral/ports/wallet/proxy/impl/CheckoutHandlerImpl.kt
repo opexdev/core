@@ -6,9 +6,11 @@ import co.nilin.opex.referral.core.spi.ConfigHandler
 import co.nilin.opex.referral.core.spi.WalletProxy
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.util.*
 
+@Service
 class CheckoutHandlerImpl(
     private val configHandler: ConfigHandler,
     private val paymentHandler: CommissionPaymentHandler,
