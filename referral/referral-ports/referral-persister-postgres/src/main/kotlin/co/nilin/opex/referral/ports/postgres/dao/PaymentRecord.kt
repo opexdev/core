@@ -18,6 +18,7 @@ data class PaymentRecord(
 
 data class PaymentRecordProjected(
     @Id var id: Long?,
+    var commissionRewardsId: Long,
     var rewardedUuid: String,
     var referentUuid: String,
     var referralCode: String,

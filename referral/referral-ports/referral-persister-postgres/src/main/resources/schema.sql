@@ -58,6 +58,7 @@ AS SELECT DISTINCT ON (commission_rewards_id)
     rich_trade_id,
     referent_order_direction,
     payment_asset_symbol,
+    share,
     payment_status,
     transfer_ref,
     create_date,
