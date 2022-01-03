@@ -3,6 +3,7 @@ package co.nilin.opex.referral.core.model
 import co.nilin.opex.accountant.core.inout.RichTrade
 import co.nilin.opex.matching.engine.core.model.OrderDirection
 import java.math.BigDecimal
+import java.time.LocalDateTime
 
 data class CommissionReward(
     var id: Long,
@@ -13,5 +14,5 @@ data class CommissionReward(
     var referentOrderDirection: OrderDirection,
     var share: BigDecimal,
     var paymentAssetSymbol: String,
-    var createDate: Long
+    var createDate: LocalDateTime
 )

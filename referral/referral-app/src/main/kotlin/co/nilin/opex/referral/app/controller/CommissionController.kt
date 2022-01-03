@@ -4,6 +4,8 @@ import co.nilin.opex.matching.engine.core.model.OrderDirection
 import co.nilin.opex.referral.core.spi.CommissionRewardHandler
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
+import java.time.ZoneId
+import java.util.*
 
 @RestController
 class CommissionController(private val commissionRewardHandler: CommissionRewardHandler) {
@@ -14,7 +16,7 @@ class CommissionController(private val commissionRewardHandler: CommissionReward
         var richTrade: Long,
         var referentOrderDirection: OrderDirection,
         var share: BigDecimal,
-        var createDate: Long
+        var createDate: Date
     )
 
     @GetMapping("/commissions/{code}")
@@ -29,17 +31,17 @@ class CommissionController(private val commissionRewardHandler: CommissionReward
                 it.richTrade.first,
                 it.referentOrderDirection,
                 it.share,
-                it.createDate
+                Date.from(it.createDate.atZone(ZoneId.systemDefault()).toInstant())
             )
         }
     }
 
     @GetMapping("/commissions")
     suspend fun getCommissionsByReferent(
-        @RequestParam referrerUuid: String?,
+        @RequestParam rewardedUuid: String?,
         @RequestParam referentUuid: String?
     ): List<CommissionRewardBody> {
-        return commissionRewardHandler.findCommissions(referentUuid = referentUuid, referrerUuid = referrerUuid).map {
+        return commissionRewardHandler.findCommissions(referentUuid = referentUuid, rewardedUuid = rewardedUuid).map {
             CommissionRewardBody(
                 it.rewardedUuid,
                 it.referentUuid,
@@ -47,7 +49,7 @@ class CommissionController(private val commissionRewardHandler: CommissionReward
                 it.richTrade.first,
                 it.referentOrderDirection,
                 it.share,
-                it.createDate
+                Date.from(it.createDate.atZone(ZoneId.systemDefault()).toInstant())
             )
         }
     }

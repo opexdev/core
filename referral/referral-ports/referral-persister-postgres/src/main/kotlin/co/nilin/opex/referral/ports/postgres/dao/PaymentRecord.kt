@@ -5,13 +5,14 @@ import co.nilin.opex.referral.core.model.PaymentStatuses
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
+import java.time.LocalDateTime
 
 @Table("payment_records")
 data class PaymentRecord(
     @Id var id: Long?,
     var commissionRewardsId: Long,
     var transferRef: String?,
-    var updateDate: Long,
+    var updateDate: LocalDateTime,
     var paymentStatus: PaymentStatuses
 )
 
@@ -25,7 +26,7 @@ data class PaymentRecordProjected(
     var share: BigDecimal,
     var paymentAssetSymbol: String,
     var transferRef: String?,
-    var createDate: Long,
-    var updateDate: Long,
+    var createDate: LocalDateTime,
+    var updateDate: LocalDateTime,
     var paymentStatus: PaymentStatuses
 )

@@ -4,6 +4,7 @@ import co.nilin.opex.matching.engine.core.model.OrderDirection
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
+import java.time.LocalDateTime
 
 @Table("commission_rewards")
 data class CommissionReward(
@@ -15,6 +16,5 @@ data class CommissionReward(
     var referentOrderDirection: OrderDirection,
     var share: BigDecimal,
     var paymentAssetSymbol: String,
-    var createDate: Long? = null
+    var createDate: LocalDateTime? = null
 )
-

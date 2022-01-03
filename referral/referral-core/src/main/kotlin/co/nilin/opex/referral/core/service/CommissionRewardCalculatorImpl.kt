@@ -8,6 +8,7 @@ import co.nilin.opex.referral.core.spi.ConfigHandler
 import co.nilin.opex.referral.core.spi.ReferenceHandler
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
+import java.time.LocalDateTime
 
 @Service
 class CommissionRewardCalculatorImpl(
@@ -38,7 +39,7 @@ class CommissionRewardCalculatorImpl(
                         direction,
                         commission * (BigDecimal.ONE - reference.referralCode.referentCommission),
                         config.paymentAssetSymbol,
-                        System.currentTimeMillis() / 1000
+                        LocalDateTime.now()
                     )
                 )
             }
@@ -53,7 +54,7 @@ class CommissionRewardCalculatorImpl(
                         direction,
                         commission * reference.referralCode.referentCommission,
                         config.paymentAssetSymbol,
-                        System.currentTimeMillis() / 1000
+                        LocalDateTime.now()
                     )
                 )
             }

@@ -58,14 +58,14 @@ AS SELECT DISTINCT ON (commission_rewards_id)
     rich_trade_id,
     referent_order_direction,
     payment_asset_symbol,
-    create_date,
+    payment_status,
     transfer_ref,
-    update_date,
-    payment_status
+    create_date,
+    update_date
 FROM payment_records
 LEFT JOIN commission_rewards
 ON commission_rewards_id = commission_rewards.id
-ORDER BY commission_rewards_id, create_date DESC;
+ORDER BY commission_rewards_id, update_date DESC;
 
 CREATE OR REPLACE FUNCTION on_insert_commission_rewards() RETURNS TRIGGER AS $$ BEGIN
     INSERT INTO payment_records(commission_rewards_id) VALUES (NEW.id);
