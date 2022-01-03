@@ -12,12 +12,6 @@ import java.math.BigDecimal
 
 @Repository
 interface PaymentRecordRepository : PaymentRecordProjectedRepository, ReactiveCrudRepository<PaymentRecord, Long> {
-    suspend fun findByPaymentStatus(paymentStatus: PaymentStatuses): Flux<PaymentRecord>
-    suspend fun findByPaymentStatusWhereCreateDateLessThan(
-        paymentStatus: PaymentStatuses,
-        createData: Long
-    ): Flux<PaymentRecord>
-
     @Modifying
     @Query("INSERT INTO payment_records(commission_reward_id, payment_status) VALUES (:id, :paymentStatus)")
     suspend fun updatePaymentStatusById(id: Long, paymentStatus: PaymentStatuses)

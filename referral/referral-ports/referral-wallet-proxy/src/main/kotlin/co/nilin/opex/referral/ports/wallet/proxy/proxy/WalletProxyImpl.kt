@@ -1,6 +1,6 @@
 package co.nilin.opex.referral.ports.wallet.proxy.proxy
 
-import co.nilin.opex.accountant.core.spi.WalletProxy
+import co.nilin.opex.referral.core.spi.WalletProxy
 import kotlinx.coroutines.reactive.awaitFirst
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.ParameterizedTypeReference

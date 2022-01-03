@@ -48,7 +48,24 @@ CREATE INDEX IF NOT EXISTS payment_records_status_index ON payment_records(payme
 
 DROP VIEW IF EXISTS payment_records_projected;
 
-CREATE VIEW payment_records_projected SELECT DISTINCT ON (commission_rewards_id) * FROM payment_records LEFT JOIN commission_rewards ON commission_rewards_id = commission_rewards.id ORDER BY create_date DESC;
+CREATE VIEW payment_records_projected
+AS SELECT DISTINCT ON (commission_rewards_id)
+    payment_records.id,
+    commission_rewards.id AS commission_rewards_id,
+    rewarded_uuid,
+    referent_uuid,
+    referral_code,
+    rich_trade_id,
+    referent_order_direction,
+    payment_asset_symbol,
+    create_date,
+    transfer_ref,
+    update_date,
+    payment_status
+FROM payment_records
+LEFT JOIN commission_rewards
+ON commission_rewards_id = commission_rewards.id
+ORDER BY commission_rewards_id, create_date DESC;
 
 CREATE OR REPLACE FUNCTION on_insert_commission_rewards() RETURNS TRIGGER AS $$ BEGIN
     INSERT INTO payment_records(commission_rewards_id) VALUES (NEW.id);
