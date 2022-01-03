@@ -24,7 +24,7 @@ class CheckoutHandlerImpl(
             if (walletProxy.canFulfil(paymentAsset, "system", "1", totalShare)) {
                 walletProxy.transfer(
                     paymentAsset,
-                    "system",
+                    "main",
                     "1",
                     "main",
                     uuid,
@@ -51,7 +51,7 @@ class CheckoutHandlerImpl(
                     if (walletProxy.canFulfil(paymentAsset, "system", "1", totalShare)) {
                         walletProxy.transfer(
                             paymentAsset,
-                            "system",
+                            "main",
                             "1",
                             "main",
                             uuid,
