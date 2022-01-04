@@ -5,6 +5,8 @@ import co.nilin.opex.referral.core.spi.ConfigHandler
 import kotlinx.coroutines.runBlocking
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import java.sql.Timestamp
+import java.util.*
 
 @Service
 class PaymentSchedule(private val checkoutHandler: CheckoutHandler, private val configHandler: ConfigHandler) {
@@ -12,7 +14,7 @@ class PaymentSchedule(private val checkoutHandler: CheckoutHandler, private val 
     fun pay() {
         runBlocking {
             val config = configHandler.findConfig("default")!!
-            val minDate = System.currentTimeMillis() / 1000
+            val minDate = Date.from(Timestamp(Date().time / 1000 - config.paymentWindowSeconds * 1000).toInstant())
             checkoutHandler.checkoutOlderThan(minDate)
         }
     }

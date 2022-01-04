@@ -9,6 +9,7 @@ import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import java.math.BigDecimal
+import java.util.*
 
 @Repository
 interface PaymentRecordRepository : PaymentRecordProjectedRepository, ReactiveCrudRepository<PaymentRecord, Long> {
@@ -28,7 +29,7 @@ interface PaymentRecordProjectedRepository {
     @Query("SELECT * FROM payment_records_projected WHERE payment_status = :paymentStatus AND create_date < :createDate")
     suspend fun findByPaymentStatusWhereCreateDateLessThanProjected(
         paymentStatus: PaymentStatuses,
-        createData: Long
+        createData: Date
     ): Flux<PaymentRecordProjected>
 
     @Query(

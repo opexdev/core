@@ -9,6 +9,7 @@ import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactive.awaitSingleOrDefault
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
+import java.util.*
 
 @Service
 class CommissionPaymentHandlerImpl(private val paymentRecordRepository: PaymentRecordRepository) :
@@ -81,7 +82,7 @@ class CommissionPaymentHandlerImpl(private val paymentRecordRepository: PaymentR
             }
     }
 
-    override suspend fun findCommissionsWherePendingDateLessOrEqualThan(date: Long): List<PaymentRecord> {
+    override suspend fun findCommissionsWherePendingDateLessOrEqualThan(date: Date): List<PaymentRecord> {
         return paymentRecordRepository.findByPaymentStatusWhereCreateDateLessThanProjected(
             PaymentStatuses.PENDING,
             date

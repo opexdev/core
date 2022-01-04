@@ -68,7 +68,7 @@ class CheckoutHandlerImpl(
         }
     }
 
-    override suspend fun checkoutOlderThan(date: Long) {
+    override suspend fun checkoutOlderThan(date: Date) {
         val commissions = paymentHandler.findCommissionsWherePendingDateLessOrEqualThan(date)
             .groupBy { it.commissionReward.rewardedUuid }
         coroutineScope {

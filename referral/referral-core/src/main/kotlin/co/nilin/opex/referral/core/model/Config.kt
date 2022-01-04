@@ -6,5 +6,6 @@ data class Config(
     var name: String,
     var referralCommissionReward: BigDecimal,
     var paymentAssetSymbol: String,
-    var minPaymentAmount: BigDecimal
+    var minPaymentAmount: BigDecimal,
+    var paymentWindowSeconds: Int
 )
