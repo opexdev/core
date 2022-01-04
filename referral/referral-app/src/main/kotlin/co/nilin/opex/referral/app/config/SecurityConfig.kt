@@ -1,9 +1,12 @@
 package co.nilin.opex.referral.app.config
 
+import net.minidev.json.JSONArray
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
+import org.springframework.security.authorization.AuthorizationDecision
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.ServerHttpSecurity
+import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder
 import org.springframework.security.web.server.SecurityWebFilterChain
@@ -19,7 +22,15 @@ class SecurityConfig(private val webClient: WebClient) {
 
         http.csrf().disable()
             .authorizeExchange()
-            .pathMatchers("/**").permitAll()
+            .pathMatchers("/codes", "/checkouts", "/commissions/**").access { mono, _ ->
+                mono.map { auth ->
+                    auth.authorities.any { authority -> authority.authority == "SCOPE_trust" } && ((auth.principal as Jwt).claims["groups"] as JSONArray)
+                        .contains("finance-admin")
+                }.map { granted ->
+                    AuthorizationDecision(granted)
+                }
+            }
+            .pathMatchers("/**").hasAuthority("SCOPE_trust")
             .anyExchange().authenticated()
             .and()
             .oauth2ResourceServer()

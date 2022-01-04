@@ -4,6 +4,8 @@ import co.nilin.opex.referral.core.spi.ReferenceHandler
 import co.nilin.opex.referral.core.spi.ReferralCodeHandler
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 
@@ -28,28 +30,55 @@ class ReferralController(
     )
 
     @PostMapping("/codes")
-    suspend fun generateReferralCode(@RequestBody body: PostReferralBody): String {
+    suspend fun generateReferralCode(
+        @RequestBody body: PostReferralBody,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): String {
+        if (body.uuid != securityContext.authentication.name) throw OpexException(OpexError.UnAuthorized)
         return referralCodeHandler.generateReferralCode(body.uuid, body.referentCommission)
     }
 
     @PatchMapping("/codes/{code}")
-    suspend fun updateReferralCodeByCode(@PathVariable code: String, @RequestBody body: PatchReferralBody) {
+    suspend fun updateReferralCodeByCode(
+        @PathVariable code: String,
+        @RequestBody body: PatchReferralBody,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ) {
+        val referralCode = referralCodeHandler.findByCode(code) ?: throw OpexException(
+            OpexError.BadRequest,
+            "Referral code is invalid"
+        )
+        if (referralCode.uuid != securityContext.authentication.name) throw OpexException(OpexError.UnAuthorized)
         referralCodeHandler.updateCommissions(code, body.referentCommission)
     }
 
     @PutMapping("/codes/{code}/assign")
-    suspend fun assignReferrer(@PathVariable code: String, @RequestParam uuid: String) {
+    suspend fun assignReferrer(
+        @PathVariable code: String,
+        @RequestParam uuid: String,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ) {
+        if (uuid != securityContext.authentication.name) throw OpexException(OpexError.UnAuthorized)
         referralCodeHandler.assign(code, uuid)
     }
 
     @GetMapping("/codes/{code}")
-    suspend fun getReferralCodeByCode(@PathVariable code: String): ReferralCodeBody {
+    suspend fun getReferralCodeByCode(
+        @PathVariable code: String,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): ReferralCodeBody {
         val referralCode = referralCodeHandler.findByCode(code) ?: throw OpexException(OpexError.NotFound)
+        if (referralCode.uuid != securityContext.authentication.name) throw OpexException(OpexError.UnAuthorized)
         return ReferralCodeBody(referralCode.uuid, referralCode.code, referralCode.referentCommission)
     }
 
     @GetMapping("/codes/{code}/references")
-    suspend fun getReferenceByCode(@PathVariable code: String): List<String> {
+    suspend fun getReferenceByCode(
+        @PathVariable code: String,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): List<String> {
+        val referralCode = referralCodeHandler.findByCode(code) ?: throw OpexException(OpexError.NotFound)
+        if (referralCode.uuid != securityContext.authentication.name) throw OpexException(OpexError.UnAuthorized)
         return referenceHandler.findByCode(code).map { it.referentUuid }
     }
 
@@ -59,7 +88,12 @@ class ReferralController(
     }
 
     @DeleteMapping("/codes/{code}")
-    suspend fun deleteReferralCode(@PathVariable code: String) {
+    suspend fun deleteReferralCode(
+        @PathVariable code: String,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ) {
+        val referralCode = referralCodeHandler.findByCode(code) ?: throw OpexException(OpexError.NotFound)
+        if (referralCode.uuid != securityContext.authentication.name) throw OpexException(OpexError.UnAuthorized)
         referralCodeHandler.deleteByCode(code)
     }
 }
