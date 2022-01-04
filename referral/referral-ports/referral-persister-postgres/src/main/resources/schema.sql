@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS payment_records (
     commission_rewards_id BIGINT NOT NULL REFERENCES commission_rewards(id),
     transfer_ref VARCHAR(255),
     update_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    payment_status VARCHAR(20) NOT NULL DEFAULT 'pending' REFERENCES payment_status(status)
+    payment_status VARCHAR(20) NOT NULL DEFAULT 'PENDING' REFERENCES payment_status(status)
 );
 
 CREATE INDEX IF NOT EXISTS payment_records_status_index ON payment_records(payment_status);
