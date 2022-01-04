@@ -31,10 +31,28 @@ interface PaymentRecordProjectedRepository {
         createData: Long
     ): Flux<PaymentRecordProjected>
 
-    @Query("SELECT *, SUM(share) AS acc_share OVER (PARTITION BY uuid) FROM payment_records_projected WHERE payment_status = 'pending' AND acc_share >= :value")
+    @Query(
+        """
+            WITH s AS (
+                SELECT *, SUM(share) OVER (PARTITION BY rewarded_uuid) AS acc_share 
+                FROM payment_records_projected 
+                WHERE payment_status = 'PENDING'
+            ) 
+            SELECT * FROM s WHERE acc_share >= :value
+        """
+    )
     suspend fun findAllWhereTotalShareMoreThanProjected(value: BigDecimal): Flux<PaymentRecordProjected>
 
-    @Query("SELECT *, SUM(share) AS acc_share OVER (PARTITION BY uuid) FROM payment_records_projected WHERE payment_status = 'pending' AND acc_share >= :value AND uuid = :uuid")
+    @Query(
+        """
+            WITH s AS (
+                SELECT *, SUM(share) OVER (PARTITION BY rewarded_uuid) AS acc_share 
+                FROM payment_records_projected 
+                WHERE payment_status = 'PENDING' AND rewarded_uuid = :uuid
+            ) 
+            SELECT * FROM s WHERE acc_share >= :value
+        """
+    )
     suspend fun findByUuidWhereTotalShareMoreThanProjected(
         uuid: String,
         value: BigDecimal
