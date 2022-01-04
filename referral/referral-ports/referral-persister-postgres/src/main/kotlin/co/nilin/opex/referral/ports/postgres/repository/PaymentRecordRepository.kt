@@ -13,11 +13,11 @@ import java.math.BigDecimal
 @Repository
 interface PaymentRecordRepository : PaymentRecordProjectedRepository, ReactiveCrudRepository<PaymentRecord, Long> {
     @Modifying
-    @Query("INSERT INTO payment_records(commission_reward_id, payment_status) VALUES (:id, :paymentStatus)")
+    @Query("INSERT INTO payment_records(commission_rewards_id, payment_status) VALUES (:id, :paymentStatus)")
     suspend fun updatePaymentStatusById(id: Long, paymentStatus: PaymentStatuses)
 
     @Modifying
-    @Query("INSERT INTO payment_records(commission_reward_id, transfer_ref) VALUES (:id, :transferRef)")
+    @Query("INSERT INTO payment_records(commission_rewards_id, transfer_ref, payment_status) VALUES (:id, :transferRef, 'CHECKED_OUT')")
     suspend fun checkout(id: Long, transferRef: String)
 }
 
