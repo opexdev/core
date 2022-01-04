@@ -17,7 +17,7 @@ class CommissionPaymentHandlerImpl(private val paymentRecordRepository: PaymentR
         return paymentRecordRepository.findByPaymentStatusProjected(paymentStatus).map {
             PaymentRecord(
                 CommissionReward(
-                    it.id!!,
+                    it.commissionRewardsId,
                     it.rewardedUuid,
                     it.referentUuid,
                     it.referralCode,
@@ -42,7 +42,7 @@ class CommissionPaymentHandlerImpl(private val paymentRecordRepository: PaymentR
             .collectList().awaitSingle().map {
                 PaymentRecord(
                     CommissionReward(
-                        it.id!!,
+                        it.commissionRewardsId,
                         it.rewardedUuid,
                         it.referentUuid,
                         it.referralCode,
@@ -64,7 +64,7 @@ class CommissionPaymentHandlerImpl(private val paymentRecordRepository: PaymentR
             .collectList().awaitSingle().map {
                 PaymentRecord(
                     CommissionReward(
-                        it.id!!,
+                        it.commissionRewardsId,
                         it.rewardedUuid,
                         it.referentUuid,
                         it.referralCode,
@@ -88,7 +88,7 @@ class CommissionPaymentHandlerImpl(private val paymentRecordRepository: PaymentR
         ).collectList().awaitSingle().map {
             PaymentRecord(
                 CommissionReward(
-                    it.id!!,
+                    it.commissionRewardsId,
                     it.rewardedUuid,
                     it.referentUuid,
                     it.referralCode,
