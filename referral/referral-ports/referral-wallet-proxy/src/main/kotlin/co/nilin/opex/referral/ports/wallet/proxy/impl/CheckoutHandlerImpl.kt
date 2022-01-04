@@ -34,9 +34,9 @@ class CheckoutHandlerImpl(
                     "",
                     transferRef
                 )
-            }
-            commissions.forEach {
-                launch { paymentHandler.checkout(it.commissionReward.id, transferRef) }
+                commissions.forEach {
+                    launch { paymentHandler.checkout(it.commissionReward.id, transferRef) }
+                }
             }
         }
     }
@@ -50,7 +50,7 @@ class CheckoutHandlerImpl(
                 coroutineScope {
                     val totalShare = c.sumOf { it.commissionReward.share }
                     val paymentAsset = c.first().commissionReward.paymentAssetSymbol //TODO Handle asset variance
-                    if (walletProxy.canFulfil(paymentAsset, "system", "1", totalShare)) {
+                    if (walletProxy.canFulfil(paymentAsset, "main", "1", totalShare)) {
                         walletProxy.transfer(
                             paymentAsset,
                             "main",
@@ -61,8 +61,8 @@ class CheckoutHandlerImpl(
                             "",
                             transferRef
                         )
+                        c.forEach { launch { paymentHandler.checkout(it.commissionReward.id, transferRef) } }
                     }
-                    c.forEach { launch { paymentHandler.checkout(it.commissionReward.id, transferRef) } }
                 }
             }
         }
@@ -76,10 +76,10 @@ class CheckoutHandlerImpl(
                 val transferRef = UUID.randomUUID().toString()
                 val totalShare = c.sumOf { it.commissionReward.share }
                 val paymentAsset = c.first().commissionReward.paymentAssetSymbol //TODO Handle asset variance
-                if (walletProxy.canFulfil(paymentAsset, "system", "1", totalShare)) {
+                if (walletProxy.canFulfil(paymentAsset, "main", "1", totalShare)) {
                     walletProxy.transfer(
                         paymentAsset,
-                        "system",
+                        "main",
                         "1",
                         "main",
                         uuid,
@@ -87,8 +87,8 @@ class CheckoutHandlerImpl(
                         "",
                         transferRef
                     )
+                    c.forEach { launch { paymentHandler.checkout(it.commissionReward.id, transferRef) } }
                 }
-                c.forEach { launch { paymentHandler.checkout(it.commissionReward.id, transferRef) } }
             }
         }
     }
