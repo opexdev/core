@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 @Table("checkout_records")
 data class CheckoutRecord(
     @Id var id: Long?,
-    var commissionRewardsId: Long,
+    var commissionRewardId: Long,
     var transferRef: String?,
     var updateDate: LocalDateTime,
     var checkoutState: CheckoutState
@@ -18,7 +18,7 @@ data class CheckoutRecord(
 
 data class CheckoutRecordProjected(
     @Id var id: Long?,
-    var commissionRewardsId: Long,
+    var commissionRewardId: Long,
     var rewardedUuid: String,
     var referentUuid: String,
     var referralCode: String,

@@ -18,7 +18,7 @@ class CommissionPaymentHandlerImpl(private val checkoutRecordRepository: Checkou
         return checkoutRecordRepository.findByCheckoutStateProjected(checkoutState).map {
             CheckoutRecord(
                 CommissionReward(
-                    it.commissionRewardsId,
+                    it.commissionRewardId,
                     it.rewardedUuid,
                     it.referentUuid,
                     it.referralCode,
@@ -42,7 +42,7 @@ class CommissionPaymentHandlerImpl(private val checkoutRecordRepository: Checkou
             .collectList().awaitSingle().map {
                 CheckoutRecord(
                     CommissionReward(
-                        it.commissionRewardsId,
+                        it.commissionRewardId,
                         it.rewardedUuid,
                         it.referentUuid,
                         it.referralCode,
@@ -63,7 +63,7 @@ class CommissionPaymentHandlerImpl(private val checkoutRecordRepository: Checkou
             .collectList().awaitSingle().map {
                 CheckoutRecord(
                     CommissionReward(
-                        it.commissionRewardsId,
+                        it.commissionRewardId,
                         it.rewardedUuid,
                         it.referentUuid,
                         it.referralCode,
@@ -86,7 +86,7 @@ class CommissionPaymentHandlerImpl(private val checkoutRecordRepository: Checkou
         ).collectList().awaitSingle().map {
             CheckoutRecord(
                 CommissionReward(
-                    it.commissionRewardsId,
+                    it.commissionRewardId,
                     it.rewardedUuid,
                     it.referentUuid,
                     it.referralCode,
