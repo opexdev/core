@@ -14,7 +14,7 @@ class ConfigHandlerImpl(private val configRepository: ConfigRepository) : Config
                 Config(
                     it.name,
                     it.referralCommissionReward,
-                    it.paymentAssetSymbol,
+                    it.paymentCurrency,
                     it.minPaymentAmount,
                     it.paymentWindowSeconds
                 )

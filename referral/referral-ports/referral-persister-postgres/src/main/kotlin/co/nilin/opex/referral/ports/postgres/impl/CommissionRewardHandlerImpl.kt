@@ -29,7 +29,6 @@ class CommissionRewardHandlerImpl(
                 Pair(it.richTradeId, null),
                 it.referentOrderDirection,
                 it.share,
-                it.paymentAssetSymbol,
                 it.createDate!!
             )
         }.collectList().awaitSingleOrDefault(emptyList())

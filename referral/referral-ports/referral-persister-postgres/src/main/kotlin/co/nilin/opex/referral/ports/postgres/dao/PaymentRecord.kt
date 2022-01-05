@@ -25,7 +25,6 @@ data class PaymentRecordProjected(
     var richTradeId: Long,
     var referentOrderDirection: OrderDirection,
     var share: BigDecimal,
-    var paymentAssetSymbol: String,
     var transferRef: String?,
     var createDate: LocalDateTime,
     var updateDate: LocalDateTime,

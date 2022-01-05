@@ -17,15 +17,15 @@ class CheckoutHandlerImpl(
     private val walletProxy: WalletProxy
 ) : CheckoutHandler {
     override suspend fun checkoutById(uuid: String) {
-        val min = configHandler.findConfig("default")!!.minPaymentAmount
+        val config = configHandler.findConfig("default")!!
+        val min = config.minPaymentAmount
         val commissions = paymentHandler.findUserCommissionsWhereTotalGreaterAndEqualTo(uuid, min)
         val transferRef = UUID.randomUUID().toString()
         coroutineScope {
             val totalShare = commissions.sumOf { it.commissionReward.share }
-            val paymentAsset = commissions.first().commissionReward.paymentAssetSymbol //TODO Handle asset variance
-            if (walletProxy.canFulfil(paymentAsset, "system", "1", totalShare)) {
+            if (walletProxy.canFulfil(config.paymentCurrency, "system", "1", totalShare)) {
                 walletProxy.transfer(
-                    paymentAsset,
+                    config.paymentCurrency,
                     "main",
                     "1",
                     "main",
@@ -42,6 +42,7 @@ class CheckoutHandlerImpl(
     }
 
     override suspend fun checkoutEveryCandidate(min: BigDecimal) {
+        val config = configHandler.findConfig("default")!!
         val commissions = paymentHandler.findAllCommissionsWhereTotalGreaterAndEqualTo(min)
             .groupBy { it.commissionReward.rewardedUuid }
         coroutineScope {
@@ -49,10 +50,9 @@ class CheckoutHandlerImpl(
                 val transferRef = UUID.randomUUID().toString()
                 coroutineScope {
                     val totalShare = c.sumOf { it.commissionReward.share }
-                    val paymentAsset = c.first().commissionReward.paymentAssetSymbol //TODO Handle asset variance
-                    if (walletProxy.canFulfil(paymentAsset, "main", "1", totalShare)) {
+                    if (walletProxy.canFulfil(config.paymentCurrency, "main", "1", totalShare)) {
                         walletProxy.transfer(
-                            paymentAsset,
+                            config.paymentCurrency,
                             "main",
                             "1",
                             "main",
@@ -69,16 +69,16 @@ class CheckoutHandlerImpl(
     }
 
     override suspend fun checkoutOlderThan(date: Date) {
+        val config = configHandler.findConfig("default")!!
         val commissions = paymentHandler.findCommissionsWherePendingDateLessOrEqualThan(date)
             .groupBy { it.commissionReward.rewardedUuid }
         coroutineScope {
             commissions.forEach { (uuid, c) ->
                 val transferRef = UUID.randomUUID().toString()
                 val totalShare = c.sumOf { it.commissionReward.share }
-                val paymentAsset = c.first().commissionReward.paymentAssetSymbol //TODO Handle asset variance
-                if (walletProxy.canFulfil(paymentAsset, "main", "1", totalShare)) {
+                if (walletProxy.canFulfil(config.paymentCurrency, "main", "1", totalShare)) {
                     walletProxy.transfer(
-                        paymentAsset,
+                        config.paymentCurrency,
                         "main",
                         "1",
                         "main",

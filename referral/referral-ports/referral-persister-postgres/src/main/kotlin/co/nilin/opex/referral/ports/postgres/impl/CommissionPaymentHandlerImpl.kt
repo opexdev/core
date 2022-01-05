@@ -25,7 +25,6 @@ class CommissionPaymentHandlerImpl(private val paymentRecordRepository: PaymentR
                     Pair(it.richTradeId, null),
                     it.referentOrderDirection,
                     it.share,
-                    it.paymentAssetSymbol,
                     it.createDate
                 ),
                 it.paymentStatus,
@@ -50,7 +49,6 @@ class CommissionPaymentHandlerImpl(private val paymentRecordRepository: PaymentR
                         Pair(it.richTradeId, null),
                         it.referentOrderDirection,
                         it.share,
-                        it.paymentAssetSymbol,
                         it.createDate
                     ),
                     it.paymentStatus,
@@ -72,7 +70,6 @@ class CommissionPaymentHandlerImpl(private val paymentRecordRepository: PaymentR
                         Pair(it.richTradeId, null),
                         it.referentOrderDirection,
                         it.share,
-                        it.paymentAssetSymbol,
                         it.createDate
                     ),
                     it.paymentStatus,
@@ -96,7 +93,6 @@ class CommissionPaymentHandlerImpl(private val paymentRecordRepository: PaymentR
                     Pair(it.richTradeId, null),
                     it.referentOrderDirection,
                     it.share,
-                    it.paymentAssetSymbol,
                     it.createDate
                 ),
                 it.paymentStatus,

@@ -17,7 +17,6 @@ class CommissionRewardCalculatorImpl(
     private val referenceHandler: ReferenceHandler
 ) : CommissionRewardCalculator {
     override suspend fun calculate(ouid: String, richTrade: RichTrade): List<CommissionReward> {
-        val config = configHandler.findConfig("default")!!
         if (ouid != richTrade.makerOuid && ouid != richTrade.takerOuid) throw IllegalArgumentException("Order is not correct")
         val uuid = if (ouid == richTrade.makerOuid) richTrade.makerUuid else richTrade.takerUuid
         val reference = referenceHandler.findByReferentUuid(uuid)
@@ -38,7 +37,6 @@ class CommissionRewardCalculatorImpl(
                         richTrade.id to richTrade,
                         direction,
                         commission * (BigDecimal.ONE - reference.referralCode.referentCommission),
-                        config.paymentAssetSymbol,
                         LocalDateTime.now()
                     )
                 )
@@ -53,7 +51,6 @@ class CommissionRewardCalculatorImpl(
                         richTrade.id to richTrade,
                         direction,
                         commission * reference.referralCode.referentCommission,
-                        config.paymentAssetSymbol,
                         LocalDateTime.now()
                     )
                 )
