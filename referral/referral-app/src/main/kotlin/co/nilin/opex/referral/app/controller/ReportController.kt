@@ -18,21 +18,37 @@ class ReportController(
     private val referenceHandler: ReferenceHandler,
     private val referralCodeHandler: ReferralCodeHandler
 ) {
-    data class ReportBody(
+    data class ReferralCodeReportBody(
         val code: String,
         val referentsCount: Long,
-        val referrerShare: BigDecimal
+        val share: BigDecimal
     )
 
-    @GetMapping("/reports/{code}")
+    data class ReferrerReportBody(
+        val referentsCount: Long,
+        val share: BigDecimal
+    )
+
+    @GetMapping("/reports/codes/{code}")
     suspend fun getReportByCode(
         @PathVariable code: String,
         @CurrentSecurityContext securityContext: SecurityContext
-    ): ReportBody {
+    ): ReferralCodeReportBody {
         val referralCode = referralCodeHandler.findByCode(code) ?: throw OpexException(OpexError.NotFound)
         if (referralCode.uuid != securityContext.authentication.name) throw OpexException(OpexError.UnAuthorized)
         val referencesCount = referenceHandler.findByCode(code).size.toLong()
         val commissions = commissionRewardHandler.findCommissions(referralCode = code)
-        return ReportBody(code, referencesCount, commissions.sumOf { it.share })
+        return ReferralCodeReportBody(code, referencesCount, commissions.sumOf { it.share })
+    }
+
+    @GetMapping("/reports/users/{rewardedUuid}")
+    suspend fun getReportByReferrerUuid(
+        @PathVariable rewardedUuid: String,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): ReferrerReportBody {
+        if (rewardedUuid != securityContext.authentication.name) throw OpexException(OpexError.UnAuthorized)
+        val referencesCount = referenceHandler.findByReferrerUuid(rewardedUuid).size.toLong()
+        val commissions = commissionRewardHandler.findCommissions(rewardedUuid = rewardedUuid)
+        return ReferrerReportBody(referencesCount, commissions.sumOf { it.share })
     }
 }

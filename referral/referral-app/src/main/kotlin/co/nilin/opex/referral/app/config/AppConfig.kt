@@ -49,7 +49,7 @@ class AppConfig {
                 makerCommissions.forEach { commissionRewardPersister.save(it) }
                 takerCommissions.forEach { commissionRewardPersister.save(it) }
                 checkoutHandler.checkoutById(richTrade.makerUuid)
-                checkoutHandler.checkoutById(richTrade.takerUuid)
+                if (richTrade.makerUuid != richTrade.takerUuid) checkoutHandler.checkoutById(richTrade.takerUuid)
             }
         }
     }
