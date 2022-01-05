@@ -1,7 +1,7 @@
 package co.nilin.opex.referral.app.controller
 
 import co.nilin.opex.matching.engine.core.model.OrderDirection
-import co.nilin.opex.referral.core.model.PaymentStatuses
+import co.nilin.opex.referral.core.model.CheckoutState
 import co.nilin.opex.referral.core.spi.CheckoutHandler
 import co.nilin.opex.referral.core.spi.CommissionPaymentHandler
 import co.nilin.opex.referral.core.spi.ConfigHandler
@@ -17,7 +17,7 @@ class CheckoutController(
     private val configHandler: ConfigHandler,
     private val paymentHandler: CommissionPaymentHandler
 ) {
-    data class PaymentRecordBody(
+    data class CheckoutRecordBody(
         var commissionRewardsId: Long,
         var rewardedUuid: String,
         var referentUuid: String,
@@ -26,7 +26,7 @@ class CheckoutController(
         var referentOrderDirection: OrderDirection,
         var share: BigDecimal,
         var createDate: Date,
-        var paymentStatus: PaymentStatuses,
+        var checkoutState: CheckoutState,
         var transferRef: String?,
         var updateDate: Date
     )
@@ -38,9 +38,9 @@ class CheckoutController(
     }
 
     @GetMapping
-    suspend fun get(@RequestParam status: PaymentStatuses): List<PaymentRecordBody> {
-        return paymentHandler.findCommissionsByStatus(status).map {
-            PaymentRecordBody(
+    suspend fun get(@RequestParam status: CheckoutState): List<CheckoutRecordBody> {
+        return paymentHandler.findCommissionsByCheckoutState(status).map {
+            CheckoutRecordBody(
                 it.commissionReward.id,
                 it.commissionReward.rewardedUuid,
                 it.commissionReward.referentUuid,
@@ -49,7 +49,7 @@ class CheckoutController(
                 it.commissionReward.referentOrderDirection,
                 it.commissionReward.share,
                 Date.from(it.commissionReward.createDate.atZone(ZoneId.systemDefault()).toInstant()),
-                it.paymentStatus,
+                it.checkoutState,
                 it.transferRef,
                 Date.from(it.updateDate.atZone(ZoneId.systemDefault()).toInstant())
             )

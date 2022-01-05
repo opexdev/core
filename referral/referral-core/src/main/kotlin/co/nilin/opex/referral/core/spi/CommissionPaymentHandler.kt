@@ -1,15 +1,15 @@
 package co.nilin.opex.referral.core.spi
 
-import co.nilin.opex.referral.core.model.PaymentRecord
-import co.nilin.opex.referral.core.model.PaymentStatuses
+import co.nilin.opex.referral.core.model.CheckoutRecord
+import co.nilin.opex.referral.core.model.CheckoutState
 import java.math.BigDecimal
 import java.util.*
 
 interface CommissionPaymentHandler {
-    suspend fun findCommissionsByStatus(paymentStatus: PaymentStatuses): List<PaymentRecord>
-    suspend fun findUserCommissionsWhereTotalGreaterAndEqualTo(uuid: String, value: BigDecimal): List<PaymentRecord>
-    suspend fun findAllCommissionsWhereTotalGreaterAndEqualTo(value: BigDecimal): List<PaymentRecord>
-    suspend fun findCommissionsWherePendingDateLessOrEqualThan(date: Date): List<PaymentRecord>
-    suspend fun updatePaymentStatus(id: Long, value: PaymentStatuses)
+    suspend fun findCommissionsByCheckoutState(checkoutState: CheckoutState): List<CheckoutRecord>
+    suspend fun findUserCommissionsWhereTotalGreaterAndEqualTo(uuid: String, value: BigDecimal): List<CheckoutRecord>
+    suspend fun findAllCommissionsWhereTotalGreaterAndEqualTo(value: BigDecimal): List<CheckoutRecord>
+    suspend fun findCommissionsWherePendingDateLessOrEqualThan(date: Date): List<CheckoutRecord>
+    suspend fun updateCheckoutState(id: Long, value: CheckoutState)
     suspend fun checkout(id: Long, transferRef: String)
 }

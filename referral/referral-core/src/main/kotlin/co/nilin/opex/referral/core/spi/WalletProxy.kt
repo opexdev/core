@@ -3,7 +3,6 @@ package co.nilin.opex.referral.core.spi
 import java.math.BigDecimal
 
 interface WalletProxy {
-
     suspend fun transfer(
         symbol: String,
         senderWalletType: String,

@@ -4,7 +4,6 @@ import co.nilin.opex.accountant.core.inout.RichTrade
 import co.nilin.opex.referral.core.api.CommissionRewardCalculator
 import co.nilin.opex.referral.core.api.SymbolPriceCalculator
 import co.nilin.opex.referral.core.model.CommissionReward
-import co.nilin.opex.referral.core.spi.ConfigHandler
 import co.nilin.opex.referral.core.spi.ReferenceHandler
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
@@ -12,7 +11,6 @@ import java.time.LocalDateTime
 
 @Service
 class CommissionRewardCalculatorImpl(
-    private val configHandler: ConfigHandler,
     private val symbolPriceCalculator: SymbolPriceCalculator,
     private val referenceHandler: ReferenceHandler
 ) : CommissionRewardCalculator {

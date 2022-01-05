@@ -1,6 +1,6 @@
 package co.nilin.opex.referral.core.model
 
-enum class PaymentStatuses {
+enum class CheckoutState {
     PENDING,
     CHECKED_OUT
 }

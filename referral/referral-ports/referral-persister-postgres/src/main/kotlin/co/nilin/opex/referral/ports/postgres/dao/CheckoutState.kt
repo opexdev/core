@@ -1,8 +1,8 @@
 package co.nilin.opex.referral.ports.postgres.dao
 
-import co.nilin.opex.referral.core.model.PaymentStatuses
+import co.nilin.opex.referral.core.model.CheckoutState
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 
-@Table("payment_status")
-data class PaymentStatus(@Id var status: PaymentStatuses)
+@Table("checkout_status")
+data class CheckoutState(@Id var state: CheckoutState)
