@@ -7,7 +7,7 @@ import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
-@Table("payment_records")
+@Table("checkout_records")
 data class CheckoutRecord(
     @Id var id: Long?,
     var commissionRewardsId: Long,
