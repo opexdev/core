@@ -1,7 +1,7 @@
 package co.nilin.opex.referral.ports.wallet.proxy.impl
 
 import co.nilin.opex.referral.core.spi.CheckoutHandler
-import co.nilin.opex.referral.core.spi.CommissionPaymentHandler
+import co.nilin.opex.referral.core.spi.CheckoutRecordHandler
 import co.nilin.opex.referral.core.spi.ConfigHandler
 import co.nilin.opex.referral.core.spi.WalletProxy
 import kotlinx.coroutines.coroutineScope
@@ -13,13 +13,13 @@ import java.util.*
 @Service
 class CheckoutHandlerImpl(
     private val configHandler: ConfigHandler,
-    private val paymentHandler: CommissionPaymentHandler,
+    private val checkoutRecordHandler: CheckoutRecordHandler,
     private val walletProxy: WalletProxy
 ) : CheckoutHandler {
     override suspend fun checkoutById(uuid: String) {
         val config = configHandler.findConfig("default")!!
         val min = config.minPaymentAmount
-        val commissions = paymentHandler.findUserCommissionsWhereTotalGreaterAndEqualTo(uuid, min)
+        val commissions = checkoutRecordHandler.findUserCommissionsWhereTotalGreaterAndEqualTo(uuid, min)
         val transferRef = UUID.randomUUID().toString()
         coroutineScope {
             val totalShare = commissions.sumOf { it.commissionReward.share }
@@ -35,7 +35,7 @@ class CheckoutHandlerImpl(
                     transferRef
                 )
                 commissions.forEach {
-                    launch { paymentHandler.checkout(it.commissionReward.id, transferRef) }
+                    launch { checkoutRecordHandler.checkout(it.commissionReward.id, transferRef) }
                 }
             }
         }
@@ -43,7 +43,7 @@ class CheckoutHandlerImpl(
 
     override suspend fun checkoutEveryCandidate(min: BigDecimal) {
         val config = configHandler.findConfig("default")!!
-        val commissions = paymentHandler.findAllCommissionsWhereTotalGreaterAndEqualTo(min)
+        val commissions = checkoutRecordHandler.findAllCommissionsWhereTotalGreaterAndEqualTo(min)
             .groupBy { it.commissionReward.rewardedUuid }
         coroutineScope {
             commissions.forEach { (uuid, c) ->
@@ -61,7 +61,7 @@ class CheckoutHandlerImpl(
                             "",
                             transferRef
                         )
-                        c.forEach { launch { paymentHandler.checkout(it.commissionReward.id, transferRef) } }
+                        c.forEach { launch { checkoutRecordHandler.checkout(it.commissionReward.id, transferRef) } }
                     }
                 }
             }
@@ -70,7 +70,7 @@ class CheckoutHandlerImpl(
 
     override suspend fun checkoutOlderThan(date: Date) {
         val config = configHandler.findConfig("default")!!
-        val commissions = paymentHandler.findCommissionsWherePendingDateLessOrEqualThan(date)
+        val commissions = checkoutRecordHandler.findCommissionsWherePendingDateLessOrEqualThan(date)
             .groupBy { it.commissionReward.rewardedUuid }
         coroutineScope {
             commissions.forEach { (uuid, c) ->
@@ -87,7 +87,7 @@ class CheckoutHandlerImpl(
                         "",
                         transferRef
                     )
-                    c.forEach { launch { paymentHandler.checkout(it.commissionReward.id, transferRef) } }
+                    c.forEach { launch { checkoutRecordHandler.checkout(it.commissionReward.id, transferRef) } }
                 }
             }
         }

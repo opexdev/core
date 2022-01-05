@@ -3,7 +3,7 @@ package co.nilin.opex.referral.ports.postgres.impl
 import co.nilin.opex.referral.core.model.CheckoutRecord
 import co.nilin.opex.referral.core.model.CheckoutState
 import co.nilin.opex.referral.core.model.CommissionReward
-import co.nilin.opex.referral.core.spi.CommissionPaymentHandler
+import co.nilin.opex.referral.core.spi.CheckoutRecordHandler
 import co.nilin.opex.referral.ports.postgres.repository.CheckoutRecordRepository
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactive.awaitSingleOrDefault
@@ -12,8 +12,8 @@ import java.math.BigDecimal
 import java.util.*
 
 @Service
-class CommissionPaymentHandlerImpl(private val checkoutRecordRepository: CheckoutRecordRepository) :
-    CommissionPaymentHandler {
+class CheckoutRecordHandlerImpl(private val checkoutRecordRepository: CheckoutRecordRepository) :
+    CheckoutRecordHandler {
     override suspend fun findCommissionsByCheckoutState(checkoutState: CheckoutState): List<CheckoutRecord> {
         return checkoutRecordRepository.findByCheckoutStateProjected(checkoutState).map {
             CheckoutRecord(

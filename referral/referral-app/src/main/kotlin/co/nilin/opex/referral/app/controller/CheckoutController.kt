@@ -3,7 +3,7 @@ package co.nilin.opex.referral.app.controller
 import co.nilin.opex.matching.engine.core.model.OrderDirection
 import co.nilin.opex.referral.core.model.CheckoutState
 import co.nilin.opex.referral.core.spi.CheckoutHandler
-import co.nilin.opex.referral.core.spi.CommissionPaymentHandler
+import co.nilin.opex.referral.core.spi.CheckoutRecordHandler
 import co.nilin.opex.referral.core.spi.ConfigHandler
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
@@ -15,7 +15,7 @@ import java.util.*
 class CheckoutController(
     private val checkoutHandler: CheckoutHandler,
     private val configHandler: ConfigHandler,
-    private val paymentHandler: CommissionPaymentHandler
+    private val checkoutRecordHandler: CheckoutRecordHandler
 ) {
     data class CheckoutRecordBody(
         var commissionRewardsId: Long,
@@ -39,7 +39,7 @@ class CheckoutController(
 
     @GetMapping
     suspend fun get(@RequestParam status: CheckoutState): List<CheckoutRecordBody> {
-        return paymentHandler.findCommissionsByCheckoutState(status).map {
+        return checkoutRecordHandler.findCommissionsByCheckoutState(status).map {
             CheckoutRecordBody(
                 it.commissionReward.id,
                 it.commissionReward.rewardedUuid,

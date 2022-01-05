@@ -5,7 +5,7 @@ import co.nilin.opex.referral.core.model.CheckoutState
 import java.math.BigDecimal
 import java.util.*
 
-interface CommissionPaymentHandler {
+interface CheckoutRecordHandler {
     suspend fun findCommissionsByCheckoutState(checkoutState: CheckoutState): List<CheckoutRecord>
     suspend fun findUserCommissionsWhereTotalGreaterAndEqualTo(uuid: String, value: BigDecimal): List<CheckoutRecord>
     suspend fun findAllCommissionsWhereTotalGreaterAndEqualTo(value: BigDecimal): List<CheckoutRecord>
