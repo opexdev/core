@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS configs (
     name VARCHAR(72) PRIMARY KEY,
     referral_commission_reward DECIMAL NOT NULL,
-    payment_asset_symbol VARCHAR(20) NOT NULL,
+    payment_currency VARCHAR(20) NOT NULL,
     min_payment_amount DECIMAL NOT NULL,
     payment_window_seconds INTEGER NOT NULL
 );
@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS referral_codes (
     code VARCHAR(255) NOT NULL UNIQUE,
     referent_commission DECIMAL NOT NULL
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS code_index ON referral_codes(code);
 
 CREATE TABLE IF NOT EXISTS referral_code_references (
     id SERIAL PRIMARY KEY,
