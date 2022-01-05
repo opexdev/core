@@ -9,7 +9,7 @@ import java.sql.Timestamp
 import java.util.*
 
 @Service
-class PaymentSchedule(private val checkoutHandler: CheckoutHandler, private val configHandler: ConfigHandler) {
+class CheckoutSchedule(private val checkoutHandler: CheckoutHandler, private val configHandler: ConfigHandler) {
     @Scheduled(fixedDelay = 12 * 60 * 60 * 1000)
     fun pay() {
         runBlocking {
