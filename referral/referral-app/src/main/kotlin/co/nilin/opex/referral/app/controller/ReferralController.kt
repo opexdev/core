@@ -60,7 +60,7 @@ class ReferralController(
         } catch (e: IllegalArgumentException) {
             throw OpexException(OpexError.BadRequest, e.message)
         } catch (e: Exception) {
-            throw OpexException(OpexError.BadRequest, e.message)
+            throw OpexException(OpexError.InternalServerError, e.message)
         }
     }
 
@@ -76,7 +76,7 @@ class ReferralController(
         } catch (e: IllegalArgumentException) {
             throw OpexException(OpexError.BadRequest, e.message)
         } catch (e: Exception) {
-            throw OpexException(OpexError.BadRequest, e.message)
+            throw OpexException(OpexError.InternalServerError, e.message)
         }
     }
 
