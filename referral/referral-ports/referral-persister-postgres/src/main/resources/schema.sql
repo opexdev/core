@@ -43,10 +43,10 @@ CREATE TABLE IF NOT EXISTS checkout_records (
     commission_rewards_id BIGINT NOT NULL REFERENCES commission_rewards(id),
     transfer_ref VARCHAR(255),
     update_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    checkout_state VARCHAR(20) NOT NULL DEFAULT 'PENDING' REFERENCES checkout_states(status)
+    checkout_state VARCHAR(20) NOT NULL DEFAULT 'PENDING' REFERENCES checkout_states(state)
 );
 
-CREATE INDEX IF NOT EXISTS checkout_records_state_index ON payment_records(checkout_state);
+CREATE INDEX IF NOT EXISTS checkout_records_state_index ON checkout_records(checkout_state);
 
 DROP VIEW IF EXISTS checkout_records_projected;
 
@@ -59,7 +59,6 @@ AS SELECT DISTINCT ON (commission_rewards_id)
     referral_code,
     rich_trade_id,
     referent_order_direction,
-    payment_asset_symbol,
     share,
     checkout_state,
     transfer_ref,
