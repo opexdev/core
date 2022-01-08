@@ -14,7 +14,7 @@ class CheckoutSchedule(private val checkoutHandler: CheckoutHandler, private val
     fun pay() {
         runBlocking {
             val config = configHandler.findConfig("default")!!
-            val minDate = Date.from(Timestamp(Date().time / 1000 - config.paymentWindowSeconds * 1000).toInstant())
+            val minDate = Date.from(Timestamp(Date().time - config.paymentWindowSeconds * 1000).toInstant())
             checkoutHandler.checkoutOlderThan(minDate)
         }
     }
