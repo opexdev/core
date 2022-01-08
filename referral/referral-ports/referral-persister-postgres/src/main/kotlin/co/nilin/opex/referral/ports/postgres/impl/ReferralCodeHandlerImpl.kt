@@ -62,7 +62,7 @@ class ReferralCodeHandlerImpl(
         if (referentUuid == referralCode.uuid) throw IllegalArgumentException("Can't assign referral code to referrer")
         val referents = referenceRepository.findByReferrerUuid(referentUuid)
         val isChild = referents.any { it.referentUuid == referralCode.uuid }.awaitSingle()
-        if (isChild) throw Exception("Referrer can't be child of referent")
+        if (isChild) throw IllegalArgumentException("Referrer can't be child of referent")
         val reference = Reference(null, referentUuid, referralCode.id!!)
         referenceRepository.save(reference).awaitSingleOrNull()
     }
