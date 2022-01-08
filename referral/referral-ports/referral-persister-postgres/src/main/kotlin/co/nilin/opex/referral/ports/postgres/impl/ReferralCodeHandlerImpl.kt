@@ -58,8 +58,8 @@ class ReferralCodeHandlerImpl(
 
     override suspend fun assign(code: String, referentUuid: String) {
         val referralCode = referralCodeRepository.findByCode(code).awaitSingleOrNull()
-            ?: throw Exception("Referral code doesn't exist")
-        if (referentUuid == referralCode.uuid) throw Exception("Can't assign referral code to referrer")
+            ?: throw IllegalArgumentException("Referral code doesn't exist")
+        if (referentUuid == referralCode.uuid) throw IllegalArgumentException("Can't assign referral code to referrer")
         val referents = referenceRepository.findByReferrerUuid(referentUuid)
         val isChild = referents.any { it.referentUuid == referralCode.uuid }.awaitSingle()
         if (isChild) throw Exception("Referrer can't be child of referent")

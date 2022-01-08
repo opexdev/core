@@ -35,7 +35,13 @@ class ReferralController(
         @CurrentSecurityContext securityContext: SecurityContext
     ): String {
         if (body.uuid != securityContext.authentication.name) throw OpexException(OpexError.UnAuthorized)
-        return referralCodeHandler.generateReferralCode(body.uuid, body.referentCommission)
+        try {
+            return referralCodeHandler.generateReferralCode(body.uuid, body.referentCommission)
+        } catch (e: IllegalArgumentException) {
+            throw OpexException(OpexError.BadRequest, e.message)
+        } catch (e: Exception) {
+            throw OpexException(OpexError.InternalServerError, e.message)
+        }
     }
 
     @PatchMapping("/codes/{code}")
@@ -49,7 +55,13 @@ class ReferralController(
             "Referral code is invalid"
         )
         if (referralCode.uuid != securityContext.authentication.name) throw OpexException(OpexError.UnAuthorized)
-        referralCodeHandler.updateCommissions(code, body.referentCommission)
+        try {
+            referralCodeHandler.updateCommissions(code, body.referentCommission)
+        } catch (e: IllegalArgumentException) {
+            throw OpexException(OpexError.BadRequest, e.message)
+        } catch (e: Exception) {
+            throw OpexException(OpexError.BadRequest, e.message)
+        }
     }
 
     @PutMapping("/codes/{code}/assign")
@@ -59,7 +71,13 @@ class ReferralController(
         @CurrentSecurityContext securityContext: SecurityContext
     ) {
         if (uuid != securityContext.authentication.name) throw OpexException(OpexError.UnAuthorized)
-        referralCodeHandler.assign(code, uuid)
+        try {
+            referralCodeHandler.assign(code, uuid)
+        } catch (e: IllegalArgumentException) {
+            throw OpexException(OpexError.BadRequest, e.message)
+        } catch (e: Exception) {
+            throw OpexException(OpexError.BadRequest, e.message)
+        }
     }
 
     @GetMapping("/codes/{code}")
