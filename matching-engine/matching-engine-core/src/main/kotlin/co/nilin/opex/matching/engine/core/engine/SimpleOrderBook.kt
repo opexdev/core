@@ -11,19 +11,19 @@ import java.util.concurrent.atomic.AtomicLong
 
 class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
 
-    private val logger = LoggerFactory.getLogger(co.nilin.opex.matching.engine.core.engine.SimpleOrderBook::class.java)
+    private val logger = LoggerFactory.getLogger(SimpleOrderBook::class.java)
 
-    val askOrders = LongAdaptiveRadixTreeMap<co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.Bucket>()
-    val bidOrders = LongAdaptiveRadixTreeMap<co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.Bucket>()
-    val orders = TreeMap<Long, co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder>()
+    val askOrders = LongAdaptiveRadixTreeMap<Bucket>()
+    val bidOrders = LongAdaptiveRadixTreeMap<Bucket>()
+    val orders = TreeMap<Long, SimpleOrder>()
 
-    var bestAskOrder: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder? = null
-    var bestBidOrder: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder? = null
+    var bestAskOrder: SimpleOrder? = null
+    var bestBidOrder: SimpleOrder? = null
 
     val orderCounter = AtomicLong()
     val tradeCounter = AtomicLong()
 
-    var lastOrder: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder? = null
+    var lastOrder: SimpleOrder? = null
 
     data class SimpleOrder(
         var id: Long?,
@@ -35,9 +35,9 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
         val orderType: OrderType,
         val direction: OrderDirection,
         var filledQuantity: Long,
-        var worse: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder?,
-        var better: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder?,
-        var bucket: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.Bucket?
+        var worse: SimpleOrder?,
+        var better: SimpleOrder?,
+        var bucket: Bucket?
     ) : Order {
         fun remainedQuantity() = quantity - filledQuantity
         override fun id(): Long? = id
@@ -60,7 +60,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
         }
     }
 
-    data class Bucket(val price: Long, var totalQuantity: Long, var ordersCount: Long, var lastOrder: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder)
+    data class Bucket(val price: Long, var totalQuantity: Long, var ordersCount: Long, var lastOrder: SimpleOrder)
 
     override fun handleNewOrderCommand(orderCommand: OrderCreateCommand): Order? {
         logger.info("****************** new order received *******************")
@@ -92,7 +92,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                     }
                     return null
                 }
-                val order = co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder(
+                val order = SimpleOrder(
                     orderCounter.incrementAndGet(),
                     orderCommand.ouid,
                     orderCommand.uuid,
@@ -131,7 +131,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                 queueOrder
             }
             MatchConstraint.IOC -> {
-                val order = co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder(
+                val order = SimpleOrder(
                     orderCounter.incrementAndGet(),
                     orderCommand.ouid,
                     orderCommand.uuid,
@@ -230,11 +230,11 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
         }
 
         if (order.direction == OrderDirection.BID) {
-            handleCancelOrder(order, bidOrders, bestBidOrder) { newBestOrder: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder? ->
+            handleCancelOrder(order, bidOrders, bestBidOrder) { newBestOrder: SimpleOrder? ->
                 bestBidOrder = newBestOrder
             }
         } else {
-            handleCancelOrder(order, askOrders, bestAskOrder) { newBestOrder: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder? ->
+            handleCancelOrder(order, askOrders, bestAskOrder) { newBestOrder: SimpleOrder? ->
                 bestAskOrder = newBestOrder
             }
         }
@@ -271,15 +271,15 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
             return order
         }
         if (order.direction == OrderDirection.BID) {
-            handleCancelOrder(order, bidOrders, bestBidOrder) { newBestOrder: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder? ->
+            handleCancelOrder(order, bidOrders, bestBidOrder) { newBestOrder: SimpleOrder? ->
                 bestBidOrder = newBestOrder
             }
         } else {
-            handleCancelOrder(order, askOrders, bestAskOrder) { newBestOrder: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder? ->
+            handleCancelOrder(order, askOrders, bestAskOrder) { newBestOrder: SimpleOrder? ->
                 bestAskOrder = newBestOrder
             }
         }
-        val newOrder = co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder(
+        val newOrder = SimpleOrder(
             order.id,
             orderCommand.ouid,
             orderCommand.uuid,
@@ -382,10 +382,10 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
     }
 
     private fun handleCancelOrder(
-        order: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder,
-        bucketQueue: LongAdaptiveRadixTreeMap<co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.Bucket>,
-        bestOrder: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder?,
-        setBestOrder: (co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder?) -> Unit
+        order: SimpleOrder,
+        bucketQueue: LongAdaptiveRadixTreeMap<Bucket>,
+        bestOrder: SimpleOrder?,
+        setBestOrder: (SimpleOrder?) -> Unit
     ) {
         val bucket = order.bucket!!
         bucket.ordersCount--
@@ -402,62 +402,62 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
             setBestOrder(bestOrder.worse)
     }
 
-    private fun matchInstantly(order: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder): co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder {
+    private fun matchInstantly(order: SimpleOrder): SimpleOrder {
         if (order.direction == OrderDirection.BID) {
             return matchInstantly(order, bestAskOrder, askOrders, { makerPrice: Long ->
                 makerPrice <= order.price
-            }) { newMakerOrder: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder? ->
+            }) { newMakerOrder: SimpleOrder? ->
                 bestAskOrder = newMakerOrder
             }
         } else {
             return matchInstantly(order, bestBidOrder, bidOrders, { makerPrice: Long ->
                 makerPrice >= order.price
-            }) { newMakerOrder: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder? ->
+            }) { newMakerOrder: SimpleOrder? ->
                 bestBidOrder = newMakerOrder
             }
         }
     }
 
-    private fun matchIocInstantly(order: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder): co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder {
+    private fun matchIocInstantly(order: SimpleOrder): SimpleOrder {
         if (order.direction == OrderDirection.BID) {
             return matchInstantly(order, bestAskOrder, askOrders, { makerPrice: Long ->
                 order.orderType == OrderType.MARKET_ORDER || makerPrice <= order.price
 
-            }) { newMakerOrder: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder? ->
+            }) { newMakerOrder: SimpleOrder? ->
                 bestAskOrder = newMakerOrder
             }
         } else {
             return matchInstantly(order, bestBidOrder, bidOrders, { makerPrice: Long ->
                 order.orderType == OrderType.MARKET_ORDER || makerPrice >= order.price
-            }) { newMakerOrder: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder? ->
+            }) { newMakerOrder: SimpleOrder? ->
                 bestBidOrder = newMakerOrder
             }
         }
     }
 
-    private fun putGtcInQueue(order: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder): co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder {
+    private fun putGtcInQueue(order: SimpleOrder): SimpleOrder {
         if (order.direction == OrderDirection.BID) {
             return putGtcInQueue(order, bidOrders, bestBidOrder, { price, queue ->
                 queue.getHigherValue(price)
-            }) { newMakerOrder: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder? ->
+            }) { newMakerOrder: SimpleOrder? ->
                 bestBidOrder = newMakerOrder
             }
         } else {
             return putGtcInQueue(order, askOrders, bestAskOrder, { price, queue ->
                 queue.getLowerValue(price)
-            }) { newMakerOrder: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder? ->
+            }) { newMakerOrder: SimpleOrder? ->
                 bestAskOrder = newMakerOrder
             }
         }
     }
 
     private fun matchInstantly(
-        order: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder,
-        makerOrder: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder?,
-        queue: LongAdaptiveRadixTreeMap<co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.Bucket>,
+        order: SimpleOrder,
+        makerOrder: SimpleOrder?,
+        queue: LongAdaptiveRadixTreeMap<Bucket>,
         isPriceMatched: (makerPrice: Long) -> Boolean,
-        setNewMarkerOrder: (co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder?) -> Unit
-    ): co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder {
+        setNewMarkerOrder: (SimpleOrder?) -> Unit
+    ): SimpleOrder {
         //the best sell price is higher the requested buy price, so no instant match
         if (makerOrder == null || !isPriceMatched(makerOrder.price)) {
             return order
@@ -521,12 +521,12 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
 
 
     private fun putGtcInQueue(
-        order: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder,
-        queue: LongAdaptiveRadixTreeMap<co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.Bucket>,
-        bestOrder: co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder?,
-        betterBucketSelector: (price: Long, queue: LongAdaptiveRadixTreeMap<co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.Bucket>) -> co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.Bucket?,
-        setNewMarkerOrder: (co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder?) -> Unit
-    ): co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder {
+        order: SimpleOrder,
+        queue: LongAdaptiveRadixTreeMap<Bucket>,
+        bestOrder: SimpleOrder?,
+        betterBucketSelector: (price: Long, queue: LongAdaptiveRadixTreeMap<Bucket>) -> Bucket?,
+        setNewMarkerOrder: (SimpleOrder?) -> Unit
+    ): SimpleOrder {
         if (order.id == null)
             order.id = orderCounter.incrementAndGet()
         orders[order.id!!] = order
@@ -545,7 +545,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
             order.better = bucketLastOrder
             order.worse = worseOfBucketLastOrder
         } else {
-            bucket = co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.Bucket(
+            bucket = Bucket(
                 order.price,
                 order.remainedQuantity(),
                 1,
@@ -599,7 +599,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
 
     fun rebuild(persistentOrderBook: PersistentOrderBook) {
         persistentOrderBook.orders?.map { order ->
-            co.nilin.opex.matching.engine.core.engine.SimpleOrderBook.SimpleOrder(
+            SimpleOrder(
                 order.id,
                 order.ouid,
                 order.uuid,

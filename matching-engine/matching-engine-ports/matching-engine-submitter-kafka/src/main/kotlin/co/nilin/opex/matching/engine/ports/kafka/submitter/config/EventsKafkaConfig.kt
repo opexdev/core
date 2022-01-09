@@ -1,10 +1,10 @@
 package co.nilin.opex.matching.engine.ports.kafka.submitter.config
 
-
 import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
 import org.apache.kafka.clients.admin.AdminClientConfig
 import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.producer.ProducerConfig
+import org.apache.kafka.common.config.TopicConfig
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -12,15 +12,17 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.support.GenericApplicationContext
+import org.springframework.context.support.beans
+import org.springframework.kafka.config.TopicBuilder
 import org.springframework.kafka.core.DefaultKafkaProducerFactory
 import org.springframework.kafka.core.KafkaAdmin
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.core.ProducerFactory
 import org.springframework.kafka.support.serializer.JsonSerializer
 
-
 @Configuration
-class EventsKafkaConfig() {
+class EventsKafkaConfig {
+
     @Value("\${spring.kafka.bootstrap-servers}")
     private lateinit var bootstrapServers: String
 
@@ -31,12 +33,14 @@ class EventsKafkaConfig() {
     private val applicationContext: GenericApplicationContext? = null
 
     @Bean("eventsProducerConfigs")
-    fun producerConfigs(): Map<String, Any>? {
-        val props: MutableMap<String, Any> = HashMap()
-        props[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = bootstrapServers
-        props[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java
-        props[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = JsonSerializer::class.java
-        return props
+    fun producerConfigs(): Map<String, Any> {
+        return mapOf(
+            ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
+            ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
+            ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JsonSerializer::class.java,
+            ProducerConfig.ACKS_CONFIG to "all",
+            ProducerConfig.CLIENT_ID_CONFIG to "matching-engine",
+        )
     }
 
     @Bean("eventsProducerFactory")
@@ -49,7 +53,6 @@ class EventsKafkaConfig() {
         return KafkaTemplate(producerFactory)
     }
 
-
     @Bean
     fun admin(): KafkaAdmin? {
         val configs: MutableMap<String, Any> = HashMap()
@@ -59,16 +62,29 @@ class EventsKafkaConfig() {
 
     @Autowired
     fun createTopics() {
-        symbols!!.split(",")
-            .map { s -> "events_$s" }
-            .map { topic ->
-                applicationContext?.registerBean("topic_${topic}", NewTopic::class.java, topic, 10, 1)
-            }
-        symbols.split(",")
-            .map { s -> "trades_$s" }
-            .map { topic ->
-                applicationContext?.registerBean("topic_${topic}", NewTopic::class.java, topic, 10, 1)
-            }
+        val beans = beans {
+            symbols!!.split(",")
+                .map { s -> "events_$s" }
+                .forEach { topic ->
+                    bean(name = "topic_${topic}") {
+                        TopicBuilder.name(topic)
+                            .partitions(10)
+                            .replicas(3)
+                            .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
+                    }
+                }
+            symbols.split(",")
+                .map { s -> "trades_$s" }
+                .forEach { topic ->
+                    bean(name = "topic_${topic}") {
+                        TopicBuilder.name(topic)
+                            .partitions(10)
+                            .replicas(3)
+                            .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
+                    }
+                }
+        }
+        applicationContext?.let { beans.initialize(it) }
     }
 
 }
