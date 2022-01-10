@@ -3,8 +3,8 @@ package co.nilin.opex.accountant.ports.kafka.submitter.config
 import co.nilin.opex.accountant.core.inout.RichOrder
 import co.nilin.opex.accountant.core.inout.RichTrade
 import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
-import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.producer.ProducerConfig
+import org.apache.kafka.common.config.TopicConfig
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -12,30 +12,28 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.support.GenericApplicationContext
+import org.springframework.context.support.beans
+import org.springframework.kafka.config.TopicBuilder
 import org.springframework.kafka.core.DefaultKafkaProducerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.core.ProducerFactory
 import org.springframework.kafka.support.serializer.JsonSerializer
 
 @Configuration
-class SubmitterKafkaConfig() {
+class SubmitterKafkaConfig {
+
     @Value("\${spring.kafka.bootstrap-servers}")
     private lateinit var bootstrapServers: String
 
-    @Value("\${spring.kafka.consumer.group-id}")
-    private val groupId: String? = null
-
-    @Autowired
-    private val applicationContext: GenericApplicationContext? = null
-
-
     @Bean("accountantProducerConfigs")
     fun producerConfigs(): Map<String, Any>? {
-        val props: MutableMap<String, Any> = HashMap()
-        props[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = bootstrapServers
-        props[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java
-        props[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = JsonSerializer::class.java
-        return props
+        return mapOf(
+            ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
+            ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
+            ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JsonSerializer::class.java,
+            ProducerConfig.ACKS_CONFIG to "all",
+            ProducerConfig.CLIENT_ID_CONFIG to "",
+        )
     }
 
     @Bean("accountantEventProducerFactory")
@@ -70,7 +68,20 @@ class SubmitterKafkaConfig() {
 
     @Autowired
     fun createTopics(applicationContext: GenericApplicationContext) {
-        applicationContext.registerBean("topic_richOrder", NewTopic::class.java, "richOrder", 10, 1)
-        applicationContext.registerBean("topic_richTrade", NewTopic::class.java, "richTrade", 10, 1)
+        beans {
+            bean(name = "topic_richOrder") {
+                TopicBuilder.name("richOrder")
+                    .partitions(10)
+                    .replicas(3)
+                    .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
+            }
+
+            bean("topic_richTrade") {
+                TopicBuilder.name("richTrade")
+                    .partitions(10)
+                    .replicas(3)
+                    .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
+            }
+        }.initialize(applicationContext)
     }
 }

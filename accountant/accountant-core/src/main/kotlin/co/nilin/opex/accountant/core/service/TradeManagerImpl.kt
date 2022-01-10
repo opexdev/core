@@ -12,15 +12,15 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 open class TradeManagerImpl(
-    val pairStaticRateLoader: PairStaticRateLoader,
-    val financeActionPersister: FinancialActionPersister,
-    val financeActionLoader: FinancialActionLoader,
-    val orderPersister: OrderPersister,
-    val tempEventPersister: TempEventPersister,
-    val richTradePublisher: RichTradePublisher,
-    val walletProxy: WalletProxy,
-    val platformCoin: String,
-    val platformAddress: String
+    private val pairStaticRateLoader: PairStaticRateLoader,
+    private val financeActionPersister: FinancialActionPersister,
+    private val financeActionLoader: FinancialActionLoader,
+    private val orderPersister: OrderPersister,
+    private val tempEventPersister: TempEventPersister,
+    private val richTradePublisher: RichTradePublisher,
+    private val walletProxy: WalletProxy,
+    private val platformCoin: String,
+    private val platformAddress: String
 ) : TradeManager {
 
     private val log = LoggerFactory.getLogger(TradeManagerImpl::class.java)
