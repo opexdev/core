@@ -2,6 +2,8 @@ package co.nilin.opex.matching.engine.app.config
 
 import co.nilin.opex.matching.engine.app.bl.ExchangeEventHandler
 import co.nilin.opex.matching.engine.app.bl.OrderBooks
+import co.nilin.opex.matching.engine.app.listener.MatchingEngineEventListener
+import co.nilin.opex.matching.engine.app.listener.OrderListener
 import co.nilin.opex.matching.engine.core.eventh.events.CancelOrderEvent
 import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
 import co.nilin.opex.matching.engine.core.eventh.events.EditOrderRequestEvent
@@ -45,7 +47,6 @@ class AppConfig {
         }
     }
 
-
     @Autowired
     fun configureOrderBooks(orderBookPersister: OrderBookPersister) {
         symbols!!.split(",")
@@ -65,7 +66,6 @@ class AppConfig {
                 }
             }
     }
-
 
     @Bean
     fun orderListener(): OrderListener {
@@ -90,72 +90,6 @@ class AppConfig {
     @Autowired
     fun configureMatchingEngineListener(exchangeEventHandler: ExchangeEventHandler) {
         exchangeEventHandler.register()
-    }
-
-    class OrderListener() : OrderSubmitRequestListener {
-
-        override fun id(): String {
-            return "OrderListener"
-        }
-
-        override suspend fun onOrder(order: OrderSubmitRequest, partition: Int, offset: Long, timestamp: Long) {
-            val orderBook = OrderBooks.lookupOrderBook(
-                order.pair.leftSideName + "_"
-                        + order.pair.rightSideName
-            )
-            orderBook.handleNewOrderCommand(
-                OrderCreateCommand(
-                    order.ouid,
-                    order.uuid,
-                    order.pair,
-                    order.price,
-                    order.quantity,
-                    order.direction,
-                    order.matchConstraint,
-                    order.orderType
-                )
-            )
-        }
-    }
-
-    class MatchingEngineEventListener() : EventListener {
-
-        private val logger = LoggerFactory.getLogger(MatchingEngineEventListener::class.java)
-
-        override fun id(): String {
-            return "EventListener"
-        }
-
-        override fun onEvent(event: CoreEvent, partition: Int, offset: Long, timestamp: Long) {
-            logger.info("Received CoreEvent: ${event::class.java}")
-
-            runBlocking(AppSchedulers.kafkaExecutor) {
-                val orderBook = OrderBooks.lookupOrderBook("${event.pair.leftSideName}_${event.pair.rightSideName}")
-
-                when (event) {
-                    is EditOrderRequestEvent -> orderBook.handleEditCommand(
-                        OrderEditCommand(
-                            event.ouid,
-                            event.uuid,
-                            event.orderId,
-                            event.pair,
-                            event.price,
-                            event.quantity
-                        )
-                    )
-
-                    is CancelOrderEvent -> orderBook.handleCancelCommand(
-                        OrderCancelCommand(
-                            event.ouid,
-                            event.uuid,
-                            event.orderId,
-                            event.pair
-                        )
-                    )
-                    else -> null
-                }
-            }
-        }
     }
 
 }
