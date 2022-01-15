@@ -19,6 +19,7 @@
         <module>referral-ports/referral-persister-postgres</module>
         <module>referral-ports/referral-eventlistener-kafka</module>
         <module>referral-ports/referral-wallet-proxy</module>
+        <module>referral-ports/referral-accountant-proxy</module>
     </modules>
 
     <dependencies>
