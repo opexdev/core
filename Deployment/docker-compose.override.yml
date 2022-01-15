@@ -53,7 +53,7 @@ services:
       - opex
   postgres-referral:
     ports:
-      - 127.0.0.1:5439:5432
+      - 127.0.0.1:5489:5432
     networks:
       - opex
   accountant:
