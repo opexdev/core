@@ -13,6 +13,8 @@ class SymbolPriceCalculator(private val accountantProxy: AccountantProxy, privat
         val out = configHandler.findConfig("default")!!.paymentCurrency
         val pair = accountantProxy.fetchPairConfigs()
             .find { (it.leftSideWalletSymbol == symbol && it.rightSideWalletSymbol == out) || (it.leftSideWalletSymbol == out && it.rightSideWalletSymbol == symbol) }
-        return BigDecimal.ZERO
+            ?: return BigDecimal.ZERO
+        if (pair.rate.isNaN()) return BigDecimal.ZERO
+        return if (symbol == pair.leftSideWalletSymbol) pair.rate.toBigDecimal() else BigDecimal.ONE / pair.rate.toBigDecimal()
     }
 }
