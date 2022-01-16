@@ -269,6 +269,9 @@ services:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_DEFAULT=docker
       - CONSUL_HOST=consul
+      - ROOT_DIR=/storage
+    volumes:
+      - $DATA/storage-data:/storage
     depends_on:
       - consul
     deploy:
