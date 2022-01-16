@@ -21,7 +21,7 @@ import java.util.*
 class FileController(
     private val storageService: StorageService,
     private val stringToHashService: StringToHashService,
-    @Value("\${app.storage-path}") private val storagePath: String
+    @Value("\${app.root-dir}") private val rootDir: String
 ) {
     data class FileUploadResponse(val path: String)
 
@@ -36,13 +36,13 @@ class FileController(
         } else {
             "$uid/$nameWithoutExtension.$ext"
         }
-        val path = Paths.get("").resolve("$storagePath/$uri").toString()
+        val path = Paths.get("").resolve("$rootDir/$uri").toString()
         storageService.store(path, file)
         return FileUploadResponse("/$uri")
     }
 
     private suspend fun download(uid: String, filename: String? = null): ResponseEntity<ByteArray> {
-        val path = Paths.get("").resolve("$storagePath/$uid/$filename")
+        val path = Paths.get("").resolve("$rootDir/$uid/$filename")
         if (!storageService.exists(path.toString())) throw OpexException(OpexError.NotFound)
         val file = storageService.load(path.toString())
         val mimeType = URLConnection.getFileNameMap().getContentTypeFor(path.fileName.toString())
