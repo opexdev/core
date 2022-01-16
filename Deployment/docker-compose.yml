@@ -282,6 +282,8 @@ services:
       - CONSUL_HOST=consul
     depends_on:
       - consul
+    volumes:
+      - $DATA/storage-data:/opex-storage
     deploy:
       restart_policy:
         condition: on-failure
