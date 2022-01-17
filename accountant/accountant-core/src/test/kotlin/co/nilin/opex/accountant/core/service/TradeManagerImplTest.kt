@@ -75,6 +75,7 @@ internal class TradeManagerImplTest() {
             orderPersister,
             tempEventPersister,
             richTradePublisher,
+            richOrderPublisher,
             walletProxy,
             "pcoin",
             "0x0"

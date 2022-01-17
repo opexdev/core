@@ -18,6 +18,7 @@ open class TradeManagerImpl(
     private val orderPersister: OrderPersister,
     private val tempEventPersister: TempEventPersister,
     private val richTradePublisher: RichTradePublisher,
+    private val richOrderPublisher: RichOrderPublisher,
     private val walletProxy: WalletProxy,
     private val platformCoin: String,
     private val platformAddress: String

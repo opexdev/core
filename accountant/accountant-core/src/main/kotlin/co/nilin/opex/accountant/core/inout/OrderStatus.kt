@@ -1,6 +1,6 @@
 package co.nilin.opex.accountant.core.inout
 
-enum class OrderStatus(val code: Int, private val orderOfAppearance: Int) {
+enum class OrderStatus(val code: Int, val orderOfAppearance: Int) {
 
     REQUESTED(0, 0),
     NEW(1, 1),    //The order has been accepted by the engine.

@@ -5,21 +5,29 @@ import co.nilin.opex.accountant.core.inout.RichTrade
 import co.nilin.opex.accountant.core.inout.comesBefore
 import co.nilin.opex.api.core.spi.TradePersister
 import co.nilin.opex.api.ports.postgres.dao.OrderRepository
+import co.nilin.opex.api.ports.postgres.dao.OrderStatusRepository
 import co.nilin.opex.api.ports.postgres.dao.TradeRepository
 import co.nilin.opex.api.ports.postgres.model.OrderModel
+import co.nilin.opex.api.ports.postgres.model.OrderStatusModel
 import co.nilin.opex.api.ports.postgres.model.TradeModel
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Component
-class TradePersisterImpl(val tradeRepository: TradeRepository, val orderRepository: OrderRepository) : TradePersister {
+class TradePersisterImpl(
+    private val tradeRepository: TradeRepository,
+    private val orderStatusRepository: OrderStatusRepository
+) : TradePersister {
+
+    private val logger = LoggerFactory.getLogger(TradePersisterImpl::class.java)
 
     @Transactional
     override suspend fun save(trade: RichTrade) {
-        println("RichTrade save")
+        logger.info("RichTrade save")
         tradeRepository.save(
             TradeModel(
                 null,
@@ -48,102 +56,48 @@ class TradePersisterImpl(val tradeRepository: TradeRepository, val orderReposito
     }
 
     private suspend fun saveTakerOrder(trade: RichTrade) {
-        val existingOrder = orderRepository
-            .findByOuid(trade.takerOuid)
-            .awaitFirstOrNull()
-
         val executedQuantity = (trade.takerQuantity.minus(trade.takerRemainedQuantity)).toDouble()
-        val status = if (trade.takerRemainedQuantity.compareTo(BigDecimal.ZERO) == 0) {
-            OrderStatus.FILLED.code
-        } else {
-            OrderStatus.PARTIALLY_FILLED.code
-        }
+        val acc = trade.takerPrice.multiply((trade.takerQuantity.minus(trade.takerRemainedQuantity))).toDouble()
+        val status = if (trade.takerRemainedQuantity.compareTo(BigDecimal.ZERO) == 0)
+            OrderStatus.FILLED
+        else
+            OrderStatus.PARTIALLY_FILLED
 
-        if (existingOrder == null || existingOrder.status.comesBefore(status) || (existingOrder.executedQuantity
-                ?: 0.0) < executedQuantity
-        )
-            orderRepository.save(
-                OrderModel(
-                    existingOrder?.id,
+        try {
+            orderStatusRepository.save(
+                OrderStatusModel(
                     trade.takerOuid,
-                    trade.takerUuid,
-                    null,
-                    trade.pair,
-                    trade.takerOrderId,
-                    existingOrder?.makerFee,
-                    existingOrder?.takerFee,
-                    existingOrder?.leftSideFraction,
-                    existingOrder?.rightSideFraction,
-                    existingOrder?.userLevel,
-                    trade.takerDirection,
-                    existingOrder?.constraint,
-                    existingOrder?.type,
-                    trade.takerPrice.toDouble(),
-                    trade.takerQuantity.toDouble(),
-                    trade.takerQuoteQuantity.toDouble(),
-                    (trade.takerQuantity.minus(trade.takerRemainedQuantity)).toDouble(),
-                    trade.takerPrice.multiply(
-                        (trade.takerQuantity.minus(trade.takerRemainedQuantity))
-                    ).toDouble(),
-                    if (trade.takerRemainedQuantity.compareTo(BigDecimal.ZERO) == 0) {
-                        OrderStatus.FILLED.code
-                    } else {
-                        OrderStatus.PARTIALLY_FILLED.code
-                    },
-                    existingOrder?.createDate,
-                    LocalDateTime.now(),
-                    existingOrder?.version
+                    executedQuantity,
+                    acc,
+                    status.code,
+                    status.orderOfAppearance
                 )
             ).awaitFirstOrNull()
+        } catch (e: Exception) {
+            logger.error(e.message)
+        }
     }
 
     private suspend fun saveMakerOrder(trade: RichTrade) {
-        val existingOrder = orderRepository
-            .findByOuid(trade.makerOuid)
-            .awaitFirstOrNull()
+        val executedQuantity = trade.makerQuantity.minus(trade.makerRemainedQuantity).toDouble()
+        val acc = trade.makerPrice.multiply((trade.makerQuantity.minus(trade.makerRemainedQuantity))).toDouble()
+        val status = if (trade.makerRemainedQuantity.compareTo(BigDecimal.ZERO) == 0)
+            OrderStatus.FILLED
+        else
+            OrderStatus.PARTIALLY_FILLED
 
-        val executedQuantity = (trade.makerQuantity.minus(trade.makerRemainedQuantity)).toDouble()
-        val status = if (trade.makerRemainedQuantity.compareTo(BigDecimal.ZERO) == 0) {
-            OrderStatus.FILLED.code
-        } else {
-            OrderStatus.PARTIALLY_FILLED.code
-        }
-
-        if (existingOrder == null || existingOrder.status.comesBefore(status) || (existingOrder.executedQuantity
-                ?: 0.0) < executedQuantity
-        )
-            orderRepository.save(
-                OrderModel(
-                    existingOrder?.id,
+        try {
+            orderStatusRepository.save(
+                OrderStatusModel(
                     trade.makerOuid,
-                    trade.makerUuid,
-                    null,
-                    trade.pair,
-                    trade.makerOrderId,
-                    existingOrder?.makerFee,
-                    existingOrder?.takerFee,
-                    existingOrder?.leftSideFraction,
-                    existingOrder?.rightSideFraction,
-                    existingOrder?.userLevel,
-                    trade.makerDirection,
-                    existingOrder?.constraint,
-                    existingOrder?.type,
-                    trade.makerPrice.toDouble(),
-                    trade.makerQuantity.toDouble(),
-                    trade.makerQuoteQuantity.toDouble(),
-                    (trade.makerQuantity.minus(trade.makerRemainedQuantity)).toDouble(),
-                    trade.makerPrice.multiply(
-                        (trade.makerQuantity.minus(trade.makerRemainedQuantity))
-                    ).toDouble(),
-                    if (trade.makerRemainedQuantity.compareTo(BigDecimal.ZERO) == 0) {
-                        OrderStatus.FILLED.code
-                    } else {
-                        OrderStatus.PARTIALLY_FILLED.code
-                    },
-                    existingOrder?.createDate ?: LocalDateTime.now(),
-                    LocalDateTime.now(),
-                    existingOrder?.version
+                    executedQuantity,
+                    acc,
+                    status.code,
+                    status.orderOfAppearance
                 )
             ).awaitFirstOrNull()
+        } catch (e: Exception) {
+            logger.error(e.message)
+        }
     }
 }

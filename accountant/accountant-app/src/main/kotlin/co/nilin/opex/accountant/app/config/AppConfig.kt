@@ -67,6 +67,7 @@ class AppConfig {
         orderPersister: OrderPersister,
         tempEventPersister: TempEventPersister,
         richTradePublisher: RichTradePublisher,
+        richOrderPublisher: RichOrderPublisher,
         walletProxy: WalletProxy,
         @Value("\${app.coin}") platformCoin: String,
         @Value("\${app.address}") platformAddress: String
@@ -78,6 +79,7 @@ class AppConfig {
             orderPersister,
             tempEventPersister,
             richTradePublisher,
+            richOrderPublisher,
             walletProxy,
             platformCoin,
             platformAddress

@@ -3,8 +3,10 @@ package co.nilin.opex.api.ports.postgres.impl
 import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.UserQueryHandler
 import co.nilin.opex.api.ports.postgres.dao.OrderRepository
+import co.nilin.opex.api.ports.postgres.dao.OrderStatusRepository
 import co.nilin.opex.api.ports.postgres.dao.TradeRepository
 import co.nilin.opex.api.ports.postgres.model.OrderModel
+import co.nilin.opex.api.ports.postgres.model.OrderStatusModel
 import co.nilin.opex.api.ports.postgres.util.*
 import co.nilin.opex.matching.engine.core.model.OrderDirection
 import co.nilin.opex.utility.error.data.OpexError
@@ -15,14 +17,16 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.stereotype.Component
+import java.math.BigDecimal
 import java.security.Principal
 import java.time.ZoneId
 import java.util.*
 
 @Component
 class UserQueryHandlerImpl(
-    val orderRepository: OrderRepository,
-    val tradeRepository: TradeRepository
+    private val orderRepository: OrderRepository,
+    private val tradeRepository: TradeRepository,
+    private val orderStatusRepository: OrderStatusRepository
 ) : UserQueryHandler {
 
     override suspend fun queryOrder(principal: Principal, request: QueryOrderRequest): QueryOrderResponse? {
@@ -31,13 +35,12 @@ class UserQueryHandlerImpl(
         } else {
             orderRepository.findBySymbolAndOrderId(request.symbol, request.orderId!!)
 
-        }).awaitFirstOrNull()
-        if (order?.constraint != null) {
-            if (order.uuid != principal.name)
-                throw OpexException(OpexError.Forbidden)
-            return orderToQueryResponse(order)
-        }
-        return null
+        }).awaitFirstOrNull() ?: return null
+
+        if (order.uuid != principal.name)
+            throw OpexException(OpexError.Forbidden)
+
+        return order.asQueryResponse(orderStatusRepository.findMostRecentByOUID(order.ouid).awaitFirstOrNull())
     }
 
     override suspend fun openOrders(principal: Principal, symbol: String?): Flow<QueryOrderResponse> {
@@ -46,7 +49,7 @@ class UserQueryHandlerImpl(
             symbol,
             listOf(OrderStatus.NEW.code, OrderStatus.PARTIALLY_FILLED.code)
         ).filter { orderModel -> orderModel.constraint != null }
-            .map { order -> orderToQueryResponse(order) }
+            .map { it.asQueryResponse(orderStatusRepository.findMostRecentByOUID(it.ouid).awaitFirstOrNull()) }
     }
 
     override suspend fun allOrders(principal: Principal, allOrderRequest: AllOrderRequest): Flow<QueryOrderResponse> {
@@ -56,7 +59,7 @@ class UserQueryHandlerImpl(
             allOrderRequest.startTime,
             allOrderRequest.endTime
         ).filter { orderModel -> orderModel.constraint != null }
-            .map { order -> orderToQueryResponse(order) }
+            .map { it.asQueryResponse(orderStatusRepository.findMostRecentByOUID(it.ouid).awaitFirstOrNull()) }
     }
 
     override suspend fun allTrades(principal: Principal, request: TradeRequest): Flow<TradeResponse> {
@@ -112,24 +115,25 @@ class UserQueryHandlerImpl(
     }
 
 
-    private fun orderToQueryResponse(order: OrderModel) = QueryOrderResponse(
-        order.symbol,
-        order.ouid,
-        order.orderId ?: -1,
+    private fun OrderModel.asQueryResponse(orderStatusModel: OrderStatusModel?) = QueryOrderResponse(
+        symbol,
+        ouid,
+        orderId ?: -1,
         -1,
-        order.clientOrderId ?: "",
-        order.price!!.toBigDecimal(),
-        order.quantity!!.toBigDecimal(),
-        order.executedQuantity!!.toBigDecimal(),
-        (order.accumulativeQuoteQty ?: 0.0).toBigDecimal(),
-        order.status!!.toOrderStatus(),
-        order.constraint!!.toTimeInForce(),
-        order.type!!.toApiOrderType(),
-        order.direction!!.toOrderSide(),
+        clientOrderId ?: "",
+        price!!.toBigDecimal(),
+        quantity!!.toBigDecimal(),
+        orderStatusModel?.executedQuantity?.toBigDecimal() ?: BigDecimal.ZERO,
+        orderStatusModel?.accumulativeQuoteQty?.toBigDecimal() ?: BigDecimal.ZERO,
+        orderStatusModel?.status?.toOrderStatus() ?: OrderStatus.NEW,
+        constraint!!.toTimeInForce(),
+        type!!.toApiOrderType(),
+        direction!!.toOrderSide(),
         null,
         null,
-        Date.from(order.createDate!!.atZone(ZoneId.systemDefault()).toInstant()),
-        Date.from(order.updateDate.atZone(ZoneId.systemDefault()).toInstant()),
-        order.status.toOrderStatus().isWorking(), order.quoteQuantity!!.toBigDecimal()
+        Date.from(createDate!!.atZone(ZoneId.systemDefault()).toInstant()),
+        Date.from(updateDate.atZone(ZoneId.systemDefault()).toInstant()),
+        (orderStatusModel?.status?.toOrderStatus() ?: OrderStatus.NEW).isWorking(),
+        quoteQuantity!!.toBigDecimal()
     )
 }

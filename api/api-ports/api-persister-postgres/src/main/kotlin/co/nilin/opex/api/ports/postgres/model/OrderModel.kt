@@ -31,9 +31,6 @@ class OrderModel(
     @Column("price") val price: Double?,
     @Column("quantity") val quantity: Double?,
     @Column("quote_quantity") val quoteQuantity: Double?,
-    @Column("executed_qty") val executedQuantity: Double?,
-    @Column("accumulative_quote_qty") val accumulativeQuoteQty: Double?,
-    @Column("status") val status: Int?,
     @Column("create_date") val createDate: LocalDateTime?,
     @Column("update_date") val updateDate: LocalDateTime,
     @Version

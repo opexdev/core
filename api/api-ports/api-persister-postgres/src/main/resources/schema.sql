@@ -16,12 +16,20 @@ CREATE TABLE IF NOT EXISTS orders (
    price DECIMAL,
    quantity DECIMAL,
    quote_quantity DECIMAL,
-   executed_qty DECIMAL,
-   accumulative_quote_qty DECIMAL,
-   status INTEGER,
    create_date TIMESTAMP,
    update_date TIMESTAMP NOT NULL,
    version INTEGER
+);
+
+CREATE TABLE IF NOT EXISTS order_status(
+   id SERIAL PRIMARY KEY,
+   ouid VARCHAR(72) NOT NULL,
+   executed_quantity DECIMAL,
+   accumulative_quote_qty DECIMAL,
+   status INTEGER NOT NULL,
+   appearance INTEGER NOT NULL,
+   date TIMESTAMP NOT NULL,
+   UNIQUE(ouid, status, appearance, executed_quantity)
 );
 
 CREATE TABLE IF NOT EXISTS trades (

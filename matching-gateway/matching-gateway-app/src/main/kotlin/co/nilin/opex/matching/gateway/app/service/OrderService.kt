@@ -67,7 +67,7 @@ class OrderService(
 
     suspend fun cancelOrder(request: CancelOrderRequest): OrderSubmitResult {
         val symbols = request.symbol.split("_")
-        val event = CancelOrderEvent(request.ouid,request.uuid,request.orderId,Pair(symbols[0], symbols[1]))
+        val event = CancelOrderEvent(request.ouid, request.uuid, request.orderId, Pair(symbols[0], symbols[1]))
         return eventSubmitter.submit(event)
     }
 }
