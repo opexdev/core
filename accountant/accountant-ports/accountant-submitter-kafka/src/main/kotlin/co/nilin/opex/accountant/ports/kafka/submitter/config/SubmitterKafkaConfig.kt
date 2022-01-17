@@ -1,6 +1,6 @@
 package co.nilin.opex.accountant.ports.kafka.submitter.config
 
-import co.nilin.opex.accountant.core.inout.RichOrder
+import co.nilin.opex.accountant.core.inout.RichOrderEvent
 import co.nilin.opex.accountant.core.inout.RichTrade
 import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
 import org.apache.kafka.clients.producer.ProducerConfig
@@ -57,12 +57,12 @@ class SubmitterKafkaConfig {
     }
 
     @Bean("richOrderProducerFactory")
-    fun richOrderProducerFactory(@Qualifier("accountantProducerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, RichOrder> {
+    fun richOrderProducerFactory(@Qualifier("accountantProducerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, RichOrderEvent> {
         return DefaultKafkaProducerFactory(producerConfigs)
     }
 
     @Bean("richOrderKafkaTemplate")
-    fun richOrderKafkaTemplate(@Qualifier("richOrderProducerFactory") producerFactory: ProducerFactory<String?, RichOrder>): KafkaTemplate<String?, RichOrder> {
+    fun richOrderKafkaTemplate(@Qualifier("richOrderProducerFactory") producerFactory: ProducerFactory<String?, RichOrderEvent>): KafkaTemplate<String?, RichOrderEvent> {
         return KafkaTemplate(producerFactory)
     }
 

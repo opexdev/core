@@ -5,7 +5,7 @@ import co.nilin.opex.matching.engine.core.model.OrderDirection
 import co.nilin.opex.matching.engine.core.model.OrderType
 import java.math.BigDecimal
 
-class RichOrder(
+data class RichOrder(
     val orderId: Long? = 0,
     val pair: String,
     val ouid: String,
@@ -24,4 +24,4 @@ class RichOrder(
     val executedQuantity: BigDecimal,
     val accumulativeQuoteQty: BigDecimal,
     val status: Int = 0
-)
+) : RichOrderEvent
