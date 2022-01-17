@@ -24,60 +24,61 @@ import java.util.regex.Pattern
 
 
 @Configuration
-class EventlogKafkaConfig {
+class EventLogKafkaConfig {
+
     @Value("\${spring.kafka.bootstrap-servers}")
     private val bootstrapServers: String? = null
 
     @Value("\${spring.kafka.consumer.group-id}")
     private val groupId: String? = null
 
-    @Bean("eventlogConsumerConfig")
+    @Bean("eventLogConsumerConfig")
     fun consumerConfigs(): Map<String, Any?>? {
-        val props: MutableMap<String, Any?> = HashMap()
-        props[ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG] = bootstrapServers
-        props[ConsumerConfig.GROUP_ID_CONFIG] = groupId
-        props[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java
-        props[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = JsonDeserializer::class.java
-        props[JsonDeserializer.TRUSTED_PACKAGES] = "co.nilin.opex.*"
-        props[JsonDeserializer.TYPE_MAPPINGS] = "order_request:co.nilin.opex.eventlog.ports.kafka.listener.inout.OrderSubmitRequest"
-        return props
+        return mapOf(
+            ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
+            ConsumerConfig.GROUP_ID_CONFIG to groupId,
+            ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
+            ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JsonDeserializer::class.java,
+            JsonDeserializer.TRUSTED_PACKAGES to "co.nilin.opex.*",
+            JsonDeserializer.TYPE_MAPPINGS to "order_request:co.nilin.opex.eventlog.ports.kafka.listener.inout.OrderSubmitRequest"
+        )
     }
 
-    @Bean("eventlogConsumerFactory")
-    fun consumerFactory(@Qualifier("eventlogConsumerConfig") consumerConfigs: Map<String, Any?>): ConsumerFactory<String, CoreEvent> {
+    @Bean("eventLogConsumerFactory")
+    fun consumerFactory(@Qualifier("eventLogConsumerConfig") consumerConfigs: Map<String, Any?>): ConsumerFactory<String, CoreEvent> {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
 
-    @Bean("eventlogProducerConfig")
+    @Bean("eventLogProducerConfig")
     fun producerConfigs(): Map<String, Any?> {
-        val props: MutableMap<String, Any?> = HashMap()
-        props[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = bootstrapServers
-        props[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java
-        props[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = JsonSerializer::class.java
-        return props
+        return mapOf(
+            ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
+            ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
+            ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JsonSerializer::class.java,
+            ProducerConfig.ACKS_CONFIG to "all"
+        )
     }
 
-    @Bean("eventlogProducerFactory")
-    fun producerFactory(@Qualifier("eventlogProducerConfig") producerConfigs: Map<String, Any?>): ProducerFactory<String?, CoreEvent> {
+    @Bean("eventLogProducerFactory")
+    fun producerFactory(@Qualifier("eventLogProducerConfig") producerConfigs: Map<String, Any?>): ProducerFactory<String?, CoreEvent> {
         return DefaultKafkaProducerFactory(producerConfigs)
     }
 
-    @Bean("eventlogKafkaTemplate")
-    fun kafkaTemplate(@Qualifier("eventlogProducerFactory") producerFactory: ProducerFactory<String?, CoreEvent>): KafkaTemplate<String?, CoreEvent> {
+    @Bean("eventLogKafkaTemplate")
+    fun kafkaTemplate(@Qualifier("eventLogProducerFactory") producerFactory: ProducerFactory<String?, CoreEvent>): KafkaTemplate<String?, CoreEvent> {
         return KafkaTemplate(producerFactory)
     }
-
 
     @Autowired
     @ConditionalOnBean(TradeKafkaListener::class)
     fun configureTradeListener(
         tradeListener: TradeKafkaListener,
-        @Qualifier("eventlogConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>
+        @Qualifier("eventLogConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>
     ) {
         val containerProps = ContainerProperties(Pattern.compile("trades_.*"))
         containerProps.messageListener = tradeListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.setBeanName("TradeKafkaListenerContainer")
+        container.beanName = "TradeKafkaListenerContainer"
         container.start()
     }
 
@@ -85,12 +86,12 @@ class EventlogKafkaConfig {
     @ConditionalOnBean(EventKafkaListener::class)
     fun configureEventListener(
         eventListener: EventKafkaListener,
-        @Qualifier("eventlogConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>
+        @Qualifier("eventLogConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>
     ) {
         val containerProps = ContainerProperties(Pattern.compile("events_.*"))
         containerProps.messageListener = eventListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.setBeanName("EventKafkaListenerContainer")
+        container.beanName = "EventKafkaListenerContainer"
         container.start()
     }
 
@@ -98,12 +99,12 @@ class EventlogKafkaConfig {
     @ConditionalOnBean(OrderKafkaListener::class)
     fun configureOrderListener(
         orderListener: OrderKafkaListener,
-        @Qualifier("eventlogConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>
+        @Qualifier("eventLogConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>
     ) {
         val containerProps = ContainerProperties(Pattern.compile("orders_.*"))
         containerProps.messageListener = orderListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.setBeanName("OrderKafkaListenerContainer")
+        container.beanName = "OrderKafkaListenerContainer"
         container.start()
     }
 

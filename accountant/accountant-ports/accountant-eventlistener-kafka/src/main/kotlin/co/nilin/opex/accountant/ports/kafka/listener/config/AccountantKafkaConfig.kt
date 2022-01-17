@@ -27,6 +27,7 @@ import java.util.regex.Pattern
 
 @Configuration
 class AccountantKafkaConfig {
+
     @Value("\${spring.kafka.bootstrap-servers}")
     private val bootstrapServers: String? = null
 
@@ -34,41 +35,21 @@ class AccountantKafkaConfig {
     private val groupId: String? = null
 
     @Bean("accountantConsumerConfig")
-    fun consumerConfigs(): Map<String, Any?>? {
-        val props: MutableMap<String, Any?> = HashMap()
-        props[ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG] = bootstrapServers
-        props[ConsumerConfig.GROUP_ID_CONFIG] = groupId
-        props[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java
-        props[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = JsonDeserializer::class.java
-        props[JsonDeserializer.TRUSTED_PACKAGES] = "co.nilin.opex.*"
-        props[JsonDeserializer.TYPE_MAPPINGS] = "order_request:co.nilin.opex.accountant.ports.kafka.listener.inout.OrderSubmitRequest"
-        return props
+    fun consumerConfigs(): Map<String, Any?> {
+        return mapOf(
+            ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
+            ConsumerConfig.GROUP_ID_CONFIG to groupId,
+            ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
+            ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JsonDeserializer::class.java,
+            JsonDeserializer.TRUSTED_PACKAGES to "co.nilin.opex.*",
+            JsonDeserializer.TYPE_MAPPINGS to "order_request:co.nilin.opex.accountant.ports.kafka.listener.inout.OrderSubmitRequest"
+        )
     }
 
     @Bean("accountantConsumerFactory")
     fun consumerFactory(@Qualifier("accountantConsumerConfig") consumerConfigs: Map<String, Any?>): ConsumerFactory<String, CoreEvent> {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
-
-    @Bean("accountantProducerConfig")
-    fun producerConfigs(): Map<String, Any?> {
-        val props: MutableMap<String, Any?> = HashMap()
-        props[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = bootstrapServers
-        props[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java
-        props[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = JsonSerializer::class.java
-        return props
-    }
-
-    @Bean("accountantProducerFactory")
-    fun producerFactory(@Qualifier("accountantProducerConfig") producerConfigs: Map<String, Any?>): ProducerFactory<String?, CoreEvent> {
-        return DefaultKafkaProducerFactory(producerConfigs)
-    }
-
-    @Bean("accountantKafkaTemplate")
-    fun kafkaTemplate(@Qualifier("accountantProducerFactory") producerFactory: ProducerFactory<String?, CoreEvent>): KafkaTemplate<String?, CoreEvent> {
-        return KafkaTemplate(producerFactory)
-    }
-
 
     @Autowired
     @ConditionalOnBean(TradeKafkaListener::class)
@@ -79,7 +60,7 @@ class AccountantKafkaConfig {
         val containerProps = ContainerProperties(Pattern.compile("trades_.*"))
         containerProps.messageListener = tradeListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.setBeanName("TradeKafkaListenerContainer")
+        container.beanName = "TradeKafkaListenerContainer"
         container.start()
     }
 
@@ -92,7 +73,7 @@ class AccountantKafkaConfig {
         val containerProps = ContainerProperties(Pattern.compile("events_.*"))
         containerProps.messageListener = eventListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.setBeanName("EventKafkaListenerContainer")
+        container.beanName = "EventKafkaListenerContainer"
         container.start()
     }
 
@@ -105,7 +86,7 @@ class AccountantKafkaConfig {
         val containerProps = ContainerProperties(Pattern.compile("orders_.*"))
         containerProps.messageListener = orderListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.setBeanName("OrderKafkaListenerContainer")
+        container.beanName = "OrderKafkaListenerContainer"
         container.start()
     }
 
@@ -123,7 +104,7 @@ class AccountantKafkaConfig {
         val containerProps = ContainerProperties(Pattern.compile("tempevents"))
         containerProps.messageListener = eventListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.setBeanName("TempEventKafkaListenerContainer")
+        container.beanName = "TempEventKafkaListenerContainer"
         container.start()
     }
 

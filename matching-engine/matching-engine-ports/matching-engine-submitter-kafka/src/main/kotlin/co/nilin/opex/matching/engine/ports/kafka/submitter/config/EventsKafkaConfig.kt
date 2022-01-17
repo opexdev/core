@@ -38,8 +38,7 @@ class EventsKafkaConfig {
             ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
             ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
             ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JsonSerializer::class.java,
-            ProducerConfig.ACKS_CONFIG to "all",
-            ProducerConfig.CLIENT_ID_CONFIG to "matching-engine",
+            ProducerConfig.ACKS_CONFIG to "all"
         )
     }
 

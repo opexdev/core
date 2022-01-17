@@ -20,13 +20,14 @@ class OrderKafkaConfig {
     private lateinit var bootstrapServers: String
 
     @Bean("orderProducerConfigs")
-    fun producerConfigs(): Map<String, Any>? {
-        val props: MutableMap<String, Any> = HashMap()
-        props[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = bootstrapServers
-        props[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java
-        props[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = JsonSerializer::class.java
-        props[JsonSerializer.TYPE_MAPPINGS] = "order_request:co.nilin.opex.matching.gateway.ports.kafka.submitter.inout.OrderSubmitRequest"
-        return props
+    fun producerConfigs(): Map<String, Any> {
+        return mapOf(
+            ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
+            ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
+            ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JsonSerializer::class.java,
+            ProducerConfig.ACKS_CONFIG to "all",
+            JsonSerializer.TYPE_MAPPINGS to "order_request:co.nilin.opex.matching.gateway.ports.kafka.submitter.inout.OrderSubmitRequest"
+        )
     }
 
     @Bean("orderProducerFactory")

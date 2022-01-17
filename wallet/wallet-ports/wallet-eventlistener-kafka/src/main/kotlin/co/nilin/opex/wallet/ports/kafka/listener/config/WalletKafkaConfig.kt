@@ -5,6 +5,7 @@ import co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent
 import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
+import org.apache.kafka.common.config.TopicConfig
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.beans.factory.annotation.Autowired
@@ -14,6 +15,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.support.GenericApplicationContext
+import org.springframework.context.support.beans
+import org.springframework.kafka.config.TopicBuilder
 import org.springframework.kafka.core.*
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer
 import org.springframework.kafka.listener.ContainerProperties
@@ -23,6 +26,7 @@ import java.util.regex.Pattern
 
 @Configuration
 class WalletKafkaConfig {
+
     @Value("\${spring.kafka.bootstrap-servers}")
     private val bootstrapServers: String? = null
 
@@ -30,15 +34,15 @@ class WalletKafkaConfig {
     private val groupId: String? = null
 
     @Bean("walletConsumerConfig")
-    fun consumerConfigs(): Map<String, Any?>? {
-        val props: MutableMap<String, Any?> = HashMap()
-        props[ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG] = bootstrapServers
-        props[ConsumerConfig.GROUP_ID_CONFIG] = groupId
-        props[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java
-        props[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = JsonDeserializer::class.java
-        props[JsonDeserializer.TRUSTED_PACKAGES] = "co.nilin.opex.*"
-        props[JsonDeserializer.TYPE_MAPPINGS] = "user_created_event:co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent"
-        return props
+    fun consumerConfigs(): Map<String, Any?> {
+        return mapOf(
+            ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
+            ConsumerConfig.GROUP_ID_CONFIG to groupId,
+            ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
+            ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JsonDeserializer::class.java,
+            JsonDeserializer.TRUSTED_PACKAGES to "co.nilin.opex.*",
+            JsonDeserializer.TYPE_MAPPINGS to "user_created_event:co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent"
+        )
     }
 
     @Bean("walletConsumerFactory")
@@ -48,11 +52,12 @@ class WalletKafkaConfig {
 
     @Bean("walletProducerConfig")
     fun producerConfigs(): Map<String, Any?> {
-        val props: MutableMap<String, Any?> = HashMap()
-        props[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = bootstrapServers
-        props[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java
-        props[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = JsonSerializer::class.java
-        return props
+        return mapOf(
+            ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
+            ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
+            ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JsonSerializer::class.java,
+            ProducerConfig.ACKS_CONFIG to "all"
+        )
     }
 
     @Bean("walletProducerFactory")
@@ -65,7 +70,6 @@ class WalletKafkaConfig {
         return KafkaTemplate(producerFactory)
     }
 
-
     @Autowired
     @ConditionalOnBean(UserCreatedKafkaListener::class)
     fun configureUserCreatedListener(
@@ -75,14 +79,20 @@ class WalletKafkaConfig {
         val containerProps = ContainerProperties(Pattern.compile("auth_user_created"))
         containerProps.messageListener = listener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.setBeanName("UserCreatedKafkaListenerContainer")
+        container.beanName = "UserCreatedKafkaListenerContainer"
         container.start()
     }
 
-
     @Autowired
     fun createUserCreatedTopics(applicationContext: GenericApplicationContext) {
-        applicationContext.registerBean("topic_auth_user_created", NewTopic::class.java, "auth_user_created", 1, 1)
+        beans {
+            bean(name = "topic_auth_user_created") {
+                TopicBuilder.name("auth_user_created")
+                    .partitions(3)
+                    .replicas(2)
+                    .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "1")
+            }
+        }.initialize(applicationContext)
     }
 
 }
