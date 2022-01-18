@@ -8,4 +8,10 @@ data class RichOrderUpdate(
     val quantity: BigDecimal,
     val remainedQuantity: BigDecimal,
     val status: OrderStatus = OrderStatus.NEW
-) : RichOrderEvent
+) : RichOrderEvent {
+
+    fun executedQuantity(): BigDecimal = quantity.minus(remainedQuantity)
+
+    fun accumulativeQuoteQuantity(): BigDecimal = price.multiply((quantity.minus(remainedQuantity)))
+
+}

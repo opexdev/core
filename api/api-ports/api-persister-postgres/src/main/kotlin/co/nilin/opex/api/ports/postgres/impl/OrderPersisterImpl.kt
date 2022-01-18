@@ -60,14 +60,11 @@ class OrderPersisterImpl(
     }
 
     override suspend fun update(orderUpdate: RichOrderUpdate) {
-        val executedQuantity = orderUpdate.quantity.minus(orderUpdate.remainedQuantity).toDouble()
-        val acc = orderUpdate.price.multiply((orderUpdate.quantity.minus(orderUpdate.remainedQuantity))).toDouble()
-
         orderStatusRepository.save(
             OrderStatusModel(
                 orderUpdate.ouid,
-                executedQuantity,
-                acc,
+                orderUpdate.executedQuantity().toDouble(),
+                orderUpdate.accumulativeQuoteQuantity().toDouble(),
                 orderUpdate.status.code,
                 orderUpdate.status.orderOfAppearance
             )
