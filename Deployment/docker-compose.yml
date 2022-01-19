@@ -50,6 +50,16 @@ services:
       - POSTGRES_DB=opex_accountant
     volumes:
       - $DATA/accountant-data:/var/lib/postgresql/data/
+  akhq:
+    container_name: akhq
+    image: tchiotludo/akhq
+    environment:
+      AKHQ_CONFIGURATION: |
+        akhq:
+          connections:
+            docker-kafka-server:
+              properties:
+                bootstrap.servers: "kafka:9092"
   postgres-eventlog:
     image: "postgres"
     environment:

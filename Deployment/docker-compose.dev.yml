@@ -21,6 +21,11 @@ services:
       - "127.0.0.1:6380:6379"
     networks:
       - opex-dev
+  akhq:
+    ports:
+      - "127.0.0.1:20100:8080"
+    networks:
+      - opex-dev
   postgres-accountant:
     ports:
       - 127.0.0.1:5633:5432
