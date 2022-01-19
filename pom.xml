@@ -10,9 +10,10 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <java.version>1.8</java.version>
-        <kotlin.version>1.4.31</kotlin.version>
-        <spring.version>2.4.4</spring.version>
+        <java.version>13</java.version>
+        <kotlin.version>1.6.0</kotlin.version>
+        <spring.version>2.6.2</spring.version>
+        <spring-cloud.version>2021.0.0</spring-cloud.version>
         <skip.unit.tests>false</skip.unit.tests>
     </properties>
 
@@ -58,11 +59,6 @@
                         <artifactId>junit-vintage-engine</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-starter-consul-all</artifactId>
-                <version>3.0.4</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

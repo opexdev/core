@@ -72,7 +72,7 @@ class WebSocketKafkaConfig {
         val containerProps = ContainerProperties(Pattern.compile("richTrade"))
         containerProps.messageListener = tradeListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.beanName = "WebsocketTradeKafkaListenerContainer"
+        container.setBeanName("WebsocketTradeKafkaListenerContainer")
         container.start()
     }
 
@@ -82,7 +82,7 @@ class WebSocketKafkaConfig {
         val containerProps = ContainerProperties(Pattern.compile("richOrder"))
         containerProps.messageListener = orderListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.beanName = "WebsocketOrderKafkaListenerContainer"
+        container.setBeanName("WebsocketOrderKafkaListenerContainer")
         container.start()
     }
 

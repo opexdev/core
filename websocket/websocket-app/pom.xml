@@ -14,10 +14,6 @@
     <name>websocket-app</name>
     <description>Websocket app</description>
 
-    <properties>
-        <spring-cloud.version>2020.0.2</spring-cloud.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>

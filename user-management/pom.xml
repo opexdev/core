@@ -9,6 +9,11 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
+    <properties>
+        <spring.version>2.4.4</spring.version>
+        <spring-cloud.version>2020.0.2</spring-cloud.version>
+    </properties>
+
     <groupId>co.nilin.opex.auth</groupId>
     <artifactId>user-management</artifactId>
     <name>user-management</name>
