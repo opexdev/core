@@ -75,7 +75,7 @@ internal class ChainSyncServiceImplTest {
             syncService.startSyncWithChain()
 
             //then
-            verifyZeroInteractions(
+            verifyNoMoreInteractions(
                 chainEndpointProxyFinder,
                 chainSyncRecordHandler,
                 walletSyncRecordHandler,
