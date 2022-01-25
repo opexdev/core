@@ -19,6 +19,7 @@ import org.springframework.kafka.core.KafkaAdmin
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.core.ProducerFactory
 import org.springframework.kafka.support.serializer.JsonSerializer
+import java.util.function.Supplier
 
 @Configuration
 class EventsKafkaConfig {
@@ -61,29 +62,27 @@ class EventsKafkaConfig {
 
     @Autowired
     fun createTopics() {
-        val beans = beans {
-            symbols!!.split(",")
-                .map { s -> "events_$s" }
-                .forEach { topic ->
-                    bean(name = "topic_${topic}") {
-                        TopicBuilder.name(topic)
-                            .partitions(10)
-                            .replicas(3)
-                            .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
-                    }
-                }
-            symbols.split(",")
-                .map { s -> "trades_$s" }
-                .forEach { topic ->
-                    bean(name = "topic_${topic}") {
-                        TopicBuilder.name(topic)
-                            .partitions(10)
-                            .replicas(3)
-                            .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
-                    }
-                }
-        }
-        applicationContext?.let { beans.initialize(it) }
+        symbols!!.split(",")
+            .map { s -> "events_$s" }
+            .forEach { topic ->
+                applicationContext?.registerBean("topic_${topic}", NewTopic::class.java, Supplier {
+                    TopicBuilder.name(topic)
+                        .partitions(10)
+                        .replicas(3)
+                        .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
+                        .build()
+                })
+            }
+        symbols.split(",")
+            .map { s -> "trades_$s" }
+            .forEach { topic ->
+                applicationContext?.registerBean("topic_${topic}", NewTopic::class.java, Supplier {
+                    TopicBuilder.name(topic)
+                        .partitions(10)
+                        .replicas(3)
+                        .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
+                        .build()
+                })
+            }
     }
-
 }

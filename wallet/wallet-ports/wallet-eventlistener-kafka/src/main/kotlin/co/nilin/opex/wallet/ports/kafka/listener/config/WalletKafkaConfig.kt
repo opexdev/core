@@ -5,7 +5,6 @@ import co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent
 import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
-import org.apache.kafka.common.config.TopicConfig
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,13 +14,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.support.GenericApplicationContext
-import org.springframework.context.support.beans
 import org.springframework.kafka.config.TopicBuilder
 import org.springframework.kafka.core.*
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer
 import org.springframework.kafka.listener.ContainerProperties
 import org.springframework.kafka.support.serializer.JsonDeserializer
 import org.springframework.kafka.support.serializer.JsonSerializer
+import java.util.function.Supplier
 import java.util.regex.Pattern
 
 @Configuration
@@ -85,14 +84,12 @@ class WalletKafkaConfig {
 
     @Autowired
     fun createUserCreatedTopics(applicationContext: GenericApplicationContext) {
-        beans {
-            bean(name = "topic_auth_user_created") {
-                TopicBuilder.name("auth_user_created")
-                    .partitions(3)
-                    .replicas(2)
-                    .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "1")
-            }
-        }.initialize(applicationContext)
+        applicationContext.registerBean("topic_auth_user_created", NewTopic::class.java, Supplier {
+            TopicBuilder.name("auth_user_created")
+                .partitions(1)
+                .replicas(1)
+                .build()
+        })
     }
 
 }

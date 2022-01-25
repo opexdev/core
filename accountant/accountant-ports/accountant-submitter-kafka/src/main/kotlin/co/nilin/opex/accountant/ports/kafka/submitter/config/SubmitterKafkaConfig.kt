@@ -3,6 +3,7 @@ package co.nilin.opex.accountant.ports.kafka.submitter.config
 import co.nilin.opex.accountant.core.inout.RichOrderEvent
 import co.nilin.opex.accountant.core.inout.RichTrade
 import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
+import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.config.TopicConfig
 import org.apache.kafka.common.serialization.StringSerializer
@@ -12,12 +13,12 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.support.GenericApplicationContext
-import org.springframework.context.support.beans
 import org.springframework.kafka.config.TopicBuilder
 import org.springframework.kafka.core.DefaultKafkaProducerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.core.ProducerFactory
 import org.springframework.kafka.support.serializer.JsonSerializer
+import java.util.function.Supplier
 
 @Configuration
 class SubmitterKafkaConfig {
@@ -68,20 +69,20 @@ class SubmitterKafkaConfig {
 
     @Autowired
     fun createTopics(applicationContext: GenericApplicationContext) {
-        beans {
-            bean(name = "topic_richOrder") {
-                TopicBuilder.name("richOrder")
-                    .partitions(10)
-                    .replicas(3)
-                    .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
-            }
+        applicationContext.registerBean("topic_richOrder", NewTopic::class.java, Supplier {
+            TopicBuilder.name("richOrder")
+                .partitions(10)
+                .replicas(3)
+                .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
+                .build()
+        })
 
-            bean("topic_richTrade") {
-                TopicBuilder.name("richTrade")
-                    .partitions(10)
-                    .replicas(3)
-                    .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
-            }
-        }.initialize(applicationContext)
+        applicationContext.registerBean("topic_richTrade", NewTopic::class.java, Supplier {
+            TopicBuilder.name("richTrade")
+                .partitions(10)
+                .replicas(3)
+                .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
+                .build()
+        })
     }
 }

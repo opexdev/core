@@ -16,13 +16,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.support.GenericApplicationContext
-import org.springframework.context.support.beans
 import org.springframework.kafka.config.TopicBuilder
 import org.springframework.kafka.core.*
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer
 import org.springframework.kafka.listener.ContainerProperties
 import org.springframework.kafka.support.serializer.JsonDeserializer
 import org.springframework.kafka.support.serializer.JsonSerializer
+import java.util.function.Supplier
 import java.util.regex.Pattern
 
 @Configuration
@@ -92,21 +92,21 @@ class WebSocketKafkaConfig {
 
     @Autowired
     fun createTopics(applicationContext: GenericApplicationContext) {
-        beans {
-            bean(name = "topic_richOrder") {
-                TopicBuilder.name("richOrder")
-                    .partitions(10)
-                    .replicas(3)
-                    .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
-            }
+        applicationContext.registerBean("topic_richOrder", NewTopic::class.java, Supplier {
+            TopicBuilder.name("richOrder")
+                .partitions(10)
+                .replicas(3)
+                .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
+                .build()
+        })
 
-            bean("topic_richTrade") {
-                TopicBuilder.name("richTrade")
-                    .partitions(10)
-                    .replicas(3)
-                    .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
-            }
-        }.initialize(applicationContext)
+        applicationContext.registerBean("topic_richTrade",NewTopic::class.java, Supplier {
+            TopicBuilder.name("richTrade")
+                .partitions(10)
+                .replicas(3)
+                .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
+                .build()
+        })
     }
 
 
