@@ -1,7 +1,7 @@
 pipeline {
     agent any
 
-    stages('Deploy - Demo') {
+    stages('Deploy - Stage') {
         stage('Build') {
             steps {
                 setBuildStatus("?", "PENDING")
@@ -14,12 +14,10 @@ pipeline {
         }
         stage('Deliver') {
             environment {
-                DATA = '/var/opex/runtime'
+                DATA = '/var/opex/runtime-dev'
             }
             steps {
-                dir("Deployment") {
-                    sh 'COMPOSE_PROJECT_NAME=demo docker-compose up -d --build'
-                }
+                sh 'COMPOSE_PROJECT_NAME=dev DEFAULT_NETWORK_NAME=opex-dev docker-compose up -d --build'
             }
         }
     }
