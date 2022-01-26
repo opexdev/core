@@ -56,87 +56,65 @@ services:
       - 127.0.0.1:8089:8089
       - 127.0.0.1:1045:1044
     networks:
-      opex:
-        aliases:
-          - accountant
+      - opex
   eventlog:
     ports:
       - 127.0.0.1:8090:8090
     networks:
-      opex:
-        aliases:
-          - eventlog
+      - opex
   matching-engine:
     ports:
       - 127.0.0.1:8092:8092
       - 127.0.0.1:1046:1044
     networks:
-      opex:
-        aliases:
-          - matching-engine
+      - opex
   matching-gateway:
     ports:
       - 127.0.0.1:8093:8093
       - 127.0.0.1:1047:1044
     networks:
-      opex:
-        aliases:
-          - matching-gateway
+      - opex
   auth:
     ports:
       - 127.0.0.1:8083:8083
       - 127.0.0.1:1048:1044
     networks:
-      opex:
-        aliases:
-          - auth
+      - opex
   wallet:
     ports:
       - 127.0.0.1:8091:8091
       - 127.0.0.1:1049:1044
     networks:
-      opex:
-        aliases:
-          - wallet
+      - opex
   api:
     ports:
       - 127.0.0.1:8094:8094
       - 127.0.0.1:1050:1044
     networks:
-      opex:
-        aliases:
-          - api
+      - opex
   websocket:
     ports:
       - 127.0.0.1:8097:8097
       - 127.0.0.1:1054:1044
     networks:
-      opex:
-        aliases:
-          - websocket
+      - opex
   bc-gateway:
     ports:
       - 127.0.0.1:8095:8095
       - 127.0.0.1:1052:1044
     networks:
-      opex:
-        aliases:
-          - bc-gateway
+      - opex
   storage:
     ports:
       - 127.0.0.1:8096:8096
       - 127.0.0.1:1053:1044
     networks:
-      opex:
-        aliases:
-          - storage
+      - opex
   nginx:
     ports:
       - 80:80
     networks:
-      opex:
-        aliases:
-          - opex_nginx
+      - opex
 networks:
   opex:
     driver: bridge
