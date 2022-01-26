@@ -9,7 +9,7 @@ services:
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
     networks:
-      - opex
+      - default
     deploy:
       restart_policy:
         condition: on-failure
@@ -26,7 +26,7 @@ services:
     depends_on:
       - zookeeper
     networks:
-      - opex
+      - default
     deploy:
       restart_policy:
         condition: on-failure
@@ -39,7 +39,7 @@ services:
     environment:
       - CONSUL_BIND_INTERFACE=eth0
     networks:
-      - opex
+      - default
     deploy:
       restart_policy:
         condition: on-failure
@@ -54,7 +54,7 @@ services:
     environment:
       - REDIS_REPLICATION_MODE=master
     networks:
-      - opex
+      - default
     deploy:
       restart_policy:
         condition: on-failure
@@ -69,7 +69,7 @@ services:
     volumes:
       - $DATA/accountant-data:/var/lib/postgresql/data/
     networks:
-      - opex
+      - default
   postgres-eventlog:
     image: "postgres"
     ports:
@@ -81,7 +81,7 @@ services:
     volumes:
       - $DATA/eventlog-data:/var/lib/postgresql/data/
     networks:
-      - opex
+      - default
   postgres-auth:
     image: "postgres"
     ports:
@@ -93,7 +93,7 @@ services:
     volumes:
       - $DATA/auth-data:/var/lib/postgresql/data/
     networks:
-      - opex
+      - default
     deploy:
       restart_policy:
         condition: on-failure
@@ -108,7 +108,7 @@ services:
     volumes:
       - $DATA/wallet-data:/var/lib/postgresql/data/
     networks:
-      - opex
+      - default
     deploy:
       restart_policy:
         condition: on-failure
@@ -123,7 +123,7 @@ services:
     volumes:
       - $DATA/api-data:/var/lib/postgresql/data/
     networks:
-      - opex
+      - default
     deploy:
       restart_policy:
         condition: on-failure
@@ -138,7 +138,7 @@ services:
     volumes:
       - $DATA/bc-gateway-data:/var/lib/postgresql/data/
     networks:
-      - opex
+      - default
     deploy:
       restart_policy:
         condition: on-failure
@@ -153,7 +153,7 @@ services:
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-accountant
     networks:
-      - opex
+      - default
     depends_on:
       - zookeeper
       - kafka
@@ -171,7 +171,7 @@ services:
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-eventlog
     networks:
-      - opex
+      - default
     depends_on:
       - zookeeper
       - kafka
@@ -187,7 +187,7 @@ services:
       - KAFKA_IP_PORT=kafka:9092
       - REDIS_HOST=redis
     networks:
-      - opex
+      - default
     depends_on:
       - zookeeper
       - kafka
@@ -202,7 +202,7 @@ services:
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
     networks:
-      - opex
+      - default
     depends_on:
       - zookeeper
       - kafka
@@ -226,7 +226,7 @@ services:
       - consul
       - postgres-auth
     networks:
-      - opex
+      - default
     deploy:
       restart_policy:
         condition: on-failure
@@ -247,7 +247,7 @@ services:
       - consul
       - postgres-wallet
     networks:
-      - opex
+      - default
     deploy:
       restart_policy:
         condition: on-failure
@@ -268,7 +268,7 @@ services:
       - consul
       - postgres-api
     networks:
-      - opex
+      - default
     deploy:
       restart_policy:
         condition: on-failure
@@ -287,7 +287,7 @@ services:
       - consul
       - postgres-api
     networks:
-      - opex
+      - default
     deploy:
       restart_policy:
         condition: on-failure
@@ -308,7 +308,7 @@ services:
       - consul
       - postgres-bc-gateway
     networks:
-      - opex
+      - default
     deploy:
       restart_policy:
         condition: on-failure
@@ -325,11 +325,11 @@ services:
     depends_on:
       - consul
     networks:
-      - opex
+      - default
     deploy:
       restart_policy:
         condition: on-failure
 networks:
-  opex:
+  default:
     name: ${DEFAULT_NETWORK_NAME:-opex}
     driver: bridge
