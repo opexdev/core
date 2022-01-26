@@ -1,22 +1,22 @@
 services:
   zookeeper:
     ports:
-      - '127.0.0.1:2181:2181'
+      - '2181:2181'
     networks:
       - opex
   kafka-1:
     ports:
-      - '127.0.0.1:9092:9092'
+      - '9092:9092'
     networks:
       - opex
   kafka-2:
     ports:
-      - '127.0.0.1:9094:9094'
+      - '9093:9093'
     networks:
       - opex
   kafka-3:
     ports:
-      - '127.0.0.1:9095:9095'
+      - '9094:9094'
     networks:
       - opex
   consul:

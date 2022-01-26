@@ -4,11 +4,30 @@ services:
       - '127.0.0.1:2182:2181'
     networks:
       - opex-dev
-  kafka:
+  kafka-1:
     ports:
-      - '127.0.0.1:9093:9092'
+      - '19092:9092'
     networks:
       - opex-dev
+    environment:
+      - KAFKA_LISTENERS=CLIENT://kafka-1:29092,EXTERNAL://localhost:19092
+      - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-1:29092,EXTERNAL://localhost:19092
+  kafka-2:
+    ports:
+      - '19093:9093'
+    networks:
+      - opex-dev
+    environment:
+      - KAFKA_LISTENERS=CLIENT://kafka-2:29092,EXTERNAL://localhost:19093
+      - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-2:29092,EXTERNAL://localhost:19093
+  kafka-3:
+    ports:
+      - '19094:9094'
+    networks:
+      - opex-dev
+    environment:
+      - KAFKA_LISTENERS=CLIENT://kafka-3:29092,EXTERNAL://localhost:19094
+      - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-3:29092,EXTERNAL://localhost:19094
   consul:
     ports:
       - '127.0.0.1:8501:8500'
