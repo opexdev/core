@@ -331,5 +331,5 @@ services:
         condition: on-failure
 networks:
   opex:
-    name: ${DEFAULT_NETWORK_NAME}
+    name: ${DEFAULT_NETWORK_NAME:-opex}
     driver: bridge
