@@ -80,7 +80,7 @@ class ApiKafkaConfig {
         val containerProps = ContainerProperties(Pattern.compile("richTrade"))
         containerProps.messageListener = tradeListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.beanName = "ApiTradeKafkaListenerContainer"
+        container.setBeanName("ApiTradeKafkaListenerContainer")
         container.start()
     }
 
@@ -93,7 +93,7 @@ class ApiKafkaConfig {
         val containerProps = ContainerProperties(Pattern.compile("events_.*"))
         containerProps.messageListener = eventListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.beanName = "ApiEventKafkaListenerContainer"
+        container.setBeanName("ApiEventKafkaListenerContainer")
         container.start()
     }
 
@@ -106,7 +106,7 @@ class ApiKafkaConfig {
         val containerProps = ContainerProperties(Pattern.compile("richOrder"))
         containerProps.messageListener = orderListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.beanName = "ApiOrderKafkaListenerContainer"
+        container.setBeanName("ApiOrderKafkaListenerContainer")
         container.start()
     }
 

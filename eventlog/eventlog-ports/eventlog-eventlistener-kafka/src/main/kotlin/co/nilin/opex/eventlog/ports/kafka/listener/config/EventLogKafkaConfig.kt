@@ -78,7 +78,7 @@ class EventLogKafkaConfig {
         val containerProps = ContainerProperties(Pattern.compile("trades_.*"))
         containerProps.messageListener = tradeListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.beanName = "TradeKafkaListenerContainer"
+        container.setBeanName("TradeKafkaListenerContainer")
         container.start()
     }
 
@@ -91,7 +91,7 @@ class EventLogKafkaConfig {
         val containerProps = ContainerProperties(Pattern.compile("events_.*"))
         containerProps.messageListener = eventListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.beanName = "EventKafkaListenerContainer"
+        container.setBeanName("EventKafkaListenerContainer")
         container.start()
     }
 
@@ -104,7 +104,7 @@ class EventLogKafkaConfig {
         val containerProps = ContainerProperties(Pattern.compile("orders_.*"))
         containerProps.messageListener = orderListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.beanName = "OrderKafkaListenerContainer"
+        container.setBeanName("OrderKafkaListenerContainer")
         container.start()
     }
 

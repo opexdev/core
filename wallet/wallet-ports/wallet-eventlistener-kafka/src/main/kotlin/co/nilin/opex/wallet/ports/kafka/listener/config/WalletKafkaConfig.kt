@@ -78,7 +78,7 @@ class WalletKafkaConfig {
         val containerProps = ContainerProperties(Pattern.compile("auth_user_created"))
         containerProps.messageListener = listener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.beanName = "UserCreatedKafkaListenerContainer"
+        container.setBeanName("UserCreatedKafkaListenerContainer")
         container.start()
     }
 
