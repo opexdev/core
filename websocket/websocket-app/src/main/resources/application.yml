@@ -1,5 +1,5 @@
 server:
-  port: 8097
+  port: 8080
 spring:
   application:
     name: opex-websocket

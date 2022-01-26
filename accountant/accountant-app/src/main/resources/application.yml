@@ -1,4 +1,4 @@
-server.port: 8089
+server.port: 8080
 logging:
   level:
     co.nilin: DEBUG
