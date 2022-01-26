@@ -5,18 +5,12 @@ services:
     networks:
       - opex
   kafka-1:
-    ports:
-      - '9092:9092'
     networks:
       - opex
   kafka-2:
-    ports:
-      - '9093:9093'
     networks:
       - opex
   kafka-3:
-    ports:
-      - '9094:9094'
     networks:
       - opex
   consul:
