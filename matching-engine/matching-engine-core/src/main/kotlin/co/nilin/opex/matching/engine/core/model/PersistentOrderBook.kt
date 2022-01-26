@@ -5,6 +5,7 @@ class PersistentOrderBook {
     lateinit var pair: Pair
     var lastOrder: PersistentOrder? = null
     var orders: List<PersistentOrder>? = emptyList()
+    var tradeCounter: Long = 0
 
     constructor() {
     }

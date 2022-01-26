@@ -107,7 +107,7 @@ class OrderKafkaConfig {
         val containerProps = ContainerProperties(*topics)
         containerProps.messageListener = orderKafkaListener
         val container = KafkaMessageListenerContainer(consumerFactory, containerProps)
-        container.beanName = "OrderKafkaListenerContainer"
+        container.setBeanName("OrderKafkaListenerContainer")
         container.start()
     }
 
@@ -119,7 +119,7 @@ class OrderKafkaConfig {
         val containerProps = ContainerProperties(Pattern.compile("events_.*"))
         containerProps.messageListener = eventListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.beanName = "EventKafkaListenerContainer"
+        container.setBeanName("EventKafkaListenerContainer")
         container.start()
     }
 

@@ -22,8 +22,9 @@ spring:
         instance-id: ${spring.application.name}:${server.port}
         healthCheckInterval: 20s
         prefer-ip-address: true
+swagger.authUrl: https://api.opex.dev
 app:
   accountant:
     url: lb://opex-accountant
-
-swagger.authUrl: https://api.opex.dev
+  auth:
+    cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs

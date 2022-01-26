@@ -13,10 +13,6 @@
     <artifactId>storage-app</artifactId>
     <name>storage-app</name>
 
-    <properties>
-        <spring-cloud.version>2020.0.2</spring-cloud.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.jetbrains.kotlinx</groupId>
@@ -61,6 +57,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.minidev</groupId>
+            <artifactId>json-smart</artifactId>
+            <version>2.4.7</version>
         </dependency>
     </dependencies>
 

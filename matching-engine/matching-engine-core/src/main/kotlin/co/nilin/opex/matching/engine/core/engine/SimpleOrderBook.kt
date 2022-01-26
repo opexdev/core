@@ -25,52 +25,8 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
 
     var lastOrder: SimpleOrder? = null
 
-    data class SimpleOrder(
-        var id: Long?,
-        val ouid: String,
-        val uuid: String,
-        val price: Long,
-        val quantity: Long,
-        val matchConstraint: MatchConstraint,
-        val orderType: OrderType,
-        val direction: OrderDirection,
-        var filledQuantity: Long,
-        var worse: SimpleOrder?,
-        var better: SimpleOrder?,
-        var bucket: Bucket?
-    ) : Order {
-        fun remainedQuantity() = quantity - filledQuantity
-        override fun id(): Long? = id
-        override fun toString(): String {
-            return "SimpleOrder(id=$id, price=$price, quantity=$quantity, matchConstraint=$matchConstraint, orderType=$orderType, filledQuantity=$filledQuantity, worse=${worse?.id}, better=${better?.id}, bucket=${bucket?.totalQuantity})"
-        }
-
-        override fun persistent(): PersistentOrder {
-            return PersistentOrder(
-                id!!,
-                ouid,
-                uuid,
-                price,
-                quantity,
-                matchConstraint,
-                orderType,
-                direction,
-                filledQuantity
-            )
-        }
-    }
-
-    data class Bucket(val price: Long, var totalQuantity: Long, var ordersCount: Long, var lastOrder: SimpleOrder)
-
     override fun handleNewOrderCommand(orderCommand: OrderCreateCommand): Order? {
-        logger.info("****************** new order received *******************")
-        logger.info("** order id: ${orderCommand.ouid}")
-        logger.info("** price: ${orderCommand.price}")
-        logger.info("** quantity: ${orderCommand.quantity}")
-        logger.info("** direction: ${orderCommand.direction}")
-        logger.info("*********************************************************")
-        println()
-
+        logNewOrder(orderCommand)
         val order = when (orderCommand.matchConstraint) {
             MatchConstraint.GTC -> {
                 if (orderCommand.orderType == OrderType.MARKET_ORDER) {
@@ -519,7 +475,6 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
 
     }
 
-
     private fun putGtcInQueue(
         order: SimpleOrder,
         queue: LongAdaptiveRadixTreeMap<Bucket>,
@@ -592,8 +547,8 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
     private fun persistent(): PersistentOrderBook {
         val persistent = PersistentOrderBook(pair)
         persistent.lastOrder = lastOrder?.persistent()
-        persistent.orders = orders.values
-            .map { order -> order.persistent() }
+        persistent.orders = orders.values.map { order -> order.persistent() }
+        persistent.tradeCounter = tradeCounter.get()
         return persistent
     }
 
@@ -616,7 +571,19 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
         }?.filter { order ->
             order.matchConstraint == MatchConstraint.GTC
         }?.forEach { order -> putGtcInQueue(order) }
+
         orderCounter.set(persistentOrderBook.lastOrder?.id ?: 0)
+        tradeCounter.set(persistentOrderBook.tradeCounter)
+    }
+
+    private fun logNewOrder(orderCommand: OrderCreateCommand) {
+        logger.info("****************** new order received *******************")
+        logger.info("** order id: ${orderCommand.ouid}")
+        logger.info("** price: ${orderCommand.price}")
+        logger.info("** quantity: ${orderCommand.quantity}")
+        logger.info("** direction: ${orderCommand.direction}")
+        logger.info("*********************************************************")
+        println()
     }
 
     private fun logCurrentState() {
