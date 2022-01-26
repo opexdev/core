@@ -277,13 +277,3 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-  nginx:
-    image: jboesl/docker-nginx-headers-more
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - $DATA/www:/data/www
-    depends_on:
-      - wallet
-      - auth
-      - matching-gateway
-      - api
