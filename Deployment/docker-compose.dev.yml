@@ -4,11 +4,24 @@ services:
       - '127.0.0.1:2182:2181'
     networks:
       - opex-dev
-  kafka:
-    ports:
-      - '127.0.0.1:9093:9092'
+  kafka-1:
     networks:
       - opex-dev
+    environment:
+      - KAFKA_LISTENERS=CLIENT://kafka-1:29092,EXTERNAL://kafka-1:9092
+      - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-1:29092,EXTERNAL://kafka-1:9092
+  kafka-2:
+    networks:
+      - opex-dev
+    environment:
+      - KAFKA_LISTENERS=CLIENT://kafka-2:29092,EXTERNAL://kafka-2:9092
+      - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-2:29092,EXTERNAL://kafka-2:9092
+  kafka-3:
+    networks:
+      - opex-dev
+    environment:
+      - KAFKA_LISTENERS=CLIENT://kafka-3:29092,EXTERNAL://kafka-3:9092
+      - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-3:29092,EXTERNAL://kafka-3:9092
   consul:
     ports:
       - '127.0.0.1:8501:8500'
@@ -19,6 +32,11 @@ services:
   redis:
     ports:
       - "127.0.0.1:6380:6379"
+    networks:
+      - opex-dev
+  akhq:
+    ports:
+      - "127.0.0.1:20100:8080"
     networks:
       - opex-dev
   postgres-accountant:

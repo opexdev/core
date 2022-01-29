@@ -8,9 +8,9 @@ import co.nilin.opex.accountant.core.spi.WalletProxy
 import org.slf4j.LoggerFactory
 
 class FinancialActionJobManagerImpl(
-    val financialActionLoader: FinancialActionLoader,
-    val financialActionPersister: FinancialActionPersister,
-    val walletProxy: WalletProxy
+    private val financialActionLoader: FinancialActionLoader,
+    private val financialActionPersister: FinancialActionPersister,
+    private val walletProxy: WalletProxy
 ) : FinancialActionJobManager {
 
     private val log = LoggerFactory.getLogger(FinancialActionJobManagerImpl::class.java)

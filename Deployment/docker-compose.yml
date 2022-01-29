@@ -1,22 +1,69 @@
 version: '3.8'
 services:
   zookeeper:
-    image: 'docker.io/bitnami/zookeeper:3-debian-10'
+    image: confluentinc/cp-zookeeper:latest
+    hostname: zookeeper
     volumes:
-      - $DATA/zookeeper_data:/bitnami
+      - $DATA/zookeeper-data/data:/var/lib/zookeeper/data
+      - $DATA/zookeeper-data/tx-logs:/var/lib/zookeeper/log
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
+      - ZOOKEEPER_CLIENT_PORT=2181
     deploy:
       restart_policy:
         condition: on-failure
-  kafka:
-    image: 'docker.io/bitnami/kafka:2-debian-10'
+  kafka-1:
+    image: confluentinc/cp-kafka:latest
+    hostname: kafka-1
     volumes:
-      - $DATA/kafka-data:/bitnami
+      - $DATA/kafka-data/kafka-1:/var/lib/kafka/data
     environment:
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
       - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_LISTENERS=CLIENT://kafka-1:29092,EXTERNAL://kafka-1:9092
+      - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-1:29092,EXTERNAL://kafka-1:9092
+      - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
+      - KAKFA_MIN_INSYNC_REPLICAS=2
+      - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+    depends_on:
+      - zookeeper
+    deploy:
+      restart_policy:
+        condition: on-failure
+  kafka-2:
+    image: confluentinc/cp-kafka:latest
+    hostname: kafka-2
+    volumes:
+      - $DATA/kafka-data/kafka-2:/var/lib/kafka/data
+    environment:
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_LISTENERS=CLIENT://kafka-2:29092,EXTERNAL://kafka-2:9092
+      - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-2:29092,EXTERNAL://kafka-2:9092
+      - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
+      - KAKFA_MIN_INSYNC_REPLICAS=2
+      - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+    depends_on:
+      - zookeeper
+    deploy:
+      restart_policy:
+        condition: on-failure
+  kafka-3:
+    image: confluentinc/cp-kafka:latest
+    hostname: kafka-3
+    volumes:
+      - $DATA/kafka-data/kafka-3:/var/lib/kafka/data
+    environment:
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_LISTENERS=CLIENT://kafka-3:29092,EXTERNAL://kafka-3:9092
+      - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-3:29092,EXTERNAL://kafka-3:9092
+      - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
+      - KAKFA_MIN_INSYNC_REPLICAS=2
+      - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
     depends_on:
       - zookeeper
     deploy:
@@ -48,6 +95,20 @@ services:
       - POSTGRES_DB=opex_accountant
     volumes:
       - $DATA/accountant-data:/var/lib/postgresql/data/
+  akhq:
+    container_name: akhq
+    image: tchiotludo/akhq
+    environment:
+      AKHQ_CONFIGURATION: |
+        akhq:
+          connections:
+            docker-kafka-server:
+              properties:
+                bootstrap.servers: "kafka-1:29092,kafka-2:29092,kafka-3:29092"
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
   postgres-eventlog:
     image: "postgres"
     environment:
@@ -107,13 +168,13 @@ services:
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_ACTIVE=docker,demo,scheduled
-      - KAFKA_IP_PORT=kafka:9092
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-accountant
     depends_on:
       - zookeeper
-      - kafka
+      - kafka-1
       - redis
       - consul
       - postgres-accountant
@@ -124,13 +185,15 @@ services:
     environment:
       - JAVA_OPTS=-Xmx256m
       - SPRING_PROFILES_ACTIVE=docker,demo
-      - KAFKA_IP_PORT=kafka:9092
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-eventlog
     depends_on:
       - zookeeper
-      - kafka
+      - kafka-1
+      - kafka-2
+      - kafka-3
       - redis
       - consul
       - postgres-eventlog
@@ -141,11 +204,13 @@ services:
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_ACTIVE=docker,demo
-      - KAFKA_IP_PORT=kafka:9092
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - REDIS_HOST=redis
     depends_on:
       - zookeeper
-      - kafka
+      - kafka-1
+      - kafka-2
+      - kafka-3
       - redis
   matching-gateway:
     build:
@@ -154,12 +219,14 @@ services:
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_DEFAULT=docker,demo
-      - KAFKA_IP_PORT=kafka:9092
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
     depends_on:
       - zookeeper
-      - kafka
+      - kafka-1
+      - kafka-2
+      - kafka-3
       - consul
   auth:
     build:
@@ -168,7 +235,7 @@ services:
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_ACTIVE=docker,demo
-      - KAFKA_IP_PORT=kafka:9092
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-auth
@@ -176,7 +243,9 @@ services:
       - WORKING_DIR=$DATA
     depends_on:
       - zookeeper
-      - kafka
+      - kafka-1
+      - kafka-2
+      - kafka-3
       - redis
       - consul
       - postgres-auth
@@ -190,13 +259,15 @@ services:
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_DEFAULT=docker,demo
-      - KAFKA_IP_PORT=kafka:9092
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-wallet
     depends_on:
       - zookeeper
-      - kafka
+      - kafka-1
+      - kafka-2
+      - kafka-3
       - redis
       - consul
       - postgres-wallet
@@ -210,13 +281,15 @@ services:
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_DEFAULT=docker,demo
-      - KAFKA_IP_PORT=kafka:9092
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-api
     depends_on:
       - zookeeper
-      - kafka
+      - kafka-1
+      - kafka-2
+      - kafka-3
       - redis
       - consul
       - postgres-api
@@ -230,12 +303,14 @@ services:
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_DEFAULT=docker
-      - KAFKA_IP_PORT=kafka:9092
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-api
     depends_on:
       - zookeeper
-      - kafka
+      - kafka-1
+      - kafka-2
+      - kafka-3
       - consul
       - postgres-api
     deploy:
@@ -248,13 +323,13 @@ services:
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_DEFAULT=docker,demo,scheduled
-      - KAFKA_IP_PORT=kafka:9092
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-bc-gateway
     depends_on:
       - zookeeper
-      - kafka
+      - kafka-1
       - redis
       - consul
       - postgres-bc-gateway

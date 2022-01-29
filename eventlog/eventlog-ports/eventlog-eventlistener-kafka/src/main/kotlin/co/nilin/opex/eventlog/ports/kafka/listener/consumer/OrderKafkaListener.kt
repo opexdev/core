@@ -1,7 +1,7 @@
 package co.nilin.opex.eventlog.ports.kafka.listener.consumer
 
-import co.nilin.opex.eventlog.ports.kafka.listener.spi.OrderSubmitRequestListener
 import co.nilin.opex.eventlog.ports.kafka.listener.inout.OrderSubmitRequest
+import co.nilin.opex.eventlog.ports.kafka.listener.spi.OrderSubmitRequestListener
 import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext

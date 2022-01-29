@@ -1,8 +1,11 @@
 package co.nilin.opex.accountant.core.service
 
 import co.nilin.opex.accountant.core.api.TradeManager
+import co.nilin.opex.accountant.core.inout.OrderStatus
+import co.nilin.opex.accountant.core.inout.RichOrderUpdate
 import co.nilin.opex.accountant.core.inout.RichTrade
 import co.nilin.opex.accountant.core.model.FinancialAction
+import co.nilin.opex.accountant.core.model.Order
 import co.nilin.opex.accountant.core.spi.*
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
 import co.nilin.opex.matching.engine.core.model.OrderDirection
@@ -12,15 +15,16 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 open class TradeManagerImpl(
-    val pairStaticRateLoader: PairStaticRateLoader,
-    val financeActionPersister: FinancialActionPersister,
-    val financeActionLoader: FinancialActionLoader,
-    val orderPersister: OrderPersister,
-    val tempEventPersister: TempEventPersister,
-    val richTradePublisher: RichTradePublisher,
-    val walletProxy: WalletProxy,
-    val platformCoin: String,
-    val platformAddress: String
+    private val pairStaticRateLoader: PairStaticRateLoader,
+    private val financeActionPersister: FinancialActionPersister,
+    private val financeActionLoader: FinancialActionLoader,
+    private val orderPersister: OrderPersister,
+    private val tempEventPersister: TempEventPersister,
+    private val richTradePublisher: RichTradePublisher,
+    private val richOrderPublisher: RichOrderPublisher,
+    private val walletProxy: WalletProxy,
+    private val platformCoin: String,
+    private val platformAddress: String
 ) : TradeManager {
 
     private val log = LoggerFactory.getLogger(TradeManagerImpl::class.java)
@@ -154,6 +158,7 @@ open class TradeManagerImpl(
         }
         orderPersister.save(takerOrder)
         log.info("taker order saved {}", takerOrder)
+        publishTakerRichOrderUpdate(takerOrder, trade)
 
         //calculate taker fee
         val takerFee = takerOrder.takerFee
@@ -232,6 +237,8 @@ open class TradeManagerImpl(
         }
         orderPersister.save(makerOrder)
         log.info("maker order saved {}", makerOrder)
+        publishMakerRichOrderUpdate(makerOrder, trade)
+
         richTradePublisher.publish(
             RichTrade(
                 trade.tradeId,
@@ -262,5 +269,26 @@ open class TradeManagerImpl(
 
         )
         return financeActionPersister.persist(financialActions)
+    }
+
+    private suspend fun publishTakerRichOrderUpdate(takerOrder: Order, trade: TradeEvent) {
+        val price = trade.takerPrice.toBigDecimal().multiply(takerOrder.rightSideFraction.toBigDecimal())
+        val remained = trade.takerRemainedQuantity.toBigDecimal().multiply(takerOrder.leftSideFraction.toBigDecimal())
+        publishRichOrderUpdate(takerOrder, price, remained)
+    }
+
+    private suspend fun publishMakerRichOrderUpdate(makerOrder: Order, trade: TradeEvent) {
+        val price = trade.makerPrice.toBigDecimal().multiply(makerOrder.rightSideFraction.toBigDecimal())
+        val remained = trade.makerRemainedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction.toBigDecimal())
+        publishRichOrderUpdate(makerOrder, price, remained)
+    }
+
+    private suspend fun publishRichOrderUpdate(order: Order, price: BigDecimal, remainedQty: BigDecimal) {
+        val status = if (remainedQty.compareTo(BigDecimal.ZERO) == 0)
+            OrderStatus.FILLED
+        else
+            OrderStatus.PARTIALLY_FILLED
+
+        richOrderPublisher.publish(RichOrderUpdate(order.ouid, price, order.origQuantity, remainedQty, status))
     }
 }

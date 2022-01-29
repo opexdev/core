@@ -1,12 +1,16 @@
 services:
   zookeeper:
     ports:
-      - '127.0.0.1:2181:2181'
+      - '2181:2181'
     networks:
       - opex
-  kafka:
-    ports:
-      - '127.0.0.1:9092:9092'
+  kafka-1:
+    networks:
+      - opex
+  kafka-2:
+    networks:
+      - opex
+  kafka-3:
     networks:
       - opex
   consul:
@@ -19,6 +23,11 @@ services:
   redis:
     ports:
       - "127.0.0.1:6379:6379"
+    networks:
+      - opex
+  akhq:
+    ports:
+      - "127.0.0.1:10100:8080"
     networks:
       - opex
   postgres-accountant:

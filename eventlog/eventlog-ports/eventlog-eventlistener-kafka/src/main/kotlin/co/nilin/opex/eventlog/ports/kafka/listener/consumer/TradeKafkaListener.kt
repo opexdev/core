@@ -1,8 +1,8 @@
 package co.nilin.opex.eventlog.ports.kafka.listener.consumer
 
 
-import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
 import co.nilin.opex.eventlog.ports.kafka.listener.spi.TradeListener
+import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.kafka.listener.MessageListener
 import org.springframework.stereotype.Component
