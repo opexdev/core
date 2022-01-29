@@ -9,6 +9,8 @@ services:
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
       - ZOOKEEPER_CLIENT_PORT=2181
+    networks:
+      - default
     deploy:
       restart_policy:
         condition: on-failure
@@ -28,6 +30,8 @@ services:
       - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
     depends_on:
       - zookeeper
+    networks:
+      - default
     deploy:
       restart_policy:
         condition: on-failure
@@ -47,6 +51,8 @@ services:
       - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
     depends_on:
       - zookeeper
+    networks:
+      - default
     deploy:
       restart_policy:
         condition: on-failure
@@ -101,6 +107,8 @@ services:
       - POSTGRES_DB=opex_accountant
     volumes:
       - $DATA/accountant-data:/var/lib/postgresql/data/
+    networks:
+      - default
   akhq:
     container_name: akhq
     image: tchiotludo/akhq
@@ -111,6 +119,8 @@ services:
             docker-kafka-server:
               properties:
                 bootstrap.servers: "kafka-1:29092,kafka-2:29092,kafka-3:29092"
+    networks:
+      - default
     depends_on:
       - kafka-1
       - kafka-2
@@ -192,6 +202,8 @@ services:
     depends_on:
       - zookeeper
       - kafka-1
+      - kafka-2
+      - kafka-3
       - redis
       - consul
       - postgres-accountant
@@ -346,13 +358,9 @@ services:
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_DEFAULT=docker,demo,scheduled
-      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
-      - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-bc-gateway
     depends_on:
-      - zookeeper
-      - kafka-1
       - redis
       - consul
       - postgres-bc-gateway
