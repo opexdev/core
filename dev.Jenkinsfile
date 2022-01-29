@@ -15,8 +15,8 @@ pipeline {
         stage('Deliver') {
             environment {
                 DATA = '/var/opex/runtime-dev'
-                COMPOSE_PROJECT_NAME='dev'
-                DEFAULT_NETWORK_NAME='dev-opex'
+                COMPOSE_PROJECT_NAME = 'dev'
+                DEFAULT_NETWORK_NAME = 'dev-opex'
             }
             steps {
                 sh 'docker-compose up -f docker-compose.yml -f docker-compose.dev.yml -d --build --remove-orphans'
