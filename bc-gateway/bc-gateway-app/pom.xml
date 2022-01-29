@@ -14,10 +14,6 @@
     <name>bc-gateway-app</name>
     <description>Blockchain gateway app of Opex</description>
 
-    <properties>
-        <spring-cloud.version>2020.0.2</spring-cloud.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>

@@ -4,8 +4,10 @@ import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.MarketQueryHandler
 import co.nilin.opex.api.core.spi.SymbolMapper
 import co.nilin.opex.api.ports.postgres.dao.OrderRepository
+import co.nilin.opex.api.ports.postgres.dao.OrderStatusRepository
 import co.nilin.opex.api.ports.postgres.dao.TradeRepository
 import co.nilin.opex.api.ports.postgres.model.OrderModel
+import co.nilin.opex.api.ports.postgres.model.OrderStatusModel
 import co.nilin.opex.api.ports.postgres.model.TradeTickerData
 import co.nilin.opex.api.ports.postgres.util.*
 import co.nilin.opex.matching.engine.core.model.OrderDirection
@@ -15,6 +17,7 @@ import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.stereotype.Component
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -27,6 +30,7 @@ import kotlin.math.min
 class MarketQueryHandlerImpl(
     private val orderRepository: OrderRepository,
     private val tradeRepository: TradeRepository,
+    private val orderStatusRepository: OrderStatusRepository,
     private val symbolMapper: SymbolMapper,
 ) : MarketQueryHandler {
 
@@ -72,9 +76,9 @@ class MarketQueryHandlerImpl(
     }
 
     override suspend fun lastOrder(symbol: String): QueryOrderResponse? {
-        return orderRepository.findLastOrderBySymbol(symbol)
-            .awaitFirstOrNull()
-            ?.asQueryOrderResponse()
+        val order = orderRepository.findLastOrderBySymbol(symbol).awaitFirstOrNull() ?: return null
+        val status = orderStatusRepository.findMostRecentByOUID(order.ouid).awaitFirstOrNull()
+        return order.asQueryOrderResponse(status)
     }
 
     override suspend fun recentTrades(symbol: String, limit: Int): Flow<MarketTradeResponse> {
@@ -168,7 +172,7 @@ class MarketQueryHandlerImpl(
             }
     }
 
-    private fun OrderModel.asQueryOrderResponse() = QueryOrderResponse(
+    private fun OrderModel.asQueryOrderResponse(orderStatusModel: OrderStatusModel?) = QueryOrderResponse(
         symbol,
         ouid,
         orderId ?: -1,
@@ -176,9 +180,9 @@ class MarketQueryHandlerImpl(
         clientOrderId ?: "",
         price!!.toBigDecimal(),
         quantity!!.toBigDecimal(),
-        executedQuantity!!.toBigDecimal(),
-        (accumulativeQuoteQty ?: 0.0).toBigDecimal(),
-        status!!.toOrderStatus(),
+        orderStatusModel?.executedQuantity?.toBigDecimal() ?: BigDecimal.ZERO,
+        orderStatusModel?.accumulativeQuoteQty?.toBigDecimal() ?: BigDecimal.ZERO,
+        orderStatusModel?.status?.toOrderStatus() ?: OrderStatus.NEW,
         constraint!!.toTimeInForce(),
         type!!.toApiOrderType(),
         direction!!.toOrderSide(),
@@ -186,7 +190,7 @@ class MarketQueryHandlerImpl(
         null,
         Date.from(createDate!!.atZone(ZoneId.systemDefault()).toInstant()),
         Date.from(updateDate.atZone(ZoneId.systemDefault()).toInstant()),
-        status.toOrderStatus().isWorking(),
+        (orderStatusModel?.status?.toOrderStatus() ?: OrderStatus.NEW).isWorking(),
         quoteQuantity!!.toBigDecimal()
     )
 

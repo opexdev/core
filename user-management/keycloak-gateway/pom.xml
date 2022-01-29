@@ -17,11 +17,9 @@
     <properties>
         <maven.compiler.target>13</maven.compiler.target>
         <maven.compiler.source>13</maven.compiler.source>
-        <java.version>13</java.version>
         <keycloak.version>12.0.4</keycloak.version>
         <keycloak.resteasy.version>3.13.2.Final</keycloak.resteasy.version>
         <infinispan.version>11.0.10.Final</infinispan.version>
-        <spring-cloud.version>2020.0.2</spring-cloud.version>
     </properties>
 
     <dependencies>

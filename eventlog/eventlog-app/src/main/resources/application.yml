@@ -1,5 +1,7 @@
 server.port: 8080
 spring:
+  main:
+    allow-circular-references: true
   kafka:
     bootstrap-servers: localhost:9092
     consumer:

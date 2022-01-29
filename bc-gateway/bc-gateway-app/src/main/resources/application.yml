@@ -31,3 +31,8 @@ logging:
     org.apache.kafka: DEBUG
 
 swagger.authUrl: https://api.opex.dev
+app:
+  auth:
+    cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
+  wallet:
+    url: lb://opex-wallet

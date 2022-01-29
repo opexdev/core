@@ -1,10 +1,12 @@
 package co.nilin.opex.websocket.app.listener
 
 import co.nilin.opex.accountant.core.inout.RichOrder
+import co.nilin.opex.accountant.core.inout.RichOrderEvent
+import co.nilin.opex.accountant.core.inout.RichOrderUpdate
 import co.nilin.opex.accountant.core.inout.RichTrade
+import co.nilin.opex.websocket.core.spi.EventStreamHandler
 import co.nilin.opex.websocket.ports.kafka.listener.spi.RichOrderListener
 import co.nilin.opex.websocket.ports.kafka.listener.spi.RichTradeListener
-import co.nilin.opex.websocket.core.spi.EventStreamHandler
 
 class WebSocketKafkaListener(private val handler: EventStreamHandler) : RichTradeListener, RichOrderListener {
 
@@ -12,21 +14,14 @@ class WebSocketKafkaListener(private val handler: EventStreamHandler) : RichTrad
         return "WebSocketKafkaListener"
     }
 
-    override fun onTrade(
-        trade: RichTrade,
-        partition: Int,
-        offset: Long,
-        timestamp: Long
-    ) {
+    override fun onTrade(trade: RichTrade, partition: Int, offset: Long, timestamp: Long) {
         handler.handleTrade(trade)
     }
 
-    override fun onOrder(
-        order: RichOrder,
-        partition: Int,
-        offset: Long,
-        timestamp: Long
-    ) {
-        handler.handleOrder(order)
+    override fun onOrder(order: RichOrderEvent, partition: Int, offset: Long, timestamp: Long) {
+        when (order) {
+            is RichOrder -> handler.handleOrder(order)
+            is RichOrderUpdate -> handler.handleOrderUpdate(order)
+        }
     }
 }

@@ -5,6 +5,6 @@ import co.nilin.opex.bcgateway.core.model.ChainSyncSchedule
 
 interface ChainSyncRetryHandler {
 
-    suspend fun handleNextTry(syncSchedule: ChainSyncSchedule, records: ChainSyncRecord, sentBlock:Long)
+    suspend fun handleNextTry(syncSchedule: ChainSyncSchedule, records: ChainSyncRecord, sentBlock: Long)
 
 }

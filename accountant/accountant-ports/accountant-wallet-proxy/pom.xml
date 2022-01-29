@@ -15,10 +15,6 @@
     <name>accountant-wallet-proxy</name>
     <description>Opex wallet proxy</description>
 
-    <properties>
-        <spring-cloud.version>2020.0.2</spring-cloud.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>

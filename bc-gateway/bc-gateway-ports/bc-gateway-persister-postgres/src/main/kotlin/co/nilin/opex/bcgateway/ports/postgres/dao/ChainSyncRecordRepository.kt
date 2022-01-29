@@ -18,7 +18,7 @@ interface ChainSyncRecordRepository : ReactiveCrudRepository<ChainSyncRecordMode
         latestBlock: Long?,
         success: Boolean,
         error: String?
-    ):Mono<ChainSyncRecordModel>
+    ): Mono<ChainSyncRecordModel>
 
     fun findByChain(chain: String): Mono<ChainSyncRecordModel>
 }

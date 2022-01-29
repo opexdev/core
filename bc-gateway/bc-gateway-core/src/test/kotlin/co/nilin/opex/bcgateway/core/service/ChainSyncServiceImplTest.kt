@@ -11,9 +11,11 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
-import org.mockito.kotlin.*
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoMoreInteractions
 import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
 import java.util.concurrent.Executors
 
 internal class ChainSyncServiceImplTest {
@@ -75,7 +77,7 @@ internal class ChainSyncServiceImplTest {
             syncService.startSyncWithChain()
 
             //then
-            verifyZeroInteractions(
+            verifyNoMoreInteractions(
                 chainEndpointProxyFinder,
                 chainSyncRecordHandler,
                 walletSyncRecordHandler,

@@ -1,5 +1,17 @@
 version: '3.8'
 services:
+  kafka-1:
+    environment:
+      - KAFKA_LISTENERS=CLIENT://kafka-1:29092,EXTERNAL://kafka-1:9092
+      - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-1:29092,EXTERNAL://kafka-1:9092
+  kafka-2:
+    environment:
+      - KAFKA_LISTENERS=CLIENT://kafka-2:29092,EXTERNAL://kafka-2:9092
+      - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-2:29092,EXTERNAL://kafka-2:9092
+  kafka-3:
+    environment:
+      - KAFKA_LISTENERS=CLIENT://kafka-3:29092,EXTERNAL://kafka-3:9092
+      - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-3:29092,EXTERNAL://kafka-3:9092
   consul:
     ports:
       - "127.0.0.1:8500:8500"
