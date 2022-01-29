@@ -15,9 +15,11 @@ pipeline {
         stage('Deliver') {
             environment {
                 DATA = '/var/opex/runtime'
+                COMPOSE_PROJECT_NAME='demo'
+                DEFAULT_NETWORK_NAME='demo-opex'
             }
             steps {
-                sh 'COMPOSE_PROJECT_NAME=demo DEFAULT_NETWORK_NAME=demo-opex docker-compose up -d --build --remove-orphans'
+                sh 'docker-compose up -d --build --remove-orphans'
             }
         }
     }
