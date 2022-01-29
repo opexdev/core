@@ -17,7 +17,7 @@ pipeline {
                 DATA = '/var/opex/runtime'
             }
             steps {
-                sh 'COMPOSE_PROJECT_NAME=demo DEFAULT_NETWORK_NAME=demo-opex docker-compose up -d --build'
+                sh 'COMPOSE_PROJECT_NAME=demo DEFAULT_NETWORK_NAME=demo-opex docker-compose up -d --build --remove-orphans'
             }
         }
     }
