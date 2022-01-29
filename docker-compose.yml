@@ -110,7 +110,6 @@ services:
     networks:
       - default
   akhq:
-    container_name: akhq
     image: tchiotludo/akhq
     environment:
       AKHQ_CONFIGURATION: |
