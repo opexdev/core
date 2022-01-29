@@ -2,8 +2,6 @@ version: '3.8'
 services:
   zookeeper:
     image: 'docker.io/bitnami/zookeeper:3-debian-10'
-    ports:
-      - '127.0.0.1:2181-2191:2181'
     volumes:
       - $DATA/zookeeper_data:/bitnami
     environment:
@@ -15,8 +13,6 @@ services:
         condition: on-failure
   kafka:
     image: 'docker.io/bitnami/kafka:2-debian-10'
-    ports:
-      - '127.0.0.1:9092-9192:9092'
     volumes:
       - $DATA/kafka-data:/bitnami
     environment:
@@ -32,10 +28,6 @@ services:
         condition: on-failure
   consul:
     image: 'consul'
-    ports:
-      - '127.0.0.1:8500-8510:8500'
-      - '127.0.0.1:8300-8310:8300'
-      - '127.0.0.1:8600-8610:8600'
     environment:
       - CONSUL_BIND_INTERFACE=eth0
     networks:
@@ -46,8 +38,6 @@ services:
   redis:
     image: "redis:alpine"
     command: redis-server
-    ports:
-      - "127.0.0.1:6379-6389:6379"
     volumes:
       - $DATA/redis-data:/var/lib/redis
       - $DATA/redis.conf:/usr/local/etc/redis/redis.conf
@@ -60,8 +50,6 @@ services:
         condition: on-failure
   postgres-accountant:
     image: "postgres"
-    ports:
-      - "127.0.0.1:5432-5530:5432"
     environment:
       - POSTGRES_USER=opex
       - POSTGRES_PASSWORD=hiopex
@@ -72,8 +60,6 @@ services:
       - default
   postgres-eventlog:
     image: "postgres"
-    ports:
-      - "127.0.0.1:5432-5530:5432"
     environment:
       - POSTGRES_USER=opex
       - POSTGRES_PASSWORD=hiopex
@@ -84,8 +70,6 @@ services:
       - default
   postgres-auth:
     image: "postgres"
-    ports:
-      - "127.0.0.1:5432-5530:5432"
     environment:
       - POSTGRES_USER=opex
       - POSTGRES_PASSWORD=hiopex
@@ -99,8 +83,6 @@ services:
         condition: on-failure
   postgres-wallet:
     image: "postgres"
-    ports:
-      - "127.0.0.1:5432-5530:5432"
     environment:
       - POSTGRES_USER=opex
       - POSTGRES_PASSWORD=hiopex
@@ -114,8 +96,6 @@ services:
         condition: on-failure
   postgres-api:
     image: "postgres"
-    ports:
-      - "127.0.0.1:5432-5530:5432"
     environment:
       - POSTGRES_USER=opex
       - POSTGRES_PASSWORD=hiopex
@@ -129,8 +109,6 @@ services:
         condition: on-failure
   postgres-bc-gateway:
     image: "postgres"
-    ports:
-      - "127.0.0.1:5432-5530:5432"
     environment:
       - POSTGRES_USER=opex
       - POSTGRES_PASSWORD=hiopex

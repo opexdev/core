@@ -17,7 +17,7 @@ pipeline {
                 DATA = '/var/opex/runtime-dev'
             }
             steps {
-                sh 'COMPOSE_PROJECT_NAME=dev DEFAULT_NETWORK_NAME=opex-dev docker-compose up -d --build'
+                sh 'COMPOSE_PROJECT_NAME=dev DEFAULT_NETWORK_NAME=dev-opex docker-compose up -f docker-compose.yml -f docker-compose.dev.yml -d --build'
             }
         }
     }
