@@ -1,8 +1,8 @@
 package co.nilin.opex.matching.gateway.app.proxy
 
+import co.nilin.opex.matching.engine.core.model.OrderDirection
 import co.nilin.opex.matching.gateway.app.inout.PairFeeConfig
 import co.nilin.opex.matching.gateway.app.spi.AccountantApiProxy
-import co.nilin.opex.matching.engine.core.model.OrderDirection
 import kotlinx.coroutines.reactive.awaitFirst
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.ParameterizedTypeReference

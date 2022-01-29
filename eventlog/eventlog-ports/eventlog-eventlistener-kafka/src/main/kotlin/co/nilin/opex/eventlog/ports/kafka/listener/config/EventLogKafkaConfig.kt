@@ -1,10 +1,10 @@
 package co.nilin.opex.eventlog.ports.kafka.listener.config
 
 
-import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
 import co.nilin.opex.eventlog.ports.kafka.listener.consumer.EventKafkaListener
 import co.nilin.opex.eventlog.ports.kafka.listener.consumer.OrderKafkaListener
 import co.nilin.opex.eventlog.ports.kafka.listener.consumer.TradeKafkaListener
+import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringDeserializer

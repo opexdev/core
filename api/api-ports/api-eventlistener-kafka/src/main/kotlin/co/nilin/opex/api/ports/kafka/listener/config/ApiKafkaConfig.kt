@@ -1,9 +1,9 @@
 package co.nilin.opex.api.ports.kafka.listener.config
 
-import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
 import co.nilin.opex.api.ports.kafka.listener.consumer.EventKafkaListener
 import co.nilin.opex.api.ports.kafka.listener.consumer.OrderKafkaListener
 import co.nilin.opex.api.ports.kafka.listener.consumer.TradeKafkaListener
+import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
 import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
@@ -120,7 +120,7 @@ class ApiKafkaConfig {
                 .build()
         })
 
-        applicationContext.registerBean("topic_richTrade",NewTopic::class.java, Supplier {
+        applicationContext.registerBean("topic_richTrade", NewTopic::class.java, Supplier {
             TopicBuilder.name("richTrade")
                 .partitions(10)
                 .replicas(3)

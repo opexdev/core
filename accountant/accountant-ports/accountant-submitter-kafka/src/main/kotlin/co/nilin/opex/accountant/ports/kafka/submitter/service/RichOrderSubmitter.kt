@@ -10,7 +10,8 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 @Component
-class RichOrderSubmitter(@Qualifier("richOrderKafkaTemplate") val kafkaTemplate: KafkaTemplate<String, RichOrderEvent>) : RichOrderPublisher {
+class RichOrderSubmitter(@Qualifier("richOrderKafkaTemplate") val kafkaTemplate: KafkaTemplate<String, RichOrderEvent>) :
+    RichOrderPublisher {
 
     override suspend fun publish(order: RichOrderEvent): Unit = suspendCoroutine { cont ->
         println("richOrderSubmit!")

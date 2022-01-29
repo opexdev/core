@@ -72,7 +72,10 @@ class WebSocketKafkaConfig {
 
     @Autowired
     @ConditionalOnBean(TradeKafkaListener::class)
-    fun configureTradeListener(tradeListener: TradeKafkaListener, @Qualifier("websocketConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>) {
+    fun configureTradeListener(
+        tradeListener: TradeKafkaListener,
+        @Qualifier("websocketConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>
+    ) {
         val containerProps = ContainerProperties(Pattern.compile("richTrade"))
         containerProps.messageListener = tradeListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
@@ -82,7 +85,10 @@ class WebSocketKafkaConfig {
 
     @Autowired
     @ConditionalOnBean(OrderKafkaListener::class)
-    fun configureOrderListener(orderListener: OrderKafkaListener, @Qualifier("websocketConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>) {
+    fun configureOrderListener(
+        orderListener: OrderKafkaListener,
+        @Qualifier("websocketConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>
+    ) {
         val containerProps = ContainerProperties(Pattern.compile("richOrder"))
         containerProps.messageListener = orderListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
@@ -100,7 +106,7 @@ class WebSocketKafkaConfig {
                 .build()
         })
 
-        applicationContext.registerBean("topic_richTrade",NewTopic::class.java, Supplier {
+        applicationContext.registerBean("topic_richTrade", NewTopic::class.java, Supplier {
             TopicBuilder.name("richTrade")
                 .partitions(10)
                 .replicas(3)

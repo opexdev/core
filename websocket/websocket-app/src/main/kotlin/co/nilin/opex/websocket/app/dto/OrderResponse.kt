@@ -8,7 +8,7 @@ import java.math.BigDecimal
 import java.util.*
 
 data class OrderResponse(
-    val ouid:String,
+    val ouid: String,
     val symbol: String,
     val orderId: Long,
     val orderListId: Long,

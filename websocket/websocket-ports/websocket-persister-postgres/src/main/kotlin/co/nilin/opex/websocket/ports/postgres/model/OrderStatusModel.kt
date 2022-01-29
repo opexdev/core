@@ -10,7 +10,7 @@ data class OrderStatusModel(
     val executedQuantity: Double?,
     val accumulativeQuoteQty: Double?,
     val status: Int,
-    val appearance:Int,
+    val appearance: Int,
     val date: LocalDateTime = LocalDateTime.now(),
     @Id
     var id: Long? = null

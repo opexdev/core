@@ -1,7 +1,6 @@
 package co.nilin.opex.matching.engine.app.listener
 
 import co.nilin.opex.matching.engine.app.bl.OrderBooks
-import co.nilin.opex.matching.engine.app.config.AppSchedulers
 import co.nilin.opex.matching.engine.core.eventh.events.CancelOrderEvent
 import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
 import co.nilin.opex.matching.engine.core.eventh.events.EditOrderRequestEvent

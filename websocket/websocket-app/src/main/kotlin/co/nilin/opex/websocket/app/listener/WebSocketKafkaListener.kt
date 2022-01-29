@@ -4,9 +4,9 @@ import co.nilin.opex.accountant.core.inout.RichOrder
 import co.nilin.opex.accountant.core.inout.RichOrderEvent
 import co.nilin.opex.accountant.core.inout.RichOrderUpdate
 import co.nilin.opex.accountant.core.inout.RichTrade
+import co.nilin.opex.websocket.core.spi.EventStreamHandler
 import co.nilin.opex.websocket.ports.kafka.listener.spi.RichOrderListener
 import co.nilin.opex.websocket.ports.kafka.listener.spi.RichTradeListener
-import co.nilin.opex.websocket.core.spi.EventStreamHandler
 
 class WebSocketKafkaListener(private val handler: EventStreamHandler) : RichTradeListener, RichOrderListener {
 

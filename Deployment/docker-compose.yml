@@ -3,7 +3,6 @@ services:
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     hostname: zookeeper
-    user: 'root'
     volumes:
       - $DATA/zookeeper-data/data:/var/lib/zookeeper/data
       - $DATA/zookeeper-data/tx-logs:/var/lib/zookeeper/log
@@ -16,7 +15,6 @@ services:
   kafka-1:
     image: confluentinc/cp-kafka:latest
     hostname: kafka-1
-    user: 'root'
     volumes:
       - $DATA/kafka-data/kafka-1:/var/lib/kafka/data
     environment:
@@ -36,7 +34,6 @@ services:
   kafka-2:
     image: confluentinc/cp-kafka:latest
     hostname: kafka-2
-    user: 'root'
     volumes:
       - $DATA/kafka-data/kafka-2:/var/lib/kafka/data
     environment:
@@ -56,7 +53,6 @@ services:
   kafka-3:
     image: confluentinc/cp-kafka:latest
     hostname: kafka-3
-    user: 'root'
     volumes:
       - $DATA/kafka-data/kafka-3:/var/lib/kafka/data
     environment:

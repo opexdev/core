@@ -1,6 +1,5 @@
 package co.nilin.opex.accountant.app.listener
 
-import co.nilin.opex.accountant.app.config.AppDispatchers
 import co.nilin.opex.accountant.core.api.OrderManager
 import co.nilin.opex.accountant.core.api.TradeManager
 import co.nilin.opex.accountant.ports.kafka.listener.spi.TempEventListener

@@ -1,8 +1,8 @@
 package co.nilin.opex.websocket.ports.postgres.dao
 
 import co.nilin.opex.matching.engine.core.model.OrderDirection
-import co.nilin.opex.websocket.ports.postgres.model.OrderModel
 import co.nilin.opex.websocket.core.inout.AggregatedOrderPriceModel
+import co.nilin.opex.websocket.ports.postgres.model.OrderModel
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.query.Param
@@ -34,13 +34,15 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
         origClientOrderId: String
     ): Mono<OrderModel>
 
-    @Query("""
+    @Query(
+        """
         select * from orders
         join order_status os on orders.ouid = os.ouid
         where uuid = :uuid and (:symbol is null or symbol = :symbol) and status in (:statuses)
         and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
         and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
-    """)
+    """
+    )
     fun findByUuidAndSymbolAndStatus(
         @Param("uuid")
         uuid: String,
