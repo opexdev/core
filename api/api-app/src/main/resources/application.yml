@@ -1,4 +1,4 @@
-Seserver.port: 8080
+server.port: 8080
 logging:
   level:
     co.nilin: DEBUG
