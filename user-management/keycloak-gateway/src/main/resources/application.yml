@@ -48,3 +48,9 @@ keycloak:
     feature:
       admin_fine_grained_authz: enabled
       token_exchange: enabled
+app:
+  keycloak:
+    url: http://auth:8083/auth
+    realm: opex
+    client-id: opex-admin
+    client-secret: secret

@@ -139,6 +139,14 @@ services:
       opex:
         aliases:
           - storage
+  admin:
+    ports:
+      - 127.0.0.1:8098:8098
+      - 127.0.0.1:1055:1044
+    networks:
+      opex:
+        aliases:
+          - admin
   nginx:
     ports:
       - 80:80

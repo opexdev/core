@@ -1,0 +1,11 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  cloud:
+    consul:
+      host: ${CONSUL_HOST}
+      port: 8500
+
+app:
+  keycloak:
+    client-secret: ${KEYCLOAK_CLIENT_SECRET}

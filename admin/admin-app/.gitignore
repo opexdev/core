@@ -31,7 +31,3 @@ build/
 
 ### VS Code ###
 .vscode/
-!/.mvn/
-Deployment/.env
-
-.DS_Store

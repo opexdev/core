@@ -9,19 +9,14 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <properties>
-        <spring.version>2.4.4</spring.version>
-        <spring-cloud.version>2020.0.2</spring-cloud.version>
-    </properties>
-
-    <groupId>co.nilin.opex.auth</groupId>
-    <artifactId>user-management</artifactId>
-    <name>user-management</name>
+    <groupId>co.nilin.opex.admin</groupId>
+    <artifactId>admin</artifactId>
+    <name>admin</name>
     <packaging>pom</packaging>
-    <description>User Management root of Opex</description>
+    <description>Admin root of Opex</description>
 
     <modules>
-        <module>keycloak-gateway</module>
+        <module>admin-app</module>
     </modules>
 
     <dependencies>
@@ -36,6 +31,11 @@
             <dependency>
                 <groupId>co.nilin.opex.utility.error</groupId>
                 <artifactId>error-handler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.utility.log</groupId>
+                <artifactId>logging-handler</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

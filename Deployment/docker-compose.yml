@@ -241,6 +241,7 @@ services:
       - DB_IP_PORT=postgres-auth
       - PROXY_ADDRESS_FORWARDING=true
       - WORKING_DIR=$DATA
+      - KEYCLOAK_CLIENT_SECRET=${AUTH_KEYCLOAK_CLIENT_SECRET}
     depends_on:
       - zookeeper
       - kafka-1
@@ -348,6 +349,25 @@ services:
     volumes:
       - $DATA/storage-data:/storage
     depends_on:
+      - consul
+    deploy:
+      restart_policy:
+        condition: on-failure
+  admin:
+    build:
+      context: ../admin/admin-app
+      dockerfile: Dockerfile
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
+      - SPRING_PROFILES_DEFAULT=docker
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - CONSUL_HOST=consul
+      - KEYCLOAK_CLIENT_SECRET=${ADMIN_KEYCLOAK_CLIENT_SECRET}
+    depends_on:
+      - zookeeper
+      - kafka-1
+      - kafka-2
+      - kafka-3
       - consul
     deploy:
       restart_policy:
