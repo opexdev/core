@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.app.config
 
+import co.nilin.opex.wallet.app.utils.hasRealmRole
 import net.minidev.json.JSONArray
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -28,15 +29,7 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/withdraw").hasAuthority("SCOPE_trust")
             .pathMatchers("/withdraw/**").hasAuthority("SCOPE_trust")
             .pathMatchers("/transaction/**").hasAuthority("SCOPE_trust")
-            .pathMatchers("/admin/**").access { mono, authorizationContext ->
-                mono.map { auth ->
-                    auth.authorities.any { authority -> authority.authority == "SCOPE_trust" }
-                            && ((auth.principal as Jwt)
-                        .claims.get("groups") as JSONArray).contains("finance-admin")
-                }.map { granted ->
-                    AuthorizationDecision(granted)
-                }
-            }
+            .pathMatchers("/admin/**").hasRealmRole("SCOPE_trust","finance-admin")
             .pathMatchers("/payment/internal/**").permitAll()
             .pathMatchers("/**").permitAll()
             .anyExchange().authenticated()

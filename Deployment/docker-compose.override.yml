@@ -142,7 +142,7 @@ services:
   admin:
     ports:
       - 127.0.0.1:8098:8098
-      - 127.0.0.1:1055:1044
+      - 127.0.0.1:1055:5005
     networks:
       opex:
         aliases:
