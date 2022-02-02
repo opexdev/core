@@ -1,4 +1,4 @@
-package co.nilin.opex.admin.app.config
+package co.nilin.opex.admin.ports.auth.config
 
 import org.keycloak.OAuth2Constants
 import org.keycloak.admin.client.Keycloak
@@ -11,16 +11,16 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class KeycloakAdminConfig {
 
-    @Value("\${app.keycloak.url}")
+    @Value("\${app.auth.keycloak.url}")
     private lateinit var url: String
 
-    @Value("\${app.keycloak.realm}")
+    @Value("\${app.auth.keycloak.realm}")
     private lateinit var realm: String
 
-    @Value("\${app.keycloak.client-id}")
+    @Value("\${app.auth.keycloak.client-id}")
     private lateinit var clientId: String
 
-    @Value("\${app.keycloak.client-secret}")
+    @Value("\${app.auth.keycloak.client-secret}")
     private lateinit var clientSecret: String
 
     @Bean

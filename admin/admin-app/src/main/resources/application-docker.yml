@@ -7,5 +7,6 @@ spring:
       port: 8500
 
 app:
-  keycloak:
-    client-secret: ${KEYCLOAK_CLIENT_SECRET}
+  auth:
+    keycloak:
+      client-secret: ${KEYCLOAK_CLIENT_SECRET}

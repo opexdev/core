@@ -14,10 +14,10 @@ spring:
         healthCheckInterval: 20s
         prefer-ip-address: true
 app:
-  keycloak:
-    url: lb://opex-auth/auth
-    realm: opex
-    client-id: opex-admin
-    client-secret: secret
   auth:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
+    keycloak:
+      url: http://auth:8083/auth
+      realm: opex
+      client-id: opex-admin
+      client-secret: secret

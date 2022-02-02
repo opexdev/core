@@ -12,7 +12,8 @@ fun ServerHttpSecurity.AuthorizeExchangeSpec.Access.hasRealmRole(
 ): ServerHttpSecurity.AuthorizeExchangeSpec = access { mono, _ ->
     mono.map { auth ->
         auth.authorities.any { it.authority == authority }
-                && (((auth.principal as Jwt).claims["realm_access"] as JSONObject)["roles"] as JSONArray).contains(role)
+                && (((auth.principal as Jwt).claims["realm_access"] as JSONObject?)?.get("roles") as JSONArray?)
+            ?.contains(role) == true
     }.map { granted ->
         AuthorizationDecision(granted)
     }
