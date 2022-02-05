@@ -42,6 +42,6 @@
     "from": "for.demo.purpose.only@opex.dev",
     "auth": true,
     "user": "for.demo.purpose.only@opex.dev",
-    "password": "642467973026C6F093FB1E39C4BFC0D15042"
+    "password": "${vault.smtppass}"
   }
 }

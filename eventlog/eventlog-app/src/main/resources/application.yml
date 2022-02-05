@@ -1,5 +1,7 @@
 server.port: 8080
 spring:
+  application:
+    name: opex-eventlog
   main:
     allow-circular-references: true
   kafka:
@@ -11,3 +13,19 @@ spring:
     username: opex
     password: hiopex
     initialization-mode: always
+  cloud:
+    vault:
+      host: ${VAULT_HOST}
+      port: 8200
+      scheme: http
+      authentication: APPID
+      app-id:
+        user-id: co.nilin.opex.util.vault.VaultUserIdMechanism
+      fail-fast: true
+      kv:
+        enabled: true
+        backend: secret
+        profile-separator: '/'
+        application-name: ${spring.application.name}
+  config:
+    import: vault://secret/${spring.application.name}

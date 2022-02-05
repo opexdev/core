@@ -15,6 +15,11 @@ pipeline {
         stage('Deliver') {
             environment {
                 DATA = '/var/opex/runtime-dev'
+                PANEL_PASS = credentials("v-panel-secret-dev")
+                BACKEND_USER = credentials("v-backend-secret-dev")
+                SMTP_PASS = credentials("smtp-secret-dev")
+                DB_USER = 'opex'
+                DB_PASS = credentials("db-secret-dev")
                 COMPOSE_PROJECT_NAME = 'dev'
                 DEFAULT_NETWORK_NAME = 'dev-opex'
             }

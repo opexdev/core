@@ -5,8 +5,8 @@ spring:
     host: ${REDIS_HOST}
   r2dbc:
     url: r2dbc:postgresql://${DB_IP_PORT}/opex_accountant
-    username: opex
-    password: hiopex
+    username: ${dbusername}
+    password: ${dbpassword}
   cloud:
     consul:
       host: ${CONSUL_HOST}

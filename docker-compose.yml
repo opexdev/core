@@ -77,6 +77,28 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  vault:
+    image: vault
+    volumes:
+      - $DATA/vault:/vault/file:rw
+      - $PWD/vault/config:/vault/config:rw
+    environment:
+      - VAULT_ADDRESS=http://0.0.0.0:8200
+      - PANEL_PASS=${PANEL_PASS}
+      - BACKEND_USER=${BACKEND_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+    healthcheck:
+      retries: 5
+    cap_add:
+      - IPC_LOCK
+    entrypoint: /vault/config/workflow-vault.sh
+  vault-ui:
+    image: djenriquez/vault-ui
+    environment:
+      - VAULT_URL_DEFAULT=http://vault:8200
+      - VAULT_AUTH_DEFAULT=USERNAMEPASSWORD
   consul:
     image: 'consul'
     environment:
@@ -196,6 +218,8 @@ services:
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-accountant
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_HOST=vault
     networks:
       - default
     depends_on:
@@ -205,6 +229,7 @@ services:
       - kafka-3
       - redis
       - consul
+      - vault
       - postgres-accountant
   eventlog:
     build:
@@ -216,6 +241,8 @@ services:
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-eventlog
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_HOST=vault
     networks:
       - default
     depends_on:
@@ -225,6 +252,7 @@ services:
       - kafka-3
       - redis
       - consul
+      - vault
       - postgres-eventlog
   matching-engine:
     build:
@@ -271,6 +299,9 @@ services:
       - DB_IP_PORT=postgres-auth
       - PROXY_ADDRESS_FORWARDING=true
       - WORKING_DIR=$DATA
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_URL=http://vault:8200
+      - VAULT_HOST=vault
     depends_on:
       - zookeeper
       - kafka-1
@@ -278,6 +309,7 @@ services:
       - kafka-3
       - redis
       - consul
+      - vault
       - postgres-auth
     networks:
       - default
@@ -294,6 +326,8 @@ services:
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-wallet
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_HOST=vault
     depends_on:
       - zookeeper
       - kafka-1
@@ -301,6 +335,7 @@ services:
       - kafka-3
       - redis
       - consul
+      - vault
       - postgres-wallet
     networks:
       - default
@@ -317,6 +352,8 @@ services:
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-api
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_HOST=vault
     depends_on:
       - zookeeper
       - kafka-1
@@ -324,6 +361,7 @@ services:
       - kafka-3
       - redis
       - consul
+      - vault
       - postgres-api
     networks:
       - default
@@ -339,12 +377,15 @@ services:
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-api
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_HOST=vault
     depends_on:
       - zookeeper
       - kafka-1
       - kafka-2
       - kafka-3
       - consul
+      - vault
       - postgres-api
     networks:
       - default
@@ -359,9 +400,12 @@ services:
       - SPRING_PROFILES_DEFAULT=docker,demo,scheduled
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-bc-gateway
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_URL=http://vault:8200
     depends_on:
       - redis
       - consul
+      - vault
       - postgres-bc-gateway
     networks:
       - default

@@ -6,6 +6,6 @@ spring:
       group-id: eventlog
   r2dbc:
     url: r2dbc:postgresql://${DB_IP_PORT}/opex_eventlog
-    username: opex
-    password: hiopex
+    username: ${dbusername}
+    password: ${dbpassword}
     initialization-mode: always
