@@ -75,8 +75,6 @@ services:
       - $DATA/vault:/vault/file:rw
       - $PWD/vault/config:/vault/config:rw
     environment:
-      - VAULT_ADDR=http://0.0.0.0:8200
-      - VAULT_API_ADDR=http://0.0.0.0:8200
       - VAULT_ADDRESS=http://0.0.0.0:8200
       - PANEL_PASS=${PANEL_PASS}
       - BACKEND_USER=${BACKEND_USER}
