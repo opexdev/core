@@ -1,0 +1,5 @@
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5433/opex_accountant
+    username: ${dbusername}
+    password: ${dbpassword}

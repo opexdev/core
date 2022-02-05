@@ -25,6 +25,19 @@ spring:
   cloud:
     bootstrap:
       enabled: true
+    vault:
+      host: localhost
+      port: 8200
+      scheme: http
+      authentication: APPID
+      app-id:
+        user-id: co.nilin.opex.util.vault.VaultUserIdMechanism
+      fail-fast: true
+      kv:
+        enabled: true
+        backend: secret
+        profile-separator: '/'
+        application-name: ${spring.application.name}
     consul:
       port: 8500
       discovery:
@@ -32,6 +45,8 @@ spring:
         instance-id: ${spring.application.name}:${server.port}
         healthCheckInterval: 20s
         prefer-ip-address: true
+  config:
+    import: vault://secret/${spring.application.name}
 keycloak:
   server:
     contextPath: /auth
@@ -48,3 +63,5 @@ keycloak:
     feature:
       admin_fine_grained_authz: enabled
       token_exchange: enabled
+  hashicorp:
+    url: ${VAULT_URL}

@@ -22,6 +22,16 @@ services:
     environment:
       - KAFKA_LISTENERS=CLIENT://kafka-3:29092,EXTERNAL://kafka-3:9092
       - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-3:29092,EXTERNAL://kafka-3:9092
+  vault:
+    ports:
+      - "127.0.0.1:8201:8200"
+    networks:
+      - opex-dev
+  vault-ui:
+    ports:
+      - "127.0.0.1:8001:8000"
+    networks:
+      - opex-dev
   consul:
     ports:
       - '127.0.0.1:8501:8500'

@@ -1,0 +1,8 @@
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5438/opex_bc_gateway
+    username: ${dbusername}
+    password: ${dbpassword}
+  cloud:
+    consul:
+      host: localhost

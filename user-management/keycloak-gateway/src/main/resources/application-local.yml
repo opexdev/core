@@ -1,0 +1,12 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+  datasource:
+    url: jdbc:postgresql://127.0.0.1:6435/opex_auth
+    username: opex
+    password: hiopex
+  cloud:
+    consul:
+      host: 127.0.0.1
+      port: 8500
+
