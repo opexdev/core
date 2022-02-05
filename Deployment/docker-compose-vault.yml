@@ -1,0 +1,33 @@
+version: '3.8'
+services:
+  vault:
+    image: vault
+    ports:
+      - "127.0.0.1:8200:8200"
+    volumes:
+      - $DATA/vault:/vault/file:rw
+      - $PWD/vault/config:/vault/config:rw
+    environment:
+      - VAULT_ADDR=http://0.0.0.0:8200
+      - VAULT_API_ADDR=http://0.0.0.0:8200
+      - VAULT_ADDRESS=http://0.0.0.0:8200
+      - PANEL_PASS=${PANEL_PASS}
+      - BACKEND_USER=${BACKEND_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+    healthcheck:
+      retries: 5
+    cap_add:
+      - IPC_LOCK
+    entrypoint: /vault/config/workflow-vault.sh
+  vault-ui:
+    image: djenriquez/vault-ui
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      - VAULT_URL_DEFAULT=http://vault:8200
+      - VAULT_AUTH_DEFAULT=USERNAMEPASSWORD
+networks:
+  opex:
+    driver: bridge

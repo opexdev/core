@@ -15,6 +15,11 @@ pipeline {
         stage('Deliver') {
             environment {
                 DATA = '/var/opex/runtime'
+                PANEL_PASS = credentials("v-panel-secret")
+                BACKEND_USER = credentials("v-backend-secret")
+                SMTP_PASS= credentials("smtp-secret")
+                DB_USER='opex'
+                DB_PASS=credentials("db-secret")
             }
             steps {
                 dir("Deployment") {
