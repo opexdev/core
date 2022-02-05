@@ -6,8 +6,6 @@ spring:
     username: ${dbusername}
     password: ${dbpassword}
   cloud:
-    vault:
-      host: ${VAULT_HOST}
     consul:
       host: ${CONSUL_HOST}
       port: 8500

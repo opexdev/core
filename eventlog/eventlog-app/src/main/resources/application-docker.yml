@@ -9,6 +9,3 @@ spring:
     username: ${dbusername}
     password: ${dbpassword}
     initialization-mode: always
-  cloud:
-    vault:
-      host: ${VAULT_HOST}
