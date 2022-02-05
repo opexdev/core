@@ -15,7 +15,7 @@ spring:
     initialization-mode: always
   cloud:
     vault:
-      host: localhost
+      host: ${VAULT_HOST}
       port: 8200
       scheme: http
       authentication: APPID

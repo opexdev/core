@@ -25,7 +25,7 @@ spring:
     bootstrap:
       enabled: true
     vault:
-      host: localhost
+      host: ${VAULT_HOST}
       port: 8200
       scheme: http
       authentication: APPID

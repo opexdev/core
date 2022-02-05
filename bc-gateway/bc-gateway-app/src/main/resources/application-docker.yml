@@ -13,8 +13,6 @@ spring:
     password: ${dbpassword}
     initialization-mode: always
   cloud:
-    vault:
-      host: ${VAULT_HOST}
     consul:
       host: ${CONSUL_HOST}
       port: 8500
