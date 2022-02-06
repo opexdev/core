@@ -25,6 +25,8 @@ pipeline {
             }
             steps {
                 sh 'docker-compose up -f docker-compose.yml -f docker-compose.dev.yml -d --build --remove-orphans'
+                sh 'docker image prune -f'
+                sh 'docker network prune -f'
             }
         }
     }
