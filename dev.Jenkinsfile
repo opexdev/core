@@ -20,7 +20,7 @@ pipeline {
                 SMTP_PASS = credentials("smtp-secret-dev")
                 DB_USER = 'opex'
                 DB_PASS = credentials("db-secret-dev")
-                COMPOSE_PROJECT_NAME = 'dev'
+                COMPOSE_PROJECT_NAME = 'dev-core'
                 DEFAULT_NETWORK_NAME = 'dev-opex'
             }
             steps {
