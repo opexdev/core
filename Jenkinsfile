@@ -6,7 +6,7 @@ pipeline {
             steps {
                 setBuildStatus("?", "PENDING")
                 withMaven(
-                        maven: 'maven-latest'
+                        maven: 'maven-3.6.3'
                 ) {
                     sh 'mvn -B clean install'
                 }
