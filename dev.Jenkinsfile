@@ -14,7 +14,7 @@ pipeline {
         }
         stage('Deliver') {
             environment {
-                DATA = '/var/opex/runtime-dev'
+                DATA = '/var/opex/dev-core'
                 PANEL_PASS = credentials("v-panel-secret-dev")
                 BACKEND_USER = credentials("v-backend-secret-dev")
                 SMTP_PASS = credentials("smtp-secret-dev")
