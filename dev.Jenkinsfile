@@ -1,7 +1,7 @@
 pipeline {
     agent any
 
-    stages('Deploy - Stage') {
+    stages('Deploy') {
         stage('Build') {
             steps {
                 setBuildStatus("?", "PENDING")
