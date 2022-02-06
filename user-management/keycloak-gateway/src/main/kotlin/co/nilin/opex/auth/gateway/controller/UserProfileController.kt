@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/ext/user")
-class AuthAdminController(private val service: KeycloakService) {
+class UserProfileController(private val service: KeycloakService) {
 
     @PostMapping
     fun registerUser(@RequestBody request: RegisterUserRequest): RegisterUserResponse {
