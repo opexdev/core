@@ -401,7 +401,7 @@ services:
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-bc-gateway
       - BACKEND_USER=${BACKEND_USER}
-      - VAULT_URL=http://vault:8200
+      - VAULT_HOST=vault
     depends_on:
       - redis
       - consul
