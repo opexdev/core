@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  vault-ui:
+    ports:
+      - "8000:8000"
+  consul:
+    ports:
+      - "8500:8500"
+      - "8300:8300"
+      - "8600:8600"
+  postgres-accountant:
+    ports:
+      - "5432:5432"
+  postgres-eventlog:
+    ports:
+      - "5433:5432"
+  postgres-auth:
+    ports:
+      - "5434:5432"
+  postgres-wallet:
+    ports:
+      - "5435:5432"
+  postgres-api:
+    ports:
+      - "5436:5432"
+  postgres-bc-gateway:
+    ports:
+      - "5437:5432"

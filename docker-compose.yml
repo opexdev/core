@@ -9,6 +9,8 @@ services:
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
       - ZOOKEEPER_CLIENT_PORT=2181
+    networks:
+      - default
     deploy:
       restart_policy:
         condition: on-failure
@@ -28,6 +30,8 @@ services:
       - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
     depends_on:
       - zookeeper
+    networks:
+      - default
     deploy:
       restart_policy:
         condition: on-failure
@@ -47,6 +51,8 @@ services:
       - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
     depends_on:
       - zookeeper
+    networks:
+      - default
     deploy:
       restart_policy:
         condition: on-failure
@@ -66,6 +72,8 @@ services:
       - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
     depends_on:
       - zookeeper
+    networks:
+      - default
     deploy:
       restart_policy:
         condition: on-failure
@@ -95,6 +103,8 @@ services:
     image: 'consul'
     environment:
       - CONSUL_BIND_INTERFACE=eth0
+    networks:
+      - default
     deploy:
       restart_policy:
         condition: on-failure
@@ -106,6 +116,8 @@ services:
       - $DATA/redis.conf:/usr/local/etc/redis/redis.conf
     environment:
       - REDIS_REPLICATION_MODE=master
+    networks:
+      - default
     deploy:
       restart_policy:
         condition: on-failure
@@ -117,8 +129,9 @@ services:
       - POSTGRES_DB=opex_accountant
     volumes:
       - $DATA/accountant-data:/var/lib/postgresql/data/
+    networks:
+      - default
   akhq:
-    container_name: akhq
     image: tchiotludo/akhq
     environment:
       AKHQ_CONFIGURATION: |
@@ -127,6 +140,8 @@ services:
             docker-kafka-server:
               properties:
                 bootstrap.servers: "kafka-1:29092,kafka-2:29092,kafka-3:29092"
+    networks:
+      - default
     depends_on:
       - kafka-1
       - kafka-2
@@ -139,6 +154,8 @@ services:
       - POSTGRES_DB=opex_eventlog
     volumes:
       - $DATA/eventlog-data:/var/lib/postgresql/data/
+    networks:
+      - default
   postgres-auth:
     image: "postgres"
     environment:
@@ -147,6 +164,8 @@ services:
       - POSTGRES_DB=opex_auth
     volumes:
       - $DATA/auth-data:/var/lib/postgresql/data/
+    networks:
+      - default
     deploy:
       restart_policy:
         condition: on-failure
@@ -158,6 +177,8 @@ services:
       - POSTGRES_DB=opex_wallet
     volumes:
       - $DATA/wallet-data:/var/lib/postgresql/data/
+    networks:
+      - default
     deploy:
       restart_policy:
         condition: on-failure
@@ -169,6 +190,8 @@ services:
       - POSTGRES_DB=opex_api
     volumes:
       - $DATA/api-data:/var/lib/postgresql/data/
+    networks:
+      - default
     deploy:
       restart_policy:
         condition: on-failure
@@ -180,13 +203,14 @@ services:
       - POSTGRES_DB=opex_bc_gateway
     volumes:
       - $DATA/bc-gateway-data:/var/lib/postgresql/data/
+    networks:
+      - default
     deploy:
       restart_policy:
         condition: on-failure
   accountant:
     build:
-      context: ../accountant/accountant-app
-      dockerfile: Dockerfile
+      context: accountant/accountant-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_ACTIVE=docker,demo,scheduled
@@ -196,17 +220,20 @@ services:
       - DB_IP_PORT=postgres-accountant
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
+    networks:
+      - default
     depends_on:
       - zookeeper
       - kafka-1
+      - kafka-2
+      - kafka-3
       - redis
       - consul
       - vault
       - postgres-accountant
   eventlog:
     build:
-      context: ../eventlog/eventlog-app
-      dockerfile: Dockerfile
+      context: eventlog/eventlog-app
     environment:
       - JAVA_OPTS=-Xmx256m
       - SPRING_PROFILES_ACTIVE=docker,demo
@@ -216,6 +243,8 @@ services:
       - DB_IP_PORT=postgres-eventlog
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
+    networks:
+      - default
     depends_on:
       - zookeeper
       - kafka-1
@@ -227,13 +256,14 @@ services:
       - postgres-eventlog
   matching-engine:
     build:
-      context: ../matching-engine/matching-engine-app
-      dockerfile: Dockerfile
+      context: matching-engine/matching-engine-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_ACTIVE=docker,demo
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - REDIS_HOST=redis
+    networks:
+      - default
     depends_on:
       - zookeeper
       - kafka-1
@@ -242,14 +272,15 @@ services:
       - redis
   matching-gateway:
     build:
-      context: ../matching-gateway/matching-gateway-app
-      dockerfile: Dockerfile
+      context: matching-gateway/matching-gateway-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_DEFAULT=docker,demo
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
+    networks:
+      - default
     depends_on:
       - zookeeper
       - kafka-1
@@ -258,8 +289,7 @@ services:
       - consul
   auth:
     build:
-      context: ../user-management/keycloak-gateway
-      dockerfile: Dockerfile
+      context: user-management/keycloak-gateway
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_ACTIVE=docker,demo
@@ -281,13 +311,14 @@ services:
       - consul
       - vault
       - postgres-auth
+    networks:
+      - default
     deploy:
       restart_policy:
         condition: on-failure
   wallet:
     build:
-      context: ../wallet/wallet-app
-      dockerfile: Dockerfile
+      context: wallet/wallet-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_DEFAULT=docker,demo
@@ -306,13 +337,14 @@ services:
       - consul
       - vault
       - postgres-wallet
+    networks:
+      - default
     deploy:
       restart_policy:
         condition: on-failure
   api:
     build:
-      context: ../api/api-app
-      dockerfile: Dockerfile
+      context: api/api-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_DEFAULT=docker,demo
@@ -331,13 +363,14 @@ services:
       - consul
       - vault
       - postgres-api
+    networks:
+      - default
     deploy:
       restart_policy:
         condition: on-failure
   websocket:
     build:
-      context: ../websocket/websocket-app
-      dockerfile: Dockerfile
+      context: websocket/websocket-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_DEFAULT=docker
@@ -354,36 +387,34 @@ services:
       - consul
       - vault
       - postgres-api
+    networks:
+      - default
     deploy:
       restart_policy:
         condition: on-failure
   bc-gateway:
     build:
-      context: ../bc-gateway/bc-gateway-app
-      dockerfile: Dockerfile
+      context: bc-gateway/bc-gateway-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_DEFAULT=docker,demo,scheduled
-      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
-      - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-bc-gateway
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_URL=http://vault:8200
     depends_on:
-      - zookeeper
-      - kafka-1
       - redis
       - consul
       - vault
       - postgres-bc-gateway
+    networks:
+      - default
     deploy:
       restart_policy:
         condition: on-failure
   storage:
     build:
-      context: ../storage/storage-app
-      dockerfile: Dockerfile
+      context: storage/storage-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - SPRING_PROFILES_DEFAULT=docker
@@ -393,16 +424,12 @@ services:
       - $DATA/storage-data:/storage
     depends_on:
       - consul
+    networks:
+      - default
     deploy:
       restart_policy:
         condition: on-failure
-  nginx:
-    image: jboesl/docker-nginx-headers-more
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - $DATA/www:/data/www
-    depends_on:
-      - wallet
-      - auth
-      - matching-gateway
-      - api
+networks:
+  default:
+    name: ${DEFAULT_NETWORK_NAME:-opex}
+    driver: bridge
