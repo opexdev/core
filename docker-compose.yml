@@ -431,20 +431,23 @@ services:
         condition: on-failure
   admin:
     build:
-      context: ../admin/admin-app
-      dockerfile: Dockerfile
+      context: admin/admin-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - SPRING_PROFILES_DEFAULT=docker
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - CONSUL_HOST=consul
-      - KEYCLOAK_CLIENT_SECRET=${ADMIN_KEYCLOAK_CLIENT_SECRET}
+      - KEYCLOAK_CLIENT_SECRET=${ADMIN_KEYCLOAK_CLIENT_SECRET} # transfer to vault
+    volumes:
+      - $DATA/admin-data:/admin
     depends_on:
       - zookeeper
       - kafka-1
       - kafka-2
       - kafka-3
       - consul
+    networks:
+      - default
     deploy:
       restart_policy:
         condition: on-failure
