@@ -81,7 +81,7 @@ services:
     image: vault
     volumes:
       - $DATA/vault:/vault/file:rw
-      - $PWD/vault/config:/vault/config:rw
+      - ./vault/config:/vault/config:rw
     environment:
       - VAULT_ADDRESS=http://0.0.0.0:8200
       - PANEL_PASS=${PANEL_PASS}
@@ -401,7 +401,7 @@ services:
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-bc-gateway
       - BACKEND_USER=${BACKEND_USER}
-      - VAULT_URL=http://vault:8200
+      - VAULT_HOST=vault
     depends_on:
       - redis
       - consul
