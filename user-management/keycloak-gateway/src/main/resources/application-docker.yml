@@ -13,8 +13,8 @@ spring:
 keycloak:
   migration:
     file: /opex-master-realm.json
-  adminUrl: http://localhost:8083/auth
-  frontendUrl: http://localhost:8083/auth
+  adminUrl: https://api.opex.dev/auth
+  frontendUrl: https://api.opex.dev/auth
 
 app:
   keycloak:
