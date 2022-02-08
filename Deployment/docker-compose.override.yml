@@ -94,7 +94,7 @@ services:
   auth:
     ports:
       - 127.0.0.1:8083:8083
-      - 127.0.0.1:1048:1044
+      - 127.0.0.1:1048:5005
     networks:
       opex:
         aliases:

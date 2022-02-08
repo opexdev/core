@@ -3,6 +3,8 @@ package co.nilin.opex.auth.gateway.extension
 import co.nilin.opex.auth.gateway.data.RegisterUserRequest
 import co.nilin.opex.auth.gateway.data.RegisterUserResponse
 import co.nilin.opex.auth.gateway.data.UserProfileInfo
+import co.nilin.opex.auth.gateway.utils.ErrorHandler
+import co.nilin.opex.auth.gateway.utils.ResourceAuthenticator
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import org.keycloak.authentication.actiontoken.execactions.ExecuteActionsActionToken
@@ -30,8 +32,12 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     fun registerUser(request: RegisterUserRequest): Response {
+        val auth = ResourceAuthenticator.bearerAuth(session)
+        if (!auth.hasScopeAccess("trust"))
+            return ErrorHandler.forbidden()
+
         if (!request.isValid())
-            throw OpexException(OpexError.BadRequest)
+            return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexException(OpexError.BadRequest))
 
         val user = session.users().addUser(opexRealm, request.username).apply {
             email = request.email
@@ -53,7 +59,10 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @Path("user/forgot")
     @Produces(MediaType.APPLICATION_JSON)
     fun forgotPassword(@QueryParam("email") email: String?): Response {
-        ResourceAuthenticator.bearerAuth(session).checkAccess("trust")
+        val auth = ResourceAuthenticator.bearerAuth(session)
+        if (!auth.hasScopeAccess("trust"))
+            return ErrorHandler.forbidden()
+
         val user = session.users().getUserByEmail(email, opexRealm)
         if (user != null) {
             sendEmail(user, listOf(UserModel.RequiredAction.UPDATE_PASSWORD.name))
@@ -66,12 +75,67 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @Produces(MediaType.APPLICATION_JSON)
     fun sendVerifyEmail(@QueryParam("email") email: String?): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
-        auth.checkScopeAccess("trust")
+        if (!auth.hasScopeAccess("trust"))
+            return ErrorHandler.forbidden()
+
         val user = session.users().getUserByEmail(email, opexRealm)
         if (user != null) {
-            auth.checkUserAccess(user.id)
+            if (!auth.hasUserAccess(user.id))
+                return ErrorHandler.forbidden()
+
             sendEmail(user, listOf(UserModel.RequiredAction.VERIFY_EMAIL.name))
         }
+        return Response.noContent().build()
+    }
+
+    @GET
+    @Path("user/profile")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    fun getAttributes(): Response {
+        val auth = ResourceAuthenticator.bearerAuth(session)
+        if (!auth.hasScopeAccess("trust"))
+            return ErrorHandler.forbidden()
+
+        val user = session.users().getUserById(auth.getUserId(), opexRealm)
+            ?: return ErrorHandler.response(
+                Response.Status.NOT_FOUND,
+                OpexException(OpexError.NotFound, "User not found")
+            )
+
+        return Response.ok(user.attributes).build()
+    }
+
+    @POST
+    @Path("user/profile")
+    @Consumes(MediaType.APPLICATION_JSON)
+    fun updateAttributes(request: UserProfileInfo): Response {
+        val auth = ResourceAuthenticator.bearerAuth(session)
+        if (!auth.hasScopeAccess("trust"))
+            return ErrorHandler.forbidden()
+
+        val user = session.users().getUserById(auth.getUserId(), opexRealm)
+            ?: return ErrorHandler.response(
+                Response.Status.NOT_FOUND,
+                OpexException(OpexError.NotFound, "User not found")
+            )
+
+        with(request) {
+            user.setSingleAttribute("firstNameFa", firstNameFa)
+            user.setSingleAttribute("lastNameEn", lastNameEn)
+            user.setSingleAttribute("firstNameFa", firstNameFa)
+            user.setSingleAttribute("lastNameFa", lastNameFa)
+            user.setSingleAttribute("birthday", birthday)
+            user.setSingleAttribute("birthdayJalali", birthdayJalali)
+            user.setSingleAttribute("nationalID", nationalID)
+            user.setSingleAttribute("passport", passport)
+            user.setSingleAttribute("phoneNumber", phoneNumber)
+            user.setSingleAttribute("homeNumber", homeNumber)
+            user.setSingleAttribute("email", email)
+            user.setSingleAttribute("postalCode", postalCode)
+            user.setSingleAttribute("address", address)
+        }
+
         return Response.noContent().build()
     }
 

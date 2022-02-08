@@ -1,7 +1,5 @@
-package co.nilin.opex.auth.gateway.extension
+package co.nilin.opex.auth.gateway.utils
 
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
 import org.keycloak.models.KeycloakSession
 import org.keycloak.models.UserModel
 import org.keycloak.representations.AccessToken
@@ -15,21 +13,16 @@ class ResourceAuthenticator(private val result: AuthenticationManager.AuthResult
 
     fun getUserId() = user?.id
 
-    fun checkAccess(scope: String, userId: String? = null) {
-        checkScopeAccess(scope)
-        checkUserAccess(userId)
+    fun hasAccess(scope: String, userId: String? = null): Boolean {
+        return hasScopeAccess(scope) && hasUserAccess(userId)
     }
 
-    fun checkScopeAccess(scope: String) {
-        val scopeAccess = token.scope.split(" ").contains(scope)
-        if (!scopeAccess)
-            throw OpexException(OpexError.Forbidden)
+    fun hasScopeAccess(scope: String): Boolean {
+        return token.scope.split(" ").contains(scope)
     }
 
-    fun checkUserAccess(userId: String? = null) {
-        val userAccess = userId != null && user?.id == userId
-        if (!userAccess)
-            throw OpexException(OpexError.Forbidden)
+    fun hasUserAccess(userId: String? = null): Boolean {
+        return userId != null && user?.id == userId
     }
 
     companion object {
