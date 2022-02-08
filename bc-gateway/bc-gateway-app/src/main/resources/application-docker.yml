@@ -9,8 +9,8 @@ spring:
     port: 6379
   r2dbc:
     url: r2dbc:postgresql://${DB_IP_PORT}/opex_bc_gateway
-    username: opex
-    password: hiopex
+    username: ${dbusername}
+    password: ${dbpassword}
     initialization-mode: always
   cloud:
     consul:

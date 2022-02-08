@@ -1,0 +1,9 @@
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5434/opex_eventlog
+    username: ${dbusername}
+    password: ${dbpassword}
+    initialization-mode: always
+  cloud:
+    consul:
+      host: localhost

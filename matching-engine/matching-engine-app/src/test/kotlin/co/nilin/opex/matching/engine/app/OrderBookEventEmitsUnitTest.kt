@@ -1,5 +1,6 @@
-package co.nilin.opex.matching.engine.core.engine
+package co.nilin.opex.matching.engine.app
 
+import co.nilin.opex.matching.engine.core.engine.SimpleOrderBook
 import co.nilin.opex.matching.engine.core.eventh.EventDispatcher
 import co.nilin.opex.matching.engine.core.eventh.events.OrderBookPublishedEvent
 import co.nilin.opex.matching.engine.core.inout.OrderCancelCommand
@@ -15,10 +16,10 @@ import org.junit.jupiter.api.Test
 import java.util.*
 
 class OrderBookEventEmitsUnitTest {
-    val pair = co.nilin.opex.matching.engine.core.model.Pair("BTC", "USDT")
-    val uuid = UUID.randomUUID().toString()
+    private val pair = co.nilin.opex.matching.engine.core.model.Pair("BTC", "USDT")
+    private val uuid = UUID.randomUUID().toString()
 
-    var persistentOrderBook: PersistentOrderBook? = null
+    private var persistentOrderBook: PersistentOrderBook? = null
 
     @BeforeEach
     fun setup() {
@@ -144,6 +145,4 @@ class OrderBookEventEmitsUnitTest {
         //then
         Assertions.assertNotNull(persistentOrderBook)
     }
-
-
 }

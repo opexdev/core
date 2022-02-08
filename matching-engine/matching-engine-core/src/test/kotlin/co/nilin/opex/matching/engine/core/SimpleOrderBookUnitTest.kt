@@ -1,5 +1,6 @@
-package co.nilin.opex.matching.engine.core.engine
+package co.nilin.opex.matching.engine.core
 
+import co.nilin.opex.matching.engine.core.engine.SimpleOrderBook
 import co.nilin.opex.matching.engine.core.inout.OrderCancelCommand
 import co.nilin.opex.matching.engine.core.inout.OrderCreateCommand
 import co.nilin.opex.matching.engine.core.inout.OrderEditCommand
@@ -13,9 +14,9 @@ import org.junit.jupiter.api.Test
 import java.util.*
 
 class SimpleOrderBookUnitTest {
-    val pair = co.nilin.opex.matching.engine.core.model.Pair("BTC", "USDT")
-    val ETH_BTC_PAIR = co.nilin.opex.matching.engine.core.model.Pair("ETH", "BTC")
-    val uuid = UUID.randomUUID().toString()
+    private val pair = co.nilin.opex.matching.engine.core.model.Pair("BTC", "USDT")
+    private val ETH_BTC_PAIR = co.nilin.opex.matching.engine.core.model.Pair("ETH", "BTC")
+    private val uuid = UUID.randomUUID().toString()
 
     @Test
     fun givenEmptyOrderBook_whenGtcBidLimitOrderCreated_then1BucketWithSize1() {
@@ -848,5 +849,4 @@ class SimpleOrderBookUnitTest {
         Assertions.assertNotNull(orderBook.bestBidOrder)
         Assertions.assertNotNull(orderBook.bestAskOrder)
     }
-
 }

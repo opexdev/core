@@ -1,12 +1,12 @@
 pipeline {
     agent any
 
-    stages('Deploy - Stage') {
+    stages('Deploy') {
         stage('Build') {
             steps {
                 setBuildStatus("?", "PENDING")
                 withMaven(
-                        maven: 'maven-latest'
+                        maven: 'maven-3.6.3'
                 ) {
                     sh 'mvn -B clean install'
                 }
@@ -14,12 +14,19 @@ pipeline {
         }
         stage('Deliver') {
             environment {
-                DATA = '/var/opex/runtime-dev'
+                DATA = '/var/opex/dev-core'
+                PANEL_PASS = credentials("v-panel-secret-dev")
+                BACKEND_USER = credentials("v-backend-secret-dev")
+                SMTP_PASS = credentials("smtp-secret-dev")
+                DB_USER = 'opex'
+                DB_PASS = credentials("db-secret-dev")
+                COMPOSE_PROJECT_NAME = 'dev-core'
+                DEFAULT_NETWORK_NAME = 'dev-opex'
             }
             steps {
-                dir("Deployment") {
-                    sh 'COMPOSE_PROJECT_NAME=dev docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build'
-                }
+                sh 'docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build --remove-orphans'
+                sh 'docker image prune -f'
+                sh 'docker network prune -f'
             }
         }
     }

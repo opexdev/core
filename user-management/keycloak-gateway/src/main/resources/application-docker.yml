@@ -3,8 +3,8 @@ spring:
     bootstrap-servers: ${KAFKA_IP_PORT}
   datasource:
     url: jdbc:postgresql://${DB_IP_PORT}/opex_auth
-    username: opex
-    password: hiopex
+    username: ${dbusername}
+    password: ${dbpassword}
   cloud:
     consul:
       host: ${CONSUL_HOST}
