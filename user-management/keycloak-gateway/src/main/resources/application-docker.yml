@@ -15,7 +15,3 @@ keycloak:
     file: /opex-master-realm.json
   adminUrl: https://api.opex.dev/auth
   frontendUrl: https://api.opex.dev/auth
-
-app:
-  keycloak:
-    client-secret: ${KEYCLOAK_CLIENT_SECRET}
