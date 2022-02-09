@@ -12,13 +12,16 @@ target/
 .settings
 .springBeans
 .sts4-cache
-.env
 
 ### IntelliJ IDEA ###
 .idea
 *.iws
 *.iml
 *.ipr
+
+### Other files ###
+.env
+docker-compose.local.yml
 
 ### NetBeans ###
 /nbproject/private/
