@@ -1,6 +1,6 @@
-package co.nilin.opex.storage.app.config
+package co.nilin.opex.admin.app.config
 
-import co.nilin.opex.storage.app.utils.hasRealmRole
+import co.nilin.opex.admin.app.utils.hasRealmRole
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
@@ -20,12 +20,7 @@ class SecurityConfig(private val webClient: WebClient) {
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
         http.csrf().disable()
             .authorizeExchange()
-            .pathMatchers("/hello").permitAll()
-            .pathMatchers("/actuator/**").permitAll()
-            .pathMatchers("/swagger-ui/**").permitAll()
-            .pathMatchers("/swagger-resources/**").permitAll()
-            .pathMatchers("/admin/**").hasRealmRole("SCOPE_trust", "finance-admin")
-            .pathMatchers("/**").hasAuthority("SCOPE_trust")
+            .pathMatchers("/auth/**").hasRealmRole("SCOPE_trust", "finance-admin")
             .anyExchange().authenticated()
             .and()
             .oauth2ResourceServer()

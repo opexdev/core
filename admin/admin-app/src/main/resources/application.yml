@@ -1,0 +1,23 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: opex-admin
+  cloud:
+    bootstrap:
+      enabled: true
+    consul:
+      port: 8500
+      discovery:
+        #healthCheckPath: ${management.context-path}/health
+        instance-id: ${spring.application.name}:${server.port}
+        healthCheckInterval: 20s
+        prefer-ip-address: true
+app:
+  auth:
+    cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
+    keycloak:
+      url: http://auth:8083/auth
+      realm: opex
+      client-id: opex-admin
+      client-secret: secret

@@ -29,6 +29,7 @@
         <module>utility</module>
         <module>wallet</module>
         <module>websocket</module>
+        <module>admin</module>
     </modules>
 
     <dependencies>

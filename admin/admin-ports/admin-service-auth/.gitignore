@@ -19,10 +19,6 @@ target/
 *.iml
 *.ipr
 
-### Other files ###
-.env
-docker-compose.local.yml
-
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
@@ -35,6 +31,3 @@ build/
 
 ### VS Code ###
 .vscode/
-!/.mvn/
-
-.DS_Store

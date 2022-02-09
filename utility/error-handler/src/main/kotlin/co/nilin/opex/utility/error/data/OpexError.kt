@@ -23,6 +23,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     SubmitOrderForbiddenByAccountant(4001, null, HttpStatus.BAD_REQUEST),
 
     // code 5000: user-management
+    EmailAlreadyVerified(5001, "Email is already verified", HttpStatus.BAD_REQUEST),
 
     // code 6000: wallet
     WalletOwnerNotFound(6001, null, HttpStatus.NOT_FOUND),
