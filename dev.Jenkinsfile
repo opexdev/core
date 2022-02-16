@@ -20,6 +20,8 @@ pipeline {
                 SMTP_PASS = credentials("smtp-secret-dev")
                 DB_USER = 'opex'
                 DB_PASS = credentials("db-secret-dev")
+                KEYCLOAK_ADMIN_URL = 'https://demo.opex.dev:8443/auth'
+                KEYCLOAK_FRONTEND_URL = 'https://demo.opex.dev:8443/auth'
                 COMPOSE_PROJECT_NAME = 'dev-core'
                 DEFAULT_NETWORK_NAME = 'dev-opex'
             }
