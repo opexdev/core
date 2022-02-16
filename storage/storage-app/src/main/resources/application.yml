@@ -14,6 +14,7 @@ spring:
     bootstrap:
       enabled: true
     consul:
+      host: ${CONSUL_HOST:-localhost}
       port: 8500
       discovery:
         #healthCheckPath: ${management.context-path}/health
@@ -23,8 +24,5 @@ spring:
 
 app:
   root-dir: ${ROOT_DIR}
-  cors:
-    allowed-hosts: https://opex.dev, http://localhost:3000
-    allowed-patterns: http://192.168.*
   auth:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs

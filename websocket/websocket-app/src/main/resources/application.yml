@@ -7,13 +7,13 @@ spring:
     allow-bean-definition-overriding: false
     allow-circular-references: true
   kafka:
-    bootstrap-servers: 192.168.178.29:9092
+    bootstrap-servers: ${KAFKA_IP_PORT:-localhost:9092}
     consumer:
       group-id: websocket
   r2dbc:
-    url: r2dbc:postgresql://localhost/opex_api
-    username: opex
-    password: hiopex
+    url: r2dbc:postgresql://${DB_IP_PORT:-localhost}/opex_api
+    username: ${dbusername:-opex}
+    password: ${dbpassword:-hiopex}
     initialization-mode: always
   cloud:
     bootstrap:
@@ -32,6 +32,7 @@ spring:
         profile-separator: '/'
         application-name: ${spring.application.name}
     consul:
+      host: ${CONSUL_HOST:-localhost}
       port: 8500
       discovery:
         instance-id: ${spring.application.name}:${server.port}
@@ -41,4 +42,4 @@ spring:
     import: vault://secret/${spring.application.name}
 app:
   auth:
-    cert-url: http://localhost:8083/auth/realms/opex/protocol/openid-connect/certs
+    cert-url: lp://opex-auth/auth/realms/opex/protocol/openid-connect/certs
