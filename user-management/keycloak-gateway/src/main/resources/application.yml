@@ -49,8 +49,8 @@ spring:
   config:
     import: vault://secret/${spring.application.name}
 keycloak:
-  adminUrl: ${ADMIN_URL:-https://demo.opex.dev:8443/auth}
-  frontendUrl: ${FRONTEND_URL:-https://demo.opex.dev:8443/auth}
+  adminUrl: ${ADMIN_URL:-https://localhost:8080/auth}
+  frontendUrl: ${FRONTEND_URL:-https://localhost:8080/auth}
   server:
     contextPath: /auth
     adminUser:

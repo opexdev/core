@@ -296,6 +296,8 @@ services:
       - PROXY_ADDRESS_FORWARDING=true
       - WORKING_DIR=$DATA
       - BACKEND_USER=${BACKEND_USER}
+      - ADMIN_URL=https://demo.opex.dev/auth
+      - FRONTEND_URL=https://demo.opex.dev/auth
       - VAULT_URL=http://vault:8200
       - VAULT_HOST=vault
     depends_on:
