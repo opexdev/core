@@ -81,7 +81,7 @@ services:
     image: vault
     volumes:
       - $DATA/vault:/vault/file:rw
-      - ./vault/config:/vault/config:rw
+      - ./resources/vault:/vault/config:rw
     environment:
       - VAULT_ADDRESS=http://0.0.0.0:8200
       - PANEL_PASS=${PANEL_PASS}
@@ -93,7 +93,7 @@ services:
       retries: 5
     cap_add:
       - IPC_LOCK
-    entrypoint: /vault/config/workflow-vault.sh
+    entrypoint: /resources/vault/workflow-vault.sh
   vault-ui:
     image: djenriquez/vault-ui
     environment:
