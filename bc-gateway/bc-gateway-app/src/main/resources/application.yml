@@ -5,16 +5,16 @@ spring:
   main:
     allow-bean-definition-overriding: false
   kafka:
-    bootstrap-servers: localhost:2181
+    bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
     consumer:
       group-id: opex-bc-gateway
   redis:
-    host: 127.0.0.1
+    host: ${REDIS_HOST:localhost}
     port: 6379
   r2dbc:
-    url: r2dbc:postgresql://localhost/opex_bc_gateway
-    username: opex
-    password: hiopex
+    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex_bc_gateway
+    username: ${dbusername:opex}
+    password: ${dbpassword:hiopex}
     initialization-mode: always
   cloud:
     bootstrap:
@@ -33,6 +33,7 @@ spring:
         profile-separator: '/'
         application-name: ${spring.application.name}
     consul:
+      host: ${CONSUL_HOST:localhost}
       port: 8500
       discovery:
         #healthCheckPath: ${management.context-path}/health

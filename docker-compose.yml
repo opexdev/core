@@ -81,7 +81,7 @@ services:
     image: vault
     volumes:
       - $DATA/vault:/vault/file:rw
-      - ./vault/config:/vault/config:rw
+      - ./resources/vault:/vault/config:rw
     environment:
       - VAULT_ADDRESS=http://0.0.0.0:8200
       - PANEL_PASS=${PANEL_PASS}
@@ -100,7 +100,7 @@ services:
       - VAULT_URL_DEFAULT=http://vault:8200
       - VAULT_AUTH_DEFAULT=USERNAMEPASSWORD
   consul:
-    image: 'consul'
+    image: consul
     environment:
       - CONSUL_BIND_INTERFACE=eth0
     networks:
@@ -109,7 +109,7 @@ services:
       restart_policy:
         condition: on-failure
   redis:
-    image: "redis:alpine"
+    image: redis:alpine
     command: redis-server
     volumes:
       - $DATA/redis-data:/var/lib/redis
@@ -122,7 +122,7 @@ services:
       restart_policy:
         condition: on-failure
   postgres-accountant:
-    image: "postgres"
+    image: postgres:14-alpine
     environment:
       - POSTGRES_USER=opex
       - POSTGRES_PASSWORD=hiopex
@@ -147,7 +147,7 @@ services:
       - kafka-2
       - kafka-3
   postgres-eventlog:
-    image: "postgres"
+    image: postgres:14-alpine
     environment:
       - POSTGRES_USER=opex
       - POSTGRES_PASSWORD=hiopex
@@ -157,7 +157,7 @@ services:
     networks:
       - default
   postgres-auth:
-    image: "postgres"
+    image: postgres:14-alpine
     environment:
       - POSTGRES_USER=opex
       - POSTGRES_PASSWORD=hiopex
@@ -170,7 +170,7 @@ services:
       restart_policy:
         condition: on-failure
   postgres-wallet:
-    image: "postgres"
+    image: postgres:14-alpine
     environment:
       - POSTGRES_USER=opex
       - POSTGRES_PASSWORD=hiopex
@@ -183,7 +183,7 @@ services:
       restart_policy:
         condition: on-failure
   postgres-api:
-    image: "postgres"
+    image: postgres:14-alpine
     environment:
       - POSTGRES_USER=opex
       - POSTGRES_PASSWORD=hiopex
@@ -196,7 +196,7 @@ services:
       restart_policy:
         condition: on-failure
   postgres-bc-gateway:
-    image: "postgres"
+    image: postgres:14-alpine
     environment:
       - POSTGRES_USER=opex
       - POSTGRES_PASSWORD=hiopex
@@ -213,7 +213,7 @@ services:
       context: accountant/accountant-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-      - SPRING_PROFILES_ACTIVE=docker,demo,scheduled
+      - SPRING_PROFILES_ACTIVE=scheduled
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
@@ -236,7 +236,6 @@ services:
       context: eventlog/eventlog-app
     environment:
       - JAVA_OPTS=-Xmx256m
-      - SPRING_PROFILES_ACTIVE=docker,demo
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
@@ -259,7 +258,6 @@ services:
       context: matching-engine/matching-engine-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-      - SPRING_PROFILES_ACTIVE=docker,demo
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - REDIS_HOST=redis
     networks:
@@ -275,7 +273,6 @@ services:
       context: matching-gateway/matching-gateway-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-      - SPRING_PROFILES_DEFAULT=docker,demo
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
@@ -292,14 +289,15 @@ services:
       context: user-management/keycloak-gateway
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-      - SPRING_PROFILES_ACTIVE=docker,demo
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-auth
       - PROXY_ADDRESS_FORWARDING=true
       - WORKING_DIR=$DATA
-      - BACKEND_USER=${BACKEND_USER}
+      - BACKEND_USER=$BACKEND_USER
+      - ADMIN_URL=$KEYCLOAK_ADMIN_URL
+      - FRONTEND_URL=$KEYCLOAK_FRONTEND_URL
       - VAULT_URL=http://vault:8200
       - VAULT_HOST=vault
     depends_on:
@@ -321,7 +319,6 @@ services:
       context: wallet/wallet-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-      - SPRING_PROFILES_DEFAULT=docker,demo
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
@@ -347,7 +344,6 @@ services:
       context: api/api-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-      - SPRING_PROFILES_DEFAULT=docker,demo
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - REDIS_HOST=redis
       - CONSUL_HOST=consul
@@ -373,7 +369,6 @@ services:
       context: websocket/websocket-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-      - SPRING_PROFILES_DEFAULT=docker
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-api
@@ -397,7 +392,7 @@ services:
       context: bc-gateway/bc-gateway-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-      - SPRING_PROFILES_DEFAULT=docker,demo,scheduled
+      - SPRING_PROFILES_DEFAULT=scheduled
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-bc-gateway
       - BACKEND_USER=${BACKEND_USER}
@@ -417,7 +412,6 @@ services:
       context: storage/storage-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-      - SPRING_PROFILES_DEFAULT=docker
       - CONSUL_HOST=consul
       - ROOT_DIR=/storage
     volumes:
@@ -434,7 +428,6 @@ services:
       context: admin/admin-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-      - SPRING_PROFILES_DEFAULT=docker
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - CONSUL_HOST=consul
       - KEYCLOAK_CLIENT_SECRET=${ADMIN_KEYCLOAK_CLIENT_SECRET} # transfer to vault

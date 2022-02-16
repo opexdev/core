@@ -3,10 +3,13 @@ server:
 spring:
   application:
     name: opex-admin
+  main:
+    allow-bean-definition-overriding: true
   cloud:
     bootstrap:
       enabled: true
     consul:
+      host: ${CONSUL_HOST:localhost}
       port: 8500
       discovery:
         #healthCheckPath: ${management.context-path}/health
@@ -17,7 +20,7 @@ app:
   auth:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
     keycloak:
-      url: http://auth:8083/auth
+      url: http://auth:8080/auth
       realm: opex
       client-id: opex-admin
-      client-secret: secret
+      client-secret: ${KEYCLOAK_CLIENT_SECRET:secret}

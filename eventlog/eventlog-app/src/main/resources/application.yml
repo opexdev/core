@@ -5,13 +5,13 @@ spring:
   main:
     allow-circular-references: true
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers:  ${KAFKA_IP_PORT:localhost:9092}
     consumer:
       group-id: eventlog
   r2dbc:
-    url: r2dbc:postgresql://localhost/opex_eventlog
-    username: opex
-    password: hiopex
+    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex_eventlog
+    username: ${dbusername:opex}
+    password: ${dbpassword:hiopex}
     initialization-mode: always
   cloud:
     vault:
