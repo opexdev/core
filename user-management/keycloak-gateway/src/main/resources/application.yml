@@ -60,7 +60,7 @@ keycloak:
   migration:
     action: import
     provider: singleFile
-    file: classpath:/opex-master-realm.json
+    file: /opex-master-realm.json
     strategy: OVERWRITE_EXISTING
   profile:
     feature:
