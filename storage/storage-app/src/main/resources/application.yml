@@ -14,7 +14,7 @@ spring:
     bootstrap:
       enabled: true
     consul:
-      host: ${CONSUL_HOST:-localhost}
+      host: ${CONSUL_HOST:localhost}
       port: 8500
       discovery:
         #healthCheckPath: ${management.context-path}/health

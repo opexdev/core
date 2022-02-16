@@ -5,15 +5,15 @@ spring:
   main:
     allow-bean-definition-overriding: false
   kafka:
-    bootstrap-servers: ${KAFKA_IP_PORT:-localhost:9092}
+    bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
     consumer:
       group-id: auth
   datasource:
     platform: postgres
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${DB_IP_PORT:-localhost}/opex_auth
-    username: ${dbusername:-opex}
-    password: ${dbpassword:-hiopex}
+    url: jdbc:postgresql://${DB_IP_PORT:localhost}/opex_auth
+    username: ${dbusername:opex}
+    password: ${dbpassword:hiopex}
     initialization-mode: always
   jpa:
     hibernate:
@@ -39,7 +39,7 @@ spring:
         profile-separator: '/'
         application-name: ${spring.application.name}
     consul:
-      host: ${CONSUL_HOST:-localhost}
+      host: ${CONSUL_HOST:localhost}
       port: 8500
       discovery:
         #healthCheckPath: ${management.context-path}/health
@@ -49,19 +49,14 @@ spring:
   config:
     import: vault://secret/${spring.application.name}
 keycloak:
-  adminUrl: ${ADMIN_URL:-https://localhost:8080/auth}
-  frontendUrl: ${FRONTEND_URL:-https://localhost:8080/auth}
+  adminUrl: ${ADMIN_URL:http://localhost:8080/auth}
+  frontendUrl: ${FRONTEND_URL:http://localhost:8080/auth}
   server:
     contextPath: /auth
     adminUser:
       username: opex-admin
       password: hiopex
     realmImportFile: /opex-realm.json
-  migration:
-    action: import
-    provider: singleFile
-    file: classpath:/opex-master-realm.json
-    strategy: OVERWRITE_EXISTING
   profile:
     feature:
       admin_fine_grained_authz: enabled
