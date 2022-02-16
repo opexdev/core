@@ -42,4 +42,4 @@ spring:
     import: vault://secret/${spring.application.name}
 app:
   auth:
-    cert-url: lp://opex-auth/auth/realms/opex/protocol/openid-connect/certs
+    cert-url: http://auth:8080/auth/realms/opex/protocol/openid-connect/certs
