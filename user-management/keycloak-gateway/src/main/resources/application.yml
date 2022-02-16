@@ -57,6 +57,11 @@ keycloak:
       username: opex-admin
       password: hiopex
     realmImportFile: /opex-realm.json
+  migration:
+    action: import
+    provider: singleFile
+    file: classpath:/opex-master-realm.json
+    strategy: OVERWRITE_EXISTING
   profile:
     feature:
       admin_fine_grained_authz: enabled
