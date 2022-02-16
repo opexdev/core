@@ -1,0 +1,450 @@
+version: '3.8'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    hostname: zookeeper
+    volumes:
+      - $DATA/zookeeper-data/data:/var/lib/zookeeper/data
+      - $DATA/zookeeper-data/tx-logs:/var/lib/zookeeper/log
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      - ZOOKEEPER_CLIENT_PORT=2181
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
+  kafka-1:
+    image: confluentinc/cp-kafka:latest
+    hostname: kafka-1
+    volumes:
+      - $DATA/kafka-data/kafka-1:/var/lib/kafka/data
+    environment:
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_LISTENERS=CLIENT://kafka-1:29092,EXTERNAL://kafka-1:9092
+      - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-1:29092,EXTERNAL://kafka-1:9092
+      - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
+      - KAKFA_MIN_INSYNC_REPLICAS=2
+      - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+    depends_on:
+      - zookeeper
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
+  kafka-2:
+    image: confluentinc/cp-kafka:latest
+    hostname: kafka-2
+    volumes:
+      - $DATA/kafka-data/kafka-2:/var/lib/kafka/data
+    environment:
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_LISTENERS=CLIENT://kafka-2:29092,EXTERNAL://kafka-2:9092
+      - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-2:29092,EXTERNAL://kafka-2:9092
+      - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
+      - KAKFA_MIN_INSYNC_REPLICAS=2
+      - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+    depends_on:
+      - zookeeper
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
+  kafka-3:
+    image: confluentinc/cp-kafka:latest
+    hostname: kafka-3
+    volumes:
+      - $DATA/kafka-data/kafka-3:/var/lib/kafka/data
+    environment:
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_LISTENERS=CLIENT://kafka-3:29092,EXTERNAL://kafka-3:9092
+      - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-3:29092,EXTERNAL://kafka-3:9092
+      - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
+      - KAKFA_MIN_INSYNC_REPLICAS=2
+      - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+    depends_on:
+      - zookeeper
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
+  vault:
+    image: vault
+    volumes:
+      - $DATA/vault:/vault/file:rw
+      - ./resources/vault:/vault/config:rw
+    environment:
+      - VAULT_ADDRESS=http://0.0.0.0:8200
+      - PANEL_PASS=${PANEL_PASS}
+      - BACKEND_USER=${BACKEND_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+    healthcheck:
+      retries: 5
+    cap_add:
+      - IPC_LOCK
+    entrypoint: /vault/config/workflow-vault.sh
+  vault-ui:
+    image: djenriquez/vault-ui
+    environment:
+      - VAULT_URL_DEFAULT=http://vault:8200
+      - VAULT_AUTH_DEFAULT=USERNAMEPASSWORD
+  consul:
+    image: consul
+    environment:
+      - CONSUL_BIND_INTERFACE=eth0
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
+  redis:
+    image: redis:alpine
+    command: redis-server
+    volumes:
+      - $DATA/redis-data:/var/lib/redis
+      - $DATA/redis.conf:/usr/local/etc/redis/redis.conf
+    environment:
+      - REDIS_REPLICATION_MODE=master
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
+  postgres-accountant:
+    image: postgres:14-alpine
+    environment:
+      - POSTGRES_USER=opex
+      - POSTGRES_PASSWORD=hiopex
+      - POSTGRES_DB=opex_accountant
+    volumes:
+      - $DATA/accountant-data:/var/lib/postgresql/data/
+    networks:
+      - default
+  akhq:
+    image: tchiotludo/akhq
+    environment:
+      AKHQ_CONFIGURATION: |
+        akhq:
+          connections:
+            docker-kafka-server:
+              properties:
+                bootstrap.servers: "kafka-1:29092,kafka-2:29092,kafka-3:29092"
+    networks:
+      - default
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
+  postgres-eventlog:
+    image: postgres:14-alpine
+    environment:
+      - POSTGRES_USER=opex
+      - POSTGRES_PASSWORD=hiopex
+      - POSTGRES_DB=opex_eventlog
+    volumes:
+      - $DATA/eventlog-data:/var/lib/postgresql/data/
+    networks:
+      - default
+  postgres-auth:
+    image: postgres:14-alpine
+    environment:
+      - POSTGRES_USER=opex
+      - POSTGRES_PASSWORD=hiopex
+      - POSTGRES_DB=opex_auth
+    volumes:
+      - $DATA/auth-data:/var/lib/postgresql/data/
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
+  postgres-wallet:
+    image: postgres:14-alpine
+    environment:
+      - POSTGRES_USER=opex
+      - POSTGRES_PASSWORD=hiopex
+      - POSTGRES_DB=opex_wallet
+    volumes:
+      - $DATA/wallet-data:/var/lib/postgresql/data/
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
+  postgres-api:
+    image: postgres:14-alpine
+    environment:
+      - POSTGRES_USER=opex
+      - POSTGRES_PASSWORD=hiopex
+      - POSTGRES_DB=opex_api
+    volumes:
+      - $DATA/api-data:/var/lib/postgresql/data/
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
+  postgres-bc-gateway:
+    image: postgres:14-alpine
+    environment:
+      - POSTGRES_USER=opex
+      - POSTGRES_PASSWORD=hiopex
+      - POSTGRES_DB=opex_bc_gateway
+    volumes:
+      - $DATA/bc-gateway-data:/var/lib/postgresql/data/
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
+  accountant:
+    build:
+      context: accountant/accountant-app
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - SPRING_PROFILES_ACTIVE=scheduled
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - REDIS_HOST=redis
+      - CONSUL_HOST=consul
+      - DB_IP_PORT=postgres-accountant
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_HOST=vault
+    networks:
+      - default
+    depends_on:
+      - zookeeper
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - redis
+      - consul
+      - vault
+      - postgres-accountant
+  eventlog:
+    build:
+      context: eventlog/eventlog-app
+    environment:
+      - JAVA_OPTS=-Xmx256m
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - REDIS_HOST=redis
+      - CONSUL_HOST=consul
+      - DB_IP_PORT=postgres-eventlog
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_HOST=vault
+    networks:
+      - default
+    depends_on:
+      - zookeeper
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - redis
+      - consul
+      - vault
+      - postgres-eventlog
+  matching-engine:
+    build:
+      context: matching-engine/matching-engine-app
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - REDIS_HOST=redis
+    networks:
+      - default
+    depends_on:
+      - zookeeper
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - redis
+  matching-gateway:
+    build:
+      context: matching-gateway/matching-gateway-app
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - REDIS_HOST=redis
+      - CONSUL_HOST=consul
+    networks:
+      - default
+    depends_on:
+      - zookeeper
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - consul
+  auth:
+    build:
+      context: user-management/keycloak-gateway
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - REDIS_HOST=redis
+      - CONSUL_HOST=consul
+      - DB_IP_PORT=postgres-auth
+      - PROXY_ADDRESS_FORWARDING=true
+      - WORKING_DIR=$DATA
+      - BACKEND_USER=$BACKEND_USER
+      - ADMIN_URL=$KEYCLOAK_ADMIN_URL
+      - FRONTEND_URL=$KEYCLOAK_FRONTEND_URL
+      - VAULT_URL=http://vault:8200
+      - VAULT_HOST=vault
+    depends_on:
+      - zookeeper
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - redis
+      - consul
+      - vault
+      - postgres-auth
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
+  wallet:
+    build:
+      context: wallet/wallet-app
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - REDIS_HOST=redis
+      - CONSUL_HOST=consul
+      - DB_IP_PORT=postgres-wallet
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_HOST=vault
+    depends_on:
+      - zookeeper
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - redis
+      - consul
+      - vault
+      - postgres-wallet
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
+  api:
+    build:
+      context: api/api-app
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - REDIS_HOST=redis
+      - CONSUL_HOST=consul
+      - DB_IP_PORT=postgres-api
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_HOST=vault
+    depends_on:
+      - zookeeper
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - redis
+      - consul
+      - vault
+      - postgres-api
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
+  websocket:
+    build:
+      context: websocket/websocket-app
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - CONSUL_HOST=consul
+      - DB_IP_PORT=postgres-api
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_HOST=vault
+    depends_on:
+      - zookeeper
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - consul
+      - vault
+      - postgres-api
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
+  bc-gateway:
+    build:
+      context: bc-gateway/bc-gateway-app
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - SPRING_PROFILES_DEFAULT=scheduled
+      - CONSUL_HOST=consul
+      - DB_IP_PORT=postgres-bc-gateway
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_HOST=vault
+    depends_on:
+      - redis
+      - consul
+      - vault
+      - postgres-bc-gateway
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
+  storage:
+    build:
+      context: storage/storage-app
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - CONSUL_HOST=consul
+      - ROOT_DIR=/storage
+    volumes:
+      - $DATA/storage-data:/storage
+    depends_on:
+      - consul
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
+  admin:
+    build:
+      context: admin/admin-app
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - CONSUL_HOST=consul
+      - KEYCLOAK_CLIENT_SECRET=${ADMIN_KEYCLOAK_CLIENT_SECRET} # transfer to vault
+    volumes:
+      - $DATA/admin-data:/admin
+    depends_on:
+      - zookeeper
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - consul
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
+networks:
+  default:
+    name: ${DEFAULT_NETWORK_NAME:-opex}
+    driver: bridge

@@ -2,11 +2,11 @@ package co.nilin.opex.eventlog.ports.postgres.impl
 
 import co.nilin.opex.eventlog.core.spi.Event
 import co.nilin.opex.eventlog.core.spi.EventPersister
+import co.nilin.opex.eventlog.ports.postgres.dao.EventRepository
+import co.nilin.opex.eventlog.ports.postgres.model.EventModel
 import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
 import co.nilin.opex.matching.engine.core.eventh.events.OneOrderEvent
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
-import co.nilin.opex.eventlog.ports.postgres.dao.EventRepository
-import co.nilin.opex.eventlog.ports.postgres.model.EventModel
 import kotlinx.coroutines.reactive.awaitFirst
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime

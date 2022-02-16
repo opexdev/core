@@ -1,10 +1,10 @@
 package co.nilin.opex.matching.gateway.app.config
 
+import co.nilin.opex.matching.engine.core.model.OrderDirection
 import co.nilin.opex.matching.gateway.app.inout.PairConfig
 import co.nilin.opex.matching.gateway.app.inout.PairFeeConfig
 import co.nilin.opex.matching.gateway.app.spi.AccountantApiProxy
 import co.nilin.opex.matching.gateway.app.spi.PairConfigLoader
-import co.nilin.opex.matching.engine.core.model.OrderDirection
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

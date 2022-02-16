@@ -14,10 +14,6 @@
     <name>websocket-app</name>
     <description>Websocket app</description>
 
-    <properties>
-        <spring-cloud.version>2020.0.2</spring-cloud.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -74,6 +70,10 @@
         <dependency>
             <groupId>co.nilin.opex.websocket.ports.postgres</groupId>
             <artifactId>websocket-persister-postgres</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-vault-config</artifactId>
         </dependency>
         <dependency>
             <groupId>io.projectreactor</groupId>

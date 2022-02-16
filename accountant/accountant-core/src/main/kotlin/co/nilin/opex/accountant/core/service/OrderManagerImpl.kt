@@ -13,13 +13,13 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 open class OrderManagerImpl(
-    val pairConfigLoader: PairConfigLoader,
-    val financialActionPersister: FinancialActionPersister,
-    val financeActionLoader: FinancialActionLoader,
-    val orderPersister: OrderPersister,
-    val tempEventPersister: TempEventPersister,
-    val tempEventRepublisher: TempEventRepublisher,
-    val richOrderPublisher: RichOrderPublisher
+    private val pairConfigLoader: PairConfigLoader,
+    private val financialActionPersister: FinancialActionPersister,
+    private val financeActionLoader: FinancialActionLoader,
+    private val orderPersister: OrderPersister,
+    private val tempEventPersister: TempEventPersister,
+    private val tempEventRepublisher: TempEventRepublisher,
+    private val richOrderPublisher: RichOrderPublisher
 ) : OrderManager {
 
     @Transactional
@@ -106,9 +106,7 @@ open class OrderManagerImpl(
         return emptyList()
     }
 
-    private suspend fun publishRichOrder(
-        order: Order, remainedQuantity: BigDecimal, status: OrderStatus? = null
-    ) {
+    private suspend fun publishRichOrder(order: Order, remainedQuantity: BigDecimal, status: OrderStatus? = null) {
         richOrderPublisher.publish(
             RichOrder(
                 order.id,

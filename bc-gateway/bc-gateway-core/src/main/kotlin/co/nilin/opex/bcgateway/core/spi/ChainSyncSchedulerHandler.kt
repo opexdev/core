@@ -5,5 +5,5 @@ import java.time.LocalDateTime
 
 interface ChainSyncSchedulerHandler {
     suspend fun fetchActiveSchedules(time: LocalDateTime): List<ChainSyncSchedule>
-    suspend fun prepareScheduleForNextTry(syncSchedule: ChainSyncSchedule, success:Boolean)
+    suspend fun prepareScheduleForNextTry(syncSchedule: ChainSyncSchedule, success: Boolean)
 }

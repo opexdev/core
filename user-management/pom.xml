@@ -9,6 +9,11 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
+    <properties>
+        <spring.version>2.4.5</spring.version>
+        <spring-cloud.version>2020.0.3</spring-cloud.version>
+    </properties>
+
     <groupId>co.nilin.opex.auth</groupId>
     <artifactId>user-management</artifactId>
     <name>user-management</name>
@@ -25,4 +30,15 @@
             <artifactId>spring-boot-starter-test</artifactId>
         </dependency>
     </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>co.nilin.opex.utility.error</groupId>
+                <artifactId>error-handler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
 </project>

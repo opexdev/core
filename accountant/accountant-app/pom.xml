@@ -55,6 +55,10 @@
             <groupId>co.nilin.opex.utility.log</groupId>
             <artifactId>logging-handler</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-vault-config</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

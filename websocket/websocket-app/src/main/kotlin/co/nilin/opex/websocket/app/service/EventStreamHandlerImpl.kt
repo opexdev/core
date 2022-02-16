@@ -1,6 +1,7 @@
 package co.nilin.opex.websocket.app.service
 
 import co.nilin.opex.accountant.core.inout.RichOrder
+import co.nilin.opex.accountant.core.inout.RichOrderUpdate
 import co.nilin.opex.accountant.core.inout.RichTrade
 import co.nilin.opex.matching.engine.core.model.OrderDirection
 import co.nilin.opex.websocket.app.config.AppDispatchers
@@ -27,6 +28,7 @@ class EventStreamHandlerImpl(
 
     override fun handleOrder(order: RichOrder) {
         val response = OrderResponse(
+            order.ouid,
             order.pair,
             order.orderId ?: -1,
             -1,
@@ -39,14 +41,39 @@ class EventStreamHandlerImpl(
             order.constraint.toTimeInForce(),
             order.type.toWebsocketOrderType(),
             order.direction.toOrderSide(),
-            null,
-            null,
             Date(),
             Date(),
             order.status.toOrderStatus().isWorking(),
             order.quoteQuantity
         )
         run { template.convertAndSendToUser(order.uuid, EventDestinations.Order.path, response) }
+    }
+
+    override fun handleOrderUpdate(orderUpdate: RichOrderUpdate) {
+        run {
+            val status = orderUpdate.status.code.toOrderStatus()
+            val order = orderRepository.findByOuid(orderUpdate.ouid).awaitFirstOrNull() ?: return@run
+            val response = OrderResponse(
+                order.ouid,
+                order.symbol,
+                order.orderId ?: -1,
+                -1,
+                null,
+                order.price?.toBigDecimal() ?: BigDecimal.ZERO,
+                orderUpdate.quantity,
+                orderUpdate.executedQuantity(),
+                orderUpdate.accumulativeQuoteQuantity(),
+                status,
+                order.constraint?.toTimeInForce(),
+                order.type?.toWebsocketOrderType(),
+                order.direction?.toOrderSide(),
+                Date(),
+                Date(),
+                status.isWorking(),
+                order.quoteQuantity?.toBigDecimal() ?: BigDecimal.ZERO
+            )
+            template.convertAndSendToUser(order.uuid, EventDestinations.Order.path, response)
+        }
     }
 
     override fun handleTrade(trade: RichTrade) {

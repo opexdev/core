@@ -3,48 +3,22 @@ package co.nilin.opex.matching.engine.core.eventh.events
 import co.nilin.opex.matching.engine.core.model.MatchConstraint
 import co.nilin.opex.matching.engine.core.model.OrderDirection
 import co.nilin.opex.matching.engine.core.model.OrderType
+import co.nilin.opex.matching.engine.core.model.Pair
 
-class UpdatedOrderEvent() : CoreEvent(), OneOrderEvent {
-    var ouid: String = ""
-    var uuid: String = ""
-    var orderId: Long = 0
-    var oldPrice: Long = 0
-    var oldQuantity: Long = 0
-    var price: Long = 0
-    var quantity: Long = 0
-    var remainedQuantity: Long = 0
-    var direction: OrderDirection = OrderDirection.ASK
-    var matchConstraint: MatchConstraint = MatchConstraint.GTC
+class UpdatedOrderEvent(
+    var ouid: String = "",
+    var uuid: String = "",
+    var orderId: Long = 0,
+    pair: Pair,
+    var oldPrice: Long = 0,
+    var oldQuantity: Long = 0,
+    var price: Long = 0,
+    var quantity: Long = 0,
+    var remainedQuantity: Long = 0,
+    var direction: OrderDirection = OrderDirection.ASK,
+    var matchConstraint: MatchConstraint = MatchConstraint.GTC,
     var orderType: OrderType = OrderType.LIMIT_ORDER
-
-    constructor(
-        ouid: String,
-        uuid: String,
-        orderId: Long,
-        pair: co.nilin.opex.matching.engine.core.model.Pair,
-        oldPrice: Long,
-        oldQuantity: Long,
-        price: Long,
-        quantity: Long,
-        remainedQuantity: Long,
-        direction: OrderDirection,
-        matchConstraint: MatchConstraint,
-        orderType: OrderType
-    )
-            : this() {
-        this.ouid = ouid
-        this.uuid = uuid
-        this.orderId = orderId
-        this.pair = pair
-        this.oldPrice = oldPrice
-        this.oldQuantity = oldQuantity
-        this.price = price
-        this.quantity = quantity
-        this.remainedQuantity = remainedQuantity
-        this.direction = direction
-        this.matchConstraint = matchConstraint
-        this.orderType = orderType
-    }
+) : CoreEvent(pair), OneOrderEvent {
 
     override fun ouid(): String {
         return ouid

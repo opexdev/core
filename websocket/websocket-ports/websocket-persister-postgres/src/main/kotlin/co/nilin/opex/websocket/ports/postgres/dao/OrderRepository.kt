@@ -1,8 +1,8 @@
 package co.nilin.opex.websocket.ports.postgres.dao
 
 import co.nilin.opex.matching.engine.core.model.OrderDirection
-import co.nilin.opex.websocket.ports.postgres.model.OrderModel
 import co.nilin.opex.websocket.core.inout.AggregatedOrderPriceModel
+import co.nilin.opex.websocket.ports.postgres.model.OrderModel
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.query.Param
@@ -34,7 +34,15 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
         origClientOrderId: String
     ): Mono<OrderModel>
 
-    @Query("select * from orders where uuid = :uuid and (:symbol is null or symbol = :symbol) and status in (:statuses)")
+    @Query(
+        """
+        select * from orders
+        join order_status os on orders.ouid = os.ouid
+        where uuid = :uuid and (:symbol is null or symbol = :symbol) and status in (:statuses)
+        and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
+        and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
+    """
+    )
     fun findByUuidAndSymbolAndStatus(
         @Param("uuid")
         uuid: String,
@@ -63,8 +71,11 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
 
     @Query(
         """
-        select price, (sum(quantity) - sum(executed_qty)) as quantity from orders 
-        where symbol = :symbol and side = :direction and status in (:statuses) 
+        select price, (sum(quantity) - sum(os.executed_quantity)) as quantity from orders 
+        join order_status os on orders.ouid = os.ouid
+        where symbol = :symbol and side = :direction and os.status in (:statuses) 
+        and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
+        and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
         group by price 
         order by price asc 
         limit :limit
@@ -83,8 +94,11 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
 
     @Query(
         """
-        select price, (sum(quantity) - sum(executed_qty)) as quantity from orders 
+        select price, (sum(quantity) - sum(executed_quantity)) as quantity from orders 
+        join order_status os on orders.ouid = os.ouid
         where symbol = :symbol and side = :direction and status in (:statuses) 
+        and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
+        and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
         group by price 
         order by price desc
         limit :limit
