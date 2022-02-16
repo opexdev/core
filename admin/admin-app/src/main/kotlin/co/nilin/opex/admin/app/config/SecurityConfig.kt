@@ -21,6 +21,7 @@ class SecurityConfig(private val webClient: WebClient) {
         http.csrf().disable()
             .authorizeExchange()
             .pathMatchers("/auth/**").hasRealmRole("SCOPE_trust", "finance-admin")
+            .pathMatchers("/system/**").hasRealmRole("SCOPE_trust", "system-admin")
             .anyExchange().authenticated()
             .and()
             .oauth2ResourceServer()
