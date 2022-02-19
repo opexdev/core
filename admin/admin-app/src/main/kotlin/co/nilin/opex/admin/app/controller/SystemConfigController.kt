@@ -22,14 +22,4 @@ class SystemConfigController(private val service: SystemConfigService) {
 
     }
 
-    @PostMapping("/pair")
-    suspend fun addOrderBook() {
-
-    }
-
-    @PutMapping("/pair")
-    suspend fun editPair() {
-
-    }
-
 }

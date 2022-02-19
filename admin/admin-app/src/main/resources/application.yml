@@ -3,6 +3,10 @@ server:
 spring:
   application:
     name: opex-admin
+  kafka:
+    bootstrap-servers: 192.168.178.29:9092
+    consumer:
+      group-id: admin
   cloud:
     bootstrap:
       enabled: true
