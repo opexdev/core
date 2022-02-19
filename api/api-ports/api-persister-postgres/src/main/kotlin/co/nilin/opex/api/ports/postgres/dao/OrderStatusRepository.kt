@@ -16,7 +16,7 @@ interface OrderStatusRepository : ReactiveCrudRepository<OrderStatusModel, Long>
             where ouid = :ouid
             and appearance = (select max_app from max_appearance)
             order by executed_quantity desc
-            limit 1;
+            limit 1
         """
     )
     fun findMostRecentByOUID(ouid: String): Mono<OrderStatusModel>
