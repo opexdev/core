@@ -1,5 +1,9 @@
 package co.nilin.opex.accountant.app.config
 
+import co.nilin.opex.accountant.app.listener.AccountantEventListener
+import co.nilin.opex.accountant.app.listener.AccountantTempEventListener
+import co.nilin.opex.accountant.app.listener.AccountantTradeListener
+import co.nilin.opex.accountant.app.listener.OrderListener
 import co.nilin.opex.accountant.core.api.FinancialActionJobManager
 import co.nilin.opex.accountant.core.api.OrderManager
 import co.nilin.opex.accountant.core.api.TradeManager
@@ -7,17 +11,10 @@ import co.nilin.opex.accountant.core.service.FinancialActionJobManagerImpl
 import co.nilin.opex.accountant.core.service.OrderManagerImpl
 import co.nilin.opex.accountant.core.service.TradeManagerImpl
 import co.nilin.opex.accountant.core.spi.*
-import co.nilin.opex.matching.engine.core.eventh.events.*
 import co.nilin.opex.accountant.ports.kafka.listener.consumer.EventKafkaListener
 import co.nilin.opex.accountant.ports.kafka.listener.consumer.OrderKafkaListener
 import co.nilin.opex.accountant.ports.kafka.listener.consumer.TempEventKafkaListener
 import co.nilin.opex.accountant.ports.kafka.listener.consumer.TradeKafkaListener
-import co.nilin.opex.accountant.ports.kafka.listener.spi.EventListener
-import co.nilin.opex.accountant.ports.kafka.listener.spi.OrderSubmitRequestListener
-import co.nilin.opex.accountant.ports.kafka.listener.spi.TempEventListener
-import co.nilin.opex.accountant.ports.kafka.listener.spi.TradeListener
-import co.nilin.opex.accountant.ports.kafka.listener.inout.OrderSubmitRequest
-import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -70,6 +67,7 @@ class AppConfig {
         orderPersister: OrderPersister,
         tempEventPersister: TempEventPersister,
         richTradePublisher: RichTradePublisher,
+        richOrderPublisher: RichOrderPublisher,
         walletProxy: WalletProxy,
         @Value("\${app.coin}") platformCoin: String,
         @Value("\${app.address}") platformAddress: String
@@ -81,6 +79,7 @@ class AppConfig {
             orderPersister,
             tempEventPersister,
             richTradePublisher,
+            richOrderPublisher,
             walletProxy,
             platformCoin,
             platformAddress
@@ -98,9 +97,7 @@ class AppConfig {
     }
 
     @Bean
-    fun accountantEventListener(
-        orderManager: OrderManager
-    ): AccountantEventListener {
+    fun accountantEventListener(orderManager: OrderManager): AccountantEventListener {
         return AccountantEventListener(orderManager)
     }
 
@@ -141,98 +138,4 @@ class AppConfig {
         tempEventKafkaListener.addEventListener(accountantTempEventListener)
     }
 
-    class OrderListener(val orderManager: OrderManager) : OrderSubmitRequestListener {
-
-        override fun id(): String {
-            return "OrderListener"
-        }
-
-        override fun onOrder(order: OrderSubmitRequest, partition: Int, offset: Long, timestamp: Long) {
-            runBlocking(AppDispatchers.kafkaExecutor) {
-                orderManager.handleRequestOrder(
-                    SubmitOrderEvent(
-                        order.ouid,
-                        order.uuid,
-                        order.orderId,
-                        order.pair,
-                        order.price,
-                        order.quantity,
-                        order.quantity,
-                        order.direction,
-                        order.matchConstraint,
-                        order.orderType
-                    )
-                )
-            }
-        }
-    }
-
-    class AccountantTradeListener(val tradeManager: TradeManager) : TradeListener {
-
-        override fun id(): String {
-            return "TradeListener"
-        }
-
-        override fun onTrade(tradeEvent: TradeEvent, partition: Int, offset: Long, timestamp: Long) {
-            runBlocking(AppDispatchers.kafkaExecutor) {
-                tradeManager.handleTrade(tradeEvent)
-            }
-        }
-    }
-
-    class AccountantEventListener(
-        val orderManager: OrderManager
-    ) : EventListener {
-
-        override fun id(): String {
-            return "EventListener"
-        }
-
-        override fun onEvent(coreEvent: CoreEvent, partition: Int, offset: Long, timestamp: Long) {
-            runBlocking(AppDispatchers.kafkaExecutor) {
-                if (coreEvent is CreateOrderEvent)
-                    orderManager.handleNewOrder(coreEvent)
-                else if (coreEvent is RejectOrderEvent)
-                    orderManager.handleRejectOrder(coreEvent)
-                else if (coreEvent is UpdatedOrderEvent)
-                    orderManager.handleUpdateOrder(coreEvent)
-                else if (coreEvent is CancelOrderEvent)
-                    orderManager.handleCancelOrder(coreEvent)
-                else {
-                    println("Event is not accepted ${coreEvent::class.java}")
-                }
-            }
-            println("onEvent")
-        }
-    }
-
-    class AccountantTempEventListener(
-        val orderManager: OrderManager,
-        val tradeManager: TradeManager
-    ) : TempEventListener {
-
-        override fun id(): String {
-            return "TempEventListener"
-        }
-
-        override fun onEvent(coreEvent: CoreEvent, partition: Int, offset: Long, timestamp: Long) {
-            println("TempEvent " + coreEvent)
-            runBlocking(AppDispatchers.kafkaExecutor) {
-                if (coreEvent is CreateOrderEvent)
-                    orderManager.handleNewOrder(coreEvent)
-                else if (coreEvent is RejectOrderEvent)
-                    orderManager.handleRejectOrder(coreEvent)
-                else if (coreEvent is UpdatedOrderEvent)
-                    orderManager.handleUpdateOrder(coreEvent)
-                else if (coreEvent is CancelOrderEvent)
-                    orderManager.handleCancelOrder(coreEvent)
-                else if (coreEvent is TradeEvent)
-                    tradeManager.handleTrade(coreEvent)
-                else {
-                    throw IllegalArgumentException("Event is not accepted ${coreEvent::class.java}")
-                }
-            }
-            println("onEvent")
-        }
-    }
 }

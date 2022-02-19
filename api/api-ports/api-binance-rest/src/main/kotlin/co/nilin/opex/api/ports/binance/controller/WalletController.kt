@@ -39,7 +39,7 @@ class WalletController(
         @CurrentSecurityContext securityContext: SecurityContext
     ): AssignAddressResponse {
         val response = bcGatewayProxy.assignAddress(securityContext.jwtAuthentication().name, coin)
-        val address = if (response.addresses.isNotEmpty()) response.addresses[0] else null
+        val address = if (response?.addresses?.isNotEmpty() == true) response.addresses[0] else null
         return AssignAddressResponse(address?.address ?: "", coin, "", "")
     }
 

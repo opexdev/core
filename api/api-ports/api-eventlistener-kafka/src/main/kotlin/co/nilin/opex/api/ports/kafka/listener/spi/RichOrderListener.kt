@@ -1,8 +1,11 @@
 package co.nilin.opex.api.ports.kafka.listener.spi
 
-import co.nilin.opex.accountant.core.inout.RichOrder
+import co.nilin.opex.accountant.core.inout.RichOrderEvent
 
 interface RichOrderListener {
+
     fun id(): String
-    fun onOrder(order: RichOrder, partition: Int, offset: Long, timestamp: Long)
+
+    fun onOrder(order: RichOrderEvent, partition: Int, offset: Long, timestamp: Long)
+
 }

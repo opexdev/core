@@ -198,9 +198,15 @@
     }
   },
   "vault": {
-    "files-plaintext": {
-      "dir": "target/dependency/vault",
-      "enabled": "${keycloak.vault.files-plaintext.provider.enabled:false}"
+    "provider": "hachicorp-vault",
+    "default": {
+      "enabled": true
+    },
+    "hachicorp-vault": {
+      "url": "${keycloak.hashicorp.url}",
+      "appId": "${spring.application.name}",
+      "engine-name": "secret",
+      "enabled": "${keycloak.vault.files-plaintext.provider.enabled:true}"
     }
   },
   "saml-artifact-resolver": {

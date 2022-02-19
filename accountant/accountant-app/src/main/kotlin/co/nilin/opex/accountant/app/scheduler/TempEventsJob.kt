@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service
 @Service
 @Profile("scheduled")
 class TempEventsJob(
-    val tempEventPersister: TempEventPersister,
-    val tempEventRepublisher: TempEventRepublisher,
+    private val tempEventPersister: TempEventPersister,
+    private val tempEventRepublisher: TempEventRepublisher,
 ) {
 
     private val log = LoggerFactory.getLogger(TempEventsJob::class.java)

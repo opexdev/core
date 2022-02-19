@@ -15,10 +15,6 @@
     <name>accountant-wallet-proxy</name>
     <description>Opex wallet proxy</description>
 
-    <properties>
-        <spring-cloud.version>2020.0.2</spring-cloud.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
@@ -88,16 +84,4 @@
             <url>https://repo.spring.io/milestone</url>
         </repository>
     </repositories>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-dependencies</artifactId>
-                <version>${spring-cloud.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 </project>

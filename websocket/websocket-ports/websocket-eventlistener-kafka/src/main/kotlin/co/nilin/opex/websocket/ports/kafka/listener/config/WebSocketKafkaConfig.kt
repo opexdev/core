@@ -6,6 +6,7 @@ import co.nilin.opex.websocket.ports.kafka.listener.consumer.TradeKafkaListener
 import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
+import org.apache.kafka.common.config.TopicConfig
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,11 +16,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.support.GenericApplicationContext
+import org.springframework.kafka.config.TopicBuilder
 import org.springframework.kafka.core.*
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer
 import org.springframework.kafka.listener.ContainerProperties
 import org.springframework.kafka.support.serializer.JsonDeserializer
 import org.springframework.kafka.support.serializer.JsonSerializer
+import java.util.function.Supplier
 import java.util.regex.Pattern
 
 @Configuration
@@ -33,13 +36,13 @@ class WebSocketKafkaConfig {
 
     @Bean("websocketConsumerConfig")
     fun consumerConfigs(): Map<String, Any?>? {
-        val props: MutableMap<String, Any?> = HashMap()
-        props[ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG] = bootstrapServers
-        props[ConsumerConfig.GROUP_ID_CONFIG] = groupId
-        props[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java
-        props[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = JsonDeserializer::class.java
-        props[JsonDeserializer.TRUSTED_PACKAGES] = "co.nilin.opex.*"
-        return props
+        return mapOf(
+            ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
+            ConsumerConfig.GROUP_ID_CONFIG to groupId,
+            ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
+            ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JsonDeserializer::class.java,
+            JsonDeserializer.TRUSTED_PACKAGES to "co.nilin.opex.*",
+        )
     }
 
     @Bean("websocketConsumerFactory")
@@ -49,11 +52,12 @@ class WebSocketKafkaConfig {
 
     @Bean("websocketProducerConfig")
     fun producerConfigs(): Map<String, Any?> {
-        val props: MutableMap<String, Any?> = HashMap()
-        props[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = bootstrapServers
-        props[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java
-        props[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = JsonSerializer::class.java
-        return props
+        return mapOf(
+            ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
+            ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
+            ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JsonSerializer::class.java,
+            ProducerConfig.ACKS_CONFIG to "all"
+        )
     }
 
     @Bean("websocketProducerFactory")
@@ -68,28 +72,47 @@ class WebSocketKafkaConfig {
 
     @Autowired
     @ConditionalOnBean(TradeKafkaListener::class)
-    fun configureTradeListener(tradeListener: TradeKafkaListener, @Qualifier("websocketConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>) {
+    fun configureTradeListener(
+        tradeListener: TradeKafkaListener,
+        @Qualifier("websocketConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>
+    ) {
         val containerProps = ContainerProperties(Pattern.compile("richTrade"))
         containerProps.messageListener = tradeListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.beanName = "WebsocketTradeKafkaListenerContainer"
+        container.setBeanName("WebsocketTradeKafkaListenerContainer")
         container.start()
     }
 
     @Autowired
     @ConditionalOnBean(OrderKafkaListener::class)
-    fun configureOrderListener(orderListener: OrderKafkaListener, @Qualifier("websocketConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>) {
+    fun configureOrderListener(
+        orderListener: OrderKafkaListener,
+        @Qualifier("websocketConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>
+    ) {
         val containerProps = ContainerProperties(Pattern.compile("richOrder"))
         containerProps.messageListener = orderListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.beanName = "WebsocketOrderKafkaListenerContainer"
+        container.setBeanName("WebsocketOrderKafkaListenerContainer")
         container.start()
     }
 
     @Autowired
     fun createTopics(applicationContext: GenericApplicationContext) {
-        applicationContext.registerBean("topic_richOrder", NewTopic::class.java, "richOrder", 10, 1)
-        applicationContext.registerBean("topic_richTrade", NewTopic::class.java, "richTrade", 10, 1)
+        applicationContext.registerBean("topic_richOrder", NewTopic::class.java, Supplier {
+            TopicBuilder.name("richOrder")
+                .partitions(10)
+                .replicas(3)
+                .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
+                .build()
+        })
+
+        applicationContext.registerBean("topic_richTrade", NewTopic::class.java, Supplier {
+            TopicBuilder.name("richTrade")
+                .partitions(10)
+                .replicas(3)
+                .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
+                .build()
+        })
     }
 
 

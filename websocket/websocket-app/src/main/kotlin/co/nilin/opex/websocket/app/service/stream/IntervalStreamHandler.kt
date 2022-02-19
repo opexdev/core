@@ -73,7 +73,7 @@ abstract class IntervalStreamHandler<T>(
             val count = userRegistry.findSubscriptions { it.destination == getPath(j.key) }.count()
             val sJob = streamJobs[j.key]
             if (count == 0) {
-                if (sJob?.isRunAllowed == true){
+                if (sJob?.isRunAllowed == true) {
                     logger.info("No subscriber for ${j.key}. stopping task")
                     sJob.isRunAllowed = false
                 }

@@ -19,6 +19,13 @@ target/
 *.iml
 *.ipr
 
+### Other files ###
+.env
+docker-compose.local.yml
+application-local.yml
+mvnw
+mvnw.cmd
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/

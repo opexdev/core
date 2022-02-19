@@ -2,6 +2,7 @@ package co.nilin.opex.matching.engine.app.bl
 
 import co.nilin.opex.matching.engine.core.factory.OrderBookFactory
 import co.nilin.opex.matching.engine.core.model.OrderBook
+import co.nilin.opex.matching.engine.core.model.Pair
 import co.nilin.opex.matching.engine.core.model.PersistentOrderBook
 
 object OrderBooks {
@@ -12,7 +13,7 @@ object OrderBooks {
         if (orderBooks.containsKey(pair))
             throw IllegalArgumentException("${pair} has an order book right now!")
         val pairs = pair.split("_")
-        orderBooks[pair] = OrderBookFactory.createOrderBook(co.nilin.opex.matching.engine.core.model.Pair(pairs[0], pairs[1]))
+        orderBooks[pair] = OrderBookFactory.createOrderBook(Pair(pairs[0], pairs[1]))
         println("order book:" + pair + " added, current order books#" + orderBooks.size)
     }
 

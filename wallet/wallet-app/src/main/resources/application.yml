@@ -1,31 +1,48 @@
-server.port: 8091
+server.port: 8080
 spring:
   application:
     name: opex-wallet
   main:
     allow-bean-definition-overriding: false
+    allow-circular-references: true
   kafka:
-    bootstrap-servers: localhost:2181
+    bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
     consumer:
       group-id: wallet
   redis:
-    host: 127.0.0.1
+    host: ${REDIS_HOST:localhost}
     port: 6379
   r2dbc:
-    url: r2dbc:postgresql://localhost/opex_wallet
-    username: opex
-    password: hiopex
+    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex_wallet
+    username: ${dbusername:opex}
+    password: ${dbpassword:hiopex}
     initialization-mode: always
   cloud:
     bootstrap:
       enabled: true
+    vault:
+      host: ${VAULT_HOST}
+      port: 8200
+      scheme: http
+      authentication: APPID
+      app-id:
+        user-id: co.nilin.opex.util.vault.VaultUserIdMechanism
+      fail-fast: true
+      kv:
+        enabled: true
+        backend: secret
+        profile-separator: '/'
+        application-name: ${spring.application.name}
     consul:
+      host: ${CONSUL_HOST:localhost}
       port: 8500
       discovery:
         #healthCheckPath: ${management.context-path}/health
         instance-id: ${spring.application.name}:${server.port}
         healthCheckInterval: 20s
         prefer-ip-address: true
+  config:
+    import: vault://secret/${spring.application.name}
 app:
   gift:
     symbol: usdt
