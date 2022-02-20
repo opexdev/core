@@ -43,9 +43,22 @@
   "roles": {
     "realm": [
       {
+        "id": "fa6b43a1-c4eb-41d9-8f6f-b7fbc3ce6579",
+        "name": "system-admin",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "opex",
+        "attributes": {}
+      },
+      {
         "id": "fe152bae-77c5-485c-be97-a5f490b3b837",
         "name": "finance-admin",
-        "composite": false,
+        "composite": true,
+        "composites": {
+          "realm": [
+            "impersonation"
+          ]
+        },
         "clientRole": false,
         "containerId": "opex",
         "attributes": {}
@@ -407,6 +420,15 @@
   },
   "groups": [
     {
+      "id": "700a0042-6146-42fc-a97a-f0f63f913301",
+      "name": "admins",
+      "path": "/admins",
+      "attributes": {},
+      "realmRoles": [],
+      "clientRoles": {},
+      "subGroups": []
+    },
+    {
       "id": "efb76f91-62a0-409d-afea-c76a9766c6f9",
       "name": "finance-admin",
       "path": "/finance-admin",
@@ -599,15 +621,26 @@
     {
       "client": "admin-cli",
       "roles": [
+        "system-admin",
         "finance-admin"
       ]
     },
     {
       "client": "opex-admin",
       "roles": [
+        "system-admin",
+        "impersonation",
+        "finance-admin",
         "offline_access",
         "uma_authorization",
         "user"
+      ]
+    },
+    {
+      "client": "web-app",
+      "roles": [
+        "system-admin",
+        "finance-admin"
       ]
     },
     {
@@ -2507,7 +2540,23 @@
       "attributes": {
         "include.in.token.scope": "true",
         "display.on.consent.screen": "true"
-      }
+      },
+      "protocolMappers": [
+        {
+          "id": "2bafcd16-ff19-4f72-adb4-c1735793842d",
+          "name": "User roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "roles",
+            "multivalued": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
     }
   ],
   "defaultDefaultClientScopes": [
