@@ -8,5 +8,5 @@ import org.springframework.data.relational.core.mapping.Table
 @Table("currency")
 class CurrencyModel(
     @Id @Column("symbol") val symbol: String,
-    @Column("name") val name: String
+    @Column("name") var name: String
 )

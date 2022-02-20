@@ -9,9 +9,11 @@ import co.nilin.opex.bcgateway.ports.postgres.model.CurrencyImplementationModel
 import co.nilin.opex.bcgateway.ports.postgres.model.CurrencyModel
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
-import kotlinx.coroutines.reactive.awaitSingleOrNull
+import kotlinx.coroutines.reactor.awaitSingleOrNull
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
@@ -20,6 +22,32 @@ class CurrencyLoaderImpl(
     private val currencyRepository: CurrencyRepository,
     private val currencyImplementationRepository: CurrencyImplementationRepository
 ) : CurrencyLoader {
+
+    private val logger = LoggerFactory.getLogger(CurrencyLoader::class.java)
+
+    override suspend fun addCurrency(name: String, symbol: String) {
+        try {
+            currencyRepository.insert(name, symbol).awaitSingleOrNull()
+        } catch (e: Exception) {
+            logger.error("Could not insert new currency $name", e)
+        }
+    }
+
+    override suspend fun editCurrency(name: String, symbol: String) {
+        val currency = currencyRepository.findBySymbol(symbol).awaitFirstOrNull()
+        if (currency != null) {
+            currency.name = name
+            currencyRepository.save(currency).awaitFirst()
+        }
+    }
+
+    override suspend fun deleteCurrency(name: String) {
+        try {
+            currencyRepository.deleteByName(name).awaitFirstOrNull()
+        } catch (e: Exception) {
+            logger.error("Could not delete currency $name", e)
+        }
+    }
 
     override suspend fun fetchCurrencyInfo(symbol: String): CurrencyInfo {
         val symbolUpperCase = symbol.toUpperCase()

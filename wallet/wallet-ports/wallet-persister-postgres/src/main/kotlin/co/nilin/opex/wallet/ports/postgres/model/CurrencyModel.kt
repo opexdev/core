@@ -10,9 +10,10 @@ import org.springframework.data.relational.core.mapping.Table
 @Table("currency")
 data class CurrencyModel(
     @JsonIgnore @Id @Column("name") val name_: String,
-    @JsonIgnore @Column("symbol") val symbol_: String,
-    @JsonIgnore @Column("precision") val precision_: Int
+    @JsonIgnore @Column("symbol") var symbol_: String,
+    @JsonIgnore @Column("precision") var precision_: Double
 ) : Currency {
+
     override fun getSymbol(): String {
         return symbol_
     }
@@ -21,7 +22,7 @@ data class CurrencyModel(
         return name_
     }
 
-    override fun getPrecision(): Int {
+    override fun getPrecision(): Double {
         return precision_
     }
 }

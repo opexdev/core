@@ -10,6 +10,9 @@ import co.nilin.opex.bcgateway.core.service.ChainSyncServiceImpl
 import co.nilin.opex.bcgateway.core.service.InfoServiceImpl
 import co.nilin.opex.bcgateway.core.service.WalletSyncServiceImpl
 import co.nilin.opex.bcgateway.core.spi.*
+import co.nilin.opex.bcgateway.ports.kafka.listener.consumer.AdminEventKafkaListener
+import co.nilin.opex.bcgateway.ports.kafka.listener.spi.AdminEventListener
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.transaction.reactive.TransactionalOperator
@@ -69,5 +72,13 @@ class AppConfig {
     @Bean
     fun infoService(): InfoService {
         return InfoServiceImpl()
+    }
+
+    @Autowired
+    fun configureEventListeners(
+        adminKafkaEventListener: AdminEventKafkaListener,
+        adminEventListener: AdminEventListener,
+    ) {
+        adminKafkaEventListener.addEventListener(adminEventListener)
     }
 }

@@ -1,8 +1,10 @@
 package co.nilin.opex.wallet.app.config
 
 import co.nilin.opex.wallet.app.service.UserRegistrationService
+import co.nilin.opex.wallet.ports.kafka.listener.consumer.AdminEventKafkaListener
 import co.nilin.opex.wallet.ports.kafka.listener.consumer.UserCreatedKafkaListener
 import co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent
+import co.nilin.opex.wallet.ports.kafka.listener.spi.AdminEventListener
 import co.nilin.opex.wallet.ports.kafka.listener.spi.UserCreatedEventListener
 import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Autowired
@@ -20,13 +22,15 @@ class AppConfig {
     @Value("\${app.gift.amount}")
     val amount: BigDecimal? = null
 
-
     @Autowired
-    fun configureUserCreatedEventListener(
+    fun configureEventListeners(
         useCreatedKafkaListener: UserCreatedKafkaListener,
-        userCreatedEventListener: UserCreatedEventListener
+        userCreatedEventListener: UserCreatedEventListener,
+        adminKafkaEventListener: AdminEventKafkaListener,
+        adminEventListener: AdminEventListener,
     ) {
         useCreatedKafkaListener.addEventListener(userCreatedEventListener)
+        adminKafkaEventListener.addEventListener(adminEventListener)
     }
 
     @Component

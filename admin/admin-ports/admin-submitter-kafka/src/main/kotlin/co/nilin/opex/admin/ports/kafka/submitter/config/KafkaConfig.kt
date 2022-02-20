@@ -29,7 +29,7 @@ class KafkaConfig {
             ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
             ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JsonSerializer::class.java,
             ProducerConfig.ACKS_CONFIG to "all",
-            JsonSerializer.TYPE_MAPPINGS to "admin_add_currency:co.nilin.opex.admin.core.events.AddCurrencyEvent"
+            JsonSerializer.TYPE_MAPPINGS to "admin_add_currency:co.nilin.opex.admin.core.events.AddCurrencyEvent,admin_edit_currency:co.nilin.opex.admin.core.events.EditCurrencyEvent,admin_delete_currency:co.nilin.opex.admin.core.events.DeleteCurrencyEvent"
         )
     }
 

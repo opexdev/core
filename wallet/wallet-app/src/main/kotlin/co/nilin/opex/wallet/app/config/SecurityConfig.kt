@@ -1,13 +1,10 @@
 package co.nilin.opex.wallet.app.config
 
-import co.nilin.opex.wallet.app.utils.hasRealmRole
-import net.minidev.json.JSONArray
+import co.nilin.opex.wallet.app.utils.hasRole
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
-import org.springframework.security.authorization.AuthorizationDecision
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.ServerHttpSecurity
-import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder
 import org.springframework.security.web.server.SecurityWebFilterChain
@@ -29,7 +26,7 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/withdraw").hasAuthority("SCOPE_trust")
             .pathMatchers("/withdraw/**").hasAuthority("SCOPE_trust")
             .pathMatchers("/transaction/**").hasAuthority("SCOPE_trust")
-            .pathMatchers("/admin/**").hasRealmRole("SCOPE_trust","finance-admin")
+            .pathMatchers("/admin/**").hasRole("SCOPE_trust","finance-admin")
             .pathMatchers("/payment/internal/**").permitAll()
             .pathMatchers("/**").permitAll()
             .anyExchange().authenticated()
