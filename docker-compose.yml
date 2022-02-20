@@ -87,8 +87,8 @@ services:
       - PANEL_PASS=${PANEL_PASS}
       - BACKEND_USER=${BACKEND_USER}
       - SMTP_PASS=${SMTP_PASS}
-      - DB_USER=${DB_USER}
-      - DB_PASS=${DB_PASS}
+      - DB_USER=${DB_USER:-opex}
+      - DB_PASS=${DB_PASS:-hiopex}
     healthcheck:
       retries: 5
     cap_add:
@@ -124,8 +124,8 @@ services:
   postgres-accountant:
     image: postgres:14-alpine
     environment:
-      - POSTGRES_USER=opex
-      - POSTGRES_PASSWORD=hiopex
+      - POSTGRES_USER=${DB_USER:-opex}
+      - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
       - POSTGRES_DB=opex_accountant
     volumes:
       - $DATA/accountant-data:/var/lib/postgresql/data/
@@ -149,8 +149,8 @@ services:
   postgres-eventlog:
     image: postgres:14-alpine
     environment:
-      - POSTGRES_USER=opex
-      - POSTGRES_PASSWORD=hiopex
+      - POSTGRES_USER=${DB_USER:-opex}
+      - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
       - POSTGRES_DB=opex_eventlog
     volumes:
       - $DATA/eventlog-data:/var/lib/postgresql/data/
@@ -159,8 +159,8 @@ services:
   postgres-auth:
     image: postgres:14-alpine
     environment:
-      - POSTGRES_USER=opex
-      - POSTGRES_PASSWORD=hiopex
+      - POSTGRES_USER=${DB_USER:-opex}
+      - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
       - POSTGRES_DB=opex_auth
     volumes:
       - $DATA/auth-data:/var/lib/postgresql/data/
@@ -172,8 +172,8 @@ services:
   postgres-wallet:
     image: postgres:14-alpine
     environment:
-      - POSTGRES_USER=opex
-      - POSTGRES_PASSWORD=hiopex
+      - POSTGRES_USER=${DB_USER:-opex}
+      - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
       - POSTGRES_DB=opex_wallet
     volumes:
       - $DATA/wallet-data:/var/lib/postgresql/data/
@@ -185,8 +185,8 @@ services:
   postgres-api:
     image: postgres:14-alpine
     environment:
-      - POSTGRES_USER=opex
-      - POSTGRES_PASSWORD=hiopex
+      - POSTGRES_USER=${DB_USER:-opex}
+      - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
       - POSTGRES_DB=opex_api
     volumes:
       - $DATA/api-data:/var/lib/postgresql/data/
@@ -198,8 +198,8 @@ services:
   postgres-bc-gateway:
     image: postgres:14-alpine
     environment:
-      - POSTGRES_USER=opex
-      - POSTGRES_PASSWORD=hiopex
+      - POSTGRES_USER=${DB_USER:-opex}
+      - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
       - POSTGRES_DB=opex_bc_gateway
     volumes:
       - $DATA/bc-gateway-data:/var/lib/postgresql/data/
