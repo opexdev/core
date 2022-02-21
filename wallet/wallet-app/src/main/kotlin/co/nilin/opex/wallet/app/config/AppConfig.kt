@@ -33,21 +33,5 @@ class AppConfig {
         adminKafkaEventListener.addEventListener(adminEventListener)
     }
 
-    @Component
-    class WalletUserCreatedEventListener(
-        val userRegistrationService: UserRegistrationService
-    ) : UserCreatedEventListener {
 
-        override fun id(): String {
-            return "UserCreatedEventListener"
-        }
-
-        override fun onEvent(event: UserCreatedEvent, partition: Int, offset: Long, timestamp: Long) {
-            println("UserCreatedEvent " + event)
-            runBlocking(AppDispatchers.kafkaExecutor) {
-                userRegistrationService.registerNewUser(event)
-            }
-            println("onUserCreatedEvent")
-        }
-    }
 }

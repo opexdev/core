@@ -20,8 +20,9 @@ spring:
 app:
   auth:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
+    token-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/token
     keycloak:
-      url: http://auth:8083/auth
+      url: http://auth:8080/auth
       realm: opex
       client-id: opex-admin
       client-secret: secret
