@@ -20,6 +20,8 @@ pipeline {
                 SMTP_PASS = credentials("smtp-secret-dev")
                 DB_USER = 'opex'
                 DB_PASS = credentials("db-secret-dev")
+                DB_BACKUP_USER = 'opex_backup'
+                DB_BACKUP_PASSWORD = credentials("db-backup-secret-dev")
                 KEYCLOAK_ADMIN_URL = 'https://demo.opex.dev:8443/auth'
                 KEYCLOAK_FRONTEND_URL = 'https://demo.opex.dev:8443/auth'
                 COMPOSE_PROJECT_NAME = 'dev-core'
