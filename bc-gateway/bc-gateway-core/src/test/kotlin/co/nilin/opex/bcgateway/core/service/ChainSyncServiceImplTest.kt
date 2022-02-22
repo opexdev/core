@@ -29,7 +29,7 @@ internal class ChainSyncServiceImplTest {
     lateinit var chainSyncSchedulerHandler: ChainSyncSchedulerHandler
 
     @Mock
-    lateinit var chainEndpointProxyFinder: ChainEndpointProxyFinder
+    lateinit var chainEndpointHandler: ChainEndpointHandler
 
     @Mock
     lateinit var chainSyncRecordHandler: ChainSyncRecordHandler
@@ -41,25 +41,25 @@ internal class ChainSyncServiceImplTest {
     lateinit var chainSyncRetryHandler: ChainSyncRetryHandler
 
     @Mock
-    lateinit var currencyLoader: CurrencyLoader
+    lateinit var currencyHandler: CurrencyHandler
 
     private val endpointProxy: ChainEndpointProxy = mock()
 
     init {
         MockitoAnnotations.openMocks(this)
         runBlocking {
-            Mockito.`when`(chainEndpointProxyFinder.findChainEndpointProxy(ethChain))
+            Mockito.`when`(chainEndpointHandler.findChainEndpointProxy(ethChain))
                 .thenReturn(endpointProxy)
-            Mockito.`when`(currencyLoader.findImplementationsWithTokenOnChain(ethChain)).thenReturn(emptyList())
+            Mockito.`when`(currencyHandler.findImplementationsWithTokenOnChain(ethChain)).thenReturn(emptyList())
         }
 
         syncService = object : ChainSyncServiceImpl(
             chainSyncSchedulerHandler,
-            chainEndpointProxyFinder,
+            chainEndpointHandler,
             chainSyncRecordHandler,
             walletSyncRecordHandler,
             chainSyncRetryHandler,
-            currencyLoader,
+            currencyHandler,
             OPERATOR,
             Executors.newFixedThreadPool(2).asCoroutineDispatcher()
         ) {
@@ -78,10 +78,10 @@ internal class ChainSyncServiceImplTest {
 
             //then
             verifyNoMoreInteractions(
-                chainEndpointProxyFinder,
+                chainEndpointHandler,
                 chainSyncRecordHandler,
                 walletSyncRecordHandler,
-                currencyLoader
+                currencyHandler
             )
         }
     }

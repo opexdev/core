@@ -1,12 +1,15 @@
 package co.nilin.opex.bcgateway.ports.postgres.impl
 
 import co.nilin.opex.bcgateway.core.model.*
-import co.nilin.opex.bcgateway.core.spi.CurrencyLoader
+import co.nilin.opex.bcgateway.core.model.Currency
+import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
 import co.nilin.opex.bcgateway.ports.postgres.dao.ChainRepository
 import co.nilin.opex.bcgateway.ports.postgres.dao.CurrencyImplementationRepository
 import co.nilin.opex.bcgateway.ports.postgres.dao.CurrencyRepository
 import co.nilin.opex.bcgateway.ports.postgres.model.CurrencyImplementationModel
 import co.nilin.opex.bcgateway.ports.postgres.model.CurrencyModel
+import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
@@ -15,19 +18,20 @@ import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
+import java.util.*
 
 @Component
-class CurrencyLoaderImpl(
+class CurrencyHandlerImpl(
     private val chainRepository: ChainRepository,
     private val currencyRepository: CurrencyRepository,
     private val currencyImplementationRepository: CurrencyImplementationRepository
-) : CurrencyLoader {
+) : CurrencyHandler {
 
-    private val logger = LoggerFactory.getLogger(CurrencyLoader::class.java)
+    private val logger = LoggerFactory.getLogger(CurrencyHandler::class.java)
 
     override suspend fun addCurrency(name: String, symbol: String) {
         try {
-            currencyRepository.insert(name, symbol).awaitSingleOrNull()
+            currencyRepository.insert(name, symbol.uppercase()).awaitSingleOrNull()
         } catch (e: Exception) {
             logger.error("Could not insert new currency $name", e)
         }
@@ -49,8 +53,48 @@ class CurrencyLoaderImpl(
         }
     }
 
+    override suspend fun addCurrencyImplementation(
+        symbol: String,
+        chain: String,
+        tokenName: String?,
+        tokenAddress: String?,
+        isToken: Boolean,
+        withdrawFee: Double,
+        minimumWithdraw: Double,
+        isWithdrawEnabled: Boolean,
+        decimal: Int
+    ): CurrencyImplementation {
+        val chainModel = chainRepository.findByName(chain.lowercase()).awaitFirstOrNull()
+            ?: throw OpexException(OpexError.ChainNotFound)
+
+        currencyImplementationRepository.findBySymbolAndChain(symbol.uppercase(), chain).awaitFirstOrNull()
+            ?: throw OpexException(OpexError.DuplicateAsset)
+
+        val currency = currencyRepository.findBySymbol(symbol.uppercase()).awaitFirstOrNull()
+            ?: throw OpexException(OpexError.CurrencyNotFoundBC)
+
+        val model = currencyImplementationRepository.save(
+            CurrencyImplementationModel(
+                null,
+                symbol.uppercase(Locale.getDefault()),
+                chainModel.name,
+                isToken,
+                tokenAddress,
+                tokenName,
+                isWithdrawEnabled,
+                withdrawFee.toBigDecimal(),
+                minimumWithdraw.toBigDecimal(),
+                decimal
+            )
+        ).awaitFirst()
+
+        logger.info("Add currency implementation: ${model.symbol} - ${model.chain}")
+
+        return projectCurrencyImplementation(model, currency)
+    }
+
     override suspend fun fetchCurrencyInfo(symbol: String): CurrencyInfo {
-        val symbolUpperCase = symbol.toUpperCase()
+        val symbolUpperCase = symbol.uppercase()
         val currencyModel = currencyRepository.findBySymbol(symbolUpperCase).awaitSingleOrNull()
         if (currencyModel === null) {
             return CurrencyInfo(Currency("", symbolUpperCase), emptyList())

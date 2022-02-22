@@ -3,13 +3,25 @@ package co.nilin.opex.bcgateway.core.spi
 import co.nilin.opex.bcgateway.core.model.CurrencyImplementation
 import co.nilin.opex.bcgateway.core.model.CurrencyInfo
 
-interface CurrencyLoader {
+interface CurrencyHandler {
 
     suspend fun addCurrency(name: String, symbol: String)
 
     suspend fun editCurrency(name: String, symbol: String)
 
     suspend fun deleteCurrency(name: String)
+
+    suspend fun addCurrencyImplementation(
+        symbol: String,
+        chain: String,
+        tokenName: String?,
+        tokenAddress: String?,
+        isToken: Boolean,
+        withdrawFee: Double,
+        minimumWithdraw: Double,
+        isWithdrawEnabled: Boolean,
+        decimal: Int
+    ): CurrencyImplementation
 
     suspend fun fetchCurrencyInfo(symbol: String): CurrencyInfo
 

@@ -1,5 +1,8 @@
 package co.nilin.opex.bcgateway.core.spi
 
-interface ChainEndpointProxyFinder {
+interface ChainEndpointHandler {
+
+    suspend fun addEndpoint(chainName: String, endpoint: String)
+
     suspend fun findChainEndpointProxy(chainName: String): ChainEndpointProxy
 }

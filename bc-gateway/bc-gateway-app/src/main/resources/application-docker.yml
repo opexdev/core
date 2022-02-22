@@ -1,4 +1,4 @@
-server.port: 8095
+server.port: 8080
 spring:
   application:
     name: opex-bc-gateway
@@ -16,4 +16,3 @@ spring:
     consul:
       host: ${CONSUL_HOST}
       port: 8500
-

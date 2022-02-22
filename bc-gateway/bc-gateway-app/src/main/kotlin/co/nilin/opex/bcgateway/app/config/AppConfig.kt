@@ -22,30 +22,30 @@ class AppConfig {
 
     @Bean
     fun assignAddressService(
-        currencyLoader: CurrencyLoader,
+        currencyHandler: CurrencyHandler,
         assignedAddressHandler: AssignedAddressHandler,
         reservedAddressHandler: ReservedAddressHandler
     ): AssignAddressService {
-        return AssignAddressServiceImpl(currencyLoader, assignedAddressHandler, reservedAddressHandler)
+        return AssignAddressServiceImpl(currencyHandler, assignedAddressHandler, reservedAddressHandler)
     }
 
     @Bean
     fun chainSyncService(
         chainSyncSchedulerHandler: ChainSyncSchedulerHandler,
-        chainEndpointProxyFinder: ChainEndpointProxyFinder,
+        chainEndpointHandler: ChainEndpointHandler,
         chainSyncRecordHandler: ChainSyncRecordHandler,
         walletSyncRecordHandler: WalletSyncRecordHandler,
         chainSyncRetryHandler: ChainSyncRetryHandler,
-        currencyLoader: CurrencyLoader,
+        currencyHandler: CurrencyHandler,
         operator: TransactionalOperator
     ): ChainSyncService {
         return ChainSyncServiceImpl(
             chainSyncSchedulerHandler,
-            chainEndpointProxyFinder,
+            chainEndpointHandler,
             chainSyncRecordHandler,
             walletSyncRecordHandler,
             chainSyncRetryHandler,
-            currencyLoader,
+            currencyHandler,
             operator,
             AppDispatchers.chainSyncExecutor
         )
@@ -57,14 +57,14 @@ class AppConfig {
         walletProxy: WalletProxy,
         walletSyncRecordHandler: WalletSyncRecordHandler,
         assignedAddressHandler: AssignedAddressHandler,
-        currencyLoader: CurrencyLoader
+        currencyHandler: CurrencyHandler
     ): WalletSyncService {
         return WalletSyncServiceImpl(
             syncSchedulerHandler,
             walletProxy,
             walletSyncRecordHandler,
             assignedAddressHandler,
-            currencyLoader,
+            currencyHandler,
             AppDispatchers.walletSyncExecutor
         )
     }
