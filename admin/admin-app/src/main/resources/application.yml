@@ -23,4 +23,4 @@ app:
       url: http://auth:8080/auth
       realm: opex
       client-id: opex-admin
-      client-secret: ${KEYCLOAK_CLIENT_SECRET:secret}
+      client-secret: ${keycloak_client_secret:secret}

@@ -24,6 +24,8 @@ pipeline {
                 DB_BACKUP_PASSWORD = credentials("db-backup-secret-dev")
                 KEYCLOAK_ADMIN_URL = 'https://demo.opex.dev:8443/auth'
                 KEYCLOAK_FRONTEND_URL = 'https://demo.opex.dev:8443/auth'
+                ADMIN_USERNAME = credentials("keycloak-admin-username-dev")
+                ADMIN_PASSWORD = credentials("keycloak-admin-password-dev")
                 COMPOSE_PROJECT_NAME = 'dev-core'
                 DEFAULT_NETWORK_NAME = 'dev-opex'
             }
