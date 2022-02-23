@@ -17,6 +17,7 @@
 
     <properties>
         <spring.version>2.5.5</spring.version>
+        <spring-cloud.version>2020.0.3</spring-cloud.version>
     </properties>
 
     <modules>
