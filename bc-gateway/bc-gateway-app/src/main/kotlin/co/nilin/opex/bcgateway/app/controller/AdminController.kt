@@ -4,17 +4,29 @@ import co.nilin.opex.bcgateway.app.dto.AddChainRequest
 import co.nilin.opex.bcgateway.app.dto.AddressTypeRequest
 import co.nilin.opex.bcgateway.app.dto.TokenRequest
 import co.nilin.opex.bcgateway.app.service.AdminService
+import co.nilin.opex.bcgateway.core.model.AddressType
+import co.nilin.opex.bcgateway.core.model.Chain
 import co.nilin.opex.bcgateway.core.model.CurrencyImplementation
+import co.nilin.opex.bcgateway.core.spi.AddressTypeHandler
+import co.nilin.opex.bcgateway.core.spi.ChainLoader
+import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/admin")
-class AdminController(private val service: AdminService) {
+class AdminController(
+    private val service: AdminService,
+    private val chainLoader: ChainLoader,
+    private val currencyHandler: CurrencyHandler,
+    private val addressTypeHandler: AddressTypeHandler
+) {
+
+    @GetMapping("/chain")
+    suspend fun getChains(): List<Chain> {
+        return chainLoader.fetchAllChains()
+    }
 
     @PostMapping("/chain")
     suspend fun addChain(@RequestBody body: AddChainRequest) {
@@ -23,11 +35,21 @@ class AdminController(private val service: AdminService) {
         service.addChain(body)
     }
 
+    @GetMapping("/address/type")
+    suspend fun getAddressTypes(): List<AddressType> {
+        return addressTypeHandler.fetchAll()
+    }
+
     @PostMapping("/address/type")
     suspend fun addAddressType(@RequestBody body: AddressTypeRequest) {
         if (body.name.isNullOrEmpty() || body.addressRegex.isNullOrEmpty())
             throw OpexException(OpexError.InvalidRequestBody)
         service.addAddressType(body.name, body.addressRegex, body.memoRegex)
+    }
+
+    @GetMapping("/token")
+    suspend fun getCurrencyImplementation(): List<CurrencyImplementation> {
+        return currencyHandler.fetchAllImplementations()
     }
 
     @PostMapping("/token")
@@ -40,6 +62,15 @@ class AdminController(private val service: AdminService) {
         }
 
         return service.addToken(body)
+    }
+
+    @PutMapping("/token/{symbol}_{chain}/withdraw")
+    suspend fun changeWithdrawStatus(
+        @PathVariable symbol: String,
+        @PathVariable chain: String,
+        @RequestParam("enabled") status: Boolean
+    ) {
+        service.changeTokenWithdrawStatus(symbol, chain, status)
     }
 
 }

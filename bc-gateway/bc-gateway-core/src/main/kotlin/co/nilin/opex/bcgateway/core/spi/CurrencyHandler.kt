@@ -23,10 +23,14 @@ interface CurrencyHandler {
         decimal: Int
     ): CurrencyImplementation
 
+    suspend fun fetchAllImplementations(): List<CurrencyImplementation>
+
     suspend fun fetchCurrencyInfo(symbol: String): CurrencyInfo
 
     suspend fun findByChainAndTokenAddress(chain: String, address: String?): CurrencyImplementation?
 
     suspend fun findImplementationsWithTokenOnChain(chain: String): List<CurrencyImplementation>
+
+    suspend fun changeWithdrawStatus(symbol: String, chain: String, status: Boolean)
 
 }

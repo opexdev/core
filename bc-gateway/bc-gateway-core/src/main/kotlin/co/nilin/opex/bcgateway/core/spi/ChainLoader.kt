@@ -6,5 +6,7 @@ interface ChainLoader {
 
     suspend fun addChain(name: String, addressType:String):Chain
 
+    suspend fun fetchAllChains():List<Chain>
+
     suspend fun fetchChainInfo(chain: String): Chain
 }

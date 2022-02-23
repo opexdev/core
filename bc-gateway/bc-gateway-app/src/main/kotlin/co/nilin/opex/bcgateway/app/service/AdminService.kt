@@ -56,4 +56,8 @@ class AdminService(
         }
     }
 
+    suspend fun changeTokenWithdrawStatus(symbol: String,chain: String, status: Boolean) {
+        currencyHandler.changeWithdrawStatus(symbol, chain, status)
+    }
+
 }

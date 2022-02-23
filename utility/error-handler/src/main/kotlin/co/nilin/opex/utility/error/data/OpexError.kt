@@ -46,7 +46,8 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     DuplicateToken(8002, "Asset already exists", HttpStatus.BAD_REQUEST),
     ChainNotFound(8003, "Chain not found", HttpStatus.NOT_FOUND),
     CurrencyNotFoundBC(8004, "Currency not found", HttpStatus.NOT_FOUND),
-    InvalidAddressType(8005, "Address type is invalid", HttpStatus.NOT_FOUND);
+    TokenNotFound(8005, "Coin/Token not found", HttpStatus.NOT_FOUND),
+    InvalidAddressType(8006, "Address type is invalid", HttpStatus.NOT_FOUND);
 
     companion object {
         fun findByCode(code: Int?): OpexError? {

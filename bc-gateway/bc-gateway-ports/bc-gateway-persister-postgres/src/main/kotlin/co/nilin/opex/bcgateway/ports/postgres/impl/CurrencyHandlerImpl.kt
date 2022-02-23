@@ -12,6 +12,7 @@ import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
@@ -92,6 +93,16 @@ class CurrencyHandlerImpl(
         return projectCurrencyImplementation(model, currency)
     }
 
+    override suspend fun fetchAllImplementations(): List<CurrencyImplementation> {
+        return currencyImplementationRepository.findAll()
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+            .map {
+                val currency = currencyRepository.findBySymbol(it.symbol).awaitFirstOrNull()
+                projectCurrencyImplementation(it, currency)
+            }
+    }
+
     override suspend fun fetchCurrencyInfo(symbol: String): CurrencyInfo {
         val symbolUpperCase = symbol.uppercase()
         val currencyModel = currencyRepository.findBySymbol(symbolUpperCase).awaitSingleOrNull()
@@ -116,6 +127,16 @@ class CurrencyHandlerImpl(
 
     override suspend fun findImplementationsWithTokenOnChain(chain: String): List<CurrencyImplementation> {
         return currencyImplementationRepository.findByChain(chain).map { projectCurrencyImplementation(it) }.toList()
+    }
+
+    override suspend fun changeWithdrawStatus(symbol: String, chain: String, status: Boolean) {
+        val impl = currencyImplementationRepository.findBySymbolAndChain(symbol, chain).awaitSingleOrNull()
+            ?: throw OpexException(OpexError.TokenNotFound)
+
+        impl.apply {
+            withdrawEnabled = status
+            currencyImplementationRepository.save(impl).awaitFirstOrNull()
+        }
     }
 
     private suspend fun projectCurrencyImplementation(

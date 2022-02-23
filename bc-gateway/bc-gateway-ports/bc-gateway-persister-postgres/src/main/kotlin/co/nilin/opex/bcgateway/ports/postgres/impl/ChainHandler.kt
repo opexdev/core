@@ -13,6 +13,7 @@ import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.stereotype.Component
@@ -36,6 +37,20 @@ class ChainHandler(
         val model = chainRepository.findByName(name).awaitFirst()
         chainAddressRepository.save(ChainAddressTypeModel(null, model.name, type.id!!)).awaitFirstOrNull()
         return Chain(model.name, emptyList(), emptyList())
+    }
+
+    override suspend fun fetchAllChains(): List<Chain> {
+        return chainRepository.findAll()
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+            .map { c ->
+                val addressTypes = chainRepository.findAddressTypesByName(c.name)
+                    .map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }
+                    .toList()
+
+                val endpoints = chainRepository.findEndpointsByName(c.name).map { Endpoint(it.url) }.toList()
+                Chain(c.name, addressTypes, endpoints)
+            }
     }
 
     override suspend fun fetchChainInfo(chain: String): Chain {
