@@ -104,8 +104,11 @@ services:
       - SMTP_PASS=${SMTP_PASS}
       - DB_USER=${DB_USER:-opex}
       - DB_PASS=${DB_PASS:-hiopex}
-      - DB_BACKUP_USER=${DB_USER:-opex_backup}
-      - DB_BACKUP_PASS=${DB_PASS:-hiopex}
+      - DB_BACKUP_USER=${DB_BACKUP_USER:-opex_backup}
+      - DB_BACKUP_PASS=${DB_BACKUP_PASS:-hiopex}
+      - KEYCLOAK_ADMIN_USERNAME=${KEYCLOAK_ADMIN_USERNAME:-opex-admin}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-hiopex}
+      - VANDAR_API_KEY=$VANDAR_API_KEY
     healthcheck:
       retries: 5
     cap_add:
@@ -450,7 +453,7 @@ services:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - CONSUL_HOST=consul
-      - KEYCLOAK_CLIENT_SECRET=${ADMIN_KEYCLOAK_CLIENT_SECRET} # transfer to vault
+      - VAULT_HOST=vault
     volumes:
       - $DATA/admin-data:/admin
     depends_on:
