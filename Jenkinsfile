@@ -8,7 +8,7 @@ pipeline {
                 withMaven(
                         maven: 'maven-3.6.3'
                 ) {
-                    sh 'mvn -B clean install'
+                    sh 'mvn -T 1C -B clean install'
                 }
             }
         }
