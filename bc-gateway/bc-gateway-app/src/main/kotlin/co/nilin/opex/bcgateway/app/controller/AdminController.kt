@@ -2,7 +2,7 @@ package co.nilin.opex.bcgateway.app.controller
 
 import co.nilin.opex.bcgateway.app.dto.AddChainRequest
 import co.nilin.opex.bcgateway.app.dto.AddressTypeRequest
-import co.nilin.opex.bcgateway.app.dto.AssetRequest
+import co.nilin.opex.bcgateway.app.dto.TokenRequest
 import co.nilin.opex.bcgateway.app.service.AdminService
 import co.nilin.opex.bcgateway.core.model.CurrencyImplementation
 import co.nilin.opex.utility.error.data.OpexError
@@ -30,8 +30,8 @@ class AdminController(private val service: AdminService) {
         service.addAddressType(body.name, body.addressRegex, body.memoRegex)
     }
 
-    @PostMapping("/asset")
-    suspend fun addCurrencyImplementation(@RequestBody body: AssetRequest): CurrencyImplementation {
+    @PostMapping("/token")
+    suspend fun addCurrencyImplementation(@RequestBody body: TokenRequest): CurrencyImplementation {
         val ex = OpexException(OpexError.InvalidRequestBody)
         with(body) {
             if (symbol.isNullOrEmpty() || chain.isNullOrEmpty()) throw ex
@@ -39,7 +39,7 @@ class AdminController(private val service: AdminService) {
             if (withdrawFee < 0 || minimumWithdraw < 0 || decimal < 1) throw ex
         }
 
-        return service.addAsset(body)
+        return service.addToken(body)
     }
 
 }

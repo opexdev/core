@@ -1,7 +1,7 @@
 package co.nilin.opex.bcgateway.app.service
 
 import co.nilin.opex.bcgateway.app.dto.AddChainRequest
-import co.nilin.opex.bcgateway.app.dto.AssetRequest
+import co.nilin.opex.bcgateway.app.dto.TokenRequest
 import co.nilin.opex.bcgateway.core.model.CurrencyImplementation
 import co.nilin.opex.bcgateway.core.spi.*
 import org.springframework.stereotype.Service
@@ -40,7 +40,7 @@ class AdminService(
         addressTypeHandler.addAddressType(name, addressRegex, memoRegex)
     }
 
-    suspend fun addAsset(body: AssetRequest): CurrencyImplementation {
+    suspend fun addToken(body: TokenRequest): CurrencyImplementation {
         return with(body) {
             currencyHandler.addCurrencyImplementation(
                 symbol!!,

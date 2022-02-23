@@ -43,7 +43,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
 
     // code 8000: bc-gateway
     ReservedAddressNotAvailable(8001, "No reserved address available", HttpStatus.BAD_REQUEST),
-    DuplicateAsset(8002, "Asset already exists", HttpStatus.BAD_REQUEST),
+    DuplicateToken(8002, "Asset already exists", HttpStatus.BAD_REQUEST),
     ChainNotFound(8003, "Chain not found", HttpStatus.NOT_FOUND),
     CurrencyNotFoundBC(8004, "Currency not found", HttpStatus.NOT_FOUND),
     InvalidAddressType(8005, "Address type is invalid", HttpStatus.NOT_FOUND);

@@ -1,7 +1,6 @@
 package co.nilin.opex.bcgateway.ports.postgres.impl
 
 import co.nilin.opex.bcgateway.core.model.*
-import co.nilin.opex.bcgateway.core.model.Currency
 import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
 import co.nilin.opex.bcgateway.ports.postgres.dao.ChainRepository
 import co.nilin.opex.bcgateway.ports.postgres.dao.CurrencyImplementationRepository
@@ -18,7 +17,6 @@ import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import java.util.*
 
 @Component
 class CurrencyHandlerImpl(
@@ -67,8 +65,9 @@ class CurrencyHandlerImpl(
         val chainModel = chainRepository.findByName(chain.lowercase()).awaitFirstOrNull()
             ?: throw OpexException(OpexError.ChainNotFound)
 
-        currencyImplementationRepository.findBySymbolAndChain(symbol.uppercase(), chain).awaitFirstOrNull()
-            ?: throw OpexException(OpexError.DuplicateAsset)
+        currencyImplementationRepository.findBySymbolAndChain(symbol.uppercase(), chain)
+            .awaitFirstOrNull()
+            ?.let { throw OpexException(OpexError.DuplicateToken) }
 
         val currency = currencyRepository.findBySymbol(symbol.uppercase()).awaitFirstOrNull()
             ?: throw OpexException(OpexError.CurrencyNotFoundBC)
@@ -76,7 +75,7 @@ class CurrencyHandlerImpl(
         val model = currencyImplementationRepository.save(
             CurrencyImplementationModel(
                 null,
-                symbol.uppercase(Locale.getDefault()),
+                symbol.uppercase(),
                 chainModel.name,
                 isToken,
                 tokenAddress,
