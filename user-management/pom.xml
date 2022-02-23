@@ -15,6 +15,10 @@
     <packaging>pom</packaging>
     <description>User Management root of Opex</description>
 
+    <properties>
+        <spring.version>2.4.4</spring.version>
+    </properties>
+
     <modules>
         <module>keycloak-gateway</module>
     </modules>
