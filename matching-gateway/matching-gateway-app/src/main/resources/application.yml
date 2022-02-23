@@ -9,13 +9,14 @@ spring:
   main:
     allow-bean-definition-overriding: false
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
     consumer:
       group-id: gateway
   cloud:
     bootstrap:
       enabled: true
     consul:
+      host: ${CONSUL_HOST:localhost}
       port: 8500
       discovery:
         #healthCheckPath: ${management.context-path}/health

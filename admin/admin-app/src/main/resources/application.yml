@@ -3,6 +3,8 @@ server:
 spring:
   application:
     name: opex-admin
+  main:
+    allow-bean-definition-overriding: true
   kafka:
     bootstrap-servers: 192.168.178.29:9092
     consumer:
@@ -11,12 +13,28 @@ spring:
     bootstrap:
       enabled: true
     consul:
+      host: ${CONSUL_HOST:localhost}
       port: 8500
       discovery:
         #healthCheckPath: ${management.context-path}/health
         instance-id: ${spring.application.name}:${server.port}
         healthCheckInterval: 20s
         prefer-ip-address: true
+    vault:
+      host: ${VAULT_HOST}
+      port: 8200
+      scheme: http
+      authentication: APPID
+      app-id:
+        user-id: co.nilin.opex.util.vault.VaultUserIdMechanism
+      fail-fast: true
+      kv:
+        enabled: true
+        backend: secret
+        profile-separator: '/'
+        application-name: ${spring.application.name}
+  config:
+    import: vault://secret/${spring.application.name}
 app:
   auth:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
@@ -25,4 +43,4 @@ app:
       url: http://auth:8080/auth
       realm: opex
       client-id: opex-admin
-      client-secret: secret
+      client-secret: ${keycloak_client_secret:secret}
