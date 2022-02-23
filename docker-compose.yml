@@ -104,8 +104,10 @@ services:
       - SMTP_PASS=${SMTP_PASS}
       - DB_USER=${DB_USER:-opex}
       - DB_PASS=${DB_PASS:-hiopex}
-      - DB_BACKUP_USER=${DB_USER:-opex_backup}
-      - DB_BACKUP_PASS=${DB_PASS:-hiopex}
+      - DB_BACKUP_USER=${DB_BACKUP_USER:-opex_backup}
+      - DB_BACKUP_PASS=${DB_BACKUP_PASS:-hiopex}
+      - KEYCLOAK_ADMIN_USERNAME=${KEYCLOAK_ADMIN_USERNAME:-opex-admin}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-hiopex}
       - VANDAR_API_KEY=$VANDAR_API_KEY
     healthcheck:
       retries: 5
