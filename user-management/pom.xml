@@ -16,7 +16,8 @@
     <description>User Management root of Opex</description>
 
     <properties>
-        <spring.version>2.5.5</spring.version>
+        <!-- keycloak is not compatible with new versions of spring -->
+        <spring.version>2.4.5</spring.version>
         <spring-cloud.version>2020.0.3</spring-cloud.version>
     </properties>
 
