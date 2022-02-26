@@ -1,6 +1,7 @@
 package co.nilin.opex.admin.ports.auth.service
 
 import co.nilin.opex.admin.ports.auth.data.KycGroup
+import co.nilin.opex.admin.ports.auth.proxy.KeycloakProxy
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import org.keycloak.admin.client.Keycloak
@@ -10,7 +11,11 @@ import org.keycloak.representations.idm.UserRepresentation
 import org.springframework.stereotype.Service
 
 @Service
-class AuthAdminService(private val keycloak: Keycloak, private val opexRealm: RealmResource) {
+class AuthAdminService(
+    private val keycloak: Keycloak,
+    private val opexRealm: RealmResource,
+    private val proxy: KeycloakProxy
+) {
 
     fun findAllUsers(): List<UserRepresentation> {
         return opexRealm.users().list()
@@ -56,6 +61,12 @@ class AuthAdminService(private val keycloak: Keycloak, private val opexRealm: Re
             groups().forEach { leaveGroup(it.id) }
             joinGroup(group.toRepresentation().id)
         }
+    }
+
+    suspend fun impersonate(clientId: String, clientSecret: String, userId: String): String {
+        opexRealm.users().get(userId) ?: throw OpexException(OpexError.NotFound, "User not found")
+        val token = keycloak.tokenManager().accessToken.token
+        return proxy.impersonate(token, clientId, clientSecret, userId)
     }
 
 }

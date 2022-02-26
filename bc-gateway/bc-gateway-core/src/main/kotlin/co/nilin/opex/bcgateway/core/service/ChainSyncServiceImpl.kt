@@ -13,11 +13,11 @@ import kotlin.coroutines.coroutineContext
 
 open class ChainSyncServiceImpl(
     private val chainSyncSchedulerHandler: ChainSyncSchedulerHandler,
-    private val chainEndpointProxyFinder: ChainEndpointProxyFinder,
+    private val chainEndpointHandler: ChainEndpointHandler,
     private val chainSyncRecordHandler: ChainSyncRecordHandler,
     private val walletSyncRecordHandler: WalletSyncRecordHandler,
     private val chainSyncRetryHandler: ChainSyncRetryHandler,
-    private val currencyLoader: CurrencyLoader,
+    private val currencyHandler: CurrencyHandler,
     private val operator: TransactionalOperator,
     private val dispatcher: ExecutorCoroutineDispatcher
 ) : ChainSyncService {
@@ -29,9 +29,9 @@ open class ChainSyncServiceImpl(
             val schedules = chainSyncSchedulerHandler.fetchActiveSchedules(currentTime())
             schedules.map { syncSchedule ->
                 async(dispatcher) {
-                    val syncHandler = chainEndpointProxyFinder.findChainEndpointProxy(syncSchedule.chainName)
+                    val syncHandler = chainEndpointHandler.findChainEndpointProxy(syncSchedule.chainName)
                     val lastSync = chainSyncRecordHandler.loadLastSuccessRecord(syncSchedule.chainName)
-                    val tokens = currencyLoader.findImplementationsWithTokenOnChain(syncSchedule.chainName)
+                    val tokens = currencyHandler.findImplementationsWithTokenOnChain(syncSchedule.chainName)
                         .map { impl -> impl.tokenAddress ?: "" }
                         .toList()
 

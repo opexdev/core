@@ -1,5 +1,6 @@
 package co.nilin.opex.bcgateway.app.config
 
+import co.nilin.opex.bcgateway.app.utils.hasRole
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -21,7 +22,9 @@ class SecurityConfig(@Qualifier("loadBalanced") private val webClient: WebClient
         http.csrf().disable()
             .authorizeExchange()
             .pathMatchers("/filter/**").hasAuthority("SCOPE_trust")
-            .pathMatchers("/**").permitAll()
+            .pathMatchers("/admin/**").hasRole("SCOPE_trust", "system-admin")
+            .pathMatchers("/address/**").permitAll()
+            .pathMatchers("/deposit/**").permitAll()
             .anyExchange().authenticated()
             .and()
             .oauth2ResourceServer()

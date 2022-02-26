@@ -1,6 +1,6 @@
 package co.nilin.opex.storage.app.config
 
-import co.nilin.opex.storage.app.utils.hasRealmRole
+import co.nilin.opex.storage.app.utils.hasRole
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
@@ -24,7 +24,7 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/actuator/**").permitAll()
             .pathMatchers("/swagger-ui/**").permitAll()
             .pathMatchers("/swagger-resources/**").permitAll()
-            .pathMatchers("/admin/**").hasRealmRole("SCOPE_trust", "finance-admin")
+            .pathMatchers("/admin/**").hasRole("SCOPE_trust", "finance-admin")
             .pathMatchers("/**").hasAuthority("SCOPE_trust")
             .anyExchange().authenticated()
             .and()
