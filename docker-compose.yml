@@ -459,6 +459,7 @@ services:
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - CONSUL_HOST=consul
       - VAULT_HOST=vault
+      - BACKEND_USER=${BACKEND_USER}
     volumes:
       - $DATA/admin-data:/admin
     depends_on:
