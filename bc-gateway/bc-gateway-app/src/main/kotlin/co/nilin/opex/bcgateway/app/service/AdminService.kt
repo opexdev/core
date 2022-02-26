@@ -33,7 +33,7 @@ class AdminService(
         val chain = chainLoader.addChain(body.name!!, body.addressType!!)
         chainScheduler.scheduleChain(chain.name, body.scheduleDelaySeconds, body.scheduleErrorDelaySeconds)
         if (body.scannerEndpoint != null)
-            chainEndpointHandler.addEndpoint(chain.name, body.scannerEndpoint)
+            chainEndpointHandler.addEndpoint(chain.name, body.scannerEndpoint, null, null)
     }
 
     suspend fun addAddressType(name: String, addressRegex: String, memoRegex: String?) {
@@ -56,7 +56,7 @@ class AdminService(
         }
     }
 
-    suspend fun changeTokenWithdrawStatus(symbol: String,chain: String, status: Boolean) {
+    suspend fun changeTokenWithdrawStatus(symbol: String, chain: String, status: Boolean) {
         currencyHandler.changeWithdrawStatus(symbol, chain, status)
     }
 

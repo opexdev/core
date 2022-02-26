@@ -20,8 +20,12 @@ class ChainEndpointHandlerImpl(
     private val endpointRepository: ChainEndpointRepository
 ) : ChainEndpointHandler {
 
-    override suspend fun addEndpoint(chainName: String, endpoint: String) {
-        endpointRepository.save(ChainEndpointModel(null, chainName, endpoint, null, null)).awaitFirstOrNull()
+    override suspend fun addEndpoint(chainName: String, url: String, username: String?, password: String?) {
+        endpointRepository.save(ChainEndpointModel(null, chainName, url, username, password)).awaitFirstOrNull()
+    }
+
+    override suspend fun deleteEndpoint(chainName: String, url: String) {
+        endpointRepository.deleteByChainNameAndUrl(chainName, url).awaitFirstOrNull()
     }
 
     override suspend fun findChainEndpointProxy(chainName: String): ChainEndpointProxy {
