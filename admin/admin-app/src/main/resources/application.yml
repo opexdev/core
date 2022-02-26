@@ -6,7 +6,7 @@ spring:
   main:
     allow-bean-definition-overriding: true
   kafka:
-    bootstrap-servers: 192.168.178.29:9092
+    bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
     consumer:
       group-id: admin
   cloud:
