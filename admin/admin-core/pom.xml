@@ -35,5 +35,4 @@
 			<artifactId>kotlinx-coroutines-core</artifactId>
 		</dependency>
     </dependencies>
-
 </project>

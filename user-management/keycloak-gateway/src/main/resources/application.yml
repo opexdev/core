@@ -54,8 +54,8 @@ keycloak:
   server:
     contextPath: /auth
     adminUser:
-      username: opex-admin
-      password: hiopex
+      username: ${admin_username:opex-admin}
+      password: ${admin_password:hiopex}
     realmImportFile: /opex-realm.json
   migration:
     action: import
