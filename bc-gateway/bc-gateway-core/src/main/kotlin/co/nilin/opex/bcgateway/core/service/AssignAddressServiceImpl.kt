@@ -6,19 +6,19 @@ import co.nilin.opex.bcgateway.core.model.AssignedAddress
 import co.nilin.opex.bcgateway.core.model.Chain
 import co.nilin.opex.bcgateway.core.model.Currency
 import co.nilin.opex.bcgateway.core.spi.AssignedAddressHandler
-import co.nilin.opex.bcgateway.core.spi.CurrencyLoader
+import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
 import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 
 class AssignAddressServiceImpl(
-    val currencyLoader: CurrencyLoader,
+    val currencyHandler: CurrencyHandler,
     val assignedAddressHandler: AssignedAddressHandler,
     val reservedAddressHandler: ReservedAddressHandler
 ) : AssignAddressService {
 
     override suspend fun assignAddress(user: String, currency: Currency): List<AssignedAddress> {
-        val currencyInfo = currencyLoader.fetchCurrencyInfo(currency.symbol)
+        val currencyInfo = currencyHandler.fetchCurrencyInfo(currency.symbol)
         val chains = currencyInfo.implementations
             .map { imp -> imp.chain }
         val addressTypes = chains

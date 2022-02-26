@@ -19,6 +19,7 @@
         <module>admin-app</module>
         <module>admin-core</module>
         <module>admin-ports/admin-service-auth</module>
+        <module>admin-ports/admin-submitter-kafka</module>
     </modules>
 
     <dependencies>
@@ -32,12 +33,17 @@
         <dependencies>
             <dependency>
                 <groupId>co.nilin.opex.admin</groupId>
+                <artifactId>admin-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.admin</groupId>
                 <artifactId>admin-service-auth</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.admin</groupId>
-                <artifactId>admin-core</artifactId>
+                <artifactId>admin-submitter-kafka</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

@@ -417,10 +417,15 @@ services:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - SPRING_PROFILES_DEFAULT=scheduled
       - CONSUL_HOST=consul
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - DB_IP_PORT=postgres-bc-gateway
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
     depends_on:
+      - zookeeper
+      - kafka-1
+      - kafka-2
+      - kafka-3
       - redis
       - consul
       - vault
@@ -454,6 +459,7 @@ services:
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - CONSUL_HOST=consul
       - VAULT_HOST=vault
+      - BACKEND_USER=${BACKEND_USER}
     volumes:
       - $DATA/admin-data:/admin
     depends_on:

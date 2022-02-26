@@ -1,6 +1,8 @@
 package co.nilin.opex.wallet.ports.kafka.listener.config
 
+import co.nilin.opex.wallet.ports.kafka.listener.consumer.AdminEventKafkaListener
 import co.nilin.opex.wallet.ports.kafka.listener.consumer.UserCreatedKafkaListener
+import co.nilin.opex.wallet.ports.kafka.listener.model.AdminEvent
 import co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent
 import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -32,7 +34,7 @@ class WalletKafkaConfig {
     @Value("\${spring.kafka.consumer.group-id}")
     private val groupId: String? = null
 
-    @Bean("walletConsumerConfig")
+    @Bean
     fun consumerConfigs(): Map<String, Any?> {
         return mapOf(
             ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
@@ -40,13 +42,44 @@ class WalletKafkaConfig {
             ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
             ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JsonDeserializer::class.java,
             JsonDeserializer.TRUSTED_PACKAGES to "co.nilin.opex.*",
-            JsonDeserializer.TYPE_MAPPINGS to "user_created_event:co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent"
+            JsonDeserializer.TYPE_MAPPINGS to "user_created_event:co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent,admin_add_currency:co.nilin.opex.wallet.ports.kafka.listener.model.AddCurrencyEvent,admin_edit_currency:co.nilin.opex.wallet.ports.kafka.listener.model.EditCurrencyEvent,admin_delete_currency:co.nilin.opex.wallet.ports.kafka.listener.model.DeleteCurrencyEvent"
         )
     }
 
     @Bean("walletConsumerFactory")
-    fun consumerFactory(@Qualifier("walletConsumerConfig") consumerConfigs: Map<String, Any?>): ConsumerFactory<String, UserCreatedEvent> {
+    fun consumerFactory(consumerConfigs: Map<String, Any?>): ConsumerFactory<String, UserCreatedEvent> {
         return DefaultKafkaConsumerFactory(consumerConfigs)
+    }
+
+    @Bean
+    fun adminEventsConsumerFactory(consumerConfigs: Map<String, Any?>): ConsumerFactory<String?, AdminEvent> {
+        return DefaultKafkaConsumerFactory(consumerConfigs)
+    }
+
+    @Autowired
+    @ConditionalOnBean(UserCreatedKafkaListener::class)
+    fun configureUserCreatedListener(
+        listener: UserCreatedKafkaListener,
+        @Qualifier("walletConsumerFactory") consumerFactory: ConsumerFactory<String, UserCreatedEvent>
+    ) {
+        val containerProps = ContainerProperties(Pattern.compile("auth_user_created"))
+        containerProps.messageListener = listener
+        val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
+        container.setBeanName("UserCreatedKafkaListenerContainer")
+        container.start()
+    }
+
+    @Autowired
+    @ConditionalOnBean(AdminEventKafkaListener::class)
+    fun configureAdminEventListener(
+        listener: AdminEventKafkaListener,
+        consumerFactory: ConsumerFactory<String?, AdminEvent>
+    ) {
+        val containerProps = ContainerProperties(Pattern.compile("admin_event"))
+        containerProps.messageListener = listener
+        val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
+        container.setBeanName("AdminEventKafkaListenerContainer")
+        container.start()
     }
 
     @Bean("walletProducerConfig")
@@ -67,19 +100,6 @@ class WalletKafkaConfig {
     @Bean("walletKafkaTemplate")
     fun kafkaTemplate(@Qualifier("walletProducerFactory") producerFactory: ProducerFactory<String?, UserCreatedEvent>): KafkaTemplate<String?, UserCreatedEvent> {
         return KafkaTemplate(producerFactory)
-    }
-
-    @Autowired
-    @ConditionalOnBean(UserCreatedKafkaListener::class)
-    fun configureUserCreatedListener(
-        listener: UserCreatedKafkaListener,
-        @Qualifier("walletConsumerFactory") consumerFactory: ConsumerFactory<String, UserCreatedEvent>
-    ) {
-        val containerProps = ContainerProperties(Pattern.compile("auth_user_created"))
-        containerProps.messageListener = listener
-        val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.setBeanName("UserCreatedKafkaListenerContainer")
-        container.start()
     }
 
     @Autowired

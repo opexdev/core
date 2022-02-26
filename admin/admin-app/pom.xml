@@ -66,6 +66,10 @@
             <artifactId>admin-service-auth</artifactId>
         </dependency>
         <dependency>
+            <groupId>co.nilin.opex.admin</groupId>
+            <artifactId>admin-submitter-kafka</artifactId>
+        </dependency>
+        <dependency>
             <groupId>co.nilin.opex.utility.error</groupId>
             <artifactId>error-handler</artifactId>
         </dependency>

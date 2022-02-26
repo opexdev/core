@@ -12,9 +12,9 @@ data class ChainSyncScheduleModel(
     val chain: String,
     @Column("retry_time")
     val retryTime: LocalDateTime,
-    val delay: Long,
+    var delay: Long,
     @Column("error_delay")
-    val errorDelay: Long
+    var errorDelay: Long
 )
 
 @Table("chain_sync_records")

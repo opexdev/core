@@ -7,6 +7,8 @@ import co.nilin.opex.bcgateway.ports.postgres.model.ChainSyncScheduleModel
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -29,5 +31,17 @@ class ChainSyncSchedulerHandlerImpl(private val chainSyncScheduleRepository: Cha
         )
         val dao = ChainSyncScheduleModel(chain, time, syncSchedule.delay, syncSchedule.errorDelay)
         chainSyncScheduleRepository.save(dao).awaitFirst()
+    }
+
+    override suspend fun scheduleChain(chain: String, delaySeconds: Int, errorDelaySeconds: Int) {
+        with(chainSyncScheduleRepository.findById(chain).awaitSingleOrNull()) {
+            if (this != null) {
+                delay = delaySeconds.toLong()
+                errorDelay = errorDelaySeconds.toLong()
+                chainSyncScheduleRepository.save(this).awaitFirstOrNull()
+            } else {
+                chainSyncScheduleRepository.insert(chain, delaySeconds, errorDelaySeconds).awaitFirstOrNull()
+            }
+        }
     }
 }

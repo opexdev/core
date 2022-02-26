@@ -5,6 +5,10 @@ spring:
     name: opex-admin
   main:
     allow-bean-definition-overriding: true
+  kafka:
+    bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
+    consumer:
+      group-id: admin
   cloud:
     bootstrap:
       enabled: true
@@ -34,6 +38,7 @@ spring:
 app:
   auth:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
+    token-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/token
     keycloak:
       url: http://auth:8080/auth
       realm: opex

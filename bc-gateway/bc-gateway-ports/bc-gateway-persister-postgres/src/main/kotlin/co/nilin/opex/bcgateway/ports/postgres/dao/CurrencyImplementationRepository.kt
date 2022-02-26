@@ -13,5 +13,7 @@ interface CurrencyImplementationRepository : ReactiveCrudRepository<CurrencyImpl
 
     fun findByChain(chain: String): Flow<CurrencyImplementationModel>
 
+    fun findBySymbolAndChain(symbol: String, chain: String): Mono<CurrencyImplementationModel>
+
     fun findByChainAndTokenAddress(chain: String, tokenAddress: String?): Mono<CurrencyImplementationModel>
 }

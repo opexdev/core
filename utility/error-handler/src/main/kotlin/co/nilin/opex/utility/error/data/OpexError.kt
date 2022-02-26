@@ -12,6 +12,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     Forbidden(1004, "Forbidden", HttpStatus.FORBIDDEN),
     NotFound(1005, "Not found", HttpStatus.NOT_FOUND),
     InvalidRequestParam(1020, "Parameter '%s' is either missing or invalid", HttpStatus.BAD_REQUEST),
+    InvalidRequestBody(1021, "Request body is invalid", HttpStatus.BAD_REQUEST),
 
     // code 2000: accountant
     InvalidPair(2001, "%s is not available", HttpStatus.BAD_REQUEST),
@@ -41,7 +42,12 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     InvalidInterval(7007, "Invalid interval", HttpStatus.BAD_REQUEST),
 
     // code 8000: bc-gateway
-    ReservedAddressNotAvailable(8001, "No reserved address available", HttpStatus.BAD_REQUEST);
+    ReservedAddressNotAvailable(8001, "No reserved address available", HttpStatus.BAD_REQUEST),
+    DuplicateToken(8002, "Asset already exists", HttpStatus.BAD_REQUEST),
+    ChainNotFound(8003, "Chain not found", HttpStatus.NOT_FOUND),
+    CurrencyNotFoundBC(8004, "Currency not found", HttpStatus.NOT_FOUND),
+    TokenNotFound(8005, "Coin/Token not found", HttpStatus.NOT_FOUND),
+    InvalidAddressType(8006, "Address type is invalid", HttpStatus.NOT_FOUND);
 
     companion object {
         fun findByCode(code: Int?): OpexError? {

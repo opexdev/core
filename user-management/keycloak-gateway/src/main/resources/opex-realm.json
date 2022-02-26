@@ -43,9 +43,22 @@
   "roles": {
     "realm": [
       {
+        "id": "fa6b43a1-c4eb-41d9-8f6f-b7fbc3ce6579",
+        "name": "system-admin",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "opex",
+        "attributes": {}
+      },
+      {
         "id": "fe152bae-77c5-485c-be97-a5f490b3b837",
         "name": "finance-admin",
-        "composite": false,
+        "composite": true,
+        "composites": {
+          "realm": [
+            "impersonation"
+          ]
+        },
         "clientRole": false,
         "containerId": "opex",
         "attributes": {}
@@ -407,6 +420,15 @@
   },
   "groups": [
     {
+      "id": "700a0042-6146-42fc-a97a-f0f63f913301",
+      "name": "admins",
+      "path": "/admins",
+      "attributes": {},
+      "realmRoles": [],
+      "clientRoles": {},
+      "subGroups": []
+    },
+    {
       "id": "efb76f91-62a0-409d-afea-c76a9766c6f9",
       "name": "finance-admin",
       "path": "/finance-admin",
@@ -599,15 +621,26 @@
     {
       "client": "admin-cli",
       "roles": [
+        "system-admin",
         "finance-admin"
       ]
     },
     {
       "client": "opex-admin",
       "roles": [
+        "system-admin",
+        "impersonation",
+        "finance-admin",
         "offline_access",
         "uma_authorization",
         "user"
+      ]
+    },
+    {
+      "client": "web-app",
+      "roles": [
+        "system-admin",
+        "finance-admin"
       ]
     },
     {
@@ -1459,6 +1492,37 @@
                 "name": "manage"
               }
             ]
+          },
+          {
+            "name": "client.resource.fb5f91c4-42fa-4769-b45d-febef22b4976",
+            "type": "Client",
+            "ownerManagedAccess": false,
+            "attributes": {},
+            "_id": "c1a93d24-8a80-4652-aeb4-008faa57d9da",
+            "uris": [],
+            "scopes": [
+              {
+                "name": "view"
+              },
+              {
+                "name": "map-roles-client-scope"
+              },
+              {
+                "name": "configure"
+              },
+              {
+                "name": "map-roles"
+              },
+              {
+                "name": "manage"
+              },
+              {
+                "name": "token-exchange"
+              },
+              {
+                "name": "map-roles-composite"
+              }
+            ]
           }
         ],
         "policies": [
@@ -1469,7 +1533,7 @@
             "logic": "POSITIVE",
             "decisionStrategy": "UNANIMOUS",
             "config": {
-              "clients": "[\"account-console\"]"
+              "clients": "[\"opex-admin\",\"account-console\"]"
             }
           },
           {
@@ -1691,6 +1755,83 @@
             "config": {
               "resources": "[\"Users\"]",
               "scopes": "[\"user-impersonated\"]"
+            }
+          },
+          {
+            "id": "93e57b9b-777a-45bd-a739-0aa9458cf54e",
+            "name": "view.permission.client.fb5f91c4-42fa-4769-b45d-febef22b4976",
+            "type": "scope",
+            "logic": "POSITIVE",
+            "decisionStrategy": "UNANIMOUS",
+            "config": {
+              "resources": "[\"client.resource.fb5f91c4-42fa-4769-b45d-febef22b4976\"]",
+              "scopes": "[\"view\"]"
+            }
+          },
+          {
+            "id": "cc39f7bb-34e0-4941-bb24-5bdf9b893e41",
+            "name": "manage.permission.client.fb5f91c4-42fa-4769-b45d-febef22b4976",
+            "type": "scope",
+            "logic": "POSITIVE",
+            "decisionStrategy": "UNANIMOUS",
+            "config": {
+              "resources": "[\"client.resource.fb5f91c4-42fa-4769-b45d-febef22b4976\"]",
+              "scopes": "[\"manage\"]"
+            }
+          },
+          {
+            "id": "a6d0689a-95e9-4f4a-b6d4-4f79dd9a5867",
+            "name": "configure.permission.client.fb5f91c4-42fa-4769-b45d-febef22b4976",
+            "type": "scope",
+            "logic": "POSITIVE",
+            "decisionStrategy": "UNANIMOUS",
+            "config": {
+              "resources": "[\"client.resource.fb5f91c4-42fa-4769-b45d-febef22b4976\"]",
+              "scopes": "[\"configure\"]"
+            }
+          },
+          {
+            "id": "9230d8ee-0496-42e4-a46c-f01570df8ca1",
+            "name": "map-roles.permission.client.fb5f91c4-42fa-4769-b45d-febef22b4976",
+            "type": "scope",
+            "logic": "POSITIVE",
+            "decisionStrategy": "UNANIMOUS",
+            "config": {
+              "resources": "[\"client.resource.fb5f91c4-42fa-4769-b45d-febef22b4976\"]",
+              "scopes": "[\"map-roles\"]"
+            }
+          },
+          {
+            "id": "63fce897-c89b-456b-b91d-4d48981a0210",
+            "name": "map-roles-client-scope.permission.client.fb5f91c4-42fa-4769-b45d-febef22b4976",
+            "type": "scope",
+            "logic": "POSITIVE",
+            "decisionStrategy": "UNANIMOUS",
+            "config": {
+              "resources": "[\"client.resource.fb5f91c4-42fa-4769-b45d-febef22b4976\"]",
+              "scopes": "[\"map-roles-client-scope\"]"
+            }
+          },
+          {
+            "id": "8384fef0-7ac4-4e83-9029-3e48fb42144e",
+            "name": "map-roles-composite.permission.client.fb5f91c4-42fa-4769-b45d-febef22b4976",
+            "type": "scope",
+            "logic": "POSITIVE",
+            "decisionStrategy": "UNANIMOUS",
+            "config": {
+              "resources": "[\"client.resource.fb5f91c4-42fa-4769-b45d-febef22b4976\"]",
+              "scopes": "[\"map-roles-composite\"]"
+            }
+          },
+          {
+            "id": "c8a6c409-c358-41d5-aa70-30282b7b8872",
+            "name": "token-exchange.permission.client.fb5f91c4-42fa-4769-b45d-febef22b4976",
+            "type": "scope",
+            "logic": "POSITIVE",
+            "decisionStrategy": "UNANIMOUS",
+            "config": {
+              "resources": "[\"client.resource.fb5f91c4-42fa-4769-b45d-febef22b4976\"]",
+              "scopes": "[\"token-exchange\"]"
             }
           }
         ],
@@ -2507,7 +2648,23 @@
       "attributes": {
         "include.in.token.scope": "true",
         "display.on.consent.screen": "true"
-      }
+      },
+      "protocolMappers": [
+        {
+          "id": "2bafcd16-ff19-4f72-adb4-c1735793842d",
+          "name": "User roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "roles",
+            "multivalued": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
     }
   ],
   "defaultDefaultClientScopes": [
