@@ -80,7 +80,7 @@ class AdminController(
         with(body) {
             if (symbol.isNullOrEmpty() || chain.isNullOrEmpty()) throw ex
             if (isToken && (tokenName.isNullOrEmpty() || tokenAddress.isNullOrEmpty())) throw ex
-            if (withdrawFee < 0 || minimumWithdraw < 0 || decimal < 1) throw ex
+            if (withdrawFee < 0 || minimumWithdraw < 0 || decimal < 0) throw ex
         }
 
         return with(service.addToken(body)) {

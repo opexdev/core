@@ -7,7 +7,7 @@ data class AddCurrencyRequest(
 ) {
 
     fun isValid(): Boolean {
-        return !name.isNullOrEmpty() && !symbol.isNullOrEmpty() && precision > 0.0
+        return !name.isNullOrEmpty() && !symbol.isNullOrEmpty() && precision > 0.0 && precision <= 1
     }
 
 }
