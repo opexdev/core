@@ -58,6 +58,11 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
+                <groupId>co.nilin.opex.referral.ports.accountant.proxy</groupId>
+                <artifactId>referral-accountant-proxy</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>co.nilin.opex.referral.ports.wallet.proxy</groupId>
                 <artifactId>referral-wallet-proxy</artifactId>
                 <version>${project.version}</version>
