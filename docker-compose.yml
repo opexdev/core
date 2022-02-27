@@ -476,6 +476,8 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
     depends_on:
+      - auth
+      - accountant
       - kafka-1
       - kafka-2
       - kafka-3
