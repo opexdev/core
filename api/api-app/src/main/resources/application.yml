@@ -48,7 +48,7 @@ app:
   accountant:
     url: lb://opex-accountant
   matching-gateway:
-    url: lb://opex-gateway
+    url: lb://opex-matching-gateway
   wallet:
     url: lb://opex-wallet
   opex-bc-gateway:
