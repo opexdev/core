@@ -74,7 +74,9 @@ CREATE OR REPLACE FUNCTION on_insert_commission_rewards() RETURNS TRIGGER AS $$ 
     RETURN NEW;
 END; $$ LANGUAGE 'plpgsql';
 
-CREATE OR REPLACE TRIGGER commission_rewards_insert AFTER INSERT
+DROP TRIGGER IF EXISTS commission_rewards_insert ON commission_rewards CASCADE;
+
+CREATE TRIGGER commission_rewards_insert AFTER INSERT
 ON commission_rewards
 FOR EACH ROW
 EXECUTE PROCEDURE on_insert_commission_rewards();
