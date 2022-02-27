@@ -314,6 +314,7 @@ services:
       - kafka-1
       - kafka-2
       - kafka-3
+      - auth
       - consul
       - matching-engine
   auth:
@@ -357,6 +358,7 @@ services:
       - kafka-1
       - kafka-2
       - kafka-3
+      - auth
       - consul
       - vault
       - postgres-wallet
@@ -407,6 +409,7 @@ services:
       - kafka-1
       - kafka-2
       - kafka-3
+      - auth
       - consul
       - vault
       - postgres-api
@@ -430,6 +433,7 @@ services:
       - kafka-1
       - kafka-2
       - kafka-3
+      - auth
       - wallet
       - consul
       - vault
@@ -449,6 +453,7 @@ services:
     volumes:
       - $DATA/storage-data:/storage
     depends_on:
+      - auth
       - consul
     networks:
       - default
@@ -493,6 +498,7 @@ services:
       - kafka-2
       - kafka-3
       - consul
+      - auth
       - vault
     networks:
       - default
