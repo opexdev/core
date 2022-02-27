@@ -43,8 +43,10 @@ SELECT setval(pg_get_serial_sequence('currency_implementations', 'id'), (SELECT 
 INSERT INTO chain_endpoints(id, chain_name, endpoint_url)
 VALUES (1, 'bitcoin', 'lb://chain-scan-gateway/bitcoin/transfers'),
        (2, 'ethereum', 'lb://chain-scan-gateway/eth/transfers'),
-       (2, 'bsc', 'lb://chain-scan-gateway/bsc/transfers')
+       (3, 'bsc', 'lb://chain-scan-gateway/bsc/transfers')
 ON CONFLICT DO NOTHING;
+
+SELECT setval(pg_get_serial_sequence('chain_endpoints', 'id'), (SELECT MAX(id) FROM chain_endpoints));
 
 INSERT INTO chain_sync_schedules
 VALUES ('bitcoin', CURRENT_DATE, 600, 60),
