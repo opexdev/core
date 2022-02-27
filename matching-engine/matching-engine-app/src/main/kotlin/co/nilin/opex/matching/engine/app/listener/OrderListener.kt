@@ -2,7 +2,7 @@ package co.nilin.opex.matching.engine.app.listener
 
 import co.nilin.opex.matching.engine.app.bl.OrderBooks
 import co.nilin.opex.matching.engine.core.inout.OrderCreateCommand
-import co.nilin.opex.matching.engine.ports.kafka.listener.inout.OrderSubmitRequest
+import co.nilin.opex.matching.engine.core.inout.OrderSubmitRequest
 import co.nilin.opex.matching.engine.ports.kafka.listener.spi.OrderSubmitRequestListener
 
 class OrderListener : OrderSubmitRequestListener {

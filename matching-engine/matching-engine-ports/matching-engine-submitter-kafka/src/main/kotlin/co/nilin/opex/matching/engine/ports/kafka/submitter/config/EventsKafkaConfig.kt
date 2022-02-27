@@ -1,12 +1,9 @@
 package co.nilin.opex.matching.engine.ports.kafka.submitter.config
 
 import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
-import org.apache.kafka.clients.admin.AdminClientConfig
-import org.apache.kafka.clients.admin.NewTopic
+import co.nilin.opex.matching.engine.core.inout.OrderSubmitRequest
 import org.apache.kafka.clients.producer.ProducerConfig
-import org.apache.kafka.common.config.TopicConfig
 import org.apache.kafka.common.serialization.StringSerializer
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -26,12 +23,6 @@ class EventsKafkaConfig {
     @Value("\${spring.kafka.bootstrap-servers}")
     private lateinit var bootstrapServers: String
 
-    @Value("\${spring.app.symbols}")
-    private val symbols: String? = null
-
-    @Autowired
-    private val applicationContext: GenericApplicationContext? = null
-
     @Bean("eventsProducerConfigs")
     fun producerConfigs(): Map<String, Any> {
         return mapOf(
@@ -43,45 +34,23 @@ class EventsKafkaConfig {
     }
 
     @Bean("eventsProducerFactory")
-    fun producerFactory(@Qualifier("eventsProducerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, CoreEvent> {
+    fun eventProducerFactory(@Qualifier("eventsProducerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, CoreEvent> {
         return DefaultKafkaProducerFactory(producerConfigs)
     }
 
     @Bean("eventsKafkaTemplate")
-    fun kafkaTemplate(@Qualifier("eventsProducerFactory") producerFactory: ProducerFactory<String?, CoreEvent>): KafkaTemplate<String?, CoreEvent> {
+    fun eventKafkaTemplate(@Qualifier("eventsProducerFactory") producerFactory: ProducerFactory<String?, CoreEvent>): KafkaTemplate<String?, CoreEvent> {
         return KafkaTemplate(producerFactory)
     }
 
-    @Bean
-    fun admin(): KafkaAdmin? {
-        val configs: MutableMap<String, Any> = HashMap()
-        configs[AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG] = bootstrapServers
-        return KafkaAdmin(configs)
+    @Bean("orderProducerFactory")
+    fun orderProducerFactory(producerConfigs: Map<String, Any>): ProducerFactory<String?, OrderSubmitRequest> {
+        return DefaultKafkaProducerFactory(producerConfigs)
     }
 
-    @Autowired
-    fun createTopics() {
-        symbols!!.split(",")
-            .map { s -> "events_$s" }
-            .forEach { topic ->
-                applicationContext?.registerBean("topic_${topic}", NewTopic::class.java, Supplier {
-                    TopicBuilder.name(topic)
-                        .partitions(10)
-                        .replicas(3)
-                        .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
-                        .build()
-                })
-            }
-        symbols.split(",")
-            .map { s -> "trades_$s" }
-            .forEach { topic ->
-                applicationContext?.registerBean("topic_${topic}", NewTopic::class.java, Supplier {
-                    TopicBuilder.name(topic)
-                        .partitions(10)
-                        .replicas(3)
-                        .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
-                        .build()
-                })
-            }
+    @Bean("orderKafkaTemplate")
+    fun orderKafkaTemplate(@Qualifier("orderProducerFactory") producerFactory: ProducerFactory<String?, OrderSubmitRequest>): KafkaTemplate<String?, OrderSubmitRequest> {
+        return KafkaTemplate(producerFactory)
     }
+
 }
