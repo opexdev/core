@@ -231,6 +231,20 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  postgres-referral:
+    image: "postgres"
+    environment:
+      - POSTGRES_USER=${DB_USER:-opex}
+      - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
+      - POSTGRES_DB=opex_referral
+      - POSTGRES_BACKUP_USER=${DB_BACKUP_USER:-opex_backup}
+      - POSTGRES_BACKUP_PASSWORD=${DB_BACKUP_PASS:-hiopex}
+    volumes:
+      - ./resources/postgres/init-backup-user.sh:/docker-entrypoint-initdb.d/init-backup-user.sh
+      - $DATA/referral-data:/var/lib/postgresql/data/
+    deploy:
+      restart_policy:
+        condition: on-failure
   accountant:
     build:
       context: accountant/accountant-app
@@ -451,6 +465,26 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  referral:
+    build:
+      context: referral/referral-app
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
+      - CONSUL_HOST=consul
+      - DB_IP_PORT=postgres-referral
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_HOST=vault
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - consul
+      - postgres-referral
+      - vault
+    deploy:
+      restart_policy:
+        condition: on-failure
   admin:
     build:
       context: admin/admin-app
@@ -468,6 +502,7 @@ services:
       - kafka-2
       - kafka-3
       - consul
+      - vault
     networks:
       - default
     deploy:

@@ -60,8 +60,9 @@ vault write auth/app-id/map/app-id/opex-websocket value=backend-policy display_n
 vault write auth/app-id/map/app-id/opex-payment value=backend-policy display_name=opex-payment
 vault write auth/app-id/map/app-id/opex-admin value=backend-policy display_name=opex-admin
 vault write auth/app-id/map/app-id/opex-chain-scan-gateway value=backend-policy display_name=opex-chain-scan-gateway
+vault write auth/app-id/map/app-id/opex-referral value=backend-policy display_name=opex-referral
 echo 'enable user-id'
-vault write auth/app-id/map/user-id/${BACKEND_USER} value=opex-wallet,opex-websocket,opex-eventlog,opex-auth,opex-accountant,opex-api,opex-bc-gateway,opex-payment,opex-admin,opex-chain-scan-gateway
+vault write auth/app-id/map/user-id/${BACKEND_USER} value=opex-wallet,opex-websocket,opex-eventlog,opex-auth,opex-accountant,opex-api,opex-bc-gateway,opex-payment,opex-admin,opex-chain-scan-gateway,opex-referral
 echo 'check login appid'
 vault write auth/app-id/login/opex-accountant user_id=${BACKEND_USER}
 vault write auth/app-id/login/opex-api user_id=${BACKEND_USER}
@@ -73,6 +74,7 @@ vault write auth/app-id/login/opex-websocket user_id=${BACKEND_USER}
 vault write auth/app-id/login/opex-payment user_id=${BACKEND_USER}
 vault write auth/app-id/login/opex-admin user_id=${BACKEND_USER}
 vault write auth/app-id/login/opex-chain-scan-gateway user_id=${BACKEND_USER}
+vault write auth/app-id/login/opex-referral user_id=${BACKEND_USER}
 
 #
 ## Add secret values
@@ -88,6 +90,7 @@ vault kv put secret/opex-websocket dbusername=${DB_USER} dbpassword=${DB_PASS} d
 vault kv put secret/opex-payment dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USERNAME} db_backup_pass=${DB_BACKUP_PASS} vandar_api_key=${VANDAR_API_KEY}
 vault kv put secret/opex-admin keycloak_client_secret=${KEYCLOAK_CLIENT_SECRET}
 vault kv put secret/opex-chain-scan-gateway dbusername=${DB_USER} dbpassword=${DB_PASS}
+vault kv put secret/opex-referral dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USERNAME} db_backup_pass=${DB_BACKUP_PASS}
 
 # Keep alive
 while pidof vault >/dev/null; do
