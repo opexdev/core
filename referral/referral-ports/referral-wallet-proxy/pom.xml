@@ -11,10 +11,6 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <properties>
-        <spring-cloud.version>2020.0.2</spring-cloud.version>
-    </properties>
-
     <groupId>co.nilin.opex.referral.ports.wallet.proxy</groupId>
     <artifactId>referral-wallet-proxy</artifactId>
     <name>referral-wallet-proxy</name>

@@ -11,10 +11,6 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <properties>
-        <spring-cloud.version>2020.0.2</spring-cloud.version>
-    </properties>
-
     <groupId>co.nilin.opex.referral.ports.accountant.proxy</groupId>
     <artifactId>referral-accountant-proxy</artifactId>
     <name>referral-accountant-proxy</name>
@@ -49,14 +45,6 @@
             <artifactId>spring-cloud-starter-consul-all</artifactId>
         </dependency>
     </dependencies>
-
-    <repositories>
-        <repository>
-            <id>spring-milestones</id>
-            <name>Spring Milestones</name>
-            <url>https://repo.spring.io/milestone</url>
-        </repository>
-    </repositories>
 
     <dependencyManagement>
         <dependencies>
