@@ -74,7 +74,7 @@ class KafkaConfig {
         val containerProps = ContainerProperties(Pattern.compile("richTrade"))
         containerProps.messageListener = richTradeListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.beanName = "ReferralRichTradeKafkaListenerContainer"
+        container.setBeanName("ReferralRichTradeKafkaListenerContainer")
         container.start()
     }
 

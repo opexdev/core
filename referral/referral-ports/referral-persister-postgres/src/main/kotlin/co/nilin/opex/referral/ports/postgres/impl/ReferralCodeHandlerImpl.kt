@@ -6,8 +6,7 @@ import co.nilin.opex.referral.ports.postgres.dao.Reference
 import co.nilin.opex.referral.ports.postgres.repository.ReferenceRepository
 import co.nilin.opex.referral.ports.postgres.repository.ReferralCodeRepository
 import kotlinx.coroutines.reactive.awaitSingle
-import kotlinx.coroutines.reactive.awaitSingleOrDefault
-import kotlinx.coroutines.reactive.awaitSingleOrNull
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -23,7 +22,7 @@ class ReferralCodeHandlerImpl(
     ): String {
         if (referentCommission < BigDecimal.ZERO || referentCommission > BigDecimal.ONE)
             throw IllegalArgumentException("Commission value must be in range of [0, 1]")
-        val lastId = referralCodeRepository.findMaxId().awaitSingleOrDefault(-1) + 1
+        val lastId = referralCodeRepository.findMaxId().awaitSingleOrNull()?.let { it + 1 } ?: 0
         val codeInteger = BigInteger.TEN.pow(7).toLong() + lastId
         if (codeInteger >= BigInteger.TEN.pow(8).toLong()) throw Exception("No referral code available")
         val code = codeInteger.toString()
@@ -47,7 +46,7 @@ class ReferralCodeHandlerImpl(
     override suspend fun findByReferrerUuid(uuid: String): List<ReferralCode> {
         return referralCodeRepository.findByUuid(uuid).map { ReferralCode(it.uuid, it.code, it.referentCommission) }
             .collectList()
-            .awaitSingleOrNull()
+            .awaitSingleOrNull() ?: emptyList()
     }
 
     override suspend fun findByCode(code: String): ReferralCode? {
