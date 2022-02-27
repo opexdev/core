@@ -1,5 +1,6 @@
 package co.nilin.opex.referral.app.config
 
+import co.nilin.opex.referral.app.utils.hasRole
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
@@ -18,15 +19,8 @@ class SecurityConfig(private val webClient: WebClient) {
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
         http.csrf().disable()
             .authorizeExchange()
-//            .pathMatchers("/codes", "/checkouts", "/commissions/**").access { mono, _ ->
-//                mono.map { auth ->
-//                    auth.authorities.any { authority -> authority.authority == "SCOPE_trust" } && ((auth.principal as Jwt).claims["groups"] as JSONArray)
-//                        .contains("finance-admin")
-//                }.map { granted ->
-//                    AuthorizationDecision(granted)
-//                }
-//            }
-//            .pathMatchers("/**").hasAuthority("SCOPE_trust")
+            .pathMatchers("/codes", "/checkouts", "/commissions/**").hasRole("SCOPE_trust", "finance-admin")
+            .pathMatchers("/**").hasAuthority("SCOPE_trust")
             .pathMatchers("/**").permitAll()
             .anyExchange().authenticated()
             .and()
