@@ -40,8 +40,8 @@ ON CONFLICT DO NOTHING;
 SELECT setval(pg_get_serial_sequence('currency_implementations', 'id'), (SELECT MAX(id) FROM currency_implementations));
 
 INSERT INTO chain_endpoints(id, chain_name, endpoint_url)
-VALUES (1, 'bitcoin', 'lb://gateway/bitcoin/transfers'),
-       (2, 'ethereum', 'lb://gateway/eth/transfers')
+VALUES (1, 'bitcoin', 'lb://chain-scan-gateway/bitcoin/transfers'),
+       (2, 'ethereum', 'lb://chain-scan-gateway/eth/transfers')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO chain_sync_schedules
