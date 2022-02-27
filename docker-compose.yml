@@ -234,7 +234,7 @@ services:
       restart_policy:
         condition: on-failure
   postgres-referral:
-    image: "postgres"
+    image: postgres:14-alpine
     environment:
       - POSTGRES_USER=${DB_USER:-opex}
       - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
