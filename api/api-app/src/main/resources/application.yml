@@ -13,9 +13,6 @@ spring:
     bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
     consumer:
       group-id: api
-  redis:
-    host: ${REDIS_HOST:localhost}
-    port: 6379
   r2dbc:
     url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex_api
     username: ${dbusername:opex}
