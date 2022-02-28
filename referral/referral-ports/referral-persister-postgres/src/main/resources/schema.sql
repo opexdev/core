@@ -3,7 +3,8 @@ CREATE TABLE IF NOT EXISTS configs (
     referral_commission_reward DECIMAL NOT NULL,
     payment_currency VARCHAR(20) NOT NULL,
     min_payment_amount DECIMAL NOT NULL,
-    payment_window_seconds INTEGER NOT NULL
+    payment_window_seconds INTEGER NOT NULL,
+    max_referral_code_per_user INTEGER NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS referral_codes (

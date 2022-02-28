@@ -3,7 +3,7 @@ package co.nilin.opex.referral.ports.postgres.impl
 import co.nilin.opex.referral.core.model.Config
 import co.nilin.opex.referral.core.spi.ConfigHandler
 import co.nilin.opex.referral.ports.postgres.repository.ConfigRepository
-import kotlinx.coroutines.reactive.awaitSingleOrNull
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.stereotype.Service
 
 @Service
@@ -16,7 +16,8 @@ class ConfigHandlerImpl(private val configRepository: ConfigRepository) : Config
                     it.referralCommissionReward,
                     it.paymentCurrency,
                     it.minPaymentAmount,
-                    it.paymentWindowSeconds
+                    it.paymentWindowSeconds,
+                    it.maxReferralCodePerUser
                 )
             }
             .awaitSingleOrNull()

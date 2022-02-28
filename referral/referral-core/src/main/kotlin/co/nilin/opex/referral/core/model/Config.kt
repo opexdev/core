@@ -7,5 +7,6 @@ data class Config(
     var referralCommissionReward: BigDecimal,
     var paymentCurrency: String,
     var minPaymentAmount: BigDecimal,
-    var paymentWindowSeconds: Int
+    var paymentWindowSeconds: Int,
+    var maxReferralCodePerUser: Int
 )
