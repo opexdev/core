@@ -19,9 +19,12 @@ class SecurityConfig(private val webClient: WebClient) {
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
         http.csrf().disable()
             .authorizeExchange()
+            .pathMatchers("/hello").permitAll()
+            .pathMatchers("/actuator/**").permitAll()
+            .pathMatchers("/swagger-ui/**").permitAll()
+            .pathMatchers("/swagger-resources/**").permitAll()
             .pathMatchers("/codes", "/checkouts", "/commissions/**").hasRole("SCOPE_trust", "finance-admin")
             .pathMatchers("/**").hasAuthority("SCOPE_trust")
-            .pathMatchers("/**").permitAll()
             .anyExchange().authenticated()
             .and()
             .oauth2ResourceServer()
