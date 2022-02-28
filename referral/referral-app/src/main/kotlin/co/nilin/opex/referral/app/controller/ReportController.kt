@@ -42,7 +42,7 @@ class ReportController(
     }
 
     @GetMapping("/reports/users/{rewardedUuid}")
-    suspend fun getReportByReferrerUuid(
+    suspend fun getReportByRewardedUuid(
         @PathVariable rewardedUuid: String,
         @CurrentSecurityContext securityContext: SecurityContext
     ): ReferrerReportBody {
