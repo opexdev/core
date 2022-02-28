@@ -1,4 +1,4 @@
-package co.nilin.opex.referral.ports.accountant.proxy.impl
+package co.nilin.opex.referral.ports.api.proxy.impl
 
 import co.nilin.opex.referral.core.api.SymbolPriceCalculator
 import co.nilin.opex.referral.core.spi.ApiProxy

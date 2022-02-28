@@ -20,7 +20,7 @@
         <module>referral-ports/referral-persister-postgres</module>
         <module>referral-ports/referral-eventlistener-kafka</module>
         <module>referral-ports/referral-wallet-proxy</module>
-        <module>referral-ports/referral-accountant-proxy</module>
+        <module>referral-ports/referral-api-proxy</module>
     </modules>
 
     <dependencies>
@@ -58,8 +58,8 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>co.nilin.opex.referral.ports.accountant.proxy</groupId>
-                <artifactId>referral-accountant-proxy</artifactId>
+                <groupId>co.nilin.opex.referral.ports.api.proxy</groupId>
+                <artifactId>referral-api-proxy</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

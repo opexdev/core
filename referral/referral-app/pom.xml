@@ -68,8 +68,8 @@
             <artifactId>referral-persister-postgres</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.referral.ports.accountant.proxy</groupId>
-            <artifactId>referral-accountant-proxy</artifactId>
+            <groupId>co.nilin.opex.referral.ports.api.proxy</groupId>
+            <artifactId>referral-api-proxy</artifactId>
         </dependency>
         <dependency>
             <groupId>co.nilin.opex.referral.ports.wallet.proxy</groupId>

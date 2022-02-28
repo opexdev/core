@@ -15,7 +15,6 @@
     <artifactId>referral-persister-postgres</artifactId>
     <name>referral-persister-postgres</name>
 
-
     <dependencies>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>

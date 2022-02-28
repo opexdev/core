@@ -1,4 +1,4 @@
-package co.nilin.opex.referral.ports.accountant.proxy.proxy
+package co.nilin.opex.referral.ports.api.proxy.proxy
 
 import co.nilin.opex.referral.core.spi.ApiProxy
 import kotlinx.coroutines.reactive.awaitFirst

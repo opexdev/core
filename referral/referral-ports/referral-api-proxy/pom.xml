@@ -11,9 +11,9 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <groupId>co.nilin.opex.referral.ports.accountant.proxy</groupId>
-    <artifactId>referral-accountant-proxy</artifactId>
-    <name>referral-accountant-proxy</name>
+    <groupId>co.nilin.opex.referral.ports.api.proxy</groupId>
+    <artifactId>referral-api-proxy</artifactId>
+    <name>referral-api-proxy</name>
 
     <dependencies>
         <dependency>
