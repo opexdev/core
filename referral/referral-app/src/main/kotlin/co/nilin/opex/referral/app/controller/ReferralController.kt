@@ -48,7 +48,7 @@ class ReferralController(
         return referralCodeHandler.runCatching {
             val maxReferralCodePerUser = configHandler.findConfig("default")!!.maxReferralCodePerUser
             val count = referralCodeHandler.findByReferrerUuid(body.uuid).size
-            if (count > maxReferralCodePerUser) throw OpexException(
+            if (count >= maxReferralCodePerUser) throw OpexException(
                 OpexError.Forbidden,
                 "You have reached maximum number of referral codes"
             )
