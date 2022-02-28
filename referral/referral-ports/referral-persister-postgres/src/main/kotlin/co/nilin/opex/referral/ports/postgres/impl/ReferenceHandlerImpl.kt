@@ -5,8 +5,8 @@ import co.nilin.opex.referral.core.model.ReferralCode
 import co.nilin.opex.referral.core.spi.ReferenceHandler
 import co.nilin.opex.referral.ports.postgres.repository.ReferenceRepository
 import co.nilin.opex.referral.ports.postgres.repository.ReferralCodeRepository
-import kotlinx.coroutines.reactive.awaitSingle
-import kotlinx.coroutines.reactive.awaitSingleOrNull
+import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.stereotype.Service
 
 @Service
@@ -33,11 +33,11 @@ class ReferenceHandlerImpl(
     }
 
     override suspend fun findByReferrerUuid(uuid: String): List<Reference> {
-        val ref = referenceRepository.findByReferrerUuid(uuid).collectList().awaitSingle()
-        val referralCode = referralCodeRepository.findByUuid(uuid).map {
-            ReferralCode(it.uuid, it.code, it.referentCommission)
-        }.awaitSingle()
-        return ref.map { Reference(referralCode, it.referentUuid) }
+        val referralCode = referralCodeRepository.findByUuid(uuid)
+            .map { it.id!! to ReferralCode(it.uuid, it.code, it.referentCommission) }
+            .collectList().awaitSingle().toMap()
+        return if (referralCode.isNotEmpty()) referenceRepository.findByReferrerUuid(uuid).collectList().awaitSingle()
+            .map { Reference(referralCode.getValue(it.referralCodeId), it.referentUuid) } else emptyList()
     }
 
     override suspend fun findByCode(code: String): List<Reference> {
