@@ -4,6 +4,7 @@ import co.nilin.opex.wallet.ports.kafka.listener.model.AdminEvent
 import co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringSerializer
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -18,7 +19,7 @@ class KafkaProducerConfig {
     @Value("\${spring.kafka.bootstrap-servers}")
     private lateinit var bootstrapServers: String
 
-    @Bean
+    @Bean("producerConfigs")
     fun producerConfigs(): Map<String, Any?> {
         return mapOf(
             ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
@@ -29,7 +30,7 @@ class KafkaProducerConfig {
     }
 
     @Bean("walletProducerFactory")
-    fun producerFactory(producerConfigs: Map<String, Any?>): ProducerFactory<String?, UserCreatedEvent> {
+    fun producerFactory(@Qualifier("producerConfigs") producerConfigs: Map<String, Any?>): ProducerFactory<String?, UserCreatedEvent> {
         return DefaultKafkaProducerFactory(producerConfigs)
     }
 
@@ -39,7 +40,7 @@ class KafkaProducerConfig {
     }
 
     @Bean
-    fun adminProducerFactory(config: Map<String, Any>): ProducerFactory<String?, AdminEvent> {
+    fun adminProducerFactory(@Qualifier("producerConfigs") config: Map<String, Any>): ProducerFactory<String?, AdminEvent> {
         return DefaultKafkaProducerFactory(config)
     }
 

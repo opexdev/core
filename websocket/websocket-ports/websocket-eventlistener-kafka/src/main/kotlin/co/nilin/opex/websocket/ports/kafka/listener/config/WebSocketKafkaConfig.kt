@@ -31,7 +31,7 @@ class WebSocketKafkaConfig {
     @Value("\${spring.kafka.consumer.group-id}")
     private lateinit var groupId: String
 
-    @Bean
+    @Bean("consumerConfigs")
     fun consumerConfigs(): Map<String, Any> {
         return mapOf(
             ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
@@ -43,17 +43,17 @@ class WebSocketKafkaConfig {
     }
 
     @Bean("eventConsumerFactory")
-    fun consumerFactory(consumerConfigs: Map<String, Any>): ConsumerFactory<String, CoreEvent> {
+    fun consumerFactory(@Qualifier("consumerConfigs") consumerConfigs: Map<String, Any>): ConsumerFactory<String, CoreEvent> {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
 
     @Bean("richTradeConsumerFactory")
-    fun richTradeConsumerFactory(consumerConfigs: Map<String, Any>): ConsumerFactory<String, RichTrade> {
+    fun richTradeConsumerFactory(@Qualifier("consumerConfigs") consumerConfigs: Map<String, Any>): ConsumerFactory<String, RichTrade> {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
 
     @Bean("richOrderConsumerFactory")
-    fun richOrderConsumerFactory(consumerConfigs: Map<String, Any>): ConsumerFactory<String, RichOrderEvent> {
+    fun richOrderConsumerFactory(@Qualifier("consumerConfigs") consumerConfigs: Map<String, Any>): ConsumerFactory<String, RichOrderEvent> {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
 

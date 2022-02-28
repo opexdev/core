@@ -30,7 +30,7 @@ class WalletKafkaConfig {
     @Value("\${spring.kafka.consumer.group-id}")
     private lateinit var groupId: String
 
-    @Bean
+    @Bean("consumerConfigs")
     fun consumerConfigs(): Map<String, Any?> {
         return mapOf(
             ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
@@ -43,12 +43,12 @@ class WalletKafkaConfig {
     }
 
     @Bean("walletConsumerFactory")
-    fun consumerFactory(consumerConfigs: Map<String, Any?>): ConsumerFactory<String, UserCreatedEvent> {
+    fun consumerFactory(@Qualifier("consumerConfigs") consumerConfigs: Map<String, Any?>): ConsumerFactory<String, UserCreatedEvent> {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
 
     @Bean
-    fun adminEventsConsumerFactory(consumerConfigs: Map<String, Any?>): ConsumerFactory<String?, AdminEvent> {
+    fun adminEventsConsumerFactory(@Qualifier("consumerConfigs") consumerConfigs: Map<String, Any?>): ConsumerFactory<String?, AdminEvent> {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
 

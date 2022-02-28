@@ -27,13 +27,13 @@ class OrderKafkaConfig {
     private lateinit var bootstrapServers: String
 
     @Value("\${spring.kafka.consumer.group-id}")
-    private val groupId: String? = null
+    private lateinit var groupId: String
 
     @Value("\${spring.app.symbols}")
-    private val symbols: String? = null
+    private lateinit var symbols: String
 
-    @Bean("orderConsumerConfigs")
-    fun consumerConfigs(): Map<String, Any?>? {
+    @Bean("consumerConfigs")
+    fun consumerConfigs(): Map<String, Any?> {
         return mapOf(
             ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
             ConsumerConfig.GROUP_ID_CONFIG to groupId,
@@ -45,12 +45,12 @@ class OrderKafkaConfig {
     }
 
     @Bean("orderConsumerFactory")
-    fun consumerFactory(@Qualifier("orderConsumerConfigs") consumerConfigs: Map<String, Any>): ConsumerFactory<String, OrderSubmitRequest> {
+    fun consumerFactory(@Qualifier("consumerConfigs") consumerConfigs: Map<String, Any>): ConsumerFactory<String, OrderSubmitRequest> {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
 
     @Bean("eventConsumerFactory")
-    fun eventConsumerFactory(@Qualifier("orderConsumerConfigs") consumerConfigs: Map<String, Any>): ConsumerFactory<String, CoreEvent> {
+    fun eventConsumerFactory(@Qualifier("consumerConfigs") consumerConfigs: Map<String, Any>): ConsumerFactory<String, CoreEvent> {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
 
@@ -60,7 +60,7 @@ class OrderKafkaConfig {
         @Qualifier("orderKafkaTemplate") template: KafkaTemplate<String?, OrderSubmitRequest>,
         @Qualifier("orderConsumerFactory") consumerFactory: ConsumerFactory<String, OrderSubmitRequest>
     ) {
-        val topics = symbols!!.split(",").map { s -> "orders_$s" }.toTypedArray()
+        val topics = symbols.split(",").map { s -> "orders_$s" }.toTypedArray()
         val containerProps = ContainerProperties(*topics)
         containerProps.messageListener = orderKafkaListener
         val container = KafkaMessageListenerContainer(consumerFactory, containerProps)

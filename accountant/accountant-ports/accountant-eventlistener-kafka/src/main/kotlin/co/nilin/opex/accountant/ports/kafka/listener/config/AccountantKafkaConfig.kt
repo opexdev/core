@@ -26,13 +26,13 @@ import java.util.regex.Pattern
 class AccountantKafkaConfig {
 
     @Value("\${spring.kafka.bootstrap-servers}")
-    private val bootstrapServers: String? = null
+    private lateinit var bootstrapServers: String
 
     @Value("\${spring.kafka.consumer.group-id}")
-    private val groupId: String? = null
+    private lateinit var groupId: String
 
-    @Bean("accountantConsumerConfig")
-    fun consumerConfigs(): Map<String, Any?> {
+    @Bean("consumerConfig")
+    fun consumerConfigs(): Map<String, Any> {
         return mapOf(
             ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
             ConsumerConfig.GROUP_ID_CONFIG to groupId,
@@ -44,7 +44,7 @@ class AccountantKafkaConfig {
     }
 
     @Bean("accountantConsumerFactory")
-    fun consumerFactory(@Qualifier("accountantConsumerConfig") consumerConfigs: Map<String, Any?>): ConsumerFactory<String, CoreEvent> {
+    fun consumerFactory(@Qualifier("consumerConfig") consumerConfigs: Map<String, Any?>): ConsumerFactory<String, CoreEvent> {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
 

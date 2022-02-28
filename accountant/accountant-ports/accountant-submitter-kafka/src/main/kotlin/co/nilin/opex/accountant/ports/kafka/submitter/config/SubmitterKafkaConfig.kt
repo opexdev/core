@@ -3,22 +3,16 @@ package co.nilin.opex.accountant.ports.kafka.submitter.config
 import co.nilin.opex.accountant.core.inout.RichOrderEvent
 import co.nilin.opex.accountant.core.inout.RichTrade
 import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
-import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.producer.ProducerConfig
-import org.apache.kafka.common.config.TopicConfig
 import org.apache.kafka.common.serialization.StringSerializer
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.support.GenericApplicationContext
-import org.springframework.kafka.config.TopicBuilder
 import org.springframework.kafka.core.DefaultKafkaProducerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.core.ProducerFactory
 import org.springframework.kafka.support.serializer.JsonSerializer
-import java.util.function.Supplier
 
 @Configuration
 class SubmitterKafkaConfig {
@@ -26,7 +20,7 @@ class SubmitterKafkaConfig {
     @Value("\${spring.kafka.bootstrap-servers}")
     private lateinit var bootstrapServers: String
 
-    @Bean("accountantProducerConfigs")
+    @Bean("producerConfigs")
     fun producerConfigs(): Map<String, Any> {
         return mapOf(
             ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
@@ -38,7 +32,7 @@ class SubmitterKafkaConfig {
     }
 
     @Bean("accountantEventProducerFactory")
-    fun producerFactory(@Qualifier("accountantProducerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, CoreEvent> {
+    fun producerFactory(@Qualifier("producerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, CoreEvent> {
         return DefaultKafkaProducerFactory(producerConfigs)
     }
 
@@ -48,7 +42,7 @@ class SubmitterKafkaConfig {
     }
 
     @Bean("richTradeProducerFactory")
-    fun richTradeProducerFactory(@Qualifier("accountantProducerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, RichTrade> {
+    fun richTradeProducerFactory(@Qualifier("producerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, RichTrade> {
         return DefaultKafkaProducerFactory(producerConfigs)
     }
 
@@ -58,7 +52,7 @@ class SubmitterKafkaConfig {
     }
 
     @Bean("richOrderProducerFactory")
-    fun richOrderProducerFactory(producerConfigs: Map<String, Any>): ProducerFactory<String?, RichOrderEvent> {
+    fun richOrderProducerFactory(@Qualifier("producerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, RichOrderEvent> {
         return DefaultKafkaProducerFactory(producerConfigs)
     }
 

@@ -8,14 +8,10 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.support.GenericApplicationContext
-import org.springframework.kafka.config.TopicBuilder
 import org.springframework.kafka.core.DefaultKafkaProducerFactory
-import org.springframework.kafka.core.KafkaAdmin
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.core.ProducerFactory
 import org.springframework.kafka.support.serializer.JsonSerializer
-import java.util.function.Supplier
 
 @Configuration
 class EventsKafkaConfig {
@@ -23,7 +19,7 @@ class EventsKafkaConfig {
     @Value("\${spring.kafka.bootstrap-servers}")
     private lateinit var bootstrapServers: String
 
-    @Bean("eventsProducerConfigs")
+    @Bean("producerConfigs")
     fun producerConfigs(): Map<String, Any> {
         return mapOf(
             ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
@@ -34,7 +30,7 @@ class EventsKafkaConfig {
     }
 
     @Bean("eventsProducerFactory")
-    fun eventProducerFactory(@Qualifier("eventsProducerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, CoreEvent> {
+    fun eventProducerFactory(@Qualifier("producerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, CoreEvent> {
         return DefaultKafkaProducerFactory(producerConfigs)
     }
 
@@ -44,7 +40,7 @@ class EventsKafkaConfig {
     }
 
     @Bean("orderProducerFactory")
-    fun orderProducerFactory(producerConfigs: Map<String, Any>): ProducerFactory<String?, OrderSubmitRequest> {
+    fun orderProducerFactory(@Qualifier("producerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, OrderSubmitRequest> {
         return DefaultKafkaProducerFactory(producerConfigs)
     }
 

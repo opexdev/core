@@ -20,7 +20,7 @@ class KafkaProducerConfig {
     @Value("\${spring.kafka.bootstrap-servers}")
     private lateinit var bootstrapServers: String
 
-    @Bean
+    @Bean("apiProducerConfigs")
     fun producerConfigs(): Map<String, Any> {
         return mapOf(
             ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
@@ -31,7 +31,7 @@ class KafkaProducerConfig {
     }
 
     @Bean("eventsProducerFactory")
-    fun producerFactory(producerConfigs: Map<String, Any>): ProducerFactory<String?, CoreEvent> {
+    fun producerFactory(@Qualifier("apiProducerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, CoreEvent> {
         return DefaultKafkaProducerFactory(producerConfigs)
     }
 
@@ -41,7 +41,7 @@ class KafkaProducerConfig {
     }
 
     @Bean("richTradeProducerFactory")
-    fun richTradeProducerFactory(producerConfigs: Map<String, Any>): ProducerFactory<String?, RichTrade> {
+    fun richTradeProducerFactory(@Qualifier("apiProducerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, RichTrade> {
         return DefaultKafkaProducerFactory(producerConfigs)
     }
 
@@ -51,7 +51,7 @@ class KafkaProducerConfig {
     }
 
     @Bean("richOrderProducerFactory")
-    fun richOrderProducerFactory(producerConfigs: Map<String, Any>): ProducerFactory<String?, RichOrderEvent> {
+    fun richOrderProducerFactory(@Qualifier("apiProducerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, RichOrderEvent> {
         return DefaultKafkaProducerFactory(producerConfigs)
     }
 

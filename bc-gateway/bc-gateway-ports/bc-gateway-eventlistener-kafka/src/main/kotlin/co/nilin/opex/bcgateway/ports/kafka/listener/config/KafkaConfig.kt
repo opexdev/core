@@ -6,6 +6,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.context.annotation.Bean
@@ -27,7 +28,7 @@ class KafkaConfig {
     @Value("\${spring.kafka.consumer.group-id}")
     private val groupId: String? = null
 
-    @Bean
+    @Bean("consumerConfigs")
     fun consumerConfigs(): Map<String, Any?> {
         return mapOf(
             ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
@@ -40,7 +41,7 @@ class KafkaConfig {
     }
 
     @Bean
-    fun adminEventsConsumerFactory(consumerConfigs: Map<String, Any?>): ConsumerFactory<String?, AdminEvent> {
+    fun adminEventsConsumerFactory(@Qualifier("consumerConfigs") consumerConfigs: Map<String, Any?>): ConsumerFactory<String?, AdminEvent> {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
 
