@@ -10,12 +10,12 @@ import java.math.BigDecimal
 class SymbolPriceCalculatorImpl(
     private val apiProxy: ApiProxy,
     private val configHandler: ConfigHandler
-) :
-    SymbolPriceCalculator {
+) : SymbolPriceCalculator {
     override suspend fun getPrice(symbol: String): BigDecimal {
         val out = configHandler.findConfig("default")!!.paymentCurrency
-        return apiProxy.fetchLastPrice("$symbol$out") ?: apiProxy.fetchLastPrice("$out$symbol")
-            ?.takeIf { it > BigDecimal.ZERO }
-            ?.let { BigDecimal.ONE / it } ?: BigDecimal.ZERO
+        return if (out == symbol) BigDecimal.ONE else
+            apiProxy.fetchLastPrice("$symbol$out") ?: apiProxy.fetchLastPrice("$out$symbol")
+                ?.takeIf { it > BigDecimal.ZERO }
+                ?.let { BigDecimal.ONE / it } ?: BigDecimal.ZERO
     }
 }
