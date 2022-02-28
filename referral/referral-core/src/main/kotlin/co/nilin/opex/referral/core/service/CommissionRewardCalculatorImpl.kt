@@ -18,7 +18,7 @@ class CommissionRewardCalculatorImpl(
         if (ouid != richTrade.makerOuid && ouid != richTrade.takerOuid) throw IllegalArgumentException("Order is not correct")
         val uuid = if (ouid == richTrade.makerOuid) richTrade.makerUuid else richTrade.takerUuid
         val reference = referenceHandler.findByReferentUuid(uuid)
-            ?: throw IllegalArgumentException("No referral entity found for uuid ($uuid)")
+            ?: return emptyList()
         val commission =
             if (ouid == richTrade.makerOuid) richTrade.makerCommision * symbolPriceCalculator.getPrice(richTrade.makerCommisionAsset)
             else richTrade.takerCommision * symbolPriceCalculator.getPrice(richTrade.takerCommisionAsset)
