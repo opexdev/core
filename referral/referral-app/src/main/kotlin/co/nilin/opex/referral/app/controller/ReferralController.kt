@@ -80,6 +80,12 @@ class ReferralController(
         }
     }
 
+    @GetMapping("/me/codes")
+    suspend fun getMyReferralCodes(@CurrentSecurityContext securityContext: SecurityContext): List<ReferralCodeBody> {
+        return referralCodeHandler.findByReferrerUuid(securityContext.authentication.name)
+            .map { ReferralCodeBody(it.uuid, it.code, it.referentCommission) }
+    }
+
     @GetMapping("/codes/{code}")
     suspend fun getReferralCodeByCode(
         @PathVariable code: String,
