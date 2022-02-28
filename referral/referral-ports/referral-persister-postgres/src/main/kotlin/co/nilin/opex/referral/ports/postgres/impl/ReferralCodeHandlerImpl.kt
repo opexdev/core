@@ -22,9 +22,9 @@ class ReferralCodeHandlerImpl(
     ): String {
         if (referentCommission < BigDecimal.ZERO || referentCommission > BigDecimal.ONE)
             throw IllegalArgumentException("Commission value must be in range of [0, 1]")
-        val lastId = referralCodeRepository.findMaxId().awaitSingleOrNull()?.let { it + 1 } ?: 0
-        val codeInteger = BigInteger.TEN.pow(7).toLong() + lastId
-        if (codeInteger >= BigInteger.TEN.pow(8).toLong()) throw Exception("No referral code available")
+        val lastId = referralCodeRepository.findMaxId().awaitSingleOrNull() ?: 0
+        val codeInteger = BigInteger.TEN.pow(4).toLong() + lastId
+        if (codeInteger >= BigInteger.TEN.pow(10).toLong()) throw Exception("No referral code available")
         val code = codeInteger.toString()
         val referralCode = co.nilin.opex.referral.ports.postgres.dao.ReferralCode(null, uuid, code, referentCommission)
         referralCodeRepository.save(referralCode).awaitSingleOrNull()
