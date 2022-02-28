@@ -1,6 +1,6 @@
 package co.nilin.opex.referral.ports.accountant.proxy.proxy
 
-import co.nilin.opex.referral.core.spi.AccountantProxy
+import co.nilin.opex.referral.core.spi.ApiProxy
 import kotlinx.coroutines.reactive.awaitFirst
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.ParameterizedTypeReference
@@ -17,12 +17,12 @@ data class PriceTickerResponse(
 inline fun <reified T : Any> typeRef(): ParameterizedTypeReference<T> = object : ParameterizedTypeReference<T>() {}
 
 @Component
-class AccountantProxyImpl(
-    @Value("\${app.accountant.url}") val accountantBaseUrl: String, val webClient: WebClient
-) : AccountantProxy {
+class ApiProxyImpl(
+    @Value("\${app.api.url}") val apiBaseUrl: String, val webClient: WebClient
+) : ApiProxy {
     override suspend fun fetchLastPrice(pairSymbol: String): BigDecimal? {
         val list = webClient.get()
-            .uri(URI.create("$accountantBaseUrl/config/all"))
+            .uri(URI.create("$apiBaseUrl/v3/ticker/price?symbol=${pairSymbol.uppercase()}"))
             .header("Content-Type", "application/json")
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })

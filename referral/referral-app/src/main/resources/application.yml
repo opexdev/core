@@ -47,7 +47,7 @@ spring:
 app:
   wallet:
     url: lb://opex-wallet/
-  accountant:
-    url: lb://opex-accountant/
+  api:
+    url: lb://opex-api/
   auth:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
