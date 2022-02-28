@@ -71,12 +71,11 @@ class ReferralController(
         @CurrentSecurityContext securityContext: SecurityContext
     ) {
         if (uuid != securityContext.authentication.name) throw OpexException(OpexError.UnAuthorized)
-        try {
-            referralCodeHandler.assign(code, uuid)
-        } catch (e: IllegalArgumentException) {
-            throw OpexException(OpexError.BadRequest, e.message)
-        } catch (e: Exception) {
-            throw OpexException(OpexError.InternalServerError, e.message)
+        referralCodeHandler.runCatching { assign(code, uuid) }.onFailure { e ->
+            when (e) {
+                is IllegalArgumentException -> throw OpexException(OpexError.BadRequest, e.message)
+                else -> throw OpexException(OpexError.InternalServerError, e.message)
+            }
         }
     }
 
@@ -101,8 +100,6 @@ class ReferralController(
         @PathVariable code: String,
         @CurrentSecurityContext securityContext: SecurityContext
     ): List<String> {
-        val referralCode = referralCodeHandler.findByCode(code) ?: throw OpexException(OpexError.NotFound)
-        if (referralCode.uuid != securityContext.authentication.name) throw OpexException(OpexError.UnAuthorized)
         return referenceHandler.findByCode(code).map { it.referentUuid }
     }
 
