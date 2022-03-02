@@ -5,6 +5,10 @@ import co.nilin.opex.referral.core.spi.ReferenceHandler
 import co.nilin.opex.referral.core.spi.ReferralCodeHandler
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
+import io.swagger.annotations.ApiOperation
+import io.swagger.annotations.ApiResponse
+import io.swagger.annotations.Example
+import io.swagger.annotations.ExampleProperty
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.GetMapping
@@ -29,6 +33,26 @@ class ReportController(
         val share: BigDecimal
     )
 
+    @ApiOperation(
+        value = "Get report by referral code",
+        notes = "Get report by referral code."
+    )
+    @ApiResponse(
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = """
+                    {
+                        "code": "10000",
+                        "referentsCount": 1,
+                        "share": 0.001
+                    }
+                """,
+                mediaType = "application/json"
+            )
+        )
+    )
     @GetMapping("/reports/codes/{code}")
     suspend fun getReportByCode(
         @PathVariable code: String,
@@ -41,6 +65,26 @@ class ReportController(
         return ReferralCodeReportBody(code, referencesCount, commissions.sumOf { it.share })
     }
 
+    @ApiOperation(
+        value = "Get report by uuid",
+        notes = "Get report by uuid."
+    )
+    @ApiResponse(
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = """
+                    {
+                        "code": "10000",
+                        "referentsCount": 1,
+                        "share": 0.001
+                    }
+                """,
+                mediaType = "application/json"
+            )
+        )
+    )
     @GetMapping("/reports/users/{rewardedUuid}")
     suspend fun getReportByRewardedUuid(
         @PathVariable rewardedUuid: String,
