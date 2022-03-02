@@ -44,7 +44,6 @@ logging:
   level:
     org.apache.kafka: ERROR
     co.nilin: DEBUG
-
 swagger.authUrl: https://api.opex.dev
 app:
   auth:
