@@ -39,7 +39,7 @@ class CommissionController(private val commissionRewardHandler: CommissionReward
                             "referentUuid": "a5e510f9-bda8-4ecb-b500-0980f525dc52",
                             "referralCode": "10000",
                             "richTrade": 1,
-                            "referentOrderDirection": BID,
+                            "referentOrderDirection": "BID",
                             "share": 0.01,
                             "createDate": 1646213088
                         }
@@ -82,7 +82,7 @@ class CommissionController(private val commissionRewardHandler: CommissionReward
                             "referentUuid": "a5e510f9-bda8-4ecb-b500-0980f525dc52",
                             "referralCode": "10000",
                             "richTrade": 1,
-                            "referentOrderDirection": BID,
+                            "referentOrderDirection": "BID",
                             "share": 0.01,
                             "createDate": 1646213088
                         }
