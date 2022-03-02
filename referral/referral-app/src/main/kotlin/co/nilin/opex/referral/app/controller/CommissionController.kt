@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
+import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 import java.time.ZoneId
@@ -30,26 +31,28 @@ class CommissionController(private val commissionRewardHandler: CommissionReward
     @ApiResponse(
         message = "OK",
         code = 200,
+        response = CommissionRewardBody::class,
+        responseContainer = "List",
         examples = Example(
             ExampleProperty(
+                mediaType = "application/json",
                 value = """
-                    [
-                        {
-                            "rewardedUuid": "b3e4f2bd-15c6-4912-bdef-161445a98193",
-                            "referentUuid": "a5e510f9-bda8-4ecb-b500-0980f525dc52",
-                            "referralCode": "10000",
-                            "richTrade": 1,
-                            "referentOrderDirection": "BID",
-                            "share": 0.01,
-                            "createDate": 1646213088
-                        }
-                    ]
-                """,
-                mediaType = "application/json"
+[
+    {
+        "rewardedUuid": "b3e4f2bd-15c6-4912-bdef-161445a98193",
+        "referentUuid": "a5e510f9-bda8-4ecb-b500-0980f525dc52",
+        "referralCode": "10000",
+        "richTrade": 1,
+        "referentOrderDirection": "BID",
+        "share": 0.01,
+        "createDate": 1646213088
+    }
+]
+                """
             )
         )
     )
-    @GetMapping("/commissions/{code}")
+    @GetMapping("/commissions/{code}", produces = [MediaType.APPLICATION_JSON_VALUE])
     suspend fun getCommissionsByReferrerAndCode(
         @PathVariable code: String
     ): List<CommissionRewardBody> {
@@ -73,26 +76,28 @@ class CommissionController(private val commissionRewardHandler: CommissionReward
     @ApiResponse(
         message = "OK",
         code = 200,
+        response = CommissionRewardBody::class,
+        responseContainer = "List",
         examples = Example(
             ExampleProperty(
+                mediaType = "application/json",
                 value = """
-                    [
-                        {
-                            "rewardedUuid": "b3e4f2bd-15c6-4912-bdef-161445a98193",
-                            "referentUuid": "a5e510f9-bda8-4ecb-b500-0980f525dc52",
-                            "referralCode": "10000",
-                            "richTrade": 1,
-                            "referentOrderDirection": "BID",
-                            "share": 0.01,
-                            "createDate": 1646213088
-                        }
-                    ]
-                """,
-                mediaType = "application/json"
+[
+    {
+        "rewardedUuid": "b3e4f2bd-15c6-4912-bdef-161445a98193",
+        "referentUuid": "a5e510f9-bda8-4ecb-b500-0980f525dc52",
+        "referralCode": "10000",
+        "richTrade": 1,
+        "referentOrderDirection": "BID",
+        "share": 0.01,
+        "createDate": 1646213088
+    }
+]
+                """
             )
         )
     )
-    @GetMapping("/commissions")
+    @GetMapping("/commissions", produces = [MediaType.APPLICATION_JSON_VALUE])
     suspend fun getCommissions(
         @RequestParam rewardedUuid: String?,
         @RequestParam referentUuid: String?
@@ -115,7 +120,7 @@ class CommissionController(private val commissionRewardHandler: CommissionReward
         notes = "Delete commissions base on given information."
     )
     @ApiResponse(message = "OK", code = 200)
-    @DeleteMapping("/commissions")
+    @DeleteMapping("/commissions", produces = [MediaType.APPLICATION_JSON_VALUE])
     suspend fun deleteCommissions(
         @RequestParam code: String?,
         @RequestParam referrerUuid: String?,
@@ -129,7 +134,7 @@ class CommissionController(private val commissionRewardHandler: CommissionReward
         notes = "Delete commission record by id."
     )
     @ApiResponse(message = "OK", code = 200)
-    @DeleteMapping("/commissions/{id}")
+    @DeleteMapping("/commissions/{id}", produces = [MediaType.APPLICATION_JSON_VALUE])
     suspend fun deleteCommissionById(@PathVariable id: Long) {
         commissionRewardHandler.deleteCommissionById(id)
     }
