@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
+import org.springframework.http.MediaType
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.GetMapping
@@ -40,20 +41,21 @@ class ReportController(
     @ApiResponse(
         message = "OK",
         code = 200,
+        response = ReferralCodeReportBody::class,
         examples = Example(
             ExampleProperty(
+                mediaType = "application/json",
                 value = """
-                    {
-                        "code": "10000",
-                        "referentsCount": 1,
-                        "share": 0.001
-                    }
+{
+    "code": "10000",
+    "referentsCount": 1,
+    "share": 0.001
+}
                 """,
-                mediaType = "application/json"
             )
         )
     )
-    @GetMapping("/reports/codes/{code}")
+    @GetMapping("/reports/codes/{code}", produces = [MediaType.APPLICATION_JSON_VALUE])
     suspend fun getReportByCode(
         @PathVariable code: String,
         @CurrentSecurityContext securityContext: SecurityContext
@@ -72,20 +74,20 @@ class ReportController(
     @ApiResponse(
         message = "OK",
         code = 200,
+        response = ReferrerReportBody::class,
         examples = Example(
             ExampleProperty(
+                mediaType = "application/json",
                 value = """
-                    {
-                        "code": "10000",
-                        "referentsCount": 1,
-                        "share": 0.001
-                    }
+{
+    "referentsCount": 1,
+    "share": 0.001
+}
                 """,
-                mediaType = "application/json"
             )
         )
     )
-    @GetMapping("/reports/users/{rewardedUuid}")
+    @GetMapping("/reports/users/{rewardedUuid}", produces = [MediaType.APPLICATION_JSON_VALUE])
     suspend fun getReportByRewardedUuid(
         @PathVariable rewardedUuid: String,
         @CurrentSecurityContext securityContext: SecurityContext
