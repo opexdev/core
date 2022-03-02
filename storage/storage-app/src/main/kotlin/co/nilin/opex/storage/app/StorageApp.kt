@@ -9,7 +9,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2
 @SpringBootApplication
 @ComponentScan("co.nilin.opex")
 @EnableOpexErrorHandler
-@EnableSwagger2
 class StorageApp
 
 fun main(args: Array<String>) {

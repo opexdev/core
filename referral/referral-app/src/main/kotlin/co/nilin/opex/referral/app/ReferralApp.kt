@@ -9,7 +9,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2
 @SpringBootApplication
 @ComponentScan("co.nilin.opex")
 @EnableOpexErrorHandler
-@EnableSwagger2
 class ReferralApp
 
 fun main(args: Array<String>) {
