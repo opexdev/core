@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
+import org.springframework.http.MediaType
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
@@ -43,18 +44,22 @@ class ReferralController(
         }
     }
 
-    @ApiOperation(value = "Create new referral code", notes = "Send user information to create new referral code. referentCommission is a value in range [0, 1].")
+    @ApiOperation(
+        value = "Create new referral code",
+        notes = "Send user information to create new referral code. referentCommission is a value in range [0, 1]."
+    )
     @ApiResponse(
         message = "OK",
         code = 200,
+        response = String::class,
         examples = Example(
             ExampleProperty(
-                value = "10000",
-                mediaType = "application/json"
+                mediaType = "application/json",
+                value = "10000"
             )
         )
     )
-    @PostMapping("/codes")
+    @PostMapping("/codes", produces = [MediaType.APPLICATION_JSON_VALUE])
     suspend fun generateReferralCode(
         @RequestBody body: PostReferralBody,
         @CurrentSecurityContext securityContext: SecurityContext
@@ -77,7 +82,7 @@ class ReferralController(
         notes = "Edit referral code properties. The id code is immutable, you can not change it. referentCommission is a value in range [0, 1]."
     )
     @ApiResponse(message = "OK", code = 200)
-    @PatchMapping("/codes/{code}")
+    @PatchMapping("/codes/{code}", produces = [MediaType.APPLICATION_JSON_VALUE])
     suspend fun updateReferralCodeByCode(
         @PathVariable code: String,
         @RequestBody body: PatchReferralBody,
@@ -97,7 +102,7 @@ class ReferralController(
         notes = "Referrer can not be one of your referents. Also can not refer yourself."
     )
     @ApiResponse(message = "OK", code = 200)
-    @PutMapping("/codes/{code}/assign")
+    @PutMapping("/codes/{code}/assign", produces = [MediaType.APPLICATION_JSON_VALUE])
     suspend fun assignReferrer(
         @PathVariable code: String,
         @RequestParam uuid: String,
@@ -111,14 +116,24 @@ class ReferralController(
     @ApiResponse(
         message = "OK",
         code = 200,
+        response = ReferralCodeBody::class,
+        responseContainer = "List",
         examples = Example(
             ExampleProperty(
-                value = "[{ \"uuid\": \"b3e4f2bd-15c6-4912-bdef-161445a98193\", \"code\": \"10000\", \"referentCommission\": 0}]",
-                mediaType = "application/json"
+                mediaType = "application/json",
+                value = """
+[
+    {
+        "uuid": "b3e4f2bd-15c6-4912-bdef-161445a98193",
+        "code": "10000", 
+        "referentCommission": 0
+    }
+]
+                """,
             )
         )
     )
-    @GetMapping("/me/codes")
+    @GetMapping("/me/codes", produces = [MediaType.APPLICATION_JSON_VALUE])
     suspend fun getMyReferralCodes(@CurrentSecurityContext securityContext: SecurityContext): List<ReferralCodeBody> {
         return referralCodeHandler.findByReferrerUuid(securityContext.authentication.name)
             .map { ReferralCodeBody(it.uuid, it.code, it.referentCommission) }
@@ -128,14 +143,21 @@ class ReferralController(
     @ApiResponse(
         message = "OK",
         code = 200,
+        response = ReferralCodeBody::class,
         examples = Example(
             ExampleProperty(
-                value = "{ \"uuid\": \"b3e4f2bd-15c6-4912-bdef-161445a98193\", \"code\": \"10000\", \"referentCommission\": 0}",
-                mediaType = "application/json"
+                mediaType = "application/json",
+                value = """
+{ 
+    "uuid": "b3e4f2bd-15c6-4912-bdef-161445a98193",
+    "code": "10000", 
+    "referentCommission": 0
+}
+                """,
             )
         )
     )
-    @GetMapping("/codes/{code}")
+    @GetMapping("/codes/{code}", produces = [MediaType.APPLICATION_JSON_VALUE])
     suspend fun getReferralCodeByCode(
         @PathVariable code: String,
         @CurrentSecurityContext securityContext: SecurityContext
@@ -149,14 +171,16 @@ class ReferralController(
     @ApiResponse(
         message = "OK",
         code = 200,
+        response = String::class,
+        responseContainer = "List",
         examples = Example(
             ExampleProperty(
+                mediaType = "application/json",
                 value = "[\"b3e4f2bd-15c6-4912-bdef-161445a98193\"]",
-                mediaType = "application/json"
             )
         )
     )
-    @GetMapping("/codes/{code}/references")
+    @GetMapping("/codes/{code}/references", produces = [MediaType.APPLICATION_JSON_VALUE])
     suspend fun getReferenceByCode(
         @PathVariable code: String,
         @CurrentSecurityContext securityContext: SecurityContext
@@ -168,21 +192,31 @@ class ReferralController(
     @ApiResponse(
         message = "OK",
         code = 200,
+        response = ReferralCodeBody::class,
+        responseContainer = "List",
         examples = Example(
             ExampleProperty(
-                value = "[{ \"uuid\": \"b3e4f2bd-15c6-4912-bdef-161445a98193\", \"code\": \"10000\", \"referentCommission\": 0}]",
-                mediaType = "application/json"
+                mediaType = "application/json",
+                value = """
+[
+    {
+        "uuid": "b3e4f2bd-15c6-4912-bdef-161445a98193", 
+        "code": "10000", 
+        "referentCommission": 0
+    }
+]
+                """,
             )
         )
     )
-    @GetMapping("/codes")
+    @GetMapping("/codes", produces = [MediaType.APPLICATION_JSON_VALUE])
     suspend fun getAllReferralCodes(): List<ReferralCodeBody> {
         return referralCodeHandler.findAll().map { ReferralCodeBody(it.uuid, it.code, it.referentCommission) }
     }
 
     @ApiOperation(value = "Delete referral code", notes = "Delete referral codes by its id.")
     @ApiResponse(message = "OK", code = 200)
-    @DeleteMapping("/codes/{code}")
+    @DeleteMapping("/codes/{code}", produces = [MediaType.APPLICATION_JSON_VALUE])
     suspend fun deleteReferralCode(
         @PathVariable code: String,
         @CurrentSecurityContext securityContext: SecurityContext

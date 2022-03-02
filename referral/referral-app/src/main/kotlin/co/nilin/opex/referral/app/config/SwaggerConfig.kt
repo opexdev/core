@@ -2,6 +2,7 @@ package co.nilin.opex.referral.app.config
 
 import co.nilin.opex.referral.app.controller.CheckoutController
 import co.nilin.opex.referral.app.controller.CommissionController
+import co.nilin.opex.referral.app.controller.ReferralController
 import com.fasterxml.classmate.TypeResolver
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -39,7 +40,8 @@ class SwaggerConfig {
             .build()
             .additionalModels(
                 typeResolver.resolve(CheckoutController.CheckoutRecordBody::class.java),
-                typeResolver.resolve(CommissionController.CommissionRewardBody::class.java)
+                typeResolver.resolve(CommissionController.CommissionRewardBody::class.java),
+                typeResolver.resolve(ReferralController.ReferralCodeBody::class.java)
             )
             .ignoredParameterTypes(
                 AuthenticationPrincipal::class.java,
