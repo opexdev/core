@@ -4,10 +4,10 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.core.annotation.CurrentSecurityContext
 import springfox.documentation.builders.ApiInfoBuilder
 import springfox.documentation.builders.OAuthBuilder
 import springfox.documentation.builders.PathSelectors
-import springfox.documentation.builders.RequestParameterBuilder
 import springfox.documentation.service.*
 import springfox.documentation.spi.DocumentationType
 import springfox.documentation.spi.service.contexts.SecurityContext
@@ -30,17 +30,11 @@ class SwaggerConfig {
             .select()
             .paths(PathSelectors.regex("^/actuator.*").negate())
             .build()
-            .globalRequestParameters(
-                Collections.singletonList(
-                    RequestParameterBuilder()
-                        .name("content-type")
-                        .description("content-type")
-                        .`in`(ParameterType.HEADER)
-                        .required(true)
-                        .build()
-                )
+            .ignoredParameterTypes(
+                AuthenticationPrincipal::class.java,
+                CurrentSecurityContext::class.java,
+                Principal::class.java
             )
-            .ignoredParameterTypes(AuthenticationPrincipal::class.java, Principal::class.java)
             .useDefaultResponseMessages(false)
             .securitySchemes(Collections.singletonList(oauth()))
             .securityContexts(Collections.singletonList(securityContext()))
