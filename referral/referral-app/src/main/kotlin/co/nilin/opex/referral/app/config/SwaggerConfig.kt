@@ -1,5 +1,8 @@
 package co.nilin.opex.referral.app.config
 
+import co.nilin.opex.referral.app.controller.CheckoutController
+import com.fasterxml.classmate.TypeResolver
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -22,6 +25,9 @@ class SwaggerConfig {
     @Value("\${swagger.authUrl}")
     private lateinit var authUrl: String
 
+    @Autowired
+    private lateinit var typeResolver: TypeResolver
+
     @Bean
     fun opexBCGateway(): Docket {
         return Docket(DocumentationType.SWAGGER_2)
@@ -30,6 +36,7 @@ class SwaggerConfig {
             .select()
             .paths(PathSelectors.regex("^/actuator.*").negate())
             .build()
+            .additionalModels(typeResolver.resolve(CheckoutController.CheckoutRecordBody::class.java))
             .ignoredParameterTypes(
                 AuthenticationPrincipal::class.java,
                 CurrentSecurityContext::class.java,

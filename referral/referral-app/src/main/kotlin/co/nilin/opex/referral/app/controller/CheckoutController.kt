@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
+import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 import java.time.ZoneId
@@ -41,10 +42,9 @@ class CheckoutController(
     )
     @ApiResponse(
         message = "OK",
-        code = 200,
-        examples = Example()
+        code = 200
     )
-    @PutMapping("/checkout-all")
+    @PutMapping("/checkout-all", produces = [MediaType.APPLICATION_JSON_VALUE])
     suspend fun checkoutAll() {
         val min = configHandler.findConfig("default")!!.minPaymentAmount
         checkoutHandler.checkoutEveryCandidate(min)
@@ -57,30 +57,32 @@ class CheckoutController(
     @ApiResponse(
         message = "OK",
         code = 200,
+        response = CheckoutRecordBody::class,
+        responseContainer = "List",
         examples = Example(
             ExampleProperty(
+                mediaType = "application/json",
                 value = """
-                    [
-                        {
-                            "commissionRewardsId": 1,
-                            "rewardedUuid": "b3e4f2bd-15c6-4912-bdef-161445a98193",
-                            "referentUuid": "a5e510f9-bda8-4ecb-b500-0980f525dc52",
-                            "referralCode": "10000",
-                            "richTrade": 1,
-                            "referentOrderDirection": "BID",
-                            "share": 0.001,
-                            "createDate": 1646213088,
-                            "checkoutState": "PENDING",
-                            "transferRef": "wallet-transaction-id",
-                            "updateDate": 1646213088
-                        }
-                    ]
-                """,
-                mediaType = "application/json"
+[
+    {
+        "commissionRewardsId": 1,
+        "rewardedUuid": "b3e4f2bd-15c6-4912-bdef-161445a98193",
+        "referentUuid": "a5e510f9-bda8-4ecb-b500-0980f525dc52",
+        "referralCode": "10000",
+        "richTrade": 1,
+        "referentOrderDirection": "BID",
+        "share": 0.001,
+        "createDate": 1646213088,
+        "checkoutState": "PENDING",
+        "transferRef": "wallet-transaction-id",
+        "updateDate": 1646213088
+    }
+]
+                """
             )
         )
     )
-    @GetMapping
+    @GetMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
     suspend fun get(@RequestParam status: CheckoutState): List<CheckoutRecordBody> {
         return checkoutRecordHandler.findCommissionsByCheckoutState(status).map {
             CheckoutRecordBody(
