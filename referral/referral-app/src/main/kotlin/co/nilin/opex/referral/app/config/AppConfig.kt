@@ -43,7 +43,7 @@ class AppConfig {
             offset: Long,
             timestamp: Long
         ) {
-            runBlocking(AppDispatchers.kafkaExecutor) {
+            runBlocking {
                 val makerCommissions = commissionRewardCalculator.calculate(richTrade.makerOuid, richTrade)
                 val takerCommissions = commissionRewardCalculator.calculate(richTrade.takerOuid, richTrade)
                 makerCommissions.forEach { commissionRewardPersister.save(it) }

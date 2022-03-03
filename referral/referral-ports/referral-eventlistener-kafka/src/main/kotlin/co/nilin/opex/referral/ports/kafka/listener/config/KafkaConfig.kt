@@ -6,6 +6,7 @@ import co.nilin.opex.referral.ports.kafka.listener.spi.RichTradeListener
 import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
+import org.apache.kafka.common.config.TopicConfig
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,11 +16,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.support.GenericApplicationContext
+import org.springframework.kafka.config.TopicBuilder
 import org.springframework.kafka.core.*
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer
 import org.springframework.kafka.listener.ContainerProperties
 import org.springframework.kafka.support.serializer.JsonDeserializer
 import org.springframework.kafka.support.serializer.JsonSerializer
+import java.util.function.Supplier
 import java.util.regex.Pattern
 
 @Configuration
@@ -80,6 +83,12 @@ class KafkaConfig {
 
     @Autowired
     fun createTopics(applicationContext: GenericApplicationContext) {
-        applicationContext.registerBean("topic_richTrade", NewTopic::class.java, "richTrade", 10, 1)
+        applicationContext.registerBean("topic_richTrade", NewTopic::class.java, Supplier {
+            TopicBuilder.name("richTrade")
+                .partitions(10)
+                .replicas(3)
+                .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
+                .build()
+        })
     }
 }
