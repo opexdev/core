@@ -149,7 +149,7 @@ class CodeController(
     )
     @GetMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
     suspend fun getAllReferralCodes(
-        @RequestParam uuid: String?,
+        @RequestParam(required = false) uuid: String?,
         principal: Principal
     ): List<ReferralCodeBody> {
         return uuid?.takeIf { uuid == principal.name }?.let { id ->

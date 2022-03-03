@@ -42,7 +42,7 @@ class ReferenceController(
     @PutMapping("/references/assign", produces = [MediaType.APPLICATION_JSON_VALUE])
     suspend fun assignReferrer(
         @RequestParam code: String,
-        @RequestParam uuid: String?,
+        @RequestParam(required = false) uuid: String?,
         principal: Principal
     ) {
         val id = uuid ?: principal.name
@@ -69,8 +69,8 @@ class ReferenceController(
     )
     @GetMapping("/references", produces = [MediaType.APPLICATION_JSON_VALUE])
     suspend fun getReferenceByCodeAndUuid(
-        @RequestParam uuid: String?,
-        @RequestParam code: String?,
+        @RequestParam(required = false) uuid: String?,
+        @RequestParam(required = false) code: String?,
         principal: Principal
     ): List<ReferenceBody> {
         if ((uuid ?: code == null) || (uuid != null && code != null)) throw OpexException(
