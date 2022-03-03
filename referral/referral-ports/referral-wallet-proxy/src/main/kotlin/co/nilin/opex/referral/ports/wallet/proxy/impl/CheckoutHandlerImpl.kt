@@ -1,5 +1,6 @@
 package co.nilin.opex.referral.ports.wallet.proxy.impl
 
+import co.nilin.opex.referral.core.model.CheckoutRecord
 import co.nilin.opex.referral.core.spi.CheckoutHandler
 import co.nilin.opex.referral.core.spi.CheckoutRecordHandler
 import co.nilin.opex.referral.core.spi.ConfigHandler
@@ -20,65 +21,30 @@ class CheckoutHandlerImpl(
         val config = configHandler.findConfig("default")!!
         val min = config.minPaymentAmount
         val commissions = checkoutRecordHandler.findUserCommissionsWhereTotalGreaterAndEqualTo(uuid, min)
-        val transferRef = UUID.randomUUID().toString()
-        coroutineScope {
-            val totalShare = commissions.sumOf { it.commissionReward.share }
-            if (walletProxy.canFulfil(config.paymentCurrency, "system", "1", totalShare)) {
-                walletProxy.transfer(
-                    config.paymentCurrency,
-                    "main",
-                    "1",
-                    "main",
-                    uuid,
-                    totalShare,
-                    "",
-                    transferRef
-                )
-                commissions.forEach {
-                    launch { checkoutRecordHandler.checkout(it.commissionReward.id, transferRef) }
-                }
-            }
-        }
+        checkout(uuid, commissions)
     }
 
     override suspend fun checkoutEveryCandidate(min: BigDecimal) {
-        val config = configHandler.findConfig("default")!!
         val commissions = checkoutRecordHandler.findAllCommissionsWhereTotalGreaterAndEqualTo(min)
             .groupBy { it.commissionReward.rewardedUuid }
-        coroutineScope {
-            commissions.forEach { (uuid, c) ->
-                val transferRef = UUID.randomUUID().toString()
-                coroutineScope {
-                    val totalShare = c.sumOf { it.commissionReward.share }
-                    if (walletProxy.canFulfil(config.paymentCurrency, "main", "1", totalShare)) {
-                        walletProxy.transfer(
-                            config.paymentCurrency,
-                            "main",
-                            "1",
-                            "main",
-                            uuid,
-                            totalShare,
-                            "",
-                            transferRef
-                        )
-                        c.forEach { launch { checkoutRecordHandler.checkout(it.commissionReward.id, transferRef) } }
-                    }
-                }
-            }
-        }
+        coroutineScope { commissions.forEach { (uuid, c) -> checkout(uuid, c) } }
     }
 
     override suspend fun checkoutOlderThan(date: Date) {
-        val config = configHandler.findConfig("default")!!
         val commissions = checkoutRecordHandler.findCommissionsWherePendingDateLessOrEqualThan(date)
             .groupBy { it.commissionReward.rewardedUuid }
+        coroutineScope { commissions.forEach { (uuid, c) -> checkout(uuid, c) } }
+    }
+
+    private suspend fun checkout(uuid: String, commissions: Iterable<CheckoutRecord>) {
+        val m = commissions.groupBy { it.commissionReward.paymentCurrency }
+        val transferRef = UUID.randomUUID().toString()
         coroutineScope {
-            commissions.forEach { (uuid, c) ->
-                val transferRef = UUID.randomUUID().toString()
+            m.forEach { (paymentCurrency, c) ->
                 val totalShare = c.sumOf { it.commissionReward.share }
-                if (walletProxy.canFulfil(config.paymentCurrency, "main", "1", totalShare)) {
+                if (walletProxy.canFulfil(paymentCurrency, "main", "1", totalShare)) {
                     walletProxy.transfer(
-                        config.paymentCurrency,
+                        paymentCurrency,
                         "main",
                         "1",
                         "main",

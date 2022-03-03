@@ -5,8 +5,8 @@ import co.nilin.opex.referral.core.model.CheckoutState
 import co.nilin.opex.referral.core.model.CommissionReward
 import co.nilin.opex.referral.core.spi.CheckoutRecordHandler
 import co.nilin.opex.referral.ports.postgres.repository.CheckoutRecordRepository
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
-import kotlinx.coroutines.reactive.awaitSingleOrDefault
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.util.*
@@ -25,13 +25,14 @@ class CheckoutRecordHandlerImpl(private val checkoutRecordRepository: CheckoutRe
                     Pair(it.richTradeId, null),
                     it.referentOrderDirection,
                     it.share,
+                    it.paymentCurrency,
                     it.createDate
                 ),
                 it.checkoutState,
                 it.transferRef,
                 it.updateDate
             )
-        }.collectList().awaitSingleOrDefault(emptyList())
+        }.collectList().awaitFirstOrNull() ?: emptyList()
     }
 
     override suspend fun findUserCommissionsWhereTotalGreaterAndEqualTo(
@@ -49,6 +50,7 @@ class CheckoutRecordHandlerImpl(private val checkoutRecordRepository: CheckoutRe
                         Pair(it.richTradeId, null),
                         it.referentOrderDirection,
                         it.share,
+                        it.paymentCurrency,
                         it.createDate
                     ),
                     it.checkoutState,
@@ -70,6 +72,7 @@ class CheckoutRecordHandlerImpl(private val checkoutRecordRepository: CheckoutRe
                         Pair(it.richTradeId, null),
                         it.referentOrderDirection,
                         it.share,
+                        it.paymentCurrency,
                         it.createDate
                     ),
                     it.checkoutState,
@@ -93,6 +96,7 @@ class CheckoutRecordHandlerImpl(private val checkoutRecordRepository: CheckoutRe
                     Pair(it.richTradeId, null),
                     it.referentOrderDirection,
                     it.share,
+                    it.paymentCurrency,
                     it.createDate
                 ),
                 it.checkoutState,

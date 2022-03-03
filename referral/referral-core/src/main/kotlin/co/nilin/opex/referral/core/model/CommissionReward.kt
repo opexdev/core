@@ -13,5 +13,6 @@ data class CommissionReward(
     var richTrade: Pair<Long, RichTrade?>,
     var referentOrderDirection: OrderDirection,
     var share: BigDecimal,
+    var paymentCurrency: String,
     var createDate: LocalDateTime
 )

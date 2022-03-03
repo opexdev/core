@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS commission_rewards (
     rich_trade_id BIGINT NOT NULL,
     referent_order_direction VARCHAR(20) NOT NULL,
     share DECIMAL NOT NULL,
+    payment_currency VARCHAR(20) NOT NULL,
     create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT reward_once_constraint UNIQUE (rich_trade_id, rewarded_uuid, referent_order_direction)
 );

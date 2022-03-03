@@ -25,6 +25,7 @@ data class CheckoutRecordProjected(
     var richTradeId: Long,
     var referentOrderDirection: OrderDirection,
     var share: BigDecimal,
+    var paymentCurrency: String,
     var transferRef: String?,
     var createDate: LocalDateTime,
     var updateDate: LocalDateTime,

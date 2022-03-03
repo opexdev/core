@@ -3,7 +3,7 @@ package co.nilin.opex.referral.ports.postgres.impl
 import co.nilin.opex.referral.core.model.CommissionReward
 import co.nilin.opex.referral.core.spi.CommissionRewardPersister
 import co.nilin.opex.referral.ports.postgres.repository.CommissionRewardRepository
-import kotlinx.coroutines.reactive.awaitSingleOrNull
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.stereotype.Service
 
 @Service
@@ -18,7 +18,8 @@ class CommissionRewardPersisterImpl(private val commissionRewardRepository: Comm
                 commissionReward.referralCode,
                 commissionReward.richTrade.first,
                 commissionReward.referentOrderDirection,
-                commissionReward.share
+                commissionReward.share,
+                commissionReward.paymentCurrency
             )
         ).awaitSingleOrNull()
     }
