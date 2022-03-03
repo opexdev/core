@@ -73,20 +73,13 @@ class ReferenceController(
         @RequestParam(required = false) code: String?,
         principal: Principal
     ): List<ReferenceBody> {
-        if ((uuid ?: code == null) || (uuid != null && code != null)) throw OpexException(
-            OpexError.BadRequest,
-            "One and only one of (uuid, code) parameters must be provided"
-        )
-        if (uuid != null && uuid != principal.name) throw OpexException(OpexError.UnAuthorized)
-        code?.let {
-            val referralCode = referralCodeHandler.findByCode(it) ?: throw OpexException(OpexError.NotFound)
-            if (referralCode.uuid != principal.name) throw OpexException(OpexError.UnAuthorized)
-        }
-        fun List<Reference>.body() = map { ReferenceBody(it.referralCode.code, it.referentUuid) }
-        return when (code ?: uuid) {
-            code -> referenceHandler.findByCode(code!!).body()
-            uuid -> referenceHandler.findByReferrerUuid(uuid!!).body()
-            else -> throw IllegalStateException("All of (code, uuid) are null")
+        fun List<Reference>.res() = map { ReferenceBody(it.referralCode.code, it.referentUuid) }
+        return when (uuid ?: code) {
+            null -> throw OpexException(OpexError.BadRequest, "One of (uuid, code) parameters must be provided")
+            uuid -> referenceHandler.findByReferrerUuid(uuid)
+                .let { it.takeIf { code == null } ?: it.filter { v -> v.referralCode.code == code } }.res()
+            code -> referenceHandler.findByCode(code).res()
+            else -> throw OpexException(OpexError.InternalServerError, "All of (code, uuid) are null")
         }
     }
 }

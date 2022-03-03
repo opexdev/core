@@ -24,7 +24,7 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/swagger-ui/**").permitAll()
             .pathMatchers("/swagger-resources/**").permitAll()
             .pathMatchers("/v2/api-docs").permitAll()
-            .pathMatchers("/checkouts/**", "/commissions/**").hasRole("SCOPE_trust", "finance-admin")
+            .pathMatchers("/checkouts/**", "/commissions/**", "/references").hasRole("SCOPE_trust", "finance-admin")
             .pathMatchers("/**").hasAuthority("SCOPE_trust")
             .anyExchange().authenticated()
             .and()
