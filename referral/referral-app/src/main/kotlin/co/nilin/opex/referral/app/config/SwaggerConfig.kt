@@ -41,7 +41,6 @@ class SwaggerConfig {
                 typeResolver.resolve(CommissionController.CommissionRewardBody::class.java),
                 typeResolver.resolve(CodeController.ReferralCodeBody::class.java),
                 typeResolver.resolve(ReferenceController.ReferenceBody::class.java),
-                typeResolver.resolve(ReportController.ReferralCodeReportBody::class.java),
                 typeResolver.resolve(ReportController.ReferrerReportBody::class.java)
             )
             .ignoredParameterTypes(
