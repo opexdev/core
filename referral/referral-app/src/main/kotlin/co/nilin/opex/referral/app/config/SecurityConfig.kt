@@ -3,7 +3,6 @@ package co.nilin.opex.referral.app.config
 import co.nilin.opex.referral.app.utils.hasRole
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
-import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder
@@ -25,9 +24,7 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/swagger-ui/**").permitAll()
             .pathMatchers("/swagger-resources/**").permitAll()
             .pathMatchers("/v2/api-docs").permitAll()
-            .pathMatchers(HttpMethod.GET, "/codes").hasRole("SCOPE_trust", "finance-admin")
-            .pathMatchers("/checkouts/**", "/commissions/**", "/codes/*/references")
-            .hasRole("SCOPE_trust", "finance-admin")
+            .pathMatchers("/checkouts/**", "/commissions/**").hasRole("SCOPE_trust", "finance-admin")
             .pathMatchers("/**").hasAuthority("SCOPE_trust")
             .anyExchange().authenticated()
             .and()

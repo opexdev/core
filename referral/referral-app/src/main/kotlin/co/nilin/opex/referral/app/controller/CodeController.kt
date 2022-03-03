@@ -5,18 +5,20 @@ import co.nilin.opex.referral.core.spi.ReferenceHandler
 import co.nilin.opex.referral.core.spi.ReferralCodeHandler
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
+import com.nimbusds.jose.shaded.json.JSONArray
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
 import org.springframework.http.MediaType
-import org.springframework.security.core.annotation.CurrentSecurityContext
-import org.springframework.security.core.context.SecurityContext
+import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
+import java.security.Principal
 
 @RestController
-class ReferralController(
+@RequestMapping("/codes")
+class CodeController(
     private val referralCodeHandler: ReferralCodeHandler,
     private val referenceHandler: ReferenceHandler,
     private val configHandler: ConfigHandler
@@ -36,7 +38,7 @@ class ReferralController(
         val referentCommission: BigDecimal
     )
 
-    private val badRequestOrThrow: (Throwable) -> Unit = { e ->
+    private val reThrow: (Throwable) -> Unit = { e ->
         when (e) {
             is IllegalArgumentException -> throw OpexException(OpexError.BadRequest, e.message)
             is OpexException -> throw e
@@ -59,12 +61,12 @@ class ReferralController(
             )
         )
     )
-    @PostMapping("/codes", produces = [MediaType.APPLICATION_JSON_VALUE])
+    @PostMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
     suspend fun generateReferralCode(
         @RequestBody body: PostReferralBody,
-        @CurrentSecurityContext securityContext: SecurityContext
+        principal: Principal
     ): String {
-        if (body.uuid != securityContext.authentication.name) throw OpexException(OpexError.UnAuthorized)
+        if (body.uuid != principal.name) throw OpexException(OpexError.UnAuthorized)
         return referralCodeHandler.runCatching {
             val maxReferralCodePerUser = configHandler.findConfig("default")!!.maxReferralCodePerUser
             val count = referralCodeHandler.findByReferrerUuid(body.uuid).size
@@ -73,8 +75,7 @@ class ReferralController(
                 "You have reached maximum number of referral codes"
             )
             generateReferralCode(body.uuid, body.referentCommission)
-        }
-            .onFailure(badRequestOrThrow).getOrThrow()
+        }.onFailure(reThrow).getOrThrow()
     }
 
     @ApiOperation(
@@ -82,61 +83,19 @@ class ReferralController(
         notes = "Edit referral code properties. The id code is immutable, you can not change it. referentCommission is a value in range [0, 1]."
     )
     @ApiResponse(message = "OK", code = 200)
-    @PatchMapping("/codes/{code}", produces = [MediaType.APPLICATION_JSON_VALUE])
+    @PatchMapping("/{code}", produces = [MediaType.APPLICATION_JSON_VALUE])
     suspend fun updateReferralCodeByCode(
         @PathVariable code: String,
         @RequestBody body: PatchReferralBody,
-        @CurrentSecurityContext securityContext: SecurityContext
+        principal: Principal
     ) {
         val referralCode = referralCodeHandler.findByCode(code) ?: throw OpexException(
             OpexError.BadRequest,
             "Referral code is invalid"
         )
-        if (referralCode.uuid != securityContext.authentication.name) throw OpexException(OpexError.UnAuthorized)
+        if (referralCode.uuid != principal.name) throw OpexException(OpexError.UnAuthorized)
         referralCodeHandler.runCatching { updateCommissions(code, body.referentCommission) }
-            .onFailure(badRequestOrThrow)
-    }
-
-    @ApiOperation(
-        value = "Refer a user by referral code",
-        notes = "Referrer can not be one of your referents. Also can not refer yourself."
-    )
-    @ApiResponse(message = "OK", code = 200)
-    @PutMapping("/codes/{code}/assign", produces = [MediaType.APPLICATION_JSON_VALUE])
-    suspend fun assignReferrer(
-        @PathVariable code: String,
-        @RequestParam uuid: String,
-        @CurrentSecurityContext securityContext: SecurityContext
-    ) {
-        if (uuid != securityContext.authentication.name) throw OpexException(OpexError.UnAuthorized)
-        referralCodeHandler.runCatching { assign(code, uuid) }.onFailure(badRequestOrThrow)
-    }
-
-    @ApiOperation(value = "Get my referral codes", notes = "Get all of your referral codes.")
-    @ApiResponse(
-        message = "OK",
-        code = 200,
-        response = ReferralCodeBody::class,
-        responseContainer = "List",
-        examples = Example(
-            ExampleProperty(
-                mediaType = "application/json",
-                value = """
-[
-    {
-        "uuid": "b3e4f2bd-15c6-4912-bdef-161445a98193",
-        "code": "10000", 
-        "referentCommission": 0
-    }
-]
-                """,
-            )
-        )
-    )
-    @GetMapping("/me/codes", produces = [MediaType.APPLICATION_JSON_VALUE])
-    suspend fun getMyReferralCodes(@CurrentSecurityContext securityContext: SecurityContext): List<ReferralCodeBody> {
-        return referralCodeHandler.findByReferrerUuid(securityContext.authentication.name)
-            .map { ReferralCodeBody(it.uuid, it.code, it.referentCommission) }
+            .onFailure(reThrow)
     }
 
     @ApiOperation(value = "Get referral codes info", notes = "Get referral codes info.")
@@ -157,35 +116,14 @@ class ReferralController(
             )
         )
     )
-    @GetMapping("/codes/{code}", produces = [MediaType.APPLICATION_JSON_VALUE])
+    @GetMapping("/{code}", produces = [MediaType.APPLICATION_JSON_VALUE])
     suspend fun getReferralCodeByCode(
         @PathVariable code: String,
-        @CurrentSecurityContext securityContext: SecurityContext
+        principal: Principal
     ): ReferralCodeBody {
         val referralCode = referralCodeHandler.findByCode(code) ?: throw OpexException(OpexError.NotFound)
-        if (referralCode.uuid != securityContext.authentication.name) throw OpexException(OpexError.UnAuthorized)
+        if (referralCode.uuid != principal.name) throw OpexException(OpexError.UnAuthorized)
         return ReferralCodeBody(referralCode.uuid, referralCode.code, referralCode.referentCommission)
-    }
-
-    @ApiOperation(value = "Get referral code's references", notes = "Get uuid of all referral code's references.")
-    @ApiResponse(
-        message = "OK",
-        code = 200,
-        response = String::class,
-        responseContainer = "List",
-        examples = Example(
-            ExampleProperty(
-                mediaType = "application/json",
-                value = "[\"b3e4f2bd-15c6-4912-bdef-161445a98193\"]",
-            )
-        )
-    )
-    @GetMapping("/codes/{code}/references", produces = [MediaType.APPLICATION_JSON_VALUE])
-    suspend fun getReferenceByCode(
-        @PathVariable code: String,
-        @CurrentSecurityContext securityContext: SecurityContext
-    ): List<String> {
-        return referenceHandler.findByCode(code).map { it.referentUuid }
     }
 
     @ApiOperation(value = "Get all referral codes", notes = "Get all of referral codes.")
@@ -209,20 +147,30 @@ class ReferralController(
             )
         )
     )
-    @GetMapping("/codes", produces = [MediaType.APPLICATION_JSON_VALUE])
-    suspend fun getAllReferralCodes(): List<ReferralCodeBody> {
-        return referralCodeHandler.findAll().map { ReferralCodeBody(it.uuid, it.code, it.referentCommission) }
+    @GetMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
+    suspend fun getAllReferralCodes(
+        @RequestParam uuid: String?,
+        principal: Principal
+    ): List<ReferralCodeBody> {
+        return uuid?.takeIf { uuid == principal.name }?.let { id ->
+            referralCodeHandler.findByReferrerUuid(id).map { ReferralCodeBody(it.uuid, it.code, it.referentCommission) }
+        } ?: run {
+            val isAdmin = ((principal as Jwt).claims["roles"] as? JSONArray)?.contains("finance-admin") ?: false
+            return if (isAdmin) referralCodeHandler.findAll()
+                .map { ReferralCodeBody(it.uuid, it.code, it.referentCommission) }
+            else throw OpexException(OpexError.UnAuthorized)
+        }
     }
 
     @ApiOperation(value = "Delete referral code", notes = "Delete referral codes by its id.")
     @ApiResponse(message = "OK", code = 200)
-    @DeleteMapping("/codes/{code}", produces = [MediaType.APPLICATION_JSON_VALUE])
+    @DeleteMapping("/{code}", produces = [MediaType.APPLICATION_JSON_VALUE])
     suspend fun deleteReferralCode(
         @PathVariable code: String,
-        @CurrentSecurityContext securityContext: SecurityContext
+        principal: Principal
     ) {
         val referralCode = referralCodeHandler.findByCode(code) ?: throw OpexException(OpexError.NotFound)
-        if (referralCode.uuid != securityContext.authentication.name) throw OpexException(OpexError.UnAuthorized)
+        if (referralCode.uuid != principal.name) throw OpexException(OpexError.UnAuthorized)
         referralCodeHandler.deleteByCode(code)
     }
 }
