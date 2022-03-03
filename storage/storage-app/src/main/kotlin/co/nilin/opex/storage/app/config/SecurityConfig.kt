@@ -20,7 +20,6 @@ class SecurityConfig(private val webClient: WebClient) {
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
         http.csrf().disable()
             .authorizeExchange()
-            .pathMatchers("/hello").permitAll()
             .pathMatchers("/actuator/**").permitAll()
             .pathMatchers("/swagger-ui/**").permitAll()
             .pathMatchers("/swagger-resources/**").permitAll()
