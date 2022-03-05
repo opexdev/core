@@ -14,14 +14,15 @@ class EventSubmitter(val kafkaTemplate: KafkaTemplate<String, CoreEvent>) {
 
     private val logger = LoggerFactory.getLogger(EventSubmitter::class.java)
 
-    suspend fun submit(event: CoreEvent): OrderSubmitResult = suspendCoroutine {
+    suspend fun submit(event: CoreEvent): OrderSubmitResult = suspendCoroutine { cont ->
         logger.info("Submit event for pair ${event.pair} = ${event::class.java}")
-        val sendFuture = kafkaTemplate.send("events_${event.pair.leftSideName}_${event.pair.rightSideName}", event)
 
-        sendFuture.addCallback({ sendResult ->
-            it.resume(OrderSubmitResult(sendResult?.recordMetadata?.offset()))
-        }, { exception ->
-            it.resumeWithException(exception)
+        val sendFuture = kafkaTemplate.send("events_${event.pair.leftSideName}_${event.pair.rightSideName}", event)
+        sendFuture.addCallback({
+            cont.resume(OrderSubmitResult(it?.recordMetadata?.offset()))
+        }, {
+            logger.error("Error submitting Event", it)
+            cont.resumeWithException(it)
         })
     }
 
