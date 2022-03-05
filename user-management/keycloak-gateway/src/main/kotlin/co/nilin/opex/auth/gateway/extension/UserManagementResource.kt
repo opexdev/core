@@ -1,8 +1,11 @@
 package co.nilin.opex.auth.gateway.extension
 
+import co.nilin.opex.auth.gateway.ApplicationContextHolder
 import co.nilin.opex.auth.gateway.data.RegisterUserRequest
 import co.nilin.opex.auth.gateway.data.RegisterUserResponse
 import co.nilin.opex.auth.gateway.data.UserProfileInfo
+import co.nilin.opex.auth.gateway.model.AuthEvent
+import co.nilin.opex.auth.gateway.model.UserCreatedEvent
 import co.nilin.opex.auth.gateway.utils.ErrorHandler
 import co.nilin.opex.auth.gateway.utils.ResourceAuthenticator
 import co.nilin.opex.utility.error.data.OpexError
@@ -16,6 +19,7 @@ import org.keycloak.models.UserModel
 import org.keycloak.services.resource.RealmResourceProvider
 import org.keycloak.services.resources.LoginActionsService
 import org.slf4j.LoggerFactory
+import org.springframework.kafka.core.KafkaTemplate
 import java.util.concurrent.TimeUnit
 import javax.ws.rs.*
 import javax.ws.rs.core.MediaType
@@ -26,6 +30,10 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
 
     private val logger = LoggerFactory.getLogger(UserManagementResource::class.java)
     private val opexRealm = session.realms().getRealm("opex")
+    private val kafkaTemplate by lazy {
+        ApplicationContextHolder.getCurrentContext()!!
+            .getBean("authKafkaTemplate") as KafkaTemplate<String, AuthEvent>
+    }
 
     @POST
     @Path("user")
@@ -52,6 +60,8 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         }
 
         logger.info("User create response ${user.id}")
+        sendUserEvent(user)
+
         return Response.ok(RegisterUserResponse(user.id)).build()
     }
 
@@ -165,6 +175,12 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             logger.error("Unable to send verification email")
             e.printStackTrace()
         }
+    }
+
+    private fun sendUserEvent(user: UserModel) {
+        val kafkaEvent = UserCreatedEvent(user.id, user.firstName, user.lastName, user.email!!)
+        kafkaTemplate.send("auth_user_created", kafkaEvent)
+        logger.info("$kafkaEvent produced in kafka topic")
     }
 
     override fun close() {

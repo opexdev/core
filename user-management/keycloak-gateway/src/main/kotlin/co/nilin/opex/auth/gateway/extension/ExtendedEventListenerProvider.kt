@@ -4,6 +4,7 @@ import co.nilin.opex.auth.gateway.ApplicationContextHolder
 import co.nilin.opex.auth.gateway.model.AuthEvent
 import co.nilin.opex.auth.gateway.model.UserCreatedEvent
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.keycloak.events.Event
 import org.keycloak.events.EventListenerProvider
 import org.keycloak.events.EventType
@@ -17,10 +18,10 @@ import org.slf4j.LoggerFactory
 import org.springframework.kafka.core.KafkaTemplate
 
 class ExtendedEventListenerProvider(private val session: KeycloakSession) : EventListenerProvider {
-    val logger = LoggerFactory.getLogger(ExtendedEventListenerProvider::class.java)
-    private val model: RealmProvider
-    val objectMapper = com.fasterxml.jackson.module.kotlin.jacksonObjectMapper()
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+
+    private val logger = LoggerFactory.getLogger(ExtendedEventListenerProvider::class.java)
+    private val model: RealmProvider = session.realms()
+    private val objectMapper = jacksonObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
     data class UserData(
         val username: String,
@@ -35,9 +36,9 @@ class ExtendedEventListenerProvider(private val session: KeycloakSession) : Even
 
 
     override fun onEvent(event: Event) {
-        logger.info("## NEW %s EVENT", event.getType())
+        logger.info("## NEW %s EVENT", event.type)
         logger.info("-----------------------------------------------------------")
-        event.getDetails().forEach { key, value -> logger.info(key.toString() + ": " + value) }
+        event.details.forEach { (key, value) -> logger.info("$key: $value") }
 
         // USE CASE SCENARIO, I'm sure there are better use case scenario's :p
         //
@@ -47,15 +48,15 @@ class ExtendedEventListenerProvider(private val session: KeycloakSession) : Even
 
         // When the user tries to login after a failed attempt,
         // the user remains unverified and when trying to login will receive another verify account email.
-        if (EventType.VERIFY_EMAIL.equals(event.getType())) {
-            val realm = model.getRealm(event.getRealmId())
-            val user = session.users().getUserById(event.getUserId(), realm)
+        if (EventType.VERIFY_EMAIL == event.type) {
+            val realm = model.getRealm(event.realmId)
+            val user = session.users().getUserById(event.userId, realm)
             if (user != null && user.email != null && user.isEmailVerified) {
-                logger.info("USER HAS VERIFIED EMAIL : " + event.getUserId())
+                logger.info("USER HAS VERIFIED EMAIL : ${event.userId}" )
 
                 // Example of adding an attribute when this event happens
                 user.setSingleAttribute("attribute-key", "attribute-value")
-                val userUuidDto = UserUuidDto(event.getType().name, event.getUserId(), user.email)
+                val userUuidDto = UserUuidDto(event.type.name, event.userId, user.email)
                 val userVerifiedTransaction = UserVerifiedTransaction(userUuidDto)
 
                 // enlistPrepare -> if our transaction fails than the user is NOT verified
@@ -73,9 +74,7 @@ class ExtendedEventListenerProvider(private val session: KeycloakSession) : Even
         logger.info("Resource path" + ": " + adminEvent.resourcePath)
         logger.info("Resource type" + ": " + adminEvent.resourceType)
         logger.info("Operation type" + ": " + adminEvent.operationType)
-        if (ResourceType.USER.equals(adminEvent.resourceType)
-            && OperationType.CREATE.equals(adminEvent.operationType)
-        ) {
+        if (ResourceType.USER == adminEvent.resourceType && OperationType.CREATE == adminEvent.operationType) {
             logger.info("A new user has been created")
             val userData = objectMapper.readValue(adminEvent.representation, UserData::class.java)
             val uuid = adminEvent.resourcePath.substringAfter("/")
@@ -90,11 +89,6 @@ class ExtendedEventListenerProvider(private val session: KeycloakSession) : Even
 
     override fun close() {
         // Nothing to close
-    }
-
-
-    init {
-        model = session.realms()
     }
 
     class UserVerifiedTransaction(private val userUuidDto: UserUuidDto) : AbstractKeycloakTransaction() {
