@@ -19,7 +19,7 @@ class DeadLetterListener(private val persister: DeadLetterPersister) : DLTListen
         return "EventLogDeadLetterListener"
     }
 
-    override fun onEvent(event: String, partition: Int, offset: Long, timestamp: Long, headers: Headers) = runBlocking {
+    override fun onEvent(event: String?, partition: Int, offset: Long, timestamp: Long, headers: Headers) = runBlocking {
         logger.info("Dead letter event received: $event")
         val map = hashMapOf<String, String?>().apply {
             headers.forEach {
@@ -28,7 +28,7 @@ class DeadLetterListener(private val persister: DeadLetterPersister) : DLTListen
         }
 
         val dlt = DeadLetterEvent(
-            map["dlt-origin-module"],
+            map["dlt-origin-module"]!!,
             map[KafkaHeaders.DLT_ORIGINAL_TOPIC],
             map[KafkaHeaders.DLT_ORIGINAL_CONSUMER_GROUP],
             map[KafkaHeaders.DLT_EXCEPTION_MESSAGE],

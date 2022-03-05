@@ -3,7 +3,7 @@ package co.nilin.opex.eventlog.core.inout
 import java.time.LocalDateTime
 
 data class DeadLetterEvent(
-    val originModule: String?,
+    val originModule: String,
     val originTopic: String?,
     val consumerGroup: String?,
     val exceptionMessage: String?,

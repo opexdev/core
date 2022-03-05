@@ -68,12 +68,12 @@ CREATE TABLE IF NOT EXISTS opex_trades
 CREATE TABLE IF NOT EXISTS dead_letter_events
 (
     id                   SERIAL PRIMARY KEY,
-    origin_module        VARCHAR(72),
+    origin_module        VARCHAR(72) NOT NULL,
     origin_topic         VARCHAR(72),
     consumer_group       VARCHAR(72),
     exception_message    TEXT,
     exception_stacktrace TEXT,
     exception_class_name TEXT,
-    timestamp            TIMESTAMP,
+    timestamp            TIMESTAMP NOT NULL,
     value                TEXT
 )

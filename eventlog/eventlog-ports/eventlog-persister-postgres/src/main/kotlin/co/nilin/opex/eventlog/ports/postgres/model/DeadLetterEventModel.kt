@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 
 @Table("dead_letter_events")
 data class DeadLetterEventModel(
-    val originModule: String?,
+    val originModule: String,
     val originTopic: String?,
     val consumerGroup: String?,
     val exceptionMessage: String?,
