@@ -21,6 +21,9 @@ class SecurityConfig(@Qualifier("loadBalanced") private val webClient: WebClient
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
         http.csrf().disable()
             .authorizeExchange()
+            .pathMatchers("/actuator/**").permitAll()
+            .pathMatchers("/swagger-ui/**").permitAll()
+            .pathMatchers("/swagger-resources/**").permitAll()
             .pathMatchers("/filter/**").hasAuthority("SCOPE_trust")
             .pathMatchers("/admin/**").hasRole("SCOPE_trust", "system-admin")
             .pathMatchers("/address/**").permitAll()

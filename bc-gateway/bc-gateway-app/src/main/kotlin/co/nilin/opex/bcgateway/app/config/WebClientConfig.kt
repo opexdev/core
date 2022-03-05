@@ -12,7 +12,6 @@ import org.springframework.web.reactive.function.client.WebClient
 
 @Configuration
 class WebClientConfig {
-
     @Bean
     @Qualifier("loadBalanced")
     fun loadBalancedWebClient(loadBalancerFactory: ReactiveLoadBalancer.Factory<ServiceInstance>): WebClient {
@@ -26,7 +25,6 @@ class WebClientConfig {
     }
 
     @Bean
-
     fun webClient(): WebClient {
         return WebClient.builder()
             .exchangeStrategies(
@@ -36,5 +34,4 @@ class WebClientConfig {
             )
             .build()
     }
-
 }
