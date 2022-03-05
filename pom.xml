@@ -32,6 +32,7 @@
         <module>wallet</module>
         <module>websocket</module>
         <module>admin</module>
+        <module>referral</module>
     </modules>
 
     <dependencies>

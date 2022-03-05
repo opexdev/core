@@ -5,7 +5,7 @@ logging:
     reactor.netty.http.client: DEBUG
 spring:
   application:
-    name: opex-gateway
+    name: opex-matching-gateway
   main:
     allow-bean-definition-overriding: false
   kafka:

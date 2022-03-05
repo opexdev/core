@@ -19,7 +19,8 @@ SELECT setval(pg_get_serial_sequence('address_types', 'id'), (SELECT MAX(id) FRO
 
 INSERT INTO chain_address_types(chain_name, addr_type_id)
 VALUES ('bitcoin', 1),
-       ('ethereum', 2)
+       ('ethereum', 2),
+       ('bsc', 2)
 ON CONFLICT DO NOTHING;
 
 INSERT INTO currency_implementations(id,
@@ -40,13 +41,17 @@ ON CONFLICT DO NOTHING;
 SELECT setval(pg_get_serial_sequence('currency_implementations', 'id'), (SELECT MAX(id) FROM currency_implementations));
 
 INSERT INTO chain_endpoints(id, chain_name, endpoint_url)
-VALUES (1, 'bitcoin', 'lb://gateway/bitcoin/transfers'),
-       (2, 'ethereum', 'lb://gateway/eth/transfers')
+VALUES (1, 'bitcoin', 'lb://chain-scan-gateway/bitcoin/transfers'),
+       (2, 'ethereum', 'lb://chain-scan-gateway/eth/transfers'),
+       (3, 'bsc', 'lb://chain-scan-gateway/bsc/transfers')
 ON CONFLICT DO NOTHING;
+
+SELECT setval(pg_get_serial_sequence('chain_endpoints', 'id'), (SELECT MAX(id) FROM chain_endpoints));
 
 INSERT INTO chain_sync_schedules
 VALUES ('bitcoin', CURRENT_DATE, 600, 60),
-       ('ethereum', CURRENT_DATE, 90, 60)
+       ('ethereum', CURRENT_DATE, 90, 60),
+       ('bsc', CURRENT_DATE, 90, 60)
 ON CONFLICT DO NOTHING;
 
 INSERT INTO wallet_sync_schedules

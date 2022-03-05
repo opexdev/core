@@ -10,12 +10,13 @@ import co.nilin.opex.bcgateway.ports.postgres.model.ChainEndpointModel
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 
 @Component
 class ChainEndpointHandlerImpl(
-    private val webClient: WebClient,
+    @Qualifier("loadBalanced") private val webClient: WebClient,
     private val chainRepository: ChainRepository,
     private val endpointRepository: ChainEndpointRepository
 ) : ChainEndpointHandler {

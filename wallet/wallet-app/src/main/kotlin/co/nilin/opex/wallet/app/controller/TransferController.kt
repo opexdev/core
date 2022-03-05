@@ -43,8 +43,8 @@ class TransferController(
         @PathVariable("receiverWalletType") receiverWalletType: String,
         @PathVariable("receiverUuid") receiverUuid: String,
         @PathVariable("amount") amount: BigDecimal,
-        @PathVariable("description") description: String?,
-        @PathVariable("transferRef") transferRef: String?
+        @RequestParam("description") description: String?,
+        @RequestParam("transferRef") transferRef: String?
     ): TransferResult {
         if (senderWalletType == "cashout" || receiverWalletType == "cashout")
             throw OpexException(OpexError.InvalidCashOutUsage)

@@ -119,6 +119,8 @@ services:
     environment:
       - VAULT_URL_DEFAULT=http://vault:8200
       - VAULT_AUTH_DEFAULT=USERNAMEPASSWORD
+    depends_on:
+      - vault
   consul:
     image: consul
     environment:
@@ -231,6 +233,20 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  postgres-referral:
+    image: postgres:14-alpine
+    environment:
+      - POSTGRES_USER=${DB_USER:-opex}
+      - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
+      - POSTGRES_DB=opex_referral
+      - POSTGRES_BACKUP_USER=${DB_BACKUP_USER:-opex_backup}
+      - POSTGRES_BACKUP_PASSWORD=${DB_BACKUP_PASS:-hiopex}
+    volumes:
+      - ./resources/postgres/init-backup-user.sh:/docker-entrypoint-initdb.d/init-backup-user.sh
+      - $DATA/referral-data:/var/lib/postgresql/data/
+    deploy:
+      restart_policy:
+        condition: on-failure
   accountant:
     build:
       context: accountant/accountant-app
@@ -238,7 +254,6 @@ services:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - SPRING_PROFILES_ACTIVE=scheduled
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
-      - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-accountant
       - BACKEND_USER=${BACKEND_USER}
@@ -246,11 +261,10 @@ services:
     networks:
       - default
     depends_on:
-      - zookeeper
       - kafka-1
       - kafka-2
       - kafka-3
-      - redis
+      - wallet
       - consul
       - vault
       - postgres-accountant
@@ -260,7 +274,6 @@ services:
     environment:
       - JAVA_OPTS=-Xmx256m
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
-      - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-eventlog
       - BACKEND_USER=${BACKEND_USER}
@@ -268,11 +281,9 @@ services:
     networks:
       - default
     depends_on:
-      - zookeeper
       - kafka-1
       - kafka-2
       - kafka-3
-      - redis
       - consul
       - vault
       - postgres-eventlog
@@ -286,7 +297,6 @@ services:
     networks:
       - default
     depends_on:
-      - zookeeper
       - kafka-1
       - kafka-2
       - kafka-3
@@ -297,23 +307,22 @@ services:
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
-      - REDIS_HOST=redis
       - CONSUL_HOST=consul
     networks:
       - default
     depends_on:
-      - zookeeper
       - kafka-1
       - kafka-2
       - kafka-3
+      - auth
       - consul
+      - matching-engine
   auth:
     build:
       context: user-management/keycloak-gateway
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
-      - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-auth
       - PROXY_ADDRESS_FORWARDING=true
@@ -324,11 +333,9 @@ services:
       - VAULT_URL=http://vault:8200
       - VAULT_HOST=vault
     depends_on:
-      - zookeeper
       - kafka-1
       - kafka-2
       - kafka-3
-      - redis
       - consul
       - vault
       - postgres-auth
@@ -343,17 +350,15 @@ services:
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
-      - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-wallet
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
     depends_on:
-      - zookeeper
       - kafka-1
       - kafka-2
       - kafka-3
-      - redis
+      - auth
       - consul
       - vault
       - postgres-wallet
@@ -368,17 +373,20 @@ services:
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
-      - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-api
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
     depends_on:
-      - zookeeper
       - kafka-1
       - kafka-2
       - kafka-3
-      - redis
+      - accountant
+      - matching-gateway
+      - wallet
+      - bc-gateway
+      - auth
+      - referral
       - consul
       - vault
       - postgres-api
@@ -398,10 +406,10 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
     depends_on:
-      - zookeeper
       - kafka-1
       - kafka-2
       - kafka-3
+      - auth
       - consul
       - vault
       - postgres-api
@@ -422,11 +430,11 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
     depends_on:
-      - zookeeper
       - kafka-1
       - kafka-2
       - kafka-3
-      - redis
+      - auth
+      - wallet
       - consul
       - vault
       - postgres-bc-gateway
@@ -445,9 +453,32 @@ services:
     volumes:
       - $DATA/storage-data:/storage
     depends_on:
+      - auth
       - consul
     networks:
       - default
+    deploy:
+      restart_policy:
+        condition: on-failure
+  referral:
+    build:
+      context: referral/referral-app
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
+      - CONSUL_HOST=consul
+      - DB_IP_PORT=postgres-referral
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_HOST=vault
+    depends_on:
+      - auth
+      - accountant
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - consul
+      - postgres-referral
+      - vault
     deploy:
       restart_policy:
         condition: on-failure
@@ -463,11 +494,12 @@ services:
     volumes:
       - $DATA/admin-data:/admin
     depends_on:
-      - zookeeper
       - kafka-1
       - kafka-2
       - kafka-3
       - consul
+      - auth
+      - vault
     networks:
       - default
     deploy:
