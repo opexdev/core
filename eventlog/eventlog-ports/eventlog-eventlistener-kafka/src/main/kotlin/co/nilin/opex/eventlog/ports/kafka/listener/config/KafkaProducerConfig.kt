@@ -1,7 +1,6 @@
-package co.nilin.opex.matching.engine.ports.kafka.submitter.config
+package co.nilin.opex.eventlog.ports.kafka.listener.config
 
 import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
-import co.nilin.opex.matching.engine.core.inout.OrderSubmitRequest
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.beans.factory.annotation.Qualifier
@@ -14,13 +13,13 @@ import org.springframework.kafka.core.ProducerFactory
 import org.springframework.kafka.support.serializer.JsonSerializer
 
 @Configuration
-class EventsKafkaConfig {
+class KafkaProducerConfig {
 
     @Value("\${spring.kafka.bootstrap-servers}")
     private lateinit var bootstrapServers: String
 
-    @Bean("producerConfigs")
-    fun producerConfigs(): Map<String, Any> {
+    @Bean("eventLogProducerConfig")
+    fun producerConfigs(): Map<String, Any?> {
         return mapOf(
             ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
             ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
@@ -29,23 +28,13 @@ class EventsKafkaConfig {
         )
     }
 
-    @Bean("eventsProducerFactory")
-    fun eventProducerFactory(@Qualifier("producerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, CoreEvent> {
+    @Bean("eventLogProducerFactory")
+    fun producerFactory(@Qualifier("eventLogProducerConfig") producerConfigs: Map<String, Any?>): ProducerFactory<String?, CoreEvent> {
         return DefaultKafkaProducerFactory(producerConfigs)
     }
 
-    @Bean("eventsKafkaTemplate")
-    fun eventKafkaTemplate(@Qualifier("eventsProducerFactory") producerFactory: ProducerFactory<String?, CoreEvent>): KafkaTemplate<String?, CoreEvent> {
-        return KafkaTemplate(producerFactory)
-    }
-
-    @Bean("orderProducerFactory")
-    fun orderProducerFactory(@Qualifier("producerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, OrderSubmitRequest> {
-        return DefaultKafkaProducerFactory(producerConfigs)
-    }
-
-    @Bean("orderKafkaTemplate")
-    fun orderKafkaTemplate(@Qualifier("orderProducerFactory") producerFactory: ProducerFactory<String?, OrderSubmitRequest>): KafkaTemplate<String?, OrderSubmitRequest> {
+    @Bean("eventLogKafkaTemplate")
+    fun kafkaTemplate(@Qualifier("eventLogProducerFactory") producerFactory: ProducerFactory<String?, CoreEvent>): KafkaTemplate<String?, CoreEvent> {
         return KafkaTemplate(producerFactory)
     }
 

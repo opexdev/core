@@ -33,6 +33,10 @@
             <artifactId>matching-engine-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>co.nilin.opex.eventlog.core</groupId>
+            <artifactId>eventlog-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
         </dependency>

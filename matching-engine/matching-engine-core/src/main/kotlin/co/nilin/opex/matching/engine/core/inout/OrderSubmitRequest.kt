@@ -1,4 +1,4 @@
-package co.nilin.opex.matching.engine.ports.kafka.listener.inout
+package co.nilin.opex.matching.engine.core.inout
 
 import co.nilin.opex.matching.engine.core.model.MatchConstraint
 import co.nilin.opex.matching.engine.core.model.OrderDirection

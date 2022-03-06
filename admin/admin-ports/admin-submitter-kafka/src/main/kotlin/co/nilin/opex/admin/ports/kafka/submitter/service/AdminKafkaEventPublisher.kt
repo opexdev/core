@@ -16,8 +16,14 @@ class AdminKafkaEventPublisher(private val kafkaTemplate: KafkaTemplate<String?,
 
     override suspend fun publish(event: AdminEvent): Unit = suspendCoroutine { cont ->
         logger.info("Publishing admin event: $event")
+
         val sendFuture = kafkaTemplate.send("admin_event", event)
-        sendFuture.addCallback({ cont.resume(Unit) }, { cont.resumeWithException(it) })
+        sendFuture.addCallback({
+            cont.resume(Unit)
+        }, {
+            logger.error("Error publishing admin event", it)
+            cont.resumeWithException(it)
+        })
     }
 
 }
