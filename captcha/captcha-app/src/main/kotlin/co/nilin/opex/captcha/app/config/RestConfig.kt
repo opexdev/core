@@ -1,4 +1,4 @@
-package co.nilin.opex.referral.app.config
+package co.nilin.opex.captcha.app.config
 
 import co.nilin.opex.utility.interceptors.FormDataWorkaroundFilter
 import org.springframework.context.annotation.Bean
