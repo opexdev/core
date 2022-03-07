@@ -333,6 +333,7 @@ services:
       - VAULT_URL=http://vault:8200
       - VAULT_HOST=vault
     depends_on:
+      - captcha
       - kafka-1
       - kafka-2
       - kafka-3
@@ -479,6 +480,17 @@ services:
       - consul
       - postgres-referral
       - vault
+    deploy:
+      restart_policy:
+        condition: on-failure
+  captcha:
+    build:
+      context: captcha/captcha-app
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
+      - CONSUL_HOST=consul
+    depends_on:
+      - consul
     deploy:
       restart_policy:
         condition: on-failure
