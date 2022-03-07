@@ -29,7 +29,7 @@ class SwaggerConfig {
     private lateinit var typeResolver: TypeResolver
 
     @Bean
-    fun opexBCGateway(): Docket {
+    fun opexReferral(): Docket {
         return Docket(DocumentationType.SWAGGER_2)
             .groupName("opex-referral")
             .apiInfo(apiInfo())

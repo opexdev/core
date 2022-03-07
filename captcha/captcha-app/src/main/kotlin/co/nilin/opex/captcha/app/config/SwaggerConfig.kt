@@ -11,7 +11,7 @@ import springfox.documentation.spring.web.plugins.Docket
 @Configuration
 class SwaggerConfig {
     @Bean
-    fun opex(): Docket {
+    fun opexCaptcha(): Docket {
         return Docket(DocumentationType.SWAGGER_2)
             .groupName("opex-captcha")
             .apiInfo(apiInfo())
