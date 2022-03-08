@@ -1,5 +1,9 @@
 package co.nilin.opex.captcha.app.controller
 
+import co.nilin.opex.captcha.app.api.CaptchaHandler
+import co.nilin.opex.captcha.app.extension.sha256
+import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.utility.error.data.OpexException
 import io.swagger.annotations.*
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -7,7 +11,7 @@ import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @RestController
-class Controller() {
+class Controller(private val captchaHandler: CaptchaHandler, private val store: MutableMap<String, String>) {
     @ApiOperation(
         value = "Request new captcha session",
         notes = "Request new captcha session."
@@ -24,13 +28,11 @@ class Controller() {
         )
     )
     @PostMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
-    suspend fun requestCaptchaSession(): String {
-        return UUID.randomUUID().toString()
-    }
+    suspend fun createSession() = UUID.randomUUID().toString().sha256().also { store[it] = "" }
 
     @ApiOperation(
         value = "Get captcha image",
-        notes = "Get captcha image associated with provided uuid."
+        notes = "Get captcha image associated with provided id."
     )
     @ApiResponses(
         ApiResponse(
@@ -49,8 +51,12 @@ class Controller() {
             code = 410,
         )
     )
-    @PatchMapping("/{uuid}", produces = [MediaType.IMAGE_JPEG_VALUE])
-    suspend fun getCaptchaImage(@PathVariable uuid: String) {
+    @PutMapping("/{id}", produces = [MediaType.IMAGE_JPEG_VALUE])
+    suspend fun getCaptchaImage(@PathVariable id: String): ByteArray {
+        store[id] ?: throw OpexException(OpexError.Error, status = HttpStatus.GONE)
+        val (text, image) = captchaHandler.generate()
+        store[id] = text.sha256()
+        return image
     }
 
     @ApiOperation(value = "Verify captcha", notes = "Verify captcha.")
@@ -69,10 +75,13 @@ class Controller() {
         )
     )
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    @DeleteMapping("/{uuid}")
+    @DeleteMapping("/{id}")
     suspend fun verifyCaptcha(
-        @PathVariable uuid: String,
+        @PathVariable id: String,
         @RequestParam answer: String
     ) {
+        store[id]?.let {
+            if (captchaHandler.verify(answer, it)) store.remove(id) else throw OpexException(OpexError.BadRequest)
+        } ?: throw OpexException(OpexError.NotFound)
     }
 }
