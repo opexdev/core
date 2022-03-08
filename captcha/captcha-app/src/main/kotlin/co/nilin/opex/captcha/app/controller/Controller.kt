@@ -1,6 +1,7 @@
 package co.nilin.opex.captcha.app.controller
 
 import io.swagger.annotations.*
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.*
 import java.util.*
@@ -67,7 +68,8 @@ class Controller() {
             code = 400,
         )
     )
-    @PutMapping("/{uuid}")
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
+    @DeleteMapping("/{uuid}")
     suspend fun verifyCaptcha(
         @PathVariable uuid: String,
         @RequestParam answer: String
