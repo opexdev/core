@@ -4,7 +4,9 @@ import co.nilin.opex.captcha.app.api.CaptchaHandler
 import co.nilin.opex.captcha.app.extension.sha256
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
-import io.swagger.annotations.*
+import io.swagger.annotations.ApiOperation
+import io.swagger.annotations.ApiResponse
+import io.swagger.annotations.ApiResponses
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -19,23 +21,10 @@ class Controller(private val captchaHandler: CaptchaHandler, private val store: 
         notes = "Get captcha image associated with provided id."
     )
     @ApiResponses(
-        ApiResponse(
-            message = "OK",
-            code = 200,
-            response = String::class,
-            examples = Example(
-                ExampleProperty(
-                    mediaType = MediaType.IMAGE_JPEG_VALUE,
-                    value = "image.jpg"
-                )
-            )
-        ),
-        ApiResponse(
-            message = "GONE",
-            code = 410,
-        )
+        ApiResponse(message = "OK", code = 200),
+        ApiResponse(message = "GONE", code = 410)
     )
-    @PostMapping(produces = [MediaType.IMAGE_JPEG_VALUE])
+    @PostMapping("/session", produces = [MediaType.IMAGE_JPEG_VALUE])
     suspend fun getCaptchaImage(): ResponseEntity<ByteArray> {
         val (text, image) = captchaHandler.generate()
         val id = UUID.randomUUID().toString().sha256().also { store[it] = text.sha256() }
