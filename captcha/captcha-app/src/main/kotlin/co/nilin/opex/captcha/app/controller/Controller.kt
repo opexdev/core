@@ -5,31 +5,15 @@ import co.nilin.opex.captcha.app.extension.sha256
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import io.swagger.annotations.*
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @RestController
 class Controller(private val captchaHandler: CaptchaHandler, private val store: MutableMap<String, String>) {
-    @ApiOperation(
-        value = "Request new captcha session",
-        notes = "Request new captcha session."
-    )
-    @ApiResponse(
-        message = "OK",
-        code = 200,
-        response = String::class,
-        examples = Example(
-            ExampleProperty(
-                mediaType = MediaType.APPLICATION_JSON_VALUE,
-                value = "ef83c977-abae-452a-81c8-5455f4e3a9fa"
-            )
-        )
-    )
-    @PostMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
-    suspend fun createSession() = UUID.randomUUID().toString().sha256().also { store[it] = "" }
-
     @ApiOperation(
         value = "Get captcha image",
         notes = "Get captcha image associated with provided id."
@@ -51,12 +35,11 @@ class Controller(private val captchaHandler: CaptchaHandler, private val store: 
             code = 410,
         )
     )
-    @PutMapping("/{id}", produces = [MediaType.IMAGE_JPEG_VALUE])
-    suspend fun getCaptchaImage(@PathVariable id: String): ByteArray {
-        store[id] ?: throw OpexException(OpexError.Error, status = HttpStatus.GONE)
+    @PostMapping(produces = [MediaType.IMAGE_JPEG_VALUE])
+    suspend fun getCaptchaImage(): ResponseEntity<ByteArray> {
         val (text, image) = captchaHandler.generate()
-        store[id] = text.sha256()
-        return image
+        val id = UUID.randomUUID().toString().sha256().also { store[it] = text.sha256() }
+        return ResponseEntity(image, HttpHeaders().apply { set("captcha-session-key", id) }, HttpStatus.OK)
     }
 
     @ApiOperation(value = "Verify captcha", notes = "Verify captcha.")
