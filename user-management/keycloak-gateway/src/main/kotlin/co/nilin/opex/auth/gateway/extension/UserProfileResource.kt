@@ -111,7 +111,6 @@ class UserProfileResource(private val session: KeycloakSession) : RealmResourceP
         val acceptForm = proxy.upload(userId, formPart).path*/
 
 
-
         val kycRequestGroup = session.groups()
             .getGroupsStream(opexRealm)
             .toList()
@@ -131,8 +130,6 @@ class UserProfileResource(private val session: KeycloakSession) : RealmResourceP
 
         return Response.noContent().build()
     }
-
-    
 
     private fun isInKycGroups(user: UserModel): Boolean {
         return user.groupsStream.map { it.name }

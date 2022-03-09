@@ -5,6 +5,7 @@ import co.nilin.opex.auth.gateway.data.*
 import co.nilin.opex.auth.gateway.model.AuthEvent
 import co.nilin.opex.auth.gateway.model.UserCreatedEvent
 import co.nilin.opex.auth.gateway.utils.ErrorHandler
+import co.nilin.opex.auth.gateway.utils.OTPUtils
 import co.nilin.opex.auth.gateway.utils.ResourceAuthenticator
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
@@ -15,8 +16,12 @@ import org.keycloak.models.Constants
 import org.keycloak.models.KeycloakSession
 import org.keycloak.models.UserCredentialModel
 import org.keycloak.models.UserModel
+import org.keycloak.models.credential.OTPCredentialModel
+import org.keycloak.models.utils.Base32
+import org.keycloak.models.utils.HmacOTP
 import org.keycloak.services.resource.RealmResourceProvider
 import org.keycloak.services.resources.LoginActionsService
+import org.keycloak.utils.CredentialHelper
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import java.util.concurrent.TimeUnit
@@ -134,6 +139,58 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     }
 
     @GET
+    @Path("user/2fa")
+    @Produces(MediaType.APPLICATION_JSON)
+    fun get2FASecret(): Response {
+        val auth = ResourceAuthenticator.bearerAuth(session)
+        if (!auth.hasScopeAccess("trust"))
+            return ErrorHandler.forbidden()
+
+        val user = session.users().getUserById(auth.getUserId(), opexRealm)
+            ?: return ErrorHandler.response(
+                Response.Status.NOT_FOUND,
+                OpexException(OpexError.NotFound, "User not found")
+            )
+
+        val secret = HmacOTP.generateSecret(64)
+        val uri = OTPUtils.generateOTPKeyURI(opexRealm, secret, "Opex", user.email)
+        return Response.ok(Get2FAResponse(uri, Base32.encode(secret.toByteArray()))).build()
+    }
+
+    @POST
+    @Path("user/2fa")
+    @Consumes(MediaType.APPLICATION_JSON)
+    fun setup2FA(body: Setup2FARequest): Response {
+        val auth = ResourceAuthenticator.bearerAuth(session)
+        if (!auth.hasScopeAccess("trust"))
+            return ErrorHandler.forbidden()
+
+        val user = session.users().getUserById(auth.getUserId(), opexRealm)
+            ?: return ErrorHandler.response(
+                Response.Status.NOT_FOUND,
+                OpexException(OpexError.NotFound, "User not found")
+            )
+
+        val otpCredential = OTPCredentialModel.createFromPolicy(opexRealm, body.secret)
+        CredentialHelper.createOTPCredential(session, opexRealm, user, body.initialCode, otpCredential)
+        return Response.noContent().build()
+    }
+
+    @GET
+    @Path("user/2fa/check")
+    @Produces(MediaType.APPLICATION_JSON)
+    fun is2FAEnabled(@QueryParam("username") username: String?): Response {
+        val auth = ResourceAuthenticator.bearerAuth(session)
+        if (!auth.hasScopeAccess("trust"))
+            return ErrorHandler.forbidden()
+
+        val user = session.users().getUserByUsername(username, opexRealm)
+            ?: return Response.ok(Check2FAResponse(false)).build()
+
+        return Response.ok(Check2FAResponse(is2FAEnabled(user))).build()
+    }
+
+    @GET
     @Path("user/sessions")
     fun getActiveSessions(): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
@@ -185,6 +242,10 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         val kafkaEvent = UserCreatedEvent(user.id, user.firstName, user.lastName, user.email!!)
         kafkaTemplate.send("auth_user_created", kafkaEvent)
         logger.info("$kafkaEvent produced in kafka topic")
+    }
+
+    private fun is2FAEnabled(user: UserModel): Boolean {
+        return session.userCredentialManager().isConfiguredFor(opexRealm, user, OTPCredentialModel.TYPE)
     }
 
     override fun close() {
