@@ -19,3 +19,5 @@ spring:
         instance-id: ${spring.application.name}:${server.port}
         healthCheckInterval: 20s
         prefer-ip-address: true
+app:
+  captcha-window-seconds: 600
