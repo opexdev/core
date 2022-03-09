@@ -1,9 +1,7 @@
 package co.nilin.opex.auth.gateway.extension
 
 import co.nilin.opex.auth.gateway.ApplicationContextHolder
-import co.nilin.opex.auth.gateway.data.RegisterUserRequest
-import co.nilin.opex.auth.gateway.data.RegisterUserResponse
-import co.nilin.opex.auth.gateway.data.UserProfileInfo
+import co.nilin.opex.auth.gateway.data.*
 import co.nilin.opex.auth.gateway.model.AuthEvent
 import co.nilin.opex.auth.gateway.model.UserCreatedEvent
 import co.nilin.opex.auth.gateway.utils.ErrorHandler
@@ -15,6 +13,7 @@ import org.keycloak.common.util.Time
 import org.keycloak.email.EmailTemplateProvider
 import org.keycloak.models.Constants
 import org.keycloak.models.KeycloakSession
+import org.keycloak.models.UserCredentialModel
 import org.keycloak.models.UserModel
 import org.keycloak.services.resource.RealmResourceProvider
 import org.keycloak.services.resources.LoginActionsService
@@ -65,6 +64,42 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         return Response.ok(RegisterUserResponse(user.id)).build()
     }
 
+    @PUT
+    @Path("user/password")
+    @Consumes(MediaType.APPLICATION_JSON)
+    fun changePassword(body: ChangePasswordRequest): Response {
+        // AccountFormService
+        val auth = ResourceAuthenticator.bearerAuth(session)
+        if (!auth.hasScopeAccess("trust"))
+            return ErrorHandler.forbidden()
+
+        val user = session.users().getUserById(auth.getUserId(), opexRealm)
+            ?: return ErrorHandler.response(
+                Response.Status.NOT_FOUND,
+                OpexException(OpexError.NotFound, "User not found")
+            )
+
+        val cred = UserCredentialModel.password(body.password)
+        if (!session.userCredentialManager().isValid(opexRealm, user, cred)) {
+            return ErrorHandler.response(
+                Response.Status.FORBIDDEN,
+                OpexException(OpexError.Forbidden, "Incorrect password")
+            )
+        }
+
+        if (body.newPasswordConfirmation == body.newPassword) {
+            return ErrorHandler.response(
+                Response.Status.BAD_REQUEST,
+                OpexException(OpexError.BadRequest, "Invalid password confirmation")
+            )
+        }
+
+        session.userCredentialManager()
+            .updateCredential(opexRealm, user, UserCredentialModel.password(body.newPassword, false))
+
+        return Response.noContent().build()
+    }
+
     @POST
     @Path("user/forgot")
     @Produces(MediaType.APPLICATION_JSON)
@@ -99,10 +134,8 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     }
 
     @GET
-    @Path("user/profile")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    fun getAttributes(): Response {
+    @Path("user/sessions")
+    fun getActiveSessions(): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
         if (!auth.hasScopeAccess("trust"))
             return ErrorHandler.forbidden()
@@ -113,40 +146,11 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
                 OpexException(OpexError.NotFound, "User not found")
             )
 
-        return Response.ok(user.attributes).build()
-    }
+        val sessions = session.sessions().getUserSessionsStream(opexRealm, user)
+            .map { UserSessionResponse(it.ipAddress, it.started, it.lastSessionRefresh, it.state.name) }
+            .toList()
 
-    @POST
-    @Path("user/profile")
-    @Consumes(MediaType.APPLICATION_JSON)
-    fun updateAttributes(request: UserProfileInfo): Response {
-        val auth = ResourceAuthenticator.bearerAuth(session)
-        if (!auth.hasScopeAccess("trust"))
-            return ErrorHandler.forbidden()
-
-        val user = session.users().getUserById(auth.getUserId(), opexRealm)
-            ?: return ErrorHandler.response(
-                Response.Status.NOT_FOUND,
-                OpexException(OpexError.NotFound, "User not found")
-            )
-
-        with(request) {
-            user.setSingleAttribute("firstNameFa", firstNameFa)
-            user.setSingleAttribute("lastNameEn", lastNameEn)
-            user.setSingleAttribute("firstNameFa", firstNameFa)
-            user.setSingleAttribute("lastNameFa", lastNameFa)
-            user.setSingleAttribute("birthday", birthday)
-            user.setSingleAttribute("birthdayJalali", birthdayJalali)
-            user.setSingleAttribute("nationalID", nationalID)
-            user.setSingleAttribute("passport", passport)
-            user.setSingleAttribute("phoneNumber", phoneNumber)
-            user.setSingleAttribute("homeNumber", homeNumber)
-            user.setSingleAttribute("email", email)
-            user.setSingleAttribute("postalCode", postalCode)
-            user.setSingleAttribute("address", address)
-        }
-
-        return Response.noContent().build()
+        return Response.ok(sessions).build()
     }
 
     private fun sendEmail(user: UserModel, actions: List<String>) {
