@@ -11,11 +11,15 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.util.ConcurrentLruCache
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @RestController
-class Controller(private val captchaHandler: CaptchaHandler, private val store: MutableMap<String, String>) {
+class Controller(
+    private val captchaHandler: CaptchaHandler,
+    private val store: ConcurrentLruCache<String, Boolean>
+) {
     @ApiOperation(
         value = "Get captcha image",
         notes = "Get captcha image associated with provided id."
@@ -27,7 +31,7 @@ class Controller(private val captchaHandler: CaptchaHandler, private val store: 
     @PostMapping("/session", produces = [MediaType.IMAGE_JPEG_VALUE])
     suspend fun getCaptchaImage(): ResponseEntity<ByteArray> {
         val (text, image) = captchaHandler.generate()
-        val id = UUID.randomUUID().toString().sha256().also { store[it] = text.sha256() }
+        val id = UUID.randomUUID().toString().sha256().also { store["$it:$text".sha256()] }
         return ResponseEntity(image, HttpHeaders().apply { set("captcha-session-key", id) }, HttpStatus.OK)
     }
 
@@ -40,10 +44,6 @@ class Controller(private val captchaHandler: CaptchaHandler, private val store: 
         ApiResponse(
             message = "SESSION_NOT_FOUND",
             code = 404,
-        ),
-        ApiResponse(
-            message = "ANSWER_INVALID",
-            code = 400,
         )
     )
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
@@ -52,8 +52,6 @@ class Controller(private val captchaHandler: CaptchaHandler, private val store: 
         @PathVariable id: String,
         @RequestParam answer: String
     ) {
-        store[id]?.let {
-            if (captchaHandler.verify(answer, it)) store.remove(id) else throw OpexException(OpexError.BadRequest)
-        } ?: throw OpexException(OpexError.NotFound)
+        if (store.contains("$id:$answer".sha256())) store.remove(id) else throw OpexException(OpexError.NotFound)
     }
 }
