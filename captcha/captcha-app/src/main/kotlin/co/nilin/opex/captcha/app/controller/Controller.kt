@@ -32,12 +32,18 @@ class Controller(
     )
     @PostMapping("/session", produces = [MediaType.IMAGE_JPEG_VALUE])
     suspend fun getCaptchaImage(): ResponseEntity<ByteArray> {
-        val (text, image) = captchaHandler.generate()
-        val id = UUID.randomUUID().toString().sha256().also { store["$it:$text".sha256()] = System.currentTimeMillis() }
+        fun idGen(id: String = UUID.randomUUID().toString().sha256()): String = if (store.contains(id)) idGen() else id
+        cleanExpired()
+        val (answer, image) = captchaHandler.generate()
+        val id = idGen()
+        store["$id:$answer".sha256()] = System.currentTimeMillis()
         return ResponseEntity(image, HttpHeaders().apply { set("captcha-session-key", id) }, HttpStatus.OK)
     }
 
-    @ApiOperation(value = "Verify captcha", notes = "Verify captcha. proof is a string in form of \"{{captcha-session-key}}:{{answer}}\"")
+    @ApiOperation(
+        value = "Verify captcha",
+        notes = "Verify captcha. proof is a string in form of \"{{captcha-session-key}}:{{answer}}\""
+    )
     @ApiResponses(
         ApiResponse(
             message = "OK",
@@ -51,8 +57,12 @@ class Controller(
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     @DeleteMapping
     suspend fun verifyCaptcha(@RequestParam proof: String) {
+        cleanExpired()
+        proof.sha256().let { if (store.contains(it)) store.remove(it) else throw OpexException(OpexError.NotFound) }
+    }
+
+    private fun cleanExpired() {
         val ms = System.currentTimeMillis()
         store.filterValues { it <= ms - captchaWindowSeconds * 1000 }.forEach { store.remove(it.key) }
-        proof.sha256().let { if (store.contains(it)) store.remove(it) else throw OpexException(OpexError.NotFound) }
     }
 }
