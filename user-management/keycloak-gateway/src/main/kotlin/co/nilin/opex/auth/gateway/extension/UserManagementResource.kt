@@ -10,6 +10,10 @@ import co.nilin.opex.auth.gateway.utils.ErrorHandler
 import co.nilin.opex.auth.gateway.utils.ResourceAuthenticator
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
+import org.apache.http.client.HttpClient
+import org.apache.http.client.methods.HttpGet
+import org.apache.http.client.utils.URIBuilder
+import org.apache.http.impl.client.HttpClientBuilder
 import org.keycloak.authentication.actiontoken.execactions.ExecuteActionsActionToken
 import org.keycloak.common.util.Time
 import org.keycloak.email.EmailTemplateProvider
@@ -68,7 +72,17 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @POST
     @Path("user/forgot")
     @Produces(MediaType.APPLICATION_JSON)
-    fun forgotPassword(@QueryParam("email") email: String?): Response {
+    fun forgotPassword(
+        @QueryParam("email") email: String?,
+        @QueryParam("captcha-answer") captchaAnswer: String
+    ): Response {
+        val client: HttpClient = HttpClientBuilder.create().build()
+        val post = HttpGet(URIBuilder("https://captcha:8080").addParameter("proof", captchaAnswer).build())
+        client.execute(post).let { response ->
+            check(response.statusLine.statusCode / 500 != 5) { "Could not connect to Opex-Captcha service." }
+            require(response.statusLine.statusCode / 100 == 2) { "Invalid captcha" }
+        }
+
         val auth = ResourceAuthenticator.bearerAuth(session)
         if (!auth.hasScopeAccess("trust"))
             return ErrorHandler.forbidden()

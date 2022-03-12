@@ -110,7 +110,7 @@ public class RegistrationOpexCaptcha implements FormAction, FormActionFactory, C
             HttpGet post = new HttpGet(new URIBuilder("https://captcha:8080").addParameter("proof", captcha).build());
             try (CloseableHttpResponse response = httpClient.execute(post)) {
                 if (response.getStatusLine().getStatusCode() / 500 == 5)
-                    throw new IllegalStateException("Failed to verify captcha");
+                    throw new IllegalStateException("Could not connect to Opex-Captcha service.");
                 success = response.getStatusLine().getStatusCode() / 100 == 2;
             }
         } catch (Exception e) {
