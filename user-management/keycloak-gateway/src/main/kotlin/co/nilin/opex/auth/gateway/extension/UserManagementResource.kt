@@ -17,11 +17,11 @@ import org.keycloak.models.KeycloakSession
 import org.keycloak.models.UserCredentialModel
 import org.keycloak.models.UserModel
 import org.keycloak.models.credential.OTPCredentialModel
-import org.keycloak.models.utils.Base32
 import org.keycloak.models.utils.HmacOTP
 import org.keycloak.services.resource.RealmResourceProvider
 import org.keycloak.services.resources.LoginActionsService
 import org.keycloak.utils.CredentialHelper
+import org.keycloak.utils.TotpUtils
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import java.util.concurrent.TimeUnit
@@ -69,42 +69,6 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         return Response.ok(RegisterUserResponse(user.id)).build()
     }
 
-    @PUT
-    @Path("user/password")
-    @Consumes(MediaType.APPLICATION_JSON)
-    fun changePassword(body: ChangePasswordRequest): Response {
-        // AccountFormService
-        val auth = ResourceAuthenticator.bearerAuth(session)
-        if (!auth.hasScopeAccess("trust"))
-            return ErrorHandler.forbidden()
-
-        val user = session.users().getUserById(auth.getUserId(), opexRealm)
-            ?: return ErrorHandler.response(
-                Response.Status.NOT_FOUND,
-                OpexException(OpexError.NotFound, "User not found")
-            )
-
-        val cred = UserCredentialModel.password(body.password)
-        if (!session.userCredentialManager().isValid(opexRealm, user, cred)) {
-            return ErrorHandler.response(
-                Response.Status.FORBIDDEN,
-                OpexException(OpexError.Forbidden, "Incorrect password")
-            )
-        }
-
-        if (body.newPasswordConfirmation == body.newPassword) {
-            return ErrorHandler.response(
-                Response.Status.BAD_REQUEST,
-                OpexException(OpexError.BadRequest, "Invalid password confirmation")
-            )
-        }
-
-        session.userCredentialManager()
-            .updateCredential(opexRealm, user, UserCredentialModel.password(body.newPassword, false))
-
-        return Response.noContent().build()
-    }
-
     @POST
     @Path("user/forgot")
     @Produces(MediaType.APPLICATION_JSON)
@@ -138,8 +102,45 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         return Response.noContent().build()
     }
 
+    @PUT
+    @Path("user/security/password")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    fun changePassword(body: ChangePasswordRequest): Response {
+        // AccountFormService
+        val auth = ResourceAuthenticator.bearerAuth(session)
+        if (!auth.hasScopeAccess("trust"))
+            return ErrorHandler.forbidden()
+
+        val user = session.users().getUserById(auth.getUserId(), opexRealm)
+            ?: return ErrorHandler.response(
+                Response.Status.NOT_FOUND,
+                OpexException(OpexError.NotFound, "User not found")
+            )
+
+        val cred = UserCredentialModel.password(body.password)
+        if (!session.userCredentialManager().isValid(opexRealm, user, cred)) {
+            return ErrorHandler.response(
+                Response.Status.FORBIDDEN,
+                OpexException(OpexError.Forbidden, "Incorrect password")
+            )
+        }
+
+        if (body.newPasswordConfirmation == body.newPassword) {
+            return ErrorHandler.response(
+                Response.Status.BAD_REQUEST,
+                OpexException(OpexError.BadRequest, "Invalid password confirmation")
+            )
+        }
+
+        session.userCredentialManager()
+            .updateCredential(opexRealm, user, UserCredentialModel.password(body.newPassword, false))
+
+        return Response.noContent().build()
+    }
+
     @GET
-    @Path("user/2fa")
+    @Path("user/security/otp")
     @Produces(MediaType.APPLICATION_JSON)
     fun get2FASecret(): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
@@ -152,14 +153,23 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
                 OpexException(OpexError.NotFound, "User not found")
             )
 
+        if (is2FAEnabled(user)) {
+            return ErrorHandler.response(
+                Response.Status.BAD_REQUEST,
+                OpexException(OpexError.OTPAlreadyEnabled)
+            )
+        }
+
         val secret = HmacOTP.generateSecret(64)
         val uri = OTPUtils.generateOTPKeyURI(opexRealm, secret, "Opex", user.email)
-        return Response.ok(Get2FAResponse(uri, Base32.encode(secret.toByteArray()))).build()
+        val qr = TotpUtils.qrCode(secret, opexRealm, user)
+        return Response.ok(Get2FAResponse(uri, secret, qr)).build()
     }
 
     @POST
-    @Path("user/2fa")
+    @Path("user/security/otp")
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     fun setup2FA(body: Setup2FARequest): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
         if (!auth.hasScopeAccess("trust"))
@@ -171,13 +181,20 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
                 OpexException(OpexError.NotFound, "User not found")
             )
 
+        if (is2FAEnabled(user)) {
+            return ErrorHandler.response(
+                Response.Status.BAD_REQUEST,
+                OpexException(OpexError.OTPAlreadyEnabled)
+            )
+        }
+
         val otpCredential = OTPCredentialModel.createFromPolicy(opexRealm, body.secret)
         CredentialHelper.createOTPCredential(session, opexRealm, user, body.initialCode, otpCredential)
         return Response.noContent().build()
     }
 
     @GET
-    @Path("user/2fa/check")
+    @Path("user/security/check")
     @Produces(MediaType.APPLICATION_JSON)
     fun is2FAEnabled(@QueryParam("username") username: String?): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
@@ -185,13 +202,14 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             return ErrorHandler.forbidden()
 
         val user = session.users().getUserByUsername(username, opexRealm)
-            ?: return Response.ok(Check2FAResponse(false)).build()
+            ?: return Response.ok(UserSecurityCheckResponse(false)).build()
 
-        return Response.ok(Check2FAResponse(is2FAEnabled(user))).build()
+        return Response.ok(UserSecurityCheckResponse(is2FAEnabled(user))).build()
     }
 
     @GET
     @Path("user/sessions")
+    @Produces(MediaType.APPLICATION_JSON)
     fun getActiveSessions(): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
         if (!auth.hasScopeAccess("trust"))
