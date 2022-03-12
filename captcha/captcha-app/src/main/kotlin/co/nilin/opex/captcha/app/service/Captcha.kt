@@ -1,30 +1,21 @@
-package co.nilin.opex.captcha.app.service;
+package co.nilin.opex.captcha.app.service
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.util.Random;
-import java.util.StringTokenizer;
-import java.util.UUID;
+import java.awt.Color
+import java.awt.Font
+import java.awt.RenderingHints
+import java.awt.image.BufferedImage
+import java.io.ByteArrayOutputStream
+import java.util.*
+import javax.imageio.ImageIO
 
-/**
- * This is a simple captcha class, use it to generate a random string and then to create an image of it.
- *
- * @author Igor Polevoy
- */
-public final class Captcha {
-
-    private Captcha() {
-    }
-
+object Captcha {
     /**
      * Generates a random alpha-numeric string of eight characters.
      *
      * @return random alpha-numeric string of eight characters.
      */
-    public static String generateText() {
-        return new StringTokenizer(UUID.randomUUID().toString(), "-").nextToken();
+    fun generateText(): String {
+        return StringTokenizer(UUID.randomUUID().toString(), "-").nextToken()
     }
 
     /**
@@ -33,36 +24,31 @@ public final class Captcha {
      * @param text expects string size eight (8) characters.
      * @return byte array that is a PNG image generated with text displayed.
      */
-    public static byte[] generateImage(String text) {
-        int w = 180, h = 40;
-        BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g = image.createGraphics();
-        g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-
-        g.setColor(Color.white);
-        g.fillRect(0, 0, w, h);
-        g.setFont(new Font("Serif", Font.PLAIN, 26));
-        g.setColor(Color.blue);
-        int start = 10;
-        byte[] bytes = text.getBytes();
-
-        Random random = new Random();
-        for (int i = 0; i < bytes.length; i++) {
-            g.setColor(new Color(random.nextInt(255), random.nextInt(255), random.nextInt(255)));
-            g.drawString(new String(new byte[]{bytes[i]}), start + (i * 20), (int) (Math.random() * 20 + 20));
+    fun generateImage(text: String): ByteArray {
+        val w = 180
+        val h = 40
+        val image = BufferedImage(w, h, BufferedImage.TYPE_INT_RGB)
+        val g = image.createGraphics()
+        g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON)
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
+        g.color = Color.white
+        g.fillRect(0, 0, w, h)
+        g.font = Font("Serif", Font.PLAIN, 26)
+        g.color = Color.blue
+        val start = 10
+        val bytes = text.toByteArray()
+        val random = Random()
+        for (i in bytes.indices) {
+            g.color = Color(random.nextInt(255), random.nextInt(255), random.nextInt(255))
+            g.drawString(String(byteArrayOf(bytes[i])), start + i * 20, (Math.random() * 20 + 20).toInt())
         }
-        g.setColor(Color.white);
-        for (int i = 0; i < 8; i++) {
-            g.drawOval((int) (Math.random() * 160), (int) (Math.random() * 10), 30, 30);
+        g.color = Color.white
+        for (i in 0..7) {
+            g.drawOval((Math.random() * 160).toInt(), (Math.random() * 10).toInt(), 30, 30)
         }
-        g.dispose();
-        ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        try {
-            ImageIO.write(image, "png", bout);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return bout.toByteArray();
+        g.dispose()
+        val bout = ByteArrayOutputStream()
+        kotlin.runCatching { ImageIO.write(image, "png", bout) }.onFailure { throw RuntimeException(it) }
+        return bout.toByteArray()
     }
 }
