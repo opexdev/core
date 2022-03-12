@@ -1,8 +1,8 @@
 package co.nilin.opex.captcha.app.controller
 
 import co.nilin.opex.captcha.app.api.CaptchaHandler
-import co.nilin.opex.captcha.app.extension.sha256
 import co.nilin.opex.captcha.app.api.SessionStore
+import co.nilin.opex.captcha.app.extension.sha256
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import io.swagger.annotations.ApiOperation
@@ -31,11 +31,14 @@ class Controller(
     @PostMapping("/session", produces = [MediaType.IMAGE_JPEG_VALUE])
     suspend fun getCaptchaImage(): ResponseEntity<ByteArray> {
         fun idGen(id: String = UUID.randomUUID().toString().sha256()): String =
-            if (sessionStore.contains(id)) idGen() else id
+            if (sessionStore.verify(id)) idGen() else id
         val (answer, image) = captchaHandler.generate()
         val id = idGen()
-        sessionStore.put("$id:$answer".sha256())
-        return ResponseEntity(image, HttpHeaders().apply { set("captcha-session-key", id) }, HttpStatus.OK)
+        val proof = "$id:$answer:${getRemoteAddr()}".sha256()
+        return ResponseEntity(image, HttpHeaders().apply {
+            set("captcha-session-key", id)
+            set("captcha-window-seconds", sessionStore.put(proof).toString())
+        }, HttpStatus.OK)
     }
 
     @ApiOperation(
@@ -48,13 +51,16 @@ class Controller(
             code = 204,
         ),
         ApiResponse(
-            message = "SESSION_NOT_FOUND",
+            message = "INVALID",
             code = 404,
         )
     )
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    @DeleteMapping
+    @GetMapping
     suspend fun verifyCaptcha(@RequestParam proof: String) {
-        if (!sessionStore.remove(proof.sha256())) throw OpexException(OpexError.NotFound)
+        if (!sessionStore.verify("$proof:${getRemoteAddr()}".sha256())) throw OpexException(OpexError.NotFound)
     }
+
+    // TODO: Provide remote address ip to prevent cross ip captcha verification
+    private fun getRemoteAddr() = "0.0.0.0"
 }

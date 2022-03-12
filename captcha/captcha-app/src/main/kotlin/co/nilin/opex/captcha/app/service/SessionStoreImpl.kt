@@ -9,17 +9,19 @@ class SessionStoreImpl(
     private val map: MutableMap<String, Long>,
     @Value("\${app.captcha-window-seconds}") private val captchaWindowSeconds: Long
 ) : SessionStore {
-    override fun put(proof: String) {
-        cleanExpired()
-        map[proof] = System.currentTimeMillis()
+    override fun put(proof: String): Long {
+        return (System.currentTimeMillis() + captchaWindowSeconds * 1000).also { map[proof] = it }
     }
 
     override fun remove(proof: String): Boolean = map.remove(proof)?.let { true } ?: false
 
-    override fun contains(proof: String): Boolean = proof in map
+    override fun verify(proof: String): Boolean {
+        cleanExpired()
+        return proof in map
+    }
 
     private fun cleanExpired() {
         val ms = System.currentTimeMillis()
-        map.filterValues { it <= ms - captchaWindowSeconds * 1000 }.forEach { map.remove(it.key) }
+        map.filterValues { it <= ms }.forEach { map.remove(it.key) }
     }
 }
