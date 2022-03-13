@@ -29,12 +29,14 @@ class Controller(
         ApiResponse(message = "GONE", code = 410)
     )
     @PostMapping("/session", produces = [MediaType.IMAGE_JPEG_VALUE])
-    suspend fun getCaptchaImage(): ResponseEntity<ByteArray> {
+    suspend fun getCaptchaImage(
+        @RequestHeader("X-Forwarded-For", defaultValue = "0.0.0.0") xForwardedFor: List<String>
+    ): ResponseEntity<ByteArray> {
         fun idGen(id: String = UUID.randomUUID().toString().sha256()): String =
             if (sessionStore.verify(id)) idGen() else id
         val (answer, image) = captchaHandler.generate()
         val id = idGen()
-        val proof = "$id:$answer:${getRemoteAddr()}".sha256()
+        val proof = "$id-$answer-${xForwardedFor.first()}".sha256()
         return ResponseEntity(image, HttpHeaders().apply {
             set("captcha-session-key", id)
             set("captcha-window-seconds", sessionStore.put(proof).toString())
@@ -43,24 +45,15 @@ class Controller(
 
     @ApiOperation(
         value = "Verify captcha",
-        notes = "Verify captcha. proof is a string in form of \"{{captcha-session-key}}:{{answer}}\""
+        notes = "Verify captcha. proof is a string in form of \"{{captcha-session-key}}-{{answer}}-{{remote-ip}}\""
     )
     @ApiResponses(
-        ApiResponse(
-            message = "OK",
-            code = 204,
-        ),
-        ApiResponse(
-            message = "INVALID",
-            code = 404,
-        )
+        ApiResponse(message = "OK", code = 204),
+        ApiResponse(message = "INVALID", code = 404)
     )
-    @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    @GetMapping
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @GetMapping("/verify")
     suspend fun verifyCaptcha(@RequestParam proof: String) {
-        if (!sessionStore.verify("$proof:${getRemoteAddr()}".sha256())) throw OpexException(OpexError.NotFound)
+        if (!sessionStore.verify(proof.sha256())) throw OpexException(OpexError.NotFound)
     }
-
-    // TODO: Provide remote address ip to prevent cross ip captcha verification
-    private fun getRemoteAddr() = "0.0.0.0"
 }

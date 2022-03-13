@@ -24,6 +24,7 @@ import org.keycloak.services.resource.RealmResourceProvider
 import org.keycloak.services.resources.LoginActionsService
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.core.KafkaTemplate
+import org.springframework.web.bind.annotation.RequestHeader
 import java.util.concurrent.TimeUnit
 import javax.ws.rs.*
 import javax.ws.rs.core.MediaType
@@ -74,10 +75,12 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @Produces(MediaType.APPLICATION_JSON)
     fun forgotPassword(
         @QueryParam("email") email: String?,
-        @QueryParam("captcha-answer") captchaAnswer: String
+        @QueryParam("captcha-answer") captchaAnswer: String,
+        @RequestHeader("X-Forwarded-For", defaultValue = "0.0.0.0") xForwardedFor: List<String>
     ): Response {
         val client: HttpClient = HttpClientBuilder.create().build()
-        val post = HttpGet(URIBuilder("https://captcha:8080").addParameter("proof", captchaAnswer).build())
+        val proof = "$captchaAnswer-${xForwardedFor.first()}"
+        val post = HttpGet(URIBuilder("https://captcha:8080").addParameter("proof", proof).build())
         client.execute(post).let { response ->
             check(response.statusLine.statusCode / 500 != 5) { "Could not connect to Opex-Captcha service." }
             require(response.statusLine.statusCode / 100 == 2) { "Invalid captcha" }
