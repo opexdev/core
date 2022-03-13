@@ -15,4 +15,6 @@ object ErrorHandler {
 
     fun forbidden() = response(Response.Status.FORBIDDEN, OpexException(OpexError.Forbidden))
 
+    fun userNotFound() = ErrorHandler.response(Response.Status.NOT_FOUND, OpexException(OpexError.UserNotFound))
+
 }

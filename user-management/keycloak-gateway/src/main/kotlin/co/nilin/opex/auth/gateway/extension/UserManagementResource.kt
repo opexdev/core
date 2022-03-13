@@ -87,18 +87,13 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @POST
     @Path("user/verify-email")
     @Produces(MediaType.APPLICATION_JSON)
-    fun sendVerifyEmail(@QueryParam("email") email: String?): Response {
+    fun sendVerifyEmail(): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
         if (!auth.hasScopeAccess("trust"))
             return ErrorHandler.forbidden()
 
-        val user = session.users().getUserByEmail(email, opexRealm)
-        if (user != null) {
-            if (!auth.hasUserAccess(user.id))
-                return ErrorHandler.forbidden()
-
-            sendEmail(user, listOf(UserModel.RequiredAction.VERIFY_EMAIL.name))
-        }
+        val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
+        sendEmail(user, listOf(UserModel.RequiredAction.VERIFY_EMAIL.name))
         return Response.noContent().build()
     }
 
@@ -112,11 +107,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         if (!auth.hasScopeAccess("trust"))
             return ErrorHandler.forbidden()
 
-        val user = session.users().getUserById(auth.getUserId(), opexRealm)
-            ?: return ErrorHandler.response(
-                Response.Status.NOT_FOUND,
-                OpexException(OpexError.NotFound, "User not found")
-            )
+        val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
 
         val cred = UserCredentialModel.password(body.password)
         if (!session.userCredentialManager().isValid(opexRealm, user, cred)) {
@@ -126,7 +117,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             )
         }
 
-        if (body.newPasswordConfirmation == body.newPassword) {
+        if (body.confirmation == body.newPassword) {
             return ErrorHandler.response(
                 Response.Status.BAD_REQUEST,
                 OpexException(OpexError.BadRequest, "Invalid password confirmation")
@@ -147,12 +138,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         if (!auth.hasScopeAccess("trust"))
             return ErrorHandler.forbidden()
 
-        val user = session.users().getUserById(auth.getUserId(), opexRealm)
-            ?: return ErrorHandler.response(
-                Response.Status.NOT_FOUND,
-                OpexException(OpexError.NotFound, "User not found")
-            )
-
+        val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
         if (is2FAEnabled(user)) {
             return ErrorHandler.response(
                 Response.Status.BAD_REQUEST,
@@ -175,11 +161,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         if (!auth.hasScopeAccess("trust"))
             return ErrorHandler.forbidden()
 
-        val user = session.users().getUserById(auth.getUserId(), opexRealm)
-            ?: return ErrorHandler.response(
-                Response.Status.NOT_FOUND,
-                OpexException(OpexError.NotFound, "User not found")
-            )
+        val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
 
         if (is2FAEnabled(user)) {
             return ErrorHandler.response(
@@ -191,6 +173,30 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         val otpCredential = OTPCredentialModel.createFromPolicy(opexRealm, body.secret)
         CredentialHelper.createOTPCredential(session, opexRealm, user, body.initialCode, otpCredential)
         return Response.noContent().build()
+    }
+
+    @DELETE
+    @Path("user/security/otp")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    fun disable2FA(): Response {
+        val auth = ResourceAuthenticator.bearerAuth(session)
+        if (!auth.hasScopeAccess("trust"))
+            return ErrorHandler.forbidden()
+
+        val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
+
+        val response = Response.noContent().build()
+        if (!is2FAEnabled(user))
+            return response
+
+        session.userCredentialManager()
+            .getStoredCredentialsByTypeStream(opexRealm, user, OTPCredentialModel.TYPE)
+            .toList()
+            .find { it.type == OTPCredentialModel.TYPE }
+            ?.let { session.userCredentialManager().removeStoredCredential(opexRealm, user, it.id) }
+
+        return response
     }
 
     @GET
@@ -215,12 +221,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         if (!auth.hasScopeAccess("trust"))
             return ErrorHandler.forbidden()
 
-        val user = session.users().getUserById(auth.getUserId(), opexRealm)
-            ?: return ErrorHandler.response(
-                Response.Status.NOT_FOUND,
-                OpexException(OpexError.NotFound, "User not found")
-            )
-
+        val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
         val sessions = session.sessions().getUserSessionsStream(opexRealm, user)
             .map { UserSessionResponse(it.ipAddress, it.started, it.lastSessionRefresh, it.state.name) }
             .toList()
