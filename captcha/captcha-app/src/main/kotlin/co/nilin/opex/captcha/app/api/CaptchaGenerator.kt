@@ -1,5 +1,5 @@
 package co.nilin.opex.captcha.app.api
 
-interface CaptchaHandler {
+interface CaptchaGenerator {
     fun generate(): Pair<String, ByteArray>
 }

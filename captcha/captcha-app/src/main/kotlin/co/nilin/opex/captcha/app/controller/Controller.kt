@@ -1,6 +1,6 @@
 package co.nilin.opex.captcha.app.controller
 
-import co.nilin.opex.captcha.app.api.CaptchaHandler
+import co.nilin.opex.captcha.app.api.CaptchaGenerator
 import co.nilin.opex.captcha.app.api.SessionStore
 import co.nilin.opex.captcha.app.extension.sha256
 import co.nilin.opex.utility.error.data.OpexError
@@ -17,7 +17,7 @@ import java.util.*
 
 @RestController
 class Controller(
-    private val captchaHandler: CaptchaHandler,
+    private val captchaGenerator: CaptchaGenerator,
     private val sessionStore: SessionStore
 ) {
     @ApiOperation(
@@ -34,7 +34,7 @@ class Controller(
     ): ResponseEntity<ByteArray> {
         fun idGen(id: String = UUID.randomUUID().toString().sha256()): String =
             if (sessionStore.verify(id)) idGen() else id
-        val (answer, image) = captchaHandler.generate()
+        val (answer, image) = captchaGenerator.generate()
         val id = idGen()
         val proof = "$id-$answer-${xForwardedFor.first()}".sha256()
         return ResponseEntity(image, HttpHeaders().apply {

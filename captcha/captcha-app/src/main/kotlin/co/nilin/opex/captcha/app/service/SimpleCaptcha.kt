@@ -8,7 +8,7 @@ import java.io.ByteArrayOutputStream
 import java.util.*
 import javax.imageio.ImageIO
 
-object Captcha {
+object SimpleCaptcha {
     /**
      * Generates a random alpha-numeric string of eight characters.
      *
