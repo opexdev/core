@@ -77,7 +77,7 @@ class UserProfileResource(private val session: KeycloakSession) : RealmResourceP
         if (!auth.hasScopeAccess("trust"))
             return ErrorHandler.forbidden()
 
-        val userId = auth.getUserId()!!
+        val userId = auth.getUserId()
         val user = session.users().getUserById(userId, opexRealm) ?: return ErrorHandler.userNotFound()
 
         if (isInKycGroups(user))
@@ -104,9 +104,8 @@ class UserProfileResource(private val session: KeycloakSession) : RealmResourceP
             .find { it.name == "kyc-requested" }
             ?: return ErrorHandler.response(Response.Status.NOT_FOUND, OpexError.GroupNotFound)
 
-        user.joinGroup(kycRequestGroup)
-
         user.apply {
+            joinGroup(kycRequestGroup)
             setSingleAttribute("kycSelfiePath", request.selfiePath)
             setSingleAttribute("kycIdCardPath", request.idCardPath)
             setSingleAttribute("kycAcceptFormPath", request.acceptFormPath)
