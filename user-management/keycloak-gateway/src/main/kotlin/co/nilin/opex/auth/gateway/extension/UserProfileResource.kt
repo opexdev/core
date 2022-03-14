@@ -36,12 +36,7 @@ class UserProfileResource(private val session: KeycloakSession) : RealmResourceP
         if (!auth.hasScopeAccess("trust"))
             return ErrorHandler.forbidden()
 
-        val user = session.users().getUserById(auth.getUserId(), opexRealm)
-            ?: return ErrorHandler.response(
-                Response.Status.NOT_FOUND,
-                OpexException(OpexError.NotFound, "User not found")
-            )
-
+        val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
         return Response.ok(user.attributes).build()
     }
 
@@ -53,11 +48,7 @@ class UserProfileResource(private val session: KeycloakSession) : RealmResourceP
         if (!auth.hasScopeAccess("trust"))
             return ErrorHandler.forbidden()
 
-        val user = session.users().getUserById(auth.getUserId(), opexRealm)
-            ?: return ErrorHandler.response(
-                Response.Status.NOT_FOUND,
-                OpexException(OpexError.NotFound, "User not found")
-            )
+        val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
 
         with(request) {
             firstNameEn?.let { user.setSingleAttribute("firstNameEn", it) }
@@ -87,18 +78,14 @@ class UserProfileResource(private val session: KeycloakSession) : RealmResourceP
             return ErrorHandler.forbidden()
 
         val userId = auth.getUserId()!!
-        val user = session.users().getUserById(userId, opexRealm)
-            ?: return ErrorHandler.response(
-                Response.Status.NOT_FOUND,
-                OpexException(OpexError.NotFound, "User not found")
-            )
+        val user = session.users().getUserById(userId, opexRealm) ?: return ErrorHandler.userNotFound()
 
-        if (isInKycGroups(user)) {
+        if (isInKycGroups(user))
             return ErrorHandler.response(
                 Response.Status.BAD_REQUEST,
-                OpexException(OpexError.BadRequest, "User is already in kyc groups")
+                OpexError.BadRequest,
+                "User is already in kyc groups"
             )
-        }
 
         /*val forms = input.formDataMap
 
@@ -115,10 +102,7 @@ class UserProfileResource(private val session: KeycloakSession) : RealmResourceP
             .getGroupsStream(opexRealm)
             .toList()
             .find { it.name == "kyc-requested" }
-            ?: return ErrorHandler.response(
-                Response.Status.NOT_FOUND,
-                OpexException(OpexError.GroupNotFound)
-            )
+            ?: return ErrorHandler.response(Response.Status.NOT_FOUND, OpexError.GroupNotFound)
 
         user.joinGroup(kycRequestGroup)
 

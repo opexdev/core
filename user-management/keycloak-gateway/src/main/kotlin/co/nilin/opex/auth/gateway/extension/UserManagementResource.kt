@@ -49,7 +49,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             return ErrorHandler.forbidden()
 
         if (!request.isValid())
-            return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexException(OpexError.BadRequest))
+            return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.BadRequest)
 
         val user = session.users().addUser(opexRealm, request.username).apply {
             email = request.email
@@ -110,19 +110,15 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
 
         val cred = UserCredentialModel.password(body.password)
-        if (!session.userCredentialManager().isValid(opexRealm, user, cred)) {
-            return ErrorHandler.response(
-                Response.Status.FORBIDDEN,
-                OpexException(OpexError.Forbidden, "Incorrect password")
-            )
-        }
+        if (!session.userCredentialManager().isValid(opexRealm, user, cred))
+            return ErrorHandler.response(Response.Status.FORBIDDEN, OpexError.Forbidden, "Incorrect password")
 
-        if (body.confirmation == body.newPassword) {
+        if (body.confirmation == body.newPassword)
             return ErrorHandler.response(
                 Response.Status.BAD_REQUEST,
-                OpexException(OpexError.BadRequest, "Invalid password confirmation")
+                OpexError.BadRequest,
+                "Invalid password confirmation"
             )
-        }
 
         session.userCredentialManager()
             .updateCredential(opexRealm, user, UserCredentialModel.password(body.newPassword, false))
@@ -139,12 +135,8 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             return ErrorHandler.forbidden()
 
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
-        if (is2FAEnabled(user)) {
-            return ErrorHandler.response(
-                Response.Status.BAD_REQUEST,
-                OpexException(OpexError.OTPAlreadyEnabled)
-            )
-        }
+        if (is2FAEnabled(user))
+            return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.OTPAlreadyEnabled)
 
         val secret = HmacOTP.generateSecret(64)
         val uri = OTPUtils.generateOTPKeyURI(opexRealm, secret, "Opex", user.email)
@@ -162,13 +154,8 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             return ErrorHandler.forbidden()
 
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
-
-        if (is2FAEnabled(user)) {
-            return ErrorHandler.response(
-                Response.Status.BAD_REQUEST,
-                OpexException(OpexError.OTPAlreadyEnabled)
-            )
-        }
+        if (is2FAEnabled(user))
+            return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.OTPAlreadyEnabled)
 
         val otpCredential = OTPCredentialModel.createFromPolicy(opexRealm, body.secret)
         CredentialHelper.createOTPCredential(session, opexRealm, user, body.initialCode, otpCredential)
