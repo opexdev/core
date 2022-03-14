@@ -39,7 +39,7 @@ class Controller(
         val proof = "$id-$answer-${xForwardedFor.first()}".sha256()
         return ResponseEntity(image, HttpHeaders().apply {
             set("Captcha-Session-Key", id)
-            set("Captcha-Window-Seconds", sessionStore.put(proof).toString())
+            set("Captcha-Expire-Timestamp", (sessionStore.put(proof) / 1000).toString())
         }, HttpStatus.OK)
     }
 
