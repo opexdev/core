@@ -38,8 +38,8 @@ class Controller(
         val id = idGen()
         val proof = "$id-$answer-${xForwardedFor.first()}".sha256()
         return ResponseEntity(image, HttpHeaders().apply {
-            set("captcha-session-key", id)
-            set("captcha-window-seconds", sessionStore.put(proof).toString())
+            set("Captcha-Session-Key", id)
+            set("Captcha-Window-Seconds", sessionStore.put(proof).toString())
         }, HttpStatus.OK)
     }
 
