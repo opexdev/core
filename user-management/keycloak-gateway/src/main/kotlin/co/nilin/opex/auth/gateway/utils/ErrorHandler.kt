@@ -13,6 +13,12 @@ object ErrorHandler {
         return Response.status(status).entity(translator.translate(ex)).build()
     }
 
-    fun forbidden() = response(Response.Status.FORBIDDEN, OpexException(OpexError.Forbidden))
+    fun response(status: Response.Status, error: OpexError, message: String? = null): Response {
+        return Response.status(status).entity(translator.translate(OpexException(error, message))).build()
+    }
+
+    fun forbidden(message: String? = null) = response(Response.Status.FORBIDDEN, OpexError.Forbidden, message)
+
+    fun userNotFound(message: String? = null) = response(Response.Status.NOT_FOUND, OpexError.UserNotFound, message)
 
 }

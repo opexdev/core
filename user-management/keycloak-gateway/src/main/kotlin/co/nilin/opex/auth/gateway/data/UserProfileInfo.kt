@@ -7,14 +7,14 @@ class UserProfileInfo {
     var firstNameFa: String? = null
     var lastNameFa: String? = null
     var birthday: String? = null
-    var birthdayJalali: String? = null
+    var birthdayAlt: String? = null
     var nationalID: String? = null
     var passport: String? = null
     var phoneNumber: String? = null
-    var homeNumber: String? = null
-    var email: String? = null
+    var telephone: String? = null
     var postalCode: String? = null
-    var address: String? = null
+    var residence: String? = null
+    var nationality: String? = null
 
     constructor()
 
@@ -29,22 +29,22 @@ class UserProfileInfo {
         passport: String?,
         phoneNumber: String?,
         homeNumber: String?,
-        email: String?,
         postalCode: String?,
-        address: String?
+        address: String?,
+        nationality: String?
     ) {
         this.firstNameEn = firstNameEn
         this.lastNameEn = lastNameEn
         this.firstNameFa = firstNameFa
         this.lastNameFa = lastNameFa
         this.birthday = birthday
-        this.birthdayJalali = birthdayJalali
+        this.birthdayAlt = birthdayJalali
         this.nationalID = nationalID
         this.passport = passport
         this.phoneNumber = phoneNumber
-        this.homeNumber = homeNumber
-        this.email = email
+        this.telephone = homeNumber
         this.postalCode = postalCode
-        this.address = address
+        this.residence = address
+        this.nationality = nationality
     }
 }
