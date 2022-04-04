@@ -81,7 +81,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     ): Response {
         val client: HttpClient = HttpClientBuilder.create().build()
         val proof = "$captchaAnswer-${xForwardedFor.first()}"
-        val post = HttpGet(URIBuilder("https://captcha:8080").addParameter("proof", proof).build())
+        val post = HttpGet(URIBuilder("http://captcha:8080").addParameter("proof", proof).build())
         client.execute(post).let { response ->
             runCatching {
                 check(response.statusLine.statusCode / 500 != 5) { "Could not connect to Opex-Captcha service." }

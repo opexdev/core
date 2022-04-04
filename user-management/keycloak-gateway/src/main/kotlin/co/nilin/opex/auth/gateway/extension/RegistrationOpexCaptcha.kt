@@ -104,7 +104,7 @@ class RegistrationOpexCaptcha : FormAction, FormActionFactory, ConfiguredProvide
             ).httpClient as CloseableHttpClient
             val xForwardedFor = context.httpRequest.httpHeaders.getRequestHeader("X-Forwarded-For")
             val proof = "$captcha-${xForwardedFor.first()}"
-            val post = HttpGet(URIBuilder("https://captcha:8080").addParameter("proof", proof).build())
+            val post = HttpGet(URIBuilder("http://captcha:8080").addParameter("proof", proof).build())
             httpClient.execute(post).use { response ->
                 check(response.statusLine.statusCode / 500 != 5) { "Could not connect to Opex-Captcha service." }
                 success = response.statusLine.statusCode / 100 == 2
@@ -119,8 +119,7 @@ class RegistrationOpexCaptcha : FormAction, FormActionFactory, ConfiguredProvide
         const val CAPTCHA_ANSWER = "captcha-answer"
         const val PROVIDER_ID = "registration-opex-captcha-action"
         private val REQUIREMENT_CHOICES = arrayOf(
-            AuthenticationExecutionModel.Requirement.REQUIRED,
-            AuthenticationExecutionModel.Requirement.DISABLED
+            AuthenticationExecutionModel.Requirement.REQUIRED, AuthenticationExecutionModel.Requirement.DISABLED
         )
     }
 }
