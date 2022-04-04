@@ -17,17 +17,12 @@ import java.util.*
 
 @RestController
 class Controller(
-    private val captchaGenerator: CaptchaGenerator,
-    private val sessionStore: SessionStore
+    private val captchaGenerator: CaptchaGenerator, private val sessionStore: SessionStore
 ) {
     @ApiOperation(
-        value = "Get captcha image",
-        notes = "Get captcha image associated with provided id."
+        value = "Get captcha image", notes = "Get captcha image associated with provided id."
     )
-    @ApiResponses(
-        ApiResponse(message = "OK", code = 200),
-        ApiResponse(message = "GONE", code = 410)
-    )
+    @ApiResponses(ApiResponse(message = "OK", code = 200))
     @PostMapping("/session", produces = [MediaType.IMAGE_JPEG_VALUE])
     suspend fun getCaptchaImage(
         @RequestHeader("X-Forwarded-For", defaultValue = "0.0.0.0") xForwardedFor: List<String>
@@ -48,12 +43,13 @@ class Controller(
         notes = "Verify captcha. proof is a string in form of \"{{captcha-session-key}}-{{answer}}-{{remote-ip}}\""
     )
     @ApiResponses(
-        ApiResponse(message = "OK", code = 204),
-        ApiResponse(message = "INVALID", code = 404)
+        ApiResponse(message = "OK", code = 204), ApiResponse(message = "INVALID", code = 400)
     )
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @GetMapping("/verify")
     suspend fun verifyCaptcha(@RequestParam proof: String) {
-        if (!sessionStore.verify(proof.sha256())) throw OpexException(OpexError.NotFound)
+        proof.sha256().let {
+            if (sessionStore.verify(it)) sessionStore.remove(it) else throw OpexException(OpexError.BadRequest)
+        }
     }
 }
