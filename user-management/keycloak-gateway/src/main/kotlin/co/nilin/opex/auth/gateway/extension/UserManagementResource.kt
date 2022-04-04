@@ -40,8 +40,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     private val logger = LoggerFactory.getLogger(UserManagementResource::class.java)
     private val opexRealm = session.realms().getRealm("opex")
     private val kafkaTemplate by lazy {
-        ApplicationContextHolder.getCurrentContext()!!
-            .getBean("authKafkaTemplate") as KafkaTemplate<String, AuthEvent>
+        ApplicationContextHolder.getCurrentContext()!!.getBean("authKafkaTemplate") as KafkaTemplate<String, AuthEvent>
     }
 
     @POST
@@ -50,11 +49,9 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @Produces(MediaType.APPLICATION_JSON)
     fun registerUser(request: RegisterUserRequest): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
-        if (!auth.hasScopeAccess("trust"))
-            return ErrorHandler.forbidden()
+        if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
-        if (!request.isValid())
-            return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.BadRequest)
+        if (!request.isValid()) return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.BadRequest)
 
         val user = session.users().addUser(opexRealm, request.username).apply {
             email = request.email
@@ -86,13 +83,16 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         val proof = "$captchaAnswer-${xForwardedFor.first()}"
         val post = HttpGet(URIBuilder("https://captcha:8080").addParameter("proof", proof).build())
         client.execute(post).let { response ->
-            check(response.statusLine.statusCode / 500 != 5) { "Could not connect to Opex-Captcha service." }
-            require(response.statusLine.statusCode / 100 == 2) { "Invalid captcha" }
+            runCatching {
+                check(response.statusLine.statusCode / 500 != 5) { "Could not connect to Opex-Captcha service." }
+                require(response.statusLine.statusCode / 100 == 2) { "Invalid captcha" }
+            }.onFailure {
+                return Response.status(Response.Status.BAD_REQUEST).build()
+            }
         }
 
         val auth = ResourceAuthenticator.bearerAuth(session)
-        if (!auth.hasScopeAccess("trust"))
-            return ErrorHandler.forbidden()
+        if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
         val user = session.users().getUserByEmail(email, opexRealm)
         if (user != null) {
@@ -106,8 +106,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @Produces(MediaType.APPLICATION_JSON)
     fun sendVerifyEmail(): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
-        if (!auth.hasScopeAccess("trust"))
-            return ErrorHandler.forbidden()
+        if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
         sendEmail(user, listOf(UserModel.RequiredAction.VERIFY_EMAIL.name))
@@ -121,21 +120,18 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     fun changePassword(body: ChangePasswordRequest): Response {
         // AccountFormService
         val auth = ResourceAuthenticator.bearerAuth(session)
-        if (!auth.hasScopeAccess("trust"))
-            return ErrorHandler.forbidden()
+        if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
 
         val cred = UserCredentialModel.password(body.password)
-        if (!session.userCredentialManager().isValid(opexRealm, user, cred))
-            return ErrorHandler.response(Response.Status.FORBIDDEN, OpexError.Forbidden, "Incorrect password")
+        if (!session.userCredentialManager()
+                .isValid(opexRealm, user, cred)
+        ) return ErrorHandler.response(Response.Status.FORBIDDEN, OpexError.Forbidden, "Incorrect password")
 
-        if (body.confirmation == body.newPassword)
-            return ErrorHandler.response(
-                Response.Status.BAD_REQUEST,
-                OpexError.BadRequest,
-                "Invalid password confirmation"
-            )
+        if (body.confirmation == body.newPassword) return ErrorHandler.response(
+            Response.Status.BAD_REQUEST, OpexError.BadRequest, "Invalid password confirmation"
+        )
 
         session.userCredentialManager()
             .updateCredential(opexRealm, user, UserCredentialModel.password(body.newPassword, false))
@@ -148,12 +144,10 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @Produces(MediaType.APPLICATION_JSON)
     fun get2FASecret(): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
-        if (!auth.hasScopeAccess("trust"))
-            return ErrorHandler.forbidden()
+        if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
-        if (is2FAEnabled(user))
-            return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.OTPAlreadyEnabled)
+        if (is2FAEnabled(user)) return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.OTPAlreadyEnabled)
 
         val secret = HmacOTP.generateSecret(64)
         val uri = OTPUtils.generateOTPKeyURI(opexRealm, secret, "Opex", user.email)
@@ -167,12 +161,10 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @Produces(MediaType.APPLICATION_JSON)
     fun setup2FA(body: Setup2FARequest): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
-        if (!auth.hasScopeAccess("trust"))
-            return ErrorHandler.forbidden()
+        if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
-        if (is2FAEnabled(user))
-            return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.OTPAlreadyEnabled)
+        if (is2FAEnabled(user)) return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.OTPAlreadyEnabled)
 
         val otpCredential = OTPCredentialModel.createFromPolicy(opexRealm, body.secret)
         CredentialHelper.createOTPCredential(session, opexRealm, user, body.initialCode, otpCredential)
@@ -185,19 +177,15 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @Produces(MediaType.APPLICATION_JSON)
     fun disable2FA(): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
-        if (!auth.hasScopeAccess("trust"))
-            return ErrorHandler.forbidden()
+        if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
 
         val response = Response.noContent().build()
-        if (!is2FAEnabled(user))
-            return response
+        if (!is2FAEnabled(user)) return response
 
-        session.userCredentialManager()
-            .getStoredCredentialsByTypeStream(opexRealm, user, OTPCredentialModel.TYPE)
-            .toList()
-            .find { it.type == OTPCredentialModel.TYPE }
+        session.userCredentialManager().getStoredCredentialsByTypeStream(opexRealm, user, OTPCredentialModel.TYPE)
+            .toList().find { it.type == OTPCredentialModel.TYPE }
             ?.let { session.userCredentialManager().removeStoredCredential(opexRealm, user, it.id) }
 
         return response
@@ -208,11 +196,11 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @Produces(MediaType.APPLICATION_JSON)
     fun is2FAEnabled(@QueryParam("username") username: String?): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
-        if (!auth.hasScopeAccess("trust"))
-            return ErrorHandler.forbidden()
+        if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
-        val user = session.users().getUserByUsername(username, opexRealm)
-            ?: return Response.ok(UserSecurityCheckResponse(false)).build()
+        val user = session.users().getUserByUsername(username, opexRealm) ?: return Response.ok(
+            UserSecurityCheckResponse(false)
+        ).build()
 
         return Response.ok(UserSecurityCheckResponse(is2FAEnabled(user))).build()
     }
@@ -222,25 +210,21 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @Produces(MediaType.APPLICATION_JSON)
     fun getActiveSessions(): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
-        if (!auth.hasScopeAccess("trust"))
-            return ErrorHandler.forbidden()
+        if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
         val sessions = session.sessions().getUserSessionsStream(opexRealm, user)
-            .map { UserSessionResponse(it.ipAddress, it.started, it.lastSessionRefresh, it.state.name) }
-            .toList()
+            .map { UserSessionResponse(it.ipAddress, it.started, it.lastSessionRefresh, it.state.name) }.toList()
 
         return Response.ok(sessions).build()
     }
 
     private fun sendEmail(user: UserModel, actions: List<String>) {
-        if (!user.isEnabled)
-            throw OpexException(OpexError.BadRequest, "User is disabled")
+        if (!user.isEnabled) throw OpexException(OpexError.BadRequest, "User is disabled")
 
         val clientId = Constants.ACCOUNT_MANAGEMENT_CLIENT_ID
         val client = session.clients().getClientByClientId(opexRealm, clientId)
-        if (client == null || !client.isEnabled)
-            throw OpexException(OpexError.BadRequest, "Client error")
+        if (client == null || !client.isEnabled) throw OpexException(OpexError.BadRequest, "Client error")
 
         val lifespan = opexRealm.actionTokenGeneratedByAdminLifespan
         val expiration = Time.currentTime() + lifespan
@@ -252,8 +236,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
                 queryParam("key", token.serialize(session, opexRealm, session.context.uri))
             }
             val link = builder.build(opexRealm.name).toString()
-            provider.setRealm(opexRealm)
-                .setUser(user)
+            provider.setRealm(opexRealm).setUser(user)
                 .sendVerifyEmail(link, TimeUnit.SECONDS.toMinutes(lifespan.toLong()))
         } catch (e: Exception) {
             logger.error("Unable to send verification email")
