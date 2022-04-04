@@ -33,6 +33,7 @@
         <module>websocket</module>
         <module>admin</module>
         <module>referral</module>
+        <module>captcha</module>
     </modules>
 
     <dependencies>
