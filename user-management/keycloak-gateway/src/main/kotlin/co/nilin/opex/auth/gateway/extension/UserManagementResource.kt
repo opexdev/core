@@ -22,6 +22,7 @@ import org.keycloak.models.UserCredentialModel
 import org.keycloak.models.UserModel
 import org.keycloak.models.credential.OTPCredentialModel
 import org.keycloak.models.utils.HmacOTP
+import org.keycloak.services.managers.AuthenticationManager
 import org.keycloak.services.resource.RealmResourceProvider
 import org.keycloak.services.resources.LoginActionsService
 import org.keycloak.utils.CredentialHelper
@@ -125,13 +126,11 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
 
         val cred = UserCredentialModel.password(body.password)
-        if (!session.userCredentialManager()
-                .isValid(opexRealm, user, cred)
-        ) return ErrorHandler.response(Response.Status.FORBIDDEN, OpexError.Forbidden, "Incorrect password")
+        if (!session.userCredentialManager().isValid(opexRealm, user, cred))
+            return ErrorHandler.forbidden("Incorrect password")
 
-        if (body.confirmation == body.newPassword) return ErrorHandler.response(
-            Response.Status.BAD_REQUEST, OpexError.BadRequest, "Invalid password confirmation"
-        )
+        if (body.confirmation != body.newPassword)
+            return ErrorHandler.badRequest("Invalid password confirmation")
 
         session.userCredentialManager()
             .updateCredential(opexRealm, user, UserCredentialModel.password(body.newPassword, false))
@@ -147,7 +146,8 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
-        if (is2FAEnabled(user)) return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.OTPAlreadyEnabled)
+        if (is2FAEnabled(user))
+            return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.OTPAlreadyEnabled)
 
         val secret = HmacOTP.generateSecret(64)
         val uri = OTPUtils.generateOTPKeyURI(opexRealm, secret, "Opex", user.email)
@@ -206,6 +206,35 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     }
 
     @GET
+    @Path("user/logout")
+    @Produces(MediaType.APPLICATION_JSON)
+    fun logout(): Response {
+        val auth = ResourceAuthenticator.bearerAuth(session)
+        if (!auth.hasScopeAccess("trust"))
+            return ErrorHandler.forbidden()
+
+        val userSession = session.sessions().getUserSession(opexRealm, auth.token?.sessionState!!)
+        AuthenticationManager.backchannelLogout(session, userSession, true)
+        return Response.noContent().build()
+    }
+
+    @GET
+    @Path("user/logout/{sessionId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    fun logout(sessionId: String): Response {
+        val auth = ResourceAuthenticator.bearerAuth(session)
+        if (!auth.hasScopeAccess("trust"))
+            return ErrorHandler.forbidden()
+
+        val userSession = session.sessions().getUserSession(opexRealm, sessionId)
+        if (userSession.user.id != auth.getUserId())
+            return ErrorHandler.forbidden()
+
+        AuthenticationManager.backchannelLogout(session, userSession, true)
+        return Response.noContent().build()
+    }
+
+    @GET
     @Path("user/sessions")
     @Produces(MediaType.APPLICATION_JSON)
     fun getActiveSessions(): Response {
@@ -214,7 +243,15 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
 
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
         val sessions = session.sessions().getUserSessionsStream(opexRealm, user)
-            .map { UserSessionResponse(it.ipAddress, it.started, it.lastSessionRefresh, it.state.name) }.toList()
+            .map {
+                UserSessionResponse(
+                    it.id,
+                    it.ipAddress,
+                    it.started.toLong(),
+                    it.lastSessionRefresh.toLong(),
+                    it.state.name
+                )
+            }.toList()
 
         return Response.ok(sessions).build()
     }
