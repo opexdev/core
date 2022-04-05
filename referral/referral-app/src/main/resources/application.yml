@@ -44,7 +44,7 @@ spring:
         prefer-ip-address: true
   config:
     import: vault://secret/${spring.application.name}
-swagger.authUrl: https://api.opex.dev
+swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
 app:
   wallet:
     url: lb://opex-wallet/

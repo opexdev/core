@@ -69,8 +69,7 @@ class SwaggerConfig {
     }
 
     private fun grantTypes(): List<GrantType?> {
-        val tokenUrl = "$authUrl/auth/realms/opex/protocol/openid-connect/token"
-        val grantType = ResourceOwnerPasswordCredentialsGrant(tokenUrl)
+        val grantType = ResourceOwnerPasswordCredentialsGrant(authUrl)
         return Collections.singletonList(grantType)
     }
 
