@@ -53,5 +53,4 @@ logging:
     org.apache.kafka: ERROR
     co.nilin: DEBUG
     reactor.netty.http.client: DEBUG
-
-swagger.authUrl: https://api.opex.dev
+swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token

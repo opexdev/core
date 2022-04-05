@@ -258,6 +258,7 @@ services:
       - DB_IP_PORT=postgres-accountant
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
+      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
     networks:
       - default
     depends_on:
@@ -355,6 +356,7 @@ services:
       - DB_IP_PORT=postgres-wallet
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
+      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
     depends_on:
       - kafka-1
       - kafka-2
@@ -378,6 +380,7 @@ services:
       - DB_IP_PORT=postgres-api
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
+      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
     depends_on:
       - kafka-1
       - kafka-2
@@ -430,6 +433,7 @@ services:
       - DB_IP_PORT=postgres-bc-gateway
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
+      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
     depends_on:
       - kafka-1
       - kafka-2
@@ -451,6 +455,7 @@ services:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - CONSUL_HOST=consul
       - ROOT_DIR=/storage
+      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
     volumes:
       - $DATA/storage-data:/storage
     depends_on:
@@ -471,6 +476,7 @@ services:
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
+      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
     depends_on:
       - auth
       - accountant
@@ -489,6 +495,7 @@ services:
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - CONSUL_HOST=consul
+      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
     depends_on:
       - consul
     deploy:
@@ -503,6 +510,7 @@ services:
       - CONSUL_HOST=consul
       - VAULT_HOST=vault
       - BACKEND_USER=${BACKEND_USER}
+      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
     volumes:
       - $DATA/admin-data:/admin
     depends_on:

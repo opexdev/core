@@ -44,7 +44,7 @@ logging:
   level:
     org.apache.kafka: ERROR
     co.nilin: DEBUG
-swagger.authUrl: https://api.opex.dev
+swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
 app:
   auth:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
