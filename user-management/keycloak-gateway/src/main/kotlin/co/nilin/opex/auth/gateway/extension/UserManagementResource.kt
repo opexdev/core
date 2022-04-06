@@ -21,6 +21,7 @@ import org.keycloak.models.KeycloakSession
 import org.keycloak.models.UserCredentialModel
 import org.keycloak.models.UserModel
 import org.keycloak.models.credential.OTPCredentialModel
+import org.keycloak.models.utils.CredentialValidation
 import org.keycloak.models.utils.HmacOTP
 import org.keycloak.services.managers.AuthenticationManager
 import org.keycloak.services.resource.RealmResourceProvider
@@ -164,9 +165,13 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
-        if (is2FAEnabled(user)) return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.OTPAlreadyEnabled)
+        if (is2FAEnabled(user))
+            return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.OTPAlreadyEnabled)
 
         val otpCredential = OTPCredentialModel.createFromPolicy(opexRealm, body.secret)
+        if (!CredentialValidation.validOTP(body.initialCode, otpCredential, opexRealm.otpPolicy.lookAheadWindow))
+            return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.InvalidOTP)
+
         CredentialHelper.createOTPCredential(session, opexRealm, user, body.initialCode, otpCredential)
         return Response.noContent().build()
     }
@@ -205,7 +210,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         return Response.ok(UserSecurityCheckResponse(is2FAEnabled(user))).build()
     }
 
-    @GET
+    @POST
     @Path("user/logout")
     @Produces(MediaType.APPLICATION_JSON)
     fun logout(): Response {
@@ -218,15 +223,17 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         return Response.noContent().build()
     }
 
-    @GET
-    @Path("user/logout/{sessionId}")
+    @POST
+    @Path("user/sessions/{sessionId}/logout")
     @Produces(MediaType.APPLICATION_JSON)
-    fun logout(sessionId: String): Response {
+    fun logout(@PathParam("sessionId") sessionId: String): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
         if (!auth.hasScopeAccess("trust"))
             return ErrorHandler.forbidden()
 
         val userSession = session.sessions().getUserSession(opexRealm, sessionId)
+            ?: return ErrorHandler.notFound("Session not found")
+
         if (userSession.user.id != auth.getUserId())
             return ErrorHandler.forbidden()
 
@@ -249,7 +256,8 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
                     it.ipAddress,
                     it.started.toLong(),
                     it.lastSessionRefresh.toLong(),
-                    it.state.name
+                    it.state.name,
+                    auth.token?.sessionState == it.id
                 )
             }.toList()
 

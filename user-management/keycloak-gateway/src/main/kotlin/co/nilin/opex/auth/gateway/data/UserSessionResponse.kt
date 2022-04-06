@@ -6,4 +6,5 @@ data class UserSessionResponse(
     val started: Long,
     val lastAccess: Long,
     val state: String,
+    val inUse:Boolean
 )
