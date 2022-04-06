@@ -1,7 +1,17 @@
 package co.nilin.opex.auth.gateway.data
 
-data class ChangePasswordRequest(
-    val password: String,
-    val newPassword: String,
-    val confirmation: String,
-)
+class ChangePasswordRequest{
+
+    var password: String?=null
+    var newPassword: String?=null
+    var confirmation: String?=null
+
+    constructor()
+
+    constructor(password: String?, newPassword: String?, confirmation: String?) {
+        this.password = password
+        this.newPassword = newPassword
+        this.confirmation = confirmation
+    }
+
+}

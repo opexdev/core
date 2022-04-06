@@ -19,6 +19,10 @@ object ErrorHandler {
 
     fun forbidden(message: String? = null) = response(Response.Status.FORBIDDEN, OpexError.Forbidden, message)
 
+    fun badRequest(message: String? = null) = response(Response.Status.BAD_REQUEST, OpexError.BadRequest, message)
+
+    fun notFound(message: String? = null) = response(Response.Status.NOT_FOUND, OpexError.NotFound, message)
+
     fun userNotFound(message: String? = null) = response(Response.Status.NOT_FOUND, OpexError.UserNotFound, message)
 
 }

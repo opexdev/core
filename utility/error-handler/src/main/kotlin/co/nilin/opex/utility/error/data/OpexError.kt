@@ -28,6 +28,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     GroupNotFound(5002, "Group not found", HttpStatus.NOT_FOUND),
     OTPAlreadyEnabled(5003, "2FA/OTP already configured", HttpStatus.BAD_REQUEST),
     UserNotFound(5004, "User not found", HttpStatus.NOT_FOUND),
+    InvalidOTP(5005, "Invalid OTP", HttpStatus.BAD_REQUEST),
 
     // code 6000: wallet
     WalletOwnerNotFound(6001, null, HttpStatus.NOT_FOUND),

@@ -8,8 +8,8 @@ import org.keycloak.services.managers.AuthenticationManager
 
 class ResourceAuthenticator(private val result: AuthenticationManager.AuthResult?) {
 
-    private val user: UserModel? = result?.user
-    private val token: AccessToken? = result?.token
+    val user: UserModel? = result?.user
+    val token: AccessToken? = result?.token
 
     fun getUserId() = user?.id
 
