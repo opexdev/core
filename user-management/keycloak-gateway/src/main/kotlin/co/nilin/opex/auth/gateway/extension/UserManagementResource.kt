@@ -323,6 +323,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         val client: HttpClient = HttpClientBuilder.create().build()
         val post = HttpGet(URIBuilder("http://captcha:8080/verify").addParameter("proof", proof).build())
         client.execute(post).let { response ->
+            logger.info(response.statusLine.statusCode.toString())
             check(response.statusLine.statusCode / 500 != 5) { "Could not connect to Opex-Captcha service." }
             require(response.statusLine.statusCode / 100 == 2) { "Invalid captcha" }
         }
