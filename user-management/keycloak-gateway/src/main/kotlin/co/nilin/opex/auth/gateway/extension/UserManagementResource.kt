@@ -56,6 +56,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         runCatching {
             validateCaptcha("${request.captchaAnswer}-${xForwardedFor ?: "0.0.0.0"}")
         }.onFailure {
+            logger.error(it.message)
             return Response.status(Response.Status.BAD_REQUEST).build()
         }
 
