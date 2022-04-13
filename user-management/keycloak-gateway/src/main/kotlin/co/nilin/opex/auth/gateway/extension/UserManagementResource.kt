@@ -224,7 +224,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     }
 
     @POST
-    @Path("user/logout/all")
+    @Path("user/sessions/logout")
     @Produces(MediaType.APPLICATION_JSON)
     fun logoutAll(): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
