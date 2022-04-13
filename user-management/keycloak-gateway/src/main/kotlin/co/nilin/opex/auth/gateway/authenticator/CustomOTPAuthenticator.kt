@@ -26,7 +26,7 @@ class CustomOTPAuthenticator : AbstractDirectGrantAuthenticator(), CredentialVal
                 context.attempted()
             } else if (context.execution.isRequired) {
                 context.event.error(Errors.INVALID_USER_CREDENTIALS)
-                val challengeResponse = ErrorHandler.response(Response.Status.FORBIDDEN, OpexError.OTPRequired)
+                val challengeResponse = ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.OTPRequired)
                 context.failure(AuthenticationFlowError.INVALID_USER, challengeResponse)
             }
             return
@@ -38,7 +38,7 @@ class CustomOTPAuthenticator : AbstractDirectGrantAuthenticator(), CredentialVal
 
         if (otp == null) {
             user?.let { context.event.user(it) }
-            val response = ErrorHandler.response(Response.Status.FORBIDDEN, OpexError.OTPRequired)
+            val response = ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.OTPRequired)
             context.failure(AuthenticationFlowError.INVALID_USER, response)
             return
         }
