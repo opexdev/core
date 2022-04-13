@@ -224,6 +224,23 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     }
 
     @POST
+    @Path("user/sessions/logout")
+    @Produces(MediaType.APPLICATION_JSON)
+    fun logoutAll(): Response {
+        val auth = ResourceAuthenticator.bearerAuth(session)
+        if (!auth.hasScopeAccess("trust"))
+            return ErrorHandler.forbidden()
+
+        val currentSession = auth.token?.sessionState!!
+        session.sessions().getUserSessionsStream(opexRealm, auth.user)
+            .toList()
+            .filter { it.id != currentSession }
+            .forEach { AuthenticationManager.backchannelLogout(session, it, true) }
+
+        return Response.noContent().build()
+    }
+
+    @POST
     @Path("user/sessions/{sessionId}/logout")
     @Produces(MediaType.APPLICATION_JSON)
     fun logout(@PathParam("sessionId") sessionId: String): Response {
@@ -257,6 +274,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
                     it.started.toLong(),
                     it.lastSessionRefresh.toLong(),
                     it.state.name,
+                    it.notes["agent"],
                     auth.token?.sessionState == it.id
                 )
             }.toList()

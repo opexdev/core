@@ -3,18 +3,18 @@ package co.nilin.opex.auth.gateway.utils
 import co.nilin.opex.utility.error.DefaultErrorTranslator
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
+import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
 
 object ErrorHandler {
 
     private val translator = DefaultErrorTranslator()
 
-    fun response(status: Response.Status, ex: OpexException): Response {
-        return Response.status(status).entity(translator.translate(ex)).build()
-    }
-
     fun response(status: Response.Status, error: OpexError, message: String? = null): Response {
-        return Response.status(status).entity(translator.translate(OpexException(error, message))).build()
+        return Response.status(status)
+            .entity(translator.translate(OpexException(error, message)))
+            .type(MediaType.APPLICATION_JSON_TYPE)
+            .build()
     }
 
     fun forbidden(message: String? = null) = response(Response.Status.FORBIDDEN, OpexError.Forbidden, message)
