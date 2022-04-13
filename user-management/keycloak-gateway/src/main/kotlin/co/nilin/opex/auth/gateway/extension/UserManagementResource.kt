@@ -30,7 +30,6 @@ import org.keycloak.utils.CredentialHelper
 import org.keycloak.utils.TotpUtils
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.core.KafkaTemplate
-import org.springframework.web.bind.annotation.RequestHeader
 import java.util.concurrent.TimeUnit
 import javax.ws.rs.*
 import javax.ws.rs.core.MediaType
@@ -38,7 +37,6 @@ import javax.ws.rs.core.Response
 import kotlin.streams.toList
 
 class UserManagementResource(private val session: KeycloakSession) : RealmResourceProvider {
-
     private val logger = LoggerFactory.getLogger(UserManagementResource::class.java)
     private val opexRealm = session.realms().getRealm("opex")
     private val kafkaTemplate by lazy {
@@ -49,7 +47,15 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @Path("user")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    fun registerUser(request: RegisterUserRequest): Response {
+    fun registerUser(
+        request: RegisterUserRequest, @HeaderParam("X-Forwarded-For") xForwardedFor: List<String>?
+    ): Response {
+        runCatching {
+            validateCaptcha("${request.captchaAnswer}-${xForwardedFor?.first() ?: "0.0.0.0"}")
+        }.onFailure {
+            return Response.status(Response.Status.BAD_REQUEST).build()
+        }
+
         val auth = ResourceAuthenticator.bearerAuth(session)
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
@@ -79,18 +85,12 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     fun forgotPassword(
         @QueryParam("email") email: String?,
         @QueryParam("captcha-answer") captchaAnswer: String,
-        @RequestHeader("X-Forwarded-For", defaultValue = "0.0.0.0") xForwardedFor: List<String>
+        @HeaderParam("X-Forwarded-For") xForwardedFor: List<String>?
     ): Response {
-        val client: HttpClient = HttpClientBuilder.create().build()
-        val proof = "$captchaAnswer-${xForwardedFor.first()}"
-        val post = HttpGet(URIBuilder("http://captcha:8080").addParameter("proof", proof).build())
-        client.execute(post).let { response ->
-            runCatching {
-                check(response.statusLine.statusCode / 500 != 5) { "Could not connect to Opex-Captcha service." }
-                require(response.statusLine.statusCode / 100 == 2) { "Invalid captcha" }
-            }.onFailure {
-                return Response.status(Response.Status.BAD_REQUEST).build()
-            }
+        runCatching {
+            validateCaptcha("$captchaAnswer-${xForwardedFor?.first() ?: "0.0.0.0"}")
+        }.onFailure {
+            return Response.status(Response.Status.BAD_REQUEST).build()
         }
 
         val auth = ResourceAuthenticator.bearerAuth(session)
@@ -127,11 +127,11 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
 
         val cred = UserCredentialModel.password(body.password)
-        if (!session.userCredentialManager().isValid(opexRealm, user, cred))
-            return ErrorHandler.forbidden("Incorrect password")
+        if (!session.userCredentialManager()
+                .isValid(opexRealm, user, cred)
+        ) return ErrorHandler.forbidden("Incorrect password")
 
-        if (body.confirmation != body.newPassword)
-            return ErrorHandler.badRequest("Invalid password confirmation")
+        if (body.confirmation != body.newPassword) return ErrorHandler.badRequest("Invalid password confirmation")
 
         session.userCredentialManager()
             .updateCredential(opexRealm, user, UserCredentialModel.password(body.newPassword, false))
@@ -147,8 +147,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
-        if (is2FAEnabled(user))
-            return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.OTPAlreadyEnabled)
+        if (is2FAEnabled(user)) return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.OTPAlreadyEnabled)
 
         val secret = HmacOTP.generateSecret(64)
         val uri = OTPUtils.generateOTPKeyURI(opexRealm, secret, "Opex", user.email)
@@ -165,12 +164,13 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
-        if (is2FAEnabled(user))
-            return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.OTPAlreadyEnabled)
+        if (is2FAEnabled(user)) return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.OTPAlreadyEnabled)
 
         val otpCredential = OTPCredentialModel.createFromPolicy(opexRealm, body.secret)
-        if (!CredentialValidation.validOTP(body.initialCode, otpCredential, opexRealm.otpPolicy.lookAheadWindow))
-            return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.InvalidOTP)
+        if (!CredentialValidation.validOTP(
+                body.initialCode, otpCredential, opexRealm.otpPolicy.lookAheadWindow
+            )
+        ) return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.InvalidOTP)
 
         CredentialHelper.createOTPCredential(session, opexRealm, user, body.initialCode, otpCredential)
         return Response.noContent().build()
@@ -215,8 +215,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @Produces(MediaType.APPLICATION_JSON)
     fun logout(): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
-        if (!auth.hasScopeAccess("trust"))
-            return ErrorHandler.forbidden()
+        if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
         val userSession = session.sessions().getUserSession(opexRealm, auth.token?.sessionState!!)
         AuthenticationManager.backchannelLogout(session, userSession, true)
@@ -228,13 +227,10 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @Produces(MediaType.APPLICATION_JSON)
     fun logoutAll(): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
-        if (!auth.hasScopeAccess("trust"))
-            return ErrorHandler.forbidden()
+        if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
         val currentSession = auth.token?.sessionState!!
-        session.sessions().getUserSessionsStream(opexRealm, auth.user)
-            .toList()
-            .filter { it.id != currentSession }
+        session.sessions().getUserSessionsStream(opexRealm, auth.user).toList().filter { it.id != currentSession }
             .forEach { AuthenticationManager.backchannelLogout(session, it, true) }
 
         return Response.noContent().build()
@@ -245,14 +241,12 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @Produces(MediaType.APPLICATION_JSON)
     fun logout(@PathParam("sessionId") sessionId: String): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
-        if (!auth.hasScopeAccess("trust"))
-            return ErrorHandler.forbidden()
+        if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
-        val userSession = session.sessions().getUserSession(opexRealm, sessionId)
-            ?: return ErrorHandler.notFound("Session not found")
+        val userSession =
+            session.sessions().getUserSession(opexRealm, sessionId) ?: return ErrorHandler.notFound("Session not found")
 
-        if (userSession.user.id != auth.getUserId())
-            return ErrorHandler.forbidden()
+        if (userSession.user.id != auth.getUserId()) return ErrorHandler.forbidden()
 
         AuthenticationManager.backchannelLogout(session, userSession, true)
         return Response.noContent().build()
@@ -266,18 +260,17 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
-        val sessions = session.sessions().getUserSessionsStream(opexRealm, user)
-            .map {
-                UserSessionResponse(
-                    it.id,
-                    it.ipAddress,
-                    it.started.toLong(),
-                    it.lastSessionRefresh.toLong(),
-                    it.state.name,
-                    it.notes["agent"],
-                    auth.token?.sessionState == it.id
-                )
-            }.toList()
+        val sessions = session.sessions().getUserSessionsStream(opexRealm, user).map {
+            UserSessionResponse(
+                it.id,
+                it.ipAddress,
+                it.started.toLong(),
+                it.lastSessionRefresh.toLong(),
+                it.state.name,
+                it.notes["agent"],
+                auth.token?.sessionState == it.id
+            )
+        }.toList()
 
         return Response.ok(sessions).build()
     }
@@ -323,5 +316,14 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
 
     override fun getResource(): Any {
         return this
+    }
+
+    private fun validateCaptcha(proof: String) {
+        val client: HttpClient = HttpClientBuilder.create().build()
+        val post = HttpGet(URIBuilder("http://captcha:8080").addParameter("proof", proof).build())
+        client.execute(post).let { response ->
+            check(response.statusLine.statusCode / 500 != 5) { "Could not connect to Opex-Captcha service." }
+            require(response.statusLine.statusCode / 100 == 2) { "Invalid captcha" }
+        }
     }
 }

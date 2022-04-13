@@ -6,6 +6,7 @@ class RegisterUserRequest {
     var lastName: String? = null
     var email: String? = null
     var username: String? = null
+    var captchaAnswer: String? = null
 
     constructor()
 
