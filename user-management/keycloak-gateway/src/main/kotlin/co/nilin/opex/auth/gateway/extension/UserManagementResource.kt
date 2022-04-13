@@ -54,7 +54,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
         runCatching {
-            validateCaptcha("${request.captchaAnswer}-${xForwardedFor ?: "0.0.0.0"}")
+            validateCaptcha("${request.captchaAnswer}-${xForwardedFor?.split(",")?.first() ?: "0.0.0.0"}")
         }.onFailure {
             logger.error(it.message)
             return Response.status(Response.Status.BAD_REQUEST).build()
@@ -92,7 +92,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
         runCatching {
-            validateCaptcha("$captchaAnswer-${xForwardedFor ?: "0.0.0.0"}")
+            validateCaptcha("$captchaAnswer-${xForwardedFor?.split(",")?.first() ?: "0.0.0.0"}")
         }.onFailure {
             return Response.status(Response.Status.BAD_REQUEST).build()
         }
