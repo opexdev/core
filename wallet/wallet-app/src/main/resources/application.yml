@@ -1,5 +1,8 @@
 server.port: 8080
 spring:
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
   application:
     name: opex-wallet
   main:
