@@ -7,6 +7,7 @@ import co.nilin.opex.auth.gateway.model.UserCreatedEvent
 import co.nilin.opex.auth.gateway.utils.ErrorHandler
 import co.nilin.opex.auth.gateway.utils.OTPUtils
 import co.nilin.opex.auth.gateway.utils.ResourceAuthenticator
+import co.nilin.opex.auth.gateway.utils.tryOrElse
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import org.apache.http.client.HttpClient
@@ -268,7 +269,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
                 it.started.toLong(),
                 it.lastSessionRefresh.toLong(),
                 it.state.name,
-                it.notes["agent"],
+                tryOrElse(null) { it.notes["agent"] },
                 auth.token?.sessionState == it.id
             )
         }.toList()
