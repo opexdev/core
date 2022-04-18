@@ -15,7 +15,7 @@ class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : Currency
     private val logger = LoggerFactory.getLogger(CurrencyServiceImpl::class.java)
 
     override suspend fun getCurrency(symbol: String): Currency? {
-        return currencyRepository.findById(symbol).awaitFirstOrNull()
+        return currencyRepository.findBySymbol(symbol).awaitFirstOrNull()
     }
 
     override suspend fun addCurrency(name: String, symbol: String, precision: Double) {

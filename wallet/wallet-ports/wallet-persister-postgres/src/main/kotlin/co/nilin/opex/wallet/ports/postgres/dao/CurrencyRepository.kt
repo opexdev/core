@@ -9,6 +9,9 @@ import reactor.core.publisher.Mono
 @Repository
 interface CurrencyRepository : ReactiveCrudRepository<CurrencyModel, String> {
 
+    @Query("select * from currency where symbol = :symbol")
+    fun findBySymbol(symbol: String): Mono<CurrencyModel>
+
     @Query("insert into currency values (:name, :symbol, :precision) on conflict do nothing")
     fun insert(name: String, symbol: String, precision: Double): Mono<CurrencyModel>
 

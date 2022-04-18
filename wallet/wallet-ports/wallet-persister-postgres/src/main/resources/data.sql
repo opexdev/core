@@ -8,7 +8,8 @@ INSERT INTO currency(name, symbol, precision)
 VALUES ('btc', 'btc', 0.000001),
        ('eth', 'eth', 0.00001),
        ('usdt', 'usdt', 0.01),
-       ('nln', 'nln', 1)
+       ('nln', 'nln', 1),
+       ('IRT', 'IRT', 1)
 ON CONFLICT DO NOTHING;
 
 INSERT INTO currency_rate(id, source_currency, dest_currency, rate)
@@ -28,7 +29,9 @@ VALUES (1, 1, 'main', 'btc', 10),
        (5, 1, 'main', 'nln', 100000000),
        (6, 1, 'exchange', 'nln', 0),
        (7, 1, 'main', 'eth', 10000),
-       (8, 1, 'exchange', 'eth', 0)
+       (8, 1, 'exchange', 'eth', 0),
+       (5, 1, 'main', 'IRT', 100000000),
+       (6, 1, 'exchange', 'IRT', 0)
 ON CONFLICT DO NOTHING;
 
 SELECT setval(pg_get_serial_sequence('wallet', 'id'), (SELECT MAX(id) FROM wallet));
