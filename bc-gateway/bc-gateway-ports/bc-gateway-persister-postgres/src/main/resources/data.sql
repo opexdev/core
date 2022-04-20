@@ -11,6 +11,12 @@ VALUES ('TBTC', 'Bitcoin (Test)'),
        ('TUSDT', 'Tether (Test)')
 ON CONFLICT DO NOTHING;
 
+INSERT INTO chains
+VALUES ('bitcoin'),
+       ('ethereum'),
+       ('bsc')
+ON CONFLICT DO NOTHING;
+
 -- Test chains
 INSERT INTO chains
 VALUES ('test-bitcoin'),

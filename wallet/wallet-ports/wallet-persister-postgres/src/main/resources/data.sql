@@ -16,8 +16,7 @@ ON CONFLICT DO NOTHING;
 INSERT INTO currency(name, symbol, precision)
 VALUES ('tbtc', 'tbtc', 0.000001),
        ('teth', 'teth', 0.00001),
-       ('tusdt', 'tusdt', 0.01),
-       ('nln', 'nln', 1)
+       ('tusdt', 'tusdt', 0.01)
 ON CONFLICT DO NOTHING;
 
 INSERT INTO currency_rate(id, source_currency, dest_currency, rate)
@@ -56,8 +55,6 @@ VALUES (11, 1, 'main', 'tbtc', 10),
        (12, 1, 'exchange', 'tbtc', 0),
        (13, 1, 'main', 'tusdt', 550000),
        (14, 1, 'exchange', 'tusdt', 0),
-       (15, 1, 'main', 'nln', 100000000),
-       (16, 1, 'exchange', 'nln', 0),
        (17, 1, 'main', 'teth', 10000),
        (18, 1, 'exchange', 'teth', 0)
 ON CONFLICT DO NOTHING;
