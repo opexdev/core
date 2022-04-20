@@ -25,7 +25,7 @@ object SimpleCaptcha {
      * @return byte array that is a PNG image generated with text displayed.
      */
     fun generateImage(text: String): ByteArray {
-        val w = 130
+        val w = 120
         val h = 40
         val image = BufferedImage(w, h, BufferedImage.TYPE_INT_RGB)
         val g = image.createGraphics()
