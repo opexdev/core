@@ -28,7 +28,7 @@ class UserRegistrationService(
         val owner =
             walletOwnerManager.createWalletOwner(event.uuid, "${event.firstName} ${event.lastName}", "1")
 
-        val btcSymbol = currencyService.getCurrency("btc") ?: throw OpexException(OpexError.CurrencyNotFound)
+        val btcSymbol = currencyService.getCurrency("tbtc") ?: throw OpexException(OpexError.CurrencyNotFound)
         //TODO REMOVE LATER
         walletManager.createWallet(
             owner,
