@@ -15,13 +15,13 @@ object SimpleCaptcha {
      * @return random alpha-numeric string of eight characters.
      */
     fun generateText(): String {
-        return StringTokenizer(UUID.randomUUID().toString(), "-").nextToken()
+        return StringTokenizer(UUID.randomUUID().toString(), "-").nextToken().take(5)
     }
 
     /**
      * Generates a PNG image of text 180 pixels wide, 40 pixels high with white background.
      *
-     * @param text expects string size eight (5) characters.
+     * @param text expects string size five (5) characters.
      * @return byte array that is a PNG image generated with text displayed.
      */
     fun generateImage(text: String): ByteArray {
