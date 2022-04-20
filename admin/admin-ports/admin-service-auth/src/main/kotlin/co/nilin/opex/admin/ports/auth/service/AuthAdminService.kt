@@ -48,9 +48,13 @@ class AuthAdminService(
         return group.members()
     }
 
-    fun findUsersInGroupByName(groupName: String, offset: Int, size: Int): List<UserRepresentation> {
+    fun findUsersInGroupByName(groupName: String, offset: Int, size: Int): QueryUserResponse {
         val group = findGroupByName(groupName)
-        return group.members(offset, size)
+        val members = group.members(offset, size)
+        return QueryUserResponse(
+            members.count(),
+            members.map { it.asKeycloakUser() }
+        )
     }
 
     fun addUserToGroup(userId: String, groupId: String) {
