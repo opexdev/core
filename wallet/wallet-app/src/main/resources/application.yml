@@ -45,7 +45,7 @@ spring:
     import: vault://secret/${spring.application.name}
 app:
   gift:
-    symbol: usdt
+    symbol: tusdt
     amount: 1000
   auth:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
