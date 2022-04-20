@@ -54,8 +54,8 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     TokenNotFound(8005, "Coin/Token not found", HttpStatus.NOT_FOUND),
     InvalidAddressType(8006, "Address type is invalid", HttpStatus.NOT_FOUND),
 
-    // code 9000: bc-gateway
-    InvalidCaptcha(9001, "Captcha is not valid", HttpStatus.BAD_REQUEST);
+    // code 10000: bc-gateway
+    InvalidCaptcha(10001, "Captcha is not valid", HttpStatus.BAD_REQUEST);
 
     companion object {
         fun findByCode(code: Int?): OpexError? {
