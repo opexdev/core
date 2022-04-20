@@ -57,8 +57,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         runCatching {
             validateCaptcha("${request.captchaAnswer}-${xForwardedFor?.split(",")?.first() ?: "0.0.0.0"}")
         }.onFailure {
-            logger.error(it.message)
-            return Response.status(Response.Status.BAD_REQUEST).build()
+            return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.InvalidCaptcha)
         }
 
         if (!request.isValid()) return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.BadRequest)
@@ -95,7 +94,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         runCatching {
             validateCaptcha("$captchaAnswer-${xForwardedFor?.split(",")?.first() ?: "0.0.0.0"}")
         }.onFailure {
-            return Response.status(Response.Status.BAD_REQUEST).build()
+            return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.InvalidCaptcha)
         }
 
         val user = session.users().getUserByEmail(email, opexRealm)

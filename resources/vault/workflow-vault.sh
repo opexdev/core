@@ -88,7 +88,7 @@ vault kv put secret/opex-auth dbusername=${DB_USER} dbpassword=${DB_PASS} admin_
 vault kv put secret/opex-wallet dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USERNAME} db_backup_pass=${DB_BACKUP_PASS}
 vault kv put secret/opex-websocket dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USERNAME} db_backup_pass=${DB_BACKUP_PASS}
 vault kv put secret/opex-payment dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USERNAME} db_backup_pass=${DB_BACKUP_PASS} vandar_api_key=${VANDAR_API_KEY}
-vault kv put secret/opex-admin keycloak_client_secret=${KEYCLOAK_CLIENT_SECRET}
+vault kv put secret/opex-admin keycloak_client_secret=${OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET}
 vault kv put secret/chain-scan-gateway dbusername=${DB_USER} dbpassword=${DB_PASS}
 vault kv put secret/opex-referral dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USERNAME} db_backup_pass=${DB_BACKUP_PASS}
 
