@@ -64,9 +64,9 @@ INSERT INTO currency_implementations(id,
                                      withdraw_fee,
                                      withdraw_min,
                                      decimal)
-VALUES (1, 'TBTC', 'test-bitcoin', false, null, null, true, 0.0001, 0.0001, 0),
-       (2, 'TETH', 'test-ethereum', false, null, null, true, 0.00001, 0.000001, 18),
-       (3, 'TUSDT', 'test-ethereum', true, '0x110a13fc3efe6a245b50102d2d79b3e76125ae83', 'TUSDT', true, 0.01, 0.01, 6)
+VALUES (4, 'TBTC', 'test-bitcoin', false, null, null, true, 0.0001, 0.0001, 0),
+       (5, 'TETH', 'test-ethereum', false, null, null, true, 0.00001, 0.000001, 18),
+       (6, 'TUSDT', 'test-ethereum', true, '0x110a13fc3efe6a245b50102d2d79b3e76125ae83', 'TUSDT', true, 0.01, 0.01, 6)
 ON CONFLICT DO NOTHING;
 
 SELECT setval(pg_get_serial_sequence('currency_implementations', 'id'), (SELECT MAX(id) FROM currency_implementations));
@@ -79,9 +79,9 @@ ON CONFLICT DO NOTHING;
 
 -- Test chain endpoints
 INSERT INTO chain_endpoints(id, chain_name, endpoint_url)
-VALUES (1, 'test-bitcoin', 'lb://chain-scan-gateway/test-bitcoin/transfers'),
-       (2, 'test-ethereum', 'lb://chain-scan-gateway/test-eth/transfers'),
-       (3, 'test-bsc', 'lb://chain-scan-gateway/test-bsc/transfers')
+VALUES (4, 'test-bitcoin', 'lb://chain-scan-gateway/test-bitcoin/transfers'),
+       (5, 'test-ethereum', 'lb://chain-scan-gateway/test-eth/transfers'),
+       (6, 'test-bsc', 'lb://chain-scan-gateway/test-bsc/transfers')
 ON CONFLICT DO NOTHING;
 
 SELECT setval(pg_get_serial_sequence('chain_endpoints', 'id'), (SELECT MAX(id) FROM chain_endpoints));

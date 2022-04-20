@@ -26,14 +26,14 @@ ON CONFLICT DO NOTHING;
 
 -- Test pair configs
 INSERT INTO pair_fee_config
-VALUES (1, 'tbtc_tusdt', 'ASK', '*', 0.01, 0.01),
-       (2, 'tbtc_tusdt', 'BID', '*', 0.01, 0.01),
-       (3, 'nln_tusdt', 'ASK', '*', 0.01, 0.01),
-       (4, 'nln_tusdt', 'BID', '*', 0.01, 0.01),
-       (5, 'nln_tbtc', 'ASK', '*', 0.01, 0.01),
-       (6, 'nln_tbtc', 'BID', '*', 0.01, 0.01),
-       (7, 'teth_tusdt', 'ASK', '*', 0.01, 0.01),
-       (8, 'teth_tusdt', 'BID', '*', 0.01, 0.01)
+VALUES (9, 'tbtc_tusdt', 'ASK', '*', 0.01, 0.01),
+       (10, 'tbtc_tusdt', 'BID', '*', 0.01, 0.01),
+       (11, 'nln_tusdt', 'ASK', '*', 0.01, 0.01),
+       (12, 'nln_tusdt', 'BID', '*', 0.01, 0.01),
+       (13, 'nln_tbtc', 'ASK', '*', 0.01, 0.01),
+       (14, 'nln_tbtc', 'BID', '*', 0.01, 0.01),
+       (15, 'teth_tusdt', 'ASK', '*', 0.01, 0.01),
+       (16, 'teth_tusdt', 'BID', '*', 0.01, 0.01)
 ON CONFLICT DO NOTHING;
 
 SELECT setval(pg_get_serial_sequence('pair_fee_config', 'id'), (SELECT MAX(id) FROM pair_fee_config));
