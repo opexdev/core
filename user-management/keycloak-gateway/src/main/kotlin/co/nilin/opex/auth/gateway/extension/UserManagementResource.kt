@@ -49,7 +49,8 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     fun registerUser(
-        request: RegisterUserRequest, @HeaderParam("X-Forwarded-For") xForwardedFor: String?
+        request: RegisterUserRequest,
+        @HeaderParam("X-Forwarded-For") xForwardedFor: String?
     ): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
@@ -62,7 +63,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
 
         if (!request.isValid()) return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.BadRequest)
 
-        val user = session.users().addUser(opexRealm, request.username).apply {
+        val user = session.users().addUser(opexRealm, request.email).apply {
             email = request.email
             firstName = request.firstName
             lastName = request.lastName
