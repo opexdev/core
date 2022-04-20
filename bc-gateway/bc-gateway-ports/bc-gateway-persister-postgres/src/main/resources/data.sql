@@ -4,10 +4,18 @@ VALUES ('BTC', 'Bitcoin'),
        ('USDT', 'Tether')
 ON CONFLICT DO NOTHING;
 
+-- Test currency
+INSERT INTO currency
+VALUES ('TBTC', 'Bitcoin (Test)'),
+       ('TETH', 'Ethereum (Test)'),
+       ('TUSDT', 'Tether (Test)')
+ON CONFLICT DO NOTHING;
+
+-- Test chains
 INSERT INTO chains
-VALUES ('bitcoin'),
-       ('ethereum'),
-       ('bsc')
+VALUES ('test-bitcoin'),
+       ('test-ethereum'),
+       ('test-bsc')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO address_types(id, address_type, address_regex)
@@ -21,6 +29,13 @@ INSERT INTO chain_address_types(chain_name, addr_type_id)
 VALUES ('bitcoin', 1),
        ('ethereum', 2),
        ('bsc', 2)
+ON CONFLICT DO NOTHING;
+
+-- Test chain address types
+INSERT INTO chain_address_types(chain_name, addr_type_id)
+VALUES ('test-bitcoin', 1),
+       ('test-ethereum', 2),
+       ('test-bsc', 2)
 ON CONFLICT DO NOTHING;
 
 INSERT INTO currency_implementations(id,
