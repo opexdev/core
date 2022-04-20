@@ -7,6 +7,7 @@ import co.nilin.opex.utility.error.spi.ErrorTranslator
 import co.nilin.opex.utility.error.spi.ExceptionResponse
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -19,9 +20,10 @@ import java.util.*
 
 @RestControllerAdvice
 class ExceptionController(
-    private val mapper: ObjectMapper,
     private val translator: ErrorTranslator
 ) {
+
+    private val mapper = ObjectMapper().registerKotlinModule()
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class WebClientErrorResponse(

@@ -7,6 +7,7 @@ import co.nilin.opex.auth.gateway.model.UserCreatedEvent
 import co.nilin.opex.auth.gateway.utils.ErrorHandler
 import co.nilin.opex.auth.gateway.utils.OTPUtils
 import co.nilin.opex.auth.gateway.utils.ResourceAuthenticator
+import co.nilin.opex.auth.gateway.utils.tryOrElse
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import org.apache.http.client.HttpClient
@@ -260,17 +261,19 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
-        val sessions = session.sessions().getUserSessionsStream(opexRealm, user).map {
-            UserSessionResponse(
-                it.id,
-                it.ipAddress,
-                it.started.toLong(),
-                it.lastSessionRefresh.toLong(),
-                it.state.name,
-                it.notes["agent"],
-                auth.token?.sessionState == it.id
-            )
-        }.toList()
+        val sessions = session.sessions().getUserSessionsStream(opexRealm, user)
+            .filter { tryOrElse(null) { it.notes["agent"] } != "opex-admin" }
+            .map {
+                UserSessionResponse(
+                    it.id,
+                    it.ipAddress,
+                    it.started.toLong(),
+                    it.lastSessionRefresh.toLong(),
+                    it.state?.name,
+                    tryOrElse(null) { it.notes["agent"] },
+                    auth.token?.sessionState == it.id
+                )
+            }.toList()
 
         return Response.ok(sessions).build()
     }

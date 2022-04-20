@@ -467,7 +467,8 @@
   ],
   "defaultRoles": [
     "offline_access",
-    "uma_authorization"
+    "uma_authorization",
+    "user"
   ],
   "requiredCredentials": [
     "password"
@@ -2866,7 +2867,7 @@
   "supportedLocales": [],
   "authenticationFlows": [
     {
-      "id": "3e12576c-0b03-48b7-aaae-7ab0c4cb12f0",
+      "id": "a5158583-26f5-45da-8c7d-edfed5c20889",
       "alias": "Handle Existing Account",
       "description": "Handle what to do if there is existing account with same email/username like authenticated identity provider",
       "providerId": "basic-flow",
@@ -2890,7 +2891,7 @@
       ]
     },
     {
-      "id": "7e8c7ced-44fa-4e17-aad8-8885dfa08e58",
+      "id": "580af056-728f-4784-95a4-6b4b5cbbfda3",
       "alias": "Handle Existing Account - Alternatives - 0",
       "description": "Subflow of Handle Existing Account with alternative executions",
       "providerId": "basic-flow",
@@ -2914,7 +2915,125 @@
       ]
     },
     {
-      "id": "33aa9360-de0a-4ee5-9b6b-47e147b278a4",
+      "id": "cb9a1006-177c-4ae9-8a13-a392cac637f9",
+      "alias": "Opex Direct Grant",
+      "description": "OpenID Connect Resource Owner Grant",
+      "providerId": "basic-flow",
+      "topLevel": true,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "user-notes-validate",
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "userSetupAllowed": false,
+          "autheticatorFlow": false
+        },
+        {
+          "authenticator": "direct-grant-validate-username",
+          "requirement": "REQUIRED",
+          "priority": 20,
+          "userSetupAllowed": false,
+          "autheticatorFlow": false
+        },
+        {
+          "authenticator": "direct-grant-validate-password",
+          "requirement": "REQUIRED",
+          "priority": 30,
+          "userSetupAllowed": false,
+          "autheticatorFlow": false
+        },
+        {
+          "requirement": "CONDITIONAL",
+          "priority": 31,
+          "flowAlias": "Opex direct grant - direct-grant-validate-otp - Conditional",
+          "userSetupAllowed": false,
+          "autheticatorFlow": true
+        }
+      ]
+    },
+    {
+      "id": "15bc451f-81d6-4b45-abd3-0a742f8b87ca",
+      "alias": "Opex Registration",
+      "description": "registration flow",
+      "providerId": "basic-flow",
+      "topLevel": true,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "registration-page-form",
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "flowAlias": "Opex Registration registration form",
+          "userSetupAllowed": false,
+          "autheticatorFlow": true
+        }
+      ]
+    },
+    {
+      "id": "52d99dce-a3d9-4551-a230-424223ab4a61",
+      "alias": "Opex Registration registration form",
+      "description": "registration form",
+      "providerId": "form-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "registration-opex-captcha-action",
+          "requirement": "REQUIRED",
+          "priority": 20,
+          "userSetupAllowed": false,
+          "autheticatorFlow": false
+        },
+        {
+          "authenticator": "registration-user-creation",
+          "requirement": "REQUIRED",
+          "priority": 40,
+          "userSetupAllowed": false,
+          "autheticatorFlow": false
+        },
+        {
+          "authenticator": "registration-profile-action",
+          "requirement": "REQUIRED",
+          "priority": 50,
+          "userSetupAllowed": false,
+          "autheticatorFlow": false
+        },
+        {
+          "authenticator": "registration-password-action",
+          "requirement": "REQUIRED",
+          "priority": 51,
+          "userSetupAllowed": false,
+          "autheticatorFlow": false
+        }
+      ]
+    },
+    {
+      "id": "421a1fde-392f-49e9-a8c8-8b1d23bbafe5",
+      "alias": "Opex direct grant - direct-grant-validate-otp - Conditional",
+      "description": "Flow to determine if the direct-grant-validate-otp authenticator should be used or not.",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "conditional-user-configured",
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "userSetupAllowed": false,
+          "autheticatorFlow": false
+        },
+        {
+          "authenticator": "direct-grant-validate-otp-custom",
+          "requirement": "REQUIRED",
+          "priority": 11,
+          "userSetupAllowed": false,
+          "autheticatorFlow": false
+        }
+      ]
+    },
+    {
+      "id": "960bd7aa-8c01-4334-9460-238edb6c716a",
       "alias": "Verify Existing Account by Re-authentication",
       "description": "Reauthentication of existing account",
       "providerId": "basic-flow",
@@ -2938,7 +3057,7 @@
       ]
     },
     {
-      "id": "52598267-c3d0-4a1c-a5b9-29f08be7c4ad",
+      "id": "8ff718aa-4e39-48d2-aacf-fdd456c75a53",
       "alias": "Verify Existing Account by Re-authentication - auth-otp-form - Conditional",
       "description": "Flow to determine if the auth-otp-form authenticator should be used or not.",
       "providerId": "basic-flow",
@@ -2962,7 +3081,7 @@
       ]
     },
     {
-      "id": "0cbc122b-febb-475b-a2f7-d82640760356",
+      "id": "011b0d5c-1da6-4519-b3bd-7779de83021b",
       "alias": "browser",
       "description": "browser based authentication",
       "providerId": "basic-flow",
@@ -3000,7 +3119,7 @@
       ]
     },
     {
-      "id": "ac7ea42f-841e-4ffb-b1f2-068a59802bf9",
+      "id": "084faf8d-bfa0-4f0d-b93b-027b54132537",
       "alias": "clients",
       "description": "Base authentication for clients",
       "providerId": "client-flow",
@@ -3038,7 +3157,7 @@
       ]
     },
     {
-      "id": "de7fc6df-dacb-4b70-84f9-c69782286465",
+      "id": "2b945774-136a-45c8-b2dd-f023f441edc4",
       "alias": "direct grant",
       "description": "OpenID Connect Resource Owner Grant",
       "providerId": "basic-flow",
@@ -3069,7 +3188,7 @@
       ]
     },
     {
-      "id": "54090557-650d-4884-93c8-52798b4bf27a",
+      "id": "caa8b7d7-0bf8-4f8c-ae53-a25bbb52ad0a",
       "alias": "direct grant - direct-grant-validate-otp - Conditional",
       "description": "Flow to determine if the direct-grant-validate-otp authenticator should be used or not.",
       "providerId": "basic-flow",
@@ -3093,7 +3212,7 @@
       ]
     },
     {
-      "id": "3fec75f5-c0e8-40df-a37a-b0c741fcdd57",
+      "id": "1ab8d8fd-db75-4cf6-b105-813cce023ece",
       "alias": "docker auth",
       "description": "Used by Docker clients to authenticate against the IDP",
       "providerId": "basic-flow",
@@ -3110,7 +3229,7 @@
       ]
     },
     {
-      "id": "121573b7-e1d5-498e-bfd7-c46fde0f347a",
+      "id": "934881e3-32ff-4050-933e-d281935e4b8f",
       "alias": "first broker login",
       "description": "Actions taken after first broker login with identity provider account, which is not yet linked to any Keycloak account",
       "providerId": "basic-flow",
@@ -3135,7 +3254,7 @@
       ]
     },
     {
-      "id": "e3fc1203-b4d2-4b21-9294-9a30e9429d58",
+      "id": "d8feb86c-0c21-4570-9b7b-ad42223ceec5",
       "alias": "first broker login - Alternatives - 0",
       "description": "Subflow of first broker login with alternative executions",
       "providerId": "basic-flow",
@@ -3160,7 +3279,7 @@
       ]
     },
     {
-      "id": "a6d1e8b2-ad8c-4387-b2cc-6f9252d3e1c4",
+      "id": "3a39fbcd-8450-428c-b4cf-e9e1fa46c395",
       "alias": "forms",
       "description": "Username, password, otp and other auth forms.",
       "providerId": "basic-flow",
@@ -3184,7 +3303,7 @@
       ]
     },
     {
-      "id": "a13840ea-7259-4ef9-9206-3848791ad17d",
+      "id": "c5ee3815-9c15-4ee6-a266-c693f1e2e655",
       "alias": "forms - auth-otp-form - Conditional",
       "description": "Flow to determine if the auth-otp-form authenticator should be used or not.",
       "providerId": "basic-flow",
@@ -3208,7 +3327,7 @@
       ]
     },
     {
-      "id": "1927c1df-bb74-4061-9349-27870f173f86",
+      "id": "2f195424-9177-43c5-b6c5-2155fe9b32ab",
       "alias": "http challenge",
       "description": "An authentication flow based on challenge-response HTTP Authentication Schemes",
       "providerId": "basic-flow",
@@ -3246,7 +3365,7 @@
       ]
     },
     {
-      "id": "3fdf2297-5a26-4166-9c28-7e0a259dc297",
+      "id": "d3363796-a3f2-458a-9510-cd0daaedbb18",
       "alias": "registration",
       "description": "registration flow",
       "providerId": "basic-flow",
@@ -3264,7 +3383,7 @@
       ]
     },
     {
-      "id": "fa5cd56a-b3da-47cb-b45b-1a42bf4315b0",
+      "id": "619ca7f4-f21d-450c-ad5a-043866073779",
       "alias": "registration form",
       "description": "registration form",
       "providerId": "form-flow",
@@ -3298,18 +3417,11 @@
           "priority": 60,
           "userSetupAllowed": false,
           "autheticatorFlow": false
-        },
-        {
-          "authenticator": "registration-opex-captcha-action",
-          "requirement": "REQUIRED",
-          "priority": 70,
-          "userSetupAllowed": false,
-          "autheticatorFlow": false
         }
       ]
     },
     {
-      "id": "bb41ce37-569e-429f-adce-d499d6d7b9f2",
+      "id": "71edeb90-7547-41e3-a395-547bfbc3ae51",
       "alias": "reset credentials",
       "description": "Reset credentials for a user if they forgot their password or something",
       "providerId": "basic-flow",
@@ -3347,7 +3459,7 @@
       ]
     },
     {
-      "id": "a780f161-e80e-4181-a753-34a3de1c37bf",
+      "id": "2e577b18-4986-4556-8396-737eff6dcf40",
       "alias": "reset credentials - reset-otp - Conditional",
       "description": "Flow to determine if the reset-otp authenticator should be used or not.",
       "providerId": "basic-flow",
@@ -3371,7 +3483,7 @@
       ]
     },
     {
-      "id": "b5d18f36-d638-4ee2-b5f9-b33ae562c94b",
+      "id": "631176c8-0237-4488-9d3d-1662da821b3b",
       "alias": "saml ecp",
       "description": "SAML ECP Profile Authentication Flow",
       "providerId": "basic-flow",
@@ -3390,14 +3502,14 @@
   ],
   "authenticatorConfig": [
     {
-      "id": "0127740a-f965-47d3-964d-a2454d3bf45c",
+      "id": "a4f4b792-ec6b-4fb1-89ec-8b6ae589fff6",
       "alias": "create unique user config",
       "config": {
         "require.password.update.after.registration": "false"
       }
     },
     {
-      "id": "003b7330-d1c0-47f1-9b05-276e8a020cbe",
+      "id": "9b1f556c-8d73-4bdf-8341-7cf7cf858ad7",
       "alias": "review profile config",
       "config": {
         "update.profile.on.first.login": "missing"
@@ -3470,8 +3582,8 @@
     }
   ],
   "browserFlow": "browser",
-  "registrationFlow": "registration",
-  "directGrantFlow": "direct grant",
+  "registrationFlow": "Opex Registration",
+  "directGrantFlow": "Opex Direct Grant",
   "resetCredentialsFlow": "reset credentials",
   "clientAuthenticationFlow": "clients",
   "dockerAuthenticationFlow": "docker auth",

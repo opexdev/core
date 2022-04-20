@@ -54,6 +54,9 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     TokenNotFound(8005, "Coin/Token not found", HttpStatus.NOT_FOUND),
     InvalidAddressType(8006, "Address type is invalid", HttpStatus.NOT_FOUND),
 
+    // code 9000: admin
+    UserNotFoundAdmin(9001, "User not found", HttpStatus.NOT_FOUND),
+
     // code 10000: bc-gateway
     InvalidCaptcha(10001, "Captcha is not valid", HttpStatus.BAD_REQUEST);
 
@@ -68,7 +71,10 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
 
 @Throws(OpexException::class)
 inline fun <reified T : Any> T.throwError(
-    error: OpexError, message: String? = null, status: HttpStatus? = null, data: Any? = null
+    error: OpexError,
+    message: String? = null,
+    status: HttpStatus? = null,
+    data: Any? = null
 ) {
     throw OpexException(error, message, status, data, T::class.java)
 }

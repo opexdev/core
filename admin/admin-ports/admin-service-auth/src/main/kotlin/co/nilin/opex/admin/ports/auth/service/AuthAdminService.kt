@@ -1,7 +1,9 @@
 package co.nilin.opex.admin.ports.auth.service
 
 import co.nilin.opex.admin.ports.auth.data.KycGroup
+import co.nilin.opex.admin.ports.auth.data.QueryUserResponse
 import co.nilin.opex.admin.ports.auth.proxy.KeycloakProxy
+import co.nilin.opex.admin.ports.auth.utils.asKeycloakUser
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import org.keycloak.admin.client.Keycloak
@@ -17,8 +19,15 @@ class AuthAdminService(
     private val proxy: KeycloakProxy
 ) {
 
-    fun findAllUsers(): List<UserRepresentation> {
-        return opexRealm.users().list()
+    fun getUser(userId: String): UserRepresentation {
+        return opexRealm.users().get(userId).toRepresentation() ?: throw OpexException(OpexError.UserNotFoundAdmin)
+    }
+
+    fun findAllUsers(offset: Int, size: Int): QueryUserResponse {
+        return QueryUserResponse(
+            opexRealm.users().count(),
+            opexRealm.users().list(offset, size).map { it.asKeycloakUser() }
+        )
     }
 
     fun findGroupById(groupId: String): GroupResource {
@@ -39,9 +48,13 @@ class AuthAdminService(
         return group.members()
     }
 
-    fun findUsersInGroupByName(groupName: String): List<UserRepresentation> {
+    fun findUsersInGroupByName(groupName: String, offset: Int, size: Int): QueryUserResponse {
         val group = findGroupByName(groupName)
-        return group.members()
+        val members = group.members(offset, size)
+        return QueryUserResponse(
+            members.count(),
+            members.map { it.asKeycloakUser() }
+        )
     }
 
     fun addUserToGroup(userId: String, groupId: String) {
@@ -67,6 +80,21 @@ class AuthAdminService(
         opexRealm.users().get(userId) ?: throw OpexException(OpexError.NotFound, "User not found")
         val token = keycloak.tokenManager().accessToken.token
         return proxy.impersonate(token, clientId, clientSecret, userId)
+    }
+
+    fun searchUser(search: String, offset: Int, size: Int): QueryUserResponse {
+        return QueryUserResponse(
+            opexRealm.users().search(search).count(),
+            opexRealm.users().search(search, offset, size, false).map { it.asKeycloakUser() }
+        )
+    }
+
+    fun searchUserEmail(search: String): QueryUserResponse {
+        val users = opexRealm.users().search(search)
+        return QueryUserResponse(
+            users.count(),
+            users.map { it.asKeycloakUser() }
+        )
     }
 
 }
