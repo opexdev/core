@@ -28,6 +28,7 @@ class KeycloakProxy(private val webClient: WebClient) {
             .with("requested_subject", userId)
             .with("subject_token", token)
             .with("grant_type", "urn:ietf:params:oauth:grant-type:token-exchange")
+            .with("agent", "opex-admin")
 
         logger.info("Request token exchange for user $userId and client $clientId")
         return webClient.post()

@@ -52,7 +52,12 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     ChainNotFound(8003, "Chain not found", HttpStatus.NOT_FOUND),
     CurrencyNotFoundBC(8004, "Currency not found", HttpStatus.NOT_FOUND),
     TokenNotFound(8005, "Coin/Token not found", HttpStatus.NOT_FOUND),
-    InvalidAddressType(8006, "Address type is invalid", HttpStatus.NOT_FOUND);
+    InvalidAddressType(8006, "Address type is invalid", HttpStatus.NOT_FOUND),
+
+    // code 9000: admin
+    UserNotFoundAdmin(9001, "User not found", HttpStatus.NOT_FOUND),
+
+    ;
 
     companion object {
         fun findByCode(code: Int?): OpexError? {

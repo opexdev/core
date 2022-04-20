@@ -262,17 +262,19 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
-        val sessions = session.sessions().getUserSessionsStream(opexRealm, user).map {
-            UserSessionResponse(
-                it.id,
-                it.ipAddress,
-                it.started.toLong(),
-                it.lastSessionRefresh.toLong(),
-                it.state.name,
-                tryOrElse(null) { it.notes["agent"] },
-                auth.token?.sessionState == it.id
-            )
-        }.toList()
+        val sessions = session.sessions().getUserSessionsStream(opexRealm, user)
+            .filter { tryOrElse(null) { it.notes["agent"] } != "opex-admin" }
+            .map {
+                UserSessionResponse(
+                    it.id,
+                    it.ipAddress,
+                    it.started.toLong(),
+                    it.lastSessionRefresh.toLong(),
+                    it.state?.name,
+                    tryOrElse(null) { it.notes["agent"] },
+                    auth.token?.sessionState == it.id
+                )
+            }.toList()
 
         return Response.ok(sessions).build()
     }
