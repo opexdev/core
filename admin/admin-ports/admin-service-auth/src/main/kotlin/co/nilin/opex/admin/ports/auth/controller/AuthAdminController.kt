@@ -57,8 +57,8 @@ class AuthAdminController(private val service: AuthAdminService) {
     @GetMapping("/group/{groupName}/members")
     fun getMembersOfGroup(
         @PathVariable groupName: String, @RequestParam offset: Int, @RequestParam size: Int
-    ): List<KeycloakUser> {
-        return service.findUsersInGroupByName(groupName, offset, size).map { it.asKeycloakUser() }
+    ): QueryUserResponse {
+        return service.findUsersInGroupByName(groupName, offset, size)
     }
 
 }

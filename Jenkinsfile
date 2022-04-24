@@ -26,6 +26,7 @@ pipeline {
                 KEYCLOAK_FRONTEND_URL = 'https://demo.opex.dev/auth'
                 KEYCLOAK_ADMIN_USERNAME = credentials("keycloak-admin-username")
                 KEYCLOAK_ADMIN_PASSWORD = credentials("keycloak-admin-password")
+                OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET = credentials("opex-admin-keycloak-client-secret")
                 COMPOSE_PROJECT_NAME = 'demo-core'
                 DEFAULT_NETWORK_NAME = 'demo-opex'
             }

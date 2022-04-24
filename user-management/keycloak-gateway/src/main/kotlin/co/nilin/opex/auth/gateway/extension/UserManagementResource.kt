@@ -49,7 +49,8 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     fun registerUser(
-        request: RegisterUserRequest, @HeaderParam("X-Forwarded-For") xForwardedFor: String?
+        request: RegisterUserRequest,
+        @HeaderParam("X-Forwarded-For") xForwardedFor: String?
     ): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
@@ -57,13 +58,12 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         runCatching {
             validateCaptcha("${request.captchaAnswer}-${xForwardedFor?.split(",")?.first() ?: "0.0.0.0"}")
         }.onFailure {
-            logger.error(it.message)
-            return Response.status(Response.Status.BAD_REQUEST).build()
+            return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.InvalidCaptcha)
         }
 
         if (!request.isValid()) return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.BadRequest)
 
-        val user = session.users().addUser(opexRealm, request.username).apply {
+        val user = session.users().addUser(opexRealm, request.email).apply {
             email = request.email
             firstName = request.firstName
             lastName = request.lastName
@@ -95,7 +95,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         runCatching {
             validateCaptcha("$captchaAnswer-${xForwardedFor?.split(",")?.first() ?: "0.0.0.0"}")
         }.onFailure {
-            return Response.status(Response.Status.BAD_REQUEST).build()
+            return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.InvalidCaptcha)
         }
 
         val user = session.users().getUserByEmail(email, opexRealm)

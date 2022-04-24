@@ -80,17 +80,17 @@ vault write auth/app-id/login/opex-referral user_id=${BACKEND_USER}
 ## Add secret values
 echo 'put key/value'
 vault kv put secret/opex smtppass=${SMTP_PASS}
-vault kv put secret/opex-accountant dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USERNAME} db_backup_pass=${DB_BACKUP_PASS}
-vault kv put secret/opex-api dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USERNAME} db_backup_pass=${DB_BACKUP_PASS}
-vault kv put secret/opex-bc-gateway dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USERNAME} db_backup_pass=${DB_BACKUP_PASS}
-vault kv put secret/opex-eventlog dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USERNAME} db_backup_pass=${DB_BACKUP_PASS}
+vault kv put secret/opex-accountant dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USER} db_backup_pass=${DB_BACKUP_PASS}
+vault kv put secret/opex-api dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USER} db_backup_pass=${DB_BACKUP_PASS}
+vault kv put secret/opex-bc-gateway dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USER} db_backup_pass=${DB_BACKUP_PASS}
+vault kv put secret/opex-eventlog dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USER} db_backup_pass=${DB_BACKUP_PASS}
 vault kv put secret/opex-auth dbusername=${DB_USER} dbpassword=${DB_PASS} admin_username=${KEYCLOAK_ADMIN_USERNAME} admin_password=${KEYCLOAK_ADMIN_PASSWORD}
-vault kv put secret/opex-wallet dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USERNAME} db_backup_pass=${DB_BACKUP_PASS}
-vault kv put secret/opex-websocket dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USERNAME} db_backup_pass=${DB_BACKUP_PASS}
-vault kv put secret/opex-payment dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USERNAME} db_backup_pass=${DB_BACKUP_PASS} vandar_api_key=${VANDAR_API_KEY}
-vault kv put secret/opex-admin keycloak_client_secret=${KEYCLOAK_CLIENT_SECRET}
+vault kv put secret/opex-wallet dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USER} db_backup_pass=${DB_BACKUP_PASS}
+vault kv put secret/opex-websocket dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USER} db_backup_pass=${DB_BACKUP_PASS}
+vault kv put secret/opex-payment dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USER} db_backup_pass=${DB_BACKUP_PASS} vandar_api_key=${VANDAR_API_KEY}
+vault kv put secret/opex-admin keycloak_client_secret=${OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET}
 vault kv put secret/chain-scan-gateway dbusername=${DB_USER} dbpassword=${DB_PASS}
-vault kv put secret/opex-referral dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USERNAME} db_backup_pass=${DB_BACKUP_PASS}
+vault kv put secret/opex-referral dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USER} db_backup_pass=${DB_BACKUP_PASS}
 
 # Keep alive
 while pidof vault >/dev/null; do

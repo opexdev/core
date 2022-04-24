@@ -12,14 +12,16 @@ import org.springframework.web.reactive.function.client.WebClient
 
 @Configuration
 class WebClientConfig {
+
     @Bean
     @Qualifier("loadBalanced")
     fun loadBalancedWebClient(loadBalancerFactory: ReactiveLoadBalancer.Factory<ServiceInstance>): WebClient {
         return WebClient.builder()
-            .filter(
-                ReactorLoadBalancerExchangeFilterFunction(
-                    loadBalancerFactory, LoadBalancerProperties(), emptyList()
-                )
+            .filter(ReactorLoadBalancerExchangeFilterFunction(loadBalancerFactory, emptyList()))
+            .exchangeStrategies(
+                ExchangeStrategies.builder()
+                    .codecs { it.defaultCodecs().maxInMemorySize(20 * 1024 * 1024) }
+                    .build()
             )
             .build()
     }

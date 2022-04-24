@@ -57,7 +57,8 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     // code 9000: admin
     UserNotFoundAdmin(9001, "User not found", HttpStatus.NOT_FOUND),
 
-    ;
+    // code 10000: bc-gateway
+    InvalidCaptcha(10001, "Captcha is not valid", HttpStatus.BAD_REQUEST);
 
     companion object {
         fun findByCode(code: Int?): OpexError? {

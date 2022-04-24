@@ -24,7 +24,6 @@ class ExtendedEventListenerProvider(private val session: KeycloakSession) : Even
     private val objectMapper = jacksonObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
     data class UserData(
-        val username: String,
         val enabled: Boolean,
         val emailVerified: Boolean,
         val firstName: String?,
