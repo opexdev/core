@@ -2,7 +2,9 @@ package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.wallet.app.dto.TransactionRequest
 import co.nilin.opex.wallet.app.dto.WithdrawHistoryResponse
-import co.nilin.opex.wallet.core.inout.*
+import co.nilin.opex.wallet.core.inout.WithdrawCommand
+import co.nilin.opex.wallet.core.inout.WithdrawResponse
+import co.nilin.opex.wallet.core.inout.WithdrawResult
 import co.nilin.opex.wallet.core.service.WithdrawService
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
@@ -45,7 +47,9 @@ class WithdrawController(private val withdrawService: WithdrawService) {
                 destTxRef,
                 destAddress,
                 status?.isEmpty() ?: true,
-                status ?: listOf("")
+                status ?: listOf(""),
+                null,
+                null
             )
     }
 

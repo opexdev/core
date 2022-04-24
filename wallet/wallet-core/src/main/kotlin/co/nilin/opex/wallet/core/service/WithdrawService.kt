@@ -178,10 +178,15 @@ class WithdrawService(
         destTxRef: String?,
         destAddress: String?,
         noStatus: Boolean,
-        status: List<String>?
+        status: List<String>?,
+        offset: Int?,
+        size: Int?
     ): List<WithdrawResponse> {
-        return withdrawPersister
-            .findByCriteria(ownerUuid, withdrawId, currency, destTxRef, destAddress, noStatus, status)
+        return if (offset == null || size == null)
+            withdrawPersister.findByCriteria(ownerUuid, withdrawId, currency, destTxRef, destAddress, noStatus, status)
+        else
+            withdrawPersister
+                .findByCriteria(ownerUuid, withdrawId, currency, destTxRef, destAddress, noStatus, status, offset, size)
     }
 
     suspend fun findWithdrawHistory(

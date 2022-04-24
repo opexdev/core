@@ -32,7 +32,9 @@ class AdminController(private val withdrawService: WithdrawService) {
         @RequestParam("currency", required = false) currency: String?,
         @RequestParam("dest_transaction_ref", required = false) destTxRef: String?,
         @RequestParam("dest_address", required = false) destAddress: String?,
-        @RequestParam("status", required = false) status: List<String>?
+        @RequestParam("status", required = false) status: List<String>?,
+        @RequestParam offset: Int,
+        @RequestParam size: Int
     ): List<WithdrawResponse> {
         return withdrawService
             .findByCriteria(
@@ -42,7 +44,9 @@ class AdminController(private val withdrawService: WithdrawService) {
                 destTxRef,
                 destAddress,
                 status?.isEmpty() ?: true,
-                status ?: listOf("")
+                status ?: listOf(""),
+                offset,
+                size
             )
     }
 
