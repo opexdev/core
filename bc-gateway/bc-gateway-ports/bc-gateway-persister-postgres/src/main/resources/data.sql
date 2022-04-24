@@ -26,7 +26,8 @@ ON CONFLICT DO NOTHING;
 
 INSERT INTO address_types(id, address_type, address_regex)
 VALUES (1, 'bitcoin', '.*'),
-       (2, 'ethereum', '.*')
+       (2, 'ethereum', '.*'),
+       (3, 'test-bitcoin', '.*'),
 ON CONFLICT DO NOTHING;
 
 SELECT setval(pg_get_serial_sequence('address_types', 'id'), (SELECT MAX(id) FROM address_types));
@@ -39,7 +40,7 @@ ON CONFLICT DO NOTHING;
 
 -- Test chain address types
 INSERT INTO chain_address_types(chain_name, addr_type_id)
-VALUES ('test-bitcoin', 1),
+VALUES ('test-bitcoin', 3),
        ('test-ethereum', 2),
        ('test-bsc', 2)
 ON CONFLICT DO NOTHING;
@@ -72,7 +73,7 @@ INSERT INTO currency_implementations(id,
                                      decimal)
 VALUES (4, 'TBTC', 'test-bitcoin', false, null, null, true, 0.0001, 0.0001, 0),
        (5, 'TETH', 'test-ethereum', false, null, null, true, 0.00001, 0.000001, 18),
-       (6, 'TUSDT', 'test-ethereum', true, '0x110a13fc3efe6a245b50102d2d79b3e76125ae83', 'TUSDT', true, 0.01, 0.01, 6)
+       (6, 'TUSDT', 'test-ethereum', true, '0x6EE856Ae55B6E1A249f04cd3b947141bc146273c', 'TUSDT', true, 0.01, 0.01, 6)
 ON CONFLICT DO NOTHING;
 
 SELECT setval(pg_get_serial_sequence('currency_implementations', 'id'), (SELECT MAX(id) FROM currency_implementations));
