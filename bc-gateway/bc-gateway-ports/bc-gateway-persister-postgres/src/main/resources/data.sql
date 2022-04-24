@@ -27,7 +27,7 @@ ON CONFLICT DO NOTHING;
 INSERT INTO address_types(id, address_type, address_regex)
 VALUES (1, 'bitcoin', '.*'),
        (2, 'ethereum', '.*'),
-       (3, 'test-bitcoin', '.*'),
+       (3, 'test-bitcoin', '.*')
 ON CONFLICT DO NOTHING;
 
 SELECT setval(pg_get_serial_sequence('address_types', 'id'), (SELECT MAX(id) FROM address_types));
