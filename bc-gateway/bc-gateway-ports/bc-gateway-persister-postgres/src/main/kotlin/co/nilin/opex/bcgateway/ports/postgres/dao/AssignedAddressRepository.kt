@@ -17,7 +17,7 @@ interface AssignedAddressRepository : ReactiveCrudRepository<AssignedAddressMode
         @Param("addressTypes") types: List<Long>
     ): Flow<AssignedAddressModel>
 
-    @Query("select * from assigned_addresses where address = :address and (:memo is null or :memo = '' or memo = :memo)")
+    @Query("select * from assigned_addresses where address = :address and (memo is null or memo = '' or memo = :memo)")
     fun findByAddressAndMemo(
         @Param("address") address: String,
         @Param("memo") memo: String?
