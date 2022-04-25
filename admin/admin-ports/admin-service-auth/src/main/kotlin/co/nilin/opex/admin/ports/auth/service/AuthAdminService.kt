@@ -9,6 +9,7 @@ import co.nilin.opex.utility.error.data.OpexException
 import org.keycloak.admin.client.Keycloak
 import org.keycloak.admin.client.resource.GroupResource
 import org.keycloak.admin.client.resource.RealmResource
+import org.keycloak.representations.idm.GroupRepresentation
 import org.keycloak.representations.idm.UserRepresentation
 import org.springframework.stereotype.Service
 
@@ -21,6 +22,10 @@ class AuthAdminService(
 
     fun getUser(userId: String): UserRepresentation {
         return opexRealm.users().get(userId).toRepresentation() ?: throw OpexException(OpexError.UserNotFoundAdmin)
+    }
+
+    fun getUserGroups(userId: String): List<GroupRepresentation> {
+        return opexRealm.users().get(userId).groups()
     }
 
     fun findAllUsers(offset: Int, size: Int): QueryUserResponse {

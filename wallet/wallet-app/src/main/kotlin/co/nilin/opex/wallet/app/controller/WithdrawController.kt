@@ -47,9 +47,7 @@ class WithdrawController(private val withdrawService: WithdrawService) {
                 destTxRef,
                 destAddress,
                 status?.isEmpty() ?: true,
-                status ?: listOf(""),
-                null,
-                null
+                status ?: listOf("")
             )
     }
 

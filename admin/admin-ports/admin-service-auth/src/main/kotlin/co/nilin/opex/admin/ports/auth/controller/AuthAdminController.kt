@@ -1,9 +1,6 @@
 package co.nilin.opex.admin.ports.auth.controller
 
-import co.nilin.opex.admin.ports.auth.data.ImpersonateRequest
-import co.nilin.opex.admin.ports.auth.data.KeycloakUser
-import co.nilin.opex.admin.ports.auth.data.KycGroup
-import co.nilin.opex.admin.ports.auth.data.QueryUserResponse
+import co.nilin.opex.admin.ports.auth.data.*
 import co.nilin.opex.admin.ports.auth.service.AuthAdminService
 import co.nilin.opex.admin.ports.auth.utils.asKeycloakUser
 import org.springframework.http.MediaType
@@ -20,7 +17,9 @@ class AuthAdminController(private val service: AuthAdminService) {
 
     @GetMapping("/user/{userId}")
     suspend fun getUser(@PathVariable userId: String): KeycloakUser {
-        return service.getUser(userId).asKeycloakUser(true)
+        return service.getUser(userId).asKeycloakUser(true).apply {
+            groups = service.getUserGroups(userId).map { KeycloakGroup(it.id, it.name) }
+        }
     }
 
     @PostMapping("/user/{userId}/join-kyc")

@@ -9,6 +9,7 @@ import co.nilin.opex.wallet.ports.postgres.model.WithdrawModel
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
@@ -46,6 +47,26 @@ class WithdrawPersisterImpl(
             )
             .map { it.asWithdrawResponse() }
             .toList()
+    }
+
+    override suspend fun countByCriteria(
+        ownerUuid: String?,
+        withdrawId: String?,
+        currency: String?,
+        destTxRef: String?,
+        destAddress: String?,
+        noStatus: Boolean,
+        status: List<String>?
+    ): Long {
+        return withdrawRepository.countByCriteria(
+            ownerUuid,
+            withdrawId?.toLong(),
+            currency,
+            destTxRef,
+            destAddress,
+            noStatus,
+            status
+        ).awaitFirstOrElse { 0 }
     }
 
     override suspend fun findByCriteria(

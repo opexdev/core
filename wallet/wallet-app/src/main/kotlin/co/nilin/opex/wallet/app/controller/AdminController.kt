@@ -1,9 +1,6 @@
 package co.nilin.opex.wallet.app.controller
 
-import co.nilin.opex.wallet.core.inout.WithdrawAcceptCommand
-import co.nilin.opex.wallet.core.inout.WithdrawRejectCommand
-import co.nilin.opex.wallet.core.inout.WithdrawResponse
-import co.nilin.opex.wallet.core.inout.WithdrawResult
+import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.service.WithdrawService
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
@@ -35,7 +32,7 @@ class AdminController(private val withdrawService: WithdrawService) {
         @RequestParam("status", required = false) status: List<String>?,
         @RequestParam offset: Int,
         @RequestParam size: Int
-    ): List<WithdrawResponse> {
+    ): PagingWithdrawResponse {
         return withdrawService
             .findByCriteria(
                 uuid,

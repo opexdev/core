@@ -11,7 +11,6 @@ fun UserRepresentation.asKeycloakUser(includeAttributes: Boolean = false): Keycl
     lastName,
     isEnabled,
     isEmailVerified,
-    groups,
     requiredActions,
     if(includeAttributes) attributes else null
 )

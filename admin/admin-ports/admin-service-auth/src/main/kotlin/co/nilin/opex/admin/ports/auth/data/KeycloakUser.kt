@@ -11,7 +11,7 @@ data class KeycloakUser(
     val lastName: String?,
     val isEnabled: Boolean,
     val isEmailVerified: Boolean,
-    val groups:List<String>?,
     val requiredActions: List<String>?,
-    val attributes: Map<String, List<String>>?
+    val attributes: Map<String, List<String>>?,
+    var groups: List<KeycloakGroup>? = null
 )
