@@ -10,13 +10,16 @@ import reactor.core.publisher.Mono
 
 @Repository
 interface AssignedAddressRepository : ReactiveCrudRepository<AssignedAddressModel, Long> {
+
     @Query("select * from assigned_addresses where uuid = :uuid and addr_type_id in (:addressTypes)")
     fun findByUuidAndAddressType(
-        @Param("uuid") uuid: String, @Param("addressTypes") types: List<Long>
+        @Param("uuid") uuid: String,
+        @Param("addressTypes") types: List<Long>
     ): Flow<AssignedAddressModel>
 
-    @Query("select * from assigned_addresses where address = :address and (:memo is null or memo = :memo)")
+    @Query("select * from assigned_addresses where address = :address and (:memo is null or :memo = '' or memo = :memo)")
     fun findByAddressAndMemo(
-        @Param("address") address: String, @Param("memo") memo: String?
+        @Param("address") address: String,
+        @Param("memo") memo: String?
     ): Mono<AssignedAddressModel>
 }
