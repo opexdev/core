@@ -13,9 +13,6 @@ spring:
     bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
     consumer:
       group-id: api
-  redis:
-    host: ${REDIS_HOST:localhost}
-    port: 6379
   r2dbc:
     url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex_api
     username: ${dbusername:opex}
@@ -51,12 +48,11 @@ app:
   accountant:
     url: lb://opex-accountant
   matching-gateway:
-    url: lb://opex-gateway
+    url: lb://opex-matching-gateway
   wallet:
     url: lb://opex-wallet
   opex-bc-gateway:
     url: lb://opex-bc-gateway
   auth:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
-
-swagger.authUrl: https://api.opex.dev
+swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token

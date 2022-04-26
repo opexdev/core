@@ -178,10 +178,44 @@ class WithdrawService(
         destTxRef: String?,
         destAddress: String?,
         noStatus: Boolean,
-        status: List<String>?
+        status: List<String>?,
+        offset: Int,
+        size: Int
+    ): PagingWithdrawResponse {
+        val count =
+            withdrawPersister.countByCriteria(ownerUuid, withdrawId, currency, destTxRef, destAddress, noStatus, status)
+        val list = withdrawPersister.findByCriteria(
+            ownerUuid,
+            withdrawId,
+            currency,
+            destTxRef,
+            destAddress,
+            noStatus,
+            status,
+            offset,
+            size
+        )
+        return PagingWithdrawResponse(count, list)
+    }
+
+    suspend fun findByCriteria(
+        ownerUuid: String?,
+        withdrawId: String?,
+        currency: String?,
+        destTxRef: String?,
+        destAddress: String?,
+        noStatus: Boolean,
+        status: List<String>?,
     ): List<WithdrawResponse> {
-        return withdrawPersister
-            .findByCriteria(ownerUuid, withdrawId, currency, destTxRef, destAddress, noStatus, status)
+        return withdrawPersister.findByCriteria(
+            ownerUuid,
+            withdrawId,
+            currency,
+            destTxRef,
+            destAddress,
+            noStatus,
+            status
+        )
     }
 
     suspend fun findWithdrawHistory(

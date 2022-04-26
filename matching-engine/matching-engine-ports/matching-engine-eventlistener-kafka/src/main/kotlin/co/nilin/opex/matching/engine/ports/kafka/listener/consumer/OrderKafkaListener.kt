@@ -1,6 +1,6 @@
 package co.nilin.opex.matching.engine.ports.kafka.listener.consumer
 
-import co.nilin.opex.matching.engine.ports.kafka.listener.inout.OrderSubmitRequest
+import co.nilin.opex.matching.engine.core.inout.OrderSubmitRequest
 import co.nilin.opex.matching.engine.ports.kafka.listener.spi.OrderSubmitRequestListener
 import kotlinx.coroutines.runBlocking
 import org.apache.kafka.clients.consumer.ConsumerRecord

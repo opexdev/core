@@ -3,7 +3,7 @@ package co.nilin.opex.admin.ports.auth.utils
 import co.nilin.opex.admin.ports.auth.data.KeycloakUser
 import org.keycloak.representations.idm.UserRepresentation
 
-fun UserRepresentation.asKeycloakUser(): KeycloakUser = KeycloakUser(
+fun UserRepresentation.asKeycloakUser(includeAttributes: Boolean = false): KeycloakUser = KeycloakUser(
     id,
     email,
     username,
@@ -11,7 +11,6 @@ fun UserRepresentation.asKeycloakUser(): KeycloakUser = KeycloakUser(
     lastName,
     isEnabled,
     isEmailVerified,
-    groups,
     requiredActions,
-    attributes
+    if(includeAttributes) attributes else null
 )

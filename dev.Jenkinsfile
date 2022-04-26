@@ -8,7 +8,7 @@ pipeline {
                 withMaven(
                         maven: 'maven-3.6.3'
                 ) {
-                    sh 'mvn -B clean install'
+                    sh 'mvn -T 1C -B clean install'
                 }
             }
         }
@@ -20,8 +20,14 @@ pipeline {
                 SMTP_PASS = credentials("smtp-secret-dev")
                 DB_USER = 'opex'
                 DB_PASS = credentials("db-secret-dev")
+                DB_BACKUP_USER = 'opex_backup'
+                DB_BACKUP_PASS = credentials("db-backup-secret-dev")
                 KEYCLOAK_ADMIN_URL = 'https://demo.opex.dev:8443/auth'
                 KEYCLOAK_FRONTEND_URL = 'https://demo.opex.dev:8443/auth'
+                KEYCLOAK_ADMIN_USERNAME = credentials("keycloak-admin-username-dev")
+                KEYCLOAK_ADMIN_PASSWORD = credentials("keycloak-admin-password-dev")
+                OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET = credentials("opex-admin-keycloak-client-secret-dev")
+                VANDAR_API_KEY = credentials("vandar-api-key-dev")
                 COMPOSE_PROJECT_NAME = 'dev-core'
                 DEFAULT_NETWORK_NAME = 'dev-opex'
             }

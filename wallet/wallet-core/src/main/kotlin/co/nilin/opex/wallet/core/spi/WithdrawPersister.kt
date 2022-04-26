@@ -16,6 +16,28 @@ interface WithdrawPersister {
         status: List<String>?
     ): List<WithdrawResponse>
 
+    suspend fun countByCriteria(
+        ownerUuid: String?,
+        withdrawId: String?,
+        currency: String?,
+        destTxRef: String?,
+        destAddress: String?,
+        noStatus: Boolean,
+        status: List<String>?
+    ): Long
+
+    suspend fun findByCriteria(
+        ownerUuid: String?,
+        withdrawId: String?,
+        currency: String?,
+        destTxRef: String?,
+        destAddress: String?,
+        noStatus: Boolean,
+        status: List<String>?,
+        offset: Int,
+        size: Int
+    ): List<WithdrawResponse>
+
     suspend fun persist(withdraw: Withdraw): Withdraw
 
     suspend fun findById(withdrawId: String): Withdraw?

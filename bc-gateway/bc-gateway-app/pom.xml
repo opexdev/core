@@ -27,11 +27,6 @@
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-kotlin</artifactId>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib -->
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib</artifactId>
-        </dependency>
         <dependency>
             <groupId>io.projectreactor.kotlin</groupId>
             <artifactId>reactor-kotlin-extensions</artifactId>
@@ -81,6 +76,10 @@
         <dependency>
             <groupId>co.nilin.opex.bcgateway.ports.walletproxy</groupId>
             <artifactId>bc-gateway-wallet-proxy</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>co.nilin.opex.bcgateway.ports.kafka.listener</groupId>
+            <artifactId>bc-gateway-eventlistener-kafka</artifactId>
         </dependency>
         <dependency>
             <groupId>io.springfox</groupId>

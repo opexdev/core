@@ -3,7 +3,7 @@ package co.nilin.opex.bcgateway.core.service
 import co.nilin.opex.bcgateway.core.model.*
 import co.nilin.opex.bcgateway.core.model.Currency
 import co.nilin.opex.bcgateway.core.spi.AssignedAddressHandler
-import co.nilin.opex.bcgateway.core.spi.CurrencyLoader
+import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
 import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
@@ -16,7 +16,7 @@ import java.util.*
 
 class AssignAddressServiceImplUnitTest {
     @Mock
-    lateinit var currencyLoader: CurrencyLoader
+    lateinit var currencyHandler: CurrencyHandler
 
     @Mock
     lateinit var assignedAddressHandler: AssignedAddressHandler
@@ -36,7 +36,7 @@ class AssignAddressServiceImplUnitTest {
     init {
         MockitoAnnotations.openMocks(this)
         assignAddressServiceImpl = AssignAddressServiceImpl(
-            currencyLoader, assignedAddressHandler, reservedAddressHandler
+            currencyHandler, assignedAddressHandler, reservedAddressHandler
         )
         runBlocking {
             val eth =
@@ -53,7 +53,7 @@ class AssignAddressServiceImplUnitTest {
                 18
             )
 
-            Mockito.`when`(currencyLoader.fetchCurrencyInfo(currency.symbol))
+            Mockito.`when`(currencyHandler.fetchCurrencyInfo(currency.symbol))
                 .thenReturn(CurrencyInfo(currency, listOf(eth, wrappedEth)))
         }
 

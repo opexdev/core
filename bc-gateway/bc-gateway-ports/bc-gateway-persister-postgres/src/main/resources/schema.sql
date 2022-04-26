@@ -50,7 +50,8 @@ CREATE TABLE IF NOT EXISTS chain_endpoints
     chain_name        VARCHAR(72)  NOT NULL REFERENCES chains (name),
     endpoint_url      VARCHAR(255) NOT NULL,
     endpoint_user     VARCHAR(72),
-    endpoint_password VARCHAR(72)
+    endpoint_password VARCHAR(72),
+    UNIQUE (chain_name, endpoint_url)
 );
 
 CREATE TABLE IF NOT EXISTS chain_sync_schedules

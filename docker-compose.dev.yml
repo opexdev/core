@@ -26,3 +26,6 @@ services:
   postgres-bc-gateway:
     ports:
       - "5447:5432"
+  postgres-referral:
+    ports:
+      - "5448:5432"

@@ -6,10 +6,10 @@ import org.keycloak.representations.AccessToken
 import org.keycloak.services.managers.AppAuthManager
 import org.keycloak.services.managers.AuthenticationManager
 
-class ResourceAuthenticator(private val result: AuthenticationManager.AuthResult) {
+class ResourceAuthenticator(private val result: AuthenticationManager.AuthResult?) {
 
-    private val user: UserModel? = result.user
-    private val token: AccessToken = result.token
+    val user: UserModel? = result?.user
+    val token: AccessToken? = result?.token
 
     fun getUserId() = user?.id
 
@@ -18,11 +18,13 @@ class ResourceAuthenticator(private val result: AuthenticationManager.AuthResult
     }
 
     fun hasScopeAccess(scope: String): Boolean {
+        if (token == null) return false
         return token.scope.split(" ").contains(scope)
     }
 
     fun hasUserAccess(userId: String? = null): Boolean {
-        return userId != null && user?.id == userId
+        if (user == null) return false
+        return userId != null && user.id == userId
     }
 
     companion object {

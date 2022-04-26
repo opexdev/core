@@ -1,5 +1,8 @@
 server.port: 8080
 spring:
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
   application:
     name: opex-wallet
   main:
@@ -9,9 +12,6 @@ spring:
     bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
     consumer:
       group-id: wallet
-  redis:
-    host: ${REDIS_HOST:localhost}
-    port: 6379
   r2dbc:
     url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex_wallet
     username: ${dbusername:opex}
@@ -45,7 +45,7 @@ spring:
     import: vault://secret/${spring.application.name}
 app:
   gift:
-    symbol: usdt
+    symbol: tusdt
     amount: 1000
   auth:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
@@ -56,5 +56,4 @@ logging:
     org.apache.kafka: ERROR
     co.nilin: DEBUG
     reactor.netty.http.client: DEBUG
-
-swagger.authUrl: https://api.opex.dev
+swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token

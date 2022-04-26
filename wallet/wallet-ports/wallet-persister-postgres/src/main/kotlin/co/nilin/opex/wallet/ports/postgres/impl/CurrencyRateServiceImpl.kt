@@ -12,17 +12,17 @@ import java.math.BigDecimal
 @Service
 class CurrencyRateServiceImpl(val currencyRateRepository: CurrencyRateRepository) : CurrencyRateService {
     override suspend fun convert(amount: Amount, targetCurrency: Currency): BigDecimal {
-        if (amount.currency.getName() == targetCurrency.getName())
+        if (amount.currency.getSymbol() == targetCurrency.getSymbol())
             return amount.amount
 
         var rate = currencyRateRepository.findBySourceAndDest(
-            amount.currency.getName(), targetCurrency.getName()
+            amount.currency.getSymbol(), targetCurrency.getSymbol()
         )
             .map { BigDecimal.valueOf(it!!.rate) }
             .awaitFirstOrNull()
         if (rate != null) {
             rate = currencyRateRepository.findBySourceAndDest(
-                targetCurrency.getName(), amount.currency.getName()
+                targetCurrency.getSymbol(), amount.currency.getSymbol()
             )
                 .map { BigDecimal.valueOf(it!!.rate) }
                 .awaitFirstOrDefault(BigDecimal.ZERO)

@@ -77,6 +77,21 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  akhq:
+    image: tchiotludo/akhq
+    environment:
+      AKHQ_CONFIGURATION: |
+        akhq:
+          connections:
+            docker-kafka-server:
+              properties:
+                bootstrap.servers: "kafka-1:29092,kafka-2:29092,kafka-3:29092"
+    networks:
+      - default
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
   vault:
     image: vault
     volumes:
@@ -87,8 +102,14 @@ services:
       - PANEL_PASS=${PANEL_PASS}
       - BACKEND_USER=${BACKEND_USER}
       - SMTP_PASS=${SMTP_PASS}
-      - DB_USER=${DB_USER}
-      - DB_PASS=${DB_PASS}
+      - DB_USER=${DB_USER:-opex}
+      - DB_PASS=${DB_PASS:-hiopex}
+      - DB_BACKUP_USER=${DB_BACKUP_USER:-opex_backup}
+      - DB_BACKUP_PASS=${DB_BACKUP_PASS:-hiopex}
+      - KEYCLOAK_ADMIN_USERNAME=${KEYCLOAK_ADMIN_USERNAME:-opex-admin}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-hiopex}
+      - OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET=${OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET}
+      - VANDAR_API_KEY=$VANDAR_API_KEY
     healthcheck:
       retries: 5
     cap_add:
@@ -99,6 +120,8 @@ services:
     environment:
       - VAULT_URL_DEFAULT=http://vault:8200
       - VAULT_AUTH_DEFAULT=USERNAMEPASSWORD
+    depends_on:
+      - vault
   consul:
     image: consul
     environment:
@@ -124,45 +147,39 @@ services:
   postgres-accountant:
     image: postgres:14-alpine
     environment:
-      - POSTGRES_USER=opex
-      - POSTGRES_PASSWORD=hiopex
+      - POSTGRES_USER=${DB_USER:-opex}
+      - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
       - POSTGRES_DB=opex_accountant
+      - POSTGRES_BACKUP_USER=${DB_BACKUP_USER:-opex_backup}
+      - POSTGRES_BACKUP_PASSWORD=${DB_BACKUP_PASS:-hiopex}
     volumes:
+      - ./resources/postgres/init-backup-user.sh:/docker-entrypoint-initdb.d/init-backup-user.sh
       - $DATA/accountant-data:/var/lib/postgresql/data/
     networks:
       - default
-  akhq:
-    image: tchiotludo/akhq
-    environment:
-      AKHQ_CONFIGURATION: |
-        akhq:
-          connections:
-            docker-kafka-server:
-              properties:
-                bootstrap.servers: "kafka-1:29092,kafka-2:29092,kafka-3:29092"
-    networks:
-      - default
-    depends_on:
-      - kafka-1
-      - kafka-2
-      - kafka-3
   postgres-eventlog:
     image: postgres:14-alpine
     environment:
-      - POSTGRES_USER=opex
-      - POSTGRES_PASSWORD=hiopex
+      - POSTGRES_USER=${DB_USER:-opex}
+      - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
       - POSTGRES_DB=opex_eventlog
+      - POSTGRES_BACKUP_USER=${DB_BACKUP_USER:-opex_backup}
+      - POSTGRES_BACKUP_PASSWORD=${DB_BACKUP_PASS:-hiopex}
     volumes:
+      - ./resources/postgres/init-backup-user.sh:/docker-entrypoint-initdb.d/init-backup-user.sh
       - $DATA/eventlog-data:/var/lib/postgresql/data/
     networks:
       - default
   postgres-auth:
     image: postgres:14-alpine
     environment:
-      - POSTGRES_USER=opex
-      - POSTGRES_PASSWORD=hiopex
+      - POSTGRES_USER=${DB_USER:-opex}
+      - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
       - POSTGRES_DB=opex_auth
+      - POSTGRES_BACKUP_USER=${DB_BACKUP_USER:-opex_backup}
+      - POSTGRES_BACKUP_PASSWORD=${DB_BACKUP_PASS:-hiopex}
     volumes:
+      - ./resources/postgres/init-backup-user.sh:/docker-entrypoint-initdb.d/init-backup-user.sh
       - $DATA/auth-data:/var/lib/postgresql/data/
     networks:
       - default
@@ -172,10 +189,13 @@ services:
   postgres-wallet:
     image: postgres:14-alpine
     environment:
-      - POSTGRES_USER=opex
-      - POSTGRES_PASSWORD=hiopex
+      - POSTGRES_USER=${DB_USER:-opex}
+      - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
       - POSTGRES_DB=opex_wallet
+      - POSTGRES_BACKUP_USER=${DB_BACKUP_USER:-opex_backup}
+      - POSTGRES_BACKUP_PASSWORD=${DB_BACKUP_PASS:-hiopex}
     volumes:
+      - ./resources/postgres/init-backup-user.sh:/docker-entrypoint-initdb.d/init-backup-user.sh
       - $DATA/wallet-data:/var/lib/postgresql/data/
     networks:
       - default
@@ -185,10 +205,13 @@ services:
   postgres-api:
     image: postgres:14-alpine
     environment:
-      - POSTGRES_USER=opex
-      - POSTGRES_PASSWORD=hiopex
+      - POSTGRES_USER=${DB_USER:-opex}
+      - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
       - POSTGRES_DB=opex_api
+      - POSTGRES_BACKUP_USER=${DB_BACKUP_USER:-opex_backup}
+      - POSTGRES_BACKUP_PASSWORD=${DB_BACKUP_PASS:-hiopex}
     volumes:
+      - ./resources/postgres/init-backup-user.sh:/docker-entrypoint-initdb.d/init-backup-user.sh
       - $DATA/api-data:/var/lib/postgresql/data/
     networks:
       - default
@@ -198,13 +221,30 @@ services:
   postgres-bc-gateway:
     image: postgres:14-alpine
     environment:
-      - POSTGRES_USER=opex
-      - POSTGRES_PASSWORD=hiopex
+      - POSTGRES_USER=${DB_USER:-opex}
+      - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
       - POSTGRES_DB=opex_bc_gateway
+      - POSTGRES_BACKUP_USER=${DB_BACKUP_USER:-opex_backup}
+      - POSTGRES_BACKUP_PASSWORD=${DB_BACKUP_PASS:-hiopex}
     volumes:
+      - ./resources/postgres/init-backup-user.sh:/docker-entrypoint-initdb.d/init-backup-user.sh
       - $DATA/bc-gateway-data:/var/lib/postgresql/data/
     networks:
       - default
+    deploy:
+      restart_policy:
+        condition: on-failure
+  postgres-referral:
+    image: postgres:14-alpine
+    environment:
+      - POSTGRES_USER=${DB_USER:-opex}
+      - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
+      - POSTGRES_DB=opex_referral
+      - POSTGRES_BACKUP_USER=${DB_BACKUP_USER:-opex_backup}
+      - POSTGRES_BACKUP_PASSWORD=${DB_BACKUP_PASS:-hiopex}
+    volumes:
+      - ./resources/postgres/init-backup-user.sh:/docker-entrypoint-initdb.d/init-backup-user.sh
+      - $DATA/referral-data:/var/lib/postgresql/data/
     deploy:
       restart_policy:
         condition: on-failure
@@ -215,19 +255,18 @@ services:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - SPRING_PROFILES_ACTIVE=scheduled
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
-      - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-accountant
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
+      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
     networks:
       - default
     depends_on:
-      - zookeeper
       - kafka-1
       - kafka-2
       - kafka-3
-      - redis
+      - wallet
       - consul
       - vault
       - postgres-accountant
@@ -237,7 +276,6 @@ services:
     environment:
       - JAVA_OPTS=-Xmx256m
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
-      - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-eventlog
       - BACKEND_USER=${BACKEND_USER}
@@ -245,11 +283,9 @@ services:
     networks:
       - default
     depends_on:
-      - zookeeper
       - kafka-1
       - kafka-2
       - kafka-3
-      - redis
       - consul
       - vault
       - postgres-eventlog
@@ -263,7 +299,6 @@ services:
     networks:
       - default
     depends_on:
-      - zookeeper
       - kafka-1
       - kafka-2
       - kafka-3
@@ -274,23 +309,22 @@ services:
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
-      - REDIS_HOST=redis
       - CONSUL_HOST=consul
     networks:
       - default
     depends_on:
-      - zookeeper
       - kafka-1
       - kafka-2
       - kafka-3
+      - auth
       - consul
+      - matching-engine
   auth:
     build:
       context: user-management/keycloak-gateway
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
-      - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-auth
       - PROXY_ADDRESS_FORWARDING=true
@@ -301,11 +335,10 @@ services:
       - VAULT_URL=http://vault:8200
       - VAULT_HOST=vault
     depends_on:
-      - zookeeper
+      - captcha
       - kafka-1
       - kafka-2
       - kafka-3
-      - redis
       - consul
       - vault
       - postgres-auth
@@ -320,17 +353,16 @@ services:
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
-      - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-wallet
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
+      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
     depends_on:
-      - zookeeper
       - kafka-1
       - kafka-2
       - kafka-3
-      - redis
+      - auth
       - consul
       - vault
       - postgres-wallet
@@ -345,17 +377,21 @@ services:
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
-      - REDIS_HOST=redis
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-api
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
+      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
     depends_on:
-      - zookeeper
       - kafka-1
       - kafka-2
       - kafka-3
-      - redis
+      - accountant
+      - matching-gateway
+      - wallet
+      - bc-gateway
+      - auth
+      - referral
       - consul
       - vault
       - postgres-api
@@ -375,10 +411,10 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
     depends_on:
-      - zookeeper
       - kafka-1
       - kafka-2
       - kafka-3
+      - auth
       - consul
       - vault
       - postgres-api
@@ -394,11 +430,17 @@ services:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - SPRING_PROFILES_DEFAULT=scheduled
       - CONSUL_HOST=consul
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - DB_IP_PORT=postgres-bc-gateway
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
+      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
     depends_on:
-      - redis
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - auth
+      - wallet
       - consul
       - vault
       - postgres-bc-gateway
@@ -414,12 +456,49 @@ services:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - CONSUL_HOST=consul
       - ROOT_DIR=/storage
+      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
     volumes:
       - $DATA/storage-data:/storage
     depends_on:
+      - auth
       - consul
     networks:
       - default
+    deploy:
+      restart_policy:
+        condition: on-failure
+  referral:
+    build:
+      context: referral/referral-app
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
+      - CONSUL_HOST=consul
+      - DB_IP_PORT=postgres-referral
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_HOST=vault
+      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
+    depends_on:
+      - auth
+      - accountant
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - consul
+      - postgres-referral
+      - vault
+    deploy:
+      restart_policy:
+        condition: on-failure
+  captcha:
+    build:
+      context: captcha/captcha-app
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
+      - CONSUL_HOST=consul
+      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
+    depends_on:
+      - consul
     deploy:
       restart_policy:
         condition: on-failure
@@ -430,15 +509,18 @@ services:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - CONSUL_HOST=consul
-      - KEYCLOAK_CLIENT_SECRET=${ADMIN_KEYCLOAK_CLIENT_SECRET} # transfer to vault
+      - VAULT_HOST=vault
+      - BACKEND_USER=${BACKEND_USER}
+      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
     volumes:
       - $DATA/admin-data:/admin
     depends_on:
-      - zookeeper
       - kafka-1
       - kafka-2
       - kafka-3
       - consul
+      - auth
+      - vault
     networks:
       - default
     deploy:

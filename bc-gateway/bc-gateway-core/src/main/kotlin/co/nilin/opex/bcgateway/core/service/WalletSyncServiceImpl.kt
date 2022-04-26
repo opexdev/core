@@ -20,7 +20,7 @@ class WalletSyncServiceImpl(
     private val walletProxy: WalletProxy,
     private val walletSyncRecordHandler: WalletSyncRecordHandler,
     private val assignedAddressHandler: AssignedAddressHandler,
-    private val currencyLoader: CurrencyLoader,
+    private val currencyHandler: CurrencyHandler,
     private val dispatcher: ExecutorCoroutineDispatcher
 ) : WalletSyncService {
 
@@ -36,10 +36,13 @@ class WalletSyncServiceImpl(
                 val result = deposits.map { deposit ->
                     async(dispatcher) {
                         var deposited = false
-                        val uuid = assignedAddressHandler.findUuid(deposit.depositor, deposit.depositorMemo)
+                        val uuid = assignedAddressHandler.findUuid(
+                            deposit.depositor,
+                            deposit.depositorMemo?.lowercase()
+                        )
                         if (uuid != null) {
                             logger.info("deposit came for $uuid - to ${deposit.depositor}")
-                            val symbol = currencyLoader.findByChainAndTokenAddress(deposit.chain, deposit.tokenAddress)
+                            val symbol = currencyHandler.findByChainAndTokenAddress(deposit.chain, deposit.tokenAddress)
                             if (symbol != null) {
                                 sendDeposit(uuid, symbol, deposit)
                                 deposited = true

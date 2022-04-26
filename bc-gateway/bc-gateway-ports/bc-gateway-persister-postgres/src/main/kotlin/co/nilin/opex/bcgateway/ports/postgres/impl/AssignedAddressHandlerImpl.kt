@@ -51,7 +51,7 @@ class AssignedAddressHandlerImpl(
                     null,
                     assignedAddress.uuid,
                     assignedAddress.address,
-                    assignedAddress.memo,
+                    assignedAddress.memo?.lowercase(),
                     assignedAddress.type.id
                 )
             ).awaitFirst()
