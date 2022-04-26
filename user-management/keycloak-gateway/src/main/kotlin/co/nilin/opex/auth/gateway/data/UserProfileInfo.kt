@@ -4,13 +4,13 @@ class UserProfileInfo {
 
     var firstNameEn: String? = null
     var lastNameEn: String? = null
-    var firstNameFa: String? = null
-    var lastNameFa: String? = null
-    var birthday: String? = null
-    var birthdayAlt: String? = null
-    var nationalID: String? = null
-    var passport: String? = null
-    var phoneNumber: String? = null
+    var firstName: String? = null
+    var lastName: String? = null
+    var birthdayJ: String? = null
+    var birthdayG: String? = null
+    var nationalId: String? = null
+    var passportNumber: String? = null
+    var mobile: String? = null
     var telephone: String? = null
     var postalCode: String? = null
     var residence: String? = null
@@ -35,13 +35,13 @@ class UserProfileInfo {
     ) {
         this.firstNameEn = firstNameEn
         this.lastNameEn = lastNameEn
-        this.firstNameFa = firstNameFa
-        this.lastNameFa = lastNameFa
-        this.birthday = birthday
-        this.birthdayAlt = birthdayJalali
-        this.nationalID = nationalID
-        this.passport = passport
-        this.phoneNumber = phoneNumber
+        this.firstName = firstNameFa
+        this.lastName = lastNameFa
+        this.birthdayJ = birthday
+        this.birthdayG = birthdayJalali
+        this.nationalId = nationalID
+        this.passportNumber = passport
+        this.mobile = phoneNumber
         this.telephone = homeNumber
         this.postalCode = postalCode
         this.residence = address
