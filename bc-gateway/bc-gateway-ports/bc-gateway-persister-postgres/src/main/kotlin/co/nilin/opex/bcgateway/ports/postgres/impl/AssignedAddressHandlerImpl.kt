@@ -50,7 +50,7 @@ class AssignedAddressHandlerImpl(
                 AssignedAddressModel(
                     null,
                     assignedAddress.uuid,
-                    assignedAddress.address.lowercase(),
+                    assignedAddress.address,
                     assignedAddress.memo?.lowercase(),
                     assignedAddress.type.id
                 )

@@ -37,7 +37,7 @@ class WalletSyncServiceImpl(
                     async(dispatcher) {
                         var deposited = false
                         val uuid = assignedAddressHandler.findUuid(
-                            deposit.depositor.lowercase(),
+                            deposit.depositor,
                             deposit.depositorMemo?.lowercase()
                         )
                         if (uuid != null) {
