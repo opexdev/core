@@ -5,7 +5,6 @@ import co.nilin.opex.auth.gateway.data.UserProfileInfo
 import co.nilin.opex.auth.gateway.utils.ErrorHandler
 import co.nilin.opex.auth.gateway.utils.ResourceAuthenticator
 import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
 import org.jboss.resteasy.plugins.providers.multipart.InputPart
 import org.keycloak.models.KeycloakSession
 import org.keycloak.models.UserModel
@@ -53,13 +52,13 @@ class UserProfileResource(private val session: KeycloakSession) : RealmResourceP
         with(request) {
             firstNameEn?.let { user.setSingleAttribute("firstNameEn", it) }
             lastNameEn?.let { user.setSingleAttribute("lastNameEn", it) }
-            firstNameFa?.let { user.setSingleAttribute("firstNameFa", it) }
-            lastNameFa?.let { user.setSingleAttribute("lastNameFa", it) }
-            birthday?.let { user.setSingleAttribute("birthday", it) }
-            birthdayAlt?.let { user.setSingleAttribute("birthdayAlt", it) }
-            nationalID?.let { user.setSingleAttribute("nationalID", it) }
-            passport?.let { user.setSingleAttribute("passport", it) }
-            phoneNumber?.let { user.setSingleAttribute("phoneNumber", it) }
+            firstName?.let { user.setSingleAttribute("firstName", it) }
+            lastName?.let { user.setSingleAttribute("lastName", it) }
+            birthdayJ?.let { user.setSingleAttribute("birthdayJ", it) }
+            birthdayG?.let { user.setSingleAttribute("birthdayG", it) }
+            nationalId?.let { user.setSingleAttribute("nationalId", it) }
+            passportNumber?.let { user.setSingleAttribute("passportNumber", it) }
+            mobile?.let { user.setSingleAttribute("mobile", it) }
             telephone?.let { user.setSingleAttribute("telephone", it) }
             postalCode?.let { user.setSingleAttribute("postalCode", it) }
             residence?.let { user.setSingleAttribute("residence", it) }
