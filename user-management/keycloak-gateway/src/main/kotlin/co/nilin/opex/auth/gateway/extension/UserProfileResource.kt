@@ -1,5 +1,7 @@
 package co.nilin.opex.auth.gateway.extension
 
+import co.nilin.opex.auth.gateway.data.KYCStatus
+import co.nilin.opex.auth.gateway.data.KYCStatusResponse
 import co.nilin.opex.auth.gateway.data.KycRequest
 import co.nilin.opex.auth.gateway.data.UserProfileInfo
 import co.nilin.opex.auth.gateway.utils.ErrorHandler
@@ -27,7 +29,6 @@ class UserProfileResource(private val session: KeycloakSession) : RealmResourceP
     private val opexRealm = session.realms().getRealm("opex")
 
     @GET
-    @Path("profile")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     fun getAttributes(): Response {
@@ -36,11 +37,23 @@ class UserProfileResource(private val session: KeycloakSession) : RealmResourceP
             return ErrorHandler.forbidden()
 
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
-        return Response.ok(user.attributes).build()
+        val attributes = mutableMapOf<String, String>()
+        user.attributes.entries.forEach {
+            if (it.value.size == 1)
+                attributes[it.key] = it.value[0]
+            else if (it.value.size > 1) {
+                attributes[it.key] = with(StringBuilder()) {
+                    it.value.forEach { v -> append("$v,") }
+                    deleteCharAt(length - 1)
+                    toString()
+                }
+            }
+        }
+
+        return Response.ok(attributes).build()
     }
 
     @POST
-    @Path("profile")
     @Consumes(MediaType.APPLICATION_JSON)
     fun updateAttributes(request: UserProfileInfo): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
@@ -69,8 +82,8 @@ class UserProfileResource(private val session: KeycloakSession) : RealmResourceP
     }
 
     @POST
-    @Path("profile/kyc")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Path("kyc")
+    @Consumes(MediaType.APPLICATION_JSON)
     fun kycFlow(request: KycRequest): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
         if (!auth.hasScopeAccess("trust"))
@@ -105,12 +118,33 @@ class UserProfileResource(private val session: KeycloakSession) : RealmResourceP
 
         user.apply {
             joinGroup(kycRequestGroup)
-            setSingleAttribute("kycSelfiePath", request.selfiePath)
-            setSingleAttribute("kycIdCardPath", request.idCardPath)
-            setSingleAttribute("kycAcceptFormPath", request.acceptFormPath)
+            setSingleAttribute("selfiePath", request.selfiePath)
+            setSingleAttribute("idCardPath", request.idCardPath)
+            setSingleAttribute("acceptFormPath", request.acceptFormPath)
         }
 
         return Response.noContent().build()
+    }
+
+    @GET
+    @Path("kyc/status")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    fun kycStatus(): Response {
+        val auth = ResourceAuthenticator.bearerAuth(session)
+        if (!auth.hasScopeAccess("trust"))
+            return ErrorHandler.forbidden()
+
+        val userId = auth.getUserId()
+        val user = session.users().getUserById(userId, opexRealm) ?: return ErrorHandler.userNotFound()
+        val status = when (getUserKycGroup(user)) {
+            "kyc-accepted" -> KYCStatus.ACCEPTED
+            "kyc-rejected" -> KYCStatus.REJECTED
+            "kyc-requested" -> KYCStatus.REQUESTED
+            else -> KYCStatus.NOT_REQUESTED
+        }
+
+        return Response.ok(KYCStatusResponse(status)).build()
     }
 
     private fun isInKycGroups(user: UserModel): Boolean {
@@ -118,6 +152,13 @@ class UserProfileResource(private val session: KeycloakSession) : RealmResourceP
             .filter { it == "kyc-accepted" || it == "kyc-rejected" || it == "kyc-requested" }
             .toList()
             .isNotEmpty()
+    }
+
+    private fun getUserKycGroup(user: UserModel): String? {
+        val kycGroups = user.groupsStream.map { it.name }
+            .filter { it == "kyc-accepted" || it == "kyc-rejected" || it == "kyc-requested" }
+            .toList()
+        return if (kycGroups.isEmpty()) null else kycGroups[0]
     }
 
     private fun createPartContent(input: InputPart): Flux<DataBuffer> {
