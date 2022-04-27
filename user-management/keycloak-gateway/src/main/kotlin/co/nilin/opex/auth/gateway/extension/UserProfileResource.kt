@@ -76,6 +76,7 @@ class UserProfileResource(private val session: KeycloakSession) : RealmResourceP
             postalCode?.let { user.setSingleAttribute("postalCode", it) }
             residence?.let { user.setSingleAttribute("residence", it) }
             nationality?.let { user.setSingleAttribute("nationality", it) }
+            address?.let { user.setSingleAttribute("address", it) }
         }
 
         return Response.noContent().build()

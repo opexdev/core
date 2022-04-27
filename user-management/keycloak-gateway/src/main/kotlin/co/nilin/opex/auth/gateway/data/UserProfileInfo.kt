@@ -15,36 +15,39 @@ class UserProfileInfo {
     var postalCode: String? = null
     var residence: String? = null
     var nationality: String? = null
+    var address: String? = null
 
     constructor()
 
     constructor(
         firstNameEn: String?,
         lastNameEn: String?,
-        firstNameFa: String?,
-        lastNameFa: String?,
-        birthday: String?,
-        birthdayJalali: String?,
+        firstName: String?,
+        lastName: String?,
+        birthdayG: String?,
+        birthdayJ: String?,
         nationalID: String?,
         passport: String?,
         phoneNumber: String?,
         homeNumber: String?,
         postalCode: String?,
-        address: String?,
-        nationality: String?
+        residence: String?,
+        nationality: String?,
+        address: String?
     ) {
         this.firstNameEn = firstNameEn
         this.lastNameEn = lastNameEn
-        this.firstName = firstNameFa
-        this.lastName = lastNameFa
-        this.birthdayJ = birthday
-        this.birthdayG = birthdayJalali
+        this.firstName = firstName
+        this.lastName = lastName
+        this.birthdayJ = birthdayJ
+        this.birthdayG = birthdayG
         this.nationalId = nationalID
         this.passportNumber = passport
         this.mobile = phoneNumber
         this.telephone = homeNumber
         this.postalCode = postalCode
-        this.residence = address
+        this.residence = residence
         this.nationality = nationality
+        this.address = address
     }
 }

@@ -29,3 +29,6 @@ services:
   postgres-referral:
     ports:
       - "5448:5432"
+  akhq:
+    ports:
+      - "10101:8080"
