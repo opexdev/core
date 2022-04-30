@@ -24,4 +24,4 @@ jobs:
       - name: Build
         run: mvn -B -T 1C clean install
       - name: Build Docker images
-        run: TAG=latest docker-compose build --parallel
+        run: TAG=latest docker-compose -f docker-compose.build.yml build

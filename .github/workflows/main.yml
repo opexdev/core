@@ -25,7 +25,7 @@ jobs:
       - name: Build
         run: mvn -B -T 1C clean install
       - name: Build Docker images
-        run: TAG=latest docker-compose build --parallel
+        run: TAG=latest docker-compose -f docker-compose.build.yml build
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
         with:
@@ -33,4 +33,4 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Push images to GitHub Container Registry
-        run: TAG=latest docker-compose push
+        run: TAG=latest docker-compose -f docker-compose.build.yml push
