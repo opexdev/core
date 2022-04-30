@@ -1,4 +1,4 @@
-name: Build on pull request
+name: Build and test on pull request
 
 on:
   pull_request:
@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         java: [ 11 ]
-    name: Opex with java ${{ matrix.java }} build
+    name: Build OPEX and run tests with java ${{ matrix.java }}
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v2
@@ -21,6 +21,7 @@ jobs:
           java-package: jdk
           java-version: ${{ matrix.java }}
           cache: maven
-      - name: Build OPEX-Core
-        working-directory: .
-        run: mvn -B clean install
+      - name: Build
+        run: mvn -B -T 1C clean install
+      - name: Build Docker images
+        run: TAG=latest docker-compose -f docker-compose.build.yml build

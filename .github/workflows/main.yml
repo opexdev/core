@@ -1,4 +1,4 @@
-name: Deploy OPEX - Demo
+name: Push images on main branch update
 
 on:
   push:
@@ -6,14 +6,31 @@ on:
       - main
 
 jobs:
-  jenkinsJob:
-    name: Deploy OPEX new demo version
-    runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        java: [ 11 ]
+    name: Build OPEX and run tests with java ${{ matrix.java }}
     steps:
-      - name: Trigger opex-build-job on jenkins
-        uses: appleboy/jenkins-action@master
+      - name: Checkout Source Code
+        uses: actions/checkout@v2
+      - name: Setup Java
+        uses: actions/setup-java@v2
         with:
-          url: ${{ secrets.JENKINS_URL }}
-          user: ${{ secrets.JENKINS_USER }}
-          token: ${{ secrets.JENKINS_TOKEN }}
-          job: "opex-core-demo-deploy"
+          distribution: 'adopt'
+          java-package: jdk
+          java-version: ${{ matrix.java }}
+          cache: maven
+      - name: Build
+        run: mvn -B -T 1C clean install
+      - name: Build Docker images
+        run: TAG=latest docker-compose -f docker-compose.build.yml build
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push images to GitHub Container Registry
+        run: TAG=latest docker-compose -f docker-compose.build.yml push
