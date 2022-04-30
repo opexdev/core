@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   vault:
-    image: ghcr.io/opexdev/ghcr.io/opexdev/vault-opex:$TAG
+    image: ghcr.io/opexdev/vault-opex:$TAG
     build: docker-images/vault
   postgres-opex:
     image: ghcr.io/opexdev/postgres-opex:$TAG
