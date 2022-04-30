@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:latest
+    image: confluentinc/cp-zookeeper:7.1.1
     hostname: zookeeper
     volumes:
       - zookeeper-data:/var/lib/zookeeper/data
@@ -15,7 +15,7 @@ services:
       restart_policy:
         condition: on-failure
   kafka-1:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:7.1.1
     hostname: kafka-1
     volumes:
       - kafka-1:/var/lib/kafka/data
@@ -36,7 +36,7 @@ services:
       restart_policy:
         condition: on-failure
   kafka-2:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:7.1.1
     hostname: kafka-2
     volumes:
       - kafka-2:/var/lib/kafka/data
@@ -57,7 +57,7 @@ services:
       restart_policy:
         condition: on-failure
   kafka-3:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:7.1.1
     hostname: kafka-3
     volumes:
       - kafka-3:/var/lib/kafka/data
@@ -78,7 +78,7 @@ services:
       restart_policy:
         condition: on-failure
   akhq:
-    image: tchiotludo/akhq
+    image: tchiotludo/akhq:0.20.0
     environment:
       AKHQ_CONFIGURATION: |
         akhq:
@@ -130,7 +130,7 @@ services:
       restart_policy:
         condition: on-failure
   redis:
-    image: redis:alpine
+    image: redis:7-alpine
     command: redis-server
     volumes:
       - redis-data:/var/lib/redis
