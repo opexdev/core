@@ -160,12 +160,12 @@ class UserProfileResource(private val session: KeycloakSession) : RealmResourceP
             else -> KYCStatus.NOT_REQUESTED
         }
 
-        val reason = if (status == KYCStatus.REJECTED) {
-            val attr = user.attributes[".rejectReason"]
-            if (attr?.isNotEmpty() == true) attr[0] else null
-        } else {
-            null
+        val reasonAttr = when (status) {
+            KYCStatus.REJECTED -> user.attributes[".rejectReason"]
+            KYCStatus.BLOCKED -> user.attributes[".blockReason"]
+            else -> null
         }
+        val reason = if (reasonAttr?.isNotEmpty() == true) reasonAttr[0] else null
 
         return Response.ok(KYCStatusResponse(status, reason)).build()
     }

@@ -38,8 +38,8 @@ class AuthAdminController(private val service: AuthAdminService) {
     }
 
     @PostMapping("/user/{userId}/kyc/block")
-    fun blockKYC(@PathVariable userId: String) {
-        service.switchKYCGroup(userId, KycGroup.BLOCKED)
+    fun blockKYC(@PathVariable userId: String, @RequestParam reason: String) {
+        service.blockKYC(userId, reason)
     }
 
     @PostMapping("/user/impersonate", produces = [MediaType.APPLICATION_JSON_VALUE])

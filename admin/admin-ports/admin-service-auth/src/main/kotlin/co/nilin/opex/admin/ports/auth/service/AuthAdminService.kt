@@ -81,6 +81,15 @@ class AuthAdminService(
         }
     }
 
+    fun blockKYC(userId: String, reason: String) {
+        switchKYCGroup(userId, KycGroup.BLOCKED)
+        val user = opexRealm.users().get(userId)
+        with(user.toRepresentation()) {
+            attributes[".blockReason"] = mutableListOf(reason)
+            user.update(this)
+        }
+    }
+
     fun switchKYCGroup(userId: String, kycGroup: KycGroup) {
         val group = findGroupByName(kycGroup.groupName)
         val user = opexRealm.users().get(userId) ?: throw OpexException(OpexError.NotFound, "User not found")
