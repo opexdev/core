@@ -30,6 +30,8 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     UserNotFound(5004, "User not found", HttpStatus.NOT_FOUND),
     InvalidOTP(5005, "Invalid OTP", HttpStatus.FORBIDDEN),
     OTPRequired(5006, "OTP Required", HttpStatus.BAD_REQUEST),
+    AlreadyInKYC(5007, "KYC flow for this user has executed", HttpStatus.BAD_REQUEST),
+    UserKYCBlocked(5008, "User is blocked from KYC", HttpStatus.BAD_REQUEST),
 
     // code 6000: wallet
     WalletOwnerNotFound(6001, null, HttpStatus.NOT_FOUND),

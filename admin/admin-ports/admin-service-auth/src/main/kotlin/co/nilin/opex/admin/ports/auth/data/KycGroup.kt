@@ -4,6 +4,7 @@ enum class KycGroup(val groupName: String) {
 
     REQUESTED("kyc-requested"),
     ACCEPTED("kyc-accepted"),
-    REJECTED("kyc-rejected")
+    REJECTED("kyc-rejected"),
+    BLOCKED("kyc-blocked")
 
 }

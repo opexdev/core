@@ -447,6 +447,15 @@
       "subGroups": []
     },
     {
+      "id": "0b4726fc-84b7-4db6-a76d-b77f5254ba4d",
+      "name": "kyc-blocked",
+      "path": "/kyc-blocked",
+      "attributes": {},
+      "realmRoles": [],
+      "clientRoles": {},
+      "subGroups": []
+    },
+    {
       "id": "abf74cdd-09c9-473f-9438-f6e545571c68",
       "name": "kyc-rejected",
       "path": "/kyc-rejected",
