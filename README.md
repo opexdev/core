@@ -50,42 +50,67 @@ Deployed at [demo.opex.dev](https://demo.opex.dev).
 ## <a name="overview"></a>Architecture Overview
 
 ```mermaid
-    graph TD
+    graph LR
+        USER_MANAGMENT(User Management)
         KAFKA(Kafka)
         ZOOKEEPER(Zookeeper)
-        REDIS(Redis)
+        REDIS[(Redis)]
+        ACCOUNTANT_POSTGRESQL[(PSQL)]
+        REFERRAL_POSTGRESQL[(PSQL)]
+        USER_MANAGMENT_POSTGRESQL[(PSQL)]
+        WALLET_POSTGRESQL[(PSQL)]
+        BC_GATEWAY_POSTGRESQL[(PSQL)]
+        EVENTLOG_POSTGRESQL[(PSQL)]
+        ACCOUNTANT(Accountant)
         API(API)
         WALLET(Wallet)
         MATCHING_ENGINE(Matching Engine)
         MATCHING_GATEWAY(Matching Gateway)
         REFERRAL(Referral)
-        AUTH(Auth)
-        ACCOUNTANT(Accountant)
         STORAGE(Storage)
+        BC_GATEWAY(Blockchain Gateway)
+        WEBSOCKET(Websocket)
+        ADMIN(Admin)
+        EVENTLOG(Event Log)
+                
+        API-->MATCHING_GATEWAY
+        API-->WALLET
+        API-->REFERRAL
+        API-->STORAGE
+        API-->BC_GATEWAY
+        API-->ACCOUNTANT
         
-        subgraph DATA
-            REDIS
-        end
+        MATCHING_ENGINE-->REDIS
+        USER_MANAGMENT-->USER_MANAGMENT_POSTGRESQL
+        BC_GATEWAY-->BC_GATEWAY_POSTGRESQL
+        REFERRAL-->REFERRAL_POSTGRESQL
+        WALLET-->WALLET_POSTGRESQL
+        ACCOUNTANT-->ACCOUNTANT_POSTGRESQL
+        EVENTLOG-->EVENTLOG_POSTGRESQL
         
         subgraph MESSAGING
             KAFKA
             ZOOKEEPER
         end
         
-        subgraph EXCHANGE DOMAIN
+        subgraph MATCHING DOMAIN
             MATCHING_GATEWAY-->MATCHING_ENGINE
+        end
+        
+        subgraph ACCOUNTANT DOMAIN
             ACCOUNTANT-->WALLET
             REFERRAL-->WALLET
         end
-
-        STORAGE-->AUTH
-        MATCHING_ENGINE-->REDIS
-        API-->WALLET
-        API-->AUTH
-        API-->MATCHING_GATEWAY
-        WALLET-->AUTH
-        ACCOUNTANT-->AUTH
-        REFERRAL-->AUTH
+        
+        subgraph DATA STORE
+            BC_GATEWAY_POSTGRESQL
+            REFERRAL_POSTGRESQL
+            ACCOUNTANT_POSTGRESQL
+            WALLET_POSTGRESQL
+            USER_MANAGMENT_POSTGRESQL
+            EVENTLOG_POSTGRESQL
+            REDIS
+        end
 ```
 
 ## <a name="how-to-contribute"></a>How to Contribute
