@@ -1,13 +1,13 @@
 INSERT INTO symbol_maps(symbol, value)
 VALUES ('btc_usdt', 'BTCUSDT'),
        ('eth_usdt', 'ETHUSDT'),
-       ('bnb_usdt', 'BSCUSDT'),
+       ('bnb_usdt', 'BNBUSDT'),
        ('eth_btc', 'ETHBTC'),
        ('nln_usdt', 'NLNUSDT'),
        ('nln_btc', 'NLNBTC'),
        ('btc_irt', 'BTCIRT'),
        ('eth_irt', 'ETHIRT'),
-       ('bnb_irt', 'BSCIRT'),
+       ('bnb_irt', 'BNBIRT'),
        ('busd_irt', 'BUSDIRT')
 ON CONFLICT DO NOTHING;
 
