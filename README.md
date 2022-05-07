@@ -18,7 +18,7 @@
         <img src="https://img.shields.io/github/issues/opexdev/core? style=flat-square"/>
     </a>
     <a href="https://demo.opex.dev" target="_blank">
-        <img src="https://img.shields.io/website?url=https%3A%2F%2Fdemo.opex.dev&logo=react" style=flat-square/>
+        <img src="https://img.shields.io/website?url=https%3A%2F%2Fdemo.opex.dev&logo=react&label=demo.opex.dev" style=flat-square/>
     </a>
 </p>
 
