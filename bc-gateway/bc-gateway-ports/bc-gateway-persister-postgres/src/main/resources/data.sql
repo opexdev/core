@@ -3,7 +3,7 @@ VALUES ('BTC', 'Bitcoin'),
        ('ETH', 'Ethereum'),
        ('USDT', 'Tether'),
        ('IRT', 'Toman'),
-       ('BSC', 'Binance Smart Chain'),
+       ('BNB', 'Binance'),
        ('BUSD', 'Binance USD')
 ON CONFLICT DO NOTHING;
 
@@ -59,7 +59,7 @@ INSERT INTO currency_implementations(id,
 VALUES (1, 'BTC', 'bitcoin', false, null, null, true, 0.0001, 0.0001, 0),
        (2, 'ETH', 'ethereum', false, null, null, true, 0.00001, 0.000001, 18),
        (3, 'USDT', 'ethereum', true, '0xdac17f958d2ee523a2206206994597c13d831ec7', 'USDT', true, 0.01, 0.01, 6),
-       (4, 'BSC', 'bsc', false, null, null, true, 0.0001, 0.0001, 0),
+       (4, 'BNB', 'bsc', true, '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c', 'WBNB', true, 0.01, 0.01, 6),
        (5, 'BUSD', 'bsc', true, '0xe9e7cea3dedca5984780bafc599bd69add087d56', 'BUSD', true, 0.01, 0.01, 6)
 ON CONFLICT DO NOTHING;
 

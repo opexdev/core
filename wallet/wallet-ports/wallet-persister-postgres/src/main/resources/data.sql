@@ -8,7 +8,7 @@ INSERT INTO currency(name, symbol, precision)
 VALUES ('btc', 'btc', 0.000001),
        ('eth', 'eth', 0.00001),
        ('usdt', 'usdt', 0.01),
-       ('bsc', 'bsc', 0.01),
+       ('bnb', 'bnb', 0.01),
        ('busd', 'busd', 0.01),
        ('nln', 'nln', 1),
        ('irt', 'irt', 1)
@@ -28,8 +28,8 @@ VALUES (1, 'btc', 'nln', 5500000),
        (4, 'eth', 'usdt', 3800),
        (5, 'btc', 'irt', 3800),
        (6, 'eth', 'irt', 3800),
-       (7, 'bsc', 'irt', 3800),
-       (8, 'bsc', 'usdt', 3800),
+       (7, 'bnb', 'irt', 3800),
+       (8, 'bnb', 'usdt', 3800),
        (9, 'busd', 'usdt', 3800)
 ON CONFLICT DO NOTHING;
 
@@ -54,8 +54,8 @@ VALUES (1, 1, 'main', 'btc', 10),
        (8, 1, 'exchange', 'eth', 0),
        (9, 1, 'main', 'irt', 100000000),
        (10, 1, 'exchange', 'irt', 0),
-       (11, 1, 'main', 'bsc', 100000000),
-       (12, 1, 'exchange', 'bsc', 0),
+       (11, 1, 'main', 'bnb', 100000000),
+       (12, 1, 'exchange', 'bnb', 0),
        (13, 1, 'main', 'busd', 100000000),
        (14, 1, 'exchange', 'busd', 0)
 ON CONFLICT DO NOTHING;
