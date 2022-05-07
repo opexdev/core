@@ -9,7 +9,7 @@ VALUES ('btc', 'btc', 0.000001),
        ('eth', 'eth', 0.00001),
        ('usdt', 'usdt', 0.01),
        ('nln', 'nln', 1),
-       ('IRT', 'IRT', 1)
+       ('irt', 'irt', 1)
 ON CONFLICT DO NOTHING;
 
 -- Test currency
@@ -23,15 +23,17 @@ INSERT INTO currency_rate(id, source_currency, dest_currency, rate)
 VALUES (1, 'btc', 'nln', 5500000),
        (2, 'usdt', 'nln', 100),
        (3, 'btc', 'usdt', 55000),
-       (4, 'eth', 'usdt', 3800)
+       (4, 'eth', 'usdt', 3800),
+       (5, 'btc', 'irt', 3800),
+       (6, 'eth', 'irt', 3800)
 ON CONFLICT DO NOTHING;
 
 -- Test currency rate
 INSERT INTO currency_rate(id, source_currency, dest_currency, rate)
-VALUES (5, 'tbtc', 'nln', 5500000),
-       (6, 'tusdt', 'nln', 100),
-       (7, 'tbtc', 'tusdt', 55000),
-       (8, 'teth', 'tusdt', 3800)
+VALUES (7, 'tbtc', 'nln', 5500000),
+       (8, 'tusdt', 'nln', 100),
+       (9, 'tbtc', 'tusdt', 55000),
+       (10, 'teth', 'tusdt', 3800)
 ON CONFLICT DO NOTHING;
 
 SELECT setval(pg_get_serial_sequence('currency_rate', 'id'), (SELECT MAX(id) FROM currency_rate));
@@ -45,8 +47,8 @@ VALUES (1, 1, 'main', 'btc', 10),
        (6, 1, 'exchange', 'nln', 0),
        (7, 1, 'main', 'eth', 10000),
        (8, 1, 'exchange', 'eth', 0),
-       (9, 1, 'main', 'IRT', 100000000),
-       (10, 1, 'exchange', 'IRT', 0)
+       (9, 1, 'main', 'irt', 100000000),
+       (10, 1, 'exchange', 'irt', 0)
 ON CONFLICT DO NOTHING;
 
 -- Test wallet

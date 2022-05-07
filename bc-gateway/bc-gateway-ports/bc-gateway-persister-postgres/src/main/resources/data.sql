@@ -1,7 +1,8 @@
 INSERT INTO currency
 VALUES ('BTC', 'Bitcoin'),
        ('ETH', 'Ethereum'),
-       ('USDT', 'Tether')
+       ('USDT', 'Tether'),
+       ('IRT', 'Toman')
 ON CONFLICT DO NOTHING;
 
 -- Test currency

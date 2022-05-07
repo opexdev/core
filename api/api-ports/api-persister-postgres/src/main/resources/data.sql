@@ -3,7 +3,9 @@ VALUES ('btc_usdt', 'BTCUSDT'),
        ('eth_usdt', 'ETHUSDT'),
        ('eth_btc', 'ETHBTC'),
        ('nln_usdt', 'NLNUSDT'),
-       ('nln_btc', 'NLNBTC')
+       ('nln_btc', 'NLNBTC'),
+       ('btc_irt', 'BTCIRT'),
+       ('eth_irt', 'ETHIRT')
 ON CONFLICT DO NOTHING;
 
 -- Test symbol mapper
