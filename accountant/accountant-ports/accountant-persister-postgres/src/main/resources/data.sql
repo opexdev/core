@@ -3,6 +3,9 @@ VALUES ('btc_usdt', 'btc', 'usdt', 0.000001, 0.01, 55000),
        ('eth_usdt', 'eth', 'usdt', 0.00001, 0.01, 3800),
        ('btc_irt', 'btc', 'irt', 0.000001, 0.01, 55000),
        ('eth_irt', 'eth', 'irt', 0.00001, 0.01, 3800),
+       ('bsc_irt', 'bsc', 'irt', 0.00001, 0.01, 3800),
+       ('bsc_usdt', 'bsc', 'usdt', 0.00001, 0.01, 3800),
+       ('busd_irt', 'busd', 'irt', 0.00001, 0.01, 3800),
        ('nln_usdt', 'nln', 'usdt', 1.0, 0.01, 0.01),
        ('nln_btc', 'nln', 'btc', 1.0, 0.000001, 1 / 5500000),
        ('nln_eth', 'nln', 'eth', 1.0, 0.000001, 1 / 550000)
@@ -31,21 +34,27 @@ VALUES (1, 'btc_usdt', 'ASK', '*', 0.01, 0.01),
        (11, 'btc_irt', 'ASK', '*', 0.01, 0.01),
        (12, 'btc_irt', 'BID', '*', 0.01, 0.01),
        (13, 'eth_irt', 'ASK', '*', 0.01, 0.01),
-       (14, 'eth_irt', 'BID', '*', 0.01, 0.01)
+       (14, 'eth_irt', 'BID', '*', 0.01, 0.01),
+       (15, 'bsc_irt', 'ASK', '*', 0.01, 0.01),
+       (16, 'bsc_irt', 'BID', '*', 0.01, 0.01),
+       (17, 'bsc_usdt', 'ASK', '*', 0.01, 0.01),
+       (18, 'bsc_usdt', 'BID', '*', 0.01, 0.01),
+       (19, 'busd_irt', 'ASK', '*', 0.01, 0.01),
+       (20, 'busd_irt', 'BID', '*', 0.01, 0.01)
 ON CONFLICT DO NOTHING;
 
 -- Test pair configs
 INSERT INTO pair_fee_config
-VALUES (15, 'tbtc_tusdt', 'ASK', '*', 0.01, 0.01),
-       (16, 'tbtc_tusdt', 'BID', '*', 0.01, 0.01),
-       (17, 'nln_tusdt', 'ASK', '*', 0.01, 0.01),
-       (18, 'nln_tusdt', 'BID', '*', 0.01, 0.01),
-       (19, 'nln_tbtc', 'ASK', '*', 0.01, 0.01),
-       (20, 'nln_tbtc', 'BID', '*', 0.01, 0.01),
-       (21, 'teth_tusdt', 'ASK', '*', 0.01, 0.01),
-       (22, 'teth_tusdt', 'BID', '*', 0.01, 0.01),
-       (23, 'nln_teth', 'ASK', '*', 0.01, 0.01),
-       (24, 'nln_teth', 'BID', '*', 0.01, 0.01)
+VALUES (21, 'tbtc_tusdt', 'ASK', '*', 0.01, 0.01),
+       (22, 'tbtc_tusdt', 'BID', '*', 0.01, 0.01),
+       (23, 'nln_tusdt', 'ASK', '*', 0.01, 0.01),
+       (24, 'nln_tusdt', 'BID', '*', 0.01, 0.01),
+       (25, 'nln_tbtc', 'ASK', '*', 0.01, 0.01),
+       (26, 'nln_tbtc', 'BID', '*', 0.01, 0.01),
+       (27, 'teth_tusdt', 'ASK', '*', 0.01, 0.01),
+       (28, 'teth_tusdt', 'BID', '*', 0.01, 0.01),
+       (29, 'nln_teth', 'ASK', '*', 0.01, 0.01),
+       (30, 'nln_teth', 'BID', '*', 0.01, 0.01)
 ON CONFLICT DO NOTHING;
 
 SELECT setval(pg_get_serial_sequence('pair_fee_config', 'id'), (SELECT MAX(id) FROM pair_fee_config));
