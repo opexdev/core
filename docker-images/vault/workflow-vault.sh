@@ -8,14 +8,14 @@ export VAULT_SKIP_VERIFY='true'
 vault server -config /vault/config/vault.json &
 
 # Wait for server to initialize
-sleep 3
+sleep 10
 
 unseal() {
   ## Generate keys
   if [ ! -f /vault/file/generated_keys.txt ]; then
       vault operator init > /vault/file/generated_keys.txt
   else
-    exec wait -n
+    exec
   fi
 
   ## Parse unsealed keys
