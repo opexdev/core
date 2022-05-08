@@ -71,6 +71,7 @@ Deployed at [demo.opex.dev](https://demo.opex.dev).
         BC_GATEWAY(Blockchain Gateway)
         WEBSOCKET(Websocket)
         ADMIN(Admin)
+        CAPTCHA(Captcha)
         EVENTLOG(Event Log)
                 
         API-->MATCHING_GATEWAY
