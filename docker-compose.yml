@@ -325,7 +325,6 @@ services:
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-auth
-      - KC_PROXY=edge
       - BACKEND_USER=$BACKEND_USER
       - ADMIN_URL=$KEYCLOAK_ADMIN_URL
       - FRONTEND_URL=$KEYCLOAK_FRONTEND_URL
