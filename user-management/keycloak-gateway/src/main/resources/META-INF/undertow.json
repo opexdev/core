@@ -1,0 +1,16 @@
+{
+  "default-server": {
+    "default": {
+      "socket-binding": "http",
+      "redirect-socket": "https",
+      "proxy-address-forwarding": true,
+      "enable-http2": true
+    },
+    "https": {
+      "socket-binding": "https",
+      "security-realm": "ApplicationRealm",
+      "proxy-address-forwarding": true,
+      "enable-http2": true
+    }
+  }
+}
