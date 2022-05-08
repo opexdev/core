@@ -1,5 +1,4 @@
 server:
-  use-forward-headers: true
   forward-headers-strategy: NATIVE
   port: 8080
 spring:
