@@ -14,6 +14,7 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.util.*
+import org.springframework.http.server.reactive.ServerHttpRequest
 
 @RestController
 class Controller(
@@ -24,14 +25,12 @@ class Controller(
     )
     @ApiResponses(ApiResponse(message = "OK", code = 200))
     @PostMapping("/session", produces = [MediaType.IMAGE_JPEG_VALUE])
-    suspend fun getCaptchaImage(
-        @RequestHeader("X-Forwarded-For", defaultValue = "0.0.0.0") xForwardedFor: List<String>
-    ): ResponseEntity<ByteArray> {
+    suspend fun getCaptchaImage(request: ServerHttpRequest): ResponseEntity<ByteArray> {
         fun idGen(id: String = UUID.randomUUID().toString().sha256()): String =
             if (sessionStore.verify(id)) idGen() else id
         val (answer, image) = captchaGenerator.generate()
         val id = idGen()
-        val proof = "$id-$answer-${xForwardedFor.first()}".sha256()
+        val proof = "$id-$answer-${request.remoteAddress?.address}".sha256()
         return ResponseEntity(image, HttpHeaders().apply {
             set("Captcha-Session-Key", id)
             set("Captcha-Expire-Timestamp", (sessionStore.put(proof) / 1000).toString())
