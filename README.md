@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-Core is a Kotlin based cryptocurrency exchange and matching engine from the **OPEX** project. This extendable and
+Core is a Kotlin based cryptocurrency exchange and matching engine from the <b>OPEX</b> project. This extendable and
 microservice project work as a vanilla core for running cryptocurrency exchanges.
 </p>
 
