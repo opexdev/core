@@ -6,32 +6,22 @@ export VAULT_SKIP_VERIFY='true'
 
 vault server -config /vault/config/vault.json &
 
-# Wait for server to initialize
-sleep 10
-
 unseal() {
-  ## Generate keys
-  if [ ! -f /vault/file/generated_keys.txt ]; then
-      vault operator init > /vault/file/generated_keys.txt
-  else
-    exec
-  fi
-
   ## Parse unsealed keys
   (grep "Unseal Key " < /vault/file/generated_keys.txt | cut -c15-) > /vault/file/keys.txt
 
   while IFS= read -r line; do
       vault operator unseal $line
   done < /vault/file/keys.txt
-}
 
-init_secrets() {
   ## Get root token
   (grep "Initial Root Token: " < /vault/file/generated_keys.txt | cut -c21-) > /vault/file/tokens.txt
   while IFS= read -r line; do
       export VAULT_TOKEN=${line}
   done < /vault/file/tokens.txt
+}
 
+init_secrets() {
   ## Enable kv
   vault secrets enable -path=secret -version=1 kv
 
@@ -97,8 +87,16 @@ init_secrets() {
   vault kv put secret/opex-referral dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USER} db_backup_pass=${DB_BACKUP_PASS}
 }
 
-unseal
-init_secrets
+# Wait for server to initialize
+sleep 10
+if [ ! -f /vault/file/generated_keys.txt ]; then
+  ## Generate keys
+  vault operator init > /vault/file/generated_keys.txt
+  unseal
+  init_secrets
+else
+  unseal
+fi
 
 ## Keep alive
 fg %1
