@@ -102,8 +102,7 @@ class RegistrationOpexCaptcha : FormAction, FormActionFactory, ConfiguredProvide
             val httpClient = context.session.getProvider(
                 HttpClientProvider::class.java
             ).httpClient as CloseableHttpClient
-            val xForwardedFor = context.httpRequest.httpHeaders.getRequestHeader("X-Forwarded-For")
-            val proof = "$captcha-${xForwardedFor.first()}"
+            val proof = "$captcha-${context.connection.remoteAddr}"
             val post = HttpGet(URIBuilder("http://captcha:8080").addParameter("proof", proof).build())
             httpClient.execute(post).use { response ->
                 check(response.statusLine.statusCode / 500 != 5) { "Could not connect to Opex-Captcha service." }

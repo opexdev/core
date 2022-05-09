@@ -2,7 +2,6 @@
 set -em
 
 ## Export environment variables
-export VAULT_ADDR='http://0.0.0.0:8200'
 export VAULT_SKIP_VERIFY='true'
 
 vault server -config /vault/config/vault.json &

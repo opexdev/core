@@ -48,15 +48,12 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @Path("user")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    fun registerUser(
-        request: RegisterUserRequest,
-        @HeaderParam("X-Forwarded-For") xForwardedFor: String?
-    ): Response {
+    fun registerUser(request: RegisterUserRequest): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
         runCatching {
-            validateCaptcha("${request.captchaAnswer}-${xForwardedFor?.split(",")?.first() ?: "0.0.0.0"}")
+            validateCaptcha("${request.captchaAnswer}-${session.context.connection.remoteAddr}")
         }.onFailure {
             return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.InvalidCaptcha)
         }
@@ -86,14 +83,13 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @Produces(MediaType.APPLICATION_JSON)
     fun forgotPassword(
         @QueryParam("email") email: String?,
-        @QueryParam("captcha-answer") captchaAnswer: String,
-        @HeaderParam("X-Forwarded-For") xForwardedFor: String?
+        @QueryParam("captcha-answer") captchaAnswer: String
     ): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
         runCatching {
-            validateCaptcha("$captchaAnswer-${xForwardedFor?.split(",")?.first() ?: "0.0.0.0"}")
+            validateCaptcha("$captchaAnswer-${session.context.connection.remoteAddr}")
         }.onFailure {
             return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.InvalidCaptcha)
         }
@@ -263,8 +259,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
 
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
         val sessions = session.sessions().getUserSessionsStream(opexRealm, user)
-            .filter { tryOrElse(null) { it.notes["agent"] } != "opex-admin" }
-            .map {
+            .filter { tryOrElse(null) { it.notes["agent"] } != "opex-admin" }.map {
                 UserSessionResponse(
                     it.id,
                     it.ipAddress,
