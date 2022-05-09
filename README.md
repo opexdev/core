@@ -1,8 +1,13 @@
-<div align="center">
-   <img width="256px" src="https://demo.opex.dev/static/media/opexLogoPlus.2858c980.svg" alt="Opex" title="Opex">
-</div>
+<p align="center">
+    <br />
+    <img width="256px" src="https://demo.opex.dev/static/media/opexLogoPlus.2858c980.svg" alt="Opex" title="Opex">
+    <br />
+</p>
 
-# OPEX Core
+<p align="center">
+Core is a Kotlin based cryptocurrency exchange and matching engine from the <b>OPEX</b> project. This extendable and
+microservice project work as a vanilla core for running cryptocurrency exchanges.
+</p>
 
 <p align="center">
     <a href="https://github.com/opexdev/core/blob/main/LICENSE" target="_blank">
@@ -21,9 +26,6 @@
         <img src="https://img.shields.io/website?url=https%3A%2F%2Fdemo.opex.dev&logo=react&label=demo.opex.dev" style=flat-square/>
     </a>
 </p>
-
-**OPEX** Core is a Kotlin based cryptocurrency exchange and matching engine from the OPEX project. This extendable and
-microservice project work as a vanilla core for running cryptocurrency exchanges.
 
 ## Contents
 
@@ -71,6 +73,7 @@ Deployed at [demo.opex.dev](https://demo.opex.dev).
         BC_GATEWAY(Blockchain Gateway)
         WEBSOCKET(Websocket)
         ADMIN(Admin)
+        CAPTCHA(Captcha)
         EVENTLOG(Event Log)
                 
         API-->MATCHING_GATEWAY
