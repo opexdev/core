@@ -30,7 +30,7 @@ class Controller(
             if (sessionStore.verify(id)) idGen() else id
         val (answer, image) = captchaGenerator.generate()
         val id = idGen()
-        val proof = "$id-$answer-${request.remoteAddress?.address}".sha256()
+        val proof = "$id-$answer-${request.remoteAddress?.address?.hostAddress}".sha256()
         return ResponseEntity(image, HttpHeaders().apply {
             set("Captcha-Session-Key", id)
             set("Captcha-Expire-Timestamp", (sessionStore.put(proof) / 1000).toString())
