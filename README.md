@@ -1,6 +1,6 @@
-<h1 align="center">
+<p align="center">
     <img width="256px" src="https://demo.opex.dev/static/media/opexLogoPlus.2858c980.svg" alt="Opex" title="Opex">
-</h1>
+</p>
 
 Core is a Kotlin based cryptocurrency exchange and matching engine from the **OPEX** project. This extendable and
 microservice project work as a vanilla core for running cryptocurrency exchanges.
