@@ -1,36 +1,36 @@
 package co.nilin.opex.accountant.core.service
 
 import co.nilin.opex.accountant.core.api.FeeCalculator
+import co.nilin.opex.accountant.core.model.FeeFinancialActions
 import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.Order
-import co.nilin.opex.accountant.core.spi.FinancialActionLoader
-import co.nilin.opex.accountant.core.spi.FinancialActionPersister
 import co.nilin.opex.accountant.core.spi.PairStaticRateLoader
 import co.nilin.opex.accountant.core.spi.WalletProxy
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Component
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
+@Component
 class FeeCalculatorImpl(
-    private val financeActionPersister: FinancialActionPersister,
-    private val financeActionLoader: FinancialActionLoader,
     private val pairStaticRateLoader: PairStaticRateLoader,
     private val walletProxy: WalletProxy,
-    private val platformCoin: String,
-    private val platformAddress: String
+    @Value("\${app.coin}") private val platformCoin: String,
+    @Value("\${app.address}") private val platformAddress: String
 ) : FeeCalculator {
 
     private val logger = LoggerFactory.getLogger(FeeCalculatorImpl::class.java)
 
-    override suspend fun createMakerFeeAction(trade: TradeEvent, makerOrder: Order, takerOrder: Order) {
-        val actions = mutableListOf<FinancialAction>()
+    override suspend fun createFeeActions(
+        trade: TradeEvent,
+        makerOrder: Order,
+        takerOrder: Order,
+        makerParentFA: FinancialAction?,
+        takerParentFA: FinancialAction?
+    ): FeeFinancialActions {
         logger.info("Start fee calculation for trade ${trade.takerUuid}")
-
-        // Look up parent financial actions
-        val makerParentFinancialAction = financeActionLoader.findLast(trade.makerUuid, trade.makerOuid)
-        val takerParentFinancialAction = financeActionLoader.findLast(trade.takerUuid, trade.takerOuid)
-        logger.info("Parent financial actions loaded")
 
         // TODO cache this
         val leftSidePCRate = pairStaticRateLoader.calculateStaticRate(platformCoin, trade.pair.leftSideName) ?: 0.0
@@ -64,11 +64,13 @@ class FeeCalculatorImpl(
             .multiply(makerPCFeeCoefficient.toBigDecimal())
 
         //check if maker uuid can pay the fee with platform coin
-        val makerFeeAction = if (makerTotalFeeWithPlatformCoin > BigDecimal.ZERO &&
+        val canMakerFulfil = runCatching {
             walletProxy.canFulfil(platformCoin, "main", trade.makerUuid, makerTotalFeeWithPlatformCoin)
-        ) {
+        }.getOrElse { false }
+
+        val makerFeeAction = if (makerTotalFeeWithPlatformCoin > BigDecimal.ZERO && canMakerFulfil) {
             FinancialAction(
-                makerParentFinancialAction,
+                makerParentFA,
                 TradeEvent::class.simpleName!!,
                 trade.takerOuid,
                 platformCoin,
@@ -81,7 +83,7 @@ class FeeCalculatorImpl(
             )
         } else {
             FinancialAction(
-                makerParentFinancialAction,
+                makerParentFA,
                 TradeEvent::class.simpleName!!,
                 trade.takerOuid,
                 if (takerOrder.isAsk()) trade.pair.leftSideName else trade.pair.rightSideName,
@@ -93,8 +95,7 @@ class FeeCalculatorImpl(
                 LocalDateTime.now()
             )
         }
-        logger.info("trade event makerFeeAction {}")
-        actions.add(makerFeeAction)
+        logger.info("trade event makerFeeAction $makerFeeAction")
 
         //calculate taker fee
         val takerFee = takerOrder.takerFee
@@ -103,11 +104,13 @@ class FeeCalculatorImpl(
             .multiply(takerPCFeeCoefficient.toBigDecimal())
 
         //check if taker uuid can pay the fee with platform coin
-        val takerFeeAction = if (takerTotalFeeWithPlatformCoin > BigDecimal.ZERO &&
+        val canTakerFulfil = runCatching {
             walletProxy.canFulfil(platformCoin, "main", trade.takerUuid, takerTotalFeeWithPlatformCoin)
-        ) {
+        }.getOrElse { false }
+
+        val takerFeeAction = if (takerTotalFeeWithPlatformCoin > BigDecimal.ZERO && canTakerFulfil) {
             FinancialAction(
-                takerParentFinancialAction,
+                takerParentFA,
                 TradeEvent::class.simpleName!!,
                 trade.makerOuid,
                 if (makerOrder.isAsk()) trade.pair.leftSideName else trade.pair.rightSideName,
@@ -120,7 +123,7 @@ class FeeCalculatorImpl(
             )
         } else {
             FinancialAction(
-                takerParentFinancialAction,
+                takerParentFA,
                 TradeEvent::class.simpleName!!,
                 trade.makerOuid,
                 if (makerOrder.isAsk()) trade.pair.leftSideName else trade.pair.rightSideName,
@@ -134,12 +137,7 @@ class FeeCalculatorImpl(
 
         }
         logger.info("trade event takerFeeAction $takerFeeAction")
-        actions.add(takerFeeAction)
 
-        financeActionPersister.persist(actions)
-    }
-
-    override suspend fun createTakerFeeAction(trade: TradeEvent, makerOrder: Order, takerOrder: Order) {
-        TODO("Not yet implemented")
+        return FeeFinancialActions(makerFeeAction, takerFeeAction)
     }
 }

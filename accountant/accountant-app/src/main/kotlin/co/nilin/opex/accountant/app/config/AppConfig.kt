@@ -8,7 +8,6 @@ import co.nilin.opex.accountant.core.api.FeeCalculator
 import co.nilin.opex.accountant.core.api.FinancialActionJobManager
 import co.nilin.opex.accountant.core.api.OrderManager
 import co.nilin.opex.accountant.core.api.TradeManager
-import co.nilin.opex.accountant.core.service.FeeCalculatorImpl
 import co.nilin.opex.accountant.core.service.FinancialActionJobManagerImpl
 import co.nilin.opex.accountant.core.service.OrderManagerImpl
 import co.nilin.opex.accountant.core.service.TradeManagerImpl
@@ -18,7 +17,6 @@ import co.nilin.opex.accountant.ports.kafka.listener.consumer.OrderKafkaListener
 import co.nilin.opex.accountant.ports.kafka.listener.consumer.TempEventKafkaListener
 import co.nilin.opex.accountant.ports.kafka.listener.consumer.TradeKafkaListener
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.EnableScheduling
@@ -68,7 +66,8 @@ class AppConfig {
         orderPersister: OrderPersister,
         tempEventPersister: TempEventPersister,
         richTradePublisher: RichTradePublisher,
-        richOrderPublisher: RichOrderPublisher
+        richOrderPublisher: RichOrderPublisher,
+        feeCalculator: FeeCalculator,
     ): TradeManager {
         return TradeManagerImpl(
             financeActionPersister,
@@ -76,26 +75,8 @@ class AppConfig {
             orderPersister,
             tempEventPersister,
             richTradePublisher,
-            richOrderPublisher
-        )
-    }
-
-    @Bean
-    fun feeCalculator(
-        financeActionPersister: FinancialActionPersister,
-        financeActionLoader: FinancialActionLoader,
-        pairStaticRateLoader: PairStaticRateLoader,
-        walletProxy: WalletProxy,
-        @Value("\${app.coin}") platformCoin: String,
-        @Value("\${app.address}") platformAddress: String
-    ): FeeCalculator {
-        return FeeCalculatorImpl(
-            financeActionPersister,
-            financeActionLoader,
-            pairStaticRateLoader,
-            walletProxy,
-            platformCoin,
-            platformAddress
+            richOrderPublisher,
+            feeCalculator
         )
     }
 

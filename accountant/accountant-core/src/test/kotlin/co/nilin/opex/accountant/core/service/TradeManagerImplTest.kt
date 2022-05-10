@@ -1,5 +1,6 @@
 package co.nilin.opex.accountant.core.service
 
+import co.nilin.opex.accountant.core.api.FeeCalculator
 import co.nilin.opex.accountant.core.api.OrderManager
 import co.nilin.opex.accountant.core.api.TradeManager
 import co.nilin.opex.accountant.core.model.FinancialAction
@@ -21,7 +22,8 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
 
-internal class TradeManagerImplTest() {
+internal class TradeManagerImplTest {
+
     @Mock
     lateinit var financialActionPersister: FinancialActionPersister
 
@@ -52,13 +54,13 @@ internal class TradeManagerImplTest() {
     @Mock
     lateinit var richTradePublisher: RichTradePublisher
 
-    val orderManager: OrderManager
-
-    val tradeManager: TradeManager
-
+    private val orderManager: OrderManager
+    private val tradeManager: TradeManager
+    private val feeCalculator: FeeCalculator
 
     init {
         MockitoAnnotations.openMocks(this)
+
         orderManager = OrderManagerImpl(
             pairConfigLoader,
             financialActionPersister,
@@ -68,17 +70,23 @@ internal class TradeManagerImplTest() {
             tempEventRepublisher,
             richOrderPublisher
         )
-        tradeManager = TradeManagerImpl(
+
+        feeCalculator = FeeCalculatorImpl(
+            financeActionLoader,
             pairStaticRateLoader,
+            walletProxy,
+            "pcoin",
+            "0x0"
+        )
+
+        tradeManager = TradeManagerImpl(
             financialActionPersister,
             financeActionLoader,
             orderPersister,
             tempEventPersister,
             richTradePublisher,
             richOrderPublisher,
-            walletProxy,
-            "pcoin",
-            "0x0"
+            feeCalculator
         )
         runBlocking {
             Mockito.`when`(tempEventPersister.loadTempEvents(ArgumentMatchers.anyString())).thenReturn(emptyList())
@@ -178,7 +186,7 @@ internal class TradeManagerImplTest() {
             Assertions.assertEquals(4, tradeFinancialActions.size)
             Assertions.assertEquals(
                 makerSubmitOrderEvent.price * pairConfig.rightSideFraction,
-                tradeFinancialActions[2].amount.toDouble()
+                tradeFinancialActions[1].amount.toDouble()
             )
         }
     }

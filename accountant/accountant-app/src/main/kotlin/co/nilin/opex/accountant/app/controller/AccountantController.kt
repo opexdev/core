@@ -18,6 +18,7 @@ class AccountantController(
     val financialActionLoader: FinancialActionLoader,
     val pairConfigLoader: PairConfigLoader
 ) {
+
     data class BooleanResponse(val result: Boolean)
 
     @GetMapping("{uuid}/create_order/{amount}_{currency}/allowed")
@@ -32,9 +33,7 @@ class AccountantController(
         )
     }
 
-    @GetMapping(
-        value = ["/config/{pair}/fee/{direction}-{userLevel}", "/config/{pair}/fee/{direction}"]
-    )
+    @GetMapping(value = ["/config/{pair}/fee/{direction}-{userLevel}", "/config/{pair}/fee/{direction}"])
     suspend fun fetchPairFeeConfig(
         @PathVariable("pair") pair: String,
         @PathVariable("direction") direction: OrderDirection,

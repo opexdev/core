@@ -1,5 +1,6 @@
 package co.nilin.opex.accountant.core.service
 
+import co.nilin.opex.accountant.core.api.FeeCalculator
 import co.nilin.opex.accountant.core.api.TradeManager
 import co.nilin.opex.accountant.core.inout.OrderStatus
 import co.nilin.opex.accountant.core.inout.RichOrderUpdate
@@ -20,6 +21,7 @@ open class TradeManagerImpl(
     private val tempEventPersister: TempEventPersister,
     private val richTradePublisher: RichTradePublisher,
     private val richOrderPublisher: RichOrderPublisher,
+    private val feeCalculator: FeeCalculator
 ) : TradeManager {
 
     private val log = LoggerFactory.getLogger(TradeManagerImpl::class.java)
@@ -122,6 +124,17 @@ open class TradeManagerImpl(
         log.info("maker order saved {}", makerOrder)
         publishMakerRichOrderUpdate(makerOrder, trade)
 
+        val feeActions = feeCalculator.createFeeActions(
+            trade,
+            makerOrder,
+            takerOrder,
+            makerParentFinancialAction,
+            takerParentFinancialAction
+        ).apply {
+            financialActions.add(makerFeeAction)
+            financialActions.add(takerFeeAction)
+        }
+
         richTradePublisher.publish(
             RichTrade(
                 trade.tradeId,
@@ -134,8 +147,8 @@ open class TradeManagerImpl(
                 takerOrder.origQuantity,
                 takerOrder.origPrice.multiply(takerOrder.origQuantity),
                 trade.takerRemainedQuantity.toBigDecimal().multiply(takerOrder.leftSideFraction.toBigDecimal()),
-                takerFeeAction.amount,
-                takerFeeAction.symbol,
+                feeActions.takerFeeAction.amount,
+                feeActions.takerFeeAction.symbol,
                 trade.makerOuid,
                 trade.makerUuid,
                 trade.makerOrderId,
@@ -144,8 +157,8 @@ open class TradeManagerImpl(
                 makerOrder.origQuantity,
                 makerOrder.origPrice.multiply(makerOrder.origQuantity),
                 trade.makerRemainedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction.toBigDecimal()),
-                makerFeeAction.amount,
-                makerFeeAction.symbol,
+                feeActions.makerFeeAction.amount,
+                feeActions.makerFeeAction.symbol,
                 trade.matchedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction.toBigDecimal()),
                 trade.eventDate
             )
