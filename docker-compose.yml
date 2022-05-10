@@ -95,7 +95,6 @@ services:
   vault:
     image: ghcr.io/opexdev/vault-opex
     build: docker-images/vault
-    tty: true
     volumes:
       - vault-data:/vault/file
     environment:
@@ -111,8 +110,6 @@ services:
       - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-hiopex}
       - OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET=${OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET}
       - VANDAR_API_KEY=$VANDAR_API_KEY
-    healthcheck:
-      retries: 5
     cap_add:
       - IPC_LOCK
   vault-ui:
