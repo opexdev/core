@@ -10,6 +10,7 @@ import java.math.BigDecimal
 import java.net.URI
 
 inline fun <reified T : Any> typeRef(): ParameterizedTypeReference<T> = object : ParameterizedTypeReference<T>() {}
+
 data class TransferResult(
     val date: Long,
     val sourceUuid: String,
@@ -23,12 +24,15 @@ data class TransferResult(
 )
 
 data class Amount(val currency: Currency, val amount: BigDecimal)
+
 data class Currency(val name: String, val symbol: String, val precision: Int)
 
 @Component
 class WalletProxyImpl(
-    @Value("\${app.wallet.url}") val walletBaseUrl: String, val webClient: WebClient
+    @Value("\${app.wallet.url}") val walletBaseUrl: String,
+    val webClient: WebClient
 ) : WalletProxy {
+
     override suspend fun transfer(
         symbol: String,
         senderWalletType: String,
@@ -43,13 +47,7 @@ class WalletProxyImpl(
             .uri(URI.create("$walletBaseUrl/transfer/${amount}_${symbol}/from/${senderUuid}_${senderWalletType}/to/${receiverUuid}_${receiverWalletType}"))
             .header("Content-Type", "application/json")
             .retrieve()
-            .onStatus({ t -> t.isError }, { p ->
-                /*
-                p.bodyToMono(typeRef<SejamResponse<Any>>()).map { t -> KycSejamException(p.statusCode().value().toString(), t.error?.errorCode.toString()
-                        + "-" + t.error?.customMessage) }
-                        */
-                throw RuntimeException()
-            })
+            .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono(typeRef<TransferResult>())
             .log()
             .awaitFirst()

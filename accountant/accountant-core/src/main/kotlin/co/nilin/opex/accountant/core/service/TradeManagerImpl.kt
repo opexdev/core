@@ -8,23 +8,18 @@ import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.Order
 import co.nilin.opex.accountant.core.spi.*
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
-import co.nilin.opex.matching.engine.core.model.OrderDirection
 import org.slf4j.LoggerFactory
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
 open class TradeManagerImpl(
-    private val pairStaticRateLoader: PairStaticRateLoader,
     private val financeActionPersister: FinancialActionPersister,
     private val financeActionLoader: FinancialActionLoader,
     private val orderPersister: OrderPersister,
     private val tempEventPersister: TempEventPersister,
     private val richTradePublisher: RichTradePublisher,
     private val richOrderPublisher: RichOrderPublisher,
-    private val walletProxy: WalletProxy,
-    private val platformCoin: String,
-    private val platformAddress: String
 ) : TradeManager {
 
     private val log = LoggerFactory.getLogger(TradeManagerImpl::class.java)
@@ -46,39 +41,22 @@ open class TradeManagerImpl(
             }
             return emptyList()
         }
-        //check taker uuid
-        //
-        //check maker uuid
-        //
-        val leftSidePCRate = pairStaticRateLoader.calculateStaticRate(platformCoin, trade.pair.leftSideName)
-        val rightSidePCRate = pairStaticRateLoader.calculateStaticRate(platformCoin, trade.pair.rightSideName)
 
-        val takerMatchedAmount = if (takerOrder.direction == OrderDirection.ASK) {
+        val takerMatchedAmount = if (takerOrder.isAsk()) {
             trade.matchedQuantity.toBigDecimal().multiply(takerOrder.leftSideFraction.toBigDecimal())
         } else {
             trade.matchedQuantity.toBigDecimal().multiply(takerOrder.leftSideFraction.toBigDecimal())
                 .multiply(trade.makerPrice.toBigDecimal()).multiply(takerOrder.rightSideFraction.toBigDecimal())
         }
 
-        val takerPCFeeCoefficient: Double = if (takerOrder.direction == OrderDirection.ASK) {
-            leftSidePCRate ?: 0.0
-        } else {
-            rightSidePCRate ?: 0.0
-        }
-
-        val makerMatchedAmount = if (makerOrder.direction == OrderDirection.ASK) {
+        val makerMatchedAmount = if (makerOrder.isAsk()) {
             trade.matchedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction.toBigDecimal())
         } else {
             trade.matchedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction.toBigDecimal())
                 .multiply(trade.makerPrice.toBigDecimal()).multiply(makerOrder.rightSideFraction.toBigDecimal())
         }
+        log.info("trade event configs loaded")
 
-        val makerPCFeeCoefficient: Double = if (makerOrder.direction == OrderDirection.ASK) {
-            leftSidePCRate ?: 0.0
-        } else {
-            rightSidePCRate ?: 0.0
-        }
-        log.info("trade event configs loaded ")
         //lookup for taker parent fa
         val takerParentFinancialAction = financeActionLoader.findLast(trade.takerUuid, trade.takerOuid)
         log.info("trade event takerParentFinancialAction {} ", takerParentFinancialAction)
@@ -86,13 +64,6 @@ open class TradeManagerImpl(
         val makerParentFinancialAction = financeActionLoader.findLast(trade.makerUuid, trade.makerOuid)
         log.info("trade event makerParentFinancialAction {} ", makerParentFinancialAction)
 
-
-        //calculate maker fee
-        val makerFee = makerOrder.makerFee
-        val makerTotalFeeWithPlatformCoin = takerMatchedAmount
-            .multiply(makerFee.toBigDecimal())
-            .multiply(makerPCFeeCoefficient.toBigDecimal())
-        //check if maker uuid can pay the fee with platform coin
         //create fa for transfer taker uuid symbol exchange wallet to maker symbol main wallet
         /*
         amount for sell (ask): match_quantity (if not pay by platform coin then - maker fee)
@@ -102,11 +73,7 @@ open class TradeManagerImpl(
             takerParentFinancialAction,
             TradeEvent::class.simpleName!!,
             trade.takerOuid,
-            if (takerOrder.direction == OrderDirection.ASK) {
-                trade.pair.leftSideName
-            } else {
-                trade.pair.rightSideName
-            },
+            if (takerOrder.isAsk()) trade.pair.leftSideName else trade.pair.rightSideName,
             takerMatchedAmount,
             trade.takerUuid,
             "exchange",
@@ -116,41 +83,7 @@ open class TradeManagerImpl(
         )
         log.info("trade event takerTransferAction {}", takerTransferAction)
         financialActions.add(takerTransferAction)
-        val makerFeeAction = if (makerTotalFeeWithPlatformCoin > BigDecimal.ZERO &&
-            walletProxy.canFulfil(platformCoin, "main", trade.makerUuid, makerTotalFeeWithPlatformCoin)
-        ) {
-            FinancialAction(
-                makerParentFinancialAction,
-                TradeEvent::class.simpleName!!,
-                trade.takerOuid,
-                platformCoin,
-                makerTotalFeeWithPlatformCoin,
-                trade.makerUuid,
-                "main",
-                platformAddress,
-                "exchange",
-                LocalDateTime.now()
-            )
-        } else {
-            FinancialAction(
-                makerParentFinancialAction,
-                TradeEvent::class.simpleName!!,
-                trade.takerOuid,
-                if (takerOrder.direction == OrderDirection.ASK) {
-                    trade.pair.leftSideName
-                } else {
-                    trade.pair.rightSideName
-                },
-                takerMatchedAmount.multiply(makerFee.toBigDecimal()),
-                trade.makerUuid,
-                "main",
-                platformAddress,
-                "exchange",
-                LocalDateTime.now()
-            )
-        }
-        log.info("trade event makerFeeAction {}", makerFeeAction)
-        financialActions.add(makerFeeAction)
+
         //update taker order status
         takerOrder.remainedTransferAmount -= takerMatchedAmount
         if (takerOrder.filledQuantity == takerOrder.quantity) {
@@ -160,13 +93,7 @@ open class TradeManagerImpl(
         log.info("taker order saved {}", takerOrder)
         publishTakerRichOrderUpdate(takerOrder, trade)
 
-        //calculate taker fee
-        val takerFee = takerOrder.takerFee
-        val takerTotalFeeWithPlatformCoin = takerMatchedAmount
-            .multiply(takerFee.toBigDecimal())
-            .multiply(takerPCFeeCoefficient.toBigDecimal())
-
-        //create fa for transfer makeruuid symbol exchange wallet to taker symbol main wallet
+        //create fa for transfer makerUuid symbol exchange wallet to taker symbol main wallet
         /*
         amount for sell (ask): match_quantity (if not pay by platform coin then - taker fee)
         amount for buy (bid): match_quantity * maker price (if not pay by platform coin then - taker fee)
@@ -175,11 +102,7 @@ open class TradeManagerImpl(
             makerParentFinancialAction,
             TradeEvent::class.simpleName!!,
             trade.makerOuid,
-            if (makerOrder.direction == OrderDirection.ASK) {
-                trade.pair.leftSideName
-            } else {
-                trade.pair.rightSideName
-            },
+            if (makerOrder.isAsk()) trade.pair.leftSideName else trade.pair.rightSideName,
             makerMatchedAmount,
             trade.makerUuid,
             "exchange",
@@ -189,47 +112,7 @@ open class TradeManagerImpl(
         )
         log.info("trade event makerTransferAction {}", makerTransferAction)
         financialActions.add(makerTransferAction)
-        //check if taker uuid can pay the fee with platform coin
-        val takerFeeAction = if (takerTotalFeeWithPlatformCoin > BigDecimal.ZERO &&
-            walletProxy.canFulfil(platformCoin, "main", trade.takerUuid, takerTotalFeeWithPlatformCoin)
-        ) {
-            FinancialAction(
-                takerParentFinancialAction,
-                TradeEvent::class.simpleName!!,
-                trade.makerOuid,
-                if (makerOrder.direction == OrderDirection.ASK) {
-                    trade.pair.leftSideName
-                } else {
-                    trade.pair.rightSideName
-                },
-                takerTotalFeeWithPlatformCoin,
-                trade.takerUuid,
-                "main",
-                platformAddress,
-                "",
-                LocalDateTime.now()
-            )
-        } else {
-            FinancialAction(
-                takerParentFinancialAction,
-                TradeEvent::class.simpleName!!,
-                trade.makerOuid,
-                if (makerOrder.direction == OrderDirection.ASK) {
-                    trade.pair.leftSideName
-                } else {
-                    trade.pair.rightSideName
-                },
-                makerMatchedAmount.multiply(takerFee.toBigDecimal()),
-                trade.takerUuid,
-                "main",
-                platformAddress,
-                "exchange",
-                LocalDateTime.now()
-            )
 
-        }
-        log.info("trade event takerFeeAction {}", takerFeeAction)
-        financialActions.add(takerFeeAction)
         //update maker order status
         makerOrder.remainedTransferAmount -= makerMatchedAmount
         if (makerOrder.filledQuantity == makerOrder.quantity) {
@@ -266,7 +149,6 @@ open class TradeManagerImpl(
                 trade.matchedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction.toBigDecimal()),
                 trade.eventDate
             )
-
         )
         return financeActionPersister.persist(financialActions)
     }

@@ -4,9 +4,11 @@ import co.nilin.opex.accountant.app.listener.AccountantEventListener
 import co.nilin.opex.accountant.app.listener.AccountantTempEventListener
 import co.nilin.opex.accountant.app.listener.AccountantTradeListener
 import co.nilin.opex.accountant.app.listener.OrderListener
+import co.nilin.opex.accountant.core.api.FeeCalculator
 import co.nilin.opex.accountant.core.api.FinancialActionJobManager
 import co.nilin.opex.accountant.core.api.OrderManager
 import co.nilin.opex.accountant.core.api.TradeManager
+import co.nilin.opex.accountant.core.service.FeeCalculatorImpl
 import co.nilin.opex.accountant.core.service.FinancialActionJobManagerImpl
 import co.nilin.opex.accountant.core.service.OrderManagerImpl
 import co.nilin.opex.accountant.core.service.TradeManagerImpl
@@ -61,25 +63,36 @@ class AppConfig {
 
     @Bean
     fun tradeManager(
-        pairStaticRateLoader: PairStaticRateLoader,
         financeActionPersister: FinancialActionPersister,
         financeActionLoader: FinancialActionLoader,
         orderPersister: OrderPersister,
         tempEventPersister: TempEventPersister,
         richTradePublisher: RichTradePublisher,
-        richOrderPublisher: RichOrderPublisher,
-        walletProxy: WalletProxy,
-        @Value("\${app.coin}") platformCoin: String,
-        @Value("\${app.address}") platformAddress: String
+        richOrderPublisher: RichOrderPublisher
     ): TradeManager {
         return TradeManagerImpl(
-            pairStaticRateLoader,
             financeActionPersister,
             financeActionLoader,
             orderPersister,
             tempEventPersister,
             richTradePublisher,
-            richOrderPublisher,
+            richOrderPublisher
+        )
+    }
+
+    @Bean
+    fun feeCalculator(
+        financeActionPersister: FinancialActionPersister,
+        financeActionLoader: FinancialActionLoader,
+        pairStaticRateLoader: PairStaticRateLoader,
+        walletProxy: WalletProxy,
+        @Value("\${app.coin}") platformCoin: String,
+        @Value("\${app.address}") platformAddress: String
+    ): FeeCalculator {
+        return FeeCalculatorImpl(
+            financeActionPersister,
+            financeActionLoader,
+            pairStaticRateLoader,
             walletProxy,
             platformCoin,
             platformAddress
