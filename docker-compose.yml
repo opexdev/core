@@ -95,7 +95,6 @@ services:
   vault:
     image: ghcr.io/opexdev/vault-opex
     build: docker-images/vault
-    tty: true
     volumes:
       - vault-data:/vault/file
     environment:
