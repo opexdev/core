@@ -8,5 +8,6 @@ data class Currency(
     var leftSideFraction: BigDecimal,
     var rightSideFraction: BigDecimal,
     var feeConfig: FeeConfig,
-    var precision: BigDecimal
+    var precision: BigDecimal,
+    var implementations: List<CurrencyImplementation>
 )
