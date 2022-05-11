@@ -166,6 +166,9 @@ currencies:
 markets:
   - leftSide: BTC
     rightSide: USDT
+    aliases:
+      - key: binance
+        value: BTCUSDT
     feeConfigs:
       - direction: ASK
         userLevel: *
@@ -177,6 +180,9 @@ markets:
         takerFee: 0.01
   - leftSide: ETH
     rightSide: USDT
+    aliases:
+      - key: binance
+        value: ETHUSDT
     feeConfigs:
       - direction: ASK
         userLevel: *
@@ -188,6 +194,9 @@ markets:
         takerFee: 0.01
   - leftSide: BNB
     rightSide: USDT
+    aliases:
+      - key: binance
+        value: BNBUSDT
     feeConfigs:
       - direction: ASK
         userLevel: *
@@ -199,6 +208,9 @@ markets:
         takerFee: 0.01
   - leftSide: BTC
     rightSide: IRT
+    aliases:
+      - key: binance
+        value: BTCIRT
     feeConfigs:
       - direction: ASK
         userLevel: *
@@ -210,6 +222,9 @@ markets:
         takerFee: 0.01
   - leftSide: ETH
     rightSide: IRT
+    aliases:
+      - key: binance
+        value: ETHIRT
     feeConfigs:
       - direction: ASK
         userLevel: *
@@ -221,6 +236,9 @@ markets:
         takerFee: 0.01
   - leftSide: BNB
     rightSide: IRT
+    aliases:
+      - key: binance
+        value: BNBIRT
     feeConfigs:
       - direction: ASK
         userLevel: *
@@ -232,6 +250,9 @@ markets:
         takerFee: 0.01
   - leftSide: BUSD
     rightSide: IRT
+    aliases:
+      - key: binance
+        value: BUSDIRT
     feeConfigs:
       - direction: ASK
         userLevel: *
@@ -243,6 +264,9 @@ markets:
         takerFee: 0.01
   - leftSide: TBTC
     rightSide: TUSDT
+    aliases:
+      - key: binance
+        value: TBTCTUSDT
     feeConfigs:
       - direction: ASK
         userLevel: *
@@ -254,6 +278,9 @@ markets:
         takerFee: 0.01
   - leftSide: TETH
     rightSide: TUSDT
+    aliases:
+      - key: binance
+        value: TETHTUSDT
     feeConfigs:
       - direction: ASK
         userLevel: *
