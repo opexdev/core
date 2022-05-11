@@ -6,5 +6,6 @@ data class ProjectPreferences(
     var currencies: List<Currency>,
     var markets: List<Market>,
     var wallets: List<Wallet>,
-    var userLevels: List<UserLevel>
+    var userLevels: List<UserLevel>,
+    var systemWallet: SystemWallet
 )

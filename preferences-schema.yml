@@ -49,3 +49,11 @@ userLimits:
     dailyCount:
     monthlyTotal:
     monthlyCount:
+systemWallet:
+  uuid:
+  title:
+  level:
+  schedule:
+    - retryTime:
+      delay:
+      batchSize:

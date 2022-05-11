@@ -300,3 +300,11 @@ userLimits:
     dailyCount: 100
     monthlyTotal: 30000
     monthlyCount: 3000
+systemWallet:
+  uuid: 1
+  title: system
+  level: basic
+  schedule:
+    - retryTime: CURRENT_DATE
+      delay: 10
+      batchSize: 10000
