@@ -72,7 +72,6 @@ internal class TradeManagerImplTest {
         )
 
         feeCalculator = FeeCalculatorImpl(
-            financeActionLoader,
             pairStaticRateLoader,
             walletProxy,
             "pcoin",

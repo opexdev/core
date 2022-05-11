@@ -33,7 +33,10 @@ class FinancialActionJobManagerImpl(
                 financialActionPersister.updateStatus(it, FinancialActionStatus.PROCESSED)
             } catch (e: Exception) {
                 log.error("financial job error", e)
-                financialActionPersister.updateStatus(it, FinancialActionStatus.ERROR)
+                financialActionPersister.updateStatus(
+                    it,
+                    if (it.retryCount >= retryLimit) FinancialActionStatus.ERROR else FinancialActionStatus.CREATED
+                )
             }
         }
     }

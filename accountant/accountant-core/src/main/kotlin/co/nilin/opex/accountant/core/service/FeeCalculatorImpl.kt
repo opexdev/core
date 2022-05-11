@@ -66,7 +66,7 @@ class FeeCalculatorImpl(
         //check if maker uuid can pay the fee with platform coin
         val canMakerFulfil = runCatching {
             walletProxy.canFulfil(platformCoin, "main", trade.makerUuid, makerTotalFeeWithPlatformCoin)
-        }.getOrElse { false }
+        }.onFailure { logger.error(it.message) }.getOrElse { false }
 
         val makerFeeAction = if (makerTotalFeeWithPlatformCoin > BigDecimal.ZERO && canMakerFulfil) {
             FinancialAction(
@@ -106,7 +106,7 @@ class FeeCalculatorImpl(
         //check if taker uuid can pay the fee with platform coin
         val canTakerFulfil = runCatching {
             walletProxy.canFulfil(platformCoin, "main", trade.takerUuid, takerTotalFeeWithPlatformCoin)
-        }.getOrElse { false }
+        }.onFailure { logger.error(it.message) }.getOrElse { false }
 
         val takerFeeAction = if (takerTotalFeeWithPlatformCoin > BigDecimal.ZERO && canTakerFulfil) {
             FinancialAction(
