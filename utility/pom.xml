@@ -20,6 +20,7 @@
         <module>error-handler</module>
         <module>logging-handler</module>
         <module>interceptors</module>
+        <module>preferences</module>
     </modules>
 
     <dependencies>
