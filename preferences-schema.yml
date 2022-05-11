@@ -1,0 +1,47 @@
+addressTypes:
+  - addressType:
+    addressRegex:
+chains:
+  - name:
+    addressType:
+    endpointUrl:
+    schedule:
+currencies:
+  - symbol:
+    name:
+    marketFraction:
+    precision:
+    implementations:
+      - chain:
+        token:
+        tokenAddress:
+        tokenName:
+        withdrawEnabled:
+        withdrawFee:
+        withdrawMin:
+        decimal:
+markets:
+  - pair:
+    leftSide:
+    rightSide:
+    leftSideFraction:
+    rightSideFraction:
+    feeConfigs:
+      - direction:
+        makerFee:
+        takerFee:
+        userLevel:
+wallets:
+  - currency:
+    mainBalance:
+    dailyTotal:
+    dailyCount:
+    monthlyTotal:
+    monthlyCount:
+userLimits:
+  - level:
+    withdrawFee:
+    dailyTotal:
+    dailyCount:
+    monthlyTotal:
+    monthlyCount:

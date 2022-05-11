@@ -4,6 +4,9 @@ import java.math.BigDecimal
 
 data class UserLevel(
     var level: String,
+    var owner: String,
+    var action: String,
+    var walletType: String,
     var withdrawFee: BigDecimal,
     var dailyTotal: BigDecimal,
     var dailyCount: Int,
