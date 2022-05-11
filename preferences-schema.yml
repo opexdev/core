@@ -6,11 +6,19 @@ chains:
     addressType:
     endpointUrl:
     schedule:
+      - retryTime:
+        delay:
+        errorDelay:
 currencies:
   - symbol:
     name:
     marketFraction:
     precision:
+    mainBalance:
+    dailyTotal:
+    dailyCount:
+    monthlyTotal:
+    monthlyCount:
     implementations:
       - chain:
         token:
@@ -28,16 +36,9 @@ markets:
     rightSideFraction:
     feeConfigs:
       - direction:
+        userLevel:
         makerFee:
         takerFee:
-        userLevel:
-wallets:
-  - currency:
-    mainBalance:
-    dailyTotal:
-    dailyCount:
-    monthlyTotal:
-    monthlyCount:
 userLimits:
   - level:
     withdrawFee:
