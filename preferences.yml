@@ -1,10 +1,10 @@
 addressTypes:
   - addressType: bitcoin
-    addressRegex: *
+    addressRegex: "*"
   - addressType: ethereum
-    addressRegex: *
+    addressRegex: "*"
   - addressType: test-bitcoin
-    addressRegex: *
+    addressRegex: "*"
 chains:
   - name: bitcoin
     addressType: bitcoin
@@ -171,11 +171,11 @@ markets:
         value: BTCUSDT
     feeConfigs:
       - direction: ASK
-        userLevel: *
+        userLevel: "*"
         makerFee: 0.01
         takerFee: 0.01
       - direction: BID
-        userLevel: *
+        userLevel: "*"
         makerFee: 0.01
         takerFee: 0.01
   - leftSide: ETH
@@ -185,11 +185,11 @@ markets:
         value: ETHUSDT
     feeConfigs:
       - direction: ASK
-        userLevel: *
+        userLevel: "*"
         makerFee: 0.01
         takerFee: 0.01
       - direction: BID
-        userLevel: *
+        userLevel: "*"
         makerFee: 0.01
         takerFee: 0.01
   - leftSide: BNB
@@ -199,11 +199,11 @@ markets:
         value: BNBUSDT
     feeConfigs:
       - direction: ASK
-        userLevel: *
+        userLevel: "*"
         makerFee: 0.01
         takerFee: 0.01
       - direction: BID
-        userLevel: *
+        userLevel: "*"
         makerFee: 0.01
         takerFee: 0.01
   - leftSide: BTC
@@ -213,11 +213,11 @@ markets:
         value: BTCIRT
     feeConfigs:
       - direction: ASK
-        userLevel: *
+        userLevel: "*"
         makerFee: 0.01
         takerFee: 0.01
       - direction: BID
-        userLevel: *
+        userLevel: "*"
         makerFee: 0.01
         takerFee: 0.01
   - leftSide: ETH
@@ -227,11 +227,11 @@ markets:
         value: ETHIRT
     feeConfigs:
       - direction: ASK
-        userLevel: *
+        userLevel: "*"
         makerFee: 0.01
         takerFee: 0.01
       - direction: BID
-        userLevel: *
+        userLevel: "*"
         makerFee: 0.01
         takerFee: 0.01
   - leftSide: BNB
@@ -241,11 +241,11 @@ markets:
         value: BNBIRT
     feeConfigs:
       - direction: ASK
-        userLevel: *
+        userLevel: "*"
         makerFee: 0.01
         takerFee: 0.01
       - direction: BID
-        userLevel: *
+        userLevel: "*"
         makerFee: 0.01
         takerFee: 0.01
   - leftSide: BUSD
@@ -255,11 +255,11 @@ markets:
         value: BUSDIRT
     feeConfigs:
       - direction: ASK
-        userLevel: *
+        userLevel: "*"
         makerFee: 0.01
         takerFee: 0.01
       - direction: BID
-        userLevel: *
+        userLevel: "*"
         makerFee: 0.01
         takerFee: 0.01
   - leftSide: TBTC
@@ -269,11 +269,11 @@ markets:
         value: TBTCTUSDT
     feeConfigs:
       - direction: ASK
-        userLevel: *
+        userLevel: "*"
         makerFee: 0.01
         takerFee: 0.01
       - direction: BID
-        userLevel: *
+        userLevel: "*"
         makerFee: 0.01
         takerFee: 0.01
   - leftSide: TETH
@@ -283,11 +283,11 @@ markets:
         value: TETHTUSDT
     feeConfigs:
       - direction: ASK
-        userLevel: *
+        userLevel: "*"
         makerFee: 0.01
         takerFee: 0.01
       - direction: BID
-        userLevel: *
+        userLevel: "*"
         makerFee: 0.01
         takerFee: 0.01
 userLimits:
