@@ -78,6 +78,11 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
+                <groupId>co.nilin.opex.utility.preferences</groupId>
+                <artifactId>preferences</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
                 <version>${spring-cloud.version}</version>

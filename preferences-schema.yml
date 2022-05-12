@@ -34,8 +34,7 @@ markets:
     leftSideFraction:
     rightSideFraction:
     aliases:
-      - key:
-        value:
+      - arrItem
     feeConfigs:
       - direction:
         userLevel:

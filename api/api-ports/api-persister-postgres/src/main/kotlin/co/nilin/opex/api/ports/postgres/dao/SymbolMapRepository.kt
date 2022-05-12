@@ -15,4 +15,7 @@ interface SymbolMapRepository : ReactiveCrudRepository<SymbolMapModel, String> {
 
     @Query("select * from symbol_maps where value = :value")
     fun findByValue(@Param("value") value: String): Mono<SymbolMapModel>
+
+    @Query("insert into symbol_maps values (:symbol, :value)")
+    fun insert(symbol: String, value: String): Mono<Void>
 }
