@@ -3,12 +3,12 @@ package co.nilin.opex.utility.preferences
 import java.math.BigDecimal
 
 data class CurrencyImplementation(
-    var chain: String,
-    var token: Boolean,
-    var tokenAddress: String?,
-    var tokenName: String?,
-    var withdrawEnabled: Boolean,
-    var withdrawFee: BigDecimal,
-    var withdrawMin: BigDecimal,
-    var decimal: BigDecimal
+    var chain: String = "",
+    var withdrawEnabled: Boolean = true,
+    var token: Boolean = false,
+    var tokenAddress: String? = null,
+    var tokenName: String? = null,
+    var withdrawFee: BigDecimal? = null,
+    var withdrawMin: BigDecimal? = null,
+    var decimal: Int? = null
 )

@@ -1,11 +1,10 @@
 package co.nilin.opex.utility.preferences
 
 data class ProjectPreferences(
-    var addressTypes: List<AddressType>,
-    var chains: List<Chain>,
-    var currencies: List<Currency>,
-    var markets: List<Market>,
-    var wallets: List<Wallet>,
-    var userLevels: List<UserLevel>,
-    var systemWallet: SystemWallet
+    var addressTypes: List<AddressType> = emptyList(),
+    var chains: List<Chain> = emptyList(),
+    var currencies: List<Currency> = emptyList(),
+    var markets: List<Market> = emptyList(),
+    var userLimits: List<UserLimit> = emptyList(),
+    var systemWallet: SystemWallet = SystemWallet()
 )

@@ -1,3 +1,7 @@
 package co.nilin.opex.utility.preferences
 
-data class ChainSyncSchedule(var retryTime: Long, var delay: Long, var errorDelay: Long)
+data class ChainSyncSchedule(
+    var retryTime: String = "CURRENT_DATE",
+    var delay: Long = 0,
+    var errorDelay: Long = 0
+)
