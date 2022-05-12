@@ -10,36 +10,31 @@ chains:
     addressType: bitcoin
     endpointUrl: lb://chain-scan-gateway/bitcoin/transfers
     schedule:
-      - retryTime: CURRENT_DATE
-        delay: 600
+      - delay: 600
         errorDelay: 60
   - name: ethereum
     addressType: ethereum
     endpointUrl: lb://chain-scan-gateway/eth/transfers
     schedule:
-      - retryTime: CURRENT_DATE
-        delay: 90
+      - delay: 90
         errorDelay: 60
   - name: bsc
     addressType: ethereum
     endpointUrl: lb://chain-scan-gateway/bsc/transfers
     schedule:
-      - retryTime: CURRENT_DATE
-        delay: 90
+      - delay: 90
         errorDelay: 60
   - name: test-bitcoin
     addressType: test-bitcoin
     endpointUrl: lb://chain-scan-gateway/test-bitcoin/transfers
     schedule:
-      - retryTime: CURRENT_DATE
-        delay: 600
+      - delay: 600
         errorDelay: 60
   - name: test-ethereum
     addressType: ethereum
     endpointUrl: lb://chain-scan-gateway/test-eth/transfers
     schedule:
-      - retryTime: CURRENT_DATE
-        delay: 90
+      - delay: 90
         errorDelay: 60
 currencies:
   - symbol: BTC
@@ -305,6 +300,5 @@ systemWallet:
   title: system
   level: basic
   schedule:
-    - retryTime: CURRENT_DATE
-      delay: 10
+    - delay: 10
       batchSize: 10000

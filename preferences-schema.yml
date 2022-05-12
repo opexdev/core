@@ -6,7 +6,6 @@ chains:
     addressType:
     endpointUrl:
     schedule:
-      retryTime:
       delay:
       errorDelay:
 currencies:
@@ -54,6 +53,5 @@ systemWallet:
   title:
   level:
   schedule:
-    retryTime:
     delay:
     batchSize:
