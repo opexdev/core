@@ -82,6 +82,10 @@
             <artifactId>bc-gateway-eventlistener-kafka</artifactId>
         </dependency>
         <dependency>
+            <groupId>co.nilin.opex.utility.preferences</groupId>
+            <artifactId>preferences</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.springfox</groupId>
             <artifactId>springfox-boot-starter</artifactId>
             <version>3.0.0</version>
@@ -89,6 +93,11 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-vault-config</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>2.13.0</version>
         </dependency>
     </dependencies>
 

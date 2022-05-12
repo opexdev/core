@@ -8,7 +8,7 @@ data class CurrencyImplementation(
     var token: Boolean = false,
     var tokenAddress: String? = null,
     var tokenName: String? = null,
-    var withdrawFee: BigDecimal? = null,
-    var withdrawMin: BigDecimal? = null,
-    var decimal: Int? = null
+    var withdrawFee: BigDecimal = BigDecimal.ZERO,
+    var withdrawMin: BigDecimal = BigDecimal.ZERO,
+    var decimal: Int = 0
 )
