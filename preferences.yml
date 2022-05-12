@@ -102,8 +102,8 @@ currencies:
     monthlyCount: 3000
     implementations:
       - chain: bsc
-        token:
-        tokenAddress:
+        token: true
+        tokenAddress: 0xe9e7cea3dedca5984780bafc599bd69add087d56
         tokenName: BUSD Token
         withdrawFee: 0.01
         withdrawMin: 0.01
@@ -300,5 +300,5 @@ systemWallet:
   title: system
   level: basic
   schedule:
-  delay: 10
-  batchSize: 10000
+    delay: 10
+    batchSize: 10000
