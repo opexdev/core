@@ -3,8 +3,6 @@ addressTypes:
     addressRegex: "*"
   - addressType: ethereum
     addressRegex: "*"
-  - addressType: test-bitcoin
-    addressRegex: "*"
 chains:
   - name: bitcoin
     addressType: bitcoin
@@ -21,18 +19,6 @@ chains:
   - name: bsc
     addressType: ethereum
     endpointUrl: lb://chain-scan-gateway/bsc/transfers
-    schedule:
-      delay: 90
-      errorDelay: 60
-  - name: test-bitcoin
-    addressType: test-bitcoin
-    endpointUrl: lb://chain-scan-gateway/test-bitcoin/transfers
-    schedule:
-      delay: 600
-      errorDelay: 60
-  - name: test-ethereum
-    addressType: ethereum
-    endpointUrl: lb://chain-scan-gateway/test-eth/transfers
     schedule:
       delay: 90
       errorDelay: 60
@@ -129,35 +115,6 @@ currencies:
         withdrawFee: 0.0001
         withdrawMin: 0.0001
         decimal: 0
-  - symbol: TETH
-    name: Ethereum (Test)
-    precision: 0.000001
-    mainBalance: 10000
-    dailyTotal: 1000
-    dailyCount: 100
-    monthlyTotal: 30000
-    monthlyCount: 3000
-    implementations:
-      - chain: test-ethereum
-        withdrawFee: 0.00001
-        withdrawMin: 0.000001
-        decimal: 18
-  - symbol: TUSDT
-    name: Tether (Test)
-    precision: 0.01
-    mainBalance: 10000
-    dailyTotal: 1000
-    dailyCount: 100
-    monthlyTotal: 30000
-    monthlyCount: 3000
-    implementations:
-      - chain: ethereum
-        token: true
-        tokenAddress: 0x110a13fc3efe6a245b50102d2d79b3e76125ae83
-        tokenName: Tether USD
-        withdrawFee: 0.01
-        withdrawMin: 0.01
-        decimal: 6
 markets:
   - leftSide: BTC
     rightSide: USDT
@@ -241,32 +198,6 @@ markets:
     rightSide: IRT
     aliases:
       - BUSDIRT
-    feeConfigs:
-      - direction: ASK
-        userLevel: "*"
-        makerFee: 0.01
-        takerFee: 0.01
-      - direction: BID
-        userLevel: "*"
-        makerFee: 0.01
-        takerFee: 0.01
-  - leftSide: TBTC
-    rightSide: TUSDT
-    aliases:
-      - TBTCTUSDT
-    feeConfigs:
-      - direction: ASK
-        userLevel: "*"
-        makerFee: 0.01
-        takerFee: 0.01
-      - direction: BID
-        userLevel: "*"
-        makerFee: 0.01
-        takerFee: 0.01
-  - leftSide: TETH
-    rightSide: TUSDT
-    aliases:
-      - TETHTUSDT
     feeConfigs:
       - direction: ASK
         userLevel: "*"
