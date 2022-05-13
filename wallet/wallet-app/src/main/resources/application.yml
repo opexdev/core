@@ -45,12 +45,13 @@ spring:
     import: vault://secret/${spring.application.name}
 app:
   gift:
-    symbol: tusdt
-    amount: 1000
+    symbol: TUSDT
+    amount: 100000
   auth:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
   system:
     uuid: 1
+  preferences: ${PREFERENCES:classpath:preferences.yml}
 logging:
   level:
     org.apache.kafka: ERROR

@@ -24,7 +24,7 @@ import java.math.BigDecimal
 @Component
 @DependsOn("postgresConfig")
 class SetupPreferences(
-    @Value("preferences.yml") file: File,
+    @Value("\${app.preferences}") file: File,
     private val currencyRepository: CurrencyRepository,
     private val walletOwnerRepository: WalletOwnerRepository,
     private val walletRepository: WalletRepository,

@@ -22,7 +22,7 @@ import java.time.LocalDateTime
 @Component
 @DependsOn("postgresConfig")
 class SetupPreferences(
-    @Value("preferences.yml") file: File,
+    @Value("\${app.preferences}") file: File,
     private val addressTypeRepository: AddressTypeRepository,
     private val chainRepository: ChainRepository,
     private val chainAddressTypeRepository: ChainAddressTypeRepository,

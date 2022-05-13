@@ -17,7 +17,7 @@ import java.io.File
 @Component
 @DependsOn("postgresConfig")
 class SetupPreferences(
-    @Value("preferences.yml") file: File,
+    @Value("\${app.preferences}") file: File,
     pairConfigRepository: PairConfigRepository,
     pairFeeConfigRepository: PairFeeConfigRepository
 ) {

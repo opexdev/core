@@ -16,7 +16,7 @@ import java.io.File
 @Component
 @DependsOn("postgresConfig")
 class SetupPreferences(
-    @Value("preferences.yml") file: File,
+    @Value("\${app.preferences}") file: File,
     symbolMapRepository: SymbolMapRepository
 ) {
     private val mapper = ObjectMapper(YAMLFactory())
