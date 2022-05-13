@@ -45,19 +45,21 @@ class SetupPreferences(
         p.userLimits.forEachIndexed { i, it ->
             launch {
                 if (!userLimitsRepository.existsById(i + 1L).awaitSingle()) {
-                    userLimitsRepository.save(
-                        UserLimitsModel(
-                            null,
-                            it.level,
-                            it.owner,
-                            it.action,
-                            it.walletType,
-                            it.dailyTotal,
-                            it.dailyCount,
-                            it.monthlyTotal,
-                            it.monthlyCount
-                        )
-                    ).awaitSingleOrNull()
+                    runCatching {
+                        userLimitsRepository.save(
+                            UserLimitsModel(
+                                null,
+                                it.level,
+                                it.owner,
+                                it.action,
+                                it.walletType,
+                                it.dailyTotal,
+                                it.dailyCount,
+                                it.monthlyTotal,
+                                it.monthlyCount
+                            )
+                        ).awaitSingleOrNull()
+                    }
                 }
             }
         }
@@ -75,21 +77,19 @@ class SetupPreferences(
             ).awaitSingleOrNull()
         }
         launch {
-            val items = p.currencies.flatMapIndexed { i, it ->
+            val items = p.currencies.flatMap {
                 listOf(
                     WalletModel(null, 1, "main", it.symbol, it.mainBalance),
                     WalletModel(null, 1, "exchange", it.symbol, BigDecimal.ZERO)
                 )
             }
-            walletRepository.saveAll(items).collectList().awaitSingleOrNull()
+            runCatching { walletRepository.saveAll(items).collectList().awaitSingleOrNull() }
         }
     }
 
     private suspend fun addCurrencies(p: ProjectPreferences) = coroutineScope {
         p.currencies.forEach {
-            launch {
-                currencyRepository.insert(it.name, it.symbol, it.precision.toDouble()).awaitSingleOrNull()
-            }
+            launch { currencyRepository.insert(it.name, it.symbol, it.precision.toDouble()).awaitSingleOrNull() }
         }
     }
 }

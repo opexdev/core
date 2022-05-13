@@ -5,7 +5,6 @@ import co.nilin.opex.utility.preferences.ProjectPreferences
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Value
@@ -27,8 +26,7 @@ class SetupPreferences(
             p.markets.map {
                 launch {
                     val pair = it.pair ?: "${it.leftSide}_${it.rightSide}"
-                    if (!symbolMapRepository.existsById(pair).awaitSingle())
-                        symbolMapRepository.insert(pair, it.aliases.first()).awaitSingleOrNull()
+                    symbolMapRepository.insert(pair, it.aliases.first()).awaitSingleOrNull()
                 }
             }
         }

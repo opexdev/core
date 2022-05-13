@@ -40,8 +40,8 @@ CREATE TABLE IF NOT EXISTS assigned_address_chains
 CREATE TABLE IF NOT EXISTS chain_address_types
 (
     id           SERIAL PRIMARY KEY,
-    chain_name   VARCHAR(72) NOT NULL REFERENCES chains (name),
-    addr_type_id INTEGER     NOT NULL REFERENCES address_types (id)
+    chain_name   VARCHAR(72) UNIQUE NOT NULL REFERENCES chains (name),
+    addr_type_id INTEGER     NOT NULL REFERENCES address_types (id),
 );
 
 CREATE TABLE IF NOT EXISTS chain_endpoints

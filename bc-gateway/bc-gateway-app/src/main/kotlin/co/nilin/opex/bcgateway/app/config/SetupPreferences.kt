@@ -50,39 +50,31 @@ class SetupPreferences(
                 null
             else AddressTypeModel(null, it.addressType, it.addressRegex, null)
         }.filterNotNull()
-        addressTypeRepository.saveAll(items).collectList().awaitSingleOrNull()
+        runCatching { addressTypeRepository.saveAll(items).collectList().awaitSingleOrNull() }
     }
 
     private suspend fun addChains(data: List<Chain>) = coroutineScope {
         data.map { chainRepository.insert(it.name).awaitSingleOrNull() }
-        val items1 = data.mapIndexed { i, it ->
-            if (chainAddressTypeRepository.existsById(i + 1L).awaitSingle()) {
-                null
-            } else {
-                val addressTypeId = addressTypeRepository.findByType(it.addressType).awaitSingle().id!!
-                ChainAddressTypeModel(null, it.name, addressTypeId)
-            }
-        }.filterNotNull()
-        chainAddressTypeRepository.saveAll(items1).collectList().awaitSingleOrNull()
-        val items2 = data.mapIndexed { i, it ->
-            if (chainEndpointRepository.existsById(i + 1L).awaitSingle()) null
-            else ChainEndpointModel(null, it.name, it.endpointUrl, null, null)
-        }.filterNotNull()
-        chainEndpointRepository.saveAll(items2).collectList().awaitSingleOrNull()
+        val items1 = data.map {
+            val addressTypeId = addressTypeRepository.findByType(it.addressType).awaitSingle().id!!
+            ChainAddressTypeModel(null, it.name, addressTypeId)
+        }
+        runCatching { chainAddressTypeRepository.saveAll(items1).collectList().awaitSingleOrNull() }
+        val items2 = data.map {
+            ChainEndpointModel(null, it.name, it.endpointUrl, null, null)
+        }
+        runCatching { chainEndpointRepository.saveAll(items2).collectList().awaitSingleOrNull() }
     }
 
     private suspend fun addCurrencies(data: List<Currency>) = coroutineScope {
         coroutineScope {
             data.forEach {
-                launch {
-                    currencyRepository.insert(it.name, it.symbol).awaitSingleOrNull()
-                }
+                launch { currencyRepository.insert(it.name, it.symbol).awaitSingleOrNull() }
             }
         }
         val items =
             data.flatMap { it.implementations.map { impl -> it to impl } }.mapIndexed { i, (currency, impl) ->
-                if (currencyImplementationRepository.existsById(i + 1L).awaitSingle()) null
-                else CurrencyImplementationModel(
+                CurrencyImplementationModel(
                     null,
                     currency.symbol,
                     impl.chain,
@@ -94,8 +86,8 @@ class SetupPreferences(
                     impl.withdrawMin,
                     impl.decimal
                 )
-            }.filterNotNull()
-        currencyImplementationRepository.saveAll(items).collectList().awaitSingleOrNull()
+            }
+        runCatching { currencyImplementationRepository.saveAll(items).collectList().awaitSingleOrNull() }
     }
 
     private suspend fun addSchedules(data: ProjectPreferences) = coroutineScope {
@@ -116,7 +108,7 @@ class SetupPreferences(
                 data.systemWallet.schedule.delay,
                 data.systemWallet.schedule.batchSize
             )
-            walletSyncScheduleRepository.save(item).awaitSingleOrNull()
+            runCatching { walletSyncScheduleRepository.save(item).awaitSingleOrNull() }
         }
     }
 }

@@ -43,16 +43,18 @@ class SetupPreferences(
                     ).awaitSingleOrNull()
                     it.feeConfigs.forEach { f ->
                         launch {
-                            pairFeeConfigRepository.save(
-                                PairFeeConfigModel(
-                                    null,
-                                    pair,
-                                    f.direction,
-                                    f.userLevel,
-                                    f.makerFee.toDouble(),
-                                    f.takerFee.toDouble()
-                                )
-                            ).awaitSingleOrNull()
+                            runCatching {
+                                pairFeeConfigRepository.save(
+                                    PairFeeConfigModel(
+                                        null,
+                                        pair,
+                                        f.direction,
+                                        f.userLevel,
+                                        f.makerFee.toDouble(),
+                                        f.takerFee.toDouble()
+                                    )
+                                ).awaitSingleOrNull()
+                            }
                         }
                     }
                 }
