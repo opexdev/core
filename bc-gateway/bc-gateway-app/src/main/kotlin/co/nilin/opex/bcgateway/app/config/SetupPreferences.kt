@@ -6,22 +6,18 @@ import co.nilin.opex.utility.preferences.AddressType
 import co.nilin.opex.utility.preferences.Chain
 import co.nilin.opex.utility.preferences.Currency
 import co.nilin.opex.utility.preferences.ProjectPreferences
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.runBlocking
-import org.springframework.beans.factory.annotation.Value
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.DependsOn
 import org.springframework.stereotype.Component
-import java.io.File
 import java.time.LocalDateTime
 
 @Component
 @DependsOn("postgresConfig")
 class SetupPreferences(
-    @Value("\${app.preferences}") file: File,
     private val addressTypeRepository: AddressTypeRepository,
     private val chainRepository: ChainRepository,
     private val chainAddressTypeRepository: ChainAddressTypeRepository,
@@ -31,15 +27,16 @@ class SetupPreferences(
     private val chainSyncScheduleRepository: ChainSyncScheduleRepository,
     private val walletSyncScheduleRepository: WalletSyncScheduleRepository
 ) {
-    private val mapper = ObjectMapper(YAMLFactory())
+    @Autowired
+    private lateinit var preferences: ProjectPreferences
 
-    init {
-        val p: ProjectPreferences = mapper.readValue(file, ProjectPreferences::class.java)
+    @Autowired
+    fun init() {
         runBlocking {
-            addAddressTypes(p.addressTypes)
-            addChains(p.chains)
-            addCurrencies(p.currencies)
-            addSchedules(p)
+            addAddressTypes(preferences.addressTypes)
+            addChains(preferences.chains)
+            addCurrencies(preferences.currencies)
+            addSchedules(preferences)
         }
     }
 

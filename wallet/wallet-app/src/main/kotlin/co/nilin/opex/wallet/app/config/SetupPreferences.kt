@@ -8,36 +8,34 @@ import co.nilin.opex.wallet.ports.postgres.dao.WalletRepository
 import co.nilin.opex.wallet.ports.postgres.model.UserLimitsModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletOwnerModel
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.runBlocking
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.DependsOn
 import org.springframework.stereotype.Component
-import java.io.File
 import java.math.BigDecimal
 
 @Component
 @DependsOn("postgresConfig")
 class SetupPreferences(
-    @Value("\${app.preferences}") file: File,
     @Value("\${app.system.uuid}") val systemUuid: String,
     private val currencyRepository: CurrencyRepository,
     private val walletOwnerRepository: WalletOwnerRepository,
     private val walletRepository: WalletRepository,
     private val userLimitsRepository: UserLimitsRepository
 ) {
-    private val mapper = ObjectMapper(YAMLFactory())
+    @Autowired
+    private lateinit var preferences: ProjectPreferences
 
-    init {
-        val p: ProjectPreferences = mapper.readValue(file, ProjectPreferences::class.java)
+    @Autowired
+    fun init() {
         runBlocking {
-            addCurrencies(p)
-            addSystemWallet(p)
-            addUserLimits(p)
+            addCurrencies(preferences)
+            addSystemWallet(preferences)
+            addUserLimits(preferences)
         }
     }
 
