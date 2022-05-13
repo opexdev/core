@@ -11,18 +11,16 @@ import org.springframework.stereotype.Component
 
 @Component
 @DependsOn("postgresConfig")
-class SetupPreferences(private val symbolMapRepository: SymbolMapRepository) {
+class InitializeService(private val symbolMapRepository: SymbolMapRepository) {
     @Autowired
     private lateinit var preferences: ProjectPreferences
 
     @Autowired
-    fun init() {
-        runBlocking {
-            preferences.markets.map {
-                val pair = it.pair ?: "${it.leftSide}_${it.rightSide}"
-                val items = it.aliases.map { a -> SymbolMapModel(null, pair, a.key, a.alias) }
-                runCatching { symbolMapRepository.saveAll(items).collectList().awaitSingleOrNull() }
-            }
+    fun init() = runBlocking {
+        preferences.markets.map {
+            val pair = it.pair ?: "${it.leftSide}_${it.rightSide}"
+            val items = it.aliases.map { a -> SymbolMapModel(null, pair, a.key, a.alias) }
+            runCatching { symbolMapRepository.saveAll(items).collectList().awaitSingleOrNull() }
         }
     }
 }

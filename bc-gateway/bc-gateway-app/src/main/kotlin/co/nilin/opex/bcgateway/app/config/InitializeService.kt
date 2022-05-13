@@ -17,7 +17,7 @@ import java.time.LocalDateTime
 
 @Component
 @DependsOn("postgresConfig")
-class SetupPreferences(
+class InitializeService(
     private val addressTypeRepository: AddressTypeRepository,
     private val chainRepository: ChainRepository,
     private val chainAddressTypeRepository: ChainAddressTypeRepository,
@@ -31,13 +31,11 @@ class SetupPreferences(
     private lateinit var preferences: ProjectPreferences
 
     @Autowired
-    fun init() {
-        runBlocking {
-            addAddressTypes(preferences.addressTypes)
-            addChains(preferences.chains)
-            addCurrencies(preferences.currencies)
-            addSchedules(preferences)
-        }
+    fun init() = runBlocking {
+        addAddressTypes(preferences.addressTypes)
+        addChains(preferences.chains)
+        addCurrencies(preferences.currencies)
+        addSchedules(preferences)
     }
 
     private suspend fun addAddressTypes(data: List<AddressType>) = coroutineScope {

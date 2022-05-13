@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-class SetupPreferences() {
+class InitializeService() {
     @Autowired
     private lateinit var preferences: ProjectPreferences
 

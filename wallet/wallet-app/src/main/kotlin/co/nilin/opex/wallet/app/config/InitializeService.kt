@@ -1,6 +1,8 @@
 package co.nilin.opex.wallet.app.config
 
+import co.nilin.opex.utility.preferences.Currency
 import co.nilin.opex.utility.preferences.ProjectPreferences
+import co.nilin.opex.utility.preferences.UserLimit
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepository
 import co.nilin.opex.wallet.ports.postgres.dao.UserLimitsRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletOwnerRepository
@@ -20,7 +22,7 @@ import java.math.BigDecimal
 
 @Component
 @DependsOn("postgresConfig")
-class SetupPreferences(
+class InitializeService(
     @Value("\${app.system.uuid}") val systemUuid: String,
     private val currencyRepository: CurrencyRepository,
     private val walletOwnerRepository: WalletOwnerRepository,
@@ -31,16 +33,14 @@ class SetupPreferences(
     private lateinit var preferences: ProjectPreferences
 
     @Autowired
-    fun init() {
-        runBlocking {
-            addCurrencies(preferences)
-            addSystemWallet(preferences)
-            addUserLimits(preferences)
-        }
+    fun init() = runBlocking {
+        addCurrencies(preferences.currencies)
+        addSystemWallet(preferences)
+        addUserLimits(preferences.userLimits)
     }
 
-    private suspend fun addUserLimits(p: ProjectPreferences) = coroutineScope {
-        p.userLimits.forEachIndexed { i, it ->
+    private suspend fun addUserLimits(data: List<UserLimit>) = coroutineScope {
+        data.forEachIndexed { i, it ->
             if (!userLimitsRepository.existsById(i + 1L).awaitSingle()) {
                 runCatching {
                     userLimitsRepository.save(
@@ -75,8 +75,8 @@ class SetupPreferences(
         runCatching { walletRepository.saveAll(items).collectList().awaitSingleOrNull() }
     }
 
-    private suspend fun addCurrencies(p: ProjectPreferences) = coroutineScope {
-        p.currencies.forEach {
+    private suspend fun addCurrencies(data: List<Currency>) = coroutineScope {
+        data.forEach {
             currencyRepository.insert(it.name, it.symbol, it.precision.toDouble()).awaitSingleOrNull()
         }
     }
