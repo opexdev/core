@@ -4,7 +4,7 @@ import java.math.BigDecimal
 
 data class UserLimit(
     var level: String = "",
-    var owner: String = "",
+    var owner: Long = 0,
     var action: String = "",
     var walletType: String = "",
     var withdrawFee: BigDecimal = BigDecimal.ZERO,
