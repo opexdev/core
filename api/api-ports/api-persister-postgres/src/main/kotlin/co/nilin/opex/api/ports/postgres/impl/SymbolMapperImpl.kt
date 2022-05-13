@@ -11,20 +11,21 @@ class SymbolMapperImpl(val symbolMapRepository: SymbolMapRepository) : SymbolMap
 
     override suspend fun map(symbol: String?): String? {
         if (symbol == null) return null
-        return symbolMapRepository.findBySymbol(symbol).awaitFirstOrNull()?.value
+        return symbolMapRepository.findByAliasKeyAndSymbol("binance", symbol).awaitFirstOrNull()?.alias
     }
 
-    override suspend fun unmap(value: String?): String? {
-        if (value == null) return null
-        return symbolMapRepository.findByValue(value).awaitFirstOrNull()?.symbol
+    override suspend fun unmap(alias: String?): String? {
+        if (alias == null) return null
+        return symbolMapRepository.findByAliasKeyAndAlias("binance", alias).awaitFirstOrNull()?.symbol
     }
 
-    override suspend fun getKeyValues(): Map<String, String> {
+    override suspend fun getAll(): Map<String, String> {
         val map = HashMap<String, String>()
         symbolMapRepository.findAll()
             .collectList()
             .awaitFirstOrElse { emptyList() }
-            .forEach { map[it.symbol] = it.value }
+            .filter { it.aliasKey == "binance" }
+            .associate { it.symbol to it.alias }
         return map
     }
 }

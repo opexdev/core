@@ -7,7 +7,7 @@ data class Market(
     var rightSide: String = "",
     var pair: String? = null,
     var feeConfigs: List<FeeConfig> = emptyList(),
-    var aliases: List<String> = emptyList(),
+    var aliases: List<Alias> = emptyList(),
     var leftSideFraction: BigDecimal? = null,
     var rightSideFraction: BigDecimal? = null
 )

@@ -74,7 +74,8 @@ markets:
   - leftSide: TBTC
     rightSide: TUSDT
     aliases:
-      - TBTCTUSDT
+      - key: binance
+        alias: TBTCTUSDT
     feeConfigs:
       - direction: ASK
         userLevel: "*"
@@ -87,7 +88,8 @@ markets:
   - leftSide: TETH
     rightSide: TUSDT
     aliases:
-      - TETHTUSDT
+      - key: binance
+        alias: TETHTUSDT
     feeConfigs:
       - direction: ASK
         userLevel: "*"
@@ -100,7 +102,8 @@ markets:
   - leftSide: TBTC
     rightSide: IRT
     aliases:
-      - TBTCIRT
+      - key: binance
+        alias: TBTCIRT
     feeConfigs:
       - direction: ASK
         userLevel: "*"
@@ -113,7 +116,8 @@ markets:
   - leftSide: TETH
     rightSide: IRT
     aliases:
-      - TETHIRT
+      - key: binance
+        alias: TETHIRT
     feeConfigs:
       - direction: ASK
         userLevel: "*"
@@ -126,7 +130,8 @@ markets:
   - leftSide: TUSDT
     rightSide: IRT
     aliases:
-      - TUSDTIRT
+      - key: binance
+        alias: TUSDTIRT
     feeConfigs:
       - direction: ASK
         userLevel: "*"

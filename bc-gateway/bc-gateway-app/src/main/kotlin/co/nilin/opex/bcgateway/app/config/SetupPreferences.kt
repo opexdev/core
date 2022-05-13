@@ -9,7 +9,6 @@ import co.nilin.opex.utility.preferences.ProjectPreferences
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.runBlocking
@@ -60,20 +59,18 @@ class SetupPreferences(
             ChainAddressTypeModel(null, it.name, addressTypeId)
         }
         runCatching { chainAddressTypeRepository.saveAll(items1).collectList().awaitSingleOrNull() }
-        val items2 = data.map {
-            ChainEndpointModel(null, it.name, it.endpointUrl, null, null)
-        }
+        val items2 = data.map { ChainEndpointModel(null, it.name, it.endpointUrl, null, null) }
         runCatching { chainEndpointRepository.saveAll(items2).collectList().awaitSingleOrNull() }
     }
 
     private suspend fun addCurrencies(data: List<Currency>) = coroutineScope {
         coroutineScope {
             data.forEach {
-                launch { currencyRepository.insert(it.name, it.symbol).awaitSingleOrNull() }
+                currencyRepository.insert(it.name, it.symbol).awaitSingleOrNull()
             }
         }
         val items =
-            data.flatMap { it.implementations.map { impl -> it to impl } }.mapIndexed { i, (currency, impl) ->
+            data.flatMap { it.implementations.map { impl -> it to impl } }.map { (currency, impl) ->
                 CurrencyImplementationModel(
                     null,
                     currency.symbol,
@@ -92,13 +89,8 @@ class SetupPreferences(
 
     private suspend fun addSchedules(data: ProjectPreferences) = coroutineScope {
         data.chains.map {
-            launch {
-                chainSyncScheduleRepository.insert(
-                    it.name,
-                    it.schedule.delay.toInt(),
-                    it.schedule.errorDelay.toInt()
-                ).awaitSingleOrNull()
-            }
+            chainSyncScheduleRepository.insert(it.name, it.schedule.delay.toInt(), it.schedule.errorDelay.toInt())
+                .awaitSingleOrNull()
         }
         if (walletSyncScheduleRepository.existsById(1).awaitSingle()) null
         else {

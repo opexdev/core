@@ -119,7 +119,8 @@ markets:
   - leftSide: BTC
     rightSide: USDT
     aliases:
-      - BTCUSDT
+      - key: binance
+        alias: BTCUSDT
     feeConfigs:
       - direction: ASK
         userLevel: "*"
@@ -132,7 +133,8 @@ markets:
   - leftSide: ETH
     rightSide: USDT
     aliases:
-      - ETHUSDT
+      - key: binance
+        alias: ETHUSDT
     feeConfigs:
       - direction: ASK
         userLevel: "*"
@@ -145,7 +147,8 @@ markets:
   - leftSide: BNB
     rightSide: USDT
     aliases:
-      - BNBUSDT
+      - key: binance
+        alias: BNBUSDT
     feeConfigs:
       - direction: ASK
         userLevel: "*"
@@ -158,7 +161,8 @@ markets:
   - leftSide: BTC
     rightSide: IRT
     aliases:
-      - BTCIRT
+      - key: binance
+        alias: BTCIRT
     feeConfigs:
       - direction: ASK
         userLevel: "*"
@@ -171,7 +175,8 @@ markets:
   - leftSide: ETH
     rightSide: IRT
     aliases:
-      - ETHIRT
+      - key: binance
+        alias: ETHIRT
     feeConfigs:
       - direction: ASK
         userLevel: "*"
@@ -184,7 +189,8 @@ markets:
   - leftSide: BNB
     rightSide: IRT
     aliases:
-      - BNBIRT
+      - key: binance
+        alias: BNBIRT
     feeConfigs:
       - direction: ASK
         userLevel: "*"
@@ -197,7 +203,8 @@ markets:
   - leftSide: BUSD
     rightSide: IRT
     aliases:
-      - BUSDIRT
+      - key: binance
+        alias: BUSDIRT
     feeConfigs:
       - direction: ASK
         userLevel: "*"

@@ -56,8 +56,10 @@ CREATE TABLE IF NOT EXISTS trades
 
 CREATE TABLE IF NOT EXISTS symbol_maps
 (
-    symbol VARCHAR(72) PRIMARY KEY,
-    value  VARCHAR(72) UNIQUE NOT NULL
+    id          SERIAL PRIMARY KEY,
+    symbol      VARCHAR(72) NOT NULL,
+    aliasKey    VARCHAR(72) NOT NULL,
+    alias       VARCHAR(72) UNIQUE NOT NULL
 );
 
 CREATE OR REPLACE FUNCTION interval_generator(

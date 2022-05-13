@@ -9,13 +9,9 @@ import reactor.core.publisher.Mono
 
 @Repository
 interface SymbolMapRepository : ReactiveCrudRepository<SymbolMapModel, String> {
+    @Query("select * from symbol_maps where symbol = :symbol and aliasKey = :aliasKey")
+    fun findByAliasKeyAndSymbol(aliasKey: String, @Param("symbol") symbol: String): Mono<SymbolMapModel>
 
-    @Query("select * from symbol_maps where symbol = :symbol")
-    fun findBySymbol(@Param("symbol") symbol: String): Mono<SymbolMapModel>
-
-    @Query("select * from symbol_maps where value = :value")
-    fun findByValue(@Param("value") value: String): Mono<SymbolMapModel>
-
-    @Query("insert into symbol_maps values (:symbol, :value) on conflict do nothing")
-    fun insert(symbol: String, value: String): Mono<Void>
+    @Query("select * from symbol_maps where aliasKey = :aliasKey and alias = :alias")
+    fun findByAliasKeyAndAlias(aliasKey: String, @Param("alias") alias: String): Mono<SymbolMapModel>
 }
