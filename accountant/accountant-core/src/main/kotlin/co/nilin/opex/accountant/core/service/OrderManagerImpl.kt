@@ -41,25 +41,24 @@ open class OrderManagerImpl(
         amount for sell (ask): quantity
         amount for buy (bid): quantity * price
          */
-        val financialAction =
-            FinancialAction(
-                null,
-                SubmitOrderEvent::class.simpleName!!,
-                submitOrderEvent.ouid,
-                symbol,
-                if (submitOrderEvent.direction == OrderDirection.ASK) {
-                    BigDecimal(submitOrderEvent.quantity).multiply(pairFeeConfig.pairConfig.leftSideFraction.toBigDecimal())
-                } else {
-                    BigDecimal(submitOrderEvent.quantity).multiply(pairFeeConfig.pairConfig.leftSideFraction.toBigDecimal())
-                        .multiply(submitOrderEvent.price.toBigDecimal())
-                        .multiply(pairFeeConfig.pairConfig.rightSideFraction.toBigDecimal())
-                },
-                submitOrderEvent.uuid,
-                "main",
-                submitOrderEvent.uuid,
-                "exchange",
-                LocalDateTime.now()
-            )
+        val financialAction = FinancialAction(
+            null,
+            SubmitOrderEvent::class.simpleName!!,
+            submitOrderEvent.ouid,
+            symbol,
+            if (submitOrderEvent.direction == OrderDirection.ASK) {
+                BigDecimal(submitOrderEvent.quantity).multiply(pairFeeConfig.pairConfig.leftSideFraction.toBigDecimal())
+            } else {
+                BigDecimal(submitOrderEvent.quantity).multiply(pairFeeConfig.pairConfig.leftSideFraction.toBigDecimal())
+                    .multiply(submitOrderEvent.price.toBigDecimal())
+                    .multiply(pairFeeConfig.pairConfig.rightSideFraction.toBigDecimal())
+            },
+            submitOrderEvent.uuid,
+            "main",
+            submitOrderEvent.uuid,
+            "exchange",
+            LocalDateTime.now()
+        )
         //store order (ouid, uuid, fees, userlevel, pair, direction, price, quantity, filledQ, status, transfered)
         orderPersister.save(
             Order(

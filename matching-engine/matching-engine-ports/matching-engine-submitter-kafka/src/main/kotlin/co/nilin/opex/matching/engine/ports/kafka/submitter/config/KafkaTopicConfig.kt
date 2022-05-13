@@ -2,21 +2,28 @@ package co.nilin.opex.matching.engine.ports.kafka.submitter.config
 
 import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.common.config.TopicConfig
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.event.EventListener
 import org.springframework.context.support.GenericApplicationContext
 import org.springframework.kafka.config.TopicBuilder
 import java.util.function.Supplier
 
 @Configuration
-class KafkaTopicConfig {
-
+class KafkaTopicConfig(
     @Value("\${spring.app.symbols}")
-    private lateinit var symbols: String
+    private val symbols: String
+) {
 
-    @Autowired
+    private val logger = LoggerFactory.getLogger(KafkaTopicConfig::class.java)
+
+    @EventListener(ApplicationReadyEvent::class)
     fun createTopics(applicationContext: GenericApplicationContext) {
+        logger.info("Creating kafka topics...")
+
         symbols.split(",")
             .map { s -> "orders_$s" }
             .forEach { topic ->
@@ -52,6 +59,8 @@ class KafkaTopicConfig {
                         .build()
                 })
             }
+
+        logger.info("Finished creating topics")
     }
 
 }

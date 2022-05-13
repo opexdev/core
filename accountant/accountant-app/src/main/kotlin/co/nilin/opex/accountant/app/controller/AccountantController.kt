@@ -5,8 +5,10 @@ import co.nilin.opex.accountant.core.model.PairFeeConfig
 import co.nilin.opex.accountant.core.spi.FinancialActionLoader
 import co.nilin.opex.accountant.core.spi.PairConfigLoader
 import co.nilin.opex.accountant.core.spi.WalletProxy
+import co.nilin.opex.accountant.ports.walletproxy.data.BooleanResponse
 import co.nilin.opex.matching.engine.core.eventh.events.SubmitOrderEvent
 import co.nilin.opex.matching.engine.core.model.OrderDirection
+import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
@@ -19,7 +21,7 @@ class AccountantController(
     val pairConfigLoader: PairConfigLoader
 ) {
 
-    data class BooleanResponse(val result: Boolean)
+    private val logger = LoggerFactory.getLogger(AccountantController::class.java)
 
     @GetMapping("{uuid}/create_order/{amount}_{currency}/allowed")
     suspend fun canCreateOrder(
@@ -27,10 +29,11 @@ class AccountantController(
         @PathVariable("currency") currency: String,
         @PathVariable("amount") amount: BigDecimal
     ): BooleanResponse {
-        return BooleanResponse(
-            financialActionLoader.countUnprocessed(uuid, currency, SubmitOrderEvent::class.simpleName!!) <= 0
-                    && walletProxy.canFulfil(currency, "main", uuid, amount)
-        )
+        val canFulfil = runCatching { walletProxy.canFulfil(currency, "main", uuid, amount) }
+            .onFailure { logger.error(it.message) }
+            .getOrElse { false }
+        val unprocessed = financialActionLoader.countUnprocessed(uuid, currency, SubmitOrderEvent::class.simpleName!!)
+        return BooleanResponse(unprocessed <= 0 && canFulfil)
     }
 
     @GetMapping(value = ["/config/{pair}/fee/{direction}-{userLevel}", "/config/{pair}/fee/{direction}"])
