@@ -49,3 +49,4 @@ app:
   address: 1
   wallet:
     url: lb://opex-wallet/
+  preferences: ${PREFERENCES:classpath:preferences.yml}

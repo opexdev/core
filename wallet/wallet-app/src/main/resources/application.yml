@@ -48,6 +48,7 @@ app:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
   system:
     uuid: 1
+  preferences: ${PREFERENCES:classpath:preferences.yml}
 logging:
   level:
     org.apache.kafka: ERROR
