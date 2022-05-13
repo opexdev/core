@@ -11,5 +11,6 @@ data class Currency(
     var dailyCount: Int = 0,
     var monthlyTotal: BigDecimal = BigDecimal.ZERO,
     var monthlyCount: Int = 0,
-    var implementations: List<CurrencyImplementation> = emptyList()
+    var implementations: List<CurrencyImplementation> = emptyList(),
+    var gift: BigDecimal = BigDecimal.ZERO
 )
