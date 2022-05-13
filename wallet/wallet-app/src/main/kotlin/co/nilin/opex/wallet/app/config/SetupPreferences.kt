@@ -25,6 +25,7 @@ import java.math.BigDecimal
 @DependsOn("postgresConfig")
 class SetupPreferences(
     @Value("\${app.preferences}") file: File,
+    @Value("\${app.system.uuid}") val systemUuid: String,
     private val currencyRepository: CurrencyRepository,
     private val walletOwnerRepository: WalletOwnerRepository,
     private val walletRepository: WalletRepository,
@@ -70,7 +71,7 @@ class SetupPreferences(
             walletOwnerRepository.save(
                 WalletOwnerModel(
                     null,
-                    p.systemWallet.uuid,
+                    systemUuid,
                     p.systemWallet.title,
                     p.systemWallet.level
                 )
