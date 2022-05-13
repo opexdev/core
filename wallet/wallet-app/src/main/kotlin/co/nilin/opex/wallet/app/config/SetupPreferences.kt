@@ -75,25 +75,13 @@ class SetupPreferences(
             ).awaitSingleOrNull()
         }
         launch {
-            val items1 = p.currencies.map {
-                WalletModel(
-                    null,
-                    1,
-                    "main",
-                    it.symbol,
-                    it.mainBalance
+            val items = p.currencies.flatMapIndexed { i, it ->
+                listOf(
+                    WalletModel(null, 1, "main", it.symbol, it.mainBalance),
+                    WalletModel(null, 1, "exchange", it.symbol, BigDecimal.ZERO)
                 )
             }
-            val items2 = p.currencies.map {
-                WalletModel(
-                    null,
-                    1,
-                    "exchange",
-                    it.symbol,
-                    BigDecimal.ZERO
-                )
-            }
-            walletRepository.saveAll(items1.zip(items2).flatMap { it.toList() }).collectList().awaitSingleOrNull()
+            walletRepository.saveAll(items).collectList().awaitSingleOrNull()
         }
     }
 
