@@ -97,6 +97,45 @@ markets:
         userLevel: "*"
         makerFee: 0.01
         takerFee: 0.01
+  - leftSide: TBTC
+    rightSide: IRT
+    aliases:
+      - TBTCIRT
+    feeConfigs:
+      - direction: ASK
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+      - direction: BID
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+  - leftSide: TETH
+    rightSide: IRT
+    aliases:
+      - TETHIRT
+    feeConfigs:
+      - direction: ASK
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+      - direction: BID
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+  - leftSide: TUSDT
+    rightSide: IRT
+    aliases:
+      - TUSDTIRT
+    feeConfigs:
+      - direction: ASK
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+      - direction: BID
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
 userLimits:
   - level: zero
     owner: 1
