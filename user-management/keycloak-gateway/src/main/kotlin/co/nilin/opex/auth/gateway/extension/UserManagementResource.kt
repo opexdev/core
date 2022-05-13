@@ -24,6 +24,7 @@ import org.keycloak.models.UserModel
 import org.keycloak.models.credential.OTPCredentialModel
 import org.keycloak.models.utils.CredentialValidation
 import org.keycloak.models.utils.HmacOTP
+import org.keycloak.policy.PasswordPolicyManagerProvider
 import org.keycloak.services.managers.AuthenticationManager
 import org.keycloak.services.resource.RealmResourceProvider
 import org.keycloak.services.resources.LoginActionsService
@@ -58,7 +59,22 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.InvalidCaptcha)
         }
 
-        if (!request.isValid()) return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.BadRequest)
+        if (!request.isValid())
+            return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.BadRequest)
+
+        if (session.users().getUserByEmail(request.email, opexRealm) != null)
+            return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.UserAlreadyExists)
+
+        if (request.password != request.passwordConfirmation)
+            return ErrorHandler.badRequest("Invalid password confirmation")
+
+        val error = session.getProvider(PasswordPolicyManagerProvider::class.java)
+            .validate(request.email, request.password)
+
+        if (error != null) {
+            logger.error(error.message)
+            return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.InvalidPassword)
+        }
 
         val user = session.users().addUser(opexRealm, request.email).apply {
             email = request.email
@@ -71,6 +87,9 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             addRequiredAction(UserModel.RequiredAction.UPDATE_PASSWORD)
             sendEmail(this, requiredActionsStream.toList())
         }
+
+        session.userCredentialManager()
+            .updateCredential(opexRealm, user, UserCredentialModel.password(request.password, false))
 
         logger.info("User create response ${user.id}")
         sendUserEvent(user)
@@ -129,7 +148,8 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
                 .isValid(opexRealm, user, cred)
         ) return ErrorHandler.forbidden("Incorrect password")
 
-        if (body.confirmation != body.newPassword) return ErrorHandler.badRequest("Invalid password confirmation")
+        if (body.confirmation != body.newPassword)
+            return ErrorHandler.badRequest("Invalid password confirmation")
 
         session.userCredentialManager()
             .updateCredential(opexRealm, user, UserCredentialModel.password(body.newPassword, false))

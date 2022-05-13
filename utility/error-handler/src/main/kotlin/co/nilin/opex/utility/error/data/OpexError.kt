@@ -32,6 +32,8 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     OTPRequired(5006, "OTP Required", HttpStatus.BAD_REQUEST),
     AlreadyInKYC(5007, "KYC flow for this user has executed", HttpStatus.BAD_REQUEST),
     UserKYCBlocked(5008, "User is blocked from KYC", HttpStatus.BAD_REQUEST),
+    InvalidPassword(5009, "Password is not valid", HttpStatus.BAD_REQUEST),
+    UserAlreadyExists(5009, "User with email is already registered", HttpStatus.BAD_REQUEST),
 
     // code 6000: wallet
     WalletOwnerNotFound(6001, null, HttpStatus.NOT_FOUND),
