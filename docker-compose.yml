@@ -256,6 +256,7 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
+      - PREFERENCES=$PREFERENCES
     networks:
       - default
     depends_on:
@@ -292,6 +293,7 @@ services:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - REDIS_HOST=redis
+      - PREFERENCES=$PREFERENCES
     networks:
       - default
     depends_on:
@@ -352,6 +354,7 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
+      - PREFERENCES=$PREFERENCES
     depends_on:
       - kafka-1
       - kafka-2
@@ -376,6 +379,7 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
+      - PREFERENCES=$PREFERENCES
     depends_on:
       - kafka-1
       - kafka-2
@@ -429,6 +433,7 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
+      - PREFERENCES=$PREFERENCES
     depends_on:
       - kafka-1
       - kafka-2
