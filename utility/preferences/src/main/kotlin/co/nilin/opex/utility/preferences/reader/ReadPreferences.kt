@@ -16,8 +16,8 @@ class ReadPreferences() {
     private lateinit var preferencesYmlPath: String
 
     @Bean
-    fun preferences(): ProjectPreferences {
+    fun preferences(): ProjectPreferences = runCatching {
         val preferencesYml = File(preferencesYmlPath)
-        return mapper.readValue(preferencesYml, ProjectPreferences::class.java)
-    }
+        mapper.readValue(preferencesYml, ProjectPreferences::class.java)
+    }.getOrElse { ProjectPreferences() }
 }
