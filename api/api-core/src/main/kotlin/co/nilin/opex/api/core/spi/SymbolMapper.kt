@@ -6,5 +6,5 @@ interface SymbolMapper {
 
     suspend fun unmap(alias: String?): String?
 
-    suspend fun getAll(): Map<String, String>
+    suspend fun symbolToAliasMap(): Map<String, String>
 }

@@ -19,13 +19,11 @@ class SymbolMapperImpl(val symbolMapRepository: SymbolMapRepository) : SymbolMap
         return symbolMapRepository.findByAliasKeyAndAlias("binance", alias).awaitFirstOrNull()?.symbol
     }
 
-    override suspend fun getAll(): Map<String, String> {
-        val map = HashMap<String, String>()
-        symbolMapRepository.findAll()
+    override suspend fun symbolToAliasMap(): Map<String, String> {
+        return symbolMapRepository.findAll()
+            .filter { it.aliasKey == "binance" }
             .collectList()
             .awaitFirstOrElse { emptyList() }
-            .filter { it.aliasKey == "binance" }
             .associate { it.symbol to it.alias }
-        return map
     }
 }

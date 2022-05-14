@@ -141,7 +141,7 @@ class MarketController(
         @RequestParam("symbols", required = false)
         symbols: String?
     ): ExchangeInfoResponse {
-        val symbolsMap = symbolMapper.getAll()
+        val symbolsMap = symbolMapper.symbolToAliasMap()
         val pairConfigs = accountantProxy.getPairConfigs()
             .map {
                 ExchangeInfoSymbol(
