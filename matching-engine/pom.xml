@@ -67,6 +67,11 @@
                 <artifactId>interceptors</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.utility.preferences</groupId>
+                <artifactId>preferences</artifactId>
+                <version>${project.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>

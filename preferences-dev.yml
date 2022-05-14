@@ -1,0 +1,159 @@
+addressTypes:
+  - addressType: ethereum
+    addressRegex: "*"
+  - addressType: test-bitcoin
+    addressRegex: "*"
+chains:
+  - name: test-bitcoin
+    addressType: test-bitcoin
+    endpointUrl: lb://chain-scan-gateway/test-bitcoin/transfers
+    schedule:
+      delay: 600
+      errorDelay: 60
+  - name: test-ethereum
+    addressType: ethereum
+    endpointUrl: lb://chain-scan-gateway/test-eth/transfers
+    schedule:
+      delay: 90
+      errorDelay: 60
+currencies:
+  - symbol: IRT
+    name: Toman
+    precision: 0.1
+    mainBalance: 10000
+    dailyTotal: 1000
+    dailyCount: 100
+    monthlyTotal: 30000
+    monthlyCount: 3000
+  - symbol: TBTC
+    name: Bitcoin (Test)
+    precision: 0.000001
+    mainBalance: 10000
+    dailyTotal: 1000
+    dailyCount: 100
+    monthlyTotal: 30000
+    monthlyCount: 3000
+    implementations:
+      - chain: test-bitcoin
+        withdrawFee: 0.0001
+        withdrawMin: 0.0001
+        decimal: 0
+    gift: 21000000
+  - symbol: TETH
+    name: Ethereum (Test)
+    precision: 0.000001
+    mainBalance: 10000
+    dailyTotal: 1000
+    dailyCount: 100
+    monthlyTotal: 30000
+    monthlyCount: 3000
+    implementations:
+      - chain: test-ethereum
+        withdrawFee: 0.00001
+        withdrawMin: 0.000001
+        decimal: 18
+    gift: 2000
+  - symbol: TUSDT
+    name: Tether (Test)
+    precision: 0.01
+    mainBalance: 10000
+    dailyTotal: 1000
+    dailyCount: 100
+    monthlyTotal: 30000
+    monthlyCount: 3000
+    implementations:
+      - chain: ethereum
+        token: true
+        tokenAddress: 0x110a13fc3efe6a245b50102d2d79b3e76125ae83
+        tokenName: Tether USD
+        withdrawFee: 0.01
+        withdrawMin: 0.01
+        decimal: 6
+    gift: 1000000
+markets:
+  - leftSide: TBTC
+    rightSide: TUSDT
+    aliases:
+      - key: binance
+        alias: TBTCTUSDT
+    feeConfigs:
+      - direction: ASK
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+      - direction: BID
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+  - leftSide: TETH
+    rightSide: TUSDT
+    aliases:
+      - key: binance
+        alias: TETHTUSDT
+    feeConfigs:
+      - direction: ASK
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+      - direction: BID
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+  - leftSide: TBTC
+    rightSide: IRT
+    aliases:
+      - key: binance
+        alias: TBTCIRT
+    feeConfigs:
+      - direction: ASK
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+      - direction: BID
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+  - leftSide: TETH
+    rightSide: IRT
+    aliases:
+      - key: binance
+        alias: TETHIRT
+    feeConfigs:
+      - direction: ASK
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+      - direction: BID
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+  - leftSide: TUSDT
+    rightSide: IRT
+    aliases:
+      - key: binance
+        alias: TUSDTIRT
+    feeConfigs:
+      - direction: ASK
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+      - direction: BID
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+wallet:
+  schedule:
+    delay: 10
+    batchSize: 10000
+userLimits:
+  - owner: 1
+    action: withdraw
+    walletType: main
+    withdrawFee: 0.0001
+    dailyTotal: 1000
+    dailyCount: 100
+    monthlyTotal: 30000
+    monthlyCount: 3000
+system:
+  walletTitle: system
+  walletLevel: basic

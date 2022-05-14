@@ -4,7 +4,7 @@ interface SymbolMapper {
 
     suspend fun map(symbol: String?): String?
 
-    suspend fun unmap(value: String?): String?
+    suspend fun unmap(alias: String?): String?
 
-    suspend fun getKeyValues(): Map<String, String>
+    suspend fun getAll(): Map<String, String>
 }

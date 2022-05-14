@@ -10,5 +10,3 @@ spring:
   redis:
     host: ${REDIS_HOST:localhost}
     port: 6379
-  app:
-    symbols: btc_usdt,eth_usdt,eth_btc,tbtc_tusdt,teth_tusdt,teth_tbtc,btc_irt,eth_irt,bnb_irt,bnb_usdt,busd_irt
