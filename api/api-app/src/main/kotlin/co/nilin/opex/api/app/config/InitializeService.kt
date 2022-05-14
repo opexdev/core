@@ -2,7 +2,7 @@ package co.nilin.opex.api.app.config
 
 import co.nilin.opex.api.ports.postgres.dao.SymbolMapRepository
 import co.nilin.opex.api.ports.postgres.model.SymbolMapModel
-import co.nilin.opex.utility.preferences.ProjectPreferences
+import co.nilin.opex.utility.preferences.Preferences
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Autowired
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component
 @DependsOn("postgresConfig")
 class InitializeService(private val symbolMapRepository: SymbolMapRepository) {
     @Autowired
-    private lateinit var preferences: ProjectPreferences
+    private lateinit var preferences: Preferences
 
     @Autowired
     fun init() = runBlocking {

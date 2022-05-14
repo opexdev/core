@@ -3,7 +3,7 @@ package co.nilin.opex.accountant.app.config
 import co.nilin.opex.accountant.ports.postgres.dao.PairConfigRepository
 import co.nilin.opex.accountant.ports.postgres.dao.PairFeeConfigRepository
 import co.nilin.opex.accountant.ports.postgres.model.PairFeeConfigModel
-import co.nilin.opex.utility.preferences.ProjectPreferences
+import co.nilin.opex.utility.preferences.Preferences
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Autowired
@@ -17,7 +17,7 @@ class InitializeService(
     private val pairFeeConfigRepository: PairFeeConfigRepository
 ) {
     @Autowired
-    private lateinit var preferences: ProjectPreferences
+    private lateinit var preferences: Preferences
 
     @Autowired
     fun init() = runBlocking {

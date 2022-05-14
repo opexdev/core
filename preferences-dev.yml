@@ -141,9 +141,12 @@ markets:
         userLevel: "*"
         makerFee: 0.01
         takerFee: 0.01
+wallet:
+  schedule:
+    delay: 10
+    batchSize: 10000
 userLimits:
-  - level: zero
-    owner: 1
+  - owner: 1
     action: withdraw
     walletType: main
     withdrawFee: 0.0001
@@ -151,9 +154,6 @@ userLimits:
     dailyCount: 100
     monthlyTotal: 30000
     monthlyCount: 3000
-systemWallet:
-  title: system
-  level: basic
-  schedule:
-    delay: 10
-    batchSize: 10000
+system:
+  walletTitle: system
+  walletLevel: basic

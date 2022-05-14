@@ -3,7 +3,7 @@ package co.nilin.opex.utility.preferences
 import java.math.BigDecimal
 
 data class UserLimit(
-    var level: String = "",
+    var level: String? = null,
     var owner: Long = 1,
     var action: String = "withdraw",
     var walletType: String = "main",

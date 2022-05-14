@@ -2,7 +2,7 @@ package co.nilin.opex.wallet.app.service
 
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
-import co.nilin.opex.utility.preferences.ProjectPreferences
+import co.nilin.opex.utility.preferences.Preferences
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.spi.CurrencyService
 import co.nilin.opex.wallet.core.spi.WalletManager
@@ -18,7 +18,7 @@ class UserRegistrationService(
     val walletOwnerManager: WalletOwnerManager, val walletManager: WalletManager, val currencyService: CurrencyService
 ) {
     @Autowired
-    private lateinit var preferences: ProjectPreferences
+    private lateinit var preferences: Preferences
 
     @Transactional
     suspend fun registerNewUser(event: UserCreatedEvent) {

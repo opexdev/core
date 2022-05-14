@@ -1,7 +1,7 @@
 package co.nilin.opex.wallet.app.config
 
 import co.nilin.opex.utility.preferences.Currency
-import co.nilin.opex.utility.preferences.ProjectPreferences
+import co.nilin.opex.utility.preferences.Preferences
 import co.nilin.opex.utility.preferences.UserLimit
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepository
 import co.nilin.opex.wallet.ports.postgres.dao.UserLimitsRepository
@@ -30,7 +30,7 @@ class InitializeService(
     private val userLimitsRepository: UserLimitsRepository
 ) {
     @Autowired
-    private lateinit var preferences: ProjectPreferences
+    private lateinit var preferences: Preferences
 
     @Autowired
     fun init() = runBlocking {
@@ -61,9 +61,9 @@ class InitializeService(
         }
     }
 
-    private suspend fun addSystemWallet(p: ProjectPreferences) = coroutineScope {
+    private suspend fun addSystemWallet(p: Preferences) = coroutineScope {
         if (!walletOwnerRepository.existsById(1).awaitSingle()) {
-            walletOwnerRepository.save(WalletOwnerModel(null, systemUuid, p.systemWallet.title, p.systemWallet.level))
+            walletOwnerRepository.save(WalletOwnerModel(null, systemUuid, p.system.walletTitle, p.system.walletLevel))
                 .awaitSingleOrNull()
         }
         val items = p.currencies.flatMap {

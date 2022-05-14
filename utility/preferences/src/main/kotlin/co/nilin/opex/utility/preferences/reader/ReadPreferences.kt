@@ -1,6 +1,6 @@
 package co.nilin.opex.utility.preferences.reader
 
-import co.nilin.opex.utility.preferences.ProjectPreferences
+import co.nilin.opex.utility.preferences.Preferences
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import org.springframework.beans.factory.annotation.Value
@@ -16,8 +16,8 @@ class ReadPreferences() {
     private lateinit var preferencesYmlPath: String
 
     @Bean
-    fun preferences(): ProjectPreferences = runCatching {
+    fun preferences(): Preferences = runCatching {
         val preferencesYml = File(preferencesYmlPath)
-        mapper.readValue(preferencesYml, ProjectPreferences::class.java)
-    }.getOrElse { ProjectPreferences() }
+        mapper.readValue(preferencesYml, Preferences::class.java)
+    }.getOrElse { Preferences() }
 }

@@ -5,7 +5,7 @@ import co.nilin.opex.bcgateway.ports.postgres.model.*
 import co.nilin.opex.utility.preferences.AddressType
 import co.nilin.opex.utility.preferences.Chain
 import co.nilin.opex.utility.preferences.Currency
-import co.nilin.opex.utility.preferences.ProjectPreferences
+import co.nilin.opex.utility.preferences.Preferences
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
@@ -28,7 +28,7 @@ class InitializeService(
     private val walletSyncScheduleRepository: WalletSyncScheduleRepository
 ) {
     @Autowired
-    private lateinit var preferences: ProjectPreferences
+    private lateinit var preferences: Preferences
 
     @Autowired
     fun init() = runBlocking {
@@ -40,8 +40,7 @@ class InitializeService(
 
     private suspend fun addAddressTypes(data: List<AddressType>) = coroutineScope {
         val items = data.mapIndexed { i, it ->
-            if (addressTypeRepository.existsById(i + 1L).awaitSingle())
-                null
+            if (addressTypeRepository.existsById(i + 1L).awaitSingle()) null
             else AddressTypeModel(null, it.addressType, it.addressRegex, null)
         }.filterNotNull()
         runCatching { addressTypeRepository.saveAll(items).collectList().awaitSingleOrNull() }
@@ -64,25 +63,24 @@ class InitializeService(
                 currencyRepository.insert(it.name, it.symbol).awaitSingleOrNull()
             }
         }
-        val items =
-            data.flatMap { it.implementations.map { impl -> it to impl } }.map { (currency, impl) ->
-                CurrencyImplementationModel(
-                    null,
-                    currency.symbol,
-                    impl.chain,
-                    impl.token,
-                    impl.tokenAddress,
-                    impl.tokenName,
-                    impl.withdrawEnabled,
-                    impl.withdrawFee,
-                    impl.withdrawMin,
-                    impl.decimal
-                )
-            }
+        val items = data.flatMap { it.implementations.map { impl -> it to impl } }.map { (currency, impl) ->
+            CurrencyImplementationModel(
+                null,
+                currency.symbol,
+                impl.chain,
+                impl.token,
+                impl.tokenAddress,
+                impl.tokenName,
+                impl.withdrawEnabled,
+                impl.withdrawFee,
+                impl.withdrawMin,
+                impl.decimal
+            )
+        }
         runCatching { currencyImplementationRepository.saveAll(items).collectList().awaitSingleOrNull() }
     }
 
-    private suspend fun addSchedules(data: ProjectPreferences) = coroutineScope {
+    private suspend fun addSchedules(data: Preferences) = coroutineScope {
         data.chains.map {
             chainSyncScheduleRepository.insert(it.name, it.schedule.delay.toInt(), it.schedule.errorDelay.toInt())
                 .awaitSingleOrNull()
@@ -90,10 +88,7 @@ class InitializeService(
         if (walletSyncScheduleRepository.existsById(1).awaitSingle()) null
         else {
             val item = WalletSyncScheduleModel(
-                null,
-                LocalDateTime.now(),
-                data.systemWallet.schedule.delay,
-                data.systemWallet.schedule.batchSize
+                null, LocalDateTime.now(), data.wallet.schedule.delay, data.wallet.schedule.batchSize
             )
             runCatching { walletSyncScheduleRepository.save(item).awaitSingleOrNull() }
         }

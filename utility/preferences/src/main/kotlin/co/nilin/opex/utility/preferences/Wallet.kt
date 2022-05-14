@@ -1,7 +1,5 @@
 package co.nilin.opex.utility.preferences
 
-data class SystemWallet(
-    var title: String = "system",
-    var level: String = "basic",
+data class Wallet(
     var schedule: WalletSyncSchedule = WalletSyncSchedule()
 )
