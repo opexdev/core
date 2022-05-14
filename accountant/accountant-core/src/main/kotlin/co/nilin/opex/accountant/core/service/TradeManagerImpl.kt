@@ -50,8 +50,10 @@ open class TradeManagerImpl(
         //
         //check maker uuid
         //
-        val leftSidePCRate = pairStaticRateLoader.calculateStaticRate(platformCoin, trade.pair.leftSideName)
-        val rightSidePCRate = pairStaticRateLoader.calculateStaticRate(platformCoin, trade.pair.rightSideName)
+//        val leftSidePCRate = pairStaticRateLoader.calculateStaticRate(platformCoin, trade.pair.leftSideName)
+//        val rightSidePCRate = pairStaticRateLoader.calculateStaticRate(platformCoin, trade.pair.rightSideName)
+        val leftSidePCRate = 0.0
+        val rightSidePCRate = 0.0
 
         val takerMatchedAmount = if (takerOrder.direction == OrderDirection.ASK) {
             trade.matchedQuantity.toBigDecimal().multiply(takerOrder.leftSideFraction.toBigDecimal())
