@@ -11,7 +11,5 @@ class InitializeService() {
     private lateinit var preferences: Preferences
 
     @Bean("symbols")
-    fun getSymbols(): List<String> {
-        return preferences.markets.map { it.pair ?: "${it.leftSide}_${it.rightSide}" }.map { it.lowercase() }
-    }
+    fun getSymbols(): List<String> = preferences.markets.map { it.pair ?: "${it.leftSide}_${it.rightSide}" }
 }
