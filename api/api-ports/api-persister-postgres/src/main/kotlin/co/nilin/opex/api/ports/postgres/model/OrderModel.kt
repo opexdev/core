@@ -1,8 +1,8 @@
 package co.nilin.opex.api.ports.postgres.model
 
-import co.nilin.opex.matching.engine.core.model.MatchConstraint
-import co.nilin.opex.matching.engine.core.model.OrderDirection
-import co.nilin.opex.matching.engine.core.model.OrderType
+import co.nilin.opex.api.core.inout.MatchConstraint
+import co.nilin.opex.api.core.inout.MatchingOrderType
+import co.nilin.opex.api.core.inout.OrderDirection
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Version
 import org.springframework.data.relational.core.mapping.Column
@@ -26,7 +26,7 @@ class OrderModel(
     @Column("user_level") val userLevel: String?,
     @Column("side") val direction: OrderDirection?,
     @Column("match_constraint") val constraint: MatchConstraint?,
-    @Column("order_type") val type: OrderType?,
+    @Column("order_type") val type: MatchingOrderType?,
     @Column("price") val price: Double?,
     @Column("quantity") val quantity: Double?,
     @Column("quote_quantity") val quoteQuantity: Double?,

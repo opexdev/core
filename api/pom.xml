@@ -33,16 +33,6 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>co.nilin.opex.matching.engine.core</groupId>
-                <artifactId>matching-engine-core</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>co.nilin.opex.accountant.core</groupId>
-                <artifactId>accountant-core</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>co.nilin.opex.api.core</groupId>
                 <artifactId>api-core</artifactId>
                 <version>${project.version}</version>

@@ -1,7 +1,7 @@
 package co.nilin.opex.api.core.spi
 
-import co.nilin.opex.accountant.core.inout.RichOrder
-import co.nilin.opex.accountant.core.inout.RichOrderUpdate
+import co.nilin.opex.api.core.event.RichOrder
+import co.nilin.opex.api.core.event.RichOrderUpdate
 
 interface OrderPersister {
 

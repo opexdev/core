@@ -1,10 +1,6 @@
 package co.nilin.opex.api.ports.binance.util
 
-import co.nilin.opex.api.core.inout.OrderSide
-import co.nilin.opex.api.core.inout.TimeInForce
-import co.nilin.opex.matching.engine.core.model.MatchConstraint
-import co.nilin.opex.matching.engine.core.model.OrderDirection
-import co.nilin.opex.matching.engine.core.model.OrderType
+import co.nilin.opex.api.core.inout.*
 
 fun OrderSide.asOrderDirection(): OrderDirection {
     if (this == OrderSide.BUY)
@@ -20,11 +16,11 @@ fun TimeInForce.asMatchConstraint(): MatchConstraint {
     }
 }
 
-fun co.nilin.opex.api.core.inout.OrderType.asMatchingOrderType(): OrderType {
+fun OrderType.asMatchingOrderType(): MatchingOrderType {
     return when (this) {
-        co.nilin.opex.api.core.inout.OrderType.LIMIT -> OrderType.LIMIT_ORDER
-        co.nilin.opex.api.core.inout.OrderType.MARKET -> OrderType.MARKET_ORDER
-        else -> OrderType.LIMIT_ORDER
+        OrderType.LIMIT -> MatchingOrderType.LIMIT_ORDER
+        OrderType.MARKET -> MatchingOrderType.MARKET_ORDER
+        else -> MatchingOrderType.LIMIT_ORDER
     }
 }
 

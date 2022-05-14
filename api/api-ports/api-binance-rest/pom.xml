@@ -21,10 +21,6 @@
             <artifactId>kotlin-reflect</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.matching.engine.core</groupId>
-            <artifactId>matching-engine-core</artifactId>
-        </dependency>
-        <dependency>
             <groupId>co.nilin.opex.api.core</groupId>
             <artifactId>api-core</artifactId>
         </dependency>

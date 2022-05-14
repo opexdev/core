@@ -1,8 +1,8 @@
 package co.nilin.opex.api.ports.postgres.impl
 
-import co.nilin.opex.accountant.core.inout.OrderStatus
-import co.nilin.opex.accountant.core.inout.RichOrder
-import co.nilin.opex.accountant.core.inout.RichOrderUpdate
+import co.nilin.opex.api.core.event.RichOrder
+import co.nilin.opex.api.core.event.RichOrderUpdate
+import co.nilin.opex.api.core.inout.OrderStatus
 import co.nilin.opex.api.core.spi.OrderPersister
 import co.nilin.opex.api.ports.postgres.dao.OrderRepository
 import co.nilin.opex.api.ports.postgres.dao.OrderStatusRepository

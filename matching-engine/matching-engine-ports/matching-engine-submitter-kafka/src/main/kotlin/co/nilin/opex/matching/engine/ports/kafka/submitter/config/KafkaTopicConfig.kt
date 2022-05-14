@@ -20,7 +20,7 @@ class KafkaTopicConfig(
 
     private val logger = LoggerFactory.getLogger(KafkaTopicConfig::class.java)
 
-    @EventListener(ApplicationReadyEvent::class)
+    @Autowired
     fun createTopics(applicationContext: GenericApplicationContext) {
         logger.info("Creating kafka topics...")
 

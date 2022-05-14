@@ -3,9 +3,8 @@ package co.nilin.opex.accountant.ports.kafka.submitter.config
 import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.common.config.TopicConfig
 import org.slf4j.LoggerFactory
-import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.event.EventListener
 import org.springframework.context.support.GenericApplicationContext
 import org.springframework.kafka.config.TopicBuilder
 import java.util.function.Supplier
@@ -15,7 +14,7 @@ class KafkaTopicConfig {
 
     private val logger = LoggerFactory.getLogger(KafkaTopicConfig::class.java)
 
-    @EventListener(ApplicationReadyEvent::class)
+    @Autowired
     fun createTopics(applicationContext: GenericApplicationContext) {
         logger.info("Creating kafka topic beans...")
 

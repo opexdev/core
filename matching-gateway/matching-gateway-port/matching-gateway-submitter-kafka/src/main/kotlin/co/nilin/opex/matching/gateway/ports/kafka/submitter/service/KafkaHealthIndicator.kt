@@ -10,14 +10,17 @@ import org.springframework.stereotype.Component
 class KafkaHealthIndicator(private val adminClient: AdminClient) {
 
     private val logger = LoggerFactory.getLogger(KafkaHealthIndicator::class.java)
-
-    var isHealthy = true
     private val options = DescribeClusterOptions().timeoutMs(1000)
+    private val healthyNodeSize = 3
+    final var isHealthy = true
+        private set
 
     @Scheduled(fixedDelay = 5000, initialDelay = 5000)
     fun check() {
         isHealthy = try {
-            adminClient.describeCluster(options)
+            val description = adminClient.describeCluster(options)
+            if (description.nodes().get().size < healthyNodeSize)
+                throw IllegalStateException("Insufficient nodes")
             true
         } catch (e: Exception) {
             logger.warn("Kafka is not healthy!: ${e.message}")

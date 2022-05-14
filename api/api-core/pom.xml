@@ -36,14 +36,6 @@
             <artifactId>kotlinx-coroutines-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.matching.engine.core</groupId>
-            <artifactId>matching-engine-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>co.nilin.opex.accountant.core</groupId>
-            <artifactId>accountant-core</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-tx</artifactId>
             <scope>provided</scope>
