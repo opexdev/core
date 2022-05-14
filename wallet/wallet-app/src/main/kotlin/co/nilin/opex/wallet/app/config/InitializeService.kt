@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.DependsOn
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
+import javax.annotation.PostConstruct
 
 @Component
 @DependsOn("postgresConfig")
@@ -32,7 +33,7 @@ class InitializeService(
     @Autowired
     private lateinit var preferences: Preferences
 
-    @Autowired
+    @PostConstruct
     fun init() = runBlocking {
         addCurrencies(preferences.currencies)
         addSystemWallet(preferences)

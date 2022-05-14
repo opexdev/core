@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.DependsOn
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
+import javax.annotation.PostConstruct
 
 @Component
 @DependsOn("postgresConfig")
@@ -30,7 +31,7 @@ class InitializeService(
     @Autowired
     private lateinit var preferences: Preferences
 
-    @Autowired
+    @PostConstruct
     fun init() = runBlocking {
         addAddressTypes(preferences.addressTypes)
         addChains(preferences.chains)
