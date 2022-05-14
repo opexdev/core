@@ -25,6 +25,7 @@ currencies:
     dailyCount: 100
     monthlyTotal: 30000
     monthlyCount: 3000
+    gift: 100000
   - symbol: TBTC
     name: Bitcoin (Test)
     precision: 0.000001
