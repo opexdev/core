@@ -50,4 +50,3 @@ app:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
   wallet:
     url: lb://opex-wallet
-  preferences: ${PREFERENCES:classpath:preferences.yml}

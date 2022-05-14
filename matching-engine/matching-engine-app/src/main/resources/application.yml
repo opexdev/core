@@ -10,4 +10,3 @@ spring:
   redis:
     host: ${REDIS_HOST:localhost}
     port: 6379
-  preferences: ${PREFERENCES:classpath:preferences.yml}

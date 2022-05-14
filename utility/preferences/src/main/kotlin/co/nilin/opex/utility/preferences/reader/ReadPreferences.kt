@@ -12,7 +12,7 @@ import java.io.File
 class ReadPreferences() {
     private val mapper = ObjectMapper(YAMLFactory())
 
-    @Value("\${app.preferences}")
+    @Value("\${PREFERENCES:classpath:preferences.yml}")
     private lateinit var preferencesYmlPath: String
 
     @Bean

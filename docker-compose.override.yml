@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  accountant:
+    volumes:
+      - "./preferences-$PREFERENCES_IDENTIFIER.yml:/preferences.yml"
+  matching-engine:
+    volumes:
+      - "./preferences-$PREFERENCES_IDENTIFIER.yml:/preferences.yml"
+  wallet:
+    volumes:
+      - "./preferences-$PREFERENCES_IDENTIFIER.yml:/preferences.yml"
+  api:
+    volumes:
+      - "./preferences-$PREFERENCES_IDENTIFIER.yml:/preferences.yml"
+  bc-gateway:
+    volumes:
+      - "./preferences-$PREFERENCES_IDENTIFIER.yml:/preferences.yml"
