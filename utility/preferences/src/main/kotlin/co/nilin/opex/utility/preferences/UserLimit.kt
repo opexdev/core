@@ -4,12 +4,12 @@ import java.math.BigDecimal
 
 data class UserLimit(
     var level: String = "",
-    var owner: Long = 0,
-    var action: String = "",
-    var walletType: String = "",
-    var withdrawFee: BigDecimal = BigDecimal.ZERO,
-    var dailyTotal: BigDecimal = BigDecimal.ZERO,
-    var dailyCount: Int = 0,
-    var monthlyTotal: BigDecimal = BigDecimal.ZERO,
-    var monthlyCount: Int = 0
+    var owner: Long = 1,
+    var action: String = "withdraw",
+    var walletType: String = "main",
+    var withdrawFee: BigDecimal = BigDecimal.valueOf(0.0001),
+    var dailyTotal: BigDecimal = BigDecimal.valueOf(1000),
+    var dailyCount: Int = 100,
+    var monthlyTotal: BigDecimal = BigDecimal.valueOf(30000),
+    var monthlyCount: Int = 3000
 )
