@@ -29,8 +29,8 @@ class OrderKafkaConfig {
     @Value("\${spring.kafka.consumer.group-id}")
     private lateinit var groupId: String
 
-    @Value("\${spring.app.symbols}")
-    private lateinit var symbols: String
+    @Autowired
+    private lateinit var symbols: List<String>
 
     @Bean("consumerConfigs")
     fun consumerConfigs(): Map<String, Any?> {
@@ -60,7 +60,7 @@ class OrderKafkaConfig {
         @Qualifier("orderKafkaTemplate") template: KafkaTemplate<String?, OrderSubmitRequest>,
         @Qualifier("orderConsumerFactory") consumerFactory: ConsumerFactory<String, OrderSubmitRequest>
     ) {
-        val topics = symbols.split(",").map { s -> "orders_$s" }.toTypedArray()
+        val topics = symbols.map { s -> "orders_$s" }.toTypedArray()
         val containerProps = ContainerProperties(*topics)
         containerProps.messageListener = orderKafkaListener
         val container = KafkaMessageListenerContainer(consumerFactory, containerProps)

@@ -1,24 +1,24 @@
 #!/bin/sh
-set -em
-
-## Export environment variables
-export VAULT_SKIP_VERIFY='true'
-
-vault server -config /vault/config/vault.json &
+set -e
 
 unseal() {
+  ## Generate keys
+  if [ ! -f /vault/file/generated_keys.txt ]; then
+    vault operator init >/vault/file/generated_keys.txt
+  fi
+
   ## Parse unsealed keys
-  (grep "Unseal Key " < /vault/file/generated_keys.txt | cut -c15-) > /vault/file/keys.txt
+  (grep "Unseal Key " </vault/file/generated_keys.txt | cut -c15-) >/vault/file/keys.txt
 
   while IFS= read -r line; do
-      vault operator unseal $line
-  done < /vault/file/keys.txt
+    vault operator unseal $line
+  done </vault/file/keys.txt
 
   ## Get root token
-  (grep "Initial Root Token: " < /vault/file/generated_keys.txt | cut -c21-) > /vault/file/tokens.txt
+  (grep "Initial Root Token: " </vault/file/generated_keys.txt | cut -c21-) >/vault/file/tokens.txt
   while IFS= read -r line; do
-      export VAULT_TOKEN=${line}
-  done < /vault/file/tokens.txt
+    export VAULT_TOKEN=${line}
+  done </vault/file/tokens.txt
 }
 
 init_secrets() {
@@ -87,16 +87,15 @@ init_secrets() {
   vault kv put secret/opex-referral dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USER} db_backup_pass=${DB_BACKUP_PASS}
 }
 
-# Wait for server to initialize
-sleep 10
-if [ ! -f /vault/file/generated_keys.txt ]; then
-  ## Generate keys
-  vault operator init > /vault/file/generated_keys.txt
+run() {
   unseal
-  init_secrets
-else
-  unseal
-fi
+  if [ ! -f /vault/file/INITED ]; then
+    init_secrets
+    touch /vault/file/INITED
+  fi
+}
 
-## Keep alive
-fg %1
+(sleep 10 && run) &
+
+## Run vault as pid 1
+exec vault server -config /vault/config/vault.json -tls-skip-verify -non-interactive
