@@ -5,15 +5,6 @@ CREATE TABLE IF NOT EXISTS currency
     precision DECIMAL NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS currency_rate
-(
-    id              SERIAL PRIMARY KEY,
-    source_currency VARCHAR(25) NOT NULL REFERENCES currency (symbol),
-    dest_currency   VARCHAR(25) NOT NULL REFERENCES currency (symbol),
-    rate            DECIMAL     NOT NULL,
-    UNIQUE (source_currency, dest_currency)
-);
-
 CREATE TABLE IF NOT EXISTS wallet_owner
 (
     id               SERIAL PRIMARY KEY,
