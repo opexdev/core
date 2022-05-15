@@ -8,13 +8,13 @@ import reactor.core.publisher.Mono
 
 @Repository
 interface PairConfigRepository : ReactiveCrudRepository<PairConfigModel, String> {
-    @Query("insert into pair_config values (:pair, :leftSide, :rightSide, :leftSideFraction, :rightSideFraction, :rate) on conflict do nothing")
+
+    @Query("insert into pair_config values (:pair, :leftSide, :rightSide, :leftSideFraction, :rightSideFraction) on conflict do nothing")
     fun insert(
         pair: String,
         leftSide: String,
         rightSide: String,
         leftSideFraction: Double,
-        rightSideFraction: Double,
-        rate: Double
+        rightSideFraction: Double
     ): Mono<Void>
 }

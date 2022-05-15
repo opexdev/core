@@ -37,12 +37,6 @@ internal class TradeManagerImplTest {
     lateinit var pairConfigLoader: PairConfigLoader
 
     @Mock
-    lateinit var pairStaticRateLoader: PairStaticRateLoader
-
-    @Mock
-    lateinit var walletProxy: WalletProxy
-
-    @Mock
     lateinit var tempEventPersister: TempEventPersister
 
     @Mock
@@ -56,7 +50,6 @@ internal class TradeManagerImplTest {
 
     private val orderManager: OrderManager
     private val tradeManager: TradeManager
-    private val feeCalculator: FeeCalculator
 
     init {
         MockitoAnnotations.openMocks(this)
@@ -71,13 +64,6 @@ internal class TradeManagerImplTest {
             richOrderPublisher
         )
 
-        feeCalculator = FeeCalculatorImpl(
-            pairStaticRateLoader,
-            walletProxy,
-            "pcoin",
-            "0x0"
-        )
-
         tradeManager = TradeManagerImpl(
             financialActionPersister,
             financeActionLoader,
@@ -85,8 +71,9 @@ internal class TradeManagerImplTest {
             tempEventPersister,
             richTradePublisher,
             richOrderPublisher,
-            feeCalculator
+            FeeCalculatorImpl("0x0")
         )
+
         runBlocking {
             Mockito.`when`(tempEventPersister.loadTempEvents(ArgumentMatchers.anyString())).thenReturn(emptyList())
         }

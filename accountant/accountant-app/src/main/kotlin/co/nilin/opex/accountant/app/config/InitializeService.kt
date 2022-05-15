@@ -33,8 +33,7 @@ class InitializeService(
                 it.leftSide,
                 it.rightSide,
                 leftSideFraction,
-                rightSideFraction,
-                0.0
+                rightSideFraction
             ).awaitSingleOrNull()
             it.feeConfigs.forEach { f ->
                 runCatching {
