@@ -3,6 +3,7 @@ package co.nilin.opex.accountant.core.service
 import co.nilin.opex.accountant.core.api.OrderManager
 import co.nilin.opex.accountant.core.inout.OrderStatus
 import co.nilin.opex.accountant.core.inout.RichOrder
+import co.nilin.opex.accountant.core.inout.RichOrderUpdate
 import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.Order
 import co.nilin.opex.accountant.core.spi.*
@@ -105,40 +106,6 @@ open class OrderManagerImpl(
         return emptyList()
     }
 
-    private suspend fun publishRichOrder(order: Order, remainedQuantity: BigDecimal, status: OrderStatus? = null) {
-        richOrderPublisher.publish(
-            RichOrder(
-                order.id,
-                order.pair,
-                order.ouid,
-                order.uuid,
-                order.userLevel,
-                order.makerFee.toBigDecimal(),
-                order.takerFee.toBigDecimal(),
-                order.leftSideFraction.toBigDecimal(),
-                order.rightSideFraction.toBigDecimal(),
-                order.direction,
-                order.matchConstraint,
-                order.orderType,
-                order.origPrice,
-                order.origQuantity,
-                order.origPrice.multiply(order.origQuantity),
-                order.quantity.toBigDecimal().subtract(remainedQuantity)
-                    .multiply(order.leftSideFraction.toBigDecimal()),
-                order.origPrice.multiply(
-                    order.quantity.toBigDecimal().subtract(remainedQuantity)
-                ),
-                status?.code ?: if (remainedQuantity.compareTo(BigDecimal.ZERO) == 0) {
-                    OrderStatus.FILLED.code
-                } else if (remainedQuantity.compareTo(order.quantity.toBigDecimal()) == 0) {
-                    OrderStatus.NEW.code
-                } else {
-                    OrderStatus.PARTIALLY_FILLED.code
-                }
-            )
-        )
-    }
-
     override suspend fun handleUpdateOrder(updatedOrderEvent: UpdatedOrderEvent): List<FinancialAction> {
         TODO("Not yet implemented")
     }
@@ -175,7 +142,15 @@ open class OrderManagerImpl(
         //update order status
         order.status = OrderStatus.REJECTED.code
         orderPersister.save(order)
-        publishRichOrder(order, order.quantity.toBigDecimal(), OrderStatus.REJECTED)
+        richOrderPublisher.publish(
+            RichOrderUpdate(
+                order.ouid,
+                order.price.toBigDecimal(),
+                order.quantity.toBigDecimal(),
+                BigDecimal.ZERO,
+                OrderStatus.REJECTED
+            )
+        )
         return financialActionPersister.persist(listOf(financialAction))
     }
 
@@ -211,7 +186,49 @@ open class OrderManagerImpl(
         //update order status
         order.status = OrderStatus.CANCELED.code
         orderPersister.save(order)
-        publishRichOrder(order, cancelOrderEvent.quantity.toBigDecimal(), OrderStatus.CANCELED)
+        richOrderPublisher.publish(
+            RichOrderUpdate(
+                order.ouid,
+                order.price.toBigDecimal(),
+                order.quantity.toBigDecimal(),
+                cancelOrderEvent.remainedQuantity.toBigDecimal(),
+                OrderStatus.REJECTED
+            )
+        )
         return financialActionPersister.persist(listOf(financialAction))
+    }
+
+    private suspend fun publishRichOrder(order: Order, remainedQuantity: BigDecimal, status: OrderStatus? = null) {
+        richOrderPublisher.publish(
+            RichOrder(
+                order.id,
+                order.pair,
+                order.ouid,
+                order.uuid,
+                order.userLevel,
+                order.makerFee.toBigDecimal(),
+                order.takerFee.toBigDecimal(),
+                order.leftSideFraction.toBigDecimal(),
+                order.rightSideFraction.toBigDecimal(),
+                order.direction,
+                order.matchConstraint,
+                order.orderType,
+                order.origPrice,
+                order.origQuantity,
+                order.origPrice.multiply(order.origQuantity),
+                order.quantity.toBigDecimal().subtract(remainedQuantity)
+                    .multiply(order.leftSideFraction.toBigDecimal()),
+                order.origPrice.multiply(
+                    order.quantity.toBigDecimal().subtract(remainedQuantity)
+                ),
+                status?.code ?: if (remainedQuantity.compareTo(BigDecimal.ZERO) == 0) {
+                    OrderStatus.FILLED.code
+                } else if (remainedQuantity.compareTo(order.quantity.toBigDecimal()) == 0) {
+                    OrderStatus.NEW.code
+                } else {
+                    OrderStatus.PARTIALLY_FILLED.code
+                }
+            )
+        )
     }
 }
