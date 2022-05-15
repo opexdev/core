@@ -22,7 +22,7 @@ class FinancialActionModel(
     val ip: String,
     @Column("create_date") val createDate: LocalDateTime,
     val status: FinancialActionStatus = FinancialActionStatus.CREATED,
-    @Column("retry_count") val retryCount: Int? = null,
+    @Column("retry_count") val retryCount: Int = 0,
     @Column("last_try_date") val lastTryDate: LocalDateTime? = null
 )
 

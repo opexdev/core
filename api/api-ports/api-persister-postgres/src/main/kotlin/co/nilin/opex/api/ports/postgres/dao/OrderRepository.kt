@@ -1,8 +1,8 @@
 package co.nilin.opex.api.ports.postgres.dao
 
 import co.nilin.opex.api.core.inout.AggregatedOrderPriceModel
+import co.nilin.opex.api.core.inout.OrderDirection
 import co.nilin.opex.api.ports.postgres.model.OrderModel
-import co.nilin.opex.matching.engine.core.model.OrderDirection
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.query.Param

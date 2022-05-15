@@ -10,7 +10,6 @@ import co.nilin.opex.api.ports.postgres.model.OrderModel
 import co.nilin.opex.api.ports.postgres.model.OrderStatusModel
 import co.nilin.opex.api.ports.postgres.model.TradeTickerData
 import co.nilin.opex.api.ports.postgres.util.*
-import co.nilin.opex.matching.engine.core.model.OrderDirection
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.awaitFirst

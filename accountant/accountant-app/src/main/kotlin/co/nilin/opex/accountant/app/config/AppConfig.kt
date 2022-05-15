@@ -4,6 +4,7 @@ import co.nilin.opex.accountant.app.listener.AccountantEventListener
 import co.nilin.opex.accountant.app.listener.AccountantTempEventListener
 import co.nilin.opex.accountant.app.listener.AccountantTradeListener
 import co.nilin.opex.accountant.app.listener.OrderListener
+import co.nilin.opex.accountant.core.api.FeeCalculator
 import co.nilin.opex.accountant.core.api.FinancialActionJobManager
 import co.nilin.opex.accountant.core.api.OrderManager
 import co.nilin.opex.accountant.core.api.TradeManager
@@ -16,7 +17,6 @@ import co.nilin.opex.accountant.ports.kafka.listener.consumer.OrderKafkaListener
 import co.nilin.opex.accountant.ports.kafka.listener.consumer.TempEventKafkaListener
 import co.nilin.opex.accountant.ports.kafka.listener.consumer.TradeKafkaListener
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.EnableScheduling
@@ -61,28 +61,22 @@ class AppConfig {
 
     @Bean
     fun tradeManager(
-        pairStaticRateLoader: PairStaticRateLoader,
         financeActionPersister: FinancialActionPersister,
         financeActionLoader: FinancialActionLoader,
         orderPersister: OrderPersister,
         tempEventPersister: TempEventPersister,
         richTradePublisher: RichTradePublisher,
         richOrderPublisher: RichOrderPublisher,
-        walletProxy: WalletProxy,
-        @Value("\${app.coin}") platformCoin: String,
-        @Value("\${app.address}") platformAddress: String
+        feeCalculator: FeeCalculator,
     ): TradeManager {
         return TradeManagerImpl(
-            pairStaticRateLoader,
             financeActionPersister,
             financeActionLoader,
             orderPersister,
             tempEventPersister,
             richTradePublisher,
             richOrderPublisher,
-            walletProxy,
-            platformCoin,
-            platformAddress
+            feeCalculator
         )
     }
 

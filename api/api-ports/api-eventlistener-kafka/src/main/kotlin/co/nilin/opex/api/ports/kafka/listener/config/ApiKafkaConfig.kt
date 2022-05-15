@@ -1,11 +1,9 @@
 package co.nilin.opex.api.ports.kafka.listener.config
 
-import co.nilin.opex.accountant.core.inout.RichOrderEvent
-import co.nilin.opex.accountant.core.inout.RichTrade
-import co.nilin.opex.api.ports.kafka.listener.consumer.EventKafkaListener
+import co.nilin.opex.api.core.event.RichOrderEvent
+import co.nilin.opex.api.core.event.RichTrade
 import co.nilin.opex.api.ports.kafka.listener.consumer.OrderKafkaListener
 import co.nilin.opex.api.ports.kafka.listener.consumer.TradeKafkaListener
-import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.serialization.StringDeserializer
@@ -40,12 +38,8 @@ class ApiKafkaConfig {
             ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
             ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JsonDeserializer::class.java,
             JsonDeserializer.TRUSTED_PACKAGES to "co.nilin.opex.*",
+            JsonDeserializer.TYPE_MAPPINGS to "rich_order_event:co.nilin.opex.api.core.event.RichOrderEvent,rich_order:co.nilin.opex.api.core.event.RichOrder,rich_order_update:co.nilin.opex.api.core.event.RichOrderUpdate,rich_trade:co.nilin.opex.api.core.event.RichTrade"
         )
-    }
-
-    @Bean("eventsConsumerFactory")
-    fun consumerFactory(@Qualifier("apiConsumerConfig") consumerConfigs: Map<String, Any>): ConsumerFactory<String, CoreEvent> {
-        return DefaultKafkaConsumerFactory(consumerConfigs)
     }
 
     @Bean("richTradeConsumerFactory")
@@ -70,21 +64,6 @@ class ApiKafkaConfig {
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
         container.setBeanName("ApiTradeKafkaListenerContainer")
         container.commonErrorHandler = createConsumerErrorHandler(template, "richTrade.DLT")
-        container.start()
-    }
-
-    @Autowired
-    @ConditionalOnBean(EventKafkaListener::class)
-    fun configureEventListener(
-        eventListener: EventKafkaListener,
-        template: KafkaTemplate<String?, CoreEvent>,
-        @Qualifier("eventsConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>
-    ) {
-        val containerProps = ContainerProperties(Pattern.compile("events_.*"))
-        containerProps.messageListener = eventListener
-        val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.setBeanName("ApiEventKafkaListenerContainer")
-        container.commonErrorHandler = createConsumerErrorHandler(template, "events.DLT")
         container.start()
     }
 

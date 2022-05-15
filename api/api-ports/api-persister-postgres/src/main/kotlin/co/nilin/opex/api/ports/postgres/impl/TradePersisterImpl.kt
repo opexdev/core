@@ -1,6 +1,6 @@
 package co.nilin.opex.api.ports.postgres.impl
 
-import co.nilin.opex.accountant.core.inout.RichTrade
+import co.nilin.opex.api.core.event.RichTrade
 import co.nilin.opex.api.core.spi.TradePersister
 import co.nilin.opex.api.ports.postgres.dao.TradeRepository
 import co.nilin.opex.api.ports.postgres.model.TradeModel

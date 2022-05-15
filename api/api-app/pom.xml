@@ -40,10 +40,6 @@
             <artifactId>interceptors</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.accountant.core</groupId>
-            <artifactId>accountant-core</artifactId>
-        </dependency>
-        <dependency>
             <groupId>co.nilin.opex.api.core</groupId>
             <artifactId>api-core</artifactId>
         </dependency>

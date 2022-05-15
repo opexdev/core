@@ -15,7 +15,8 @@ import org.springframework.stereotype.Component
 
 @Component
 class PairConfigLoaderImpl(
-    val pairConfigRepository: PairConfigRepository, val pairFeeConfigRepository: PairFeeConfigRepository
+    val pairConfigRepository: PairConfigRepository,
+    val pairFeeConfigRepository: PairFeeConfigRepository
 ) : PairConfigLoader {
 
     override suspend fun loadPairConfigs(): List<PairConfig> {
@@ -70,6 +71,5 @@ class PairConfigLoaderImpl(
                 pairConfig.rightSideFraction
             ), pairFeeConfig!!.direction, pairFeeConfig.userLevel, pairFeeConfig.makerFee, pairFeeConfig.takerFee
         )
-
     }
 }
