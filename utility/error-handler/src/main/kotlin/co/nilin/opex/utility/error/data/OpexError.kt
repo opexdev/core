@@ -11,6 +11,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     UnAuthorized(1003, "Unauthorized", HttpStatus.UNAUTHORIZED),
     Forbidden(1004, "Forbidden", HttpStatus.FORBIDDEN),
     NotFound(1005, "Not found", HttpStatus.NOT_FOUND),
+    ServiceUnavailable(1006, null, HttpStatus.SERVICE_UNAVAILABLE),
     InvalidRequestParam(1020, "Parameter '%s' is either missing or invalid", HttpStatus.BAD_REQUEST),
     InvalidRequestBody(1021, "Request body is invalid", HttpStatus.BAD_REQUEST),
 
@@ -22,7 +23,6 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
 
     // code 4000: matching-gateway
     SubmitOrderForbiddenByAccountant(4001, null, HttpStatus.BAD_REQUEST),
-    ServiceUnavailable(4002, null, HttpStatus.SERVICE_UNAVAILABLE),
 
     // code 5000: user-management
     EmailAlreadyVerified(5001, "Email is already verified", HttpStatus.BAD_REQUEST),
