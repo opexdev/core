@@ -18,6 +18,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
+import org.assertj.core.api.Assertions.*
 
 private class WalletManagerTest {
     @Mock
@@ -75,7 +76,7 @@ private class WalletManagerTest {
     }
 
     @Test
-    fun givenFullWalletWithNoLimit_whenIsWithdrawAllowed_thenReturnTrue() = runBlocking {
+    fun givenFullWalletWithNoLimit_whenIsWithdrawAllowed_thenReturnTrue(): Unit = runBlocking {
         val wallet = object : Wallet {
             override fun id() = 20L
             override fun owner() = walletOwner
@@ -86,11 +87,11 @@ private class WalletManagerTest {
 
         val isAllowed = walletManagerImpl.isWithdrawAllowed(wallet, BigDecimal.valueOf(0.5))
 
-        Assertions.assertEquals(true, isAllowed)
+        assertThat(isAllowed).isTrue()
     }
 
     @Test
-    fun givenEmptyWalletWithNoLimit_whenIsWithdrawAllowed_thenReturnFalse() = runBlocking {
+    fun givenEmptyWalletWithNoLimit_whenIsWithdrawAllowed_thenReturnFalse(): Unit = runBlocking {
         val wallet = object : Wallet {
             override fun id() = 20L
             override fun owner() = walletOwner
@@ -101,6 +102,6 @@ private class WalletManagerTest {
 
         val isAllowed = walletManagerImpl.isWithdrawAllowed(wallet, BigDecimal.valueOf(0.5))
 
-        Assertions.assertEquals(false, isAllowed)
+        assertThat(isAllowed).isFalse()
     }
 }
