@@ -28,4 +28,9 @@ data class Order(
     var remainedTransferAmount: BigDecimal,
     var status: Int,
     val id: Long? = null
-)
+) {
+
+    fun isAsk() = direction == OrderDirection.ASK
+
+    fun isBid() = direction == OrderDirection.BID
+}

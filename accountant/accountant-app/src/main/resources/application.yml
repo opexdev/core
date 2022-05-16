@@ -45,7 +45,6 @@ spring:
   config:
     import: vault://secret/${spring.application.name}
 app:
-  coin: nln
   address: 1
   wallet:
     url: lb://opex-wallet/

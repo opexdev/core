@@ -7,10 +7,10 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.kafka.core.KafkaAdmin
 
 @Configuration
-class KafkaAdminConfig {
-
+class KafkaAdminConfig(
     @Value("\${spring.kafka.bootstrap-servers}")
-    private lateinit var bootstrapServers: String
+    private val bootstrapServers: String
+) {
 
     @Bean
     fun admin(): KafkaAdmin? {

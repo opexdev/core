@@ -23,8 +23,8 @@ class RichOrderSubmitter(@Qualifier("richOrderKafkaTemplate") val kafkaTemplate:
         sendFuture.addCallback({
             cont.resume(Unit)
         }, {
-            logger.info("Error submitting RichOrder", it)
-            cont.resumeWithException(it)
+            logger.error("Error submitting RichOrder", it)
+            cont.resume(Unit)
         })
     }
 }

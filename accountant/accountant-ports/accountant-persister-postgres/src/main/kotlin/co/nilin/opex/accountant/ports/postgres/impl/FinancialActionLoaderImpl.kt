@@ -38,7 +38,6 @@ class FinancialActionLoaderImpl(val financialActionRepository: FinancialActionRe
         if (id != null) {
             val fim = financialActionRepository.findById(id).awaitFirst()
             return FinancialAction(
-                fim.id,
                 loadFinancialAction(fim.parentId),
                 fim.eventType,
                 fim.pointer,
@@ -48,7 +47,9 @@ class FinancialActionLoaderImpl(val financialActionRepository: FinancialActionRe
                 fim.senderWalletType,
                 fim.receiver,
                 fim.receiverWalletType,
-                fim.createDate
+                fim.createDate,
+                fim.retryCount,
+                fim.id
             )
         }
         return null

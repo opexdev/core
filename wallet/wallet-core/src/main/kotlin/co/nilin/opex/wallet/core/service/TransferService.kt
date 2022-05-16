@@ -17,7 +17,6 @@ import java.util.*
 
 @Service
 class TransferService(
-    val currencyRateService: CurrencyRateService,
     val walletManager: WalletManager,
     val walletListener: WalletListener,
     val walletOwnerManager: WalletOwnerManager,
@@ -41,7 +40,7 @@ class TransferService(
         val destWallet = transferCommand.destWallet
         val destWalletOwner = destWallet.owner()
         //check wallet if can accept the value type
-        val amountToTransfer = currencyRateService.convert(transferCommand.amount, destWallet.currency())
+        val amountToTransfer = transferCommand.amount.amount
 
         if (!walletOwnerManager.isDepositAllowed(destWalletOwner, Amount(destWallet.currency(), amountToTransfer)))
             throw DepositLimitExceededException()

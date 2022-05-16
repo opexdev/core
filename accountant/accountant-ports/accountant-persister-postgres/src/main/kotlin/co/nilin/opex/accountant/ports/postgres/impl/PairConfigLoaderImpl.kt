@@ -5,31 +5,36 @@ import co.nilin.opex.accountant.core.model.PairFeeConfig
 import co.nilin.opex.accountant.core.spi.PairConfigLoader
 import co.nilin.opex.accountant.ports.postgres.dao.PairConfigRepository
 import co.nilin.opex.accountant.ports.postgres.dao.PairFeeConfigRepository
+import co.nilin.opex.accountant.ports.postgres.model.PairConfigModel
 import co.nilin.opex.accountant.ports.postgres.model.PairFeeConfigModel
 import co.nilin.opex.matching.engine.core.model.OrderDirection
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.stereotype.Component
 
 @Component
 class PairConfigLoaderImpl(
-    val pairConfigRepository: PairConfigRepository, val pairFeeConfigRepository: PairFeeConfigRepository
+    val pairConfigRepository: PairConfigRepository,
+    val pairFeeConfigRepository: PairFeeConfigRepository
 ) : PairConfigLoader {
 
     override suspend fun loadPairConfigs(): List<PairConfig> {
         return pairConfigRepository.findAll()
             .collectList()
             .awaitFirstOrElse { emptyList() }
+            .map { it.asPairConfig() }
+    }
+
+    override suspend fun loadPairFeeConfigs(): List<PairFeeConfig> {
+        return pairFeeConfigRepository.findAll()
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
             .map {
-                PairConfig(
-                    it.pair,
-                    it.leftSideWalletSymbol,
-                    it.rightSideWalletSymbol,
-                    it.leftSideFraction,
-                    it.rightSideFraction
-                )
+                val pairConfig = pairConfigRepository.findById(it.pairConfigId).awaitSingle().asPairConfig()
+                PairFeeConfig(pairConfig, it.direction, it.userLevel, it.makerFee, it.takerFee)
             }
     }
 
@@ -70,6 +75,13 @@ class PairConfigLoaderImpl(
                 pairConfig.rightSideFraction
             ), pairFeeConfig!!.direction, pairFeeConfig.userLevel, pairFeeConfig.makerFee, pairFeeConfig.takerFee
         )
-
     }
+
+    private fun PairConfigModel.asPairConfig() = PairConfig(
+        pair,
+        leftSideWalletSymbol,
+        rightSideWalletSymbol,
+        leftSideFraction,
+        rightSideFraction
+    )
 }

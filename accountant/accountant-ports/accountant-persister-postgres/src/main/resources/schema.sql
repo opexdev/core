@@ -54,7 +54,6 @@ CREATE TABLE IF NOT EXISTS pair_config
     right_side_wallet_symbol VARCHAR(36) NOT NULL,
     left_side_fraction       DECIMAL     NOT NULL,
     right_side_fraction      DECIMAL     NOT NULL,
-    rate                     DECIMAL     NOT NULL,
     UNIQUE (
             left_side_wallet_symbol,
             right_side_wallet_symbol

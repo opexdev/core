@@ -141,19 +141,20 @@ class MarketController(
         @RequestParam("symbols", required = false)
         symbols: String?
     ): ExchangeInfoResponse {
-        val symbolsMap = symbolMapper.getKeyValues()
+        val symbolsMap = symbolMapper.symbolToAliasMap()
+        val fee = accountantProxy.getFeeConfigs()
         val pairConfigs = accountantProxy.getPairConfigs()
             .map {
                 ExchangeInfoSymbol(
                     symbolsMap[it.pair] ?: it.pair,
                     "TRADING",
-                    it.leftSideWalletSymbol.toUpperCase(),
+                    it.leftSideWalletSymbol.uppercase(),
                     BigDecimal.valueOf(it.leftSideFraction).scale(),
-                    it.rightSideWalletSymbol.toUpperCase(),
+                    it.rightSideWalletSymbol.uppercase(),
                     BigDecimal.valueOf(it.rightSideFraction).scale()
                 )
             }
-        return ExchangeInfoResponse(symbols = pairConfigs)
+        return ExchangeInfoResponse(fees = fee, symbols = pairConfigs)
     }
 
     // Weight(IP): 1

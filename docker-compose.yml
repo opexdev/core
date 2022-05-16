@@ -92,9 +92,11 @@ services:
       - kafka-1
       - kafka-2
       - kafka-3
+    deploy:
+      restart_policy:
+        condition: on-failure
   vault:
     image: ghcr.io/opexdev/vault-opex
-    build: docker-images/vault
     volumes:
       - vault-data:/vault/file
     environment:
@@ -112,6 +114,9 @@ services:
       - VANDAR_API_KEY=$VANDAR_API_KEY
     cap_add:
       - IPC_LOCK
+    deploy:
+      restart_policy:
+        condition: on-failure
   vault-ui:
     image: djenriquez/vault-ui
     environment:
@@ -119,6 +124,9 @@ services:
       - VAULT_AUTH_DEFAULT=USERNAMEPASSWORD
     depends_on:
       - vault
+    deploy:
+      restart_policy:
+        condition: on-failure
   consul:
     image: consul
     environment:
@@ -142,7 +150,6 @@ services:
         condition: on-failure
   postgres-accountant:
     image: ghcr.io/opexdev/postgres-opex
-    build: docker-images/postgres
     environment:
       - POSTGRES_USER=${DB_USER:-opex}
       - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
@@ -153,9 +160,11 @@ services:
       - accountant-data:/var/lib/postgresql/data/
     networks:
       - default
+    deploy:
+      restart_policy:
+        condition: on-failure
   postgres-eventlog:
     image: ghcr.io/opexdev/postgres-opex
-    build: docker-images/postgres
     environment:
       - POSTGRES_USER=${DB_USER:-opex}
       - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
@@ -166,9 +175,11 @@ services:
       - eventlog-data:/var/lib/postgresql/data/
     networks:
       - default
+    deploy:
+      restart_policy:
+        condition: on-failure
   postgres-auth:
     image: ghcr.io/opexdev/postgres-opex
-    build: docker-images/postgres
     environment:
       - POSTGRES_USER=${DB_USER:-opex}
       - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
@@ -184,7 +195,6 @@ services:
         condition: on-failure
   postgres-wallet:
     image: ghcr.io/opexdev/postgres-opex
-    build: docker-images/postgres
     environment:
       - POSTGRES_USER=${DB_USER:-opex}
       - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
@@ -200,7 +210,6 @@ services:
         condition: on-failure
   postgres-api:
     image: ghcr.io/opexdev/postgres-opex
-    build: docker-images/postgres
     environment:
       - POSTGRES_USER=${DB_USER:-opex}
       - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
@@ -216,7 +225,6 @@ services:
         condition: on-failure
   postgres-bc-gateway:
     image: ghcr.io/opexdev/postgres-opex
-    build: docker-images/postgres
     environment:
       - POSTGRES_USER=${DB_USER:-opex}
       - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
@@ -232,7 +240,6 @@ services:
         condition: on-failure
   postgres-referral:
     image: ghcr.io/opexdev/postgres-opex
-    build: docker-images/postgres
     environment:
       - POSTGRES_USER=${DB_USER:-opex}
       - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
@@ -246,7 +253,6 @@ services:
         condition: on-failure
   accountant:
     image: ghcr.io/opexdev/accountant
-    build: accountant/accountant-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - SPRING_PROFILES_ACTIVE=scheduled
@@ -256,6 +262,9 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
+      - PREFERENCES=$PREFERENCES
+    configs:
+      - preferences.yml
     networks:
       - default
     depends_on:
@@ -266,9 +275,11 @@ services:
       - consul
       - vault
       - postgres-accountant
+    deploy:
+      restart_policy:
+        condition: on-failure
   eventlog:
     image: ghcr.io/opexdev/eventlog
-    build: eventlog/eventlog-app
     environment:
       - JAVA_OPTS=-Xmx256m
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
@@ -285,13 +296,18 @@ services:
       - consul
       - vault
       - postgres-eventlog
+    deploy:
+      restart_policy:
+        condition: on-failure
   matching-engine:
     image: ghcr.io/opexdev/matching-engine
-    build: matching-engine/matching-engine-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - REDIS_HOST=redis
+      - PREFERENCES=$PREFERENCES
+    configs:
+      - preferences.yml
     networks:
       - default
     depends_on:
@@ -299,9 +315,11 @@ services:
       - kafka-2
       - kafka-3
       - redis
+    deploy:
+      restart_policy:
+        condition: on-failure
   matching-gateway:
     image: ghcr.io/opexdev/matching-gateway
-    build: bc-gateway/bc-gateway-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
@@ -315,9 +333,11 @@ services:
       - auth
       - consul
       - matching-engine
+    deploy:
+      restart_policy:
+        condition: on-failure
   auth:
     image: ghcr.io/opexdev/auth
-    build: user-management/keycloak-gateway
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
@@ -343,7 +363,6 @@ services:
         condition: on-failure
   wallet:
     image: ghcr.io/opexdev/wallet
-    build: wallet/wallet-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
@@ -352,6 +371,9 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
+      - PREFERENCES=$PREFERENCES
+    configs:
+      - preferences.yml
     depends_on:
       - kafka-1
       - kafka-2
@@ -367,7 +389,6 @@ services:
         condition: on-failure
   api:
     image: ghcr.io/opexdev/api
-    build: api/api-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
@@ -376,6 +397,9 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
+      - PREFERENCES=$PREFERENCES
+    configs:
+      - preferences.yml
     depends_on:
       - kafka-1
       - kafka-2
@@ -396,7 +420,6 @@ services:
         condition: on-failure
   websocket:
     image: ghcr.io/opexdev/websocket
-    build: websocket/websocket-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
@@ -419,7 +442,6 @@ services:
         condition: on-failure
   bc-gateway:
     image: ghcr.io/opexdev/bc-gateway
-    build: bc-gateway/bc-gateway-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - SPRING_PROFILES_DEFAULT=scheduled
@@ -429,6 +451,9 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
+      - PREFERENCES=$PREFERENCES
+    configs:
+      - preferences.yml
     depends_on:
       - kafka-1
       - kafka-2
@@ -445,7 +470,6 @@ services:
         condition: on-failure
   storage:
     image: ghcr.io/opexdev/storage
-    build: storage/storage-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - CONSUL_HOST=consul
@@ -463,7 +487,6 @@ services:
         condition: on-failure
   referral:
     image: ghcr.io/opexdev/referral
-    build: referral/referral-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - CONSUL_HOST=consul
@@ -486,7 +509,6 @@ services:
         condition: on-failure
   captcha:
     image: ghcr.io/opexdev/captcha
-    build: captcha/captcha-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - CONSUL_HOST=consul
@@ -498,7 +520,6 @@ services:
         condition: on-failure
   admin:
     image: ghcr.io/opexdev/admin
-    build: admin/admin-app
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
@@ -540,3 +561,11 @@ volumes:
 networks:
   default:
     driver: bridge
+secrets:
+  opex_dev_crt:
+    file: opex.dev.crt
+  private_pem:
+    file: private.pem
+configs:
+  preferences.yml:
+    file: preferences.yml

@@ -13,26 +13,30 @@ class FinancialActionJobManagerImpl(
     private val walletProxy: WalletProxy
 ) : FinancialActionJobManager {
 
+    private val retryLimit = 10
     private val log = LoggerFactory.getLogger(FinancialActionJobManagerImpl::class.java)
 
     override suspend fun processFinancialActions(offset: Long, size: Long) {
         val factions = financialActionLoader.loadUnprocessed(offset, size)
-        factions.forEach { faction ->
+        factions.forEach {
             try {
                 walletProxy.transfer(
-                    faction.symbol,
-                    faction.senderWalletType,
-                    faction.sender,
-                    faction.receiverWalletType,
-                    faction.receiver,
-                    faction.amount,
-                    faction.eventType + faction.pointer,
-                    null
+                    it.symbol,
+                    it.senderWalletType,
+                    it.sender,
+                    it.receiverWalletType,
+                    it.receiver,
+                    it.amount,
+                    it.eventType + it.pointer,
+                    "fa${it.id}"
                 )
-                financialActionPersister.updateStatus(faction, FinancialActionStatus.PROCESSED)
+                financialActionPersister.updateStatus(it, FinancialActionStatus.PROCESSED)
             } catch (e: Exception) {
                 log.error("financial job error", e)
-                financialActionPersister.updateStatus(faction, FinancialActionStatus.ERROR)
+                financialActionPersister.updateStatus(
+                    it,
+                    if (it.retryCount >= retryLimit) FinancialActionStatus.ERROR else FinancialActionStatus.CREATED
+                )
             }
         }
     }
