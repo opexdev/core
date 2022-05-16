@@ -6,6 +6,9 @@ import co.nilin.opex.wallet.core.model.Wallet
 import co.nilin.opex.wallet.core.model.WalletOwner
 import co.nilin.opex.wallet.ports.postgres.dao.*
 import co.nilin.opex.wallet.ports.postgres.impl.WalletManagerImpl
+import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
+import co.nilin.opex.wallet.ports.postgres.model.WalletModel
+import co.nilin.opex.wallet.ports.postgres.model.WalletOwnerModel
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -27,13 +30,13 @@ private class WalletManagerTest {
     private var transactionRepository: TransactionRepository
 
     @Mock
-    private lateinit var walletRepository: WalletRepository
+    private var walletRepository: WalletRepository
 
     @Mock
-    private lateinit var walletOwnerRepository: WalletOwnerRepository
+    private var walletOwnerRepository: WalletOwnerRepository
 
     @Mock
-    private lateinit var currencyRepository: CurrencyRepository
+    private var currencyRepository: CurrencyRepository
 
     private var walletManagerImpl: WalletManagerImpl
 
@@ -68,6 +71,50 @@ private class WalletManagerTest {
         }
         transactionRepository = mock {
             on { calculateWithdrawStatistics(anyLong(), anyLong(), any(), any()) } doReturn Mono.empty()
+        }
+        walletOwnerRepository = mock {
+            on { findById(walletOwner.id()) } doReturn Mono.just(
+                WalletOwnerModel(
+                    walletOwner.id(),
+                    walletOwner.uuid(),
+                    walletOwner.title(),
+                    walletOwner.level(),
+                    walletOwner.isTradeAllowed(),
+                    walletOwner.isWithdrawAllowed(),
+                    walletOwner.isDepositAllowed()
+                )
+            )
+        }
+        walletRepository = mock {
+            on {
+                findByOwnerAndTypeAndCurrency(walletOwner.id(), "main", currency.getSymbol())
+            } doReturn Mono.just(
+                WalletModel(
+                    20L,
+                    walletOwner.id(),
+                    "main",
+                    currency.getSymbol(),
+                    BigDecimal.valueOf(1.2)
+                )
+            )
+            on { save(any()) } doReturn Mono.just(
+                WalletModel(
+                    20L,
+                    walletOwner.id(),
+                    "main",
+                    currency.getSymbol(),
+                    BigDecimal.valueOf(1.2)
+                )
+            )
+        }
+        currencyRepository = mock {
+            on { findBySymbol(currency.getSymbol()) } doReturn Mono.just(
+                CurrencyModel(
+                    currency.getSymbol(),
+                    currency.getName(),
+                    currency.getPrecision()
+                )
+            )
         }
         walletManagerImpl = WalletManagerImpl(
             walletLimitsRepository, transactionRepository, walletRepository, walletOwnerRepository, currencyRepository
@@ -105,8 +152,25 @@ private class WalletManagerTest {
     }
 
     @Test
-    fun givenWalletOwner_whenFindWalletByOwnerAndCurrencyAndType_thenReturnWallet(): Unit = runBlocking {}
+    fun givenWalletOwner_whenFindWalletByOwnerAndCurrencyAndType_thenReturnWallet(): Unit = runBlocking {
+        val wallet = walletManagerImpl.findWalletByOwnerAndCurrencyAndType(walletOwner, "main", currency)
+        assertThat(wallet).isNotNull
+        assertThat(wallet!!.owner().id()).isEqualTo(walletOwner.id())
+        assertThat(wallet.currency().getSymbol()).isEqualTo(currency.getSymbol())
+        assertThat(wallet.type()).isEqualTo("main")
+    }
 
     @Test
-    fun givenEmptyWalletWithNoLimit_whenCreateWallet_thenReturnWallet(): Unit = runBlocking {}
+    fun givenEmptyWalletWithNoLimit_whenCreateWallet_thenReturnWallet(): Unit = runBlocking {
+        val wallet = walletManagerImpl.createWallet(
+            walletOwner,
+            Amount(currency, BigDecimal.valueOf(1)),
+            currency,
+            "main"
+        )
+        assertThat(wallet).isNotNull
+        assertThat(wallet.owner().id()).isEqualTo(walletOwner.id())
+        assertThat(wallet.currency().getSymbol()).isEqualTo(currency.getSymbol())
+        assertThat(wallet.type()).isEqualTo("main")
+    }
 }
