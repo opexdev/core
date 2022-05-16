@@ -1,47 +1,47 @@
 version: '3.8'
 services:
   vault:
-    image: ghcr.io/opexdev/vault-opex
+    image: ghcr.io/opexdev/vault-opex:$TAG
     build: docker-images/vault
   postgres-opex:
-    image: ghcr.io/opexdev/postgres-opex
+    image: ghcr.io/opexdev/postgres-opex:$TAG
     build: docker-images/postgres
   accountant:
-    image: ghcr.io/opexdev/accountant
+    image: ghcr.io/opexdev/accountant:$TAG
     build: accountant/accountant-app
   eventlog:
-    image: ghcr.io/opexdev/eventlog
+    image: ghcr.io/opexdev/eventlog:$TAG
     build: eventlog/eventlog-app
   matching-engine:
-    image: ghcr.io/opexdev/matching-engine
+    image: ghcr.io/opexdev/matching-engine:$TAG
     build: matching-engine/matching-engine-app
   matching-gateway:
-    image: ghcr.io/opexdev/matching-gateway
+    image: ghcr.io/opexdev/matching-gateway:$TAG
     build: matching-gateway/matching-gateway-app
   auth:
-    image: ghcr.io/opexdev/auth
+    image: ghcr.io/opexdev/auth:$TAG
     build: user-management/keycloak-gateway
   wallet:
-    image: ghcr.io/opexdev/wallet
+    image: ghcr.io/opexdev/wallet:$TAG
     build: wallet/wallet-app
   api:
-    image: ghcr.io/opexdev/api
+    image: ghcr.io/opexdev/api:$TAG
     build: api/api-app
   websocket:
-    image: ghcr.io/opexdev/websocket
+    image: ghcr.io/opexdev/websocket:$TAG
     build: websocket/websocket-app
   bc-gateway:
-    image: ghcr.io/opexdev/bc-gateway
+    image: ghcr.io/opexdev/bc-gateway:$TAG
     build: bc-gateway/bc-gateway-app
   storage:
-    image: ghcr.io/opexdev/storage
+    image: ghcr.io/opexdev/storage:$TAG
     build: storage/storage-app
   referral:
-    image: ghcr.io/opexdev/referral
+    image: ghcr.io/opexdev/referral:$TAG
     build: referral/referral-app
   captcha:
-    image: ghcr.io/opexdev/captcha
+    image: ghcr.io/opexdev/captcha:$TAG
     build: captcha/captcha-app
   admin:
-    image: ghcr.io/opexdev/admin
+    image: ghcr.io/opexdev/admin:$TAG
     build: admin/admin-app
