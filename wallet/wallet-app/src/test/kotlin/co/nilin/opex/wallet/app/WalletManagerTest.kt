@@ -1,6 +1,5 @@
 package co.nilin.opex.wallet.app
 
-import co.nilin.opex.wallet.app.MockitoHelper.anyObject
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.model.Wallet
@@ -10,19 +9,22 @@ import co.nilin.opex.wallet.ports.postgres.impl.WalletManagerImpl
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.anyLong
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
 
 private class WalletManagerTest {
     @Mock
-    private lateinit var walletLimitsRepository: WalletLimitsRepository
+    private var walletLimitsRepository: WalletLimitsRepository
 
     @Mock
-    private lateinit var transactionRepository: TransactionRepository
+    private var transactionRepository: TransactionRepository
 
     @Mock
     private lateinit var walletRepository: WalletRepository
@@ -40,9 +42,9 @@ private class WalletManagerTest {
         override fun uuid() = "fdf453d7-0633-4ec7-852d-a18148c99a82"
         override fun title() = "wallet"
         override fun level() = "1"
-        override fun isTradeAllowed() = true;
-        override fun isWithdrawAllowed() = true;
-        override fun isDepositAllowed() = true;
+        override fun isTradeAllowed() = true
+        override fun isWithdrawAllowed() = true
+        override fun isDepositAllowed() = true
     }
 
     private val currency = object : Currency {
@@ -53,55 +55,27 @@ private class WalletManagerTest {
 
     init {
         MockitoAnnotations.openMocks(this)
-        runBlocking {
-            Mockito.`when`(
-                walletLimitsRepository.findByOwnerAndCurrencyAndWalletAndAction(
-                    ArgumentMatchers.anyLong(),
-                    ArgumentMatchers.anyString(),
-                    ArgumentMatchers.anyLong(),
-                    ArgumentMatchers.anyString()
-                )
-            )
-                .thenReturn(Mono.empty())
-            Mockito.`when`(
-                walletLimitsRepository.findByOwnerAndCurrencyAndActionAndWalletType(
-                    ArgumentMatchers.anyLong(),
-                    ArgumentMatchers.anyString(),
-                    ArgumentMatchers.anyString(),
-                    ArgumentMatchers.anyString()
-                )
-            )
-                .thenReturn(Mono.empty())
-            Mockito.`when`(
-                walletLimitsRepository.findByLevelAndCurrencyAndActionAndWalletType(
-                    ArgumentMatchers.anyString(),
-                    ArgumentMatchers.anyString(),
-                    ArgumentMatchers.anyString(),
-                    ArgumentMatchers.anyString()
-                )
-            )
-                .thenReturn(Mono.empty())
-            Mockito.`when`(
-                transactionRepository.calculateWithdrawStatistics(
-                    ArgumentMatchers.anyLong(),
-                    ArgumentMatchers.anyLong(),
-                    anyObject(),
-                    anyObject()
-                )
-            )
-                .thenReturn(Mono.empty())
+        walletLimitsRepository = mock {
+            on {
+                findByOwnerAndCurrencyAndWalletAndAction(anyLong(), anyString(), anyLong(), anyString())
+            } doReturn Mono.empty()
+            on {
+                findByOwnerAndCurrencyAndActionAndWalletType(anyLong(), anyString(), anyString(), anyString())
+            } doReturn Mono.empty()
+            on {
+                findByLevelAndCurrencyAndActionAndWalletType(anyString(), anyString(), anyString(), anyString())
+            } doReturn Mono.empty()
+        }
+        transactionRepository = mock {
+            on { calculateWithdrawStatistics(anyLong(), anyLong(), any(), any()) } doReturn Mono.empty()
         }
         walletManagerImpl = WalletManagerImpl(
-            walletLimitsRepository,
-            transactionRepository,
-            walletRepository,
-            walletOwnerRepository,
-            currencyRepository
+            walletLimitsRepository, transactionRepository, walletRepository, walletOwnerRepository, currencyRepository
         )
     }
 
     @Test
-    fun givenFullWalletWithNoLimit_whenIsWithdrawAllowed_thenReturnTrue() {
+    fun givenFullWalletWithNoLimit_whenIsWithdrawAllowed_thenReturnTrue() = runBlocking {
         val wallet = object : Wallet {
             override fun id() = 20L
             override fun owner() = walletOwner
@@ -110,13 +84,13 @@ private class WalletManagerTest {
             override fun type() = "main"
         }
 
-        val isAllowed = runBlocking { walletManagerImpl.isWithdrawAllowed(wallet, BigDecimal.valueOf(0.5)) }
+        val isAllowed = walletManagerImpl.isWithdrawAllowed(wallet, BigDecimal.valueOf(0.5))
 
         Assertions.assertEquals(true, isAllowed)
     }
 
     @Test
-    fun givenEmptyWalletWithNoLimit_whenIsWithdrawAllowed_thenReturnFalse() {
+    fun givenEmptyWalletWithNoLimit_whenIsWithdrawAllowed_thenReturnFalse() = runBlocking {
         val wallet = object : Wallet {
             override fun id() = 20L
             override fun owner() = walletOwner
@@ -125,7 +99,7 @@ private class WalletManagerTest {
             override fun type() = "main"
         }
 
-        val isAllowed = runBlocking { walletManagerImpl.isWithdrawAllowed(wallet, BigDecimal.valueOf(0.5)) }
+        val isAllowed = walletManagerImpl.isWithdrawAllowed(wallet, BigDecimal.valueOf(0.5))
 
         Assertions.assertEquals(false, isAllowed)
     }
