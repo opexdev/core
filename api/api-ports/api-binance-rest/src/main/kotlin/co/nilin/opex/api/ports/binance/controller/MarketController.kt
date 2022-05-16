@@ -142,6 +142,7 @@ class MarketController(
         symbols: String?
     ): ExchangeInfoResponse {
         val symbolsMap = symbolMapper.symbolToAliasMap()
+        val fee = accountantProxy.getFeeConfigs()
         val pairConfigs = accountantProxy.getPairConfigs()
             .map {
                 ExchangeInfoSymbol(
@@ -153,7 +154,7 @@ class MarketController(
                     BigDecimal.valueOf(it.rightSideFraction).scale()
                 )
             }
-        return ExchangeInfoResponse(symbols = pairConfigs)
+        return ExchangeInfoResponse(fees = fee, symbols = pairConfigs)
     }
 
     // Weight(IP): 1
