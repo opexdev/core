@@ -1,5 +1,6 @@
 package co.nilin.opex.api.ports.binance.proxy
 
+import co.nilin.opex.api.core.inout.PairFeeResponse
 import co.nilin.opex.api.core.inout.PairInfoResponse
 import co.nilin.opex.api.core.spi.AccountantProxy
 import co.nilin.opex.api.ports.binance.util.LoggerDelegate
@@ -29,6 +30,18 @@ class AccountantProxyImpl(private val webClient: WebClient) : AccountantProxy {
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToFlux(typeRef<PairInfoResponse>())
+            .collectList()
+            .awaitSingle()
+    }
+
+    override suspend fun getFeeConfigs(): List<PairFeeResponse> {
+        logger.info("fetching fee configs")
+        return webClient.get()
+            .uri("$baseUrl/config/fee/all")
+            .accept(MediaType.APPLICATION_JSON)
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToFlux(typeRef<PairFeeResponse>())
             .collectList()
             .awaitSingle()
     }

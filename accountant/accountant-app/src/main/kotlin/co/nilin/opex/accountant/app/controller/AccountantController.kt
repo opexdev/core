@@ -1,5 +1,6 @@
 package co.nilin.opex.accountant.app.controller
 
+import co.nilin.opex.accountant.app.data.PairFeeResponse
 import co.nilin.opex.accountant.core.model.PairConfig
 import co.nilin.opex.accountant.core.model.PairFeeConfig
 import co.nilin.opex.accountant.core.spi.FinancialActionLoader
@@ -48,6 +49,12 @@ class AccountantController(
     @GetMapping("/config/all")
     suspend fun fetchPairConfigs(): List<PairConfig> {
         return pairConfigLoader.loadPairConfigs()
+    }
+
+    @GetMapping("/config/fee/all")
+    suspend fun fetchFeeConfigs(): List<PairFeeResponse> {
+        return pairConfigLoader.loadPairFeeConfigs()
+            .map { PairFeeResponse(it.pairConfig.pair, it.direction, it.userLevel, it.makerFee, it.takerFee) }
     }
 
 }
