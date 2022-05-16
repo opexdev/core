@@ -1,7 +1,5 @@
 package co.nilin.opex.wallet.app
 
-import co.nilin.opex.wallet.core.model.Currency
-import co.nilin.opex.wallet.core.model.WalletOwner
 import co.nilin.opex.wallet.ports.postgres.dao.TransactionRepository
 import co.nilin.opex.wallet.ports.postgres.dao.UserLimitsRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletConfigRepository
@@ -33,6 +31,12 @@ private class WalletOwnerManagerTest {
             userLimitsRepository, transactionRepository, walletConfigRepository, walletOwnerRepository
         )
     }
+
+    @Test
+    fun givenFullWalletWithNoLimit_whenIsWithdrawAllowed_thenReturnTrue(): Unit = runBlocking { }
+
+    @Test
+    fun givenEmptyWalletWithNoLimit_whenIsWithdrawAllowed_thenReturnFalse(): Unit = runBlocking { }
 
     @Test
     fun givenUUID_whenFindWalletOwner_thenReturnWalletOwner(): Unit = runBlocking {}
