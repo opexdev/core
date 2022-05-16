@@ -46,6 +46,7 @@ spring:
     import: vault://secret/${spring.application.name}
 swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
 app:
+  address: 1
   wallet:
     url: lb://opex-wallet/
   api:
