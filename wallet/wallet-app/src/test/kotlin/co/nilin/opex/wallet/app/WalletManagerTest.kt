@@ -7,7 +7,7 @@ import co.nilin.opex.wallet.core.model.WalletOwner
 import co.nilin.opex.wallet.ports.postgres.dao.*
 import co.nilin.opex.wallet.ports.postgres.impl.WalletManagerImpl
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.ArgumentMatchers.anyString
@@ -18,7 +18,6 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
-import org.assertj.core.api.Assertions.*
 
 private class WalletManagerTest {
     @Mock
@@ -104,4 +103,10 @@ private class WalletManagerTest {
 
         assertThat(isAllowed).isFalse()
     }
+
+    @Test
+    fun givenWalletOwner_whenFindWalletByOwnerAndCurrencyAndType_thenReturnWallet(): Unit = runBlocking {}
+
+    @Test
+    fun givenEmptyWalletWithNoLimit_whenCreateWallet_thenReturnWallet(): Unit = runBlocking {}
 }
