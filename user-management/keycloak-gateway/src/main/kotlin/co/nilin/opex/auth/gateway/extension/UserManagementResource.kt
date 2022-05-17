@@ -53,11 +53,12 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         val auth = ResourceAuthenticator.bearerAuth(session)
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
-        runCatching {
+
+        /*runCatching {
             validateCaptcha("${request.captchaAnswer}-${session.context.connection.remoteAddr}")
         }.onFailure {
             return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.InvalidCaptcha)
-        }
+        }*/
 
         if (!request.isValid())
             return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.BadRequest)
@@ -121,7 +122,14 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     }
 
     @POST
-    @Path("user/verify-email")
+    @Path("user/verify")
+    fun verifyEmail(): Response {
+
+        return Response.noContent().build()
+    }
+
+    @POST
+    @Path("user/request-verify")
     @Produces(MediaType.APPLICATION_JSON)
     fun sendVerifyEmail(): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
@@ -311,6 +319,8 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
                 queryParam("key", token.serialize(session, opexRealm, session.context.uri))
             }
             val link = builder.build(opexRealm.name).toString()
+            logger.info("************** link: $link")
+
             provider.setRealm(opexRealm).setUser(user)
                 .sendVerifyEmail(link, TimeUnit.SECONDS.toMinutes(lifespan.toLong()))
         } catch (e: Exception) {
