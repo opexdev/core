@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 
 private class WalletManagerTest : WalletManagerTestBase() {
-    //region isWithdrawAllowed()
     @Test
     fun givenFullWalletWithNoLimit_whenIsWithdrawAllowed_thenReturnTrue(): Unit = runBlocking {
         val wallet = object : Wallet {
@@ -127,9 +126,7 @@ private class WalletManagerTest : WalletManagerTestBase() {
 
         assertThat(isAllowed).isFalse()
     }
-    //endregion
 
-    //region isDepositAllowed()
     @Test
     fun givenFullWalletWithNoLimit_whenIsDepositAllowed_thenReturnTrue(): Unit = runBlocking {
         val wallet = object : Wallet {
@@ -246,9 +243,7 @@ private class WalletManagerTest : WalletManagerTestBase() {
 
         assertThat(isAllowed).isFalse()
     }
-    //endregion
 
-    //region findWalletByOwnerAndCurrencyAndType()
     @Test
     fun givenWalletOwner_whenFindWalletByOwnerAndCurrencyAndType_thenReturnWallet(): Unit = runBlocking {
         val wallet = walletManagerImpl.findWalletByOwnerAndCurrencyAndType(walletOwner, "main", currency)
@@ -257,9 +252,7 @@ private class WalletManagerTest : WalletManagerTestBase() {
         assertThat(wallet.currency().getSymbol()).isEqualTo(currency.getSymbol())
         assertThat(wallet.type()).isEqualTo("main")
     }
-    //endregion
 
-    //region createWallet()
     @Test
     fun givenEmptyWalletWithNoLimit_whenCreateWallet_thenReturnWallet(): Unit = runBlocking {
         val wallet = walletManagerImpl.createWallet(
@@ -273,9 +266,7 @@ private class WalletManagerTest : WalletManagerTestBase() {
         assertThat(wallet.currency().getSymbol()).isEqualTo(currency.getSymbol())
         assertThat(wallet.type()).isEqualTo("main")
     }
-    //endregion
 
-    //region increaseBalance()
     @Test
     fun givenWallet_whenIncreaseBalance_thenSuccess(): Unit = runBlocking {
         val wallet = object : Wallet {
@@ -314,9 +305,7 @@ private class WalletManagerTest : WalletManagerTestBase() {
 
         assertThatThrownBy { runBlocking { walletManagerImpl.increaseBalance(wallet, BigDecimal.valueOf(-1)) } }
     }
-    //endregion
 
-    //region decreaseBalance()
     @Test
     fun givenWallet_whenDecreaseBalance_thenSuccess(): Unit = runBlocking {
         val wallet = object : Wallet {
@@ -355,9 +344,7 @@ private class WalletManagerTest : WalletManagerTestBase() {
 
         assertThatThrownBy { runBlocking { walletManagerImpl.decreaseBalance(wallet, BigDecimal.valueOf(-1)) } }
     }
-    //endregion
 
-    //region findWalletById()
     @Test
     fun givenId_whenFindWalletById_thenReturnWallet(): Unit = runBlocking {
         val wallet = walletManagerImpl.findWalletById(20)
@@ -365,5 +352,4 @@ private class WalletManagerTest : WalletManagerTestBase() {
         assertThat(wallet).isNotNull
         assertThat(wallet!!.id()).isEqualTo(20)
     }
-    //endregion
 }
