@@ -18,6 +18,7 @@ import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
@@ -106,9 +107,28 @@ private class WalletManagerTest {
                     BigDecimal.valueOf(1.2)
                 )
             )
+            on { findById(20) } doReturn Mono.just(
+                WalletModel(
+                    20L,
+                    walletOwner.id(),
+                    "main",
+                    currency.getSymbol(),
+                    BigDecimal.valueOf(0.5)
+                )
+            )
+            on {
+                updateBalance(eq(20), any())
+            } doReturn Mono.just(1)
         }
         currencyRepository = mock {
             on { findBySymbol(currency.getSymbol()) } doReturn Mono.just(
+                CurrencyModel(
+                    currency.getSymbol(),
+                    currency.getName(),
+                    currency.getPrecision()
+                )
+            )
+            on { findById(currency.getSymbol()) } doReturn Mono.just(
                 CurrencyModel(
                     currency.getSymbol(),
                     currency.getName(),
@@ -172,5 +192,39 @@ private class WalletManagerTest {
         assertThat(wallet.owner().id()).isEqualTo(walletOwner.id())
         assertThat(wallet.currency().getSymbol()).isEqualTo(currency.getSymbol())
         assertThat(wallet.type()).isEqualTo("main")
+    }
+
+    @Test
+    fun givenWallet_whenIncreaseBalance_thenSuccess(): Unit = runBlocking {
+        val wallet = object : Wallet {
+            override fun id() = 20L
+            override fun owner() = walletOwner
+            override fun balance() = Amount(currency, BigDecimal.valueOf(2))
+            override fun currency() = currency
+            override fun type() = "main"
+        }
+
+        walletManagerImpl.increaseBalance(wallet, BigDecimal.valueOf(1))
+    }
+
+    @Test
+    fun givenWallet_whenDecreaseBalance_thenSuccess(): Unit = runBlocking {
+        val wallet = object : Wallet {
+            override fun id() = 20L
+            override fun owner() = walletOwner
+            override fun balance() = Amount(currency, BigDecimal.valueOf(2))
+            override fun currency() = currency
+            override fun type() = "main"
+        }
+
+        walletManagerImpl.decreaseBalance(wallet, BigDecimal.valueOf(1))
+    }
+
+    @Test
+    fun givenId_whenFindWalletById_thenReturnWallet(): Unit = runBlocking {
+        val wallet = walletManagerImpl.findWalletById(20)
+
+        assertThat(wallet).isNotNull
+        assertThat(wallet!!.id()).isEqualTo(20)
     }
 }
