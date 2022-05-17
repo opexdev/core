@@ -11,6 +11,7 @@ import co.nilin.opex.wallet.ports.postgres.model.WalletModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletOwnerModel
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.ArgumentMatchers.anyString
@@ -117,6 +118,9 @@ private class WalletManagerTest {
                 )
             )
             on {
+                updateBalance(any(), any())
+            } doReturn Mono.just(0)
+            on {
                 updateBalance(eq(20), any())
             } doReturn Mono.just(1)
         }
@@ -208,6 +212,32 @@ private class WalletManagerTest {
     }
 
     @Test
+    fun givenNotExistWallet_whenIncreaseBalance_thenSuccess(): Unit = runBlocking {
+        val wallet = object : Wallet {
+            override fun id() = 40L
+            override fun owner() = walletOwner
+            override fun balance() = Amount(currency, BigDecimal.valueOf(2))
+            override fun currency() = currency
+            override fun type() = "main"
+        }
+
+        assertThatThrownBy { runBlocking { walletManagerImpl.increaseBalance(wallet, BigDecimal.valueOf(1)) } }
+    }
+
+    @Test
+    fun givenWrongAmount_whenIncreaseBalance_thenSuccess(): Unit = runBlocking {
+        val wallet = object : Wallet {
+            override fun id() = 20L
+            override fun owner() = walletOwner
+            override fun balance() = Amount(currency, BigDecimal.valueOf(2))
+            override fun currency() = currency
+            override fun type() = "main"
+        }
+
+        assertThatThrownBy { runBlocking { walletManagerImpl.increaseBalance(wallet, BigDecimal.valueOf(-1)) } }
+    }
+
+    @Test
     fun givenWallet_whenDecreaseBalance_thenSuccess(): Unit = runBlocking {
         val wallet = object : Wallet {
             override fun id() = 20L
@@ -218,6 +248,32 @@ private class WalletManagerTest {
         }
 
         walletManagerImpl.decreaseBalance(wallet, BigDecimal.valueOf(1))
+    }
+
+    @Test
+    fun givenNotExist_whenDecreaseBalance_thenSuccess(): Unit = runBlocking {
+        val wallet = object : Wallet {
+            override fun id() = 40L
+            override fun owner() = walletOwner
+            override fun balance() = Amount(currency, BigDecimal.valueOf(2))
+            override fun currency() = currency
+            override fun type() = "main"
+        }
+
+        assertThatThrownBy { runBlocking { walletManagerImpl.decreaseBalance(wallet, BigDecimal.valueOf(1)) } }
+    }
+
+    @Test
+    fun givenWrongAmount_whenDecreaseBalance_thenSuccess(): Unit = runBlocking {
+        val wallet = object : Wallet {
+            override fun id() = 20L
+            override fun owner() = walletOwner
+            override fun balance() = Amount(currency, BigDecimal.valueOf(2))
+            override fun currency() = currency
+            override fun type() = "main"
+        }
+
+        assertThatThrownBy { runBlocking { walletManagerImpl.decreaseBalance(wallet, BigDecimal.valueOf(-1)) } }
     }
 
     @Test

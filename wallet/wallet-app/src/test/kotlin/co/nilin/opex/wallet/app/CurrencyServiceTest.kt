@@ -30,6 +30,12 @@ private class CurrencyServiceTest {
                     0.0001
                 )
             )
+            on {
+                findBySymbol("")
+            } doReturn Mono.empty()
+            on {
+                findBySymbol("WRONG")
+            } doReturn Mono.empty()
         }
         currencyService = CurrencyServiceImpl(currencyRepository)
     }
@@ -40,5 +46,19 @@ private class CurrencyServiceTest {
 
         assertThat(c).isNotNull
         assertThat(c!!.getSymbol()).isEqualTo("ETH")
+    }
+
+    @Test
+    fun givenWrongSymbol_whenGetCurrency_thenReturnNull(): Unit = runBlocking {
+        val c = currencyService.getCurrency("WRONG")
+
+        assertThat(c).isNull()
+    }
+
+    @Test
+    fun givenEmptySymbol_whenGetCurrency_thenReturnNull(): Unit = runBlocking {
+        val c = currencyService.getCurrency("")
+
+        assertThat(c).isNull()
     }
 }
