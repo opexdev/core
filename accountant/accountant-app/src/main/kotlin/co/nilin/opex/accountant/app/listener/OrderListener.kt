@@ -5,8 +5,11 @@ import co.nilin.opex.accountant.ports.kafka.listener.inout.OrderSubmitRequest
 import co.nilin.opex.accountant.ports.kafka.listener.spi.OrderSubmitRequestListener
 import co.nilin.opex.matching.engine.core.eventh.events.SubmitOrderEvent
 import kotlinx.coroutines.runBlocking
+import org.slf4j.LoggerFactory
 
 class OrderListener(private val orderManager: OrderManager) : OrderSubmitRequestListener {
+
+    private val logger = LoggerFactory.getLogger(OrderListener::class.java)
 
     override fun id(): String {
         return "OrderListener"
@@ -14,6 +17,8 @@ class OrderListener(private val orderManager: OrderManager) : OrderSubmitRequest
 
     override fun onOrder(order: OrderSubmitRequest, partition: Int, offset: Long, timestamp: Long) {
         runBlocking {
+            logger.info("Order submit event received ${order.ouid}")
+
             orderManager.handleRequestOrder(
                 SubmitOrderEvent(
                     order.ouid,

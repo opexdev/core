@@ -1,11 +1,6 @@
 package co.nilin.opex.api.ports.postgres.util
 
-import co.nilin.opex.api.core.inout.OrderSide
-import co.nilin.opex.api.core.inout.OrderStatus
-import co.nilin.opex.api.core.inout.TimeInForce
-import co.nilin.opex.matching.engine.core.model.MatchConstraint
-import co.nilin.opex.matching.engine.core.model.OrderDirection
-import co.nilin.opex.matching.engine.core.model.OrderType
+import co.nilin.opex.api.core.inout.*
 
 fun MatchConstraint.toTimeInForce(): TimeInForce {
     if (this == MatchConstraint.FOK_BUDGET)
@@ -20,11 +15,11 @@ fun TimeInForce.toMatchConstraint(): MatchConstraint {
     return MatchConstraint.valueOf(this.name)
 }
 
-fun OrderType.toApiOrderType(): co.nilin.opex.api.core.inout.OrderType {
-    if (this == OrderType.LIMIT_ORDER)
-        return co.nilin.opex.api.core.inout.OrderType.LIMIT
-    if (this == OrderType.MARKET_ORDER)
-        return co.nilin.opex.api.core.inout.OrderType.MARKET
+fun MatchingOrderType.toApiOrderType(): OrderType {
+    if (this == MatchingOrderType.LIMIT_ORDER)
+        return OrderType.LIMIT
+    if (this == MatchingOrderType.MARKET_ORDER)
+        return OrderType.MARKET
     throw IllegalArgumentException("OrderType $this is not supported!")
 }
 
@@ -39,7 +34,6 @@ fun OrderStatus.isWorking(): Boolean {
 }
 
 fun Int.toOrderStatus(): OrderStatus {
-    val status = co.nilin.opex.accountant.core.inout.OrderStatus.values()
-        .find { s -> s.code == this }
+    val status = OrderStatus.values().find { s -> s.code == this }
     return OrderStatus.valueOf(status!!.name)
 }

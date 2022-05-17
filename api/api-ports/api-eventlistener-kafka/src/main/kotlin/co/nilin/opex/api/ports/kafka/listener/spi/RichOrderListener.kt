@@ -1,6 +1,6 @@
 package co.nilin.opex.api.ports.kafka.listener.spi
 
-import co.nilin.opex.accountant.core.inout.RichOrderEvent
+import co.nilin.opex.api.core.event.RichOrderEvent
 
 interface RichOrderListener {
 

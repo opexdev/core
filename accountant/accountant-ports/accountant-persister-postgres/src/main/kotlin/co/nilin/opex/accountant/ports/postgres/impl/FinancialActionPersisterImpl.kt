@@ -16,21 +16,21 @@ class FinancialActionPersisterImpl(val financialActionRepository: FinancialActio
     FinancialActionPersister {
 
     override suspend fun persist(financialActions: List<FinancialAction>): List<FinancialAction> {
-        financialActionRepository.saveAll(financialActions.map { fa ->
+        financialActionRepository.saveAll(financialActions.map {
             FinancialActionModel(
                 null,
-                fa.parent?.id,
-                fa.eventType,
-                fa.pointer,
-                fa.symbol,
-                fa.amount.toDouble(),
-                fa.sender,
-                fa.senderWalletType,
-                fa.receiver,
-                fa.receiverWalletType,
+                it.parent?.id,
+                it.eventType,
+                it.pointer,
+                it.symbol,
+                it.amount.toDouble(),
+                it.sender,
+                it.senderWalletType,
+                it.receiver,
+                it.receiverWalletType,
                 "",
                 "",
-                fa.createDate
+                it.createDate
             )
         }).awaitLast()
         return financialActions
@@ -56,7 +56,7 @@ class FinancialActionPersisterImpl(val financialActionRepository: FinancialActio
                 existing.ip,
                 existing.createDate,
                 status,
-                1 + (existing.retryCount ?: 0),
+                1 + existing.retryCount,
                 LocalDateTime.now()
             )
         ).awaitFirst()

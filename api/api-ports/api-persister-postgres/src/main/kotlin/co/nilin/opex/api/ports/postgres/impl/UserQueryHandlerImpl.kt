@@ -8,7 +8,6 @@ import co.nilin.opex.api.ports.postgres.dao.TradeRepository
 import co.nilin.opex.api.ports.postgres.model.OrderModel
 import co.nilin.opex.api.ports.postgres.model.OrderStatusModel
 import co.nilin.opex.api.ports.postgres.util.*
-import co.nilin.opex.matching.engine.core.model.OrderDirection
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.flow.Flow

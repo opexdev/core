@@ -1,0 +1,203 @@
+addressTypes:
+  - addressType: bitcoin
+    addressRegex: "*"
+  - addressType: ethereum
+    addressRegex: "*"
+chains:
+  - name: bitcoin
+    addressType: bitcoin
+    endpointUrl: lb://chain-scan-gateway/bitcoin/transfers
+    schedule:
+      delay: 600
+      errorDelay: 60
+  - name: ethereum
+    addressType: ethereum
+    endpointUrl: lb://chain-scan-gateway/eth/transfers
+    schedule:
+      delay: 90
+      errorDelay: 60
+  - name: bsc
+    addressType: ethereum
+    endpointUrl: lb://chain-scan-gateway/bsc/transfers
+    schedule:
+      delay: 90
+      errorDelay: 60
+currencies:
+  - symbol: BTC
+    name: Bitcoin
+    precision: 0.000001
+    mainBalance: 10000
+    dailyTotal: 1000
+    dailyCount: 100
+    monthlyTotal: 30000
+    monthlyCount: 3000
+    implementations:
+      - chain: bitcoin
+        withdrawFee: 0.0001
+        withdrawMin: 0.0001
+        decimal: 0
+  - symbol: ETH
+    name: Ethereum
+    precision: 0.000001
+    mainBalance: 10000
+    dailyTotal: 1000
+    dailyCount: 100
+    monthlyTotal: 30000
+    monthlyCount: 3000
+    implementations:
+      - chain: ethereum
+        withdrawFee: 0.00001
+        withdrawMin: 0.000001
+        decimal: 18
+  - symbol: BNB
+    name: Binance
+    precision: 0.0001
+    mainBalance: 10000
+    dailyTotal: 1000
+    dailyCount: 100
+    monthlyTotal: 30000
+    monthlyCount: 3000
+    implementations:
+      - chain: bsc
+        withdrawFee: 0.00001
+        withdrawMin: 0.000001
+        decimal: 18
+  - symbol: BUSD
+    name: Binance USD
+    precision: 0.01
+    mainBalance: 10000
+    dailyTotal: 1000
+    dailyCount: 100
+    monthlyTotal: 30000
+    monthlyCount: 3000
+    implementations:
+      - chain: bsc
+        token: true
+        tokenAddress: 0xe9e7cea3dedca5984780bafc599bd69add087d56
+        tokenName: BUSD Token
+        withdrawFee: 0.01
+        withdrawMin: 0.01
+        decimal: 18
+  - symbol: IRT
+    name: Toman
+    precision: 0.1
+    mainBalance: 10000
+    dailyTotal: 1000
+    dailyCount: 100
+    monthlyTotal: 30000
+    monthlyCount: 3000
+markets:
+  - leftSide: BTC
+    rightSide: BUSD
+    aliases:
+      - key: binance
+        alias: BTCBUSD
+    feeConfigs:
+      - direction: ASK
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+      - direction: BID
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+  - leftSide: ETH
+    rightSide: BUSD
+    aliases:
+      - key: binance
+        alias: ETHBUSD
+    feeConfigs:
+      - direction: ASK
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+      - direction: BID
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+  - leftSide: BNB
+    rightSide: BUSD
+    aliases:
+      - key: binance
+        alias: BNBBUSD
+    feeConfigs:
+      - direction: ASK
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+      - direction: BID
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+  - leftSide: BTC
+    rightSide: IRT
+    aliases:
+      - key: binance
+        alias: BTCIRT
+    feeConfigs:
+      - direction: ASK
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+      - direction: BID
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+  - leftSide: ETH
+    rightSide: IRT
+    aliases:
+      - key: binance
+        alias: ETHIRT
+    feeConfigs:
+      - direction: ASK
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+      - direction: BID
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+  - leftSide: BNB
+    rightSide: IRT
+    aliases:
+      - key: binance
+        alias: BNBIRT
+    feeConfigs:
+      - direction: ASK
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+      - direction: BID
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+  - leftSide: BUSD
+    rightSide: IRT
+    aliases:
+      - key: binance
+        alias: BUSDIRT
+    feeConfigs:
+      - direction: ASK
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+      - direction: BID
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+wallet:
+  schedule:
+    delay: 10
+    batchSize: 10000
+userLimits:
+  - owner: 1
+    action: withdraw
+    walletType: main
+    withdrawFee: 0.0001
+    dailyTotal: 1000
+    dailyCount: 100
+    monthlyTotal: 30000
+    monthlyCount: 3000
+system:
+  walletTitle: system
+  walletLevel: basic

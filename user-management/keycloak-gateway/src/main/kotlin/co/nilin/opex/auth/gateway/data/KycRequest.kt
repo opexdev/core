@@ -1,7 +1,17 @@
 package co.nilin.opex.auth.gateway.data
 
-data class KycRequest(
-    val selfiePath: String,
-    val idCardPath: String,
-    val acceptFormPath: String
-)
+class KycRequest {
+
+    var selfiePath: String? = null
+    var idCardPath: String? = null
+    var acceptFormPath: String? = null
+
+    constructor()
+
+    constructor(selfiePath: String?, idCardPath: String?, acceptFormPath: String?) {
+        this.selfiePath = selfiePath
+        this.idCardPath = idCardPath
+        this.acceptFormPath = acceptFormPath
+    }
+
+}

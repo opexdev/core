@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS assigned_address_chains
 CREATE TABLE IF NOT EXISTS chain_address_types
 (
     id           SERIAL PRIMARY KEY,
-    chain_name   VARCHAR(72) NOT NULL REFERENCES chains (name),
+    chain_name   VARCHAR(72) UNIQUE NOT NULL REFERENCES chains (name),
     addr_type_id INTEGER     NOT NULL REFERENCES address_types (id)
 );
 
@@ -122,7 +122,7 @@ CREATE TABLE IF NOT EXISTS currency
 CREATE TABLE IF NOT EXISTS currency_implementations
 (
     id               SERIAL PRIMARY KEY,
-    symbol           VARCHAR(72) NOT NULL,
+    symbol           VARCHAR(72) NOT NULL REFERENCES currency (symbol),
     chain            VARCHAR(72) NOT NULL REFERENCES chains (name),
     token            BOOLEAN     NOT NULL,
     token_address    VARCHAR(72),
@@ -130,5 +130,6 @@ CREATE TABLE IF NOT EXISTS currency_implementations
     withdraw_enabled BOOLEAN     NOT NULL,
     withdraw_fee     DECIMAL     NOT NULL,
     withdraw_min     DECIMAL     NOT NULL,
-    decimal          INTEGER     NOT NULL
+    decimal          INTEGER     NOT NULL,
+    UNIQUE (symbol, chain)
 );

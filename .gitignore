@@ -22,6 +22,7 @@ target/
 ### Other files ###
 .env
 docker-compose.local.yml
+docker-compose.legacy.yml
 application-local.yml
 mvnw
 mvnw.cmd
@@ -41,3 +42,4 @@ build/
 !/.mvn/
 
 .DS_Store
+resources

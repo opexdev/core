@@ -10,26 +10,34 @@ import co.nilin.opex.matching.gateway.app.spi.PairConfigLoader
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.inout.OrderSubmitRequest
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.inout.OrderSubmitResult
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.EventSubmitter
+import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.KafkaHealthIndicator
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.OrderSubmitter
 import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.throwError
+import co.nilin.opex.utility.error.data.OpexException
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import java.util.*
 
 @Service
 class OrderService(
     val accountantApiProxy: AccountantApiProxy,
     val orderSubmitter: OrderSubmitter,
     val eventSubmitter: EventSubmitter,
-    val pairConfigLoader: PairConfigLoader
+    val pairConfigLoader: PairConfigLoader,
+    private val kafkaHealthIndicator: KafkaHealthIndicator,
 ) {
+
+    private val logger = LoggerFactory.getLogger(OrderService::class.java)
+
     suspend fun submitNewOrder(createOrderRequest: CreateOrderRequest): OrderSubmitResult {
         val symbolSides = createOrderRequest.pair.split("_")
         val symbol = if (createOrderRequest.direction == OrderDirection.ASK)
             symbolSides[0]
         else
             symbolSides[1]
-        if (!accountantApiProxy.canCreateOrder(
+        val pairFeeConfig = pairConfigLoader.load(createOrderRequest.pair, createOrderRequest.direction, "")
+
+        val canCreateOrder = runCatching {
+            accountantApiProxy.canCreateOrder(
                 createOrderRequest.uuid!!,
                 symbol,
                 if (createOrderRequest.direction == OrderDirection.ASK)
@@ -37,26 +45,22 @@ class OrderService(
                 else
                     createOrderRequest.quantity.multiply(createOrderRequest.price)
             )
-        ) {
-            throwError(OpexError.SubmitOrderForbiddenByAccountant)
-        }
-        val pairFeeConfig = pairConfigLoader.load(
-            createOrderRequest.pair, createOrderRequest.direction, ""
-        )
+        }.onFailure { logger.error(it.message) }.getOrElse { false }
+
+        if (!canCreateOrder)
+            throw OpexException(OpexError.SubmitOrderForbiddenByAccountant)
+
+        if (!kafkaHealthIndicator.isHealthy)
+            throw OpexException(OpexError.ServiceUnavailable)
+
         val orderSubmitRequest = OrderSubmitRequest(
-            UUID.randomUUID().toString(),
-            createOrderRequest.uuid!! //get from auth2
-            ,
-            null,
+            createOrderRequest.uuid!!, //get from auth2
             Pair(symbolSides[0], symbolSides[1]),
-            createOrderRequest.price.divide(
-                pairFeeConfig.pairConfig.rightSideFraction
-                    .toBigDecimal()
-            ).longValueExact(),
-            createOrderRequest.quantity.divide(
-                pairFeeConfig.pairConfig.leftSideFraction
-                    .toBigDecimal()
-            )
+            createOrderRequest.price
+                .divide(pairFeeConfig.pairConfig.rightSideFraction.toBigDecimal())
+                .longValueExact(),
+            createOrderRequest.quantity
+                .divide(pairFeeConfig.pairConfig.leftSideFraction.toBigDecimal())
                 .longValueExact(),
             createOrderRequest.direction,
             createOrderRequest.matchConstraint,

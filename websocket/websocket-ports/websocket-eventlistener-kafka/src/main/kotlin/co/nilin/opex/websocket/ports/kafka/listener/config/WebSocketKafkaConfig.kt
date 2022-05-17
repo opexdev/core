@@ -38,6 +38,7 @@ class WebSocketKafkaConfig {
             ConsumerConfig.GROUP_ID_CONFIG to groupId,
             ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
             ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JsonDeserializer::class.java,
+            JsonDeserializer.TYPE_MAPPINGS to "rich_order_event:co.nilin.opex.accountant.core.inout.RichOrderEvent,rich_order:co.nilin.opex.accountant.core.inout.RichOrder,rich_order_update:co.nilin.opex.accountant.core.inout.RichOrderUpdate, rich_trade:co.nilin.opex.accountant.core.inout.RichTrade",
             JsonDeserializer.TRUSTED_PACKAGES to "co.nilin.opex.*",
         )
     }

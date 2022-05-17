@@ -77,6 +77,7 @@ class AccountController(
     @JsonInclude(JsonInclude.Include.NON_NULL)
     data class QueryOrderResponse(
         val symbol: String,
+        val ouid: String,
         val orderId: Long,
         val orderListId: Long, //Unless part of an OCO, the value will always be -1.
         val clientOrderId: String,
@@ -304,6 +305,7 @@ class AccountController(
 
         return QueryOrderResponse(
             symbol,
+            response.ouid,
             response.orderId,
             response.orderListId,
             response.clientOrderId,
@@ -363,6 +365,7 @@ class AccountController(
             .map { response ->
                 QueryOrderResponse(
                     symbol ?: "",
+                    response.ouid,
                     response.orderId,
                     response.orderListId,
                     response.clientOrderId,
@@ -427,6 +430,7 @@ class AccountController(
             .map { response ->
                 QueryOrderResponse(
                     symbol ?: "",
+                    response.ouid,
                     response.orderId,
                     response.orderListId,
                     response.clientOrderId,

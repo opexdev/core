@@ -7,7 +7,7 @@ import java.math.BigDecimal
 
 @Table("user_limits")
 class UserLimitsModel(
-    @Id val id: Long?,
+    @Id var id: Long?,
     val level: String?,
     val owner: Long?,
     val action: String, //withdraw or deposit

@@ -1,8 +1,8 @@
 package co.nilin.opex.api.ports.postgres.impl
 
-import co.nilin.opex.accountant.core.inout.OrderStatus
-import co.nilin.opex.accountant.core.inout.RichOrder
-import co.nilin.opex.accountant.core.inout.RichOrderUpdate
+import co.nilin.opex.api.core.event.RichOrder
+import co.nilin.opex.api.core.event.RichOrderUpdate
+import co.nilin.opex.api.core.inout.OrderStatus
 import co.nilin.opex.api.core.spi.OrderPersister
 import co.nilin.opex.api.ports.postgres.dao.OrderRepository
 import co.nilin.opex.api.ports.postgres.dao.OrderStatusRepository
@@ -60,15 +60,19 @@ class OrderPersisterImpl(
     }
 
     override suspend fun update(orderUpdate: RichOrderUpdate) {
-        orderStatusRepository.save(
-            OrderStatusModel(
-                orderUpdate.ouid,
-                orderUpdate.executedQuantity().toDouble(),
-                orderUpdate.accumulativeQuoteQuantity().toDouble(),
-                orderUpdate.status.code,
-                orderUpdate.status.orderOfAppearance
-            )
-        ).awaitFirstOrNull()
+        try {
+            orderStatusRepository.save(
+                OrderStatusModel(
+                    orderUpdate.ouid,
+                    orderUpdate.executedQuantity().toDouble(),
+                    orderUpdate.accumulativeQuoteQuantity().toDouble(),
+                    orderUpdate.status.code,
+                    orderUpdate.status.orderOfAppearance
+                )
+            ).awaitFirstOrNull()
+        } catch (e: Exception) {
+            logger.error("Error updating order status: ${e.message}")
+        }
         logger.info("OrderStatus ${orderUpdate.ouid} updated with status of ${orderUpdate.status}")
     }
 }

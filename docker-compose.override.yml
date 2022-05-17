@@ -1,31 +1,42 @@
 version: '3.8'
 services:
-  vault-ui:
-    ports:
-      - "8000:8000"
-  consul:
-    ports:
-      - "8500:8500"
-      - "8300:8300"
-      - "8600:8600"
-  postgres-accountant:
-    ports:
-      - "5432:5432"
-  postgres-eventlog:
-    ports:
-      - "5433:5432"
-  postgres-auth:
-    ports:
-      - "5434:5432"
-  postgres-wallet:
-    ports:
-      - "5435:5432"
-  postgres-api:
-    ports:
-      - "5436:5432"
-  postgres-bc-gateway:
-    ports:
-      - "5437:5432"
-  postgres-referral:
-    ports:
-      - "5438:5432"
+  vault:
+    build: docker-images/vault
+  postgres-opex:
+    build: docker-images/postgres
+  accountant:
+    build: accountant/accountant-app
+    volumes:
+      - "./preferences-$PREFERENCES_IDENTIFIER.yml:/preferences.yml"
+  eventlog:
+    build: eventlog/eventlog-app
+  matching-engine:
+    build: matching-engine/matching-engine-app
+    volumes:
+      - "./preferences-$PREFERENCES_IDENTIFIER.yml:/preferences.yml"
+  matching-gateway:
+    build: matching-gateway/matching-gateway-app
+  auth:
+    build: user-management/keycloak-gateway
+  wallet:
+    build: wallet/wallet-app
+    volumes:
+      - "./preferences-$PREFERENCES_IDENTIFIER.yml:/preferences.yml"
+  api:
+    build: api/api-app
+    volumes:
+      - "./preferences-$PREFERENCES_IDENTIFIER.yml:/preferences.yml"
+  websocket:
+    build: websocket/websocket-app
+  bc-gateway:
+    build: bc-gateway/bc-gateway-app
+    volumes:
+      - "./preferences-$PREFERENCES_IDENTIFIER.yml:/preferences.yml"
+  storage:
+    build: storage/storage-app
+  referral:
+    build: referral/referral-app
+  captcha:
+    build: captcha/captcha-app
+  admin:
+    build: admin/admin-app

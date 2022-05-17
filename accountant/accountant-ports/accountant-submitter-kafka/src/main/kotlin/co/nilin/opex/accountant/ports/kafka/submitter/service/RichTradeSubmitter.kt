@@ -24,7 +24,7 @@ class RichTradeSubmitter(@Qualifier("richTradeKafkaTemplate") val kafkaTemplate:
             cont.resume(Unit)
         }, {
             logger.error("RichTrade submitter error", it)
-            cont.resumeWithException(it)
+            cont.resume(Unit)
         })
     }
 }

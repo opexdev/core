@@ -1,11 +1,14 @@
 package co.nilin.opex.auth.gateway.extension
 
+import co.nilin.opex.auth.gateway.data.KYCStatus
+import co.nilin.opex.auth.gateway.data.KYCStatusResponse
 import co.nilin.opex.auth.gateway.data.KycRequest
 import co.nilin.opex.auth.gateway.data.UserProfileInfo
 import co.nilin.opex.auth.gateway.utils.ErrorHandler
 import co.nilin.opex.auth.gateway.utils.ResourceAuthenticator
 import co.nilin.opex.utility.error.data.OpexError
 import org.jboss.resteasy.plugins.providers.multipart.InputPart
+import org.keycloak.models.GroupModel
 import org.keycloak.models.KeycloakSession
 import org.keycloak.models.UserModel
 import org.keycloak.services.resource.RealmResourceProvider
@@ -25,9 +28,10 @@ class UserProfileResource(private val session: KeycloakSession) : RealmResourceP
 
     private val logger = LoggerFactory.getLogger(UserProfileResource::class.java)
     private val opexRealm = session.realms().getRealm("opex")
+    private var kycRequestGroup: GroupModel? = null
+    private var kycRejectGroup: GroupModel? = null
 
     @GET
-    @Path("profile")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     fun getAttributes(): Response {
@@ -36,11 +40,25 @@ class UserProfileResource(private val session: KeycloakSession) : RealmResourceP
             return ErrorHandler.forbidden()
 
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
-        return Response.ok(user.attributes).build()
+        val attributes = mutableMapOf<String, String?>()
+        user.attributes.entries
+            .filter { !it.key.startsWith(".") } // Skip hidden attributes
+            .forEach {
+                if (it.value.size == 1)
+                    attributes[it.key] = it.value[0]
+                else if (it.value.size > 1) {
+                    attributes[it.key] = with(StringBuilder()) {
+                        it.value.forEach { v -> append("$v,") }
+                        deleteCharAt(length - 1)
+                        toString()
+                    }
+                }
+            }
+
+        return Response.ok(attributes).build()
     }
 
     @POST
-    @Path("profile")
     @Consumes(MediaType.APPLICATION_JSON)
     fun updateAttributes(request: UserProfileInfo): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
@@ -63,14 +81,15 @@ class UserProfileResource(private val session: KeycloakSession) : RealmResourceP
             postalCode?.let { user.setSingleAttribute("postalCode", it) }
             residence?.let { user.setSingleAttribute("residence", it) }
             nationality?.let { user.setSingleAttribute("nationality", it) }
+            address?.let { user.setSingleAttribute("address", it) }
         }
 
         return Response.noContent().build()
     }
 
     @POST
-    @Path("profile/kyc")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Path("kyc")
+    @Consumes(MediaType.APPLICATION_JSON)
     fun kycFlow(request: KycRequest): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
         if (!auth.hasScopeAccess("trust"))
@@ -79,10 +98,16 @@ class UserProfileResource(private val session: KeycloakSession) : RealmResourceP
         val userId = auth.getUserId()
         val user = session.users().getUserById(userId, opexRealm) ?: return ErrorHandler.userNotFound()
 
-        if (isInKycGroups(user))
+        if (isInBlockedKycGroups(user))
             return ErrorHandler.response(
                 Response.Status.BAD_REQUEST,
-                OpexError.BadRequest,
+                OpexError.UserKYCBlocked
+            )
+
+        if (isInNonRetryableKycGroups(user))
+            return ErrorHandler.response(
+                Response.Status.BAD_REQUEST,
+                OpexError.AlreadyInKYC,
                 "User is already in kyc groups"
             )
 
@@ -96,28 +121,81 @@ class UserProfileResource(private val session: KeycloakSession) : RealmResourceP
         val idCard = proxy.upload(userId, idPart).path
         val acceptForm = proxy.upload(userId, formPart).path*/
 
+        if (kycRequestGroup == null || kycRejectGroup == null) {
+            val groups = session.groups()
+                .getGroupsStream(opexRealm)
+                .toList()
 
-        val kycRequestGroup = session.groups()
-            .getGroupsStream(opexRealm)
-            .toList()
-            .find { it.name == "kyc-requested" }
-            ?: return ErrorHandler.response(Response.Status.NOT_FOUND, OpexError.GroupNotFound)
+            kycRequestGroup = groups.find { it.name == "kyc-requested" }
+            kycRejectGroup = groups.find { it.name == "kyc-rejected" }
+        }
 
         user.apply {
-            joinGroup(kycRequestGroup)
-            setSingleAttribute("kycSelfiePath", request.selfiePath)
-            setSingleAttribute("kycIdCardPath", request.idCardPath)
-            setSingleAttribute("kycAcceptFormPath", request.acceptFormPath)
+            kycRequestGroup?.let { joinGroup(it) }
+            kycRejectGroup?.let { leaveGroup(it) }
+            setSingleAttribute("selfiePath", request.selfiePath)
+            setSingleAttribute("idCardPath", request.idCardPath)
+            setSingleAttribute("acceptFormPath", request.acceptFormPath)
         }
 
         return Response.noContent().build()
     }
 
+    @GET
+    @Path("kyc/status")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    fun kycStatus(): Response {
+        val auth = ResourceAuthenticator.bearerAuth(session)
+        if (!auth.hasScopeAccess("trust"))
+            return ErrorHandler.forbidden()
+
+        val userId = auth.getUserId()
+        val user = session.users().getUserById(userId, opexRealm) ?: return ErrorHandler.userNotFound()
+        val status = when (getUserKycGroup(user)) {
+            "kyc-accepted" -> KYCStatus.ACCEPTED
+            "kyc-rejected" -> KYCStatus.REJECTED
+            "kyc-requested" -> KYCStatus.REQUESTED
+            "kyc-blocked" -> KYCStatus.BLOCKED
+            else -> KYCStatus.NOT_REQUESTED
+        }
+
+        val reasonAttr = when (status) {
+            KYCStatus.REJECTED -> user.attributes[".rejectReason"]
+            KYCStatus.BLOCKED -> user.attributes[".blockReason"]
+            else -> null
+        }
+        val reason = if (reasonAttr?.isNotEmpty() == true) reasonAttr[0] else null
+
+        return Response.ok(KYCStatusResponse(status, reason)).build()
+    }
+
     private fun isInKycGroups(user: UserModel): Boolean {
         return user.groupsStream.map { it.name }
-            .filter { it == "kyc-accepted" || it == "kyc-rejected" || it == "kyc-requested" }
+            .filter { it == "kyc-accepted" || it == "kyc-rejected" || it == "kyc-requested" || it == "kyc-blocked" }
             .toList()
             .isNotEmpty()
+    }
+
+    private fun isInNonRetryableKycGroups(user: UserModel): Boolean {
+        return user.groupsStream.map { it.name }
+            .filter { it == "kyc-accepted" || it == "kyc-requested" }
+            .toList()
+            .isNotEmpty()
+    }
+
+    private fun isInBlockedKycGroups(user: UserModel): Boolean {
+        return user.groupsStream.map { it.name }
+            .filter { it == "kyc-blocked" }
+            .toList()
+            .isNotEmpty()
+    }
+
+    private fun getUserKycGroup(user: UserModel): String? {
+        val kycGroups = user.groupsStream.map { it.name }
+            .filter { it == "kyc-accepted" || it == "kyc-rejected" || it == "kyc-requested" || it == "kyc-blocked" }
+            .toList()
+        return if (kycGroups.isEmpty()) null else kycGroups[0]
     }
 
     private fun createPartContent(input: InputPart): Flux<DataBuffer> {

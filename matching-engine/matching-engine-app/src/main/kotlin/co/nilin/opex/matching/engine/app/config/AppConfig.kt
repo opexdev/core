@@ -12,16 +12,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
 class AppConfig {
-
-    @Value("\${spring.app.symbols}")
-    private val symbols: String? = null
+    @Autowired
+    private lateinit var symbols: List<String>
 
     @Bean
     @ConditionalOnMissingBean(value = [OrderBookPersister::class])
@@ -38,22 +36,21 @@ class AppConfig {
 
     @Autowired
     fun configureOrderBooks(orderBookPersister: OrderBookPersister) {
-        symbols!!.split(",")
-            .forEach { symbol ->
-                CoroutineScope(AppSchedulers.generalExecutor).launch {
-                    val lastOrderBook = orderBookPersister.loadLastState(symbol)
-                    //todo: load db orders from last order in order book and put in order book
-                    //todo: add missing orders to lastOrderBook or create one
-                    if (lastOrderBook != null) {
-                        withContext(coroutineContext) {
-                            OrderBooks.reloadOrderBook(lastOrderBook)
-                        }
-                    } else {
-                        OrderBooks.createOrderBook(symbol)
+        symbols.forEach { symbol ->
+            CoroutineScope(AppSchedulers.generalExecutor).launch {
+                val lastOrderBook = orderBookPersister.loadLastState(symbol)
+                //todo: load db orders from last order in order book and put in order book
+                //todo: add missing orders to lastOrderBook or create one
+                if (lastOrderBook != null) {
+                    withContext(coroutineContext) {
+                        OrderBooks.reloadOrderBook(lastOrderBook)
                     }
-
+                } else {
+                    OrderBooks.createOrderBook(symbol)
                 }
+
             }
+        }
     }
 
     @Bean
@@ -80,5 +77,4 @@ class AppConfig {
     fun configureMatchingEngineListener(exchangeEventHandler: ExchangeEventHandler) {
         exchangeEventHandler.register()
     }
-
 }

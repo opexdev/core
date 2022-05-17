@@ -32,6 +32,16 @@ class AuthAdminController(private val service: AuthAdminService) {
         service.switchKYCGroup(userId, KycGroup.ACCEPTED)
     }
 
+    @PostMapping("/user/{userId}/kyc/reject")
+    fun rejectKYC(@PathVariable userId: String, @RequestParam reason: String) {
+        service.rejectKYC(userId, reason)
+    }
+
+    @PostMapping("/user/{userId}/kyc/block")
+    fun blockKYC(@PathVariable userId: String, @RequestParam reason: String) {
+        service.blockKYC(userId, reason)
+    }
+
     @PostMapping("/user/impersonate", produces = [MediaType.APPLICATION_JSON_VALUE])
     suspend fun impersonate(@RequestBody body: ImpersonateRequest): String {
         return service.impersonate(body.clientId, body.clientSecret, body.userId)
@@ -46,11 +56,6 @@ class AuthAdminController(private val service: AuthAdminService) {
     ): QueryUserResponse {
         return if (by == "email") service.searchUserEmail(search)
         else service.searchUser(search, offset, size)
-    }
-
-    @PostMapping("/user/{userId}/kyc/reject")
-    fun rejectKYC(@PathVariable userId: String) {
-        service.switchKYCGroup(userId, KycGroup.REJECTED)
     }
 
     @GetMapping("/group/{groupName}/members")

@@ -1,4 +1,6 @@
-server.port: 8080
+server:
+  forward-headers-strategy: NATIVE
+  port: 8080
 spring:
   application:
     name: opex-auth

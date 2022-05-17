@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>co.nilin.opex</groupId>
-    <artifactId>OPEX-Core</artifactId>
+    <artifactId>core</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
 

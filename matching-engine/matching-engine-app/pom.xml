@@ -43,6 +43,14 @@
             <groupId>co.nilin.opex.matching.engine.ports.redis</groupId>
             <artifactId>matching-engine-snapshots-redis</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>co.nilin.opex.utility.preferences</groupId>
+            <artifactId>preferences</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

@@ -1,11 +1,11 @@
 version: '3.8'
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:latest
+    image: confluentinc/cp-zookeeper:7.1.1
     hostname: zookeeper
     volumes:
-      - $DATA/zookeeper-data/data:/var/lib/zookeeper/data
-      - $DATA/zookeeper-data/tx-logs:/var/lib/zookeeper/log
+      - zookeeper-data:/var/lib/zookeeper/data
+      - zookeeper-log:/var/lib/zookeeper/log
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
       - ZOOKEEPER_CLIENT_PORT=2181
@@ -15,10 +15,10 @@ services:
       restart_policy:
         condition: on-failure
   kafka-1:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:7.1.1
     hostname: kafka-1
     volumes:
-      - $DATA/kafka-data/kafka-1:/var/lib/kafka/data
+      - kafka-1:/var/lib/kafka/data
     environment:
       - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
       - ALLOW_PLAINTEXT_LISTENER=yes
@@ -36,10 +36,10 @@ services:
       restart_policy:
         condition: on-failure
   kafka-2:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:7.1.1
     hostname: kafka-2
     volumes:
-      - $DATA/kafka-data/kafka-2:/var/lib/kafka/data
+      - kafka-2:/var/lib/kafka/data
     environment:
       - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
       - ALLOW_PLAINTEXT_LISTENER=yes
@@ -57,10 +57,10 @@ services:
       restart_policy:
         condition: on-failure
   kafka-3:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:7.1.1
     hostname: kafka-3
     volumes:
-      - $DATA/kafka-data/kafka-3:/var/lib/kafka/data
+      - kafka-3:/var/lib/kafka/data
     environment:
       - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
       - ALLOW_PLAINTEXT_LISTENER=yes
@@ -78,7 +78,7 @@ services:
       restart_policy:
         condition: on-failure
   akhq:
-    image: tchiotludo/akhq
+    image: tchiotludo/akhq:0.20.0
     environment:
       AKHQ_CONFIGURATION: |
         akhq:
@@ -92,13 +92,15 @@ services:
       - kafka-1
       - kafka-2
       - kafka-3
+    deploy:
+      restart_policy:
+        condition: on-failure
   vault:
-    image: vault
+    image: ghcr.io/opexdev/vault-opex
     volumes:
-      - $DATA/vault:/vault/file:rw
-      - ./resources/vault:/vault/config:rw
+      - vault-data:/vault/file
     environment:
-      - VAULT_ADDRESS=http://0.0.0.0:8200
+      - VAULT_ADDR=http://0.0.0.0:8200
       - PANEL_PASS=${PANEL_PASS}
       - BACKEND_USER=${BACKEND_USER}
       - SMTP_PASS=${SMTP_PASS}
@@ -110,11 +112,11 @@ services:
       - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-hiopex}
       - OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET=${OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET}
       - VANDAR_API_KEY=$VANDAR_API_KEY
-    healthcheck:
-      retries: 5
     cap_add:
       - IPC_LOCK
-    entrypoint: /vault/config/workflow-vault.sh
+    deploy:
+      restart_policy:
+        condition: on-failure
   vault-ui:
     image: djenriquez/vault-ui
     environment:
@@ -122,6 +124,9 @@ services:
       - VAULT_AUTH_DEFAULT=USERNAMEPASSWORD
     depends_on:
       - vault
+    deploy:
+      restart_policy:
+        condition: on-failure
   consul:
     image: consul
     environment:
@@ -132,11 +137,10 @@ services:
       restart_policy:
         condition: on-failure
   redis:
-    image: redis:alpine
+    image: redis:7-alpine
     command: redis-server
     volumes:
-      - $DATA/redis-data:/var/lib/redis
-      - $DATA/redis.conf:/usr/local/etc/redis/redis.conf
+      - redis-data:/var/lib/redis
     environment:
       - REDIS_REPLICATION_MODE=master
     networks:
@@ -145,7 +149,7 @@ services:
       restart_policy:
         condition: on-failure
   postgres-accountant:
-    image: postgres:14-alpine
+    image: ghcr.io/opexdev/postgres-opex
     environment:
       - POSTGRES_USER=${DB_USER:-opex}
       - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
@@ -153,12 +157,14 @@ services:
       - POSTGRES_BACKUP_USER=${DB_BACKUP_USER:-opex_backup}
       - POSTGRES_BACKUP_PASSWORD=${DB_BACKUP_PASS:-hiopex}
     volumes:
-      - ./resources/postgres/init-backup-user.sh:/docker-entrypoint-initdb.d/init-backup-user.sh
-      - $DATA/accountant-data:/var/lib/postgresql/data/
+      - accountant-data:/var/lib/postgresql/data/
     networks:
       - default
+    deploy:
+      restart_policy:
+        condition: on-failure
   postgres-eventlog:
-    image: postgres:14-alpine
+    image: ghcr.io/opexdev/postgres-opex
     environment:
       - POSTGRES_USER=${DB_USER:-opex}
       - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
@@ -166,12 +172,14 @@ services:
       - POSTGRES_BACKUP_USER=${DB_BACKUP_USER:-opex_backup}
       - POSTGRES_BACKUP_PASSWORD=${DB_BACKUP_PASS:-hiopex}
     volumes:
-      - ./resources/postgres/init-backup-user.sh:/docker-entrypoint-initdb.d/init-backup-user.sh
-      - $DATA/eventlog-data:/var/lib/postgresql/data/
+      - eventlog-data:/var/lib/postgresql/data/
     networks:
       - default
+    deploy:
+      restart_policy:
+        condition: on-failure
   postgres-auth:
-    image: postgres:14-alpine
+    image: ghcr.io/opexdev/postgres-opex
     environment:
       - POSTGRES_USER=${DB_USER:-opex}
       - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
@@ -179,15 +187,14 @@ services:
       - POSTGRES_BACKUP_USER=${DB_BACKUP_USER:-opex_backup}
       - POSTGRES_BACKUP_PASSWORD=${DB_BACKUP_PASS:-hiopex}
     volumes:
-      - ./resources/postgres/init-backup-user.sh:/docker-entrypoint-initdb.d/init-backup-user.sh
-      - $DATA/auth-data:/var/lib/postgresql/data/
+      - auth-data:/var/lib/postgresql/data/
     networks:
       - default
     deploy:
       restart_policy:
         condition: on-failure
   postgres-wallet:
-    image: postgres:14-alpine
+    image: ghcr.io/opexdev/postgres-opex
     environment:
       - POSTGRES_USER=${DB_USER:-opex}
       - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
@@ -195,15 +202,14 @@ services:
       - POSTGRES_BACKUP_USER=${DB_BACKUP_USER:-opex_backup}
       - POSTGRES_BACKUP_PASSWORD=${DB_BACKUP_PASS:-hiopex}
     volumes:
-      - ./resources/postgres/init-backup-user.sh:/docker-entrypoint-initdb.d/init-backup-user.sh
-      - $DATA/wallet-data:/var/lib/postgresql/data/
+      - wallet-data:/var/lib/postgresql/data/
     networks:
       - default
     deploy:
       restart_policy:
         condition: on-failure
   postgres-api:
-    image: postgres:14-alpine
+    image: ghcr.io/opexdev/postgres-opex
     environment:
       - POSTGRES_USER=${DB_USER:-opex}
       - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
@@ -211,15 +217,14 @@ services:
       - POSTGRES_BACKUP_USER=${DB_BACKUP_USER:-opex_backup}
       - POSTGRES_BACKUP_PASSWORD=${DB_BACKUP_PASS:-hiopex}
     volumes:
-      - ./resources/postgres/init-backup-user.sh:/docker-entrypoint-initdb.d/init-backup-user.sh
-      - $DATA/api-data:/var/lib/postgresql/data/
+      - api-data:/var/lib/postgresql/data/
     networks:
       - default
     deploy:
       restart_policy:
         condition: on-failure
   postgres-bc-gateway:
-    image: postgres:14-alpine
+    image: ghcr.io/opexdev/postgres-opex
     environment:
       - POSTGRES_USER=${DB_USER:-opex}
       - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
@@ -227,15 +232,14 @@ services:
       - POSTGRES_BACKUP_USER=${DB_BACKUP_USER:-opex_backup}
       - POSTGRES_BACKUP_PASSWORD=${DB_BACKUP_PASS:-hiopex}
     volumes:
-      - ./resources/postgres/init-backup-user.sh:/docker-entrypoint-initdb.d/init-backup-user.sh
-      - $DATA/bc-gateway-data:/var/lib/postgresql/data/
+      - bc-gateway-data:/var/lib/postgresql/data/
     networks:
       - default
     deploy:
       restart_policy:
         condition: on-failure
   postgres-referral:
-    image: postgres:14-alpine
+    image: ghcr.io/opexdev/postgres-opex
     environment:
       - POSTGRES_USER=${DB_USER:-opex}
       - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
@@ -243,14 +247,12 @@ services:
       - POSTGRES_BACKUP_USER=${DB_BACKUP_USER:-opex_backup}
       - POSTGRES_BACKUP_PASSWORD=${DB_BACKUP_PASS:-hiopex}
     volumes:
-      - ./resources/postgres/init-backup-user.sh:/docker-entrypoint-initdb.d/init-backup-user.sh
-      - $DATA/referral-data:/var/lib/postgresql/data/
+      - referral-data:/var/lib/postgresql/data/
     deploy:
       restart_policy:
         condition: on-failure
   accountant:
-    build:
-      context: accountant/accountant-app
+    image: ghcr.io/opexdev/accountant
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - SPRING_PROFILES_ACTIVE=scheduled
@@ -260,6 +262,9 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
+      - PREFERENCES=$PREFERENCES
+    configs:
+      - preferences.yml
     networks:
       - default
     depends_on:
@@ -270,9 +275,11 @@ services:
       - consul
       - vault
       - postgres-accountant
+    deploy:
+      restart_policy:
+        condition: on-failure
   eventlog:
-    build:
-      context: eventlog/eventlog-app
+    image: ghcr.io/opexdev/eventlog
     environment:
       - JAVA_OPTS=-Xmx256m
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
@@ -289,13 +296,18 @@ services:
       - consul
       - vault
       - postgres-eventlog
+    deploy:
+      restart_policy:
+        condition: on-failure
   matching-engine:
-    build:
-      context: matching-engine/matching-engine-app
+    image: ghcr.io/opexdev/matching-engine
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - REDIS_HOST=redis
+      - PREFERENCES=$PREFERENCES
+    configs:
+      - preferences.yml
     networks:
       - default
     depends_on:
@@ -303,9 +315,11 @@ services:
       - kafka-2
       - kafka-3
       - redis
+    deploy:
+      restart_policy:
+        condition: on-failure
   matching-gateway:
-    build:
-      context: matching-gateway/matching-gateway-app
+    image: ghcr.io/opexdev/matching-gateway
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
@@ -319,16 +333,16 @@ services:
       - auth
       - consul
       - matching-engine
+    deploy:
+      restart_policy:
+        condition: on-failure
   auth:
-    build:
-      context: user-management/keycloak-gateway
+    image: ghcr.io/opexdev/auth
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-auth
-      - PROXY_ADDRESS_FORWARDING=true
-      - WORKING_DIR=$DATA
       - BACKEND_USER=$BACKEND_USER
       - ADMIN_URL=$KEYCLOAK_ADMIN_URL
       - FRONTEND_URL=$KEYCLOAK_FRONTEND_URL
@@ -348,8 +362,7 @@ services:
       restart_policy:
         condition: on-failure
   wallet:
-    build:
-      context: wallet/wallet-app
+    image: ghcr.io/opexdev/wallet
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
@@ -358,6 +371,9 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
+      - PREFERENCES=$PREFERENCES
+    configs:
+      - preferences.yml
     depends_on:
       - kafka-1
       - kafka-2
@@ -372,8 +388,7 @@ services:
       restart_policy:
         condition: on-failure
   api:
-    build:
-      context: api/api-app
+    image: ghcr.io/opexdev/api
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
@@ -382,6 +397,9 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
+      - PREFERENCES=$PREFERENCES
+    configs:
+      - preferences.yml
     depends_on:
       - kafka-1
       - kafka-2
@@ -401,8 +419,7 @@ services:
       restart_policy:
         condition: on-failure
   websocket:
-    build:
-      context: websocket/websocket-app
+    image: ghcr.io/opexdev/websocket
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
@@ -424,8 +441,7 @@ services:
       restart_policy:
         condition: on-failure
   bc-gateway:
-    build:
-      context: bc-gateway/bc-gateway-app
+    image: ghcr.io/opexdev/bc-gateway
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - SPRING_PROFILES_DEFAULT=scheduled
@@ -435,6 +451,9 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
+      - PREFERENCES=$PREFERENCES
+    configs:
+      - preferences.yml
     depends_on:
       - kafka-1
       - kafka-2
@@ -450,15 +469,14 @@ services:
       restart_policy:
         condition: on-failure
   storage:
-    build:
-      context: storage/storage-app
+    image: ghcr.io/opexdev/storage
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - CONSUL_HOST=consul
       - ROOT_DIR=/storage
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
     volumes:
-      - $DATA/storage-data:/storage
+      - storage-data:/storage
     depends_on:
       - auth
       - consul
@@ -468,8 +486,7 @@ services:
       restart_policy:
         condition: on-failure
   referral:
-    build:
-      context: referral/referral-app
+    image: ghcr.io/opexdev/referral
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - CONSUL_HOST=consul
@@ -491,8 +508,7 @@ services:
       restart_policy:
         condition: on-failure
   captcha:
-    build:
-      context: captcha/captcha-app
+    image: ghcr.io/opexdev/captcha
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
       - CONSUL_HOST=consul
@@ -503,8 +519,7 @@ services:
       restart_policy:
         condition: on-failure
   admin:
-    build:
-      context: admin/admin-app
+    image: ghcr.io/opexdev/admin
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
@@ -513,7 +528,7 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
     volumes:
-      - $DATA/admin-data:/admin
+      - admin-data:/admin
     depends_on:
       - kafka-1
       - kafka-2
@@ -526,7 +541,31 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+volumes:
+  zookeeper-data:
+  zookeeper-log:
+  kafka-1:
+  kafka-2:
+  kafka-3:
+  vault-data:
+  redis-data:
+  accountant-data:
+  eventlog-data:
+  auth-data:
+  wallet-data:
+  api-data:
+  bc-gateway-data:
+  referral-data:
+  storage-data:
+  admin-data:
 networks:
   default:
-    name: ${DEFAULT_NETWORK_NAME:-opex}
     driver: bridge
+secrets:
+  opex_dev_crt:
+    file: opex.dev.crt
+  private_pem:
+    file: private.pem
+configs:
+  preferences.yml:
+    file: preferences.yml

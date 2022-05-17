@@ -1,8 +1,7 @@
 package co.nilin.opex.api.ports.kafka.listener.config
 
-import co.nilin.opex.accountant.core.inout.RichOrderEvent
-import co.nilin.opex.accountant.core.inout.RichTrade
-import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
+import co.nilin.opex.api.core.event.RichOrderEvent
+import co.nilin.opex.api.core.event.RichTrade
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.beans.factory.annotation.Qualifier
@@ -28,16 +27,6 @@ class KafkaProducerConfig {
             ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JsonSerializer::class.java,
             ProducerConfig.ACKS_CONFIG to "all"
         )
-    }
-
-    @Bean("eventsProducerFactory")
-    fun producerFactory(@Qualifier("apiProducerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, CoreEvent> {
-        return DefaultKafkaProducerFactory(producerConfigs)
-    }
-
-    @Bean("eventKafkaTemplate")
-    fun kafkaTemplate(@Qualifier("eventsProducerFactory") producerFactory: ProducerFactory<String?, CoreEvent>): KafkaTemplate<String?, CoreEvent> {
-        return KafkaTemplate(producerFactory)
     }
 
     @Bean("richTradeProducerFactory")
