@@ -39,10 +39,14 @@ import javax.ws.rs.core.Response
 import kotlin.streams.toList
 
 class UserManagementResource(private val session: KeycloakSession) : RealmResourceProvider {
+
     private val logger = LoggerFactory.getLogger(UserManagementResource::class.java)
     private val opexRealm = session.realms().getRealm("opex")
+    private val verifyUrl by lazy {
+        ApplicationContextHolder.getCurrentContext()!!.environment.resolvePlaceholders("\${verify-url}")
+    }
     private val kafkaTemplate by lazy {
-        ApplicationContextHolder.getCurrentContext()!!.getBean("authKafkaTemplate") as KafkaTemplate<String, AuthEvent>
+        ApplicationContextHolder.getCurrentContext()!!.getBean("authKafkaTemplate",) as KafkaTemplate<String, AuthEvent>
     }
 
     @POST
@@ -86,7 +90,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
 
             addRequiredAction(UserModel.RequiredAction.VERIFY_EMAIL)
             addRequiredAction(UserModel.RequiredAction.UPDATE_PASSWORD)
-            sendEmail(this, requiredActionsStream.toList())
+            sendEmail(this, requiredActionsStream.toList(), verifyUrl)
         }
 
         session.userCredentialManager()
@@ -123,7 +127,18 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
 
     @POST
     @Path("user/verify")
-    fun verifyEmail(): Response {
+    fun verifyEmail(@QueryParam("token") token: String): Response {
+        val actionToken = session.tokens().decode(token, ExecuteActionsActionToken::class.java)
+        if (actionToken == null || !actionToken.isActive || actionToken.requiredActions.isEmpty())
+            return ErrorHandler.forbidden()
+
+        if (!actionToken.requiredActions.contains(UserModel.RequiredAction.VERIFY_EMAIL.name))
+            return Response.noContent().build()
+
+        with(session.users().getUserById(actionToken.subject, opexRealm)) {
+            removeRequiredAction(UserModel.RequiredAction.VERIFY_EMAIL)
+            isEmailVerified = true
+        }
 
         return Response.noContent().build()
     }
@@ -302,27 +317,33 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         return Response.ok(sessions).build()
     }
 
-    private fun sendEmail(user: UserModel, actions: List<String>) {
+    private fun sendEmail(user: UserModel, actions: List<String>, link: String? = null) {
         if (!user.isEnabled) throw OpexException(OpexError.BadRequest, "User is disabled")
 
         val clientId = Constants.ACCOUNT_MANAGEMENT_CLIENT_ID
         val client = session.clients().getClientByClientId(opexRealm, clientId)
         if (client == null || !client.isEnabled) throw OpexException(OpexError.BadRequest, "Client error")
 
-        val lifespan = opexRealm.actionTokenGeneratedByAdminLifespan
-        val expiration = Time.currentTime() + lifespan
-        val token = ExecuteActionsActionToken(user.id, expiration, actions, null, clientId)
-
         try {
-            val provider = session.getProvider(EmailTemplateProvider::class.java)
-            val builder = LoginActionsService.actionTokenProcessor(session.context.uri).apply {
-                queryParam("key", token.serialize(session, opexRealm, session.context.uri))
-            }
-            val link = builder.build(opexRealm.name).toString()
-            logger.info("************** link: $link")
+            val lifespan = opexRealm.actionTokenGeneratedByAdminLifespan
+            val expiration = Time.currentTime() + lifespan
 
+            //TODO It might be better to use redirect uri
+            val token = ExecuteActionsActionToken(user.id, expiration, actions, null, clientId)
+            val serializedToken = token.serialize(session, opexRealm, session.context.uri)
+            val verifyLink = if (link.isNullOrEmpty()) {
+                LoginActionsService.actionTokenProcessor(session.context.uri)
+                    .queryParam("key", serializedToken)
+                    .build(opexRealm.name)
+                    .toString()
+            } else {
+                "$link?key=$serializedToken"
+            }
+
+            val provider = session.getProvider(EmailTemplateProvider::class.java)
+            logger.info("verify link: $verifyLink")
             provider.setRealm(opexRealm).setUser(user)
-                .sendVerifyEmail(link, TimeUnit.SECONDS.toMinutes(lifespan.toLong()))
+                .sendVerifyEmail(verifyLink, TimeUnit.SECONDS.toMinutes(lifespan.toLong()))
         } catch (e: Exception) {
             logger.error("Unable to send verification email")
             e.printStackTrace()
