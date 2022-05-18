@@ -19,6 +19,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
                 " join wallet wm on wm.id = tm.source_wallet " +
                 " WHERE wm.owner = :owner " +
                 " and wm.wallet_type = :walletType " +
+                " and wm.currency = :currency " +
                 " and tm.transaction_date >= :startDate " +
                 " and tm.transaction_date <= :endDate"
     )
@@ -35,7 +36,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
                 " FROM transaction tm " +
                 " join wallet wm on wm.id = tm.source_wallet " +
                 " WHERE wm.owner = :owner " +
-                " and wm.id = :id " +
+                " and wm.id = :walletId " +
                 " and tm.transaction_date >= :startDate " +
                 " and tm.transaction_date <= :endDate"
     )
@@ -52,6 +53,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
                 " join wallet wm on wm.id = tm.dest_wallet " +
                 " WHERE wm.owner = :owner " +
                 " and wm.wallet_type = :walletType " +
+                " and wm.currency = :currency " +
                 " and tm.transaction_date >= :startDate " +
                 " and tm.transaction_date <= :endDate"
     )
