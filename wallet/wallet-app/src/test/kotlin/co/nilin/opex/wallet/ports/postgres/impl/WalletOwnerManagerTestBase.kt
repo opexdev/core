@@ -6,36 +6,16 @@ import co.nilin.opex.wallet.ports.postgres.dao.TransactionRepository
 import co.nilin.opex.wallet.ports.postgres.dao.UserLimitsRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletConfigRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletOwnerRepository
-import co.nilin.opex.wallet.ports.postgres.model.UserLimitsModel
-import co.nilin.opex.wallet.ports.postgres.model.WalletConfigModel
-import co.nilin.opex.wallet.ports.postgres.model.WalletOwnerModel
-import kotlinx.coroutines.flow.flow
-import org.mockito.ArgumentMatchers.anyLong
-import org.mockito.ArgumentMatchers.anyString
-import org.mockito.Mock
-import org.mockito.MockitoAnnotations
-import org.mockito.kotlin.any
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
-import java.math.BigDecimal
 
 internal open class WalletOwnerManagerTestBase {
-    @Mock
-    protected var userLimitsRepository: UserLimitsRepository
-
-    @Mock
-    protected var transactionRepository: TransactionRepository
-
-    @Mock
-    protected var walletOwnerRepository: WalletOwnerRepository
-
-    @Mock
-    protected var walletConfigRepository: WalletConfigRepository
-
-    protected var walletOwnerManagerImpl: WalletOwnerManagerImpl
+    protected var userLimitsRepository: UserLimitsRepository = mock()
+    protected var transactionRepository: TransactionRepository = mock()
+    protected var walletOwnerRepository: WalletOwnerRepository = mock()
+    protected var walletConfigRepository: WalletConfigRepository = mock()
+    protected var walletOwnerManagerImpl: WalletOwnerManagerImpl = WalletOwnerManagerImpl(
+        userLimitsRepository, transactionRepository, walletConfigRepository, walletOwnerRepository
+    )
 
     protected val walletOwner = object : WalletOwner {
         override fun id() = 2L
@@ -51,76 +31,5 @@ internal open class WalletOwnerManagerTestBase {
         override fun getSymbol() = "ETH"
         override fun getName() = "Ethereum"
         override fun getPrecision() = 0.0001
-    }
-
-    init {
-        MockitoAnnotations.openMocks(this)
-        userLimitsRepository = mock {
-            on { findByOwnerAndAction(anyLong(), eq("withdraw")) } doReturn flow {
-                emit(
-                    UserLimitsModel(
-                        1L,
-                        null,
-                        walletOwner.id(),
-                        "withdraw",
-                        "main",
-                        BigDecimal.valueOf(10),
-                        100,
-                        BigDecimal.valueOf(300),
-                        3000,
-                    )
-                )
-            }
-        }
-        walletOwnerRepository = mock {
-            on { save(any()) } doReturn Mono.just(
-                WalletOwnerModel(
-                    walletOwner.id(),
-                    walletOwner.uuid(),
-                    walletOwner.title(),
-                    walletOwner.level(),
-                    walletOwner.isTradeAllowed(),
-                    walletOwner.isWithdrawAllowed(),
-                    walletOwner.isDepositAllowed()
-                )
-            )
-            on { findByUuid(walletOwner.uuid()) } doReturn Mono.just(
-                WalletOwnerModel(
-                    walletOwner.id(),
-                    walletOwner.uuid(),
-                    walletOwner.title(),
-                    walletOwner.level(),
-                    walletOwner.isTradeAllowed(),
-                    walletOwner.isWithdrawAllowed(),
-                    walletOwner.isDepositAllowed()
-                )
-            )
-        }
-        walletConfigRepository = mock {
-            on { findAll() } doReturn Flux.just(WalletConfigModel("", "ETH"))
-        }
-        transactionRepository = mock {
-            on {
-                calculateDepositStatisticsBasedOnCurrency(
-                    anyLong(),
-                    anyString(),
-                    any(),
-                    any(),
-                    anyString()
-                )
-            } doReturn Mono.empty()
-            on {
-                calculateWithdrawStatisticsBasedOnCurrency(
-                    anyLong(),
-                    anyString(),
-                    any(),
-                    any(),
-                    anyString()
-                )
-            } doReturn Mono.empty()
-        }
-        walletOwnerManagerImpl = WalletOwnerManagerImpl(
-            userLimitsRepository, transactionRepository, walletConfigRepository, walletOwnerRepository
-        )
     }
 }
