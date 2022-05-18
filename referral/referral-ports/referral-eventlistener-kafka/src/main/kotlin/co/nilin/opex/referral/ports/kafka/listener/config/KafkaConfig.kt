@@ -40,6 +40,7 @@ class KafkaConfig {
         props[ConsumerConfig.GROUP_ID_CONFIG] = groupId
         props[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java
         props[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = JsonDeserializer::class.java
+        props[JsonDeserializer.TYPE_MAPPINGS] = "rich_order_event:co.nilin.opex.accountant.core.inout.RichOrderEvent,rich_order:co.nilin.opex.accountant.core.inout.RichOrder,rich_order_update:co.nilin.opex.accountant.core.inout.RichOrderUpdate,rich_trade:co.nilin.opex.accountant.core.inout.RichTrade"
         props[JsonDeserializer.TRUSTED_PACKAGES] = "co.nilin.opex.*"
         return props
     }
