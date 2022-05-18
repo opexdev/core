@@ -1,4 +1,4 @@
-package co.nilin.opex.wallet.app
+package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.wallet.core.model.Amount
 import kotlinx.coroutines.runBlocking

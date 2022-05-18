@@ -1,9 +1,8 @@
-package co.nilin.opex.wallet.app
+package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.model.WalletOwner
 import co.nilin.opex.wallet.ports.postgres.dao.*
-import co.nilin.opex.wallet.ports.postgres.impl.WalletManagerImpl
 import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletLimitsModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletModel

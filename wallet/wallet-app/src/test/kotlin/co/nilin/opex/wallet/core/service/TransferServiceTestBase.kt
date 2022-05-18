@@ -1,10 +1,9 @@
-package co.nilin.opex.wallet.app
+package co.nilin.opex.wallet.core.service
 
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.model.Wallet
 import co.nilin.opex.wallet.core.model.WalletOwner
-import co.nilin.opex.wallet.core.service.TransferService
 import co.nilin.opex.wallet.core.spi.TransactionManager
 import co.nilin.opex.wallet.core.spi.WalletListener
 import co.nilin.opex.wallet.core.spi.WalletManager

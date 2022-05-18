@@ -1,4 +1,4 @@
-package co.nilin.opex.wallet.app
+package co.nilin.opex.wallet.ports.postgres.impl
 
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat

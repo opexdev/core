@@ -1,4 +1,4 @@
-package co.nilin.opex.wallet.app
+package co.nilin.opex.wallet.core.service
 
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.model.Amount
