@@ -11,6 +11,8 @@ private class CurrencyServiceTest : CurrencyServiceTestBase() {
 
         assertThat(c).isNotNull
         assertThat(c!!.getSymbol()).isEqualTo("ETH")
+        assertThat(c.getName()).isEqualTo("Ethereum")
+        assertThat(c.getPrecision()).isEqualTo(0.0001)
     }
 
     @Test
