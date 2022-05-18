@@ -5,7 +5,6 @@ import co.nilin.opex.wallet.core.model.WalletOwner
 import co.nilin.opex.wallet.ports.postgres.dao.*
 import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
 import org.mockito.ArgumentMatchers.anyLong
-import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
@@ -36,7 +35,6 @@ internal open class WalletManagerTestBase {
     }
 
     init {
-        MockitoAnnotations.openMocks(this)
         transactionRepository = mock {
             on { calculateWithdrawStatistics(anyLong(), anyLong(), any(), any()) } doReturn Mono.empty()
         }
