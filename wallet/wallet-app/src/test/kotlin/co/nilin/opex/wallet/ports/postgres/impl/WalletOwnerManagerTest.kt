@@ -7,6 +7,7 @@ import co.nilin.opex.wallet.ports.postgres.model.WalletOwnerModel
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.ArgumentMatchers.anyString
@@ -39,7 +40,7 @@ private class WalletOwnerManagerTest : WalletOwnerManagerTestBase() {
     }
 
     @Test
-    fun givenWrongAmount_whenIsWithdrawAllowed_thenReturnTrue(): Unit = runBlocking {
+    fun givenInvalidAmount_whenIsWithdrawAllowed_thenReturnFalse(): Unit = runBlocking {
         stubbing(userLimitsRepository) {
             on { findByOwnerAndAction(walletOwner.id()!!, "withdraw") } doReturn flow { }
             on { findByLevelAndAction(eq("1"), eq("withdraw")) } doReturn flow {}
@@ -52,9 +53,15 @@ private class WalletOwnerManagerTest : WalletOwnerManagerTestBase() {
                 calculateWithdrawStatisticsBasedOnCurrency(anyLong(), anyString(), any(), any(), anyString())
             } doReturn Mono.empty()
         }
-        val isAllowed = walletOwnerManagerImpl.isWithdrawAllowed(walletOwner, Amount(currency, BigDecimal.valueOf(-5)))
 
-        assertThat(isAllowed).isTrue()
+        assertThatThrownBy {
+            runBlocking {
+                walletOwnerManagerImpl.isWithdrawAllowed(
+                    walletOwner,
+                    Amount(currency, BigDecimal.valueOf(-5))
+                )
+            }
+        }.isNotInstanceOf(NullPointerException::class.java)
     }
 
     @Test
