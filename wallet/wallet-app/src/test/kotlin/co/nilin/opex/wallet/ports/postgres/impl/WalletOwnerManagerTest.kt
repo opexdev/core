@@ -200,37 +200,35 @@ private class WalletOwnerManagerTest : WalletOwnerManagerTestBase() {
     @Test
     fun givenLevelWithLimit_whenIsDepositAllowed_thenReturnFalse(): Unit = runBlocking {
         stubbing(userLimitsRepository) {
-            stubbing(userLimitsRepository) {
-                on { findByOwnerAndAction(walletOwner.id()!!, "deposit") } doReturn flow { }
-                on { findByLevelAndAction(eq("1"), eq("deposit")) } doReturn flow {
-                    emit(
-                        UserLimitsModel(
-                            1,
-                            "1",
-                            null,
-                            "deposit",
-                            "main",
-                            BigDecimal.valueOf(100),
-                            10,
-                            BigDecimal.valueOf(3000),
-                            300
-                        )
+            on { findByOwnerAndAction(walletOwner.id()!!, "deposit") } doReturn flow { }
+            on { findByLevelAndAction(eq("1"), eq("deposit")) } doReturn flow {
+                emit(
+                    UserLimitsModel(
+                        1,
+                        "1",
+                        null,
+                        "deposit",
+                        "main",
+                        BigDecimal.valueOf(100),
+                        10,
+                        BigDecimal.valueOf(3000),
+                        300
                     )
-                }
+                )
             }
-            stubbing(walletConfigRepository) {
-                on { findAll() } doReturn Flux.just(WalletConfigModel("default", "ETH"))
-            }
-            stubbing(transactionRepository) {
-                on {
-                    calculateDepositStatisticsBasedOnCurrency(anyLong(), anyString(), any(), any(), anyString())
-                } doReturn Mono.empty()
-            }
-            val isAllowed =
-                walletOwnerManagerImpl.isDepositAllowed(walletOwner, Amount(currency, BigDecimal.valueOf(120)))
-
-            assertThat(isAllowed).isFalse()
         }
+        stubbing(walletConfigRepository) {
+            on { findAll() } doReturn Flux.just(WalletConfigModel("default", "ETH"))
+        }
+        stubbing(transactionRepository) {
+            on {
+                calculateDepositStatisticsBasedOnCurrency(anyLong(), anyString(), any(), any(), anyString())
+            } doReturn Mono.empty()
+        }
+        val isAllowed =
+            walletOwnerManagerImpl.isDepositAllowed(walletOwner, Amount(currency, BigDecimal.valueOf(120)))
+
+        assertThat(isAllowed).isFalse()
     }
 
     @Test

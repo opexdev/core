@@ -1,8 +1,8 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.wallet.core.model.Amount
-import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.model.Wallet
+import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletLimitsModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletOwnerModel
@@ -16,7 +16,7 @@ import java.math.BigDecimal
 
 private class WalletManagerTest : WalletManagerTestBase() {
     @Test
-    fun givenFullWalletWithNoLimit_whenIsWithdrawAllowed_thenReturnTrue(): Unit = runBlocking {
+    fun givenWalletWithNoLimit_whenIsWithdrawAllowed_thenReturnTrue(): Unit = runBlocking {
         stubbing(walletLimitsRepository) {
             on {
                 findByOwnerAndCurrencyAndWalletAndAction(walletOwner.id()!!, "ETH", 20, "withdraw")
@@ -51,25 +51,38 @@ private class WalletManagerTest : WalletManagerTestBase() {
             override fun type() = "main"
         }
 
-        assertThatThrownBy { runBlocking { walletManagerImpl.isWithdrawAllowed(wallet, BigDecimal.valueOf(0.5)) } }
+        assertThatThrownBy {
+            runBlocking {
+                walletManagerImpl.isWithdrawAllowed(
+                    wallet,
+                    BigDecimal.valueOf(0.5)
+                )
+            }
+        }.isNotInstanceOf(NullPointerException::class.java)
     }
 
     @Test
-    fun givenWrongCurrency_whenIsWithdrawAllowed_thenThrow(): Unit = runBlocking {
+    fun givenNotExistCurrency_whenIsWithdrawAllowed_thenThrow(): Unit = runBlocking {
+        stubbing(currencyRepository) {
+            on { findBySymbol(currency.getSymbol()) } doReturn Mono.empty()
+            on { findById(currency.getSymbol()) } doReturn Mono.empty()
+        }
         val wallet = object : Wallet {
             override fun id() = 20L
             override fun owner() = walletOwner
             override fun balance() = Amount(currency, BigDecimal.valueOf(0))
-            override fun currency() = object : Currency {
-                override fun getSymbol() = "WRONG"
-                override fun getName() = "WRONG"
-                override fun getPrecision() = 0.001
-            }
-
+            override fun currency() = currency
             override fun type() = "main"
         }
 
-        assertThatThrownBy { runBlocking { walletManagerImpl.isWithdrawAllowed(wallet, BigDecimal.valueOf(0.5)) } }
+        assertThatThrownBy {
+            runBlocking {
+                walletManagerImpl.isWithdrawAllowed(
+                    wallet,
+                    BigDecimal.valueOf(0.5)
+                )
+            }
+        }.isNotInstanceOf(NullPointerException::class.java)
     }
 
     @Test
@@ -82,7 +95,7 @@ private class WalletManagerTest : WalletManagerTestBase() {
             override fun type() = "main"
         }
 
-        val isAllowed = runBlocking { walletManagerImpl.isWithdrawAllowed(wallet, BigDecimal.valueOf(0.5)) }
+        val isAllowed = walletManagerImpl.isWithdrawAllowed(wallet, BigDecimal.valueOf(0.5))
 
         assertThat(isAllowed).isFalse()
     }
@@ -97,7 +110,14 @@ private class WalletManagerTest : WalletManagerTestBase() {
             override fun type() = "main"
         }
 
-        assertThatThrownBy { runBlocking { walletManagerImpl.isWithdrawAllowed(wallet, BigDecimal.valueOf(-1)) } }
+        assertThatThrownBy {
+            runBlocking {
+                walletManagerImpl.isWithdrawAllowed(
+                    wallet,
+                    BigDecimal.valueOf(-1)
+                )
+            }
+        }.isNotInstanceOf(NullPointerException::class.java)
     }
 
     @Test
@@ -418,7 +438,14 @@ private class WalletManagerTest : WalletManagerTestBase() {
             override fun type() = "main"
         }
 
-        assertThatThrownBy { runBlocking { walletManagerImpl.isDepositAllowed(wallet, BigDecimal.valueOf(0.5)) } }
+        assertThatThrownBy {
+            runBlocking {
+                walletManagerImpl.isDepositAllowed(
+                    wallet,
+                    BigDecimal.valueOf(0.5)
+                )
+            }
+        }.isNotInstanceOf(NullPointerException::class.java)
     }
 
     @Test
@@ -427,16 +454,18 @@ private class WalletManagerTest : WalletManagerTestBase() {
             override fun id() = 20L
             override fun owner() = walletOwner
             override fun balance() = Amount(currency, BigDecimal.valueOf(0))
-            override fun currency() = object : Currency {
-                override fun getSymbol() = "WRONG"
-                override fun getName() = "WRONG"
-                override fun getPrecision() = 0.001
-            }
-
+            override fun currency() = currency
             override fun type() = "main"
         }
 
-        assertThatThrownBy { runBlocking { walletManagerImpl.isDepositAllowed(wallet, BigDecimal.valueOf(0.5)) } }
+        assertThatThrownBy {
+            runBlocking {
+                walletManagerImpl.isDepositAllowed(
+                    wallet,
+                    BigDecimal.valueOf(0.5)
+                )
+            }
+        }.isNotInstanceOf(NullPointerException::class.java)
     }
 
     @Test
@@ -685,6 +714,17 @@ private class WalletManagerTest : WalletManagerTestBase() {
                 )
             )
         }
+        stubbing(currencyRepository) {
+            on {
+                findBySymbol(currency.getSymbol())
+            } doReturn Mono.just(
+                CurrencyModel(
+                    currency.getSymbol(),
+                    currency.getName(),
+                    currency.getPrecision()
+                )
+            )
+        }
         val wallet = walletManagerImpl.findWalletByOwnerAndCurrencyAndType(walletOwner, "main", currency)
 
         assertThat(wallet).isNotNull
@@ -736,14 +776,21 @@ private class WalletManagerTest : WalletManagerTestBase() {
             override fun type() = "main"
         }
 
-        walletManagerImpl.increaseBalance(wallet, BigDecimal.valueOf(1))
+        assertThatThrownBy {
+            runBlocking {
+                walletManagerImpl.increaseBalance(
+                    wallet,
+                    BigDecimal.valueOf(1)
+                )
+            }
+        }.doesNotThrowAnyException()
     }
 
     @Test
     fun givenNotExistWallet_whenIncreaseBalance_thenThrow(): Unit = runBlocking {
         stubbing(walletRepository) {
             on {
-                updateBalance(any(), any())
+                updateBalance(any(), eq(BigDecimal.valueOf(1)))
             } doReturn Mono.just(0)
         }
         val wallet = object : Wallet {
@@ -754,7 +801,14 @@ private class WalletManagerTest : WalletManagerTestBase() {
             override fun type() = "main"
         }
 
-        assertThatThrownBy { runBlocking { walletManagerImpl.increaseBalance(wallet, BigDecimal.valueOf(1)) } }
+        assertThatThrownBy {
+            runBlocking {
+                walletManagerImpl.increaseBalance(
+                    wallet,
+                    BigDecimal.valueOf(1)
+                )
+            }
+        }.isNotInstanceOf(NullPointerException::class.java)
     }
 
     @Test
@@ -772,7 +826,14 @@ private class WalletManagerTest : WalletManagerTestBase() {
             override fun type() = "main"
         }
 
-        assertThatThrownBy { runBlocking { walletManagerImpl.increaseBalance(wallet, BigDecimal.valueOf(-1)) } }
+        assertThatThrownBy {
+            runBlocking {
+                walletManagerImpl.increaseBalance(
+                    wallet,
+                    BigDecimal.valueOf(-1)
+                )
+            }
+        }.isNotInstanceOf(NullPointerException::class.java)
     }
 
     @Test
@@ -788,14 +849,21 @@ private class WalletManagerTest : WalletManagerTestBase() {
             override fun type() = "main"
         }
 
-        walletManagerImpl.decreaseBalance(wallet, BigDecimal.valueOf(1))
+        assertThatThrownBy {
+            runBlocking {
+                walletManagerImpl.decreaseBalance(
+                    wallet,
+                    BigDecimal.valueOf(1)
+                )
+            }
+        }.doesNotThrowAnyException()
     }
 
     @Test
     fun givenNotExist_whenDecreaseBalance_thenThrow(): Unit = runBlocking {
         stubbing(walletRepository) {
             on {
-                updateBalance(any(), any())
+                updateBalance(any(), eq(BigDecimal.valueOf(-1)))
             } doReturn Mono.just(0)
         }
         val wallet = object : Wallet {
@@ -806,14 +874,21 @@ private class WalletManagerTest : WalletManagerTestBase() {
             override fun type() = "main"
         }
 
-        assertThatThrownBy { runBlocking { walletManagerImpl.decreaseBalance(wallet, BigDecimal.valueOf(1)) } }
+        assertThatThrownBy {
+            runBlocking {
+                walletManagerImpl.decreaseBalance(
+                    wallet,
+                    BigDecimal.valueOf(1)
+                )
+            }
+        }.isNotInstanceOf(NullPointerException::class.java)
     }
 
     @Test
     fun givenWrongAmount_whenDecreaseBalance_thenThrow(): Unit = runBlocking {
         stubbing(walletRepository) {
             on {
-                updateBalance(eq(20), any())
+                updateBalance(eq(20), eq(BigDecimal.valueOf(-1)))
             } doReturn Mono.just(0)
         }
         val wallet = object : Wallet {
@@ -824,7 +899,14 @@ private class WalletManagerTest : WalletManagerTestBase() {
             override fun type() = "main"
         }
 
-        assertThatThrownBy { runBlocking { walletManagerImpl.decreaseBalance(wallet, BigDecimal.valueOf(-1)) } }
+        assertThatThrownBy {
+            runBlocking {
+                walletManagerImpl.decreaseBalance(
+                    wallet,
+                    BigDecimal.valueOf(-1)
+                )
+            }
+        }.isNotInstanceOf(NullPointerException::class.java)
     }
 
     @Test
@@ -852,6 +934,17 @@ private class WalletManagerTest : WalletManagerTestBase() {
                     walletOwner.isTradeAllowed(),
                     walletOwner.isWithdrawAllowed(),
                     walletOwner.isDepositAllowed()
+                )
+            )
+        }
+        stubbing(currencyRepository) {
+            on {
+                findById(currency.getSymbol())
+            } doReturn Mono.just(
+                CurrencyModel(
+                    currency.getSymbol(),
+                    currency.getName(),
+                    currency.getPrecision()
                 )
             )
         }

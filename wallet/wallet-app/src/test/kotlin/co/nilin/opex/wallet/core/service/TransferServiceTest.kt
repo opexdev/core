@@ -497,11 +497,9 @@ private class TransferServiceTest : TransferServiceTestBase() {
                 }
             } doReturn Unit
         }
-        stubbing(transactionManager)
-        {
+        stubbing(transactionManager) {
             onBlocking { save(any()) } doReturn "1"
         }
-
         val sourceWalletOwner = object : WalletOwner {
             override fun id() = 2L
             override fun uuid() = "fdf453d7-0633-4ec7-852d-a18148c99a82"

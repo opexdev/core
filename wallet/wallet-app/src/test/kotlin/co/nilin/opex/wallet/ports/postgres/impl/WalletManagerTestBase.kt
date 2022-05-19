@@ -3,7 +3,6 @@ package co.nilin.opex.wallet.ports.postgres.impl
 import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.model.WalletOwner
 import co.nilin.opex.wallet.ports.postgres.dao.*
-import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -15,7 +14,7 @@ internal open class WalletManagerTestBase {
     protected var walletRepository: WalletRepository = mock()
     protected var walletOwnerRepository: WalletOwnerRepository = mock()
 
-    protected var transactionRepository: TransactionRepository = mock {
+    private var transactionRepository: TransactionRepository = mock {
         on { calculateWithdrawStatistics(eq(2), eq(20), any(), any()) } doReturn Mono.empty()
     }
 
@@ -35,14 +34,7 @@ internal open class WalletManagerTestBase {
         override fun getPrecision() = 0.0001
     }
 
-    protected var currencyRepository: CurrencyRepository = mock {
-        on { findBySymbol(currency.getSymbol()) } doReturn Mono.just(
-            CurrencyModel(currency.getSymbol(), currency.getName(), currency.getPrecision())
-        )
-        on { findById(currency.getSymbol()) } doReturn Mono.just(
-            CurrencyModel(currency.getSymbol(), currency.getName(), currency.getPrecision())
-        )
-    }
+    protected var currencyRepository: CurrencyRepository = mock { }
 
     protected var walletManagerImpl: WalletManagerImpl = WalletManagerImpl(
         walletLimitsRepository, transactionRepository, walletRepository, walletOwnerRepository, currencyRepository
