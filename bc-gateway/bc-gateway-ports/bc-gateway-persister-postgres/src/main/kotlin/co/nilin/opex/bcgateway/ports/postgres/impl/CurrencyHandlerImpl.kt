@@ -63,7 +63,7 @@ class CurrencyHandlerImpl(
         isWithdrawEnabled: Boolean,
         decimal: Int
     ): CurrencyImplementation {
-        val chainModel = chainRepository.findByName(chain.lowercase()).awaitFirstOrNull()
+        val chainModel = chainRepository.findByName(chain).awaitFirstOrNull()
             ?: throw OpexException(OpexError.ChainNotFound)
 
         currencyImplementationRepository.findBySymbolAndChain(symbol.uppercase(), chain)

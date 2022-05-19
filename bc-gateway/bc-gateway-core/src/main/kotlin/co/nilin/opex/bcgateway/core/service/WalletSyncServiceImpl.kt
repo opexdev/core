@@ -38,7 +38,7 @@ class WalletSyncServiceImpl(
                         var deposited = false
                         val uuid = assignedAddressHandler.findUuid(
                             deposit.depositor,
-                            deposit.depositorMemo?.lowercase()
+                            deposit.depositorMemo
                         )
                         if (uuid != null) {
                             logger.info("deposit came for $uuid - to ${deposit.depositor}")

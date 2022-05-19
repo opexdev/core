@@ -14,13 +14,12 @@ import java.time.LocalDateTime
 @Repository
 interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long> {
     @Query(
-        "SELECT count(1) cnt, COALESCE(sum(source_amount * crm.rate), 0) total" +
+        "SELECT count(1) cnt, COALESCE(sum(source_amount), 0) total" +
                 " FROM transaction tm " +
                 " join wallet wm on wm.id = tm.source_wallet " +
-                " join currency_rate crm on wm.currency = crm.source_currency " +
                 " WHERE wm.owner = :owner " +
                 " and wm.wallet_type = :walletType " +
-                " and crm.dest_currency = :currency " +
+                " and wm.currency = :currency " +
                 " and tm.transaction_date >= :startDate " +
                 " and tm.transaction_date <= :endDate"
     )
@@ -34,10 +33,10 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
 
     @Query(
         "SELECT count(1) cnt, COALESCE(sum(source_amount), 0) total " +
-                " FROM TransactionModel tm " +
-                " join WalletModel wm on wm.id = tm.sourceWallet " +
+                " FROM transaction tm " +
+                " join wallet wm on wm.id = tm.source_wallet " +
                 " WHERE wm.owner = :owner " +
-                " and wm.id = :id " +
+                " and wm.id = :walletId " +
                 " and tm.transaction_date >= :startDate " +
                 " and tm.transaction_date <= :endDate"
     )
@@ -52,10 +51,9 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
         "SELECT count(1) cnt, COALESCE(sum(dest_amount),0) total " +
                 " FROM transaction tm " +
                 " join wallet wm on wm.id = tm.dest_wallet " +
-                " join currency_rate crm on wm.currency = crm.source_currency " +
                 " WHERE wm.owner = :owner " +
                 " and wm.wallet_type = :walletType " +
-                " and crm.dest_currency = :currency " +
+                " and wm.currency = :currency " +
                 " and tm.transaction_date >= :startDate " +
                 " and tm.transaction_date <= :endDate"
     )
@@ -68,7 +66,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
     ): Mono<TransactionStat>
 
     @Query(
-        "SELECT count(1) cnt, COALESCE(sum(dest_amount * crm.rate), 0) total" +
+        "SELECT count(1) cnt, COALESCE(sum(dest_amount), 0) total" +
                 " FROM transaction tm " +
                 " join wallet wm on wm.id = tm.dest_wallet " +
                 " WHERE wm.owner = :owner " +
