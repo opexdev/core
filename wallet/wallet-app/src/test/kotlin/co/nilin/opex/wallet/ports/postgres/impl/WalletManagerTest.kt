@@ -10,10 +10,7 @@ import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.eq
-import org.mockito.kotlin.stubbing
+import org.mockito.kotlin.*
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
 
@@ -444,6 +441,17 @@ private class WalletManagerTest : WalletManagerTestBase() {
 
     @Test
     fun givenInsufficientAmount_whenIsDepositAllowed_thenFalse(): Unit = runBlocking {
+        stubbing(walletLimitsRepository) {
+            on {
+                findByOwnerAndCurrencyAndWalletAndAction(walletOwner.id()!!, "ETH", 20, "withdraw")
+            } doReturn Mono.empty()
+            on {
+                findByOwnerAndCurrencyAndActionAndWalletType(walletOwner.id()!!, "ETH", "withdraw", "main")
+            } doReturn Mono.empty()
+            on {
+                findByLevelAndCurrencyAndActionAndWalletType("1", "ETH", "withdraw", "main")
+            } doReturn Mono.empty()
+        }
         val wallet = object : Wallet {
             override fun id() = 20L
             override fun owner() = walletOwner
@@ -453,6 +461,24 @@ private class WalletManagerTest : WalletManagerTestBase() {
         }
         val isAllowed = runBlocking { walletManagerImpl.isDepositAllowed(wallet, BigDecimal.valueOf(0.5)) }
 
+        verify(walletLimitsRepository, never()).findByOwnerAndCurrencyAndWalletAndAction(
+            walletOwner.id()!!,
+            "ETH",
+            20,
+            "withdraw"
+        )
+        verify(walletLimitsRepository, never()).findByOwnerAndCurrencyAndActionAndWalletType(
+            walletOwner.id()!!,
+            "ETH",
+            "withdraw",
+            "main"
+        )
+        verify(walletLimitsRepository, never()).findByLevelAndCurrencyAndActionAndWalletType(
+            "1",
+            "ETH",
+            "withdraw",
+            "main"
+        )
         assertThat(isAllowed).isFalse()
     }
 
@@ -671,33 +697,14 @@ private class WalletManagerTest : WalletManagerTestBase() {
     fun givenEmptyWalletWithNoLimit_whenCreateWallet_thenReturnWallet(): Unit = runBlocking {
         stubbing(walletRepository) {
             on {
-                findByOwnerAndTypeAndCurrency(walletOwner.id()!!, "main", currency.getSymbol())
+                save(WalletModel(null, walletOwner.id()!!, "main", currency.getSymbol(), BigDecimal.valueOf(1)))
             } doReturn Mono.just(
                 WalletModel(
                     20L,
                     walletOwner.id()!!,
                     "main",
                     currency.getSymbol(),
-                    BigDecimal.valueOf(1.2)
-                )
-            )
-            on {
-                save(
-                    WalletModel(
-                        null,
-                        walletOwner.id()!!,
-                        "main",
-                        currency.getSymbol(),
-                        BigDecimal.valueOf(1.2)
-                    )
-                )
-            } doReturn Mono.just(
-                WalletModel(
-                    20L,
-                    walletOwner.id()!!,
-                    "main",
-                    currency.getSymbol(),
-                    BigDecimal.valueOf(1.2)
+                    BigDecimal.valueOf(1)
                 )
             )
         }
@@ -771,9 +778,7 @@ private class WalletManagerTest : WalletManagerTestBase() {
     @Test
     fun givenWallet_whenDecreaseBalance_thenSuccess(): Unit = runBlocking {
         stubbing(walletRepository) {
-            on {
-                updateBalance(eq(20), any())
-            } doReturn Mono.just(1)
+            on { updateBalance(eq(20), eq(BigDecimal.valueOf(-1))) } doReturn Mono.just(1)
         }
         val wallet = object : Wallet {
             override fun id() = 20L
@@ -835,9 +840,26 @@ private class WalletManagerTest : WalletManagerTestBase() {
                 )
             )
         }
+        stubbing(walletOwnerRepository) {
+            on {
+                findById(walletOwner.id()!!)
+            } doReturn Mono.just(
+                WalletOwnerModel(
+                    walletOwner.id(),
+                    walletOwner.uuid(),
+                    walletOwner.title(),
+                    walletOwner.level(),
+                    walletOwner.isTradeAllowed(),
+                    walletOwner.isWithdrawAllowed(),
+                    walletOwner.isDepositAllowed()
+                )
+            )
+        }
         val wallet = walletManagerImpl.findWalletById(20)
 
         assertThat(wallet).isNotNull
         assertThat(wallet!!.id()).isEqualTo(20)
+        assertThat(wallet.balance()).isEqualTo(Amount(currency, BigDecimal.valueOf(0.5)))
+        assertThat(wallet.currency().getSymbol()).isEqualTo("ETH")
     }
 }

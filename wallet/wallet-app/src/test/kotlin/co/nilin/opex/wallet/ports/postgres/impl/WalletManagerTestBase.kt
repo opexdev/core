@@ -4,19 +4,20 @@ import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.model.WalletOwner
 import co.nilin.opex.wallet.ports.postgres.dao.*
 import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
-import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import reactor.core.publisher.Mono
 
 internal open class WalletManagerTestBase {
     protected var walletLimitsRepository: WalletLimitsRepository = mock()
-    protected var transactionRepository: TransactionRepository = mock()
     protected var walletRepository: WalletRepository = mock()
     protected var walletOwnerRepository: WalletOwnerRepository = mock()
-    protected var currencyRepository: CurrencyRepository = mock()
-    protected var walletManagerImpl: WalletManagerImpl
+
+    protected var transactionRepository: TransactionRepository = mock {
+        on { calculateWithdrawStatistics(eq(2), eq(20), any(), any()) } doReturn Mono.empty()
+    }
 
     protected val walletOwner = object : WalletOwner {
         override fun id() = 2L
@@ -34,28 +35,16 @@ internal open class WalletManagerTestBase {
         override fun getPrecision() = 0.0001
     }
 
-    init {
-        transactionRepository = mock {
-            on { calculateWithdrawStatistics(anyLong(), anyLong(), any(), any()) } doReturn Mono.empty()
-        }
-        currencyRepository = mock {
-            on { findBySymbol(currency.getSymbol()) } doReturn Mono.just(
-                CurrencyModel(
-                    currency.getSymbol(),
-                    currency.getName(),
-                    currency.getPrecision()
-                )
-            )
-            on { findById(currency.getSymbol()) } doReturn Mono.just(
-                CurrencyModel(
-                    currency.getSymbol(),
-                    currency.getName(),
-                    currency.getPrecision()
-                )
-            )
-        }
-        walletManagerImpl = WalletManagerImpl(
-            walletLimitsRepository, transactionRepository, walletRepository, walletOwnerRepository, currencyRepository
+    protected var currencyRepository: CurrencyRepository = mock {
+        on { findBySymbol(currency.getSymbol()) } doReturn Mono.just(
+            CurrencyModel(currency.getSymbol(), currency.getName(), currency.getPrecision())
+        )
+        on { findById(currency.getSymbol()) } doReturn Mono.just(
+            CurrencyModel(currency.getSymbol(), currency.getName(), currency.getPrecision())
         )
     }
+
+    protected var walletManagerImpl: WalletManagerImpl = WalletManagerImpl(
+        walletLimitsRepository, transactionRepository, walletRepository, walletOwnerRepository, currencyRepository
+    )
 }
