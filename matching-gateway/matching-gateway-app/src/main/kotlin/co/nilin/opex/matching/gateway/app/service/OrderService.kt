@@ -50,8 +50,8 @@ class OrderService(
         if (!canCreateOrder)
             throw OpexException(OpexError.SubmitOrderForbiddenByAccountant)
 
-        if (!kafkaHealthIndicator.isHealthy)
-            throw OpexException(OpexError.ServiceUnavailable)
+//        if (!kafkaHealthIndicator.isHealthy)
+//            throw OpexException(OpexError.ServiceUnavailable)
 
         val orderSubmitRequest = OrderSubmitRequest(
             createOrderRequest.uuid!!, //get from auth2

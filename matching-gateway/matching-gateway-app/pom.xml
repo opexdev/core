@@ -73,6 +73,10 @@
             <groupId>co.nilin.opex.utility.log</groupId>
             <artifactId>logging-handler</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.mockito.kotlin</groupId>
+            <artifactId>mockito-kotlin</artifactId>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>
