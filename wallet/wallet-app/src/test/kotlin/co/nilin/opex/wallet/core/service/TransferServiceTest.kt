@@ -19,15 +19,15 @@ private class TransferServiceTest : TransferServiceTestBase() {
     @Test
     fun givenTransferCommand_whenTransfer_thenReturnTransferResultDetailed(): Unit = runBlocking {
         stubbing(walletOwnerManager) {
-            on { runBlocking { isWithdrawAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } } doReturn true
-            on { runBlocking { isDepositAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } } doReturn true
+            onBlocking { isWithdrawAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } doReturn true
+            onBlocking { isDepositAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } doReturn true
         }
         stubbing(walletManager) {
-            on { runBlocking { isWithdrawAllowed(any(), eq(BigDecimal.valueOf(0.5))) } } doReturn true
-            on { runBlocking { isDepositAllowed(any(), eq(BigDecimal.valueOf(0.5))) } } doReturn true
-            on { runBlocking { decreaseBalance(any(), eq(BigDecimal.valueOf(0.5))) } } doReturn Unit
-            on { runBlocking { increaseBalance(any(), eq(BigDecimal.valueOf(0.5))) } } doReturn Unit
-            on { runBlocking { findWalletById(20L) } } doReturn object : Wallet {
+            onBlocking { isWithdrawAllowed(any(), eq(BigDecimal.valueOf(0.5))) } doReturn true
+            onBlocking { isDepositAllowed(any(), eq(BigDecimal.valueOf(0.5))) } doReturn true
+            onBlocking { decreaseBalance(any(), eq(BigDecimal.valueOf(0.5))) } doReturn Unit
+            onBlocking { increaseBalance(any(), eq(BigDecimal.valueOf(0.5))) } doReturn Unit
+            onBlocking { findWalletById(20L) } doReturn object : Wallet {
                 override fun id() = 20L
                 override fun owner() = walletOwner
                 override fun balance() = Amount(currency, BigDecimal.valueOf(1))
@@ -36,11 +36,11 @@ private class TransferServiceTest : TransferServiceTestBase() {
             }
         }
         stubbing(walletListener) {
-            on { runBlocking { onWithdraw(any(), any(), any(), anyString(), any()) } } doReturn Unit
-            on { runBlocking { onDeposit(any(), any(), any(), any(), anyString(), any()) } } doReturn Unit
+            onBlocking { onWithdraw(any(), any(), any(), anyString(), any()) } doReturn Unit
+            onBlocking { onDeposit(any(), any(), any(), any(), anyString(), any()) } doReturn Unit
         }
         stubbing(transactionManager) {
-            on { runBlocking { save(any()) } } doReturn "1"
+            onBlocking { save(any()) } doReturn "1"
         }
         val sourceWalletOwner = object : WalletOwner {
             override fun id() = 2L
@@ -98,22 +98,17 @@ private class TransferServiceTest : TransferServiceTestBase() {
     @Test
     fun givenOwnerNotWithdrawAllowed_whenTransfer_thenThrow(): Unit = runBlocking {
         stubbing(walletOwnerManager) {
-            on {
-                runBlocking {
-                    isWithdrawAllowed(
-                        any(),
-                        eq(Amount(currency, BigDecimal.valueOf(0.5)))
-                    )
-                }
+            onBlocking {
+                isWithdrawAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5))))
             } doReturn false
-            on { runBlocking { isDepositAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } } doReturn true
+            onBlocking { isDepositAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } doReturn true
         }
         stubbing(walletManager) {
-            on { runBlocking { isWithdrawAllowed(any(), eq(BigDecimal.valueOf(0.5))) } } doReturn true
-            on { runBlocking { isDepositAllowed(any(), eq(BigDecimal.valueOf(0.5))) } } doReturn true
-            on { runBlocking { decreaseBalance(any(), eq(BigDecimal.valueOf(0.5))) } } doReturn Unit
-            on { runBlocking { increaseBalance(any(), eq(BigDecimal.valueOf(0.5))) } } doReturn Unit
-            on { runBlocking { findWalletById(20L) } } doReturn object : Wallet {
+            onBlocking { isWithdrawAllowed(any(), eq(BigDecimal.valueOf(0.5))) } doReturn true
+            onBlocking { isDepositAllowed(any(), eq(BigDecimal.valueOf(0.5))) } doReturn true
+            onBlocking { decreaseBalance(any(), eq(BigDecimal.valueOf(0.5))) } doReturn Unit
+            onBlocking { increaseBalance(any(), eq(BigDecimal.valueOf(0.5))) } doReturn Unit
+            onBlocking { findWalletById(20L) } doReturn object : Wallet {
                 override fun id() = 20L
                 override fun owner() = walletOwner
                 override fun balance() = Amount(currency, BigDecimal.valueOf(1))
@@ -147,7 +142,7 @@ private class TransferServiceTest : TransferServiceTestBase() {
             } doReturn Unit
         }
         stubbing(transactionManager) {
-            on { runBlocking { save(any()) } } doReturn "1"
+            onBlocking { save(any()) } doReturn "1"
         }
         val sourceWalletOwner = object : WalletOwner {
             override fun id() = 2L
@@ -196,15 +191,15 @@ private class TransferServiceTest : TransferServiceTestBase() {
     @Test
     fun givenWalletNotWithdrawAllowed_whenTransfer_thenThrow(): Unit = runBlocking {
         stubbing(walletOwnerManager) {
-            on { runBlocking { isWithdrawAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } } doReturn true
-            on { runBlocking { isDepositAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } } doReturn true
+            onBlocking { isWithdrawAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } doReturn true
+            onBlocking { isDepositAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } doReturn true
         }
         stubbing(walletManager) {
-            on { runBlocking { isWithdrawAllowed(any(), eq(BigDecimal.valueOf(0.5))) } } doReturn false
-            on { runBlocking { isDepositAllowed(any(), eq(BigDecimal.valueOf(0.5))) } } doReturn true
-            on { runBlocking { decreaseBalance(any(), eq(BigDecimal.valueOf(0.5))) } } doReturn Unit
-            on { runBlocking { increaseBalance(any(), eq(BigDecimal.valueOf(0.5))) } } doReturn Unit
-            on { runBlocking { findWalletById(20L) } } doReturn object : Wallet {
+            onBlocking { isWithdrawAllowed(any(), eq(BigDecimal.valueOf(0.5))) } doReturn false
+            onBlocking { isDepositAllowed(any(), eq(BigDecimal.valueOf(0.5))) } doReturn true
+            onBlocking { decreaseBalance(any(), eq(BigDecimal.valueOf(0.5))) } doReturn Unit
+            onBlocking { increaseBalance(any(), eq(BigDecimal.valueOf(0.5))) } doReturn Unit
+            onBlocking { findWalletById(20L) } doReturn object : Wallet {
                 override fun id() = 20L
                 override fun owner() = walletOwner
                 override fun balance() = Amount(currency, BigDecimal.valueOf(1))
@@ -238,7 +233,7 @@ private class TransferServiceTest : TransferServiceTestBase() {
             } doReturn Unit
         }
         stubbing(transactionManager) {
-            on { runBlocking { save(any()) } } doReturn "1"
+            onBlocking { save(any()) } doReturn "1"
         }
         val sourceWalletOwner = object : WalletOwner {
             override fun id() = 2L
@@ -287,15 +282,15 @@ private class TransferServiceTest : TransferServiceTestBase() {
     @Test
     fun givenOwnerNotDepositAllowed_whenTransfer_thenThrow(): Unit = runBlocking {
         stubbing(walletOwnerManager) {
-            on { runBlocking { isWithdrawAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } } doReturn true
-            on { runBlocking { isDepositAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } } doReturn false
+            onBlocking { isWithdrawAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } doReturn true
+            onBlocking { isDepositAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } doReturn false
         }
         stubbing(walletManager) {
-            on { runBlocking { isWithdrawAllowed(any(), eq(BigDecimal.valueOf(0.5))) } } doReturn true
-            on { runBlocking { isDepositAllowed(any(), eq(BigDecimal.valueOf(0.5))) } } doReturn true
-            on { runBlocking { decreaseBalance(any(), eq(BigDecimal.valueOf(0.5))) } } doReturn Unit
-            on { runBlocking { increaseBalance(any(), eq(BigDecimal.valueOf(0.5))) } } doReturn Unit
-            on { runBlocking { findWalletById(20L) } } doReturn object : Wallet {
+            onBlocking { isWithdrawAllowed(any(), eq(BigDecimal.valueOf(0.5))) } doReturn true
+            onBlocking { isDepositAllowed(any(), eq(BigDecimal.valueOf(0.5))) } doReturn true
+            onBlocking { decreaseBalance(any(), eq(BigDecimal.valueOf(0.5))) } doReturn Unit
+            onBlocking { increaseBalance(any(), eq(BigDecimal.valueOf(0.5))) } doReturn Unit
+            onBlocking { findWalletById(20L) } doReturn object : Wallet {
                 override fun id() = 20L
                 override fun owner() = walletOwner
                 override fun balance() = Amount(currency, BigDecimal.valueOf(1))
@@ -329,7 +324,7 @@ private class TransferServiceTest : TransferServiceTestBase() {
             } doReturn Unit
         }
         stubbing(transactionManager) {
-            on { runBlocking { save(any()) } } doReturn "1"
+            onBlocking { save(any()) } doReturn "1"
         }
         val sourceWalletOwner = object : WalletOwner {
             override fun id() = 2L
@@ -378,15 +373,15 @@ private class TransferServiceTest : TransferServiceTestBase() {
     @Test
     fun givenWalletNotDepositAllowed_whenTransfer_thenThrow(): Unit = runBlocking {
         stubbing(walletOwnerManager) {
-            on { runBlocking { isWithdrawAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } } doReturn true
-            on { runBlocking { isDepositAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } } doReturn true
+            onBlocking { isWithdrawAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } doReturn true
+            onBlocking { isDepositAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } doReturn true
         }
         stubbing(walletManager) {
-            on { runBlocking { isWithdrawAllowed(any(), eq(BigDecimal.valueOf(0.5))) } } doReturn true
-            on { runBlocking { isDepositAllowed(any(), eq(BigDecimal.valueOf(0.5))) } } doReturn false
-            on { runBlocking { decreaseBalance(any(), eq(BigDecimal.valueOf(0.5))) } } doReturn Unit
-            on { runBlocking { increaseBalance(any(), eq(BigDecimal.valueOf(0.5))) } } doReturn Unit
-            on { runBlocking { findWalletById(20L) } } doReturn object : Wallet {
+            onBlocking { isWithdrawAllowed(any(), eq(BigDecimal.valueOf(0.5))) } doReturn true
+            onBlocking { isDepositAllowed(any(), eq(BigDecimal.valueOf(0.5))) } doReturn false
+            onBlocking { decreaseBalance(any(), eq(BigDecimal.valueOf(0.5))) } doReturn Unit
+            onBlocking { increaseBalance(any(), eq(BigDecimal.valueOf(0.5))) } doReturn Unit
+            onBlocking { findWalletById(20L) } doReturn object : Wallet {
                 override fun id() = 20L
                 override fun owner() = walletOwner
                 override fun balance() = Amount(currency, BigDecimal.valueOf(1))
@@ -420,7 +415,7 @@ private class TransferServiceTest : TransferServiceTestBase() {
             } doReturn Unit
         }
         stubbing(transactionManager) {
-            on { runBlocking { save(any()) } } doReturn "1"
+            onBlocking { save(any()) } doReturn "1"
         }
         val sourceWalletOwner = object : WalletOwner {
             override fun id() = 2L
@@ -469,27 +464,25 @@ private class TransferServiceTest : TransferServiceTestBase() {
     @Test
     fun givenNotExistWallet_whenTransfer_thenThrow(): Unit = runBlocking {
         stubbing(walletOwnerManager) {
-            on { runBlocking { isWithdrawAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } } doReturn true
-            on { runBlocking { isDepositAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } } doReturn true
+            onBlocking { isWithdrawAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } doReturn true
+            onBlocking { isDepositAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } doReturn true
         }
         stubbing(walletManager) {
-            on { runBlocking { isWithdrawAllowed(any(), eq(BigDecimal.valueOf(0.5))) } } doReturn true
-            on { runBlocking { isDepositAllowed(any(), eq(BigDecimal.valueOf(0.5))) } } doReturn true
-            on { runBlocking { decreaseBalance(any(), eq(BigDecimal.valueOf(0.5))) } } doReturn Unit
-            on { runBlocking { increaseBalance(any(), eq(BigDecimal.valueOf(0.5))) } } doReturn Unit
-            on { runBlocking { findWalletById(20L) } } doReturn null
+            onBlocking { isWithdrawAllowed(any(), eq(BigDecimal.valueOf(0.5))) } doReturn true
+            onBlocking { isDepositAllowed(any(), eq(BigDecimal.valueOf(0.5))) } doReturn true
+            onBlocking { decreaseBalance(any(), eq(BigDecimal.valueOf(0.5))) } doReturn Unit
+            onBlocking { increaseBalance(any(), eq(BigDecimal.valueOf(0.5))) } doReturn Unit
+            onBlocking { findWalletById(20L) } doReturn null
         }
         stubbing(walletListener) {
-            on {
-                runBlocking {
-                    onWithdraw(
-                        any(),
-                        any(),
-                        eq(Amount(currency, BigDecimal.valueOf(0.5))),
-                        anyString(),
-                        any()
-                    )
-                }
+            onBlocking {
+                onWithdraw(
+                    any(),
+                    any(),
+                    eq(Amount(currency, BigDecimal.valueOf(0.5))),
+                    anyString(),
+                    any()
+                )
             } doReturn Unit
             on {
                 runBlocking {
@@ -504,9 +497,11 @@ private class TransferServiceTest : TransferServiceTestBase() {
                 }
             } doReturn Unit
         }
-        stubbing(transactionManager) {
-            on { runBlocking { save(any()) } } doReturn "1"
+        stubbing(transactionManager)
+        {
+            onBlocking { save(any()) } doReturn "1"
         }
+
         val sourceWalletOwner = object : WalletOwner {
             override fun id() = 2L
             override fun uuid() = "fdf453d7-0633-4ec7-852d-a18148c99a82"
