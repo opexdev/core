@@ -12,8 +12,8 @@ class KafkaHealthIndicator(private val adminClient: AdminClient) {
     private val logger = LoggerFactory.getLogger(KafkaHealthIndicator::class.java)
     private val options = DescribeClusterOptions().timeoutMs(1000)
     private val healthyNodeSize = 3
-    final var isHealthy = true
-        private set
+    var isHealthy = false
+        protected set
 
     @Scheduled(fixedDelay = 5000, initialDelay = 5000)
     fun check() {

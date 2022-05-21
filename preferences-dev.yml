@@ -65,7 +65,7 @@ currencies:
     implementations:
       - chain: ethereum
         token: true
-        tokenAddress: 0x110a13fc3efe6a245b50102d2d79b3e76125ae83
+        tokenAddress: 0x110a13FC3efE6A245B50102D2d79B3E76125Ae83
         tokenName: Tether USD
         withdrawFee: 0.01
         withdrawMin: 0.01
