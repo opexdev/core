@@ -36,7 +36,7 @@ class UserQueryHandlerTest {
         }
         stubbing(orderStatusRepository) {
             on {
-                findMostRecentByOUID("f1167d30-ccc0-4f86-ab5d-dd24aa3250df")
+                findMostRecentByOUID(Valid.MAKER_ORDER_MODEL.ouid)
             } doReturn Mono.just(Valid.MAKER_ORDER_STATUS_MODEL)
         }
 
@@ -83,7 +83,7 @@ class UserQueryHandlerTest {
             on {
                 findByUuidAndSymbolAndStatus(
                     eq(Valid.PRINCIPAL.name),
-                    eq("ETH_USDT"),
+                    eq(Valid.ETH_USDT),
                     argThat {
                         this == listOf(
                             OrderStatus.NEW.code,
@@ -97,11 +97,11 @@ class UserQueryHandlerTest {
         }
         stubbing(orderStatusRepository) {
             on {
-                findMostRecentByOUID("f1167d30-ccc0-4f86-ab5d-dd24aa3250df")
+                findMostRecentByOUID(Valid.MAKER_ORDER_MODEL.ouid)
             } doReturn Mono.just(Valid.MAKER_ORDER_STATUS_MODEL)
         }
 
-        val queryOrderResponses = userQueryHandler.openOrders(Valid.PRINCIPAL, "ETH_USDT")
+        val queryOrderResponses = userQueryHandler.openOrders(Valid.PRINCIPAL, Valid.ETH_USDT)
 
         assertThat(queryOrderResponses).isNotNull
         assertThat(queryOrderResponses.count()).isEqualTo(1)
@@ -111,15 +111,15 @@ class UserQueryHandlerTest {
     fun given_whenQueryOrder_then(): Unit = runBlocking {
         stubbing(orderRepository) {
             on {
-                findBySymbolAndClientOrderId("ETH_USDT", "2")
+                findBySymbolAndClientOrderId(Valid.ETH_USDT, "2")
             } doReturn Mono.just(Valid.MAKER_ORDER_MODEL)
             on {
-                findBySymbolAndOrderId("ETH_USDT", 1)
+                findBySymbolAndOrderId(Valid.ETH_USDT, 1)
             } doReturn Mono.just(Valid.MAKER_ORDER_MODEL)
         }
         stubbing(orderStatusRepository) {
             on {
-                findMostRecentByOUID("f1167d30-ccc0-4f86-ab5d-dd24aa3250df")
+                findMostRecentByOUID(Valid.MAKER_ORDER_MODEL.ouid)
             } doReturn Mono.just(Valid.MAKER_ORDER_STATUS_MODEL)
         }
 

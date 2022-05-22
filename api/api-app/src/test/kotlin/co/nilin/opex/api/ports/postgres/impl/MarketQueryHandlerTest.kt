@@ -30,7 +30,7 @@ class MarketQueryHandlerTest {
         stubbing(orderRepository) {
             on {
                 findBySymbolAndDirectionAndStatusSortAscendingByPrice(
-                    eq("ETH_USDT"),
+                    eq(Valid.ETH_USDT),
                     eq(OrderDirection.ASK),
                     eq(1),
                     argThat {
@@ -42,7 +42,8 @@ class MarketQueryHandlerTest {
                 )
             } doReturn Flux.just(Valid.AGGREGATED_ORDER_PRICE_MODEL)
         }
-        val orderBookResponses = marketQueryHandler.openAskOrders("ETH_USDT", 1)
+
+        val orderBookResponses = marketQueryHandler.openAskOrders(Valid.ETH_USDT, 1)
 
         assertThat(orderBookResponses).isNotNull
         assertThat(orderBookResponses.size).isEqualTo(1)
@@ -54,7 +55,7 @@ class MarketQueryHandlerTest {
         stubbing(orderRepository) {
             on {
                 findBySymbolAndDirectionAndStatusSortDescendingByPrice(
-                    eq("ETH_USDT"),
+                    eq(Valid.ETH_USDT),
                     eq(OrderDirection.BID),
                     eq(1),
                     argThat {
@@ -67,7 +68,7 @@ class MarketQueryHandlerTest {
             } doReturn Flux.just(Valid.AGGREGATED_ORDER_PRICE_MODEL)
         }
 
-        val orderBookResponses = marketQueryHandler.openBidOrders("ETH_USDT", 1)
+        val orderBookResponses = marketQueryHandler.openBidOrders(Valid.ETH_USDT, 1)
 
         assertThat(orderBookResponses).isNotNull
         assertThat(orderBookResponses.size).isEqualTo(1)
@@ -78,16 +79,16 @@ class MarketQueryHandlerTest {
     fun givenSymbol_whenLastOrder_thenReturnQueryOrderResponse(): Unit = runBlocking {
         stubbing(orderRepository) {
             on {
-                findLastOrderBySymbol("ETH_USDT")
+                findLastOrderBySymbol(Valid.ETH_USDT)
             } doReturn Mono.just(Valid.MAKER_ORDER_MODEL)
         }
         stubbing(orderStatusRepository) {
             on {
-                findMostRecentByOUID("f1167d30-ccc0-4f86-ab5d-dd24aa3250df")
+                findMostRecentByOUID(Valid.MAKER_ORDER_MODEL.ouid)
             } doReturn Mono.just(Valid.MAKER_ORDER_STATUS_MODEL)
         }
 
-        val queryOrderResponse = marketQueryHandler.lastOrder("ETH_USDT")
+        val queryOrderResponse = marketQueryHandler.lastOrder(Valid.ETH_USDT)
 
         assertThat(queryOrderResponse).isNotNull
         assertThat(queryOrderResponse).isEqualTo(Valid.MAKER_QUERY_ORDER_RESPONSE)
@@ -100,7 +101,7 @@ class MarketQueryHandlerTest {
                 findAllGroupBySymbol()
             } doReturn Flux.just(Valid.TRADE_MODEL)
             on {
-                findBySymbolGroupBySymbol("ETH_USDT")
+                findBySymbolGroupBySymbol(Valid.ETH_USDT)
             } doReturn Flux.just(Valid.TRADE_MODEL)
         }
         stubbing(orderRepository) {
@@ -110,10 +111,11 @@ class MarketQueryHandlerTest {
         }
         stubbing(symbolMapper) {
             onBlocking {
-                map("ETH_USDT")
+                map(Valid.ETH_USDT)
             } doReturn "ETHUSDT"
         }
-        val priceTickerResponse = marketQueryHandler.lastPrice("ETH_USDT")
+
+        val priceTickerResponse = marketQueryHandler.lastPrice(Valid.ETH_USDT)
 
         assertThat(priceTickerResponse).isNotNull
         assertThat(priceTickerResponse.size).isEqualTo(1)
@@ -125,7 +127,7 @@ class MarketQueryHandlerTest {
     fun givenSymbol_whenRecentTrades_thenMarketTradeResponseFlow(): Unit = runBlocking {
         stubbing(tradeRepository) {
             on {
-                findBySymbolSortDescendingByCreateDate("ETH_USDT", 1)
+                findBySymbolSortDescendingByCreateDate(Valid.ETH_USDT, 1)
             } doReturn flow {
                 emit(Valid.TRADE_MODEL)
             }
@@ -139,7 +141,7 @@ class MarketQueryHandlerTest {
             } doReturn Mono.just(Valid.TAKER_ORDER_MODEL)
         }
 
-        val marketTradeResponses = marketQueryHandler.recentTrades("ETH_USDT", 1)
+        val marketTradeResponses = marketQueryHandler.recentTrades(Valid.ETH_USDT, 1)
 
         assertThat(marketTradeResponses).isNotNull
         assertThat(marketTradeResponses.count()).isEqualTo(1)

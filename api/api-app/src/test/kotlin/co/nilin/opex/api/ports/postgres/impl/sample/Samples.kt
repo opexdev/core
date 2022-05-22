@@ -16,12 +16,13 @@ import java.time.ZoneOffset
 import java.util.*
 
 object Valid {
-    private const val PAIR_SYMBOL = "ETH_USDT"
     private const val TIMESTAMP = 1653125840L
     private val CREATE_DATE: LocalDateTime = LocalDateTime.ofEpochSecond(TIMESTAMP, 0, ZoneOffset.UTC)
     private val UPDATE_DATE: LocalDateTime = LocalDateTime.ofEpochSecond(TIMESTAMP + 180, 0, ZoneOffset.UTC)
     private val FROM_DATE: LocalDateTime = LocalDateTime.ofEpochSecond(TIMESTAMP - 600, 0, ZoneOffset.UTC)
     private val TO_DATE: LocalDateTime = LocalDateTime.ofEpochSecond(TIMESTAMP + 600, 0, ZoneOffset.UTC)
+
+    const val ETH_USDT = "ETH_USDT"
 
     val PRINCIPAL = Principal { "98c7ca9b-2d9c-46dd-afa8-b0cd2f52a97c" }
 
@@ -30,7 +31,7 @@ object Valid {
         "f1167d30-ccc0-4f86-ab5d-dd24aa3250df",
         PRINCIPAL.name,
         null, // Binance
-        PAIR_SYMBOL,
+        ETH_USDT,
         1, // MatchingEngine ID
         0.01, // Calculated?
         0.01, // Calculated?
@@ -52,7 +53,7 @@ object Valid {
         "157b9b4a-cc66-43b9-b30b-40a8b66ea6aa",
         PRINCIPAL.name,
         null,
-        PAIR_SYMBOL,
+        ETH_USDT,
         2,
         0.01,
         0.01,
@@ -89,15 +90,15 @@ object Valid {
 
     val SYMBOL_MAP_MODEL = SymbolMapModel(
         1,
-        PAIR_SYMBOL,
+        ETH_USDT,
         "binance",
-        PAIR_SYMBOL.replace("_", "")
+        ETH_USDT.replace("_", "")
     )
 
     val TRADE_MODEL = TradeModel(
         1,
         1,
-        PAIR_SYMBOL,
+        ETH_USDT,
         0.001, // Minimum of orders quantities
         100000.0,
         100000.0,
@@ -114,7 +115,7 @@ object Valid {
     )
 
     val MAKER_QUERY_ORDER_RESPONSE = QueryOrderResponse(
-        PAIR_SYMBOL,
+        ETH_USDT,
         MAKER_ORDER_MODEL.ouid,
         1,
         -1, // Binance
@@ -147,7 +148,7 @@ object Valid {
 
     val RICH_ORDER = RichOrder(
         null,
-        PAIR_SYMBOL,
+        ETH_USDT,
         MAKER_ORDER_MODEL.ouid,
         PRINCIPAL.name,
         "1",
@@ -176,7 +177,7 @@ object Valid {
 
     val RICH_TRADE = RichTrade(
         1,
-        PAIR_SYMBOL,
+        ETH_USDT,
         MAKER_ORDER_MODEL.ouid,
         PRINCIPAL.name,
         1,
@@ -202,14 +203,14 @@ object Valid {
     )
 
     val ALL_ORDER_REQUEST = AllOrderRequest(
-        PAIR_SYMBOL,
+        ETH_USDT,
         Date.from(FROM_DATE.toInstant(ZoneOffset.UTC)),
         Date.from(TO_DATE.toInstant(ZoneOffset.UTC)),
         500
     )
 
     val TRADE_REQUEST = TradeRequest(
-        PAIR_SYMBOL,
+        ETH_USDT,
         1,
         Date.from(FROM_DATE.toInstant(ZoneOffset.UTC)),
         Date.from(TO_DATE.toInstant(ZoneOffset.UTC)),
@@ -217,7 +218,7 @@ object Valid {
     )
 
     val MARKET_TRADE_RESPONSE = MarketTradeResponse(
-        PAIR_SYMBOL,
+        ETH_USDT,
         1,
         BigDecimal.valueOf(100000.0),
         BigDecimal.valueOf(0.001),
@@ -228,7 +229,7 @@ object Valid {
     )
 
     val QUERY_ORDER_REQUEST = QueryOrderRequest(
-        PAIR_SYMBOL,
+        ETH_USDT,
         1,
         "2"
     )
