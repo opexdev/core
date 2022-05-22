@@ -1,6 +1,7 @@
 package co.nilin.opex.api.ports.postgres.impl
 
 import co.nilin.opex.api.core.inout.OrderDirection
+import co.nilin.opex.api.core.inout.OrderStatus
 import co.nilin.opex.api.core.spi.SymbolMapper
 import co.nilin.opex.api.ports.postgres.dao.OrderRepository
 import co.nilin.opex.api.ports.postgres.dao.OrderStatusRepository
@@ -12,9 +13,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.stubbing
+import org.mockito.kotlin.*
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
@@ -30,10 +29,20 @@ class MarketQueryHandlerTest {
     fun givenSymbol_whenOpenASKOrders_thenReturnOrderBookResponseList(): Unit = runBlocking {
         stubbing(orderRepository) {
             on {
-                findBySymbolAndDirectionAndStatusSortAscendingByPrice("ETH_USDT", OrderDirection.BID, 1, listOf(0))
+                findBySymbolAndDirectionAndStatusSortAscendingByPrice(
+                    eq("ETH_USDT"),
+                    eq(OrderDirection.ASK),
+                    eq(1),
+                    argThat {
+                        this == listOf(
+                            OrderStatus.NEW.code,
+                            OrderStatus.PARTIALLY_FILLED.code
+                        )
+                    }
+                )
             } doReturn Flux.just(Valid.AGGREGATED_ORDER_PRICE_MODEL)
         }
-        val orderBookResponses = marketQueryHandler.openAskOrders("ETH_USDT", 10)
+        val orderBookResponses = marketQueryHandler.openAskOrders("ETH_USDT", 1)
 
         assertThat(orderBookResponses).isNotNull
         assertThat(orderBookResponses.size).isEqualTo(1)
@@ -44,11 +53,21 @@ class MarketQueryHandlerTest {
     fun givenSymbol_whenOpenBIDOrders_thenReturnOrderBookResponseList(): Unit = runBlocking {
         stubbing(orderRepository) {
             on {
-                findBySymbolAndDirectionAndStatusSortDescendingByPrice("ETH_USDT", OrderDirection.BID, 1, listOf(0))
+                findBySymbolAndDirectionAndStatusSortDescendingByPrice(
+                    eq("ETH_USDT"),
+                    eq(OrderDirection.BID),
+                    eq(1),
+                    argThat {
+                        this == listOf(
+                            OrderStatus.NEW.code,
+                            OrderStatus.PARTIALLY_FILLED.code
+                        )
+                    }
+                )
             } doReturn Flux.just(Valid.AGGREGATED_ORDER_PRICE_MODEL)
         }
 
-        val orderBookResponses = marketQueryHandler.openBidOrders("ETH_USDT", 10)
+        val orderBookResponses = marketQueryHandler.openBidOrders("ETH_USDT", 1)
 
         assertThat(orderBookResponses).isNotNull
         assertThat(orderBookResponses.size).isEqualTo(1)
@@ -89,11 +108,16 @@ class MarketQueryHandlerTest {
                 findByOuid("99289106-2775-44d4-bffc-ca35fc25e58c")
             } doReturn Mono.just(Valid.ORDER_MODEL)
         }
+        stubbing(symbolMapper) {
+            onBlocking {
+                map("ETH_USDT")
+            } doReturn "ETHUSDT"
+        }
         val priceTickerResponse = marketQueryHandler.lastPrice("ETH_USDT")
 
         assertThat(priceTickerResponse).isNotNull
         assertThat(priceTickerResponse.size).isEqualTo(1)
-        assertThat(priceTickerResponse.first().symbol).isEqualTo("ETH_USDT")
+        assertThat(priceTickerResponse.first().symbol).isEqualTo("ETHUSDT")
         assertThat(priceTickerResponse.first().price).isEqualTo(100000)
     }
 
