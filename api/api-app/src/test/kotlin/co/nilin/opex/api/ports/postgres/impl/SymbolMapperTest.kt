@@ -1,14 +1,14 @@
 package co.nilin.opex.api.ports.postgres.impl
 
 import co.nilin.opex.api.ports.postgres.dao.SymbolMapRepository
-import co.nilin.opex.api.ports.postgres.model.SymbolMapModel
+import co.nilin.opex.api.ports.postgres.impl.testfixtures.Valid
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Test
-import org.mockito.kotlin.mock
-import org.assertj.core.api.Assertions.*
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.stubbing
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -23,34 +23,13 @@ class SymbolMapperTest {
         stubbing(symbolMapRepository) {
             on {
                 findByAliasKeyAndAlias("binance", "ETHUSDT")
-            } doReturn Mono.just(
-                SymbolMapModel(
-                    1,
-                    "ETH_USDT",
-                    "binance",
-                    "ETHUSDT"
-                )
-            )
+            } doReturn Mono.just(Valid.SYMBOL_MAP_MODEL)
             on {
                 findByAliasKeyAndSymbol("binance", "ETH_USDT")
-            } doReturn Mono.just(
-                SymbolMapModel(
-                    1,
-                    "ETH_USDT",
-                    "binance",
-                    "ETHUSDT"
-                )
-            )
+            } doReturn Mono.just(Valid.SYMBOL_MAP_MODEL)
             on {
                 findAll()
-            } doReturn Flux.just(
-                SymbolMapModel(
-                    1,
-                    "ETH_USDT",
-                    "binance",
-                    "ETHUSDT"
-                )
-            )
+            } doReturn Flux.just(Valid.SYMBOL_MAP_MODEL)
         }
     }
 
