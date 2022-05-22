@@ -28,7 +28,7 @@ class FinancialActionJobManagerImpl(
                     it.receiver,
                     it.amount,
                     it.eventType + it.pointer,
-                    "fa${it.id}"
+                    null
                 )
                 financialActionPersister.updateStatus(it, FinancialActionStatus.PROCESSED)
             } catch (e: Exception) {
