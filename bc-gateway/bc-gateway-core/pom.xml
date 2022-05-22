@@ -14,10 +14,6 @@
     <name>bc-gateway-core</name>
     <description>Blockchain gateway core of Opex</description>
 
-    <properties>
-        <mockito-kotlin.version>4.0.0</mockito-kotlin.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
