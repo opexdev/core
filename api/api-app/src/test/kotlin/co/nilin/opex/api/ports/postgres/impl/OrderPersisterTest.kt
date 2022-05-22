@@ -22,7 +22,7 @@ class OrderPersisterTest {
         stubbing(orderRepository) {
             on {
                 save(any())
-            } doReturn Mono.just(Valid.ORDER_MODEL)
+            } doReturn Mono.just(Valid.MAKER_ORDER_MODEL)
         }
         stubbing(orderStatusRepository) {
             on {

@@ -17,10 +17,32 @@ import java.util.*
 object Valid {
     val PRINCIPAL = Principal { "98c7ca9b-2d9c-46dd-afa8-b0cd2f52a97c" }
 
-    val ORDER_MODEL = OrderModel(
+    val MAKER_ORDER_MODEL = OrderModel(
         1,
         "f1167d30-ccc0-4f86-ab5d-dd24aa3250df",
-        "18013d13-0568-496b-b93b-2524c8132b93",
+        PRINCIPAL.name,
+        "id", // ?
+        "ETH_USDT",
+        1,
+        0.01,
+        0.01,
+        0.0001,
+        0.01,
+        "1",
+        OrderDirection.ASK,
+        MatchConstraint.GTC,
+        MatchingOrderType.LIMIT_ORDER,
+        100000.0,
+        0.01,
+        0.0, // ?
+        LocalDateTime.ofEpochSecond(1653125840, 0, ZoneOffset.UTC),
+        LocalDateTime.ofEpochSecond(1653125840, 0, ZoneOffset.UTC)
+    )
+
+    val TAKER_ORDER_MODEL = OrderModel(
+        2,
+        "f1167d30-ccc0-4f86-ab5d-dd24aa3250df",
+        PRINCIPAL.name,
         "id", // ?
         "ETH_USDT",
         1,

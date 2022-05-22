@@ -79,7 +79,7 @@ class MarketQueryHandlerTest {
         stubbing(orderRepository) {
             on {
                 findLastOrderBySymbol("ETH_USDT")
-            } doReturn Mono.just(Valid.ORDER_MODEL)
+            } doReturn Mono.just(Valid.MAKER_ORDER_MODEL)
         }
         stubbing(orderStatusRepository) {
             on {
@@ -106,7 +106,7 @@ class MarketQueryHandlerTest {
         stubbing(orderRepository) {
             on {
                 findByOuid("99289106-2775-44d4-bffc-ca35fc25e58c")
-            } doReturn Mono.just(Valid.ORDER_MODEL)
+            } doReturn Mono.just(Valid.MAKER_ORDER_MODEL)
         }
         stubbing(symbolMapper) {
             onBlocking {
@@ -133,10 +133,10 @@ class MarketQueryHandlerTest {
         stubbing(orderRepository) {
             on {
                 findByOuid("99289106-2775-44d4-bffc-ca35fc25e58c")
-            } doReturn Mono.just(Valid.ORDER_MODEL)
+            } doReturn Mono.just(Valid.MAKER_ORDER_MODEL)
             on {
                 findByOuid("2fa73fa2-6d70-44b8-8571-e2b24e2eea2b")
-            } doReturn Mono.just(Valid.ORDER_MODEL)
+            } doReturn Mono.just(Valid.MAKER_ORDER_MODEL)
         }
 
         val marketTradeResponses = marketQueryHandler.recentTrades("ETH_USDT", 10)

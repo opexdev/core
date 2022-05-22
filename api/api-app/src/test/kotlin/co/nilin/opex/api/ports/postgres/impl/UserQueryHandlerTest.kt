@@ -1,5 +1,6 @@
 package co.nilin.opex.api.ports.postgres.impl
 
+import co.nilin.opex.api.core.inout.OrderStatus
 import co.nilin.opex.api.ports.postgres.dao.OrderRepository
 import co.nilin.opex.api.ports.postgres.dao.OrderStatusRepository
 import co.nilin.opex.api.ports.postgres.dao.TradeRepository
@@ -10,9 +11,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.stubbing
+import org.mockito.kotlin.*
 import reactor.core.publisher.Mono
 
 class UserQueryHandlerTest {
@@ -32,8 +31,13 @@ class UserQueryHandlerTest {
                     Valid.ALL_ORDER_REQUEST.endTime
                 )
             } doReturn flow {
-                emit(Valid.ORDER_MODEL)
+                emit(Valid.MAKER_ORDER_MODEL)
             }
+        }
+        stubbing(orderStatusRepository) {
+            on {
+                findMostRecentByOUID("f1167d30-ccc0-4f86-ab5d-dd24aa3250df")
+            } doReturn Mono.just(Valid.ORDER_STATUS_MODEL)
         }
 
         val queryOrderResponses = userQueryHandler.allOrders(Valid.PRINCIPAL, Valid.ALL_ORDER_REQUEST)
@@ -58,6 +62,14 @@ class UserQueryHandlerTest {
                 emit(Valid.TRADE_MODEL)
             }
         }
+        stubbing(orderRepository) {
+            on {
+                findByOuid(Valid.TRADE_MODEL.makerOuid)
+            } doReturn Mono.just(Valid.MAKER_ORDER_MODEL)
+            on {
+                findByOuid(Valid.TRADE_MODEL.takerOuid)
+            } doReturn Mono.just(Valid.TAKER_ORDER_MODEL)
+        }
 
         val tradeResponses = userQueryHandler.allTrades(Valid.PRINCIPAL, Valid.TRADE_REQUEST)
 
@@ -69,10 +81,24 @@ class UserQueryHandlerTest {
     fun given_whenOpenOrders_then(): Unit = runBlocking {
         stubbing(orderRepository) {
             on {
-                findByUuidAndSymbolAndStatus(Valid.PRINCIPAL.name, "ETH_USDT", listOf(0))
+                findByUuidAndSymbolAndStatus(
+                    eq(Valid.PRINCIPAL.name),
+                    eq("ETH_USDT"),
+                    argThat {
+                        this == listOf(
+                            OrderStatus.NEW.code,
+                            OrderStatus.PARTIALLY_FILLED.code
+                        )
+                    }
+                )
             } doReturn flow {
-                emit(Valid.ORDER_MODEL)
+                emit(Valid.MAKER_ORDER_MODEL)
             }
+        }
+        stubbing(orderStatusRepository) {
+            on {
+                findMostRecentByOUID("f1167d30-ccc0-4f86-ab5d-dd24aa3250df")
+            } doReturn Mono.just(Valid.ORDER_STATUS_MODEL)
         }
 
         val queryOrderResponses = userQueryHandler.openOrders(Valid.PRINCIPAL, "ETH_USDT")
@@ -85,11 +111,11 @@ class UserQueryHandlerTest {
     fun given_whenQueryOrder_then(): Unit = runBlocking {
         stubbing(orderRepository) {
             on {
-                findBySymbolAndClientOrderId("ETH_USDT", "id")
-            } doReturn Mono.just(Valid.ORDER_MODEL)
+                findBySymbolAndClientOrderId("ETH_USDT", "2")
+            } doReturn Mono.just(Valid.MAKER_ORDER_MODEL)
             on {
                 findBySymbolAndOrderId("ETH_USDT", 1)
-            } doReturn Mono.just(Valid.ORDER_MODEL)
+            } doReturn Mono.just(Valid.MAKER_ORDER_MODEL)
         }
         stubbing(orderStatusRepository) {
             on {
@@ -98,6 +124,7 @@ class UserQueryHandlerTest {
         }
 
         val queryOrderResponse = userQueryHandler.queryOrder(Valid.PRINCIPAL, Valid.QUERY_ORDER_REQUEST)
+
         assertThat(queryOrderResponse).isNotNull
     }
 }
