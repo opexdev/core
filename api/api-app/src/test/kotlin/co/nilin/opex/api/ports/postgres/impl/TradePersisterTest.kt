@@ -16,7 +16,7 @@ class TradePersisterTest {
     private val tradePersister = TradePersisterImpl(tradeRepository)
 
     @Test
-    fun givenRichTrade_whenSave_thenSuccess(): Unit = runBlocking {
+    fun givenTradeRepo_whenSaveRichTrade_thenSuccess(): Unit = runBlocking {
         stubbing(tradeRepository) {
             on {
                 save(any())

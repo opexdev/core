@@ -142,8 +142,8 @@ object Valid {
     )
 
     val ORDER_BOOK_RESPONSE = OrderBookResponse(
-        BigDecimal.valueOf(100000.0),
-        BigDecimal.valueOf(0.001)
+        AGGREGATED_ORDER_PRICE_MODEL.price!!.toBigDecimal(),
+        AGGREGATED_ORDER_PRICE_MODEL.quantity!!.toBigDecimal()
     )
 
     val RICH_ORDER = RichOrder(

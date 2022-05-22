@@ -26,7 +26,7 @@ class MarketQueryHandlerTest {
         MarketQueryHandlerImpl(orderRepository, tradeRepository, orderStatusRepository, symbolMapper)
 
     @Test
-    fun givenSymbol_whenOpenASKOrders_thenReturnOrderBookResponseList(): Unit = runBlocking {
+    fun givenAggregatedOrderPrice_whenOpenASKOrders_thenReturnOrderBookResponseList(): Unit = runBlocking {
         stubbing(orderRepository) {
             on {
                 findBySymbolAndDirectionAndStatusSortAscendingByPrice(
@@ -51,7 +51,7 @@ class MarketQueryHandlerTest {
     }
 
     @Test
-    fun givenSymbol_whenOpenBIDOrders_thenReturnOrderBookResponseList(): Unit = runBlocking {
+    fun givenAggregatedOrderPrice_whenOpenBIDOrders_thenReturnOrderBookResponseList(): Unit = runBlocking {
         stubbing(orderRepository) {
             on {
                 findBySymbolAndDirectionAndStatusSortDescendingByPrice(
@@ -76,7 +76,7 @@ class MarketQueryHandlerTest {
     }
 
     @Test
-    fun givenSymbol_whenLastOrder_thenReturnQueryOrderResponse(): Unit = runBlocking {
+    fun givenOrder_whenLastOrder_thenReturnQueryOrderResponse(): Unit = runBlocking {
         stubbing(orderRepository) {
             on {
                 findLastOrderBySymbol(Valid.ETH_USDT)
@@ -95,7 +95,7 @@ class MarketQueryHandlerTest {
     }
 
     @Test
-    fun givenSymbol_whenLastPrice_thenPriceTickerResponse(): Unit = runBlocking {
+    fun givenOrderAndTradeAndSymbolAlias_whenLastPrice_thenPriceTickerResponse(): Unit = runBlocking {
         stubbing(tradeRepository) {
             on {
                 findAllGroupBySymbol()
@@ -124,7 +124,7 @@ class MarketQueryHandlerTest {
     }
 
     @Test
-    fun givenSymbol_whenRecentTrades_thenMarketTradeResponseFlow(): Unit = runBlocking {
+    fun givenOrderAndTrade_whenRecentTrades_thenMarketTradeResponseFlow(): Unit = runBlocking {
         stubbing(tradeRepository) {
             on {
                 findBySymbolSortDescendingByCreateDate(Valid.ETH_USDT, 1)

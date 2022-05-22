@@ -21,7 +21,7 @@ class UserQueryHandlerTest {
     private val userQueryHandler = UserQueryHandlerImpl(orderRepository, tradeRepository, orderStatusRepository)
 
     @Test
-    fun given_whenAllOrders_then(): Unit = runBlocking {
+    fun givenOrder_whenAllOrders_thenReturnQueryOrderResponseList(): Unit = runBlocking {
         stubbing(orderRepository) {
             on {
                 findByUuidAndSymbolAndTimeBetween(
@@ -48,7 +48,7 @@ class UserQueryHandlerTest {
     }
 
     @Test
-    fun given_whenAllTrades_then(): Unit = runBlocking {
+    fun givenOrderAndTrade_whenAllTrades_thenTradeResponseList(): Unit = runBlocking {
         stubbing(tradeRepository) {
             on {
                 findByUuidAndSymbolAndTimeBetweenAndTradeIdGreaterThan(
@@ -78,7 +78,7 @@ class UserQueryHandlerTest {
     }
 
     @Test
-    fun given_whenOpenOrders_then(): Unit = runBlocking {
+    fun givenOrder_whenOpenOrders_thenReturnQueryOrderResponseList(): Unit = runBlocking {
         stubbing(orderRepository) {
             on {
                 findByUuidAndSymbolAndStatus(
@@ -108,7 +108,7 @@ class UserQueryHandlerTest {
     }
 
     @Test
-    fun given_whenQueryOrder_then(): Unit = runBlocking {
+    fun givenOrder_whenQueryOrder_thenReturnQueryOrderResponse(): Unit = runBlocking {
         stubbing(orderRepository) {
             on {
                 findBySymbolAndClientOrderId(Valid.ETH_USDT, "2")

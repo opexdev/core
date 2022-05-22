@@ -18,7 +18,7 @@ class OrderPersisterTest {
     private val orderPersister = OrderPersisterImpl(orderRepository, orderStatusRepository)
 
     @Test
-    fun givenRichOrder_whenSave_thenSuccess(): Unit = runBlocking {
+    fun givenOrderRepo_whenSaveRichOrder_thenSuccess(): Unit = runBlocking {
         stubbing(orderRepository) {
             on {
                 save(any())
@@ -34,7 +34,7 @@ class OrderPersisterTest {
     }
 
     @Test
-    fun givenRichOrder_whenUpdate_thenSuccess(): Unit = runBlocking {
+    fun givenOrderRepo_whenUpdateRichOrder_thenSuccess(): Unit = runBlocking {
         stubbing(orderStatusRepository) {
             on {
                 save(any())
