@@ -16,7 +16,7 @@
         <kotlin.version>1.6.0</kotlin.version>
         <spring.version>2.6.2</spring.version>
         <spring-cloud.version>2021.0.0</spring-cloud.version>
-        <skip.unit.tests>false</skip.unit.tests>
+        <skip.unit.tests>true</skip.unit.tests>
     </properties>
 
     <modules>
