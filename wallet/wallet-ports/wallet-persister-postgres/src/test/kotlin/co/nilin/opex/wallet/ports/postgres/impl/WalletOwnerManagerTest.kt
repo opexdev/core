@@ -50,7 +50,7 @@ private class WalletOwnerManagerTest {
     @Test
     fun givenOwnerWithNoLimit_whenIsWithdrawAllowed_thenReturnTrue(): Unit = runBlocking {
         stubbing(userLimitsRepository) {
-            on { findByOwnerAndAction(walletOwner.id()!!, "withdraw") } doReturn flow { }
+            on { findByOwnerAndAction(walletOwner.id(), "withdraw") } doReturn flow { }
             on { findByLevelAndAction(eq("1"), eq("withdraw")) } doReturn flow {}
         }
         stubbing(walletConfigRepository) {
@@ -69,7 +69,7 @@ private class WalletOwnerManagerTest {
     @Test
     fun givenInvalidAmount_whenIsWithdrawAllowed_thenReturnFalse(): Unit = runBlocking {
         stubbing(userLimitsRepository) {
-            on { findByOwnerAndAction(walletOwner.id()!!, "withdraw") } doReturn flow { }
+            on { findByOwnerAndAction(walletOwner.id(), "withdraw") } doReturn flow { }
             on { findByLevelAndAction(eq("1"), eq("withdraw")) } doReturn flow {}
         }
         stubbing(walletConfigRepository) {
@@ -94,12 +94,12 @@ private class WalletOwnerManagerTest {
     @Test
     fun givenOwnerWithLimit_whenIsWithdrawAllowed_thenReturnFalse(): Unit = runBlocking {
         stubbing(userLimitsRepository) {
-            on { findByOwnerAndAction(walletOwner.id()!!, "withdraw") } doReturn flow {
+            on { findByOwnerAndAction(walletOwner.id(), "withdraw") } doReturn flow {
                 emit(
                     UserLimitsModel(
                         1,
                         null,
-                        walletOwner.id()!!,
+                        walletOwner.id(),
                         "withdraw",
                         "main",
                         BigDecimal.valueOf(100),
@@ -128,7 +128,7 @@ private class WalletOwnerManagerTest {
     @Test
     fun givenLevelWithLimit_whenIsWithdrawAllowed_thenReturnFalse(): Unit = runBlocking {
         stubbing(userLimitsRepository) {
-            on { findByOwnerAndAction(walletOwner.id()!!, "withdraw") } doReturn flow { }
+            on { findByOwnerAndAction(walletOwner.id(), "withdraw") } doReturn flow { }
             on { findByLevelAndAction(eq("1"), eq("withdraw")) } doReturn flow {
                 emit(
                     UserLimitsModel(
@@ -162,7 +162,7 @@ private class WalletOwnerManagerTest {
     @Test
     fun givenOwnerWithNoLimit_whenIsDepositAllowed_thenReturnTrue(): Unit = runBlocking {
         stubbing(userLimitsRepository) {
-            on { findByOwnerAndAction(walletOwner.id()!!, "deposit") } doReturn flow { }
+            on { findByOwnerAndAction(walletOwner.id(), "deposit") } doReturn flow { }
             on { findByLevelAndAction(eq("1"), eq("deposit")) } doReturn flow {}
         }
         stubbing(walletConfigRepository) {
@@ -181,7 +181,7 @@ private class WalletOwnerManagerTest {
     @Test
     fun givenWrongAmount_whenIsDepositAllowed_thenReturnTrue(): Unit = runBlocking {
         stubbing(userLimitsRepository) {
-            on { findByOwnerAndAction(walletOwner.id()!!, "deposit") } doReturn flow { }
+            on { findByOwnerAndAction(walletOwner.id(), "deposit") } doReturn flow { }
             on { findByLevelAndAction(eq("1"), eq("deposit")) } doReturn flow {}
         }
         stubbing(walletConfigRepository) {
@@ -200,12 +200,12 @@ private class WalletOwnerManagerTest {
     @Test
     fun givenOwnerWithLimit_whenIsDepositAllowed_thenReturnFalse(): Unit = runBlocking {
         stubbing(userLimitsRepository) {
-            on { findByOwnerAndAction(walletOwner.id()!!, "deposit") } doReturn flow {
+            on { findByOwnerAndAction(walletOwner.id(), "deposit") } doReturn flow {
                 emit(
                     UserLimitsModel(
                         1,
                         null,
-                        walletOwner.id()!!,
+                        walletOwner.id(),
                         "deposit",
                         "main",
                         BigDecimal.valueOf(100),
@@ -234,7 +234,7 @@ private class WalletOwnerManagerTest {
     @Test
     fun givenLevelWithLimit_whenIsDepositAllowed_thenReturnFalse(): Unit = runBlocking {
         stubbing(userLimitsRepository) {
-            on { findByOwnerAndAction(walletOwner.id()!!, "deposit") } doReturn flow { }
+            on { findByOwnerAndAction(walletOwner.id(), "deposit") } doReturn flow { }
             on { findByLevelAndAction(eq("1"), eq("deposit")) } doReturn flow {
                 emit(
                     UserLimitsModel(

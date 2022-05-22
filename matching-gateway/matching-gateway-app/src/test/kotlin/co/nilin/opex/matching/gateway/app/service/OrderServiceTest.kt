@@ -7,17 +7,36 @@ import co.nilin.opex.matching.gateway.app.inout.CancelOrderRequest
 import co.nilin.opex.matching.gateway.app.inout.CreateOrderRequest
 import co.nilin.opex.matching.gateway.app.inout.PairConfig
 import co.nilin.opex.matching.gateway.app.inout.PairFeeConfig
+import co.nilin.opex.matching.gateway.app.spi.AccountantApiProxy
+import co.nilin.opex.matching.gateway.app.spi.PairConfigLoader
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.inout.OrderSubmitResult
+import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.EventSubmitter
+import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.KafkaHealthIndicator
+import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.OrderSubmitter
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.stubbing
 import java.math.BigDecimal
 
-private class OrderServiceTest : OrderServiceTestBase() {
+private class OrderServiceTest {
+    private val accountantApiProxy: AccountantApiProxy = mock()
+    private val orderSubmitter: OrderSubmitter = mock()
+    private val eventSubmitter: EventSubmitter = mock()
+    private val pairConfigLoader: PairConfigLoader = mock()
+    private val kafkaHealthIndicator: KafkaHealthIndicator = mock()
+    private val orderService: OrderService = OrderService(
+        accountantApiProxy,
+        orderSubmitter,
+        eventSubmitter,
+        pairConfigLoader,
+        kafkaHealthIndicator
+    )
+
     @Test
     fun givenLimitASKOrder_whenSubmitNewOrder_thenOrderSubmitResult(): Unit = runBlocking {
         val pairConfig = PairConfig("ETH_USDT", "ETH", "USDT", 0.01, 0.0001)

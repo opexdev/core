@@ -51,10 +51,10 @@ private class WalletManagerTest {
     fun givenWalletWithNoLimit_whenIsWithdrawAllowed_thenReturnTrue(): Unit = runBlocking {
         stubbing(walletLimitsRepository) {
             on {
-                findByOwnerAndCurrencyAndWalletAndAction(walletOwner.id()!!, "ETH", 20, "withdraw")
+                findByOwnerAndCurrencyAndWalletAndAction(walletOwner.id(), "ETH", 20, "withdraw")
             } doReturn Mono.empty()
             on {
-                findByOwnerAndCurrencyAndActionAndWalletType(walletOwner.id()!!, "ETH", "withdraw", "main")
+                findByOwnerAndCurrencyAndActionAndWalletType(walletOwner.id(), "ETH", "withdraw", "main")
             } doReturn Mono.empty()
             on {
                 findByLevelAndCurrencyAndActionAndWalletType("1", "ETH", "withdraw", "main")
@@ -412,10 +412,10 @@ private class WalletManagerTest {
     fun givenEmptyWalletWithNoLimit_whenIsWithdrawAllowed_thenReturnFalse(): Unit = runBlocking {
         stubbing(walletLimitsRepository) {
             on {
-                findByOwnerAndCurrencyAndWalletAndAction(walletOwner.id()!!, "ETH", 20, "withdraw")
+                findByOwnerAndCurrencyAndWalletAndAction(walletOwner.id(), "ETH", 20, "withdraw")
             } doReturn Mono.empty()
             on {
-                findByOwnerAndCurrencyAndActionAndWalletType(walletOwner.id()!!, "ETH", "withdraw", "main")
+                findByOwnerAndCurrencyAndActionAndWalletType(walletOwner.id(), "ETH", "withdraw", "main")
             } doReturn Mono.empty()
             on {
                 findByLevelAndCurrencyAndActionAndWalletType("1", "ETH", "withdraw", "main")
@@ -438,10 +438,10 @@ private class WalletManagerTest {
     fun givenFullWalletWithNoLimit_whenIsDepositAllowed_thenReturnTrue(): Unit = runBlocking {
         stubbing(walletLimitsRepository) {
             on {
-                findByOwnerAndCurrencyAndWalletAndAction(walletOwner.id()!!, "ETH", 20, "deposit")
+                findByOwnerAndCurrencyAndWalletAndAction(walletOwner.id(), "ETH", 20, "deposit")
             } doReturn Mono.empty()
             on {
-                findByOwnerAndCurrencyAndActionAndWalletType(walletOwner.id()!!, "ETH", "deposit", "main")
+                findByOwnerAndCurrencyAndActionAndWalletType(walletOwner.id(), "ETH", "deposit", "main")
             } doReturn Mono.empty()
             on {
                 findByLevelAndCurrencyAndActionAndWalletType("1", "ETH", "deposit", "main")
@@ -504,10 +504,10 @@ private class WalletManagerTest {
     fun givenInsufficientAmount_whenIsDepositAllowed_thenFalse(): Unit = runBlocking {
         stubbing(walletLimitsRepository) {
             on {
-                findByOwnerAndCurrencyAndWalletAndAction(walletOwner.id()!!, "ETH", 20, "withdraw")
+                findByOwnerAndCurrencyAndWalletAndAction(walletOwner.id(), "ETH", 20, "withdraw")
             } doReturn Mono.empty()
             on {
-                findByOwnerAndCurrencyAndActionAndWalletType(walletOwner.id()!!, "ETH", "withdraw", "main")
+                findByOwnerAndCurrencyAndActionAndWalletType(walletOwner.id(), "ETH", "withdraw", "main")
             } doReturn Mono.empty()
             on {
                 findByLevelAndCurrencyAndActionAndWalletType("1", "ETH", "withdraw", "main")
@@ -523,13 +523,13 @@ private class WalletManagerTest {
         val isAllowed = runBlocking { walletManagerImpl.isDepositAllowed(wallet, BigDecimal.valueOf(0.5)) }
 
         verify(walletLimitsRepository, never()).findByOwnerAndCurrencyAndWalletAndAction(
-            walletOwner.id()!!,
+            walletOwner.id(),
             "ETH",
             20,
             "withdraw"
         )
         verify(walletLimitsRepository, never()).findByOwnerAndCurrencyAndActionAndWalletType(
-            walletOwner.id()!!,
+            walletOwner.id(),
             "ETH",
             "withdraw",
             "main"
@@ -696,10 +696,10 @@ private class WalletManagerTest {
     fun givenEmptyWalletWithNoLimit_whenIsDepositAllowed_thenReturnFalse(): Unit = runBlocking {
         stubbing(walletLimitsRepository) {
             on {
-                findByOwnerAndCurrencyAndWalletAndAction(walletOwner.id()!!, "ETH", 20, "deposit")
+                findByOwnerAndCurrencyAndWalletAndAction(walletOwner.id(), "ETH", 20, "deposit")
             } doReturn Mono.empty()
             on {
-                findByOwnerAndCurrencyAndActionAndWalletType(walletOwner.id()!!, "ETH", "deposit", "main")
+                findByOwnerAndCurrencyAndActionAndWalletType(walletOwner.id(), "ETH", "deposit", "main")
             } doReturn Mono.empty()
             on {
                 findByLevelAndCurrencyAndActionAndWalletType("1", "ETH", "deposit", "main")
@@ -721,7 +721,7 @@ private class WalletManagerTest {
     @Test
     fun givenWalletOwner_whenFindWalletByOwnerAndCurrencyAndType_thenReturnWallet(): Unit = runBlocking {
         stubbing(walletOwnerRepository) {
-            on { findById(walletOwner.id()!!) } doReturn Mono.just(
+            on { findById(walletOwner.id()) } doReturn Mono.just(
                 WalletOwnerModel(
                     walletOwner.id(),
                     walletOwner.uuid(),
@@ -735,11 +735,11 @@ private class WalletManagerTest {
         }
         stubbing(walletRepository) {
             on {
-                findByOwnerAndTypeAndCurrency(walletOwner.id()!!, "main", currency.getSymbol())
+                findByOwnerAndTypeAndCurrency(walletOwner.id(), "main", currency.getSymbol())
             } doReturn Mono.just(
                 WalletModel(
                     20L,
-                    walletOwner.id()!!,
+                    walletOwner.id(),
                     "main",
                     currency.getSymbol(),
                     BigDecimal.valueOf(1.2)
@@ -769,11 +769,11 @@ private class WalletManagerTest {
     fun givenEmptyWalletWithNoLimit_whenCreateWallet_thenReturnWallet(): Unit = runBlocking {
         stubbing(walletRepository) {
             on {
-                save(WalletModel(null, walletOwner.id()!!, "main", currency.getSymbol(), BigDecimal.valueOf(1)))
+                save(WalletModel(null, walletOwner.id(), "main", currency.getSymbol(), BigDecimal.valueOf(1)))
             } doReturn Mono.just(
                 WalletModel(
                     20L,
-                    walletOwner.id()!!,
+                    walletOwner.id(),
                     "main",
                     currency.getSymbol(),
                     BigDecimal.valueOf(1)
@@ -947,7 +947,7 @@ private class WalletManagerTest {
             on { findById(20) } doReturn Mono.just(
                 WalletModel(
                     20L,
-                    walletOwner.id()!!,
+                    walletOwner.id(),
                     "main",
                     currency.getSymbol(),
                     BigDecimal.valueOf(0.5)
@@ -956,7 +956,7 @@ private class WalletManagerTest {
         }
         stubbing(walletOwnerRepository) {
             on {
-                findById(walletOwner.id()!!)
+                findById(walletOwner.id())
             } doReturn Mono.just(
                 WalletOwnerModel(
                     walletOwner.id(),
