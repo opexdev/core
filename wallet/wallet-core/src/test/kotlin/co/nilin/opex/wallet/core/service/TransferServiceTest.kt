@@ -42,7 +42,7 @@ private class TransferServiceTest {
     }
 
     @Test
-    fun givenTransferCommand_whenTransfer_thenReturnTransferResultDetailed(): Unit = runBlocking {
+    fun givenWalletWithAllowedTransfer_whenTransfer_thenReturnTransferResultDetailed(): Unit = runBlocking {
         stubbing(walletOwnerManager) {
             onBlocking { isWithdrawAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } doReturn true
             onBlocking { isDepositAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } doReturn true
@@ -121,7 +121,7 @@ private class TransferServiceTest {
     }
 
     @Test
-    fun givenOwnerNotWithdrawAllowed_whenTransfer_thenThrow(): Unit = runBlocking {
+    fun givenWalletWithOwnerWithdrawNotAllowed_whenTransfer_thenThrow(): Unit = runBlocking {
         stubbing(walletOwnerManager) {
             onBlocking {
                 isWithdrawAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5))))
@@ -214,7 +214,7 @@ private class TransferServiceTest {
     }
 
     @Test
-    fun givenWalletNotWithdrawAllowed_whenTransfer_thenThrow(): Unit = runBlocking {
+    fun givenWalletWithWithdrawNotAllowed_whenTransfer_thenThrow(): Unit = runBlocking {
         stubbing(walletOwnerManager) {
             onBlocking { isWithdrawAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } doReturn true
             onBlocking { isDepositAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } doReturn true
@@ -305,7 +305,7 @@ private class TransferServiceTest {
     }
 
     @Test
-    fun givenOwnerNotDepositAllowed_whenTransfer_thenThrow(): Unit = runBlocking {
+    fun givenWalletWithOwnerDepositNotAllowed_whenTransfer_thenThrow(): Unit = runBlocking {
         stubbing(walletOwnerManager) {
             onBlocking { isWithdrawAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } doReturn true
             onBlocking { isDepositAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } doReturn false
@@ -396,7 +396,7 @@ private class TransferServiceTest {
     }
 
     @Test
-    fun givenWalletNotDepositAllowed_whenTransfer_thenThrow(): Unit = runBlocking {
+    fun givenWalletWithDepositNotAllowed_whenTransfer_thenThrow(): Unit = runBlocking {
         stubbing(walletOwnerManager) {
             onBlocking { isWithdrawAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } doReturn true
             onBlocking { isDepositAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } doReturn true
@@ -487,7 +487,7 @@ private class TransferServiceTest {
     }
 
     @Test
-    fun givenNotExistWallet_whenTransfer_thenThrow(): Unit = runBlocking {
+    fun givenNoWallet_whenTransfer_thenThrow(): Unit = runBlocking {
         stubbing(walletOwnerManager) {
             onBlocking { isWithdrawAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } doReturn true
             onBlocking { isDepositAllowed(any(), eq(Amount(currency, BigDecimal.valueOf(0.5)))) } doReturn true

@@ -15,7 +15,7 @@ private class CurrencyServiceTest {
     private val currencyService: CurrencyServiceImpl = CurrencyServiceImpl(currencyRepository)
 
     @Test
-    fun givenCorrectSymbol_whenGetCurrency_thenReturnCurrency(): Unit = runBlocking {
+    fun givenCurrency_whenGetCurrency_thenReturnCurrency(): Unit = runBlocking {
         stubbing(currencyRepository) {
             on { findBySymbol("ETH") } doReturn Mono.just(CurrencyModel("ETH", "Ethereum", 0.0001))
         }
@@ -28,7 +28,7 @@ private class CurrencyServiceTest {
     }
 
     @Test
-    fun givenNotExistCurrency_whenGetCurrency_thenReturnNull(): Unit = runBlocking {
+    fun givenNoCurrency_whenGetCurrency_thenReturnNull(): Unit = runBlocking {
         stubbing(currencyRepository) {
             on { findBySymbol("ETH") } doReturn Mono.empty()
         }
@@ -38,7 +38,7 @@ private class CurrencyServiceTest {
     }
 
     @Test
-    fun givenEmptySymbol_whenGetCurrency_thenReturnNull(): Unit = runBlocking {
+    fun givenNoCurrency_whenGetCurrencyWithEmptySymbol_thenReturnNull(): Unit = runBlocking {
         stubbing(currencyRepository) {
             on { findBySymbol("") } doReturn Mono.empty()
         }
