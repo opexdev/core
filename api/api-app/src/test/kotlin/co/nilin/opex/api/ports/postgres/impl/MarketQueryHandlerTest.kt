@@ -71,7 +71,7 @@ class MarketQueryHandlerTest {
 
         assertThat(orderBookResponses).isNotNull
         assertThat(orderBookResponses.size).isEqualTo(1)
-        assertThat(orderBookResponses.first()).isEqualTo(Valid.ORDER_STATUS_MODEL)
+        assertThat(orderBookResponses.first()).isEqualTo(Valid.ORDER_BOOK_RESPONSE)
     }
 
     @Test
@@ -105,7 +105,7 @@ class MarketQueryHandlerTest {
         }
         stubbing(orderRepository) {
             on {
-                findByOuid("99289106-2775-44d4-bffc-ca35fc25e58c")
+                findByOuid(Valid.MAKER_ORDER_MODEL.ouid)
             } doReturn Mono.just(Valid.MAKER_ORDER_MODEL)
         }
         stubbing(symbolMapper) {
@@ -125,21 +125,21 @@ class MarketQueryHandlerTest {
     fun givenSymbol_whenRecentTrades_thenMarketTradeResponseFlow(): Unit = runBlocking {
         stubbing(tradeRepository) {
             on {
-                findBySymbolSortDescendingByCreateDate("ETH_USDT", 10)
+                findBySymbolSortDescendingByCreateDate("ETH_USDT", 1)
             } doReturn flow {
                 emit(Valid.TRADE_MODEL)
             }
         }
         stubbing(orderRepository) {
             on {
-                findByOuid("99289106-2775-44d4-bffc-ca35fc25e58c")
+                findByOuid(Valid.TRADE_MODEL.makerOuid)
             } doReturn Mono.just(Valid.MAKER_ORDER_MODEL)
             on {
-                findByOuid("2fa73fa2-6d70-44b8-8571-e2b24e2eea2b")
-            } doReturn Mono.just(Valid.MAKER_ORDER_MODEL)
+                findByOuid(Valid.TRADE_MODEL.takerOuid)
+            } doReturn Mono.just(Valid.TAKER_ORDER_MODEL)
         }
 
-        val marketTradeResponses = marketQueryHandler.recentTrades("ETH_USDT", 10)
+        val marketTradeResponses = marketQueryHandler.recentTrades("ETH_USDT", 1)
 
         assertThat(marketTradeResponses).isNotNull
         assertThat(marketTradeResponses.count()).isEqualTo(1)

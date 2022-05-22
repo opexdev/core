@@ -8,6 +8,7 @@ import co.nilin.opex.api.ports.postgres.model.OrderModel
 import co.nilin.opex.api.ports.postgres.model.OrderStatusModel
 import co.nilin.opex.api.ports.postgres.model.SymbolMapModel
 import co.nilin.opex.api.ports.postgres.model.TradeModel
+import co.nilin.opex.api.ports.postgres.util.isWorking
 import java.math.BigDecimal
 import java.security.Principal
 import java.time.LocalDateTime
@@ -21,11 +22,11 @@ object Valid {
         1,
         "f1167d30-ccc0-4f86-ab5d-dd24aa3250df",
         PRINCIPAL.name,
-        "id", // ?
+        null, // Binance
         "ETH_USDT",
-        1,
-        0.01,
-        0.01,
+        1, // MatchingEngine ID
+        0.01, // Calculated?
+        0.01, // Calculated?
         0.0001,
         0.01,
         "1",
@@ -33,17 +34,17 @@ object Valid {
         MatchConstraint.GTC,
         MatchingOrderType.LIMIT_ORDER,
         100000.0,
-        0.01,
-        0.0, // ?
+        0.001,
+        100000.0 * 0.01,
         LocalDateTime.ofEpochSecond(1653125840, 0, ZoneOffset.UTC),
         LocalDateTime.ofEpochSecond(1653125840, 0, ZoneOffset.UTC)
     )
 
     val TAKER_ORDER_MODEL = OrderModel(
         2,
-        "f1167d30-ccc0-4f86-ab5d-dd24aa3250df",
+        "157b9b4a-cc66-43b9-b30b-40a8b66ea6aa",
         PRINCIPAL.name,
-        "id", // ?
+        null,
         "ETH_USDT",
         1,
         0.01,
@@ -55,18 +56,18 @@ object Valid {
         MatchConstraint.GTC,
         MatchingOrderType.LIMIT_ORDER,
         100000.0,
-        0.01,
-        0.0, // ?
+        0.001,
+        100000.0 * 0.01, // ?
         LocalDateTime.ofEpochSecond(1653125840, 0, ZoneOffset.UTC),
         LocalDateTime.ofEpochSecond(1653125840, 0, ZoneOffset.UTC)
     )
 
     val ORDER_STATUS_MODEL = OrderStatusModel(
         "f1167d30-ccc0-4f86-ab5d-dd24aa3250df",
-        0.0, // ?
-        0.0, // ?
-        0, // ?
-        0, // ?
+        0.0, // Filled amount
+        0.0, // --> See accountant
+        OrderStatus.FILLED.code,
+        OrderStatus.FILLED.orderOfAppearance,
         LocalDateTime.ofEpochSecond(1653125840, 0, ZoneOffset.UTC)
     )
 
@@ -81,18 +82,18 @@ object Valid {
         1,
         1,
         "ETH_USDT",
-        0.001,
+        0.001, // Minimum of orders quantities
         100000.0,
         100000.0,
-        0.001,
-        0.001,
-        "",
-        "",
+        0.001, // Calculated
+        0.001, // Calculated
+        "ETH",
+        "USDT",
         LocalDateTime.ofEpochSecond(1653125640, 0, ZoneOffset.UTC),
-        "99289106-2775-44d4-bffc-ca35fc25e58c",
-        "2fa73fa2-6d70-44b8-8571-e2b24e2eea2b",
-        "52c6d890-3dd4-4fa8-9425-d9e0d6274705",
-        "07bb979a-dfca-475b-a38b-fcc5dd2f88d8",
+        "f1167d30-ccc0-4f86-ab5d-dd24aa3250df",
+        "157b9b4a-cc66-43b9-b30b-40a8b66ea6aa",
+        PRINCIPAL.name,
+        PRINCIPAL.name,
         LocalDateTime.ofEpochSecond(1653125640, 0, ZoneOffset.UTC)
     )
 
@@ -100,22 +101,22 @@ object Valid {
         "ETH_USDT",
         "f1167d30-ccc0-4f86-ab5d-dd24aa3250df",
         1,
-        1, // ?,
-        "id",
-        BigDecimal.valueOf(100000),
+        -1, // Binance
+        "", // Binance
+        BigDecimal.valueOf(100000.0),
         BigDecimal.valueOf(0.001),
-        BigDecimal.valueOf(100),
-        BigDecimal.valueOf(1),
+        BigDecimal.valueOf(0.0),
+        BigDecimal.valueOf(0.0),
         OrderStatus.FILLED,
         TimeInForce.GTC,
         OrderType.LIMIT,
-        OrderSide.BUY,
-        BigDecimal.valueOf(100000),
-        BigDecimal.valueOf(100000),
+        OrderSide.SELL,
+        null,
+        null,
         Date.from(LocalDateTime.ofEpochSecond(1653125840, 0, ZoneOffset.UTC).toInstant(ZoneOffset.UTC)),
         Date.from(LocalDateTime.ofEpochSecond(1653125840, 0, ZoneOffset.UTC).toInstant(ZoneOffset.UTC)),
-        true,
-        BigDecimal.valueOf(0)
+        OrderStatus.FILLED.isWorking(),
+        BigDecimal.valueOf(100000.0 * 0.001)
     )
 
     val AGGREGATED_ORDER_PRICE_MODEL = AggregatedOrderPriceModel(
@@ -186,8 +187,8 @@ object Valid {
 
     val ALL_ORDER_REQUEST = AllOrderRequest(
         "ETH_USDT",
-        Date.from(LocalDateTime.ofEpochSecond(1653125640, 0, ZoneOffset.UTC).toInstant(ZoneOffset.UTC)),
-        Date.from(LocalDateTime.ofEpochSecond(1653125840, 0, ZoneOffset.UTC).toInstant(ZoneOffset.UTC)),
+        Date.from(LocalDateTime.ofEpochSecond(1653125740, 0, ZoneOffset.UTC).toInstant(ZoneOffset.UTC)),
+        Date.from(LocalDateTime.ofEpochSecond(1653125940, 0, ZoneOffset.UTC).toInstant(ZoneOffset.UTC)),
         500
     )
 
