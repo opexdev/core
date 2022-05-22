@@ -2,7 +2,7 @@ package co.nilin.opex.api.ports.postgres.impl
 
 import co.nilin.opex.api.ports.postgres.dao.OrderRepository
 import co.nilin.opex.api.ports.postgres.dao.OrderStatusRepository
-import co.nilin.opex.api.ports.postgres.impl.testfixtures.Valid
+import co.nilin.opex.api.ports.postgres.impl.sample.Valid
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThatNoException
 import org.junit.jupiter.api.Test
@@ -27,7 +27,7 @@ class OrderPersisterTest {
         stubbing(orderStatusRepository) {
             on {
                 save(any())
-            } doReturn Mono.just(Valid.ORDER_STATUS_MODEL)
+            } doReturn Mono.just(Valid.MAKER_ORDER_STATUS_MODEL)
         }
 
         assertThatNoException().isThrownBy { runBlocking { orderPersister.save(Valid.RICH_ORDER) } }
@@ -38,7 +38,7 @@ class OrderPersisterTest {
         stubbing(orderStatusRepository) {
             on {
                 save(any())
-            } doReturn Mono.just(Valid.ORDER_STATUS_MODEL)
+            } doReturn Mono.just(Valid.MAKER_ORDER_STATUS_MODEL)
         }
 
         assertThatNoException().isThrownBy { runBlocking { orderPersister.update(Valid.RICH_ORDER_UPDATE) } }

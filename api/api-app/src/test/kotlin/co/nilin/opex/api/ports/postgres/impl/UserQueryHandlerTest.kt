@@ -4,7 +4,7 @@ import co.nilin.opex.api.core.inout.OrderStatus
 import co.nilin.opex.api.ports.postgres.dao.OrderRepository
 import co.nilin.opex.api.ports.postgres.dao.OrderStatusRepository
 import co.nilin.opex.api.ports.postgres.dao.TradeRepository
-import co.nilin.opex.api.ports.postgres.impl.testfixtures.Valid
+import co.nilin.opex.api.ports.postgres.impl.sample.Valid
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
@@ -37,14 +37,14 @@ class UserQueryHandlerTest {
         stubbing(orderStatusRepository) {
             on {
                 findMostRecentByOUID("f1167d30-ccc0-4f86-ab5d-dd24aa3250df")
-            } doReturn Mono.just(Valid.ORDER_STATUS_MODEL)
+            } doReturn Mono.just(Valid.MAKER_ORDER_STATUS_MODEL)
         }
 
         val queryOrderResponses = userQueryHandler.allOrders(Valid.PRINCIPAL, Valid.ALL_ORDER_REQUEST)
 
         assertThat(queryOrderResponses).isNotNull
         assertThat(queryOrderResponses.count()).isEqualTo(1)
-        assertThat(queryOrderResponses.first()).isEqualTo(Valid.QUERY_ORDER_RESPONSE)
+        assertThat(queryOrderResponses.first()).isEqualTo(Valid.MAKER_QUERY_ORDER_RESPONSE)
     }
 
     @Test
@@ -98,7 +98,7 @@ class UserQueryHandlerTest {
         stubbing(orderStatusRepository) {
             on {
                 findMostRecentByOUID("f1167d30-ccc0-4f86-ab5d-dd24aa3250df")
-            } doReturn Mono.just(Valid.ORDER_STATUS_MODEL)
+            } doReturn Mono.just(Valid.MAKER_ORDER_STATUS_MODEL)
         }
 
         val queryOrderResponses = userQueryHandler.openOrders(Valid.PRINCIPAL, "ETH_USDT")
@@ -120,7 +120,7 @@ class UserQueryHandlerTest {
         stubbing(orderStatusRepository) {
             on {
                 findMostRecentByOUID("f1167d30-ccc0-4f86-ab5d-dd24aa3250df")
-            } doReturn Mono.just(Valid.ORDER_STATUS_MODEL)
+            } doReturn Mono.just(Valid.MAKER_ORDER_STATUS_MODEL)
         }
 
         val queryOrderResponse = userQueryHandler.queryOrder(Valid.PRINCIPAL, Valid.QUERY_ORDER_REQUEST)

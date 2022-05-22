@@ -6,7 +6,7 @@ import co.nilin.opex.api.core.spi.SymbolMapper
 import co.nilin.opex.api.ports.postgres.dao.OrderRepository
 import co.nilin.opex.api.ports.postgres.dao.OrderStatusRepository
 import co.nilin.opex.api.ports.postgres.dao.TradeRepository
-import co.nilin.opex.api.ports.postgres.impl.testfixtures.Valid
+import co.nilin.opex.api.ports.postgres.impl.sample.Valid
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
@@ -84,13 +84,13 @@ class MarketQueryHandlerTest {
         stubbing(orderStatusRepository) {
             on {
                 findMostRecentByOUID("f1167d30-ccc0-4f86-ab5d-dd24aa3250df")
-            } doReturn Mono.just(Valid.ORDER_STATUS_MODEL)
+            } doReturn Mono.just(Valid.MAKER_ORDER_STATUS_MODEL)
         }
 
         val queryOrderResponse = marketQueryHandler.lastOrder("ETH_USDT")
 
         assertThat(queryOrderResponse).isNotNull
-        assertThat(queryOrderResponse).isEqualTo(Valid.QUERY_ORDER_RESPONSE)
+        assertThat(queryOrderResponse).isEqualTo(Valid.MAKER_QUERY_ORDER_RESPONSE)
     }
 
     @Test
@@ -118,7 +118,7 @@ class MarketQueryHandlerTest {
         assertThat(priceTickerResponse).isNotNull
         assertThat(priceTickerResponse.size).isEqualTo(1)
         assertThat(priceTickerResponse.first().symbol).isEqualTo("ETHUSDT")
-        assertThat(priceTickerResponse.first().price).isEqualTo(100000)
+        assertThat(priceTickerResponse.first().price).isEqualTo("100000.0")
     }
 
     @Test

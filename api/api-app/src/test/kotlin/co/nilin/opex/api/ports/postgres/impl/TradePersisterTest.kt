@@ -1,7 +1,7 @@
 package co.nilin.opex.api.ports.postgres.impl
 
 import co.nilin.opex.api.ports.postgres.dao.TradeRepository
-import co.nilin.opex.api.ports.postgres.impl.testfixtures.Valid
+import co.nilin.opex.api.ports.postgres.impl.sample.Valid
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThatNoException
 import org.junit.jupiter.api.Test
