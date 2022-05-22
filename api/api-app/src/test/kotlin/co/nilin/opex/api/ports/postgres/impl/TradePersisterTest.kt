@@ -4,7 +4,7 @@ import co.nilin.opex.api.core.event.RichTrade
 import co.nilin.opex.api.core.inout.OrderDirection
 import co.nilin.opex.api.ports.postgres.dao.TradeRepository
 import kotlinx.coroutines.runBlocking
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThatNoException
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import java.math.BigDecimal
@@ -44,6 +44,6 @@ class TradePersisterTest {
             LocalDateTime.ofEpochSecond(1653125640, 0, ZoneOffset.UTC)
         )
 
-        Assertions.assertThatThrownBy { runBlocking { tradePersister.save(richOrder) } }.doesNotThrowAnyException()
+        assertThatNoException().isThrownBy { runBlocking { tradePersister.save(richOrder) } }
     }
 }
