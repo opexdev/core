@@ -1,11 +1,11 @@
 package co.nilin.opex.api.ports.postgres.impl
 
-import co.nilin.opex.api.core.inout.AllOrderRequest
-import co.nilin.opex.api.core.inout.QueryOrderRequest
-import co.nilin.opex.api.core.inout.TradeRequest
+import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.ports.postgres.dao.OrderRepository
 import co.nilin.opex.api.ports.postgres.dao.OrderStatusRepository
 import co.nilin.opex.api.ports.postgres.dao.TradeRepository
+import kotlinx.coroutines.flow.count
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
@@ -13,6 +13,8 @@ import java.security.Principal
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.*
+import org.assertj.core.api.Assertions.*
+import java.math.BigDecimal
 
 class UserQueryHandlerTest {
     private val orderRepository: OrderRepository = mock()
@@ -30,7 +32,33 @@ class UserQueryHandlerTest {
             500
         )
 
-        userQueryHandler.allOrders(principal, allOrderRequest)
+        val queryOrderResponses = userQueryHandler.allOrders(principal, allOrderRequest)
+
+        assertThat(queryOrderResponses).isNotNull
+        assertThat(queryOrderResponses.count()).isEqualTo(1)
+        assertThat(queryOrderResponses.first()).isEqualTo(
+            QueryOrderResponse(
+                "ETH_USDT",
+                "f1167d30-ccc0-4f86-ab5d-dd24aa3250df",
+                1,
+                1, // ?,
+                "id",
+                BigDecimal.valueOf(100000),
+                BigDecimal.valueOf(0.001),
+                BigDecimal.valueOf(100),
+                BigDecimal.valueOf(1),
+                OrderStatus.FILLED,
+                TimeInForce.GTC,
+                OrderType.LIMIT,
+                OrderSide.BUY,
+                BigDecimal.valueOf(100000),
+                BigDecimal.valueOf(100000),
+                Date.from(LocalDateTime.ofEpochSecond(1653125840, 0, ZoneOffset.UTC).toInstant(ZoneOffset.UTC)),
+                Date.from(LocalDateTime.ofEpochSecond(1653125840, 0, ZoneOffset.UTC).toInstant(ZoneOffset.UTC)),
+                true,
+                BigDecimal.valueOf(0)
+            )
+        )
     }
 
     @Test
@@ -43,12 +71,18 @@ class UserQueryHandlerTest {
             500
         )
 
-        userQueryHandler.allTrades(principal, tradeRequest)
+        val tradeResponses = userQueryHandler.allTrades(principal, tradeRequest)
+
+        assertThat(tradeResponses).isNotNull
+        assertThat(tradeResponses.count()).isEqualTo(1)
     }
 
     @Test
     fun given_whenOpenOrders_then(): Unit = runBlocking {
-        userQueryHandler.openOrders(principal, "ETH_USDT")
+        val queryOrderResponses = userQueryHandler.openOrders(principal, "ETH_USDT")
+
+        assertThat(queryOrderResponses).isNotNull
+        assertThat(queryOrderResponses.count()).isEqualTo(1)
     }
 
     @Test
@@ -59,6 +93,7 @@ class UserQueryHandlerTest {
             "2" // ?
         )
 
-        userQueryHandler.queryOrder(principal, queryOrderRequest)
+        val queryOrderResponse = userQueryHandler.queryOrder(principal, queryOrderRequest)
+        assertThat(queryOrderResponse).isNotNull
     }
 }
