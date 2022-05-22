@@ -1,7 +1,10 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.model.Wallet
+import co.nilin.opex.wallet.core.model.WalletOwner
+import co.nilin.opex.wallet.ports.postgres.dao.*
 import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletLimitsModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletModel
@@ -14,7 +17,36 @@ import org.mockito.kotlin.*
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
 
-private class WalletManagerTest : WalletManagerTestBase() {
+private class WalletManagerTest {
+    private val walletLimitsRepository: WalletLimitsRepository = mock()
+    private val walletRepository: WalletRepository = mock()
+    private val walletOwnerRepository: WalletOwnerRepository = mock()
+    private val currencyRepository: CurrencyRepository = mock { }
+
+    private var transactionRepository: TransactionRepository = mock {
+        on { calculateWithdrawStatistics(eq(2), eq(20), any(), any()) } doReturn Mono.empty()
+    }
+
+    private val walletManagerImpl: WalletManagerImpl = WalletManagerImpl(
+        walletLimitsRepository, transactionRepository, walletRepository, walletOwnerRepository, currencyRepository
+    )
+
+    private val walletOwner = object : WalletOwner {
+        override fun id() = 2L
+        override fun uuid() = "fdf453d7-0633-4ec7-852d-a18148c99a82"
+        override fun title() = "wallet"
+        override fun level() = "1"
+        override fun isTradeAllowed() = true
+        override fun isWithdrawAllowed() = true
+        override fun isDepositAllowed() = true
+    }
+
+    private val currency = object : Currency {
+        override fun getSymbol() = "ETH"
+        override fun getName() = "Ethereum"
+        override fun getPrecision() = 0.0001
+    }
+
     @Test
     fun givenWalletWithNoLimit_whenIsWithdrawAllowed_thenReturnTrue(): Unit = runBlocking {
         stubbing(walletLimitsRepository) {

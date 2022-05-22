@@ -1,6 +1,12 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.model.Currency
+import co.nilin.opex.wallet.core.model.WalletOwner
+import co.nilin.opex.wallet.ports.postgres.dao.TransactionRepository
+import co.nilin.opex.wallet.ports.postgres.dao.UserLimitsRepository
+import co.nilin.opex.wallet.ports.postgres.dao.WalletConfigRepository
+import co.nilin.opex.wallet.ports.postgres.dao.WalletOwnerRepository
 import co.nilin.opex.wallet.ports.postgres.model.UserLimitsModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletConfigModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletOwnerModel
@@ -11,15 +17,36 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.ArgumentMatchers.anyString
-import org.mockito.kotlin.any
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.eq
-import org.mockito.kotlin.stubbing
+import org.mockito.kotlin.*
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
 
-private class WalletOwnerManagerTest : WalletOwnerManagerTestBase() {
+private class WalletOwnerManagerTest {
+    private val userLimitsRepository: UserLimitsRepository = mock()
+    private val transactionRepository: TransactionRepository = mock()
+    private val walletOwnerRepository: WalletOwnerRepository = mock()
+    private val walletConfigRepository: WalletConfigRepository = mock()
+    private val walletOwnerManagerImpl: WalletOwnerManagerImpl = WalletOwnerManagerImpl(
+        userLimitsRepository, transactionRepository, walletConfigRepository, walletOwnerRepository
+    )
+
+    private val walletOwner = object : WalletOwner {
+        override fun id() = 2L
+        override fun uuid() = "fdf453d7-0633-4ec7-852d-a18148c99a82"
+        override fun title() = "wallet"
+        override fun level() = "1"
+        override fun isTradeAllowed() = true
+        override fun isWithdrawAllowed() = true
+        override fun isDepositAllowed() = true
+    }
+
+    private val currency = object : Currency {
+        override fun getSymbol() = "ETH"
+        override fun getName() = "Ethereum"
+        override fun getPrecision() = 0.0001
+    }
+
     @Test
     fun givenOwnerWithNoLimit_whenIsWithdrawAllowed_thenReturnTrue(): Unit = runBlocking {
         stubbing(userLimitsRepository) {

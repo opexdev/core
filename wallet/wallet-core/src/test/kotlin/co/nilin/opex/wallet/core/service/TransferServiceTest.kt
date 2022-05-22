@@ -2,20 +2,45 @@ package co.nilin.opex.wallet.core.service
 
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.model.Wallet
 import co.nilin.opex.wallet.core.model.WalletOwner
+import co.nilin.opex.wallet.core.spi.TransactionManager
+import co.nilin.opex.wallet.core.spi.WalletListener
+import co.nilin.opex.wallet.core.spi.WalletManager
+import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
-import org.mockito.kotlin.any
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.eq
-import org.mockito.kotlin.stubbing
+import org.mockito.kotlin.*
 import java.math.BigDecimal
 
-private class TransferServiceTest : TransferServiceTestBase() {
+private class TransferServiceTest {
+    private val walletOwnerManager: WalletOwnerManager = mock()
+    private val walletManager: WalletManager = mock()
+    private val walletListener: WalletListener = mock()
+    private val transactionManager: TransactionManager = mock()
+    private val transferService: TransferService =
+        TransferService(walletManager, walletListener, walletOwnerManager, transactionManager)
+
+    private val currency = object : Currency {
+        override fun getSymbol() = "ETH"
+        override fun getName() = "Ethereum"
+        override fun getPrecision() = 0.0001
+    }
+
+    private val walletOwner = object : WalletOwner {
+        override fun id() = 2L
+        override fun uuid() = "fdf453d7-0633-4ec7-852d-a18148c99a82"
+        override fun title() = "wallet"
+        override fun level() = "1"
+        override fun isTradeAllowed() = true
+        override fun isWithdrawAllowed() = true
+        override fun isDepositAllowed() = true
+    }
+
     @Test
     fun givenTransferCommand_whenTransfer_thenReturnTransferResultDetailed(): Unit = runBlocking {
         stubbing(walletOwnerManager) {

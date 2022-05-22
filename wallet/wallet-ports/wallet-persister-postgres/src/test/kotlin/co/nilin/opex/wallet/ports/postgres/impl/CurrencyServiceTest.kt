@@ -1,14 +1,19 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
+import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepository
 import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.stubbing
 import reactor.core.publisher.Mono
 
-private class CurrencyServiceTest : CurrencyServiceTestBase() {
+private class CurrencyServiceTest {
+    private val currencyRepository: CurrencyRepository = mock { }
+    private val currencyService: CurrencyServiceImpl = CurrencyServiceImpl(currencyRepository)
+
     @Test
     fun givenCorrectSymbol_whenGetCurrency_thenReturnCurrency(): Unit = runBlocking {
         stubbing(currencyRepository) {
