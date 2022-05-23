@@ -1,6 +1,6 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
-import co.nilin.opex.wallet.core.service.sample.VALID
+import co.nilin.opex.wallet.ports.postgres.impl.sample.VALID
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepository
 import co.nilin.opex.wallet.ports.postgres.dto.toModel
 import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
