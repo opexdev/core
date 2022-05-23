@@ -1,12 +1,12 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.wallet.core.model.Amount
-import co.nilin.opex.wallet.ports.postgres.impl.sample.VALID
 import co.nilin.opex.wallet.ports.postgres.dao.TransactionRepository
 import co.nilin.opex.wallet.ports.postgres.dao.UserLimitsRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletConfigRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletOwnerRepository
 import co.nilin.opex.wallet.ports.postgres.dto.toModel
+import co.nilin.opex.wallet.ports.postgres.impl.sample.VALID
 import co.nilin.opex.wallet.ports.postgres.model.WalletConfigModel
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
@@ -55,7 +55,7 @@ private class WalletOwnerManagerTest {
     }
 
     @Test
-    fun givenNoLimit_whenIsWithdrawAllowed_thenReturnFalse(): Unit = runBlocking {
+    fun givenNoLimit_whenIsWithdrawAllowedByCrossedAmount_thenReturnFalse(): Unit = runBlocking {
         stubNoUserLimit(VALID.ACTION_WITHDRAW)
         stubbing(walletConfigRepository) {
             on { findAll() } doReturn Flux.just(WalletConfigModel("default", VALID.CURRENCY.symbol))
@@ -77,7 +77,7 @@ private class WalletOwnerManagerTest {
     }
 
     @Test
-    fun givenOwnerWithLimit_whenIsWithdrawAllowedWithInvalidAmount_thenReturnFalse(): Unit = runBlocking {
+    fun givenOwnerWithLimit_whenIsWithdrawAllowedWithCrossedAmount_thenReturnFalse(): Unit = runBlocking {
         stubbing(userLimitsRepository) {
             on { findByOwnerAndAction(VALID.WALLET_OWNER.id!!, "withdraw") } doReturn flow {
                 emit(VALID.USER_LIMITS_MODEL_WITHDRAW)
@@ -103,7 +103,7 @@ private class WalletOwnerManagerTest {
     }
 
     @Test
-    fun givenLevelWithLimit_whenIsWithdrawAllowedInvalidAmount_thenReturnFalse(): Unit = runBlocking {
+    fun givenLevelWithLimit_whenIsWithdrawAllowedCrossedAmount_thenReturnFalse(): Unit = runBlocking {
         stubbing(userLimitsRepository) {
             on { findByOwnerAndAction(VALID.WALLET_OWNER.id!!, VALID.ACTION_WITHDRAW) } doReturn flow { }
             on { findByLevelAndAction(eq(VALID.USER_LEVEL_REGISTERED), eq(VALID.ACTION_WITHDRAW)) } doReturn flow {
@@ -149,7 +149,7 @@ private class WalletOwnerManagerTest {
     }
 
     @Test
-    fun givenWrongAmount_whenIsDepositAllowed_thenReturnTrue(): Unit = runBlocking {
+    fun givenNoUserLimit_whenIsDepositAllowed_thenReturnTrue(): Unit = runBlocking {
         stubNoUserLimit(VALID.ACTION_DEPOSIT)
         stubbing(walletConfigRepository) {
             on { findAll() } doReturn Flux.just(WalletConfigModel("default", VALID.CURRENCY.symbol))
@@ -160,16 +160,18 @@ private class WalletOwnerManagerTest {
             } doReturn Mono.empty()
         }
 
-        val isAllowed = walletOwnerManagerImpl.isDepositAllowed(
-            VALID.WALLET_OWNER,
-            Amount(VALID.CURRENCY, BigDecimal.valueOf(-5))
-        )
-
-        assertThat(isAllowed).isTrue()
+        assertThatThrownBy {
+            runBlocking {
+                walletOwnerManagerImpl.isDepositAllowed(
+                    VALID.WALLET_OWNER,
+                    Amount(VALID.CURRENCY, BigDecimal.valueOf(-5))
+                )
+            }
+        }.isNotInstanceOf(NullPointerException::class.java)
     }
 
     @Test
-    fun givenOwnerWithLimit_whenIsDepositAllowedInvalidAmount_thenReturnFalse(): Unit = runBlocking {
+    fun givenOwnerWithLimit_whenIsDepositAllowedCrossedAmount_thenReturnFalse(): Unit = runBlocking {
         stubbing(userLimitsRepository) {
             on { findByOwnerAndAction(VALID.WALLET_OWNER.id!!, VALID.ACTION_DEPOSIT) } doReturn flow {
                 emit(VALID.USER_LIMITS_MODEL_DEPOSIT)
@@ -195,7 +197,7 @@ private class WalletOwnerManagerTest {
     }
 
     @Test
-    fun givenLevelWithLimit_whenIsDepositAllowedInvalidAmount_thenReturnFalse(): Unit = runBlocking {
+    fun givenLevelWithLimit_whenIsDepositAllowedCrossedAmount_thenReturnFalse(): Unit = runBlocking {
         stubbing(userLimitsRepository) {
             on { findByOwnerAndAction(VALID.WALLET_OWNER.id!!, VALID.ACTION_DEPOSIT) } doReturn flow { }
             on { findByLevelAndAction(eq(VALID.USER_LEVEL_REGISTERED), eq(VALID.ACTION_DEPOSIT)) } doReturn flow {

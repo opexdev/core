@@ -1,14 +1,11 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
-import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.ports.postgres.dao.*
 import co.nilin.opex.wallet.ports.postgres.dto.toModel
 import co.nilin.opex.wallet.ports.postgres.impl.sample.VALID
 import kotlinx.coroutines.runBlocking
-import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers.anyString
 import org.mockito.kotlin.*
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
@@ -20,7 +17,22 @@ private class WalletManagerTest {
     private val currencyRepository: CurrencyRepository = mock { }
 
     private var transactionRepository: TransactionRepository = mock {
-        on { calculateWithdrawStatistics(eq(2), eq(20), any(), any()) } doReturn Mono.empty()
+        on {
+            calculateWithdrawStatistics(
+                eq(VALID.WALLET_OWNER.id!!),
+                eq(VALID.WALLET.id!!),
+                any(),
+                any()
+            )
+        } doReturn Mono.empty()
+        on {
+            calculateDepositStatistics(
+                eq(VALID.WALLET_OWNER.id!!),
+                eq(VALID.WALLET.id!!),
+                any(),
+                any()
+            )
+        } doReturn Mono.empty()
     }
 
     private val walletManagerImpl: WalletManagerImpl = WalletManagerImpl(
@@ -92,33 +104,8 @@ private class WalletManagerTest {
     }
 
     @Test
-    fun givenNoWallet_whenIsWithdrawAllowed_thenThrow(): Unit = runBlocking {
-        stubNoWalletLimit(VALID.ACTION_WITHDRAW)
-
-        assertThatThrownBy {
-            runBlocking {
-                walletManagerImpl.isWithdrawAllowed(VALID.WALLET, BigDecimal.valueOf(0.5))
-            }
-        }.isNotInstanceOf(NullPointerException::class.java)
-    }
-
-    @Test
-    fun givenNoCurrency_whenIsWithdrawAllowed_thenThrow(): Unit = runBlocking {
-        stubbing(currencyRepository) {
-            on { findBySymbol(VALID.CURRENCY.symbol) } doReturn Mono.empty()
-            on { findById(VALID.CURRENCY.symbol) } doReturn Mono.empty()
-        }
-
-        assertThatThrownBy {
-            runBlocking {
-                walletManagerImpl.isWithdrawAllowed(VALID.WALLET, BigDecimal.valueOf(0.5))
-            }
-        }.isNotInstanceOf(NullPointerException::class.java)
-    }
-
-    @Test
     fun givenEmptyWallet_whenIsWithdrawAllowed_thenReturnFalse(): Unit = runBlocking {
-        val isAllowed = walletManagerImpl.isWithdrawAllowed(VALID.WALLET, BigDecimal.valueOf(0.5))
+        val isAllowed = walletManagerImpl.isWithdrawAllowed(VALID.WALLET, BigDecimal.valueOf(5))
 
         assertThat(isAllowed).isFalse()
     }
@@ -256,7 +243,7 @@ private class WalletManagerTest {
     fun givenEmptyWalletWithNoLimit_whenIsWithdrawAllowed_thenReturnFalse(): Unit = runBlocking {
         stubNoWalletLimit(VALID.ACTION_WITHDRAW)
 
-        val isAllowed = walletManagerImpl.isWithdrawAllowed(VALID.WALLET, BigDecimal.valueOf(0.5))
+        val isAllowed = walletManagerImpl.isWithdrawAllowed(VALID.WALLET, BigDecimal.valueOf(5))
 
         assertThat(isAllowed).isFalse()
     }
@@ -268,59 +255,6 @@ private class WalletManagerTest {
         val isAllowed = walletManagerImpl.isDepositAllowed(VALID.WALLET, BigDecimal.valueOf(0.5))
 
         assertThat(isAllowed).isTrue()
-    }
-
-    @Test
-    fun givenNotExistWallet_whenIsDepositAllowed_thenThrow(): Unit = runBlocking {
-        assertThatThrownBy {
-            runBlocking {
-                walletManagerImpl.isDepositAllowed(VALID.WALLET, BigDecimal.valueOf(0.5))
-            }
-        }.isNotInstanceOf(NullPointerException::class.java)
-    }
-
-    @Test
-    fun givenNoCurrency_whenIsDepositAllowed_thenThrow(): Unit = runBlocking {
-        stubbing(currencyRepository) {
-            on { findBySymbol(anyString()) } doReturn Mono.empty()
-            on { findById(anyString()) } doReturn Mono.empty()
-        }
-
-        assertThatThrownBy {
-            runBlocking {
-                walletManagerImpl.isDepositAllowed(
-                    VALID.WALLET,
-                    BigDecimal.valueOf(0.5)
-                )
-            }
-        }.isNotInstanceOf(NullPointerException::class.java)
-    }
-
-    @Test
-    fun givenEmptyWallet_whenIsDepositAllowed_thenFalse(): Unit = runBlocking {
-        stubNoWalletLimit(VALID.ACTION_DEPOSIT)
-
-        val isAllowed = runBlocking { walletManagerImpl.isDepositAllowed(VALID.WALLET, BigDecimal.valueOf(0.5)) }
-
-        verify(walletLimitsRepository, never()).findByOwnerAndCurrencyAndWalletAndAction(
-            VALID.WALLET_OWNER.id!!,
-            VALID.CURRENCY.symbol,
-            VALID.WALLET.id!!,
-            VALID.ACTION_DEPOSIT
-        )
-        verify(walletLimitsRepository, never()).findByOwnerAndCurrencyAndActionAndWalletType(
-            VALID.WALLET_OWNER.id!!,
-            VALID.CURRENCY.symbol,
-            VALID.ACTION_DEPOSIT,
-            VALID.WALLET_TYPE_MAIN
-        )
-        verify(walletLimitsRepository, never()).findByLevelAndCurrencyAndActionAndWalletType(
-            VALID.USER_LEVEL_REGISTERED,
-            VALID.CURRENCY.symbol,
-            VALID.ACTION_DEPOSIT,
-            VALID.WALLET_TYPE_MAIN
-        )
-        assertThat(isAllowed).isFalse()
     }
 
     @Test
@@ -376,15 +310,6 @@ private class WalletManagerTest {
     }
 
     @Test
-    fun givenEmptyWalletWithNoLimit_whenIsDepositAllowed_thenReturnFalse(): Unit = runBlocking {
-        stubNoWalletLimit(VALID.ACTION_DEPOSIT)
-
-        val isAllowed = walletManagerImpl.isDepositAllowed(VALID.WALLET, BigDecimal.valueOf(0.5))
-
-        assertThat(isAllowed).isFalse()
-    }
-
-    @Test
     fun givenWallet_whenFindWalletByOwnerAndCurrencyAndType_thenReturnWallet(): Unit = runBlocking {
         stubbing(walletOwnerRepository) {
             on { findById(VALID.WALLET_OWNER.id!!) } doReturn Mono.just(VALID.WALLET_OWNER.toModel())
@@ -420,7 +345,7 @@ private class WalletManagerTest {
     fun givenEmptyWalletWithNoLimit_whenCreateWallet_thenReturnWallet(): Unit = runBlocking {
         stubbing(walletRepository) {
             on {
-                save(VALID.WALLET.toModel())
+                save(VALID.WALLET.copy(id = null).toModel())
             } doReturn Mono.just(VALID.WALLET.toModel())
         }
 
@@ -441,18 +366,18 @@ private class WalletManagerTest {
     fun givenWallet_whenIncreaseBalance_thenSuccess(): Unit = runBlocking {
         stubbing(walletRepository) {
             on {
-                updateBalance(eq(20), any())
+                updateBalance(eq(VALID.WALLET.id!!), eq(BigDecimal.valueOf(1)))
             } doReturn Mono.just(1)
         }
 
-        assertThatThrownBy {
+        assertThatNoException().isThrownBy {
             runBlocking {
                 walletManagerImpl.increaseBalance(
                     VALID.WALLET,
                     BigDecimal.valueOf(1)
                 )
             }
-        }.doesNotThrowAnyException()
+        }
     }
 
     @Test
@@ -497,14 +422,14 @@ private class WalletManagerTest {
             on { updateBalance(eq(VALID.WALLET.id!!), eq(BigDecimal.valueOf(-1))) } doReturn Mono.just(1)
         }
 
-        assertThatThrownBy {
+        assertThatNoException().isThrownBy {
             runBlocking {
                 walletManagerImpl.decreaseBalance(
                     VALID.WALLET,
                     BigDecimal.valueOf(1)
                 )
             }
-        }.doesNotThrowAnyException()
+        }
     }
 
     @Test
@@ -559,11 +484,11 @@ private class WalletManagerTest {
             } doReturn Mono.just(VALID.CURRENCY.toModel())
         }
 
-        val wallet = walletManagerImpl.findWalletById(20)
+        val wallet = walletManagerImpl.findWalletById(VALID.WALLET.id!!)
 
         assertThat(wallet).isNotNull
-        assertThat(wallet!!.id).isEqualTo(20)
-        assertThat(wallet.balance).isEqualTo(Amount(VALID.CURRENCY, BigDecimal.valueOf(0.5)))
+        assertThat(wallet!!.id).isEqualTo(VALID.WALLET.id)
+        assertThat(wallet.balance).isEqualTo(VALID.WALLET.balance)
         assertThat(wallet.currency.symbol).isEqualTo(VALID.CURRENCY.symbol)
     }
 }

@@ -30,11 +30,11 @@ class WalletManagerImpl(
         ).awaitFirstOrNull()
         if (limit == null) {
             limit = walletLimitsRepository.findByOwnerAndCurrencyAndActionAndWalletType(
-                wallet.owner.id!!, wallet.currency.symbol, wallet.type, "deposit"
+                wallet.owner.id!!, wallet.currency.symbol, "deposit", wallet.type
             ).awaitFirstOrNull()
             if (limit == null) {
                 limit = walletLimitsRepository.findByLevelAndCurrencyAndActionAndWalletType(
-                    wallet.owner.level, wallet.currency.symbol, wallet.type, "deposit"
+                    wallet.owner.level, wallet.currency.symbol, "deposit", wallet.type
                 ).awaitFirstOrNull()
             }
         }
@@ -45,9 +45,11 @@ class WalletManagerImpl(
                     wallet.owner.id!!, wallet.id!!, LocalDateTime.now().minusDays(1)
                         .withHour(0).withMinute(0).withSecond(0), LocalDateTime.now()
                 ).awaitFirstOrNull()
-                if (ts != null) {
-                    evaluate = (limit.dailyCount != null && ts.cnt!! >= limit.dailyCount!!)
-                            || (limit.dailyTotal != null && ts.total!! >= limit.dailyTotal)
+                evaluate = if (ts != null) {
+                    ((limit.dailyCount != null && ts.cnt!! >= limit.dailyCount!!)
+                            || (limit.dailyTotal != null && ts.total!! >= limit.dailyTotal))
+                } else {
+                    limit.dailyTotal?.let { it >= amount } ?: true
                 }
             }
 
@@ -57,9 +59,11 @@ class WalletManagerImpl(
                         .withDayOfMonth(1)
                         .withHour(0).withMinute(0).withSecond(0), LocalDateTime.now()
                 ).awaitFirstOrNull()
-                if (ts != null) {
-                    evaluate = (limit.dailyCount != null && ts.cnt!! >= limit.dailyCount!!)
-                            || (limit.dailyTotal != null && ts.total!! >= limit.dailyTotal)
+                evaluate = if (ts != null) {
+                    ((limit.dailyCount != null && ts.cnt!! >= limit.dailyCount!!)
+                            || (limit.dailyTotal != null && ts.total!! >= limit.dailyTotal))
+                } else {
+                    limit.dailyTotal?.let { it >= amount } ?: true
                 }
             }
         }
@@ -67,18 +71,20 @@ class WalletManagerImpl(
     }
 
     override suspend fun isWithdrawAllowed(wallet: Wallet, amount: BigDecimal): Boolean {
+        require(amount >= BigDecimal.ZERO)
         var evaluate = wallet.balance.amount >= amount
+        if (!evaluate) return false
         if (evaluate) {
             var limit = walletLimitsRepository.findByOwnerAndCurrencyAndWalletAndAction(
                 wallet.owner.id!!, wallet.currency.symbol, wallet.id!!, "withdraw"
             ).awaitFirstOrNull()
             if (limit == null) {
                 limit = walletLimitsRepository.findByOwnerAndCurrencyAndActionAndWalletType(
-                    wallet.owner.id!!, wallet.currency.symbol, wallet.type, "withdraw"
+                    wallet.owner.id!!, wallet.currency.symbol, "withdraw", wallet.type
                 ).awaitFirstOrNull()
                 if (limit == null) {
                     limit = walletLimitsRepository.findByLevelAndCurrencyAndActionAndWalletType(
-                        wallet.owner.level, wallet.currency.symbol, wallet.type, "withdraw"
+                        wallet.owner.level, wallet.currency.symbol, "withdraw", wallet.type
                     ).awaitFirstOrNull()
                 }
             }
@@ -112,11 +118,15 @@ class WalletManagerImpl(
     }
 
     override suspend fun increaseBalance(wallet: Wallet, amount: BigDecimal) {
-        walletRepository.updateBalance(wallet.id!!, amount).awaitFirst()
+        require(amount >= BigDecimal.ZERO)
+        val updateCount = walletRepository.updateBalance(wallet.id!!, amount).awaitFirst()
+        assert(updateCount == 1) { "Decrease wallet balance failed" }
     }
 
     override suspend fun decreaseBalance(wallet: Wallet, amount: BigDecimal) {
-        walletRepository.updateBalance(wallet.id!!, -amount).awaitFirst()
+        require(amount >= BigDecimal.ZERO)
+        val updateCount = walletRepository.updateBalance(wallet.id!!, -amount).awaitFirst()
+        assert(updateCount == 1) { "Decrease wallet balance failed" }
     }
 
     override suspend fun findWalletByOwnerAndCurrencyAndType(

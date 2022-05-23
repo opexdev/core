@@ -247,8 +247,18 @@ private class TransferServiceTest {
         stubbing(walletManager) {
             onBlocking { isWithdrawAllowed(any(), eq(VALID.TRANSFER_COMMAND.amount.amount)) } doReturn true
             onBlocking { isDepositAllowed(any(), eq(VALID.TRANSFER_COMMAND.amount.amount)) } doReturn true
-            onBlocking { decreaseBalance(any(), eq(VALID.TRANSFER_COMMAND.amount.amount)) } doReturn Unit
-            onBlocking { increaseBalance(any(), eq(VALID.TRANSFER_COMMAND.amount.amount)) } doReturn Unit
+            onBlocking {
+                decreaseBalance(
+                    any(),
+                    eq(VALID.TRANSFER_COMMAND.amount.amount)
+                )
+            } doThrow IllegalStateException()
+            onBlocking {
+                increaseBalance(
+                    any(),
+                    eq(VALID.TRANSFER_COMMAND.amount.amount)
+                )
+            } doThrow IllegalStateException()
             onBlocking { findWalletById(1L) } doReturn null
         }
         stubbing(walletListener) {

@@ -19,6 +19,7 @@ import kotlinx.coroutines.reactive.awaitFirstOrDefault
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Service
@@ -32,24 +33,25 @@ class WalletOwnerManagerImpl(
     val logger = LoggerFactory.getLogger(WalletOwnerManager::class.java)
 
     override suspend fun isDepositAllowed(owner: WalletOwner, amount: Amount): Boolean {
-        var evaluate: Boolean? = limitsRepository.findByOwnerAndAction(
+        require(amount.amount >= BigDecimal.ZERO)
+        var evaluate: Boolean = limitsRepository.findByOwnerAndAction(
             owner.id!!,
             "deposit"
         ).map { limit ->
-            evaluateLimit(limit, owner, true)
+            evaluateLimit(amount.amount, limit, owner, true)
         }.onEmpty {
             emit(true)
         }
             .reduce { a, b ->
                 a && b
             }
-        if (evaluate == null) {
+        if (evaluate) {
             evaluate = limitsRepository.findByLevelAndAction(
                 owner.level,
                 "deposit"
             )
                 .map { limit ->
-                    evaluateLimit(limit, owner, true)
+                    evaluateLimit(amount.amount, limit, owner, true)
                 }.onEmpty {
                     emit(true)
                 }.reduce { a, b ->
@@ -61,6 +63,7 @@ class WalletOwnerManagerImpl(
     }
 
     private suspend fun evaluateLimit(
+        amount: BigDecimal,
         limit: UserLimitsModel?,
         owner: WalletOwner,
         deposit: Boolean
@@ -82,9 +85,11 @@ class WalletOwnerManagerImpl(
                             .withHour(0).withMinute(0).withSecond(0), LocalDateTime.now(), mainCurrency
                     )
                 }.awaitFirstOrNull()
-                if (ts != null) {
-                    evaluate = !((limit.dailyCount != null && ts.cnt!! >= limit.dailyCount)
+                evaluate = if (ts != null) {
+                    !((limit.dailyCount != null && ts.cnt!! >= limit.dailyCount)
                             || (limit.dailyTotal != null && ts.total!! >= limit.dailyTotal))
+                } else {
+                    limit.dailyTotal?.let { it >= amount } ?: true
                 }
             }
             if (evaluate) {
@@ -100,9 +105,11 @@ class WalletOwnerManagerImpl(
                                 .withHour(0).withMinute(0).withSecond(0), LocalDateTime.now(), mainCurrency
                         )
                     }.awaitFirstOrNull()
-                    if (ts != null) {
-                        evaluate = !((limit.monthlyCount != null && ts.cnt!! >= limit.monthlyCount)
+                    evaluate = if (ts != null) {
+                        !((limit.monthlyCount != null && ts.cnt!! >= limit.monthlyCount)
                                 || (limit.monthlyTotal != null && ts.total!! >= limit.monthlyTotal))
+                    } else {
+                        limit.monthlyTotal?.let { it >= amount } ?: true
                     }
                 }
             }
@@ -111,24 +118,25 @@ class WalletOwnerManagerImpl(
     }
 
     override suspend fun isWithdrawAllowed(owner: WalletOwner, amount: Amount): Boolean {
-        var evaluate: Boolean? = limitsRepository.findByOwnerAndAction(
+        require(amount.amount >= BigDecimal.ZERO)
+        var evaluate: Boolean = limitsRepository.findByOwnerAndAction(
             owner.id!!,
             "withdraw"
         )
             .map { limit ->
-                evaluateLimit(limit, owner, false)
+                evaluateLimit(amount.amount, limit, owner, false)
             }.onEmpty {
                 emit(true)
             }.reduce { a, b ->
                 a && b
             }
-        if (evaluate == null) {
+        if (evaluate) {
             evaluate = limitsRepository.findByLevelAndAction(
                 owner.level,
                 "withdraw"
             )
                 .map { limit ->
-                    evaluateLimit(limit, owner, false)
+                    evaluateLimit(amount.amount, limit, owner, false)
                 }.onEmpty {
                     emit(true)
                 }.reduce { a, b ->
