@@ -1,10 +1,10 @@
 package co.nilin.opex.wallet.core.service.sample
 
-import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.model.Wallet
 import co.nilin.opex.wallet.core.model.WalletOwner
+import co.nilin.opex.wallet.ports.postgres.model.UserLimitsModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletLimitsModel
 import java.math.BigDecimal
 
@@ -56,4 +56,19 @@ object VALID {
     )
 
     val WALLET_LIMITS_MODEL_DEPOSIT = WALLET_LIMITS_MODEL_WITHDRAW.copy(action = ACTION_DEPOSIT)
+
+
+    val USER_LIMITS_MODEL_WITHDRAW = UserLimitsModel(
+        1,
+        USER_LEVEL_REGISTERED,
+        SOURCE_WALLET_OWNER.id,
+        ACTION_WITHDRAW,
+        WALLET_TYPE_MAIN,
+        BigDecimal.valueOf(100),
+        10,
+        BigDecimal.valueOf(3000),
+        300
+    )
+
+    val USER_LIMITS_MODEL_DEPOSIT = USER_LIMITS_MODEL_WITHDRAW.copy(action = ACTION_DEPOSIT)
 }

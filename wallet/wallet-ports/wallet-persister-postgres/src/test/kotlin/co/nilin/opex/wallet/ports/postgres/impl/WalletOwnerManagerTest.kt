@@ -1,14 +1,12 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.wallet.core.model.Amount
-import co.nilin.opex.wallet.core.model.Currency
-import co.nilin.opex.wallet.core.model.WalletOwner
+import co.nilin.opex.wallet.core.service.sample.VALID
 import co.nilin.opex.wallet.ports.postgres.dao.TransactionRepository
 import co.nilin.opex.wallet.ports.postgres.dao.UserLimitsRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletConfigRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletOwnerRepository
 import co.nilin.opex.wallet.ports.postgres.dto.toModel
-import co.nilin.opex.wallet.ports.postgres.model.UserLimitsModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletConfigModel
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
@@ -31,30 +29,16 @@ private class WalletOwnerManagerTest {
         userLimitsRepository, transactionRepository, walletConfigRepository, walletOwnerRepository
     )
 
-    private val walletOwner = WalletOwner(
-        2L,
-        "fdf453d7-0633-4ec7-852d-a18148c99a82",
-        "wallet",
-        "1",
-        true,
-        true,
-        true
-    )
-
-    private val currency = Currency(
-        "ETH",
-        "Ethereum",
-        BigDecimal.valueOf(0.0001)
-    )
+    private fun stubNoUserLimit(action: String) = stubbing(userLimitsRepository) {
+        on { findByOwnerAndAction(VALID.SOURCE_WALLET_OWNER.id!!, action) } doReturn flow { }
+        on { findByLevelAndAction(eq(VALID.USER_LEVEL_REGISTERED), eq(action)) } doReturn flow {}
+    }
 
     @Test
     fun givenOwnerWithNoLimit_whenIsWithdrawAllowed_thenReturnTrue(): Unit = runBlocking {
-        stubbing(userLimitsRepository) {
-            on { findByOwnerAndAction(walletOwner.id!!, "withdraw") } doReturn flow { }
-            on { findByLevelAndAction(eq("1"), eq("withdraw")) } doReturn flow {}
-        }
+        stubNoUserLimit(VALID.ACTION_WITHDRAW)
         stubbing(walletConfigRepository) {
-            on { findAll() } doReturn Flux.just(WalletConfigModel("default", "ETH"))
+            on { findAll() } doReturn Flux.just(WalletConfigModel("default", VALID.CURRENCY.symbol))
         }
         stubbing(transactionRepository) {
             on {
@@ -62,19 +46,19 @@ private class WalletOwnerManagerTest {
             } doReturn Mono.empty()
         }
 
-        val isAllowed = walletOwnerManagerImpl.isWithdrawAllowed(walletOwner, Amount(currency, BigDecimal.valueOf(0.5)))
+        val isAllowed = walletOwnerManagerImpl.isWithdrawAllowed(
+            VALID.SOURCE_WALLET_OWNER,
+            Amount(VALID.CURRENCY, BigDecimal.valueOf(0.5))
+        )
 
         assertThat(isAllowed).isTrue()
     }
 
     @Test
     fun givenNoLimit_whenIsWithdrawAllowed_thenReturnFalse(): Unit = runBlocking {
-        stubbing(userLimitsRepository) {
-            on { findByOwnerAndAction(walletOwner.id!!, "withdraw") } doReturn flow { }
-            on { findByLevelAndAction(eq("1"), eq("withdraw")) } doReturn flow {}
-        }
+        stubNoUserLimit(VALID.ACTION_WITHDRAW)
         stubbing(walletConfigRepository) {
-            on { findAll() } doReturn Flux.just(WalletConfigModel("default", "ETH"))
+            on { findAll() } doReturn Flux.just(WalletConfigModel("default", VALID.CURRENCY.symbol))
         }
         stubbing(transactionRepository) {
             on {
@@ -85,8 +69,8 @@ private class WalletOwnerManagerTest {
         assertThatThrownBy {
             runBlocking {
                 walletOwnerManagerImpl.isWithdrawAllowed(
-                    walletOwner,
-                    Amount(currency, BigDecimal.valueOf(-5))
+                    VALID.SOURCE_WALLET_OWNER,
+                    Amount(VALID.CURRENCY, BigDecimal.valueOf(-5))
                 )
             }
         }.isNotInstanceOf(NullPointerException::class.java)
@@ -95,25 +79,13 @@ private class WalletOwnerManagerTest {
     @Test
     fun givenOwnerWithLimit_whenIsWithdrawAllowedWithInvalidAmount_thenReturnFalse(): Unit = runBlocking {
         stubbing(userLimitsRepository) {
-            on { findByOwnerAndAction(walletOwner.id!!, "withdraw") } doReturn flow {
-                emit(
-                    UserLimitsModel(
-                        1,
-                        null,
-                        walletOwner.id,
-                        "withdraw",
-                        "main",
-                        BigDecimal.valueOf(100),
-                        10,
-                        BigDecimal.valueOf(3000),
-                        300
-                    )
-                )
+            on { findByOwnerAndAction(VALID.SOURCE_WALLET_OWNER.id!!, "withdraw") } doReturn flow {
+                emit(VALID.USER_LIMITS_MODEL_WITHDRAW)
             }
             on { findByLevelAndAction(eq("1"), eq("withdraw")) } doReturn flow { }
         }
         stubbing(walletConfigRepository) {
-            on { findAll() } doReturn Flux.just(WalletConfigModel("default", "ETH"))
+            on { findAll() } doReturn Flux.just(WalletConfigModel("default", VALID.CURRENCY.symbol))
         }
         stubbing(transactionRepository) {
             on {
@@ -122,7 +94,10 @@ private class WalletOwnerManagerTest {
         }
 
         val isAllowed =
-            walletOwnerManagerImpl.isWithdrawAllowed(walletOwner, Amount(currency, BigDecimal.valueOf(120)))
+            walletOwnerManagerImpl.isWithdrawAllowed(
+                VALID.SOURCE_WALLET_OWNER,
+                Amount(VALID.CURRENCY, BigDecimal.valueOf(120))
+            )
 
         assertThat(isAllowed).isFalse()
     }
@@ -130,25 +105,13 @@ private class WalletOwnerManagerTest {
     @Test
     fun givenLevelWithLimit_whenIsWithdrawAllowedInvalidAmount_thenReturnFalse(): Unit = runBlocking {
         stubbing(userLimitsRepository) {
-            on { findByOwnerAndAction(walletOwner.id!!, "withdraw") } doReturn flow { }
-            on { findByLevelAndAction(eq("1"), eq("withdraw")) } doReturn flow {
-                emit(
-                    UserLimitsModel(
-                        1,
-                        "1",
-                        null,
-                        "withdraw",
-                        "main",
-                        BigDecimal.valueOf(100),
-                        10,
-                        BigDecimal.valueOf(3000),
-                        300
-                    )
-                )
+            on { findByOwnerAndAction(VALID.SOURCE_WALLET_OWNER.id!!, VALID.ACTION_WITHDRAW) } doReturn flow { }
+            on { findByLevelAndAction(eq(VALID.USER_LEVEL_REGISTERED), eq(VALID.ACTION_WITHDRAW)) } doReturn flow {
+                emit(VALID.USER_LIMITS_MODEL_WITHDRAW)
             }
         }
         stubbing(walletConfigRepository) {
-            on { findAll() } doReturn Flux.just(WalletConfigModel("default", "ETH"))
+            on { findAll() } doReturn Flux.just(WalletConfigModel("default", VALID.CURRENCY.symbol))
         }
         stubbing(transactionRepository) {
             on {
@@ -157,19 +120,19 @@ private class WalletOwnerManagerTest {
         }
 
         val isAllowed =
-            walletOwnerManagerImpl.isWithdrawAllowed(walletOwner, Amount(currency, BigDecimal.valueOf(120)))
+            walletOwnerManagerImpl.isWithdrawAllowed(
+                VALID.SOURCE_WALLET_OWNER,
+                Amount(VALID.CURRENCY, BigDecimal.valueOf(120))
+            )
 
         assertThat(isAllowed).isFalse()
     }
 
     @Test
     fun givenOwnerWithNoLimit_whenIsDepositAllowed_thenReturnTrue(): Unit = runBlocking {
-        stubbing(userLimitsRepository) {
-            on { findByOwnerAndAction(walletOwner.id!!, "deposit") } doReturn flow { }
-            on { findByLevelAndAction(eq("1"), eq("deposit")) } doReturn flow {}
-        }
+        stubNoUserLimit(VALID.ACTION_DEPOSIT)
         stubbing(walletConfigRepository) {
-            on { findAll() } doReturn Flux.just(WalletConfigModel("default", "ETH"))
+            on { findAll() } doReturn Flux.just(WalletConfigModel("default", VALID.CURRENCY.symbol))
         }
         stubbing(transactionRepository) {
             on {
@@ -177,19 +140,19 @@ private class WalletOwnerManagerTest {
             } doReturn Mono.empty()
         }
 
-        val isAllowed = walletOwnerManagerImpl.isDepositAllowed(walletOwner, Amount(currency, BigDecimal.valueOf(0.5)))
+        val isAllowed = walletOwnerManagerImpl.isDepositAllowed(
+            VALID.SOURCE_WALLET_OWNER,
+            Amount(VALID.CURRENCY, BigDecimal.valueOf(0.5))
+        )
 
         assertThat(isAllowed).isTrue()
     }
 
     @Test
     fun givenWrongAmount_whenIsDepositAllowed_thenReturnTrue(): Unit = runBlocking {
-        stubbing(userLimitsRepository) {
-            on { findByOwnerAndAction(walletOwner.id!!, "deposit") } doReturn flow { }
-            on { findByLevelAndAction(eq("1"), eq("deposit")) } doReturn flow {}
-        }
+        stubNoUserLimit(VALID.ACTION_DEPOSIT)
         stubbing(walletConfigRepository) {
-            on { findAll() } doReturn Flux.just(WalletConfigModel("default", "ETH"))
+            on { findAll() } doReturn Flux.just(WalletConfigModel("default", VALID.CURRENCY.symbol))
         }
         stubbing(transactionRepository) {
             on {
@@ -197,7 +160,10 @@ private class WalletOwnerManagerTest {
             } doReturn Mono.empty()
         }
 
-        val isAllowed = walletOwnerManagerImpl.isDepositAllowed(walletOwner, Amount(currency, BigDecimal.valueOf(-5)))
+        val isAllowed = walletOwnerManagerImpl.isDepositAllowed(
+            VALID.SOURCE_WALLET_OWNER,
+            Amount(VALID.CURRENCY, BigDecimal.valueOf(-5))
+        )
 
         assertThat(isAllowed).isTrue()
     }
@@ -205,25 +171,13 @@ private class WalletOwnerManagerTest {
     @Test
     fun givenOwnerWithLimit_whenIsDepositAllowedInvalidAmount_thenReturnFalse(): Unit = runBlocking {
         stubbing(userLimitsRepository) {
-            on { findByOwnerAndAction(walletOwner.id!!, "deposit") } doReturn flow {
-                emit(
-                    UserLimitsModel(
-                        1,
-                        null,
-                        walletOwner.id,
-                        "deposit",
-                        "main",
-                        BigDecimal.valueOf(100),
-                        10,
-                        BigDecimal.valueOf(3000),
-                        300
-                    )
-                )
+            on { findByOwnerAndAction(VALID.SOURCE_WALLET_OWNER.id!!, VALID.ACTION_DEPOSIT) } doReturn flow {
+                emit(VALID.USER_LIMITS_MODEL_DEPOSIT)
             }
-            on { findByLevelAndAction(eq("1"), eq("deposit")) } doReturn flow { }
+            on { findByLevelAndAction(eq(VALID.USER_LEVEL_REGISTERED), eq(VALID.ACTION_DEPOSIT)) } doReturn flow { }
         }
         stubbing(walletConfigRepository) {
-            on { findAll() } doReturn Flux.just(WalletConfigModel("default", "ETH"))
+            on { findAll() } doReturn Flux.just(WalletConfigModel("default", VALID.CURRENCY.symbol))
         }
         stubbing(transactionRepository) {
             on {
@@ -232,7 +186,10 @@ private class WalletOwnerManagerTest {
         }
 
         val isAllowed =
-            walletOwnerManagerImpl.isDepositAllowed(walletOwner, Amount(currency, BigDecimal.valueOf(120)))
+            walletOwnerManagerImpl.isDepositAllowed(
+                VALID.SOURCE_WALLET_OWNER,
+                Amount(VALID.CURRENCY, BigDecimal.valueOf(120))
+            )
 
         assertThat(isAllowed).isFalse()
     }
@@ -240,25 +197,13 @@ private class WalletOwnerManagerTest {
     @Test
     fun givenLevelWithLimit_whenIsDepositAllowedInvalidAmount_thenReturnFalse(): Unit = runBlocking {
         stubbing(userLimitsRepository) {
-            on { findByOwnerAndAction(walletOwner.id!!, "deposit") } doReturn flow { }
-            on { findByLevelAndAction(eq("1"), eq("deposit")) } doReturn flow {
-                emit(
-                    UserLimitsModel(
-                        1,
-                        "1",
-                        null,
-                        "deposit",
-                        "main",
-                        BigDecimal.valueOf(100),
-                        10,
-                        BigDecimal.valueOf(3000),
-                        300
-                    )
-                )
+            on { findByOwnerAndAction(VALID.SOURCE_WALLET_OWNER.id!!, VALID.ACTION_DEPOSIT) } doReturn flow { }
+            on { findByLevelAndAction(eq(VALID.USER_LEVEL_REGISTERED), eq(VALID.ACTION_DEPOSIT)) } doReturn flow {
+                emit(VALID.USER_LIMITS_MODEL_DEPOSIT)
             }
         }
         stubbing(walletConfigRepository) {
-            on { findAll() } doReturn Flux.just(WalletConfigModel("default", "ETH"))
+            on { findAll() } doReturn Flux.just(WalletConfigModel("default", VALID.CURRENCY.symbol))
         }
         stubbing(transactionRepository) {
             on {
@@ -267,7 +212,10 @@ private class WalletOwnerManagerTest {
         }
 
         val isAllowed =
-            walletOwnerManagerImpl.isDepositAllowed(walletOwner, Amount(currency, BigDecimal.valueOf(120)))
+            walletOwnerManagerImpl.isDepositAllowed(
+                VALID.SOURCE_WALLET_OWNER,
+                Amount(VALID.CURRENCY, BigDecimal.valueOf(120))
+            )
 
         assertThat(isAllowed).isFalse()
     }
@@ -275,24 +223,28 @@ private class WalletOwnerManagerTest {
     @Test
     fun givenWalletOwner_whenFindWalletOwner_thenReturnWalletOwner(): Unit = runBlocking {
         stubbing(walletOwnerRepository) {
-            on { findByUuid(walletOwner.uuid) } doReturn Mono.just(walletOwner.toModel())
+            on { findByUuid(VALID.SOURCE_WALLET_OWNER.uuid) } doReturn Mono.just(VALID.SOURCE_WALLET_OWNER.toModel())
         }
 
-        val wo = walletOwnerManagerImpl.findWalletOwner(walletOwner.uuid)
+        val wo = walletOwnerManagerImpl.findWalletOwner(VALID.SOURCE_WALLET_OWNER.uuid)
 
-        assertThat(wo!!.id).isEqualTo(walletOwner.id)
-        assertThat(wo.uuid).isEqualTo(walletOwner.uuid)
+        assertThat(wo!!.id).isEqualTo(VALID.SOURCE_WALLET_OWNER.id)
+        assertThat(wo.uuid).isEqualTo(VALID.SOURCE_WALLET_OWNER.uuid)
     }
 
     @Test
     fun givenWalletOwner_whenCreateWalletOwner_thenReturnWalletOwner(): Unit = runBlocking {
         stubbing(walletOwnerRepository) {
-            on { save(any()) } doReturn Mono.just(walletOwner.toModel())
+            on { save(any()) } doReturn Mono.just(VALID.SOURCE_WALLET_OWNER.toModel())
         }
 
-        val wo = walletOwnerManagerImpl.createWalletOwner(walletOwner.uuid, walletOwner.title, walletOwner.level)
+        val wo = walletOwnerManagerImpl.createWalletOwner(
+            VALID.SOURCE_WALLET_OWNER.uuid,
+            VALID.SOURCE_WALLET_OWNER.title,
+            VALID.SOURCE_WALLET_OWNER.level
+        )
 
-        assertThat(wo.id).isEqualTo(walletOwner.id)
-        assertThat(wo.uuid).isEqualTo(walletOwner.uuid)
+        assertThat(wo.id).isEqualTo(VALID.SOURCE_WALLET_OWNER.id)
+        assertThat(wo.uuid).isEqualTo(VALID.SOURCE_WALLET_OWNER.uuid)
     }
 }
