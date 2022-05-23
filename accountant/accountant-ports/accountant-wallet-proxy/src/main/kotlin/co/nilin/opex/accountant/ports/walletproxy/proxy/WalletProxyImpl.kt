@@ -27,7 +27,7 @@ class WalletProxyImpl(
         transferRef: String?
     ) {
         webClient.post()
-            .uri("$walletBaseUrl/transfer/${amount}_$symbol/from/${senderUuid}_$senderWalletType/to/${receiverUuid}_$receiverWalletType?transferRef=$transferRef&description=$description")
+            .uri("$walletBaseUrl/transfer/${amount}_$symbol/from/${senderUuid}_$senderWalletType/to/${receiverUuid}_$receiverWalletType")
             .header("Content-Type", "application/json")
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
