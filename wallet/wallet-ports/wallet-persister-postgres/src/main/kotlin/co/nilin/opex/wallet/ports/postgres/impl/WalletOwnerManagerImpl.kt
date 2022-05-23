@@ -7,6 +7,7 @@ import co.nilin.opex.wallet.ports.postgres.dao.TransactionRepository
 import co.nilin.opex.wallet.ports.postgres.dao.UserLimitsRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletConfigRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletOwnerRepository
+import co.nilin.opex.wallet.ports.postgres.dto.toPlainObject
 import co.nilin.opex.wallet.ports.postgres.model.UserLimitsModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletConfigModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletOwnerModel
@@ -32,7 +33,7 @@ class WalletOwnerManagerImpl(
 
     override suspend fun isDepositAllowed(owner: WalletOwner, amount: Amount): Boolean {
         var evaluate: Boolean? = limitsRepository.findByOwnerAndAction(
-            owner.id()!!,
+            owner.id!!,
             "deposit"
         ).map { limit ->
             evaluateLimit(limit, owner, true)
@@ -44,7 +45,7 @@ class WalletOwnerManagerImpl(
             }
         if (evaluate == null) {
             evaluate = limitsRepository.findByLevelAndAction(
-                owner.level(),
+                owner.level,
                 "deposit"
             )
                 .map { limit ->
@@ -55,7 +56,7 @@ class WalletOwnerManagerImpl(
                     a && b
                 }
         }
-        logger.info("isDepositAllowed: {} {}{} {}", owner.uuid(), amount.amount, amount.currency.getName(), evaluate)
+        logger.info("isDepositAllowed: {} {}{} {}", owner.uuid, amount.amount, amount.currency.name, evaluate)
         return evaluate
     }
 
@@ -72,12 +73,12 @@ class WalletOwnerManagerImpl(
             if (limit.dailyCount != null || limit.dailyTotal != null) {
                 val ts = if (deposit) {
                     transactionRepository.calculateDepositStatisticsBasedOnCurrency(
-                        owner.id()!!, limit.walletType, LocalDateTime.now().minusDays(1)
+                        owner.id!!, limit.walletType, LocalDateTime.now().minusDays(1)
                             .withHour(0).withMinute(0).withSecond(0), LocalDateTime.now(), mainCurrency
                     )
                 } else {
                     transactionRepository.calculateWithdrawStatisticsBasedOnCurrency(
-                        owner.id()!!, limit.walletType, LocalDateTime.now().minusDays(1)
+                        owner.id!!, limit.walletType, LocalDateTime.now().minusDays(1)
                             .withHour(0).withMinute(0).withSecond(0), LocalDateTime.now(), mainCurrency
                     )
                 }.awaitFirstOrNull()
@@ -90,12 +91,12 @@ class WalletOwnerManagerImpl(
                 if (limit.monthlyCount != null || limit.monthlyTotal != null) {
                     val ts = if (deposit) {
                         transactionRepository.calculateDepositStatisticsBasedOnCurrency(
-                            owner.id()!!, limit.walletType, LocalDateTime.now().minusMonths(1).withDayOfMonth(1)
+                            owner.id!!, limit.walletType, LocalDateTime.now().minusMonths(1).withDayOfMonth(1)
                                 .withHour(0).withMinute(0).withSecond(0), LocalDateTime.now(), mainCurrency
                         )
                     } else {
                         transactionRepository.calculateWithdrawStatisticsBasedOnCurrency(
-                            owner.id()!!, limit.walletType, LocalDateTime.now().minusMonths(1).withDayOfMonth(1)
+                            owner.id!!, limit.walletType, LocalDateTime.now().minusMonths(1).withDayOfMonth(1)
                                 .withHour(0).withMinute(0).withSecond(0), LocalDateTime.now(), mainCurrency
                         )
                     }.awaitFirstOrNull()
@@ -109,10 +110,9 @@ class WalletOwnerManagerImpl(
         return evaluate
     }
 
-
     override suspend fun isWithdrawAllowed(owner: WalletOwner, amount: Amount): Boolean {
         var evaluate: Boolean? = limitsRepository.findByOwnerAndAction(
-            owner.id()!!,
+            owner.id!!,
             "withdraw"
         )
             .map { limit ->
@@ -124,7 +124,7 @@ class WalletOwnerManagerImpl(
             }
         if (evaluate == null) {
             evaluate = limitsRepository.findByLevelAndAction(
-                owner.level(),
+                owner.level,
                 "withdraw"
             )
                 .map { limit ->
@@ -135,15 +135,15 @@ class WalletOwnerManagerImpl(
                     a && b
                 }
         }
-        logger.info("isWithdrawAllowed: {} {}{} {}", owner.uuid(), amount.amount, amount.currency.getName(), evaluate)
+        logger.info("isWithdrawAllowed: {} {}{} {}", owner.uuid, amount.amount, amount.currency.name, evaluate)
         return evaluate
     }
 
     override suspend fun findWalletOwner(uuid: String): WalletOwner? {
-        return walletOwnerRepository.findByUuid(uuid).awaitFirstOrNull()
+        return walletOwnerRepository.findByUuid(uuid).awaitFirstOrNull()?.toPlainObject()
     }
 
     override suspend fun createWalletOwner(uuid: String, title: String, userLevel: String): WalletOwner {
-        return walletOwnerRepository.save(WalletOwnerModel(null, uuid, title, userLevel)).awaitFirst()
+        return walletOwnerRepository.save(WalletOwnerModel(null, uuid, title, userLevel)).awaitFirst().toPlainObject()
     }
 }

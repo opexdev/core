@@ -6,7 +6,7 @@ import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
 
 @Table("user_limits")
-class UserLimitsModel(
+data class UserLimitsModel(
     @Id var id: Long?,
     val level: String?,
     val owner: Long?,

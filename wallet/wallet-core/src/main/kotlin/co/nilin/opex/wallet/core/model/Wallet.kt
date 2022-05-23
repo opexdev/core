@@ -1,9 +1,9 @@
 package co.nilin.opex.wallet.core.model
 
-interface Wallet {
-    fun id(): Long?
-    fun owner(): WalletOwner
-    fun balance(): Amount
-    fun currency(): Currency
-    fun type(): String
-}
+data class Wallet(
+    val id: Long?,
+    val owner: WalletOwner,
+    val balance: Amount,
+    val currency: Currency,
+    val type: String
+)

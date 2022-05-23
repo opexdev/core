@@ -9,6 +9,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.stubbing
 import reactor.core.publisher.Mono
+import java.math.BigDecimal
 
 private class CurrencyServiceTest {
     private val currencyRepository: CurrencyRepository = mock { }
@@ -17,14 +18,14 @@ private class CurrencyServiceTest {
     @Test
     fun givenCurrency_whenGetCurrency_thenReturnCurrency(): Unit = runBlocking {
         stubbing(currencyRepository) {
-            on { findBySymbol("ETH") } doReturn Mono.just(CurrencyModel("ETH", "Ethereum", 0.0001))
+            on { findBySymbol("ETH") } doReturn Mono.just(CurrencyModel("ETH", "Ethereum", BigDecimal.valueOf(0.0001)))
         }
         val c = currencyService.getCurrency("ETH")
 
         assertThat(c).isNotNull
-        assertThat(c!!.getSymbol()).isEqualTo("ETH")
-        assertThat(c.getName()).isEqualTo("Ethereum")
-        assertThat(c.getPrecision()).isEqualTo(0.0001)
+        assertThat(c!!.symbol).isEqualTo("ETH")
+        assertThat(c.name).isEqualTo("Ethereum")
+        assertThat(c.precision).isEqualTo(0.0001)
     }
 
     @Test

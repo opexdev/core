@@ -7,6 +7,7 @@ import co.nilin.opex.wallet.ports.postgres.dao.TransactionRepository
 import co.nilin.opex.wallet.ports.postgres.dao.UserLimitsRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletConfigRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletOwnerRepository
+import co.nilin.opex.wallet.ports.postgres.dto.toModel
 import co.nilin.opex.wallet.ports.postgres.model.UserLimitsModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletConfigModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletOwnerModel
@@ -31,26 +32,26 @@ private class WalletOwnerManagerTest {
         userLimitsRepository, transactionRepository, walletConfigRepository, walletOwnerRepository
     )
 
-    private val walletOwner = object : WalletOwner {
-        override fun id() = 2L
-        override fun uuid() = "fdf453d7-0633-4ec7-852d-a18148c99a82"
-        override fun title() = "wallet"
-        override fun level() = "1"
-        override fun isTradeAllowed() = true
-        override fun isWithdrawAllowed() = true
-        override fun isDepositAllowed() = true
-    }
+    private val walletOwner = WalletOwner(
+        2L,
+        "fdf453d7-0633-4ec7-852d-a18148c99a82",
+        "wallet",
+        "1",
+        true,
+        true,
+        true
+    )
 
-    private val currency = object : Currency {
-        override fun getSymbol() = "ETH"
-        override fun getName() = "Ethereum"
-        override fun getPrecision() = 0.0001
-    }
+    private val currency = Currency(
+        "ETH",
+        "Ethereum",
+        BigDecimal.valueOf(0.0001)
+    )
 
     @Test
     fun givenOwnerWithNoLimit_whenIsWithdrawAllowed_thenReturnTrue(): Unit = runBlocking {
         stubbing(userLimitsRepository) {
-            on { findByOwnerAndAction(walletOwner.id(), "withdraw") } doReturn flow { }
+            on { findByOwnerAndAction(walletOwner.id!!, "withdraw") } doReturn flow { }
             on { findByLevelAndAction(eq("1"), eq("withdraw")) } doReturn flow {}
         }
         stubbing(walletConfigRepository) {
@@ -70,7 +71,7 @@ private class WalletOwnerManagerTest {
     @Test
     fun givenNoLimit_whenIsWithdrawAllowed_thenReturnFalse(): Unit = runBlocking {
         stubbing(userLimitsRepository) {
-            on { findByOwnerAndAction(walletOwner.id(), "withdraw") } doReturn flow { }
+            on { findByOwnerAndAction(walletOwner.id!!, "withdraw") } doReturn flow { }
             on { findByLevelAndAction(eq("1"), eq("withdraw")) } doReturn flow {}
         }
         stubbing(walletConfigRepository) {
@@ -95,12 +96,12 @@ private class WalletOwnerManagerTest {
     @Test
     fun givenOwnerWithLimit_whenIsWithdrawAllowedWithInvalidAmount_thenReturnFalse(): Unit = runBlocking {
         stubbing(userLimitsRepository) {
-            on { findByOwnerAndAction(walletOwner.id(), "withdraw") } doReturn flow {
+            on { findByOwnerAndAction(walletOwner.id!!, "withdraw") } doReturn flow {
                 emit(
                     UserLimitsModel(
                         1,
                         null,
-                        walletOwner.id(),
+                        walletOwner.id,
                         "withdraw",
                         "main",
                         BigDecimal.valueOf(100),
@@ -130,7 +131,7 @@ private class WalletOwnerManagerTest {
     @Test
     fun givenLevelWithLimit_whenIsWithdrawAllowedInvalidAmount_thenReturnFalse(): Unit = runBlocking {
         stubbing(userLimitsRepository) {
-            on { findByOwnerAndAction(walletOwner.id(), "withdraw") } doReturn flow { }
+            on { findByOwnerAndAction(walletOwner.id!!, "withdraw") } doReturn flow { }
             on { findByLevelAndAction(eq("1"), eq("withdraw")) } doReturn flow {
                 emit(
                     UserLimitsModel(
@@ -165,7 +166,7 @@ private class WalletOwnerManagerTest {
     @Test
     fun givenOwnerWithNoLimit_whenIsDepositAllowed_thenReturnTrue(): Unit = runBlocking {
         stubbing(userLimitsRepository) {
-            on { findByOwnerAndAction(walletOwner.id(), "deposit") } doReturn flow { }
+            on { findByOwnerAndAction(walletOwner.id!!, "deposit") } doReturn flow { }
             on { findByLevelAndAction(eq("1"), eq("deposit")) } doReturn flow {}
         }
         stubbing(walletConfigRepository) {
@@ -185,7 +186,7 @@ private class WalletOwnerManagerTest {
     @Test
     fun givenWrongAmount_whenIsDepositAllowed_thenReturnTrue(): Unit = runBlocking {
         stubbing(userLimitsRepository) {
-            on { findByOwnerAndAction(walletOwner.id(), "deposit") } doReturn flow { }
+            on { findByOwnerAndAction(walletOwner.id!!, "deposit") } doReturn flow { }
             on { findByLevelAndAction(eq("1"), eq("deposit")) } doReturn flow {}
         }
         stubbing(walletConfigRepository) {
@@ -205,12 +206,12 @@ private class WalletOwnerManagerTest {
     @Test
     fun givenOwnerWithLimit_whenIsDepositAllowedInvalidAmount_thenReturnFalse(): Unit = runBlocking {
         stubbing(userLimitsRepository) {
-            on { findByOwnerAndAction(walletOwner.id(), "deposit") } doReturn flow {
+            on { findByOwnerAndAction(walletOwner.id!!, "deposit") } doReturn flow {
                 emit(
                     UserLimitsModel(
                         1,
                         null,
-                        walletOwner.id(),
+                        walletOwner.id,
                         "deposit",
                         "main",
                         BigDecimal.valueOf(100),
@@ -240,7 +241,7 @@ private class WalletOwnerManagerTest {
     @Test
     fun givenLevelWithLimit_whenIsDepositAllowedInvalidAmount_thenReturnFalse(): Unit = runBlocking {
         stubbing(userLimitsRepository) {
-            on { findByOwnerAndAction(walletOwner.id(), "deposit") } doReturn flow { }
+            on { findByOwnerAndAction(walletOwner.id!!, "deposit") } doReturn flow { }
             on { findByLevelAndAction(eq("1"), eq("deposit")) } doReturn flow {
                 emit(
                     UserLimitsModel(
@@ -275,44 +276,24 @@ private class WalletOwnerManagerTest {
     @Test
     fun givenWalletOwner_whenFindWalletOwner_thenReturnWalletOwner(): Unit = runBlocking {
         stubbing(walletOwnerRepository) {
-            on { findByUuid(walletOwner.uuid()) } doReturn Mono.just(
-                WalletOwnerModel(
-                    walletOwner.id(),
-                    walletOwner.uuid(),
-                    walletOwner.title(),
-                    walletOwner.level(),
-                    walletOwner.isTradeAllowed(),
-                    walletOwner.isWithdrawAllowed(),
-                    walletOwner.isDepositAllowed()
-                )
-            )
+            on { findByUuid(walletOwner.uuid) } doReturn Mono.just(walletOwner.toModel())
         }
 
-        val wo = walletOwnerManagerImpl.findWalletOwner(walletOwner.uuid())
+        val wo = walletOwnerManagerImpl.findWalletOwner(walletOwner.uuid)
 
-        assertThat(wo!!.id()).isEqualTo(walletOwner.id())
-        assertThat(wo.uuid()).isEqualTo(walletOwner.uuid())
+        assertThat(wo!!.id).isEqualTo(walletOwner.id)
+        assertThat(wo.uuid).isEqualTo(walletOwner.uuid)
     }
 
     @Test
     fun givenWalletOwner_whenCreateWalletOwner_thenReturnWalletOwner(): Unit = runBlocking {
         stubbing(walletOwnerRepository) {
-            on { save(any()) } doReturn Mono.just(
-                WalletOwnerModel(
-                    walletOwner.id(),
-                    walletOwner.uuid(),
-                    walletOwner.title(),
-                    walletOwner.level(),
-                    walletOwner.isTradeAllowed(),
-                    walletOwner.isWithdrawAllowed(),
-                    walletOwner.isDepositAllowed()
-                )
-            )
+            on { save(any()) } doReturn Mono.just(walletOwner.toModel())
         }
 
-        val wo = walletOwnerManagerImpl.createWalletOwner(walletOwner.uuid(), walletOwner.title(), walletOwner.level())
+        val wo = walletOwnerManagerImpl.createWalletOwner(walletOwner.uuid, walletOwner.title, walletOwner.level)
 
-        assertThat(wo.id()).isEqualTo(walletOwner.id())
-        assertThat(wo.uuid()).isEqualTo(walletOwner.uuid())
+        assertThat(wo.id).isEqualTo(walletOwner.id)
+        assertThat(wo.uuid).isEqualTo(walletOwner.uuid)
     }
 }

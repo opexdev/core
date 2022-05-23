@@ -59,7 +59,7 @@ class PaymentGatewayController(
             TransferCommand(
                 sourceWallet,
                 receiverWallet,
-                Amount(sourceWallet.currency(), convertedAmount.toBigDecimal()),
+                Amount(sourceWallet.currency, convertedAmount.toBigDecimal()),
                 request.description,
                 request.reference,
                 emptyMap()

@@ -7,7 +7,7 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Table("withdraws")
-class WithdrawModel(
+data class WithdrawModel(
     @Id var id: Long?,
     @Column("uuid") val ownerUuid: String,
     @Column("wallet") val wallet: Long,

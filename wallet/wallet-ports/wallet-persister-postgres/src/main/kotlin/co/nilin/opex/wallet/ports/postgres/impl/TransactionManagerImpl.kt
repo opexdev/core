@@ -18,8 +18,8 @@ class TransactionManagerImpl(val transactionRepository: TransactionRepository) :
         return transactionRepository.save(
             TransactionModel(
                 null,
-                transaction.sourceWallet.id()!!,
-                transaction.destWallet.id()!!,
+                transaction.sourceWallet.id!!,
+                transaction.destWallet.id!!,
                 transaction.sourceAmount,
                 transaction.destAmount,
                 transaction.description,

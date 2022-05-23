@@ -5,6 +5,7 @@ import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.model.Wallet
 import co.nilin.opex.wallet.core.model.WalletOwner
 import co.nilin.opex.wallet.ports.postgres.dao.*
+import co.nilin.opex.wallet.ports.postgres.dto.toModel
 import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletLimitsModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletModel
@@ -33,42 +34,42 @@ private class WalletManagerTest {
         walletLimitsRepository, transactionRepository, walletRepository, walletOwnerRepository, currencyRepository
     )
 
-    private val walletOwner = object : WalletOwner {
-        override fun id() = 2L
-        override fun uuid() = "fdf453d7-0633-4ec7-852d-a18148c99a82"
-        override fun title() = "wallet"
-        override fun level() = "1"
-        override fun isTradeAllowed() = true
-        override fun isWithdrawAllowed() = true
-        override fun isDepositAllowed() = true
-    }
+    private val walletOwner = WalletOwner(
+        2L,
+        "fdf453d7-0633-4ec7-852d-a18148c99a82",
+        "wallet",
+        "1",
+        true,
+        true,
+        true
+    )
 
-    private val currency = object : Currency {
-        override fun getSymbol() = "ETH"
-        override fun getName() = "Ethereum"
-        override fun getPrecision() = 0.0001
-    }
+    private val currency = Currency(
+        "ETH",
+        "Ethereum",
+        BigDecimal.valueOf(0.0001)
+    )
 
     @Test
     fun givenWalletWithNoLimit_whenIsWithdrawAllowed_thenReturnTrue(): Unit = runBlocking {
         stubbing(walletLimitsRepository) {
             on {
-                findByOwnerAndCurrencyAndWalletAndAction(walletOwner.id(), "ETH", 20, "withdraw")
+                findByOwnerAndCurrencyAndWalletAndAction(walletOwner.id!!, "ETH", 20, "withdraw")
             } doReturn Mono.empty()
             on {
-                findByOwnerAndCurrencyAndActionAndWalletType(walletOwner.id(), "ETH", "withdraw", "main")
+                findByOwnerAndCurrencyAndActionAndWalletType(walletOwner.id!!, "ETH", "withdraw", "main")
             } doReturn Mono.empty()
             on {
                 findByLevelAndCurrencyAndActionAndWalletType("1", "ETH", "withdraw", "main")
             } doReturn Mono.empty()
         }
-        val wallet = object : Wallet {
-            override fun id() = 20L
-            override fun owner() = walletOwner
-            override fun balance() = Amount(currency, BigDecimal.valueOf(0.5))
-            override fun currency() = currency
-            override fun type() = "main"
-        }
+        val wallet = Wallet(
+            20L,
+            walletOwner,
+            Amount(currency, BigDecimal.valueOf(0.5)),
+            currency,
+            "main"
+        )
 
         val isAllowed = walletManagerImpl.isWithdrawAllowed(wallet, BigDecimal.valueOf(0.5))
 
@@ -77,13 +78,13 @@ private class WalletManagerTest {
 
     @Test
     fun givenNoWallet_whenIsWithdrawAllowed_thenThrow(): Unit = runBlocking {
-        val wallet = object : Wallet {
-            override fun id() = 20L
-            override fun owner() = walletOwner
-            override fun balance() = Amount(currency, BigDecimal.valueOf(0))
-            override fun currency() = currency
-            override fun type() = "main"
-        }
+        val wallet = Wallet(
+            20L,
+            walletOwner,
+            Amount(currency, BigDecimal.valueOf(0)),
+            currency,
+            "main"
+        )
         stubbing(walletLimitsRepository) {
             on {
                 findByOwnerAndCurrencyAndWalletAndAction(anyLong(), "ETH", anyLong(), "withdraw")
@@ -109,16 +110,16 @@ private class WalletManagerTest {
     @Test
     fun giNoCurrency_whenIsWithdrawAllowed_thenThrow(): Unit = runBlocking {
         stubbing(currencyRepository) {
-            on { findBySymbol(currency.getSymbol()) } doReturn Mono.empty()
-            on { findById(currency.getSymbol()) } doReturn Mono.empty()
+            on { findBySymbol(currency.symbol) } doReturn Mono.empty()
+            on { findById(currency.symbol) } doReturn Mono.empty()
         }
-        val wallet = object : Wallet {
-            override fun id() = 20L
-            override fun owner() = walletOwner
-            override fun balance() = Amount(currency, BigDecimal.valueOf(0))
-            override fun currency() = currency
-            override fun type() = "main"
-        }
+        val wallet = Wallet(
+            20L,
+            walletOwner,
+            Amount(currency, BigDecimal.valueOf(0)),
+            currency,
+            "main"
+        )
 
         assertThatThrownBy {
             runBlocking {
@@ -132,13 +133,13 @@ private class WalletManagerTest {
 
     @Test
     fun givenEmptyWallet_whenIsWithdrawAllowed_thenReturnFalse(): Unit = runBlocking {
-        val wallet = object : Wallet {
-            override fun id() = 20L
-            override fun owner() = walletOwner
-            override fun balance() = Amount(currency, BigDecimal.valueOf(0))
-            override fun currency() = currency
-            override fun type() = "main"
-        }
+        val wallet = Wallet(
+            20L,
+            walletOwner,
+            Amount(currency, BigDecimal.valueOf(0)),
+            currency,
+            "main"
+        )
 
         val isAllowed = walletManagerImpl.isWithdrawAllowed(wallet, BigDecimal.valueOf(0.5))
 
@@ -147,13 +148,13 @@ private class WalletManagerTest {
 
     @Test
     fun givenWrongAmount_whenIsWithdrawAllowed_thenThrow(): Unit = runBlocking {
-        val wallet = object : Wallet {
-            override fun id() = 20L
-            override fun owner() = walletOwner
-            override fun balance() = Amount(currency, BigDecimal.valueOf(0))
-            override fun currency() = currency
-            override fun type() = "main"
-        }
+        val wallet = Wallet(
+            20L,
+            walletOwner,
+            Amount(currency, BigDecimal.valueOf(0)),
+            currency,
+            "main"
+        )
 
         assertThatThrownBy {
             runBlocking {
@@ -192,13 +193,13 @@ private class WalletManagerTest {
                 findByLevelAndCurrencyAndActionAndWalletType("1", "ETH", "withdraw", "main")
             } doReturn Mono.empty()
         }
-        val wallet = object : Wallet {
-            override fun id() = 30L
-            override fun owner() = walletOwner
-            override fun balance() = Amount(currency, BigDecimal.valueOf(5))
-            override fun currency() = currency
-            override fun type() = "main"
-        }
+        val wallet = Wallet(
+            30L,
+            walletOwner,
+            Amount(currency, BigDecimal.valueOf(5)),
+            currency,
+            "main"
+        )
 
         val isAllowed = walletManagerImpl.isWithdrawAllowed(wallet, BigDecimal.valueOf(1))
 
@@ -232,13 +233,13 @@ private class WalletManagerTest {
                 findByLevelAndCurrencyAndActionAndWalletType("1", "ETH", "withdraw", "main")
             } doReturn Mono.empty()
         }
-        val wallet = object : Wallet {
-            override fun id() = 30L
-            override fun owner() = walletOwner
-            override fun balance() = Amount(currency, BigDecimal.valueOf(5))
-            override fun currency() = currency
-            override fun type() = "main"
-        }
+        val wallet = Wallet(
+            30L,
+            walletOwner,
+            Amount(currency, BigDecimal.valueOf(5)),
+            currency,
+            "main"
+        )
 
         val isAllowed = walletManagerImpl.isWithdrawAllowed(wallet, BigDecimal.valueOf(1))
 
@@ -272,13 +273,13 @@ private class WalletManagerTest {
                 )
             )
         }
-        val wallet = object : Wallet {
-            override fun id() = 30L
-            override fun owner() = walletOwner
-            override fun balance() = Amount(currency, BigDecimal.valueOf(5))
-            override fun currency() = currency
-            override fun type() = "main"
-        }
+        val wallet = Wallet(
+            30L,
+            walletOwner,
+            Amount(currency, BigDecimal.valueOf(5)),
+            currency,
+            "main"
+        )
 
         val isAllowed = walletManagerImpl.isWithdrawAllowed(wallet, BigDecimal.valueOf(1))
 
@@ -340,13 +341,13 @@ private class WalletManagerTest {
                 )
             )
         }
-        val wallet = object : Wallet {
-            override fun id() = 30L
-            override fun owner() = walletOwner
-            override fun balance() = Amount(currency, BigDecimal.valueOf(5))
-            override fun currency() = currency
-            override fun type() = "main"
-        }
+        val wallet = Wallet(
+            30L,
+            walletOwner,
+            Amount(currency, BigDecimal.valueOf(5)),
+            currency,
+            "main"
+        )
 
         val isAllowed = walletManagerImpl.isWithdrawAllowed(wallet, BigDecimal.valueOf(1))
 
@@ -408,13 +409,13 @@ private class WalletManagerTest {
                 )
             )
         }
-        val wallet = object : Wallet {
-            override fun id() = 30L
-            override fun owner() = walletOwner
-            override fun balance() = Amount(currency, BigDecimal.valueOf(500))
-            override fun currency() = currency
-            override fun type() = "main"
-        }
+        val wallet = Wallet(
+            30L,
+            walletOwner,
+            Amount(currency, BigDecimal.valueOf(500)),
+            currency,
+            "main"
+        )
 
         val isAllowed = walletManagerImpl.isWithdrawAllowed(wallet, BigDecimal.valueOf(30))
 
@@ -425,22 +426,22 @@ private class WalletManagerTest {
     fun givenEmptyWalletWithNoLimit_whenIsWithdrawAllowed_thenReturnFalse(): Unit = runBlocking {
         stubbing(walletLimitsRepository) {
             on {
-                findByOwnerAndCurrencyAndWalletAndAction(walletOwner.id(), "ETH", 20, "withdraw")
+                findByOwnerAndCurrencyAndWalletAndAction(walletOwner.id!!, "ETH", 20, "withdraw")
             } doReturn Mono.empty()
             on {
-                findByOwnerAndCurrencyAndActionAndWalletType(walletOwner.id(), "ETH", "withdraw", "main")
+                findByOwnerAndCurrencyAndActionAndWalletType(walletOwner.id!!, "ETH", "withdraw", "main")
             } doReturn Mono.empty()
             on {
                 findByLevelAndCurrencyAndActionAndWalletType("1", "ETH", "withdraw", "main")
             } doReturn Mono.empty()
         }
-        val wallet = object : Wallet {
-            override fun id() = 20L
-            override fun owner() = walletOwner
-            override fun balance() = Amount(currency, BigDecimal.valueOf(0))
-            override fun currency() = currency
-            override fun type() = "main"
-        }
+        val wallet = Wallet(
+            20L,
+            walletOwner,
+            Amount(currency, BigDecimal.valueOf(0)),
+            currency,
+            "main"
+        )
 
         val isAllowed = walletManagerImpl.isWithdrawAllowed(wallet, BigDecimal.valueOf(0.5))
 
@@ -451,22 +452,22 @@ private class WalletManagerTest {
     fun givenWalletWithNoLimit_whenIsDepositAllowed_thenReturnTrue(): Unit = runBlocking {
         stubbing(walletLimitsRepository) {
             on {
-                findByOwnerAndCurrencyAndWalletAndAction(walletOwner.id(), "ETH", 20, "deposit")
+                findByOwnerAndCurrencyAndWalletAndAction(walletOwner.id!!, "ETH", 20, "deposit")
             } doReturn Mono.empty()
             on {
-                findByOwnerAndCurrencyAndActionAndWalletType(walletOwner.id(), "ETH", "deposit", "main")
+                findByOwnerAndCurrencyAndActionAndWalletType(walletOwner.id!!, "ETH", "deposit", "main")
             } doReturn Mono.empty()
             on {
                 findByLevelAndCurrencyAndActionAndWalletType("1", "ETH", "deposit", "main")
             } doReturn Mono.empty()
         }
-        val wallet = object : Wallet {
-            override fun id() = 20L
-            override fun owner() = walletOwner
-            override fun balance() = Amount(currency, BigDecimal.valueOf(0.5))
-            override fun currency() = currency
-            override fun type() = "main"
-        }
+        val wallet = Wallet(
+            20L,
+            walletOwner,
+            Amount(currency, BigDecimal.valueOf(0.5)),
+            currency,
+            "main"
+        )
 
         val isAllowed = walletManagerImpl.isDepositAllowed(wallet, BigDecimal.valueOf(0.5))
 
@@ -475,13 +476,13 @@ private class WalletManagerTest {
 
     @Test
     fun givenNotExistWallet_whenIsDepositAllowed_thenThrow(): Unit = runBlocking {
-        val wallet = object : Wallet {
-            override fun id() = 40L
-            override fun owner() = walletOwner
-            override fun balance() = Amount(currency, BigDecimal.valueOf(0))
-            override fun currency() = currency
-            override fun type() = "main"
-        }
+        val wallet = Wallet(
+            40L,
+            walletOwner,
+            Amount(currency, BigDecimal.valueOf(0)),
+            currency,
+            "main"
+        )
 
         assertThatThrownBy {
             runBlocking {
@@ -495,13 +496,13 @@ private class WalletManagerTest {
 
     @Test
     fun givenNoCurrency_whenIsDepositAllowed_thenThrow(): Unit = runBlocking {
-        val wallet = object : Wallet {
-            override fun id() = 20L
-            override fun owner() = walletOwner
-            override fun balance() = Amount(currency, BigDecimal.valueOf(0))
-            override fun currency() = currency
-            override fun type() = "main"
-        }
+        val wallet = Wallet(
+            20L,
+            walletOwner,
+            Amount(currency, BigDecimal.valueOf(0)),
+            currency,
+            "main"
+        )
         stubbing(currencyRepository) {
             on { findBySymbol(anyString()) } doReturn Mono.empty()
             on { findById(anyString()) } doReturn Mono.empty()
@@ -521,33 +522,33 @@ private class WalletManagerTest {
     fun givenEmptyWallet_whenIsDepositAllowed_thenFalse(): Unit = runBlocking {
         stubbing(walletLimitsRepository) {
             on {
-                findByOwnerAndCurrencyAndWalletAndAction(walletOwner.id(), "ETH", 20, "withdraw")
+                findByOwnerAndCurrencyAndWalletAndAction(walletOwner.id!!, "ETH", 20, "withdraw")
             } doReturn Mono.empty()
             on {
-                findByOwnerAndCurrencyAndActionAndWalletType(walletOwner.id(), "ETH", "withdraw", "main")
+                findByOwnerAndCurrencyAndActionAndWalletType(walletOwner.id!!, "ETH", "withdraw", "main")
             } doReturn Mono.empty()
             on {
                 findByLevelAndCurrencyAndActionAndWalletType("1", "ETH", "withdraw", "main")
             } doReturn Mono.empty()
         }
-        val wallet = object : Wallet {
-            override fun id() = 20L
-            override fun owner() = walletOwner
-            override fun balance() = Amount(currency, BigDecimal.valueOf(0))
-            override fun currency() = currency
-            override fun type() = "main"
-        }
+        val wallet = Wallet(
+            20L,
+            walletOwner,
+            Amount(currency, BigDecimal.valueOf(0)),
+            currency,
+            "main"
+        )
 
         val isAllowed = runBlocking { walletManagerImpl.isDepositAllowed(wallet, BigDecimal.valueOf(0.5)) }
 
         verify(walletLimitsRepository, never()).findByOwnerAndCurrencyAndWalletAndAction(
-            walletOwner.id(),
+            walletOwner.id!!,
             "ETH",
             20,
             "withdraw"
         )
         verify(walletLimitsRepository, never()).findByOwnerAndCurrencyAndActionAndWalletType(
-            walletOwner.id(),
+            walletOwner.id!!,
             "ETH",
             "withdraw",
             "main"
@@ -563,13 +564,13 @@ private class WalletManagerTest {
 
     @Test
     fun givenWrongAmount_whenIsDepositAllowed_thenThrow(): Unit = runBlocking {
-        val wallet = object : Wallet {
-            override fun id() = 20L
-            override fun owner() = walletOwner
-            override fun balance() = Amount(currency, BigDecimal.valueOf(0))
-            override fun currency() = currency
-            override fun type() = "main"
-        }
+        val wallet = Wallet(
+            20L,
+            walletOwner,
+            Amount(currency, BigDecimal.valueOf(0)),
+            currency,
+            "main"
+        )
 
         assertThatThrownBy { runBlocking { walletManagerImpl.isDepositAllowed(wallet, BigDecimal.valueOf(-1)) } }
     }
@@ -629,13 +630,13 @@ private class WalletManagerTest {
                 )
             )
         }
-        val wallet = object : Wallet {
-            override fun id() = 30L
-            override fun owner() = walletOwner
-            override fun balance() = Amount(currency, BigDecimal.valueOf(5))
-            override fun currency() = currency
-            override fun type() = "main"
-        }
+        val wallet = Wallet(
+            30L,
+            walletOwner,
+            Amount(currency, BigDecimal.valueOf(5)),
+            currency,
+            "main"
+        )
 
         val isAllowed = walletManagerImpl.isDepositAllowed(wallet, BigDecimal.valueOf(1))
 
@@ -697,13 +698,13 @@ private class WalletManagerTest {
                 )
             )
         }
-        val wallet = object : Wallet {
-            override fun id() = 30L
-            override fun owner() = walletOwner
-            override fun balance() = Amount(currency, BigDecimal.valueOf(500))
-            override fun currency() = currency
-            override fun type() = "main"
-        }
+        val wallet = Wallet(
+            30L,
+            walletOwner,
+            Amount(currency, BigDecimal.valueOf(500)),
+            currency,
+            "main"
+        )
 
         val isAllowed = walletManagerImpl.isDepositAllowed(wallet, BigDecimal.valueOf(30))
 
@@ -714,22 +715,22 @@ private class WalletManagerTest {
     fun givenEmptyWalletWithNoLimit_whenIsDepositAllowed_thenReturnFalse(): Unit = runBlocking {
         stubbing(walletLimitsRepository) {
             on {
-                findByOwnerAndCurrencyAndWalletAndAction(walletOwner.id(), "ETH", 20, "deposit")
+                findByOwnerAndCurrencyAndWalletAndAction(walletOwner.id!!, "ETH", 20, "deposit")
             } doReturn Mono.empty()
             on {
-                findByOwnerAndCurrencyAndActionAndWalletType(walletOwner.id(), "ETH", "deposit", "main")
+                findByOwnerAndCurrencyAndActionAndWalletType(walletOwner.id!!, "ETH", "deposit", "main")
             } doReturn Mono.empty()
             on {
                 findByLevelAndCurrencyAndActionAndWalletType("1", "ETH", "deposit", "main")
             } doReturn Mono.empty()
         }
-        val wallet = object : Wallet {
-            override fun id() = 20L
-            override fun owner() = walletOwner
-            override fun balance() = Amount(currency, BigDecimal.valueOf(0))
-            override fun currency() = currency
-            override fun type() = "main"
-        }
+        val wallet = Wallet(
+            20L,
+            walletOwner,
+            Amount(currency, BigDecimal.valueOf(0)),
+            currency,
+            "main"
+        )
 
         val isAllowed = walletManagerImpl.isDepositAllowed(wallet, BigDecimal.valueOf(0.5))
 
@@ -739,62 +740,46 @@ private class WalletManagerTest {
     @Test
     fun givenWallet_whenFindWalletByOwnerAndCurrencyAndType_thenReturnWallet(): Unit = runBlocking {
         stubbing(walletOwnerRepository) {
-            on { findById(walletOwner.id()) } doReturn Mono.just(
-                WalletOwnerModel(
-                    walletOwner.id(),
-                    walletOwner.uuid(),
-                    walletOwner.title(),
-                    walletOwner.level(),
-                    walletOwner.isTradeAllowed(),
-                    walletOwner.isWithdrawAllowed(),
-                    walletOwner.isDepositAllowed()
-                )
-            )
+            on { findById(walletOwner.id!!) } doReturn Mono.just(walletOwner.toModel())
         }
         stubbing(walletRepository) {
             on {
-                findByOwnerAndTypeAndCurrency(walletOwner.id(), "main", currency.getSymbol())
+                findByOwnerAndTypeAndCurrency(walletOwner.id!!, "main", currency.symbol)
             } doReturn Mono.just(
                 WalletModel(
                     20L,
-                    walletOwner.id(),
+                    walletOwner.id!!,
                     "main",
-                    currency.getSymbol(),
+                    currency.symbol,
                     BigDecimal.valueOf(1.2)
                 )
             )
         }
         stubbing(currencyRepository) {
             on {
-                findBySymbol(currency.getSymbol())
-            } doReturn Mono.just(
-                CurrencyModel(
-                    currency.getSymbol(),
-                    currency.getName(),
-                    currency.getPrecision()
-                )
-            )
+                findBySymbol(currency.symbol)
+            } doReturn Mono.just(currency.toModel())
         }
 
         val wallet = walletManagerImpl.findWalletByOwnerAndCurrencyAndType(walletOwner, "main", currency)
 
         assertThat(wallet).isNotNull
-        assertThat(wallet!!.owner().id()).isEqualTo(walletOwner.id())
-        assertThat(wallet.currency().getSymbol()).isEqualTo(currency.getSymbol())
-        assertThat(wallet.type()).isEqualTo("main")
+        assertThat(wallet!!.owner.id).isEqualTo(walletOwner.id)
+        assertThat(wallet.currency.symbol).isEqualTo(currency.symbol)
+        assertThat(wallet.type).isEqualTo("main")
     }
 
     @Test
     fun givenEmptyWalletWithNoLimit_whenCreateWallet_thenReturnWallet(): Unit = runBlocking {
         stubbing(walletRepository) {
             on {
-                save(WalletModel(null, walletOwner.id(), "main", currency.getSymbol(), BigDecimal.valueOf(1)))
+                save(WalletModel(null, walletOwner.id!!, "main", currency.symbol, BigDecimal.valueOf(1)))
             } doReturn Mono.just(
                 WalletModel(
                     20L,
-                    walletOwner.id(),
+                    walletOwner.id!!,
                     "main",
-                    currency.getSymbol(),
+                    currency.symbol,
                     BigDecimal.valueOf(1)
                 )
             )
@@ -808,9 +793,9 @@ private class WalletManagerTest {
         )
 
         assertThat(wallet).isNotNull
-        assertThat(wallet.owner().id()).isEqualTo(walletOwner.id())
-        assertThat(wallet.currency().getSymbol()).isEqualTo(currency.getSymbol())
-        assertThat(wallet.type()).isEqualTo("main")
+        assertThat(wallet.owner.id).isEqualTo(walletOwner.id)
+        assertThat(wallet.currency.symbol).isEqualTo(currency.symbol)
+        assertThat(wallet.type).isEqualTo("main")
     }
 
     @Test
@@ -820,13 +805,13 @@ private class WalletManagerTest {
                 updateBalance(eq(20), any())
             } doReturn Mono.just(1)
         }
-        val wallet = object : Wallet {
-            override fun id() = 20L
-            override fun owner() = walletOwner
-            override fun balance() = Amount(currency, BigDecimal.valueOf(2))
-            override fun currency() = currency
-            override fun type() = "main"
-        }
+        val wallet = Wallet(
+            20L,
+            walletOwner,
+            Amount(currency, BigDecimal.valueOf(2)),
+            currency,
+            "main"
+        )
 
         assertThatThrownBy {
             runBlocking {
@@ -845,13 +830,13 @@ private class WalletManagerTest {
                 updateBalance(any(), eq(BigDecimal.valueOf(1)))
             } doReturn Mono.just(0)
         }
-        val wallet = object : Wallet {
-            override fun id() = 40L
-            override fun owner() = walletOwner
-            override fun balance() = Amount(currency, BigDecimal.valueOf(2))
-            override fun currency() = currency
-            override fun type() = "main"
-        }
+        val wallet = Wallet(
+            40L,
+            walletOwner,
+            Amount(currency, BigDecimal.valueOf(2)),
+            currency,
+            "main"
+        )
 
         assertThatThrownBy {
             runBlocking {
@@ -870,13 +855,13 @@ private class WalletManagerTest {
                 updateBalance(eq(20), any())
             } doReturn Mono.just(0)
         }
-        val wallet = object : Wallet {
-            override fun id() = 20L
-            override fun owner() = walletOwner
-            override fun balance() = Amount(currency, BigDecimal.valueOf(2))
-            override fun currency() = currency
-            override fun type() = "main"
-        }
+        val wallet = Wallet(
+            20L,
+            walletOwner,
+            Amount(currency, BigDecimal.valueOf(2)),
+            currency,
+            "main"
+        )
 
         assertThatThrownBy {
             runBlocking {
@@ -893,13 +878,13 @@ private class WalletManagerTest {
         stubbing(walletRepository) {
             on { updateBalance(eq(20), eq(BigDecimal.valueOf(-1))) } doReturn Mono.just(1)
         }
-        val wallet = object : Wallet {
-            override fun id() = 20L
-            override fun owner() = walletOwner
-            override fun balance() = Amount(currency, BigDecimal.valueOf(2))
-            override fun currency() = currency
-            override fun type() = "main"
-        }
+        val wallet = Wallet(
+            20L,
+            walletOwner,
+            Amount(currency, BigDecimal.valueOf(2)),
+            currency,
+            "main"
+        )
 
         assertThatThrownBy {
             runBlocking {
@@ -918,13 +903,13 @@ private class WalletManagerTest {
                 updateBalance(any(), eq(BigDecimal.valueOf(-1)))
             } doReturn Mono.just(0)
         }
-        val wallet = object : Wallet {
-            override fun id() = 40L
-            override fun owner() = walletOwner
-            override fun balance() = Amount(currency, BigDecimal.valueOf(2))
-            override fun currency() = currency
-            override fun type() = "main"
-        }
+        val wallet = Wallet(
+            40L,
+            walletOwner,
+            Amount(currency, BigDecimal.valueOf(2)),
+            currency,
+            "main"
+        )
 
         assertThatThrownBy {
             runBlocking {
@@ -943,13 +928,13 @@ private class WalletManagerTest {
                 updateBalance(eq(20), eq(BigDecimal.valueOf(-1)))
             } doReturn Mono.just(0)
         }
-        val wallet = object : Wallet {
-            override fun id() = 20L
-            override fun owner() = walletOwner
-            override fun balance() = Amount(currency, BigDecimal.valueOf(2))
-            override fun currency() = currency
-            override fun type() = "main"
-        }
+        val wallet = Wallet(
+            20L,
+            walletOwner,
+            Amount(currency, BigDecimal.valueOf(2)),
+            currency,
+            "main"
+        )
 
         assertThatThrownBy {
             runBlocking {
@@ -967,44 +952,28 @@ private class WalletManagerTest {
             on { findById(20) } doReturn Mono.just(
                 WalletModel(
                     20L,
-                    walletOwner.id(),
+                    walletOwner.id!!,
                     "main",
-                    currency.getSymbol(),
+                    currency.symbol,
                     BigDecimal.valueOf(0.5)
                 )
             )
         }
         stubbing(walletOwnerRepository) {
             on {
-                findById(walletOwner.id())
-            } doReturn Mono.just(
-                WalletOwnerModel(
-                    walletOwner.id(),
-                    walletOwner.uuid(),
-                    walletOwner.title(),
-                    walletOwner.level(),
-                    walletOwner.isTradeAllowed(),
-                    walletOwner.isWithdrawAllowed(),
-                    walletOwner.isDepositAllowed()
-                )
-            )
+                findById(walletOwner.id!!)
+            } doReturn Mono.just(walletOwner.toModel())
         }
         stubbing(currencyRepository) {
             on {
-                findById(currency.getSymbol())
-            } doReturn Mono.just(
-                CurrencyModel(
-                    currency.getSymbol(),
-                    currency.getName(),
-                    currency.getPrecision()
-                )
-            )
+                findById(currency.symbol)
+            } doReturn Mono.just(currency.toModel())
         }
         val wallet = walletManagerImpl.findWalletById(20)
 
         assertThat(wallet).isNotNull
-        assertThat(wallet!!.id()).isEqualTo(20)
-        assertThat(wallet.balance()).isEqualTo(Amount(currency, BigDecimal.valueOf(0.5)))
-        assertThat(wallet.currency().getSymbol()).isEqualTo("ETH")
+        assertThat(wallet!!.id).isEqualTo(20)
+        assertThat(wallet.balance).isEqualTo(Amount(currency, BigDecimal.valueOf(0.5)))
+        assertThat(wallet.currency.symbol).isEqualTo("ETH")
     }
 }

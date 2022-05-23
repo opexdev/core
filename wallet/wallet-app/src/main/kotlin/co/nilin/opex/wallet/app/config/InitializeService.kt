@@ -78,7 +78,7 @@ class InitializeService(
 
     private suspend fun addCurrencies(data: List<Currency>) = coroutineScope {
         data.forEach {
-            currencyRepository.insert(it.name, it.symbol, it.precision.toDouble()).awaitSingleOrNull()
+            currencyRepository.insert(it.name, it.symbol, it.precision).awaitSingleOrNull()
         }
     }
 }
