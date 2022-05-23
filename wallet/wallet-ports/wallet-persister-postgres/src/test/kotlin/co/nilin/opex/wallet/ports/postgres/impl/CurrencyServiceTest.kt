@@ -1,6 +1,8 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
+import co.nilin.opex.wallet.core.service.sample.VALID
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepository
+import co.nilin.opex.wallet.ports.postgres.dto.toModel
 import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
@@ -18,22 +20,24 @@ private class CurrencyServiceTest {
     @Test
     fun givenCurrency_whenGetCurrency_thenReturnCurrency(): Unit = runBlocking {
         stubbing(currencyRepository) {
-            on { findBySymbol("ETH") } doReturn Mono.just(CurrencyModel("ETH", "Ethereum", BigDecimal.valueOf(0.0001)))
+            on { findBySymbol(VALID.CURRENCY.symbol) } doReturn Mono.just(VALID.CURRENCY.toModel())
         }
-        val c = currencyService.getCurrency("ETH")
+
+        val c = currencyService.getCurrency(VALID.CURRENCY.symbol)
 
         assertThat(c).isNotNull
-        assertThat(c!!.symbol).isEqualTo("ETH")
-        assertThat(c.name).isEqualTo("Ethereum")
-        assertThat(c.precision).isEqualTo(0.0001)
+        assertThat(c!!.symbol).isEqualTo(VALID.CURRENCY.symbol)
+        assertThat(c.name).isEqualTo(VALID.CURRENCY.name)
+        assertThat(c.precision).isEqualTo(VALID.CURRENCY.precision)
     }
 
     @Test
     fun givenNoCurrency_whenGetCurrency_thenReturnNull(): Unit = runBlocking {
         stubbing(currencyRepository) {
-            on { findBySymbol("ETH") } doReturn Mono.empty()
+            on { findBySymbol(VALID.CURRENCY.symbol) } doReturn Mono.empty()
         }
-        val c = currencyService.getCurrency("ETH")
+
+        val c = currencyService.getCurrency(VALID.CURRENCY.symbol)
 
         assertThat(c).isNull()
     }
@@ -43,6 +47,7 @@ private class CurrencyServiceTest {
         stubbing(currencyRepository) {
             on { findBySymbol("") } doReturn Mono.empty()
         }
+
         val c = currencyService.getCurrency("")
 
         assertThat(c).isNull()
