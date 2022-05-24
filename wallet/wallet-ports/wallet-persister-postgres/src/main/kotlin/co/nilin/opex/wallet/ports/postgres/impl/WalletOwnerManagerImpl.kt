@@ -3,13 +3,10 @@ package co.nilin.opex.wallet.ports.postgres.impl
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.WalletOwner
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
-import co.nilin.opex.wallet.ports.postgres.dao.TransactionRepository
-import co.nilin.opex.wallet.ports.postgres.dao.UserLimitsRepository
-import co.nilin.opex.wallet.ports.postgres.dao.WalletConfigRepository
-import co.nilin.opex.wallet.ports.postgres.dao.WalletOwnerRepository
+import co.nilin.opex.wallet.ports.postgres.dao.*
 import co.nilin.opex.wallet.ports.postgres.dto.toPlainObject
-import co.nilin.opex.wallet.ports.postgres.model.UserLimitsModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletConfigModel
+import co.nilin.opex.wallet.ports.postgres.model.WalletLimitsModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletOwnerModel
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEmpty
@@ -24,7 +21,7 @@ import java.time.LocalDateTime
 
 @Service
 class WalletOwnerManagerImpl(
-    val limitsRepository: UserLimitsRepository,
+    val limitsRepository: WalletLimitsRepository,
     val transactionRepository: TransactionRepository,
     val walletConfigRepository: WalletConfigRepository,
     val walletOwnerRepository: WalletOwnerRepository
@@ -64,7 +61,7 @@ class WalletOwnerManagerImpl(
 
     private suspend fun evaluateLimit(
         amount: BigDecimal,
-        limit: UserLimitsModel?,
+        limit: WalletLimitsModel?,
         owner: WalletOwner,
         deposit: Boolean
     ): Boolean {

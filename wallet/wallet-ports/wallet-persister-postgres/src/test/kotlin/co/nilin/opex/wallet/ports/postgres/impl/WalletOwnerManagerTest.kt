@@ -2,8 +2,8 @@ package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.ports.postgres.dao.TransactionRepository
-import co.nilin.opex.wallet.ports.postgres.dao.UserLimitsRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletConfigRepository
+import co.nilin.opex.wallet.ports.postgres.dao.WalletLimitsRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletOwnerRepository
 import co.nilin.opex.wallet.ports.postgres.dto.toModel
 import co.nilin.opex.wallet.ports.postgres.impl.sample.VALID
@@ -20,17 +20,22 @@ import reactor.core.publisher.Mono
 import java.math.BigDecimal
 
 private class WalletOwnerManagerTest {
-    private val userLimitsRepository: UserLimitsRepository = mockk()
+    private val walletLimitsRepository: WalletLimitsRepository = mockk()
     private val transactionRepository: TransactionRepository = mockk()
     private val walletOwnerRepository: WalletOwnerRepository = mockk()
     private val walletConfigRepository: WalletConfigRepository = mockk()
     private val walletOwnerManagerImpl: WalletOwnerManagerImpl = WalletOwnerManagerImpl(
-        userLimitsRepository, transactionRepository, walletConfigRepository, walletOwnerRepository
+        walletLimitsRepository, transactionRepository, walletConfigRepository, walletOwnerRepository
     )
 
     private fun stubNoUserLimit(action: String) {
-        every { userLimitsRepository.findByOwnerAndAction(VALID.WALLET_OWNER.id!!, action) } returns flow { }
-        every { userLimitsRepository.findByLevelAndAction(eq(VALID.USER_LEVEL_REGISTERED), eq(action)) } returns flow {}
+        every { walletLimitsRepository.findByOwnerAndAction(VALID.WALLET_OWNER.id!!, action) } returns flow { }
+        every {
+            walletLimitsRepository.findByLevelAndAction(
+                eq(VALID.USER_LEVEL_REGISTERED),
+                eq(action)
+            )
+        } returns flow {}
     }
 
     @Test
@@ -85,10 +90,10 @@ private class WalletOwnerManagerTest {
 
     @Test
     fun givenOwnerWithLimit_whenIsWithdrawAllowedWithCrossedAmount_thenReturnFalse(): Unit = runBlocking {
-        every { userLimitsRepository.findByOwnerAndAction(VALID.WALLET_OWNER.id!!, "withdraw") } returns flow {
+        every { walletLimitsRepository.findByOwnerAndAction(VALID.WALLET_OWNER.id!!, "withdraw") } returns flow {
             emit(VALID.USER_LIMITS_MODEL_WITHDRAW)
         }
-        every { userLimitsRepository.findByLevelAndAction(eq("1"), eq("withdraw")) } returns flow { }
+        every { walletLimitsRepository.findByLevelAndAction(eq("1"), eq("withdraw")) } returns flow { }
         every { walletConfigRepository.findAll() } returns Flux.just(
             WalletConfigModel("default", VALID.CURRENCY.symbol)
         )
@@ -114,13 +119,13 @@ private class WalletOwnerManagerTest {
     @Test
     fun givenLevelWithLimit_whenIsWithdrawAllowedCrossedAmount_thenReturnFalse(): Unit = runBlocking {
         every {
-            userLimitsRepository.findByOwnerAndAction(
+            walletLimitsRepository.findByOwnerAndAction(
                 VALID.WALLET_OWNER.id!!,
                 VALID.ACTION_WITHDRAW
             )
         } returns flow { }
         every {
-            userLimitsRepository.findByLevelAndAction(
+            walletLimitsRepository.findByLevelAndAction(
                 eq(VALID.USER_LEVEL_REGISTERED),
                 eq(VALID.ACTION_WITHDRAW)
             )
@@ -202,7 +207,7 @@ private class WalletOwnerManagerTest {
     @Test
     fun givenOwnerWithLimit_whenIsDepositAllowedCrossedAmount_thenReturnFalse(): Unit = runBlocking {
         every {
-            userLimitsRepository.findByOwnerAndAction(
+            walletLimitsRepository.findByOwnerAndAction(
                 VALID.WALLET_OWNER.id!!,
                 VALID.ACTION_DEPOSIT
             )
@@ -210,7 +215,7 @@ private class WalletOwnerManagerTest {
             emit(VALID.USER_LIMITS_MODEL_DEPOSIT)
         }
         every {
-            userLimitsRepository.findByLevelAndAction(
+            walletLimitsRepository.findByLevelAndAction(
                 eq(VALID.USER_LEVEL_REGISTERED),
                 eq(VALID.ACTION_DEPOSIT)
             )
@@ -240,13 +245,13 @@ private class WalletOwnerManagerTest {
     @Test
     fun givenLevelWithLimit_whenIsDepositAllowedCrossedAmount_thenReturnFalse(): Unit = runBlocking {
         every {
-            userLimitsRepository.findByOwnerAndAction(
+            walletLimitsRepository.findByOwnerAndAction(
                 VALID.WALLET_OWNER.id!!,
                 VALID.ACTION_DEPOSIT
             )
         } returns flow { }
         every {
-            userLimitsRepository.findByLevelAndAction(
+            walletLimitsRepository.findByLevelAndAction(
                 eq(VALID.USER_LEVEL_REGISTERED),
                 eq(VALID.ACTION_DEPOSIT)
             )

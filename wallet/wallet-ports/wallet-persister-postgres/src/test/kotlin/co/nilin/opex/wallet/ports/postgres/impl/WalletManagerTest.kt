@@ -133,8 +133,8 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByOwnerAndCurrencyAndActionAndWalletType(
                 VALID.WALLET_LIMITS_MODEL_WITHDRAW.owner!!,
-                VALID.WALLET_LIMITS_MODEL_WITHDRAW.currency,
-                VALID.WALLET_LIMITS_MODEL_WITHDRAW.action,
+                VALID.WALLET_LIMITS_MODEL_WITHDRAW.currency!!,
+                VALID.WALLET_LIMITS_MODEL_WITHDRAW.action!!,
                 VALID.WALLET_LIMITS_MODEL_WITHDRAW.walletType
             )
         } returns Mono.just(VALID.WALLET_LIMITS_MODEL_WITHDRAW)
@@ -157,9 +157,9 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByOwnerAndCurrencyAndWalletAndAction(
                 VALID.WALLET_LIMITS_MODEL_WITHDRAW.owner!!,
-                VALID.WALLET_LIMITS_MODEL_WITHDRAW.currency,
+                VALID.WALLET_LIMITS_MODEL_WITHDRAW.currency!!,
                 VALID.WALLET_LIMITS_MODEL_WITHDRAW.walletId!!,
-                VALID.WALLET_LIMITS_MODEL_WITHDRAW.action
+                VALID.WALLET_LIMITS_MODEL_WITHDRAW.action!!
             )
         } returns Mono.just(VALID.WALLET_LIMITS_MODEL_WITHDRAW)
         every {
@@ -205,8 +205,8 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByLevelAndCurrencyAndActionAndWalletType(
                 VALID.USER_LEVEL_REGISTERED,
-                VALID.WALLET_LIMITS_MODEL_WITHDRAW.currency,
-                VALID.WALLET_LIMITS_MODEL_WITHDRAW.action,
+                VALID.WALLET_LIMITS_MODEL_WITHDRAW.currency!!,
+                VALID.WALLET_LIMITS_MODEL_WITHDRAW.action!!,
                 VALID.WALLET_LIMITS_MODEL_WITHDRAW.walletType
             )
         } returns Mono.just(VALID.WALLET_LIMITS_MODEL_WITHDRAW)

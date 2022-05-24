@@ -4,10 +4,10 @@ import co.nilin.opex.utility.preferences.Currency
 import co.nilin.opex.utility.preferences.Preferences
 import co.nilin.opex.utility.preferences.UserLimit
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepository
-import co.nilin.opex.wallet.ports.postgres.dao.UserLimitsRepository
+import co.nilin.opex.wallet.ports.postgres.dao.WalletLimitsRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletOwnerRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletRepository
-import co.nilin.opex.wallet.ports.postgres.model.UserLimitsModel
+import co.nilin.opex.wallet.ports.postgres.model.WalletLimitsModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletOwnerModel
 import kotlinx.coroutines.coroutineScope
@@ -28,7 +28,7 @@ class InitializeService(
     private val currencyRepository: CurrencyRepository,
     private val walletOwnerRepository: WalletOwnerRepository,
     private val walletRepository: WalletRepository,
-    private val userLimitsRepository: UserLimitsRepository
+    private val walletLimitsRepository: WalletLimitsRepository
 ) {
     @Autowired
     private lateinit var preferences: Preferences
@@ -42,15 +42,17 @@ class InitializeService(
 
     private suspend fun addUserLimits(data: List<UserLimit>) = coroutineScope {
         data.forEachIndexed { i, it ->
-            if (!userLimitsRepository.existsById(i + 1L).awaitSingle()) {
+            if (!walletLimitsRepository.existsById(i + 1L).awaitSingle()) {
                 runCatching {
-                    userLimitsRepository.save(
-                        UserLimitsModel(
+                    walletLimitsRepository.save(
+                        WalletLimitsModel(
                             null,
                             it.level,
                             it.owner,
                             it.action,
+                            null,
                             it.walletType,
+                            null,
                             it.dailyTotal,
                             it.dailyCount,
                             it.monthlyTotal,

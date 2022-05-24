@@ -4,7 +4,6 @@ import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.model.Wallet
 import co.nilin.opex.wallet.core.model.WalletOwner
-import co.nilin.opex.wallet.ports.postgres.model.UserLimitsModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletLimitsModel
 import java.math.BigDecimal
 
@@ -53,12 +52,14 @@ object VALID {
 
     val WALLET_LIMITS_MODEL_DEPOSIT = WALLET_LIMITS_MODEL_WITHDRAW.copy(action = ACTION_DEPOSIT)
 
-    val USER_LIMITS_MODEL_WITHDRAW = UserLimitsModel(
+    val USER_LIMITS_MODEL_WITHDRAW = WalletLimitsModel(
         1,
         USER_LEVEL_REGISTERED,
         WALLET_OWNER.id,
         ACTION_WITHDRAW,
+        CURRENCY.symbol,
         WALLET_TYPE_MAIN,
+        WALLET.id,
         BigDecimal.valueOf(10),
         1,
         BigDecimal.valueOf(300),
