@@ -24,13 +24,15 @@ object VALID {
 
     const val USER_LEVEL_REGISTERED = "registered"
 
+    const val USER_LEVEL_VERIFIED = "verified"
+
     val PAIR_CONFIG = PairConfig(ETH_USDT, ETH, USDT, 0.01, 0.0001)
 
     val CREATE_ORDER_REQUEST_ASK = CreateOrderRequest(
         UUID,
         ETH_USDT,
         BigDecimal.valueOf(100000),
-        BigDecimal.valueOf(-0.001),
+        BigDecimal.valueOf(0.001),
         OrderDirection.ASK,
         MatchConstraint.GTC,
         OrderType.LIMIT_ORDER

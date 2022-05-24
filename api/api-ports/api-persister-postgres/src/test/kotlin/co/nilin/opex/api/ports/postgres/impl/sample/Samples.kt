@@ -15,7 +15,7 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.*
 
-object Valid {
+object VALID {
     private const val TIMESTAMP = 1653125840L
     private val CREATE_DATE: LocalDateTime = LocalDateTime.ofEpochSecond(TIMESTAMP, 0, ZoneOffset.UTC)
     private val UPDATE_DATE: LocalDateTime = LocalDateTime.ofEpochSecond(TIMESTAMP + 180, 0, ZoneOffset.UTC)

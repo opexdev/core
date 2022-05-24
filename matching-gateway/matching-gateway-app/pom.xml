@@ -74,8 +74,8 @@
             <artifactId>logging-handler</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.mockito.kotlin</groupId>
-            <artifactId>mockito-kotlin</artifactId>
+            <groupId>io.mockk</groupId>
+            <artifactId>mockk</artifactId>
         </dependency>
     </dependencies>
 
