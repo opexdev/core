@@ -28,8 +28,8 @@ class AppConfig {
             ): PairFeeConfig {
                 return PairFeeConfig(
                     PairConfig(
-                        pair, pair.split("_")[0], pair.split("_")[1], 1.0, 1.0
-                    ), direction.name, userLevel, 0.01, 0.01
+                        pair, pair.split("_")[0], pair.split("_")[1], BigDecimal.valueOf(1.0), BigDecimal.valueOf(1.0)
+                    ), direction.name, userLevel, BigDecimal.valueOf(0.01), BigDecimal.valueOf(0.01)
                 )
             }
         }

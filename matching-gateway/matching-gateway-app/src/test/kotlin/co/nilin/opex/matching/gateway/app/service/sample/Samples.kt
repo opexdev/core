@@ -26,7 +26,7 @@ object VALID {
 
     const val USER_LEVEL_VERIFIED = "verified"
 
-    val PAIR_CONFIG = PairConfig(ETH_USDT, ETH, USDT, 0.01, 0.0001)
+    private val PAIR_CONFIG = PairConfig(ETH_USDT, ETH, USDT, BigDecimal.valueOf(0.01), BigDecimal.valueOf(0.0001))
 
     val CREATE_ORDER_REQUEST_ASK = CreateOrderRequest(
         UUID,
@@ -44,8 +44,8 @@ object VALID {
         PAIR_CONFIG,
         ORDER_DIRECTION_ASK,
         USER_LEVEL_REGISTERED,
-        0.01,
-        0.01
+        BigDecimal.valueOf(0.01),
+        BigDecimal.valueOf(0.01)
     )
 
     val CANCEL_ORDER_REQUEST = CancelOrderRequest(

@@ -23,8 +23,6 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.util.*
-import kotlin.math.max
-import kotlin.math.min
 
 @Component
 class MarketQueryHandlerImpl(
@@ -53,7 +51,7 @@ class MarketQueryHandlerImpl(
             listOf(OrderStatus.NEW.code, OrderStatus.PARTIALLY_FILLED.code)
         ).collectList()
             .awaitFirstOrElse { emptyList() }
-            .map { OrderBookResponse(it.price?.toBigDecimal(), it.quantity?.toBigDecimal()) }
+            .map { OrderBookResponse(it.price, it.quantity) }
     }
 
     override suspend fun openAskOrders(symbol: String, limit: Int): List<OrderBookResponse> {
@@ -64,7 +62,7 @@ class MarketQueryHandlerImpl(
             listOf(OrderStatus.NEW.code, OrderStatus.PARTIALLY_FILLED.code)
         ).collectList()
             .awaitFirstOrElse { emptyList() }
-            .map { OrderBookResponse(it.price?.toBigDecimal(), it.quantity?.toBigDecimal()) }
+            .map { OrderBookResponse(it.price, it.quantity) }
     }
 
     override suspend fun lastOrder(symbol: String): QueryOrderResponse? {
@@ -82,12 +80,12 @@ class MarketQueryHandlerImpl(
                 MarketTradeResponse(
                     it.symbol,
                     it.tradeId,
-                    if (isMakerBuyer) it.makerPrice.toBigDecimal() else it.takerPrice.toBigDecimal(),
-                    it.matchedQuantity.toBigDecimal(),
+                    if (isMakerBuyer) it.makerPrice else it.takerPrice,
+                    it.matchedQuantity,
                     if (isMakerBuyer)
-                        makerOrder.quoteQuantity!!.toBigDecimal()
+                        makerOrder.quoteQuantity!!
                     else
-                        takerOrder.quoteQuantity!!.toBigDecimal(),
+                        takerOrder.quoteQuantity!!,
                     Date.from(it.createDate.atZone(ZoneId.systemDefault()).toInstant()),
                     true,
                     isMakerBuyer
@@ -103,19 +101,15 @@ class MarketQueryHandlerImpl(
         return list.collectList()
             .awaitFirstOrElse { emptyList() }
             .map {
-                val makerOrder = orderRepository.findByOuid(it.makerOuid).awaitFirst()
+                orderRepository.findByOuid(it.makerOuid).awaitFirst()
                 val websocketSymbol = try {
                     symbolMapper.map(it.symbol)
                 } catch (e: Exception) {
                     it.symbol
                 }
-                val isMakerBuyer = makerOrder.direction == OrderDirection.BID
                 PriceTickerResponse(
                     websocketSymbol,
-                    if (isMakerBuyer)
-                        min(it.takerPrice, it.makerPrice).toString()
-                    else
-                        max(it.takerPrice, it.makerPrice).toString()
+                    it.takerPrice.min(it.makerPrice).toString()
                 )
             }
 
@@ -151,15 +145,15 @@ class MarketQueryHandlerImpl(
                 CandleData(
                     it.openTime,
                     it.closeTime,
-                    it.open ?: 0.0,
-                    it.close ?: 0.0,
-                    it.high ?: 0.0,
-                    it.low ?: 0.0,
-                    it.volume ?: 0.0,
-                    0.0,
+                    it.open ?: BigDecimal.ZERO,
+                    it.close ?: BigDecimal.ZERO,
+                    it.high ?: BigDecimal.ZERO,
+                    it.low ?: BigDecimal.ZERO,
+                    it.volume ?: BigDecimal.ZERO,
+                    BigDecimal.ZERO,
                     it.trades,
-                    0.0,
-                    0.0
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO
                 )
             }
     }
@@ -170,10 +164,10 @@ class MarketQueryHandlerImpl(
         orderId ?: -1,
         -1,
         clientOrderId ?: "",
-        price!!.toBigDecimal(),
-        quantity!!.toBigDecimal(),
-        orderStatusModel?.executedQuantity?.toBigDecimal() ?: BigDecimal.ZERO,
-        orderStatusModel?.accumulativeQuoteQty?.toBigDecimal() ?: BigDecimal.ZERO,
+        price!!,
+        quantity!!,
+        orderStatusModel?.executedQuantity ?: BigDecimal.ZERO,
+        orderStatusModel?.accumulativeQuoteQty ?: BigDecimal.ZERO,
         orderStatusModel?.status?.toOrderStatus() ?: OrderStatus.NEW,
         constraint!!.toTimeInForce(),
         type!!.toWebSocketOrderType(),
@@ -183,22 +177,22 @@ class MarketQueryHandlerImpl(
         Date.from(createDate!!.atZone(ZoneId.systemDefault()).toInstant()),
         Date.from(updateDate.atZone(ZoneId.systemDefault()).toInstant()),
         (orderStatusModel?.status?.toOrderStatus() ?: OrderStatus.NEW).isWorking(),
-        quoteQuantity!!.toBigDecimal()
+        quoteQuantity!!
     )
 
     private fun TradeTickerData.asPriceChangeResponse(openTime: Long, closeTime: Long) = PriceChangeResponse(
         symbol,
-        priceChange ?: 0.0,
-        priceChangePercent ?: 0.0,
-        weightedAvgPrice ?: 0.0,
-        lastPrice ?: 0.0,
-        lastQty ?: 0.0,
-        bidPrice ?: 0.0,
-        askPrice ?: 0.0,
-        openPrice ?: 0.0,
-        highPrice ?: 0.0,
-        lowPrice ?: 0.0,
-        volume ?: 0.0,
+        priceChange ?: BigDecimal.ZERO,
+        priceChangePercent ?: BigDecimal.ZERO,
+        weightedAvgPrice ?: BigDecimal.ZERO,
+        lastPrice ?: BigDecimal.ZERO,
+        lastQty ?: BigDecimal.ZERO,
+        bidPrice ?: BigDecimal.ZERO,
+        askPrice ?: BigDecimal.ZERO,
+        openPrice ?: BigDecimal.ZERO,
+        highPrice ?: BigDecimal.ZERO,
+        lowPrice ?: BigDecimal.ZERO,
+        volume ?: BigDecimal.ZERO,
         openTime,
         closeTime,
         firstId ?: -1,

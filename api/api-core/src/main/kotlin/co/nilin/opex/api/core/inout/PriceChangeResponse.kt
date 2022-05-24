@@ -1,18 +1,20 @@
 package co.nilin.opex.api.core.inout
 
+import java.math.BigDecimal
+
 data class PriceChangeResponse(
     val symbol: String,
-    val priceChange: Double = 0.0,
-    val priceChangePercent: Double = 0.0,
-    val weightedAvgPrice: Double = 0.0,
-    val lastPrice: Double = 0.0,
-    val lastQty: Double = 0.0,
-    val bidPrice: Double = 0.0,
-    val askPrice: Double = 0.0,
-    val openPrice: Double = 0.0,
-    val highPrice: Double = 0.0,
-    val lowPrice: Double = 0.0,
-    val volume: Double = 0.0,
+    val priceChange: BigDecimal = BigDecimal.ZERO,
+    val priceChangePercent: BigDecimal = BigDecimal.ZERO,
+    val weightedAvgPrice: BigDecimal = BigDecimal.ZERO,
+    val lastPrice: BigDecimal = BigDecimal.ZERO,
+    val lastQty: BigDecimal = BigDecimal.ZERO,
+    val bidPrice: BigDecimal = BigDecimal.ZERO,
+    val askPrice: BigDecimal = BigDecimal.ZERO,
+    val openPrice: BigDecimal = BigDecimal.ZERO,
+    val highPrice: BigDecimal = BigDecimal.ZERO,
+    val lowPrice: BigDecimal = BigDecimal.ZERO,
+    val volume: BigDecimal = BigDecimal.ZERO,
     val openTime: Long,
     val closeTime: Long,
     val firstId: Long = 0,

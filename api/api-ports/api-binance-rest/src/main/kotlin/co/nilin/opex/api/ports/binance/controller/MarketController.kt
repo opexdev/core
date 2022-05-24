@@ -149,9 +149,9 @@ class MarketController(
                     symbolsMap[it.pair] ?: it.pair,
                     "TRADING",
                     it.leftSideWalletSymbol.uppercase(),
-                    BigDecimal.valueOf(it.leftSideFraction).scale(),
+                    it.leftSideFraction.scale(),
                     it.rightSideWalletSymbol.uppercase(),
-                    BigDecimal.valueOf(it.rightSideFraction).scale()
+                    it.rightSideFraction.scale()
                 )
             }
         return ExchangeInfoResponse(fees = fee, symbols = pairConfigs)

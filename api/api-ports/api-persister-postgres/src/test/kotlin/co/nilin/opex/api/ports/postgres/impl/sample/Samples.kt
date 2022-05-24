@@ -33,60 +33,33 @@ object VALID {
         null, // Binance
         ETH_USDT,
         1, // MatchingEngine ID
-        0.01, // Calculated?
-        0.01, // Calculated?
-        0.0001,
-        0.01,
+        BigDecimal.valueOf(0.01), // Calculated?
+        BigDecimal.valueOf(0.01), // Calculated?
+        BigDecimal.valueOf(0.0001),
+        BigDecimal.valueOf(0.01),
         "1",
         OrderDirection.ASK,
         MatchConstraint.GTC,
         MatchingOrderType.LIMIT_ORDER,
-        100000.0,
-        0.001,
-        100000.0 * 0.001,
+        BigDecimal(100000.0),
+        BigDecimal(0.001),
+        BigDecimal(100000.0 * 0.001),
         CREATE_DATE,
         UPDATE_DATE
     )
 
-    val TAKER_ORDER_MODEL = OrderModel(
-        2,
-        "157b9b4a-cc66-43b9-b30b-40a8b66ea6aa",
-        PRINCIPAL.name,
-        null,
-        ETH_USDT,
-        2,
-        0.01,
-        0.01,
-        0.0001,
-        0.01,
-        "1",
-        OrderDirection.BID,
-        MatchConstraint.GTC,
-        MatchingOrderType.LIMIT_ORDER,
-        100000.0,
-        0.001,
-        100000.0 * 0.01,
-        CREATE_DATE,
-        UPDATE_DATE
-    )
+    val TAKER_ORDER_MODEL = MAKER_ORDER_MODEL.copy(2, "157b9b4a-cc66-43b9-b30b-40a8b66ea6aa")
 
     val MAKER_ORDER_STATUS_MODEL = OrderStatusModel(
         MAKER_ORDER_MODEL.ouid,
-        0.0, // Filled amount
-        0.0, // --> See accountant
+        BigDecimal.valueOf(0.0), // Filled amount
+        BigDecimal.valueOf(0.0), // --> See accountant
         OrderStatus.FILLED.code,
         OrderStatus.FILLED.orderOfAppearance,
         CREATE_DATE
     )
 
-    val TAKER_ORDER_STATUS_MODEL = OrderStatusModel(
-        TAKER_ORDER_MODEL.ouid,
-        0.0, // Filled amount
-        0.0, // --> See accountant
-        OrderStatus.FILLED.code,
-        OrderStatus.FILLED.orderOfAppearance,
-        CREATE_DATE
-    )
+    val TAKER_ORDER_STATUS_MODEL = MAKER_ORDER_STATUS_MODEL.copy(TAKER_ORDER_MODEL.ouid)
 
     val SYMBOL_MAP_MODEL = SymbolMapModel(
         1,
@@ -99,11 +72,11 @@ object VALID {
         1,
         1,
         ETH_USDT,
-        0.001, // Minimum of orders quantities
-        100000.0,
-        100000.0,
-        0.001, // Calculated
-        0.001, // Calculated
+        BigDecimal.valueOf(0.001), // Minimum of orders quantities
+        BigDecimal.valueOf(100000.0),
+        BigDecimal.valueOf(100000.0),
+        BigDecimal.valueOf(0.001), // Calculated
+        BigDecimal.valueOf(0.001), // Calculated
         "ETH",
         "USDT",
         UPDATE_DATE,
@@ -137,13 +110,13 @@ object VALID {
     )
 
     val AGGREGATED_ORDER_PRICE_MODEL = AggregatedOrderPriceModel(
-        100000.0,
-        0.001
+        BigDecimal.valueOf(100000.0),
+        BigDecimal.valueOf(0.001)
     )
 
     val ORDER_BOOK_RESPONSE = OrderBookResponse(
-        AGGREGATED_ORDER_PRICE_MODEL.price!!.toBigDecimal(),
-        AGGREGATED_ORDER_PRICE_MODEL.quantity!!.toBigDecimal()
+        AGGREGATED_ORDER_PRICE_MODEL.price!!,
+        AGGREGATED_ORDER_PRICE_MODEL.quantity!!
     )
 
     val RICH_ORDER = RichOrder(

@@ -57,10 +57,10 @@ class OrderService(
             createOrderRequest.uuid!!, //get from auth2
             Pair(symbolSides[0], symbolSides[1]),
             createOrderRequest.price
-                .divide(pairFeeConfig.pairConfig.rightSideFraction.toBigDecimal())
+                .divide(pairFeeConfig.pairConfig.rightSideFraction)
                 .longValueExact(),
             createOrderRequest.quantity
-                .divide(pairFeeConfig.pairConfig.leftSideFraction.toBigDecimal())
+                .divide(pairFeeConfig.pairConfig.leftSideFraction)
                 .longValueExact(),
             createOrderRequest.direction,
             createOrderRequest.matchConstraint,

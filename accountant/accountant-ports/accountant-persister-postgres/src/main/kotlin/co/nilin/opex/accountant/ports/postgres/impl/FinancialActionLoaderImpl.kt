@@ -42,7 +42,7 @@ class FinancialActionLoaderImpl(val financialActionRepository: FinancialActionRe
                 fim.eventType,
                 fim.pointer,
                 fim.symbol,
-                BigDecimal.valueOf(fim.amount),
+                fim.amount,
                 fim.sender,
                 fim.senderWalletType,
                 fim.receiver,
