@@ -3,7 +3,7 @@ package co.nilin.opex.wallet.ports.postgres.impl
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepository
 import co.nilin.opex.wallet.ports.postgres.dto.toModel
 import co.nilin.opex.wallet.ports.postgres.impl.sample.VALID
-import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
@@ -16,7 +16,7 @@ private class CurrencyServiceTest {
 
     @Test
     fun givenCurrency_whenGetCurrency_thenReturnCurrency(): Unit = runBlocking {
-        coEvery { currencyRepository.findBySymbol(VALID.CURRENCY.symbol) } returns Mono.just(VALID.CURRENCY.toModel())
+        every { currencyRepository.findBySymbol(VALID.CURRENCY.symbol) } returns Mono.just(VALID.CURRENCY.toModel())
 
         val c = currencyService.getCurrency(VALID.CURRENCY.symbol)
 
@@ -28,7 +28,7 @@ private class CurrencyServiceTest {
 
     @Test
     fun givenNoCurrency_whenGetCurrency_thenReturnNull(): Unit = runBlocking {
-        coEvery { currencyRepository.findBySymbol(VALID.CURRENCY.symbol) } returns Mono.empty()
+        every { currencyRepository.findBySymbol(VALID.CURRENCY.symbol) } returns Mono.empty()
 
         val c = currencyService.getCurrency(VALID.CURRENCY.symbol)
 
@@ -37,7 +37,7 @@ private class CurrencyServiceTest {
 
     @Test
     fun givenNoCurrency_whenGetCurrencyWithEmptySymbol_thenReturnNull(): Unit = runBlocking {
-        coEvery { currencyRepository.findBySymbol("") } returns Mono.empty()
+        every { currencyRepository.findBySymbol("") } returns Mono.empty()
 
         val c = currencyService.getCurrency("")
 
