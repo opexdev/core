@@ -8,80 +8,103 @@ import co.nilin.opex.matching.engine.core.model.OrderDirection
 import co.nilin.opex.matching.engine.core.model.OrderType
 import co.nilin.opex.matching.engine.core.model.Pair
 import kotlinx.coroutines.runBlocking
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 
 internal class FeeCalculatorImplTest {
 
-    private val feeCalculator = FeeCalculatorImpl("0x0")
+    private val receiverAddress = "0x0"
+    private val feeCalculator = FeeCalculatorImpl(receiverAddress)
+    private var defaultMaker: Order = Order(
+        "BTC_USDT",
+        "order_1",
+        1,
+        0.01,
+        0.01,
+        0.000001,
+        0.01,
+        "user_1",
+        "*",
+        OrderDirection.BID,
+        MatchConstraint.GTC,
+        OrderType.LIMIT_ORDER,
+        50_000.toBigDecimal().divide(0.01.toBigDecimal()).longValueExact(),
+        1.toBigDecimal().divide(0.000001.toBigDecimal()).longValueExact(),
+        1.toBigDecimal().divide(0.000001.toBigDecimal()).longValueExact(),
+        50_000.toBigDecimal(),
+        1.toBigDecimal(),
+        BigDecimal.ZERO,
+        BigDecimal.ZERO,
+        BigDecimal.ZERO,
+        OrderStatus.FILLED.code
+    )
+    private var defaultTaker: Order = Order(
+        "BTC_USDT",
+        "order_2",
+        2,
+        0.01,
+        0.01,
+        0.000001,
+        0.01,
+        "user_2",
+        "*",
+        OrderDirection.ASK,
+        MatchConstraint.GTC,
+        OrderType.LIMIT_ORDER,
+        50_000.toBigDecimal().divide(0.01.toBigDecimal()).longValueExact(),
+        1.toBigDecimal().divide(0.000001.toBigDecimal()).longValueExact(),
+        1.toBigDecimal().divide(0.000001.toBigDecimal()).longValueExact(),
+        50_000.toBigDecimal(),
+        1.toBigDecimal(),
+        BigDecimal.ZERO,
+        BigDecimal.ZERO,
+        BigDecimal.ZERO,
+        OrderStatus.FILLED.code
+    )
+    private var defaultTrade: TradeEvent = TradeEvent(
+        1,
+        Pair("BTC", "USDT"),
+        "order_2",
+        "user_2",
+        2,
+        OrderDirection.ASK,
+        (50_000 / 0.01).toLong(),
+        0,
+        "order_1",
+        "user_1",
+        1,
+        OrderDirection.BID,
+        (50_000 / 0.01).toLong(),
+        0,
+        (1 / 0.000001).toLong()
+    )
 
     @Test
-    fun test() = runBlocking {
-        val maker = Order(
-            "btc_usdt",
-            "order_1",
-            1,
-            0.01,
-            0.01,
-            0.00001,
-            0.01,
-            "user_1",
-            "*",
-            OrderDirection.BID,
-            MatchConstraint.GTC,
-            OrderType.LIMIT_ORDER,
-            50_000,
-            1000,
-            0,
-            BigDecimal.ZERO,
-            BigDecimal.ZERO,
-            BigDecimal.ZERO,
-            BigDecimal.ZERO,
-            BigDecimal.ZERO,
-            OrderStatus.NEW.code
-        )
+    fun givenTradeEventsAndOrders_whenFeeCalculated_feeActionsNotNull(): Unit = runBlocking {
+        val actions = feeCalculator.createFeeActions(defaultTrade, defaultMaker, defaultTaker, null, null)
+        assertThat(actions.makerFeeAction).isNotNull
+        assertThat(actions.takerFeeAction).isNotNull
+    }
 
-        val taker = Order(
-            "btc_usdt",
-            "order_2",
-            2,
-            0.01,
-            0.01,
-            0.00001,
-            0.01,
-            "user_2",
-            "*",
-            OrderDirection.ASK,
-            MatchConstraint.GTC,
-            OrderType.LIMIT_ORDER,
-            50_000,
-            1000,
-            0,
-            BigDecimal.ZERO,
-            BigDecimal.ZERO,
-            BigDecimal.ZERO,
-            BigDecimal.ZERO,
-            BigDecimal.ZERO,
-            OrderStatus.NEW.code
-        )
-        val trade = TradeEvent(
-            1,
-            Pair("btc", "usdt"),
-            "order_2",
-            "user_2",
-            2,
-            OrderDirection.ASK,
-            50_000,
-            0,
-            "order_1",
-            "user_1",
-            1,
-            OrderDirection.BID,
-            50_000,
-            0,
-            1000
-        )
-        val actions = feeCalculator.createFeeActions()
+    @Test
+    fun givenTradeEventsAndOrders_whenFeeCalculated_returnCorrectFees(): Unit = runBlocking {
+        val actions = feeCalculator.createFeeActions(defaultTrade, defaultMaker, defaultTaker, null, null)
+        with(actions.makerFeeAction) {
+            assertThat(amount.toDouble()).isEqualTo(0.01) // 1% of 1 BTC
+            assertThat(symbol).isEqualTo("BTC")
+            assertThat(sender).isEqualTo("user_1")
+            assertThat(pointer).isEqualTo("order_2")
+            assertThat(receiver).isEqualTo(receiverAddress)
+        }
+
+        with(actions.takerFeeAction) {
+            assertThat(amount.toDouble()).isEqualTo(500.0) // 1% of 50,000 USDT
+            assertThat(symbol).isEqualTo("USDT")
+            assertThat(sender).isEqualTo("user_2")
+            assertThat(pointer).isEqualTo("order_1")
+            assertThat(receiver).isEqualTo(receiverAddress)
+        }
     }
 
 }

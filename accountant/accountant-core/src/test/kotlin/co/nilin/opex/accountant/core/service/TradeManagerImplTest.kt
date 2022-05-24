@@ -1,6 +1,5 @@
 package co.nilin.opex.accountant.core.service
 
-import co.nilin.opex.accountant.core.api.FeeCalculator
 import co.nilin.opex.accountant.core.api.OrderManager
 import co.nilin.opex.accountant.core.api.TradeManager
 import co.nilin.opex.accountant.core.model.FinancialAction
