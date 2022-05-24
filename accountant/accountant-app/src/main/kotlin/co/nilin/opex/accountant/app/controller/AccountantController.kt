@@ -37,13 +37,21 @@ class AccountantController(
         return BooleanResponse(unprocessed <= 0 && canFulfil)
     }
 
-    @GetMapping(value = ["/config/{pair}/fee/{direction}-{userLevel}", "/config/{pair}/fee/{direction}"])
+    @GetMapping("/config/{pair}/fee/{direction}-{userLevel}")
     suspend fun fetchPairFeeConfig(
         @PathVariable("pair") pair: String,
         @PathVariable("direction") direction: OrderDirection,
-        @PathVariable("userLevel") level: String?
+        @PathVariable("userLevel") level: String
     ): PairFeeConfig {
-        return pairConfigLoader.load(pair, direction, level ?: "")
+        return pairConfigLoader.load(pair, direction, level)
+    }
+
+    @GetMapping("/config/{pair}/{direction}")
+    suspend fun fetchPairConfig(
+        @PathVariable("pair") pair: String,
+        @PathVariable("direction") direction: OrderDirection
+    ): PairConfig {
+        return pairConfigLoader.load(pair, direction)
     }
 
     @GetMapping("/config/all")
@@ -56,5 +64,4 @@ class AccountantController(
         return pairConfigLoader.loadPairFeeConfigs()
             .map { PairFeeResponse(it.pairConfig.pair, it.direction, it.userLevel, it.makerFee, it.takerFee) }
     }
-
 }

@@ -16,6 +16,7 @@ import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.math.BigDecimal
 
 @Service
 class OrderService(
@@ -29,12 +30,13 @@ class OrderService(
     private val logger = LoggerFactory.getLogger(OrderService::class.java)
 
     suspend fun submitNewOrder(createOrderRequest: CreateOrderRequest): OrderSubmitResult {
+        require(createOrderRequest.price >= BigDecimal.ZERO)
         val symbolSides = createOrderRequest.pair.split("_")
         val symbol = if (createOrderRequest.direction == OrderDirection.ASK)
             symbolSides[0]
         else
             symbolSides[1]
-        val pairFeeConfig = pairConfigLoader.load(createOrderRequest.pair, createOrderRequest.direction, "")
+        val pairConfig = pairConfigLoader.load(createOrderRequest.pair, createOrderRequest.direction)
 
         val canCreateOrder = runCatching {
             accountantApiProxy.canCreateOrder(
@@ -57,10 +59,10 @@ class OrderService(
             createOrderRequest.uuid!!, //get from auth2
             Pair(symbolSides[0], symbolSides[1]),
             createOrderRequest.price
-                .divide(pairFeeConfig.pairConfig.rightSideFraction)
+                .divide(pairConfig.rightSideFraction)
                 .longValueExact(),
             createOrderRequest.quantity
-                .divide(pairFeeConfig.pairConfig.leftSideFraction)
+                .divide(pairConfig.leftSideFraction)
                 .longValueExact(),
             createOrderRequest.direction,
             createOrderRequest.matchConstraint,

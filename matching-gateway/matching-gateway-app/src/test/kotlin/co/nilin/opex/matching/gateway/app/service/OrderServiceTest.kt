@@ -33,10 +33,9 @@ private class OrderServiceTest {
         coEvery {
             pairConfigLoader.load(
                 VALID.ETH_USDT,
-                OrderDirection.ASK,
-                VALID.USER_LEVEL_REGISTERED
+                OrderDirection.ASK
             )
-        } returns VALID.PAIR_FEE_CONFIG
+        } returns VALID.PAIR_CONFIG
         coEvery {
             accountantApiProxy.canCreateOrder(
                 VALID.CREATE_ORDER_REQUEST_ASK.uuid!!,
@@ -56,10 +55,9 @@ private class OrderServiceTest {
         coEvery {
             pairConfigLoader.load(
                 VALID.ETH_USDT,
-                OrderDirection.BID,
-                VALID.USER_LEVEL_REGISTERED
+                OrderDirection.BID
             )
-        } returns VALID.PAIR_FEE_CONFIG
+        } returns VALID.PAIR_CONFIG
         coEvery {
             accountantApiProxy.canCreateOrder(
                 VALID.CREATE_ORDER_REQUEST_BID.uuid!!,
@@ -87,6 +85,10 @@ private class OrderServiceTest {
     @Test
     fun givenPair_whenSubmitNewOrderByInvalidSymbol_thenThrow(): Unit = runBlocking {
         stubASK()
+        clearMocks(pairConfigLoader)
+        coEvery {
+            pairConfigLoader.load("BTC_ETH", OrderDirection.ASK)
+        } throws Exception()
 
         assertThatThrownBy {
             runBlocking {
@@ -118,25 +120,6 @@ private class OrderServiceTest {
     }
 
     @Test
-    fun givenPair_whenSubmitNewOrderByASKAndInvalidLevel_thenThrow(): Unit = runBlocking {
-        stubASK()
-        clearMocks(pairConfigLoader)
-        coEvery {
-            pairConfigLoader.load(
-                VALID.ETH_USDT,
-                OrderDirection.ASK,
-                VALID.USER_LEVEL_VERIFIED
-            )
-        } returns VALID.PAIR_FEE_CONFIG.copy(userLevel = VALID.USER_LEVEL_VERIFIED)
-
-        assertThatThrownBy {
-            runBlocking {
-                orderService.submitNewOrder(VALID.CREATE_ORDER_REQUEST_ASK)
-            }
-        }.isNotInstanceOf(MockKException::class.java)
-    }
-
-    @Test
     fun givenPair_whenSubmitNewOrderByBID_thenOrderSubmitResult(): Unit = runBlocking {
         stubBID()
 
@@ -148,6 +131,10 @@ private class OrderServiceTest {
     @Test
     fun givenPair_whenSubmitNewOrderByBIDAndInvalidSymbol_thenThrow(): Unit = runBlocking {
         stubBID()
+        clearMocks(pairConfigLoader)
+        coEvery {
+            pairConfigLoader.load("BTC_USDT", OrderDirection.BID)
+        } throws Exception()
 
         assertThatThrownBy {
             runBlocking {
@@ -190,28 +177,9 @@ private class OrderServiceTest {
     }
 
     @Test
-    fun givenPair_whenSubmitNewOrderByBIDAndInvalidLevel_thenThrow(): Unit = runBlocking {
-        stubBID()
-        clearMocks(pairConfigLoader)
-        coEvery {
-            pairConfigLoader.load(
-                VALID.ETH_USDT,
-                OrderDirection.BID,
-                VALID.USER_LEVEL_VERIFIED
-            )
-        } returns VALID.PAIR_FEE_CONFIG.copy(userLevel = VALID.USER_LEVEL_VERIFIED)
-
-        assertThatThrownBy {
-            runBlocking {
-                orderService.submitNewOrder(VALID.CREATE_ORDER_REQUEST_BID)
-            }
-        }.isNotInstanceOf(MockKException::class.java)
-    }
-
-    @Test
     fun givenEventSubmitter_whenCancelOrder_thenOrderSubmitResult(): Unit = runBlocking {
         coEvery {
-            orderSubmitter.submit(any())
+            eventSubmitter.submit(any())
         } returns OrderSubmitResult(null)
 
         val orderSubmitResult = orderService.cancelOrder(VALID.CANCEL_ORDER_REQUEST)

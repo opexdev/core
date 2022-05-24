@@ -6,7 +6,6 @@ import co.nilin.opex.matching.engine.core.model.OrderType
 import co.nilin.opex.matching.gateway.app.inout.CancelOrderRequest
 import co.nilin.opex.matching.gateway.app.inout.CreateOrderRequest
 import co.nilin.opex.matching.gateway.app.inout.PairConfig
-import co.nilin.opex.matching.gateway.app.inout.PairFeeConfig
 import java.math.BigDecimal
 
 object VALID {
@@ -22,11 +21,7 @@ object VALID {
 
     const val ORDER_DIRECTION_ASK = "ASK"
 
-    const val USER_LEVEL_REGISTERED = "registered"
-
-    const val USER_LEVEL_VERIFIED = "verified"
-
-    private val PAIR_CONFIG = PairConfig(ETH_USDT, ETH, USDT, BigDecimal.valueOf(0.01), BigDecimal.valueOf(0.0001))
+    val PAIR_CONFIG = PairConfig(ETH_USDT, ETH, USDT, BigDecimal.valueOf(0.01), BigDecimal.valueOf(0.0001))
 
     val CREATE_ORDER_REQUEST_ASK = CreateOrderRequest(
         UUID,
@@ -39,14 +34,6 @@ object VALID {
     )
 
     val CREATE_ORDER_REQUEST_BID = CREATE_ORDER_REQUEST_ASK.copy(direction = OrderDirection.BID)
-
-    val PAIR_FEE_CONFIG = PairFeeConfig(
-        PAIR_CONFIG,
-        ORDER_DIRECTION_ASK,
-        USER_LEVEL_REGISTERED,
-        BigDecimal.valueOf(0.01),
-        BigDecimal.valueOf(0.01)
-    )
 
     val CANCEL_ORDER_REQUEST = CancelOrderRequest(
         OUID,
