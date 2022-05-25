@@ -35,6 +35,7 @@ internal class TradeManagerImplTest {
         tempEventPersister,
         richOrderPublisher
     )
+
     private val tradeManager = TradeManagerImpl(
         financialActionPersister,
         financeActionLoader,

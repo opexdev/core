@@ -1,14 +1,23 @@
 package co.nilin.opex.accountant.core.service
 
+import co.nilin.opex.accountant.core.inout.OrderStatus
 import co.nilin.opex.accountant.core.model.FinancialAction
+import co.nilin.opex.accountant.core.model.Order
 import co.nilin.opex.accountant.core.model.PairConfig
 import co.nilin.opex.accountant.core.model.PairFeeConfig
 import co.nilin.opex.accountant.core.spi.*
+import co.nilin.opex.matching.engine.core.eventh.events.CancelOrderEvent
+import co.nilin.opex.matching.engine.core.eventh.events.CreateOrderEvent
+import co.nilin.opex.matching.engine.core.eventh.events.RejectOrderEvent
 import co.nilin.opex.matching.engine.core.eventh.events.SubmitOrderEvent
+import co.nilin.opex.matching.engine.core.inout.RejectReason
+import co.nilin.opex.matching.engine.core.inout.RequestedOperation
 import co.nilin.opex.matching.engine.core.model.MatchConstraint
 import co.nilin.opex.matching.engine.core.model.OrderDirection
 import co.nilin.opex.matching.engine.core.model.OrderType
+import co.nilin.opex.matching.engine.core.model.Pair
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
@@ -25,6 +34,7 @@ internal class OrderManagerImplTest {
     private val tempEventPersister = mockk<TempEventPersister>()
     private val pairConfigLoader = mockk<PairConfigLoader>()
     private val richOrderPublisher = mockk<RichOrderPublisher>()
+
     private val orderManager = OrderManagerImpl(
         pairConfigLoader,
         financialActionPersister,
@@ -34,15 +44,43 @@ internal class OrderManagerImplTest {
         richOrderPublisher
     )
 
+    private val order = Order(
+        "BTC_USDT",
+        "order_ouid",
+        null,
+        0.01.toBigDecimal(),
+        0.01.toBigDecimal(),
+        0.000001.toBigDecimal(),
+        0.01.toBigDecimal(),
+        "user_1",
+        "*",
+        OrderDirection.BID,
+        MatchConstraint.GTC,
+        OrderType.LIMIT_ORDER,
+        100000,
+        1000,
+        0,
+        BigDecimal.ZERO,
+        BigDecimal.ZERO,
+        BigDecimal.ZERO,
+        BigDecimal.ZERO,
+        100000.0.toBigDecimal(),
+        OrderStatus.NEW.code
+    )
+
     init {
         coEvery { tempEventPersister.loadTempEvents(any()) } returns emptyList()
-        coEvery { orderPersister.save(any()) } returns any()
+        coEvery { orderPersister.save(any()) } returnsArgument (0)
+        coEvery { richOrderPublisher.publish(any()) } returnsArgument (0)
+        coEvery { tempEventPersister.saveTempEvent(any(), any()) } returns any()
+        coEvery { financialActionLoader.findLast(any(), any()) } returns null
+        coEvery { financialActionPersister.persist(any()) } returnsArgument (0)
     }
 
     @Test
     fun givenAskOrder_whenHandleRequestOrder_thenFAMatch(): Unit = runBlocking {
         //given
-        val pair = co.nilin.opex.matching.engine.core.model.Pair("ETH", "BTC")
+        val pair = Pair("ETH", "BTC")
         val pairConfig = PairConfig(
             pair.toString(),
             pair.leftSideName,
@@ -98,7 +136,7 @@ internal class OrderManagerImplTest {
     @Test
     fun givenBidOrder_whenHandleRequestOrder_thenFAMatch(): Unit = runBlocking {
         //given
-        val pair = co.nilin.opex.matching.engine.core.model.Pair("eth", "btc")
+        val pair = Pair("eth", "btc")
         val pairConfig = PairConfig(
             pair.toString(),
             pair.leftSideName,
@@ -153,20 +191,144 @@ internal class OrderManagerImplTest {
     }
 
     @Test
-    fun handleNewOrder() {
+    fun givenNewOrderEventReceived_whenUpdatingOrder_matchingEngineIdMatch(): Unit = runBlocking {
+        val orderEvent = CreateOrderEvent(
+            "order_ouid",
+            "user_1",
+            55,
+            Pair("BTC", "USDT"),
+            100000,
+            1000,
+            0,
+            OrderDirection.BID
+        )
+
+        coEvery { orderPersister.load(any()) } returns order
+
+        val fa = orderManager.handleNewOrder(orderEvent)
+
+        assertThat(fa.size).isEqualTo(0)
+        assertThat(order.matchingEngineId).isEqualTo(55)
+        coVerify(exactly = 1) { richOrderPublisher.publish(any()) }
     }
 
+    @Test
+    fun givenNewOrderEventReceived_whenLocalOrderNull_saveTempEvent(): Unit = runBlocking {
+        val orderEvent = CreateOrderEvent(
+            "order_ouid",
+            "user_1",
+            55,
+            Pair("BTC", "USDT"),
+            100000,
+            1000,
+            0,
+            OrderDirection.BID
+        )
+
+        coEvery { orderPersister.load(any()) } returns null
+
+        val fa = orderManager.handleNewOrder(orderEvent)
+
+        assertThat(fa.size).isEqualTo(0)
+        coVerify(exactly = 1) { tempEventPersister.saveTempEvent(any(), any()) }
+    }
+
+    @Test
+    fun givenRejectOrderReceived_whenLocalOrderNull_saveTempEvent(): Unit = runBlocking {
+        val orderEvent = RejectOrderEvent(
+            "ouid",
+            "user_1",
+            56,
+            Pair("BTC", "USDT"),
+            RequestedOperation.CANCEL_ORDER,
+            RejectReason.ORDER_NOT_FOUND
+        )
+
+        coEvery { orderPersister.load(any()) } returns null
+
+        val fa = orderManager.handleRejectOrder(orderEvent)
+
+        assertThat(fa.size).isEqualTo(0)
+        coVerify(exactly = 1) { tempEventPersister.saveTempEvent(any(), any()) }
+    }
+
+    @Test
+    fun givenRejectOrderReceived_whenLocalFound_publishRichOrderUpdate(): Unit = runBlocking {
+        val orderEvent = RejectOrderEvent(
+            "ouid",
+            "user_1",
+            56,
+            Pair("BTC", "USDT"),
+            100000,
+            1000,
+            OrderDirection.BID,
+            MatchConstraint.GTC,
+            OrderType.LIMIT_ORDER,
+            RequestedOperation.CANCEL_ORDER,
+            RejectReason.ORDER_NOT_FOUND,
+        )
+        coEvery { orderPersister.load(any()) } returns order
+
+        val fa = orderManager.handleRejectOrder(orderEvent)[0]
+
+        assertThat(fa.amount).isEqualTo(order.remainedTransferAmount)
+        assertThat(fa.symbol).isEqualTo(orderEvent.pair.rightSideName)
+        assertThat(order.status).isEqualTo(OrderStatus.REJECTED.code)
+
+        coVerify(exactly = 1) { richOrderPublisher.publish(any()) }
+        coVerify(exactly = 1) { orderPersister.save(any()) }
+    }
+
+    @Test
+    fun givenCancelOrderReceived_whenLocalOrderNull_saveTempEvent(): Unit = runBlocking {
+        val orderEvent = CancelOrderEvent(
+            "order_ouid",
+            "user_id",
+            88,
+            Pair("BTC", "USDT"),
+            100000,
+            1000,
+            500,
+            OrderDirection.BID
+        )
+
+        coEvery { orderPersister.load(any()) } returns null
+
+        val fa = orderManager.handleCancelOrder(orderEvent)
+
+        assertThat(fa.size).isEqualTo(0)
+        coVerify(exactly = 1) { tempEventPersister.saveTempEvent(any(), any()) }
+    }
+
+    @Test
+    fun givenCancelOrderReceived_whenLocalFound_publishRichOrderUpdate(): Unit = runBlocking {
+        val orderEvent = CancelOrderEvent(
+            "order_ouid",
+            "user_id",
+            88,
+            Pair("BTC", "USDT"),
+            100000,
+            1000,
+            500,
+            OrderDirection.BID
+        )
+        coEvery { orderPersister.load(any()) } returns order
+
+        val fa = orderManager.handleCancelOrder(orderEvent)[0]
+
+        assertThat(fa.amount).isEqualTo(order.remainedTransferAmount)
+        assertThat(fa.symbol).isEqualTo(orderEvent.pair.rightSideName)
+        assertThat(order.status).isEqualTo(OrderStatus.CANCELED.code)
+
+        coVerify(exactly = 1) { richOrderPublisher.publish(any()) }
+        coVerify(exactly = 1) { orderPersister.save(any()) }
+    }
+
+    //TODO
     @Test
     fun handleUpdateOrder() {
     }
 
-    @Test
-    fun handleRejectOrder() {
-    }
-
-    @Test
-    fun handleCancelOrder() {
-    }
 }
 
 
