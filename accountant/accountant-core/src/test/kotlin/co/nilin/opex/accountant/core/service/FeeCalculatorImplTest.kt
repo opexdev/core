@@ -1,6 +1,7 @@
 package co.nilin.opex.accountant.core.service
 
 import co.nilin.opex.accountant.core.inout.OrderStatus
+import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.Order
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
 import co.nilin.opex.matching.engine.core.model.MatchConstraint
@@ -11,6 +12,7 @@ import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
+import java.time.LocalDateTime
 
 internal class FeeCalculatorImplTest {
 
@@ -20,10 +22,10 @@ internal class FeeCalculatorImplTest {
         "BTC_USDT",
         "order_1",
         1,
-        0.01,
-        0.01,
-        0.000001,
-        0.01,
+        0.01.toBigDecimal(),
+        0.01.toBigDecimal(),
+        0.000001.toBigDecimal(),
+        0.01.toBigDecimal(),
         "user_1",
         "*",
         OrderDirection.BID,
@@ -43,10 +45,10 @@ internal class FeeCalculatorImplTest {
         "BTC_USDT",
         "order_2",
         2,
-        0.01,
-        0.01,
-        0.000001,
-        0.01,
+        0.01.toBigDecimal(),
+        0.01.toBigDecimal(),
+        0.000001.toBigDecimal(),
+        0.01.toBigDecimal(),
         "user_2",
         "*",
         OrderDirection.ASK,
@@ -96,6 +98,7 @@ internal class FeeCalculatorImplTest {
             assertThat(sender).isEqualTo("user_1")
             assertThat(pointer).isEqualTo("order_2")
             assertThat(receiver).isEqualTo(receiverAddress)
+            assertThat(receiverWalletType).isEqualTo("exchange")
         }
 
         with(actions.takerFeeAction) {
@@ -104,7 +107,28 @@ internal class FeeCalculatorImplTest {
             assertThat(sender).isEqualTo("user_2")
             assertThat(pointer).isEqualTo("order_1")
             assertThat(receiver).isEqualTo(receiverAddress)
+            assertThat(receiverWalletType).isEqualTo("exchange")
         }
+    }
+
+    @Test
+    fun givenTradeEventsAndOrders_whenFAParentNotNull_thenFeeActionParentNotNull(): Unit = runBlocking {
+        val parentFA = FinancialAction(
+            null,
+            TradeEvent::class.java.name,
+            "trade_id",
+            "BTC_USDT",
+            10000.0.toBigDecimal(),
+            "user_parent",
+            "main",
+            "system",
+            "main",
+            LocalDateTime.now()
+        )
+
+        val actions = feeCalculator.createFeeActions(defaultTrade, defaultMaker, defaultTaker, parentFA, parentFA)
+        assertThat(actions.makerFeeAction.parent).isNotNull
+        assertThat(actions.takerFeeAction.parent).isNotNull
     }
 
 }

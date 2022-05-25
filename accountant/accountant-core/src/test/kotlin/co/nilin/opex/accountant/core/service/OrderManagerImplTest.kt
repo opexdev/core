@@ -19,7 +19,7 @@ import org.mockito.MockitoAnnotations
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
-internal class OrderManagerImplTest() {
+internal class OrderManagerImplTest {
 
     @Mock
     lateinit var financialActionPersister: FinancialActionPersister
