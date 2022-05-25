@@ -125,8 +125,8 @@ internal class TradeManagerImplTest {
 
             Assertions.assertEquals(4, tradeFinancialActions.size)
             Assertions.assertEquals(
-                (makerSubmitOrderEvent.price.toBigDecimal() * pairConfig.rightSideFraction),
-                tradeFinancialActions[0].amount
+                (makerSubmitOrderEvent.price.toBigDecimal() * pairConfig.rightSideFraction).stripTrailingZeros(),
+                tradeFinancialActions[0].amount.stripTrailingZeros()
             )
         }
     }
@@ -178,8 +178,8 @@ internal class TradeManagerImplTest {
 
             Assertions.assertEquals(4, tradeFinancialActions.size)
             Assertions.assertEquals(
-                makerSubmitOrderEvent.price.toBigDecimal() * pairConfig.rightSideFraction,
-                tradeFinancialActions[1].amount
+                (makerSubmitOrderEvent.price.toBigDecimal() * pairConfig.rightSideFraction).stripTrailingZeros(),
+                tradeFinancialActions[1].amount.stripTrailingZeros()
             )
         }
     }
