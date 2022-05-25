@@ -1,34 +1,26 @@
 package co.nilin.opex.matching.gateway.app.service
 
-import co.nilin.opex.matching.engine.core.model.MatchConstraint
 import co.nilin.opex.matching.engine.core.model.OrderDirection
-import co.nilin.opex.matching.engine.core.model.OrderType
-import co.nilin.opex.matching.gateway.app.inout.CancelOrderRequest
-import co.nilin.opex.matching.gateway.app.inout.CreateOrderRequest
-import co.nilin.opex.matching.gateway.app.inout.PairConfig
-import co.nilin.opex.matching.gateway.app.inout.PairFeeConfig
+import co.nilin.opex.matching.gateway.app.service.sample.VALID
 import co.nilin.opex.matching.gateway.app.spi.AccountantApiProxy
 import co.nilin.opex.matching.gateway.app.spi.PairConfigLoader
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.inout.OrderSubmitResult
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.EventSubmitter
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.KafkaHealthIndicator
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.OrderSubmitter
+import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.stubbing
 import java.math.BigDecimal
 
 private class OrderServiceTest {
-    private val accountantApiProxy: AccountantApiProxy = mock()
-    private val orderSubmitter: OrderSubmitter = mock()
-    private val eventSubmitter: EventSubmitter = mock()
-    private val pairConfigLoader: PairConfigLoader = mock()
-    private val kafkaHealthIndicator: KafkaHealthIndicator = mock()
+    private val accountantApiProxy: AccountantApiProxy = mockk()
+    private val orderSubmitter: OrderSubmitter = mockk()
+    private val eventSubmitter: EventSubmitter = mockk()
+    private val pairConfigLoader: PairConfigLoader = mockk()
+    private val kafkaHealthIndicator: KafkaHealthIndicator = mockk()
     private val orderService: OrderService = OrderService(
         accountantApiProxy,
         orderSubmitter,
@@ -37,443 +29,160 @@ private class OrderServiceTest {
         kafkaHealthIndicator
     )
 
+    private fun stubASK() {
+        coEvery {
+            pairConfigLoader.load(
+                VALID.ETH_USDT,
+                OrderDirection.ASK
+            )
+        } returns VALID.PAIR_CONFIG
+        coEvery {
+            accountantApiProxy.canCreateOrder(
+                VALID.CREATE_ORDER_REQUEST_ASK.uuid!!,
+                VALID.ETH,
+                VALID.CREATE_ORDER_REQUEST_ASK.quantity
+            )
+        } returns true
+        coEvery {
+            orderSubmitter.submit(any())
+        } returns OrderSubmitResult(null)
+        coEvery {
+            kafkaHealthIndicator.isHealthy
+        } returns true
+    }
+
+    private fun stubBID() {
+        coEvery {
+            pairConfigLoader.load(
+                VALID.ETH_USDT,
+                OrderDirection.BID
+            )
+        } returns VALID.PAIR_CONFIG
+        coEvery {
+            accountantApiProxy.canCreateOrder(
+                VALID.CREATE_ORDER_REQUEST_BID.uuid!!,
+                VALID.USDT,
+                VALID.CREATE_ORDER_REQUEST_BID.quantity * VALID.CREATE_ORDER_REQUEST_BID.price
+            )
+        } returns true
+        coEvery {
+            orderSubmitter.submit(any())
+        } returns OrderSubmitResult(null)
+        coEvery {
+            kafkaHealthIndicator.isHealthy
+        } returns true
+    }
+
     @Test
     fun givenPair_whenSubmitNewOrder_thenOrderSubmitResult(): Unit = runBlocking {
-        val pairConfig = PairConfig("ETH_USDT", "ETH", "USDT", 0.01, 0.0001)
-        val order = CreateOrderRequest(
-            "a2930d06-0c84-4448-bff7-65134184bb1d",
-            "ETH_USDT",
-            BigDecimal.valueOf(100000),
-            BigDecimal.valueOf(0.001),
-            OrderDirection.ASK,
-            MatchConstraint.GTC,
-            OrderType.LIMIT_ORDER
-        )
-        stubbing(pairConfigLoader) {
-            onBlocking { load("ETH_USDT", OrderDirection.ASK, "") } doReturn PairFeeConfig(
-                pairConfig,
-                "ASK",
-                "",
-                0.01,
-                0.01
-            )
-        }
-        stubbing(accountantApiProxy) {
-            onBlocking {
-                canCreateOrder(order.uuid!!, "ETH", order.quantity)
-            } doReturn true
-        }
-        stubbing(orderSubmitter) {
-            onBlocking {
-                submit(any())
-            } doReturn OrderSubmitResult(null)
-        }
-        stubbing(kafkaHealthIndicator) {
-            on { isHealthy } doReturn true
-        }
+        stubASK()
 
-        val orderSubmitResult = orderService.submitNewOrder(order)
+        val orderSubmitResult = orderService.submitNewOrder(VALID.CREATE_ORDER_REQUEST_ASK)
 
         assertThat(orderSubmitResult).isNotNull
     }
 
     @Test
     fun givenPair_whenSubmitNewOrderByInvalidSymbol_thenThrow(): Unit = runBlocking {
-        val pairConfig = PairConfig("ETH_USDT", "ETH", "USDT", 0.01, 0.0001)
-        val order = CreateOrderRequest(
-            "a2930d06-0c84-4448-bff7-65134184bb1d",
-            "BTC_USDT",
-            BigDecimal.valueOf(100000),
-            BigDecimal.valueOf(0.001),
-            OrderDirection.ASK,
-            MatchConstraint.GTC,
-            OrderType.LIMIT_ORDER
-        )
-        stubbing(pairConfigLoader) {
-            onBlocking { load("ETH_USDT", OrderDirection.ASK, "") } doReturn PairFeeConfig(
-                pairConfig,
-                "ASK",
-                "",
-                0.01,
-                0.01
-            )
-        }
-        stubbing(accountantApiProxy) {
-            onBlocking {
-                canCreateOrder(order.uuid!!, "ETH", order.quantity)
-            } doReturn true
-        }
-        stubbing(orderSubmitter) {
-            onBlocking {
-                submit(any())
-            } doReturn OrderSubmitResult(null)
-        }
-        stubbing(kafkaHealthIndicator) {
-            on { isHealthy } doReturn true
-        }
+        stubASK()
+        clearMocks(pairConfigLoader)
+        coEvery {
+            pairConfigLoader.load("BTC_ETH", OrderDirection.ASK)
+        } throws Exception()
 
-        assertThatThrownBy { runBlocking { orderService.submitNewOrder(order) } }.isNotInstanceOf(NullPointerException::class.java)
+        assertThatThrownBy {
+            runBlocking {
+                orderService.submitNewOrder(VALID.CREATE_ORDER_REQUEST_ASK.copy(pair = "BTC_ETH"))
+            }
+        }.isNotInstanceOf(MockKException::class.java)
     }
 
     @Test
     fun givenPair_whenSubmitNewOrderByASKAndInvalidPrice_thenThrow(): Unit = runBlocking {
-        val pairConfig = PairConfig("ETH_USDT", "ETH", "USDT", 0.01, 0.0001)
-        val order = CreateOrderRequest(
-            "a2930d06-0c84-4448-bff7-65134184bb1d",
-            "ETH_USDT",
-            BigDecimal.valueOf(-100000),
-            BigDecimal.valueOf(0.001),
-            OrderDirection.ASK,
-            MatchConstraint.GTC,
-            OrderType.LIMIT_ORDER
-        )
-        stubbing(pairConfigLoader) {
-            onBlocking { load("ETH_USDT", OrderDirection.ASK, "") } doReturn PairFeeConfig(
-                pairConfig,
-                "ASK",
-                "",
-                0.01,
-                0.01
-            )
-        }
-        stubbing(accountantApiProxy) {
-            onBlocking {
-                canCreateOrder(order.uuid!!, "ETH", order.quantity)
-            } doReturn true
-        }
-        stubbing(orderSubmitter) {
-            onBlocking {
-                submit(any())
-            } doReturn OrderSubmitResult(null)
-        }
-        stubbing(kafkaHealthIndicator) {
-            on { isHealthy } doReturn true
-        }
+        stubASK()
 
-        assertThatThrownBy { runBlocking { orderService.submitNewOrder(order) } }.isNotInstanceOf(NullPointerException::class.java)
+        assertThatThrownBy {
+            runBlocking {
+                orderService.submitNewOrder(VALID.CREATE_ORDER_REQUEST_ASK.copy(price = BigDecimal.valueOf(-100000)))
+            }
+        }.isNotInstanceOf(MockKException::class.java)
     }
 
     @Test
     fun givenPair_whenSubmitNewOrderByASKAndInvalidQuantity_thenThrow(): Unit = runBlocking {
-        val pairConfig = PairConfig("ETH_USDT", "ETH", "USDT", 0.01, 0.0001)
-        val order = CreateOrderRequest(
-            "a2930d06-0c84-4448-bff7-65134184bb1d",
-            "ETH_USDT",
-            BigDecimal.valueOf(100000),
-            BigDecimal.valueOf(-0.001),
-            OrderDirection.ASK,
-            MatchConstraint.GTC,
-            OrderType.LIMIT_ORDER
-        )
-        stubbing(pairConfigLoader) {
-            onBlocking { load("ETH_USDT", OrderDirection.ASK, "") } doReturn PairFeeConfig(
-                pairConfig,
-                "ASK",
-                "",
-                0.01,
-                0.01
-            )
-        }
-        stubbing(accountantApiProxy) {
-            onBlocking {
-                canCreateOrder(order.uuid!!, "ETH", order.quantity)
-            } doReturn true
-        }
-        stubbing(orderSubmitter) {
-            onBlocking {
-                submit(any())
-            } doReturn OrderSubmitResult(null)
-        }
-        stubbing(kafkaHealthIndicator) {
-            on { isHealthy } doReturn true
-        }
+        stubASK()
 
-        assertThatThrownBy { runBlocking { orderService.submitNewOrder(order) } }.isNotInstanceOf(NullPointerException::class.java)
-    }
-
-    @Test
-    fun givenPair_whenSubmitNewOrderByASKAndInvalidLevel_thenThrow(): Unit = runBlocking {
-        val pairConfig = PairConfig("ETH_USDT", "ETH", "USDT", 0.01, 0.0001)
-        val order = CreateOrderRequest(
-            "a2930d06-0c84-4448-bff7-65134184bb1d",
-            "ETH_USDT",
-            BigDecimal.valueOf(100000),
-            BigDecimal.valueOf(0.001),
-            OrderDirection.ASK,
-            MatchConstraint.GTC,
-            OrderType.LIMIT_ORDER
-        )
-        stubbing(pairConfigLoader) {
-            onBlocking { load("ETH_USDT", OrderDirection.ASK, "1") } doReturn PairFeeConfig(
-                pairConfig,
-                "ASK",
-                "1",
-                0.01,
-                0.01
-            )
-        }
-        stubbing(accountantApiProxy) {
-            onBlocking {
-                canCreateOrder(order.uuid!!, "ETH", order.quantity)
-            } doReturn true
-        }
-        stubbing(orderSubmitter) {
-            onBlocking {
-                submit(any())
-            } doReturn OrderSubmitResult(null)
-        }
-        stubbing(kafkaHealthIndicator) {
-            on { isHealthy } doReturn true
-        }
-
-        assertThatThrownBy { runBlocking { orderService.submitNewOrder(order) } }.isNotInstanceOf(NullPointerException::class.java)
+        assertThatThrownBy {
+            runBlocking {
+                orderService.submitNewOrder(VALID.CREATE_ORDER_REQUEST_ASK.copy(quantity = BigDecimal.valueOf(-0.001)))
+            }
+        }.isNotInstanceOf(MockKException::class.java)
     }
 
     @Test
     fun givenPair_whenSubmitNewOrderByBID_thenOrderSubmitResult(): Unit = runBlocking {
-        val pairConfig = PairConfig("ETH_USDT", "ETH", "USDT", 0.01, 0.0001)
-        val order = CreateOrderRequest(
-            "a2930d06-0c84-4448-bff7-65134184bb1d",
-            "ETH_USDT",
-            BigDecimal.valueOf(100000),
-            BigDecimal.valueOf(0.001),
-            OrderDirection.BID,
-            MatchConstraint.GTC,
-            OrderType.LIMIT_ORDER
-        )
-        stubbing(pairConfigLoader) {
-            onBlocking { load("ETH_USDT", OrderDirection.BID, "") } doReturn PairFeeConfig(
-                pairConfig,
-                "BID",
-                "",
-                0.01,
-                0.01
-            )
-        }
-        stubbing(accountantApiProxy) {
-            onBlocking {
-                canCreateOrder(order.uuid!!, "USDT", order.quantity * order.price)
-            } doReturn true
-        }
-        stubbing(orderSubmitter) {
-            onBlocking {
-                submit(any())
-            } doReturn OrderSubmitResult(null)
-        }
-        stubbing(kafkaHealthIndicator) {
-            on { isHealthy } doReturn true
-        }
+        stubBID()
 
-        val orderSubmitResult = orderService.submitNewOrder(order)
+        val orderSubmitResult = orderService.submitNewOrder(VALID.CREATE_ORDER_REQUEST_BID)
 
         assertThat(orderSubmitResult).isNotNull
     }
 
     @Test
     fun givenPair_whenSubmitNewOrderByBIDAndInvalidSymbol_thenThrow(): Unit = runBlocking {
-        val pairConfig = PairConfig("ETH_USDT", "ETH", "USDT", 0.01, 0.0001)
-        val order = CreateOrderRequest(
-            "a2930d06-0c84-4448-bff7-65134184bb1d",
-            "BTC_USDT",
-            BigDecimal.valueOf(100000),
-            BigDecimal.valueOf(0.001),
-            OrderDirection.BID,
-            MatchConstraint.GTC,
-            OrderType.LIMIT_ORDER
-        )
-        stubbing(pairConfigLoader) {
-            onBlocking { load("ETH_USDT", OrderDirection.BID, "") } doReturn PairFeeConfig(
-                pairConfig,
-                "BID",
-                "",
-                0.01,
-                0.01
-            )
-        }
-        stubbing(accountantApiProxy) {
-            onBlocking {
-                canCreateOrder(order.uuid!!, "USDT", order.quantity * order.price)
-            } doReturn true
-        }
-        stubbing(orderSubmitter) {
-            onBlocking {
-                submit(any())
-            } doReturn OrderSubmitResult(null)
-        }
-        stubbing(kafkaHealthIndicator) {
-            on { isHealthy } doReturn true
-        }
+        stubBID()
+        clearMocks(pairConfigLoader)
+        coEvery {
+            pairConfigLoader.load("BTC_USDT", OrderDirection.BID)
+        } throws Exception()
 
-        assertThatThrownBy { runBlocking { orderService.submitNewOrder(order) } }.isNotInstanceOf(NullPointerException::class.java)
+        assertThatThrownBy {
+            runBlocking {
+                orderService.submitNewOrder(VALID.CREATE_ORDER_REQUEST_BID.copy(pair = "BTC_USDT"))
+            }
+        }.isNotInstanceOf(MockKException::class.java)
     }
 
     @Test
     fun givenPair_whenSubmitNewOrderByBIDAndNotExistOwner_thenThrow(): Unit = runBlocking {
-        val pairConfig = PairConfig("ETH_USDT", "ETH", "USDT", 0.01, 0.0001)
-        val order = CreateOrderRequest(
-            "55408c0a-ed53-42d1-b5ee-b2edf531b9d5",
-            "ETH_USDT",
-            BigDecimal.valueOf(100000),
-            BigDecimal.valueOf(0.001),
-            OrderDirection.BID,
-            MatchConstraint.GTC,
-            OrderType.LIMIT_ORDER
-        )
-        stubbing(pairConfigLoader) {
-            onBlocking { load("ETH_USDT", OrderDirection.BID, "") } doReturn PairFeeConfig(
-                pairConfig,
-                "BID",
-                "",
-                0.01,
-                0.01
-            )
-        }
-        stubbing(accountantApiProxy) {
-            onBlocking {
-                canCreateOrder(order.uuid!!, "USDT", order.quantity * order.price)
-            } doReturn true
-        }
-        stubbing(orderSubmitter) {
-            onBlocking {
-                submit(any())
-            } doReturn OrderSubmitResult(null)
-        }
-        stubbing(kafkaHealthIndicator) {
-            on { isHealthy } doReturn true
-        }
+        stubBID()
 
-        assertThatThrownBy { runBlocking { orderService.submitNewOrder(order) } }.isNotInstanceOf(NullPointerException::class.java)
+        assertThatThrownBy {
+            runBlocking {
+                orderService.submitNewOrder(VALID.CREATE_ORDER_REQUEST_BID.copy(uuid = "55408c0a-ed53-42d1-b5ee-b2edf531b9d5"))
+            }
+        }.isNotInstanceOf(MockKException::class.java)
     }
 
     @Test
     fun givenPair_whenSubmitNewOrderByBIDAndInvalidPrice_thenThrow(): Unit = runBlocking {
-        val pairConfig = PairConfig("ETH_USDT", "ETH", "USDT", 0.01, 0.0001)
-        val order = CreateOrderRequest(
-            "a2930d06-0c84-4448-bff7-65134184bb1d",
-            "ETH_USDT",
-            BigDecimal.valueOf(-100000),
-            BigDecimal.valueOf(0.001),
-            OrderDirection.BID,
-            MatchConstraint.GTC,
-            OrderType.LIMIT_ORDER
-        )
-        stubbing(pairConfigLoader) {
-            onBlocking { load("ETH_USDT", OrderDirection.BID, "") } doReturn PairFeeConfig(
-                pairConfig,
-                "BID",
-                "",
-                0.01,
-                0.01
-            )
-        }
-        stubbing(accountantApiProxy) {
-            onBlocking {
-                canCreateOrder(order.uuid!!, "USDT", order.quantity * order.price)
-            } doReturn true
-        }
-        stubbing(orderSubmitter) {
-            onBlocking {
-                submit(any())
-            } doReturn OrderSubmitResult(null)
-        }
-        stubbing(kafkaHealthIndicator) {
-            on { isHealthy } doReturn true
-        }
+        stubBID()
 
-        assertThatThrownBy { runBlocking { orderService.submitNewOrder(order) } }.isNotInstanceOf(NullPointerException::class.java)
+        assertThatThrownBy {
+            runBlocking {
+                orderService.submitNewOrder(VALID.CREATE_ORDER_REQUEST_BID.copy(price = BigDecimal.valueOf(-100000)))
+            }
+        }.isNotInstanceOf(MockKException::class.java)
     }
 
     @Test
     fun givenPair_whenSubmitNewOrderByBIDAndInvalidQuantity_thenThrow(): Unit = runBlocking {
-        val pairConfig = PairConfig("ETH_USDT", "ETH", "USDT", 0.01, 0.0001)
-        val order = CreateOrderRequest(
-            "a2930d06-0c84-4448-bff7-65134184bb1d",
-            "ETH_USDT",
-            BigDecimal.valueOf(100000),
-            BigDecimal.valueOf(-0.001),
-            OrderDirection.BID,
-            MatchConstraint.GTC,
-            OrderType.LIMIT_ORDER
-        )
-        stubbing(pairConfigLoader) {
-            onBlocking { load("ETH_USDT", OrderDirection.BID, "") } doReturn PairFeeConfig(
-                pairConfig,
-                "BID",
-                "",
-                0.01,
-                0.01
-            )
-        }
-        stubbing(accountantApiProxy) {
-            onBlocking {
-                canCreateOrder(order.uuid!!, "USDT", order.quantity * order.price)
-            } doReturn true
-        }
-        stubbing(orderSubmitter) {
-            onBlocking {
-                submit(any())
-            } doReturn OrderSubmitResult(null)
-        }
-        stubbing(kafkaHealthIndicator) {
-            on { isHealthy } doReturn true
-        }
+        stubBID()
 
-        assertThatThrownBy { runBlocking { orderService.submitNewOrder(order) } }.isNotInstanceOf(NullPointerException::class.java)
-    }
-
-    @Test
-    fun givenPair_whenSubmitNewOrderByBIDAndInvalidLevel_thenThrow(): Unit = runBlocking {
-        val pairConfig = PairConfig("ETH_USDT", "ETH", "USDT", 0.01, 0.0001)
-        val order = CreateOrderRequest(
-            "a2930d06-0c84-4448-bff7-65134184bb1d",
-            "ETH_USDT",
-            BigDecimal.valueOf(100000),
-            BigDecimal.valueOf(0.001),
-            OrderDirection.BID,
-            MatchConstraint.GTC,
-            OrderType.LIMIT_ORDER
-        )
-        stubbing(pairConfigLoader) {
-            onBlocking { load("ETH_USDT", OrderDirection.BID, "1") } doReturn PairFeeConfig(
-                pairConfig,
-                "BID",
-                "1",
-                0.01,
-                0.01
-            )
-        }
-        stubbing(accountantApiProxy) {
-            onBlocking {
-                canCreateOrder(order.uuid!!, "USDT", order.quantity * order.price)
-            } doReturn true
-        }
-        stubbing(orderSubmitter) {
-            onBlocking {
-                submit(any())
-            } doReturn OrderSubmitResult(null)
-        }
-        stubbing(kafkaHealthIndicator) {
-            on { isHealthy } doReturn true
-        }
-
-        assertThatThrownBy { runBlocking { orderService.submitNewOrder(order) } }.isNotInstanceOf(NullPointerException::class.java)
+        assertThatThrownBy {
+            runBlocking {
+                orderService.submitNewOrder(VALID.CREATE_ORDER_REQUEST_BID.copy(quantity = BigDecimal.valueOf(-0.001)))
+            }
+        }.isNotInstanceOf(MockKException::class.java)
     }
 
     @Test
     fun givenEventSubmitter_whenCancelOrder_thenOrderSubmitResult(): Unit = runBlocking {
-        val order = CancelOrderRequest(
-            "edee8090-62d9-4929-b70d-5b97de0c29eb",
-            "a2930d06-0c84-4448-bff7-65134184bb1d",
-            1,
-            "ETH_USDT"
-        )
-        stubbing(eventSubmitter) {
-            onBlocking {
-                submit(any())
-            } doReturn OrderSubmitResult(null)
-        }
+        coEvery {
+            eventSubmitter.submit(any())
+        } returns OrderSubmitResult(null)
 
-        val orderSubmitResult = orderService.cancelOrder(order)
+        val orderSubmitResult = orderService.cancelOrder(VALID.CANCEL_ORDER_REQUEST)
 
         assertThat(orderSubmitResult).isNotNull
     }

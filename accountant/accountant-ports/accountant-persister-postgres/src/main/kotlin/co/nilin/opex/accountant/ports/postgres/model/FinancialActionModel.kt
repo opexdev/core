@@ -4,6 +4,7 @@ import co.nilin.opex.accountant.core.model.FinancialActionStatus
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
+import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Table("fi_actions")
@@ -13,7 +14,7 @@ class FinancialActionModel(
     @Column("event_type") val eventType: String,
     val pointer: String,
     val symbol: String,
-    @Column("amount") val amount: Double,
+    @Column("amount") val amount: BigDecimal,
     val sender: String,
     @Column("sender_wallet_type") val senderWalletType: String,
     val receiver: String,

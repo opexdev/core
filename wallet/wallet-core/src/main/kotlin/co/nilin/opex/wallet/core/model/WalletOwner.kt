@@ -1,11 +1,11 @@
 package co.nilin.opex.wallet.core.model
 
-interface WalletOwner {
-    fun id(): Long?
-    fun uuid(): String
-    fun title(): String
-    fun level(): String
-    fun isTradeAllowed(): Boolean
-    fun isWithdrawAllowed(): Boolean
-    fun isDepositAllowed(): Boolean
-}
+data class WalletOwner(
+    val id: Long?,
+    val uuid: String,
+    val title: String,
+    val level: String,
+    val isTradeAllowed: Boolean,
+    val isWithdrawAllowed: Boolean,
+    val isDepositAllowed: Boolean
+)

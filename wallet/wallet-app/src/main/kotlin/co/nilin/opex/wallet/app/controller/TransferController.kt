@@ -71,7 +71,7 @@ class TransferController(
             TransferCommand(
                 sourceWallet,
                 receiverWallet,
-                Amount(sourceWallet.currency(), amount),
+                Amount(sourceWallet.currency, amount),
                 description, transferRef, emptyMap()
             )
         ).transferResult
@@ -121,7 +121,7 @@ class TransferController(
             TransferCommand(
                 sourceWallet,
                 receiverWallet,
-                Amount(sourceWallet.currency(), amount),
+                Amount(sourceWallet.currency, amount),
                 description, transferRef, emptyMap()
             )
         ).transferResult

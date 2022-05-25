@@ -5,6 +5,7 @@ import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Mono
+import java.math.BigDecimal
 
 @Repository
 interface PairConfigRepository : ReactiveCrudRepository<PairConfigModel, String> {
@@ -14,7 +15,7 @@ interface PairConfigRepository : ReactiveCrudRepository<PairConfigModel, String>
         pair: String,
         leftSide: String,
         rightSide: String,
-        leftSideFraction: Double,
-        rightSideFraction: Double
+        leftSideFraction: BigDecimal,
+        rightSideFraction: BigDecimal
     ): Mono<Void>
 }

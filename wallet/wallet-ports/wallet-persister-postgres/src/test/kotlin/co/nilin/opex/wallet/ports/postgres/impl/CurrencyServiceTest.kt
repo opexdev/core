@@ -1,47 +1,44 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepository
-import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
+import co.nilin.opex.wallet.ports.postgres.dto.toModel
+import co.nilin.opex.wallet.ports.postgres.impl.sample.VALID
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.stubbing
 import reactor.core.publisher.Mono
 
 private class CurrencyServiceTest {
-    private val currencyRepository: CurrencyRepository = mock { }
+    private val currencyRepository: CurrencyRepository = mockk()
     private val currencyService: CurrencyServiceImpl = CurrencyServiceImpl(currencyRepository)
 
     @Test
     fun givenCurrency_whenGetCurrency_thenReturnCurrency(): Unit = runBlocking {
-        stubbing(currencyRepository) {
-            on { findBySymbol("ETH") } doReturn Mono.just(CurrencyModel("ETH", "Ethereum", 0.0001))
-        }
-        val c = currencyService.getCurrency("ETH")
+        every { currencyRepository.findBySymbol(VALID.CURRENCY.symbol) } returns Mono.just(VALID.CURRENCY.toModel())
+
+        val c = currencyService.getCurrency(VALID.CURRENCY.symbol)
 
         assertThat(c).isNotNull
-        assertThat(c!!.getSymbol()).isEqualTo("ETH")
-        assertThat(c.getName()).isEqualTo("Ethereum")
-        assertThat(c.getPrecision()).isEqualTo(0.0001)
+        assertThat(c!!.symbol).isEqualTo(VALID.CURRENCY.symbol)
+        assertThat(c.name).isEqualTo(VALID.CURRENCY.name)
+        assertThat(c.precision).isEqualTo(VALID.CURRENCY.precision)
     }
 
     @Test
     fun givenNoCurrency_whenGetCurrency_thenReturnNull(): Unit = runBlocking {
-        stubbing(currencyRepository) {
-            on { findBySymbol("ETH") } doReturn Mono.empty()
-        }
-        val c = currencyService.getCurrency("ETH")
+        every { currencyRepository.findBySymbol(VALID.CURRENCY.symbol) } returns Mono.empty()
+
+        val c = currencyService.getCurrency(VALID.CURRENCY.symbol)
 
         assertThat(c).isNull()
     }
 
     @Test
     fun givenNoCurrency_whenGetCurrencyWithEmptySymbol_thenReturnNull(): Unit = runBlocking {
-        stubbing(currencyRepository) {
-            on { findBySymbol("") } doReturn Mono.empty()
-        }
+        every { currencyRepository.findBySymbol("") } returns Mono.empty()
+
         val c = currencyService.getCurrency("")
 
         assertThat(c).isNull()

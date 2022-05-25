@@ -59,7 +59,7 @@ class EventStreamHandlerImpl(
                 order.orderId ?: -1,
                 -1,
                 null,
-                order.price?.toBigDecimal() ?: BigDecimal.ZERO,
+                order.price ?: BigDecimal.ZERO,
                 orderUpdate.quantity,
                 orderUpdate.executedQuantity(),
                 orderUpdate.accumulativeQuoteQuantity(),
@@ -70,7 +70,7 @@ class EventStreamHandlerImpl(
                 Date(),
                 Date(),
                 status.isWorking(),
-                order.quoteQuantity?.toBigDecimal() ?: BigDecimal.ZERO
+                order.quoteQuantity ?: BigDecimal.ZERO
             )
             template.convertAndSendToUser(order.uuid, EventDestinations.Order.path, response)
         }
@@ -104,9 +104,9 @@ class EventStreamHandlerImpl(
             if (takerUuid == uuid) takerPrice else makerPrice,
             matchedQuantity,
             if (isMakerBuyer)
-                makerOrder.quoteQuantity?.toBigDecimal() ?: BigDecimal.ZERO
+                makerOrder.quoteQuantity ?: BigDecimal.ZERO
             else
-                takerOrder.quoteQuantity?.toBigDecimal() ?: BigDecimal.ZERO,
+                takerOrder.quoteQuantity ?: BigDecimal.ZERO,
             if (takerUuid == uuid) takerCommision else makerCommision,
             if (takerUuid == uuid) takerCommisionAsset else makerCommisionAsset,
             Date(),

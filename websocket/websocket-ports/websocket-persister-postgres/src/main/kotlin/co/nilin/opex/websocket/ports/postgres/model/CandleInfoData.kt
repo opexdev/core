@@ -1,6 +1,7 @@
 package co.nilin.opex.websocket.ports.postgres.model
 
 import org.springframework.data.relational.core.mapping.Column
+import java.math.BigDecimal
 import java.time.LocalDateTime
 
 data class CandleInfoData(
@@ -8,10 +9,10 @@ data class CandleInfoData(
     val openTime: LocalDateTime,
     @Column("close_time")
     val closeTime: LocalDateTime,
-    val open: Double?,
-    val close: Double?,
-    val high: Double?,
-    val low: Double?,
-    val volume: Double?,
+    val open: BigDecimal?,
+    val close: BigDecimal?,
+    val high: BigDecimal?,
+    val low: BigDecimal?,
+    val volume: BigDecimal?,
     val trades: Int,
 )
