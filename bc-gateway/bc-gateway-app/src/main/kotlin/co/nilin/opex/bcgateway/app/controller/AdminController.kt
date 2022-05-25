@@ -10,6 +10,7 @@ import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import org.springframework.web.bind.annotation.*
+import java.math.BigDecimal
 
 @RestController
 @RequestMapping("/admin")
@@ -80,7 +81,7 @@ class AdminController(
         with(body) {
             if (symbol.isNullOrEmpty() || chain.isNullOrEmpty()) throw ex
             if (isToken && (tokenName.isNullOrEmpty() || tokenAddress.isNullOrEmpty())) throw ex
-            if (withdrawFee < 0 || minimumWithdraw < 0 || decimal < 0) throw ex
+            if (withdrawFee < BigDecimal.ZERO || minimumWithdraw < BigDecimal.ZERO || decimal < 0) throw ex
         }
 
         return with(service.addToken(body)) {

@@ -2,7 +2,7 @@ package co.nilin.opex.matching.gateway.app.proxy
 
 import co.nilin.opex.matching.engine.core.model.OrderDirection
 import co.nilin.opex.matching.gateway.app.inout.BooleanResponse
-import co.nilin.opex.matching.gateway.app.inout.PairFeeConfig
+import co.nilin.opex.matching.gateway.app.inout.PairConfig
 import co.nilin.opex.matching.gateway.app.spi.AccountantApiProxy
 import kotlinx.coroutines.reactive.awaitFirst
 import org.springframework.beans.factory.annotation.Value
@@ -30,19 +30,13 @@ class AccountantProxyImpl(
             .result
     }
 
-    override suspend fun fetchPairFeeConfig(pair: String, direction: OrderDirection, userLevel: String): PairFeeConfig {
+    override suspend fun fetchPairConfig(pair: String, direction: OrderDirection): PairConfig {
         return webClient.get()
-            .uri(
-                if (userLevel.isBlank()) {
-                    "$accountantBaseUrl/config/${pair}/fee/${direction}"
-                } else {
-                    "$accountantBaseUrl/config/${pair}/fee/${direction}-${userLevel}"
-                }
-            )
+            .uri("$accountantBaseUrl/config/${pair}/${direction}")
             .header("Content-Type", "application/json")
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
-            .bodyToMono<PairFeeConfig>()
+            .bodyToMono<PairConfig>()
             .log()
             .awaitFirst()
     }

@@ -26,8 +26,8 @@ class InitializeService(
             val pair = it.pair ?: "${it.leftSide}_${it.rightSide}"
             val leftSideCurrency = preferences.currencies.first { c -> it.leftSide == c.symbol }
             val rightSideCurrency = preferences.currencies.first { c -> it.rightSide == c.symbol }
-            val leftSideFraction = (it.leftSideFraction ?: leftSideCurrency.precision).toDouble()
-            val rightSideFraction = (it.rightSideFraction ?: rightSideCurrency.precision).toDouble()
+            val leftSideFraction = (it.leftSideFraction ?: leftSideCurrency.precision)
+            val rightSideFraction = (it.rightSideFraction ?: rightSideCurrency.precision)
             pairConfigRepository.insert(
                 pair,
                 it.leftSide,
@@ -43,8 +43,8 @@ class InitializeService(
                             pair,
                             f.direction,
                             f.userLevel,
-                            f.makerFee.toDouble(),
-                            f.takerFee.toDouble()
+                            f.makerFee,
+                            f.takerFee
                         )
                     ).awaitSingleOrNull()
                 }

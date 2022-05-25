@@ -43,7 +43,7 @@ class BalanceController(
         if (owner != null) {
             val c = currencyService.getCurrency(currency) ?: throw OpexException(OpexError.CurrencyNotFound)
             val wallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, walletType, c)
-            return BalanceResponse(wallet?.balance()?.amount ?: BigDecimal.ZERO)
+            return BalanceResponse(wallet?.balance?.amount ?: BigDecimal.ZERO)
         }
         return BalanceResponse(BigDecimal.ZERO)
     }

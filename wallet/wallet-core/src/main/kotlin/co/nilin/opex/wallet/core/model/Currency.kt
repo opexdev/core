@@ -1,7 +1,5 @@
 package co.nilin.opex.wallet.core.model
 
-interface Currency {
-    fun getSymbol(): String
-    fun getName(): String
-    fun getPrecision(): Double
-}
+import java.math.BigDecimal
+
+data class Currency(val symbol: String, val name: String, val precision: BigDecimal)

@@ -1,30 +1,31 @@
 package co.nilin.opex.websocket.ports.postgres.model
 
 import org.springframework.data.relational.core.mapping.Column
+import java.math.BigDecimal
 
 data class TradeTickerData(
     val symbol: String,
     @Column("price_change")
-    val priceChange: Double?,
+    val priceChange: BigDecimal?,
     @Column("price_change_percent")
-    val priceChangePercent: Double?,
+    val priceChangePercent: BigDecimal?,
     @Column("weighted_avg_price")
-    val weightedAvgPrice: Double?,
+    val weightedAvgPrice: BigDecimal?,
     @Column("last_price")
-    val lastPrice: Double?,
+    val lastPrice: BigDecimal?,
     @Column("last_qty")
-    val lastQty: Double?,
+    val lastQty: BigDecimal?,
     @Column("bid_price")
-    val bidPrice: Double?,
+    val bidPrice: BigDecimal?,
     @Column("ask_price")
-    val askPrice: Double?,
+    val askPrice: BigDecimal?,
     @Column("open_price")
-    val openPrice: Double?,
+    val openPrice: BigDecimal?,
     @Column("high_price")
-    val highPrice: Double?,
+    val highPrice: BigDecimal?,
     @Column("low_price")
-    val lowPrice: Double?,
-    val volume: Double?,
+    val lowPrice: BigDecimal?,
+    val volume: BigDecimal?,
     @Column("first_id")
     val firstId: Long?,
     @Column("last_id")

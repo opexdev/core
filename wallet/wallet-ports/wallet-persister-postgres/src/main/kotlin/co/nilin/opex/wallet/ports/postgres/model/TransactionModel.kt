@@ -7,7 +7,7 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Table("transaction")
-class TransactionModel(
+data class TransactionModel(
     @Id var id: Long?,
     @Column("source_wallet") val sourceWallet: Long,
     @Column("dest_wallet") val destWallet: Long,

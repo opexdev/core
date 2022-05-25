@@ -12,10 +12,12 @@ import co.nilin.opex.api.ports.postgres.util.isWorking
 import java.math.BigDecimal
 import java.security.Principal
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.ZoneOffset
 import java.util.*
 
-object Valid {
+object VALID {
+    private const val USER_LEVEL_REGISTERED = "registered"
     private const val TIMESTAMP = 1653125840L
     private val CREATE_DATE: LocalDateTime = LocalDateTime.ofEpochSecond(TIMESTAMP, 0, ZoneOffset.UTC)
     private val UPDATE_DATE: LocalDateTime = LocalDateTime.ofEpochSecond(TIMESTAMP + 180, 0, ZoneOffset.UTC)
@@ -33,60 +35,33 @@ object Valid {
         null, // Binance
         ETH_USDT,
         1, // MatchingEngine ID
-        0.01, // Calculated?
-        0.01, // Calculated?
-        0.0001,
-        0.01,
-        "1",
+        BigDecimal.valueOf(0.01), // Calculated?
+        BigDecimal.valueOf(0.01), // Calculated?
+        BigDecimal.valueOf(0.0001),
+        BigDecimal.valueOf(0.01),
+        USER_LEVEL_REGISTERED,
         OrderDirection.ASK,
         MatchConstraint.GTC,
         MatchingOrderType.LIMIT_ORDER,
-        100000.0,
-        0.001,
-        100000.0 * 0.001,
+        BigDecimal.valueOf(100000),
+        BigDecimal.valueOf(0.001),
+        BigDecimal.valueOf(100).stripTrailingZeros(),
         CREATE_DATE,
         UPDATE_DATE
     )
 
-    val TAKER_ORDER_MODEL = OrderModel(
-        2,
-        "157b9b4a-cc66-43b9-b30b-40a8b66ea6aa",
-        PRINCIPAL.name,
-        null,
-        ETH_USDT,
-        2,
-        0.01,
-        0.01,
-        0.0001,
-        0.01,
-        "1",
-        OrderDirection.BID,
-        MatchConstraint.GTC,
-        MatchingOrderType.LIMIT_ORDER,
-        100000.0,
-        0.001,
-        100000.0 * 0.01,
-        CREATE_DATE,
-        UPDATE_DATE
-    )
+    val TAKER_ORDER_MODEL = MAKER_ORDER_MODEL.copy(2, "157b9b4a-cc66-43b9-b30b-40a8b66ea6aa")
 
     val MAKER_ORDER_STATUS_MODEL = OrderStatusModel(
         MAKER_ORDER_MODEL.ouid,
-        0.0, // Filled amount
-        0.0, // --> See accountant
+        BigDecimal.valueOf(0), // Filled amount
+        BigDecimal.valueOf(0), // --> See accountant
         OrderStatus.FILLED.code,
         OrderStatus.FILLED.orderOfAppearance,
         CREATE_DATE
     )
 
-    val TAKER_ORDER_STATUS_MODEL = OrderStatusModel(
-        TAKER_ORDER_MODEL.ouid,
-        0.0, // Filled amount
-        0.0, // --> See accountant
-        OrderStatus.FILLED.code,
-        OrderStatus.FILLED.orderOfAppearance,
-        CREATE_DATE
-    )
+    val TAKER_ORDER_STATUS_MODEL = MAKER_ORDER_STATUS_MODEL.copy(TAKER_ORDER_MODEL.ouid)
 
     val SYMBOL_MAP_MODEL = SymbolMapModel(
         1,
@@ -99,19 +74,19 @@ object Valid {
         1,
         1,
         ETH_USDT,
-        0.001, // Minimum of orders quantities
-        100000.0,
-        100000.0,
-        0.001, // Calculated
-        0.001, // Calculated
+        BigDecimal.valueOf(0.001), // Minimum of orders quantities
+        BigDecimal.valueOf(100000),
+        BigDecimal.valueOf(100000),
+        BigDecimal.valueOf(0.001), // Calculated
+        BigDecimal.valueOf(0.001), // Calculated
         "ETH",
         "USDT",
-        UPDATE_DATE,
+        CREATE_DATE,
         MAKER_ORDER_MODEL.ouid,
         TAKER_ORDER_MODEL.ouid,
         PRINCIPAL.name,
         PRINCIPAL.name,
-        CREATE_DATE
+        UPDATE_DATE
     )
 
     val MAKER_QUERY_ORDER_RESPONSE = QueryOrderResponse(
@@ -120,30 +95,30 @@ object Valid {
         1,
         -1, // Binance
         "", // Binance
-        BigDecimal.valueOf(100000.0),
+        BigDecimal.valueOf(100000),
         BigDecimal.valueOf(0.001),
-        BigDecimal.valueOf(0.0),
-        BigDecimal.valueOf(0.0),
+        BigDecimal.valueOf(0),
+        BigDecimal.valueOf(0),
         OrderStatus.FILLED,
         TimeInForce.GTC,
         OrderType.LIMIT,
         OrderSide.SELL,
         null,
         null,
-        Date.from(CREATE_DATE.toInstant(ZoneOffset.UTC)),
-        Date.from(UPDATE_DATE.toInstant(ZoneOffset.UTC)),
+        Date.from(CREATE_DATE.atZone(ZoneId.systemDefault()).toInstant()),
+        Date.from(UPDATE_DATE.atZone(ZoneId.systemDefault()).toInstant()),
         OrderStatus.FILLED.isWorking(),
-        BigDecimal.valueOf(100000.0 * 0.001)
+        BigDecimal.valueOf(100000.0 * 0.001).stripTrailingZeros()
     )
 
     val AGGREGATED_ORDER_PRICE_MODEL = AggregatedOrderPriceModel(
-        100000.0,
-        0.001
+        BigDecimal.valueOf(100000),
+        BigDecimal.valueOf(0.001)
     )
 
     val ORDER_BOOK_RESPONSE = OrderBookResponse(
-        AGGREGATED_ORDER_PRICE_MODEL.price!!.toBigDecimal(),
-        AGGREGATED_ORDER_PRICE_MODEL.quantity!!.toBigDecimal()
+        AGGREGATED_ORDER_PRICE_MODEL.price!!,
+        AGGREGATED_ORDER_PRICE_MODEL.quantity!!
     )
 
     val RICH_ORDER = RichOrder(
@@ -151,7 +126,7 @@ object Valid {
         ETH_USDT,
         MAKER_ORDER_MODEL.ouid,
         PRINCIPAL.name,
-        "1",
+        USER_LEVEL_REGISTERED,
         BigDecimal.valueOf(0.01),
         BigDecimal.valueOf(0.01),
         BigDecimal.valueOf(0.0001),
@@ -220,10 +195,10 @@ object Valid {
     val MARKET_TRADE_RESPONSE = MarketTradeResponse(
         ETH_USDT,
         1,
-        BigDecimal.valueOf(100000.0),
+        BigDecimal.valueOf(100000),
         BigDecimal.valueOf(0.001),
-        BigDecimal.valueOf(100000.0 * 0.001),
-        Date.from(CREATE_DATE.toInstant(ZoneOffset.UTC)),
+        BigDecimal.valueOf(100000 * 0.001).stripTrailingZeros(),
+        Date.from(UPDATE_DATE.atZone(ZoneId.systemDefault()).toInstant()),
         true,
         MAKER_ORDER_MODEL.direction == OrderDirection.BID
     )

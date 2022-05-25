@@ -2,6 +2,7 @@ package co.nilin.opex.bcgateway.core.spi
 
 import co.nilin.opex.bcgateway.core.model.CurrencyImplementation
 import co.nilin.opex.bcgateway.core.model.CurrencyInfo
+import java.math.BigDecimal
 
 interface CurrencyHandler {
 
@@ -17,8 +18,8 @@ interface CurrencyHandler {
         tokenName: String?,
         tokenAddress: String?,
         isToken: Boolean,
-        withdrawFee: Double,
-        minimumWithdraw: Double,
+        withdrawFee: BigDecimal,
+        minimumWithdraw: BigDecimal,
         isWithdrawEnabled: Boolean,
         decimal: Int
     ): CurrencyImplementation

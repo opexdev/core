@@ -16,9 +16,10 @@ import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
+import java.math.BigDecimal
 import java.time.LocalDateTime
 
-internal class OrderManagerImplTest {
+internal class OrderManagerImplTest() {
 
     @Mock
     lateinit var financialActionPersister: FinancialActionPersister
@@ -33,15 +34,12 @@ internal class OrderManagerImplTest {
     lateinit var tempEventPersister: TempEventPersister
 
     @Mock
-    lateinit var tempEventRepublisher: TempEventRepublisher
-
-    @Mock
     lateinit var pairConfigLoader: PairConfigLoader
 
     @Mock
     lateinit var richOrderPublisher: RichOrderPublisher
 
-    val orderManager: OrderManager
+    private val orderManager: OrderManager
 
     init {
         MockitoAnnotations.openMocks(this)
@@ -51,7 +49,6 @@ internal class OrderManagerImplTest {
             financialActionLoader,
             orderPersister,
             tempEventPersister,
-            tempEventRepublisher,
             richOrderPublisher
         )
         runBlocking {
@@ -65,7 +62,11 @@ internal class OrderManagerImplTest {
             //given
             val pair = co.nilin.opex.matching.engine.core.model.Pair("eth", "btc")
             val pairConfig = PairConfig(
-                pair.toString(), pair.leftSideName, pair.rightSideName, 1.0, 0.001
+                pair.toString(),
+                pair.leftSideName,
+                pair.rightSideName,
+                BigDecimal.valueOf(1.0),
+                BigDecimal.valueOf(0.001)
             )
             val submitOrderEvent = SubmitOrderEvent(
                 "ouid", "uuid", null, pair, 30, 60, 0, OrderDirection.ASK, MatchConstraint.GTC, OrderType.LIMIT_ORDER
@@ -76,8 +77,8 @@ internal class OrderManagerImplTest {
                         pairConfig,
                         submitOrderEvent.direction.toString(),
                         "",
-                        0.1,
-                        0.12
+                        BigDecimal.valueOf(0.1),
+                        BigDecimal.valueOf(0.12)
                     )
                 )
             Mockito.`when`(financialActionPersister.persist(MockitoHelper.anyObject()))
@@ -95,7 +96,7 @@ internal class OrderManagerImplTest {
                 SubmitOrderEvent::class.simpleName!!,
                 submitOrderEvent.ouid,
                 pair.leftSideName,
-                pairConfig.leftSideFraction.toBigDecimal().multiply(submitOrderEvent.quantity.toBigDecimal()),
+                pairConfig.leftSideFraction.multiply(submitOrderEvent.quantity.toBigDecimal()),
                 submitOrderEvent.uuid,
                 "main",
                 submitOrderEvent.uuid,
@@ -118,7 +119,11 @@ internal class OrderManagerImplTest {
             //given
             val pair = co.nilin.opex.matching.engine.core.model.Pair("eth", "btc")
             val pairConfig = PairConfig(
-                pair.toString(), pair.leftSideName, pair.rightSideName, 1.0, 0.001
+                pair.toString(),
+                pair.leftSideName,
+                pair.rightSideName,
+                BigDecimal.valueOf(1.0),
+                BigDecimal.valueOf(0.001)
             )
             val submitOrderEvent = SubmitOrderEvent(
                 "ouid", "uuid", null, pair, 35, 14, 0, OrderDirection.BID, MatchConstraint.GTC, OrderType.LIMIT_ORDER
@@ -126,7 +131,11 @@ internal class OrderManagerImplTest {
             Mockito.`when`(pairConfigLoader.load(pair.toString(), submitOrderEvent.direction, ""))
                 .thenReturn(
                     PairFeeConfig(
-                        pairConfig, submitOrderEvent.direction.toString(), "", 0.08, 0.1
+                        pairConfig,
+                        submitOrderEvent.direction.toString(),
+                        "",
+                        BigDecimal.valueOf(0.08),
+                        BigDecimal.valueOf(0.1)
                     )
                 )
             Mockito.`when`(financialActionPersister.persist(MockitoHelper.anyObject()))
@@ -146,8 +155,8 @@ internal class OrderManagerImplTest {
                 SubmitOrderEvent::class.simpleName!!,
                 submitOrderEvent.ouid,
                 pair.rightSideName,
-                pairConfig.leftSideFraction.toBigDecimal().multiply(submitOrderEvent.quantity.toBigDecimal())
-                    .multiply(pairConfig.rightSideFraction.toBigDecimal())
+                pairConfig.leftSideFraction.multiply(submitOrderEvent.quantity.toBigDecimal())
+                    .multiply(pairConfig.rightSideFraction)
                     .multiply(submitOrderEvent.price.toBigDecimal()),
                 submitOrderEvent.uuid,
                 "main",

@@ -1,5 +1,6 @@
 package co.nilin.opex.accountant.core.service
 
+import co.nilin.opex.accountant.core.api.FeeCalculator
 import co.nilin.opex.accountant.core.api.OrderManager
 import co.nilin.opex.accountant.core.api.TradeManager
 import co.nilin.opex.accountant.core.model.FinancialAction
@@ -20,6 +21,7 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
+import java.math.BigDecimal
 
 internal class TradeManagerImplTest {
 
@@ -59,7 +61,6 @@ internal class TradeManagerImplTest {
             financeActionLoader,
             orderPersister,
             tempEventPersister,
-            tempEventRepublisher,
             richOrderPublisher
         )
 
@@ -84,7 +85,11 @@ internal class TradeManagerImplTest {
             //given
             val pair = Pair("eth", "btc")
             val pairConfig = PairConfig(
-                pair.toString(), pair.leftSideName, pair.rightSideName, 1.0, 0.01
+                pair.toString(),
+                pair.leftSideName,
+                pair.rightSideName,
+                BigDecimal.valueOf(1.0),
+                BigDecimal.valueOf(0.01)
             )
             val makerSubmitOrderEvent = SubmitOrderEvent(
                 "mouid",
@@ -98,7 +103,7 @@ internal class TradeManagerImplTest {
                 MatchConstraint.GTC,
                 OrderType.LIMIT_ORDER
             )
-            prepareOrder(pair, pairConfig, makerSubmitOrderEvent, 0.1, 0.12)
+            prepareOrder(pair, pairConfig, makerSubmitOrderEvent, BigDecimal.valueOf(0.1), BigDecimal.valueOf(0.12))
 
             val takerSubmitOrderEvent = SubmitOrderEvent(
                 "touid",
@@ -113,7 +118,7 @@ internal class TradeManagerImplTest {
                 OrderType.LIMIT_ORDER
             )
 
-            prepareOrder(pair, pairConfig, takerSubmitOrderEvent, 0.08, 0.1)
+            prepareOrder(pair, pairConfig, takerSubmitOrderEvent, BigDecimal.valueOf(0.08), BigDecimal.valueOf(0.1))
 
             val tradeEvent = makeTradeEvent(pair, takerSubmitOrderEvent, makerSubmitOrderEvent)
             //when
@@ -121,8 +126,8 @@ internal class TradeManagerImplTest {
 
             Assertions.assertEquals(4, tradeFinancialActions.size)
             Assertions.assertEquals(
-                (makerSubmitOrderEvent.price * pairConfig.rightSideFraction),
-                tradeFinancialActions[0].amount.toDouble()
+                (makerSubmitOrderEvent.price.toBigDecimal() * pairConfig.rightSideFraction).stripTrailingZeros(),
+                tradeFinancialActions[0].amount.stripTrailingZeros()
             )
         }
     }
@@ -133,7 +138,11 @@ internal class TradeManagerImplTest {
             //given
             val pair = Pair("eth", "btc")
             val pairConfig = PairConfig(
-                pair.toString(), pair.leftSideName, pair.rightSideName, 1.0, 0.001
+                pair.toString(),
+                pair.leftSideName,
+                pair.rightSideName,
+                BigDecimal.valueOf(1.0),
+                BigDecimal.valueOf(0.001)
             )
             val makerSubmitOrderEvent = SubmitOrderEvent(
                 "mouid",
@@ -147,7 +156,7 @@ internal class TradeManagerImplTest {
                 MatchConstraint.GTC,
                 OrderType.LIMIT_ORDER
             )
-            prepareOrder(pair, pairConfig, makerSubmitOrderEvent, 0.1, 0.12)
+            prepareOrder(pair, pairConfig, makerSubmitOrderEvent, BigDecimal.valueOf(0.1), BigDecimal.valueOf(0.12))
 
             val takerSubmitOrderEvent = SubmitOrderEvent(
                 "touid",
@@ -162,7 +171,7 @@ internal class TradeManagerImplTest {
                 OrderType.LIMIT_ORDER
             )
 
-            prepareOrder(pair, pairConfig, takerSubmitOrderEvent, 0.08, 0.1)
+            prepareOrder(pair, pairConfig, takerSubmitOrderEvent, BigDecimal.valueOf(0.08), BigDecimal.valueOf(0.1))
 
             val tradeEvent = makeTradeEvent(pair, takerSubmitOrderEvent, makerSubmitOrderEvent)
             //when
@@ -170,8 +179,8 @@ internal class TradeManagerImplTest {
 
             Assertions.assertEquals(4, tradeFinancialActions.size)
             Assertions.assertEquals(
-                makerSubmitOrderEvent.price * pairConfig.rightSideFraction,
-                tradeFinancialActions[1].amount.toDouble()
+                (makerSubmitOrderEvent.price.toBigDecimal() * pairConfig.rightSideFraction).stripTrailingZeros(),
+                tradeFinancialActions[1].amount.stripTrailingZeros()
             )
         }
     }
@@ -181,7 +190,7 @@ internal class TradeManagerImplTest {
         takerSubmitOrderEvent: SubmitOrderEvent,
         makerSubmitOrderEvent: SubmitOrderEvent
     ): TradeEvent {
-        val tradeEvent = TradeEvent(
+        return TradeEvent(
             0,
             pair,
             takerSubmitOrderEvent.ouid,
@@ -198,15 +207,14 @@ internal class TradeManagerImplTest {
             makerSubmitOrderEvent.quantity - takerSubmitOrderEvent.quantity,
             takerSubmitOrderEvent.quantity
         )
-        return tradeEvent
     }
 
     private fun prepareOrder(
         pair: Pair,
         pairConfig: PairConfig,
         submitOrderEvent: SubmitOrderEvent,
-        makerFee: Double,
-        takerFee: Double
+        makerFee: BigDecimal,
+        takerFee: BigDecimal
     ) {
         runBlocking {
             Mockito.`when`(pairConfigLoader.load(pair.toString(), submitOrderEvent.direction, ""))
@@ -228,8 +236,8 @@ internal class TradeManagerImplTest {
 
             val orderPairFeeConfig =
                 pairConfigLoader.load(submitOrderEvent.pair.toString(), submitOrderEvent.direction, "")
-            val orderMakerFee = orderPairFeeConfig.makerFee * 1 //user level formula
-            val orderTakerFee = orderPairFeeConfig.takerFee * 1 //user level formula
+            val orderMakerFee = orderPairFeeConfig.makerFee * BigDecimal.ONE //user level formula
+            val orderTakerFee = orderPairFeeConfig.takerFee * BigDecimal.ONE //user level formula
             Mockito.`when`(orderPersister.load(submitOrderEvent.ouid)).thenReturn(
                 Order(
                     submitOrderEvent.pair.toString(),

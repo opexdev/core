@@ -30,17 +30,17 @@ class OrderPersisterImpl(
                 null,
                 order.pair,
                 order.orderId,
-                order.makerFee.toDouble(),
-                order.takerFee.toDouble(),
-                order.leftSideFraction.toDouble(),
-                order.rightSideFraction.toDouble(),
+                order.makerFee,
+                order.takerFee,
+                order.leftSideFraction,
+                order.rightSideFraction,
                 order.userLevel,
                 order.direction,
                 order.constraint,
                 order.type,
-                order.price.toDouble(),
-                order.quantity.toDouble(),
-                order.quoteQuantity.toDouble(),
+                order.price,
+                order.quantity,
+                order.quoteQuantity,
                 LocalDateTime.now(),
                 LocalDateTime.now()
             )
@@ -50,8 +50,8 @@ class OrderPersisterImpl(
         orderStatusRepository.save(
             OrderStatusModel(
                 order.ouid,
-                order.executedQuantity.toDouble(),
-                order.accumulativeQuoteQty.toDouble(),
+                order.executedQuantity,
+                order.accumulativeQuoteQty,
                 OrderStatus.NEW.code,
                 OrderStatus.NEW.orderOfAppearance
             )
@@ -64,8 +64,8 @@ class OrderPersisterImpl(
             orderStatusRepository.save(
                 OrderStatusModel(
                     orderUpdate.ouid,
-                    orderUpdate.executedQuantity().toDouble(),
-                    orderUpdate.accumulativeQuoteQuantity().toDouble(),
+                    orderUpdate.executedQuantity(),
+                    orderUpdate.accumulativeQuoteQuantity(),
                     orderUpdate.status.code,
                     orderUpdate.status.orderOfAppearance
                 )
