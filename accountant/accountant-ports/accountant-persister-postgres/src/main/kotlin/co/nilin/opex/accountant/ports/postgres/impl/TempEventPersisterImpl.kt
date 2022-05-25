@@ -21,8 +21,11 @@ class TempEventPersisterImpl(val tempEventRepository: TempEventRepository) : Tem
     override suspend fun saveTempEvent(ouid: String, event: CoreEvent) {
         tempEventRepository.save(
             TempEventModel(
-                null, ouid, event.javaClass.name,
-                Gson().toJson(event), LocalDateTime.now()
+                null,
+                ouid,
+                event.javaClass.name,
+                Gson().toJson(event),
+                LocalDateTime.now()
             )
         ).awaitSingle()
     }
@@ -30,9 +33,7 @@ class TempEventPersisterImpl(val tempEventRepository: TempEventRepository) : Tem
     override suspend fun loadTempEvents(ouid: String): List<CoreEvent> {
         return tempEventRepository
             .findByOuid(ouid)
-            .map { value: TempEventModel ->
-                Gson().fromJson(value.eventBody, Class.forName(value.eventType)) as CoreEvent
-            }
+            .map { Gson().fromJson(it.eventBody, Class.forName(it.eventType)) as CoreEvent }
             .toList()
     }
 
@@ -41,25 +42,26 @@ class TempEventPersisterImpl(val tempEventRepository: TempEventRepository) : Tem
     }
 
     override suspend fun removeTempEvents(tempEvents: List<TempEvent>) {
-        tempEventRepository.deleteAll(tempEvents.map { event ->
+        tempEventRepository.deleteAll(tempEvents.map {
             TempEventModel(
-                event.id, event.ouid, event.eventBody.javaClass.name,
-                "", event.eventDate
+                it.id,
+                it.ouid,
+                it.eventBody.javaClass.name,
+                "",
+                it.eventDate
             )
         }).awaitFirstOrNull()
     }
 
-    override suspend fun fetchTempEvents(
-        offset: Long,
-        size: Long
-    ): List<TempEvent> {
+    override suspend fun fetchTempEvents(offset: Long, size: Long): List<TempEvent> {
         return tempEventRepository
             .findAll(PageRequest.of(offset.toInt(), size.toInt(), Sort.by(Sort.Direction.ASC, "eventDate")))
-            .map { value: TempEventModel ->
+            .map {
                 TempEvent(
-                    value.id!!, value.ouid, Gson().fromJson(value.eventBody, Class.forName(value.eventType))
-                            as
-                            CoreEvent, value.eventDate
+                    it.id!!,
+                    it.ouid,
+                    Gson().fromJson(it.eventBody, Class.forName(it.eventType)) as CoreEvent,
+                    it.eventDate
                 )
             }
             .toList()

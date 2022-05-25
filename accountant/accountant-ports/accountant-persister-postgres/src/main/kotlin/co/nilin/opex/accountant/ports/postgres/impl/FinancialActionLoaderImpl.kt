@@ -21,17 +21,15 @@ class FinancialActionLoaderImpl(val financialActionRepository: FinancialActionRe
         return financialActionRepository.findByStatus(
             FinancialActionStatus.CREATED.name,
             PageRequest.of(offset.toInt(), size.toInt(), Sort.by(Sort.Direction.ASC, "createDate"))
-        ).map { fim ->
-            loadFinancialAction(fim.id)!!
-        }.toList()
+        ).map { loadFinancialAction(it.id)!! }
+            .toList()
     }
 
     override suspend fun findLast(uuid: String, ouid: String): FinancialAction? {
         return financialActionRepository.findByOuidAndUuid(
             ouid, uuid, PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "createDate"))
-        ).map { fim ->
-            loadFinancialAction(fim.id)
-        }.firstOrNull()
+        ).map { loadFinancialAction(it.id) }
+            .firstOrNull()
     }
 
     private suspend fun loadFinancialAction(id: Long?): FinancialAction? {
@@ -61,7 +59,6 @@ class FinancialActionLoaderImpl(val financialActionRepository: FinancialActionRe
             symbol,
             eventType,
             FinancialActionStatus.CREATED
-        ).awaitFirstOrElse { BigDecimal.ZERO }
-            .toLong()
+        ).awaitFirstOrElse { BigDecimal.ZERO }.toLong()
     }
 }
