@@ -108,15 +108,17 @@ class MarketQueryHandlerImpl(
         return list.collectList()
             .awaitFirstOrElse { emptyList() }
             .map {
-                orderRepository.findByOuid(it.makerOuid).awaitFirst()
+                val makerOrder = orderRepository.findByOuid(it.makerOuid).awaitFirst()
                 val apiSymbol = try {
                     symbolMapper.map(it.symbol)
                 } catch (e: Exception) {
                     it.symbol
                 }
+                val isMakerBuyer = makerOrder.direction == OrderDirection.BID
                 PriceTickerResponse(
                     apiSymbol,
-                    it.takerPrice.min(it.makerPrice).toString()
+                    if (isMakerBuyer) it.takerPrice.min(it.makerPrice).toString()
+                    else it.takerPrice.max(it.makerPrice).toString()
                 )
             }
 
