@@ -104,7 +104,7 @@ class AppConfig {
 
     @Autowired
     fun configureOrderListener(orderKafkaListener: OrderKafkaListener, orderListener: OrderListener) {
-        orderKafkaListener.addOrderListener(orderListener)
+        orderKafkaListener.addListener(orderListener)
     }
 
     @Autowired
@@ -112,7 +112,7 @@ class AppConfig {
         tradeKafkaListener: TradeKafkaListener,
         accountantTradeListener: AccountantTradeListener
     ) {
-        tradeKafkaListener.addTradeListener(accountantTradeListener)
+        tradeKafkaListener.addListener(accountantTradeListener)
     }
 
     @Autowired
@@ -120,7 +120,7 @@ class AppConfig {
         eventKafkaListener: EventKafkaListener,
         accountantEventListener: AccountantEventListener
     ) {
-        eventKafkaListener.addEventListener(accountantEventListener)
+        eventKafkaListener.addListener(accountantEventListener)
     }
 
     @Autowired
@@ -128,7 +128,7 @@ class AppConfig {
         tempEventKafkaListener: TempEventKafkaListener,
         accountantTempEventListener: AccountantTempEventListener
     ) {
-        tempEventKafkaListener.addEventListener(accountantTempEventListener)
+        tempEventKafkaListener.addListener(accountantTempEventListener)
     }
 
 }
