@@ -46,7 +46,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         ApplicationContextHolder.getCurrentContext()!!.environment.resolvePlaceholders("\${verify-url}")
     }
     private val kafkaTemplate by lazy {
-        ApplicationContextHolder.getCurrentContext()!!.getBean("authKafkaTemplate",) as KafkaTemplate<String, AuthEvent>
+        ApplicationContextHolder.getCurrentContext()!!.getBean("authKafkaTemplate") as KafkaTemplate<String, AuthEvent>
     }
 
     @POST
@@ -89,7 +89,6 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             isEmailVerified = false
 
             addRequiredAction(UserModel.RequiredAction.VERIFY_EMAIL)
-            addRequiredAction(UserModel.RequiredAction.UPDATE_PASSWORD)
             sendEmail(this, requiredActionsStream.toList(), verifyUrl)
         }
 
@@ -127,6 +126,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
 
     @POST
     @Path("user/verify")
+    @Produces(MediaType.APPLICATION_JSON)
     fun verifyEmail(@QueryParam("token") token: String): Response {
         val actionToken = session.tokens().decode(token, ExecuteActionsActionToken::class.java)
         if (actionToken == null || !actionToken.isActive || actionToken.requiredActions.isEmpty())
@@ -151,7 +151,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
-        sendEmail(user, listOf(UserModel.RequiredAction.VERIFY_EMAIL.name))
+        sendEmail(user, listOf(UserModel.RequiredAction.VERIFY_EMAIL.name), verifyUrl)
         return Response.noContent().build()
     }
 
@@ -328,7 +328,6 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             val lifespan = opexRealm.actionTokenGeneratedByAdminLifespan
             val expiration = Time.currentTime() + lifespan
 
-            //TODO It might be better to use redirect uri
             val token = ExecuteActionsActionToken(user.id, expiration, actions, null, clientId)
             val serializedToken = token.serialize(session, opexRealm, session.context.uri)
             val verifyLink = if (link.isNullOrEmpty()) {
@@ -342,7 +341,8 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
 
             val provider = session.getProvider(EmailTemplateProvider::class.java)
             logger.info("verify link: $verifyLink")
-            provider.setRealm(opexRealm).setUser(user)
+            provider.setRealm(opexRealm)
+                .setUser(user)
                 .sendVerifyEmail(verifyLink, TimeUnit.SECONDS.toMinutes(lifespan.toLong()))
         } catch (e: Exception) {
             logger.error("Unable to send verification email")
