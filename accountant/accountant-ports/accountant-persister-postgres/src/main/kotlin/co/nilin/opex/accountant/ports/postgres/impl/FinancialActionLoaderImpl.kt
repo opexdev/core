@@ -32,6 +32,15 @@ class FinancialActionLoaderImpl(val financialActionRepository: FinancialActionRe
             .firstOrNull()
     }
 
+    override suspend fun countUnprocessed(uuid: String, symbol: String, eventType: String): Long {
+        return financialActionRepository.findByUuidAndSymbolAndEventTypeAndStatus(
+            uuid,
+            symbol,
+            eventType,
+            FinancialActionStatus.CREATED
+        ).awaitFirstOrElse { BigDecimal.ZERO }.toLong()
+    }
+
     private suspend fun loadFinancialAction(id: Long?): FinancialAction? {
         if (id != null) {
             val fim = financialActionRepository.findById(id).awaitFirst()
@@ -51,14 +60,5 @@ class FinancialActionLoaderImpl(val financialActionRepository: FinancialActionRe
             )
         }
         return null
-    }
-
-    override suspend fun countUnprocessed(uuid: String, symbol: String, eventType: String): Long {
-        return financialActionRepository.findByUuidAndSymbolAndEventTypeAndStatus(
-            uuid,
-            symbol,
-            eventType,
-            FinancialActionStatus.CREATED
-        ).awaitFirstOrElse { BigDecimal.ZERO }.toLong()
     }
 }
