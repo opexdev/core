@@ -57,12 +57,11 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         val auth = ResourceAuthenticator.bearerAuth(session)
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
-
-        /*runCatching {
+        runCatching {
             validateCaptcha("${request.captchaAnswer}-${session.context.connection.remoteAddr}")
         }.onFailure {
             return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.InvalidCaptcha)
-        }*/
+        }
 
         if (!request.isValid())
             return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.BadRequest)
@@ -167,9 +166,8 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
 
         val cred = UserCredentialModel.password(body.password)
-        if (!session.userCredentialManager()
-                .isValid(opexRealm, user, cred)
-        ) return ErrorHandler.forbidden("Incorrect password")
+        if (!session.userCredentialManager().isValid(opexRealm, user, cred))
+            return ErrorHandler.forbidden("Incorrect password")
 
         if (body.confirmation != body.newPassword)
             return ErrorHandler.badRequest("Invalid password confirmation")
@@ -360,14 +358,6 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         return session.userCredentialManager().isConfiguredFor(opexRealm, user, OTPCredentialModel.TYPE)
     }
 
-    override fun close() {
-
-    }
-
-    override fun getResource(): Any {
-        return this
-    }
-
     private fun validateCaptcha(proof: String) {
         val client: HttpClient = HttpClientBuilder.create().build()
         val post = HttpGet(URIBuilder("http://captcha:8080/verify").addParameter("proof", proof).build())
@@ -376,5 +366,13 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             check(response.statusLine.statusCode / 500 != 5) { "Could not connect to Opex-Captcha service." }
             require(response.statusLine.statusCode / 100 == 2) { "Invalid captcha" }
         }
+    }
+
+    override fun close() {
+
+    }
+
+    override fun getResource(): Any {
+        return this
     }
 }
