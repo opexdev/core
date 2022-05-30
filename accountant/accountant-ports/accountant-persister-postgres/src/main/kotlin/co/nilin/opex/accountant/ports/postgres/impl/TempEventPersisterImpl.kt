@@ -9,14 +9,14 @@ import com.google.gson.Gson
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirstOrNull
-import kotlinx.coroutines.reactive.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 
 @Component
-class TempEventPersisterImpl(val tempEventRepository: TempEventRepository) : TempEventPersister {
+class TempEventPersisterImpl(private val tempEventRepository: TempEventRepository) : TempEventPersister {
 
     override suspend fun saveTempEvent(ouid: String, event: CoreEvent) {
         tempEventRepository.save(
@@ -27,7 +27,7 @@ class TempEventPersisterImpl(val tempEventRepository: TempEventRepository) : Tem
                 Gson().toJson(event),
                 LocalDateTime.now()
             )
-        ).awaitSingle()
+        ).awaitSingleOrNull()
     }
 
     override suspend fun loadTempEvents(ouid: String): List<CoreEvent> {
