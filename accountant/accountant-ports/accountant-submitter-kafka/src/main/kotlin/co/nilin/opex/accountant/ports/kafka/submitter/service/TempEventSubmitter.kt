@@ -11,8 +11,10 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 @Component
-class TempEventSubmitter(@Qualifier("accountantEventKafkaTemplate") val kafkaTemplate: KafkaTemplate<String, CoreEvent>) :
-    TempEventRepublisher {
+class TempEventSubmitter(
+    @Qualifier("accountantEventKafkaTemplate")
+    private val kafkaTemplate: KafkaTemplate<String, CoreEvent>
+) : TempEventRepublisher, EventPublisher {
 
     private val logger = LoggerFactory.getLogger(TempEventSubmitter::class.java)
 
@@ -20,7 +22,7 @@ class TempEventSubmitter(@Qualifier("accountantEventKafkaTemplate") val kafkaTem
         logger.info("Submitting TempEvents")
 
         events.forEach { event ->
-            val sendFuture = kafkaTemplate.send("tempevents", event)
+            val sendFuture = kafkaTemplate.send(topic(), event)
             sendFuture.addCallback({
                 cont.resume(Unit)
             }, {
@@ -28,5 +30,9 @@ class TempEventSubmitter(@Qualifier("accountantEventKafkaTemplate") val kafkaTem
                 cont.resumeWithException(it)
             })
         }
+    }
+
+    override fun topic(): String {
+        return "tempevents"
     }
 }

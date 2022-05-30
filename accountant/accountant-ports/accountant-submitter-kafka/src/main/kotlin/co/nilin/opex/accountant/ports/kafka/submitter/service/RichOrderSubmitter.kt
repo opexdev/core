@@ -7,24 +7,29 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Component
 import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 @Component
-class RichOrderSubmitter(@Qualifier("richOrderKafkaTemplate") val kafkaTemplate: KafkaTemplate<String, RichOrderEvent>) :
-    RichOrderPublisher {
+class RichOrderSubmitter(
+    @Qualifier("richOrderKafkaTemplate")
+    private val kafkaTemplate: KafkaTemplate<String, RichOrderEvent>
+) : RichOrderPublisher, EventPublisher {
 
     private val logger = LoggerFactory.getLogger(RichOrderSubmitter::class.java)
 
     override suspend fun publish(order: RichOrderEvent): Unit = suspendCoroutine { cont ->
         logger.info("Submitting RichOrder")
 
-        val sendFuture = kafkaTemplate.send("richOrder", order)
+        val sendFuture = kafkaTemplate.send(topic(), order)
         sendFuture.addCallback({
             cont.resume(Unit)
         }, {
             logger.error("Error submitting RichOrder", it)
             cont.resume(Unit)
         })
+    }
+
+    override fun topic(): String {
+        return "richOrder"
     }
 }
