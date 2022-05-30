@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 
 @Component
-class OrderPersisterImpl(val orderRepository: OrderRepository) : OrderPersister {
+class OrderPersisterImpl(private val orderRepository: OrderRepository) : OrderPersister {
 
     override suspend fun load(ouid: String): Order? {
         val model = orderRepository.findByOuid(ouid).awaitFirstOrNull() ?: return null
