@@ -71,4 +71,4 @@ keycloak:
   hashicorp:
     url: ${VAULT_URL}
 app:
-  verify-url: ${VERIFY_URL}
+  verify-redirect-url: ${VERIFY_REDIRECT_URL}
