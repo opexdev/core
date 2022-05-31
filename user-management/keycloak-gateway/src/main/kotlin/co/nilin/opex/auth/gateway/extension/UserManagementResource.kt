@@ -2,12 +2,10 @@ package co.nilin.opex.auth.gateway.extension
 
 import co.nilin.opex.auth.gateway.ApplicationContextHolder
 import co.nilin.opex.auth.gateway.data.*
+import co.nilin.opex.auth.gateway.model.ActionTokenResult
 import co.nilin.opex.auth.gateway.model.AuthEvent
 import co.nilin.opex.auth.gateway.model.UserCreatedEvent
-import co.nilin.opex.auth.gateway.utils.ErrorHandler
-import co.nilin.opex.auth.gateway.utils.OTPUtils
-import co.nilin.opex.auth.gateway.utils.ResourceAuthenticator
-import co.nilin.opex.auth.gateway.utils.tryOrElse
+import co.nilin.opex.auth.gateway.utils.*
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import org.apache.http.client.HttpClient
@@ -24,9 +22,10 @@ import org.keycloak.models.UserModel
 import org.keycloak.models.credential.OTPCredentialModel
 import org.keycloak.models.utils.CredentialValidation
 import org.keycloak.models.utils.HmacOTP
+import org.keycloak.policy.PasswordPolicyManagerProvider
 import org.keycloak.services.managers.AuthenticationManager
 import org.keycloak.services.resource.RealmResourceProvider
-import org.keycloak.services.resources.LoginActionsService
+import org.keycloak.urls.UrlType
 import org.keycloak.utils.CredentialHelper
 import org.keycloak.utils.TotpUtils
 import org.slf4j.LoggerFactory
@@ -35,11 +34,16 @@ import java.util.concurrent.TimeUnit
 import javax.ws.rs.*
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
+import javax.ws.rs.core.UriBuilder
 import kotlin.streams.toList
 
 class UserManagementResource(private val session: KeycloakSession) : RealmResourceProvider {
+
     private val logger = LoggerFactory.getLogger(UserManagementResource::class.java)
     private val opexRealm = session.realms().getRealm("opex")
+    private val verifyUrl by lazy {
+        ApplicationContextHolder.getCurrentContext()!!.environment.resolvePlaceholders("\${verify-redirect-url}")
+    }
     private val kafkaTemplate by lazy {
         ApplicationContextHolder.getCurrentContext()!!.getBean("authKafkaTemplate") as KafkaTemplate<String, AuthEvent>
     }
@@ -58,7 +62,22 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.InvalidCaptcha)
         }
 
-        if (!request.isValid()) return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.BadRequest)
+        if (!request.isValid())
+            return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.BadRequest)
+
+        if (session.users().getUserByEmail(request.email, opexRealm) != null)
+            return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.UserAlreadyExists)
+
+        if (request.password != request.passwordConfirmation)
+            return ErrorHandler.badRequest("Invalid password confirmation")
+
+        val error = session.getProvider(PasswordPolicyManagerProvider::class.java)
+            .validate(request.email, request.password)
+
+        if (error != null) {
+            logger.error(error.message)
+            return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.InvalidPassword)
+        }
 
         val user = session.users().addUser(opexRealm, request.email).apply {
             email = request.email
@@ -68,9 +87,17 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             isEmailVerified = false
 
             addRequiredAction(UserModel.RequiredAction.VERIFY_EMAIL)
-            addRequiredAction(UserModel.RequiredAction.UPDATE_PASSWORD)
-            sendEmail(this, requiredActionsStream.toList())
+            val actions = requiredActionsStream.toList()
+            val token = ActionTokenHelper.generateRequiredActionsToken(session, opexRealm, this, actions)
+            val url = "${session.context.getUri(UrlType.BACKEND).baseUri}/realms/opex/user-management/user/verify"
+            val link = ActionTokenHelper.attachTokenToLink(url, token)
+            val expiration = Time.currentTime() + opexRealm.actionTokenGeneratedByAdminLifespan
+            logger.info(link)
+            sendEmail(this) { it.sendVerifyEmail(link, TimeUnit.SECONDS.toMinutes(expiration.toLong())) }
         }
+
+        session.userCredentialManager()
+            .updateCredential(opexRealm, user, UserCredentialModel.password(request.password, false))
 
         logger.info("User create response ${user.id}")
         sendUserEvent(user)
@@ -96,20 +123,58 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
 
         val user = session.users().getUserByEmail(email, opexRealm)
         if (user != null) {
-            sendEmail(user, listOf(UserModel.RequiredAction.UPDATE_PASSWORD.name))
+            val token = ActionTokenHelper.generateRequiredActionsToken(
+                session,
+                opexRealm,
+                user,
+                listOf(UserModel.RequiredAction.UPDATE_PASSWORD.name),
+                verifyUrl
+            )
+            val link = ActionTokenHelper.createInternalEmailLink(session, opexRealm, token)
+            val expiration = Time.currentTime() + opexRealm.actionTokenGeneratedByAdminLifespan
+            sendEmail(user) { it.sendVerifyEmail(link, TimeUnit.SECONDS.toMinutes(expiration.toLong())) }
         }
         return Response.noContent().build()
     }
 
+    @GET
+    @Path("user/verify")
+    fun verifyEmail(@QueryParam("key") key: String): Response {
+        val uri = UriBuilder.fromUri(verifyUrl)
+        val actionToken = session.tokens().decode(key, ExecuteActionsActionToken::class.java)
+
+        if (actionToken == null || !actionToken.isActive || actionToken.requiredActions.isEmpty())
+            return Response.seeOther(uri.queryParam("result", ActionTokenResult.FAILED).build()).build()
+
+        val user = session.users().getUserById(actionToken.subject, opexRealm)
+        if (actionToken.requiredActions.contains(UserModel.RequiredAction.VERIFY_EMAIL.name)) {
+            user.removeRequiredAction(UserModel.RequiredAction.VERIFY_EMAIL)
+            user.isEmailVerified = true
+        }
+
+        return Response.seeOther(uri.queryParam("result", ActionTokenResult.SUCCEED).build()).build()
+    }
+
     @POST
-    @Path("user/verify-email")
+    @Path("user/request-verify")
     @Produces(MediaType.APPLICATION_JSON)
     fun sendVerifyEmail(): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
-        sendEmail(user, listOf(UserModel.RequiredAction.VERIFY_EMAIL.name))
+
+        val token = ActionTokenHelper.generateRequiredActionsToken(
+            session,
+            opexRealm,
+            user,
+            listOf(UserModel.RequiredAction.VERIFY_EMAIL.name)
+        )
+        val url = "${session.context.getUri(UrlType.BACKEND).baseUri}/realms/opex/user-management/user/verify"
+        val link = ActionTokenHelper.attachTokenToLink(url, token)
+        val expiration = Time.currentTime() + opexRealm.actionTokenGeneratedByAdminLifespan
+        sendEmail(user) { it.sendVerifyEmail(link, TimeUnit.SECONDS.toMinutes(expiration.toLong())) }
+
         return Response.noContent().build()
     }
 
@@ -125,11 +190,11 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
 
         val cred = UserCredentialModel.password(body.password)
-        if (!session.userCredentialManager()
-                .isValid(opexRealm, user, cred)
-        ) return ErrorHandler.forbidden("Incorrect password")
+        if (!session.userCredentialManager().isValid(opexRealm, user, cred))
+            return ErrorHandler.forbidden("Incorrect password")
 
-        if (body.confirmation != body.newPassword) return ErrorHandler.badRequest("Invalid password confirmation")
+        if (body.confirmation != body.newPassword)
+            return ErrorHandler.badRequest("Invalid password confirmation")
 
         session.userCredentialManager()
             .updateCredential(opexRealm, user, UserCredentialModel.password(body.newPassword, false))
@@ -274,25 +339,16 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         return Response.ok(sessions).build()
     }
 
-    private fun sendEmail(user: UserModel, actions: List<String>) {
+    private fun sendEmail(user: UserModel, sendAction: (EmailTemplateProvider) -> Unit) {
         if (!user.isEnabled) throw OpexException(OpexError.BadRequest, "User is disabled")
 
         val clientId = Constants.ACCOUNT_MANAGEMENT_CLIENT_ID
         val client = session.clients().getClientByClientId(opexRealm, clientId)
         if (client == null || !client.isEnabled) throw OpexException(OpexError.BadRequest, "Client error")
 
-        val lifespan = opexRealm.actionTokenGeneratedByAdminLifespan
-        val expiration = Time.currentTime() + lifespan
-        val token = ExecuteActionsActionToken(user.id, expiration, actions, null, clientId)
-
         try {
             val provider = session.getProvider(EmailTemplateProvider::class.java)
-            val builder = LoginActionsService.actionTokenProcessor(session.context.uri).apply {
-                queryParam("key", token.serialize(session, opexRealm, session.context.uri))
-            }
-            val link = builder.build(opexRealm.name).toString()
-            provider.setRealm(opexRealm).setUser(user)
-                .sendVerifyEmail(link, TimeUnit.SECONDS.toMinutes(lifespan.toLong()))
+            sendAction(provider.setRealm(opexRealm).setUser(user))
         } catch (e: Exception) {
             logger.error("Unable to send verification email")
             e.printStackTrace()
@@ -309,14 +365,6 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         return session.userCredentialManager().isConfiguredFor(opexRealm, user, OTPCredentialModel.TYPE)
     }
 
-    override fun close() {
-
-    }
-
-    override fun getResource(): Any {
-        return this
-    }
-
     private fun validateCaptcha(proof: String) {
         val client: HttpClient = HttpClientBuilder.create().build()
         val post = HttpGet(URIBuilder("http://captcha:8080/verify").addParameter("proof", proof).build())
@@ -325,5 +373,13 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             check(response.statusLine.statusCode / 500 != 5) { "Could not connect to Opex-Captcha service." }
             require(response.statusLine.statusCode / 100 == 2) { "Invalid captcha" }
         }
+    }
+
+    override fun close() {
+
+    }
+
+    override fun getResource(): Any {
+        return this
     }
 }
