@@ -45,17 +45,17 @@ open class TradeManagerImpl(
         }
 
         val takerMatchedAmount = if (takerOrder.isAsk()) {
-            trade.matchedQuantity.toBigDecimal().multiply(takerOrder.leftSideFraction.toBigDecimal())
+            trade.matchedQuantity.toBigDecimal().multiply(takerOrder.leftSideFraction)
         } else {
-            trade.matchedQuantity.toBigDecimal().multiply(takerOrder.leftSideFraction.toBigDecimal())
-                .multiply(trade.makerPrice.toBigDecimal()).multiply(takerOrder.rightSideFraction.toBigDecimal())
+            trade.matchedQuantity.toBigDecimal().multiply(takerOrder.leftSideFraction)
+                .multiply(trade.makerPrice.toBigDecimal()).multiply(takerOrder.rightSideFraction)
         }
 
         val makerMatchedAmount = if (makerOrder.isAsk()) {
-            trade.matchedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction.toBigDecimal())
+            trade.matchedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction)
         } else {
-            trade.matchedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction.toBigDecimal())
-                .multiply(trade.makerPrice.toBigDecimal()).multiply(makerOrder.rightSideFraction.toBigDecimal())
+            trade.matchedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction)
+                .multiply(trade.makerPrice.toBigDecimal()).multiply(makerOrder.rightSideFraction)
         }
         log.info("trade event configs loaded")
 
@@ -143,23 +143,23 @@ open class TradeManagerImpl(
                 trade.takerUuid,
                 trade.takerOrderId,
                 trade.takerDirection,
-                trade.takerPrice.toBigDecimal().multiply(takerOrder.rightSideFraction.toBigDecimal()),
+                trade.takerPrice.toBigDecimal().multiply(takerOrder.rightSideFraction),
                 takerOrder.origQuantity,
                 takerOrder.origPrice.multiply(takerOrder.origQuantity),
-                trade.takerRemainedQuantity.toBigDecimal().multiply(takerOrder.leftSideFraction.toBigDecimal()),
+                trade.takerRemainedQuantity.toBigDecimal().multiply(takerOrder.leftSideFraction),
                 feeActions.takerFeeAction.amount,
                 feeActions.takerFeeAction.symbol,
                 trade.makerOuid,
                 trade.makerUuid,
                 trade.makerOrderId,
                 trade.makerDirection,
-                trade.makerPrice.toBigDecimal().multiply(makerOrder.rightSideFraction.toBigDecimal()),
+                trade.makerPrice.toBigDecimal().multiply(makerOrder.rightSideFraction),
                 makerOrder.origQuantity,
                 makerOrder.origPrice.multiply(makerOrder.origQuantity),
-                trade.makerRemainedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction.toBigDecimal()),
+                trade.makerRemainedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction),
                 feeActions.makerFeeAction.amount,
                 feeActions.makerFeeAction.symbol,
-                trade.matchedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction.toBigDecimal()),
+                trade.matchedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction),
                 trade.eventDate
             )
         )
@@ -167,14 +167,14 @@ open class TradeManagerImpl(
     }
 
     private suspend fun publishTakerRichOrderUpdate(takerOrder: Order, trade: TradeEvent) {
-        val price = trade.takerPrice.toBigDecimal().multiply(takerOrder.rightSideFraction.toBigDecimal())
-        val remained = trade.takerRemainedQuantity.toBigDecimal().multiply(takerOrder.leftSideFraction.toBigDecimal())
+        val price = trade.takerPrice.toBigDecimal().multiply(takerOrder.rightSideFraction)
+        val remained = trade.takerRemainedQuantity.toBigDecimal().multiply(takerOrder.leftSideFraction)
         publishRichOrderUpdate(takerOrder, price, remained)
     }
 
     private suspend fun publishMakerRichOrderUpdate(makerOrder: Order, trade: TradeEvent) {
-        val price = trade.makerPrice.toBigDecimal().multiply(makerOrder.rightSideFraction.toBigDecimal())
-        val remained = trade.makerRemainedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction.toBigDecimal())
+        val price = trade.makerPrice.toBigDecimal().multiply(makerOrder.rightSideFraction)
+        val remained = trade.makerRemainedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction)
         publishRichOrderUpdate(makerOrder, price, remained)
     }
 

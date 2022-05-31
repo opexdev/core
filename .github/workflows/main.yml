@@ -24,6 +24,8 @@ jobs:
           cache: maven
       - name: Build
         run: mvn -B -T 1C clean install
+      - name: Run Tests
+        run: mvn -B -T 1C -Dskip.unit.tests=false surefire:test
       - name: Build Docker images
         env:
           TAG: latest

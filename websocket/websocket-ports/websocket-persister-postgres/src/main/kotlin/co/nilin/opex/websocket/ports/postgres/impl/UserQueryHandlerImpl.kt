@@ -79,20 +79,20 @@ class UserQueryHandlerImpl(
                 },
                 -1,
                 if (trade.takerUuid == principal.name) {
-                    trade.takerPrice.toBigDecimal()
+                    trade.takerPrice
                 } else {
-                    trade.makerPrice.toBigDecimal()
+                    trade.makerPrice
                 },
-                trade.matchedQuantity.toBigDecimal(),
+                trade.matchedQuantity,
                 if (isMakerBuyer) {
-                    makerOrder.quoteQuantity!!.toBigDecimal()
+                    makerOrder.quoteQuantity!!
                 } else {
-                    takerOrder.quoteQuantity!!.toBigDecimal()
+                    takerOrder.quoteQuantity!!
                 },
                 if (trade.takerUuid == principal.name) {
-                    trade.takerCommision!!.toBigDecimal()
+                    trade.takerCommision!!
                 } else {
-                    trade.makerCommision!!.toBigDecimal()
+                    trade.makerCommision!!
                 },
                 if (trade.takerUuid == principal.name) {
                     trade.takerCommisionAsset!!
@@ -121,10 +121,10 @@ class UserQueryHandlerImpl(
         orderId ?: -1,
         -1,
         clientOrderId ?: "",
-        price!!.toBigDecimal(),
-        quantity!!.toBigDecimal(),
-        orderStatusModel?.executedQuantity?.toBigDecimal() ?: BigDecimal.ZERO,
-        orderStatusModel?.accumulativeQuoteQty?.toBigDecimal() ?: BigDecimal.ZERO,
+        price!!,
+        quantity!!,
+        orderStatusModel?.executedQuantity ?: BigDecimal.ZERO,
+        orderStatusModel?.accumulativeQuoteQty ?: BigDecimal.ZERO,
         orderStatusModel?.status?.toOrderStatus() ?: OrderStatus.NEW,
         constraint!!.toTimeInForce(),
         type!!.toWebSocketOrderType(),
@@ -134,6 +134,6 @@ class UserQueryHandlerImpl(
         Date.from(createDate!!.atZone(ZoneId.systemDefault()).toInstant()),
         Date.from(updateDate.atZone(ZoneId.systemDefault()).toInstant()),
         (orderStatusModel?.status?.toOrderStatus() ?: OrderStatus.NEW).isWorking(),
-        quoteQuantity!!.toBigDecimal()
+        quoteQuantity!!
     )
 }

@@ -77,6 +77,22 @@ class PairConfigLoaderImpl(
         )
     }
 
+    override suspend fun load(pair: String, direction: OrderDirection): PairConfig {
+        return pairConfigRepository
+            .findById(pair).awaitFirstOrElse {
+                val error = OpexError.InvalidPair
+                throw OpexException(error, String.format(error.message!!, pair))
+            }.let {
+                PairConfig(
+                    it.pair,
+                    it.leftSideWalletSymbol,
+                    it.rightSideWalletSymbol,
+                    it.leftSideFraction,
+                    it.rightSideFraction
+                )
+            }
+    }
+
     private fun PairConfigModel.asPairConfig() = PairConfig(
         pair,
         leftSideWalletSymbol,

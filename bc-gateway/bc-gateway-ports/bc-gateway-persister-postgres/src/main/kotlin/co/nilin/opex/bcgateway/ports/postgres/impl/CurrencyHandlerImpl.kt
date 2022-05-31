@@ -18,6 +18,7 @@ import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
+import java.math.BigDecimal
 
 @Component
 class CurrencyHandlerImpl(
@@ -58,12 +59,12 @@ class CurrencyHandlerImpl(
         tokenName: String?,
         tokenAddress: String?,
         isToken: Boolean,
-        withdrawFee: Double,
-        minimumWithdraw: Double,
+        withdrawFee: BigDecimal,
+        minimumWithdraw: BigDecimal,
         isWithdrawEnabled: Boolean,
         decimal: Int
     ): CurrencyImplementation {
-        val chainModel = chainRepository.findByName(chain.lowercase()).awaitFirstOrNull()
+        val chainModel = chainRepository.findByName(chain).awaitFirstOrNull()
             ?: throw OpexException(OpexError.ChainNotFound)
 
         currencyImplementationRepository.findBySymbolAndChain(symbol.uppercase(), chain)
@@ -82,8 +83,8 @@ class CurrencyHandlerImpl(
                 tokenAddress,
                 tokenName,
                 isWithdrawEnabled,
-                withdrawFee.toBigDecimal(),
-                minimumWithdraw.toBigDecimal(),
+                withdrawFee,
+                minimumWithdraw,
                 decimal
             )
         ).awaitFirst()

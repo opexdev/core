@@ -38,27 +38,14 @@ CREATE TABLE IF NOT EXISTS transaction
     transaction_date TIMESTAMP NOT NULL DEFAULT CURRENT_DATE
 );
 
-CREATE TABLE IF NOT EXISTS user_limits
-(
-    id            SERIAL PRIMARY KEY,
-    level         VARCHAR(10),
-    owner         INTEGER REFERENCES wallet_owner (id),
-    action        VARCHAR(25) NOT NULL,
-    wallet_type   VARCHAR(10) NOT NULL,
-    daily_total   DECIMAL,
-    daily_count   INTEGER,
-    monthly_total DECIMAL,
-    monthly_count INTEGER
-);
-
 CREATE TABLE IF NOT EXISTS wallet_limits
 (
     id            SERIAL PRIMARY KEY,
     level         VARCHAR(10),
     owner         INTEGER REFERENCES wallet_owner (id),
-    action        VARCHAR(25) NOT NULL,
-    currency      VARCHAR(25) NOT NULL REFERENCES currency (symbol),
-    wallet_type   VARCHAR(10) NOT NULL,
+    action        VARCHAR(25),
+    currency      VARCHAR(25) REFERENCES currency (symbol),
+    wallet_type   VARCHAR(10),
     wallet_id     INTEGER REFERENCES wallet (id),
     daily_total   DECIMAL,
     daily_count   INTEGER,

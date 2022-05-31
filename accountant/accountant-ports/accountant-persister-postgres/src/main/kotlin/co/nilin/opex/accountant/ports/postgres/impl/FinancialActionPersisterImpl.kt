@@ -23,7 +23,7 @@ class FinancialActionPersisterImpl(val financialActionRepository: FinancialActio
                 it.eventType,
                 it.pointer,
                 it.symbol,
-                it.amount.toDouble(),
+                it.amount,
                 it.sender,
                 it.senderWalletType,
                 it.receiver,

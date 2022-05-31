@@ -6,12 +6,12 @@ import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
 
 @Table("wallet_limits")
-class WalletLimitsModel(
-    @Id val id: Long?,
+data class WalletLimitsModel(
+    @Id var id: Long?,
     val level: String?,
     val owner: Long?,
-    val action: String, //withdraw or deposit
-    val currency: String,
+    val action: String?, //withdraw or deposit
+    val currency: String?,
     @Column("wallet_type") val walletType: String,
     @Column("wallet_id") val walletId: Long?,
     @Column("daily_total") val dailyTotal: BigDecimal?,

@@ -54,7 +54,6 @@ class AppConfig {
             financeActionLoader,
             orderPersister,
             tempEventPersister,
-            tempEventRepublisher,
             richOrderPublisher
         )
     }

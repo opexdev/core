@@ -73,6 +73,10 @@
             <groupId>co.nilin.opex.utility.log</groupId>
             <artifactId>logging-handler</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.mockk</groupId>
+            <artifactId>mockk</artifactId>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>

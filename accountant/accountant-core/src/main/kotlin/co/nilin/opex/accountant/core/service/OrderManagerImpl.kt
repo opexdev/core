@@ -19,7 +19,6 @@ open class OrderManagerImpl(
     private val financeActionLoader: FinancialActionLoader,
     private val orderPersister: OrderPersister,
     private val tempEventPersister: TempEventPersister,
-    private val tempEventRepublisher: TempEventRepublisher,
     private val richOrderPublisher: RichOrderPublisher
 ) : OrderManager {
 
@@ -34,8 +33,8 @@ open class OrderManagerImpl(
             submitOrderEvent.pair.rightSideName
         }
         val pairFeeConfig = pairConfigLoader.load(submitOrderEvent.pair.toString(), submitOrderEvent.direction, "")
-        val makerFee = pairFeeConfig.makerFee * 1 //user level formula
-        val takerFee = pairFeeConfig.takerFee * 1 //user level formula
+        val makerFee = pairFeeConfig.makerFee * BigDecimal.ONE //user level formula
+        val takerFee = pairFeeConfig.takerFee * BigDecimal.ONE //user level formula
 
         //create fa for transfer uuid symbol main wallet to uuid symbol exchange wallet
         /*
@@ -48,11 +47,11 @@ open class OrderManagerImpl(
             submitOrderEvent.ouid,
             symbol,
             if (submitOrderEvent.direction == OrderDirection.ASK) {
-                BigDecimal(submitOrderEvent.quantity).multiply(pairFeeConfig.pairConfig.leftSideFraction.toBigDecimal())
+                BigDecimal(submitOrderEvent.quantity).multiply(pairFeeConfig.pairConfig.leftSideFraction)
             } else {
-                BigDecimal(submitOrderEvent.quantity).multiply(pairFeeConfig.pairConfig.leftSideFraction.toBigDecimal())
+                BigDecimal(submitOrderEvent.quantity).multiply(pairFeeConfig.pairConfig.leftSideFraction)
                     .multiply(submitOrderEvent.price.toBigDecimal())
-                    .multiply(pairFeeConfig.pairConfig.rightSideFraction.toBigDecimal())
+                    .multiply(pairFeeConfig.pairConfig.rightSideFraction)
             },
             submitOrderEvent.uuid,
             "main",
@@ -79,10 +78,10 @@ open class OrderManagerImpl(
                 submitOrderEvent.quantity,
                 submitOrderEvent.quantity - submitOrderEvent.remainedQuantity,
                 submitOrderEvent.price.toBigDecimal()
-                    .multiply(pairFeeConfig.pairConfig.rightSideFraction.toBigDecimal()),
+                    .multiply(pairFeeConfig.pairConfig.rightSideFraction),
                 submitOrderEvent.quantity.toBigDecimal()
-                    .multiply(pairFeeConfig.pairConfig.leftSideFraction.toBigDecimal()),
-                BigDecimal(submitOrderEvent.quantity - submitOrderEvent.remainedQuantity).multiply(pairFeeConfig.pairConfig.leftSideFraction.toBigDecimal()),
+                    .multiply(pairFeeConfig.pairConfig.leftSideFraction),
+                BigDecimal(submitOrderEvent.quantity - submitOrderEvent.remainedQuantity).multiply(pairFeeConfig.pairConfig.leftSideFraction),
                 financialAction.amount,
                 financialAction.amount,
                 OrderStatus.REQUESTED.code
@@ -206,10 +205,10 @@ open class OrderManagerImpl(
                 order.ouid,
                 order.uuid,
                 order.userLevel,
-                order.makerFee.toBigDecimal(),
-                order.takerFee.toBigDecimal(),
-                order.leftSideFraction.toBigDecimal(),
-                order.rightSideFraction.toBigDecimal(),
+                order.makerFee,
+                order.takerFee,
+                order.leftSideFraction,
+                order.rightSideFraction,
                 order.direction,
                 order.matchConstraint,
                 order.orderType,
@@ -217,7 +216,7 @@ open class OrderManagerImpl(
                 order.origQuantity,
                 order.origPrice.multiply(order.origQuantity),
                 order.quantity.toBigDecimal().subtract(remainedQuantity)
-                    .multiply(order.leftSideFraction.toBigDecimal()),
+                    .multiply(order.leftSideFraction),
                 order.origPrice.multiply(
                     order.quantity.toBigDecimal().subtract(remainedQuantity)
                 ),

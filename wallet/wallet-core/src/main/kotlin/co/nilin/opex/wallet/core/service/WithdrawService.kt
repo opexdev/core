@@ -51,7 +51,7 @@ class WithdrawService(
         )
         val withdraw = withdrawPersister.persist(
             Withdraw(
-                null, owner.uuid(), receiverWallet.id()!!, withdrawCommand.amount,
+                null, owner.uuid, receiverWallet.id!!, withdrawCommand.amount,
                 transferResultDetailed.tx, null,
                 withdrawCommand.acceptedFee, null,
                 null, withdrawCommand.destCurrency,
@@ -77,18 +77,18 @@ class WithdrawService(
         }
         val sourceWallet = walletManager.findWalletById(withdraw.wallet) ?: throw RuntimeException("Wallet not found")
         val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(
-            system, "main", sourceWallet.currency()
+            system, "main", sourceWallet.currency
         ) ?: walletManager.createWallet(
             system,
-            Amount(sourceWallet.currency(), BigDecimal.ZERO),
-            sourceWallet.currency(),
+            Amount(sourceWallet.currency, BigDecimal.ZERO),
+            sourceWallet.currency,
             "main"
         )
         val transferResultDetailed = transferService.transfer(
             TransferCommand(
                 sourceWallet,
                 receiverWallet,
-                Amount(sourceWallet.currency(), withdraw.amount),
+                Amount(sourceWallet.currency, withdraw.amount),
                 null, null, emptyMap()
             )
         )
@@ -107,7 +107,7 @@ class WithdrawService(
                 withdraw.destCurrency,
                 withdraw.destAddress,
                 withdraw.destNetwork,
-                withdraw.destNote ?: "" + "-----------" + (acceptCommand.destNote ?: ""),
+                withdraw.destNote ?: ("" + "-----------" + (acceptCommand.destNote ?: "")),
                 null,
                 acceptCommand.destTransactionRef!!,
                 "DONE",
@@ -131,18 +131,18 @@ class WithdrawService(
         }
         val sourceWallet = walletManager.findWalletById(withdraw.wallet) ?: throw RuntimeException("Wallet not found")
         val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(
-            sourceWallet.owner(), "main", sourceWallet.currency()
+            sourceWallet.owner, "main", sourceWallet.currency
         ) ?: walletManager.createWallet(
-            sourceWallet.owner(),
-            Amount(sourceWallet.currency(), BigDecimal.ZERO),
-            sourceWallet.currency(),
+            sourceWallet.owner,
+            Amount(sourceWallet.currency, BigDecimal.ZERO),
+            sourceWallet.currency,
             "main"
         )
         val transferResultDetailed = transferService.transfer(
             TransferCommand(
                 sourceWallet,
                 receiverWallet,
-                Amount(sourceWallet.currency(), withdraw.amount),
+                Amount(sourceWallet.currency, withdraw.amount),
                 rejectCommand.statusReason, null, emptyMap()
             )
         )
@@ -160,7 +160,7 @@ class WithdrawService(
                 withdraw.destCurrency,
                 withdraw.destAddress,
                 withdraw.destNetwork,
-                withdraw.destNote ?: "" + "-----------" + (rejectCommand.destNote ?: ""),
+                withdraw.destNote ?: ("" + "-----------" + (rejectCommand.destNote ?: "")),
                 null,
                 rejectCommand.statusReason,
                 "REJECTED",
