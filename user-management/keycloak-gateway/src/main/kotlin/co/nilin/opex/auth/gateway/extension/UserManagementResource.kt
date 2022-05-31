@@ -167,10 +167,10 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             session,
             opexRealm,
             user,
-            listOf(UserModel.RequiredAction.VERIFY_EMAIL.name),
-            verifyUrl
+            listOf(UserModel.RequiredAction.VERIFY_EMAIL.name)
         )
-        val link = ActionTokenHelper.attachTokenToLink(verifyUrl, token)
+        val url = "${session.context.getUri(UrlType.BACKEND).baseUri}/realms/opex/user-management/user/verify"
+        val link = ActionTokenHelper.attachTokenToLink(url, token)
         val expiration = Time.currentTime() + opexRealm.actionTokenGeneratedByAdminLifespan
         sendEmail(user) { it.sendVerifyEmail(link, TimeUnit.SECONDS.toMinutes(expiration.toLong())) }
 
