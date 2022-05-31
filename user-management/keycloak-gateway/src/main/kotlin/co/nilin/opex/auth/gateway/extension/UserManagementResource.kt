@@ -2,6 +2,7 @@ package co.nilin.opex.auth.gateway.extension
 
 import co.nilin.opex.auth.gateway.ApplicationContextHolder
 import co.nilin.opex.auth.gateway.data.*
+import co.nilin.opex.auth.gateway.model.ActionTokenResult
 import co.nilin.opex.auth.gateway.model.AuthEvent
 import co.nilin.opex.auth.gateway.model.UserCreatedEvent
 import co.nilin.opex.auth.gateway.utils.*
@@ -143,7 +144,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         val actionToken = session.tokens().decode(key, ExecuteActionsActionToken::class.java)
 
         if (actionToken == null || !actionToken.isActive || actionToken.requiredActions.isEmpty())
-            return Response.seeOther(uri.queryParam("result", "failed").build()).build()
+            return Response.seeOther(uri.queryParam("result", ActionTokenResult.FAILED).build()).build()
 
         val user = session.users().getUserById(actionToken.subject, opexRealm)
         if (actionToken.requiredActions.contains(UserModel.RequiredAction.VERIFY_EMAIL.name)) {
@@ -151,7 +152,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             user.isEmailVerified = true
         }
 
-        return Response.seeOther(uri.queryParam("result", "success").build()).build()
+        return Response.seeOther(uri.queryParam("result", ActionTokenResult.SUCCEED).build()).build()
     }
 
     @POST
