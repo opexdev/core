@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Component
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 @Component
@@ -25,7 +26,7 @@ class RichOrderSubmitter(
             cont.resume(Unit)
         }, {
             logger.error("Error submitting RichOrder", it)
-            cont.resume(Unit)
+            cont.resumeWithException(it)
         })
     }
 
