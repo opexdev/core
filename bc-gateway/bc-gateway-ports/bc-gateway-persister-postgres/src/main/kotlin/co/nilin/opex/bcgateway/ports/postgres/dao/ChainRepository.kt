@@ -1,7 +1,6 @@
 package co.nilin.opex.bcgateway.ports.postgres.dao
 
 import co.nilin.opex.bcgateway.ports.postgres.model.AddressTypeModel
-import co.nilin.opex.bcgateway.ports.postgres.model.ChainEndpointModel
 import co.nilin.opex.bcgateway.ports.postgres.model.ChainModel
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.r2dbc.repository.Query
@@ -27,7 +26,4 @@ interface ChainRepository : ReactiveCrudRepository<ChainModel, String> {
         """
     )
     fun findAddressTypesByName(name: String): Flow<AddressTypeModel>
-
-    @Query("select * from chain_endpoints where chain_name = :name")
-    fun findEndpointsByName(name: String): Flow<ChainEndpointModel>
 }

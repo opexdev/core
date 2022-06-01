@@ -1,7 +1,9 @@
 package co.nilin.opex.bcgateway.app.config
 
 import co.nilin.opex.bcgateway.ports.postgres.dao.*
-import co.nilin.opex.bcgateway.ports.postgres.model.*
+import co.nilin.opex.bcgateway.ports.postgres.model.AddressTypeModel
+import co.nilin.opex.bcgateway.ports.postgres.model.ChainAddressTypeModel
+import co.nilin.opex.bcgateway.ports.postgres.model.CurrencyImplementationModel
 import co.nilin.opex.utility.preferences.AddressType
 import co.nilin.opex.utility.preferences.Chain
 import co.nilin.opex.utility.preferences.Currency
@@ -13,7 +15,6 @@ import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.DependsOn
 import org.springframework.stereotype.Component
-import java.time.LocalDateTime
 import javax.annotation.PostConstruct
 
 @Component
@@ -22,11 +23,8 @@ class InitializeService(
     private val addressTypeRepository: AddressTypeRepository,
     private val chainRepository: ChainRepository,
     private val chainAddressTypeRepository: ChainAddressTypeRepository,
-    private val chainEndpointRepository: ChainEndpointRepository,
     private val currencyRepository: CurrencyRepository,
     private val currencyImplementationRepository: CurrencyImplementationRepository,
-    private val chainSyncScheduleRepository: ChainSyncScheduleRepository,
-    private val walletSyncScheduleRepository: WalletSyncScheduleRepository
 ) {
     @Autowired
     private lateinit var preferences: Preferences
@@ -36,7 +34,6 @@ class InitializeService(
         addAddressTypes(preferences.addressTypes)
         addChains(preferences.chains)
         addCurrencies(preferences.currencies)
-        addSchedules(preferences)
     }
 
     private suspend fun addAddressTypes(data: List<AddressType>) = coroutineScope {
@@ -54,8 +51,6 @@ class InitializeService(
             ChainAddressTypeModel(null, it.name, addressTypeId)
         }
         runCatching { chainAddressTypeRepository.saveAll(items1).collectList().awaitSingleOrNull() }
-        val items2 = data.map { ChainEndpointModel(null, it.name, it.endpointUrl, null, null) }
-        runCatching { chainEndpointRepository.saveAll(items2).collectList().awaitSingleOrNull() }
     }
 
     private suspend fun addCurrencies(data: List<Currency>) = coroutineScope {
@@ -79,19 +74,5 @@ class InitializeService(
             )
         }
         runCatching { currencyImplementationRepository.saveAll(items).collectList().awaitSingleOrNull() }
-    }
-
-    private suspend fun addSchedules(data: Preferences) = coroutineScope {
-        data.chains.map {
-            chainSyncScheduleRepository.insert(it.name, it.schedule.delay.toInt(), it.schedule.errorDelay.toInt())
-                .awaitSingleOrNull()
-        }
-        if (walletSyncScheduleRepository.existsById(1).awaitSingle()) null
-        else {
-            val item = WalletSyncScheduleModel(
-                null, LocalDateTime.now(), data.wallet.schedule.delay, data.wallet.schedule.batchSize
-            )
-            runCatching { walletSyncScheduleRepository.save(item).awaitSingleOrNull() }
-        }
     }
 }

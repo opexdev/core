@@ -3,7 +3,9 @@ package co.nilin.opex.bcgateway.app.service
 import co.nilin.opex.bcgateway.app.dto.AddChainRequest
 import co.nilin.opex.bcgateway.app.dto.TokenRequest
 import co.nilin.opex.bcgateway.core.model.CurrencyImplementation
-import co.nilin.opex.bcgateway.core.spi.*
+import co.nilin.opex.bcgateway.core.spi.AddressTypeHandler
+import co.nilin.opex.bcgateway.core.spi.ChainLoader
+import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -11,9 +13,7 @@ import org.springframework.transaction.annotation.Transactional
 class AdminService(
     private val chainLoader: ChainLoader,
     private val currencyHandler: CurrencyHandler,
-    private val chainScheduler: ChainSyncSchedulerHandler,
-    private val addressTypeHandler: AddressTypeHandler,
-    private val chainEndpointHandler: ChainEndpointHandler,
+    private val addressTypeHandler: AddressTypeHandler
 ) {
 
     suspend fun addCurrency(name: String, symbol: String) {
@@ -30,10 +30,7 @@ class AdminService(
 
     @Transactional
     suspend fun addChain(body: AddChainRequest) {
-        val chain = chainLoader.addChain(body.name!!, body.addressType!!)
-        chainScheduler.scheduleChain(chain.name, body.scheduleDelaySeconds, body.scheduleErrorDelaySeconds)
-        if (body.scannerEndpoint != null)
-            chainEndpointHandler.addEndpoint(chain.name, body.scannerEndpoint, null, null)
+        chainLoader.addChain(body.name!!, body.addressType!!)
     }
 
     suspend fun addAddressType(name: String, addressRegex: String, memoRegex: String?) {
