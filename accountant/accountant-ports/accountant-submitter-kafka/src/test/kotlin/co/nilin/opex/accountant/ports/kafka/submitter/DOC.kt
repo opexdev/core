@@ -9,7 +9,7 @@ import org.springframework.kafka.support.SendResult
 import org.springframework.util.concurrent.SettableListenableFuture
 import java.time.LocalDateTime
 
-object DUC {
+object DOC {
 
     class TestRichOrderEvent : RichOrderEvent
     class TestCoreEvent : CoreEvent(Pair("BTC", "USDT"))

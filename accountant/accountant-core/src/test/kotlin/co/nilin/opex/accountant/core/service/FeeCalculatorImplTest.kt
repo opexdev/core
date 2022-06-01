@@ -18,7 +18,7 @@ internal class FeeCalculatorImplTest {
 
     private val receiverAddress = "0x0"
     private val feeCalculator = FeeCalculatorImpl(receiverAddress)
-    private var defaultMaker: Order = Order(
+    private var defaultMaker = Order(
         "BTC_USDT",
         "order_1",
         1,
@@ -41,7 +41,7 @@ internal class FeeCalculatorImplTest {
         BigDecimal.ZERO,
         OrderStatus.FILLED.code
     )
-    private var defaultTaker: Order = Order(
+    private var defaultTaker = Order(
         "BTC_USDT",
         "order_2",
         2,
@@ -64,7 +64,7 @@ internal class FeeCalculatorImplTest {
         BigDecimal.ZERO,
         OrderStatus.FILLED.code
     )
-    private var defaultTrade: TradeEvent = TradeEvent(
+    private var defaultTrade = TradeEvent(
         1,
         Pair("BTC", "USDT"),
         "order_2",
