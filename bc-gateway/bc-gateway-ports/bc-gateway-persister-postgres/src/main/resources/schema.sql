@@ -32,16 +32,17 @@ CREATE TABLE IF NOT EXISTS chains
 
 CREATE TABLE IF NOT EXISTS assigned_address_chains
 (
-    id                  SERIAL PRIMARY KEY,
+    id                  SERIAL      PRIMARY KEY,
     assigned_address_id INTEGER     NOT NULL REFERENCES assigned_addresses (id),
     chain               VARCHAR(72) NOT NULL REFERENCES chains (name)
 );
 
 CREATE TABLE IF NOT EXISTS chain_address_types
 (
-    id           SERIAL PRIMARY KEY,
-    chain_name   VARCHAR(72) UNIQUE NOT NULL REFERENCES chains (name),
-    addr_type_id INTEGER     NOT NULL REFERENCES address_types (id)
+    id           SERIAL      PRIMARY KEY,
+    chain_name   VARCHAR(72) NOT NULL REFERENCES chains (name),
+    addr_type_id INTEGER     NOT NULL REFERENCES address_types (id),
+    UNIQUE (chain_name, addr_type_id)
 );
 
 CREATE TABLE IF NOT EXISTS currency
