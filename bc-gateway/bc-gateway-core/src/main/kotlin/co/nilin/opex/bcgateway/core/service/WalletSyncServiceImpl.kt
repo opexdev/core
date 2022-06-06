@@ -11,8 +11,10 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import org.slf4j.Logger
+import org.springframework.stereotype.Service
 import java.math.BigDecimal
 
+@Service
 class WalletSyncServiceImpl(
     private val walletProxy: WalletProxy,
     private val assignedAddressHandler: AssignedAddressHandler,

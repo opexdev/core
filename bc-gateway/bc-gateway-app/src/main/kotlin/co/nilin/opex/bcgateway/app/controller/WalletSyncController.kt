@@ -14,7 +14,12 @@ import org.springframework.web.bind.annotation.RestController
 class WalletSyncController(private val chainHandler: ChainHandler, private val walletSyncService: WalletSyncService) {
     @PutMapping("wallet-sync/{chain}")
     suspend fun syncTransferOnChain(@PathVariable chain: String, @RequestBody transfers: List<Transfer>) {
-        runCatching { chainHandler.fetchChainInfo(chain) }.onFailure { throw OpexException(OpexError.NotFound) }
-        walletSyncService.syncTransfers(transfers)
+        runCatching {
+            chainHandler.fetchChainInfo(chain)
+        }.onFailure {
+            throw OpexException(OpexError.NotFound)
+        }.onSuccess {
+            walletSyncService.syncTransfers(transfers)
+        }
     }
 }
