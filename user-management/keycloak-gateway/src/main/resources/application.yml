@@ -70,3 +70,5 @@ keycloak:
       token_exchange: enabled
   hashicorp:
     url: ${VAULT_URL}
+app:
+  verify-redirect-url: ${VERIFY_REDIRECT_URL}
