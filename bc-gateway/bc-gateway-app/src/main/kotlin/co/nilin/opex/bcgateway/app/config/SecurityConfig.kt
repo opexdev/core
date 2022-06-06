@@ -28,6 +28,7 @@ class SecurityConfig(@Qualifier("loadBalanced") private val webClient: WebClient
             .pathMatchers("/admin/**").hasRole("SCOPE_trust", "system-admin")
             .pathMatchers("/address/**").permitAll()
             .pathMatchers("/deposit/**").permitAll()
+            .pathMatchers("/addresses/**").hasRole("SCOPE_trust", "system-admin")
             .anyExchange().authenticated()
             .and()
             .oauth2ResourceServer()
