@@ -18,8 +18,8 @@ class TempEventPersisterTest {
 
     private val tempEventRepository = mockk<TempEventRepository> {
         every { save(any()) } returns Mono.empty()
-        every { findAll(any()) } returns flow { emit(DOC.tempEventModel) }
-        every { findByOuid(any()) } returns flow { emit(DOC.tempEventModel) }
+        every { findAll(any()) } returns flow { emit(Valid.tempEventModel) }
+        every { findByOuid(any()) } returns flow { emit(Valid.tempEventModel) }
         every { delete(any()) } returns Mono.empty()
         every { deleteAll(any() as Iterable<TempEventModel>) } returns Mono.empty()
         every { deleteByOuid(any()) } returns Mono.empty()
@@ -29,7 +29,7 @@ class TempEventPersisterTest {
 
     @Test
     fun givenOuidAndEvent_whenSaving_callRepoOnce(): Unit = runBlocking {
-        persister.saveTempEvent("event_1", DOC.testEvent)
+        persister.saveTempEvent("event_1", Valid.testEvent)
         verify(exactly = 1) { tempEventRepository.save(any()) }
     }
 
@@ -41,8 +41,8 @@ class TempEventPersisterTest {
 
         with(events[0]) {
             assertThat(this).isInstanceOf(CoreEvent::class.java)
-            assertThat(pair.rightSideName).isEqualTo(DOC.testEvent.rightSidePair)
-            assertThat(pair.leftSideName).isEqualTo(DOC.testEvent.leftSidePair)
+            assertThat(pair.rightSideName).isEqualTo(Valid.testEvent.rightSidePair)
+            assertThat(pair.leftSideName).isEqualTo(Valid.testEvent.leftSidePair)
         }
     }
 

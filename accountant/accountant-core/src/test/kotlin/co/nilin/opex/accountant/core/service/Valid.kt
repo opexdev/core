@@ -4,7 +4,7 @@ import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
 import java.time.LocalDateTime
 
-object DOC {
+object Valid {
 
     val fa = FinancialAction(
         null,

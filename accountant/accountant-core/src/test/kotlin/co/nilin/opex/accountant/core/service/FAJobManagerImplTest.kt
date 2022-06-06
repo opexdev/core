@@ -18,7 +18,7 @@ class FAJobManagerImplTest {
     private val sut = FinancialActionJobManagerImpl(financialActionLoader, financialActionPersister, walletProxy)
 
     init {
-        coEvery { financialActionLoader.loadUnprocessed(any(), any()) } returns listOf(DOC.fa, DOC.fa)
+        coEvery { financialActionLoader.loadUnprocessed(any(), any()) } returns listOf(Valid.fa, Valid.fa)
         coEvery { financialActionPersister.updateStatus(any(), any()) } returns Unit
     }
 

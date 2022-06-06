@@ -28,7 +28,7 @@ class FAPersisterImplTest {
 
     @Test
     fun givenFAAndStatus_whenUpdatingStatusAndFANotFound_throwException(): Unit = runBlocking {
-        faPersister.updateStatus(DOC.fa, FinancialActionStatus.CREATED)
+        faPersister.updateStatus(Valid.fa, FinancialActionStatus.CREATED)
         coVerify { financialActionRepository.updateStatusAndIncreaseRetry(any(), any()) }
     }
 

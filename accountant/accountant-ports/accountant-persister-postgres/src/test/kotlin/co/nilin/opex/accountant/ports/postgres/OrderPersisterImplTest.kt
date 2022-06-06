@@ -13,8 +13,8 @@ import reactor.core.publisher.Mono
 class OrderPersisterImplTest {
 
     private val repository = mockk<OrderRepository> {
-        every { save(any()) } returns Mono.just(DOC.orderModel)
-        every { findByOuid(any()) } returns Mono.just(DOC.orderModel)
+        every { save(any()) } returns Mono.just(Valid.orderModel)
+        every { findByOuid(any()) } returns Mono.just(Valid.orderModel)
     }
 
     private val persister = OrderPersisterImpl(repository)
@@ -29,24 +29,24 @@ class OrderPersisterImplTest {
     fun givenOUID_whenLoading_resultIsValidOrder(): Unit = runBlocking {
         val order = persister.load("")!!
         coVerify { repository.findByOuid(any()) }
-        assertThat(order.status).isEqualTo(DOC.orderModel.status)
-        assertThat(order.matchingEngineId).isEqualTo(DOC.orderModel.matchingEngineId)
-        assertThat(order.direction).isEqualTo(DOC.orderModel.direction)
-        assertThat(order.filledQuantity).isEqualTo(DOC.orderModel.filledQuantity)
-        assertThat(order.ouid).isEqualTo(DOC.orderModel.ouid)
+        assertThat(order.status).isEqualTo(Valid.orderModel.status)
+        assertThat(order.matchingEngineId).isEqualTo(Valid.orderModel.matchingEngineId)
+        assertThat(order.direction).isEqualTo(Valid.orderModel.direction)
+        assertThat(order.filledQuantity).isEqualTo(Valid.orderModel.filledQuantity)
+        assertThat(order.ouid).isEqualTo(Valid.orderModel.ouid)
     }
 
     @Test
     fun givenNewOrder_whenSaving_saveAndReturnValidOrder(): Unit = runBlocking {
-        val newOrder = persister.save(DOC.order)
+        val newOrder = persister.save(Valid.order)
         coVerify { repository.save(any()) }
-        with(DOC.order){
+        with(Valid.order){
             assertThat(newOrder).isNotNull
-            assertThat(status).isEqualTo(DOC.orderModel.status)
-            assertThat(matchingEngineId).isEqualTo(DOC.orderModel.matchingEngineId)
-            assertThat(direction).isEqualTo(DOC.orderModel.direction)
-            assertThat(filledQuantity).isEqualTo(DOC.orderModel.filledQuantity)
-            assertThat(ouid).isEqualTo(DOC.orderModel.ouid)
+            assertThat(status).isEqualTo(Valid.orderModel.status)
+            assertThat(matchingEngineId).isEqualTo(Valid.orderModel.matchingEngineId)
+            assertThat(direction).isEqualTo(Valid.orderModel.direction)
+            assertThat(filledQuantity).isEqualTo(Valid.orderModel.filledQuantity)
+            assertThat(ouid).isEqualTo(Valid.orderModel.ouid)
         }
     }
 

@@ -29,9 +29,9 @@ class EventPublishersTest {
     private val tempEventSubmitter = TempEventSubmitter(tempEventTemplate)
 
     init {
-        every { richOrderTemplate.send(any(), any()) } returns DOC.kafkaSendFuture<RichOrderEvent>()
-        every { richTradeTemplate.send(any(), any()) } returns DOC.kafkaSendFuture<RichTrade>()
-        every { tempEventTemplate.send(any(), any()) } returns DOC.kafkaSendFuture<CoreEvent>()
+        every { richOrderTemplate.send(any(), any()) } returns Valid.kafkaSendFuture<RichOrderEvent>()
+        every { richTradeTemplate.send(any(), any()) } returns Valid.kafkaSendFuture<RichTrade>()
+        every { tempEventTemplate.send(any(), any()) } returns Valid.kafkaSendFuture<CoreEvent>()
     }
 
     @Test
@@ -49,7 +49,7 @@ class EventPublishersTest {
         future.setException(IllegalStateException("mock"))
 
         Assertions.assertThatThrownBy {
-            runBlocking { richOrderSubmitter.publish(DOC.testRichOrder) }
+            runBlocking { richOrderSubmitter.publish(Valid.testRichOrder) }
         }.isInstanceOfAny(Throwable::class.java)
     }
 
@@ -61,7 +61,7 @@ class EventPublishersTest {
         future.setException(IllegalStateException("mock"))
 
         Assertions.assertThatThrownBy {
-            runBlocking { richTradeSubmitter.publish(DOC.richTrade) }
+            runBlocking { richTradeSubmitter.publish(Valid.richTrade) }
         }.isInstanceOfAny(Throwable::class.java)
     }
 
@@ -73,25 +73,25 @@ class EventPublishersTest {
         future.setException(IllegalStateException("mock"))
 
         Assertions.assertThatThrownBy {
-            runBlocking { tempEventSubmitter.republish(listOf(DOC.testCoreEvent)) }
+            runBlocking { tempEventSubmitter.republish(listOf(Valid.testCoreEvent)) }
         }.isInstanceOfAny(Throwable::class.java)
     }
 
     @Test
     fun givenRichOrderSubmitter_whenPublish_callSendWithCorrectTopic():Unit = runBlocking {
-        richOrderSubmitter.publish(DOC.testRichOrder)
+        richOrderSubmitter.publish(Valid.testRichOrder)
         verify { richOrderTemplate.send(eq(richOrderSubmitter.topic()),any()) }
     }
 
     @Test
     fun givenTradeOrderSubmitter_whenPublish_callSendWithCorrectTopic():Unit = runBlocking {
-        richTradeSubmitter.publish(DOC.richTrade)
+        richTradeSubmitter.publish(Valid.richTrade)
         verify { richTradeTemplate.send(eq(richTradeSubmitter.topic()),any()) }
     }
 
     @Test
     fun givenTempEventSubmitter_whenRepublish_callSendForEachEventWithCorrectTopic(): Unit = runBlocking {
-        tempEventSubmitter.republish(listOf(DOC.testCoreEvent,DOC.testCoreEvent))
+        tempEventSubmitter.republish(listOf(Valid.testCoreEvent,Valid.testCoreEvent))
         verify(exactly = 2) { tempEventTemplate.send(eq(tempEventSubmitter.topic()),any()) }
     }
 

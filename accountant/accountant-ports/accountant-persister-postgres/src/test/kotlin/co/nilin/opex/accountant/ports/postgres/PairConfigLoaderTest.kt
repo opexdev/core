@@ -19,12 +19,12 @@ import reactor.core.publisher.Mono
 class PairConfigLoaderTest {
 
     private val pairConfigRepository = mockk<PairConfigRepository> {
-        every { findAll() } returns Flux.just(DOC.pairConfigModel, DOC.pairConfigModel)
-        every { findById(any() as String) } returns Mono.just(DOC.pairConfigModel)
+        every { findAll() } returns Flux.just(Valid.pairConfigModel, Valid.pairConfigModel)
+        every { findById(any() as String) } returns Mono.just(Valid.pairConfigModel)
     }
     private val pairFeeConfigRepository = mockk<PairFeeConfigRepository> {
-        every { findAll() } returns Flux.just(DOC.pairFeeConfigModel, DOC.pairFeeConfigModel)
-        every { findByPairAndDirectionAndUserLevel(any(), any(), any()) } returns Mono.just(DOC.pairFeeConfigModel)
+        every { findAll() } returns Flux.just(Valid.pairFeeConfigModel, Valid.pairFeeConfigModel)
+        every { findByPairAndDirectionAndUserLevel(any(), any(), any()) } returns Mono.just(Valid.pairFeeConfigModel)
     }
     private val pairConfigLoader = PairConfigLoaderImpl(pairConfigRepository, pairFeeConfigRepository)
 
@@ -33,11 +33,11 @@ class PairConfigLoaderTest {
         val configs = pairConfigLoader.loadPairConfigs()
         assertThat(configs.size).isEqualTo(2)
         with(configs[1]) {
-            assertThat(pair).isEqualTo(DOC.pairConfig.pair)
-            assertThat(leftSideWalletSymbol).isEqualTo(DOC.pairConfig.leftSideWalletSymbol)
-            assertThat(rightSideWalletSymbol).isEqualTo(DOC.pairConfig.rightSideWalletSymbol)
-            assertThat(leftSideFraction).isEqualTo(DOC.pairConfig.leftSideFraction)
-            assertThat(rightSideFraction).isEqualTo(DOC.pairConfig.rightSideFraction)
+            assertThat(pair).isEqualTo(Valid.pairConfig.pair)
+            assertThat(leftSideWalletSymbol).isEqualTo(Valid.pairConfig.leftSideWalletSymbol)
+            assertThat(rightSideWalletSymbol).isEqualTo(Valid.pairConfig.rightSideWalletSymbol)
+            assertThat(leftSideFraction).isEqualTo(Valid.pairConfig.leftSideFraction)
+            assertThat(rightSideFraction).isEqualTo(Valid.pairConfig.rightSideFraction)
         }
     }
 
@@ -46,11 +46,11 @@ class PairConfigLoaderTest {
         val configs = pairConfigLoader.loadPairFeeConfigs()
         assertThat(configs.size).isEqualTo(2)
         with(configs[1]) {
-            assertThat(pairConfig.pair).isEqualTo(DOC.pairConfig.pair)
-            assertThat(userLevel).isEqualTo(DOC.pairFeeConfigModel.userLevel)
-            assertThat(direction).isEqualTo(DOC.pairFeeConfigModel.direction)
-            assertThat(makerFee).isEqualTo(DOC.pairFeeConfigModel.makerFee)
-            assertThat(takerFee).isEqualTo(DOC.pairFeeConfigModel.takerFee)
+            assertThat(pairConfig.pair).isEqualTo(Valid.pairConfig.pair)
+            assertThat(userLevel).isEqualTo(Valid.pairFeeConfigModel.userLevel)
+            assertThat(direction).isEqualTo(Valid.pairFeeConfigModel.direction)
+            assertThat(makerFee).isEqualTo(Valid.pairFeeConfigModel.makerFee)
+            assertThat(takerFee).isEqualTo(Valid.pairFeeConfigModel.takerFee)
         }
     }
 
@@ -118,11 +118,11 @@ class PairConfigLoaderTest {
     @Test
     fun givenPairDirection_whenConfigLoaded_returnValidPairConfig(): Unit = runBlocking {
         with(pairConfigLoader.load("BTC_USDT", OrderDirection.BID)){
-            assertThat(pair).isEqualTo(DOC.pairConfigModel.pair)
-            assertThat(leftSideWalletSymbol).isEqualTo(DOC.pairConfigModel.leftSideWalletSymbol)
-            assertThat(rightSideWalletSymbol).isEqualTo(DOC.pairConfigModel.rightSideWalletSymbol)
-            assertThat(rightSideFraction).isEqualTo(DOC.pairConfigModel.rightSideFraction)
-            assertThat(leftSideFraction).isEqualTo(DOC.pairConfigModel.leftSideFraction)
+            assertThat(pair).isEqualTo(Valid.pairConfigModel.pair)
+            assertThat(leftSideWalletSymbol).isEqualTo(Valid.pairConfigModel.leftSideWalletSymbol)
+            assertThat(rightSideWalletSymbol).isEqualTo(Valid.pairConfigModel.rightSideWalletSymbol)
+            assertThat(rightSideFraction).isEqualTo(Valid.pairConfigModel.rightSideFraction)
+            assertThat(leftSideFraction).isEqualTo(Valid.pairConfigModel.leftSideFraction)
         }
     }
 

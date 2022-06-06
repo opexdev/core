@@ -18,7 +18,7 @@ import co.nilin.opex.matching.engine.core.model.Pair
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
-object DOC {
+object Valid {
 
     val orderModel = OrderModel(
         1,
