@@ -53,6 +53,7 @@ class AddressController(
             val at = addressTypes[columns[2]] ?: throw OpexException(OpexError.BadRequest, "Invalid Address Type")
             ReservedAddress(columns[0], columns[1], at)
         }
-        reservedAddressHandler.addReservedAddress(items)
+        // Do nothing in case of duplication (Or any constraint issue)
+        runCatching { reservedAddressHandler.addReservedAddress(items) }
     }
 }
