@@ -10,6 +10,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import reactor.core.publisher.Mono
 
+@Suppress("ReactiveStreamsUnusedPublisher")
 class OrderPersisterImplTest {
 
     private val repository = mockk<OrderRepository> {

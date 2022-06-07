@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
+@Suppress("ReactiveStreamsUnusedPublisher")
 class FAPersisterImplTest {
 
     private val financialActionRepository = mockk<FinancialActionRepository> {
