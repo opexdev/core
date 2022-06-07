@@ -55,7 +55,6 @@ init_secrets() {
   vault write auth/app-id/map/app-id/opex-admin value=backend-policy display_name=opex-admin
   vault write auth/app-id/map/app-id/bitcoin-scanner value=backend-policy display_name=bitcoin-scanner
   vault write auth/app-id/map/app-id/ethereum-scanner value=backend-policy display_name=ethereum-scanner
-  vault write auth/app-id/map/app-id/bsc-scanner value=backend-policy display_name=bsc-scanner
   vault write auth/app-id/map/app-id/tron-scanner value=backend-policy display_name=tron-scanner
   vault write auth/app-id/map/app-id/scanner-scheduler value=backend-policy display_name=scanner-scheduler
   vault write auth/app-id/map/app-id/opex-referral value=backend-policy display_name=opex-referral
@@ -75,7 +74,6 @@ init_secrets() {
   vault write auth/app-id/login/opex-admin user_id=${BACKEND_USER}
   vault write auth/app-id/login/bitcoin-scanner user_id=${BACKEND_USER}
   vault write auth/app-id/login/ethereum-scanner user_id=${BACKEND_USER}
-  vault write auth/app-id/login/bsc-scanner user_id=${BACKEND_USER}
   vault write auth/app-id/login/tron-scanner user_id=${BACKEND_USER}
   vault write auth/app-id/login/scanner-scheduler user_id=${BACKEND_USER}
   vault write auth/app-id/login/opex-referral user_id=${BACKEND_USER}
@@ -93,7 +91,6 @@ init_secrets() {
   vault kv put secret/opex-admin keycloak_client_secret=${OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET}
   vault kv put secret/bitcoin-scanner dbusername=${DB_USER} dbpassword=${DB_PASS}
   vault kv put secret/ethereum-scanner dbusername=${DB_USER} dbpassword=${DB_PASS}
-  vault kv put secret/bsc-scanner dbusername=${DB_USER} dbpassword=${DB_PASS}
   vault kv put secret/tron-scanner dbusername=${DB_USER} dbpassword=${DB_PASS}
   vault kv put secret/scanner-scheduler dbusername=${DB_USER} dbpassword=${DB_PASS}
   vault kv put secret/opex-referral dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USER} db_backup_pass=${DB_BACKUP_PASS}
