@@ -53,7 +53,10 @@ init_secrets() {
   vault write auth/app-id/map/app-id/opex-websocket value=backend-policy display_name=opex-websocket
   vault write auth/app-id/map/app-id/opex-payment value=backend-policy display_name=opex-payment
   vault write auth/app-id/map/app-id/opex-admin value=backend-policy display_name=opex-admin
-  vault write auth/app-id/map/app-id/chain-scan-gateway value=backend-policy display_name=chain-scan-gateway
+  vault write auth/app-id/map/app-id/bitcoin-scanner value=backend-policy display_name=bitcoin-scanner
+  vault write auth/app-id/map/app-id/ethereum-scanner value=backend-policy display_name=ethereum-scanner
+  vault write auth/app-id/map/app-id/tron-scanner value=backend-policy display_name=tron-scanner
+  vault write auth/app-id/map/app-id/scanner-scheduler value=backend-policy display_name=scanner-scheduler
   vault write auth/app-id/map/app-id/opex-referral value=backend-policy display_name=opex-referral
 
   ## Enable user-id
@@ -69,7 +72,10 @@ init_secrets() {
   vault write auth/app-id/login/opex-websocket user_id=${BACKEND_USER}
   vault write auth/app-id/login/opex-payment user_id=${BACKEND_USER}
   vault write auth/app-id/login/opex-admin user_id=${BACKEND_USER}
-  vault write auth/app-id/login/chain-scan-gateway user_id=${BACKEND_USER}
+  vault write auth/app-id/login/bitcoin-scanner user_id=${BACKEND_USER}
+  vault write auth/app-id/login/ethereum-scanner user_id=${BACKEND_USER}
+  vault write auth/app-id/login/tron-scanner user_id=${BACKEND_USER}
+  vault write auth/app-id/login/scanner-scheduler user_id=${BACKEND_USER}
   vault write auth/app-id/login/opex-referral user_id=${BACKEND_USER}
 
   ## Add secret values
@@ -83,7 +89,10 @@ init_secrets() {
   vault kv put secret/opex-websocket dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USER} db_backup_pass=${DB_BACKUP_PASS}
   vault kv put secret/opex-payment dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USER} db_backup_pass=${DB_BACKUP_PASS} vandar_api_key=${VANDAR_API_KEY}
   vault kv put secret/opex-admin keycloak_client_secret=${OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET}
-  vault kv put secret/chain-scan-gateway dbusername=${DB_USER} dbpassword=${DB_PASS}
+  vault kv put secret/bitcoin-scanner dbusername=${DB_USER} dbpassword=${DB_PASS}
+  vault kv put secret/ethereum-scanner dbusername=${DB_USER} dbpassword=${DB_PASS}
+  vault kv put secret/tron-scanner dbusername=${DB_USER} dbpassword=${DB_PASS}
+  vault kv put secret/scanner-scheduler dbusername=${DB_USER} dbpassword=${DB_PASS}
   vault kv put secret/opex-referral dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USER} db_backup_pass=${DB_BACKUP_PASS}
 }
 

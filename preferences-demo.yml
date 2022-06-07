@@ -6,22 +6,40 @@ addressTypes:
 chains:
   - name: bitcoin
     addressType: bitcoin
-    endpointUrl: lb://chain-scan-gateway/bitcoin/transfers
+    scanners:
+      - url: http://bitcoin-scanner:8080
+        maxBlockRange: 30
+        delayOnRateLimit: 300
     schedule:
       delay: 600
       errorDelay: 60
+      timeout: 30
+      maxRetries: 5
+      confirmations: 0
   - name: ethereum
     addressType: ethereum
-    endpointUrl: lb://chain-scan-gateway/eth/transfers
+    scanners:
+      - url: http://ethereum-scanner:8080
+        maxBlockRange: 30
+        delayOnRateLimit: 300
     schedule:
       delay: 90
       errorDelay: 60
+      timeout: 30
+      maxRetries: 5
+      confirmations: 0
   - name: bsc
     addressType: ethereum
-    endpointUrl: lb://chain-scan-gateway/bsc/transfers
+    scanners:
+      - url: http://bsc-scanner:8080
+        maxBlockRange: 30
+        delayOnRateLimit: 300
     schedule:
-      delay: 90
-      errorDelay: 60
+      delay: 6
+      errorDelay: 3
+      timeout: 30
+      maxRetries: 5
+      confirmations: 0
 currencies:
   - symbol: BTC
     name: Bitcoin

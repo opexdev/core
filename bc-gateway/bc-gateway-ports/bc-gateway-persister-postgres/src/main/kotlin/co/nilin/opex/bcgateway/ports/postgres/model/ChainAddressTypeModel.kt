@@ -4,12 +4,7 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 
-@Table("assigned_addresses")
-data class AssignedAddressModel(
-    @Id val id: Long?,
-    val uuid: String,
-    val address: String,
-    val memo: String?,
-    @Column("addr_type_id") val addressTypeId: Long
+@Table("chain_address_types")
+data class ChainAddressTypeModel(
+    @Id val id: Long?, @Column("chain_name") val chainName: String, @Column("addr_type_id") val addressTypeId: Long
 )
-

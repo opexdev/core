@@ -6,16 +6,40 @@ addressTypes:
 chains:
   - name: test-bitcoin
     addressType: test-bitcoin
-    endpointUrl: lb://chain-scan-gateway/test-bitcoin/transfers
+    scanners:
+      - url: http://test-bitcoin-scanner:8080
+        maxBlockRange: 30
+        delayOnRateLimit: 300
     schedule:
       delay: 600
       errorDelay: 60
+      timeout: 30
+      maxRetries: 5
+      confirmations: 0
   - name: test-ethereum
     addressType: ethereum
-    endpointUrl: lb://chain-scan-gateway/test-eth/transfers
+    scanners:
+      - url: http://test-ethereum-scanner:8080
+        maxBlockRange: 30
+        delayOnRateLimit: 300
     schedule:
-      delay: 90
-      errorDelay: 60
+      delay: 6
+      errorDelay: 3
+      timeout: 30
+      maxRetries: 5
+      confirmations: 0
+  - name: test-bsc
+    addressType: ethereum
+    scanners:
+      - url: http://test-bsc-scanner:8080
+        maxBlockRange: 30
+        delayOnRateLimit: 300
+    schedule:
+      delay: 6
+      errorDelay: 3
+      timeout: 30
+      maxRetries: 5
+      confirmations: 0
 currencies:
   - symbol: IRT
     name: Toman
@@ -142,10 +166,6 @@ markets:
         userLevel: "*"
         makerFee: 0.01
         takerFee: 0.01
-wallet:
-  schedule:
-    delay: 10
-    batchSize: 10000
 userLimits:
   - owner: 1
     action: withdraw

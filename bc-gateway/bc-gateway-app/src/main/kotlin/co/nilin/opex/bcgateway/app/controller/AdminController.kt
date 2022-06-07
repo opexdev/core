@@ -4,7 +4,6 @@ import co.nilin.opex.bcgateway.app.dto.*
 import co.nilin.opex.bcgateway.app.service.AdminService
 import co.nilin.opex.bcgateway.core.model.AddressType
 import co.nilin.opex.bcgateway.core.spi.AddressTypeHandler
-import co.nilin.opex.bcgateway.core.spi.ChainEndpointHandler
 import co.nilin.opex.bcgateway.core.spi.ChainLoader
 import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
 import co.nilin.opex.utility.error.data.OpexError
@@ -18,14 +17,12 @@ class AdminController(
     private val service: AdminService,
     private val chainLoader: ChainLoader,
     private val currencyHandler: CurrencyHandler,
-    private val addressTypeHandler: AddressTypeHandler,
-    private val chainEndpointHandler: ChainEndpointHandler
+    private val addressTypeHandler: AddressTypeHandler
 ) {
 
     @GetMapping("/chain")
     suspend fun getChains(): List<ChainResponse> {
-        return chainLoader.fetchAllChains()
-            .map { c -> ChainResponse(c.name, c.addressTypes.map { it.type }, c.endpoints.map { it.url }) }
+        return chainLoader.fetchAllChains().map { c -> ChainResponse(c.name, c.addressTypes.map { it.type }) }
     }
 
     @PostMapping("/chain")
@@ -33,16 +30,6 @@ class AdminController(
         if (!body.isValid())
             throw OpexException(OpexError.InvalidRequestBody)
         service.addChain(body)
-    }
-
-    @PostMapping("/chain/{chain}/endpoint")
-    suspend fun addChainEndpoint(@PathVariable chain: String, @RequestBody body: ChainEndpointRequest) {
-        chainEndpointHandler.addEndpoint(chain, body.url, body.username, body.password)
-    }
-
-    @DeleteMapping("/chain/{chain}/endpoint")
-    suspend fun deleteChainEndpoint(@PathVariable chain: String, @RequestParam url: String) {
-        chainEndpointHandler.deleteEndpoint(chain, url)
     }
 
     @GetMapping("/address/type")

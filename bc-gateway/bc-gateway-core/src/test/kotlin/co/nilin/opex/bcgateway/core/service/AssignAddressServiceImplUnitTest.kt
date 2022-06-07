@@ -29,8 +29,8 @@ class AssignAddressServiceImplUnitTest {
     val currency = Currency("ETH", "Ethereum")
     val ethAddressType = AddressType(1, "ETH", "+*", ".*")
     val ethMemoAddressType = AddressType(2, "ETH", "+*", "+*")
-    val ethChain = Chain("ETH_MAINNET", arrayListOf(ethAddressType), emptyList())
-    val bscChain = Chain("BSC_MAINNET", arrayListOf(ethAddressType, ethMemoAddressType), emptyList())
+    val ethChain = Chain("ETH_MAINNET", arrayListOf(ethAddressType))
+    val bscChain = Chain("BSC_MAINNET", arrayListOf(ethAddressType, ethMemoAddressType))
 
 
     init {

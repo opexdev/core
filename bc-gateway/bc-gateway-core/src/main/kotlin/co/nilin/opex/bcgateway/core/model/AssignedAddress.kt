@@ -1,7 +1,5 @@
 package co.nilin.opex.bcgateway.core.model
 
-data class AddressType(val id: Long, val type: String, val addressRegex: String, val memoRegex: String?)
-data class ReservedAddress(val address: String, val memo: String?, val type: AddressType)
 data class AssignedAddress(
     val uuid: String,
     val address: String,
