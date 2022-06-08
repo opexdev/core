@@ -82,6 +82,13 @@ currencies:
         withdrawFee: 0.00001
         withdrawMin: 0.000001
         decimal: 18
+      - chain: bsc
+        token: true
+        tokenAddress: 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c
+        tokenName: Wrapped BNB
+        withdrawFee: 0.01
+        withdrawMin: 0.01
+        decimal: 18
   - symbol: BUSD
     name: Binance USD
     precision: 0.01
@@ -205,10 +212,6 @@ markets:
         userLevel: "*"
         makerFee: 0.01
         takerFee: 0.01
-wallet:
-  schedule:
-    delay: 10
-    batchSize: 10000
 userLimits:
   - owner: 1
     action: withdraw
