@@ -113,6 +113,7 @@ currencies:
         withdrawFee: 0.01
         withdrawMin: 0.01
         decimal: 18
+    gift: 1000000
   - symbol: TBNB
     name: Binance (Test)
     precision: 0.0001
@@ -133,6 +134,7 @@ currencies:
         withdrawFee: 0.01
         withdrawMin: 0.01
         decimal: 18
+    gift: 1000000
 markets:
   - leftSide: TBTC
     rightSide: TUSDT
