@@ -11,8 +11,6 @@ spring:
   main:
     allow-bean-definition-overriding: false
   cloud:
-    bootstrap:
-      enabled: true
     consul:
       host: ${CONSUL_HOST:localhost}
       port: 8500

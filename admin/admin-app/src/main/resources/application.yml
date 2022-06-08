@@ -10,8 +10,6 @@ spring:
     consumer:
       group-id: admin
   cloud:
-    bootstrap:
-      enabled: true
     consul:
       host: ${CONSUL_HOST:localhost}
       port: 8500
