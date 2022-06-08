@@ -54,11 +54,11 @@ class CurrencyHandlerImpl(
     }
 
     override suspend fun addCurrencyImplementation(
-        symbol: String,
+        currencySymbol: String,
+        implementationSymbol: String,
         chain: String,
         tokenName: String?,
         tokenAddress: String?,
-        tokenSymbol: String?,
         isToken: Boolean,
         withdrawFee: BigDecimal,
         minimumWithdraw: BigDecimal,
@@ -68,22 +68,22 @@ class CurrencyHandlerImpl(
         val chainModel = chainRepository.findByName(chain).awaitFirstOrNull()
             ?: throw OpexException(OpexError.ChainNotFound)
 
-        currencyImplementationRepository.findBySymbolAndChain(symbol.uppercase(), chain)
+        currencyImplementationRepository.findBySymbolAndChain(currencySymbol.uppercase(), chain)
             .awaitFirstOrNull()
             ?.let { throw OpexException(OpexError.DuplicateToken) }
 
-        val currency = currencyRepository.findBySymbol(symbol.uppercase()).awaitFirstOrNull()
+        val currency = currencyRepository.findBySymbol(currencySymbol.uppercase()).awaitFirstOrNull()
             ?: throw OpexException(OpexError.CurrencyNotFoundBC)
 
         val model = currencyImplementationRepository.save(
             CurrencyImplementationModel(
                 null,
-                symbol.uppercase(),
+                currencySymbol.uppercase(),
+                implementationSymbol,
                 chainModel.name,
                 isToken,
                 tokenAddress,
                 tokenName,
-                tokenSymbol,
                 isWithdrawEnabled,
                 withdrawFee,
                 minimumWithdraw,
@@ -91,7 +91,7 @@ class CurrencyHandlerImpl(
             )
         ).awaitFirst()
 
-        logger.info("Add currency implementation: ${model.symbol} - ${model.chain}")
+        logger.info("Add currency implementation: ${model.currencySymbol} - ${model.chain}")
 
         return projectCurrencyImplementation(model, currency)
     }
@@ -101,7 +101,7 @@ class CurrencyHandlerImpl(
             .collectList()
             .awaitFirstOrElse { emptyList() }
             .map {
-                val currency = currencyRepository.findBySymbol(it.symbol).awaitFirstOrNull()
+                val currency = currencyRepository.findBySymbol(it.currencySymbol).awaitFirstOrNull()
                 projectCurrencyImplementation(it, currency)
             }
     }
@@ -149,7 +149,7 @@ class CurrencyHandlerImpl(
         val addressTypesModel = chainRepository.findAddressTypesByName(currencyImplementationModel.chain)
         val addressTypes = addressTypesModel.map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }
         val currencyModelVal =
-            currencyModel ?: currencyRepository.findBySymbol(currencyImplementationModel.symbol).awaitSingle()
+            currencyModel ?: currencyRepository.findBySymbol(currencyImplementationModel.currencySymbol).awaitSingle()
         val currency = Currency(currencyModelVal.symbol, currencyModelVal.name)
         return CurrencyImplementation(
             currency,

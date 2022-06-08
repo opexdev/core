@@ -63,11 +63,11 @@ class InitializeService(
             CurrencyImplementationModel(
                 null,
                 currency.symbol,
+                impl.symbol.takeUnless { it.isEmpty() } ?: currency.symbol,
                 impl.chain,
                 impl.token,
                 impl.tokenAddress,
                 impl.tokenName,
-                impl.symbol.takeUnless { it.isEmpty() } ?: currency.symbol,
                 impl.withdrawEnabled,
                 impl.withdrawFee,
                 impl.withdrawMin,

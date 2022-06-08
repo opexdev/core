@@ -40,11 +40,11 @@ class AdminService(
     suspend fun addToken(body: TokenRequest): CurrencyImplementation {
         return with(body) {
             currencyHandler.addCurrencyImplementation(
-                symbol!!,
+                currencySymbol!!,
+                implementationSymbol ?: currencySymbol,
                 chain!!,
                 tokenName,
                 tokenAddress,
-                tokenSymbol,
                 isToken,
                 withdrawFee,
                 minimumWithdraw,

@@ -13,11 +13,11 @@ interface CurrencyHandler {
     suspend fun deleteCurrency(name: String)
 
     suspend fun addCurrencyImplementation(
-        symbol: String,
+        currencySymbol: String,
+        implementationSymbol: String,
         chain: String,
         tokenName: String?,
         tokenAddress: String?,
-        tokenSymbol: String?,
         isToken: Boolean,
         withdrawFee: BigDecimal,
         minimumWithdraw: BigDecimal,
