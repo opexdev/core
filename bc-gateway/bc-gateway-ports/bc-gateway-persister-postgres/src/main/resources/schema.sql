@@ -64,5 +64,5 @@ CREATE TABLE IF NOT EXISTS currency_implementations
     withdraw_fee          DECIMAL     NOT NULL,
     withdraw_min          DECIMAL     NOT NULL,
     decimal               INTEGER     NOT NULL,
-    UNIQUE (symbol, chain, implementation_symbol)
+    UNIQUE (currency_symbol, chain, implementation_symbol)
 );
