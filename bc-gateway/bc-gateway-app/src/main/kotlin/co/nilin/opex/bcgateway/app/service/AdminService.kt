@@ -44,6 +44,7 @@ class AdminService(
                 chain!!,
                 tokenName,
                 tokenAddress,
+                tokenSymbol,
                 isToken,
                 withdrawFee,
                 minimumWithdraw,

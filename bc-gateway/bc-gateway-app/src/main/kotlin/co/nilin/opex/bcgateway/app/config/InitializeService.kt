@@ -62,11 +62,12 @@ class InitializeService(
         val items = data.flatMap { it.implementations.map { impl -> it to impl } }.map { (currency, impl) ->
             CurrencyImplementationModel(
                 null,
-                impl.symbol.takeUnless { it.isEmpty() } ?: currency.symbol,
+                currency.symbol,
                 impl.chain,
                 impl.token,
                 impl.tokenAddress,
                 impl.tokenName,
+                impl.symbol.takeUnless { it.isEmpty() } ?: currency.symbol,
                 impl.withdrawEnabled,
                 impl.withdrawFee,
                 impl.withdrawMin,

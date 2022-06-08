@@ -17,6 +17,7 @@ interface CurrencyHandler {
         chain: String,
         tokenName: String?,
         tokenAddress: String?,
+        tokenSymbol: String?,
         isToken: Boolean,
         withdrawFee: BigDecimal,
         minimumWithdraw: BigDecimal,

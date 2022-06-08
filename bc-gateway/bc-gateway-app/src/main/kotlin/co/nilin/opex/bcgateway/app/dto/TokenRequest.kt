@@ -8,6 +8,7 @@ data class TokenRequest(
     val isToken: Boolean,
     val tokenName: String?,
     val tokenAddress: String?,
+    val tokenSymbol: String?,
     val withdrawFee: BigDecimal,
     val minimumWithdraw: BigDecimal,
     val isWithdrawEnabled: Boolean = true,

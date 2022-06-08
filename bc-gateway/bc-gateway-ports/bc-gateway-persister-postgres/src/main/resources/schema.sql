@@ -59,9 +59,10 @@ CREATE TABLE IF NOT EXISTS currency_implementations
     token            BOOLEAN     NOT NULL,
     token_address    VARCHAR(72),
     token_name       VARCHAR(72),
+    token_symbol     VARCHAR(72),
     withdraw_enabled BOOLEAN     NOT NULL,
     withdraw_fee     DECIMAL     NOT NULL,
     withdraw_min     DECIMAL     NOT NULL,
     decimal          INTEGER     NOT NULL,
-    UNIQUE (symbol, chain)
+    UNIQUE (symbol, chain, token_address)
 );

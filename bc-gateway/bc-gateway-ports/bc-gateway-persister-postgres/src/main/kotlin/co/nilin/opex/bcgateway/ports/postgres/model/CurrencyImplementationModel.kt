@@ -14,6 +14,7 @@ class CurrencyImplementationModel(
     @Column("token") val token: Boolean,
     @Column("token_address") var tokenAddress: String?,
     @Column("token_name") var tokenName: String?,
+    @Column("token_symbol") var tokenSymbol: String?,
     @Column("withdraw_enabled") var withdrawEnabled: Boolean,
     @Column("withdraw_fee") var withdrawFee: BigDecimal,
     @Column("withdraw_min") var withdrawMin: BigDecimal,
