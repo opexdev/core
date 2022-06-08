@@ -182,11 +182,11 @@ markets:
         userLevel: "*"
         makerFee: 0.01
         takerFee: 0.01
-  - leftSide: TBUSD
-    rightSide: TETH
+  - leftSide: TETH
+    rightSide: TBUSD
     aliases:
       - key: binance
-        alias: TBUSDTETH
+        alias: TETHTBUSD
     feeConfigs:
       - direction: ASK
         userLevel: "*"
@@ -196,11 +196,11 @@ markets:
         userLevel: "*"
         makerFee: 0.01
         takerFee: 0.01
-  - leftSide: TBUSD
-    rightSide: TBTC
+  - leftSide: TBTC
+    rightSide: TBUSD
     aliases:
       - key: binance
-        alias: TBUSDTBTC
+        alias: TBTCTBUSD
     feeConfigs:
       - direction: ASK
         userLevel: "*"
