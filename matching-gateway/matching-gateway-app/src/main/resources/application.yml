@@ -13,8 +13,6 @@ spring:
     consumer:
       group-id: gateway
   cloud:
-    bootstrap:
-      enabled: true
     consul:
       host: ${CONSUL_HOST:localhost}
       port: 8500
