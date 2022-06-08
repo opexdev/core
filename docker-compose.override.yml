@@ -2,6 +2,9 @@ version: '3.8'
 services:
   vault:
     build: docker-images/vault
+  postgres-opex:
+    image: ghcr.io/opexdev/postgres-opex
+    build: docker-images/postgres
   accountant:
     build: accountant/accountant-app
     volumes:
