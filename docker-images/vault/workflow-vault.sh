@@ -60,7 +60,8 @@ init_secrets() {
   vault write auth/app-id/map/app-id/opex-referral value=backend-policy display_name=opex-referral
 
   ## Enable user-id
-  vault write auth/app-id/map/user-id/${BACKEND_USER} value=opex-wallet,opex-websocket,opex-eventlog,opex-auth,opex-accountant,opex-api,opex-bc-gateway,opex-payment,opex-admin,chain-scan-gateway,opex-referral
+  vault write auth/app-id/map/user-id/${BACKEND_USER} \
+    value=opex-wallet,opex-websocket,opex-eventlog,opex-auth,opex-accountant,opex-api,opex-bc-gateway,opex-payment,opex-admin,bitcoin-scanner,ethereum-scanner,tron-scanner,scanner-scheduler,opex-referral
 
   ## Check login app-id
   vault write auth/app-id/login/opex-accountant user_id=${BACKEND_USER}
