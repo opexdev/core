@@ -16,6 +16,8 @@ spring:
     password: ${dbpassword:hiopex}
     initialization-mode: always
   cloud:
+    bootstrap:
+      enabled: true
     vault:
       host: ${VAULT_HOST}
       port: 8200
