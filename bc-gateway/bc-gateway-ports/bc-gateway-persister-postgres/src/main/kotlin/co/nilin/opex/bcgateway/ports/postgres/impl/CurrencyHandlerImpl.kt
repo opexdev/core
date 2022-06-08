@@ -68,7 +68,7 @@ class CurrencyHandlerImpl(
         val chainModel = chainRepository.findByName(chain).awaitFirstOrNull()
             ?: throw OpexException(OpexError.ChainNotFound)
 
-        currencyImplementationRepository.findBySymbolAndChain(currencySymbol.uppercase(), chain)
+        currencyImplementationRepository.findByCurrencySymbolAndChain(currencySymbol.uppercase(), chain)
             .awaitFirstOrNull()
             ?.let { throw OpexException(OpexError.DuplicateToken) }
 
@@ -112,7 +112,7 @@ class CurrencyHandlerImpl(
         if (currencyModel === null) {
             return CurrencyInfo(Currency("", symbolUpperCase), emptyList())
         }
-        val currencyImplModel = currencyImplementationRepository.findBySymbol(symbolUpperCase)
+        val currencyImplModel = currencyImplementationRepository.findByCurrencySymbol(symbolUpperCase)
         val currency = Currency(currencyModel.symbol, currencyModel.name)
         val implementations = currencyImplModel.map { projectCurrencyImplementation(it, currencyModel) }
         return CurrencyInfo(currency, implementations.toList())
@@ -133,7 +133,7 @@ class CurrencyHandlerImpl(
     }
 
     override suspend fun changeWithdrawStatus(symbol: String, chain: String, status: Boolean) {
-        val impl = currencyImplementationRepository.findBySymbolAndChain(symbol, chain).awaitSingleOrNull()
+        val impl = currencyImplementationRepository.findByCurrencySymbolAndChain(symbol, chain).awaitSingleOrNull()
             ?: throw OpexException(OpexError.TokenNotFound)
 
         impl.apply {
