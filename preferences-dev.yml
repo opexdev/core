@@ -232,6 +232,20 @@ markets:
         userLevel: "*"
         makerFee: 0.01
         takerFee: 0.01
+  - leftSide: TBNB
+    rightSide: TBUSD
+    aliases:
+      - key: binance
+        alias: TBNBTBUSD
+    feeConfigs:
+      - direction: ASK
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+      - direction: BID
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
 userLimits:
   - owner: 1
     action: withdraw
