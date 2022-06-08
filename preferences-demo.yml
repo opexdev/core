@@ -83,6 +83,7 @@ currencies:
         withdrawMin: 0.000001
         decimal: 18
       - chain: bsc
+        symbol: WBNB
         token: true
         tokenAddress: 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c
         tokenName: Wrapped BNB
