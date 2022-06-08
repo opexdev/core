@@ -16,6 +16,7 @@ chains:
       timeout: 30
       maxRetries: 5
       confirmations: 0
+      enabled: false
   - name: test-ethereum
     addressType: ethereum
     scanners:
@@ -23,11 +24,12 @@ chains:
         maxBlockRange: 30
         delayOnRateLimit: 5
     schedule:
-      delay: 6
-      errorDelay: 3
+      delay: 15
+      errorDelay: 7
       timeout: 30
       maxRetries: 5
       confirmations: 0
+      enabled: false
   - name: test-bsc
     addressType: ethereum
     scanners:
