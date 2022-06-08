@@ -10,7 +10,7 @@ spring:
     consumer:
       group-id: bc-gateway
   r2dbc:
-    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex_bc_gateway
+    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
     initialization-mode: always

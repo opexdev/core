@@ -14,7 +14,7 @@ spring:
     consumer:
       group-id: referral
   r2dbc:
-    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex_referral
+    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
     initialization-mode: always
