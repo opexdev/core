@@ -128,6 +128,7 @@ currencies:
         withdrawMin: 0.000001
         decimal: 18
       - chain: test-bsc
+        symbol: TWBNB
         token: true
         tokenAddress: 0x5b3e2bc1da86ff6235d9ead4504d598cae77dbcb
         tokenName: Wrapped BNB (Test Net)
