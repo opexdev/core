@@ -3,6 +3,7 @@ x-postgres-db: &postgres-db
   environment:
     - POSTGRES_USER=${DB_USER:-opex}
     - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
+    - POSTGRES_DB=${DB_USER:-opex}
     - POSTGRES_READ_ONLY_USER=${DB_READ_ONLY_USER:-opex_reader}
     - POSTGRES_READ_ONLY_PASSWORD=${DB_READ_ONLY_PASS:-hiopex}
   networks:
