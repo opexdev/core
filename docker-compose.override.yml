@@ -8,13 +8,13 @@ services:
   accountant:
     build: accountant/accountant-app
     volumes:
-      - "./preferences-$PREFERENCES_IDENTIFIER.yml:/preferences.yml"
+      - "./preferences-dev.yml:/preferences.yml"
   eventlog:
     build: eventlog/eventlog-app
   matching-engine:
     build: matching-engine/matching-engine-app
     volumes:
-      - "./preferences-$PREFERENCES_IDENTIFIER.yml:/preferences.yml"
+      - "./preferences-dev.yml:/preferences.yml"
   matching-gateway:
     build: matching-gateway/matching-gateway-app
   auth:
@@ -22,17 +22,17 @@ services:
   wallet:
     build: wallet/wallet-app
     volumes:
-      - "./preferences-$PREFERENCES_IDENTIFIER.yml:/preferences.yml"
+      - "./preferences-dev.yml:/preferences.yml"
   api:
     build: api/api-app
     volumes:
-      - "./preferences-$PREFERENCES_IDENTIFIER.yml:/preferences.yml"
+      - "./preferences-dev.yml:/preferences.yml"
   websocket:
     build: websocket/websocket-app
   bc-gateway:
     build: bc-gateway/bc-gateway-app
     volumes:
-      - "./preferences-$PREFERENCES_IDENTIFIER.yml:/preferences.yml"
+      - "./preferences-dev.yml:/preferences.yml"
   storage:
     build: storage/storage-app
   referral:
