@@ -34,11 +34,11 @@ chains:
     addressType: ethereum
     scanners:
       - url: http://bsc-scanner:8080
-        maxBlockRange: 5
+        maxBlockRange: 10
         delayOnRateLimit: 300
     schedule:
-      delay: 12
-      errorDelay: 6
+      delay: 6
+      errorDelay: 3
       timeout: 30
       maxRetries: 50
       confirmations: 0
