@@ -8,4 +8,6 @@ interface OrderPersister {
     suspend fun save(order: RichOrder)
 
     suspend fun update(orderUpdate: RichOrderUpdate)
+
+    suspend fun load(ouid:String)
 }

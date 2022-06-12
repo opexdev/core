@@ -3,6 +3,7 @@ package co.nilin.opex.market.app.controller
 import co.nilin.opex.market.core.inout.AllOrderRequest
 import co.nilin.opex.market.core.inout.QueryOrderResponse
 import co.nilin.opex.market.core.spi.MarketQueryHandler
+import co.nilin.opex.market.core.spi.OrderPersister
 import co.nilin.opex.market.core.spi.UserQueryHandler
 import org.springframework.web.bind.annotation.*
 
@@ -10,7 +11,8 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/v1/order")
 class OrderController(
     private val marketQueryHandler: MarketQueryHandler,
-    private val userQueryHandler: UserQueryHandler
+    private val userQueryHandler: UserQueryHandler,
+    private val orderPersister: OrderPersister,
 ) {
 
     @GetMapping("/{ouid}")

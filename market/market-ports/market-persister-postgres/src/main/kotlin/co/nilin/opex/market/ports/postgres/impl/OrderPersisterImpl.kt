@@ -75,4 +75,8 @@ class OrderPersisterImpl(
         }
         logger.info("OrderStatus ${orderUpdate.ouid} updated with status of ${orderUpdate.status}")
     }
+
+    override suspend fun load(ouid: String) {
+        orderRepository.findByOuid(ouid)
+    }
 }
