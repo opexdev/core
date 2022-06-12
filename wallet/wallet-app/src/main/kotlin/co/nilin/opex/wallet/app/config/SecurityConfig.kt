@@ -26,7 +26,7 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/withdraw").hasAuthority("SCOPE_trust")
             .pathMatchers("/withdraw/**").hasAuthority("SCOPE_trust")
             .pathMatchers("/transaction/**").hasAuthority("SCOPE_trust")
-            .pathMatchers("/admin/**").hasRole("SCOPE_trust","finance-admin")
+            .pathMatchers("/admin/**").hasRole("SCOPE_trust","admin_finance")
             .pathMatchers("/payment/internal/**").permitAll()
             .pathMatchers("/**").permitAll()
             .anyExchange().authenticated()
