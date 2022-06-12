@@ -155,7 +155,7 @@ class CodeController(
         return uuid?.takeIf { uuid == principal.name }?.let { id ->
             referralCodeHandler.findByReferrerUuid(id).map { ReferralCodeBody(it.uuid, it.code, it.referentCommission) }
         } ?: run {
-            val isAdmin = ((principal as Jwt).claims["roles"] as? JSONArray)?.contains("finance-admin") ?: false
+            val isAdmin = ((principal as Jwt).claims["roles"] as? JSONArray)?.contains("admin_finance") ?: false
             return if (isAdmin) referralCodeHandler.findAll()
                 .map { ReferralCodeBody(it.uuid, it.code, it.referentCommission) }
             else throw OpexException(OpexError.UnAuthorized)
