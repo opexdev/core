@@ -5,8 +5,12 @@ import kotlinx.coroutines.flow.Flow
 import java.security.Principal
 
 interface UserQueryHandler {
-    suspend fun queryOrder(principal: Principal, request: QueryOrderRequest): QueryOrderResponse?
-    suspend fun openOrders(principal: Principal, symbol: String?): Flow<QueryOrderResponse>
-    suspend fun allOrders(principal: Principal, allOrderRequest: AllOrderRequest): Flow<QueryOrderResponse>
-    suspend fun allTrades(principal: Principal, request: TradeRequest): Flow<TradeResponse>
+
+    suspend fun queryOrder(uuid: String, request: QueryOrderRequest): QueryOrderResponse?
+
+    suspend fun openOrders(uuid: String, symbol: String?): List<QueryOrderResponse>
+
+    suspend fun allOrders(uuid: String, allOrderRequest: AllOrderRequest): List<QueryOrderResponse>
+
+    suspend fun allTrades(uuid: String, request: TradeRequest): List<TradeResponse>
 }

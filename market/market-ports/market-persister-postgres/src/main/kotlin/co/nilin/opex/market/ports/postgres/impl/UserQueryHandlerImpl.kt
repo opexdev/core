@@ -17,6 +17,7 @@ import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.stereotype.Component
@@ -32,7 +33,7 @@ class UserQueryHandlerImpl(
     private val orderStatusRepository: OrderStatusRepository
 ) : UserQueryHandler {
 
-    override suspend fun queryOrder(principal: Principal, request: QueryOrderRequest): QueryOrderResponse? {
+    override suspend fun queryOrder(uuid: String, request: QueryOrderRequest): QueryOrderResponse? {
         val order = (if (request.origClientOrderId != null) {
             orderRepository.findBySymbolAndClientOrderId(request.symbol, request.origClientOrderId!!)
         } else {
@@ -40,34 +41,36 @@ class UserQueryHandlerImpl(
 
         }).awaitFirstOrNull() ?: return null
 
-        if (order.uuid != principal.name)
+        if (order.uuid != uuid)
             throw OpexException(OpexError.Forbidden)
 
         return order.asQueryResponse(orderStatusRepository.findMostRecentByOUID(order.ouid).awaitFirstOrNull())
     }
 
-    override suspend fun openOrders(principal: Principal, symbol: String?): Flow<QueryOrderResponse> {
+    override suspend fun openOrders(uuid: String, symbol: String?): List<QueryOrderResponse> {
         return orderRepository.findByUuidAndSymbolAndStatus(
-            principal.name,
+            uuid,
             symbol,
             listOf(OrderStatus.NEW.code, OrderStatus.PARTIALLY_FILLED.code)
         ).filter { orderModel -> orderModel.constraint != null }
             .map { it.asQueryResponse(orderStatusRepository.findMostRecentByOUID(it.ouid).awaitFirstOrNull()) }
+            .toList()
     }
 
-    override suspend fun allOrders(principal: Principal, allOrderRequest: AllOrderRequest): Flow<QueryOrderResponse> {
+    override suspend fun allOrders(uuid: String, allOrderRequest: AllOrderRequest): List<QueryOrderResponse> {
         return orderRepository.findByUuidAndSymbolAndTimeBetween(
-            principal.name,
+            uuid,
             allOrderRequest.symbol,
             allOrderRequest.startTime,
             allOrderRequest.endTime
         ).filter { orderModel -> orderModel.constraint != null }
             .map { it.asQueryResponse(orderStatusRepository.findMostRecentByOUID(it.ouid).awaitFirstOrNull()) }
+            .toList()
     }
 
-    override suspend fun allTrades(principal: Principal, request: TradeRequest): Flow<TradeResponse> {
+    override suspend fun allTrades(uuid: String, request: TradeRequest): List<TradeResponse> {
         return tradeRepository.findByUuidAndSymbolAndTimeBetweenAndTradeIdGreaterThan(
-            principal.name, request.symbol, request.fromTrade, request.startTime, request.endTime
+            uuid, request.symbol, request.fromTrade, request.startTime, request.endTime
         ).map { trade ->
             val takerOrder = orderRepository.findByOuid(trade.takerOuid).awaitFirst()
             val makerOrder = orderRepository.findByOuid(trade.makerOuid).awaitFirst()
@@ -75,13 +78,13 @@ class UserQueryHandlerImpl(
             TradeResponse(
                 trade.symbol,
                 trade.tradeId,
-                if (trade.takerUuid == principal.name) {
+                if (trade.takerUuid == uuid) {
                     takerOrder.orderId!!
                 } else {
                     makerOrder.orderId!!
                 },
                 -1,
-                if (trade.takerUuid == principal.name) {
+                if (trade.takerUuid == uuid) {
                     trade.takerPrice
                 } else {
                     trade.makerPrice
@@ -92,12 +95,12 @@ class UserQueryHandlerImpl(
                 } else {
                     takerOrder.quoteQuantity!!
                 },
-                if (trade.takerUuid == principal.name) {
+                if (trade.takerUuid == uuid) {
                     trade.takerCommision!!
                 } else {
                     trade.makerCommision!!
                 },
-                if (trade.takerUuid == principal.name) {
+                if (trade.takerUuid == uuid) {
                     trade.takerCommisionAsset!!
                 } else {
                     trade.makerCommisionAsset!!
@@ -105,16 +108,16 @@ class UserQueryHandlerImpl(
                 Date.from(
                     trade.createDate.atZone(ZoneId.systemDefault()).toInstant()
                 ),
-                if (trade.takerUuid == principal.name) {
+                if (trade.takerUuid == uuid) {
                     OrderDirection.ASK == takerOrder.direction
                 } else {
                     OrderDirection.ASK == makerOrder.direction
                 },
-                trade.makerUuid == principal.name,
+                trade.makerUuid == uuid,
                 true,
                 isMakerBuyer
             )
-        }
+        }.toList()
     }
 
 
