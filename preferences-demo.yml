@@ -16,6 +16,7 @@ chains:
       timeout: 30
       maxRetries: 5
       confirmations: 0
+      enabled: false
   - name: ethereum
     addressType: ethereum
     scanners:
@@ -23,11 +24,12 @@ chains:
         maxBlockRange: 30
         delayOnRateLimit: 300
     schedule:
-      delay: 90
-      errorDelay: 60
+      delay: 15
+      errorDelay: 7
       timeout: 30
       maxRetries: 5
       confirmations: 0
+      enabled: false
   - name: bsc
     addressType: ethereum
     scanners:
@@ -79,6 +81,14 @@ currencies:
       - chain: bsc
         withdrawFee: 0.00001
         withdrawMin: 0.000001
+        decimal: 18
+      - chain: bsc
+        symbol: WBNB
+        token: true
+        tokenAddress: 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c
+        tokenName: Wrapped BNB
+        withdrawFee: 0.01
+        withdrawMin: 0.01
         decimal: 18
   - symbol: BUSD
     name: Binance USD
@@ -203,10 +213,6 @@ markets:
         userLevel: "*"
         makerFee: 0.01
         takerFee: 0.01
-wallet:
-  schedule:
-    delay: 10
-    batchSize: 10000
 userLimits:
   - owner: 1
     action: withdraw

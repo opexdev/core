@@ -66,7 +66,7 @@ class AdminController(
     suspend fun addCurrencyImplementation(@RequestBody body: TokenRequest): TokenResponse {
         val ex = OpexException(OpexError.InvalidRequestBody)
         with(body) {
-            if (symbol.isNullOrEmpty() || chain.isNullOrEmpty()) throw ex
+            if (currencySymbol.isNullOrEmpty() || chain.isNullOrEmpty()) throw ex
             if (isToken && (tokenName.isNullOrEmpty() || tokenAddress.isNullOrEmpty())) throw ex
             if (withdrawFee < BigDecimal.ZERO || minimumWithdraw < BigDecimal.ZERO || decimal < 0) throw ex
         }

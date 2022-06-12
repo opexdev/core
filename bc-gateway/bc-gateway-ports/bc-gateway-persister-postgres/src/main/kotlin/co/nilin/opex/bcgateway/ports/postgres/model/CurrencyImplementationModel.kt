@@ -9,7 +9,8 @@ import java.math.BigDecimal
 @Table("currency_implementations")
 class CurrencyImplementationModel(
     @Id var id: Long?,
-    @Column("symbol") val symbol: String,
+    @Column("currency_symbol") val currencySymbol: String,
+    @Column("implementation_symbol") var implementationSymbol: String,
     @Column("chain") val chain: String,
     @Column("token") val token: Boolean,
     @Column("token_address") var tokenAddress: String?,
