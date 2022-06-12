@@ -20,7 +20,6 @@
         <module>api-app</module>
         <module>api-ports/api-persister-postgres</module>
         <module>api-ports/api-binance-rest</module>
-        <module>api-ports/api-eventlistener-kafka</module>
     </modules>
 
     <dependencies>

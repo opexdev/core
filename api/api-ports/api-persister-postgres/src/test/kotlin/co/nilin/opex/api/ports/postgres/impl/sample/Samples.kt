@@ -1,8 +1,5 @@
 package co.nilin.opex.api.ports.postgres.impl.sample
 
-import co.nilin.opex.api.core.event.RichOrder
-import co.nilin.opex.api.core.event.RichOrderUpdate
-import co.nilin.opex.api.core.event.RichTrade
 import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.ports.postgres.model.OrderModel
 import co.nilin.opex.api.ports.postgres.model.OrderStatusModel
@@ -119,62 +116,6 @@ object VALID {
     val ORDER_BOOK_RESPONSE = OrderBookResponse(
         AGGREGATED_ORDER_PRICE_MODEL.price!!,
         AGGREGATED_ORDER_PRICE_MODEL.quantity!!
-    )
-
-    val RICH_ORDER = RichOrder(
-        null,
-        ETH_USDT,
-        MAKER_ORDER_MODEL.ouid,
-        PRINCIPAL.name,
-        USER_LEVEL_REGISTERED,
-        BigDecimal.valueOf(0.01),
-        BigDecimal.valueOf(0.01),
-        BigDecimal.valueOf(0.0001),
-        BigDecimal.valueOf(0.01),
-        OrderDirection.ASK,
-        MatchConstraint.GTC,
-        MatchingOrderType.LIMIT_ORDER,
-        BigDecimal.valueOf(1000001),
-        BigDecimal.valueOf(0.01),
-        BigDecimal.valueOf(0),
-        BigDecimal.valueOf(0),
-        BigDecimal.valueOf(0),
-        0
-    )
-
-    val RICH_ORDER_UPDATE = RichOrderUpdate(
-        MAKER_ORDER_MODEL.ouid,
-        BigDecimal.valueOf(1000001),
-        BigDecimal.valueOf(0.01),
-        BigDecimal.valueOf(0.08),
-        OrderStatus.PARTIALLY_FILLED
-    )
-
-    val RICH_TRADE = RichTrade(
-        1,
-        ETH_USDT,
-        MAKER_ORDER_MODEL.ouid,
-        PRINCIPAL.name,
-        1,
-        OrderDirection.ASK,
-        BigDecimal.valueOf(100000),
-        BigDecimal.valueOf(0.01),
-        BigDecimal.valueOf(0),
-        BigDecimal.valueOf(0),
-        BigDecimal.valueOf(0),
-        "ETH",
-        TAKER_ORDER_MODEL.ouid,
-        PRINCIPAL.name,
-        2,
-        OrderDirection.ASK,
-        BigDecimal.valueOf(100000),
-        BigDecimal.valueOf(0.01),
-        BigDecimal.valueOf(0),
-        BigDecimal.valueOf(0),
-        BigDecimal.valueOf(0),
-        "USDT",
-        BigDecimal.valueOf(0),
-        CREATE_DATE
     )
 
     val ALL_ORDER_REQUEST = AllOrderRequest(
