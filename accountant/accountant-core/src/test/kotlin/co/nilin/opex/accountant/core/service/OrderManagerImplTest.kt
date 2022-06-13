@@ -2,7 +2,6 @@ package co.nilin.opex.accountant.core.service
 
 import co.nilin.opex.accountant.core.inout.OrderStatus
 import co.nilin.opex.accountant.core.model.FinancialAction
-import co.nilin.opex.accountant.core.model.Order
 import co.nilin.opex.accountant.core.model.PairConfig
 import co.nilin.opex.accountant.core.model.PairFeeConfig
 import co.nilin.opex.accountant.core.spi.*
@@ -42,30 +41,6 @@ internal class OrderManagerImplTest {
         orderPersister,
         tempEventPersister,
         richOrderPublisher
-    )
-
-    private val order = Order(
-        "BTC_USDT",
-        "order_ouid",
-        null,
-        0.01.toBigDecimal(),
-        0.01.toBigDecimal(),
-        0.000001.toBigDecimal(),
-        0.01.toBigDecimal(),
-        "user_1",
-        "*",
-        OrderDirection.BID,
-        MatchConstraint.GTC,
-        OrderType.LIMIT_ORDER,
-        100000,
-        1000,
-        0,
-        BigDecimal.ZERO,
-        BigDecimal.ZERO,
-        BigDecimal.ZERO,
-        BigDecimal.ZERO,
-        100000.0.toBigDecimal(),
-        OrderStatus.NEW.code
     )
 
     init {
@@ -203,12 +178,12 @@ internal class OrderManagerImplTest {
             OrderDirection.BID
         )
 
-        coEvery { orderPersister.load(any()) } returns order
+        coEvery { orderPersister.load(any()) } returns Valid.order
 
         val fa = orderManager.handleNewOrder(orderEvent)
 
         assertThat(fa.size).isEqualTo(0)
-        assertThat(order.matchingEngineId).isEqualTo(55)
+        assertThat(Valid.order.matchingEngineId).isEqualTo(55)
         coVerify(exactly = 1) { richOrderPublisher.publish(any()) }
     }
 
@@ -267,13 +242,13 @@ internal class OrderManagerImplTest {
             RequestedOperation.CANCEL_ORDER,
             RejectReason.ORDER_NOT_FOUND,
         )
-        coEvery { orderPersister.load(any()) } returns order
+        coEvery { orderPersister.load(any()) } returns Valid.order
 
         val fa = orderManager.handleRejectOrder(orderEvent)[0]
 
-        assertThat(fa.amount).isEqualTo(order.remainedTransferAmount)
+        assertThat(fa.amount).isEqualTo(Valid.order.remainedTransferAmount)
         assertThat(fa.symbol).isEqualTo(orderEvent.pair.rightSideName)
-        assertThat(order.status).isEqualTo(OrderStatus.REJECTED.code)
+        assertThat(Valid.order.status).isEqualTo(OrderStatus.REJECTED.code)
 
         coVerify(exactly = 1) { richOrderPublisher.publish(any()) }
         coVerify(exactly = 1) { orderPersister.save(any()) }
@@ -312,13 +287,13 @@ internal class OrderManagerImplTest {
             500,
             OrderDirection.BID
         )
-        coEvery { orderPersister.load(any()) } returns order
+        coEvery { orderPersister.load(any()) } returns Valid.order
 
         val fa = orderManager.handleCancelOrder(orderEvent)[0]
 
-        assertThat(fa.amount).isEqualTo(order.remainedTransferAmount)
+        assertThat(fa.amount).isEqualTo(Valid.order.remainedTransferAmount)
         assertThat(fa.symbol).isEqualTo(orderEvent.pair.rightSideName)
-        assertThat(order.status).isEqualTo(OrderStatus.CANCELED.code)
+        assertThat(Valid.order.status).isEqualTo(OrderStatus.CANCELED.code)
 
         coVerify(exactly = 1) { richOrderPublisher.publish(any()) }
         coVerify(exactly = 1) { orderPersister.save(any()) }

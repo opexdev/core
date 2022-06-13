@@ -42,15 +42,7 @@ class TempEventPersisterImpl(private val tempEventRepository: TempEventRepositor
     }
 
     override suspend fun removeTempEvents(tempEvents: List<TempEvent>) {
-        tempEventRepository.deleteAll(tempEvents.map {
-            TempEventModel(
-                it.id,
-                it.ouid,
-                it.eventBody.javaClass.name,
-                "",
-                it.eventDate
-            )
-        }).awaitFirstOrNull()
+        tempEventRepository.deleteAllById(tempEvents.map { it.id }).awaitFirstOrNull()
     }
 
     override suspend fun fetchTempEvents(offset: Long, size: Long): List<TempEvent> {

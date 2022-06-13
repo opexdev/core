@@ -22,14 +22,14 @@ class OrderPersisterImplTest {
 
     @Test
     fun givenOUID_whenLoading_resultNotNull(): Unit = runBlocking {
-        val order = persister.load("")
+        val order = persister.load(Valid.orderModel.ouid)
         assertThat(order).isNotNull
     }
 
     @Test
     fun givenOUID_whenLoading_resultIsValidOrder(): Unit = runBlocking {
-        val order = persister.load("")!!
-        coVerify { repository.findByOuid(any()) }
+        val order = persister.load(Valid.orderModel.ouid)!!
+        coVerify { repository.findByOuid(eq(Valid.orderModel.ouid)) }
         assertThat(order.status).isEqualTo(Valid.orderModel.status)
         assertThat(order.matchingEngineId).isEqualTo(Valid.orderModel.matchingEngineId)
         assertThat(order.direction).isEqualTo(Valid.orderModel.direction)
@@ -41,7 +41,7 @@ class OrderPersisterImplTest {
     fun givenNewOrder_whenSaving_saveAndReturnValidOrder(): Unit = runBlocking {
         val newOrder = persister.save(Valid.order)
         coVerify { repository.save(any()) }
-        with(Valid.order){
+        with(Valid.order) {
             assertThat(newOrder).isNotNull
             assertThat(status).isEqualTo(Valid.orderModel.status)
             assertThat(matchingEngineId).isEqualTo(Valid.orderModel.matchingEngineId)

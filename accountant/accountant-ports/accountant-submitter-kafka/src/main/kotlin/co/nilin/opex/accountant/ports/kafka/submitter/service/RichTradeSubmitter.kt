@@ -14,14 +14,16 @@ import kotlin.coroutines.suspendCoroutine
 class RichTradeSubmitter(
     @Qualifier("richTradeKafkaTemplate")
     private val kafkaTemplate: KafkaTemplate<String, RichTrade>
-) : RichTradePublisher,EventPublisher {
+) : RichTradePublisher, EventPublisher {
 
     private val logger = LoggerFactory.getLogger(RichTradeSubmitter::class.java)
+
+    override val topic = "richTrade"
 
     override suspend fun publish(trade: RichTrade): Unit = suspendCoroutine { cont ->
         logger.info("Submitting RichTrade event: id=${trade.id}")
 
-        val sendFuture = kafkaTemplate.send(topic(), trade)
+        val sendFuture = kafkaTemplate.send(topic, trade)
         sendFuture.addCallback({
             cont.resume(Unit)
         }, {
@@ -30,7 +32,4 @@ class RichTradeSubmitter(
         })
     }
 
-    override fun topic(): String {
-        return "richTrade"
-    }
 }

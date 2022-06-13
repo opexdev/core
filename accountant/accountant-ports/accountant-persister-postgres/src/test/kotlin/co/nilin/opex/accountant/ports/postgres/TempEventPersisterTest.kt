@@ -48,8 +48,8 @@ class TempEventPersisterTest {
 
     @Test
     fun givenOuid_whenDeletingByOUID_callRepoOnce(): Unit = runBlocking {
-        persister.removeTempEvents("event_1")
-        verify(exactly = 1) { tempEventRepository.deleteByOuid(any()) }
+        persister.removeTempEvents(Valid.tempEvent.ouid)
+        verify(exactly = 1) { tempEventRepository.deleteByOuid(eq(Valid.tempEvent.ouid)) }
     }
 
 }

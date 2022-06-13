@@ -6,6 +6,7 @@ import co.nilin.opex.accountant.core.spi.FinancialActionPersister
 import co.nilin.opex.accountant.ports.postgres.dao.FinancialActionRepository
 import co.nilin.opex.accountant.ports.postgres.model.FinancialActionModel
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactor.awaitSingle
 import org.springframework.stereotype.Component
 
 @Component
@@ -29,7 +30,7 @@ class FinancialActionPersisterImpl(private val financialActionRepository: Financ
                 "",
                 it.createDate
             )
-        }).awaitFirstOrNull()
+        }).collectList().awaitSingle()
         return financialActions
     }
 

@@ -5,10 +5,7 @@ import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.Order
 import co.nilin.opex.accountant.core.model.PairConfig
 import co.nilin.opex.accountant.core.model.TempEvent
-import co.nilin.opex.accountant.ports.postgres.model.OrderModel
-import co.nilin.opex.accountant.ports.postgres.model.PairConfigModel
-import co.nilin.opex.accountant.ports.postgres.model.PairFeeConfigModel
-import co.nilin.opex.accountant.ports.postgres.model.TempEventModel
+import co.nilin.opex.accountant.ports.postgres.model.*
 import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
 import co.nilin.opex.matching.engine.core.model.MatchConstraint
@@ -101,7 +98,7 @@ object Valid {
     class TestCoreEvent(val leftSidePair: String, val rightSidePair: String) :
         CoreEvent(Pair(leftSidePair, rightSidePair), LocalDateTime.now())
 
-    val testEvent = TestCoreEvent("BTC","USDT")
+    val testEvent = TestCoreEvent("BTC", "USDT")
 
     val tempEvent = TempEvent(
         1,
@@ -131,6 +128,22 @@ object Valid {
         LocalDateTime.now(),
         1,
         1
+    )
+
+    val faModel = FinancialActionModel(
+        null,
+        null,
+        TradeEvent::class.java.name,
+        "trade_id",
+        "BTC_USDT",
+        10000.0.toBigDecimal(),
+        "user_parent",
+        "main",
+        "system",
+        "main",
+        "",
+        "",
+        LocalDateTime.now()
     )
 
 }

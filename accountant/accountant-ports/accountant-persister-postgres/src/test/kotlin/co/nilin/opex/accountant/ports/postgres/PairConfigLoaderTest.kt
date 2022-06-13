@@ -66,7 +66,13 @@ class PairConfigLoaderTest {
     fun givenPairDirection_whenUserLevelEmpty_loadWithDefaultUserLevel(): Unit = runBlocking {
         val pair = pairConfigLoader.load("BTC_USDT", OrderDirection.BID, "")
         assertThat(pair).isNotNull
-        verify(exactly = 1) { pairFeeConfigRepository.findByPairAndDirectionAndUserLevel(any(), any(), eq("*")) }
+        verify(exactly = 1) {
+            pairFeeConfigRepository.findByPairAndDirectionAndUserLevel(
+                eq("BTC_USDT"),
+                eq(OrderDirection.BID),
+                eq("*")
+            )
+        }
     }
 
     @Test
@@ -88,7 +94,13 @@ class PairConfigLoaderTest {
 
         val pair = pairConfigLoader.load("BTC_USDT", OrderDirection.BID, "1")
         assertThat(pair).isNotNull
-        verify(exactly = 1) { pairFeeConfigRepository.findByPairAndDirectionAndUserLevel(any(), any(), eq("*")) }
+        verify(exactly = 1) {
+            pairFeeConfigRepository.findByPairAndDirectionAndUserLevel(
+                eq("BTC_USDT"),
+                eq(OrderDirection.BID),
+                eq("*")
+            )
+        }
     }
 
     @Test
@@ -117,7 +129,7 @@ class PairConfigLoaderTest {
 
     @Test
     fun givenPairDirection_whenConfigLoaded_returnValidPairConfig(): Unit = runBlocking {
-        with(pairConfigLoader.load("BTC_USDT", OrderDirection.BID)){
+        with(pairConfigLoader.load("BTC_USDT", OrderDirection.BID)) {
             assertThat(pair).isEqualTo(Valid.pairConfigModel.pair)
             assertThat(leftSideWalletSymbol).isEqualTo(Valid.pairConfigModel.leftSideWalletSymbol)
             assertThat(rightSideWalletSymbol).isEqualTo(Valid.pairConfigModel.rightSideWalletSymbol)

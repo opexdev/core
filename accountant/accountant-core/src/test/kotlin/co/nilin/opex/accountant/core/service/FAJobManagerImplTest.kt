@@ -1,5 +1,6 @@
 package co.nilin.opex.accountant.core.service
 
+import co.nilin.opex.accountant.core.model.FinancialActionStatus
 import co.nilin.opex.accountant.core.spi.FinancialActionLoader
 import co.nilin.opex.accountant.core.spi.FinancialActionPersister
 import co.nilin.opex.accountant.core.spi.WalletProxy
@@ -26,8 +27,26 @@ class FAJobManagerImplTest {
     fun given2FALoaded_whenProcessing_thenVerifyThatTransferProxyCalled2Times() = runBlocking {
         coEvery { walletProxy.transfer(any(), any(), any(), any(), any(), any(), any(), any()) } returns Unit
         sut.processFinancialActions(0, 2)
-        coVerify(exactly = 2) { walletProxy.transfer(any(), any(), any(), any(), any(), any(), any(), any()) }
-        coVerify(exactly = 2) { financialActionPersister.updateStatus(any(), any()) }
+        with(Valid.fa) {
+            coVerify(exactly = 2) {
+                walletProxy.transfer(
+                    eq(symbol),
+                    eq(senderWalletType),
+                    eq(sender),
+                    eq(receiverWalletType),
+                    eq(receiver),
+                    eq(amount),
+                    eq(eventType + pointer),
+                    any()
+                )
+            }
+            coVerify(exactly = 2) {
+                financialActionPersister.updateStatus(
+                    eq(this@with),
+                    eq(FinancialActionStatus.PROCESSED)
+                )
+            }
+        }
     }
 
     @Test
@@ -37,8 +56,57 @@ class FAJobManagerImplTest {
         } throws IllegalStateException()
 
         sut.processFinancialActions(0, 2)
-        coVerify(exactly = 2) { walletProxy.transfer(any(), any(), any(), any(), any(), any(), any(), any()) }
-        coVerify(exactly = 2) { financialActionPersister.updateStatus(any(), any()) }
+        with(Valid.fa){
+            coVerify(exactly = 2) {
+                walletProxy.transfer(
+                eq(symbol),
+                eq(senderWalletType),
+                eq(sender),
+                eq(receiverWalletType),
+                eq(receiver),
+                eq(amount),
+                eq(eventType + pointer),
+                any()
+            )
+            }
+            coVerify(exactly = 2) {
+                financialActionPersister.updateStatus(
+                    eq(this@with),
+                    eq(FinancialActionStatus.CREATED)
+                )
+            }
+        }
+    }
+
+    @Test
+    fun given2FALoaded_whenProcessingFailedAndRetryCountExceeded_thenUpdateStatusCalledRegardless() = runBlocking {
+        coEvery {
+            walletProxy.transfer(any(), any(), any(), any(), any(), any(), any(), any())
+        } throws IllegalStateException()
+
+        coEvery { financialActionLoader.loadUnprocessed(any(), any()) } returns listOf(Valid.faHighRetry)
+
+        sut.processFinancialActions(0, 1)
+        with(Valid.faHighRetry){
+            coVerify(exactly = 1) {
+                walletProxy.transfer(
+                    eq(symbol),
+                    eq(senderWalletType),
+                    eq(sender),
+                    eq(receiverWalletType),
+                    eq(receiver),
+                    eq(amount),
+                    eq(eventType + pointer),
+                    any()
+                )
+            }
+            coVerify(exactly = 1) {
+                financialActionPersister.updateStatus(
+                    eq(this@with),
+                    eq(FinancialActionStatus.ERROR)
+                )
+            }
+        }
     }
 
 }

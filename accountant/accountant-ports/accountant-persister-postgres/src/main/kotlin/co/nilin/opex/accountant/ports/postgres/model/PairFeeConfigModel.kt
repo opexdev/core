@@ -5,7 +5,7 @@ import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
 
 @Table("pair_fee_config")
-class PairFeeConfigModel(
+data class PairFeeConfigModel(
     val id: Long?,
     @Column("pair_config_id") val pairConfigId: String,
     @Column("direction") val direction: String,

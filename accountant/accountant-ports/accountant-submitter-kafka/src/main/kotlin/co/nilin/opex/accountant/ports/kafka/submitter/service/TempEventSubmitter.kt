@@ -18,11 +18,13 @@ class TempEventSubmitter(
 
     private val logger = LoggerFactory.getLogger(TempEventSubmitter::class.java)
 
+    override val topic = "tempevents"
+
     override suspend fun republish(events: List<CoreEvent>): Unit = suspendCoroutine { cont ->
         logger.info("Submitting TempEvents")
 
         events.forEach { event ->
-            val sendFuture = kafkaTemplate.send(topic(), event)
+            val sendFuture = kafkaTemplate.send(topic, event)
             sendFuture.addCallback({
                 cont.resume(Unit)
             }, {
@@ -30,9 +32,5 @@ class TempEventSubmitter(
                 cont.resumeWithException(it)
             })
         }
-    }
-
-    override fun topic(): String {
-        return "tempevents"
     }
 }

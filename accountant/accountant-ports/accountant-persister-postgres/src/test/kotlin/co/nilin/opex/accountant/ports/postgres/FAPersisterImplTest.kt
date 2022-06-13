@@ -16,21 +16,26 @@ import reactor.core.publisher.Mono
 class FAPersisterImplTest {
 
     private val financialActionRepository = mockk<FinancialActionRepository> {
-        coEvery { saveAll(emptyList()) } returns Flux.empty()
+        coEvery { saveAll(any() as Iterable<FinancialActionModel>) } returns Flux.just(Valid.faModel)
         coEvery { updateStatusAndIncreaseRetry(any(), any()) } returns Mono.empty()
     }
     private val faPersister = FinancialActionPersisterImpl(financialActionRepository)
 
     @Test
     fun givenListOfActions_whenSaving_callSaveAll(): Unit = runBlocking {
-        faPersister.persist(emptyList())
-        coVerify { financialActionRepository.saveAll(any() as Iterable<FinancialActionModel>) }
+        faPersister.persist(listOf(Valid.fa))
+        coVerify { financialActionRepository.saveAll(eq(listOf(Valid.faModel))) }
     }
 
     @Test
     fun givenFAAndStatus_whenUpdatingStatusAndFANotFound_throwException(): Unit = runBlocking {
         faPersister.updateStatus(Valid.fa, FinancialActionStatus.CREATED)
-        coVerify { financialActionRepository.updateStatusAndIncreaseRetry(any(), any()) }
+        coVerify {
+            financialActionRepository.updateStatusAndIncreaseRetry(
+                eq(Valid.fa.id!!),
+                eq(FinancialActionStatus.CREATED)
+            )
+        }
     }
 
 }

@@ -36,9 +36,9 @@ class EventPublishersTest {
 
     @Test
     fun givenSubmitters_validateTopics(): Unit = runBlocking {
-        assertThat(richOrderSubmitter.topic()).isEqualTo("richOrder")
-        assertThat(richTradeSubmitter.topic()).isEqualTo("richTrade")
-        assertThat(tempEventSubmitter.topic()).isEqualTo("tempevents")
+        assertThat(richOrderSubmitter.topic).isEqualTo("richOrder")
+        assertThat(richTradeSubmitter.topic).isEqualTo("richTrade")
+        assertThat(tempEventSubmitter.topic).isEqualTo("tempevents")
     }
 
     @Test
@@ -78,21 +78,21 @@ class EventPublishersTest {
     }
 
     @Test
-    fun givenRichOrderSubmitter_whenPublish_callSendWithCorrectTopic():Unit = runBlocking {
+    fun givenRichOrderSubmitter_whenPublish_callSendWithCorrectTopic(): Unit = runBlocking {
         richOrderSubmitter.publish(Valid.testRichOrder)
-        verify { richOrderTemplate.send(eq(richOrderSubmitter.topic()),any()) }
+        verify { richOrderTemplate.send(eq(richOrderSubmitter.topic), eq(Valid.testRichOrder)) }
     }
 
     @Test
-    fun givenTradeOrderSubmitter_whenPublish_callSendWithCorrectTopic():Unit = runBlocking {
+    fun givenTradeOrderSubmitter_whenPublish_callSendWithCorrectTopic(): Unit = runBlocking {
         richTradeSubmitter.publish(Valid.richTrade)
-        verify { richTradeTemplate.send(eq(richTradeSubmitter.topic()),any()) }
+        verify { richTradeTemplate.send(eq(richTradeSubmitter.topic), eq(Valid.richTrade)) }
     }
 
     @Test
     fun givenTempEventSubmitter_whenRepublish_callSendForEachEventWithCorrectTopic(): Unit = runBlocking {
-        tempEventSubmitter.republish(listOf(Valid.testCoreEvent,Valid.testCoreEvent))
-        verify(exactly = 2) { tempEventTemplate.send(eq(tempEventSubmitter.topic()),any()) }
+        tempEventSubmitter.republish(listOf(Valid.testCoreEvent, Valid.testCoreEvent))
+        verify(exactly = 2) { tempEventTemplate.send(eq(tempEventSubmitter.topic), eq(Valid.testCoreEvent)) }
     }
 
 }
