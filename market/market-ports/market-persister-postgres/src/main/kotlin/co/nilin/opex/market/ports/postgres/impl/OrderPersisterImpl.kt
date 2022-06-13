@@ -2,12 +2,14 @@ package co.nilin.opex.market.ports.postgres.impl
 
 import co.nilin.opex.market.core.event.RichOrder
 import co.nilin.opex.market.core.event.RichOrderUpdate
+import co.nilin.opex.market.core.inout.Order
 import co.nilin.opex.market.core.inout.OrderStatus
 import co.nilin.opex.market.core.spi.OrderPersister
 import co.nilin.opex.market.ports.postgres.dao.OrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderStatusRepository
 import co.nilin.opex.market.ports.postgres.model.OrderModel
 import co.nilin.opex.market.ports.postgres.model.OrderStatusModel
+import co.nilin.opex.market.ports.postgres.util.asOrderDTO
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -76,7 +78,7 @@ class OrderPersisterImpl(
         logger.info("OrderStatus ${orderUpdate.ouid} updated with status of ${orderUpdate.status}")
     }
 
-    override suspend fun load(ouid: String) {
-        orderRepository.findByOuid(ouid)
+    override suspend fun load(ouid: String): Order? {
+        return orderRepository.findByOuid(ouid).awaitFirstOrNull()?.asOrderDTO()
     }
 }

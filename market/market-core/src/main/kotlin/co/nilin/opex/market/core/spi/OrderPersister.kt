@@ -2,6 +2,7 @@ package co.nilin.opex.market.core.spi
 
 import co.nilin.opex.market.core.event.RichOrder
 import co.nilin.opex.market.core.event.RichOrderUpdate
+import co.nilin.opex.market.core.inout.Order
 
 interface OrderPersister {
 
@@ -9,5 +10,5 @@ interface OrderPersister {
 
     suspend fun update(orderUpdate: RichOrderUpdate)
 
-    suspend fun load(ouid:String)
+    suspend fun load(ouid: String): Order?
 }
