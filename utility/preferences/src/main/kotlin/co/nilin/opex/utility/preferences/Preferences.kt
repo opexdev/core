@@ -6,6 +6,5 @@ data class Preferences(
     var currencies: List<Currency> = emptyList(),
     var markets: List<Market> = emptyList(),
     var userLimits: List<UserLimit> = emptyList(),
-    var wallet: Wallet = Wallet(),
     var system: System = System()
 )

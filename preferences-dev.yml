@@ -6,16 +6,42 @@ addressTypes:
 chains:
   - name: test-bitcoin
     addressType: test-bitcoin
-    endpointUrl: lb://chain-scan-gateway/test-bitcoin/transfers
+    scanners:
+      - url: http://bitcoin-scanner:8080
+        maxBlockRange: 30
+        delayOnRateLimit: 5
     schedule:
       delay: 600
       errorDelay: 60
+      timeout: 30
+      maxRetries: 5
+      confirmations: 0
+      enabled: false
   - name: test-ethereum
     addressType: ethereum
-    endpointUrl: lb://chain-scan-gateway/test-eth/transfers
+    scanners:
+      - url: http://ethereum-scanner:8080
+        maxBlockRange: 30
+        delayOnRateLimit: 5
     schedule:
-      delay: 90
-      errorDelay: 60
+      delay: 15
+      errorDelay: 7
+      timeout: 30
+      maxRetries: 5
+      confirmations: 0
+      enabled: false
+  - name: test-bsc
+    addressType: ethereum
+    scanners:
+      - url: http://bsc-scanner:8080
+        maxBlockRange: 10
+        delayOnRateLimit: 300
+    schedule:
+      delay: 6
+      errorDelay: 3
+      timeout: 30
+      maxRetries: 50
+      confirmations: 0
 currencies:
   - symbol: IRT
     name: Toman
@@ -63,13 +89,52 @@ currencies:
     monthlyTotal: 30000
     monthlyCount: 3000
     implementations:
-      - chain: ethereum
+      - chain: test-ethereum
         token: true
         tokenAddress: 0x110a13FC3efE6A245B50102D2d79B3E76125Ae83
         tokenName: Tether USD
         withdrawFee: 0.01
         withdrawMin: 0.01
         decimal: 6
+    gift: 1000000
+  - symbol: TBUSD
+    name: Binance USD (Test)
+    precision: 0.01
+    mainBalance: 10000
+    dailyTotal: 1000
+    dailyCount: 100
+    monthlyTotal: 30000
+    monthlyCount: 3000
+    implementations:
+      - chain: test-bsc
+        token: true
+        tokenAddress: 0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee
+        tokenName: BUSD Token
+        withdrawFee: 0.01
+        withdrawMin: 0.01
+        decimal: 18
+    gift: 1000000
+  - symbol: TBNB
+    name: Binance (Test)
+    precision: 0.0001
+    mainBalance: 10000
+    dailyTotal: 1000
+    dailyCount: 100
+    monthlyTotal: 30000
+    monthlyCount: 3000
+    implementations:
+      - chain: test-bsc
+        withdrawFee: 0.00001
+        withdrawMin: 0.000001
+        decimal: 18
+      - chain: test-bsc
+        symbol: TWBNB
+        token: true
+        tokenAddress: 0x5b3e2bc1da86ff6235d9ead4504d598cae77dbcb
+        tokenName: Wrapped BNB (Test Net)
+        withdrawFee: 0.01
+        withdrawMin: 0.01
+        decimal: 18
     gift: 1000000
 markets:
   - leftSide: TBTC
@@ -142,10 +207,48 @@ markets:
         userLevel: "*"
         makerFee: 0.01
         takerFee: 0.01
-wallet:
-  schedule:
-    delay: 10
-    batchSize: 10000
+  - leftSide: TETH
+    rightSide: TBUSD
+    aliases:
+      - key: binance
+        alias: TETHTBUSD
+    feeConfigs:
+      - direction: ASK
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+      - direction: BID
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+  - leftSide: TBTC
+    rightSide: TBUSD
+    aliases:
+      - key: binance
+        alias: TBTCTBUSD
+    feeConfigs:
+      - direction: ASK
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+      - direction: BID
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+  - leftSide: TBNB
+    rightSide: TBUSD
+    aliases:
+      - key: binance
+        alias: TBNBTBUSD
+    feeConfigs:
+      - direction: ASK
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+      - direction: BID
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
 userLimits:
   - owner: 1
     action: withdraw

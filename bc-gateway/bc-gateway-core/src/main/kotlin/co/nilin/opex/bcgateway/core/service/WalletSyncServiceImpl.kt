@@ -2,78 +2,44 @@ package co.nilin.opex.bcgateway.core.service
 
 import co.nilin.opex.bcgateway.core.api.WalletSyncService
 import co.nilin.opex.bcgateway.core.model.CurrencyImplementation
-import co.nilin.opex.bcgateway.core.model.Deposit
-import co.nilin.opex.bcgateway.core.model.WalletSyncRecord
-import co.nilin.opex.bcgateway.core.spi.*
-import kotlinx.coroutines.ExecutorCoroutineDispatcher
+import co.nilin.opex.bcgateway.core.model.Transfer
+import co.nilin.opex.bcgateway.core.spi.AssignedAddressHandler
+import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
+import co.nilin.opex.bcgateway.core.spi.WalletProxy
+import co.nilin.opex.bcgateway.core.utils.LoggerDelegate
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.withContext
-import org.slf4j.LoggerFactory
+import kotlinx.coroutines.coroutineScope
+import org.slf4j.Logger
+import org.springframework.stereotype.Service
 import java.math.BigDecimal
-import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
-import kotlin.coroutines.coroutineContext
 
+@Service
 class WalletSyncServiceImpl(
-    private val syncSchedulerHandler: WalletSyncSchedulerHandler,
     private val walletProxy: WalletProxy,
-    private val walletSyncRecordHandler: WalletSyncRecordHandler,
     private val assignedAddressHandler: AssignedAddressHandler,
-    private val currencyHandler: CurrencyHandler,
-    private val dispatcher: ExecutorCoroutineDispatcher
+    private val currencyHandler: CurrencyHandler
 ) : WalletSyncService {
 
-    private val logger = LoggerFactory.getLogger(ChainSyncServiceImpl::class.java)
+    private val logger: Logger by LoggerDelegate()
 
-    override suspend fun startSyncWithWallet() {
-        withContext(coroutineContext) {
-            val schedule = syncSchedulerHandler.fetchActiveSchedule(LocalDateTime.now())
-            if (schedule != null) {
-                val deposits = walletSyncRecordHandler.findReadyToSyncTransfers(schedule.batchSize)
-                logger.info("syncing ${deposits.size} deposits")
-
-                val result = deposits.map { deposit ->
-                    async(dispatcher) {
-                        var deposited = false
-                        val uuid = assignedAddressHandler.findUuid(
-                            deposit.depositor,
-                            deposit.depositorMemo
-                        )
-                        if (uuid != null) {
-                            logger.info("deposit came for $uuid - to ${deposit.depositor}")
-                            val symbol = currencyHandler.findByChainAndTokenAddress(deposit.chain, deposit.tokenAddress)
-                            if (symbol != null) {
-                                sendDeposit(uuid, symbol, deposit)
-                                deposited = true
-                            }
-                        }
-                        Pair(deposit, deposited)
+    override suspend fun syncTransfers(transfers: List<Transfer>): Unit = coroutineScope {
+        transfers.map { transfer ->
+            async {
+                assignedAddressHandler.findUuid(transfer.receiver.address, transfer.receiver.memo)?.also { uuid ->
+                    logger.info("Deposit came for $uuid - to ${transfer.receiver.address}")
+                    currencyHandler.findByChainAndTokenAddress(transfer.chain, transfer.tokenAddress)?.also { symbol ->
+                        sendDeposit(uuid, symbol, transfer)
                     }
-                }.awaitAll()
-
-                walletSyncRecordHandler.saveWalletSyncRecord(
-                    WalletSyncRecord(
-                        LocalDateTime.now(),
-                        true,
-                        null
-                    ),
-                    result.filter { it.second }.map { it.first },
-                    result.filter { !it.second }.map { it.first }
-                )
-
-                syncSchedulerHandler.prepareScheduleForNextTry(
-                    schedule, LocalDateTime.now()
-                        .plus(schedule.delay, ChronoUnit.SECONDS)
-                )
+                }
             }
-        }
+        }.awaitAll()
     }
 
-    private suspend fun sendDeposit(uuid: String, currencyImpl: CurrencyImplementation, deposit: Deposit) {
-        val amount = deposit.amount.divide(BigDecimal(10).pow(currencyImpl.decimal))
+    private suspend fun sendDeposit(uuid: String, currencyImpl: CurrencyImplementation, transfer: Transfer) {
+        val amount = transfer.amount.divide(BigDecimal.TEN.pow(currencyImpl.decimal))
         val symbol = currencyImpl.currency.symbol
-        logger.info("sending deposit to $uuid - $amount $symbol")
-        walletProxy.transfer(uuid, symbol, amount, deposit.hash)
+        logger.info("Sending deposit to $uuid - $amount $symbol")
+        walletProxy.transfer(uuid, symbol, amount, transfer.txHash)
     }
 }

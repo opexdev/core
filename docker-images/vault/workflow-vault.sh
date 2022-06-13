@@ -53,11 +53,15 @@ init_secrets() {
   vault write auth/app-id/map/app-id/opex-websocket value=backend-policy display_name=opex-websocket
   vault write auth/app-id/map/app-id/opex-payment value=backend-policy display_name=opex-payment
   vault write auth/app-id/map/app-id/opex-admin value=backend-policy display_name=opex-admin
-  vault write auth/app-id/map/app-id/chain-scan-gateway value=backend-policy display_name=chain-scan-gateway
+  vault write auth/app-id/map/app-id/bitcoin-scanner value=backend-policy display_name=bitcoin-scanner
+  vault write auth/app-id/map/app-id/ethereum-scanner value=backend-policy display_name=ethereum-scanner
+  vault write auth/app-id/map/app-id/tron-scanner value=backend-policy display_name=tron-scanner
+  vault write auth/app-id/map/app-id/scanner-scheduler value=backend-policy display_name=scanner-scheduler
   vault write auth/app-id/map/app-id/opex-referral value=backend-policy display_name=opex-referral
 
   ## Enable user-id
-  vault write auth/app-id/map/user-id/${BACKEND_USER} value=opex-wallet,opex-websocket,opex-eventlog,opex-auth,opex-accountant,opex-api,opex-bc-gateway,opex-payment,opex-admin,chain-scan-gateway,opex-referral
+  vault write auth/app-id/map/user-id/${BACKEND_USER} \
+    value=opex-wallet,opex-websocket,opex-eventlog,opex-auth,opex-accountant,opex-api,opex-bc-gateway,opex-payment,opex-admin,bitcoin-scanner,ethereum-scanner,tron-scanner,scanner-scheduler,opex-referral
 
   ## Check login app-id
   vault write auth/app-id/login/opex-accountant user_id=${BACKEND_USER}
@@ -69,22 +73,28 @@ init_secrets() {
   vault write auth/app-id/login/opex-websocket user_id=${BACKEND_USER}
   vault write auth/app-id/login/opex-payment user_id=${BACKEND_USER}
   vault write auth/app-id/login/opex-admin user_id=${BACKEND_USER}
-  vault write auth/app-id/login/chain-scan-gateway user_id=${BACKEND_USER}
+  vault write auth/app-id/login/bitcoin-scanner user_id=${BACKEND_USER}
+  vault write auth/app-id/login/ethereum-scanner user_id=${BACKEND_USER}
+  vault write auth/app-id/login/tron-scanner user_id=${BACKEND_USER}
+  vault write auth/app-id/login/scanner-scheduler user_id=${BACKEND_USER}
   vault write auth/app-id/login/opex-referral user_id=${BACKEND_USER}
 
   ## Add secret values
   vault kv put secret/opex smtppass=${SMTP_PASS}
-  vault kv put secret/opex-accountant dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USER} db_backup_pass=${DB_BACKUP_PASS}
-  vault kv put secret/opex-api dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USER} db_backup_pass=${DB_BACKUP_PASS}
-  vault kv put secret/opex-bc-gateway dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USER} db_backup_pass=${DB_BACKUP_PASS}
-  vault kv put secret/opex-eventlog dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USER} db_backup_pass=${DB_BACKUP_PASS}
+  vault kv put secret/opex-accountant dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}
+  vault kv put secret/opex-api dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}
+  vault kv put secret/opex-bc-gateway dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}
+  vault kv put secret/opex-eventlog dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}
   vault kv put secret/opex-auth dbusername=${DB_USER} dbpassword=${DB_PASS} admin_username=${KEYCLOAK_ADMIN_USERNAME} admin_password=${KEYCLOAK_ADMIN_PASSWORD}
-  vault kv put secret/opex-wallet dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USER} db_backup_pass=${DB_BACKUP_PASS}
-  vault kv put secret/opex-websocket dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USER} db_backup_pass=${DB_BACKUP_PASS}
-  vault kv put secret/opex-payment dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USER} db_backup_pass=${DB_BACKUP_PASS} vandar_api_key=${VANDAR_API_KEY}
+  vault kv put secret/opex-wallet dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}
+  vault kv put secret/opex-websocket dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}
+  vault kv put secret/opex-payment dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS} vandar_api_key=${VANDAR_API_KEY}
   vault kv put secret/opex-admin keycloak_client_secret=${OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET}
-  vault kv put secret/chain-scan-gateway dbusername=${DB_USER} dbpassword=${DB_PASS}
-  vault kv put secret/opex-referral dbusername=${DB_USER} dbpassword=${DB_PASS} db_backup_username=${DB_BACKUP_USER} db_backup_pass=${DB_BACKUP_PASS}
+  vault kv put secret/bitcoin-scanner dbusername=${DB_USER} dbpassword=${DB_PASS}
+  vault kv put secret/ethereum-scanner dbusername=${DB_USER} dbpassword=${DB_PASS}
+  vault kv put secret/tron-scanner dbusername=${DB_USER} dbpassword=${DB_PASS}
+  vault kv put secret/scanner-scheduler dbusername=${DB_USER} dbpassword=${DB_PASS}
+  vault kv put secret/opex-referral dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}
 }
 
 run() {

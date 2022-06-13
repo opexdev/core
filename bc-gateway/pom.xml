@@ -18,7 +18,6 @@
         <module>bc-gateway-core</module>
         <module>bc-gateway-app</module>
         <module>bc-gateway-ports/bc-gateway-persister-postgres</module>
-        <module>bc-gateway-ports/bc-gateway-chain-proxy</module>
         <module>bc-gateway-ports/bc-gateway-wallet-proxy</module>
         <module>bc-gateway-ports/bc-gateway-eventlistener-kafka</module>
     </modules>
@@ -45,11 +44,6 @@
             <dependency>
                 <groupId>co.nilin.opex.bcgateway.ports.walletproxy</groupId>
                 <artifactId>bc-gateway-wallet-proxy</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>co.nilin.opex.bcgateway.ports.chainproxy</groupId>
-                <artifactId>bc-gateway-chain-proxy</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

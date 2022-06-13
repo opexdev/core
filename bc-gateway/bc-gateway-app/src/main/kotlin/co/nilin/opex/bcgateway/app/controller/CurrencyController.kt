@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class NetworkController(val currencyHandler: CurrencyHandler) {
+class CurrencyController(val currencyHandler: CurrencyHandler) {
 
     @GetMapping("currency/{currency}")
     suspend fun fetchCurrencyInfo(@PathVariable("currency") currency: String): CurrencyInfo {

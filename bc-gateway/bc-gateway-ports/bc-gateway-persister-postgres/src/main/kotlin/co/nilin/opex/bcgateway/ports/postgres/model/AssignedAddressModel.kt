@@ -13,9 +13,3 @@ data class AssignedAddressModel(
     @Column("addr_type_id") val addressTypeId: Long
 )
 
-@Table("assigned_address_chains")
-data class AssignedAddressChainModel(
-    @Id val id: Long?,
-    @Column("assigned_address_id") val addressTypeId: Long,
-    @Column("chain") val chain: String
-)
