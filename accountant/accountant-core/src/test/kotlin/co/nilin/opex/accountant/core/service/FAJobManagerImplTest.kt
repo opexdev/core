@@ -56,18 +56,18 @@ class FAJobManagerImplTest {
         } throws IllegalStateException()
 
         sut.processFinancialActions(0, 2)
-        with(Valid.fa){
+        with(Valid.fa) {
             coVerify(exactly = 2) {
                 walletProxy.transfer(
-                eq(symbol),
-                eq(senderWalletType),
-                eq(sender),
-                eq(receiverWalletType),
-                eq(receiver),
-                eq(amount),
-                eq(eventType + pointer),
-                any()
-            )
+                    eq(symbol),
+                    eq(senderWalletType),
+                    eq(sender),
+                    eq(receiverWalletType),
+                    eq(receiver),
+                    eq(amount),
+                    eq(eventType + pointer),
+                    any()
+                )
             }
             coVerify(exactly = 2) {
                 financialActionPersister.updateStatus(
@@ -87,7 +87,7 @@ class FAJobManagerImplTest {
         coEvery { financialActionLoader.loadUnprocessed(any(), any()) } returns listOf(Valid.faHighRetry)
 
         sut.processFinancialActions(0, 1)
-        with(Valid.faHighRetry){
+        with(Valid.faHighRetry) {
             coVerify(exactly = 1) {
                 walletProxy.transfer(
                     eq(symbol),
