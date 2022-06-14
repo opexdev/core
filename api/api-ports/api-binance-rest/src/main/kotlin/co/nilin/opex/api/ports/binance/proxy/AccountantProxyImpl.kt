@@ -10,9 +10,7 @@ import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
-
-private inline fun <reified T : Any> typeRef(): ParameterizedTypeReference<T> =
-    object : ParameterizedTypeReference<T>() {}
+import org.springframework.web.reactive.function.client.bodyToFlux
 
 @Component
 class AccountantProxyImpl(private val webClient: WebClient) : AccountantProxy {
@@ -29,7 +27,7 @@ class AccountantProxyImpl(private val webClient: WebClient) : AccountantProxy {
             .accept(MediaType.APPLICATION_JSON)
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
-            .bodyToFlux(typeRef<PairInfoResponse>())
+            .bodyToFlux<PairInfoResponse>()
             .collectList()
             .awaitSingle()
     }
@@ -41,7 +39,7 @@ class AccountantProxyImpl(private val webClient: WebClient) : AccountantProxy {
             .accept(MediaType.APPLICATION_JSON)
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
-            .bodyToFlux(typeRef<PairFeeResponse>())
+            .bodyToFlux<PairFeeResponse>()
             .collectList()
             .awaitSingle()
     }
