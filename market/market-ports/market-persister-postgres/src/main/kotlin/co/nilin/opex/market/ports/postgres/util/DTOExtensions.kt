@@ -1,9 +1,11 @@
 package co.nilin.opex.market.ports.postgres.util
 
 import co.nilin.opex.market.core.inout.Order
+import co.nilin.opex.market.core.inout.OrderStatus
 import co.nilin.opex.market.ports.postgres.model.OrderModel
+import co.nilin.opex.market.ports.postgres.model.OrderStatusModel
 
-fun OrderModel.asOrderDTO() = Order(
+fun OrderModel.asOrderDTO(status: OrderStatusModel?) = Order(
     id!!,
     ouid,
     uuid,
@@ -21,6 +23,9 @@ fun OrderModel.asOrderDTO() = Order(
     price,
     quantity,
     quoteQuantity,
+    status?.executedQuantity,
+    status?.accumulativeQuoteQty,
+    OrderStatus.fromCode(status?.status),
     createDate,
     updateDate
 )

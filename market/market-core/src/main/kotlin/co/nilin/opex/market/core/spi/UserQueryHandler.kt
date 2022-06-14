@@ -1,16 +1,16 @@
 package co.nilin.opex.market.core.spi
 
 import co.nilin.opex.market.core.inout.*
-import kotlinx.coroutines.flow.Flow
-import java.security.Principal
 
 interface UserQueryHandler {
 
-    suspend fun queryOrder(uuid: String, request: QueryOrderRequest): QueryOrderResponse?
+    suspend fun getOrder(uuid: String, ouid: String): Order?
 
-    suspend fun openOrders(uuid: String, symbol: String?): List<QueryOrderResponse>
+    suspend fun queryOrder(uuid: String, request: QueryOrderRequest): Order?
 
-    suspend fun allOrders(uuid: String, allOrderRequest: AllOrderRequest): List<QueryOrderResponse>
+    suspend fun openOrders(uuid: String, symbol: String?): List<Order>
 
-    suspend fun allTrades(uuid: String, request: TradeRequest): List<TradeResponse>
+    suspend fun allOrders(uuid: String, allOrderRequest: AllOrderRequest): List<Order>
+
+    suspend fun allTrades(uuid: String, request: TradeRequest): List<Trade>
 }

@@ -23,9 +23,7 @@ class MarketQueryHandlerTest {
     private val orderRepository: OrderRepository = mockk()
     private val tradeRepository: TradeRepository = mockk()
     private val orderStatusRepository: OrderStatusRepository = mockk()
-    private val symbolMapper: SymbolMapper = mockk()
-    private val marketQueryHandler =
-        MarketQueryHandlerImpl(orderRepository, tradeRepository, orderStatusRepository, symbolMapper)
+    private val marketQueryHandler = MarketQueryHandlerImpl(orderRepository, tradeRepository, orderStatusRepository)
 
     @Test
     fun givenAggregatedOrderPrice_whenOpenASKOrders_thenReturnOrderBookResponseList(): Unit = runBlocking {
@@ -89,9 +87,6 @@ class MarketQueryHandlerTest {
         every {
             orderRepository.findByOuid(VALID.MAKER_ORDER_MODEL.ouid)
         } returns Mono.just(VALID.MAKER_ORDER_MODEL)
-        coEvery {
-            symbolMapper.map(VALID.ETH_USDT)
-        } returns "ETHUSDT"
 
         val priceTickerResponse = marketQueryHandler.lastPrice(VALID.ETH_USDT)
 

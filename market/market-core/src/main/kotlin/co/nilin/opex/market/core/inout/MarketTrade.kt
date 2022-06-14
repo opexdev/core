@@ -3,12 +3,12 @@ package co.nilin.opex.market.core.inout
 import java.math.BigDecimal
 import java.util.*
 
-data class MarketTradeResponse(
+data class MarketTrade(
     val symbol: String,
     val id: Long,
     val price: BigDecimal,
-    val qty: BigDecimal,
-    val quoteQty: BigDecimal,
+    val quantity: BigDecimal,
+    val quoteQuantity: BigDecimal,
     val time: Date,
     val isBestMatch: Boolean,
     val isMakerBuyer: Boolean

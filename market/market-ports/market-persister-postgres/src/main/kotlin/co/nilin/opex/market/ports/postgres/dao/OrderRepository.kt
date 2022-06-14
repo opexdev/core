@@ -18,6 +18,9 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
     @Query("select * from orders where ouid = :ouid")
     fun findByOuid(@Param("ouid") ouid: String): Mono<OrderModel>
 
+    @Query("select * from orders where uuid = :uuid and ouid = :ouid")
+    fun findByUUIDAndOUID(@Param("uuid") uuid:String, @Param("ouid") ouid: String): Mono<OrderModel>
+
     @Query("select * from orders where symbol = :symbol and order_id = :orderId")
     fun findBySymbolAndOrderId(
         @Param("symbol")

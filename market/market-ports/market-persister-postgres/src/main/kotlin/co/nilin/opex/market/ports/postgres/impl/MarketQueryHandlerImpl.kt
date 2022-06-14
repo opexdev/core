@@ -1,21 +1,15 @@
 package co.nilin.opex.market.ports.postgres.impl
 
 import co.nilin.opex.market.core.inout.*
-import co.nilin.opex.market.ports.postgres.model.OrderModel
-import co.nilin.opex.market.ports.postgres.model.OrderStatusModel
-import co.nilin.opex.market.ports.postgres.model.TradeTickerData
-import co.nilin.opex.market.ports.postgres.util.*
-import co.nilin.opex.market.core.inout.OrderBookResponse
-import co.nilin.opex.market.core.inout.OrderDirection
-import co.nilin.opex.market.core.inout.OrderStatus
-import co.nilin.opex.market.core.inout.PriceChangeResponse
 import co.nilin.opex.market.core.spi.MarketQueryHandler
 import co.nilin.opex.market.core.spi.SymbolMapper
 import co.nilin.opex.market.ports.postgres.dao.OrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderStatusRepository
 import co.nilin.opex.market.ports.postgres.dao.TradeRepository
-import kotlinx.coroutines.flow.Flow
+import co.nilin.opex.market.ports.postgres.model.TradeTickerData
+import co.nilin.opex.market.ports.postgres.util.asOrderDTO
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
@@ -31,11 +25,12 @@ import java.util.*
 class MarketQueryHandlerImpl(
     private val orderRepository: OrderRepository,
     private val tradeRepository: TradeRepository,
-    private val orderStatusRepository: OrderStatusRepository,
-    private val symbolMapper: SymbolMapper,
+    private val orderStatusRepository: OrderStatusRepository
 ) : MarketQueryHandler {
 
-    override suspend fun getTradeTickerData(startFrom: LocalDateTime): List<PriceChangeResponse> {
+    //TODO merge order and status fetching in query
+
+    override suspend fun getTradeTickerData(startFrom: LocalDateTime): List<PriceChange> {
         return tradeRepository.tradeTicker(startFrom)
             .collectList()
             .awaitFirstOrElse { emptyList() }
@@ -43,18 +38,13 @@ class MarketQueryHandlerImpl(
 
     }
 
-    override suspend fun getTradeTickerDataBySymbol(symbol: String, startFrom: LocalDateTime): PriceChangeResponse {
+    override suspend fun getTradeTickerDateBySymbol(symbol: String, startFrom: LocalDateTime): PriceChange? {
         return tradeRepository.tradeTickerBySymbol(symbol, startFrom)
             .awaitFirstOrNull()
             ?.asPriceChangeResponse(Date().time, startFrom.toInstant(ZoneOffset.UTC).toEpochMilli())
-            ?: PriceChangeResponse(
-                symbol = symbol,
-                openTime = Date().time,
-                closeTime = startFrom.toInstant(ZoneOffset.UTC).toEpochMilli()
-            )
     }
 
-    override suspend fun openBidOrders(symbol: String, limit: Int): List<OrderBookResponse> {
+    override suspend fun openBidOrders(symbol: String, limit: Int): List<OrderBook> {
         return orderRepository.findBySymbolAndDirectionAndStatusSortDescendingByPrice(
             symbol,
             OrderDirection.BID,
@@ -62,10 +52,10 @@ class MarketQueryHandlerImpl(
             listOf(OrderStatus.NEW.code, OrderStatus.PARTIALLY_FILLED.code)
         ).collectList()
             .awaitFirstOrElse { emptyList() }
-            .map { OrderBookResponse(it.price, it.quantity) }
+            .map { OrderBook(it.price, it.quantity) }
     }
 
-    override suspend fun openAskOrders(symbol: String, limit: Int): List<OrderBookResponse> {
+    override suspend fun openAskOrders(symbol: String, limit: Int): List<OrderBook> {
         return orderRepository.findBySymbolAndDirectionAndStatusSortAscendingByPrice(
             symbol,
             OrderDirection.ASK,
@@ -73,22 +63,22 @@ class MarketQueryHandlerImpl(
             listOf(OrderStatus.NEW.code, OrderStatus.PARTIALLY_FILLED.code)
         ).collectList()
             .awaitFirstOrElse { emptyList() }
-            .map { OrderBookResponse(it.price, it.quantity) }
+            .map { OrderBook(it.price, it.quantity) }
     }
 
-    override suspend fun lastOrder(symbol: String): QueryOrderResponse? {
+    override suspend fun lastOrder(symbol: String): Order? {
         val order = orderRepository.findLastOrderBySymbol(symbol).awaitFirstOrNull() ?: return null
         val status = orderStatusRepository.findMostRecentByOUID(order.ouid).awaitFirstOrNull()
-        return order.asQueryOrderResponse(status)
+        return order.asOrderDTO(status)
     }
 
-    override suspend fun recentTrades(symbol: String, limit: Int): Flow<MarketTradeResponse> {
+    override suspend fun recentTrades(symbol: String, limit: Int): List<MarketTrade> {
         return tradeRepository.findBySymbolSortDescendingByCreateDate(symbol, limit)
             .map {
                 val takerOrder = orderRepository.findByOuid(it.takerOuid).awaitFirst()
                 val makerOrder = orderRepository.findByOuid(it.makerOuid).awaitFirst()
                 val isMakerBuyer = makerOrder.direction == OrderDirection.BID
-                MarketTradeResponse(
+                MarketTrade(
                     it.symbol,
                     it.tradeId,
                     if (isMakerBuyer) it.makerPrice else it.takerPrice,
@@ -101,7 +91,7 @@ class MarketQueryHandlerImpl(
                     true,
                     isMakerBuyer
                 )
-            }
+            }.toList()
     }
 
     override suspend fun lastPrice(symbol: String?): List<PriceTickerResponse> {
@@ -112,17 +102,15 @@ class MarketQueryHandlerImpl(
         return list.collectList()
             .awaitFirstOrElse { emptyList() }
             .map {
+                //TODO use query
                 val makerOrder = orderRepository.findByOuid(it.makerOuid).awaitFirst()
-                val apiSymbol = try {
-                    symbolMapper.map(it.symbol)
-                } catch (e: Exception) {
-                    it.symbol
-                }
                 val isMakerBuyer = makerOrder.direction == OrderDirection.BID
                 PriceTickerResponse(
-                    apiSymbol,
-                    if (isMakerBuyer) it.takerPrice.min(it.makerPrice).toString()
-                    else it.takerPrice.max(it.makerPrice).toString()
+                    it.symbol,
+                    if (isMakerBuyer)
+                        it.takerPrice.min(it.makerPrice).toString()
+                    else
+                        it.takerPrice.max(it.makerPrice).toString()
                 )
             }
 
@@ -171,29 +159,7 @@ class MarketQueryHandlerImpl(
             }
     }
 
-    private fun OrderModel.asQueryOrderResponse(orderStatusModel: OrderStatusModel?) = QueryOrderResponse(
-        symbol,
-        ouid,
-        orderId ?: -1,
-        -1,
-        clientOrderId ?: "",
-        price!!,
-        quantity!!,
-        orderStatusModel?.executedQuantity ?: BigDecimal.ZERO,
-        orderStatusModel?.accumulativeQuoteQty ?: BigDecimal.ZERO,
-        orderStatusModel?.status?.toOrderStatus() ?: OrderStatus.NEW,
-        constraint!!.toTimeInForce(),
-        type!!.toApiOrderType(),
-        direction!!.toOrderSide(),
-        null,
-        null,
-        Date.from(createDate!!.atZone(ZoneId.systemDefault()).toInstant()),
-        Date.from(updateDate.atZone(ZoneId.systemDefault()).toInstant()),
-        (orderStatusModel?.status?.toOrderStatus() ?: OrderStatus.NEW).isWorking(),
-        quoteQuantity!!
-    )
-
-    private fun TradeTickerData.asPriceChangeResponse(openTime: Long, closeTime: Long) = PriceChangeResponse(
+    private fun TradeTickerData.asPriceChangeResponse(openTime: Long, closeTime: Long) = PriceChange(
         symbol,
         priceChange ?: BigDecimal.ZERO,
         priceChangePercent ?: BigDecimal.ZERO,

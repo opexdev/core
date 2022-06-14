@@ -21,6 +21,9 @@ data class Order(
     val price: BigDecimal?,
     val quantity: BigDecimal?,
     val quoteQuantity: BigDecimal?,
+    val executedQuantity: BigDecimal?,
+    val accumulativeQuoteQty: BigDecimal?,
+    val status: OrderStatus?,
     val createDate: LocalDateTime?,
     val updateDate: LocalDateTime,
 )

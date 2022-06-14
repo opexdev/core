@@ -116,7 +116,7 @@ object VALID {
         BigDecimal.valueOf(0.001)
     )
 
-    val ORDER_BOOK_RESPONSE = OrderBookResponse(
+    val ORDER_BOOK_RESPONSE = OrderBook(
         AGGREGATED_ORDER_PRICE_MODEL.price!!,
         AGGREGATED_ORDER_PRICE_MODEL.quantity!!
     )
@@ -192,7 +192,7 @@ object VALID {
         500
     )
 
-    val MARKET_TRADE_RESPONSE = MarketTradeResponse(
+    val MARKET_TRADE_RESPONSE = MarketTrade(
         ETH_USDT,
         1,
         BigDecimal.valueOf(100000),
