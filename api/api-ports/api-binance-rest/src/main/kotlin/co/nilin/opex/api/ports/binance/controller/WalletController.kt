@@ -6,7 +6,7 @@ import co.nilin.opex.api.core.spi.BlockchainGatewayProxy
 import co.nilin.opex.api.core.spi.WalletProxy
 import co.nilin.opex.api.ports.binance.data.AssignAddressResponse
 import co.nilin.opex.api.ports.binance.data.DepositResponse
-import co.nilin.opex.api.ports.binance.data.Interval
+import co.nilin.opex.api.core.utils.Interval
 import co.nilin.opex.api.ports.binance.data.WithdrawResponse
 import co.nilin.opex.api.ports.binance.util.jwtAuthentication
 import co.nilin.opex.api.ports.binance.util.tokenValue

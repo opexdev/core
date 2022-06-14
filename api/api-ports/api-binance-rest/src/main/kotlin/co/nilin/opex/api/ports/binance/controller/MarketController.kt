@@ -5,6 +5,7 @@ import co.nilin.opex.api.core.inout.PriceTickerResponse
 import co.nilin.opex.api.core.spi.AccountantProxy
 import co.nilin.opex.api.core.spi.MarketQueryHandler
 import co.nilin.opex.api.core.spi.SymbolMapper
+import co.nilin.opex.api.core.utils.Interval
 import co.nilin.opex.api.ports.binance.data.*
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException

@@ -1,10 +1,11 @@
 package co.nilin.opex.api.ports.binance.controller
 
 import co.nilin.opex.api.core.inout.*
-import co.nilin.opex.api.core.spi.MEGatewayProxy
+import co.nilin.opex.api.core.spi.MatchingGatewayProxy
 import co.nilin.opex.api.core.spi.SymbolMapper
 import co.nilin.opex.api.core.spi.UserQueryHandler
 import co.nilin.opex.api.core.spi.WalletProxy
+import co.nilin.opex.api.core.utils.LoggerDelegate
 import co.nilin.opex.api.ports.binance.data.AccountInfoResponse
 import co.nilin.opex.api.ports.binance.util.*
 import co.nilin.opex.utility.error.data.OpexError
@@ -27,7 +28,7 @@ import java.util.*
 @RestController
 class AccountController(
     val queryHandler: UserQueryHandler,
-    val matchingGatewayProxy: MEGatewayProxy,
+    val matchingGatewayProxy: MatchingGatewayProxy,
     val walletProxy: WalletProxy,
     val symbolMapper: SymbolMapper
 ) {
@@ -117,9 +118,9 @@ class AccountController(
     private val logger by LoggerDelegate()
 
     /*
-   Send in a new order.
-   Weight: 1
-   Data Source: Matching Engine
+    Send in a new order.
+    Weight: 1
+    Data Source: Matching Engine
     */
     @PostMapping(
         "/v3/order",
@@ -177,7 +178,7 @@ class AccountController(
     ): NewOrderResponse {
         val internalSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
 
-        val request = MEGatewayProxy.CreateOrderRequest(
+        val request = MatchingGatewayProxy.CreateOrderRequest(
             securityContext.jwtAuthentication().name,
             internalSymbol,
             price ?: BigDecimal.ZERO, // Maybe make this nullable as well?
