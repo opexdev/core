@@ -10,7 +10,7 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Table("orders")
-class OrderModel(
+data class OrderModel(
     @Id var id: Long?,
     val ouid: String,
     val uuid: String,

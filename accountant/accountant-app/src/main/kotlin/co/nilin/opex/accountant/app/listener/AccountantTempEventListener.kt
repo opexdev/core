@@ -15,17 +15,17 @@ class AccountantTempEventListener(
         return "TempEventListener"
     }
 
-    override fun onEvent(coreEvent: CoreEvent, partition: Int, offset: Long, timestamp: Long) {
-        println("TempEvent $coreEvent")
+    override fun onEvent(event: CoreEvent, partition: Int, offset: Long, timestamp: Long) {
+        println("TempEvent $event")
         runBlocking {
-            when (coreEvent) {
-                is CreateOrderEvent -> orderManager.handleNewOrder(coreEvent)
-                is RejectOrderEvent -> orderManager.handleRejectOrder(coreEvent)
-                is UpdatedOrderEvent -> orderManager.handleUpdateOrder(coreEvent)
-                is CancelOrderEvent -> orderManager.handleCancelOrder(coreEvent)
-                is TradeEvent -> tradeManager.handleTrade(coreEvent)
+            when (event) {
+                is CreateOrderEvent -> orderManager.handleNewOrder(event)
+                is RejectOrderEvent -> orderManager.handleRejectOrder(event)
+                is UpdatedOrderEvent -> orderManager.handleUpdateOrder(event)
+                is CancelOrderEvent -> orderManager.handleCancelOrder(event)
+                is TradeEvent -> tradeManager.handleTrade(event)
                 else -> {
-                    throw IllegalArgumentException("Event is not accepted ${coreEvent::class.java}")
+                    throw IllegalArgumentException("Event is not accepted ${event::class.java}")
                 }
             }
         }

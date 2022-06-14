@@ -11,16 +11,20 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 @Component
-class TempEventSubmitter(@Qualifier("accountantEventKafkaTemplate") val kafkaTemplate: KafkaTemplate<String, CoreEvent>) :
-    TempEventRepublisher {
+class TempEventSubmitter(
+    @Qualifier("accountantEventKafkaTemplate")
+    private val kafkaTemplate: KafkaTemplate<String, CoreEvent>
+) : TempEventRepublisher, EventPublisher {
 
     private val logger = LoggerFactory.getLogger(TempEventSubmitter::class.java)
+
+    override val topic = "tempevents"
 
     override suspend fun republish(events: List<CoreEvent>): Unit = suspendCoroutine { cont ->
         logger.info("Submitting TempEvents")
 
         events.forEach { event ->
-            val sendFuture = kafkaTemplate.send("tempevents", event)
+            val sendFuture = kafkaTemplate.send(topic, event)
             sendFuture.addCallback({
                 cont.resume(Unit)
             }, {

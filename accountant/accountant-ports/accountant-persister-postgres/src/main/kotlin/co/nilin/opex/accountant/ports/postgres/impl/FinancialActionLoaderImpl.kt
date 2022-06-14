@@ -21,17 +21,24 @@ class FinancialActionLoaderImpl(val financialActionRepository: FinancialActionRe
         return financialActionRepository.findByStatus(
             FinancialActionStatus.CREATED.name,
             PageRequest.of(offset.toInt(), size.toInt(), Sort.by(Sort.Direction.ASC, "createDate"))
-        ).map { fim ->
-            loadFinancialAction(fim.id)!!
-        }.toList()
+        ).map { loadFinancialAction(it.id)!! }
+            .toList()
     }
 
     override suspend fun findLast(uuid: String, ouid: String): FinancialAction? {
         return financialActionRepository.findByOuidAndUuid(
             ouid, uuid, PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "createDate"))
-        ).map { fim ->
-            loadFinancialAction(fim.id)
-        }.firstOrNull()
+        ).map { loadFinancialAction(it.id) }
+            .firstOrNull()
+    }
+
+    override suspend fun countUnprocessed(uuid: String, symbol: String, eventType: String): Long {
+        return financialActionRepository.findByUuidAndSymbolAndEventTypeAndStatus(
+            uuid,
+            symbol,
+            eventType,
+            FinancialActionStatus.CREATED
+        ).awaitFirstOrElse { BigDecimal.ZERO }.toLong()
     }
 
     private suspend fun loadFinancialAction(id: Long?): FinancialAction? {
@@ -53,15 +60,5 @@ class FinancialActionLoaderImpl(val financialActionRepository: FinancialActionRe
             )
         }
         return null
-    }
-
-    override suspend fun countUnprocessed(uuid: String, symbol: String, eventType: String): Long {
-        return financialActionRepository.findByUuidAndSymbolAndEventTypeAndStatus(
-            uuid,
-            symbol,
-            eventType,
-            FinancialActionStatus.CREATED
-        ).awaitFirstOrElse { BigDecimal.ZERO }
-            .toLong()
     }
 }

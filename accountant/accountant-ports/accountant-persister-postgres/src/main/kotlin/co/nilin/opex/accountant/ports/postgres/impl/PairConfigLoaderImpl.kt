@@ -39,11 +39,11 @@ class PairConfigLoaderImpl(
     }
 
     override suspend fun load(pair: String, direction: OrderDirection, userLevel: String): PairFeeConfig {
-        val pairConfig = pairConfigRepository
-            .findById(pair).awaitFirstOrElse {
-                val error = OpexError.InvalidPair
-                throw OpexException(error, String.format(error.message!!, pair))
-            }
+        val pairConfig = pairConfigRepository.findById(pair).awaitFirstOrElse {
+            val error = OpexError.InvalidPair
+            throw OpexException(error, String.format(error.message!!, pair))
+        }
+
         var pairFeeConfig: PairFeeConfigModel?
         if (userLevel.isEmpty()) {
             pairFeeConfig = pairFeeConfigRepository
@@ -73,7 +73,11 @@ class PairConfigLoaderImpl(
                 pairConfig.rightSideWalletSymbol,
                 pairConfig.leftSideFraction,
                 pairConfig.rightSideFraction
-            ), pairFeeConfig!!.direction, pairFeeConfig.userLevel, pairFeeConfig.makerFee, pairFeeConfig.takerFee
+            ),
+            pairFeeConfig!!.direction,
+            pairFeeConfig.userLevel,
+            pairFeeConfig.makerFee,
+            pairFeeConfig.takerFee
         )
     }
 

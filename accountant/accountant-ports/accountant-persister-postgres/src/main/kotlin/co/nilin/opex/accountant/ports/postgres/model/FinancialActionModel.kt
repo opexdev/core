@@ -8,7 +8,7 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Table("fi_actions")
-class FinancialActionModel(
+data class FinancialActionModel(
     @Id var id: Long?,
     @Column("parent_id") var parentId: Long?,
     @Column("event_type") val eventType: String,

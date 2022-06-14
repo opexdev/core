@@ -15,22 +15,22 @@ class OrderListener(private val orderManager: OrderManager) : OrderSubmitRequest
         return "OrderListener"
     }
 
-    override fun onOrder(order: OrderSubmitRequest, partition: Int, offset: Long, timestamp: Long) {
+    override fun onEvent(event: OrderSubmitRequest, partition: Int, offset: Long, timestamp: Long) {
         runBlocking {
-            logger.info("Order submit event received ${order.ouid}")
+            logger.info("Order submit event received ${event.ouid}")
 
             orderManager.handleRequestOrder(
                 SubmitOrderEvent(
-                    order.ouid,
-                    order.uuid,
-                    order.orderId,
-                    order.pair,
-                    order.price,
-                    order.quantity,
-                    order.quantity,
-                    order.direction,
-                    order.matchConstraint,
-                    order.orderType
+                    event.ouid,
+                    event.uuid,
+                    event.orderId,
+                    event.pair,
+                    event.price,
+                    event.quantity,
+                    event.quantity,
+                    event.direction,
+                    event.matchConstraint,
+                    event.orderType
                 )
             )
         }

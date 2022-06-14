@@ -16,7 +16,9 @@ interface FinancialActionRepository : ReactiveCrudRepository<FinancialActionMode
 
     @Query("select * from fi_actions fi where pointer = :ouid and :uuid in (fi.sender, fi.receiver)")
     fun findByOuidAndUuid(
-        @Param("ouid") ouid: String, @Param("uuid") uuid: String, paging: Pageable
+        @Param("ouid") ouid: String,
+        @Param("uuid") uuid: String,
+        paging: Pageable
     ): Flow<FinancialActionModel>
 
     @Query("select count(1) from fi_actions fi where fi.sender = :uuid and fi.symbol = :symbol and fi.event_type = :eventType and fi.status = :status")
@@ -29,4 +31,10 @@ interface FinancialActionRepository : ReactiveCrudRepository<FinancialActionMode
 
     @Query("select * from fi_actions fi where status = :status")
     fun findByStatus(@Param("status") status: String, paging: Pageable): Flow<FinancialActionModel>
+
+    @Query("update fi_actions set status = :status where id = :id")
+    fun updateStatus(@Param("id") id: Long, @Param("status") status: FinancialActionStatus)
+
+    @Query("update fi_actions set status = :status, retry_count = retry_count + 1 where id = :id")
+    fun updateStatusAndIncreaseRetry(@Param("id") id: Long, @Param("status") status: FinancialActionStatus): Mono<Int>
 }
