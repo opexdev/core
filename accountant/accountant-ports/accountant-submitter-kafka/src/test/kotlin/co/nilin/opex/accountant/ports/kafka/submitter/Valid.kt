@@ -14,6 +14,8 @@ object Valid {
     class TestRichOrderEvent : RichOrderEvent
     class TestCoreEvent : CoreEvent(Pair("BTC", "USDT"))
 
+    val currentTime = LocalDateTime.now()
+
     val testRichOrder = TestRichOrderEvent()
     val testCoreEvent = TestCoreEvent()
     val richTrade = RichTrade(
@@ -40,7 +42,7 @@ object Valid {
         1.0.toBigDecimal(),
         "",
         1.0.toBigDecimal(),
-        LocalDateTime.now()
+        currentTime
     )
 
     fun <T> kafkaSendFuture() = SettableListenableFuture<SendResult<String, T>>().apply {

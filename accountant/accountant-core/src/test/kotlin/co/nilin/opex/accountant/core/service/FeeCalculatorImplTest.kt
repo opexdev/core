@@ -55,7 +55,7 @@ internal class FeeCalculatorImplTest {
             "main",
             "system",
             "main",
-            LocalDateTime.now()
+            Valid.currentTime
         )
 
         val actions = feeCalculator.createFeeActions(

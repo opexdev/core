@@ -94,7 +94,7 @@ internal class OrderManagerImplTest {
             "main",
             submitOrderEvent.uuid,
             "exchange",
-            LocalDateTime.now()
+            Valid.currentTime
         )
 
         with(expectedFinancialAction) {
@@ -152,7 +152,7 @@ internal class OrderManagerImplTest {
             "main",
             submitOrderEvent.uuid,
             "exchange",
-            LocalDateTime.now()
+            Valid.currentTime
         )
         with(expectedFinancialAction) {
             assertThat(eventType).isEqualTo(financialActions[0].eventType)

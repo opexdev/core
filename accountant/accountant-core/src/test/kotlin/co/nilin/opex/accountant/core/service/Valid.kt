@@ -13,6 +13,8 @@ import java.time.LocalDateTime
 
 object Valid {
 
+    val currentTime = LocalDateTime.now()
+
     val fa = FinancialAction(
         null,
         TradeEvent::class.java.name,
@@ -23,7 +25,7 @@ object Valid {
         "main",
         "system",
         "main",
-        LocalDateTime.now()
+        currentTime
     )
 
     val faHighRetry = FinancialAction(
@@ -36,7 +38,7 @@ object Valid {
         "main",
         "system",
         "main",
-        LocalDateTime.now(),
+        currentTime,
         15
     )
 

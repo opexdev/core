@@ -17,6 +17,8 @@ import java.time.LocalDateTime
 
 object Valid {
 
+    private val currentTime = LocalDateTime.now()
+
     val orderModel = OrderModel(
         1,
         "order_1",
@@ -42,7 +44,7 @@ object Valid {
         OrderStatus.FILLED.code,
         "",
         "",
-        LocalDateTime.now()
+        currentTime
     )
 
     val order = Order(
@@ -96,7 +98,7 @@ object Valid {
     )
 
     class TestCoreEvent(val leftSidePair: String, val rightSidePair: String) :
-        CoreEvent(Pair(leftSidePair, rightSidePair), LocalDateTime.now())
+        CoreEvent(Pair(leftSidePair, rightSidePair), currentTime)
 
     val testEvent = TestCoreEvent("BTC", "USDT")
 
@@ -104,7 +106,7 @@ object Valid {
         1,
         "event_1",
         TestCoreEvent("BTC", "USDT"),
-        LocalDateTime.now()
+        currentTime
     )
 
     val tempEventModel = TempEventModel(
@@ -112,7 +114,7 @@ object Valid {
         "event_1",
         TestCoreEvent::class.java.name,
         "{\"leftSidePair\":\"BTC\",\"rightSidePair\":\"USDT\",\"pair\":{\"leftSideName\":\"BTC\",\"rightSideName\":\"USDT\"},\"eventDate\":{\"date\":{\"year\":2022,\"month\":5,\"day\":30},\"time\":{\"hour\":16,\"minute\":57,\"second\":44,\"nano\":809838600}}}",
-        LocalDateTime.now()
+        currentTime
     )
 
     val fa = FinancialAction(
@@ -125,7 +127,7 @@ object Valid {
         "main",
         "system",
         "main",
-        LocalDateTime.now(),
+        currentTime,
         1,
         1
     )
@@ -143,7 +145,7 @@ object Valid {
         "main",
         "",
         "",
-        LocalDateTime.now()
+        currentTime
     )
 
 }
