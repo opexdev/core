@@ -23,6 +23,8 @@ services:
     build: wallet/wallet-app
     volumes:
       - "./preferences-dev.yml:/preferences.yml"
+  market:
+    build: api/api-app
   api:
     build: api/api-app
     volumes:
