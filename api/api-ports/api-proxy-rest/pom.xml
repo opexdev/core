@@ -11,8 +11,8 @@
     </parent>
 
     <groupId>co.nilin.opex.api.ports.proxy</groupId>
-    <artifactId>api-internal-proxy</artifactId>
-    <name>api-internal-proxy</name>
+    <artifactId>api-proxy-rest</artifactId>
+    <name>api-proxy-rest</name>
     <description>Proxies to internal services</description>
 
     <dependencies>
