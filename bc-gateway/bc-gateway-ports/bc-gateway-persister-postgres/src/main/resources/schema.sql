@@ -66,3 +66,15 @@ CREATE TABLE IF NOT EXISTS currency_implementations
     decimal               INTEGER     NOT NULL,
     UNIQUE (currency_symbol, chain, implementation_symbol)
 );
+
+CREATE TABLE IF NOT EXISTS deposits
+(
+    id               SERIAL       PRIMARY KEY,
+    hash             VARCHAR(100) UNIQUE NOT NULL,
+    chain            VARCHAR(72)  NOT NULL REFERENCES chains (name),
+    token            BOOLEAN      NOT NULL,
+    token_address    VARCHAR(72),
+    amount           DECIMAL      NOT NULL,
+    depositor        VARCHAR(72)  NOT NULL,
+    depositor_memo   VARCHAR(72)
+);

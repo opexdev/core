@@ -18,13 +18,13 @@ class EmbeddedKeycloakConfig {
     @Throws(Exception::class)
     fun keycloakJaxRsApplication(
         keycloakServerProperties: KeycloakServerProperties, dataSource: DataSource
-    ): ServletRegistrationBean<HttpServlet30Dispatcher>? {
-        mockJndiEnvironment(dataSource)
+    ): ServletRegistrationBean<HttpServlet30Dispatcher> {
+        mockJndiEnvironment()
         EmbeddedKeycloakApplication.keycloakServerProperties = keycloakServerProperties
         val servlet = ServletRegistrationBean(
             HttpServlet30Dispatcher()
         )
-        servlet.addInitParameter("javax.ws.rs.Application", EmbeddedKeycloakApplication::class.java.getName())
+        servlet.addInitParameter("javax.ws.rs.Application", EmbeddedKeycloakApplication::class.java.name)
         servlet.addInitParameter(
             ResteasyContextParameters.RESTEASY_SERVLET_MAPPING_PREFIX,
             keycloakServerProperties.contextPath
@@ -32,29 +32,27 @@ class EmbeddedKeycloakConfig {
         servlet.addInitParameter(ResteasyContextParameters.RESTEASY_USE_CONTAINER_FORM_PARAMS, "true")
         servlet.addUrlMappings(keycloakServerProperties.contextPath + "/*")
         servlet.setLoadOnStartup(1)
-        servlet.setAsyncSupported(true)
+        servlet.isAsyncSupported = true
         return servlet
     }
 
     @Bean
-    fun keycloakSessionManagement(keycloakServerProperties: KeycloakServerProperties): FilterRegistrationBean<EmbeddedKeycloakRequestFilter>? {
+    fun keycloakSessionManagement(
+        keycloakServerProperties: KeycloakServerProperties
+    ): FilterRegistrationBean<EmbeddedKeycloakRequestFilter> {
         val filter: FilterRegistrationBean<EmbeddedKeycloakRequestFilter> =
             FilterRegistrationBean<EmbeddedKeycloakRequestFilter>()
         filter.setName("Keycloak Session Management")
-        filter.setFilter(EmbeddedKeycloakRequestFilter())
+        filter.filter = EmbeddedKeycloakRequestFilter()
         filter.addUrlPatterns(keycloakServerProperties.contextPath + "/*")
         return filter
     }
 
     @Throws(NamingException::class)
-    private fun mockJndiEnvironment(dataSource: DataSource) {
-        NamingManager.setInitialContextFactoryBuilder { env: Hashtable<*, *>? ->
+    private fun mockJndiEnvironment() {
+        NamingManager.setInitialContextFactoryBuilder {
             InitialContextFactory { environment: Hashtable<*, *>? ->
                 object : InitialContext() {
-                    @Throws(NamingException::class)
-                    fun KeycloakInitialContext(environment: Hashtable<*, *>?) {
-                    }
-
                     @Throws(NamingException::class)
                     override fun lookup(name: Name): Any? {
                         return lookup(name.toString())

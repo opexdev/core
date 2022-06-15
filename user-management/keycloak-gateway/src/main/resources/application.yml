@@ -54,7 +54,7 @@ keycloak:
   adminUrl: ${ADMIN_URL:http://localhost:8080/auth}
   frontendUrl: ${FRONTEND_URL:http://localhost:8080/auth}
   server:
-    contextPath: /
+    contextPath: "/auth"
     adminUser:
       username: ${admin_username:opex-admin}
       password: ${admin_password:hiopex}

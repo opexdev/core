@@ -1,7 +1,6 @@
 package co.nilin.opex.auth.gateway.config
 
 import org.keycloak.common.ClientConnection
-import org.keycloak.models.KeycloakSession
 import org.keycloak.services.filters.AbstractRequestFilter
 import java.io.UnsupportedEncodingException
 import javax.servlet.Filter
@@ -14,9 +13,9 @@ import javax.servlet.http.HttpServletRequest
 class EmbeddedKeycloakRequestFilter : AbstractRequestFilter(), Filter {
     @Throws(UnsupportedEncodingException::class)
     override fun doFilter(servletRequest: ServletRequest, servletResponse: ServletResponse?, filterChain: FilterChain) {
-        servletRequest.setCharacterEncoding("UTF-8")
+        servletRequest.characterEncoding = "UTF-8"
         val clientConnection = createConnection(servletRequest as HttpServletRequest)
-        filter(clientConnection) { session: KeycloakSession? ->
+        filter(clientConnection) {
             try {
                 filterChain.doFilter(servletRequest, servletResponse)
             } catch (e: Exception) {
@@ -28,23 +27,23 @@ class EmbeddedKeycloakRequestFilter : AbstractRequestFilter(), Filter {
     private fun createConnection(request: HttpServletRequest): ClientConnection {
         return object : ClientConnection {
             override fun getRemoteAddr(): String {
-                return request.getRemoteAddr()
+                return request.remoteAddr
             }
 
             override fun getRemoteHost(): String {
-                return request.getRemoteHost()
+                return request.remoteHost
             }
 
             override fun getRemotePort(): Int {
-                return request.getRemotePort()
+                return request.remotePort
             }
 
             override fun getLocalAddr(): String {
-                return request.getLocalAddr()
+                return request.localAddr
             }
 
             override fun getLocalPort(): Int {
-                return request.getLocalPort()
+                return request.localPort
             }
         }
     }
