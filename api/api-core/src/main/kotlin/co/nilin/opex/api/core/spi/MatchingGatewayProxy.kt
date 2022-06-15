@@ -1,6 +1,9 @@
 package co.nilin.opex.api.core.spi
 
-import co.nilin.opex.api.core.inout.*
+import co.nilin.opex.api.core.inout.MatchConstraint
+import co.nilin.opex.api.core.inout.MatchingOrderType
+import co.nilin.opex.api.core.inout.OrderDirection
+import co.nilin.opex.api.core.inout.OrderSubmitResult
 import java.math.BigDecimal
 
 interface MatchingGatewayProxy {
@@ -17,5 +20,11 @@ interface MatchingGatewayProxy {
 
     suspend fun createNewOrder(order: CreateOrderRequest, token: String?): OrderSubmitResult?
 
-    suspend fun cancelOrder(request: CancelOrderRequest, token: String?): OrderSubmitResult?
+    suspend fun cancelOrder(
+        ouid: String,
+        uuid: String,
+        orderId: Long,
+        symbol: String,
+        token: String?
+    ): OrderSubmitResult?
 }

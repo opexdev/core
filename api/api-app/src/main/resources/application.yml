@@ -51,6 +51,8 @@ app:
     url: lb://opex-matching-gateway
   wallet:
     url: lb://opex-wallet
+  market:
+    url: lb://opex-market
   opex-bc-gateway:
     url: lb://opex-bc-gateway
   auth:

@@ -1,4 +1,4 @@
-package co.nilin.opex.api.core.inout
+package co.nilin.opex.api.ports.binance.data
 
 enum class RateLimit(val rateLimitType: RateLimitType, val interval: String, val intervalNum: Int, val limit: Int) {
 

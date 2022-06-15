@@ -6,7 +6,6 @@ import co.nilin.opex.market.core.event.RichTrade
 import co.nilin.opex.market.core.inout.*
 import co.nilin.opex.market.ports.postgres.model.OrderModel
 import co.nilin.opex.market.ports.postgres.model.OrderStatusModel
-import co.nilin.opex.market.ports.postgres.model.SymbolMapModel
 import co.nilin.opex.market.ports.postgres.model.TradeModel
 import co.nilin.opex.market.ports.postgres.util.isWorking
 import java.math.BigDecimal
@@ -59,15 +58,6 @@ object VALID {
         OrderStatus.FILLED.code,
         OrderStatus.FILLED.orderOfAppearance,
         CREATE_DATE
-    )
-
-    val TAKER_ORDER_STATUS_MODEL = MAKER_ORDER_STATUS_MODEL.copy(TAKER_ORDER_MODEL.ouid)
-
-    val SYMBOL_MAP_MODEL = SymbolMapModel(
-        1,
-        ETH_USDT,
-        "binance",
-        ETH_USDT.replace("_", "")
     )
 
     val TRADE_MODEL = TradeModel(

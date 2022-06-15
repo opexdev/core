@@ -1,4 +1,4 @@
-package co.nilin.opex.api.core.inout
+package co.nilin.opex.api.ports.proxy.data
 
 data class QueryOrderRequest(
     val symbol: String,

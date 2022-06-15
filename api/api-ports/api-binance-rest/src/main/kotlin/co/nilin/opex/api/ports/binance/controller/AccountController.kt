@@ -3,119 +3,32 @@ package co.nilin.opex.api.ports.binance.controller
 import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.MatchingGatewayProxy
 import co.nilin.opex.api.core.spi.SymbolMapper
-import co.nilin.opex.api.core.spi.UserQueryHandler
+import co.nilin.opex.api.core.spi.MarketUserDataProxy
 import co.nilin.opex.api.core.spi.WalletProxy
-import co.nilin.opex.api.core.utils.LoggerDelegate
-import co.nilin.opex.api.ports.binance.data.AccountInfoResponse
+import co.nilin.opex.api.ports.binance.data.*
 import co.nilin.opex.api.ports.binance.util.*
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
-import com.fasterxml.jackson.annotation.JsonInclude
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import org.springframework.http.MediaType
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 import java.security.Principal
+import java.time.ZoneId
 import java.util.*
 
 @RestController
 class AccountController(
-    val queryHandler: UserQueryHandler,
+    val queryHandler: MarketUserDataProxy,
     val matchingGatewayProxy: MatchingGatewayProxy,
     val walletProxy: WalletProxy,
     val symbolMapper: SymbolMapper
 ) {
-
-    data class FillsData(
-        val price: BigDecimal,
-        val qty: BigDecimal,
-        val commission: BigDecimal,
-        val commissionAsset: String
-    )
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    data class NewOrderResponse(
-        val symbol: String,
-        val orderId: Long,
-        val orderListId: Long, //Unless OCO, value will be -1
-        val clientOrderId: String?,
-        val transactTime: Date,
-        val price: BigDecimal?,
-        val origQty: BigDecimal?,
-        val executedQty: BigDecimal?,
-        val cummulativeQuoteQty: BigDecimal?,
-        val status: OrderStatus?,
-        val timeInForce: TimeInForce?,
-        val type: OrderType?,
-        val side: OrderSide?,
-        val fills: List<FillsData>?
-    )
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    data class CancelOrderResponse(
-        val symbol: String,
-        val origClientOrderId: String?,
-        val orderId: Long?,
-        val orderListId: Long, //Unless OCO, value will be -1
-        val clientOrderId: String?,
-        val price: BigDecimal?,
-        val origQty: BigDecimal?,
-        val executedQty: BigDecimal?,
-        val cummulativeQuoteQty: BigDecimal?,
-        val status: OrderStatus?,
-        val timeInForce: TimeInForce?,
-        val type: OrderType?,
-        val side: OrderSide?
-    )
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    data class QueryOrderResponse(
-        val symbol: String,
-        val ouid: String,
-        val orderId: Long,
-        val orderListId: Long, //Unless part of an OCO, the value will always be -1.
-        val clientOrderId: String,
-        val price: BigDecimal,
-        val origQty: BigDecimal,
-        val executedQty: BigDecimal,
-        val cummulativeQuoteQty: BigDecimal,
-        val status: OrderStatus,
-        val timeInForce: TimeInForce,
-        val type: OrderType,
-        val side: OrderSide,
-        val stopPrice: BigDecimal?,
-        val icebergQty: BigDecimal?,
-        val time: Date,
-        val updateTime: Date,
-        val isWorking: Boolean,
-        val origQuoteOrderQty: BigDecimal
-    )
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    data class TradeResponse(
-        val symbol: String,
-        val id: Long,
-        val orderId: Long,
-        val orderListId: Long = -1,
-        val price: BigDecimal,
-        val qty: BigDecimal,
-        val quoteQty: BigDecimal,
-        val commission: BigDecimal,
-        val commissionAsset: String,
-        val time: Date,
-        val isBuyer: Boolean,
-        val isMaker: Boolean,
-        val isBestMatch: Boolean
-    )
-
-    private val logger by LoggerDelegate()
 
     /*
     Send in a new order.
@@ -233,7 +146,7 @@ class AccountController(
         if (orderId == null && origClientOrderId == null)
             throw OpexException(OpexError.BadRequest, message = "'orderId' or 'origClientOrderId' must be sent")
 
-        val order = queryHandler.queryOrder(principal, QueryOrderRequest(localSymbol, orderId, origClientOrderId))
+        val order = queryHandler.queryOrder(principal, localSymbol, orderId, origClientOrderId)
             ?: throw OpexException(OpexError.OrderNotFound)
 
         val response = CancelOrderResponse(
@@ -243,13 +156,13 @@ class AccountController(
             -1,
             null,
             order.price,
-            order.origQty,
-            order.executedQty,
-            order.cummulativeQuoteQty,
+            order.quantity,
+            order.executedQuantity,
+            order.accumulativeQuoteQty,
             OrderStatus.CANCELED,
-            order.timeInForce,
-            order.type,
-            order.side
+            order.constraint.asTimeInForce(),
+            order.type.asOrderType(),
+            order.direction.asOrderSide()
         )
 
         if (order.status == OrderStatus.CANCELED)
@@ -259,8 +172,13 @@ class AccountController(
             throw OpexException(OpexError.CancelOrderNotAllowed)
 
 
-        val request = CancelOrderRequest(order.ouid, principal.name, order.orderId, localSymbol)
-        matchingGatewayProxy.cancelOrder(request, securityContext.jwtAuthentication().tokenValue())
+        matchingGatewayProxy.cancelOrder(
+            order.ouid,
+            principal.name,
+            order.orderId ?: 0,
+            localSymbol,
+            securityContext.jwtAuthentication().tokenValue()
+        )
         return response
     }
 
@@ -300,33 +218,10 @@ class AccountController(
         timestamp: Long
     ): QueryOrderResponse {
         val internalSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
-
-        val response = queryHandler.queryOrder(principal, QueryOrderRequest(internalSymbol, orderId, origClientOrderId))
+        return queryHandler.queryOrder(principal, internalSymbol, orderId, origClientOrderId)
+            ?.asQueryOrderResponse()
             ?: throw OpexException(OpexError.OrderNotFound)
-
-        return QueryOrderResponse(
-            symbol,
-            response.ouid,
-            response.orderId,
-            response.orderListId,
-            response.clientOrderId,
-            response.price,
-            response.origQty,
-            response.executedQty,
-            response.cummulativeQuoteQty,
-            response.status,
-            response.timeInForce,
-            response.type,
-            response.side,
-            response.stopPrice,
-            response.icebergQty,
-            response.time,
-            response.updateTime,
-            response.isWorking,
-            response.origQuoteOrderQty
-        )
     }
-
 
     /*
       Get all open orders on a symbol. Careful when accessing this with no symbol.
@@ -359,33 +254,9 @@ class AccountController(
         recvWindow: Long?, //The value cannot be greater than 60000
         @RequestParam(name = "timestamp")
         timestamp: Long
-    ): Flow<QueryOrderResponse> {
+    ): List<QueryOrderResponse> {
         val internalSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
-
-        return queryHandler.openOrders(principal, internalSymbol)
-            .map { response ->
-                QueryOrderResponse(
-                    symbol ?: "",
-                    response.ouid,
-                    response.orderId,
-                    response.orderListId,
-                    response.clientOrderId,
-                    response.price,
-                    response.origQty,
-                    response.executedQty,
-                    response.cummulativeQuoteQty,
-                    response.status,
-                    response.timeInForce,
-                    response.type,
-                    response.side,
-                    response.stopPrice,
-                    response.icebergQty,
-                    response.time,
-                    response.updateTime,
-                    response.isWorking,
-                    response.origQuoteOrderQty
-                )
-            }
+        return queryHandler.openOrders(principal, internalSymbol).map { it.asQueryOrderResponse() }
     }
 
     /*
@@ -424,33 +295,10 @@ class AccountController(
         recvWindow: Long?, //The value cannot be greater than 60000
         @RequestParam(name = "timestamp")
         timestamp: Long
-    ): Flow<QueryOrderResponse> {
+    ): List<QueryOrderResponse> {
         val internalSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
-
-        return queryHandler.allOrders(principal, AllOrderRequest(internalSymbol, startTime, endTime, limit))
-            .map { response ->
-                QueryOrderResponse(
-                    symbol ?: "",
-                    response.ouid,
-                    response.orderId,
-                    response.orderListId,
-                    response.clientOrderId,
-                    response.price,
-                    response.origQty,
-                    response.executedQty,
-                    response.cummulativeQuoteQty,
-                    response.status,
-                    response.timeInForce,
-                    response.type,
-                    response.side,
-                    response.stopPrice,
-                    response.icebergQty,
-                    response.time,
-                    response.updateTime,
-                    response.isWorking,
-                    response.origQuoteOrderQty
-                )
-            }
+        return queryHandler.allOrders(principal, internalSymbol, startTime, endTime, limit)
+            .map { it.asQueryOrderResponse() }
     }
 
     /*
@@ -493,25 +341,25 @@ class AccountController(
         recvWindow: Long?, //The value cannot be greater than 60000
         @RequestParam(name = "timestamp")
         timestamp: Long
-    ): Flow<TradeResponse> {
+    ): List<TradeResponse> {
         val internalSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
 
-        return queryHandler.allTrades(principal, TradeRequest(internalSymbol, fromId, startTime, endTime, limit))
-            .map { response ->
+        return queryHandler.allTrades(principal, internalSymbol, fromId, startTime, endTime, limit)
+            .map {
                 TradeResponse(
                     symbol ?: "",
-                    response.id,
-                    response.orderId,
+                    it.id,
+                    it.orderId,
                     -1,
-                    response.price,
-                    response.qty,
-                    response.quoteQty,
-                    response.commission,
-                    response.commissionAsset,
-                    response.time,
-                    response.isBuyer,
-                    response.isMaker,
-                    response.isBestMatch
+                    it.price,
+                    it.quantity,
+                    it.quoteQuantity,
+                    it.commission,
+                    it.commissionAsset,
+                    it.time,
+                    it.isBuyer,
+                    it.isMaker,
+                    it.isBestMatch
                 )
             }
     }
@@ -560,5 +408,27 @@ class AccountController(
             listOf(accountType)
         )
     }
+
+    private fun Order.asQueryOrderResponse() = QueryOrderResponse(
+        symbol,
+        ouid,
+        orderId ?: 0,
+        -1,
+        "",
+        price,
+        quantity,
+        executedQuantity,
+        accumulativeQuoteQty,
+        status,
+        constraint.asTimeInForce(),
+        type.asOrderType(),
+        direction.asOrderSide(),
+        null,
+        null,
+        Date.from(createDate.atZone(ZoneId.systemDefault()).toInstant()),
+        Date.from(updateDate.atZone(ZoneId.systemDefault()).toInstant()),
+        status.isWorking(),
+        quoteQuantity
+    )
 
 }

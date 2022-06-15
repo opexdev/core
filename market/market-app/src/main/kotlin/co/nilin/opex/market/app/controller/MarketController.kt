@@ -51,7 +51,7 @@ class MarketController(private val marketQueryHandler: MarketQueryHandler) {
     }
 
     @GetMapping("/prices")
-    suspend fun getLastPriceForSymbol(@RequestParam(required = false) symbol: String?): List<PriceTickerResponse> {
+    suspend fun getLastPriceForSymbol(@RequestParam(required = false) symbol: String?): List<PriceTicker> {
         return marketQueryHandler.lastPrice(symbol)
     }
 

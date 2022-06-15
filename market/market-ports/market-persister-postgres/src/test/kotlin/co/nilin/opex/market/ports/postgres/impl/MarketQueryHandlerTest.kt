@@ -2,16 +2,12 @@ package co.nilin.opex.market.ports.postgres.impl
 
 import co.nilin.opex.market.core.inout.OrderDirection
 import co.nilin.opex.market.core.inout.OrderStatus
-import co.nilin.opex.market.core.spi.SymbolMapper
 import co.nilin.opex.market.ports.postgres.dao.OrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderStatusRepository
 import co.nilin.opex.market.ports.postgres.dao.TradeRepository
 import co.nilin.opex.market.ports.postgres.impl.sample.VALID
-import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.flow.count
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat

@@ -9,6 +9,7 @@ import reactor.core.publisher.Mono
 
 @Repository
 interface SymbolMapRepository : ReactiveCrudRepository<SymbolMapModel, String> {
+
     @Query("select * from symbol_maps where symbol = :symbol and alias_key = :aliasKey")
     fun findByAliasKeyAndSymbol(aliasKey: String, @Param("symbol") symbol: String): Mono<SymbolMapModel>
 

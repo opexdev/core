@@ -1,13 +1,13 @@
-package co.nilin.opex.market.core.spi
+package co.nilin.opex.api.core.spi
 
-import co.nilin.opex.market.core.inout.*
+import co.nilin.opex.api.core.inout.*
 import java.time.LocalDateTime
 
-interface MarketQueryHandler {
+interface MarketDataProxy {
 
     suspend fun getTradeTickerData(startFrom: LocalDateTime): List<PriceChange>
 
-    suspend fun getTradeTickerDateBySymbol(symbol: String, startFrom: LocalDateTime): PriceChange?
+    suspend fun getTradeTickerDataBySymbol(symbol: String, startFrom: LocalDateTime): PriceChange
 
     suspend fun openBidOrders(symbol: String, limit: Int): List<OrderBook>
 

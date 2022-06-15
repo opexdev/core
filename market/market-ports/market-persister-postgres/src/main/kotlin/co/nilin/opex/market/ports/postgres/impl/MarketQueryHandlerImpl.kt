@@ -2,7 +2,6 @@ package co.nilin.opex.market.ports.postgres.impl
 
 import co.nilin.opex.market.core.inout.*
 import co.nilin.opex.market.core.spi.MarketQueryHandler
-import co.nilin.opex.market.core.spi.SymbolMapper
 import co.nilin.opex.market.ports.postgres.dao.OrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderStatusRepository
 import co.nilin.opex.market.ports.postgres.dao.TradeRepository
@@ -94,7 +93,7 @@ class MarketQueryHandlerImpl(
             }.toList()
     }
 
-    override suspend fun lastPrice(symbol: String?): List<PriceTickerResponse> {
+    override suspend fun lastPrice(symbol: String?): List<PriceTicker> {
         val list = if (symbol.isNullOrEmpty())
             tradeRepository.findAllGroupBySymbol()
         else
@@ -105,7 +104,7 @@ class MarketQueryHandlerImpl(
                 //TODO use query
                 val makerOrder = orderRepository.findByOuid(it.makerOuid).awaitFirst()
                 val isMakerBuyer = makerOrder.direction == OrderDirection.BID
-                PriceTickerResponse(
+                PriceTicker(
                     it.symbol,
                     if (isMakerBuyer)
                         it.takerPrice.min(it.makerPrice).toString()

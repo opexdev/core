@@ -1,9 +1,10 @@
 package co.nilin.opex.api.ports.proxy.impl
 
-import co.nilin.opex.api.core.inout.CancelOrderRequest
+
 import co.nilin.opex.api.core.inout.OrderSubmitResult
 import co.nilin.opex.api.core.spi.MatchingGatewayProxy
 import co.nilin.opex.api.core.utils.LoggerDelegate
+import co.nilin.opex.api.ports.proxy.data.CancelOrderRequest
 import kotlinx.coroutines.reactive.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
@@ -39,14 +40,20 @@ class MatchingGatewayProxyImpl(private val client: WebClient) : MatchingGatewayP
             .awaitSingleOrNull()
     }
 
-    override suspend fun cancelOrder(request: CancelOrderRequest, token: String?): OrderSubmitResult? {
+    override suspend fun cancelOrder(
+        ouid: String,
+        uuid: String,
+        orderId: Long,
+        symbol: String,
+        token: String?
+    ): OrderSubmitResult? {
         logger.info("calling matching-gateway order cancel")
         return client.post()
             .uri(URI.create("$baseUrl/order/cancel"))
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer $token")
-            .body(Mono.just(request))
+            .body(Mono.just(CancelOrderRequest(ouid, uuid, orderId, symbol)))
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<OrderSubmitResult>()

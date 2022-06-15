@@ -1,17 +1,15 @@
 package co.nilin.opex.api.ports.binance.controller
 
-import co.nilin.opex.api.core.inout.PriceChangeResponse
-import co.nilin.opex.api.core.inout.PriceTickerResponse
+import co.nilin.opex.api.core.inout.PriceChange
+import co.nilin.opex.api.core.inout.PriceTicker
 import co.nilin.opex.api.core.spi.AccountantProxy
-import co.nilin.opex.api.core.spi.MarketQueryHandler
+import co.nilin.opex.api.core.spi.MarketDataProxy
 import co.nilin.opex.api.core.spi.SymbolMapper
 import co.nilin.opex.api.core.utils.Interval
 import co.nilin.opex.api.ports.binance.data.*
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.utility.error.data.throwError
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
@@ -23,7 +21,7 @@ import java.time.ZoneId
 @RestController
 class MarketController(
     private val accountantProxy: AccountantProxy,
-    private val marketQueryHandler: MarketQueryHandler,
+    private val marketDataProxy: MarketDataProxy,
     private val symbolMapper: SymbolMapper,
 ) {
 
@@ -50,8 +48,8 @@ class MarketController(
         val mappedBidOrders = ArrayList<ArrayList<BigDecimal>>()
         val mappedAskOrders = ArrayList<ArrayList<BigDecimal>>()
 
-        val bidOrders = marketQueryHandler.openBidOrders(localSymbol, validLimit)
-        val askOrders = marketQueryHandler.openAskOrders(localSymbol, validLimit)
+        val bidOrders = marketDataProxy.openBidOrders(localSymbol, validLimit)
+        val askOrders = marketDataProxy.openAskOrders(localSymbol, validLimit)
 
         bidOrders.forEach {
             val mapped = arrayListOf<BigDecimal>().apply {
@@ -69,7 +67,7 @@ class MarketController(
             mappedAskOrders.add(mapped)
         }
 
-        val lastOrder = marketQueryHandler.lastOrder(localSymbol)
+        val lastOrder = marketDataProxy.lastOrder(localSymbol)
         return OrderBookResponse(lastOrder?.orderId ?: -1, mappedBidOrders, mappedAskOrders)
     }
 
@@ -80,13 +78,13 @@ class MarketController(
         symbol: String,
         @RequestParam("limit", required = false)
         limit: Int? // Default 500; max 1000.
-    ): Flow<RecentTradeResponse> {
+    ): List<RecentTradeResponse> {
         val validLimit = limit ?: 500
         val localSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
         if (validLimit !in 1..1000)
             throwError(OpexError.InvalidLimitForRecentTrades)
 
-        return marketQueryHandler.recentTrades(localSymbol, validLimit)
+        return marketDataProxy.recentTrades(localSymbol, validLimit)
             .map {
                 RecentTradeResponse(
                     it.id,
@@ -106,7 +104,7 @@ class MarketController(
         duration: String,
         @RequestParam("symbol", required = false)
         symbol: String?,
-    ): List<PriceChangeResponse> {
+    ): List<PriceChange> {
         val localSymbol = if (symbol.isNullOrEmpty())
             null
         else
@@ -118,21 +116,21 @@ class MarketController(
         val startDate = Interval.findByLabel(duration)?.getLocalDateTime() ?: Interval.Day.getLocalDateTime()
 
         return if (symbol.isNullOrEmpty())
-            marketQueryHandler.getTradeTickerData(startDate)
+            marketDataProxy.getTradeTickerData(startDate)
         else
-            listOf(marketQueryHandler.getTradeTickerDataBySymbol(localSymbol!!, startDate))
+            listOf(marketDataProxy.getTradeTickerDataBySymbol(localSymbol!!, startDate))
     }
 
     // Weight
     // 1 for a single symbol
     // 2 when the symbol parameter is omitted
     @GetMapping("/v3/ticker/price")
-    suspend fun priceTicker(@RequestParam("symbol", required = false) symbol: String?): List<PriceTickerResponse> {
+    suspend fun priceTicker(@RequestParam("symbol", required = false) symbol: String?): List<PriceTicker> {
         val localSymbol = if (symbol == null)
             null
         else
             symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
-        return marketQueryHandler.lastPrice(localSymbol)
+        return marketDataProxy.lastPrice(localSymbol)
     }
 
     @GetMapping("/v3/exchangeInfo")
@@ -180,7 +178,7 @@ class MarketController(
         val i = Interval.findByLabel(interval) ?: throw OpexException(OpexError.InvalidInterval)
 
         val list = ArrayList<ArrayList<Any>>()
-        marketQueryHandler.getCandleInfo(localSymbol, "${i.duration} ${i.unit}", startTime, endTime, validLimit)
+        marketDataProxy.getCandleInfo(localSymbol, "${i.duration} ${i.unit}", startTime, endTime, validLimit)
             .forEach {
                 list.add(
                     arrayListOf(

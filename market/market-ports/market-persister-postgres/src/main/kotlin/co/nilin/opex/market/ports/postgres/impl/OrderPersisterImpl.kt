@@ -11,6 +11,7 @@ import co.nilin.opex.market.ports.postgres.model.OrderModel
 import co.nilin.opex.market.ports.postgres.model.OrderStatusModel
 import co.nilin.opex.market.ports.postgres.util.asOrderDTO
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
@@ -79,6 +80,8 @@ class OrderPersisterImpl(
     }
 
     override suspend fun load(ouid: String): Order? {
-        return orderRepository.findByOuid(ouid).awaitFirstOrNull()?.asOrderDTO()
+        return orderRepository.findByOuid(ouid)
+            .awaitFirstOrNull()
+            ?.asOrderDTO(orderStatusRepository.findMostRecentByOUID(ouid).awaitSingleOrNull())
     }
 }
