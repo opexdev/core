@@ -22,7 +22,7 @@ import org.springframework.util.backoff.FixedBackOff
 import java.util.regex.Pattern
 
 @Configuration
-class ApiKafkaConfig {
+class KafkaConsumerConfig {
 
     @Value("\${spring.kafka.bootstrap-servers}")
     private lateinit var bootstrapServers: String
@@ -30,7 +30,7 @@ class ApiKafkaConfig {
     @Value("\${spring.kafka.consumer.group-id}")
     private lateinit var groupId: String
 
-    @Bean("apiConsumerConfig")
+    @Bean("marketConsumerConfig")
     fun consumerConfigs(): Map<String, Any> {
         return mapOf(
             ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
@@ -38,17 +38,17 @@ class ApiKafkaConfig {
             ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
             ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JsonDeserializer::class.java,
             JsonDeserializer.TRUSTED_PACKAGES to "co.nilin.opex.*",
-            JsonDeserializer.TYPE_MAPPINGS to "rich_order_event:co.nilin.opex.api.core.event.RichOrderEvent,rich_order:co.nilin.opex.api.core.event.RichOrder,rich_order_update:co.nilin.opex.api.core.event.RichOrderUpdate,rich_trade:co.nilin.opex.api.core.event.RichTrade"
+            JsonDeserializer.TYPE_MAPPINGS to "rich_order_event:co.nilin.opex.market.core.event.RichOrderEvent,rich_order:co.nilin.opex.market.core.event.RichOrder,rich_order_update:co.nilin.opex.market.core.event.RichOrderUpdate,rich_trade:co.nilin.opex.market.core.event.RichTrade"
         )
     }
 
     @Bean("richTradeConsumerFactory")
-    fun richTradeConsumerFactory(@Qualifier("apiConsumerConfig") consumerConfigs: Map<String, Any>): ConsumerFactory<String, RichTrade> {
+    fun richTradeConsumerFactory(@Qualifier("marketConsumerConfig") consumerConfigs: Map<String, Any>): ConsumerFactory<String, RichTrade> {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
 
     @Bean("richOrderConsumerFactory")
-    fun richOrderConsumerFactory(@Qualifier("apiConsumerConfig") consumerConfigs: Map<String, Any>): ConsumerFactory<String, RichOrderEvent> {
+    fun richOrderConsumerFactory(@Qualifier("marketConsumerConfig") consumerConfigs: Map<String, Any>): ConsumerFactory<String, RichOrderEvent> {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
 
@@ -62,7 +62,7 @@ class ApiKafkaConfig {
         val containerProps = ContainerProperties(Pattern.compile("richTrade"))
         containerProps.messageListener = tradeListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.setBeanName("ApiTradeKafkaListenerContainer")
+        container.setBeanName("marketTradeKafkaListenerContainer")
         container.commonErrorHandler = createConsumerErrorHandler(template, "richTrade.DLT")
         container.start()
     }
@@ -77,14 +77,14 @@ class ApiKafkaConfig {
         val containerProps = ContainerProperties(Pattern.compile("richOrder"))
         containerProps.messageListener = orderListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.setBeanName("ApiOrderKafkaListenerContainer")
+        container.setBeanName("marketOrderKafkaListenerContainer")
         container.commonErrorHandler = createConsumerErrorHandler(template, "richOrder.DLT")
         container.start()
     }
 
     private fun createConsumerErrorHandler(kafkaTemplate: KafkaTemplate<*, *>, dltTopic: String): CommonErrorHandler {
         val recoverer = DeadLetterPublishingRecoverer(kafkaTemplate) { cr, _ ->
-            cr.headers().add("dlt-origin-module", "API".toByteArray())
+            cr.headers().add("dlt-origin-module", "market".toByteArray())
             TopicPartition(dltTopic, cr.partition())
         }
         return DefaultErrorHandler(recoverer, FixedBackOff(5_000, 20))

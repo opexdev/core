@@ -8,17 +8,16 @@ import java.math.BigDecimal
 
 interface MatchingGatewayProxy {
 
-    data class CreateOrderRequest(
-        var uuid: String?,
-        val pair: String,
-        val price: BigDecimal,
-        val quantity: BigDecimal,
-        val direction: OrderDirection,
-        val matchConstraint: MatchConstraint?,
-        val orderType: MatchingOrderType
-    )
-
-    suspend fun createNewOrder(order: CreateOrderRequest, token: String?): OrderSubmitResult?
+    suspend fun createNewOrder(
+        uuid: String?,
+        pair: String,
+        price: BigDecimal,
+        quantity: BigDecimal,
+        direction: OrderDirection,
+        matchConstraint: MatchConstraint?,
+        orderType: MatchingOrderType,
+        token: String?
+    ): OrderSubmitResult?
 
     suspend fun cancelOrder(
         ouid: String,

@@ -15,14 +15,6 @@ fun TimeInForce.toMatchConstraint(): MatchConstraint {
     return MatchConstraint.valueOf(this.name)
 }
 
-fun MatchingOrderType.toApiOrderType(): OrderType {
-    if (this == MatchingOrderType.LIMIT_ORDER)
-        return OrderType.LIMIT
-    if (this == MatchingOrderType.MARKET_ORDER)
-        return OrderType.MARKET
-    throw IllegalArgumentException("OrderType $this is not supported!")
-}
-
 fun OrderDirection.toOrderSide(): OrderSide {
     if (this == OrderDirection.BID)
         return OrderSide.BUY

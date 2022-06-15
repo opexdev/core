@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration
 class AppConfig {
 
     @Bean
-    fun apiListener(richOrderPersister: OrderPersister, richTradePersister: TradePersister): MarketListenerImpl {
+    fun marketListener(richOrderPersister: OrderPersister, richTradePersister: TradePersister): MarketListenerImpl {
         return MarketListenerImpl(richOrderPersister, richTradePersister)
     }
 

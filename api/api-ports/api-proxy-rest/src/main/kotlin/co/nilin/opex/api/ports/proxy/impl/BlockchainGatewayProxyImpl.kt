@@ -7,7 +7,7 @@ import co.nilin.opex.api.core.utils.LoggerDelegate
 import co.nilin.opex.api.ports.proxy.data.AssignAddressRequest
 import co.nilin.opex.api.ports.proxy.data.DepositDetailsRequest
 import kotlinx.coroutines.reactive.awaitFirstOrElse
-import kotlinx.coroutines.reactive.awaitSingleOrNull
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component

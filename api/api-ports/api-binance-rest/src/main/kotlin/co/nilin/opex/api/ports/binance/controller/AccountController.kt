@@ -1,9 +1,9 @@
 package co.nilin.opex.api.ports.binance.controller
 
 import co.nilin.opex.api.core.inout.*
+import co.nilin.opex.api.core.spi.MarketUserDataProxy
 import co.nilin.opex.api.core.spi.MatchingGatewayProxy
 import co.nilin.opex.api.core.spi.SymbolMapper
-import co.nilin.opex.api.core.spi.MarketUserDataProxy
 import co.nilin.opex.api.core.spi.WalletProxy
 import co.nilin.opex.api.ports.binance.data.*
 import co.nilin.opex.api.ports.binance.util.*
@@ -91,17 +91,15 @@ class AccountController(
     ): NewOrderResponse {
         val internalSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
 
-        val request = MatchingGatewayProxy.CreateOrderRequest(
+        matchingGatewayProxy.createNewOrder(
             securityContext.jwtAuthentication().name,
             internalSymbol,
             price ?: BigDecimal.ZERO, // Maybe make this nullable as well?
             quantity ?: BigDecimal.ZERO,
             side.asOrderDirection(),
             timeInForce?.asMatchConstraint(),
-            type.asMatchingOrderType()
+            type.asMatchingOrderType(), securityContext.jwtAuthentication().tokenValue()
         )
-
-        matchingGatewayProxy.createNewOrder(request, securityContext.jwtAuthentication().tokenValue())
         return NewOrderResponse(
             symbol,
             -1,

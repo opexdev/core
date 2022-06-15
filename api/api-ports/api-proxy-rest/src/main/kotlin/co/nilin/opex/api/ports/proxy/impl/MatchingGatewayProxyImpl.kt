@@ -1,11 +1,14 @@
 package co.nilin.opex.api.ports.proxy.impl
 
-
+import co.nilin.opex.api.core.inout.MatchConstraint
+import co.nilin.opex.api.core.inout.MatchingOrderType
+import co.nilin.opex.api.core.inout.OrderDirection
 import co.nilin.opex.api.core.inout.OrderSubmitResult
 import co.nilin.opex.api.core.spi.MatchingGatewayProxy
 import co.nilin.opex.api.core.utils.LoggerDelegate
 import co.nilin.opex.api.ports.proxy.data.CancelOrderRequest
-import kotlinx.coroutines.reactive.awaitSingleOrNull
+import co.nilin.opex.api.ports.proxy.data.CreateOrderRequest
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
@@ -13,6 +16,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.body
 import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
+import java.math.BigDecimal
 import java.net.URI
 
 @Component
@@ -24,7 +28,13 @@ class MatchingGatewayProxyImpl(private val client: WebClient) : MatchingGatewayP
     private lateinit var baseUrl: String
 
     override suspend fun createNewOrder(
-        order: MatchingGatewayProxy.CreateOrderRequest,
+        uuid: String?,
+        pair: String,
+        price: BigDecimal,
+        quantity: BigDecimal,
+        direction: OrderDirection,
+        matchConstraint: MatchConstraint?,
+        orderType: MatchingOrderType,
         token: String?
     ): OrderSubmitResult? {
         logger.info("calling matching-gateway order create")
@@ -33,11 +43,12 @@ class MatchingGatewayProxyImpl(private val client: WebClient) : MatchingGatewayP
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer $token")
-            .body(Mono.just(order))
+            .body(Mono.just(CreateOrderRequest(uuid, pair, price, quantity, direction, matchConstraint, orderType)))
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<OrderSubmitResult>()
             .awaitSingleOrNull()
+
     }
 
     override suspend fun cancelOrder(
