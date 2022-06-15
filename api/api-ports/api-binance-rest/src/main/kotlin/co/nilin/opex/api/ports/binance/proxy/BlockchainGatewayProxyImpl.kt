@@ -4,8 +4,8 @@ import co.nilin.opex.api.core.inout.AssignResponse
 import co.nilin.opex.api.core.inout.DepositDetails
 import co.nilin.opex.api.core.spi.BlockchainGatewayProxy
 import co.nilin.opex.api.ports.binance.util.LoggerDelegate
-import kotlinx.coroutines.reactive.awaitSingleOrElse
-import kotlinx.coroutines.reactive.awaitSingleOrNull
+import kotlinx.coroutines.reactive.awaitFirstOrElse
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.MediaType
@@ -56,6 +56,6 @@ class BlockchainGatewayProxyImpl(private val client: WebClient) : BlockchainGate
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono(typeRef<List<DepositDetails>>())
-            .awaitSingleOrElse { emptyList() }
+            .awaitFirstOrElse { emptyList() }
     }
 }
