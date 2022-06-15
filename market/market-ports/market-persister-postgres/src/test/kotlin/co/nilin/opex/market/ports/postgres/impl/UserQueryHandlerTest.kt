@@ -37,11 +37,11 @@ class UserQueryHandlerTest {
             orderStatusRepository.findMostRecentByOUID(VALID.MAKER_ORDER_MODEL.ouid)
         } returns Mono.just(VALID.MAKER_ORDER_STATUS_MODEL)
 
-        val queryOrderResponses = userQueryHandler.allOrders(VALID.PRINCIPAL, VALID.ALL_ORDER_REQUEST)
+        val queryOrderResponses = userQueryHandler.allOrders(VALID.PRINCIPAL.name, VALID.ALL_ORDER_REQUEST)
 
         assertThat(queryOrderResponses).isNotNull
         assertThat(queryOrderResponses.count()).isEqualTo(1)
-        assertThat(queryOrderResponses.first()).isEqualTo(VALID.MAKER_QUERY_ORDER_RESPONSE)
+        assertThat(queryOrderResponses.first()).isEqualTo(VALID.MAKER_ORDER)
     }
 
     @Test
@@ -64,7 +64,7 @@ class UserQueryHandlerTest {
             orderRepository.findByOuid(VALID.TRADE_MODEL.takerOuid)
         } returns Mono.just(VALID.TAKER_ORDER_MODEL)
 
-        val tradeResponses = userQueryHandler.allTrades(VALID.PRINCIPAL, VALID.TRADE_REQUEST)
+        val tradeResponses = userQueryHandler.allTrades(VALID.PRINCIPAL.name, VALID.TRADE_REQUEST)
 
         assertThat(tradeResponses).isNotNull
         assertThat(tradeResponses.count()).isEqualTo(1)
@@ -85,7 +85,7 @@ class UserQueryHandlerTest {
             orderStatusRepository.findMostRecentByOUID(VALID.MAKER_ORDER_MODEL.ouid)
         } returns Mono.just(VALID.MAKER_ORDER_STATUS_MODEL)
 
-        val queryOrderResponses = userQueryHandler.openOrders(VALID.PRINCIPAL, VALID.ETH_USDT)
+        val queryOrderResponses = userQueryHandler.openOrders(VALID.PRINCIPAL.name, VALID.ETH_USDT)
 
         assertThat(queryOrderResponses).isNotNull
         assertThat(queryOrderResponses.count()).isEqualTo(1)
@@ -103,7 +103,7 @@ class UserQueryHandlerTest {
             orderStatusRepository.findMostRecentByOUID(VALID.MAKER_ORDER_MODEL.ouid)
         } returns Mono.just(VALID.MAKER_ORDER_STATUS_MODEL)
 
-        val queryOrderResponse = userQueryHandler.queryOrder(VALID.PRINCIPAL, VALID.QUERY_ORDER_REQUEST)
+        val queryOrderResponse = userQueryHandler.queryOrder(VALID.PRINCIPAL.name, VALID.QUERY_ORDER_REQUEST)
 
         assertThat(queryOrderResponse).isNotNull
     }

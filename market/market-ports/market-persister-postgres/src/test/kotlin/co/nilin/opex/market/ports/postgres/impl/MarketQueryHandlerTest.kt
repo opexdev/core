@@ -69,7 +69,7 @@ class MarketQueryHandlerTest {
         val queryOrderResponse = marketQueryHandler.lastOrder(VALID.ETH_USDT)
 
         assertThat(queryOrderResponse).isNotNull
-        assertThat(queryOrderResponse).isEqualTo(VALID.MAKER_QUERY_ORDER_RESPONSE)
+        assertThat(queryOrderResponse).isEqualTo(VALID.MAKER_ORDER)
     }
 
     @Test

@@ -16,6 +16,7 @@ import java.time.ZoneOffset
 import java.util.*
 
 object VALID {
+
     private const val USER_LEVEL_REGISTERED = "registered"
     private const val TIMESTAMP = 1653125840L
     private val CREATE_DATE: LocalDateTime = LocalDateTime.ofEpochSecond(TIMESTAMP, 0, ZoneOffset.UTC)
@@ -49,6 +50,31 @@ object VALID {
         UPDATE_DATE
     )
 
+    val MAKER_ORDER = Order(
+        1,
+        MAKER_ORDER_MODEL.ouid,
+        PRINCIPAL.name,
+        null,
+        ETH_USDT,
+        1,
+        BigDecimal.valueOf(0.01),
+        BigDecimal.valueOf(0.01), // Calculated?
+        BigDecimal.valueOf(0.0001),
+        BigDecimal.valueOf(0.01),
+        USER_LEVEL_REGISTERED,
+        OrderDirection.ASK,
+        MatchConstraint.GTC,
+        MatchingOrderType.LIMIT_ORDER,
+        BigDecimal.valueOf(100000),
+        BigDecimal.valueOf(0.001),
+        BigDecimal.valueOf(100).stripTrailingZeros(),
+        BigDecimal.valueOf(0),
+        BigDecimal.valueOf(0),
+        OrderStatus.FILLED,
+        CREATE_DATE,
+        UPDATE_DATE
+    )
+
     val TAKER_ORDER_MODEL = MAKER_ORDER_MODEL.copy(2, "157b9b4a-cc66-43b9-b30b-40a8b66ea6aa")
 
     val MAKER_ORDER_STATUS_MODEL = OrderStatusModel(
@@ -77,28 +103,6 @@ object VALID {
         PRINCIPAL.name,
         PRINCIPAL.name,
         UPDATE_DATE
-    )
-
-    val MAKER_QUERY_ORDER_RESPONSE = QueryOrderResponse(
-        ETH_USDT,
-        MAKER_ORDER_MODEL.ouid,
-        1,
-        -1, // Binance
-        "", // Binance
-        BigDecimal.valueOf(100000),
-        BigDecimal.valueOf(0.001),
-        BigDecimal.valueOf(0),
-        BigDecimal.valueOf(0),
-        OrderStatus.FILLED,
-        TimeInForce.GTC,
-        OrderType.LIMIT,
-        OrderSide.SELL,
-        null,
-        null,
-        Date.from(CREATE_DATE.atZone(ZoneId.systemDefault()).toInstant()),
-        Date.from(UPDATE_DATE.atZone(ZoneId.systemDefault()).toInstant()),
-        OrderStatus.FILLED.isWorking(),
-        BigDecimal.valueOf(100000.0 * 0.001).stripTrailingZeros()
     )
 
     val AGGREGATED_ORDER_PRICE_MODEL = AggregatedOrderPriceModel(
