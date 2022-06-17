@@ -6,7 +6,7 @@
     <parent>
         <groupId>co.nilin.opex.utility</groupId>
         <artifactId>utility</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0.0-beta.3</version>
     </parent>
 
     <groupId>co.nilin.opex.utility.log</groupId>
