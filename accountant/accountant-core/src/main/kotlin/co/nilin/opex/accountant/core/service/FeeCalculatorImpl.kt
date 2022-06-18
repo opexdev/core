@@ -25,21 +25,21 @@ class FeeCalculatorImpl(@Value("\${app.address}") private val platformAddress: S
         logger.info("Start fee calculation for trade ${trade.takerUuid}")
 
         val makerMatchedAmount = if (makerOrder.isAsk()) {
-            trade.matchedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction.toBigDecimal())
+            trade.matchedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction)
         } else {
             trade.matchedQuantity.toBigDecimal()
-                .multiply(makerOrder.leftSideFraction.toBigDecimal())
+                .multiply(makerOrder.leftSideFraction)
                 .multiply(trade.makerPrice.toBigDecimal())
-                .multiply(makerOrder.rightSideFraction.toBigDecimal())
+                .multiply(makerOrder.rightSideFraction)
         }
 
         val takerMatchedAmount = if (takerOrder.isAsk()) {
-            trade.matchedQuantity.toBigDecimal().multiply(takerOrder.leftSideFraction.toBigDecimal())
+            trade.matchedQuantity.toBigDecimal().multiply(takerOrder.leftSideFraction)
         } else {
             trade.matchedQuantity.toBigDecimal()
-                .multiply(takerOrder.leftSideFraction.toBigDecimal())
+                .multiply(takerOrder.leftSideFraction)
                 .multiply(trade.makerPrice.toBigDecimal())
-                .multiply(takerOrder.rightSideFraction.toBigDecimal())
+                .multiply(takerOrder.rightSideFraction)
         }
 
         //calculate maker fee
@@ -48,7 +48,7 @@ class FeeCalculatorImpl(@Value("\${app.address}") private val platformAddress: S
             TradeEvent::class.simpleName!!,
             trade.takerOuid,
             if (takerOrder.isAsk()) trade.pair.leftSideName else trade.pair.rightSideName,
-            takerMatchedAmount.multiply(makerOrder.makerFee.toBigDecimal()),
+            takerMatchedAmount.multiply(makerOrder.makerFee),
             trade.makerUuid,
             "main",
             platformAddress,
@@ -63,7 +63,7 @@ class FeeCalculatorImpl(@Value("\${app.address}") private val platformAddress: S
             TradeEvent::class.simpleName!!,
             trade.makerOuid,
             if (makerOrder.isAsk()) trade.pair.leftSideName else trade.pair.rightSideName,
-            makerMatchedAmount.multiply(takerOrder.takerFee.toBigDecimal()),
+            makerMatchedAmount.multiply(takerOrder.takerFee),
             trade.takerUuid,
             "main",
             platformAddress,

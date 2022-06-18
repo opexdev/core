@@ -6,7 +6,7 @@
     <parent>
         <groupId>co.nilin.opex.bcgateway</groupId>
         <artifactId>bc-gateway</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0.0-beta.3</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -54,10 +54,6 @@
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-test</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>co.nilin.opex.bcgateway.ports.chainproxy</groupId>
-            <artifactId>bc-gateway-chain-proxy</artifactId>
         </dependency>
     </dependencies>
 </project>

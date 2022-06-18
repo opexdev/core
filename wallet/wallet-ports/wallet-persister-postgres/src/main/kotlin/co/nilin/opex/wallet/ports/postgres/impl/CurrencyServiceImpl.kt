@@ -8,6 +8,7 @@ import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.math.BigDecimal
 
 @Service
 class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : CurrencyService {
@@ -15,10 +16,12 @@ class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : Currency
     private val logger = LoggerFactory.getLogger(CurrencyServiceImpl::class.java)
 
     override suspend fun getCurrency(symbol: String): Currency? {
-        return currencyRepository.findBySymbol(symbol).awaitFirstOrNull()
+        return currencyRepository.findBySymbol(symbol).awaitFirstOrNull()?.run {
+            Currency(this.symbol, name, precision)
+        }
     }
 
-    override suspend fun addCurrency(name: String, symbol: String, precision: Double) {
+    override suspend fun addCurrency(name: String, symbol: String, precision: BigDecimal) {
         try {
             currencyRepository.insert(name, symbol, precision).awaitSingleOrNull()
         } catch (e: Exception) {
@@ -26,11 +29,11 @@ class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : Currency
         }
     }
 
-    override suspend fun editCurrency(name: String, symbol: String, precision: Double) {
+    override suspend fun editCurrency(name: String, symbol: String, precision: BigDecimal) {
         val currency = currencyRepository.findById(name).awaitFirstOrNull()
         if (currency != null) {
-            currency.symbol_ = symbol
-            currency.precision_ = precision
+            currency.symbol = symbol
+            currency.precision = precision
             currencyRepository.save(currency).awaitFirst()
         }
     }

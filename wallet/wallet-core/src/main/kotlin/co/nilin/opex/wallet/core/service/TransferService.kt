@@ -26,9 +26,9 @@ class TransferService(
     suspend fun transfer(transferCommand: TransferCommand): TransferResultDetailed {
         //pre transfer hook (dispatch pre transfer event)
         val srcWallet = transferCommand.sourceWallet
-        val srcWalletOwner = srcWallet.owner()
-        val srcWalletBalance = srcWallet.balance()
-        if (srcWallet.currency() != transferCommand.amount.currency)
+        val srcWalletOwner = srcWallet.owner
+        val srcWalletBalance = srcWallet.balance
+        if (srcWallet.currency != transferCommand.amount.currency)
             throw CurrencyNotMatchedException()
         if (srcWalletBalance.amount < transferCommand.amount.amount)
             throw NotEnoughBalanceException()
@@ -38,11 +38,11 @@ class TransferService(
             throw WithdrawLimitExceededException()
 
         val destWallet = transferCommand.destWallet
-        val destWalletOwner = destWallet.owner()
-        //check wallet if can accept the value type
+        val destWalletOwner = destWallet.owner
+        //check wallet if it can accept the value type
         val amountToTransfer = transferCommand.amount.amount
 
-        if (!walletOwnerManager.isDepositAllowed(destWalletOwner, Amount(destWallet.currency(), amountToTransfer)))
+        if (!walletOwnerManager.isDepositAllowed(destWalletOwner, Amount(destWallet.currency, amountToTransfer)))
             throw DepositLimitExceededException()
         if (!walletManager.isDepositAllowed(destWallet, amountToTransfer))
             throw DepositLimitExceededException()
@@ -76,14 +76,14 @@ class TransferService(
         return TransferResultDetailed(
             TransferResult(
                 Date().time,
-                srcWalletOwner.uuid(),
-                srcWallet.type(),
+                srcWalletOwner.uuid,
+                srcWallet.type,
                 srcWalletBalance,
-                walletManager.findWalletById(srcWallet.id()!!)!!.balance(),
+                walletManager.findWalletById(srcWallet.id!!)!!.balance,
                 transferCommand.amount,
-                destWalletOwner.uuid(),
-                destWallet.type(),
-                Amount(destWallet.currency(), amountToTransfer)
+                destWalletOwner.uuid,
+                destWallet.type,
+                Amount(destWallet.currency, amountToTransfer)
             ), tx
         )
     }

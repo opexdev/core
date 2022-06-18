@@ -13,7 +13,7 @@ spring:
   datasource:
     platform: postgres
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${DB_IP_PORT:localhost}/opex_auth
+    url: jdbc:postgresql://${DB_IP_PORT:localhost}/opex
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
     initialization-mode: always
@@ -54,7 +54,7 @@ keycloak:
   adminUrl: ${ADMIN_URL:http://localhost:8080/auth}
   frontendUrl: ${FRONTEND_URL:http://localhost:8080/auth}
   server:
-    contextPath: /auth
+    contextPath: "/auth"
     adminUser:
       username: ${admin_username:opex-admin}
       password: ${admin_password:hiopex}
@@ -70,3 +70,5 @@ keycloak:
       token_exchange: enabled
   hashicorp:
     url: ${VAULT_URL}
+app:
+  verify-redirect-url: ${VERIFY_REDIRECT_URL}

@@ -2,7 +2,6 @@ package co.nilin.opex.bcgateway.ports.postgres.impl
 
 import co.nilin.opex.bcgateway.core.model.AddressType
 import co.nilin.opex.bcgateway.core.model.Chain
-import co.nilin.opex.bcgateway.core.model.Endpoint
 import co.nilin.opex.bcgateway.core.spi.ChainLoader
 import co.nilin.opex.bcgateway.ports.postgres.dao.AddressTypeRepository
 import co.nilin.opex.bcgateway.ports.postgres.dao.ChainAddressTypeRepository
@@ -36,7 +35,7 @@ class ChainHandler(
         chainRepository.insert(name).awaitFirstOrNull()
         val model = chainRepository.findByName(name).awaitFirst()
         chainAddressRepository.save(ChainAddressTypeModel(null, model.name, type.id!!)).awaitFirstOrNull()
-        return Chain(model.name, emptyList(), emptyList())
+        return Chain(model.name, emptyList())
     }
 
     override suspend fun fetchAllChains(): List<Chain> {
@@ -48,8 +47,7 @@ class ChainHandler(
                     .map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }
                     .toList()
 
-                val endpoints = chainRepository.findEndpointsByName(c.name).map { Endpoint(it.url) }.toList()
-                Chain(c.name, addressTypes, endpoints)
+                Chain(c.name, addressTypes)
             }
     }
 
@@ -57,8 +55,7 @@ class ChainHandler(
         val chainDao = chainRepository.findByName(chain).awaitSingle()
         val addressTypes = chainRepository.findAddressTypesByName(chain)
             .map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }.toList()
-        val endpoints = chainRepository.findEndpointsByName(chain).map { Endpoint(it.url) }.toList()
-        return Chain(chainDao.name, addressTypes, endpoints)
+        return Chain(chainDao.name, addressTypes)
     }
 
 }

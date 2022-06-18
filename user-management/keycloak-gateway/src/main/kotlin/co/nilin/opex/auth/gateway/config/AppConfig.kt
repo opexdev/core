@@ -18,7 +18,7 @@ class AppConfig {
         serverProperties: ServerProperties,
         keycloakServerProperties: KeycloakServerProperties
     ): ApplicationListener<ApplicationReadyEvent> {
-        return ApplicationListener<ApplicationReadyEvent> { evt ->
+        return ApplicationListener<ApplicationReadyEvent> {
             val port = serverProperties.port
             val keycloakContextPath = keycloakServerProperties.contextPath
             LOG.info("Embedded Keycloak started: http://localhost:{}{} to use keycloak", port, keycloakContextPath)

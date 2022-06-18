@@ -14,7 +14,7 @@ spring:
     consumer:
       group-id: accountant
   r2dbc:
-    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex_accountant
+    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
     initialization-mode: always

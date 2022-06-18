@@ -6,7 +6,7 @@
     <parent>
         <artifactId>core</artifactId>
         <groupId>co.nilin.opex</groupId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0.0-beta.3</version>
     </parent>
 
     <groupId>co.nilin.opex.admin</groupId>

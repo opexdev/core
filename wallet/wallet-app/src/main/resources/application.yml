@@ -13,7 +13,7 @@ spring:
     consumer:
       group-id: wallet
   r2dbc:
-    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex_wallet
+    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
     initialization-mode: always

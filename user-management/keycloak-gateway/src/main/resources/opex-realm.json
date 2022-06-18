@@ -43,16 +43,9 @@
   "roles": {
     "realm": [
       {
-        "id": "fa6b43a1-c4eb-41d9-8f6f-b7fbc3ce6579",
-        "name": "system-admin",
-        "composite": false,
-        "clientRole": false,
-        "containerId": "opex",
-        "attributes": {}
-      },
-      {
-        "id": "fe152bae-77c5-485c-be97-a5f490b3b837",
-        "name": "finance-admin",
+        "id": "6e034724-6f49-41c2-92f4-e085959d9d04",
+        "name": "admin_finance",
+        "description": "Admin responsible for finance operations",
         "composite": true,
         "composites": {
           "realm": [
@@ -64,8 +57,35 @@
         "attributes": {}
       },
       {
+        "id": "6061c17a-30fb-4d17-9414-8e20e61520ce",
+        "name": "admin_system",
+        "description": "Admins responsible for system's settings and operations",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "opex",
+        "attributes": {}
+      },
+      {
+        "id": "470642d4-8042-4eef-8146-cd8e5dc0c346",
+        "name": "user_anonymous",
+        "description": "Anonymous user",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "opex",
+        "attributes": {}
+      },
+      {
         "id": "1135b8ef-3838-4397-961e-79a77845fac2",
         "name": "impersonation",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "opex",
+        "attributes": {}
+      },
+      {
+        "id": "ddab5c6c-f54e-4369-be3d-24a4121288d3",
+        "name": "user_basic",
+        "description": "Registered user",
         "composite": false,
         "clientRole": false,
         "containerId": "opex",
@@ -81,6 +101,22 @@
         "attributes": {}
       },
       {
+        "id": "17aeb6b8-96f7-44c3-a7b7-db5a163ddec5",
+        "name": "super_admin",
+        "description": "Composition of all admin roles. Assign with caution!",
+        "composite": true,
+        "composites": {
+          "realm": [
+            "impersonation",
+            "admin_system",
+            "admin_finance"
+          ]
+        },
+        "clientRole": false,
+        "containerId": "opex",
+        "attributes": {}
+      },
+      {
         "id": "0dd6a8c7-d669-4941-9ea1-521980e9c53f",
         "name": "uma_authorization",
         "description": "${role_uma_authorization}",
@@ -90,16 +126,21 @@
         "attributes": {}
       },
       {
-        "id": "ca962095-7f9b-49e2-a190-e391a0d4b704",
-        "name": "user",
-        "composite": false,
+        "id": "fee989a8-c92e-4889-9507-c37809d8f876",
+        "name": "user_kyc",
+        "description": "User verified through eKYC flow",
+        "composite": true,
+        "composites": {
+          "realm": [
+            "user_basic"
+          ]
+        },
         "clientRole": false,
         "containerId": "opex",
         "attributes": {}
       }
     ],
     "client": {
-      "newClient": [],
       "ipg": [],
       "web-app": [],
       "realm-management": [
@@ -429,20 +470,13 @@
       "subGroups": []
     },
     {
-      "id": "efb76f91-62a0-409d-afea-c76a9766c6f9",
-      "name": "finance-admin",
-      "path": "/finance-admin",
-      "attributes": {},
-      "realmRoles": [],
-      "clientRoles": {},
-      "subGroups": []
-    },
-    {
       "id": "8307c787-473d-41a1-ad57-f31bd32119e8",
       "name": "kyc-accepted",
       "path": "/kyc-accepted",
       "attributes": {},
-      "realmRoles": [],
+      "realmRoles": [
+        "user_kyc"
+      ],
       "clientRoles": {},
       "subGroups": []
     },
@@ -475,13 +509,14 @@
     }
   ],
   "defaultRoles": [
+    "user_basic",
     "offline_access",
-    "uma_authorization",
-    "user"
+    "uma_authorization"
   ],
   "requiredCredentials": [
     "password"
   ],
+  "passwordPolicy": "length(8)",
   "otpPolicyType": "totp",
   "otpPolicyAlgorithm": "HmacSHA1",
   "otpPolicyInitialCounter": 0,
@@ -624,33 +659,24 @@
       "client": "account-console",
       "roles": [
         "offline_access",
-        "uma_authorization",
-        "user"
-      ]
-    },
-    {
-      "client": "admin-cli",
-      "roles": [
-        "system-admin",
-        "finance-admin"
+        "uma_authorization"
       ]
     },
     {
       "client": "opex-admin",
       "roles": [
-        "system-admin",
         "impersonation",
-        "finance-admin",
+        "super_admin",
         "offline_access",
-        "uma_authorization",
-        "user"
+        "uma_authorization"
       ]
     },
     {
       "client": "web-app",
       "roles": [
-        "system-admin",
-        "finance-admin"
+        "user_kyc",
+        "admin_system",
+        "admin_finance"
       ]
     },
     {
@@ -1141,71 +1167,6 @@
         "phone",
         "offline_access",
         "microprofile-jwt"
-      ]
-    },
-    {
-      "id": "b88ce206-63d6-43b6-87c9-ea09d8c02f32",
-      "clientId": "newClient",
-      "surrogateAuthRequired": false,
-      "enabled": true,
-      "alwaysDisplayInConsole": false,
-      "clientAuthenticatorType": "client-secret",
-      "secret": "b25cd2c3-1bbd-4988-ab6a-8439ac4e2c60",
-      "redirectUris": [
-        "http://localhost:8082/new-client/login/oauth2/code/custom",
-        "http://localhost:3000/*",
-        "http://localhost:8089/auth/redirect/",
-        "https://opex.dev/*"
-      ],
-      "webOrigins": [
-        "+"
-      ],
-      "notBefore": 0,
-      "bearerOnly": false,
-      "consentRequired": false,
-      "standardFlowEnabled": true,
-      "implicitFlowEnabled": true,
-      "directAccessGrantsEnabled": true,
-      "serviceAccountsEnabled": false,
-      "publicClient": false,
-      "frontchannelLogout": false,
-      "protocol": "openid-connect",
-      "attributes": {
-        "saml.assertion.signature": "false",
-        "saml.force.post.binding": "false",
-        "saml.multivalued.roles": "false",
-        "saml.encrypt": "false",
-        "saml.server.signature": "false",
-        "backchannel.logout.revoke.offline.tokens": "false",
-        "saml.server.signature.keyinfo.ext": "false",
-        "exclude.session.state.from.auth.response": "false",
-        "backchannel.logout.session.required": "false",
-        "client_credentials.use_refresh_token": "false",
-        "saml_force_name_id_format": "false",
-        "saml.client.signature": "false",
-        "tls.client.certificate.bound.access.tokens": "false",
-        "saml.authnstatement": "false",
-        "display.on.consent.screen": "false",
-        "saml.onetimeuse.condition": "false"
-      },
-      "authenticationFlowBindingOverrides": {},
-      "fullScopeAllowed": true,
-      "nodeReRegistrationTimeout": -1,
-      "defaultClientScopes": [
-        "trust",
-        "role_list",
-        "profile"
-      ],
-      "optionalClientScopes": [
-        "web-origins",
-        "address",
-        "read",
-        "phone",
-        "roles",
-        "offline_access",
-        "microprofile-jwt",
-        "write",
-        "email"
       ]
     },
     {
@@ -2793,13 +2754,13 @@
         "subComponents": {},
         "config": {
           "allowed-protocol-mapper-types": [
-            "oidc-usermodel-attribute-mapper",
             "saml-user-property-mapper",
-            "saml-role-list-mapper",
+            "saml-user-attribute-mapper",
+            "oidc-usermodel-attribute-mapper",
+            "oidc-sha256-pairwise-sub-mapper",
             "oidc-full-name-mapper",
             "oidc-usermodel-property-mapper",
-            "saml-user-attribute-mapper",
-            "oidc-sha256-pairwise-sub-mapper",
+            "saml-role-list-mapper",
             "oidc-address-mapper"
           ]
         }
@@ -2820,14 +2781,14 @@
         "subComponents": {},
         "config": {
           "allowed-protocol-mapper-types": [
-            "oidc-usermodel-property-mapper",
-            "oidc-sha256-pairwise-sub-mapper",
+            "saml-user-property-mapper",
+            "oidc-usermodel-attribute-mapper",
+            "saml-user-attribute-mapper",
             "oidc-full-name-mapper",
             "saml-role-list-mapper",
-            "oidc-usermodel-attribute-mapper",
-            "saml-user-property-mapper",
             "oidc-address-mapper",
-            "saml-user-attribute-mapper"
+            "oidc-usermodel-property-mapper",
+            "oidc-sha256-pairwise-sub-mapper"
           ]
         }
       }

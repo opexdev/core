@@ -9,7 +9,6 @@ import java.math.BigDecimal
 data class DepositModel(
     @Id val id: Long?,
     val hash: String,
-    @Column("wallet_record_id") val walletRecordId: Long?,
     val depositor: String,
     @Column("depositor_memo") val depositorMemo: String?,
     val amount: BigDecimal,

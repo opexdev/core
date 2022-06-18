@@ -8,7 +8,6 @@ import java.math.BigDecimal
 
 @RestController
 class DepositController(private val depositService: DepositService) {
-
     data class GetDepositsRequest(val refs: List<String>)
 
     data class DepositRequest(
@@ -23,18 +22,10 @@ class DepositController(private val depositService: DepositService) {
 
     @PostMapping("/deposit/find/all")
     suspend fun getDeposits(@RequestBody request: GetDepositsRequest): List<DepositRequest> {
-        return depositService.getDepositDetails(request.refs)
-            .map {
-                DepositRequest(
-                    it.hash,
-                    it.depositor,
-                    it.depositorMemo,
-                    it.amount,
-                    it.chain,
-                    it.token,
-                    it.tokenAddress
-                )
-            }
+        return depositService.getDepositDetails(request.refs).map {
+            DepositRequest(
+                it.hash, it.depositor, it.depositorMemo, it.amount, it.chain, it.token, it.tokenAddress
+            )
+        }
     }
-
 }

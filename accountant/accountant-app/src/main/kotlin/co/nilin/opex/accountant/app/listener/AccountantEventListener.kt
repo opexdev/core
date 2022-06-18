@@ -11,15 +11,15 @@ class AccountantEventListener(private val orderManager: OrderManager) : EventLis
         return "EventListener"
     }
 
-    override fun onEvent(coreEvent: CoreEvent, partition: Int, offset: Long, timestamp: Long) {
+    override fun onEvent(event: CoreEvent, partition: Int, offset: Long, timestamp: Long) {
         runBlocking {
-            when (coreEvent) {
-                is CreateOrderEvent -> orderManager.handleNewOrder(coreEvent)
-                is RejectOrderEvent -> orderManager.handleRejectOrder(coreEvent)
-                is UpdatedOrderEvent -> orderManager.handleUpdateOrder(coreEvent)
-                is CancelOrderEvent -> orderManager.handleCancelOrder(coreEvent)
+            when (event) {
+                is CreateOrderEvent -> orderManager.handleNewOrder(event)
+                is RejectOrderEvent -> orderManager.handleRejectOrder(event)
+                is UpdatedOrderEvent -> orderManager.handleUpdateOrder(event)
+                is CancelOrderEvent -> orderManager.handleCancelOrder(event)
                 else -> {
-                    println("Event is not accepted ${coreEvent::class.java}")
+                    println("Event is not accepted ${event::class.java}")
                 }
             }
         }

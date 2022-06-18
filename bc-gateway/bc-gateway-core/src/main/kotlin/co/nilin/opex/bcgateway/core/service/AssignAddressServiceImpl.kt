@@ -12,9 +12,9 @@ import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 
 class AssignAddressServiceImpl(
-    val currencyHandler: CurrencyHandler,
-    val assignedAddressHandler: AssignedAddressHandler,
-    val reservedAddressHandler: ReservedAddressHandler
+    private val currencyHandler: CurrencyHandler,
+    private val assignedAddressHandler: AssignedAddressHandler,
+    private val reservedAddressHandler: ReservedAddressHandler
 ) : AssignAddressService {
 
     override suspend fun assignAddress(user: String, currency: Currency): List<AssignedAddress> {
@@ -28,15 +28,15 @@ class AssignAddressServiceImpl(
         chains.forEach { chain ->
             chain.addressTypes.forEach { addressType ->
                 chainAddressTypeMap.putIfAbsent(addressType, mutableListOf())
-                chainAddressTypeMap.get(addressType)!!.add(chain)
+                chainAddressTypeMap.getValue(addressType).add(chain)
             }
         }
         val userAssignedAddresses = (assignedAddressHandler.fetchAssignedAddresses(user, addressTypes)).toMutableList()
         val result = mutableSetOf<AssignedAddress>()
         addressTypes.forEach { addressType ->
-            val assigned = userAssignedAddresses.firstOrNull { assignAddress -> assignAddress.type.equals(addressType) }
+            val assigned = userAssignedAddresses.firstOrNull { assignAddress -> assignAddress.type == addressType }
             if (assigned != null) {
-                chainAddressTypeMap.get(addressType)?.forEach { chain ->
+                chainAddressTypeMap[addressType]?.forEach { chain ->
                     if (!assigned.chains.contains(chain)) {
                         assigned.chains.add(chain)
                     }
@@ -50,7 +50,7 @@ class AssignAddressServiceImpl(
                         reservedAddress.address,
                         reservedAddress.memo,
                         addressType,
-                        chainAddressTypeMap.get(addressType)!!
+                        chainAddressTypeMap[addressType]!!
                     )
                     reservedAddressHandler.remove(reservedAddress)
                     result.add(newAssigned)

@@ -31,7 +31,7 @@ class PaymentGatewayController(
         val systemUuid = "1"
         val receiverWalletType = "main"
         val convertedAmount = when (request.currency) {
-            PaymentCurrency.RIALS -> (request.amount / 10).toLong()
+            PaymentCurrency.RIALS -> (request.amount / BigDecimal.valueOf(10)).toLong()
             PaymentCurrency.TOMAN -> request.amount.toLong()
         }
 
@@ -59,7 +59,7 @@ class PaymentGatewayController(
             TransferCommand(
                 sourceWallet,
                 receiverWallet,
-                Amount(sourceWallet.currency(), convertedAmount.toBigDecimal()),
+                Amount(sourceWallet.currency, convertedAmount.toBigDecimal()),
                 request.description,
                 request.reference,
                 emptyMap()

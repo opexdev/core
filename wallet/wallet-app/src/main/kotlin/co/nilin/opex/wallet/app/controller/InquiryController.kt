@@ -48,7 +48,7 @@ class InquiryController(
             if (wallet != null) {
                 return BooleanResponse(
                     walletManager.isWithdrawAllowed(wallet, amount)
-                            && walletOwnerManager.isWithdrawAllowed(owner, Amount(wallet.currency(), amount))
+                            && walletOwnerManager.isWithdrawAllowed(owner, Amount(wallet.currency, amount))
                 )
             }
         }

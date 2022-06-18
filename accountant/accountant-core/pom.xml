@@ -6,7 +6,7 @@
     <parent>
         <groupId>co.nilin.opex.accountant</groupId>
         <artifactId>accountant</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0.0-beta.3</version>
     </parent>
 
     <groupId>co.nilin.opex.accountant.core</groupId>
@@ -48,6 +48,14 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-tx</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito.kotlin</groupId>
+            <artifactId>mockito-kotlin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.mockk</groupId>
+            <artifactId>mockk</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -18,6 +18,7 @@ import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
+import java.math.BigDecimal
 
 @Component
 class CurrencyHandlerImpl(
@@ -53,42 +54,44 @@ class CurrencyHandlerImpl(
     }
 
     override suspend fun addCurrencyImplementation(
-        symbol: String,
+        currencySymbol: String,
+        implementationSymbol: String,
         chain: String,
         tokenName: String?,
         tokenAddress: String?,
         isToken: Boolean,
-        withdrawFee: Double,
-        minimumWithdraw: Double,
+        withdrawFee: BigDecimal,
+        minimumWithdraw: BigDecimal,
         isWithdrawEnabled: Boolean,
         decimal: Int
     ): CurrencyImplementation {
         val chainModel = chainRepository.findByName(chain).awaitFirstOrNull()
             ?: throw OpexException(OpexError.ChainNotFound)
 
-        currencyImplementationRepository.findBySymbolAndChain(symbol.uppercase(), chain)
+        currencyImplementationRepository.findByCurrencySymbolAndChain(currencySymbol.uppercase(), chain)
             .awaitFirstOrNull()
             ?.let { throw OpexException(OpexError.DuplicateToken) }
 
-        val currency = currencyRepository.findBySymbol(symbol.uppercase()).awaitFirstOrNull()
+        val currency = currencyRepository.findBySymbol(currencySymbol.uppercase()).awaitFirstOrNull()
             ?: throw OpexException(OpexError.CurrencyNotFoundBC)
 
         val model = currencyImplementationRepository.save(
             CurrencyImplementationModel(
                 null,
-                symbol.uppercase(),
+                currencySymbol.uppercase(),
+                implementationSymbol,
                 chainModel.name,
                 isToken,
                 tokenAddress,
                 tokenName,
                 isWithdrawEnabled,
-                withdrawFee.toBigDecimal(),
-                minimumWithdraw.toBigDecimal(),
+                withdrawFee,
+                minimumWithdraw,
                 decimal
             )
         ).awaitFirst()
 
-        logger.info("Add currency implementation: ${model.symbol} - ${model.chain}")
+        logger.info("Add currency implementation: ${model.currencySymbol} - ${model.chain}")
 
         return projectCurrencyImplementation(model, currency)
     }
@@ -98,7 +101,7 @@ class CurrencyHandlerImpl(
             .collectList()
             .awaitFirstOrElse { emptyList() }
             .map {
-                val currency = currencyRepository.findBySymbol(it.symbol).awaitFirstOrNull()
+                val currency = currencyRepository.findBySymbol(it.currencySymbol).awaitFirstOrNull()
                 projectCurrencyImplementation(it, currency)
             }
     }
@@ -109,7 +112,7 @@ class CurrencyHandlerImpl(
         if (currencyModel === null) {
             return CurrencyInfo(Currency("", symbolUpperCase), emptyList())
         }
-        val currencyImplModel = currencyImplementationRepository.findBySymbol(symbolUpperCase)
+        val currencyImplModel = currencyImplementationRepository.findByCurrencySymbol(symbolUpperCase)
         val currency = Currency(currencyModel.symbol, currencyModel.name)
         val implementations = currencyImplModel.map { projectCurrencyImplementation(it, currencyModel) }
         return CurrencyInfo(currency, implementations.toList())
@@ -130,7 +133,7 @@ class CurrencyHandlerImpl(
     }
 
     override suspend fun changeWithdrawStatus(symbol: String, chain: String, status: Boolean) {
-        val impl = currencyImplementationRepository.findBySymbolAndChain(symbol, chain).awaitSingleOrNull()
+        val impl = currencyImplementationRepository.findByCurrencySymbolAndChain(symbol, chain).awaitSingleOrNull()
             ?: throw OpexException(OpexError.TokenNotFound)
 
         impl.apply {
@@ -145,14 +148,12 @@ class CurrencyHandlerImpl(
     ): CurrencyImplementation {
         val addressTypesModel = chainRepository.findAddressTypesByName(currencyImplementationModel.chain)
         val addressTypes = addressTypesModel.map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }
-        val endpointsModel = chainRepository.findEndpointsByName(currencyImplementationModel.chain)
-        val endpoints = endpointsModel.map { Endpoint(it.url) }
         val currencyModelVal =
-            currencyModel ?: currencyRepository.findBySymbol(currencyImplementationModel.symbol).awaitSingle()
+            currencyModel ?: currencyRepository.findBySymbol(currencyImplementationModel.currencySymbol).awaitSingle()
         val currency = Currency(currencyModelVal.symbol, currencyModelVal.name)
         return CurrencyImplementation(
             currency,
-            Chain(currencyImplementationModel.chain, addressTypes.toList(), endpoints.toList()),
+            Chain(currencyImplementationModel.chain, addressTypes.toList()),
             currencyImplementationModel.token,
             currencyImplementationModel.tokenAddress,
             currencyImplementationModel.tokenName,

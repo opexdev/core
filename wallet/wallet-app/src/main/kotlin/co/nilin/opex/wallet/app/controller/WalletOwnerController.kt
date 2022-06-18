@@ -46,7 +46,7 @@ class WalletOwnerController(
             ?: throw OpexException(OpexError.WalletOwnerNotFound)
         val wallets = walletManager.findWalletsByOwner(owner)
         return wallets.map {
-            WalletData(it.currency().getSymbol(), it.balance().amount, it.type())
+            WalletData(it.currency.symbol, it.balance.amount, it.type)
         }
     }
 
@@ -64,6 +64,6 @@ class WalletOwnerController(
     suspend fun getWalletOwnerLimits(principal: Principal): OwnerLimitsResponse {
         val owner = walletOwnerManager.findWalletOwner(principal.name)
             ?: throw OpexException(OpexError.WalletOwnerNotFound)
-        return OwnerLimitsResponse(owner.isTradeAllowed(), owner.isWithdrawAllowed(), owner.isDepositAllowed())
+        return OwnerLimitsResponse(owner.isTradeAllowed, owner.isWithdrawAllowed, owner.isDepositAllowed)
     }
 }

@@ -11,7 +11,7 @@ spring:
     consumer:
       group-id: websocket
   r2dbc:
-    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex_api
+    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
     initialization-mode: always

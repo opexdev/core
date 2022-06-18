@@ -6,7 +6,7 @@
     <parent>
         <artifactId>core</artifactId>
         <groupId>co.nilin.opex</groupId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0.0-beta.3</version>
     </parent>
 
     <groupId>co.nilin.opex.accountant</groupId>
@@ -28,6 +28,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.mockk</groupId>
+            <artifactId>mockk</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

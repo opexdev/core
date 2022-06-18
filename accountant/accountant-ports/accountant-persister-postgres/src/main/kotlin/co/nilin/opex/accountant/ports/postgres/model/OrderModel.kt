@@ -10,16 +10,16 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Table("orders")
-class OrderModel(
+data class OrderModel(
     @Id var id: Long?,
     val ouid: String,
     val uuid: String,
     val pair: String,
     @Column(value = "matching_engine_id") val matchingEngineId: Long?,
-    @Column("maker_fee") val makerFee: Double,
-    @Column("taker_fee") val takerFee: Double,
-    @Column("left_side_fraction") val leftSideFraction: Double,
-    @Column("right_side_fraction") val rightSideFraction: Double,
+    @Column("maker_fee") val makerFee: BigDecimal,
+    @Column("taker_fee") val takerFee: BigDecimal,
+    @Column("left_side_fraction") val leftSideFraction: BigDecimal,
+    @Column("right_side_fraction") val rightSideFraction: BigDecimal,
     @Column("user_level") val userLevel: String,
     @Column("direction") val direction: OrderDirection,
     @Column("match_constraint") val matchConstraint: MatchConstraint,
