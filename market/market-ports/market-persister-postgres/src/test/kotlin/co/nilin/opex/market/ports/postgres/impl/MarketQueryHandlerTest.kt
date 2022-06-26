@@ -88,7 +88,7 @@ class MarketQueryHandlerTest {
 
         assertThat(priceTickerResponse).isNotNull
         assertThat(priceTickerResponse.size).isEqualTo(1)
-        assertThat(priceTickerResponse.first().symbol).isEqualTo("ETHUSDT")
+        assertThat(priceTickerResponse.first().symbol).isEqualTo("ETH_USDT")
         assertThat(priceTickerResponse.first().price).isEqualTo(VALID.TRADE_MODEL.let { it.makerPrice.min(it.takerPrice) }.toString())
     }
 
