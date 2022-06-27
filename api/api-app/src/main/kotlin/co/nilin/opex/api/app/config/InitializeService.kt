@@ -13,6 +13,7 @@ import javax.annotation.PostConstruct
 @Component
 @DependsOn("postgresConfig")
 class InitializeService(private val symbolMapRepository: SymbolMapRepository) {
+
     @Autowired
     private lateinit var preferences: Preferences
 

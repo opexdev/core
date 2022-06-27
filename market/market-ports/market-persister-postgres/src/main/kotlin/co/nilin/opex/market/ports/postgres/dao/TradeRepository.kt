@@ -19,6 +19,9 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
     @Query("select * from trades where :ouid in (taker_ouid, maker_ouid) ")
     fun findByOuid(@Param("ouid") ouid: String): Flow<TradeModel>
 
+    @Query("select * from trades where symbol = :symbol order by create_date desc limit 1")
+    fun findMostRecentBySymbol(symbol: String): Flow<TradeModel>
+
     @Query(
         """
         select * from trades where :uuid in (taker_uuid, maker_uuid) 
