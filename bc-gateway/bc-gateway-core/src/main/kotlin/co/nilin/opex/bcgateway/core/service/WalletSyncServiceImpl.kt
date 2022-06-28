@@ -13,6 +13,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import org.slf4j.Logger
 import org.springframework.stereotype.Service
@@ -31,21 +32,22 @@ class WalletSyncServiceImpl(
 
     @Transactional
     override suspend fun syncTransfers(transfers: List<Transfer>) = coroutineScope {
-        val deposits = transfers.asFlow().map {
+        val deposits = transfers.map {
             async {
-                val uuid = async {
-                    assignedAddressHandler.findUuid(it.receiver.address, it.receiver.memo)
-                        ?: throw IllegalStateException("Receiver not found")
+                coroutineScope {
+                    val currencyImpl = async {
+                        currencyHandler.findByChainAndTokenAddress(it.chain, it.tokenAddress)
+                            ?: throw IllegalStateException("Currency implementation not found")
+                    }
+                    val uuid = async { assignedAddressHandler.findUuid(it.receiver.address, it.receiver.memo) }
+                    uuid.await()?.let { it to currencyImpl.await() }
+                }?.let { (uuid, currencyImpl) ->
+                    sendDeposit(uuid, currencyImpl, it)
+                    logger.info("Deposit synced for $uuid on ${currencyImpl.currency.symbol} - to ${it.receiver.address}")
+                    it
                 }
-                val currencyImpl = async {
-                    currencyHandler.findByChainAndTokenAddress(it.chain, it.tokenAddress)
-                        ?: throw IllegalStateException("Currency implementation not found")
-                }
-                sendDeposit(uuid.await(), currencyImpl.await(), it)
-                logger.info("Deposit synced for $uuid on ${currencyImpl.await().currency.symbol} - to ${it.receiver.address}")
-                it
             }
-        }.map {
+        }.mapNotNull {
             it.await()
         }.map {
             Deposit(

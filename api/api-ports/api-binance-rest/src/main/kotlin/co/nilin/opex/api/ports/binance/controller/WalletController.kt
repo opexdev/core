@@ -77,7 +77,7 @@ class WalletController(
         if (deposits.isEmpty())
             return emptyList()
 
-        val details = bcGatewayProxy.getDepositDetails(deposits.map { it.ref ?: "" })
+        val details = bcGatewayProxy.getDepositDetails(deposits.filterNot { it.ref.isNullOrBlank() }.map { it.ref!! })
         return matchDepositsAndDetails(deposits, details)
     }
 
@@ -122,7 +122,7 @@ class WalletController(
             }
 
             WithdrawResponse(
-                it.destAddress ?: "0xusEraDdReS",
+                it.destAddress ?: "0x0",
                 it.amount,
                 LocalDateTime.ofInstant(Instant.ofEpochMilli(it.createDate), ZoneId.systemDefault())
                     .toString()
@@ -145,23 +145,26 @@ class WalletController(
         deposits: List<TransactionHistoryResponse>,
         details: List<DepositDetails>
     ): List<DepositResponse> {
-        return deposits.map { deposit ->
-            val detail = details.find { deposit.ref == it.hash }
-            DepositResponse(
-                deposit.amount,
-                deposit.currency,
-                detail?.chain ?: "",
-                1,
-                detail?.address ?: "0xusEraDdReS",
-                null,
-                deposit.ref ?: deposit.id.toString(),
-                deposit.date,
-                1,
-                "1/1",
-                "1/1",
-                deposit.date
-            )
+        val detailMap = details.associateBy { it.hash }
+        return deposits.associateWith {
+            detailMap[it.ref]
+        }.mapNotNull { (deposit, detail) ->
+            detail?.let {
+                DepositResponse(
+                    deposit.amount,
+                    deposit.currency,
+                    detail.chain,
+                    1,
+                    detail.address,
+                    null,
+                    deposit.ref ?: deposit.id.toString(),
+                    deposit.date,
+                    1,
+                    "1/1",
+                    "1/1",
+                    deposit.date
+                )
+            }
         }
     }
-
 }
