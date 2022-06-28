@@ -8,6 +8,7 @@ import co.nilin.opex.market.ports.postgres.dao.TradeRepository
 import co.nilin.opex.market.ports.postgres.model.TradeTickerData
 import co.nilin.opex.market.ports.postgres.util.asOrderDTO
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrElse
@@ -156,6 +157,24 @@ class MarketQueryHandlerImpl(
                     BigDecimal.ZERO
                 )
             }
+    }
+
+    override suspend fun numberOfActiveUsers(interval: LocalDateTime): Long {
+        return orderRepository.countUsersWhoMadeOrder(interval).singleOrNull() ?: 0L
+    }
+
+    override suspend fun numberOfTrades(interval: LocalDateTime, pair: String?): Long {
+        return if (pair != null)
+            tradeRepository.countBySymbolNewerThan(interval, pair).singleOrNull() ?: 0
+        else
+            tradeRepository.countNewerThan(interval).singleOrNull() ?: 0
+    }
+
+    override suspend fun numberOfOrders(interval: LocalDateTime, pair: String?): Long {
+        return if (pair != null)
+            orderRepository.countBySymbolNewerThan(interval, pair).singleOrNull() ?: 0
+        else
+            orderRepository.countNewerThan(interval).singleOrNull() ?: 0
     }
 
     private fun TradeTickerData.asPriceChangeResponse(openTime: Long, closeTime: Long) = PriceChange(

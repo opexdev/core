@@ -27,4 +27,10 @@ interface MarketQueryHandler {
         limit: Int
     ): List<CandleData>
 
+    suspend fun numberOfActiveUsers(interval: LocalDateTime): Long
+
+    suspend fun numberOfTrades(interval: LocalDateTime, pair: String? = null): Long
+
+    suspend fun numberOfOrders(interval: LocalDateTime, pair: String? = null): Long
+
 }

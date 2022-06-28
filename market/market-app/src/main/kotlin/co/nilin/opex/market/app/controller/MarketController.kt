@@ -1,11 +1,14 @@
 package co.nilin.opex.market.app.controller
 
+import co.nilin.opex.market.app.data.CountResponse
+import co.nilin.opex.market.app.utils.asLocalDateTime
 import co.nilin.opex.market.core.inout.*
 import co.nilin.opex.market.core.spi.MarketQueryHandler
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDateTime
+import java.util.*
 
 @RestController
 @RequestMapping("/v1/market")
@@ -53,6 +56,30 @@ class MarketController(private val marketQueryHandler: MarketQueryHandler) {
     @GetMapping("/prices")
     suspend fun getLastPriceForSymbol(@RequestParam(required = false) symbol: String?): List<PriceTicker> {
         return marketQueryHandler.lastPrice(symbol)
+    }
+
+    @GetMapping("/active-users")
+    suspend fun getNumberOfActiveUsers(@RequestParam interval: Long): CountResponse {
+        val active = marketQueryHandler.numberOfActiveUsers(Date(interval).asLocalDateTime())
+        return CountResponse(active)
+    }
+
+    @GetMapping("/orders-count")
+    suspend fun getNumberOfOrders(
+        @RequestParam interval: Long,
+        @RequestParam(required = false) symbol: String?
+    ): CountResponse {
+        val count = marketQueryHandler.numberOfOrders(Date(interval).asLocalDateTime(), symbol)
+        return CountResponse(count)
+    }
+
+    @GetMapping("/trades-count")
+    suspend fun getNumberOfTrades(
+        @RequestParam interval: Long,
+        @RequestParam(required = false) symbol: String?
+    ): CountResponse {
+        val count = marketQueryHandler.numberOfTrades(Date(interval).asLocalDateTime(), symbol)
+        return CountResponse(count)
     }
 
 }

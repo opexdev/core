@@ -10,6 +10,7 @@ import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.time.LocalDateTime
 import java.util.*
 
 @Repository
@@ -19,7 +20,7 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
     fun findByOuid(@Param("ouid") ouid: String): Mono<OrderModel>
 
     @Query("select * from orders where uuid = :uuid and ouid = :ouid")
-    fun findByUUIDAndOUID(@Param("uuid") uuid:String, @Param("ouid") ouid: String): Mono<OrderModel>
+    fun findByUUIDAndOUID(@Param("uuid") uuid: String, @Param("ouid") ouid: String): Mono<OrderModel>
 
     @Query("select * from orders where symbol = :symbol and order_id = :orderId")
     fun findBySymbolAndOrderId(
@@ -118,4 +119,13 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
 
     @Query("select * from orders where symbol = :symbol order by create_date desc limit 1")
     fun findLastOrderBySymbol(@Param("symbol") symbol: String): Mono<OrderModel>
+
+    @Query("select count(distinct uuid) from orders where create_date >= :interval")
+    fun countUsersWhoMadeOrder(interval: LocalDateTime): Flow<Long>
+
+    @Query("select count(*) from orders where create_date >= :interval")
+    fun countNewerThan(interval: LocalDateTime): Flow<Long>
+
+    @Query("select count(*) from orders where symbol = :symbol and create_date >= :interval")
+    fun countBySymbolNewerThan(interval: LocalDateTime, symbol: String): Flow<Long>
 }

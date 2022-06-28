@@ -16,7 +16,7 @@ import java.util.*
 @Repository
 interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
 
-    @Query("select * from trades where :ouid in (taker_ouid, maker_ouid) ")
+    @Query("select * from trades where :ouid in (taker_ouid, maker_ouid)")
     fun findByOuid(@Param("ouid") ouid: String): Flow<TradeModel>
 
     @Query("select * from trades where symbol = :symbol order by create_date desc limit 1")
@@ -192,4 +192,10 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
 
     @Query("select * from trades order by create_date asc limit 1")
     suspend fun findFirstByCreateDate(): Mono<TradeModel>
+
+    @Query("select count(*) from trades where create_date >= :interval")
+    fun countNewerThan(interval: LocalDateTime): Flow<Long>
+
+    @Query("select count(*) from trades where symbol = :symbol and create_date >= :interval")
+    fun countBySymbolNewerThan(interval: LocalDateTime, symbol: String): Flow<Long>
 }
