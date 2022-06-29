@@ -54,6 +54,15 @@ CREATE TABLE IF NOT EXISTS trades
     create_date            TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS currency_rate
+(
+    id          SERIAL PRIMARY KEY,
+    source      VARCHAR(25) NOT NULL,
+    destination VARCHAR(25) NOT NULL,
+    rate        DECIMAL     NOT NULL,
+    UNIQUE (source, destination)
+);
+
 CREATE OR REPLACE FUNCTION interval_generator(
     start_ts TIMESTAMP without TIME ZONE,
     end_ts TIMESTAMP without TIME ZONE,

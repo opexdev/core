@@ -2,6 +2,7 @@ package co.nilin.opex.market.ports.postgres.impl
 
 import co.nilin.opex.market.core.event.RichTrade
 import co.nilin.opex.market.core.spi.TradePersister
+import co.nilin.opex.market.ports.postgres.dao.CurrencyRateRepository
 import co.nilin.opex.market.ports.postgres.dao.TradeRepository
 import co.nilin.opex.market.ports.postgres.model.TradeModel
 import kotlinx.coroutines.reactive.awaitFirstOrNull
@@ -11,7 +12,10 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Component
-class TradePersisterImpl(private val tradeRepository: TradeRepository) : TradePersister {
+class TradePersisterImpl(
+    private val tradeRepository: TradeRepository,
+    private val currencyRateRepository: CurrencyRateRepository
+) : TradePersister {
 
     private val logger = LoggerFactory.getLogger(TradePersisterImpl::class.java)
 
@@ -38,5 +42,13 @@ class TradePersisterImpl(private val tradeRepository: TradeRepository) : TradePe
             )
         ).awaitFirstOrNull()
         logger.info("RichTrade ${trade.id} saved")
+
+        val pair = trade.pair.split("_")
+        currencyRateRepository.createOrUpdate(
+            pair[0].uppercase(),
+            pair[1].uppercase(),
+            trade.takerPrice
+        ).awaitFirstOrNull()
+        logger.info("Rate between ${pair[0]} and ${pair[1]} updated")
     }
 }

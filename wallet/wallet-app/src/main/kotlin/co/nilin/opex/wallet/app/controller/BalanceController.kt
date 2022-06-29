@@ -19,7 +19,8 @@ import java.security.Principal
 class BalanceController(
     val walletManager: WalletManager, val walletOwnerManager: WalletOwnerManager, val currencyService: CurrencyService
 ) {
-    val logger = LoggerFactory.getLogger(BalanceController::class.java)
+
+    private val logger = LoggerFactory.getLogger(BalanceController::class.java)
 
     data class BalanceResponse(val balance: BigDecimal)
 

@@ -6,6 +6,6 @@ interface MarketRateService {
 
     suspend fun priceOfCurrency(currency: String, basedOnCurrency: String): CurrencyPrice
 
-    suspend fun priceOfAllCurrencies(currency: String): List<CurrencyPrice>
+    suspend fun priceOfAllCurrencies(basedOn: String): List<CurrencyPrice>
 
 }
