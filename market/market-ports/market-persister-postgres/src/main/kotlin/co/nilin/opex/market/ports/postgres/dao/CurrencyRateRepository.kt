@@ -30,7 +30,7 @@ interface CurrencyRateRepository : ReactiveCrudRepository<CurrencyRateModel, Lon
     @Query(
         """
         select a.source, b.destination, (a.rate * b.rate) as rate from currency_rate as a
-        join currency_rate b on a.destionation = b.source
+        join currency_rate b on a.destination = b.source
         where a.source = :source and b.destination = :destination
         """
     )
@@ -39,7 +39,7 @@ interface CurrencyRateRepository : ReactiveCrudRepository<CurrencyRateModel, Lon
     @Query(
         """
         select a.source, b.destination, (a.rate * b.rate) as rate from currency_rate as a
-        join currency_rate b on a.destionation = b.source
+        join currency_rate b on a.destination = b.source
         where b.destination = :destination
         """
     )

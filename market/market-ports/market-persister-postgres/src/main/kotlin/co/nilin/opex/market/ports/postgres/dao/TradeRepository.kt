@@ -198,4 +198,7 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
 
     @Query("select count(*) from trades where symbol = :symbol and create_date >= :interval")
     fun countBySymbolNewerThan(interval: LocalDateTime, symbol: String): Flow<Long>
+
+    @Query("select * from trades")
+    fun findByMostIncreasedPrice(since: LocalDateTime): Mono<TradeModel>
 }

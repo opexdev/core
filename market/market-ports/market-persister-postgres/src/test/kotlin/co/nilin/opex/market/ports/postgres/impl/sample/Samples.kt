@@ -90,6 +90,7 @@ object VALID {
         1,
         1,
         ETH_USDT,
+        BigDecimal.valueOf(100000),
         BigDecimal.valueOf(0.001), // Minimum of orders quantities
         BigDecimal.valueOf(100000),
         BigDecimal.valueOf(100000),
@@ -167,6 +168,7 @@ object VALID {
         BigDecimal.valueOf(0),
         BigDecimal.valueOf(0),
         "USDT",
+        BigDecimal.valueOf(0),
         BigDecimal.valueOf(0),
         CREATE_DATE
     )

@@ -81,7 +81,7 @@ class MarketQueryHandlerImpl(
                 MarketTrade(
                     it.symbol,
                     it.tradeId,
-                    if (isMakerBuyer) it.makerPrice else it.takerPrice,
+                    it.matchedPrice,
                     it.matchedQuantity,
                     if (isMakerBuyer)
                         makerOrder.quoteQuantity!!
@@ -101,19 +101,7 @@ class MarketQueryHandlerImpl(
             tradeRepository.findBySymbolGroupBySymbol(symbol)
         return list.collectList()
             .awaitFirstOrElse { emptyList() }
-            .map {
-                //TODO use query
-                val makerOrder = orderRepository.findByOuid(it.makerOuid).awaitFirst()
-                val isMakerBuyer = makerOrder.direction == OrderDirection.BID
-                PriceTicker(
-                    it.symbol,
-                    if (isMakerBuyer)
-                        it.takerPrice.min(it.makerPrice).toString()
-                    else
-                        it.takerPrice.max(it.makerPrice).toString()
-                )
-            }
-
+            .map { PriceTicker(it.symbol, it.matchedPrice.toString()) }
     }
 
     override suspend fun getCandleInfo(

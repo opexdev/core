@@ -1,6 +1,6 @@
 package co.nilin.opex.market.ports.postgres.impl
 
-import co.nilin.opex.market.core.inout.CurrencyPrice
+import co.nilin.opex.market.core.inout.CurrencyRate
 import co.nilin.opex.market.core.spi.MarketRateService
 import co.nilin.opex.market.ports.postgres.dao.CurrencyRateRepository
 import kotlinx.coroutines.reactive.awaitFirstOrElse
@@ -12,21 +12,21 @@ import java.math.BigDecimal
 @Component
 class MarketRateServiceImpl(private val rateRepository: CurrencyRateRepository) : MarketRateService {
 
-    override suspend fun priceOfCurrency(currency: String, basedOnCurrency: String): CurrencyPrice {
+    override suspend fun currencyRate(currency: String, basedOnCurrency: String): CurrencyRate {
         val rate = rateRepository.findBySourceAndDestination(currency, basedOnCurrency).awaitSingleOrNull()
             ?: rateRepository.findBySourceAndDestinationIndirect(currency, basedOnCurrency).awaitFirstOrNull()
-        return CurrencyPrice(
+        return CurrencyRate(
             currency,
             basedOnCurrency,
             rate?.rate ?: BigDecimal.ZERO
         )
     }
 
-    override suspend fun priceOfAllCurrencies(basedOn: String): List<CurrencyPrice> {
+    override suspend fun currencyRate(basedOn: String): List<CurrencyRate> {
         return rateRepository.findAllByDestinationCurrency(basedOn)
             .collectList()
             .switchIfEmpty(rateRepository.findAllByDestinationCurrencyIndirect(basedOn).collectList())
             .awaitFirstOrElse { emptyList() }
-            .map { CurrencyPrice(it.sourceCurrency, it.destinationCurrency, it.rate) }
+            .map { CurrencyRate(it.sourceCurrency, it.destinationCurrency, it.rate) }
     }
 }

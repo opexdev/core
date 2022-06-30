@@ -2,8 +2,8 @@ package co.nilin.opex.market.core.inout
 
 import java.math.BigDecimal
 
-data class CurrencyPrice(
+data class CurrencyRate(
     val currency: String,
     val basedOn: String,
-    val price: BigDecimal
+    val rate: BigDecimal
 )

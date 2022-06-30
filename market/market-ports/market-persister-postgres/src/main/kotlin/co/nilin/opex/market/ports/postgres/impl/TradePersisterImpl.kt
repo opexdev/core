@@ -26,6 +26,7 @@ class TradePersisterImpl(
                 null,
                 trade.id,
                 trade.pair,
+                trade.matchedPrice,
                 trade.matchedQuantity,
                 trade.takerPrice,
                 trade.makerPrice,
@@ -47,7 +48,7 @@ class TradePersisterImpl(
         currencyRateRepository.createOrUpdate(
             pair[0].uppercase(),
             pair[1].uppercase(),
-            trade.takerPrice
+            trade.matchedPrice
         ).awaitFirstOrNull()
         logger.info("Rate between ${pair[0]} and ${pair[1]} updated")
     }

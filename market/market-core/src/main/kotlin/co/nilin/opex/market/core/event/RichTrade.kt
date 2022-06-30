@@ -27,6 +27,7 @@ class RichTrade(
     val makerRemainedQuantity: BigDecimal,
     val makerCommision: BigDecimal,
     val makerCommisionAsset: String,
+    val matchedPrice: BigDecimal,
     val matchedQuantity: BigDecimal,
     val tradeDateTime: LocalDateTime
 )
