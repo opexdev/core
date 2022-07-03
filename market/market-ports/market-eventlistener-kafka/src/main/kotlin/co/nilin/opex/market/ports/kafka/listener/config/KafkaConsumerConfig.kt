@@ -84,7 +84,7 @@ class KafkaConsumerConfig {
 
     private fun createConsumerErrorHandler(kafkaTemplate: KafkaTemplate<*, *>, dltTopic: String): CommonErrorHandler {
         val recoverer = DeadLetterPublishingRecoverer(kafkaTemplate) { cr, _ ->
-            cr.headers().add("dlt-origin-module", "market".toByteArray())
+            cr.headers().add("dlt-origin-module", "MARKET".toByteArray())
             TopicPartition(dltTopic, cr.partition())
         }
         return DefaultErrorHandler(recoverer, FixedBackOff(5_000, 20))

@@ -27,6 +27,6 @@ class MarketRateServiceImpl(private val rateRepository: CurrencyRateRepository) 
             .collectList()
             .switchIfEmpty(rateRepository.findAllByDestinationCurrencyIndirect(basedOn).collectList())
             .awaitFirstOrElse { emptyList() }
-            .map { CurrencyRate(it.sourceCurrency, it.destinationCurrency, it.rate) }
+            .map { CurrencyRate(it.source, it.destination, it.rate) }
     }
 }

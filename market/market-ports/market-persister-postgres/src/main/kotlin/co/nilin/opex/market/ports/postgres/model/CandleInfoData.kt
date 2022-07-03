@@ -5,9 +5,7 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 data class CandleInfoData(
-    @Column("open_time")
     val openTime: LocalDateTime,
-    @Column("close_time")
     val closeTime: LocalDateTime,
     val open: BigDecimal?,
     val close: BigDecimal?,

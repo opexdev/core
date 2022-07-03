@@ -7,7 +7,7 @@ import java.math.BigDecimal
 @Table("currency_rate")
 data class CurrencyRateModel(
     @Id val id: Long? = null,
-    val sourceCurrency: String,
-    val destinationCurrency: String,
+    val source: String,
+    val destination: String,
     val rate: BigDecimal
 )

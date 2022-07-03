@@ -13,27 +13,24 @@ import java.time.LocalDateTime
 @Table("orders")
 data class OrderModel(
     @Id var id: Long?,
-    @Column(value = "ouid")
     val ouid: String,
     val uuid: String,
-    @Column(value = "client_order_id")
     val clientOrderId: String?,
     val symbol: String,
-    @Column(value = "order_id") val orderId: Long?,
-    @Column("maker_fee") val makerFee: BigDecimal?,
-    @Column("taker_fee") val takerFee: BigDecimal?,
-    @Column("left_side_fraction") val leftSideFraction: BigDecimal?,
-    @Column("right_side_fraction") val rightSideFraction: BigDecimal?,
-    @Column("user_level") val userLevel: String?,
+    val orderId: Long?,
+    val makerFee: BigDecimal?,
+    val takerFee: BigDecimal?,
+    val leftSideFraction: BigDecimal?,
+    val rightSideFraction: BigDecimal?,
+    val userLevel: String?,
     @Column("side") val direction: OrderDirection?,
     @Column("match_constraint") val constraint: MatchConstraint?,
     @Column("order_type") val type: MatchingOrderType?,
-    @Column("price") val price: BigDecimal?,
-    @Column("quantity") val quantity: BigDecimal?,
-    @Column("quote_quantity") val quoteQuantity: BigDecimal?,
-    @Column("create_date") val createDate: LocalDateTime?,
-    @Column("update_date") val updateDate: LocalDateTime,
+    val price: BigDecimal?,
+    val quantity: BigDecimal?,
+    val quoteQuantity: BigDecimal?,
+    val createDate: LocalDateTime?,
+    val updateDate: LocalDateTime,
     @Version
-    @Column("version")
     var version: Long? = null
 )

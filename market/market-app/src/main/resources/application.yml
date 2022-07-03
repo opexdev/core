@@ -45,14 +45,6 @@ spring:
   config:
     import: vault://secret/${spring.application.name}
 app:
-  accountant:
-    url: lb://opex-accountant
-  matching-gateway:
-    url: lb://opex-matching-gateway
-  wallet:
-    url: lb://opex-wallet
-  opex-bc-gateway:
-    url: lb://opex-bc-gateway
   auth:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
 swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
