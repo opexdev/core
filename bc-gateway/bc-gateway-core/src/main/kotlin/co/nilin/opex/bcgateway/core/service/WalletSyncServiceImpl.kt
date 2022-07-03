@@ -28,7 +28,6 @@ class WalletSyncServiceImpl(
 
     @Transactional
     override suspend fun syncTransfers(transfers: List<Transfer>) = coroutineScope {
-        logger.debug("Received ${transfers.size} number of transfers")
         val groupedByChain = currencyHandler.fetchAllImplementations().groupBy { it.chain.name }
         val deposits = transfers.map {
             async {
