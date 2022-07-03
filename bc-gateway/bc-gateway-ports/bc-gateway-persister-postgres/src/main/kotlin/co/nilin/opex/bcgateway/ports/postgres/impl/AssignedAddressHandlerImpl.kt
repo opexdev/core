@@ -23,29 +23,26 @@ class AssignedAddressHandlerImpl(
 ) : AssignedAddressHandler {
     override suspend fun fetchAssignedAddresses(user: String, addressTypes: List<AddressType>): List<AssignedAddress> {
         if (addressTypes.isEmpty()) return emptyList()
+        val addressTypeMap = addressTypeRepository.findAll().map { aam ->
+            AddressType(aam.id!!, aam.type, aam.addressRegex, aam.memoRegex)
+        }.collectMap { it.id }.awaitFirst()
         return assignedAddressRepository.findByUuidAndAddressType(
             user, addressTypes.map(AddressType::id)
-        )
-            .map { model ->
-                AssignedAddress(
-                    model.uuid, model.address, model.memo,
-                    addressTypeRepository
-                        .findById(model.addressTypeId)
-                        .map { aam ->
-                            AddressType(aam.id!!, aam.type, aam.addressRegex, aam.memoRegex)
-                        }
-                        .awaitFirst(),
-                    assignedAddressChainRepository.findByAssignedAddress(model.id!!)
-                        .map { cm ->
-                            chainLoader.fetchChainInfo(cm.chain)
-                        }
-                        .toList().toMutableList()
-                )
-            }.toList()
+        ).map { model ->
+            AssignedAddress(
+                model.uuid,
+                model.address,
+                model.memo,
+                addressTypeMap.getValue(model.addressTypeId),
+                assignedAddressChainRepository.findByAssignedAddress(model.id!!).map { cm ->
+                    chainLoader.fetchChainInfo(cm.chain)
+                }.toList().toMutableList()
+            )
+        }.toList()
     }
 
     override suspend fun persist(assignedAddress: AssignedAddress) {
-        try {
+        runCatching {
             assignedAddressRepository.save(
                 AssignedAddressModel(
                     null,
@@ -55,8 +52,6 @@ class AssignedAddressHandlerImpl(
                     assignedAddress.type.id
                 )
             ).awaitFirst()
-        } catch (e: Exception) {
-
         }
     }
 
