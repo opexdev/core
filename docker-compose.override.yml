@@ -24,7 +24,7 @@ services:
     volumes:
       - "./preferences-dev.yml:/preferences.yml"
   market:
-    build: api/api-app
+    build: market/market-app
   api:
     build: api/api-app
     volumes:

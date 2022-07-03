@@ -26,7 +26,7 @@ services:
     build: wallet/wallet-app
   market:
     image: ghcr.io/opexdev/wallet:$TAG
-    build: wallet/market-app
+    build: market/market-app
   api:
     image: ghcr.io/opexdev/api:$TAG
     build: api/api-app
