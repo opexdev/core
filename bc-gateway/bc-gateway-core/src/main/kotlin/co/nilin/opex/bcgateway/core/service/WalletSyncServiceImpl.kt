@@ -11,10 +11,6 @@ import co.nilin.opex.bcgateway.core.spi.WalletProxy
 import co.nilin.opex.bcgateway.core.utils.LoggerDelegate
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.toList
 import org.slf4j.Logger
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -32,15 +28,14 @@ class WalletSyncServiceImpl(
 
     @Transactional
     override suspend fun syncTransfers(transfers: List<Transfer>) = coroutineScope {
+        logger.debug("Received ${transfers.size} number of transfers")
+        val groupedByChain = currencyHandler.fetchAllImplementations().groupBy { it.chain.name }
         val deposits = transfers.map {
             async {
                 coroutineScope {
-                    val currencyImpl = async {
-                        currencyHandler.findByChainAndTokenAddress(it.chain, it.tokenAddress)
-                            ?: throw IllegalStateException("Currency implementation not found")
-                    }
-                    val uuid = async { assignedAddressHandler.findUuid(it.receiver.address, it.receiver.memo) }
-                    uuid.await()?.let { it to currencyImpl.await() }
+                    val currencyImpl = groupedByChain[it.chain]?.find { c -> c.tokenAddress == it.tokenAddress }
+                        ?: throw IllegalStateException("Currency implementation not found")
+                    assignedAddressHandler.findUuid(it.receiver.address, it.receiver.memo)?.let { it to currencyImpl }
                 }?.let { (uuid, currencyImpl) ->
                     sendDeposit(uuid, currencyImpl, it)
                     logger.info("Deposit synced for $uuid on ${currencyImpl.currency.symbol} - to ${it.receiver.address}")
