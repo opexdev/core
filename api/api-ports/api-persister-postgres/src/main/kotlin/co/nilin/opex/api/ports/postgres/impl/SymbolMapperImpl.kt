@@ -9,12 +9,12 @@ import org.springframework.stereotype.Component
 @Component
 class SymbolMapperImpl(val symbolMapRepository: SymbolMapRepository) : SymbolMapper {
 
-    override suspend fun map(symbol: String?): String? {
+    override suspend fun fromInternalSymbol(symbol: String?): String? {
         if (symbol == null) return null
         return symbolMapRepository.findByAliasKeyAndSymbol("binance", symbol).awaitFirstOrNull()?.alias
     }
 
-    override suspend fun unmap(alias: String?): String? {
+    override suspend fun toInternalSymbol(alias: String?): String? {
         if (alias == null) return null
         return symbolMapRepository.findByAliasKeyAndAlias("binance", alias).awaitFirstOrNull()?.symbol
     }

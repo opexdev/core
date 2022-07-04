@@ -158,7 +158,7 @@ class WalletController(
         timestamp: Long
     ): List<PairFeeResponse> {
         return if (symbol != null) {
-            val internalSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+            val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
 
             val fee = accountantProxy.getFeeConfig(internalSymbol)
             arrayListOf<PairFeeResponse>().apply {
@@ -175,7 +175,7 @@ class WalletController(
                 .distinctBy { it.pair }
                 .map {
                     PairFeeResponse(
-                        symbolMapper.map(it.pair) ?: it.pair,
+                        symbolMapper.fromInternalSymbol(it.pair) ?: it.pair,
                         it.makerFee.toDouble(),
                         it.takerFee.toDouble()
                     )

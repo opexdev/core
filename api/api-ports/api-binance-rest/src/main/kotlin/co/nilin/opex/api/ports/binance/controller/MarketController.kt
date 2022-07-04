@@ -41,7 +41,7 @@ class MarketController(
         limit: Int? // Default 100; max 5000. Valid limits:[5, 10, 20, 50, 100, 500, 1000, 5000]
     ): OrderBookResponse {
         val validLimit = limit ?: 100
-        val localSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+        val localSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
         if (!orderBookValidLimits.contains(validLimit))
             throwError(OpexError.InvalidLimitForOrderBook)
 
@@ -80,7 +80,7 @@ class MarketController(
         limit: Int? // Default 500; max 1000.
     ): List<RecentTradeResponse> {
         val validLimit = limit ?: 500
-        val localSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+        val localSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
         if (validLimit !in 1..1000)
             throwError(OpexError.InvalidLimitForRecentTrades)
 
@@ -108,7 +108,7 @@ class MarketController(
         val localSymbol = if (symbol.isNullOrEmpty())
             null
         else
-            symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+            symbolMapper.toInternalSymbol(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
 
         if (!validDurations.contains(duration))
             throwError(OpexError.InvalidPriceChangeDuration)
@@ -129,7 +129,7 @@ class MarketController(
         val localSymbol = if (symbol == null)
             null
         else
-            symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+            symbolMapper.toInternalSymbol(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
         return marketDataProxy.lastPrice(localSymbol)
     }
 
@@ -171,7 +171,7 @@ class MarketController(
         limit: Int? // Default 500; max 1000.
     ): List<List<Any>> {
         val validLimit = limit ?: 500
-        val localSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+        val localSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
         if (validLimit !in 1..1000)
             throwError(OpexError.InvalidLimitForRecentTrades)
 

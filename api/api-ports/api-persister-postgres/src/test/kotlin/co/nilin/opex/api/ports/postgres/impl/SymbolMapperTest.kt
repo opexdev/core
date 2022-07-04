@@ -32,14 +32,14 @@ class SymbolMapperTest {
 
     @Test
     fun givenSymbolAlias_whenMapSymbol_thenReturnAlias(): Unit = runBlocking {
-        val alis = symbolMapper.map(VALID.ETH_USDT)
+        val alis = symbolMapper.fromInternalSymbol(VALID.ETH_USDT)
 
         assertThat(alis).isEqualTo("ETHUSDT")
     }
 
     @Test
     fun givenSymbolAlias_whenUnmapAlias_thenReturnSymbol(): Unit = runBlocking {
-        val symbol = symbolMapper.unmap("ETHUSDT")
+        val symbol = symbolMapper.toInternalSymbol("ETHUSDT")
 
         assertThat(symbol).isEqualTo(VALID.ETH_USDT)
     }
