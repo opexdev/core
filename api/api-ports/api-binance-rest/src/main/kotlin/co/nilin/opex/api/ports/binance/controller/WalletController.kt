@@ -2,14 +2,19 @@ package co.nilin.opex.api.ports.binance.controller
 
 import co.nilin.opex.api.core.inout.DepositDetails
 import co.nilin.opex.api.core.inout.TransactionHistoryResponse
+import co.nilin.opex.api.core.spi.AccountantProxy
 import co.nilin.opex.api.core.spi.BlockchainGatewayProxy
+import co.nilin.opex.api.core.spi.SymbolMapper
 import co.nilin.opex.api.core.spi.WalletProxy
+import co.nilin.opex.api.core.utils.Interval
 import co.nilin.opex.api.ports.binance.data.AssignAddressResponse
 import co.nilin.opex.api.ports.binance.data.DepositResponse
-import co.nilin.opex.api.core.utils.Interval
+import co.nilin.opex.api.ports.binance.data.PairFeeResponse
 import co.nilin.opex.api.ports.binance.data.WithdrawResponse
 import co.nilin.opex.api.ports.binance.util.jwtAuthentication
 import co.nilin.opex.api.ports.binance.util.tokenValue
+import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.utility.error.data.OpexException
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.GetMapping
@@ -23,6 +28,8 @@ import java.util.*
 @RestController
 class WalletController(
     private val walletProxy: WalletProxy,
+    private val symbolMapper: SymbolMapper,
+    private val accountantProxy: AccountantProxy,
     private val bcGatewayProxy: BlockchainGatewayProxy
 ) {
 
@@ -139,6 +146,40 @@ class WalletController(
                 if (status == 1 && it.acceptDate != null) it.acceptDate!! else it.createDate
             )
         }
+    }
+
+    @GetMapping("/v1/asset/tradeFee")
+    suspend fun getPairFees(
+        @RequestParam(required = false)
+        symbol: String?,
+        @RequestParam(required = false)
+        recvWindow: Long?, //The value cannot be greater than 60000
+        @RequestParam(name = "timestamp")
+        timestamp: Long
+    ): List<PairFeeResponse> {
+        return if (symbol != null) {
+            val internalSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+
+            val fee = accountantProxy.getFeeConfig(internalSymbol)
+            arrayListOf<PairFeeResponse>().apply {
+                add(
+                    PairFeeResponse(
+                        symbol,
+                        fee.makerFee.toDouble(),
+                        fee.takerFee.toDouble()
+                    )
+                )
+            }
+        } else
+            accountantProxy.getFeeConfigs()
+                .distinctBy { it.pair }
+                .map {
+                    PairFeeResponse(
+                        symbolMapper.map(it.pair) ?: it.pair,
+                        it.makerFee.toDouble(),
+                        it.takerFee.toDouble()
+                    )
+                }
     }
 
     private fun matchDepositsAndDetails(

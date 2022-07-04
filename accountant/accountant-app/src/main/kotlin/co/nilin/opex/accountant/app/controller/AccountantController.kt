@@ -9,9 +9,12 @@ import co.nilin.opex.accountant.core.spi.WalletProxy
 import co.nilin.opex.accountant.ports.walletproxy.data.BooleanResponse
 import co.nilin.opex.matching.engine.core.eventh.events.SubmitOrderEvent
 import co.nilin.opex.matching.engine.core.model.OrderDirection
+import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.utility.error.data.OpexException
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.math.BigDecimal
 
@@ -59,9 +62,20 @@ class AccountantController(
         return pairConfigLoader.loadPairConfigs()
     }
 
-    @GetMapping("/config/fee/all")
-    suspend fun fetchFeeConfigs(): List<PairFeeResponse> {
+    @GetMapping("/config/fee")
+    suspend fun getFeeConfigs(): List<PairFeeResponse> {
         return pairConfigLoader.loadPairFeeConfigs()
             .map { PairFeeResponse(it.pairConfig.pair, it.direction, it.userLevel, it.makerFee, it.takerFee) }
+    }
+
+    @GetMapping("/config/fee/{pair}")
+    suspend fun getFeeConfig(
+        @PathVariable pair: String,
+        @RequestParam(required = false) direction: OrderDirection?,
+        @RequestParam(required = false) userLevel: String?
+    ): PairFeeResponse {
+        val fee = pairConfigLoader.loadPairFeeConfigs(pair, direction ?: OrderDirection.BID, userLevel ?: "*")
+            ?: throw OpexException(OpexError.PairFeeNotFound)
+        return PairFeeResponse(fee.pairConfig.pair, fee.direction, fee.userLevel, fee.makerFee, fee.takerFee)
     }
 }

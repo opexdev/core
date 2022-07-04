@@ -10,6 +10,7 @@ import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToFlux
+import org.springframework.web.reactive.function.client.bodyToMono
 
 @Component
 class AccountantProxyImpl(private val webClient: WebClient) : AccountantProxy {
@@ -34,12 +35,23 @@ class AccountantProxyImpl(private val webClient: WebClient) : AccountantProxy {
     override suspend fun getFeeConfigs(): List<PairFeeResponse> {
         logger.info("fetching fee configs")
         return webClient.get()
-            .uri("$baseUrl/config/fee/all")
+            .uri("$baseUrl/config/fee")
             .accept(MediaType.APPLICATION_JSON)
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToFlux<PairFeeResponse>()
             .collectList()
+            .awaitSingle()
+    }
+
+    override suspend fun getFeeConfig(symbol: String): PairFeeResponse {
+        logger.info("fetching fee configs")
+        return webClient.get()
+            .uri("$baseUrl/config/fee/$symbol")
+            .accept(MediaType.APPLICATION_JSON)
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<PairFeeResponse>()
             .awaitSingle()
     }
 }
