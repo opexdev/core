@@ -4,6 +4,7 @@ import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.app.dto.OwnerLimitsResponse
 import co.nilin.opex.wallet.app.dto.WalletData
+import co.nilin.opex.wallet.app.utils.BalanceParser
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import io.swagger.annotations.ApiResponse
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.security.Principal
 
 @RestController
 @RequestMapping("/v1/owner")
@@ -37,7 +37,7 @@ class WalletOwnerController(
         val owner = walletOwnerManager.findWalletOwner(uuid)
             ?: throw OpexException(OpexError.WalletOwnerNotFound)
         val wallets = walletManager.findWalletsByOwner(owner)
-        return wallets.map { WalletData(it.currency.symbol, it.balance.amount, it.type) }
+        return BalanceParser.parse(wallets)
     }
 
     @GetMapping("/{uuid}/limits")

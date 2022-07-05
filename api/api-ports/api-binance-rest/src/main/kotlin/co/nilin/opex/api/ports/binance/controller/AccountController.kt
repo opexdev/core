@@ -388,7 +388,6 @@ class AccountController(
         val auth = securityContext.jwtAuthentication()
         val wallets = walletProxy.getWallets(auth.name, auth.tokenValue())
         val limits = walletProxy.getOwnerLimits(auth.name, auth.tokenValue())
-        val parsedBalances = BalanceParser.parse(wallets)
         val accountType = "SPOT"
 
         //TODO replace commissions and accountType with actual data
@@ -402,7 +401,7 @@ class AccountController(
             limits.canDeposit,
             Date().time,
             accountType,
-            parsedBalances,
+            wallets.map { BalanceResponse(it.asset, it.balance, it.locked, it.withdraw) },
             listOf(accountType)
         )
     }
