@@ -2,15 +2,9 @@ package co.nilin.opex.api.ports.binance.controller
 
 import co.nilin.opex.api.core.inout.DepositDetails
 import co.nilin.opex.api.core.inout.TransactionHistoryResponse
-import co.nilin.opex.api.core.spi.AccountantProxy
-import co.nilin.opex.api.core.spi.BlockchainGatewayProxy
-import co.nilin.opex.api.core.spi.SymbolMapper
-import co.nilin.opex.api.core.spi.WalletProxy
+import co.nilin.opex.api.core.spi.*
 import co.nilin.opex.api.core.utils.Interval
-import co.nilin.opex.api.ports.binance.data.AssignAddressResponse
-import co.nilin.opex.api.ports.binance.data.DepositResponse
-import co.nilin.opex.api.ports.binance.data.PairFeeResponse
-import co.nilin.opex.api.ports.binance.data.WithdrawResponse
+import co.nilin.opex.api.ports.binance.data.*
 import co.nilin.opex.api.ports.binance.util.jwtAuthentication
 import co.nilin.opex.api.ports.binance.util.tokenValue
 import co.nilin.opex.utility.error.data.OpexError
@@ -20,6 +14,7 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -29,8 +24,9 @@ import java.util.*
 class WalletController(
     private val walletProxy: WalletProxy,
     private val symbolMapper: SymbolMapper,
+    private val marketDataProxy: MarketDataProxy,
     private val accountantProxy: AccountantProxy,
-    private val bcGatewayProxy: BlockchainGatewayProxy
+    private val bcGatewayProxy: BlockchainGatewayProxy,
 ) {
 
     @GetMapping("/v1/capital/deposit/address")
@@ -180,6 +176,47 @@ class WalletController(
                         it.takerFee.toDouble()
                     )
                 }
+    }
+
+    @GetMapping("/v1/asset/getUserAsset")
+    suspend fun getUserAssets(
+        @CurrentSecurityContext
+        securityContext: SecurityContext,
+        @RequestParam(required = false)
+        symbol: String?,
+        @RequestParam(required = false)
+        evaluateWith: String?,
+        @RequestParam(required = false)
+        calculateEvaluation: Boolean?
+    ): List<AssetResponse> {
+        val auth = securityContext.jwtAuthentication()
+        val result = arrayListOf<AssetResponse>()
+
+        if (symbol != null) {
+            val wallet = walletProxy.getWallet(auth.name, auth.tokenValue(), symbol.uppercase())
+            result.add(AssetResponse(wallet.asset, wallet.balance, wallet.locked, wallet.withdraw))
+        } else {
+            result.addAll(
+                walletProxy.getWallets(auth.name, auth.tokenValue())
+                    .map { AssetResponse(it.asset, it.balance, it.locked, it.withdraw) }
+            )
+        }
+
+        if (evaluateWith == null)
+            return result
+
+        val rates = marketDataProxy.getCurrencyRates(evaluateWith).associateBy { it.currency }
+        result.associateWith { rates[it.asset] }
+            .forEach { (asset, rate) -> asset.valuation = rate?.rate ?: BigDecimal.ZERO }
+
+        if (calculateEvaluation == true)
+            result.forEach {
+                it.free = it.free.multiply(it.valuation)
+                it.locked = it.locked.multiply(it.valuation)
+                it.withdrawing = it.withdrawing.multiply(it.valuation)
+            }
+
+        return result
     }
 
     private fun matchDepositsAndDetails(

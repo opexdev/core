@@ -38,7 +38,6 @@ spring:
       host: ${CONSUL_HOST:localhost}
       port: 8500
       discovery:
-        #healthCheckPath: ${management.context-path}/health
         instance-id: ${spring.application.name}:${server.port}
         healthCheckInterval: 20s
         prefer-ip-address: true

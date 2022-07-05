@@ -34,10 +34,26 @@ class WalletOwnerController(
         )
     )
     suspend fun getAllWallets(@PathVariable uuid: String): List<WalletData> {
-        val owner = walletOwnerManager.findWalletOwner(uuid)
-            ?: throw OpexException(OpexError.WalletOwnerNotFound)
+        val owner = walletOwnerManager.findWalletOwner(uuid) ?: throw OpexException(OpexError.WalletOwnerNotFound)
         val wallets = walletManager.findWalletsByOwner(owner)
         return BalanceParser.parse(wallets)
+    }
+
+    @GetMapping("/{uuid}/wallets/{symbol}")
+    @ApiResponse(
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = "{ }",
+                mediaType = "application/json"
+            )
+        )
+    )
+    suspend fun getWallet(@PathVariable uuid: String, @PathVariable symbol: String): WalletData {
+        val owner = walletOwnerManager.findWalletOwner(uuid) ?: throw OpexException(OpexError.WalletOwnerNotFound)
+        val wallets = walletManager.findWalletByOwnerAndSymbol(owner, symbol)
+        return BalanceParser.parseSingleCurrency(wallets) ?: throw OpexException(OpexError.WalletNotFound)
     }
 
     @GetMapping("/{uuid}/limits")
@@ -52,8 +68,7 @@ class WalletOwnerController(
         )
     )
     suspend fun getWalletOwnerLimits(@PathVariable uuid: String): OwnerLimitsResponse {
-        val owner = walletOwnerManager.findWalletOwner(uuid)
-            ?: throw OpexException(OpexError.WalletOwnerNotFound)
+        val owner = walletOwnerManager.findWalletOwner(uuid) ?: throw OpexException(OpexError.WalletOwnerNotFound)
         return OwnerLimitsResponse(owner.isTradeAllowed, owner.isWithdrawAllowed, owner.isDepositAllowed)
     }
 }

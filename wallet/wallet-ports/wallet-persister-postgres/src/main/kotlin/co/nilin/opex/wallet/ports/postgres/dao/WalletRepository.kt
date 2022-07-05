@@ -29,6 +29,9 @@ interface WalletRepository : ReactiveCrudRepository<WalletModel, Long> {
     @Query("select * from wallet where owner = :owner")
     fun findByOwner(@Param("owner") owner: Long): Flux<WalletModel>
 
+    @Query("select * from wallet where owner = :owner and currency = :currency")
+    fun findByOwnerAndCurrency(owner: Long, currency: String): Flux<WalletModel>
+
     @Modifying
     @Query("update wallet set balance = balance + :balance where id = :id")
     fun updateBalance(id: Long, delta: BigDecimal): Mono<Int>

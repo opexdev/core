@@ -40,6 +40,18 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
             .awaitSingle()
     }
 
+    override suspend fun getWallet(uuid: String?, token: String?, symbol: String): Wallet {
+        logger.info("fetching wallets for $uuid")
+        return webClient.get()
+            .uri("$baseUrl/v1/owner/$uuid/wallets/$symbol")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<Wallet>()
+            .awaitSingle()
+    }
+
     override suspend fun getOwnerLimits(uuid: String?, token: String?): OwnerLimitsResponse {
         logger.info("fetching owner limits for $uuid")
         return webClient.get()
