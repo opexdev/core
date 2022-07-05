@@ -30,7 +30,7 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
     override suspend fun getWallets(uuid: String?, token: String?): List<Wallet> {
         logger.info("fetching wallets for $uuid")
         return webClient.get()
-            .uri("$baseUrl/owner/wallet/all")
+            .uri("$baseUrl/v1/owner/$uuid/wallets")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .retrieve()
@@ -43,7 +43,7 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
     override suspend fun getOwnerLimits(uuid: String?, token: String?): OwnerLimitsResponse {
         logger.info("fetching owner limits for $uuid")
         return webClient.get()
-            .uri("$baseUrl/owner/limits")
+            .uri("$baseUrl/v1/owner/$uuid/limits")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .retrieve()
