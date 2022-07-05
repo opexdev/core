@@ -219,6 +219,29 @@ class WalletController(
         return result
     }
 
+    @GetMapping("/v1/asset/estimatedValue")
+    suspend fun assetsEstimatedValue(
+        @CurrentSecurityContext
+        securityContext: SecurityContext,
+        @RequestParam
+        evaluateWith: String
+    ): AssetsEstimatedValue {
+        val auth = securityContext.jwtAuthentication()
+        val wallets = walletProxy.getWallets(auth.name, auth.tokenValue())
+        val rates = marketDataProxy.getCurrencyRates(evaluateWith.uppercase()).associateBy { it.currency }
+
+        var value = BigDecimal.ZERO
+        val zeroAssets = arrayListOf<String>()
+        wallets.associateWith { rates[it.asset] }
+            .forEach { (asset, rate) ->
+                if (rate == null || rate.rate == BigDecimal.ZERO)
+                    zeroAssets.add(asset.asset)
+                else
+                    value += asset.balance.multiply(rate.rate)
+            }
+        return AssetsEstimatedValue(value, evaluateWith.uppercase(), zeroAssets)
+    }
+
     private fun matchDepositsAndDetails(
         deposits: List<TransactionHistoryResponse>,
         details: List<DepositDetails>
