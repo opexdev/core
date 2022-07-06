@@ -167,7 +167,7 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         on t.create_date >= f.start_time and t.create_date < f.end_time
         where symbol = :symbol or symbol is null
         group by f.start_time, f.end_time
-        order by f.end_time desc
+        order by f.start_time asc
         limit :limit
         """
     )
