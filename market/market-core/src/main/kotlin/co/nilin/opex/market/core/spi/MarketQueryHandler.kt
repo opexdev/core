@@ -33,4 +33,12 @@ interface MarketQueryHandler {
 
     suspend fun numberOfOrders(interval: LocalDateTime, pair: String? = null): Long
 
+    suspend fun mostIncreasePrice(interval: LocalDateTime): List<PriceStat>
+
+    suspend fun mostDecreasePrice(interval: LocalDateTime): List<PriceStat>
+
+    suspend fun mostVolume(interval: LocalDateTime): TradeVolumeStat
+
+    suspend fun mostTrades(interval: LocalDateTime): TradeVolumeStat
+
 }

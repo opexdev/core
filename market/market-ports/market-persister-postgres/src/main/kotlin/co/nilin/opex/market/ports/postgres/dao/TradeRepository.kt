@@ -1,5 +1,7 @@
 package co.nilin.opex.market.ports.postgres.dao
 
+import co.nilin.opex.market.core.inout.PriceStat
+import co.nilin.opex.market.core.inout.TradeVolumeStat
 import co.nilin.opex.market.ports.postgres.model.CandleInfoData
 import co.nilin.opex.market.ports.postgres.model.TradeModel
 import co.nilin.opex.market.ports.postgres.model.TradeTickerData
@@ -190,7 +192,7 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
     @Query("select * from trades order by create_date desc limit 1")
     suspend fun findLastByCreateDate(): Mono<TradeModel>
 
-    @Query("select * from trades order by create_date asc limit 1")
+    @Query("select * from trades order by create_date limit 1")
     suspend fun findFirstByCreateDate(): Mono<TradeModel>
 
     @Query("select count(*) from trades where create_date >= :interval")
@@ -199,6 +201,87 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
     @Query("select count(*) from trades where symbol = :symbol and create_date >= :interval")
     fun countBySymbolNewerThan(interval: LocalDateTime, symbol: String): Flow<Long>
 
-    @Query("select * from trades")
-    fun findByMostIncreasedPrice(since: LocalDateTime): Mono<TradeModel>
+    @Query(
+        """
+        select 
+            symbol,
+            (select matched_price from trades where  create_date > :since and symbol = t.symbol order by create_date desc limit 1) as last_price,
+            max(
+                (select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date desc limit 1)
+              - (select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date limit 1)
+            ) as price_change,
+            (
+                (select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date desc limit 1)
+               -(select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date limit 1)
+            ) / (select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date limit 1) * 100 as price_change_percent
+        from trades t
+        group by symbol
+        order by price_change_percent desc
+        limit :limit
+    """
+    )
+    fun findByMostIncreasedPrice(since: LocalDateTime, limit: Int): Flux<PriceStat>
+
+    @Query(
+        """
+        select 
+            symbol,
+            (select matched_price from trades where  create_date > :since and symbol = t.symbol order by create_date desc limit 1) as last_price,
+            max(
+                (select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date desc limit 1)
+              - (select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date limit 1)
+            ) as price_change,
+            (
+                (select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date desc limit 1)
+               -(select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date limit 1)
+            ) / (select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date limit 1) * 100 as price_change_percent
+        from trades t
+        group by symbol
+        order by price_change_percent
+        limit :limit
+    """
+    )
+    fun findByMostDecreasedPrice(since: LocalDateTime, limit: Int): Flux<PriceStat>
+
+    @Query(
+        """
+        select 
+            symbol, 
+            sum(matched_quantity) as volume, 
+            count(id) as trade_count,
+            (
+                (
+                    (select matched_quantity from trades where create_date > :since and symbol = t.symbol order by create_date desc limit 1)
+                  - (select matched_quantity from trades where create_date > :since and symbol = t.symbol order by create_date limit 1)
+                ) / (select matched_quantity from trades where create_date > :since and symbol = t.symbol order by create_date limit 1) * 100
+            ) as change
+        from trades t
+        where create_date > :since
+        group by symbol
+        order by volume
+        limit 1
+    """
+    )
+    fun findByMostVolume(since: LocalDateTime): Mono<TradeVolumeStat>
+
+    @Query(
+        """
+        select 
+            symbol, 
+            sum(matched_quantity) as volume, 
+            count(id) as trade_count,
+            (
+                (
+                    (select matched_quantity from trades where create_date > :since and symbol = t.symbol order by create_date desc limit 1)
+                  - (select matched_quantity from trades where create_date > :since and symbol = t.symbol order by create_date limit 1)
+                ) / (select matched_quantity from trades where create_date > :since and symbol = t.symbol order by create_date limit 1) * 100
+            ) as change
+        from trades t
+        where create_date > :since
+        group by symbol
+        order by trade_count
+        limit 1
+    """
+    )
+    fun findByMostTrades(since: LocalDateTime): Mono<TradeVolumeStat>
 }

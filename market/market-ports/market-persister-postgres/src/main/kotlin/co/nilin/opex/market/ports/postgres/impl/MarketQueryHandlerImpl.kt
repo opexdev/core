@@ -165,6 +165,22 @@ class MarketQueryHandlerImpl(
             orderRepository.countNewerThan(interval).singleOrNull() ?: 0
     }
 
+    override suspend fun mostIncreasePrice(interval: LocalDateTime): List<PriceStat> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun mostDecreasePrice(interval: LocalDateTime): List<PriceStat> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun mostVolume(interval: LocalDateTime): TradeVolumeStat {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun mostTrades(interval: LocalDateTime): TradeVolumeStat {
+        TODO("Not yet implemented")
+    }
+
     private fun TradeTickerData.asPriceChangeResponse(openTime: Long, closeTime: Long) = PriceChange(
         symbol,
         priceChange ?: BigDecimal.ZERO,
