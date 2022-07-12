@@ -10,6 +10,7 @@ import java.time.LocalDateTime
 data class WithdrawModel(
     @Id var id: Long?,
     @Column("uuid") val ownerUuid: String,
+    @Column("currency") val currency: String,
     @Column("wallet") val wallet: Long,
     @Column("amount") val amount: BigDecimal,
     @Column("req_transaction_id") val requestTransaction: String,
@@ -17,7 +18,7 @@ data class WithdrawModel(
     @Column("accepted_fee") val acceptedFee: BigDecimal,
     @Column("applied_fee") val appliedFee: BigDecimal?,
     @Column("dest_amount") val destAmount: BigDecimal?,
-    @Column("dest_currency") val destCurrency: String?,
+    @Column("dest_symbol") val destSymbol: String?,
     @Column("dest_network") val destNetwork: String?,
     @Column("dest_address") val destAddress: String?,
     @Column("dest_notes") var destNote: String?,

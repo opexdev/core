@@ -64,20 +64,28 @@ class WithdrawController(private val withdrawService: WithdrawService) {
     )
     suspend fun requestWithdraw(
         principal: Principal,
-        @PathVariable("symbol") symbol: String,
+        @PathVariable("currency") currency: String,
         @PathVariable("amount") amount: BigDecimal,
         @RequestParam("description", required = false) description: String?,
         @RequestParam("transferRef", required = false) transferRef: String?,
         @RequestParam("fee") fee: BigDecimal,
-        @RequestParam("destCurrency") destCurrency: String,
+        @RequestParam("destSymbol") destSymbol: String,
         @RequestParam("destAddress") destAddress: String,
         @RequestParam("destNetwork") destNetwork: String,
         @RequestParam("destNote", required = false) destNote: String?,
     ): WithdrawResult {
         return withdrawService.requestWithdraw(
             WithdrawCommand(
-                principal.name, symbol,
-                amount, description, transferRef, destCurrency, destAddress, destNetwork, destNote, fee
+                principal.name,
+                currency,
+                amount,
+                description,
+                transferRef,
+                destSymbol,
+                destAddress,
+                destNetwork,
+                destNote,
+                fee
             )
         )
     }
@@ -99,10 +107,11 @@ class WithdrawController(private val withdrawService: WithdrawService) {
                 it.withdrawId,
                 it.ownerUuid,
                 it.amount,
+                it.currency,
                 it.acceptedFee,
                 it.appliedFee,
                 it.destAmount,
-                it.destCurrency,
+                it.destSymbol,
                 it.destAddress,
                 it.destNetwork,
                 it.destNote,

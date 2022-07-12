@@ -15,7 +15,7 @@ class WithdrawResponse(
     val appliedFee: BigDecimal?,
     val amount: BigDecimal?,
     val destAmount: BigDecimal?,
-    val destCurrency: String?,
+    val destSymbol: String?,
     val destAddress: String?,
     val destNetwork: String?,
     var destNote: String?,
