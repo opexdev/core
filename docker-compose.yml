@@ -481,6 +481,22 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  elasticsearch:
+    image: elasticsearch:8.3.2
+    environment:
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - discovery.type=single-node
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+  kibana:
+    image: kibana:8.3.2
+  filebeat:
+    image: filebeat:8.3.2
+    user: root
+    volumes:
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock
 volumes:
   zookeeper-data:
   zookeeper-log:
@@ -499,6 +515,7 @@ volumes:
   referral-data:
   storage-data:
   admin-data:
+  elasticsearch_data:
 networks:
   default:
     driver: bridge
