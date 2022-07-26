@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
 import java.time.Instant
@@ -165,20 +167,24 @@ class MarketQueryHandlerImpl(
             orderRepository.countNewerThan(interval).singleOrNull() ?: 0
     }
 
-    override suspend fun mostIncreasePrice(interval: LocalDateTime): List<PriceStat> {
-        TODO("Not yet implemented")
+    override suspend fun mostIncreasePrice(interval: LocalDateTime, limit: Int): List<PriceStat> {
+        return tradeRepository.findByMostIncreasedPrice(interval, limit)
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
     }
 
-    override suspend fun mostDecreasePrice(interval: LocalDateTime): List<PriceStat> {
-        TODO("Not yet implemented")
+    override suspend fun mostDecreasePrice(interval: LocalDateTime, limit: Int): List<PriceStat> {
+        return tradeRepository.findByMostDecreasedPrice(interval, limit)
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
     }
 
-    override suspend fun mostVolume(interval: LocalDateTime): TradeVolumeStat {
-        TODO("Not yet implemented")
+    override suspend fun mostVolume(interval: LocalDateTime): TradeVolumeStat? {
+        return tradeRepository.findByMostVolume(interval).awaitSingleOrNull()
     }
 
-    override suspend fun mostTrades(interval: LocalDateTime): TradeVolumeStat {
-        TODO("Not yet implemented")
+    override suspend fun mostTrades(interval: LocalDateTime): TradeVolumeStat? {
+        return tradeRepository.findByMostTrades(interval).awaitSingleOrNull()
     }
 
     private fun TradeTickerData.asPriceChangeResponse(openTime: Long, closeTime: Long) = PriceChange(

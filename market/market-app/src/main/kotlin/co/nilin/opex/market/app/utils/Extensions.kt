@@ -11,3 +11,7 @@ fun LocalDateTime.asDate(): Date {
 fun Date.asLocalDateTime(): LocalDateTime {
     return LocalDateTime.ofInstant(toInstant(), ZoneId.systemDefault())
 }
+
+fun Long.asLocalDateTime(): LocalDateTime {
+    return LocalDateTime.ofInstant(Date(this).toInstant(), ZoneId.systemDefault())
+}

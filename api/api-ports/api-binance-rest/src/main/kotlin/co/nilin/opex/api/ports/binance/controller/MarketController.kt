@@ -4,6 +4,7 @@ import co.nilin.opex.api.core.inout.PriceChange
 import co.nilin.opex.api.core.inout.PriceTicker
 import co.nilin.opex.api.core.spi.AccountantProxy
 import co.nilin.opex.api.core.spi.MarketDataProxy
+import co.nilin.opex.api.core.spi.MarketStatProxy
 import co.nilin.opex.api.core.spi.SymbolMapper
 import co.nilin.opex.api.core.utils.Interval
 import co.nilin.opex.api.ports.binance.data.*
@@ -22,6 +23,7 @@ import java.time.ZoneId
 class MarketController(
     private val accountantProxy: AccountantProxy,
     private val marketDataProxy: MarketDataProxy,
+    private val marketStatProxy: MarketStatProxy,
     private val symbolMapper: SymbolMapper,
 ) {
 
@@ -198,6 +200,29 @@ class MarketController(
                 )
             }
         return list
+    }
+
+    // Custom service
+    @GetMapping("/v3/stats")
+    suspend fun getMarketStats(
+        @RequestParam interval: String,
+        @RequestParam(required = false) limit: Int?
+    ): MarketStatResponse {
+        val since = (Interval.findByLabel(interval) ?: Interval.Day).getDate().time
+
+        val l = when {
+            limit == null -> 100
+            limit > 1000 -> 1000
+            limit < 1 -> 1
+            else -> limit
+        }
+
+        return MarketStatResponse(
+            marketStatProxy.getMostIncreasedInPricePairs(since, l),
+            marketStatProxy.getMostDecreasedInPricePairs(since, l),
+            marketStatProxy.getHighestVolumePair(since),
+            marketStatProxy.getTradeCountPair(since)
+        )
     }
 
 }

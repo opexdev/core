@@ -205,15 +205,21 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         """
         select 
             symbol,
-            (select matched_price from trades where  create_date > :since and symbol = t.symbol order by create_date desc limit 1) as last_price,
-            max(
-                (select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date desc limit 1)
-              - (select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date limit 1)
+            coalesce((select matched_price from trades where  create_date > :since and symbol = t.symbol order by create_date desc limit 1), 0.0) as last_price,
+            coalesce(
+                max(
+                    (select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date desc limit 1)
+                  - (select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date limit 1)
+                ),
+                0.0
             ) as price_change,
-            (
-                (select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date desc limit 1)
-               -(select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date limit 1)
-            ) / (select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date limit 1) * 100 as price_change_percent
+            coalesce(
+                (
+                    (select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date desc limit 1)  
+                  - (select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date limit 1)
+                ) / (select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date limit 1) * 100,
+                0.0
+            ) as price_change_percent
         from trades t
         group by symbol
         order by price_change_percent desc
@@ -226,15 +232,21 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         """
         select 
             symbol,
-            (select matched_price from trades where  create_date > :since and symbol = t.symbol order by create_date desc limit 1) as last_price,
-            max(
-                (select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date desc limit 1)
-              - (select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date limit 1)
+            coalesce((select matched_price from trades where  create_date > :since and symbol = t.symbol order by create_date desc limit 1), 0.0) as last_price,
+            coalesce(
+                max(
+                    (select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date desc limit 1)
+                  - (select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date limit 1)
+                ),
+                0.0
             ) as price_change,
-            (
-                (select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date desc limit 1)
-               -(select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date limit 1)
-            ) / (select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date limit 1) * 100 as price_change_percent
+            coalesce(
+                (
+                    (select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date desc limit 1)
+                   -(select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date limit 1)
+                ) / (select matched_price from trades where create_date > :since and symbol = t.symbol order by create_date limit 1) * 100,
+                0.0
+            ) as price_change_percent
         from trades t
         group by symbol
         order by price_change_percent
@@ -247,13 +259,14 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         """
         select 
             symbol, 
-            sum(matched_quantity) as volume, 
+            coalesce(sum(matched_quantity), 0.0) as volume, 
             count(id) as trade_count,
-            (
+            coalesce(
                 (
                     (select matched_quantity from trades where create_date > :since and symbol = t.symbol order by create_date desc limit 1)
                   - (select matched_quantity from trades where create_date > :since and symbol = t.symbol order by create_date limit 1)
-                ) / (select matched_quantity from trades where create_date > :since and symbol = t.symbol order by create_date limit 1) * 100
+                ) / (select matched_quantity from trades where create_date > :since and symbol = t.symbol order by create_date limit 1) * 100,
+                0.0
             ) as change
         from trades t
         where create_date > :since
@@ -268,13 +281,14 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         """
         select 
             symbol, 
-            sum(matched_quantity) as volume, 
+            coalesce(sum(matched_quantity), 0.0) as volume, 
             count(id) as trade_count,
-            (
+            coalesce(
                 (
                     (select matched_quantity from trades where create_date > :since and symbol = t.symbol order by create_date desc limit 1)
                   - (select matched_quantity from trades where create_date > :since and symbol = t.symbol order by create_date limit 1)
-                ) / (select matched_quantity from trades where create_date > :since and symbol = t.symbol order by create_date limit 1) * 100
+                ) / (select matched_quantity from trades where create_date > :since and symbol = t.symbol order by create_date limit 1) * 100,
+                0.0
             ) as change
         from trades t
         where create_date > :since
