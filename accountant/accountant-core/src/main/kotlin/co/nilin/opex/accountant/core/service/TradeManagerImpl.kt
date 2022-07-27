@@ -138,11 +138,6 @@ open class TradeManagerImpl(
 
         val takerPrice = trade.takerPrice.toBigDecimal().multiply(takerOrder.rightSideFraction)
         val makerPrice = trade.makerPrice.toBigDecimal().multiply(makerOrder.rightSideFraction)
-        val matchedPrice = if (trade.makerDirection == OrderDirection.BID) {
-            takerPrice.min(makerPrice)
-        } else {
-            takerPrice.max(makerPrice)
-        }
 
         richTradePublisher.publish(
             RichTrade(
@@ -168,7 +163,7 @@ open class TradeManagerImpl(
                 trade.makerRemainedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction),
                 feeActions.makerFeeAction.amount,
                 feeActions.makerFeeAction.symbol,
-                matchedPrice,
+                makerPrice,
                 trade.matchedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction),
                 trade.eventDate
             )

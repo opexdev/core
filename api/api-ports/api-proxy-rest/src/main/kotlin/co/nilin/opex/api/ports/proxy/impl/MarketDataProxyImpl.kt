@@ -146,6 +146,7 @@ class MarketDataProxyImpl(private val webClient: WebClient) : MarketDataProxy {
         return webClient.get()
             .uri("$baseUrl/v1/rate") {
                 it.queryParam("basedOn", basedOn)
+                it.queryParam("indirect", basedOn.equals("IRT", true))
                 it.build()
             }.accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -154,5 +155,47 @@ class MarketDataProxyImpl(private val webClient: WebClient) : MarketDataProxy {
             .bodyToFlux<CurrencyRate>()
             .collectList()
             .awaitFirstOrElse { emptyList() }
+    }
+
+    override suspend fun countActiveUsers(since: Long): Long {
+        return webClient.get()
+            .uri("$baseUrl/v1/market/active-users") {
+                it.queryParam("interval", since)
+                it.build()
+            }.accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<CountResponse>()
+            .awaitSingleOrNull()
+            ?.value ?: 0
+    }
+
+    override suspend fun countTotalOrders(since: Long): Long {
+        return webClient.get()
+            .uri("$baseUrl/v1/market/active-users") {
+                it.queryParam("interval", since)
+                it.build()
+            }.accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<CountResponse>()
+            .awaitSingleOrNull()
+            ?.value ?: 0
+    }
+
+    override suspend fun countTotalTrades(since: Long): Long {
+        return webClient.get()
+            .uri("$baseUrl/v1/market/trades-count") {
+                it.queryParam("interval", since)
+                it.build()
+            }.accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<CountResponse>()
+            .awaitSingleOrNull()
+            ?.value ?: 0
     }
 }

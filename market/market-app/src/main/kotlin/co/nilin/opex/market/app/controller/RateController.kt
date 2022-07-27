@@ -9,13 +9,23 @@ import org.springframework.web.bind.annotation.*
 class RateController(private val marketRateService: MarketRateService) {
 
     @GetMapping
-    suspend fun getPrices(@RequestParam basedOn: String): List<CurrencyRate> {
-        return marketRateService.currencyRate(basedOn)
+    suspend fun getPrices(@RequestParam basedOn: String, @RequestParam indirect: Boolean): List<CurrencyRate> {
+        return if (indirect)
+            marketRateService.indirectRate(basedOn.uppercase())
+        else
+            marketRateService.currencyRate(basedOn.uppercase())
     }
 
     @GetMapping("/{currency}")
-    suspend fun getPrice(@PathVariable currency: String, @RequestParam basedOn: String): CurrencyRate {
-        return marketRateService.currencyRate(currency, basedOn)
+    suspend fun getPrice(
+        @PathVariable currency: String,
+        @RequestParam basedOn: String,
+        @RequestParam indirect: Boolean
+    ): CurrencyRate {
+        return if (indirect)
+            marketRateService.indirectRate(currency.uppercase(), basedOn.uppercase())
+        else
+            marketRateService.currencyRate(currency.uppercase(), basedOn.uppercase())
     }
 
 }

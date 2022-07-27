@@ -29,4 +29,10 @@ interface MarketDataProxy {
 
     suspend fun getCurrencyRates(basedOn: String): List<CurrencyRate>
 
+    suspend fun countActiveUsers(since:Long): Long
+
+    suspend fun countTotalOrders(since:Long): Long
+
+    suspend fun countTotalTrades(since:Long): Long
+
 }

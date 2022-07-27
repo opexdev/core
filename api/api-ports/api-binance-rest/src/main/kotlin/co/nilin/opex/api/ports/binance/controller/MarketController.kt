@@ -202,27 +202,4 @@ class MarketController(
         return list
     }
 
-    // Custom service
-    @GetMapping("/v3/stats")
-    suspend fun getMarketStats(
-        @RequestParam interval: String,
-        @RequestParam(required = false) limit: Int?
-    ): MarketStatResponse {
-        val since = (Interval.findByLabel(interval) ?: Interval.Day).getDate().time
-
-        val l = when {
-            limit == null -> 100
-            limit > 1000 -> 1000
-            limit < 1 -> 1
-            else -> limit
-        }
-
-        return MarketStatResponse(
-            marketStatProxy.getMostIncreasedInPricePairs(since, l),
-            marketStatProxy.getMostDecreasedInPricePairs(since, l),
-            marketStatProxy.getHighestVolumePair(since),
-            marketStatProxy.getTradeCountPair(since)
-        )
-    }
-
 }

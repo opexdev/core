@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/v1/user")
 class UserDataController(private val userQueryHandler: UserQueryHandler) {
 
-    //TODO convert POST to GET
-
     @GetMapping("/{uuid}/order/{ouid}")
     suspend fun getOrder(@PathVariable uuid: String, @PathVariable ouid: String): Order {
         return userQueryHandler.getOrder(uuid, ouid) ?: throw OpexException(OpexError.NotFound)

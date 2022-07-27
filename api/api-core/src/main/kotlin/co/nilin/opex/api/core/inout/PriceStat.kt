@@ -3,7 +3,7 @@ package co.nilin.opex.api.core.inout
 import java.math.BigDecimal
 
 data class PriceStat(
-    val symbol: String,
+    var symbol: String,
     val lastPrice: BigDecimal,
     val priceChangePercent: Double
 )
