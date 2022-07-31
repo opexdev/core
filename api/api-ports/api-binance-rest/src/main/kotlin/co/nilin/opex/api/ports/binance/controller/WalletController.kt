@@ -205,7 +205,8 @@ class WalletController(
         if (evaluateWith == null)
             return result
 
-        val rates = marketDataProxy.getCurrencyRates(evaluateWith).associateBy { it.currency }
+        val rates = marketDataProxy.getCurrencyRates(evaluateWith, evaluateWith.equals("IRT", true))
+            .associateBy { it.currency }
         result.associateWith { rates[it.asset] }
             .forEach { (asset, rate) -> asset.valuation = rate?.rate ?: BigDecimal.ZERO }
 
@@ -228,7 +229,8 @@ class WalletController(
     ): AssetsEstimatedValue {
         val auth = securityContext.jwtAuthentication()
         val wallets = walletProxy.getWallets(auth.name, auth.tokenValue())
-        val rates = marketDataProxy.getCurrencyRates(evaluateWith.uppercase()).associateBy { it.currency }
+        val rates = marketDataProxy.getCurrencyRates(evaluateWith.uppercase(), evaluateWith.equals("IRT", true))
+            .associateBy { it.currency }
 
         var value = BigDecimal.ZERO
         val zeroAssets = arrayListOf<String>()
