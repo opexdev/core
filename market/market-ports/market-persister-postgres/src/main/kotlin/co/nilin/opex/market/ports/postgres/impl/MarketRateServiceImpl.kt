@@ -11,34 +11,18 @@ import java.math.BigDecimal
 @Component
 class MarketRateServiceImpl(private val rateRepository: CurrencyRateRepository) : MarketRateService {
 
-    override suspend fun currencyRate(basedOn: String): List<CurrencyRate> {
-        return rateRepository.findAllByDestinationCurrency(basedOn)
+    override suspend fun currencyRate(baseAsset: String): List<CurrencyRate> {
+        return rateRepository.findAllByDestinationCurrency(baseAsset)
             .collectList()
             .awaitFirstOrElse { emptyList() }
             .map { CurrencyRate(it.source, it.destination, it.rate) }
     }
 
-    override suspend fun currencyRate(currency: String, basedOn: String): CurrencyRate {
-        val rate = rateRepository.findBySourceAndDestination(currency, basedOn).awaitSingleOrNull()
+    override suspend fun currencyRate(currency: String, baseAsset: String): CurrencyRate {
+        val rate = rateRepository.findBySourceAndDestination(currency, baseAsset).awaitSingleOrNull()
         return CurrencyRate(
             currency,
-            basedOn,
-            rate?.rate ?: BigDecimal.ZERO
-        )
-    }
-
-    override suspend fun indirectRate(basedOn: String): List<CurrencyRate> {
-        return rateRepository.findAllByDestinationCurrencyIndirect(basedOn)
-            .collectList()
-            .awaitFirstOrElse { emptyList() }
-            .map { CurrencyRate(it.source, it.destination, it.rate) }
-    }
-
-    override suspend fun indirectRate(currency: String, basedOn: String): CurrencyRate {
-        val rate = rateRepository.findBySourceAndDestinationIndirect(currency, basedOn).awaitSingleOrNull()
-        return CurrencyRate(
-            rate?.source ?: currency,
-            rate?.destination ?: basedOn,
+            baseAsset,
             rate?.rate ?: BigDecimal.ZERO
         )
     }

@@ -185,7 +185,7 @@ class WalletController(
         @RequestParam(required = false)
         symbol: String?,
         @RequestParam(required = false)
-        evaluateWith: String?,
+        baseAsset: String?,
         @RequestParam(required = false)
         calculateEvaluation: Boolean?
     ): List<AssetResponse> {
@@ -202,10 +202,10 @@ class WalletController(
             )
         }
 
-        if (evaluateWith == null)
+        if (baseAsset == null)
             return result
 
-        val rates = marketDataProxy.getCurrencyRates(evaluateWith, evaluateWith.equals("IRT", true))
+        val rates = marketDataProxy.getCurrencyRates(baseAsset)
             .associateBy { it.currency }
         result.associateWith { rates[it.asset] }
             .forEach { (asset, rate) -> asset.valuation = rate?.rate ?: BigDecimal.ZERO }
@@ -225,11 +225,11 @@ class WalletController(
         @CurrentSecurityContext
         securityContext: SecurityContext,
         @RequestParam
-        evaluateWith: String
+        baseAsset: String
     ): AssetsEstimatedValue {
         val auth = securityContext.jwtAuthentication()
         val wallets = walletProxy.getWallets(auth.name, auth.tokenValue())
-        val rates = marketDataProxy.getCurrencyRates(evaluateWith.uppercase(), evaluateWith.equals("IRT", true))
+        val rates = marketDataProxy.getCurrencyRates(baseAsset.uppercase())
             .associateBy { it.currency }
 
         var value = BigDecimal.ZERO
@@ -241,7 +241,7 @@ class WalletController(
                 else
                     value += asset.balance.multiply(rate.rate)
             }
-        return AssetsEstimatedValue(value, evaluateWith.uppercase(), zeroAssets)
+        return AssetsEstimatedValue(value, baseAsset.uppercase(), zeroAssets)
     }
 
     private fun matchDepositsAndDetails(

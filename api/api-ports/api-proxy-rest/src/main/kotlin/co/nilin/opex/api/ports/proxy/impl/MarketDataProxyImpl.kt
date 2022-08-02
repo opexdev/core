@@ -142,11 +142,10 @@ class MarketDataProxyImpl(private val webClient: WebClient) : MarketDataProxy {
             .awaitFirstOrElse { emptyList() }
     }
 
-    override suspend fun getCurrencyRates(basedOn: String, indirect: Boolean): List<CurrencyRate> {
+    override suspend fun getCurrencyRates(baseAsset: String): List<CurrencyRate> {
         return webClient.get()
             .uri("$baseUrl/v1/rate") {
-                it.queryParam("basedOn", basedOn)
-                it.queryParam("indirect", indirect)
+                it.queryParam("baseAsset", baseAsset)
                 it.build()
             }.accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)

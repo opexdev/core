@@ -27,22 +27,4 @@ interface CurrencyRateRepository : ReactiveCrudRepository<CurrencyRateModel, Lon
     @Query("select * from currency_rate where destination = :destination")
     fun findAllByDestinationCurrency(destination: String): Flux<CurrencyRateModel>
 
-    @Query(
-        """
-        select a.source, b.destination, (a.rate * b.rate) as rate from currency_rate as a
-        join currency_rate b on a.destination = b.source
-        where a.source = :source and b.destination = :destination
-        """
-    )
-    fun findBySourceAndDestinationIndirect(source: String, destination: String): Mono<CurrencyRateModel>
-
-    @Query(
-        """
-        select a.source, b.destination, (a.rate * b.rate) as rate from currency_rate as a
-        join currency_rate b on a.destination = b.source
-        where b.destination = :destination
-        """
-    )
-    fun findAllByDestinationCurrencyIndirect(destination: String): Flux<CurrencyRateModel>
-
 }
