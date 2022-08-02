@@ -15,8 +15,20 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/v1/landing")
 class LandingController(
     private val marketStatProxy: MarketStatProxy,
-    private val marketDataProxy: MarketDataProxy
+    private val marketDataProxy: MarketDataProxy,
+    private val symbolMapper: SymbolMapper
 ) {
+
+    @GetMapping("/prices")
+    suspend fun getCurrencyPrices(
+        @RequestParam interval: String,
+        @RequestParam basedOn: String
+    ): List<String> {
+        val result = arrayListOf<String>()
+        val since = (Interval.findByLabel(interval) ?: Interval.Day).getDate().time
+
+        return result
+    }
 
     @GetMapping("/marketStats")
     suspend fun getMarketStats(
@@ -24,17 +36,11 @@ class LandingController(
         @RequestParam(required = false) limit: Int?
     ): MarketStatResponse {
         val since = (Interval.findByLabel(interval) ?: Interval.Day).getDate().time
-
-        val l = when {
-            limit == null -> 100
-            limit > 1000 -> 1000
-            limit < 1 -> 1
-            else -> limit
-        }
+        val validLimit = getValidLimit(limit)
 
         return MarketStatResponse(
-            marketStatProxy.getMostIncreasedInPricePairs(since, l),
-            marketStatProxy.getMostDecreasedInPricePairs(since, l),
+            marketStatProxy.getMostIncreasedInPricePairs(since, validLimit),
+            marketStatProxy.getMostDecreasedInPricePairs(since, validLimit),
             marketStatProxy.getHighestVolumePair(since),
             marketStatProxy.getTradeCountPair(since)
         )
@@ -48,6 +54,13 @@ class LandingController(
             marketDataProxy.countTotalOrders(since),
             marketDataProxy.countTotalTrades(since),
         )
+    }
+
+    private fun getValidLimit(limit: Int?): Int = when {
+        limit == null -> 100
+        limit > 1000 -> 1000
+        limit < 1 -> 1
+        else -> limit
     }
 
 }
