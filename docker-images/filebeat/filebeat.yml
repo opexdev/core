@@ -1,5 +1,5 @@
 filebeat.inputs:
-  - type: container
+  - type: filestream
     paths:
       - '/var/lib/docker/containers/*/*.log'
 
@@ -14,6 +14,9 @@ processors:
 
 output.elasticsearch:
   hosts: [ "elasticsearch:9200" ]
+  protocol: https
+  api_key: ${FILEBEAT_API_KEY}
+  ssl.verification_mode: "none"
   indices:
     - index: "filebeat-%{[agent.version]}-%{+yyyy.MM.dd}"
 

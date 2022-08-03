@@ -482,21 +482,30 @@ services:
       restart_policy:
         condition: on-failure
   elasticsearch:
-    image: docker.elastic.co/elasticsearch:8.3.2
+    image: elastic/elasticsearch:8.3.2
     environment:
       - ES_JAVA_OPTS=-Xms1g -Xmx1g
       - discovery.type=single-node
-      - xpack.security.enabled=false
+      - ingest.geoip.downloader.enabled=false
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - default
   kibana:
-    image: docker.elastic.co/kibana:8.3.2
+    image: elastic/kibana:8.3.2
+    networks:
+      - default
   filebeat:
     image: opex-filebeat
+    build: docker-images/filebeat
     user: root
+    environment:
+      - FILEBEAT_API_KEY=$FILEBEAT_API_KEY
     volumes:
       - /var/lib/docker:/var/lib/docker:ro
       - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - default
 volumes:
   zookeeper-data:
   zookeeper-log:
