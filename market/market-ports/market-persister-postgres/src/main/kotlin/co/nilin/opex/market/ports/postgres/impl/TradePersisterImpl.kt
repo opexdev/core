@@ -1,6 +1,7 @@
 package co.nilin.opex.market.ports.postgres.impl
 
 import co.nilin.opex.market.core.event.RichTrade
+import co.nilin.opex.market.core.inout.RateSource
 import co.nilin.opex.market.core.spi.TradePersister
 import co.nilin.opex.market.ports.postgres.dao.CurrencyRateRepository
 import co.nilin.opex.market.ports.postgres.dao.TradeRepository
@@ -48,6 +49,7 @@ class TradePersisterImpl(
         currencyRateRepository.createOrUpdate(
             pair[0].uppercase(),
             pair[1].uppercase(),
+            RateSource.MARKET,
             trade.matchedPrice
         ).awaitFirstOrNull()
         logger.info("Rate between ${pair[0]} and ${pair[1]} updated")

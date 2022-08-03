@@ -1,5 +1,6 @@
 package co.nilin.opex.market.app.config
 
+import co.nilin.opex.market.core.inout.RateSource
 import co.nilin.opex.market.ports.postgres.dao.CurrencyRateRepository
 import co.nilin.opex.utility.preferences.Preferences
 import kotlinx.coroutines.reactor.awaitSingleOrNull
@@ -20,7 +21,10 @@ class InitializeService(private val rateRepository: CurrencyRateRepository) {
     @PostConstruct
     fun init() = runBlocking {
         preferences.currencies.forEach {
-            rateRepository.createOrUpdate(it.symbol, it.symbol, BigDecimal.ONE).awaitSingleOrNull()
+            rateRepository.createOrUpdate(it.symbol, it.symbol, RateSource.MARKET, BigDecimal.ONE)
+                .awaitSingleOrNull()
+            rateRepository.createOrUpdate(it.symbol, it.symbol, RateSource.EXTERNAL, BigDecimal.ONE)
+                .awaitSingleOrNull()
         }
     }
 }

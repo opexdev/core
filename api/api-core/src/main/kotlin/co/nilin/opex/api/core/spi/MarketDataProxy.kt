@@ -27,7 +27,9 @@ interface MarketDataProxy {
         limit: Int
     ): List<CandleData>
 
-    suspend fun getCurrencyRates(baseAsset: String): List<CurrencyRate>
+    suspend fun getMarketCurrencyRates(quote: String): List<CurrencyRate>
+
+    suspend fun getExternalCurrencyRates(quote: String): List<CurrencyRate>
 
     suspend fun countActiveUsers(since: Long): Long
 

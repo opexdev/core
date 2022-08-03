@@ -57,11 +57,12 @@ CREATE TABLE IF NOT EXISTS trades
 
 CREATE TABLE IF NOT EXISTS currency_rate
 (
-    id          SERIAL PRIMARY KEY,
-    source      VARCHAR(25) NOT NULL,
-    destination VARCHAR(25) NOT NULL,
-    rate        DECIMAL     NOT NULL,
-    UNIQUE (source, destination)
+    id     SERIAL PRIMARY KEY,
+    base   VARCHAR(25) NOT NULL,
+    quote  VARCHAR(25) NOT NULL,
+    source VARCHAR(25) NOT NULL,
+    rate   DECIMAL     NOT NULL,
+    UNIQUE (base, quote, source)
 );
 
 CREATE OR REPLACE FUNCTION interval_generator(

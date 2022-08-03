@@ -142,10 +142,24 @@ class MarketDataProxyImpl(private val webClient: WebClient) : MarketDataProxy {
             .awaitFirstOrElse { emptyList() }
     }
 
-    override suspend fun getCurrencyRates(baseAsset: String): List<CurrencyRate> {
+    override suspend fun getMarketCurrencyRates(quote: String): List<CurrencyRate> {
         return webClient.get()
-            .uri("$baseUrl/v1/rate") {
-                it.queryParam("baseAsset", baseAsset)
+            .uri("$baseUrl/v1/rate/MARKET") {
+                it.queryParam("quote", quote)
+                it.build()
+            }.accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToFlux<CurrencyRate>()
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+    }
+
+    override suspend fun getExternalCurrencyRates(quote: String): List<CurrencyRate> {
+        return webClient.get()
+            .uri("$baseUrl/v1/rate/EXTERNAL") {
+                it.queryParam("quote", quote)
                 it.build()
             }.accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)

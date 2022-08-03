@@ -19,7 +19,7 @@ class TradePersisterTest {
     @Test
     fun givenTradeRepo_whenSaveRichTrade_thenSuccess(): Unit = runBlocking {
         every { tradeRepository.save(any()) } returns Mono.just(VALID.TRADE_MODEL)
-        every { currencyRateRepository.createOrUpdate(any(), any(), any()) } returns Mono.empty()
+        every { currencyRateRepository.createOrUpdate(any(), any(), any(), any()) } returns Mono.empty()
 
         assertThatNoException().isThrownBy { runBlocking { tradePersister.save(VALID.RICH_TRADE) } }
     }
