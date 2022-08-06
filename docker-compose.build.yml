@@ -45,3 +45,6 @@ services:
   admin:
     image: ghcr.io/opexdev/admin:$TAG
     build: admin/admin-app
+  filebeat:
+    image: ghcr.io/opexdev/filebeat:$TAG
+    build: docker-images/filebeat

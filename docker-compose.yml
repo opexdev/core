@@ -481,6 +481,35 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  elasticsearch:
+    image: elastic/elasticsearch:8.3.2
+    environment:
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - discovery.type=single-node
+      - ingest.geoip.downloader.enabled=false
+      - node.name=elasticsearch
+      - network.publish_host=elasticsearch
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - default
+  kibana:
+    image: elastic/kibana:8.3.2
+    environment:
+      - SERVER_PUBLICBASEURL=$KIBANA_PUBLIC_URL
+      - ELASTICSEARCH_SSL_VERIFICATIONMODE=certificate
+    networks:
+      - default
+  filebeat:
+    image: ghcr.io/opexdev/opex-filebeat
+    user: root
+    environment:
+      - FILEBEAT_API_KEY=$FILEBEAT_API_KEY
+    volumes:
+      - /var/lib/docker:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - default
 volumes:
   zookeeper-data:
   zookeeper-log:
@@ -499,6 +528,7 @@ volumes:
   referral-data:
   storage-data:
   admin-data:
+  elasticsearch_data:
 networks:
   default:
     driver: bridge
