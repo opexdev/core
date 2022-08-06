@@ -15,7 +15,7 @@ interface CurrencyRateRepository : ReactiveCrudRepository<CurrencyRateModel, Lon
     @Query(
         """
         insert into currency_rate (base, quote, source, rate)
-        values (:base, :quote, source, :rate)
+        values (:base, :quote, :source, :rate)
         on conflict (base, quote, source)
         do update set rate = excluded.rate
         """

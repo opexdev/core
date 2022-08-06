@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
-import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
@@ -82,6 +81,8 @@ class MarketQueryHandlerImpl(
                 val isMakerBuyer = makerOrder.direction == OrderDirection.BID
                 MarketTrade(
                     it.symbol,
+                    it.baseAsset,
+                    it.quoteAsset,
                     it.tradeId,
                     it.matchedPrice,
                     it.matchedQuantity,
@@ -104,6 +105,12 @@ class MarketQueryHandlerImpl(
         return list.collectList()
             .awaitFirstOrElse { emptyList() }
             .map { PriceTicker(it.symbol, it.matchedPrice.toString()) }
+    }
+
+    override suspend fun getBestPriceForSymbols(symbols: List<String>): List<BestPrice> {
+        return tradeRepository.bestAskAndBidPrice(symbols)
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
     }
 
     override suspend fun getCandleInfo(

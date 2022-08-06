@@ -11,6 +11,8 @@ class TradeModel(
     @Id var id: Long?,
     val tradeId: Long,
     val symbol: String,
+    val baseAsset: String,
+    val quoteAsset: String,
     val matchedPrice: BigDecimal,
     val matchedQuantity: BigDecimal,
     val takerPrice: BigDecimal,

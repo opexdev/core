@@ -19,6 +19,8 @@ interface MarketDataProxy {
 
     suspend fun lastPrice(symbol: String?): List<PriceTicker>
 
+    suspend fun getBestPriceForSymbols(symbols: List<String>): List<BestPrice>
+
     suspend fun getCandleInfo(
         symbol: String,
         interval: String,

@@ -58,6 +58,11 @@ class MarketController(private val marketQueryHandler: MarketQueryHandler) {
         return marketQueryHandler.lastPrice(symbol)
     }
 
+    @GetMapping("/best-prices")
+    suspend fun getOrderBookForSymbol(@RequestParam symbols: List<String>): List<BestPrice> {
+        return marketQueryHandler.getBestPriceForSymbols(symbols)
+    }
+
     @GetMapping("/active-users")
     suspend fun getNumberOfActiveUsers(@RequestParam interval: Long): CountResponse {
         val active = marketQueryHandler.numberOfActiveUsers(Date(interval).asLocalDateTime())

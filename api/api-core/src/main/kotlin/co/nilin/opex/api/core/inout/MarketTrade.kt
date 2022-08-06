@@ -5,6 +5,8 @@ import java.util.*
 
 data class MarketTrade(
     val symbol: String,
+    val baseAsset: String,
+    val quoteAsset: String,
     val id: Long,
     val price: BigDecimal,
     val qty: BigDecimal,

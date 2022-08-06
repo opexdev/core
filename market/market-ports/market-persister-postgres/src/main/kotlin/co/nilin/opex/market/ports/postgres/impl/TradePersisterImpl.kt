@@ -22,11 +22,15 @@ class TradePersisterImpl(
 
     @Transactional
     override suspend fun save(trade: RichTrade) {
+        val pair = trade.pair.split("_")
+
         tradeRepository.save(
             TradeModel(
                 null,
                 trade.id,
                 trade.pair,
+                pair[0].uppercase(),
+                pair[1].uppercase(),
                 trade.matchedPrice,
                 trade.matchedQuantity,
                 trade.takerPrice,
@@ -45,7 +49,6 @@ class TradePersisterImpl(
         ).awaitFirstOrNull()
         logger.info("RichTrade ${trade.id} saved")
 
-        val pair = trade.pair.split("_")
         currencyRateRepository.createOrUpdate(
             pair[0].uppercase(),
             pair[1].uppercase(),

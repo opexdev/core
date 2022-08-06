@@ -39,6 +39,8 @@ CREATE TABLE IF NOT EXISTS trades
     id                     SERIAL PRIMARY KEY,
     trade_id               INTEGER     NOT NULL,
     symbol                 VARCHAR(20) NOT NULL,
+    base_asset             VARCHAR(20) NOT NULL,
+    quote_asset            VARCHAR(20) NOT NULL,
     matched_price          DECIMAL     NOT NULL,
     matched_quantity       DECIMAL     NOT NULL,
     taker_price            DECIMAL     NOT NULL,

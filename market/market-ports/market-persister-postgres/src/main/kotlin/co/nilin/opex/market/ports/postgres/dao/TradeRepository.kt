@@ -1,5 +1,6 @@
 package co.nilin.opex.market.ports.postgres.dao
 
+import co.nilin.opex.market.core.inout.BestPrice
 import co.nilin.opex.market.core.inout.PriceStat
 import co.nilin.opex.market.core.inout.TradeVolumeStat
 import co.nilin.opex.market.ports.postgres.model.CandleInfoData
@@ -148,6 +149,83 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         @Param("date")
         createDate: LocalDateTime,
     ): Mono<TradeTickerData>
+
+    @Query(
+        """
+            select symbol, 
+            (
+                select price from orders
+                join order_status os on orders.ouid = os.ouid
+                where symbol = t.symbol and status in (1, 4) and side = 'BID' 
+                and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
+                and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
+                order by create_date desc limit 1
+            ) as bid_price,
+            (
+                select price from orders 
+                join order_status os on orders.ouid = os.ouid
+                where symbol = t.symbol and status in (1, 4) and side = 'ASK' 
+                and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
+                and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
+                order by create_date limit 1
+            ) as ask_price
+            from trades as t
+            group by symbol
+        """
+    )
+    fun bestAskAndBidPrice(): Flux<BestPrice>
+
+    @Query(
+        """
+            select symbol,
+            (
+                select price from orders
+                join order_status os on orders.ouid = os.ouid
+                where symbol = t.symbol and status in (1, 4) and side = 'BID' 
+                and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
+                and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
+                order by create_date desc limit 1
+            ) as bid_price,
+            (
+                select price from orders 
+                join order_status os on orders.ouid = os.ouid
+                where symbol = t.symbol and status in (1, 4) and side = 'ASK' 
+                and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
+                and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
+                order by create_date limit 1
+            ) as ask_price
+            from trades as t 
+            where symbol in (:symbols)
+            group by symbol
+        """
+    )
+    fun bestAskAndBidPrice(symbols: List<String>): Flux<BestPrice>
+
+    @Query(
+        """
+            select symbol, 
+            (
+                select price from orders
+                join order_status os on orders.ouid = os.ouid
+                where symbol = t.symbol and status in (1, 4) and side = 'BID' 
+                and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
+                and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
+                order by create_date desc limit 1
+            ) as bid_price,
+            (
+                select price from orders 
+                join order_status os on orders.ouid = os.ouid
+                where symbol = t.symbol and status in (1, 4) and side = 'ASK' 
+                and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
+                and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
+                order by create_date limit 1
+            ) as ask_price
+            from trades as t 
+            where symbol = :symbol
+            group by symbol
+        """
+    )
+    fun bestAskAndBidPrice(symbol: String): Mono<BestPrice>
 
     @Query("select * from trades where create_date in (select max(create_date) from trades group by symbol) and symbol = :symbol")
     fun findBySymbolGroupBySymbol(@Param("symbol") symbol: String): Flux<TradeModel>

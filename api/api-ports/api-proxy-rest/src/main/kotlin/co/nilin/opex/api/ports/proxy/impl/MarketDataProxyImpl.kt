@@ -119,6 +119,20 @@ class MarketDataProxyImpl(private val webClient: WebClient) : MarketDataProxy {
             .awaitFirstOrElse { emptyList() }
     }
 
+    override suspend fun getBestPriceForSymbols(symbols: List<String>): List<BestPrice> {
+        return webClient.get()
+            .uri("$baseUrl/v1/market/best-prices") {
+                it.queryParam("symbols", symbols)
+                it.build()
+            }.accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToFlux<BestPrice>()
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+    }
+
     override suspend fun getCandleInfo(
         symbol: String,
         interval: String,

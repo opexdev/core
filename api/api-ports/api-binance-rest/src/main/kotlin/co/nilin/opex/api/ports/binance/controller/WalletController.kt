@@ -205,10 +205,12 @@ class WalletController(
         if (quoteAsset == null)
             return result
 
-        val rates = marketDataProxy.getMarketCurrencyRates(quoteAsset)
-            .associateBy { it.currency }
-        result.associateWith { rates[it.asset] }
-            .forEach { (asset, rate) -> asset.valuation = rate?.rate ?: BigDecimal.ZERO }
+        val prices = marketDataProxy.getBestPriceForSymbols(
+            result.map { "${it.asset.uppercase()}_${quoteAsset.uppercase()}" }
+        ).associateBy { it.symbol.split("_")[0] }
+
+        result.associateWith { prices[it.asset] }
+            .forEach { (asset, price) -> asset.valuation = price?.bidPrice ?: BigDecimal.ZERO }
 
         if (calculateEvaluation == true)
             result.forEach {
@@ -229,17 +231,18 @@ class WalletController(
     ): AssetsEstimatedValue {
         val auth = securityContext.jwtAuthentication()
         val wallets = walletProxy.getWallets(auth.name, auth.tokenValue())
-        val rates = marketDataProxy.getMarketCurrencyRates(quoteAsset.uppercase())
-            .associateBy { it.currency }
+        val rates = marketDataProxy.getBestPriceForSymbols(
+            wallets.map { "${it.asset.uppercase()}_${quoteAsset.uppercase()}" }
+        ).associateBy { it.symbol.split("_")[0] }
 
         var value = BigDecimal.ZERO
         val zeroAssets = arrayListOf<String>()
         wallets.associateWith { rates[it.asset] }
-            .forEach { (asset, rate) ->
-                if (rate == null || rate.rate == BigDecimal.ZERO)
+            .forEach { (asset, price) ->
+                if (price == null || price.bidPrice == BigDecimal.ZERO)
                     zeroAssets.add(asset.asset)
                 else
-                    value += asset.balance.multiply(rate.rate)
+                    value += asset.balance.multiply(price.bidPrice)
             }
         return AssetsEstimatedValue(value, quoteAsset.uppercase(), zeroAssets)
     }

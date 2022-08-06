@@ -90,6 +90,8 @@ object VALID {
         1,
         1,
         ETH_USDT,
+        "ETH",
+        "USDT",
         BigDecimal.valueOf(100000),
         BigDecimal.valueOf(0.001), // Minimum of orders quantities
         BigDecimal.valueOf(100000),
@@ -190,6 +192,8 @@ object VALID {
 
     val MARKET_TRADE_RESPONSE = MarketTrade(
         ETH_USDT,
+        "ETH",
+        "USDT",
         1,
         BigDecimal.valueOf(100000),
         BigDecimal.valueOf(0.001),
