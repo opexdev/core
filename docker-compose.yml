@@ -487,17 +487,21 @@ services:
       - ES_JAVA_OPTS=-Xms1g -Xmx1g
       - discovery.type=single-node
       - ingest.geoip.downloader.enabled=false
+      - node.name=elasticsearch
+      - network.publish_host=elasticsearch
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
     networks:
       - default
   kibana:
     image: elastic/kibana:8.3.2
+    environment:
+      - SERVER_PUBLICBASEURL=$KIBANA_PUBLIC_URL
+      - ELASTICSEARCH_SSL_VERIFICATIONMODE=certificate
     networks:
       - default
   filebeat:
-    image: opex-filebeat
-    build: docker-images/filebeat
+    image: ghcr.io/opexdev/opex-filebeat
     user: root
     environment:
       - FILEBEAT_API_KEY=$FILEBEAT_API_KEY
