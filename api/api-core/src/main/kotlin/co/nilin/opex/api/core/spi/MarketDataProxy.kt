@@ -5,9 +5,9 @@ import java.time.LocalDateTime
 
 interface MarketDataProxy {
 
-    suspend fun getTradeTickerData(startFrom: LocalDateTime): List<PriceChange>
+    suspend fun getTradeTickerData(startFrom: Long): List<PriceChange>
 
-    suspend fun getTradeTickerDataBySymbol(symbol: String, startFrom: LocalDateTime): PriceChange
+    suspend fun getTradeTickerDataBySymbol(symbol: String, startFrom: Long): PriceChange
 
     suspend fun openBidOrders(symbol: String, limit: Int): List<OrderBook>
 
@@ -29,9 +29,9 @@ interface MarketDataProxy {
         limit: Int
     ): List<CandleData>
 
-    suspend fun getMarketCurrencyRates(quote: String): List<CurrencyRate>
+    suspend fun getMarketCurrencyRates(quote: String, base: String? = null): List<CurrencyRate>
 
-    suspend fun getExternalCurrencyRates(quote: String): List<CurrencyRate>
+    suspend fun getExternalCurrencyRates(quote: String, base: String? = null): List<CurrencyRate>
 
     suspend fun countActiveUsers(since: Long): Long
 

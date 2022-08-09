@@ -1,11 +1,14 @@
 package co.nilin.opex.api.ports.binance.controller
 
+import co.nilin.opex.api.core.spi.GlobalMarketProxy
 import co.nilin.opex.api.core.spi.MarketDataProxy
 import co.nilin.opex.api.core.spi.MarketStatProxy
 import co.nilin.opex.api.core.spi.SymbolMapper
 import co.nilin.opex.api.core.utils.Interval
+import co.nilin.opex.api.ports.binance.data.GlobalPriceResponse
 import co.nilin.opex.api.ports.binance.data.MarketInfoResponse
 import co.nilin.opex.api.ports.binance.data.MarketStatResponse
+import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -16,18 +19,23 @@ import org.springframework.web.bind.annotation.RestController
 class LandingController(
     private val marketStatProxy: MarketStatProxy,
     private val marketDataProxy: MarketDataProxy,
+    private val globalMarketProxy: GlobalMarketProxy,
     private val symbolMapper: SymbolMapper
 ) {
 
-    @GetMapping("/prices")
-    suspend fun getCurrencyPrices(
-        @RequestParam interval: String,
-        @RequestParam basedOn: String
-    ): List<String> {
-        val result = arrayListOf<String>()
-        val since = (Interval.findByLabel(interval) ?: Interval.Day).getDate().time
+    private val logger = LoggerFactory.getLogger(LandingController::class.java)
 
-        return result
+    @GetMapping("/globalPrices")
+    suspend fun getCurrencyPrices(@RequestParam usdSymbol: String): GlobalPriceResponse {
+        val irtUSDPrice = marketDataProxy.getExternalCurrencyRates("IRT", usdSymbol)
+        val globalPrice = try {
+            globalMarketProxy.getPrices(symbolMapper.symbolToAliasMap().entries.map { it.value })
+        } catch (e: Exception) {
+            logger.error("Could not fetch prices")
+            emptyList()
+        }
+
+        return GlobalPriceResponse(irtUSDPrice, globalPrice)
     }
 
     @GetMapping("/marketStats")
@@ -35,7 +43,7 @@ class LandingController(
         @RequestParam interval: String,
         @RequestParam(required = false) limit: Int?
     ): MarketStatResponse {
-        val since = (Interval.findByLabel(interval) ?: Interval.Day).getDate().time
+        val since = (Interval.findByLabel(interval) ?: Interval.Week).getDate().time
         val validLimit = getValidLimit(limit)
 
         return MarketStatResponse(

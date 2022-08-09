@@ -15,16 +15,16 @@ import java.util.*
 class MarketController(private val marketQueryHandler: MarketQueryHandler) {
 
     @GetMapping("/ticker")
-    suspend fun priceChangeSince(@RequestParam since: LocalDateTime): List<PriceChange> {
-        return marketQueryHandler.getTradeTickerData(since)
+    suspend fun priceChangeSince(@RequestParam since: Long): List<PriceChange> {
+        return marketQueryHandler.getTradeTickerData(since.asLocalDateTime())
     }
 
     @GetMapping("/{symbol}/ticker")
     suspend fun priceChangeForSymbolSince(
         @PathVariable symbol: String,
-        @RequestParam since: LocalDateTime
+        @RequestParam since: Long
     ): PriceChange {
-        return marketQueryHandler.getTradeTickerDateBySymbol(symbol, since)
+        return marketQueryHandler.getTradeTickerDateBySymbol(symbol, since.asLocalDateTime())
             ?: throw OpexException(OpexError.PriceChangeNotFound)
     }
 
@@ -65,7 +65,7 @@ class MarketController(private val marketQueryHandler: MarketQueryHandler) {
 
     @GetMapping("/active-users")
     suspend fun getNumberOfActiveUsers(@RequestParam interval: Long): CountResponse {
-        val active = marketQueryHandler.numberOfActiveUsers(Date(interval).asLocalDateTime())
+        val active = marketQueryHandler.numberOfActiveUsers(interval.asLocalDateTime())
         return CountResponse(active)
     }
 
@@ -74,7 +74,7 @@ class MarketController(private val marketQueryHandler: MarketQueryHandler) {
         @RequestParam interval: Long,
         @RequestParam(required = false) symbol: String?
     ): CountResponse {
-        val count = marketQueryHandler.numberOfOrders(Date(interval).asLocalDateTime(), symbol)
+        val count = marketQueryHandler.numberOfOrders(interval.asLocalDateTime(), symbol)
         return CountResponse(count)
     }
 
@@ -83,7 +83,7 @@ class MarketController(private val marketQueryHandler: MarketQueryHandler) {
         @RequestParam interval: Long,
         @RequestParam(required = false) symbol: String?
     ): CountResponse {
-        val count = marketQueryHandler.numberOfTrades(Date(interval).asLocalDateTime(), symbol)
+        val count = marketQueryHandler.numberOfTrades(interval.asLocalDateTime(), symbol)
         return CountResponse(count)
     }
 

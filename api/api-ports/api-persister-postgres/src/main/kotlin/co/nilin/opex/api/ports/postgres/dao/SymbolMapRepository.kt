@@ -5,6 +5,7 @@ import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @Repository
@@ -15,4 +16,6 @@ interface SymbolMapRepository : ReactiveCrudRepository<SymbolMapModel, String> {
 
     @Query("select * from symbol_maps where alias_key = :aliasKey and alias = :alias")
     fun findByAliasKeyAndAlias(aliasKey: String, @Param("alias") alias: String): Mono<SymbolMapModel>
+
+    fun findAllByAliasKey(aliasKey: String): Flux<SymbolMapModel>
 }

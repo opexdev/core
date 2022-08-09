@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component
 @Component
 class SymbolMapperImpl(val symbolMapRepository: SymbolMapRepository) : SymbolMapper {
 
+    private var symbolsCache: Map<String, String>? = null
+
     override suspend fun fromInternalSymbol(symbol: String?): String? {
         if (symbol == null) return null
         return symbolMapRepository.findByAliasKeyAndSymbol("binance", symbol).awaitFirstOrNull()?.alias
@@ -20,10 +22,12 @@ class SymbolMapperImpl(val symbolMapRepository: SymbolMapRepository) : SymbolMap
     }
 
     override suspend fun symbolToAliasMap(): Map<String, String> {
-        return symbolMapRepository.findAll()
-            .filter { it.aliasKey == "binance" }
-            .collectList()
-            .awaitFirstOrElse { emptyList() }
-            .associate { it.symbol to it.alias }
+        if (symbolsCache.isNullOrEmpty()) {
+            symbolsCache = symbolMapRepository.findAllByAliasKey("binance")
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
+                .associate { it.symbol to it.alias }
+        }
+        return symbolsCache!!
     }
 }

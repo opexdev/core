@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToFlux
 import org.springframework.web.reactive.function.client.bodyToMono
-import java.time.LocalDateTime
 
 @Component
 class MarketDataProxyImpl(private val webClient: WebClient) : MarketDataProxy {
@@ -23,7 +22,7 @@ class MarketDataProxyImpl(private val webClient: WebClient) : MarketDataProxy {
     @Value("\${app.market.url}")
     private lateinit var baseUrl: String
 
-    override suspend fun getTradeTickerData(startFrom: LocalDateTime): List<PriceChange> {
+    override suspend fun getTradeTickerData(startFrom: Long): List<PriceChange> {
         return webClient.get()
             .uri("$baseUrl/v1/market/ticker") {
                 it.queryParam("since", startFrom)
@@ -37,7 +36,7 @@ class MarketDataProxyImpl(private val webClient: WebClient) : MarketDataProxy {
             .awaitFirstOrElse { emptyList() }
     }
 
-    override suspend fun getTradeTickerDataBySymbol(symbol: String, startFrom: LocalDateTime): PriceChange {
+    override suspend fun getTradeTickerDataBySymbol(symbol: String, startFrom: Long): PriceChange {
         return webClient.get()
             .uri("$baseUrl/v1/market/$symbol/ticker") {
                 it.queryParam("since", startFrom)
@@ -156,9 +155,9 @@ class MarketDataProxyImpl(private val webClient: WebClient) : MarketDataProxy {
             .awaitFirstOrElse { emptyList() }
     }
 
-    override suspend fun getMarketCurrencyRates(quote: String): List<CurrencyRate> {
+    override suspend fun getMarketCurrencyRates(quote: String, base: String?): List<CurrencyRate> {
         return webClient.get()
-            .uri("$baseUrl/v1/rate/MARKET") {
+            .uri(if (base.isNullOrEmpty()) "$baseUrl/v1/rate/EXTERNAL" else "$baseUrl/v1/rate/$base/EXTERNAL") {
                 it.queryParam("quote", quote)
                 it.build()
             }.accept(MediaType.APPLICATION_JSON)
@@ -170,9 +169,9 @@ class MarketDataProxyImpl(private val webClient: WebClient) : MarketDataProxy {
             .awaitFirstOrElse { emptyList() }
     }
 
-    override suspend fun getExternalCurrencyRates(quote: String): List<CurrencyRate> {
+    override suspend fun getExternalCurrencyRates(quote: String, base: String?): List<CurrencyRate> {
         return webClient.get()
-            .uri("$baseUrl/v1/rate/EXTERNAL") {
+            .uri(if (base.isNullOrEmpty()) "$baseUrl/v1/rate/EXTERNAL" else "$baseUrl/v1/rate/$base/EXTERNAL") {
                 it.queryParam("quote", quote)
                 it.build()
             }.accept(MediaType.APPLICATION_JSON)

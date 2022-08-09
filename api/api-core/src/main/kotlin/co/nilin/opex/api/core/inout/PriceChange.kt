@@ -3,7 +3,7 @@ package co.nilin.opex.api.core.inout
 import java.math.BigDecimal
 
 data class PriceChange(
-    val symbol: String,
+    var symbol: String,
     val priceChange: BigDecimal = BigDecimal.ZERO,
     val priceChangePercent: BigDecimal = BigDecimal.ZERO,
     val weightedAvgPrice: BigDecimal = BigDecimal.ZERO,
@@ -15,8 +15,8 @@ data class PriceChange(
     val highPrice: BigDecimal = BigDecimal.ZERO,
     val lowPrice: BigDecimal = BigDecimal.ZERO,
     val volume: BigDecimal = BigDecimal.ZERO,
-    val openTime: Long,
-    val closeTime: Long,
+    val openTime: Long = 0,
+    val closeTime: Long = 0,
     val firstId: Long = 0,
     val lastId: Long = 0,
     val count: Long = 0,

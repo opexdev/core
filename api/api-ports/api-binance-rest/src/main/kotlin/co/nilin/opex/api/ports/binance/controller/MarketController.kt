@@ -23,8 +23,7 @@ import java.time.ZoneId
 class MarketController(
     private val accountantProxy: AccountantProxy,
     private val marketDataProxy: MarketDataProxy,
-    private val marketStatProxy: MarketStatProxy,
-    private val symbolMapper: SymbolMapper,
+    private val symbolMapper: SymbolMapper
 ) {
 
     private val orderBookValidLimits = arrayListOf(5, 10, 20, 50, 100, 500, 1000, 5000)
@@ -115,12 +114,22 @@ class MarketController(
         if (!validDurations.contains(duration))
             throwError(OpexError.InvalidPriceChangeDuration)
 
-        val startDate = Interval.findByLabel(duration)?.getLocalDateTime() ?: Interval.Day.getLocalDateTime()
+        val startDate = Interval.findByLabel(duration) ?: Interval.Week
 
-        return if (symbol.isNullOrEmpty())
-            marketDataProxy.getTradeTickerData(startDate)
+        val result = if (symbol.isNullOrEmpty())
+            marketDataProxy.getTradeTickerData(startDate.getDate().time).toMutableList()
         else
-            listOf(marketDataProxy.getTradeTickerDataBySymbol(localSymbol!!, startDate))
+            arrayListOf(marketDataProxy.getTradeTickerDataBySymbol(localSymbol!!, startDate.getDate().time))
+
+        symbolMapper.symbolToAliasMap().entries.forEach { map ->
+            val price = result.find { it.symbol == map.key }
+            if (price == null && symbol.isNullOrEmpty())
+                result.add(PriceChange(map.value))
+            else
+                price?.symbol = map.value
+        }
+
+        return result
     }
 
     // Weight
