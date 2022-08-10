@@ -45,3 +45,5 @@ services:
     build: captcha/captcha-app
   admin:
     build: admin/admin-app
+  filebeat:
+    build: docker-images/filebeat

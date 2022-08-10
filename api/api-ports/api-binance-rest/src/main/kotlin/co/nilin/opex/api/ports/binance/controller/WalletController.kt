@@ -130,7 +130,7 @@ class WalletController(
                 LocalDateTime.ofInstant(Instant.ofEpochMilli(it.createDate), ZoneId.systemDefault())
                     .toString()
                     .replace("T", " "),
-                it.destCurrency ?: "",
+                it.destSymbol ?: "",
                 it.withdrawId?.toString() ?: "",
                 "",
                 it.destNetwork ?: "",

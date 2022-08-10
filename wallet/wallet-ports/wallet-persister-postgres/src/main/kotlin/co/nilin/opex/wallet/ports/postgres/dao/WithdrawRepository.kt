@@ -108,7 +108,7 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, String> {
         """
         select * from withdraws 
         where uuid = :uuid
-            and dest_currency = :currency
+            and currency = :currency
             and create_date > :startTime 
             and create_date <= :endTime
         limit :limit

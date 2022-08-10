@@ -147,13 +147,13 @@ class CurrencyHandlerImpl(
         currencyModel: CurrencyModel? = null
     ): CurrencyImplementation {
         val addressTypesModel = chainRepository.findAddressTypesByName(currencyImplementationModel.chain)
-        val addressTypes = addressTypesModel.map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }
+        val addressTypes = addressTypesModel.map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }.toList()
         val currencyModelVal =
             currencyModel ?: currencyRepository.findBySymbol(currencyImplementationModel.currencySymbol).awaitSingle()
         val currency = Currency(currencyModelVal.symbol, currencyModelVal.name)
         return CurrencyImplementation(
             currency,
-            Chain(currencyImplementationModel.chain, addressTypes.toList()),
+            Chain(currencyImplementationModel.chain, addressTypes),
             currencyImplementationModel.token,
             currencyImplementationModel.tokenAddress,
             currencyImplementationModel.tokenName,
