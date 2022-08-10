@@ -26,6 +26,9 @@ class SymbolMapperTest {
             symbolMapRepository.findByAliasKeyAndSymbol("binance", VALID.ETH_USDT)
         } returns Mono.just(VALID.SYMBOL_MAP_MODEL)
         every {
+            symbolMapRepository.findAllByAliasKey("binance")
+        } returns Flux.just(VALID.SYMBOL_MAP_MODEL)
+        every {
             symbolMapRepository.findAll()
         } returns Flux.just(VALID.SYMBOL_MAP_MODEL)
     }
