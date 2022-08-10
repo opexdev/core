@@ -26,20 +26,23 @@ class SymbolMapperTest {
             symbolMapRepository.findByAliasKeyAndSymbol("binance", VALID.ETH_USDT)
         } returns Mono.just(VALID.SYMBOL_MAP_MODEL)
         every {
+            symbolMapRepository.findAllByAliasKey("binance")
+        } returns Flux.just(VALID.SYMBOL_MAP_MODEL)
+        every {
             symbolMapRepository.findAll()
         } returns Flux.just(VALID.SYMBOL_MAP_MODEL)
     }
 
     @Test
     fun givenSymbolAlias_whenMapSymbol_thenReturnAlias(): Unit = runBlocking {
-        val alis = symbolMapper.map(VALID.ETH_USDT)
+        val alis = symbolMapper.fromInternalSymbol(VALID.ETH_USDT)
 
         assertThat(alis).isEqualTo("ETHUSDT")
     }
 
     @Test
     fun givenSymbolAlias_whenUnmapAlias_thenReturnSymbol(): Unit = runBlocking {
-        val symbol = symbolMapper.unmap("ETHUSDT")
+        val symbol = symbolMapper.toInternalSymbol("ETHUSDT")
 
         assertThat(symbol).isEqualTo(VALID.ETH_USDT)
     }

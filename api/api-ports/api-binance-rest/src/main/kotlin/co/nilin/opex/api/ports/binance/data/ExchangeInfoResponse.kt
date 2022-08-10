@@ -1,7 +1,6 @@
 package co.nilin.opex.api.ports.binance.data
 
 import co.nilin.opex.api.core.inout.PairFeeResponse
-import co.nilin.opex.api.core.inout.RateLimit
 import java.util.*
 
 data class ExchangeInfoResponse(

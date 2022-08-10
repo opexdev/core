@@ -14,10 +14,12 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     ServiceUnavailable(1006, null, HttpStatus.SERVICE_UNAVAILABLE),
     InvalidRequestParam(1020, "Parameter '%s' is either missing or invalid", HttpStatus.BAD_REQUEST),
     InvalidRequestBody(1021, "Request body is invalid", HttpStatus.BAD_REQUEST),
+    NoRecordFound(1022,"No record found for this service",HttpStatus.NOT_FOUND),
 
     // code 2000: accountant
     InvalidPair(2001, "%s is not available", HttpStatus.BAD_REQUEST),
     InvalidPairFee(2002, "%s fee is not available", HttpStatus.BAD_REQUEST),
+    PairFeeNotFound(2002, "No fee for requested pair found", HttpStatus.NOT_FOUND),
 
     // code 3000: matching-engine
 
@@ -63,7 +65,13 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     UserNotFoundAdmin(9001, "User not found", HttpStatus.NOT_FOUND),
 
     // code 10000: bc-gateway
-    InvalidCaptcha(10001, "Captcha is not valid", HttpStatus.BAD_REQUEST);
+    InvalidCaptcha(10001, "Captcha is not valid", HttpStatus.BAD_REQUEST),
+
+    // code 11000: market
+    PriceChangeNotFound(11001, "Price change for requested symbol not found", HttpStatus.NOT_FOUND),
+    LastOrderNotFound(11002, "Last order for symbol not found", HttpStatus.NOT_FOUND),
+
+    ;
 
     companion object {
         fun findByCode(code: Int?): OpexError? {

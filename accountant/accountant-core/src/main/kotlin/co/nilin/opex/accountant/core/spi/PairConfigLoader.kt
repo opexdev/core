@@ -10,6 +10,10 @@ interface PairConfigLoader {
 
     suspend fun loadPairFeeConfigs(): List<PairFeeConfig>
 
+    suspend fun loadPairFeeConfigs(direction: OrderDirection, userLevel: String): List<PairFeeConfig>
+
+    suspend fun loadPairFeeConfigs(pair: String, direction: OrderDirection, userLevel: String): PairFeeConfig?
+
     suspend fun load(pair: String, direction: OrderDirection, userLevel: String): PairFeeConfig
 
     suspend fun load(pair: String, direction: OrderDirection): PairConfig

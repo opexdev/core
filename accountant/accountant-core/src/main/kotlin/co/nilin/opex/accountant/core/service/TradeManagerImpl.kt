@@ -9,6 +9,7 @@ import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.Order
 import co.nilin.opex.accountant.core.spi.*
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
+import co.nilin.opex.matching.engine.core.model.OrderDirection
 import org.slf4j.LoggerFactory
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
@@ -135,6 +136,9 @@ open class TradeManagerImpl(
             financialActions.add(takerFeeAction)
         }
 
+        val takerPrice = trade.takerPrice.toBigDecimal().multiply(takerOrder.rightSideFraction)
+        val makerPrice = trade.makerPrice.toBigDecimal().multiply(makerOrder.rightSideFraction)
+
         richTradePublisher.publish(
             RichTrade(
                 trade.tradeId,
@@ -143,7 +147,7 @@ open class TradeManagerImpl(
                 trade.takerUuid,
                 trade.takerOrderId,
                 trade.takerDirection,
-                trade.takerPrice.toBigDecimal().multiply(takerOrder.rightSideFraction),
+                takerPrice,
                 takerOrder.origQuantity,
                 takerOrder.origPrice.multiply(takerOrder.origQuantity),
                 trade.takerRemainedQuantity.toBigDecimal().multiply(takerOrder.leftSideFraction),
@@ -153,12 +157,13 @@ open class TradeManagerImpl(
                 trade.makerUuid,
                 trade.makerOrderId,
                 trade.makerDirection,
-                trade.makerPrice.toBigDecimal().multiply(makerOrder.rightSideFraction),
+                makerPrice,
                 makerOrder.origQuantity,
                 makerOrder.origPrice.multiply(makerOrder.origQuantity),
                 trade.makerRemainedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction),
                 feeActions.makerFeeAction.amount,
                 feeActions.makerFeeAction.symbol,
+                makerPrice,
                 trade.matchedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction),
                 trade.eventDate
             )
