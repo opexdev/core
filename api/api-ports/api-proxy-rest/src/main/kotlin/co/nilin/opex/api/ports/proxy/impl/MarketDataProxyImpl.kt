@@ -4,7 +4,6 @@ import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.MarketDataProxy
 import co.nilin.opex.api.core.utils.LoggerDelegate
 import kotlinx.coroutines.reactive.awaitFirstOrElse
-import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
@@ -13,6 +12,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToFlux
 import org.springframework.web.reactive.function.client.bodyToMono
+import java.util.*
 
 @Component
 class MarketDataProxyImpl(private val webClient: WebClient) : MarketDataProxy {
@@ -46,7 +46,8 @@ class MarketDataProxyImpl(private val webClient: WebClient) : MarketDataProxy {
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<PriceChange>()
-            .awaitSingle()
+            .awaitSingleOrNull()
+            ?: PriceChange(symbol, openTime = Date().time, closeTime = startFrom)
     }
 
     override suspend fun openBidOrders(symbol: String, limit: Int): List<OrderBook> {

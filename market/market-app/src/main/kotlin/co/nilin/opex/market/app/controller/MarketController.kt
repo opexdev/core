@@ -23,9 +23,8 @@ class MarketController(private val marketQueryHandler: MarketQueryHandler) {
     suspend fun priceChangeForSymbolSince(
         @PathVariable symbol: String,
         @RequestParam since: Long
-    ): PriceChange {
+    ): PriceChange? {
         return marketQueryHandler.getTradeTickerDateBySymbol(symbol, since.asLocalDateTime())
-            ?: throw OpexException(OpexError.PriceChangeNotFound)
     }
 
     @GetMapping("/{symbol}/order-book")
@@ -49,8 +48,8 @@ class MarketController(private val marketQueryHandler: MarketQueryHandler) {
     }
 
     @GetMapping("/{symbol}/last-order")
-    suspend fun getLastOrderForSymbol(@PathVariable symbol: String): Order {
-        return marketQueryHandler.lastOrder(symbol) ?: throw OpexException(OpexError.LastOrderNotFound)
+    suspend fun getLastOrderForSymbol(@PathVariable symbol: String): Order? {
+        return marketQueryHandler.lastOrder(symbol)
     }
 
     @GetMapping("/prices")

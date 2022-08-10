@@ -68,8 +68,6 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     InvalidCaptcha(10001, "Captcha is not valid", HttpStatus.BAD_REQUEST),
 
     // code 11000: market
-    PriceChangeNotFound(11001, "Price change for requested symbol not found", HttpStatus.NOT_FOUND),
-    LastOrderNotFound(11002, "Last order for symbol not found", HttpStatus.NOT_FOUND),
 
     ;
 
