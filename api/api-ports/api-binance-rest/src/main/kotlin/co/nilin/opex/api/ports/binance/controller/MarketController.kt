@@ -4,7 +4,6 @@ import co.nilin.opex.api.core.inout.PriceChange
 import co.nilin.opex.api.core.inout.PriceTicker
 import co.nilin.opex.api.core.spi.AccountantProxy
 import co.nilin.opex.api.core.spi.MarketDataProxy
-import co.nilin.opex.api.core.spi.MarketStatProxy
 import co.nilin.opex.api.core.spi.SymbolMapper
 import co.nilin.opex.api.core.utils.Interval
 import co.nilin.opex.api.ports.binance.data.*
@@ -90,8 +89,8 @@ class MarketController(
                 RecentTradeResponse(
                     it.id,
                     it.price,
-                    it.qty,
-                    it.quoteQty,
+                    it.quantity,
+                    it.quoteQuantity,
                     it.time.time,
                     it.isMakerBuyer,
                     it.isBestMatch
