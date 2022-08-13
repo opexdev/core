@@ -46,6 +46,7 @@ init_secrets() {
   ## Enable backend apps
   vault write auth/app-id/map/app-id/opex-accountant value=backend-policy display_name=opex-accountant
   vault write auth/app-id/map/app-id/opex-api value=backend-policy display_name=opex-api
+  vault write auth/app-id/map/app-id/opex-market value=backend-policy display_name=opex-market
   vault write auth/app-id/map/app-id/opex-bc-gateway value=backend-policy display_name=opex-bc-gateway
   vault write auth/app-id/map/app-id/opex-eventlog value=backend-policy display_name=opex-eventlog
   vault write auth/app-id/map/app-id/opex-auth value=backend-policy display_name=opex-auth
@@ -61,11 +62,12 @@ init_secrets() {
 
   ## Enable user-id
   vault write auth/app-id/map/user-id/${BACKEND_USER} \
-    value=opex-wallet,opex-websocket,opex-eventlog,opex-auth,opex-accountant,opex-api,opex-bc-gateway,opex-payment,opex-admin,bitcoin-scanner,ethereum-scanner,tron-scanner,scanner-scheduler,opex-referral
+    value=opex-wallet,opex-websocket,opex-eventlog,opex-auth,opex-accountant,opex-api,opex-market,opex-bc-gateway,opex-payment,opex-admin,bitcoin-scanner,ethereum-scanner,tron-scanner,scanner-scheduler,opex-referral
 
   ## Check login app-id
   vault write auth/app-id/login/opex-accountant user_id=${BACKEND_USER}
   vault write auth/app-id/login/opex-api user_id=${BACKEND_USER}
+  vault write auth/app-id/login/opex-market user_id=${BACKEND_USER}
   vault write auth/app-id/login/opex-bc-gateway user_id=${BACKEND_USER}
   vault write auth/app-id/login/opex-eventlog user_id=${BACKEND_USER}
   vault write auth/app-id/login/opex-auth user_id=${BACKEND_USER}
@@ -83,6 +85,7 @@ init_secrets() {
   vault kv put secret/opex smtppass=${SMTP_PASS}
   vault kv put secret/opex-accountant dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}
   vault kv put secret/opex-api dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}
+  vault kv put secret/opex-market dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}
   vault kv put secret/opex-bc-gateway dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}
   vault kv put secret/opex-eventlog dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}
   vault kv put secret/opex-auth dbusername=${DB_USER} dbpassword=${DB_PASS} admin_username=${KEYCLOAK_ADMIN_USERNAME} admin_password=${KEYCLOAK_ADMIN_PASSWORD}

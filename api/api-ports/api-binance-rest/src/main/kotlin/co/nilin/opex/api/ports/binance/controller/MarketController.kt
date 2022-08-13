@@ -1,16 +1,16 @@
 package co.nilin.opex.api.ports.binance.controller
 
-import co.nilin.opex.api.core.inout.PriceChangeResponse
-import co.nilin.opex.api.core.inout.PriceTickerResponse
+import co.nilin.opex.api.core.inout.PriceChange
+import co.nilin.opex.api.core.inout.PriceTicker
 import co.nilin.opex.api.core.spi.AccountantProxy
-import co.nilin.opex.api.core.spi.MarketQueryHandler
+import co.nilin.opex.api.core.spi.MarketDataProxy
+import co.nilin.opex.api.core.spi.MarketStatProxy
 import co.nilin.opex.api.core.spi.SymbolMapper
+import co.nilin.opex.api.core.utils.Interval
 import co.nilin.opex.api.ports.binance.data.*
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.utility.error.data.throwError
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
@@ -22,8 +22,8 @@ import java.time.ZoneId
 @RestController
 class MarketController(
     private val accountantProxy: AccountantProxy,
-    private val marketQueryHandler: MarketQueryHandler,
-    private val symbolMapper: SymbolMapper,
+    private val marketDataProxy: MarketDataProxy,
+    private val symbolMapper: SymbolMapper
 ) {
 
     private val orderBookValidLimits = arrayListOf(5, 10, 20, 50, 100, 500, 1000, 5000)
@@ -42,15 +42,15 @@ class MarketController(
         limit: Int? // Default 100; max 5000. Valid limits:[5, 10, 20, 50, 100, 500, 1000, 5000]
     ): OrderBookResponse {
         val validLimit = limit ?: 100
-        val localSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+        val localSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
         if (!orderBookValidLimits.contains(validLimit))
             throwError(OpexError.InvalidLimitForOrderBook)
 
         val mappedBidOrders = ArrayList<ArrayList<BigDecimal>>()
         val mappedAskOrders = ArrayList<ArrayList<BigDecimal>>()
 
-        val bidOrders = marketQueryHandler.openBidOrders(localSymbol, validLimit)
-        val askOrders = marketQueryHandler.openAskOrders(localSymbol, validLimit)
+        val bidOrders = marketDataProxy.openBidOrders(localSymbol, validLimit)
+        val askOrders = marketDataProxy.openAskOrders(localSymbol, validLimit)
 
         bidOrders.forEach {
             val mapped = arrayListOf<BigDecimal>().apply {
@@ -68,7 +68,7 @@ class MarketController(
             mappedAskOrders.add(mapped)
         }
 
-        val lastOrder = marketQueryHandler.lastOrder(localSymbol)
+        val lastOrder = marketDataProxy.lastOrder(localSymbol)
         return OrderBookResponse(lastOrder?.orderId ?: -1, mappedBidOrders, mappedAskOrders)
     }
 
@@ -79,13 +79,13 @@ class MarketController(
         symbol: String,
         @RequestParam("limit", required = false)
         limit: Int? // Default 500; max 1000.
-    ): Flow<RecentTradeResponse> {
+    ): List<RecentTradeResponse> {
         val validLimit = limit ?: 500
-        val localSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+        val localSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
         if (validLimit !in 1..1000)
             throwError(OpexError.InvalidLimitForRecentTrades)
 
-        return marketQueryHandler.recentTrades(localSymbol, validLimit)
+        return marketDataProxy.recentTrades(localSymbol, validLimit)
             .map {
                 RecentTradeResponse(
                     it.id,
@@ -105,33 +105,43 @@ class MarketController(
         duration: String,
         @RequestParam("symbol", required = false)
         symbol: String?,
-    ): List<PriceChangeResponse> {
+    ): List<PriceChange> {
         val localSymbol = if (symbol.isNullOrEmpty())
             null
         else
-            symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+            symbolMapper.toInternalSymbol(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
 
         if (!validDurations.contains(duration))
             throwError(OpexError.InvalidPriceChangeDuration)
 
-        val startDate = Interval.findByLabel(duration)?.getLocalDateTime() ?: Interval.Day.getLocalDateTime()
+        val startDate = Interval.findByLabel(duration) ?: Interval.Week
 
-        return if (symbol.isNullOrEmpty())
-            marketQueryHandler.getTradeTickerData(startDate)
+        val result = if (symbol.isNullOrEmpty())
+            marketDataProxy.getTradeTickerData(startDate.getDate().time).toMutableList()
         else
-            listOf(marketQueryHandler.getTradeTickerDataBySymbol(localSymbol!!, startDate))
+            arrayListOf(marketDataProxy.getTradeTickerDataBySymbol(localSymbol!!, startDate.getDate().time))
+
+        symbolMapper.symbolToAliasMap().entries.forEach { map ->
+            val price = result.find { it.symbol == map.key }
+            if (price == null && symbol.isNullOrEmpty())
+                result.add(PriceChange(map.value))
+            else
+                price?.symbol = map.value
+        }
+
+        return result
     }
 
     // Weight
     // 1 for a single symbol
     // 2 when the symbol parameter is omitted
     @GetMapping("/v3/ticker/price")
-    suspend fun priceTicker(@RequestParam("symbol", required = false) symbol: String?): List<PriceTickerResponse> {
+    suspend fun priceTicker(@RequestParam("symbol", required = false) symbol: String?): List<PriceTicker> {
         val localSymbol = if (symbol == null)
             null
         else
-            symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
-        return marketQueryHandler.lastPrice(localSymbol)
+            symbolMapper.toInternalSymbol(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+        return marketDataProxy.lastPrice(localSymbol)
     }
 
     @GetMapping("/v3/exchangeInfo")
@@ -172,14 +182,14 @@ class MarketController(
         limit: Int? // Default 500; max 1000.
     ): List<List<Any>> {
         val validLimit = limit ?: 500
-        val localSymbol = symbolMapper.unmap(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+        val localSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
         if (validLimit !in 1..1000)
             throwError(OpexError.InvalidLimitForRecentTrades)
 
         val i = Interval.findByLabel(interval) ?: throw OpexException(OpexError.InvalidInterval)
 
         val list = ArrayList<ArrayList<Any>>()
-        marketQueryHandler.getCandleInfo(localSymbol, "${i.duration} ${i.unit}", startTime, endTime, validLimit)
+        marketDataProxy.getCandleInfo(localSymbol, "${i.duration} ${i.unit}", startTime, endTime, validLimit)
             .forEach {
                 list.add(
                     arrayListOf(

@@ -185,6 +185,23 @@ class WalletManagerImpl(
             }
     }
 
+    override suspend fun findWalletByOwnerAndSymbol(owner: WalletOwner, symbol: String): List<Wallet> {
+        val ownerModel = walletOwnerRepository.findById(owner.id!!).awaitFirst()
+        return walletRepository.findByOwnerAndCurrency(owner.id!!, symbol)
+            .collectList()
+            .awaitSingle()
+            .map {
+                val currency = currencyRepository.findById(it.currency).awaitFirst()
+                Wallet(
+                    it.id!!,
+                    ownerModel.toPlainObject(),
+                    Amount(currency.toPlainObject(), it.balance),
+                    currency.toPlainObject(),
+                    it.type
+                )
+            }
+    }
+
     override suspend fun createWallet(owner: WalletOwner, balance: Amount, currency: Currency, type: String): Wallet {
         val walletModel = walletRepository
             .save(WalletModel(null, owner.id!!, type, currency.symbol, balance.amount))

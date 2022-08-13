@@ -9,4 +9,6 @@ interface AccountantProxy {
 
     suspend fun getFeeConfigs(): List<PairFeeResponse>
 
+    suspend fun getFeeConfig(symbol: String): PairFeeResponse
+
 }

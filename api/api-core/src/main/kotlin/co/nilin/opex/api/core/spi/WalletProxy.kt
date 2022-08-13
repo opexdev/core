@@ -9,6 +9,8 @@ interface WalletProxy {
 
     suspend fun getWallets(uuid: String?, token: String?): List<Wallet>
 
+    suspend fun getWallet(uuid: String?, token: String?, symbol: String): Wallet
+
     suspend fun getOwnerLimits(uuid: String?, token: String?): OwnerLimitsResponse
 
     suspend fun getDepositTransactions(

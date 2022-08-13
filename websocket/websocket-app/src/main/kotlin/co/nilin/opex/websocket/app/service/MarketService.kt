@@ -73,7 +73,7 @@ class MarketService(private val marketQueryHandler: MarketQueryHandler) {
     }
 
     suspend fun getPriceOverview(symbol: String, duration: String): List<PriceChangeResponse> {
-        val startDate = Interval.findByLabel(duration)?.getLocalDateTime() ?: Interval.Day.getLocalDateTime()
+        val startDate = Interval.findByLabel(duration)?.getLocalDateTime() ?: Interval.Week.getLocalDateTime()
         return listOf(marketQueryHandler.getTradeTickerDataBySymbol(symbol, startDate))
     }
 

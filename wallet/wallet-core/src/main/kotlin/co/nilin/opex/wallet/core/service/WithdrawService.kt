@@ -26,7 +26,7 @@ class WithdrawService(
     suspend fun requestWithdraw(
         withdrawCommand: WithdrawCommand
     ): WithdrawResult {
-        val currency = currencyService.getCurrency(withdrawCommand.symbol) ?: throw IllegalArgumentException()
+        val currency = currencyService.getCurrency(withdrawCommand.currency) ?: throw IllegalArgumentException()
         val owner = walletOwnerManager.findWalletOwner(withdrawCommand.uuid) ?: throw IllegalArgumentException()
         val sourceWallet =
             walletManager.findWalletByOwnerAndCurrencyAndType(owner, "main", currency)
@@ -51,12 +51,23 @@ class WithdrawService(
         )
         val withdraw = withdrawPersister.persist(
             Withdraw(
-                null, owner.uuid, receiverWallet.id!!, withdrawCommand.amount,
-                transferResultDetailed.tx, null,
-                withdrawCommand.acceptedFee, null,
-                null, withdrawCommand.destCurrency,
-                withdrawCommand.destAddress, withdrawCommand.destNetwork,
-                withdrawCommand.destNote, null, null, "CREATED"
+                null,
+                owner.uuid,
+                currency.symbol,
+                receiverWallet.id!!,
+                withdrawCommand.amount,
+                transferResultDetailed.tx,
+                null,
+                withdrawCommand.acceptedFee,
+                null,
+                null,
+                withdrawCommand.destSymbol,
+                withdrawCommand.destAddress,
+                withdrawCommand.destNetwork,
+                withdrawCommand.destNote,
+                null,
+                null,
+                "CREATED"
             )
         )
         return WithdrawResult(withdraw.withdrawId!!, withdraw.status)
@@ -97,6 +108,7 @@ class WithdrawService(
             Withdraw(
                 withdraw.withdrawId,
                 withdraw.ownerUuid,
+                withdraw.currency,
                 withdraw.wallet,
                 withdraw.amount,
                 withdraw.requestTransaction,
@@ -104,7 +116,7 @@ class WithdrawService(
                 withdraw.acceptedFee,
                 withdraw.appliedFee,
                 withdraw.amount.subtract(acceptCommand.appliedFee),
-                withdraw.destCurrency,
+                withdraw.destSymbol,
                 withdraw.destAddress,
                 withdraw.destNetwork,
                 withdraw.destNote ?: ("" + "-----------" + (acceptCommand.destNote ?: "")),
@@ -150,6 +162,7 @@ class WithdrawService(
             Withdraw(
                 withdraw.withdrawId,
                 withdraw.ownerUuid,
+                withdraw.currency,
                 withdraw.wallet,
                 withdraw.amount,
                 withdraw.requestTransaction,
@@ -157,7 +170,7 @@ class WithdrawService(
                 withdraw.acceptedFee,
                 null,
                 null,
-                withdraw.destCurrency,
+                withdraw.destSymbol,
                 withdraw.destAddress,
                 withdraw.destNetwork,
                 withdraw.destNote ?: ("" + "-----------" + (rejectCommand.destNote ?: "")),

@@ -27,7 +27,7 @@ spring:
       scheme: http
       authentication: APPID
       app-id:
-        user-id: co.nilin.opex.util.vault.VaultUserIdMechanism
+        user-id: co.nilin.opex.api.app.utils.VaultUserIdMechanism
       fail-fast: true
       kv:
         enabled: true
@@ -51,8 +51,12 @@ app:
     url: lb://opex-matching-gateway
   wallet:
     url: lb://opex-wallet
+  market:
+    url: lb://opex-market
   opex-bc-gateway:
     url: lb://opex-bc-gateway
   auth:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
+  binance:
+    api-url: https://api1.binance.com
 swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
