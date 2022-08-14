@@ -45,12 +45,18 @@ class LandingController(
     ): MarketStatResponse {
         val since = (Interval.findByLabel(interval) ?: Interval.Week).getDate().time
         val validLimit = getValidLimit(limit)
+        val symbols = symbolMapper.symbolToAliasMap()
+
 
         return MarketStatResponse(
-            marketStatProxy.getMostIncreasedInPricePairs(since, validLimit),
-            marketStatProxy.getMostDecreasedInPricePairs(since, validLimit),
-            marketStatProxy.getHighestVolumePair(since),
-            marketStatProxy.getTradeCountPair(since)
+            marketStatProxy.getMostIncreasedInPricePairs(since, validLimit).onEach {
+                symbols[it.symbol]?.let { s -> it.symbol = s }
+            },
+            marketStatProxy.getMostDecreasedInPricePairs(since, validLimit).onEach {
+                symbols[it.symbol]?.let { s -> it.symbol = s }
+            },
+            marketStatProxy.getHighestVolumePair(since)?.apply { symbols[symbol]?.let { symbol = it } },
+            marketStatProxy.getTradeCountPair(since)?.apply { symbols[symbol]?.let { symbol = it } }
         )
     }
 

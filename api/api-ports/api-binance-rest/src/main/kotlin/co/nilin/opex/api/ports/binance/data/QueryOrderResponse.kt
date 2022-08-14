@@ -10,7 +10,7 @@ import java.util.*
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class QueryOrderResponse(
-    val symbol: String,
+    var symbol: String,
     val ouid: String,
     val orderId: Long,
     val orderListId: Long, //Unless part of an OCO, the value will always be -1.

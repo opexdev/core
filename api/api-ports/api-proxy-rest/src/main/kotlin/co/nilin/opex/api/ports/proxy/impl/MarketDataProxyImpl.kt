@@ -200,7 +200,7 @@ class MarketDataProxyImpl(private val webClient: WebClient) : MarketDataProxy {
 
     override suspend fun countTotalOrders(since: Long): Long {
         return webClient.get()
-            .uri("$baseUrl/v1/market/active-users") {
+            .uri("$baseUrl/v1/market/orders-count") {
                 it.queryParam("interval", since)
                 it.build()
             }.accept(MediaType.APPLICATION_JSON)

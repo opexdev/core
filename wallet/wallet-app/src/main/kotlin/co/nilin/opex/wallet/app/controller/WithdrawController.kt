@@ -51,7 +51,7 @@ class WithdrawController(private val withdrawService: WithdrawService) {
             )
     }
 
-    @PostMapping("/{amount}_{symbol}")
+    @PostMapping("/{amount}_{currency}")
     @ApiResponse(
         message = "OK",
         code = 200,

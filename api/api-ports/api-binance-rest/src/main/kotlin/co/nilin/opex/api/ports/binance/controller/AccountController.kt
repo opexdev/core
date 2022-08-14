@@ -218,6 +218,7 @@ class AccountController(
         val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
         return queryHandler.queryOrder(principal, internalSymbol, orderId, origClientOrderId)
             ?.asQueryOrderResponse()
+            ?.apply { this.symbol = symbol }
             ?: throw OpexException(OpexError.OrderNotFound)
     }
 
@@ -254,7 +255,9 @@ class AccountController(
         timestamp: Long
     ): List<QueryOrderResponse> {
         val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
-        return queryHandler.openOrders(principal, internalSymbol).map { it.asQueryOrderResponse() }
+        return queryHandler.openOrders(principal, internalSymbol).map {
+            it.asQueryOrderResponse().apply { symbol?.let { s -> this.symbol = s } }
+        }
     }
 
     /*
@@ -295,8 +298,9 @@ class AccountController(
         timestamp: Long
     ): List<QueryOrderResponse> {
         val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
-        return queryHandler.allOrders(principal, internalSymbol, startTime, endTime, limit)
-            .map { it.asQueryOrderResponse() }
+        return queryHandler.allOrders(principal, internalSymbol, startTime, endTime, limit).map {
+            it.asQueryOrderResponse().apply { symbol?.let { s -> this.symbol = s } }
+        }
     }
 
     /*

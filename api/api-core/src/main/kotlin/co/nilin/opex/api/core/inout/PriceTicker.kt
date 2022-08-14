@@ -1,6 +1,6 @@
 package co.nilin.opex.api.core.inout
 
 data class PriceTicker(
-    val symbol: String?,
+    var symbol: String?,
     val price: String?
 )

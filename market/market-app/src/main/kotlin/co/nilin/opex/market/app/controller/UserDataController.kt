@@ -16,7 +16,7 @@ class UserDataController(private val userQueryHandler: UserQueryHandler) {
     }
 
     @PostMapping("/{uuid}/order/query")
-    suspend fun queryUserOrder(@PathVariable uuid: String, request: QueryOrderRequest): Order {
+    suspend fun queryUserOrder(@PathVariable uuid: String, @RequestBody request: QueryOrderRequest): Order {
         return userQueryHandler.queryOrder(uuid, request) ?: throw OpexException(OpexError.NotFound)
     }
 
@@ -26,12 +26,12 @@ class UserDataController(private val userQueryHandler: UserQueryHandler) {
     }
 
     @PostMapping("/{uuid}/orders")
-    suspend fun getUserOrders(@PathVariable uuid: String, request: AllOrderRequest): List<Order> {
+    suspend fun getUserOrders(@PathVariable uuid: String, @RequestBody request: AllOrderRequest): List<Order> {
         return userQueryHandler.allOrders(uuid, request)
     }
 
     @PostMapping("/{uuid}/trades")
-    suspend fun getUserTrades(@PathVariable uuid: String, request: TradeRequest): List<Trade> {
+    suspend fun getUserTrades(@PathVariable uuid: String, @RequestBody request: TradeRequest): List<Trade> {
         return userQueryHandler.allTrades(uuid, request)
     }
 

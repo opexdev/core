@@ -136,11 +136,12 @@ class MarketController(
     // 2 when the symbol parameter is omitted
     @GetMapping("/v3/ticker/price")
     suspend fun priceTicker(@RequestParam("symbol", required = false) symbol: String?): List<PriceTicker> {
+        val symbols = symbolMapper.symbolToAliasMap()
         val localSymbol = if (symbol == null)
             null
         else
             symbolMapper.toInternalSymbol(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
-        return marketDataProxy.lastPrice(localSymbol)
+        return marketDataProxy.lastPrice(localSymbol).onEach { symbols[it.symbol]?.let { s -> it.symbol = s } }
     }
 
     @GetMapping("/v3/exchangeInfo")
