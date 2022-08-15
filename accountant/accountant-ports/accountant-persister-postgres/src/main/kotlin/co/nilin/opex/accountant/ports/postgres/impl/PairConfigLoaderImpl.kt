@@ -45,8 +45,9 @@ class PairConfigLoaderImpl(
             .collectList()
             .awaitFirstOrElse { emptyList() }
             .map {
+                val pairConfig = pairConfigRepository.findById(it.pairConfigId).awaitSingle().asPairConfig()
                 PairFeeConfig(
-                    PairConfig(it.pairConfigId, "", "", BigDecimal.ZERO, BigDecimal.ZERO),
+                    pairConfig,
                     it.direction,
                     it.userLevel,
                     it.makerFee,
@@ -62,8 +63,9 @@ class PairConfigLoaderImpl(
     ): PairFeeConfig? {
         val fee = pairFeeConfigRepository.findByPairAndDirectionAndUserLevel(pair, direction, userLevel)
             .awaitSingleOrNull() ?: return null
+        val pairConfig = pairConfigRepository.findById(fee.pairConfigId).awaitSingle().asPairConfig()
         return PairFeeConfig(
-            PairConfig(pair, "", "", BigDecimal.ZERO, BigDecimal.ZERO),
+            pairConfig,
             fee.direction,
             fee.userLevel,
             fee.makerFee,
