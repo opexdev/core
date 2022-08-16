@@ -40,7 +40,6 @@ services:
       - KAFKA_LISTENERS=CLIENT://kafka-1:29092,EXTERNAL://kafka-1:9092
       - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-1:29092,EXTERNAL://kafka-1:9092
       - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
-      - KAFKA_MIN_INSYNC_REPLICAS=2
       - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
     depends_on:
       - zookeeper
@@ -61,7 +60,6 @@ services:
       - KAFKA_LISTENERS=CLIENT://kafka-2:29092,EXTERNAL://kafka-2:9092
       - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-2:29092,EXTERNAL://kafka-2:9092
       - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
-      - KAFKA_MIN_INSYNC_REPLICAS=2
       - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
     depends_on:
       - zookeeper
@@ -82,7 +80,6 @@ services:
       - KAFKA_LISTENERS=CLIENT://kafka-3:29092,EXTERNAL://kafka-3:9092
       - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-3:29092,EXTERNAL://kafka-3:9092
       - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
-      - KAFKA_MIN_INSYNC_REPLICAS=2
       - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
     depends_on:
       - zookeeper
@@ -131,16 +128,6 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-  vault-ui:
-    image: djenriquez/vault-ui
-    environment:
-      - VAULT_URL_DEFAULT=http://vault:8200
-      - VAULT_AUTH_DEFAULT=USERNAMEPASSWORD
-    depends_on:
-      - vault
-    deploy:
-      restart_policy:
-        condition: on-failure
   consul:
     image: consul
     environment:
@@ -179,6 +166,10 @@ services:
     <<: *postgres-db
     volumes:
       - wallet-data:/var/lib/postgresql/data/
+  postgres-market:
+    <<: *postgres-db
+    volumes:
+      - market-data:/var/lib/postgresql/data/
   postgres-api:
     <<: *postgres-db
     volumes:
@@ -195,6 +186,7 @@ services:
     image: ghcr.io/opexdev/accountant
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - SPRING_PROFILES_ACTIVE=scheduled
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-accountant
@@ -327,11 +319,34 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  market:
+    image: ghcr.io/opexdev/market
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - CONSUL_HOST=consul
+      - DB_IP_PORT=postgres-market
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_HOST=vault
+      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
+      - PREFERENCES=$PREFERENCES
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - auth
+      - consul
+      - vault
+      - postgres-market
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
   api:
     image: ghcr.io/opexdev/api
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-api
       - BACKEND_USER=${BACKEND_USER}
@@ -341,12 +356,10 @@ services:
     configs:
       - preferences.yml
     depends_on:
-      - kafka-1
-      - kafka-2
-      - kafka-3
       - accountant
       - matching-gateway
       - wallet
+      - market
       - bc-gateway
       - auth
       - referral
@@ -480,6 +493,35 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  elasticsearch:
+    image: elastic/elasticsearch:8.3.2
+    environment:
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - discovery.type=single-node
+      - ingest.geoip.downloader.enabled=false
+      - node.name=elasticsearch
+      - network.publish_host=elasticsearch
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - default
+  kibana:
+    image: elastic/kibana:8.3.2
+    environment:
+      - SERVER_PUBLICBASEURL=$KIBANA_PUBLIC_URL
+      - ELASTICSEARCH_SSL_VERIFICATIONMODE=certificate
+    networks:
+      - default
+  filebeat:
+    image: ghcr.io/opexdev/opex-filebeat
+    user: root
+    environment:
+      - FILEBEAT_API_KEY=$FILEBEAT_API_KEY
+    volumes:
+      - /var/lib/docker:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - default
 volumes:
   zookeeper-data:
   zookeeper-log:
@@ -493,11 +535,13 @@ volumes:
   eventlog-data:
   auth-data:
   wallet-data:
+  market-data:
   api-data:
   bc-gateway-data:
   referral-data:
   storage-data:
   admin-data:
+  elasticsearch_data:
 networks:
   default:
     driver: bridge

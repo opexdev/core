@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>core</artifactId>
+        <groupId>co.nilin.opex</groupId>
+        <version>1.0.0-beta.3</version>
+    </parent>
+
+    <groupId>co.nilin.opex.market</groupId>
+    <artifactId>market</artifactId>
+    <name>market</name>
+    <packaging>pom</packaging>
+    <description>Market root of Opex</description>
+
+    <modules>
+        <module>market-app</module>
+        <module>market-core</module>
+        <module>market-ports/market-eventlistener-kafka</module>
+        <module>market-ports/market-persister-postgres</module>
+    </modules>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+        </dependency>
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>co.nilin.opex.market.core</groupId>
+                <artifactId>market-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.market.ports.kafka.listener</groupId>
+                <artifactId>market-eventlistener-kafka</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.market.ports.binance</groupId>
+                <artifactId>market-binance-rest</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.market.ports.postgres</groupId>
+                <artifactId>market-persister-postgres</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.utility.error</groupId>
+                <artifactId>error-handler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.utility.log</groupId>
+                <artifactId>logging-handler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.utility.interceptors</groupId>
+                <artifactId>interceptors</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.utility.preferences</groupId>
+                <artifactId>preferences</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

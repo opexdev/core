@@ -44,8 +44,8 @@
             <artifactId>api-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.api.ports.kafka.listener</groupId>
-            <artifactId>api-eventlistener-kafka</artifactId>
+            <groupId>co.nilin.opex.api.ports.proxy</groupId>
+            <artifactId>api-proxy-rest</artifactId>
         </dependency>
         <dependency>
             <groupId>co.nilin.opex.api.ports.binance</groupId>

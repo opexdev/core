@@ -7,13 +7,23 @@ import co.nilin.opex.wallet.core.model.WalletOwner
 import java.math.BigDecimal
 
 interface WalletManager {
+
     suspend fun isDepositAllowed(wallet: Wallet, amount: BigDecimal): Boolean
+
     suspend fun isWithdrawAllowed(wallet: Wallet, amount: BigDecimal): Boolean
+
     suspend fun increaseBalance(wallet: Wallet, amount: BigDecimal)
+
     suspend fun decreaseBalance(wallet: Wallet, amount: BigDecimal)
+
     suspend fun findWalletByOwnerAndCurrencyAndType(owner: WalletOwner, walletType: String, currency: Currency): Wallet?
+
     suspend fun findWalletsByOwnerAndType(owner: WalletOwner, walletType: String): List<Wallet>
+
     suspend fun findWalletsByOwner(owner: WalletOwner): List<Wallet>
+
+    suspend fun findWalletByOwnerAndSymbol(owner: WalletOwner, symbol: String): List<Wallet>
+
     suspend fun createWallet(
         owner: WalletOwner,
         balance: Amount,

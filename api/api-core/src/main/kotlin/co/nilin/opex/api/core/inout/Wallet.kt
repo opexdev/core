@@ -4,6 +4,7 @@ import java.math.BigDecimal
 
 data class Wallet(
     val asset: String,
-    val balance: BigDecimal,
-    val type: String
+    var balance: BigDecimal,
+    var locked: BigDecimal,
+    var withdraw: BigDecimal
 )

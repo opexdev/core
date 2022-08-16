@@ -24,6 +24,9 @@ services:
   wallet:
     image: ghcr.io/opexdev/wallet:$TAG
     build: wallet/wallet-app
+  market:
+    image: ghcr.io/opexdev/market:$TAG
+    build: market/market-app
   api:
     image: ghcr.io/opexdev/api:$TAG
     build: api/api-app
@@ -45,3 +48,6 @@ services:
   admin:
     image: ghcr.io/opexdev/admin:$TAG
     build: admin/admin-app
+  filebeat:
+    image: ghcr.io/opexdev/opex-filebeat:$TAG
+    build: docker-images/filebeat

@@ -13,7 +13,9 @@ import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.stereotype.Component
+import java.math.BigDecimal
 
 @Component
 class PairConfigLoaderImpl(
@@ -36,6 +38,39 @@ class PairConfigLoaderImpl(
                 val pairConfig = pairConfigRepository.findById(it.pairConfigId).awaitSingle().asPairConfig()
                 PairFeeConfig(pairConfig, it.direction, it.userLevel, it.makerFee, it.takerFee)
             }
+    }
+
+    override suspend fun loadPairFeeConfigs(direction: OrderDirection, userLevel: String): List<PairFeeConfig> {
+        return pairFeeConfigRepository.findByDirectionAndUserLevel(direction, userLevel)
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+            .map {
+                val pairConfig = pairConfigRepository.findById(it.pairConfigId).awaitSingle().asPairConfig()
+                PairFeeConfig(
+                    pairConfig,
+                    it.direction,
+                    it.userLevel,
+                    it.makerFee,
+                    it.takerFee
+                )
+            }
+    }
+
+    override suspend fun loadPairFeeConfigs(
+        pair: String,
+        direction: OrderDirection,
+        userLevel: String
+    ): PairFeeConfig? {
+        val fee = pairFeeConfigRepository.findByPairAndDirectionAndUserLevel(pair, direction, userLevel)
+            .awaitSingleOrNull() ?: return null
+        val pairConfig = pairConfigRepository.findById(fee.pairConfigId).awaitSingle().asPairConfig()
+        return PairFeeConfig(
+            pairConfig,
+            fee.direction,
+            fee.userLevel,
+            fee.makerFee,
+            fee.takerFee
+        )
     }
 
     override suspend fun load(pair: String, direction: OrderDirection, userLevel: String): PairFeeConfig {

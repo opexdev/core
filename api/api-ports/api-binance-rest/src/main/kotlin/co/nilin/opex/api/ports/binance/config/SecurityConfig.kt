@@ -29,6 +29,7 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/v3/exchangeInfo").permitAll()
             .pathMatchers("/v3/klines").permitAll()
             .pathMatchers("/socket").permitAll()
+            .pathMatchers("/v1/landing/**").permitAll()
             .pathMatchers("/**").hasAuthority("SCOPE_trust")
             .anyExchange().authenticated()
             .and()

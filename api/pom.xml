@@ -20,7 +20,7 @@
         <module>api-app</module>
         <module>api-ports/api-persister-postgres</module>
         <module>api-ports/api-binance-rest</module>
-        <module>api-ports/api-eventlistener-kafka</module>
+        <module>api-ports/api-proxy-rest</module>
     </modules>
 
     <dependencies>
@@ -38,8 +38,8 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>co.nilin.opex.api.ports.kafka.listener</groupId>
-                <artifactId>api-eventlistener-kafka</artifactId>
+                <groupId>co.nilin.opex.api.ports.proxy</groupId>
+                <artifactId>api-proxy-rest</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
