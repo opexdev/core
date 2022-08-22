@@ -9,7 +9,7 @@ interface MarketUserDataProxy {
 
     suspend fun queryOrder(principal: Principal, symbol: String, orderId: Long?, origClientOrderId: String?): Order?
 
-    suspend fun openOrders(principal: Principal, symbol: String?): List<Order>
+    suspend fun openOrders(principal: Principal, symbol: String?, limit: Int?): List<Order>
 
     suspend fun allOrders(
         principal: Principal,

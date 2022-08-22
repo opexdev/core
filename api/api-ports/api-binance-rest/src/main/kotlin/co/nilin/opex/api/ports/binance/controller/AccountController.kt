@@ -51,41 +51,41 @@ class AccountController(
         )
     )
     suspend fun createNewOrder(
-        @RequestParam(name = "symbol")
+        @RequestParam
         symbol: String,
-        @RequestParam(name = "side")
+        @RequestParam
         side: OrderSide,
-        @RequestParam(name = "type")
+        @RequestParam
         type: OrderType,
-        @RequestParam(name = "timeInForce", required = false)
+        @RequestParam(required = false)
         timeInForce: TimeInForce?,
-        @RequestParam(name = "quantity", required = false)
+        @RequestParam(required = false)
         quantity: BigDecimal?,
-        @RequestParam(name = "quoteOrderQty", required = false)
+        @RequestParam(required = false)
         quoteOrderQty: BigDecimal?,
-        @RequestParam(name = "price", required = false)
+        @RequestParam(required = false)
         price: BigDecimal?,
         @ApiParam(
             value = "A unique id among open orders. Automatically generated if not sent.\n" +
                     "Orders with the same newClientOrderID can be accepted only when the previous one is filled, otherwise the order will be rejected."
         )
-        @RequestParam(name = "newClientOrderId", required = false)
+        @RequestParam(required = false)
         newClientOrderId: String?,    /* A unique id among open orders. Automatically generated if not sent.
     Orders with the same newClientOrderID can be accepted only when the previous one is filled, otherwise the order will be rejected.
     */
         @ApiParam(value = "Used with STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, and TAKE_PROFIT_LIMIT orders.")
-        @RequestParam(name = "stopPrice", required = false)
+        @RequestParam(required = false)
         stopPrice: BigDecimal?, //Used with STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, and TAKE_PROFIT_LIMIT orders.
-        @RequestParam(name = "icebergQty", required = false)
+        @RequestParam(required = false)
         @ApiParam(value = "Used with LIMIT, STOP_LOSS_LIMIT, and TAKE_PROFIT_LIMIT to create an iceberg order.")
         icebergQty: BigDecimal?, //Used with LIMIT, STOP_LOSS_LIMIT, and TAKE_PROFIT_LIMIT to create an iceberg order.
-        @RequestParam(name = "newOrderRespType", required = false)
+        @RequestParam(required = false)
         @ApiParam(value = "Set the response JSON. ACK, RESULT, or FULL; MARKET and LIMIT order types default to FULL, all other orders default to ACK.")
         newOrderRespType: OrderResponseType?,  //Set the response JSON. ACK, RESULT, or FULL; MARKET and LIMIT order types default to FULL, all other orders default to ACK.
         @ApiParam(value = "The value cannot be greater than 60000")
-        @RequestParam(name = "recvWindow", required = false)
+        @RequestParam(required = false)
         recvWindow: Long?, //The value cannot be greater than 60000
-        @RequestParam(name = "timestamp")
+        @RequestParam
         timestamp: Long,
         @CurrentSecurityContext securityContext: SecurityContext
     ): NewOrderResponse {
@@ -125,18 +125,18 @@ class AccountController(
     )
     suspend fun cancelOrder(
         principal: Principal,
-        @RequestParam(name = "symbol")
+        @RequestParam
         symbol: String,
-        @RequestParam(name = "orderId", required = false)
+        @RequestParam(required = false)
         orderId: Long?, //Either orderId or origClientOrderId must be sent.
-        @RequestParam(name = "origClientOrderId", required = false)
+        @RequestParam(required = false)
         origClientOrderId: String?,
-        @RequestParam(name = "newClientOrderId", required = false)
+        @RequestParam(required = false)
         newClientOrderId: String?,
         @ApiParam(value = "The value cannot be greater than 60000")
-        @RequestParam(name = "recvWindow", required = false)
+        @RequestParam(required = false)
         recvWindow: Long?, //The value cannot be greater than 60000
-        @RequestParam(name = "timestamp")
+        @RequestParam
         timestamp: Long,
         @CurrentSecurityContext securityContext: SecurityContext
     ): CancelOrderResponse {
@@ -203,16 +203,16 @@ class AccountController(
     )
     suspend fun queryOrder(
         principal: Principal,
-        @RequestParam(name = "symbol")
+        @RequestParam
         symbol: String,
-        @RequestParam(name = "orderId", required = false)
+        @RequestParam(required = false)
         orderId: Long?,
-        @RequestParam(name = "origClientOrderId", required = false)
+        @RequestParam(required = false)
         origClientOrderId: String?,
         @ApiParam(value = "The value cannot be greater than 60000")
-        @RequestParam(name = "recvWindow", required = false)
+        @RequestParam(required = false)
         recvWindow: Long?, //The value cannot be greater than 60000
-        @RequestParam(name = "timestamp")
+        @RequestParam
         timestamp: Long
     ): QueryOrderResponse {
         val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
@@ -246,16 +246,18 @@ class AccountController(
     )
     suspend fun fetchOpenOrders(
         principal: Principal,
-        @RequestParam(name = "symbol", required = false)
+        @RequestParam(required = false)
         symbol: String?,
         @ApiParam(value = "The value cannot be greater than 60000")
-        @RequestParam(name = "recvWindow", required = false)
+        @RequestParam(required = false)
         recvWindow: Long?, //The value cannot be greater than 60000
-        @RequestParam(name = "timestamp")
-        timestamp: Long
+        @RequestParam
+        timestamp: Long,
+        @RequestParam(required = false)
+        limit: Int?
     ): List<QueryOrderResponse> {
         val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
-        return queryHandler.openOrders(principal, internalSymbol).map {
+        return queryHandler.openOrders(principal, internalSymbol, limit).map {
             it.asQueryOrderResponse().apply { symbol?.let { s -> this.symbol = s } }
         }
     }
@@ -282,19 +284,19 @@ class AccountController(
     )
     suspend fun fetchAllOrders(
         principal: Principal,
-        @RequestParam(name = "symbol", required = false)
+        @RequestParam(required = false)
         symbol: String?,
-        @RequestParam(name = "startTime", required = false)
+        @RequestParam(required = false)
         startTime: Date?,
-        @RequestParam(name = "endTime", required = false)
+        @RequestParam(required = false)
         endTime: Date?,
         @ApiParam(value = "Default 500; max 1000.")
-        @RequestParam(name = "limit", required = false)
-        limit: Int? = 500, //Default 500; max 1000.
+        @RequestParam(required = false)
+        limit: Int?, //Default 500; max 1000.
         @ApiParam(value = "The value cannot be greater than 60000")
-        @RequestParam(name = "recvWindow", required = false)
+        @RequestParam(required = false)
         recvWindow: Long?, //The value cannot be greater than 60000
-        @RequestParam(name = "timestamp")
+        @RequestParam
         timestamp: Long
     ): List<QueryOrderResponse> {
         val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
@@ -326,22 +328,22 @@ class AccountController(
     )
     suspend fun fetchAllTrades(
         principal: Principal,
-        @RequestParam(name = "symbol")
+        @RequestParam
         symbol: String?,
-        @RequestParam(name = "startTime", required = false)
+        @RequestParam(required = false)
         startTime: Date?,
-        @RequestParam(name = "endTime", required = false)
+        @RequestParam(required = false)
         endTime: Date?,
         @ApiParam(value = "TradeId to fetch from. Default gets most recent trades.")
-        @RequestParam(name = "fromId", required = false)
+        @RequestParam(required = false)
         fromId: Long?,//TradeId to fetch from. Default gets most recent trades.
         @ApiParam(value = "Default 500; max 1000.")
-        @RequestParam(name = "limit", required = false)
-        limit: Int? = 500, //Default 500; max 1000.
+        @RequestParam(required = false)
+        limit: Int?, //Default 500; max 1000.
         @ApiParam(value = "The value cannot be greater than 60000")
-        @RequestParam(name = "recvWindow", required = false)
+        @RequestParam(required = false)
         recvWindow: Long?, //The value cannot be greater than 60000
-        @RequestParam(name = "timestamp")
+        @RequestParam
         timestamp: Long
     ): List<TradeResponse> {
         val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
@@ -384,9 +386,9 @@ class AccountController(
     suspend fun accountInfo(
         @CurrentSecurityContext securityContext: SecurityContext,
         @ApiParam(value = "The value cannot be greater than 60000")
-        @RequestParam(name = "recvWindow", required = false)
+        @RequestParam(required = false)
         recvWindow: Long?, //The value cannot be greater than 60000
-        @RequestParam(name = "timestamp")
+        @RequestParam
         timestamp: Long
     ): AccountInfoResponse {
         val auth = securityContext.jwtAuthentication()

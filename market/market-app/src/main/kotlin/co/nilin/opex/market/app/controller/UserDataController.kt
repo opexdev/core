@@ -21,8 +21,12 @@ class UserDataController(private val userQueryHandler: UserQueryHandler) {
     }
 
     @GetMapping("/{uuid}/orders/{symbol}/open")
-    suspend fun getUserOpenOrders(@PathVariable uuid: String, @PathVariable symbol: String): List<Order> {
-        return userQueryHandler.openOrders(uuid, symbol)
+    suspend fun getUserOpenOrders(
+        @PathVariable uuid: String,
+        @PathVariable symbol: String,
+        @RequestParam limit: Int
+    ): List<Order> {
+        return userQueryHandler.openOrders(uuid, symbol, limit)
     }
 
     @PostMapping("/{uuid}/orders")

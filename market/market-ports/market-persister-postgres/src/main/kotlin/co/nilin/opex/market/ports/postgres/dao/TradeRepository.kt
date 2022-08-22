@@ -32,6 +32,7 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
             and (:symbol is null or symbol = :symbol) 
             and (:startTime is null or trade_date >= :startTime) 
             and (:endTime is null or trade_date < :endTime)
+        limit :limit
         """
     )
     fun findByUuidAndSymbolAndTimeBetweenAndTradeIdGreaterThan(
@@ -44,7 +45,8 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         @Param("startTime")
         startTime: Date?,
         @Param("endTime")
-        endTime: Date?
+        endTime: Date?,
+        limit:Int
     ): Flow<TradeModel>
 
     @Query("select * from trades where symbol = :symbol order by create_date desc limit :limit")

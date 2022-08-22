@@ -31,13 +31,13 @@ class WalletController(
 
     @GetMapping("/v1/capital/deposit/address")
     suspend fun assignAddress(
-        @RequestParam("coin")
+        @RequestParam
         coin: String,
-        @RequestParam("network", required = false)
+        @RequestParam(required = false)
         network: String?,
-        @RequestParam(name = "recvWindow", required = false)
+        @RequestParam(required = false)
         recvWindow: Long?, //The value cannot be greater than 60000
-        @RequestParam(name = "timestamp")
+        @RequestParam
         timestamp: Long,
         @CurrentSecurityContext securityContext: SecurityContext
     ): AssignAddressResponse {
@@ -48,21 +48,21 @@ class WalletController(
 
     @GetMapping("/v1/capital/deposit/hisrec")
     suspend fun getDepositTransactions(
-        @RequestParam("coin", required = false)
+        @RequestParam(required = false)
         coin: String?,
         @RequestParam("network", required = false)
         status: Int?,
-        @RequestParam("startTime", required = false)
+        @RequestParam(required = false)
         startTime: Long?,
-        @RequestParam("endTime", required = false)
+        @RequestParam(required = false)
         endTime: Long?,
-        @RequestParam("offset", required = false)
+        @RequestParam(required = false)
         offset: Int?,
-        @RequestParam("limit", required = false)
+        @RequestParam(required = false)
         limit: Int?,
-        @RequestParam(name = "recvWindow", required = false)
+        @RequestParam(required = false)
         recvWindow: Long?, //The value cannot be greater than 60000
-        @RequestParam(name = "timestamp")
+        @RequestParam
         timestamp: Long,
         @CurrentSecurityContext securityContext: SecurityContext
     ): List<DepositResponse> {
@@ -86,23 +86,23 @@ class WalletController(
 
     @GetMapping("/v1/capital/withdraw/history")
     suspend fun getWithdrawTransactions(
-        @RequestParam("coin", required = false)
+        @RequestParam(required = false)
         coin: String,
-        @RequestParam("withdrawOrderId", required = false)
+        @RequestParam(required = false)
         withdrawOrderId: String?,
         @RequestParam("status", required = false)
         withdrawStatus: Int?,
-        @RequestParam("offset", required = false)
+        @RequestParam(required = false)
         offset: Int?,
-        @RequestParam("limit", required = false)
+        @RequestParam(required = false)
         limit: Int?,
-        @RequestParam("startTime", required = false)
+        @RequestParam(required = false)
         startTime: Long?,
-        @RequestParam("endTime", required = false)
+        @RequestParam(required = false)
         endTime: Long?,
-        @RequestParam(name = "recvWindow", required = false)
+        @RequestParam(required = false)
         recvWindow: Long?, //The value cannot be greater than 60000
-        @RequestParam(name = "timestamp")
+        @RequestParam
         timestamp: Long,
         @CurrentSecurityContext securityContext: SecurityContext
     ): List<WithdrawResponse> {
@@ -150,7 +150,7 @@ class WalletController(
         symbol: String?,
         @RequestParam(required = false)
         recvWindow: Long?, //The value cannot be greater than 60000
-        @RequestParam(name = "timestamp")
+        @RequestParam
         timestamp: Long
     ): List<PairFeeResponse> {
         return if (symbol != null) {
