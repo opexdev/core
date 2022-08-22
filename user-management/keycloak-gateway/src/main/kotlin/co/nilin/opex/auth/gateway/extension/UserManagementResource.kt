@@ -44,6 +44,9 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     private val verifyUrl by lazy {
         ApplicationContextHolder.getCurrentContext()!!.environment.resolvePlaceholders("\${verify-redirect-url}")
     }
+    private val forgotUrl by lazy {
+        ApplicationContextHolder.getCurrentContext()!!.environment.resolvePlaceholders("\${forgot-redirect-url}")
+    }
     private val kafkaTemplate by lazy {
         ApplicationContextHolder.getCurrentContext()!!.getBean("authKafkaTemplate") as KafkaTemplate<String, AuthEvent>
     }
@@ -91,9 +94,9 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             val token = ActionTokenHelper.generateRequiredActionsToken(session, opexRealm, this, actions)
             val url = "${session.context.getUri(UrlType.BACKEND).baseUri}/realms/opex/user-management/user/verify"
             val link = ActionTokenHelper.attachTokenToLink(url, token)
-            val expiration = Time.currentTime() + opexRealm.actionTokenGeneratedByAdminLifespan
+            val expiration = TimeUnit.SECONDS.toMinutes(opexRealm.actionTokenGeneratedByAdminLifespan.toLong())
             logger.info(link)
-            sendEmail(this) { it.sendVerifyEmail(link, TimeUnit.SECONDS.toMinutes(expiration.toLong())) }
+            sendEmail(this) { it.sendVerifyEmail(link, expiration) }
         }
 
         session.userCredentialManager()
@@ -106,14 +109,13 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     }
 
     @POST
-    @Path("user/forgot")
+    @Path("user/request-forgot")
     @Produces(MediaType.APPLICATION_JSON)
     fun forgotPassword(
         @QueryParam("email") email: String?,
         @QueryParam("captcha-answer") captchaAnswer: String
     ): Response {
-        val auth = ResourceAuthenticator.bearerAuth(session)
-        if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
+        val uri = UriBuilder.fromUri(forgotUrl)
 
         runCatching {
             validateCaptcha("$captchaAnswer-${session.context.connection.remoteAddr}")
@@ -130,10 +132,39 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
                 listOf(UserModel.RequiredAction.UPDATE_PASSWORD.name),
                 verifyUrl
             )
-            val link = ActionTokenHelper.createInternalEmailLink(session, opexRealm, token)
-            val expiration = Time.currentTime() + opexRealm.actionTokenGeneratedByAdminLifespan
-            sendEmail(user) { it.sendVerifyEmail(link, TimeUnit.SECONDS.toMinutes(expiration.toLong())) }
+
+            val link = uri.queryParam("key", token).build().toString()
+            val expiration = TimeUnit.SECONDS.toMinutes(opexRealm.actionTokenGeneratedByAdminLifespan.toLong())
+            logger.info(link)
+            logger.info(expiration.toString())
+            sendEmail(user) { it.sendVerifyEmail(link, expiration) }
         }
+
+        return Response.noContent().build()
+    }
+
+    @PUT
+    @Path("user/forgot")
+    fun forgotPassword(@QueryParam("key") key: String, body: ForgotPasswordRequest): Response {
+        val actionToken = session.tokens().decode(key, ExecuteActionsActionToken::class.java)
+
+        if (actionToken == null || !actionToken.isActive || actionToken.requiredActions.isEmpty())
+            return ErrorHandler.badRequest()
+
+        val user = session.users().getUserById(actionToken.subject, opexRealm) ?: return ErrorHandler.userNotFound()
+        if (body.password != body.passwordConfirmation)
+            return ErrorHandler.badRequest("Invalid password confirmation")
+
+        val error = session.getProvider(PasswordPolicyManagerProvider::class.java)
+            .validate(user.email, body.password)
+
+        if (error != null) {
+            logger.error(error.message)
+            return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.InvalidPassword)
+        }
+        session.userCredentialManager()
+            .updateCredential(opexRealm, user, UserCredentialModel.password(body.password, false))
+
         return Response.noContent().build()
     }
 
@@ -158,22 +189,22 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @POST
     @Path("user/request-verify")
     @Produces(MediaType.APPLICATION_JSON)
-    fun sendVerifyEmail(): Response {
-        val auth = ResourceAuthenticator.bearerAuth(session)
-        if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
+    fun sendVerifyEmail(@QueryParam("email") email: String?): Response {
+        val user = session.users().getUserByEmail(email, opexRealm)
+        if (user != null) {
+            val token = ActionTokenHelper.generateRequiredActionsToken(
+                session,
+                opexRealm,
+                user,
+                listOf(UserModel.RequiredAction.VERIFY_EMAIL.name)
+            )
 
-        val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
-
-        val token = ActionTokenHelper.generateRequiredActionsToken(
-            session,
-            opexRealm,
-            user,
-            listOf(UserModel.RequiredAction.VERIFY_EMAIL.name)
-        )
-        val url = "${session.context.getUri(UrlType.BACKEND).baseUri}/realms/opex/user-management/user/verify"
-        val link = ActionTokenHelper.attachTokenToLink(url, token)
-        val expiration = Time.currentTime() + opexRealm.actionTokenGeneratedByAdminLifespan
-        sendEmail(user) { it.sendVerifyEmail(link, TimeUnit.SECONDS.toMinutes(expiration.toLong())) }
+            val url = "${session.context.getUri(UrlType.BACKEND).baseUri}/realms/opex/user-management/user/verify"
+            val link = ActionTokenHelper.attachTokenToLink(url, token)
+            val expiration = TimeUnit.SECONDS.toMinutes(opexRealm.actionTokenGeneratedByAdminLifespan.toLong())
+            logger.info(link)
+            sendEmail(user) { it.sendVerifyEmail(link, expiration) }
+        }
 
         return Response.noContent().build()
     }
@@ -306,8 +337,8 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         val auth = ResourceAuthenticator.bearerAuth(session)
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
-        val userSession =
-            session.sessions().getUserSession(opexRealm, sessionId) ?: return ErrorHandler.notFound("Session not found")
+        val userSession = session.sessions().getUserSession(opexRealm, sessionId)
+            ?: return ErrorHandler.notFound("Session not found")
 
         if (userSession.user.id != auth.getUserId()) return ErrorHandler.forbidden()
 

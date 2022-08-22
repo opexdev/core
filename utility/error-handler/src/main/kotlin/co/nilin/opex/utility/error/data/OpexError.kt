@@ -14,7 +14,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     ServiceUnavailable(1006, null, HttpStatus.SERVICE_UNAVAILABLE),
     InvalidRequestParam(1020, "Parameter '%s' is either missing or invalid", HttpStatus.BAD_REQUEST),
     InvalidRequestBody(1021, "Request body is invalid", HttpStatus.BAD_REQUEST),
-    NoRecordFound(1022,"No record found for this service",HttpStatus.NOT_FOUND),
+    NoRecordFound(1022, "No record found for this service", HttpStatus.NOT_FOUND),
 
     // code 2000: accountant
     InvalidPair(2001, "%s is not available", HttpStatus.BAD_REQUEST),
@@ -70,6 +70,10 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     // code 11000: market
 
     ;
+
+    fun exception(): OpexException {
+        return OpexException(this)
+    }
 
     companion object {
         fun findByCode(code: Int?): OpexError? {
