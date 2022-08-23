@@ -132,6 +132,12 @@ class CurrencyHandlerImpl(
         return currencyImplementationRepository.findByChain(chain).map { projectCurrencyImplementation(it) }.toList()
     }
 
+    override suspend fun findImplementationsByCurrency(currency: String): List<CurrencyImplementation> {
+        return currencyImplementationRepository.findByCurrencySymbol(currency)
+            .map { projectCurrencyImplementation(it) }
+            .toList()
+    }
+
     override suspend fun changeWithdrawStatus(symbol: String, chain: String, status: Boolean) {
         val impl = currencyImplementationRepository.findByCurrencySymbolAndChain(symbol, chain).awaitSingleOrNull()
             ?: throw OpexException(OpexError.TokenNotFound)
@@ -147,12 +153,13 @@ class CurrencyHandlerImpl(
         currencyModel: CurrencyModel? = null
     ): CurrencyImplementation {
         val addressTypesModel = chainRepository.findAddressTypesByName(currencyImplementationModel.chain)
-        val addressTypes = addressTypesModel.map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }.toList()
+        val addressTypes =
+            addressTypesModel.map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }.toList()
         val currencyModelVal =
             currencyModel ?: currencyRepository.findBySymbol(currencyImplementationModel.currencySymbol).awaitSingle()
-        val currency = Currency(currencyModelVal.symbol, currencyModelVal.name)
         return CurrencyImplementation(
-            currency,
+            Currency(currencyModelVal.symbol, currencyModelVal.name),
+            Currency(currencyImplementationModel.implementationSymbol, currencyModelVal.name),
             Chain(currencyImplementationModel.chain, addressTypes),
             currencyImplementationModel.token,
             currencyImplementationModel.tokenAddress,

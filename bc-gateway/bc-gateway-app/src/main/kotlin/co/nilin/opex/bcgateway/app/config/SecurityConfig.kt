@@ -25,6 +25,7 @@ class SecurityConfig(@Qualifier("loadBalanced") private val webClient: WebClient
             .pathMatchers("/swagger-ui/**").permitAll()
             .pathMatchers("/swagger-resources/**").permitAll()
             .pathMatchers("/wallet-sync/**").permitAll()
+            .pathMatchers("/currency/**").permitAll()
             .pathMatchers("/filter/**").hasAuthority("SCOPE_trust")
             .pathMatchers("/admin/**").hasRole("SCOPE_trust", "admin_system")
             .pathMatchers("/address/**").permitAll()

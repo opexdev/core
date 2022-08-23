@@ -39,9 +39,21 @@ class AssignAddressServiceImplUnitTest {
             currencyHandler, assignedAddressHandler, reservedAddressHandler
         )
         runBlocking {
-            val eth =
-                CurrencyImplementation(currency, ethChain, false, null, null, true, BigDecimal.ONE, BigDecimal.TEN, 18)
+            val eth = CurrencyImplementation(
+                currency,
+                currency,
+                ethChain,
+                false,
+                null,
+                null,
+                true,
+                BigDecimal.ONE,
+                BigDecimal.TEN,
+                18
+            )
+
             val wrappedEth = CurrencyImplementation(
+                currency,
                 currency,
                 bscChain,
                 false,

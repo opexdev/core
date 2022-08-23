@@ -1,6 +1,7 @@
 package co.nilin.opex.api.ports.proxy.impl
 
 import co.nilin.opex.api.core.inout.AssignResponse
+import co.nilin.opex.api.core.inout.CurrencyImplementation
 import co.nilin.opex.api.core.inout.DepositDetails
 import co.nilin.opex.api.core.spi.BlockchainGatewayProxy
 import co.nilin.opex.api.core.utils.LoggerDelegate
@@ -48,6 +49,20 @@ class BlockchainGatewayProxyImpl(private val client: WebClient) : BlockchainGate
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToFlux<DepositDetails>()
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+    }
+
+    override suspend fun getCurrencyImplementations(currency: String?): List<CurrencyImplementation> {
+        logger.info("calling bc-gateway chain details")
+        return client.get()
+            .uri("$baseUrl/currency/chains") {
+                it.queryParam("currency", currency)
+                it.build()
+            }.accept(MediaType.APPLICATION_JSON)
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToFlux<CurrencyImplementation>()
             .collectList()
             .awaitFirstOrElse { emptyList() }
     }

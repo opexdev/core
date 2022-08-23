@@ -362,7 +362,6 @@ services:
       - market
       - bc-gateway
       - auth
-      - referral
       - consul
       - vault
       - postgres-api

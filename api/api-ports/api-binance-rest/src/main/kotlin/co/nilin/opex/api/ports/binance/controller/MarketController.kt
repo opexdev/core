@@ -3,6 +3,7 @@ package co.nilin.opex.api.ports.binance.controller
 import co.nilin.opex.api.core.inout.PriceChange
 import co.nilin.opex.api.core.inout.PriceTicker
 import co.nilin.opex.api.core.spi.AccountantProxy
+import co.nilin.opex.api.core.spi.BlockchainGatewayProxy
 import co.nilin.opex.api.core.spi.MarketDataProxy
 import co.nilin.opex.api.core.spi.SymbolMapper
 import co.nilin.opex.api.core.utils.Interval
@@ -10,6 +11,8 @@ import co.nilin.opex.api.ports.binance.data.*
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.utility.error.data.throwError
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
@@ -22,6 +25,7 @@ import java.time.ZoneId
 class MarketController(
     private val accountantProxy: AccountantProxy,
     private val marketDataProxy: MarketDataProxy,
+    private val blockchainGatewayProxy: BlockchainGatewayProxy,
     private val symbolMapper: SymbolMapper
 ) {
 
@@ -148,11 +152,11 @@ class MarketController(
         symbol: String?,
         @RequestParam(required = false)
         symbols: String?
-    ): ExchangeInfoResponse {
+    ): ExchangeInfoResponse = coroutineScope {
         val symbolsMap = symbolMapper.symbolToAliasMap()
-        val fee = accountantProxy.getFeeConfigs()
-        val pairConfigs = accountantProxy.getPairConfigs()
-            .map {
+        val fee = async { accountantProxy.getFeeConfigs() }
+        val pairConfigs = async {
+            accountantProxy.getPairConfigs().map {
                 ExchangeInfoSymbol(
                     symbolsMap[it.pair] ?: it.pair,
                     "TRADING",
@@ -162,7 +166,32 @@ class MarketController(
                     it.rightSideFraction.scale()
                 )
             }
-        return ExchangeInfoResponse(fees = fee, symbols = pairConfigs)
+        }
+        ExchangeInfoResponse(fees = fee.await(), symbols = pairConfigs.await())
+    }
+
+    // Custom service
+    @GetMapping("/v3/currencyInfo")
+    suspend fun getNetworks(@RequestParam(required = false) currency: String?): List<CurrencyNetworkResponse> {
+        return blockchainGatewayProxy.getCurrencyImplementations(currency)
+            .groupBy { it.currency }
+            .toList()
+            .map { pair ->
+                CurrencyNetworkResponse(
+                    pair.first.symbol,
+                    pair.first.name,
+                    pair.second.map {
+                        CurrencyNetwork(
+                            it.implCurrency.name,
+                            it.implCurrency.symbol,
+                            it.withdrawMin,
+                            it.withdrawFee,
+                            it.token,
+                            it.tokenAddress
+                        )
+                    }
+                )
+            }
     }
 
     // Weight(IP): 1

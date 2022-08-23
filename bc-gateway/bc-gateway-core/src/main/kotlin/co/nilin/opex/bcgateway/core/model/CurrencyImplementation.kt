@@ -4,6 +4,7 @@ import java.math.BigDecimal
 
 data class CurrencyImplementation(
     val currency: Currency,
+    val implCurrency: Currency,
     val chain: Chain,
     val token: Boolean,
     val tokenAddress: String?,
