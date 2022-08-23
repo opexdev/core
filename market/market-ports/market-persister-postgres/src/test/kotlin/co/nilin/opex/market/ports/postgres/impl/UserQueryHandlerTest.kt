@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test
 import reactor.core.publisher.Mono
 
 class UserQueryHandlerTest {
+
     private val orderRepository: OrderRepository = mockk()
     private val tradeRepository: TradeRepository = mockk()
     private val orderStatusRepository: OrderStatusRepository = mockk()
@@ -29,7 +30,7 @@ class UserQueryHandlerTest {
                 VALID.ALL_ORDER_REQUEST.symbol,
                 VALID.ALL_ORDER_REQUEST.startTime,
                 VALID.ALL_ORDER_REQUEST.endTime,
-                100
+                VALID.ALL_ORDER_REQUEST.limit
             )
         } returns flow {
             emit(VALID.MAKER_ORDER_MODEL)
@@ -54,7 +55,7 @@ class UserQueryHandlerTest {
                 1,
                 VALID.TRADE_REQUEST.startTime,
                 VALID.TRADE_REQUEST.endTime,
-                100
+                VALID.TRADE_REQUEST.limit
             )
         } returns flow {
             emit(VALID.TRADE_MODEL)
