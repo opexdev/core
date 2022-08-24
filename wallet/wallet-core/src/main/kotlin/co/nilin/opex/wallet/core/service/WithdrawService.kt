@@ -22,10 +22,9 @@ class WithdrawService(
     val transferService: TransferService,
     @Value("\${app.system.uuid}") val systemUuid: String
 ) {
+
     @Transactional
-    suspend fun requestWithdraw(
-        withdrawCommand: WithdrawCommand
-    ): WithdrawResult {
+    suspend fun requestWithdraw(withdrawCommand: WithdrawCommand): WithdrawResult {
         val currency = currencyService.getCurrency(withdrawCommand.currency) ?: throw IllegalArgumentException()
         val owner = walletOwnerManager.findWalletOwner(withdrawCommand.uuid) ?: throw IllegalArgumentException()
         val sourceWallet =
@@ -74,9 +73,7 @@ class WithdrawService(
     }
 
     @Transactional
-    suspend fun acceptWithdraw(
-        acceptCommand: WithdrawAcceptCommand
-    ): WithdrawResult {
+    suspend fun acceptWithdraw(acceptCommand: WithdrawAcceptCommand): WithdrawResult {
         val system = walletOwnerManager.findWalletOwner(systemUuid) ?: throw IllegalArgumentException()
         val withdraw = withdrawPersister.findById(acceptCommand.withdrawId)
             ?: throw RuntimeException("No matching withdraw request")
@@ -120,8 +117,8 @@ class WithdrawService(
                 withdraw.destAddress,
                 withdraw.destNetwork,
                 withdraw.destNote ?: ("" + "-----------" + (acceptCommand.destNote ?: "")),
-                null,
                 acceptCommand.destTransactionRef!!,
+                null,
                 "DONE",
                 withdraw.createDate,
                 LocalDateTime.now()
@@ -133,9 +130,7 @@ class WithdrawService(
     }
 
     @Transactional
-    suspend fun rejectWithdraw(
-        rejectCommand: WithdrawRejectCommand
-    ): WithdrawResult {
+    suspend fun rejectWithdraw(rejectCommand: WithdrawRejectCommand): WithdrawResult {
         val withdraw = withdrawPersister.findById(rejectCommand.withdrawId)
             ?: throw RuntimeException("No matching withdraw request")
         if (withdraw.status != "CREATED") {
@@ -212,13 +207,13 @@ class WithdrawService(
     }
 
     suspend fun findByCriteria(
-        ownerUuid: String?,
-        withdrawId: String?,
-        currency: String?,
-        destTxRef: String?,
-        destAddress: String?,
-        noStatus: Boolean,
-        status: List<String>?,
+        ownerUuid: String? = null,
+        withdrawId: String? = null,
+        currency: String? = null,
+        destTxRef: String? = null,
+        destAddress: String? = null,
+        noStatus: Boolean = true,
+        status: List<String>? = null,
     ): List<WithdrawResponse> {
         return withdrawPersister.findByCriteria(
             ownerUuid,
