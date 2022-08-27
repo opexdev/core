@@ -113,12 +113,12 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @Produces(MediaType.APPLICATION_JSON)
     fun forgotPassword(
         @QueryParam("email") email: String?,
-        @QueryParam("captcha-answer") captchaAnswer: String
+        @QueryParam("captcha") captcha: String
     ): Response {
         val uri = UriBuilder.fromUri(forgotUrl)
 
         runCatching {
-            validateCaptcha("$captchaAnswer-${session.context.connection.remoteAddr}")
+            validateCaptcha("$captcha-${session.context.connection.remoteAddr}")
         }.onFailure {
             return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.InvalidCaptcha)
         }
