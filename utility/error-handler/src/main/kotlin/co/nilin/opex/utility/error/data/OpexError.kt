@@ -72,6 +72,10 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
 
     ;
 
+    fun exception(): OpexException {
+        return OpexException(this)
+    }
+
     companion object {
         fun findByCode(code: Int?): OpexError? {
             code ?: return null
