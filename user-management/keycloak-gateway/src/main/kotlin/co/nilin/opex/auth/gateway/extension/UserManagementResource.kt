@@ -137,7 +137,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             val expiration = TimeUnit.SECONDS.toMinutes(opexRealm.actionTokenGeneratedByAdminLifespan.toLong())
             logger.info(link)
             logger.info(expiration.toString())
-            sendEmail(user) { it.sendVerifyEmail(link, expiration) }
+            sendEmail(user) { it.sendPasswordReset(link, expiration) }
         }
 
         return Response.noContent().build()
