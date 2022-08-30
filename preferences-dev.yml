@@ -51,7 +51,7 @@ currencies:
     dailyCount: 100
     monthlyTotal: 30000
     monthlyCount: 3000
-    gift: 100000
+    gift: 1000000
   - symbol: TBTC
     name: Bitcoin (Test)
     precision: 0.000001
@@ -65,7 +65,7 @@ currencies:
         withdrawFee: 0.0001
         withdrawMin: 0.0001
         decimal: 0
-    gift: 21000000
+    gift: 5
   - symbol: TETH
     name: Ethereum (Test)
     precision: 0.000001
@@ -79,7 +79,7 @@ currencies:
         withdrawFee: 0.00001
         withdrawMin: 0.000001
         decimal: 18
-    gift: 2000
+    gift: 100
   - symbol: TUSDT
     name: Tether (Test)
     precision: 0.01
@@ -135,7 +135,7 @@ currencies:
         withdrawFee: 0.01
         withdrawMin: 0.01
         decimal: 18
-    gift: 1000000
+    gift: 2000
 markets:
   - leftSide: TBTC
     rightSide: TUSDT
