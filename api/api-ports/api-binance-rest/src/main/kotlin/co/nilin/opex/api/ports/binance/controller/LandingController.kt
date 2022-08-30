@@ -1,5 +1,6 @@
 package co.nilin.opex.api.ports.binance.controller
 
+import co.nilin.opex.api.core.inout.TradeVolumeStat
 import co.nilin.opex.api.core.spi.GlobalMarketProxy
 import co.nilin.opex.api.core.spi.MarketDataProxy
 import co.nilin.opex.api.core.spi.MarketStatProxy
@@ -8,11 +9,14 @@ import co.nilin.opex.api.core.utils.Interval
 import co.nilin.opex.api.ports.binance.data.GlobalPriceResponse
 import co.nilin.opex.api.ports.binance.data.MarketInfoResponse
 import co.nilin.opex.api.ports.binance.data.MarketStatResponse
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.math.BigDecimal
 
 @RestController // Custom service
 @RequestMapping("/v1/landing")
@@ -42,21 +46,40 @@ class LandingController(
     suspend fun getMarketStats(
         @RequestParam interval: String,
         @RequestParam(required = false) limit: Int?
-    ): MarketStatResponse {
+    ): MarketStatResponse = coroutineScope {
         val since = (Interval.findByLabel(interval) ?: Interval.Week).getDate().time
         val validLimit = getValidLimit(limit)
         val symbols = symbolMapper.symbolToAliasMap()
 
-
-        return MarketStatResponse(
+        val mostIncreased = async {
             marketStatProxy.getMostIncreasedInPricePairs(since, validLimit).onEach {
                 symbols[it.symbol]?.let { s -> it.symbol = s }
-            },
+            }
+        }
+
+        val mostDecreased = async {
             marketStatProxy.getMostDecreasedInPricePairs(since, validLimit).onEach {
                 symbols[it.symbol]?.let { s -> it.symbol = s }
-            },
-            marketStatProxy.getHighestVolumePair(since)?.apply { symbols[symbol]?.let { symbol = it } },
-            marketStatProxy.getTradeCountPair(since)?.apply { symbols[symbol]?.let { symbol = it } }
+            }
+        }
+
+        val highestVolume = async {
+            marketStatProxy.getHighestVolumePair(since)
+                ?.apply { symbols[symbol]?.let { symbol = it } }
+                ?: TradeVolumeStat(symbols.entries.random().value, BigDecimal.ZERO, BigDecimal.ZERO, 0.0)
+        }
+
+        val mostTrades = async {
+            marketStatProxy.getTradeCountPair(since)
+                ?.apply { symbols[symbol]?.let { symbol = it } }
+                ?: TradeVolumeStat(symbols.entries.random().value, BigDecimal.ZERO, BigDecimal.ZERO, 0.0)
+        }
+
+        MarketStatResponse(
+            mostIncreased.await(),
+            mostDecreased.await(),
+            highestVolume.await(),
+            mostTrades.await()
         )
     }
 

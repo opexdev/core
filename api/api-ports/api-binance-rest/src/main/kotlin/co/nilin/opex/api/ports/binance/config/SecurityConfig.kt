@@ -27,6 +27,7 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/v3/trades").permitAll()
             .pathMatchers("/v3/ticker/**").permitAll()
             .pathMatchers("/v3/exchangeInfo").permitAll()
+            .pathMatchers("/v3/currencyInfo").permitAll()
             .pathMatchers("/v3/klines").permitAll()
             .pathMatchers("/socket").permitAll()
             .pathMatchers("/v1/landing/**").permitAll()

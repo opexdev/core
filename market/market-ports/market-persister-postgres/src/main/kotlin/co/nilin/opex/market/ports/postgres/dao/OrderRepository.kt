@@ -42,23 +42,29 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
         select * from orders
         join order_status os on orders.ouid = os.ouid
         where uuid = :uuid and (:symbol is null or symbol = :symbol) and status in (:statuses)
-        and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
-        and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
+            and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
+            and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
+        limit :limit
     """
     )
     fun findByUuidAndSymbolAndStatus(
         @Param("uuid")
         uuid: String,
         @Param("symbol")
-        symbol: String?, @Param("statuses")
-        status: Collection<Int>
+        symbol: String?,
+        @Param("statuses")
+        status: Collection<Int>,
+        limit: Int
     ): Flow<OrderModel>
 
     @Query(
-        "select * from orders where uuid = :uuid " +
-                "and (:symbol is null or symbol = :symbol) " +
-                "and (:startTime is null or update_date >= :startTime)" +
-                "and (:endTime is null or update_date < :endTime)"
+        """
+        select * from orders where uuid = :uuid
+            and (:symbol is null or symbol = :symbol)
+            and (:startTime is null or update_date >= :startTime)
+            and (:endTime is null or update_date < :endTime)
+        limit :limit
+        """
     )
     fun findByUuidAndSymbolAndTimeBetween(
         @Param("uuid")
@@ -68,7 +74,8 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
         @Param("startTime")
         startTime: Date?,
         @Param("endTime")
-        endTime: Date?
+        endTime: Date?,
+        limit: Int
     ): Flow<OrderModel>
 
     @Query(
@@ -76,8 +83,8 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
         select price, (sum(quantity) - sum(os.executed_quantity)) as quantity from orders 
         join order_status os on orders.ouid = os.ouid
         where symbol = :symbol and side = :direction and os.status in (:statuses) 
-        and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
-        and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
+            and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
+            and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
         group by price 
         order by price asc 
         limit :limit
@@ -99,8 +106,8 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
         select price, (sum(quantity) - sum(executed_quantity)) as quantity from orders 
         join order_status os on orders.ouid = os.ouid
         where symbol = :symbol and side = :direction and status in (:statuses) 
-        and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
-        and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
+            and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
+            and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
         group by price 
         order by price desc
         limit :limit

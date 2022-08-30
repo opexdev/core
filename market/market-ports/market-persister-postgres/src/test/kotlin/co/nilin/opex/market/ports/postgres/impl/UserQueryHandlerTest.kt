@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test
 import reactor.core.publisher.Mono
 
 class UserQueryHandlerTest {
+
     private val orderRepository: OrderRepository = mockk()
     private val tradeRepository: TradeRepository = mockk()
     private val orderStatusRepository: OrderStatusRepository = mockk()
@@ -28,7 +29,8 @@ class UserQueryHandlerTest {
                 VALID.PRINCIPAL.name,
                 VALID.ALL_ORDER_REQUEST.symbol,
                 VALID.ALL_ORDER_REQUEST.startTime,
-                VALID.ALL_ORDER_REQUEST.endTime
+                VALID.ALL_ORDER_REQUEST.endTime,
+                VALID.ALL_ORDER_REQUEST.limit
             )
         } returns flow {
             emit(VALID.MAKER_ORDER_MODEL)
@@ -52,7 +54,8 @@ class UserQueryHandlerTest {
                 VALID.TRADE_REQUEST.symbol,
                 1,
                 VALID.TRADE_REQUEST.startTime,
-                VALID.TRADE_REQUEST.endTime
+                VALID.TRADE_REQUEST.endTime,
+                VALID.TRADE_REQUEST.limit
             )
         } returns flow {
             emit(VALID.TRADE_MODEL)
@@ -76,7 +79,8 @@ class UserQueryHandlerTest {
             orderRepository.findByUuidAndSymbolAndStatus(
                 eq(VALID.PRINCIPAL.name),
                 eq(VALID.ETH_USDT),
-                arrayListOf(OrderStatus.NEW.code, OrderStatus.PARTIALLY_FILLED.code)
+                arrayListOf(OrderStatus.NEW.code, OrderStatus.PARTIALLY_FILLED.code),
+                100
             )
         } returns flow {
             emit(VALID.MAKER_ORDER_MODEL)
@@ -85,7 +89,7 @@ class UserQueryHandlerTest {
             orderStatusRepository.findMostRecentByOUID(VALID.MAKER_ORDER_MODEL.ouid)
         } returns Mono.just(VALID.MAKER_ORDER_STATUS_MODEL)
 
-        val queryOrderResponses = userQueryHandler.openOrders(VALID.PRINCIPAL.name, VALID.ETH_USDT)
+        val queryOrderResponses = userQueryHandler.openOrders(VALID.PRINCIPAL.name, VALID.ETH_USDT, 100)
 
         assertThat(queryOrderResponses).isNotNull
         assertThat(queryOrderResponses.count()).isEqualTo(1)

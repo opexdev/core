@@ -46,10 +46,12 @@ class MarketUserDataProxyImpl(private val webClient: WebClient) : MarketUserData
             .awaitSingleOrNull()
     }
 
-    override suspend fun openOrders(principal: Principal, symbol: String?): List<Order> {
+    override suspend fun openOrders(principal: Principal, symbol: String?, limit: Int?): List<Order> {
         return webClient.get()
-            .uri("$baseUrl/v1/user/${principal.name}/orders/$symbol/open")
-            .accept(MediaType.APPLICATION_JSON)
+            .uri("$baseUrl/v1/user/${principal.name}/orders/$symbol/open") {
+                it.queryParam("limit", limit ?: 100)
+                it.build()
+            }.accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
@@ -69,7 +71,7 @@ class MarketUserDataProxyImpl(private val webClient: WebClient) : MarketUserData
             .uri("$baseUrl/v1/user/${principal.name}/orders")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .body(Mono.just(AllOrderRequest(symbol, startTime, endTime, limit)))
+            .body(Mono.just(AllOrderRequest(symbol, startTime, endTime, limit ?: 500)))
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToFlux<Order>()
@@ -89,7 +91,7 @@ class MarketUserDataProxyImpl(private val webClient: WebClient) : MarketUserData
             .uri("$baseUrl/v1/user/${principal.name}/trades")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .body(Mono.just(TradeRequest(symbol, fromTrade, startTime, endTime, limit)))
+            .body(Mono.just(TradeRequest(symbol, fromTrade, startTime, endTime, limit ?: 500)))
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToFlux<Trade>()

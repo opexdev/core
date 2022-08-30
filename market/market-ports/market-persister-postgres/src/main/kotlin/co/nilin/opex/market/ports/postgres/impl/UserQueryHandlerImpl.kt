@@ -47,11 +47,12 @@ class UserQueryHandlerImpl(
         return order.asOrderDTO(status)
     }
 
-    override suspend fun openOrders(uuid: String, symbol: String?): List<Order> {
+    override suspend fun openOrders(uuid: String, symbol: String?, limit: Int): List<Order> {
         return orderRepository.findByUuidAndSymbolAndStatus(
             uuid,
             symbol,
-            listOf(OrderStatus.NEW.code, OrderStatus.PARTIALLY_FILLED.code)
+            listOf(OrderStatus.NEW.code, OrderStatus.PARTIALLY_FILLED.code),
+            limit
         ).filter { orderModel -> orderModel.constraint != null }
             .map { it.asOrderDTO(orderStatusRepository.findMostRecentByOUID(it.ouid).awaitFirstOrNull()) }
             .toList()
@@ -62,7 +63,8 @@ class UserQueryHandlerImpl(
             uuid,
             allOrderRequest.symbol,
             allOrderRequest.startTime,
-            allOrderRequest.endTime
+            allOrderRequest.endTime,
+            allOrderRequest.limit
         ).filter { orderModel -> orderModel.constraint != null }
             .map { it.asOrderDTO(orderStatusRepository.findMostRecentByOUID(it.ouid).awaitFirstOrNull()) }
             .toList()
@@ -70,7 +72,7 @@ class UserQueryHandlerImpl(
 
     override suspend fun allTrades(uuid: String, request: TradeRequest): List<Trade> {
         return tradeRepository.findByUuidAndSymbolAndTimeBetweenAndTradeIdGreaterThan(
-            uuid, request.symbol, request.fromTrade, request.startTime, request.endTime
+            uuid, request.symbol, request.fromTrade, request.startTime, request.endTime, request.limit
         ).map {
             val takerOrder = orderRepository.findByOuid(it.takerOuid).awaitFirst()
             val makerOrder = orderRepository.findByOuid(it.makerOuid).awaitFirst()

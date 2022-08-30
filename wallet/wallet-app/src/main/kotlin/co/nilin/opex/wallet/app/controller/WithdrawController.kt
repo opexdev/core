@@ -1,5 +1,7 @@
 package co.nilin.opex.wallet.app.controller
 
+import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.app.dto.TransactionRequest
 import co.nilin.opex.wallet.app.dto.WithdrawHistoryResponse
 import co.nilin.opex.wallet.core.inout.WithdrawCommand
@@ -19,6 +21,14 @@ import java.time.ZoneId
 @RestController
 @RequestMapping("/withdraw")
 class WithdrawController(private val withdrawService: WithdrawService) {
+
+    @GetMapping("/{withdrawId}")
+    suspend fun findWithdraw(@PathVariable withdrawId: String): WithdrawResponse {
+        return with(withdrawService.findByCriteria(withdrawId = withdrawId)) {
+            if (isEmpty()) throw OpexException(OpexError.WithdrawNotFound)
+            get(0)
+        }
+    }
 
     @GetMapping
     @ApiResponse(

@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS withdraws
     applied_fee          DECIMAL,
     dest_amount          DECIMAL,
     dest_symbol          VARCHAR(20),
-    dest_network         VARCHAR(20),
+    dest_network         VARCHAR(80),
     dest_address         VARCHAR(80),
     dest_notes           TEXT,
     dest_transaction_ref VARCHAR(100),

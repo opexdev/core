@@ -3,6 +3,7 @@ package co.nilin.opex.api.ports.binance.controller
 import co.nilin.opex.api.core.inout.PriceChange
 import co.nilin.opex.api.core.inout.PriceTicker
 import co.nilin.opex.api.core.spi.AccountantProxy
+import co.nilin.opex.api.core.spi.BlockchainGatewayProxy
 import co.nilin.opex.api.core.spi.MarketDataProxy
 import co.nilin.opex.api.core.spi.SymbolMapper
 import co.nilin.opex.api.core.utils.Interval
@@ -10,6 +11,8 @@ import co.nilin.opex.api.ports.binance.data.*
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.utility.error.data.throwError
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
@@ -22,6 +25,7 @@ import java.time.ZoneId
 class MarketController(
     private val accountantProxy: AccountantProxy,
     private val marketDataProxy: MarketDataProxy,
+    private val blockchainGatewayProxy: BlockchainGatewayProxy,
     private val symbolMapper: SymbolMapper
 ) {
 
@@ -35,9 +39,9 @@ class MarketController(
     // 5000 - 50
     @GetMapping("/v3/depth")
     suspend fun orderBook(
-        @RequestParam("symbol")
+        @RequestParam
         symbol: String,
-        @RequestParam("limit", required = false)
+        @RequestParam(required = false)
         limit: Int? // Default 100; max 5000. Valid limits:[5, 10, 20, 50, 100, 500, 1000, 5000]
     ): OrderBookResponse {
         val validLimit = limit ?: 100
@@ -74,9 +78,9 @@ class MarketController(
     @GetMapping("/v3/trades")
     suspend fun recentTrades(
         principal: Principal,
-        @RequestParam("symbol")
+        @RequestParam
         symbol: String,
-        @RequestParam("limit", required = false)
+        @RequestParam(required = false)
         limit: Int? // Default 500; max 1000.
     ): List<RecentTradeResponse> {
         val validLimit = limit ?: 500
@@ -100,10 +104,8 @@ class MarketController(
 
     @GetMapping("/v3/ticker/{duration:24h|7d|1M}")
     suspend fun priceChange(
-        @PathVariable("duration")
-        duration: String,
-        @RequestParam("symbol", required = false)
-        symbol: String?,
+        @PathVariable duration: String,
+        @RequestParam(required = false) symbol: String?
     ): List<PriceChange> {
         val localSymbol = if (symbol.isNullOrEmpty())
             null
@@ -135,7 +137,7 @@ class MarketController(
     // 1 for a single symbol
     // 2 when the symbol parameter is omitted
     @GetMapping("/v3/ticker/price")
-    suspend fun priceTicker(@RequestParam("symbol", required = false) symbol: String?): List<PriceTicker> {
+    suspend fun priceTicker(@RequestParam(required = false) symbol: String?): List<PriceTicker> {
         val symbols = symbolMapper.symbolToAliasMap()
         val localSymbol = if (symbol == null)
             null
@@ -146,15 +148,15 @@ class MarketController(
 
     @GetMapping("/v3/exchangeInfo")
     suspend fun pairInfo(
-        @RequestParam("symbol", required = false)
+        @RequestParam(required = false)
         symbol: String?,
-        @RequestParam("symbols", required = false)
+        @RequestParam(required = false)
         symbols: String?
-    ): ExchangeInfoResponse {
+    ): ExchangeInfoResponse = coroutineScope {
         val symbolsMap = symbolMapper.symbolToAliasMap()
-        val fee = accountantProxy.getFeeConfigs()
-        val pairConfigs = accountantProxy.getPairConfigs()
-            .map {
+        val fee = async { accountantProxy.getFeeConfigs() }
+        val pairConfigs = async {
+            accountantProxy.getPairConfigs().map {
                 ExchangeInfoSymbol(
                     symbolsMap[it.pair] ?: it.pair,
                     "TRADING",
@@ -164,21 +166,46 @@ class MarketController(
                     it.rightSideFraction.scale()
                 )
             }
-        return ExchangeInfoResponse(fees = fee, symbols = pairConfigs)
+        }
+        ExchangeInfoResponse(fees = fee.await(), symbols = pairConfigs.await())
+    }
+
+    // Custom service
+    @GetMapping("/v3/currencyInfo")
+    suspend fun getNetworks(@RequestParam(required = false) currency: String?): List<CurrencyNetworkResponse> {
+        return blockchainGatewayProxy.getCurrencyImplementations(currency)
+            .groupBy { it.currency }
+            .toList()
+            .map { pair ->
+                CurrencyNetworkResponse(
+                    pair.first.symbol,
+                    pair.first.name,
+                    pair.second.map {
+                        CurrencyNetwork(
+                            it.implCurrency.name,
+                            it.implCurrency.symbol,
+                            it.withdrawMin,
+                            it.withdrawFee,
+                            it.token,
+                            it.tokenAddress
+                        )
+                    }
+                )
+            }
     }
 
     // Weight(IP): 1
     @GetMapping("/v3/klines")
     suspend fun klines(
-        @RequestParam("symbol")
+        @RequestParam
         symbol: String,
-        @RequestParam("interval")
+        @RequestParam
         interval: String,
-        @RequestParam("startTime", required = false)
+        @RequestParam(required = false)
         startTime: Long?,
-        @RequestParam("endTime", required = false)
+        @RequestParam(required = false)
         endTime: Long?,
-        @RequestParam("limit", required = false)
+        @RequestParam(required = false)
         limit: Int? // Default 500; max 1000.
     ): List<List<Any>> {
         val validLimit = limit ?: 500

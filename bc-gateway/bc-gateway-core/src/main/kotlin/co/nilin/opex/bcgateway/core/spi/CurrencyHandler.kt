@@ -33,6 +33,8 @@ interface CurrencyHandler {
 
     suspend fun findImplementationsWithTokenOnChain(chain: String): List<CurrencyImplementation>
 
+    suspend fun findImplementationsByCurrency(currency: String): List<CurrencyImplementation>
+
     suspend fun changeWithdrawStatus(symbol: String, chain: String, status: Boolean)
 
 }
