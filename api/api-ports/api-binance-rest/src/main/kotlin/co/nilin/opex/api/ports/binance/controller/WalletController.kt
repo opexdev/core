@@ -239,10 +239,10 @@ class WalletController(
         val zeroAssets = arrayListOf<String>()
         wallets.associateWith { rates[it.asset] }
             .forEach { (asset, price) ->
-                if (price == null || price.bidPrice == BigDecimal.ZERO)
+                if (price == null || (price.bidPrice ?: BigDecimal.ZERO) == BigDecimal.ZERO)
                     zeroAssets.add(asset.asset)
                 else
-                    value += asset.balance.multiply(price.bidPrice ?: BigDecimal.ZERO)
+                    value += asset.balance.multiply(price.bidPrice)
             }
         return AssetsEstimatedValue(value, quoteAsset.uppercase(), zeroAssets)
     }
