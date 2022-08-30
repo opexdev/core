@@ -242,7 +242,7 @@ class WalletController(
                 if (price == null || price.bidPrice == BigDecimal.ZERO)
                     zeroAssets.add(asset.asset)
                 else
-                    value += asset.balance.multiply(price.bidPrice)
+                    value += asset.balance.multiply(price.bidPrice ?: BigDecimal.ZERO)
             }
         return AssetsEstimatedValue(value, quoteAsset.uppercase(), zeroAssets)
     }
