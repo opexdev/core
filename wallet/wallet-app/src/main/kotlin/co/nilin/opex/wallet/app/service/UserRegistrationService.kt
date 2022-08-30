@@ -15,7 +15,9 @@ import java.math.BigDecimal
 
 @Component
 class UserRegistrationService(
-    val walletOwnerManager: WalletOwnerManager, val walletManager: WalletManager, val currencyService: CurrencyService
+    val walletOwnerManager: WalletOwnerManager,
+    val walletManager: WalletManager,
+    val currencyService: CurrencyService
 ) {
     @Autowired
     private lateinit var preferences: Preferences
@@ -24,7 +26,7 @@ class UserRegistrationService(
     suspend fun registerNewUser(event: UserCreatedEvent) {
         val owner = walletOwnerManager.createWalletOwner(event.uuid, "${event.firstName} ${event.lastName}", "1")
 
-        preferences.currencies.filter { it.gift > BigDecimal.ZERO }.forEach {
+        preferences.currencies.forEach {
             val currency = currencyService.getCurrency(it.symbol) ?: throw OpexException(OpexError.CurrencyNotFound)
             walletManager.createWallet(owner, Amount(currency, it.gift), currency, "main")
         }
