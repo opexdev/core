@@ -48,3 +48,5 @@ app:
   address: 1
   wallet:
     url: lb://opex-wallet/
+  whitelist:
+    enabled: ${WHITELIST_ENABLED:false}
