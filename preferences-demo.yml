@@ -225,3 +225,7 @@ userLimits:
 system:
   walletTitle: system
   walletLevel: basic
+auth:
+  whitelist:
+    enabled: false
+    file: /whitelist.txt

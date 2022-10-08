@@ -73,3 +73,5 @@ keycloak:
 app:
   verify-redirect-url: ${VERIFY_REDIRECT_URL}
   forgot-redirect-url: ${FORGOT_REDIRECT_URL}
+  whitelist:
+    enabled: ${WHITELIST_ENABLED:false}

@@ -42,5 +42,3 @@ build/
 !/.mvn/
 
 .DS_Store
-
-whitelist.txt
