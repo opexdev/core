@@ -19,6 +19,9 @@ services:
     build: matching-gateway/matching-gateway-app
   auth:
     build: user-management/keycloak-gateway
+    volumes:
+      - "./preferences-dev.yml:/preferences.yml"
+      - "./whitelist.txt:/whitelist.txt"
   wallet:
     build: wallet/wallet-app
     volumes:

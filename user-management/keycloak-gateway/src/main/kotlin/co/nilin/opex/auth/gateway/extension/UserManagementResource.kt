@@ -41,6 +41,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
 
     private val logger = LoggerFactory.getLogger(UserManagementResource::class.java)
     private val opexRealm = session.realms().getRealm("opex")
+    private val whitelist by lazy { ApplicationContextHolder.getCurrentContext()!!.getBean("whitelist") as Whitelist }
     private val verifyUrl by lazy {
         ApplicationContextHolder.getCurrentContext()!!.environment.resolvePlaceholders("\${verify-redirect-url}")
     }
@@ -58,6 +59,10 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     fun registerUser(request: RegisterUserRequest): Response {
         val auth = ResourceAuthenticator.bearerAuth(session)
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
+
+        if (whitelist.isEnabled && request.email != null && !whitelist.emails.contains(request.email!!.toLowerCase())) {
+            return ErrorHandler.forbidden()
+        }
 
         runCatching {
             validateCaptcha("${request.captchaAnswer}-${session.context.connection.remoteAddr}")

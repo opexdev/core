@@ -281,6 +281,7 @@ services:
       - FORGOT_REDIRECT_URL=$KEYCLOAK_FORGOT_REDIRECT_URL
       - VAULT_URL=http://vault:8200
       - VAULT_HOST=vault
+      - PREFERENCES=$PREFERENCES
     depends_on:
       - captcha
       - kafka-1
