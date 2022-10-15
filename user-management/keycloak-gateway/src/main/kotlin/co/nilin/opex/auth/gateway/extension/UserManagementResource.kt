@@ -5,6 +5,7 @@ import co.nilin.opex.auth.gateway.data.*
 import co.nilin.opex.auth.gateway.model.ActionTokenResult
 import co.nilin.opex.auth.gateway.model.AuthEvent
 import co.nilin.opex.auth.gateway.model.UserCreatedEvent
+import co.nilin.opex.auth.gateway.providers.CustomEmailTemplateProvider
 import co.nilin.opex.auth.gateway.utils.*
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
@@ -377,13 +378,14 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
 
     private fun sendEmail(user: UserModel, sendAction: (EmailTemplateProvider) -> Unit) {
         if (!user.isEnabled) throw OpexException(OpexError.BadRequest, "User is disabled")
-
         val clientId = Constants.ACCOUNT_MANAGEMENT_CLIENT_ID
         val client = session.clients().getClientByClientId(opexRealm, clientId)
         if (client == null || !client.isEnabled) throw OpexException(OpexError.BadRequest, "Client error")
 
         try {
-            val provider = session.getProvider(EmailTemplateProvider::class.java)
+            val provider = session.getAllProviders(EmailTemplateProvider::class.java)
+                .find { it is CustomEmailTemplateProvider }!!
+            //val provider = session.getProvider(CustomEmailTemplateProvider::class.java)
             sendAction(provider.setRealm(opexRealm).setUser(user))
         } catch (e: Exception) {
             logger.error("Unable to send verification email")
