@@ -102,8 +102,12 @@ class CustomEmailTemplateProvider(private val session: KeycloakSession) : EmailT
 
     private fun processTemplate(fileName: String, docBuilder: Document.() -> Unit): Document {
         return getTemplateAsDocument(fileName).apply {
-            getElementById("name")?.attr("value", appName)
-            getElementById("baseUrl")?.attr("value", baseUrl)
+            getElementById("site")?.attr("href", baseUrl)
+            getElementById("logo")?.attr("src", "$baseUrl/assets/logo/logo.svg")
+            getElementById("link")?.apply {
+                attr("href", baseUrl)
+                text(appName)
+            }
             docBuilder(this)
         }
     }
