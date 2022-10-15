@@ -14,25 +14,25 @@ class WhitelistConfig(private val preferences: Preferences) {
 
     @Bean("whitelist")
     fun whitelist(): Whitelist {
-        val whitelist = with(preferences.auth.whitelist) {
+        with(preferences.auth.whitelist) {
             val file = File(file)
             if (!enabled) {
                 logger.info("whitelist disabled by preferences")
-                Whitelist()
+                return Whitelist()
             }
 
             if (!file.exists()) {
                 logger.info("whitelist file doesn't exists")
-                Whitelist()
+                return Whitelist()
             }
 
             val list = file.readLines().onEach { it.trim().toLowerCase() }
-            Whitelist(list.isNotEmpty(), list)
-        }
 
-        logger.info("whitelist enabled: ${whitelist.isEnabled}")
-        logger.info("whitelist emails: ${whitelist.emails}")
-        return whitelist
+            logger.info("whitelist enabled: ${list.isNotEmpty()}")
+            logger.info("whitelist emails: $list")
+
+            return Whitelist(list.isNotEmpty(), list)
+        }
     }
 
 }
