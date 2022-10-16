@@ -54,14 +54,14 @@ class CustomEmailTemplateProvider(private val session: KeycloakSession) : EmailT
         val template = processTemplate("password-reset.html") {
             getElementById("action-button")?.attr("href", link ?: "")
         }
-        send("Reset password", template.html(), "Please click on the link below to reset password\n $link")
+        send("$appName reset password", template.html(), "Please click on the link below to reset password\n $link")
     }
 
     override fun sendSmtpTestEmail(config: MutableMap<String, String>?, user: UserModel?) {
         val template = processTemplate("execute-action.html") {
             getElementById("action-button")?.attr("href", "/where-link-goes")
         }
-        send("SMTP test email", template.html(), "This is a test email")
+        send("$appName SMTP test email", template.html(), "This is a test email")
     }
 
     override fun sendConfirmIdentityBrokerLink(link: String?, expirationInMinutes: Long) {
@@ -72,14 +72,14 @@ class CustomEmailTemplateProvider(private val session: KeycloakSession) : EmailT
         val template = processTemplate("execute-action.html") {
             getElementById("action-button")?.attr("href", link ?: "")
         }
-        send("Execute actions", template.html(), "Please click on the link below to execute actions\n $link")
+        send("$appName execute actions", template.html(), "Please click on the link below to execute actions\n $link")
     }
 
     override fun sendVerifyEmail(link: String?, expirationInMinutes: Long) {
         val template = processTemplate("verify-email.html") {
             getElementById("action-button")?.attr("href", link ?: "")
         }
-        send("Verify email", template.html(), "Please click on the link below to verify email\n $link")
+        send("$appName verify email", template.html(), "Please click on the link below to verify email\n $link")
     }
 
     override fun send(subjectFormatKey: String?, bodyTemplate: String?, bodyAttributes: MutableMap<String, Any>?) {
@@ -102,8 +102,10 @@ class CustomEmailTemplateProvider(private val session: KeycloakSession) : EmailT
 
     private fun processTemplate(fileName: String, docBuilder: Document.() -> Unit): Document {
         return getTemplateAsDocument(fileName).apply {
-            getElementById("site")?.attr("href", baseUrl)
-            getElementById("logo")?.attr("src", "$baseUrl/assets/logo/logo.svg")
+            getElementById("site")?.apply {
+                attr("href", baseUrl)
+                text(appName)
+            }
             getElementById("link")?.apply {
                 attr("href", baseUrl)
                 text(appName)
