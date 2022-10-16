@@ -282,6 +282,8 @@ services:
       - VAULT_URL=http://vault:8200
       - VAULT_HOST=vault
       - PREFERENCES=$PREFERENCES
+      - APP_NAME=$APP_NAME
+      - APP_BASE_URL=$APP_BASE_URL
     depends_on:
       - captcha
       - kafka-1
