@@ -1,5 +1,6 @@
 package co.nilin.opex.api.ports.binance.controller
 
+import co.nilin.opex.api.core.inout.PriceStat
 import co.nilin.opex.api.core.inout.TradeVolumeStat
 import co.nilin.opex.api.core.spi.GlobalMarketProxy
 import co.nilin.opex.api.core.spi.MarketDataProxy
@@ -52,15 +53,15 @@ class LandingController(
         val symbols = symbolMapper.symbolToAliasMap()
 
         val mostIncreased = async {
-            marketStatProxy.getMostIncreasedInPricePairs(since, validLimit).onEach {
-                symbols[it.symbol]?.let { s -> it.symbol = s }
-            }
+            marketStatProxy.getMostIncreasedInPricePairs(since, validLimit)
+                .onEach { symbols[it.symbol]?.let { s -> it.symbol = s } }
+                .ifEmpty { symbols.entries.map { PriceStat(it.value, BigDecimal.ZERO, 0.0) } }
         }
 
         val mostDecreased = async {
-            marketStatProxy.getMostDecreasedInPricePairs(since, validLimit).onEach {
-                symbols[it.symbol]?.let { s -> it.symbol = s }
-            }
+            marketStatProxy.getMostDecreasedInPricePairs(since, validLimit)
+                .onEach { symbols[it.symbol]?.let { s -> it.symbol = s } }
+                .ifEmpty { symbols.entries.map { PriceStat(it.value, BigDecimal.ZERO, 0.0) } }
         }
 
         val highestVolume = async {
