@@ -203,17 +203,5 @@
         <td style="font-family: Roboto, sans-serif; font-size: 16px; vertical-align: top;" valign="top">&nbsp;</td>
     </tr>
 </table>
-<script>
-    const name = document.getElementById('name').value
-    const baseUrl = document.getElementById('baseUrl').value
-
-    document.getElementById('site').href = baseUrl
-    document.getElementById('link').href = baseUrl
-    document.getElementById('link').innerHTML = name
-    document.getElementById('logo').src = baseUrl+"/assets/logo/logo.svg"
-    const nameBoxs = document.querySelectorAll('.name-holder');
-
-    nameBoxs.forEach(box => { box.innerHTML = name});
-</script>
 </body>
 </html>
