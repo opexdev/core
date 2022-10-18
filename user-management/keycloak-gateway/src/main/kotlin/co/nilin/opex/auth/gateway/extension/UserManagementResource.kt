@@ -195,16 +195,20 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @POST
     @Path("user/request-verify")
     @Produces(MediaType.APPLICATION_JSON)
-    fun sendVerifyEmail(@QueryParam("email") email: String?): Response {
-        val user = session.users().getUserByEmail(email, opexRealm)
-        if (user != null) {
-            val token = ActionTokenHelper.generateRequiredActionsToken(
-                session,
-                opexRealm,
-                user,
-                listOf(UserModel.RequiredAction.VERIFY_EMAIL.name)
-            )
+    fun requestVerifyEmail(@QueryParam("email") email: String?, @QueryParam("captcha") captcha: String): Response {
+        runCatching {
+            validateCaptcha("${captcha}-${session.context.connection.remoteAddr}")
+        }.onFailure {
+            return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.InvalidCaptcha)
+        }
 
+        val user = session.users().getUserByEmail(email, opexRealm)
+        if (user?.isEmailVerified == true)
+            return ErrorHandler.badRequest("User already verified")
+
+        if (user != null) {
+            val actions = user.requiredActionsStream.toList()
+            val token = ActionTokenHelper.generateRequiredActionsToken(session, opexRealm, user, actions)
             val url = "${session.context.getUri(UrlType.BACKEND).baseUri}/realms/opex/user-management/user/verify"
             val link = ActionTokenHelper.attachTokenToLink(url, token)
             val expiration = TimeUnit.SECONDS.toMinutes(opexRealm.actionTokenGeneratedByAdminLifespan.toLong())
