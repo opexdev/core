@@ -68,16 +68,11 @@ class UserProfileResource(private val session: KeycloakSession) : RealmResourceP
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
 
         with(request) {
-            firstNameEn?.let { user.setSingleAttribute("firstNameEn", it) }
-            lastNameEn?.let { user.setSingleAttribute("lastNameEn", it) }
             firstName?.let { user.setSingleAttribute("firstName", it) }
             lastName?.let { user.setSingleAttribute("lastName", it) }
-            birthdayJ?.let { user.setSingleAttribute("birthdayJ", it) }
-            birthdayG?.let { user.setSingleAttribute("birthdayG", it) }
-            nationalId?.let { user.setSingleAttribute("nationalId", it) }
-            passportNumber?.let { user.setSingleAttribute("passportNumber", it) }
+            birthday?.let { user.setSingleAttribute("birthday", it) }
+            idNumber?.let { user.setSingleAttribute("idNumber", it) }
             mobile?.let { user.setSingleAttribute("mobile", it) }
-            telephone?.let { user.setSingleAttribute("telephone", it) }
             postalCode?.let { user.setSingleAttribute("postalCode", it) }
             residence?.let { user.setSingleAttribute("residence", it) }
             nationality?.let { user.setSingleAttribute("nationality", it) }

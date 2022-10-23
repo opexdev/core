@@ -4,6 +4,8 @@ import java.math.BigDecimal
 
 data class PriceChange(
     var symbol: String,
+    var base: String? = null,
+    var quote: String? = null,
     val priceChange: BigDecimal = BigDecimal.ZERO,
     val priceChangePercent: BigDecimal = BigDecimal.ZERO,
     val weightedAvgPrice: BigDecimal = BigDecimal.ZERO,
