@@ -57,6 +57,9 @@ app:
     url: lb://opex-bc-gateway
   auth:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
+    token-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/token
+    api-key-client:
+      secret: ${API_KEY_CLIENT_SECRET}
   binance:
     api-url: https://api1.binance.com
 swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
