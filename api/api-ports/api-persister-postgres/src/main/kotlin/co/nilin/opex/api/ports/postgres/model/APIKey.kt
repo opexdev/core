@@ -13,5 +13,6 @@ data class APIKey(
     val refreshToken: String,
     val expirationTime: LocalDateTime,
     val allowedIPs: String?,
-    val key: String = UUID.randomUUID().toString()
+    val key: String = UUID.randomUUID().toString(),
+    var isEnabled: Boolean = true
 )

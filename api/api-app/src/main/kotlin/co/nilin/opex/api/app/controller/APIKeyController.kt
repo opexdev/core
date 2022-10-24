@@ -1,0 +1,64 @@
+package co.nilin.opex.api.app.controller
+
+import co.nilin.opex.api.app.data.APIKeyResponse
+import co.nilin.opex.api.app.data.CreateAPIKeyRequest
+import co.nilin.opex.api.app.service.APIKeyService
+import co.nilin.opex.api.ports.binance.util.jwtAuthentication
+import co.nilin.opex.api.ports.binance.util.tokenValue
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
+import java.security.Principal
+
+@RestController
+@RequestMapping("/api-key")
+class APIKeyController(private val apiKeyService: APIKeyService) {
+
+    @GetMapping
+    suspend fun getKeys(principal: Principal): List<APIKeyResponse> {
+        return apiKeyService.getKeysByUserId(principal.name)
+            .map { APIKeyResponse(it.label, it.expirationTime, it.allowedIPs, it.key, it.isEnabled) }
+    }
+
+    @PostMapping
+    suspend fun create(
+        @RequestBody request: CreateAPIKeyRequest,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): Any {
+        val jwt = securityContext.jwtAuthentication()
+        val response = apiKeyService.createAPIKey(
+            jwt.name,
+            request.label,
+            request.expirationTime,
+            request.allowedIPs,
+            jwt.tokenValue()
+        )
+        return object {
+            val secret = response.first
+            val apiKey = response.second.key
+        }
+    }
+
+    @PutMapping("/{key}/enable")
+    suspend fun enableKey(principal: Principal, @PathVariable key: String) {
+        apiKeyService.changeKeyState(principal.name, key, true)
+    }
+
+    @PutMapping("/{key}/disable")
+    suspend fun disableKey(principal: Principal, @PathVariable key: String) {
+        apiKeyService.changeKeyState(principal.name, key, false)
+    }
+
+    @DeleteMapping("/{key}")
+    suspend fun deleteKey(principal: Principal, @PathVariable key: String) {
+        apiKeyService.deleteKey(principal.name, key)
+    }
+
+}
