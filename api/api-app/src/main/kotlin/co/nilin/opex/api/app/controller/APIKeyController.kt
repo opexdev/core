@@ -2,7 +2,7 @@ package co.nilin.opex.api.app.controller
 
 import co.nilin.opex.api.app.data.APIKeyResponse
 import co.nilin.opex.api.app.data.CreateAPIKeyRequest
-import co.nilin.opex.api.app.service.APIKeyService
+import co.nilin.opex.api.app.service.APIKeyServiceImpl
 import co.nilin.opex.api.ports.binance.util.jwtAuthentication
 import co.nilin.opex.api.ports.binance.util.tokenValue
 import org.springframework.security.core.annotation.CurrentSecurityContext
@@ -19,7 +19,12 @@ import java.security.Principal
 
 @RestController
 @RequestMapping("/api-key")
-class APIKeyController(private val apiKeyService: APIKeyService) {
+class APIKeyController(private val apiKeyService: APIKeyServiceImpl) {
+
+    @GetMapping("/test")
+    fun test(principal: Principal): String {
+        return principal.name
+    }
 
     @GetMapping
     suspend fun getKeys(principal: Principal): List<APIKeyResponse> {
@@ -36,13 +41,13 @@ class APIKeyController(private val apiKeyService: APIKeyService) {
         val response = apiKeyService.createAPIKey(
             jwt.name,
             request.label,
-            request.expirationTime,
+            request.expiration?.getLocalDateTime(),
             request.allowedIPs,
             jwt.tokenValue()
         )
         return object {
-            val secret = response.first
             val apiKey = response.second.key
+            val secret = response.first
         }
     }
 
