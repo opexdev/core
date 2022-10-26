@@ -19,5 +19,5 @@ data class APIKeyModel(
     var tokenExpirationTime: LocalDateTime,
     val key: String = UUID.randomUUID().toString(),
     var isEnabled: Boolean = true,
-    var isExpired: Boolean = true
+    var isExpired: Boolean = false
 )

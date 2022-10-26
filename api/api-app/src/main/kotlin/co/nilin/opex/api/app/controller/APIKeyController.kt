@@ -18,13 +18,8 @@ import org.springframework.web.bind.annotation.RestController
 import java.security.Principal
 
 @RestController
-@RequestMapping("/api-key")
+@RequestMapping("/v1/api-key")
 class APIKeyController(private val apiKeyService: APIKeyServiceImpl) {
-
-    @GetMapping("/test")
-    fun test(principal: Principal): String {
-        return principal.name
-    }
 
     @GetMapping
     suspend fun getKeys(principal: Principal): List<APIKeyResponse> {

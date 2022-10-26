@@ -7,7 +7,6 @@ import org.springframework.context.annotation.ComponentScan
 import springfox.documentation.swagger2.annotations.EnableSwagger2
 
 @SpringBootApplication
-@EnableCaching
 @ComponentScan("co.nilin.opex")
 class ApiApp
 

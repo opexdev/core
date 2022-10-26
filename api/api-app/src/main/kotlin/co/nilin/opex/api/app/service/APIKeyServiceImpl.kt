@@ -14,6 +14,8 @@ import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.cache.Cache
+import org.springframework.cache.CacheManager
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.time.LocalDateTime
@@ -23,11 +25,13 @@ import java.util.concurrent.TimeUnit
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
+import kotlin.math.log
 
 @Service
 class APIKeyServiceImpl(
     private val apiKeyRepository: APIKeyRepository,
     private val authProxy: AuthProxy,
+    private val cacheManager: CacheManager,
     @Value("\${app.auth.api-key-client.secret}")
     private val clientSecret: String
 ) : APIKeyService {
@@ -68,15 +72,16 @@ class APIKeyServiceImpl(
     }
 
     override suspend fun getAPIKey(key: String, secret: String): APIKey? = coroutineScope {
-        val apiKey = apiKeyRepository.findByKey(key).awaitSingleOrNull()
+        val apiKey = getFromCache(key)?.also { logger.info("Got apiKey from cache") }
+            ?: apiKeyRepository.findByKey(key).awaitSingleOrNull()?.apply { putCache(this) }
+
         with(apiKey) {
             if (this != null) {
                 launch { checkupAPIKey(this@with, secret) }
-                logger.info("Returning api key data")
                 APIKey(
                     userId,
                     label,
-                    decryptToken(accessToken, secret),
+                    decryptAES(accessToken, secret),
                     expirationTime,
                     allowedIPs,
                     key,
@@ -119,36 +124,33 @@ class APIKeyServiceImpl(
         apiKeyRepository.delete(apiKey).awaitSingle()
     }
 
-    private fun decryptToken(secret: String, token: String): String? {
-        return try {
-            decryptAES(token, secret)
-        } catch (e: Exception) {
-            logger.error("Unable to decrypt token")
-            logger.error(e.stackTraceToString())
-            null
-        }
-    }
-
     private suspend fun checkupAPIKey(apiKey: APIKeyModel, secret: String) {
         if (apiKey.isExpired || !apiKey.isEnabled)
             return
 
         logger.info("Checking up api key...")
-        val now = LocalDateTime.now()
-        if (apiKey.expirationTime?.isBefore(now) == true) {
-            apiKey.isExpired = true
-            apiKeyRepository.save(apiKey).awaitSingle()
-            logger.info("API key ${apiKey.key} is expired")
-            return
-        }
-
-        if (apiKey.tokenExpirationTime.isBefore(now)) {
-            val response = authProxy.refreshToken(clientSecret, decryptToken(secret, apiKey.refreshToken)!!)
-            apiKey.apply {
-                accessToken = encryptAES(response.refresh_token, secret)
-                tokenExpirationTime = tokenExpiration(response.expires_in)
+        try {
+            val now = LocalDateTime.now()
+            if (apiKey.expirationTime?.isBefore(now) == true) {
+                logger.info("Expiring api key ${apiKey.key}")
+                apiKey.isExpired = true
+                apiKeyRepository.save(apiKey).awaitSingle().apply { updateCache(this) }
+                logger.info("API key ${apiKey.key} is expired")
+                return
             }
-            apiKeyRepository.save(apiKey).awaitSingle()
+
+            if (apiKey.tokenExpirationTime.isBefore(now)) {
+                logger.info("Refreshing api key ${apiKey.key} token")
+                val response = authProxy.refreshToken(clientSecret, decryptAES(apiKey.refreshToken, secret))
+                apiKey.apply {
+                    accessToken = encryptAES(response.access_token, secret)
+                    tokenExpirationTime = tokenExpiration(response.expires_in)
+                }
+                apiKeyRepository.save(apiKey).awaitSingle().apply { updateCache(this) }
+                logger.info("API key ${apiKey.key} token refreshed")
+            }
+        } catch (e: Exception) {
+            logger.error("Error checking api key ${apiKey.key}", e)
         }
     }
 
@@ -176,6 +178,32 @@ class APIKeyServiceImpl(
     private fun tokenExpiration(expiresInSeconds: Long): LocalDateTime {
         val tokenOffsetTime = Date().time + TimeUnit.SECONDS.toMillis(expiresInSeconds) - TimeUnit.MINUTES.toMillis(10)
         return LocalDateTime.ofInstant(Instant.ofEpochMilli(tokenOffsetTime), ZoneId.systemDefault())
+    }
+
+    private fun getFromCache(key: String): APIKeyModel? {
+        return getCache()?.get(key)?.get() as APIKeyModel?
+    }
+
+    private fun putCache(apiKey: APIKeyModel) {
+        getCache()?.apply {
+            putIfAbsent(apiKey.key, apiKey)
+            logger.info("Added to cache")
+        }
+    }
+
+    private fun updateCache(apiKey: APIKeyModel) {
+        getCache()?.apply {
+            evict(apiKey.key)
+            put(apiKey.key, apiKey)
+            logger.info("Cache updated")
+        }
+    }
+
+    private fun getCache(): Cache? {
+        val cache = cacheManager.getCache("apiKey")
+        if (cache == null)
+            logger.warn("Could not find cache of apiKey")
+        return cache
     }
 
 }

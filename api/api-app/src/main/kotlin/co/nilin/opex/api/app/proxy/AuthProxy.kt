@@ -42,7 +42,7 @@ class AuthProxy(
         val body = BodyInserters.fromFormData("client_id", "opex-api-key")
             .with("client_secret", clientSecret)
             .with("refresh_token", refreshToken)
-            .with("grant_type", "urn:ietf:params:oauth:grant-type:token-exchange")
+            .with("grant_type", "refresh_token")
 
         logger.info("Refreshing token")
         return client.post()
