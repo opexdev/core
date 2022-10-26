@@ -105,7 +105,8 @@ class MarketController(
     @GetMapping("/v3/ticker/{duration:24h|7d|1M}")
     suspend fun priceChange(
         @PathVariable duration: String,
-        @RequestParam(required = false) symbol: String?
+        @RequestParam(required = false) symbol: String?,
+        @RequestParam(required = false) quote: String?
     ): List<PriceChange> {
         val localSymbol = if (symbol.isNullOrEmpty())
             null
@@ -124,13 +125,19 @@ class MarketController(
 
         symbolMapper.symbolToAliasMap().entries.forEach { map ->
             val price = result.find { it.symbol == map.key }
+            val symbolBase = map.key.split("_")[0].uppercase()
+            val symbolQuote = map.key.split("_")[1].uppercase()
+
             if (price == null && symbol.isNullOrEmpty())
-                result.add(PriceChange(map.value))
-            else
+                result.add(PriceChange(map.value, symbolBase, symbolQuote))
+            else {
                 price?.symbol = map.value
+                price?.base = symbolBase
+                price?.quote = symbolQuote
+            }
         }
 
-        return result
+        return if (quote.isNullOrEmpty()) result else result.filter { it.quote.equals(quote, true) }
     }
 
     // Weight
@@ -192,6 +199,14 @@ class MarketController(
                     }
                 )
             }
+    }
+
+    // Custom service
+    @GetMapping("/v3/currencyInfo/quotes")
+    suspend fun getQuoteCurrencies(): List<String> {
+        return accountantProxy.getPairConfigs()
+            .map { it.rightSideWalletSymbol }
+            .distinct()
     }
 
     // Weight(IP): 1
