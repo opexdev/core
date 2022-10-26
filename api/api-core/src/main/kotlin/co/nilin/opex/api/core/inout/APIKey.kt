@@ -5,10 +5,10 @@ import java.time.LocalDateTime
 data class APIKey(
     val userId: String,
     val label: String,
-    val accessToken: String,
-    val refreshToken: String,
+    val accessToken: String?,
     val expirationTime: LocalDateTime?,
     val allowedIPs: String?,
     val key: String,
-    var isEnabled: Boolean
+    val isEnabled: Boolean,
+    val isExpired: Boolean
 )

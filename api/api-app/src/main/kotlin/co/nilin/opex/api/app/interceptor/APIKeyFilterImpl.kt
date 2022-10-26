@@ -20,13 +20,13 @@ class APIKeyFilterImpl(private val apiKeyService: APIKeyServiceImpl) : APIKeyFil
             if (secret.isNullOrEmpty())
                 return chain.filter(exchange)
 
-            val apiKey = runBlocking { apiKeyService.getAPIKey(key[0]) } ?: return chain.filter(exchange)
-            val accessToken = apiKeyService.decryptToken(secret[0], apiKey) ?: return chain.filter(exchange)
-            val req = exchange.request.mutate()
-                .header("Authorization", "Bearer $accessToken")
-                .build()
-
-            return chain.filter(exchange.mutate().request(req).build())
+            val apiKey = runBlocking { apiKeyService.getAPIKey(key[0], secret[0]) }
+            if (apiKey != null && apiKey.isEnabled && apiKey.accessToken != null && !apiKey.isExpired) {
+                val req = exchange.request.mutate()
+                    .header("Authorization", "Bearer ${apiKey.accessToken}")
+                    .build()
+                return chain.filter(exchange.mutate().request(req).build())
+            }
         }
         return chain.filter(exchange)
     }

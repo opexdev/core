@@ -13,9 +13,7 @@ interface APIKeyService {
         currentToken: String
     ): Pair<String, APIKey>
 
-    suspend fun getAPIKey(key: String): APIKey?
-
-    fun decryptToken(secret: String, apiKey: APIKey): String?
+    suspend fun getAPIKey(key: String, secret: String): APIKey?
 
     suspend fun getKeysByUserId(userId: String): List<APIKey>
 

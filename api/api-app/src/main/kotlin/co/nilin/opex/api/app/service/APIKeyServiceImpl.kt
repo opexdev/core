@@ -7,14 +7,19 @@ import co.nilin.opex.api.ports.postgres.dao.APIKeyRepository
 import co.nilin.opex.api.ports.postgres.model.APIKeyModel
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import java.time.Instant
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.*
+import java.util.concurrent.TimeUnit
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
@@ -49,33 +54,37 @@ class APIKeyServiceImpl(
                 encryptAES(tokenResponse.access_token, secret),
                 encryptAES(tokenResponse.refresh_token, secret),
                 expirationTime,
-                allowedIPs
+                allowedIPs,
+                tokenExpiration(tokenResponse.expires_in)
             )
         ).awaitSingle()
+
         return Pair(
             secret,
             with(apiKey) {
-                APIKey(userId, label, accessToken, refreshToken, expirationTime, allowedIPs, key, isEnabled)
+                APIKey(userId, label, accessToken, expirationTime, allowedIPs, key, isEnabled, isExpired)
             }
         )
     }
 
-    override suspend fun getAPIKey(key: String): APIKey? {
+    override suspend fun getAPIKey(key: String, secret: String): APIKey? = coroutineScope {
         val apiKey = apiKeyRepository.findByKey(key).awaitSingleOrNull()
-        return with(apiKey) {
-            if (this != null)
-                APIKey(userId, label, accessToken, refreshToken, expirationTime, allowedIPs, key, isEnabled)
-            else null
-        }
-    }
-
-    override fun decryptToken(secret: String, apiKey: APIKey): String? {
-        return try {
-            decryptAES(apiKey.accessToken, secret)
-        } catch (e: Exception) {
-            logger.error("Unable to decrypt token")
-            logger.error(e.stackTraceToString())
-            null
+        with(apiKey) {
+            if (this != null) {
+                launch { checkupAPIKey(this@with, secret) }
+                logger.info("Returning api key data")
+                APIKey(
+                    userId,
+                    label,
+                    decryptToken(accessToken, secret),
+                    expirationTime,
+                    allowedIPs,
+                    key,
+                    isEnabled,
+                    isExpired
+                )
+            } else
+                null
         }
     }
 
@@ -86,11 +95,11 @@ class APIKeyServiceImpl(
                     it.userId,
                     it.label,
                     it.accessToken,
-                    it.refreshToken,
                     it.expirationTime,
                     it.allowedIPs,
                     it.key,
-                    it.isEnabled
+                    it.isEnabled,
+                    it.isExpired
                 )
             }
     }
@@ -108,6 +117,39 @@ class APIKeyServiceImpl(
         if (apiKey.userId != userId)
             throw OpexException(OpexError.Forbidden)
         apiKeyRepository.delete(apiKey).awaitSingle()
+    }
+
+    private fun decryptToken(secret: String, token: String): String? {
+        return try {
+            decryptAES(token, secret)
+        } catch (e: Exception) {
+            logger.error("Unable to decrypt token")
+            logger.error(e.stackTraceToString())
+            null
+        }
+    }
+
+    private suspend fun checkupAPIKey(apiKey: APIKeyModel, secret: String) {
+        if (apiKey.isExpired || !apiKey.isEnabled)
+            return
+
+        logger.info("Checking up api key...")
+        val now = LocalDateTime.now()
+        if (apiKey.expirationTime?.isBefore(now) == true) {
+            apiKey.isExpired = true
+            apiKeyRepository.save(apiKey).awaitSingle()
+            logger.info("API key ${apiKey.key} is expired")
+            return
+        }
+
+        if (apiKey.tokenExpirationTime.isBefore(now)) {
+            val response = authProxy.refreshToken(clientSecret, decryptToken(secret, apiKey.refreshToken)!!)
+            apiKey.apply {
+                accessToken = encryptAES(response.refresh_token, secret)
+                tokenExpirationTime = tokenExpiration(response.expires_in)
+            }
+            apiKeyRepository.save(apiKey).awaitSingle()
+        }
     }
 
     private fun encryptAES(input: String, key: String): String {
@@ -129,6 +171,11 @@ class APIKeyServiceImpl(
     private fun generateSecret(length: Int = 32): String {
         val chars = ('A'..'Z') + ('a'..'z') + ('0'..'9')
         return (1..length).map { chars.random() }.joinToString("")
+    }
+
+    private fun tokenExpiration(expiresInSeconds: Long): LocalDateTime {
+        val tokenOffsetTime = Date().time + TimeUnit.SECONDS.toMillis(expiresInSeconds) - TimeUnit.MINUTES.toMillis(10)
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(tokenOffsetTime), ZoneId.systemDefault())
     }
 
 }

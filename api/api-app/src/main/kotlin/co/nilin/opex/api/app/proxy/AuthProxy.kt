@@ -24,6 +24,7 @@ class AuthProxy(
             .with("client_secret", clientSecret)
             .with("subject_token", token)
             .with("grant_type", "urn:ietf:params:oauth:grant-type:token-exchange")
+            .with("scope", "offline_access")
 
         logger.info("Request token exchange for user")
         return client.post()
