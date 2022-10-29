@@ -357,6 +357,7 @@ services:
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
       - PREFERENCES=$PREFERENCES
+      - API_KEY_CLIENT_SECRET=$API_KEY_CLIENT_SECRET
     configs:
       - preferences.yml
     depends_on:
