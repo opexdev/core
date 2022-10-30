@@ -10,6 +10,7 @@ import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.awaitFirstOrElse
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
@@ -121,7 +122,7 @@ class APIKeyServiceImpl(
         val apiKey = apiKeyRepository.findByKey(key).awaitSingleOrNull() ?: throw OpexException(OpexError.NotFound)
         if (apiKey.userId != userId)
             throw OpexException(OpexError.Forbidden)
-        apiKeyRepository.delete(apiKey).awaitSingle()
+        apiKeyRepository.delete(apiKey).awaitFirstOrNull()
     }
 
     private suspend fun checkupAPIKey(apiKey: APIKeyModel, secret: String) {
