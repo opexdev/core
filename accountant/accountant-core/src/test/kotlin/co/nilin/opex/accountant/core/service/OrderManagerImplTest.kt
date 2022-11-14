@@ -71,7 +71,7 @@ internal class OrderManagerImplTest {
         )
 
         coEvery {
-            pairConfigLoader.load(pair.toString(), submitOrderEvent.direction, "")
+            pairConfigLoader.load(pair.toString(), submitOrderEvent.direction, any())
         } returns PairFeeConfig(
             pairConfig,
             submitOrderEvent.direction.toString(),
@@ -127,7 +127,7 @@ internal class OrderManagerImplTest {
         )
 
         coEvery {
-            pairConfigLoader.load(pair.toString(), submitOrderEvent.direction, "")
+            pairConfigLoader.load(pair.toString(), submitOrderEvent.direction, any())
         } returns PairFeeConfig(
             pairConfig,
             submitOrderEvent.direction.toString(),
