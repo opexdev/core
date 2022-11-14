@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS api_key
     label                 VARCHAR(200) NOT NULL,
     access_token          TEXT         NOT NULL,
     refresh_token         TEXT         NOT NULL,
-    expiration_time       TIMESTAMP    NOT NULL,
+    expiration_time       TIMESTAMP,
     allowed_ips           TEXT,
     token_expiration_time TIMESTAMP    NOT NULL,
     key                   VARCHAR(36)  NOT NULL UNIQUE,

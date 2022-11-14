@@ -15,6 +15,7 @@ import java.time.LocalDateTime
 
 open class OrderManagerImpl(
     private val pairConfigLoader: PairConfigLoader,
+    private val userLevelLoader: UserLevelLoader,
     private val financialActionPersister: FinancialActionPersister,
     private val financeActionLoader: FinancialActionLoader,
     private val orderPersister: OrderPersister,
@@ -32,7 +33,13 @@ open class OrderManagerImpl(
         } else {
             submitOrderEvent.pair.rightSideName
         }
-        val pairFeeConfig = pairConfigLoader.load(submitOrderEvent.pair.toString(), submitOrderEvent.direction, "")
+
+        val level = userLevelLoader.load(submitOrderEvent.uuid)
+        val pairFeeConfig = pairConfigLoader.load(
+            submitOrderEvent.pair.toString(),
+            submitOrderEvent.direction,
+            level
+        )
         val makerFee = pairFeeConfig.makerFee * BigDecimal.ONE //user level formula
         val takerFee = pairFeeConfig.takerFee * BigDecimal.ONE //user level formula
 
@@ -70,7 +77,7 @@ open class OrderManagerImpl(
                 pairFeeConfig.pairConfig.leftSideFraction,
                 pairFeeConfig.pairConfig.rightSideFraction,
                 submitOrderEvent.uuid,
-                "",
+                submitOrderEvent.userLevel,
                 submitOrderEvent.direction,
                 submitOrderEvent.matchConstraint,
                 submitOrderEvent.orderType,

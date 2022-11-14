@@ -30,7 +30,8 @@ class OrderListener(private val orderManager: OrderManager) : OrderSubmitRequest
                     event.quantity,
                     event.direction,
                     event.matchConstraint,
-                    event.orderType
+                    event.orderType,
+                    event.userLevel
                 )
             )
         }

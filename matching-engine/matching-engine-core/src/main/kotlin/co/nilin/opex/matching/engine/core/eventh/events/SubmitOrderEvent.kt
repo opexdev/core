@@ -15,7 +15,8 @@ class SubmitOrderEvent(
     var remainedQuantity: Long = 0,
     var direction: OrderDirection = OrderDirection.ASK,
     var matchConstraint: MatchConstraint = MatchConstraint.GTC,
-    var orderType: OrderType = OrderType.LIMIT_ORDER
+    var orderType: OrderType = OrderType.LIMIT_ORDER,
+    val userLevel: String = ""
 ) : CoreEvent(pair), OneOrderEvent {
 
     override fun ouid(): String {

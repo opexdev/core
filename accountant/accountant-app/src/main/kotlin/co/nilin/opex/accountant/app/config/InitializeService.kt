@@ -2,6 +2,7 @@ package co.nilin.opex.accountant.app.config
 
 import co.nilin.opex.accountant.ports.postgres.dao.PairConfigRepository
 import co.nilin.opex.accountant.ports.postgres.dao.PairFeeConfigRepository
+import co.nilin.opex.accountant.ports.postgres.dao.UserLevelRepository
 import co.nilin.opex.accountant.ports.postgres.model.PairFeeConfigModel
 import co.nilin.opex.utility.preferences.Preferences
 import kotlinx.coroutines.reactor.awaitSingleOrNull
@@ -15,13 +16,19 @@ import javax.annotation.PostConstruct
 @DependsOn("postgresConfig")
 class InitializeService(
     private val pairConfigRepository: PairConfigRepository,
-    private val pairFeeConfigRepository: PairFeeConfigRepository
+    private val pairFeeConfigRepository: PairFeeConfigRepository,
+    private val userLevelRepository: UserLevelRepository,
 ) {
+
     @Autowired
     private lateinit var preferences: Preferences
 
     @PostConstruct
     fun init() = runBlocking {
+        preferences.userLevels.forEach {
+            userLevelRepository.insert(it).awaitSingleOrNull()
+        }
+
         preferences.markets.map {
             val pair = it.pair ?: "${it.leftSide}_${it.rightSide}"
             val leftSideCurrency = preferences.currencies.first { c -> it.leftSide == c.symbol }

@@ -30,7 +30,8 @@ object VALID {
         BigDecimal.valueOf(0.001),
         OrderDirection.ASK,
         MatchConstraint.GTC,
-        OrderType.LIMIT_ORDER
+        OrderType.LIMIT_ORDER,
+        "*"
     )
 
     val CREATE_ORDER_REQUEST_BID = CREATE_ORDER_REQUEST_ASK.copy(direction = OrderDirection.BID)

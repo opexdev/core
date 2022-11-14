@@ -41,15 +41,17 @@ class AppConfig {
     @Bean
     fun orderManager(
         pairConfigLoader: PairConfigLoader,
+        userLevelLoader: UserLevelLoader,
         financialActionPersister: FinancialActionPersister,
         financeActionLoader: FinancialActionLoader,
         orderPersister: OrderPersister,
         tempEventPersister: TempEventPersister,
         tempEventRepublisher: TempEventRepublisher,
-        richOrderPublisher: RichOrderPublisher
+        richOrderPublisher: RichOrderPublisher,
     ): OrderManager {
         return OrderManagerImpl(
             pairConfigLoader,
+            userLevelLoader,
             financialActionPersister,
             financeActionLoader,
             orderPersister,

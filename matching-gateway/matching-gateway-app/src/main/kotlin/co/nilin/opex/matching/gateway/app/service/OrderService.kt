@@ -66,7 +66,8 @@ class OrderService(
                 .longValueExact(),
             createOrderRequest.direction,
             createOrderRequest.matchConstraint,
-            createOrderRequest.orderType
+            createOrderRequest.orderType,
+            createOrderRequest.userLevel
         )
         return orderSubmitter.submit(orderSubmitRequest)
     }

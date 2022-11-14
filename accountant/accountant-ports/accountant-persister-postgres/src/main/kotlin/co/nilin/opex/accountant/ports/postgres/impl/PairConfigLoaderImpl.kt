@@ -5,6 +5,7 @@ import co.nilin.opex.accountant.core.model.PairFeeConfig
 import co.nilin.opex.accountant.core.spi.PairConfigLoader
 import co.nilin.opex.accountant.ports.postgres.dao.PairConfigRepository
 import co.nilin.opex.accountant.ports.postgres.dao.PairFeeConfigRepository
+import co.nilin.opex.accountant.ports.postgres.dao.UserLevelMapperRepository
 import co.nilin.opex.accountant.ports.postgres.model.PairConfigModel
 import co.nilin.opex.accountant.ports.postgres.model.PairFeeConfigModel
 import co.nilin.opex.matching.engine.core.model.OrderDirection
@@ -19,8 +20,8 @@ import java.math.BigDecimal
 
 @Component
 class PairConfigLoaderImpl(
-    val pairConfigRepository: PairConfigRepository,
-    val pairFeeConfigRepository: PairFeeConfigRepository
+    private val pairConfigRepository: PairConfigRepository,
+    private val pairFeeConfigRepository: PairFeeConfigRepository
 ) : PairConfigLoader {
 
     override suspend fun loadPairConfigs(): List<PairConfig> {

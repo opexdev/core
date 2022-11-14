@@ -16,6 +16,7 @@ interface MatchingGatewayProxy {
         direction: OrderDirection,
         matchConstraint: MatchConstraint?,
         orderType: MatchingOrderType,
+        userLevel: String,
         token: String?
     ): OrderSubmitResult?
 
