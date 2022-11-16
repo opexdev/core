@@ -53,6 +53,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     InvalidPriceChangeDuration(7005, "Valid durations: [24h, 7d, 1m]", HttpStatus.BAD_REQUEST),
     CancelOrderNotAllowed(7006, "Canceling this order is not allowed", HttpStatus.FORBIDDEN),
     InvalidInterval(7007, "Invalid interval", HttpStatus.BAD_REQUEST),
+    APIKeyLimitReached(7007, "Reached API key limit. Maximum number of API key is 10", HttpStatus.BAD_REQUEST),
 
     // code 8000: bc-gateway
     ReservedAddressNotAvailable(8001, "No reserved address available", HttpStatus.BAD_REQUEST),

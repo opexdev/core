@@ -6,6 +6,7 @@ data class Preferences(
     var currencies: List<Currency> = emptyList(),
     var markets: List<Market> = emptyList(),
     var userLimits: List<UserLimit> = emptyList(),
+    var userLevels: List<String> = emptyList(),
     var system: System = System(),
     val auth: Auth = Auth()
 )

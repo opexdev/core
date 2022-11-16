@@ -12,5 +12,6 @@ data class CreateOrderRequest(
     val quantity: BigDecimal,
     val direction: OrderDirection,
     val matchConstraint: MatchConstraint,
-    val orderType: OrderType
+    val orderType: OrderType,
+    val userLevel: String
 )

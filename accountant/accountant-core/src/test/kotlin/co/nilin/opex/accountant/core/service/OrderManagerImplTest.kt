@@ -33,9 +33,11 @@ internal class OrderManagerImplTest {
     private val tempEventPersister = mockk<TempEventPersister>()
     private val pairConfigLoader = mockk<PairConfigLoader>()
     private val richOrderPublisher = mockk<RichOrderPublisher>()
+    private val userLevelLoader = mockk<UserLevelLoader>()
 
     private val orderManager = OrderManagerImpl(
         pairConfigLoader,
+        userLevelLoader,
         financialActionPersister,
         financialActionLoader,
         orderPersister,
@@ -50,6 +52,7 @@ internal class OrderManagerImplTest {
         coEvery { tempEventPersister.saveTempEvent(any(), any()) } returns any()
         coEvery { financialActionLoader.findLast(any(), any()) } returns null
         coEvery { financialActionPersister.persist(any()) } returnsArgument (0)
+        coEvery { userLevelLoader.load(any()) } returns "*"
     }
 
     @Test
@@ -68,7 +71,7 @@ internal class OrderManagerImplTest {
         )
 
         coEvery {
-            pairConfigLoader.load(pair.toString(), submitOrderEvent.direction, "")
+            pairConfigLoader.load(pair.toString(), submitOrderEvent.direction, any())
         } returns PairFeeConfig(
             pairConfig,
             submitOrderEvent.direction.toString(),
@@ -124,7 +127,7 @@ internal class OrderManagerImplTest {
         )
 
         coEvery {
-            pairConfigLoader.load(pair.toString(), submitOrderEvent.direction, "")
+            pairConfigLoader.load(pair.toString(), submitOrderEvent.direction, any())
         } returns PairFeeConfig(
             pairConfig,
             submitOrderEvent.direction.toString(),

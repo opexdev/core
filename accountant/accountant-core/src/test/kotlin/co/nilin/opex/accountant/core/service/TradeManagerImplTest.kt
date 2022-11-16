@@ -26,9 +26,11 @@ internal class TradeManagerImplTest {
     private val tempEventPersister = mockk<TempEventPersister>()
     private val richOrderPublisher = mockk<RichOrderPublisher>()
     private val richTradePublisher = mockk<RichTradePublisher>()
+    private val userLevelLoader = mockk<UserLevelLoader>()
 
     private val orderManager = OrderManagerImpl(
         pairConfigLoader,
+        userLevelLoader,
         financialActionPersister,
         financeActionLoader,
         orderPersister,
@@ -48,10 +50,11 @@ internal class TradeManagerImplTest {
 
     init {
         coEvery { tempEventPersister.loadTempEvents(any()) } returns emptyList()
-        coEvery { orderPersister.save(any()) } returnsArgument(0)
-        coEvery { financeActionLoader.findLast(any(),any()) } returns null
+        coEvery { orderPersister.save(any()) } returnsArgument (0)
+        coEvery { financeActionLoader.findLast(any(), any()) } returns null
         coEvery { richOrderPublisher.publish(any()) } returns Unit
         coEvery { richTradePublisher.publish(any()) } returns Unit
+        coEvery { userLevelLoader.load(any()) } returns "*"
     }
 
     @Test
@@ -184,7 +187,7 @@ internal class TradeManagerImplTest {
         takerFee: BigDecimal
     ) {
         coEvery {
-            pairConfigLoader.load(pair.toString(), submitOrderEvent.direction, "")
+            pairConfigLoader.load(pair.toString(), submitOrderEvent.direction, any())
         } returns PairFeeConfig(
             pairConfig,
             submitOrderEvent.direction.toString(),
@@ -210,7 +213,7 @@ internal class TradeManagerImplTest {
             orderPairFeeConfig.pairConfig.leftSideFraction,
             orderPairFeeConfig.pairConfig.rightSideFraction,
             submitOrderEvent.uuid,
-            "",
+            submitOrderEvent.userLevel,
             submitOrderEvent.direction,
             submitOrderEvent.matchConstraint,
             submitOrderEvent.orderType,

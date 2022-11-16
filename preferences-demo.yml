@@ -225,6 +225,9 @@ userLimits:
 system:
   walletTitle: system
   walletLevel: basic
+userLevels:
+  - "*"
+  - "nofee"
 auth:
   whitelist:
     enabled: false

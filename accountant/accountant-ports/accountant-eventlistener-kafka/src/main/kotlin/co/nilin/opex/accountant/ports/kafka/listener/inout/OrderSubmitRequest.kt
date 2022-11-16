@@ -15,4 +15,5 @@ data class OrderSubmitRequest(
     val direction: OrderDirection,
     val matchConstraint: MatchConstraint,
     val orderType: OrderType,
+    val userLevel: String
 )

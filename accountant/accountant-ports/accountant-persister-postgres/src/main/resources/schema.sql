@@ -54,10 +54,12 @@ CREATE TABLE IF NOT EXISTS pair_config
     right_side_wallet_symbol VARCHAR(36) NOT NULL,
     left_side_fraction       DECIMAL     NOT NULL,
     right_side_fraction      DECIMAL     NOT NULL,
-    UNIQUE (
-            left_side_wallet_symbol,
-            right_side_wallet_symbol
-        )
+    UNIQUE (left_side_wallet_symbol, right_side_wallet_symbol)
+);
+
+CREATE TABLE IF NOT EXISTS user_level
+(
+    level VARCHAR(36) PRIMARY KEY
 );
 
 CREATE TABLE IF NOT EXISTS pair_fee_config
@@ -65,10 +67,17 @@ CREATE TABLE IF NOT EXISTS pair_fee_config
     id             SERIAL PRIMARY KEY,
     pair_config_id VARCHAR(72) NOT NULL REFERENCES pair_config (pair),
     direction      VARCHAR(36) NOT NULL,
-    user_level     VARCHAR(36) NOT NULL,
+    user_level     VARCHAR(36) NOT NULL REFERENCES user_level (level),
     maker_fee      DECIMAL     NOT NULL,
     taker_fee      DECIMAL     NOT NULL,
     UNIQUE (direction, user_level, pair_config_id)
+);
+
+CREATE TABLE IF NOT EXISTS user_level_mapper
+(
+    id         SERIAL PRIMARY KEY,
+    uuid       VARCHAR(36) NOT NULL UNIQUE,
+    user_level VARCHAR(36) NOT NULL REFERENCES user_level (level)
 );
 
 CREATE TABLE IF NOT EXISTS temp_events

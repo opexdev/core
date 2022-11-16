@@ -98,7 +98,9 @@ class AccountController(
             quantity ?: BigDecimal.ZERO,
             side.asOrderDirection(),
             timeInForce?.asMatchConstraint(),
-            type.asMatchingOrderType(), securityContext.jwtAuthentication().tokenValue()
+            type.asMatchingOrderType(),
+            "*",
+            securityContext.jwtAuthentication().tokenValue()
         )
         return NewOrderResponse(
             symbol,

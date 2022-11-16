@@ -35,15 +35,17 @@ class MatchingGatewayProxyImpl(private val client: WebClient) : MatchingGatewayP
         direction: OrderDirection,
         matchConstraint: MatchConstraint?,
         orderType: MatchingOrderType,
+        userLevel: String,
         token: String?
     ): OrderSubmitResult? {
         logger.info("calling matching-gateway order create")
+        val body = CreateOrderRequest(uuid, pair, price, quantity, direction, matchConstraint, orderType, userLevel)
         return client.post()
             .uri(URI.create("$baseUrl/order"))
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer $token")
-            .body(Mono.just(CreateOrderRequest(uuid, pair, price, quantity, direction, matchConstraint, orderType)))
+            .body(Mono.just(body))
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<OrderSubmitResult>()
