@@ -29,20 +29,16 @@ class WalletSyncServiceImpl(
     @Transactional
     override suspend fun syncTransfers(transfers: List<Transfer>) = coroutineScope {
         val groupedByChain = currencyHandler.fetchAllImplementations().groupBy { it.chain.name }
-        val deposits = transfers.map {
-            async {
-                coroutineScope {
-                    val currencyImpl = groupedByChain[it.chain]?.find { c -> c.tokenAddress == it.tokenAddress }
-                        ?: throw IllegalStateException("Currency implementation not found")
-                    assignedAddressHandler.findUuid(it.receiver.address, it.receiver.memo)?.let { it to currencyImpl }
-                }?.let { (uuid, currencyImpl) ->
-                    sendDeposit(uuid, currencyImpl, it)
-                    logger.info("Deposit synced for $uuid on ${currencyImpl.currency.symbol} - to ${it.receiver.address}")
-                    it
-                }
+        val deposits = transfers.mapNotNull {
+            coroutineScope {
+                val currencyImpl = groupedByChain[it.chain]?.find { c -> c.tokenAddress == it.tokenAddress }
+                    ?: throw IllegalStateException("Currency implementation not found")
+                assignedAddressHandler.findUuid(it.receiver.address, it.receiver.memo)?.let { it to currencyImpl }
+            }?.let { (uuid, currencyImpl) ->
+                sendDeposit(uuid, currencyImpl, it)
+                logger.info("Deposit synced for $uuid on ${currencyImpl.currency.symbol} - to ${it.receiver.address}")
+                it
             }
-        }.mapNotNull {
-            it.await()
         }.map {
             Deposit(
                 null,
