@@ -46,7 +46,7 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         startTime: Date?,
         @Param("endTime")
         endTime: Date?,
-        limit:Int
+        limit: Int
     ): Flow<TradeModel>
 
     @Query("select * from trades where symbol = :symbol order by create_date desc limit :limit")
@@ -59,12 +59,14 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
 
     @Query(
         """
+        with first_trade as (select * from trades where create_date > :date order by create_date limit 1),
+             last_trade as (select * from trades where create_date > :date order by create_date desc limit 1)
         select symbol, 
-        (select taker_price from trades where create_date > :date and symbol=t.symbol order by create_date desc limit 1) - (select taker_price from trades where create_date > :date and symbol=t.symbol order by create_date limit 1) as price_change,
-        ((((select taker_price from trades where create_date > :date and symbol=t.symbol order by create_date desc limit 1) - (select taker_price from trades where create_date > :date and symbol=t.symbol order by create_date limit 1))/(select taker_price from trades where create_date > :date and symbol=t.symbol order by create_date limit 1))*100) as price_change_percent, 
-        (sum(matched_quantity)/sum(taker_price)) as weighted_avg_price,
-        (select taker_price from trades where create_date > :date and symbol=t.symbol order by create_date limit 1) as last_price, 
-        (select matched_quantity from trades where create_date > :date and symbol=t.symbol order by create_date limit 1) as last_qty, 
+        (select matched_price from last_trade where symbol=t.symbol) - (select matched_price from first_trade where symbol=t.symbol) as price_change,
+        ((((select matched_price from last_trade where symbol=t.symbol) - (select matched_price from first_trade where symbol=t.symbol))/(select matched_price from first_trade where symbol=t.symbol))*100) as price_change_percent, 
+        (sum(matched_quantity)/sum(matched_price)) as weighted_avg_price,
+        (select matched_price from last_trade where symbol=t.symbol) as last_price, 
+        (select matched_quantity from last_trade where symbol=t.symbol) as last_qty, 
         (
             select price from orders
             join order_status os on orders.ouid = os.ouid
@@ -89,11 +91,11 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
             and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
             order by create_date desc limit 1
         ) as open_price,
-        max(taker_price) as high_price, 
-        min(taker_price) as low_price, 
+        max(matched_price) as high_price, 
+        min(matched_price) as low_price, 
         sum(matched_quantity) as volume, 
-        (select id from trades where create_date > :date and symbol=t.symbol order by create_date limit 1) as first_id, 
-        (select id from trades where create_date > :date and symbol=t.symbol order by create_date desc limit 1) as last_id, 
+        (select id from first_trade where symbol=t.symbol) as first_id, 
+        (select id from last_trade where symbol=t.symbol) as last_id, 
         count(id) as count
         from trades as t 
         where create_date > :date
@@ -104,12 +106,14 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
 
     @Query(
         """
+        with first_trade as (select * from trades where create_date > :date and symbol = :symbol order by create_date limit 1),
+             last_trade as (select * from trades where create_date > :date and symbol = :symbol order by create_date desc limit 1)
         select symbol, 
-        (select taker_price from trades where create_date > :date and symbol=:symbol order by create_date desc limit 1) - (select taker_price from trades where create_date > :date and symbol=:symbol order by create_date limit 1) as price_change,
-        ((((select taker_price from trades where create_date > :date and symbol=:symbol order by create_date desc limit 1) - (select taker_price from trades where create_date > :date and symbol=:symbol order by create_date limit 1))/(select taker_price from trades where create_date > :date and symbol=:symbol order by create_date limit 1))*100) as price_change_percent, 
-        (sum(matched_quantity)/sum(taker_price)) as weighted_avg_price,
-        (select taker_price from trades where create_date > :date and symbol=:symbol order by create_date limit 1) as last_price, 
-        (select matched_quantity from trades where create_date > :date and symbol=:symbol order by create_date limit 1) as last_qty, 
+        (select matched_price from last_trade) - (select matched_price from first_trade) as price_change,
+        ((((select matched_price from last_trade) - (select matched_price from first_trade))/(select matched_price from first_trade))*100) as price_change_percent, 
+        (sum(matched_quantity)/sum(matched_price)) as weighted_avg_price,
+        (select matched_price from last_trade) as last_price, 
+        (select matched_quantity from last_trade) as last_qty, 
         (
             select price from orders
             join order_status os on orders.ouid = os.ouid
@@ -134,11 +138,11 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
             and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
             order by create_date desc limit 1
         ) as open_price,
-        max(taker_price) as high_price, 
-        min(taker_price) as low_price, 
+        max(matched_price) as high_price, 
+        min(matched_price) as low_price, 
         sum(matched_quantity) as volume, 
-        (select id from trades where create_date > :date and symbol=:symbol order by create_date limit 1) as first_id, 
-        (select id from trades where create_date > :date and symbol=:symbol order by create_date desc limit 1) as last_id, 
+        (select id from first_trade) as first_id, 
+        (select id from last_trade) as last_id, 
         count(id) as count
         from trades as t 
         where create_date > :date and symbol = :symbol
@@ -241,10 +245,10 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         select 
             f.start_time as open_time,
             f.end_time as close_time, 
-            (select taker_price from trades tt where symbol = :symbol and tt.create_date >= f.start_time and tt.create_date < f.end_time order by tt.create_date limit 1) as open,
-            max(t.taker_price) as high,
-            min(t.taker_price) as low,
-            (select taker_price from trades tt where symbol = :symbol and tt.create_date >= f.start_time and tt.create_date < f.end_time order by tt.create_date desc limit 1) as close,
+            (select matched_price from trades tt where symbol = :symbol and tt.create_date >= f.start_time and tt.create_date < f.end_time order by tt.create_date limit 1) as open,
+            max(t.matched_price) as high,
+            min(t.matched_price) as low,
+            (select matched_price from trades tt where symbol = :symbol and tt.create_date >= f.start_time and tt.create_date < f.end_time order by tt.create_date desc limit 1) as close,
             sum(t.matched_quantity) as volume,
             count(id) as trades
         from trades t
@@ -252,7 +256,7 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         on t.create_date >= f.start_time and t.create_date < f.end_time
         where symbol = :symbol or symbol is null
         group by f.start_time, f.end_time
-        order by f.start_time asc
+        order by f.start_time
         limit :limit
         """
     )
