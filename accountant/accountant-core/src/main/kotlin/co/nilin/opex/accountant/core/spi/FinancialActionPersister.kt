@@ -8,4 +8,6 @@ interface FinancialActionPersister {
     suspend fun persist(financialActions: List<FinancialAction>): List<FinancialAction>
 
     suspend fun updateStatus(financialAction: FinancialAction, status: FinancialActionStatus)
+
+    suspend fun updateBatchStatus(financialAction: List<FinancialAction>, status: FinancialActionStatus)
 }

@@ -1,30 +1,17 @@
 package co.nilin.opex.wallet.app.controller
 
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
-import co.nilin.opex.wallet.core.inout.TransferCommand
+import co.nilin.opex.wallet.app.dto.TransferRequest
+import co.nilin.opex.wallet.app.service.TransferService
 import co.nilin.opex.wallet.core.inout.TransferResult
-import co.nilin.opex.wallet.core.model.Amount
-import co.nilin.opex.wallet.core.service.TransferService
-import co.nilin.opex.wallet.core.spi.CurrencyService
-import co.nilin.opex.wallet.core.spi.WalletManager
-import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 
 @RestController
-class TransferController(
-    val transferService: TransferService,
-    val currencyService: CurrencyService,
-    val walletManager: WalletManager,
-    val walletOwnerManager: WalletOwnerManager
-) {
+class TransferController(private val transferService: TransferService) {
+
     @PostMapping("/transfer/{amount}_{symbol}/from/{senderUuid}_{senderWalletType}/to/{receiverUuid}_{receiverWalletType}")
     @ApiResponse(
         message = "OK",
@@ -46,35 +33,21 @@ class TransferController(
         @RequestParam("description") description: String?,
         @RequestParam("transferRef") transferRef: String?
     ): TransferResult {
-        if (senderWalletType == "cashout" || receiverWalletType == "cashout")
-            throw OpexException(OpexError.InvalidCashOutUsage)
-        val currency = currencyService.getCurrency(symbol) ?: throw OpexException(OpexError.CurrencyNotFound)
-        val sourceOwner = walletOwnerManager.findWalletOwner(senderUuid)
-            ?: throw OpexException(OpexError.WalletOwnerNotFound)
-        val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner, senderWalletType, currency)
-            ?: throw OpexException(OpexError.WalletNotFound)
-
-        val receiverOwner = walletOwnerManager.findWalletOwner(receiverUuid) ?: walletOwnerManager.createWalletOwner(
-            senderUuid,
-            "not set",
-            ""
-        )
-        val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(
-            receiverOwner, receiverWalletType, currency
-        ) ?: walletManager.createWallet(
-            receiverOwner,
-            Amount(currency, BigDecimal.ZERO),
-            currency,
-            receiverWalletType
-        )
         return transferService.transfer(
-            TransferCommand(
-                sourceWallet,
-                receiverWallet,
-                Amount(sourceWallet.currency, amount),
-                description, transferRef, emptyMap()
-            )
-        ).transferResult
+            symbol,
+            senderWalletType,
+            senderUuid,
+            receiverWalletType,
+            receiverUuid,
+            amount,
+            description,
+            transferRef
+        )
+    }
+
+    @PostMapping("/transfer/batch")
+    suspend fun batchTransfer(@RequestBody request: List<TransferRequest>) {
+        transferService.batchTransfer(request)
     }
 
     @PostMapping("/deposit/{amount}_{symbol}/{receiverUuid}_{receiverWalletType}")
@@ -96,34 +69,6 @@ class TransferController(
         @RequestParam("description") description: String?,
         @RequestParam("transferRef") transferRef: String?
     ): TransferResult {
-        if (receiverWalletType == "cashout") throw OpexException(OpexError.InvalidCashOutUsage)
-        val systemUuid = "1"
-        val currency = currencyService.getCurrency(symbol) ?: throw OpexException(OpexError.CurrencyNotFound)
-        val sourceOwner = walletOwnerManager.findWalletOwner(systemUuid)
-            ?: throw OpexException(OpexError.WalletOwnerNotFound)
-        val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner, "main", currency)
-            ?: throw OpexException(OpexError.WalletNotFound)
-
-        val receiverOwner = walletOwnerManager.findWalletOwner(receiverUuid) ?: walletOwnerManager.createWalletOwner(
-            systemUuid,
-            "not set",
-            ""
-        )
-        val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(
-            receiverOwner, receiverWalletType, currency
-        ) ?: walletManager.createWallet(
-            receiverOwner,
-            Amount(currency, BigDecimal.ZERO),
-            currency,
-            receiverWalletType
-        )
-        return transferService.transfer(
-            TransferCommand(
-                sourceWallet,
-                receiverWallet,
-                Amount(sourceWallet.currency, amount),
-                description, transferRef, emptyMap()
-            )
-        ).transferResult
+        return transferService.deposit(symbol, receiverUuid, receiverWalletType, amount, description, transferRef)
     }
 }

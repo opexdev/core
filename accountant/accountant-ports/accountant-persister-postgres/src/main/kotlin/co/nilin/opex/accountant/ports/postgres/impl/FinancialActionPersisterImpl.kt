@@ -37,4 +37,8 @@ class FinancialActionPersisterImpl(private val financialActionRepository: Financ
     override suspend fun updateStatus(financialAction: FinancialAction, status: FinancialActionStatus) {
         financialActionRepository.updateStatusAndIncreaseRetry(financialAction.id!!, status).awaitFirstOrNull()
     }
+
+    override suspend fun updateBatchStatus(financialAction: List<FinancialAction>, status: FinancialActionStatus) {
+        financialActionRepository.updateStatus(financialAction.mapNotNull { it.id }, status).awaitFirstOrNull()
+    }
 }

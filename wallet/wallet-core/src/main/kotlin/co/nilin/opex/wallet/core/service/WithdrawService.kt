@@ -3,10 +3,7 @@ package co.nilin.opex.wallet.core.service
 import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.Withdraw
-import co.nilin.opex.wallet.core.spi.CurrencyService
-import co.nilin.opex.wallet.core.spi.WalletManager
-import co.nilin.opex.wallet.core.spi.WalletOwnerManager
-import co.nilin.opex.wallet.core.spi.WithdrawPersister
+import co.nilin.opex.wallet.core.spi.*
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -15,12 +12,12 @@ import java.time.LocalDateTime
 
 @Service
 class WithdrawService(
-    val withdrawPersister: WithdrawPersister,
-    val walletManager: WalletManager,
-    val walletOwnerManager: WalletOwnerManager,
-    val currencyService: CurrencyService,
-    val transferService: TransferService,
-    @Value("\${app.system.uuid}") val systemUuid: String
+    private val withdrawPersister: WithdrawPersister,
+    private val walletManager: WalletManager,
+    private val walletOwnerManager: WalletOwnerManager,
+    private val currencyService: CurrencyService,
+    private val transferManager: TransferManager,
+    @Value("\${app.system.uuid}") private val systemUuid: String
 ) {
 
     @Transactional
@@ -38,7 +35,7 @@ class WithdrawService(
             currency,
             "cashout"
         )
-        val transferResultDetailed = transferService.transfer(
+        val transferResultDetailed = transferManager.transfer(
             TransferCommand(
                 sourceWallet,
                 receiverWallet,
@@ -92,7 +89,7 @@ class WithdrawService(
             sourceWallet.currency,
             "main"
         )
-        val transferResultDetailed = transferService.transfer(
+        val transferResultDetailed = transferManager.transfer(
             TransferCommand(
                 sourceWallet,
                 receiverWallet,
@@ -145,7 +142,7 @@ class WithdrawService(
             sourceWallet.currency,
             "main"
         )
-        val transferResultDetailed = transferService.transfer(
+        val transferResultDetailed = transferManager.transfer(
             TransferCommand(
                 sourceWallet,
                 receiverWallet,

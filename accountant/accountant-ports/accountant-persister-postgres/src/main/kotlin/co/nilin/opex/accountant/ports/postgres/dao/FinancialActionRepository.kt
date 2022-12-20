@@ -37,4 +37,7 @@ interface FinancialActionRepository : ReactiveCrudRepository<FinancialActionMode
 
     @Query("update fi_actions set status = :status, retry_count = retry_count + 1 where id = :id")
     fun updateStatusAndIncreaseRetry(@Param("id") id: Long, @Param("status") status: FinancialActionStatus): Mono<Int>
+
+    @Query("update fi_actions set status = :status where id in (:ids)")
+    fun updateStatus(ids: List<Long>, status: FinancialActionStatus): Mono<Int>
 }

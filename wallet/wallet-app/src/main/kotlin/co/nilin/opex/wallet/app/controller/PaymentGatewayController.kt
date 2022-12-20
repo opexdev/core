@@ -7,8 +7,8 @@ import co.nilin.opex.wallet.app.dto.PaymentDepositRequest
 import co.nilin.opex.wallet.app.dto.PaymentDepositResponse
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.model.Amount
-import co.nilin.opex.wallet.core.service.TransferService
 import co.nilin.opex.wallet.core.spi.CurrencyService
+import co.nilin.opex.wallet.core.spi.TransferManager
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import org.springframework.web.bind.annotation.PostMapping
@@ -20,7 +20,7 @@ import java.math.BigDecimal
 @RestController
 @RequestMapping("/payment")
 class PaymentGatewayController(
-    val transferService: TransferService,
+    val transferManager: TransferManager,
     val currencyService: CurrencyService,
     val walletManager: WalletManager,
     val walletOwnerManager: WalletOwnerManager
@@ -55,7 +55,7 @@ class PaymentGatewayController(
             receiverWalletType
         )
 
-        val command = transferService.transfer(
+        val command = transferManager.transfer(
             TransferCommand(
                 sourceWallet,
                 receiverWallet,
