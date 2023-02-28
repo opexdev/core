@@ -10,20 +10,22 @@ import co.nilin.opex.wallet.core.inout.TransferResultDetailed
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.Transaction
 import co.nilin.opex.wallet.core.spi.*
+import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
 
-@Service
-class TransferService(
-    val walletManager: WalletManager,
-    val walletListener: WalletListener,
-    val walletOwnerManager: WalletOwnerManager,
-    val transactionManager: TransactionManager
-) {
+@Component
+class TransferManagerImpl(
+    private val walletManager: WalletManager,
+    private val walletListener: WalletListener,
+    private val walletOwnerManager: WalletOwnerManager,
+    private val transactionManager: TransactionManager
+) : TransferManager {
+
     @Transactional
-    suspend fun transfer(transferCommand: TransferCommand): TransferResultDetailed {
+    override suspend fun transfer(transferCommand: TransferCommand): TransferResultDetailed {
         //pre transfer hook (dispatch pre transfer event)
         val srcWallet = transferCommand.sourceWallet
         val srcWalletOwner = srcWallet.owner

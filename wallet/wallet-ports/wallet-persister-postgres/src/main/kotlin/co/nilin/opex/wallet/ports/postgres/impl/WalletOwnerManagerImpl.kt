@@ -27,35 +27,41 @@ class WalletOwnerManagerImpl(
     val walletOwnerRepository: WalletOwnerRepository
 ) : WalletOwnerManager {
 
-    val logger = LoggerFactory.getLogger(WalletOwnerManager::class.java)
+    private val logger = LoggerFactory.getLogger(WalletOwnerManager::class.java)
 
     override suspend fun isDepositAllowed(owner: WalletOwner, amount: Amount): Boolean {
         require(amount.amount >= BigDecimal.ZERO)
-        var evaluate: Boolean = limitsRepository.findByOwnerAndAction(
-            owner.id!!,
-            "deposit"
-        ).map { limit ->
-            evaluateLimit(amount.amount, limit, owner, true)
-        }.onEmpty {
-            emit(true)
-        }
-            .reduce { a, b ->
-                a && b
-            }
+        var evaluate = limitsRepository.findByOwnerAndAction(owner.id!!, "deposit")
+            .map { limit -> evaluateLimit(amount.amount, limit, owner, true) }
+            .onEmpty { emit(true) }
+            .reduce { a, b -> a && b }
+
         if (evaluate) {
-            evaluate = limitsRepository.findByLevelAndAction(
-                owner.level,
-                "deposit"
-            )
-                .map { limit ->
-                    evaluateLimit(amount.amount, limit, owner, true)
-                }.onEmpty {
-                    emit(true)
-                }.reduce { a, b ->
-                    a && b
-                }
+            evaluate = limitsRepository.findByLevelAndAction(owner.level, "deposit")
+                .map { limit -> evaluateLimit(amount.amount, limit, owner, true) }
+                .onEmpty { emit(true) }
+                .reduce { a, b -> a && b }
         }
+
         logger.info("isDepositAllowed: {} {}{} {}", owner.uuid, amount.amount, amount.currency.name, evaluate)
+        return evaluate
+    }
+
+    override suspend fun isWithdrawAllowed(owner: WalletOwner, amount: Amount): Boolean {
+        require(amount.amount >= BigDecimal.ZERO)
+        var evaluate = limitsRepository.findByOwnerAndAction(owner.id!!, "withdraw")
+            .map { limit -> evaluateLimit(amount.amount, limit, owner, false) }
+            .onEmpty { emit(true) }
+            .reduce { a, b -> a && b }
+
+        if (evaluate) {
+            evaluate = limitsRepository.findByLevelAndAction(owner.level, "withdraw")
+                .map { limit -> evaluateLimit(amount.amount, limit, owner, false) }
+                .onEmpty { emit(true) }
+                .reduce { a, b -> a && b }
+        }
+
+        logger.info("isWithdrawAllowed: {} {}{} {}", owner.uuid, amount.amount, amount.currency.name, evaluate)
         return evaluate
     }
 
@@ -65,82 +71,55 @@ class WalletOwnerManagerImpl(
         owner: WalletOwner,
         deposit: Boolean
     ): Boolean {
+        if (limit == null)
+            return true
+
         var evaluate = true
-        if (limit != null) {
-            val mainCurrency = walletConfigRepository.findAll()
-                .map { t: WalletConfigModel -> t.mainCurrency }
-                .awaitFirstOrDefault("BTC")
-            if (limit.dailyCount != null || limit.dailyTotal != null) {
+        val mainCurrency = walletConfigRepository.findAll()
+            .map { it.mainCurrency }
+            .awaitFirstOrDefault("BTC")
+
+        if (limit.dailyCount != null || limit.dailyTotal != null) {
+            val ts = if (deposit) {
+                transactionRepository.calculateDepositStatisticsBasedOnCurrency(
+                    owner.id!!, limit.walletType, LocalDateTime.now().minusDays(1)
+                        .withHour(0).withMinute(0).withSecond(0), LocalDateTime.now(), mainCurrency
+                )
+            } else {
+                transactionRepository.calculateWithdrawStatisticsBasedOnCurrency(
+                    owner.id!!, limit.walletType, LocalDateTime.now().minusDays(1)
+                        .withHour(0).withMinute(0).withSecond(0), LocalDateTime.now(), mainCurrency
+                )
+            }.awaitFirstOrNull()
+            evaluate = if (ts != null) {
+                !((limit.dailyCount != null && ts.cnt!! >= limit.dailyCount)
+                        || (limit.dailyTotal != null && ts.total!! >= limit.dailyTotal))
+            } else {
+                limit.dailyTotal?.let { it >= amount } ?: true
+            }
+        }
+
+        if (evaluate) {
+            if (limit.monthlyCount != null || limit.monthlyTotal != null) {
                 val ts = if (deposit) {
                     transactionRepository.calculateDepositStatisticsBasedOnCurrency(
-                        owner.id!!, limit.walletType, LocalDateTime.now().minusDays(1)
+                        owner.id!!, limit.walletType, LocalDateTime.now().minusMonths(1).withDayOfMonth(1)
                             .withHour(0).withMinute(0).withSecond(0), LocalDateTime.now(), mainCurrency
                     )
                 } else {
                     transactionRepository.calculateWithdrawStatisticsBasedOnCurrency(
-                        owner.id!!, limit.walletType, LocalDateTime.now().minusDays(1)
+                        owner.id!!, limit.walletType, LocalDateTime.now().minusMonths(1).withDayOfMonth(1)
                             .withHour(0).withMinute(0).withSecond(0), LocalDateTime.now(), mainCurrency
                     )
                 }.awaitFirstOrNull()
                 evaluate = if (ts != null) {
-                    !((limit.dailyCount != null && ts.cnt!! >= limit.dailyCount)
-                            || (limit.dailyTotal != null && ts.total!! >= limit.dailyTotal))
+                    !((limit.monthlyCount != null && ts.cnt!! >= limit.monthlyCount)
+                            || (limit.monthlyTotal != null && ts.total!! >= limit.monthlyTotal))
                 } else {
-                    limit.dailyTotal?.let { it >= amount } ?: true
-                }
-            }
-            if (evaluate) {
-                if (limit.monthlyCount != null || limit.monthlyTotal != null) {
-                    val ts = if (deposit) {
-                        transactionRepository.calculateDepositStatisticsBasedOnCurrency(
-                            owner.id!!, limit.walletType, LocalDateTime.now().minusMonths(1).withDayOfMonth(1)
-                                .withHour(0).withMinute(0).withSecond(0), LocalDateTime.now(), mainCurrency
-                        )
-                    } else {
-                        transactionRepository.calculateWithdrawStatisticsBasedOnCurrency(
-                            owner.id!!, limit.walletType, LocalDateTime.now().minusMonths(1).withDayOfMonth(1)
-                                .withHour(0).withMinute(0).withSecond(0), LocalDateTime.now(), mainCurrency
-                        )
-                    }.awaitFirstOrNull()
-                    evaluate = if (ts != null) {
-                        !((limit.monthlyCount != null && ts.cnt!! >= limit.monthlyCount)
-                                || (limit.monthlyTotal != null && ts.total!! >= limit.monthlyTotal))
-                    } else {
-                        limit.monthlyTotal?.let { it >= amount } ?: true
-                    }
+                    limit.monthlyTotal?.let { it >= amount } ?: true
                 }
             }
         }
-        return evaluate
-    }
-
-    override suspend fun isWithdrawAllowed(owner: WalletOwner, amount: Amount): Boolean {
-        require(amount.amount >= BigDecimal.ZERO)
-        var evaluate: Boolean = limitsRepository.findByOwnerAndAction(
-            owner.id!!,
-            "withdraw"
-        )
-            .map { limit ->
-                evaluateLimit(amount.amount, limit, owner, false)
-            }.onEmpty {
-                emit(true)
-            }.reduce { a, b ->
-                a && b
-            }
-        if (evaluate) {
-            evaluate = limitsRepository.findByLevelAndAction(
-                owner.level,
-                "withdraw"
-            )
-                .map { limit ->
-                    evaluateLimit(amount.amount, limit, owner, false)
-                }.onEmpty {
-                    emit(true)
-                }.reduce { a, b ->
-                    a && b
-                }
-        }
-        logger.info("isWithdrawAllowed: {} {}{} {}", owner.uuid, amount.amount, amount.currency.name, evaluate)
         return evaluate
     }
 

@@ -14,13 +14,13 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 
-private class TransferServiceTest {
+private class TransferManagerImplTest {
     private val walletOwnerManager: WalletOwnerManager = mockk()
     private val walletManager: WalletManager = mockk()
     private val walletListener: WalletListener = mockk()
     private val transactionManager: TransactionManager = mockk()
-    private val transferService: TransferService =
-        TransferService(walletManager, walletListener, walletOwnerManager, transactionManager)
+    private val transferManager: TransferManagerImpl =
+        TransferManagerImpl(walletManager, walletListener, walletOwnerManager, transactionManager)
 
     private fun stubWalletListener() {
         coEvery {
@@ -48,7 +48,7 @@ private class TransferServiceTest {
         coEvery { walletListener.onDeposit(any(), any(), any(), any(), any(), any()) } returns Unit
         coEvery { transactionManager.save(any()) } returns "1"
 
-        val result = transferService.transfer(VALID.TRANSFER_COMMAND).transferResult
+        val result = transferManager.transfer(VALID.TRANSFER_COMMAND).transferResult
 
         assertThat(result).isNotNull
         assertThat(result.sourceUuid).isEqualTo(VALID.SOURCE_WALLET_OWNER.uuid)
@@ -81,7 +81,7 @@ private class TransferServiceTest {
 
         assertThatThrownBy {
             runBlocking {
-                transferService.transfer(VALID.TRANSFER_COMMAND)
+                transferManager.transfer(VALID.TRANSFER_COMMAND)
             }
         }.isNotInstanceOf(MockKException::class.java)
     }
@@ -100,7 +100,7 @@ private class TransferServiceTest {
 
         assertThatThrownBy {
             runBlocking {
-                transferService.transfer(VALID.TRANSFER_COMMAND)
+                transferManager.transfer(VALID.TRANSFER_COMMAND)
             }
         }.isNotInstanceOf(MockKException::class.java)
     }
@@ -119,7 +119,7 @@ private class TransferServiceTest {
 
         assertThatThrownBy {
             runBlocking {
-                transferService.transfer(VALID.TRANSFER_COMMAND)
+                transferManager.transfer(VALID.TRANSFER_COMMAND)
             }
         }.isNotInstanceOf(MockKException::class.java)
     }
@@ -138,7 +138,7 @@ private class TransferServiceTest {
 
         assertThatThrownBy {
             runBlocking {
-                transferService.transfer(VALID.TRANSFER_COMMAND)
+                transferManager.transfer(VALID.TRANSFER_COMMAND)
             }
         }.isNotInstanceOf(MockKException::class.java)
     }
@@ -167,7 +167,7 @@ private class TransferServiceTest {
 
         assertThatThrownBy {
             runBlocking {
-                transferService.transfer(VALID.TRANSFER_COMMAND)
+                transferManager.transfer(VALID.TRANSFER_COMMAND)
             }
         }.isNotInstanceOf(MockKException::class.java)
     }

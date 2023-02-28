@@ -1,13 +1,18 @@
 package co.nilin.opex.accountant.ports.walletproxy.proxy
 
+import co.nilin.opex.accountant.core.inout.TransferRequest
 import co.nilin.opex.accountant.core.spi.WalletProxy
 import co.nilin.opex.accountant.ports.walletproxy.data.BooleanResponse
 import co.nilin.opex.accountant.ports.walletproxy.data.TransferResult
 import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.body
 import org.springframework.web.reactive.function.client.bodyToMono
+import reactor.core.publisher.Mono
 import java.math.BigDecimal
 
 @Component
@@ -28,12 +33,24 @@ class WalletProxyImpl(
     ) {
         webClient.post()
             .uri("$walletBaseUrl/transfer/${amount}_$symbol/from/${senderUuid}_$senderWalletType/to/${receiverUuid}_$receiverWalletType")
-            .header("Content-Type", "application/json")
+            .contentType(MediaType.APPLICATION_JSON)
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<TransferResult>()
             .log()
             .awaitFirst()
+    }
+
+    override suspend fun batchTransfer(transfers: List<TransferRequest>) {
+        webClient.post()
+            .uri("$walletBaseUrl/transfer/batch")
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(Mono.just(transfers))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<TransferResult>()
+            .log()
+            .awaitFirstOrNull()
     }
 
     override suspend fun canFulfil(symbol: String, walletType: String, uuid: String, amount: BigDecimal): Boolean {
