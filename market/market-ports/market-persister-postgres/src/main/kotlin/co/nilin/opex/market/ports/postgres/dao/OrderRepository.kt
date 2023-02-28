@@ -44,6 +44,7 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
         where uuid = :uuid and (:symbol is null or symbol = :symbol) and status in (:statuses)
             and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
             and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
+        order by create_date desc
         limit :limit
     """
     )

@@ -90,6 +90,7 @@ class AccountController(
         @CurrentSecurityContext securityContext: SecurityContext
     ): NewOrderResponse {
         val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+        validateNewOrderParams(type, price, quantity, timeInForce, stopPrice, quoteOrderQty)
 
         matchingGatewayProxy.createNewOrder(
             securityContext.jwtAuthentication().name,
@@ -412,6 +413,69 @@ class AccountController(
             wallets.map { BalanceResponse(it.asset, it.balance, it.locked, it.withdraw) },
             listOf(accountType)
         )
+    }
+
+    private fun validateNewOrderParams(
+        type: OrderType,
+        price: BigDecimal?,
+        quantity: BigDecimal?,
+        timeInForce: TimeInForce?,
+        stopPrice: BigDecimal?,
+        quoteOrderQty: BigDecimal?,
+    ) {
+        when (type) {
+            OrderType.LIMIT -> {
+                checkDecimal(price, "price")
+                checkDecimal(quantity, "quantity")
+                checkNull(timeInForce, "timeInForce")
+            }
+
+            OrderType.MARKET -> {
+                if (quantity == null)
+                    checkDecimal(quoteOrderQty, "quoteOrderQty")
+                else
+                    checkDecimal(quantity, "quantity")
+            }
+
+            OrderType.STOP_LOSS -> {
+                checkDecimal(quantity, "quantity")
+                checkDecimal(stopPrice, "stopPrice")
+            }
+
+            OrderType.STOP_LOSS_LIMIT -> {
+                checkDecimal(price, "price")
+                checkDecimal(quantity, "quantity")
+                checkDecimal(stopPrice, "stopPrice")
+                checkNull(timeInForce, "timeInForce")
+            }
+
+            OrderType.TAKE_PROFIT -> {
+                checkDecimal(quantity, "quantity")
+                checkDecimal(stopPrice, "stopPrice")
+            }
+
+            OrderType.TAKE_PROFIT_LIMIT -> {
+                checkDecimal(price, "price")
+                checkDecimal(quantity, "quantity")
+                checkDecimal(stopPrice, "stopPrice")
+                checkNull(timeInForce, "timeInForce")
+            }
+
+            OrderType.LIMIT_MAKER -> {
+                checkDecimal(price, "price")
+                checkDecimal(quantity, "quantity")
+            }
+        }
+    }
+
+    private fun checkDecimal(decimal: BigDecimal?, paramName: String) {
+        if (decimal == null || decimal <= BigDecimal.ZERO)
+            throw OpexException(OpexError.InvalidRequestParam, "Parameter '$paramName' is either missing or invalid")
+    }
+
+    private fun checkNull(obj: Any?, paramName: String) {
+        if (obj == null)
+            throw OpexException(OpexError.InvalidRequestParam, "Parameter '$paramName' is either missing or invalid")
     }
 
     private fun Order.asQueryOrderResponse() = QueryOrderResponse(
