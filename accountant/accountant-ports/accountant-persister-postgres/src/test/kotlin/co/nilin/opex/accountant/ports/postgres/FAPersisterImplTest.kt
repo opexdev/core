@@ -17,7 +17,7 @@ class FAPersisterImplTest {
 
     private val financialActionRepository = mockk<FinancialActionRepository> {
         coEvery { saveAll(any() as Iterable<FinancialActionModel>) } returns Flux.just(Valid.faModel)
-        coEvery { updateStatusAndIncreaseRetry(any(), any()) } returns Mono.empty()
+        coEvery { updateBatchStatus(any(), any()) } returns Mono.empty()
     }
     private val faPersister = FinancialActionPersisterImpl(financialActionRepository)
 
@@ -29,9 +29,10 @@ class FAPersisterImplTest {
 
     @Test
     fun givenFAAndStatus_whenUpdatingStatusAndFANotFound_throwException(): Unit = runBlocking {
+        coEvery { financialActionRepository.updateStatus(eq(Valid.fa.id!!), any()) } returns Mono.empty()
         faPersister.updateStatus(Valid.fa, FinancialActionStatus.CREATED)
         coVerify {
-            financialActionRepository.updateStatusAndIncreaseRetry(
+            financialActionRepository.updateStatus(
                 eq(Valid.fa.id!!),
                 eq(FinancialActionStatus.CREATED)
             )

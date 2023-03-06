@@ -15,7 +15,7 @@ import java.math.BigDecimal
 interface FinancialActionRepository : ReactiveCrudRepository<FinancialActionModel, Long> {
 
     @Query("select * from fi_actions fi where pointer = :ouid and :uuid in (fi.sender, fi.receiver)")
-    fun findByOuidAndUuid(
+    fun findByOuidAndUserUuid(
         @Param("ouid") ouid: String,
         @Param("uuid") uuid: String,
         paging: Pageable
@@ -33,11 +33,11 @@ interface FinancialActionRepository : ReactiveCrudRepository<FinancialActionMode
     fun findByStatus(@Param("status") status: String, paging: Pageable): Flow<FinancialActionModel>
 
     @Query("update fi_actions set status = :status where id = :id")
-    fun updateStatus(@Param("id") id: Long, @Param("status") status: FinancialActionStatus)
+    fun updateStatus(@Param("id") id: Long, @Param("status") status: FinancialActionStatus): Mono<Int>
 
-    @Query("update fi_actions set status = :status, retry_count = retry_count + 1 where id = :id")
-    fun updateStatusAndIncreaseRetry(@Param("id") id: Long, @Param("status") status: FinancialActionStatus): Mono<Int>
+    @Query("update fi_actions set status = :status where uuid = :uuid")
+    fun updateStatus(uuid: String, status: FinancialActionStatus): Mono<Int>
 
     @Query("update fi_actions set status = :status where id in (:ids)")
-    fun updateStatus(ids: List<Long>, status: FinancialActionStatus): Mono<Int>
+    fun updateBatchStatus(ids: List<Long>, status: FinancialActionStatus): Mono<Int>
 }

@@ -35,6 +35,14 @@ class KafkaTopicConfig {
                     .build()
             })
 
+            registerBean("topic_fiAction", NewTopic::class.java, Supplier {
+                TopicBuilder.name("fiAction")
+                    .partitions(10)
+                    .replicas(3)
+                    .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
+                    .build()
+            })
+
             registerBean("topic_tempevents", NewTopic::class.java, "tempevents", 1, 1)
         }
         logger.info("Kafka topics created")

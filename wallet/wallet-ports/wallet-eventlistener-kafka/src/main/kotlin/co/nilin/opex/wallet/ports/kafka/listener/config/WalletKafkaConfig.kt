@@ -1,8 +1,10 @@
 package co.nilin.opex.wallet.ports.kafka.listener.config
 
 import co.nilin.opex.wallet.ports.kafka.listener.consumer.AdminEventKafkaListener
+import co.nilin.opex.wallet.ports.kafka.listener.consumer.FinancialActionKafkaListener
 import co.nilin.opex.wallet.ports.kafka.listener.consumer.UserCreatedKafkaListener
 import co.nilin.opex.wallet.ports.kafka.listener.model.AdminEvent
+import co.nilin.opex.wallet.ports.kafka.listener.model.FinancialActionEvent
 import co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.TopicPartition
@@ -38,12 +40,17 @@ class WalletKafkaConfig {
             ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
             ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JsonDeserializer::class.java,
             JsonDeserializer.TRUSTED_PACKAGES to "co.nilin.opex.*",
-            JsonDeserializer.TYPE_MAPPINGS to "user_created_event:co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent,admin_add_currency:co.nilin.opex.wallet.ports.kafka.listener.model.AddCurrencyEvent,admin_edit_currency:co.nilin.opex.wallet.ports.kafka.listener.model.EditCurrencyEvent,admin_delete_currency:co.nilin.opex.wallet.ports.kafka.listener.model.DeleteCurrencyEvent"
+            JsonDeserializer.TYPE_MAPPINGS to "user_created_event:co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent,admin_add_currency:co.nilin.opex.wallet.ports.kafka.listener.model.AddCurrencyEvent,admin_edit_currency:co.nilin.opex.wallet.ports.kafka.listener.model.EditCurrencyEvent,admin_delete_currency:co.nilin.opex.wallet.ports.kafka.listener.model.DeleteCurrencyEvent,financial_action:co.nilin.opex.wallet.ports.kafka.listener.model.FinancialActionEvent"
         )
     }
 
     @Bean("walletConsumerFactory")
     fun consumerFactory(@Qualifier("consumerConfigs") consumerConfigs: Map<String, Any?>): ConsumerFactory<String, UserCreatedEvent> {
+        return DefaultKafkaConsumerFactory(consumerConfigs)
+    }
+
+    @Bean("financialActionConsumerFactory")
+    fun financialActionConsumerFactory(@Qualifier("consumerConfigs") consumerConfigs: Map<String, Any?>): ConsumerFactory<String, FinancialActionEvent> {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
 
@@ -64,6 +71,21 @@ class WalletKafkaConfig {
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
         container.setBeanName("UserCreatedKafkaListenerContainer")
         container.commonErrorHandler = createConsumerErrorHandler(template, "auth_user_created.DLT")
+        container.start()
+    }
+
+    @Autowired
+    @ConditionalOnBean(FinancialActionKafkaListener::class)
+    fun configureFinancialActionListener(
+        listener: FinancialActionKafkaListener,
+        template: KafkaTemplate<String, FinancialActionEvent>,
+        @Qualifier("financialActionConsumerFactory") consumerFactory: ConsumerFactory<String, FinancialActionEvent>
+    ) {
+        val containerProps = ContainerProperties(Pattern.compile("fiAction"))
+        containerProps.messageListener = listener
+        val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
+        container.setBeanName("FinancialActionKafkaListenerContainer")
+        container.commonErrorHandler = createConsumerErrorHandler(template, "fiAction.DLT")
         container.start()
     }
 

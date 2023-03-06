@@ -9,7 +9,6 @@ import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.Order
 import co.nilin.opex.accountant.core.spi.*
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
-import co.nilin.opex.matching.engine.core.model.OrderDirection
 import org.slf4j.LoggerFactory
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal

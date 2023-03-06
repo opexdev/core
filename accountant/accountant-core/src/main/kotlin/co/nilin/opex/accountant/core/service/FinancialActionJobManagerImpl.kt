@@ -1,6 +1,5 @@
 package co.nilin.opex.accountant.core.service
 
-import co.nilin.opex.accountant.core.api.FinancialActionJobManager
 import co.nilin.opex.accountant.core.inout.TransferRequest
 import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.FinancialActionStatus
@@ -9,15 +8,16 @@ import co.nilin.opex.accountant.core.spi.FinancialActionPersister
 import co.nilin.opex.accountant.core.spi.WalletProxy
 import org.slf4j.LoggerFactory
 
+@Deprecated("We are using kafka for processing now")
 class FinancialActionJobManagerImpl(
     private val financialActionLoader: FinancialActionLoader,
     private val financialActionPersister: FinancialActionPersister,
     private val walletProxy: WalletProxy
-) : FinancialActionJobManager {
+) {
 
     private val logger = LoggerFactory.getLogger(FinancialActionJobManagerImpl::class.java)
 
-    override suspend fun processFinancialActions(offset: Long, size: Long) {
+    suspend fun processFinancialActions(offset: Long, size: Long) {
         val factions = financialActionLoader.loadUnprocessed(offset, size)
         val flatten = sortAndFlattenFA(factions)
         logger.info("Loaded ${flatten.size} factions: ${flatten.map { it.id }}")

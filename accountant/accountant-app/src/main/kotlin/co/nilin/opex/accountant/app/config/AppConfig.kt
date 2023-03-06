@@ -5,10 +5,10 @@ import co.nilin.opex.accountant.app.listener.AccountantTempEventListener
 import co.nilin.opex.accountant.app.listener.AccountantTradeListener
 import co.nilin.opex.accountant.app.listener.OrderListener
 import co.nilin.opex.accountant.core.api.FeeCalculator
-import co.nilin.opex.accountant.core.api.FinancialActionJobManager
+import co.nilin.opex.accountant.core.api.FinancialActionProcessor
 import co.nilin.opex.accountant.core.api.OrderManager
 import co.nilin.opex.accountant.core.api.TradeManager
-import co.nilin.opex.accountant.core.service.FinancialActionJobManagerImpl
+import co.nilin.opex.accountant.core.service.FinancialActionProcessorImpl
 import co.nilin.opex.accountant.core.service.OrderManagerImpl
 import co.nilin.opex.accountant.core.service.TradeManagerImpl
 import co.nilin.opex.accountant.core.spi.*
@@ -29,12 +29,12 @@ class AppConfig {
     fun getFinancialActionJobManager(
         financialActionLoader: FinancialActionLoader,
         financialActionPersister: FinancialActionPersister,
-        walletProxy: WalletProxy
-    ): FinancialActionJobManager {
-        return FinancialActionJobManagerImpl(
+        financialActionPublisher: FinancialActionPublisher
+    ): FinancialActionProcessor {
+        return FinancialActionProcessorImpl(
             financialActionLoader,
             financialActionPersister,
-            walletProxy
+            financialActionPublisher
         )
     }
 
@@ -47,7 +47,7 @@ class AppConfig {
         orderPersister: OrderPersister,
         tempEventPersister: TempEventPersister,
         tempEventRepublisher: TempEventRepublisher,
-        richOrderPublisher: RichOrderPublisher,
+        richOrderPublisher: RichOrderPublisher
     ): OrderManager {
         return OrderManagerImpl(
             pairConfigLoader,
@@ -82,13 +82,16 @@ class AppConfig {
     }
 
     @Bean
-    fun orderListener(orderManager: OrderManager): OrderListener {
-        return OrderListener(orderManager)
+    fun orderListener(orderManager: OrderManager, financialActionProcessor: FinancialActionProcessor): OrderListener {
+        return OrderListener(orderManager, financialActionProcessor)
     }
 
     @Bean
-    fun accountantTradeListener(tradeManager: TradeManager): AccountantTradeListener {
-        return AccountantTradeListener(tradeManager)
+    fun accountantTradeListener(
+        tradeManager: TradeManager,
+        financialActionProcessor: FinancialActionProcessor
+    ): AccountantTradeListener {
+        return AccountantTradeListener(tradeManager, financialActionProcessor)
     }
 
     @Bean
@@ -99,9 +102,10 @@ class AppConfig {
     @Bean
     fun accountantTempEventListener(
         orderManager: OrderManager,
-        tradeManager: TradeManager
+        tradeManager: TradeManager,
+        financialActionProcessor: FinancialActionProcessor
     ): AccountantTempEventListener {
-        return AccountantTempEventListener(orderManager, tradeManager)
+        return AccountantTempEventListener(orderManager, tradeManager, financialActionProcessor)
     }
 
     @Autowired

@@ -1,7 +1,9 @@
 package co.nilin.opex.accountant.ports.kafka.submitter.config
 
+import co.nilin.opex.accountant.core.inout.FinancialActionEvent
 import co.nilin.opex.accountant.core.inout.RichOrderEvent
 import co.nilin.opex.accountant.core.inout.RichTrade
+import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringSerializer
@@ -27,7 +29,7 @@ class SubmitterKafkaConfig {
             ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
             ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JsonSerializer::class.java,
             ProducerConfig.ACKS_CONFIG to "all",
-            JsonSerializer.TYPE_MAPPINGS to "rich_order_event:co.nilin.opex.accountant.core.inout.RichOrderEvent,rich_order:co.nilin.opex.accountant.core.inout.RichOrder,rich_order_update:co.nilin.opex.accountant.core.inout.RichOrderUpdate, rich_trade:co.nilin.opex.accountant.core.inout.RichTrade"
+            JsonSerializer.TYPE_MAPPINGS to "rich_order_event:co.nilin.opex.accountant.core.inout.RichOrderEvent,rich_order:co.nilin.opex.accountant.core.inout.RichOrder,rich_order_update:co.nilin.opex.accountant.core.inout.RichOrderUpdate, rich_trade:co.nilin.opex.accountant.core.inout.RichTrade,financial_action:co.nilin.opex.accountant.core.inout.FinancialActionEvent"
             //ProducerConfig.CLIENT_ID_CONFIG to "", omitting this option as it produces InstanceAlreadyExistsException
         )
     }
@@ -59,6 +61,16 @@ class SubmitterKafkaConfig {
 
     @Bean("richOrderKafkaTemplate")
     fun richOrderKafkaTemplate(@Qualifier("richOrderProducerFactory") producerFactory: ProducerFactory<String?, RichOrderEvent>): KafkaTemplate<String?, RichOrderEvent> {
+        return KafkaTemplate(producerFactory)
+    }
+
+    @Bean("fiActionProducerFactory")
+    fun fiActionProducerFactory(@Qualifier("producerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, FinancialActionEvent> {
+        return DefaultKafkaProducerFactory(producerConfigs)
+    }
+
+    @Bean("fiActionKafkaTemplate")
+    fun fiActionKafkaTemplate(@Qualifier("fiActionProducerFactory") producerFactory: ProducerFactory<String?, FinancialActionEvent>): KafkaTemplate<String?, FinancialActionEvent> {
         return KafkaTemplate(producerFactory)
     }
 }
