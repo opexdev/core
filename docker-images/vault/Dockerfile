@@ -1,4 +1,4 @@
-FROM vault:1.12.2
+FROM vault:1.11.7
 COPY ["backend-policy.hcl", "panel-policy.hcl", "vault.json", "workflow-vault.sh",  "/vault/config/"]
 EXPOSE 8200
 ENTRYPOINT /vault/config/workflow-vault.sh
