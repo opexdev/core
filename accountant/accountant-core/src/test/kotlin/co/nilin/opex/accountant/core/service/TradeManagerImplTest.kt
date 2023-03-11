@@ -1,6 +1,5 @@
 package co.nilin.opex.accountant.core.service
 
-import co.nilin.opex.accountant.core.api.FinancialActionProcessor
 import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.Order
 import co.nilin.opex.accountant.core.model.PairConfig
@@ -29,7 +28,7 @@ internal class TradeManagerImplTest {
     private val richOrderPublisher = mockk<RichOrderPublisher>()
     private val richTradePublisher = mockk<RichTradePublisher>()
     private val userLevelLoader = mockk<UserLevelLoader>()
-    private val financialActionProcessor = mockk<FinancialActionProcessor>()
+    private val financialActionPublisher = mockk<FinancialActionPublisher>()
 
     private val orderManager = OrderManagerImpl(
         pairConfigLoader,
@@ -39,7 +38,7 @@ internal class TradeManagerImplTest {
         orderPersister,
         tempEventPersister,
         richOrderPublisher,
-        financialActionProcessor
+        financialActionPublisher
     )
 
     private val tradeManager = TradeManagerImpl(
@@ -50,7 +49,7 @@ internal class TradeManagerImplTest {
         richTradePublisher,
         richOrderPublisher,
         FeeCalculatorImpl("0x0"),
-        financialActionProcessor
+        financialActionPublisher
     )
 
     init {
@@ -60,8 +59,8 @@ internal class TradeManagerImplTest {
         coEvery { richOrderPublisher.publish(any()) } returns Unit
         coEvery { richTradePublisher.publish(any()) } returns Unit
         coEvery { userLevelLoader.load(any()) } returns "*"
-        coEvery { financialActionProcessor.process(any<FinancialAction>()) } returns Unit
-        coEvery { financialActionProcessor.process(any<List<FinancialAction>>()) } returns Unit
+        coEvery { financialActionPublisher.publish(any()) } returns Unit
+        coEvery { financialActionPersister.updateStatus(any<FinancialAction>(), any()) } returns Unit
     }
 
     @Test

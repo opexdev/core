@@ -1,58 +1,50 @@
 package co.nilin.opex.accountant.core.service
 
+import co.nilin.opex.accountant.core.api.FinancialActionJobManager
 import co.nilin.opex.accountant.core.inout.TransferRequest
 import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.FinancialActionStatus
 import co.nilin.opex.accountant.core.spi.FinancialActionLoader
 import co.nilin.opex.accountant.core.spi.FinancialActionPersister
+import co.nilin.opex.accountant.core.spi.FinancialActionPublisher
 import co.nilin.opex.accountant.core.spi.WalletProxy
 import org.slf4j.LoggerFactory
 
-@Deprecated("We are using kafka for processing now")
 class FinancialActionJobManagerImpl(
     private val financialActionLoader: FinancialActionLoader,
     private val financialActionPersister: FinancialActionPersister,
-    private val walletProxy: WalletProxy
-) {
+    private val financialActionPublisher: FinancialActionPublisher,
+) : FinancialActionJobManager {
 
     private val logger = LoggerFactory.getLogger(FinancialActionJobManagerImpl::class.java)
 
-    suspend fun processFinancialActions(offset: Long, size: Long) {
+    override suspend fun processFinancialActions(offset: Long, size: Long) {
         val factions = financialActionLoader.loadUnprocessed(offset, size)
-        val flatten = sortAndFlattenFA(factions)
-        logger.info("Loaded ${flatten.size} factions: ${flatten.map { it.id }}")
-        if (factions.isEmpty())
-            return
+        publishFinancialActions(factions)
+    }
 
-        try {
-            val requests = factions.map {
-                TransferRequest(
-                    it.amount,
-                    it.symbol,
-                    it.sender,
-                    it.senderWalletType,
-                    it.receiver,
-                    it.receiverWalletType,
-                    null,
-                    it.eventType + it.pointer
-                )
+    private suspend fun publishFinancialActions(financialActions: List<FinancialAction>) {
+        val list = arrayListOf<FinancialAction>()
+        financialActions.forEach { extractFAParents(it, list) }
+        for (fa in list) {
+            if (fa.status == FinancialActionStatus.CREATED) {
+                try {
+                    financialActionPublisher.publish(fa)
+                } catch (e: Exception) {
+                    logger.error("Cannot publish fa ${fa.uuid}", e)
+                    break
+                }
+                financialActionPersister.updateStatus(fa, FinancialActionStatus.PROCESSED)
             }
-            walletProxy.batchTransfer(requests)
-            financialActionPersister.updateBatchStatus(factions, FinancialActionStatus.PROCESSED)
-        } catch (e: Exception) {
-            logger.error("financial job error", e)
         }
     }
 
-    fun sortAndFlattenFA(list: List<FinancialAction>): Collection<FinancialAction> {
-        val result = arrayListOf<FinancialAction>()
-
-        fun extractParent(fa: FinancialAction) {
-            if (fa.parent != null)
-                extractParent(fa.parent)
-            result.add(fa)
+    private fun extractFAParents(financialAction: FinancialAction, list: ArrayList<FinancialAction>) {
+        if (financialAction.parent != null) {
+            extractFAParents(financialAction.parent, list)
         }
-        list.forEach { extractParent(it) }
-        return result.distinctBy { it.id }
+
+        if (!list.contains(financialAction))
+            list.add(financialAction)
     }
 }
