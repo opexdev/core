@@ -61,6 +61,7 @@ internal class TradeManagerImplTest {
         coEvery { userLevelLoader.load(any()) } returns "*"
         coEvery { financialActionPublisher.publish(any()) } returns Unit
         coEvery { financialActionPersister.updateStatus(any<FinancialAction>(), any()) } returns Unit
+        coEvery { financialActionPersister.updateStatus(any<String>(), any()) } returns Unit
     }
 
     @Test

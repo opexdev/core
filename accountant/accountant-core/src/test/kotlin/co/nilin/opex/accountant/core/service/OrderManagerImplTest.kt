@@ -54,6 +54,7 @@ internal class OrderManagerImplTest {
         coEvery { financialActionLoader.findLast(any(), any()) } returns null
         coEvery { financialActionPersister.persist(any()) } returnsArgument (0)
         coEvery { financialActionPersister.updateStatus(any<FinancialAction>(), any()) } returns Unit
+        coEvery { financialActionPersister.updateStatus(any<String>(), any()) } returns Unit
         coEvery { userLevelLoader.load(any()) } returns "*"
         coEvery { financialActionPublisher.publish(any()) } returns Unit
     }
