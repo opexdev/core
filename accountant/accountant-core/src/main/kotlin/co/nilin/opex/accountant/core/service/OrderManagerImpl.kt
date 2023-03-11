@@ -252,7 +252,7 @@ open class OrderManagerImpl(
 
         if (financialAction.status == FinancialActionStatus.CREATED) {
             financialActionPublisher.publish(financialAction)
-            financialActionPersister.updateStatus(financialAction, FinancialActionStatus.PROCESSED)
+            financialActionPersister.updateStatus(financialAction.uuid, FinancialActionStatus.PROCESSED)
         }
     }
 }
