@@ -14,7 +14,7 @@ class FinancialActionsJob(private val financialActionProcessor: FinancialActionP
     private val log = LoggerFactory.getLogger(FinancialActionsJob::class.java)
     private val scope = CoroutineScope(Dispatchers.IO)
 
-    @Scheduled(fixedDelay = 10000)
+    @Scheduled(fixedDelay = 10000, initialDelay = 10000)
     fun processFinancialActions() {
         scope.ensureActive()
         if (!scope.isCompleted())

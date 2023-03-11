@@ -1,5 +1,6 @@
 package co.nilin.opex.accountant.core.service
 
+import co.nilin.opex.accountant.core.api.FinancialActionProcessor
 import co.nilin.opex.accountant.core.api.OrderManager
 import co.nilin.opex.accountant.core.inout.OrderStatus
 import co.nilin.opex.accountant.core.inout.RichOrder
@@ -20,7 +21,8 @@ open class OrderManagerImpl(
     private val financeActionLoader: FinancialActionLoader,
     private val orderPersister: OrderPersister,
     private val tempEventPersister: TempEventPersister,
-    private val richOrderPublisher: RichOrderPublisher
+    private val richOrderPublisher: RichOrderPublisher,
+    private val financialActionProcessor: FinancialActionProcessor
 ) : OrderManager {
 
     @Transactional
@@ -94,6 +96,7 @@ open class OrderManagerImpl(
                 OrderStatus.REQUESTED.code
             )
         )
+        financialActionProcessor.process(financialAction)
         return financialActionPersister.persist(listOf(financialAction))
     }
 
@@ -157,6 +160,7 @@ open class OrderManagerImpl(
                 OrderStatus.REJECTED
             )
         )
+        financialActionProcessor.process(financialAction)
         return financialActionPersister.persist(listOf(financialAction))
     }
 
@@ -201,6 +205,7 @@ open class OrderManagerImpl(
                 OrderStatus.REJECTED
             )
         )
+        financialActionProcessor.process(financialAction)
         return financialActionPersister.persist(listOf(financialAction))
     }
 

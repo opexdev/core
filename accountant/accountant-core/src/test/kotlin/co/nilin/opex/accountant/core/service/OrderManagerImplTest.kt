@@ -1,5 +1,6 @@
 package co.nilin.opex.accountant.core.service
 
+import co.nilin.opex.accountant.core.api.FinancialActionProcessor
 import co.nilin.opex.accountant.core.inout.OrderStatus
 import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.PairConfig
@@ -33,6 +34,7 @@ internal class OrderManagerImplTest {
     private val pairConfigLoader = mockk<PairConfigLoader>()
     private val richOrderPublisher = mockk<RichOrderPublisher>()
     private val userLevelLoader = mockk<UserLevelLoader>()
+    private val financialActionProcessor = mockk<FinancialActionProcessor>()
 
     private val orderManager = OrderManagerImpl(
         pairConfigLoader,
@@ -41,7 +43,8 @@ internal class OrderManagerImplTest {
         financialActionLoader,
         orderPersister,
         tempEventPersister,
-        richOrderPublisher
+        richOrderPublisher,
+        financialActionProcessor
     )
 
     init {
@@ -52,6 +55,7 @@ internal class OrderManagerImplTest {
         coEvery { financialActionLoader.findLast(any(), any()) } returns null
         coEvery { financialActionPersister.persist(any()) } returnsArgument (0)
         coEvery { userLevelLoader.load(any()) } returns "*"
+        coEvery { financialActionProcessor.process(any<FinancialAction>()) } returns Unit
     }
 
     @Test

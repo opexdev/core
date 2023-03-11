@@ -26,7 +26,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
 class AppConfig {
 
     @Bean
-    fun getFinancialActionJobManager(
+    fun financialActionProcessor(
         financialActionLoader: FinancialActionLoader,
         financialActionPersister: FinancialActionPersister,
         financialActionPublisher: FinancialActionPublisher
@@ -47,7 +47,8 @@ class AppConfig {
         orderPersister: OrderPersister,
         tempEventPersister: TempEventPersister,
         tempEventRepublisher: TempEventRepublisher,
-        richOrderPublisher: RichOrderPublisher
+        richOrderPublisher: RichOrderPublisher,
+        financialActionProcessor: FinancialActionProcessor
     ): OrderManager {
         return OrderManagerImpl(
             pairConfigLoader,
@@ -56,7 +57,8 @@ class AppConfig {
             financeActionLoader,
             orderPersister,
             tempEventPersister,
-            richOrderPublisher
+            richOrderPublisher,
+            financialActionProcessor
         )
     }
 
@@ -69,6 +71,7 @@ class AppConfig {
         richTradePublisher: RichTradePublisher,
         richOrderPublisher: RichOrderPublisher,
         feeCalculator: FeeCalculator,
+        financialActionProcessor: FinancialActionProcessor
     ): TradeManager {
         return TradeManagerImpl(
             financeActionPersister,
@@ -77,21 +80,19 @@ class AppConfig {
             tempEventPersister,
             richTradePublisher,
             richOrderPublisher,
-            feeCalculator
+            feeCalculator,
+            financialActionProcessor
         )
     }
 
     @Bean
-    fun orderListener(orderManager: OrderManager, financialActionProcessor: FinancialActionProcessor): OrderListener {
-        return OrderListener(orderManager, financialActionProcessor)
+    fun orderListener(orderManager: OrderManager): OrderListener {
+        return OrderListener(orderManager)
     }
 
     @Bean
-    fun accountantTradeListener(
-        tradeManager: TradeManager,
-        financialActionProcessor: FinancialActionProcessor
-    ): AccountantTradeListener {
-        return AccountantTradeListener(tradeManager, financialActionProcessor)
+    fun accountantTradeListener(tradeManager: TradeManager): AccountantTradeListener {
+        return AccountantTradeListener(tradeManager)
     }
 
     @Bean
@@ -102,10 +103,9 @@ class AppConfig {
     @Bean
     fun accountantTempEventListener(
         orderManager: OrderManager,
-        tradeManager: TradeManager,
-        financialActionProcessor: FinancialActionProcessor
+        tradeManager: TradeManager
     ): AccountantTempEventListener {
-        return AccountantTempEventListener(orderManager, tradeManager, financialActionProcessor)
+        return AccountantTempEventListener(orderManager, tradeManager)
     }
 
     @Autowired

@@ -1,6 +1,7 @@
 package co.nilin.opex.accountant.core.service
 
 import co.nilin.opex.accountant.core.api.FeeCalculator
+import co.nilin.opex.accountant.core.api.FinancialActionProcessor
 import co.nilin.opex.accountant.core.api.TradeManager
 import co.nilin.opex.accountant.core.inout.OrderStatus
 import co.nilin.opex.accountant.core.inout.RichOrderUpdate
@@ -21,7 +22,8 @@ open class TradeManagerImpl(
     private val tempEventPersister: TempEventPersister,
     private val richTradePublisher: RichTradePublisher,
     private val richOrderPublisher: RichOrderPublisher,
-    private val feeCalculator: FeeCalculator
+    private val feeCalculator: FeeCalculator,
+    private val financialActionProcessor: FinancialActionProcessor
 ) : TradeManager {
 
     private val log = LoggerFactory.getLogger(TradeManagerImpl::class.java)
@@ -167,7 +169,9 @@ open class TradeManagerImpl(
                 trade.eventDate
             )
         )
-        return financeActionPersister.persist(financialActions)
+        return financeActionPersister.persist(financialActions).also {
+            financialActionProcessor.process(financialActions)
+        }
     }
 
     private suspend fun publishTakerRichOrderUpdate(takerOrder: Order, trade: TradeEvent) {

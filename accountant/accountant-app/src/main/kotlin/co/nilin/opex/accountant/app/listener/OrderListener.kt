@@ -1,6 +1,5 @@
 package co.nilin.opex.accountant.app.listener
 
-import co.nilin.opex.accountant.core.api.FinancialActionProcessor
 import co.nilin.opex.accountant.core.api.OrderManager
 import co.nilin.opex.accountant.ports.kafka.listener.inout.OrderSubmitRequest
 import co.nilin.opex.accountant.ports.kafka.listener.spi.OrderSubmitRequestListener
@@ -8,10 +7,7 @@ import co.nilin.opex.matching.engine.core.eventh.events.SubmitOrderEvent
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 
-class OrderListener(
-    private val orderManager: OrderManager,
-    private val financialManagerProcessor: FinancialActionProcessor,
-) : OrderSubmitRequestListener {
+class OrderListener(private val orderManager: OrderManager) : OrderSubmitRequestListener {
 
     private val logger = LoggerFactory.getLogger(OrderListener::class.java)
 
@@ -23,7 +19,7 @@ class OrderListener(
         runBlocking {
             logger.info("Order submit event received ${event.ouid}")
 
-            val fa = orderManager.handleRequestOrder(
+            orderManager.handleRequestOrder(
                 SubmitOrderEvent(
                     event.ouid,
                     event.uuid,
@@ -38,8 +34,6 @@ class OrderListener(
                     event.userLevel
                 )
             )
-
-            financialManagerProcessor.process(fa)
         }
     }
 }
