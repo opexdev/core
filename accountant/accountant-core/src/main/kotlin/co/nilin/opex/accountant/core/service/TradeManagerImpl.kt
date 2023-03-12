@@ -204,7 +204,7 @@ open class TradeManagerImpl(
                     logger.error("Cannot publish fa ${fa.uuid}", e)
                     break
                 }
-                financeActionPersister.updateStatus(fa, FinancialActionStatus.PROCESSED)
+                financeActionPersister.updateStatus(fa.uuid, FinancialActionStatus.PROCESSED)
             }
         }
     }
