@@ -4,10 +4,7 @@ import co.nilin.opex.accountant.app.listener.AccountantEventListener
 import co.nilin.opex.accountant.app.listener.AccountantTempEventListener
 import co.nilin.opex.accountant.app.listener.AccountantTradeListener
 import co.nilin.opex.accountant.app.listener.OrderListener
-import co.nilin.opex.accountant.core.api.FeeCalculator
-import co.nilin.opex.accountant.core.api.FinancialActionJobManager
-import co.nilin.opex.accountant.core.api.OrderManager
-import co.nilin.opex.accountant.core.api.TradeManager
+import co.nilin.opex.accountant.core.api.*
 import co.nilin.opex.accountant.core.service.FinancialActionJobManagerImpl
 import co.nilin.opex.accountant.core.service.OrderManagerImpl
 import co.nilin.opex.accountant.core.service.TradeManagerImpl
@@ -26,19 +23,6 @@ import org.springframework.scheduling.annotation.EnableScheduling
 class AppConfig {
 
     @Bean
-    fun getFinancialActionJobManager(
-        financialActionLoader: FinancialActionLoader,
-        financialActionPersister: FinancialActionPersister,
-        walletProxy: WalletProxy
-    ): FinancialActionJobManager {
-        return FinancialActionJobManagerImpl(
-            financialActionLoader,
-            financialActionPersister,
-            walletProxy
-        )
-    }
-
-    @Bean
     fun orderManager(
         pairConfigLoader: PairConfigLoader,
         userLevelLoader: UserLevelLoader,
@@ -48,6 +32,7 @@ class AppConfig {
         tempEventPersister: TempEventPersister,
         tempEventRepublisher: TempEventRepublisher,
         richOrderPublisher: RichOrderPublisher,
+        financialActionPublisher: FinancialActionPublisher,
     ): OrderManager {
         return OrderManagerImpl(
             pairConfigLoader,
@@ -56,7 +41,8 @@ class AppConfig {
             financeActionLoader,
             orderPersister,
             tempEventPersister,
-            richOrderPublisher
+            richOrderPublisher,
+            financialActionPublisher
         )
     }
 
@@ -69,6 +55,7 @@ class AppConfig {
         richTradePublisher: RichTradePublisher,
         richOrderPublisher: RichOrderPublisher,
         feeCalculator: FeeCalculator,
+        financialActionPublisher: FinancialActionPublisher,
     ): TradeManager {
         return TradeManagerImpl(
             financeActionPersister,
@@ -77,7 +64,8 @@ class AppConfig {
             tempEventPersister,
             richTradePublisher,
             richOrderPublisher,
-            feeCalculator
+            feeCalculator,
+            financialActionPublisher
         )
     }
 

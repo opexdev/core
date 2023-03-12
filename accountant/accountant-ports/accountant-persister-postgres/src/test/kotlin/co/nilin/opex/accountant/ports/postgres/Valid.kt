@@ -14,6 +14,7 @@ import co.nilin.opex.matching.engine.core.model.OrderType
 import co.nilin.opex.matching.engine.core.model.Pair
 import java.math.BigDecimal
 import java.time.LocalDateTime
+import java.util.UUID
 
 object Valid {
 
@@ -128,12 +129,13 @@ object Valid {
         "system",
         "main",
         currentTime,
-        1,
-        1
+        id = 1,
+        uuid = "uuid"
     )
 
     val faModel = FinancialActionModel(
         null,
+        "uuid",
         null,
         TradeEvent::class.java.name,
         "trade_id",
@@ -145,7 +147,7 @@ object Valid {
         "main",
         "",
         "",
-        currentTime
+        currentTime,
     )
 
 }

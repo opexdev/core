@@ -10,6 +10,7 @@ import java.time.LocalDateTime
 @Table("fi_actions")
 data class FinancialActionModel(
     @Id var id: Long?,
+    val uuid: String,
     @Column("parent_id") var parentId: Long?,
     @Column("event_type") val eventType: String,
     val pointer: String,
@@ -22,9 +23,7 @@ data class FinancialActionModel(
     val agent: String,
     val ip: String,
     @Column("create_date") val createDate: LocalDateTime,
-    val status: FinancialActionStatus = FinancialActionStatus.CREATED,
-    @Column("retry_count") val retryCount: Int = 0,
-    @Column("last_try_date") val lastTryDate: LocalDateTime? = null
+    val status: FinancialActionStatus = FinancialActionStatus.CREATED
 )
 
 

@@ -25,16 +25,16 @@ class FinancialActionLoaderImpl(val financialActionRepository: FinancialActionRe
             .toList()
     }
 
-    override suspend fun findLast(uuid: String, ouid: String): FinancialAction? {
-        return financialActionRepository.findByOuidAndUuid(
-            ouid, uuid, PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "createDate"))
+    override suspend fun findLast(userUuid: String, ouid: String): FinancialAction? {
+        return financialActionRepository.findByOuidAndUserUuid(
+            ouid, userUuid, PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "createDate"))
         ).map { loadFinancialAction(it.id) }
             .firstOrNull()
     }
 
-    override suspend fun countUnprocessed(uuid: String, symbol: String, eventType: String): Long {
+    override suspend fun countUnprocessed(userUuid: String, symbol: String, eventType: String): Long {
         return financialActionRepository.findByUuidAndSymbolAndEventTypeAndStatus(
-            uuid,
+            userUuid,
             symbol,
             eventType,
             FinancialActionStatus.CREATED
@@ -55,7 +55,8 @@ class FinancialActionLoaderImpl(val financialActionRepository: FinancialActionRe
                 fim.receiver,
                 fim.receiverWalletType,
                 fim.createDate,
-                fim.retryCount,
+                fim.status,
+                fim.uuid,
                 fim.id
             )
         }

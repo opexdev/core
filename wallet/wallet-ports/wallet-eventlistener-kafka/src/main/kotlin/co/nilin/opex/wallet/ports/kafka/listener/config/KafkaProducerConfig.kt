@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.ports.kafka.listener.config
 
 import co.nilin.opex.wallet.ports.kafka.listener.model.AdminEvent
+import co.nilin.opex.wallet.ports.kafka.listener.model.FinancialActionEvent
 import co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringSerializer
@@ -36,6 +37,16 @@ class KafkaProducerConfig {
 
     @Bean("walletKafkaTemplate")
     fun kafkaTemplate(factory: ProducerFactory<String?, UserCreatedEvent>): KafkaTemplate<String?, UserCreatedEvent> {
+        return KafkaTemplate(factory)
+    }
+
+    @Bean("financialActionProducerFactory")
+    fun financialActionProducerFactory(@Qualifier("producerConfigs") producerConfigs: Map<String, Any?>): ProducerFactory<String?, FinancialActionEvent> {
+        return DefaultKafkaProducerFactory(producerConfigs)
+    }
+
+    @Bean("financialActionKafkaTemplate")
+    fun financialActionKafkaTemplate(factory: ProducerFactory<String?, FinancialActionEvent>): KafkaTemplate<String?, FinancialActionEvent> {
         return KafkaTemplate(factory)
     }
 

@@ -5,6 +5,7 @@ import co.nilin.opex.accountant.core.inout.OrderStatus
 import co.nilin.opex.accountant.core.inout.RichOrder
 import co.nilin.opex.accountant.core.inout.RichOrderUpdate
 import co.nilin.opex.accountant.core.model.FinancialAction
+import co.nilin.opex.accountant.core.model.FinancialActionStatus
 import co.nilin.opex.accountant.core.model.Order
 import co.nilin.opex.accountant.core.spi.*
 import co.nilin.opex.matching.engine.core.eventh.events.*
@@ -20,7 +21,8 @@ open class OrderManagerImpl(
     private val financeActionLoader: FinancialActionLoader,
     private val orderPersister: OrderPersister,
     private val tempEventPersister: TempEventPersister,
-    private val richOrderPublisher: RichOrderPublisher
+    private val richOrderPublisher: RichOrderPublisher,
+    private val financialActionPublisher: FinancialActionPublisher
 ) : OrderManager {
 
     @Transactional
@@ -94,7 +96,9 @@ open class OrderManagerImpl(
                 OrderStatus.REQUESTED.code
             )
         )
-        return financialActionPersister.persist(listOf(financialAction))
+        val fa = financialActionPersister.persist(listOf(financialAction))
+        publishFinancialAction(financialAction)
+        return fa
     }
 
     @Transactional
@@ -157,7 +161,9 @@ open class OrderManagerImpl(
                 OrderStatus.REJECTED
             )
         )
-        return financialActionPersister.persist(listOf(financialAction))
+        val fa = financialActionPersister.persist(listOf(financialAction))
+        publishFinancialAction(financialAction)
+        return fa
     }
 
     @Transactional
@@ -201,7 +207,9 @@ open class OrderManagerImpl(
                 OrderStatus.REJECTED
             )
         )
-        return financialActionPersister.persist(listOf(financialAction))
+        val fa = financialActionPersister.persist(listOf(financialAction))
+        publishFinancialAction(financialAction)
+        return fa
     }
 
     private suspend fun publishRichOrder(order: Order, remainedQuantity: BigDecimal, status: OrderStatus? = null) {
@@ -236,5 +244,15 @@ open class OrderManagerImpl(
                 }
             )
         )
+    }
+
+    private suspend fun publishFinancialAction(financialAction: FinancialAction) {
+        if (financialAction.parent != null)
+            publishFinancialAction(financialAction.parent)
+
+        if (financialAction.status == FinancialActionStatus.CREATED) {
+            financialActionPublisher.publish(financialAction)
+            financialActionPersister.updateStatus(financialAction.uuid, FinancialActionStatus.PROCESSED)
+        }
     }
 }

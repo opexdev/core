@@ -7,6 +7,7 @@ import co.nilin.opex.accountant.ports.postgres.dao.FinancialActionRepository
 import co.nilin.opex.accountant.ports.postgres.model.FinancialActionModel
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.stereotype.Component
 
 @Component
@@ -17,6 +18,7 @@ class FinancialActionPersisterImpl(private val financialActionRepository: Financ
         financialActionRepository.saveAll(financialActions.map {
             FinancialActionModel(
                 null,
+                it.uuid,
                 it.parent?.id,
                 it.eventType,
                 it.pointer,
@@ -34,11 +36,39 @@ class FinancialActionPersisterImpl(private val financialActionRepository: Financ
         return financialActions
     }
 
+    override suspend fun persistWithStatus(financialAction: FinancialAction, status: FinancialActionStatus) {
+        financialActionRepository.save(
+            with(financialAction) {
+                FinancialActionModel(
+                    null,
+                    uuid,
+                    parent?.id,
+                    eventType,
+                    pointer,
+                    symbol,
+                    amount,
+                    sender,
+                    senderWalletType,
+                    receiver,
+                    receiverWalletType,
+                    "",
+                    "",
+                    createDate,
+                    status
+                )
+            }
+        ).awaitSingle()
+    }
+
     override suspend fun updateStatus(financialAction: FinancialAction, status: FinancialActionStatus) {
-        financialActionRepository.updateStatusAndIncreaseRetry(financialAction.id!!, status).awaitFirstOrNull()
+        financialActionRepository.updateStatus(financialAction.id!!, status).awaitSingleOrNull()
+    }
+
+    override suspend fun updateStatus(faUuid: String, status: FinancialActionStatus) {
+        financialActionRepository.updateStatus(faUuid, status).awaitSingleOrNull()
     }
 
     override suspend fun updateBatchStatus(financialAction: List<FinancialAction>, status: FinancialActionStatus) {
-        financialActionRepository.updateStatus(financialAction.mapNotNull { it.id }, status).awaitFirstOrNull()
+        financialActionRepository.updateBatchStatus(financialAction.mapNotNull { it.id }, status).awaitFirstOrNull()
     }
 }

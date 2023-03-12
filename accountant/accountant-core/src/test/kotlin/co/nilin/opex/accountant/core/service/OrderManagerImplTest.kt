@@ -23,7 +23,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import java.math.BigDecimal
-import java.time.LocalDateTime
 
 internal class OrderManagerImplTest {
 
@@ -34,6 +33,7 @@ internal class OrderManagerImplTest {
     private val pairConfigLoader = mockk<PairConfigLoader>()
     private val richOrderPublisher = mockk<RichOrderPublisher>()
     private val userLevelLoader = mockk<UserLevelLoader>()
+    private val financialActionPublisher = mockk<FinancialActionPublisher>()
 
     private val orderManager = OrderManagerImpl(
         pairConfigLoader,
@@ -42,7 +42,8 @@ internal class OrderManagerImplTest {
         financialActionLoader,
         orderPersister,
         tempEventPersister,
-        richOrderPublisher
+        richOrderPublisher,
+        financialActionPublisher
     )
 
     init {
@@ -52,7 +53,10 @@ internal class OrderManagerImplTest {
         coEvery { tempEventPersister.saveTempEvent(any(), any()) } returns any()
         coEvery { financialActionLoader.findLast(any(), any()) } returns null
         coEvery { financialActionPersister.persist(any()) } returnsArgument (0)
+        coEvery { financialActionPersister.updateStatus(any<FinancialAction>(), any()) } returns Unit
+        coEvery { financialActionPersister.updateStatus(any<String>(), any()) } returns Unit
         coEvery { userLevelLoader.load(any()) } returns "*"
+        coEvery { financialActionPublisher.publish(any()) } returns Unit
     }
 
     @Test

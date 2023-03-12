@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS orders
 CREATE TABLE IF NOT EXISTS fi_actions
 (
     id                   SERIAL PRIMARY KEY,
+    uuid                 VARCHAR(72) NOT NULL UNIQUE,
     parent_id            INTEGER,
     event_type           VARCHAR(72) NOT NULL,
     pointer              VARCHAR(72) NOT NULL,
@@ -42,9 +43,7 @@ CREATE TABLE IF NOT EXISTS fi_actions
     agent                VARCHAR(20),
     ip                   VARCHAR(11),
     create_date          TIMESTAMP   NOT NULL,
-    status               VARCHAR(20),
-    retry_count          DECIMAL,
-    last_try_date        TIMESTAMP
+    status               VARCHAR(20)
 );
 
 CREATE TABLE IF NOT EXISTS pair_config

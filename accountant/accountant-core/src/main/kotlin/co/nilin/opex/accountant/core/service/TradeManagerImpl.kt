@@ -6,10 +6,10 @@ import co.nilin.opex.accountant.core.inout.OrderStatus
 import co.nilin.opex.accountant.core.inout.RichOrderUpdate
 import co.nilin.opex.accountant.core.inout.RichTrade
 import co.nilin.opex.accountant.core.model.FinancialAction
+import co.nilin.opex.accountant.core.model.FinancialActionStatus
 import co.nilin.opex.accountant.core.model.Order
 import co.nilin.opex.accountant.core.spi.*
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
-import co.nilin.opex.matching.engine.core.model.OrderDirection
 import org.slf4j.LoggerFactory
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
@@ -22,14 +22,15 @@ open class TradeManagerImpl(
     private val tempEventPersister: TempEventPersister,
     private val richTradePublisher: RichTradePublisher,
     private val richOrderPublisher: RichOrderPublisher,
-    private val feeCalculator: FeeCalculator
+    private val feeCalculator: FeeCalculator,
+    private val financialActionPublisher: FinancialActionPublisher
 ) : TradeManager {
 
-    private val log = LoggerFactory.getLogger(TradeManagerImpl::class.java)
+    private val logger = LoggerFactory.getLogger(TradeManagerImpl::class.java)
 
     @Transactional
     override suspend fun handleTrade(trade: TradeEvent): List<FinancialAction> {
-        log.info("trade event started {}", trade)
+        logger.info("trade event started {}", trade)
         val financialActions = mutableListOf<FinancialAction>()
         //taker order by ouid
         val takerOrder = orderPersister.load(trade.takerOuid)
@@ -58,14 +59,14 @@ open class TradeManagerImpl(
             trade.matchedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction)
                 .multiply(trade.makerPrice.toBigDecimal()).multiply(makerOrder.rightSideFraction)
         }
-        log.info("trade event configs loaded")
+        logger.info("trade event configs loaded")
 
         //lookup for taker parent fa
         val takerParentFinancialAction = financeActionLoader.findLast(trade.takerUuid, trade.takerOuid)
-        log.info("trade event takerParentFinancialAction {} ", takerParentFinancialAction)
+        logger.info("trade event takerParentFinancialAction {} ", takerParentFinancialAction)
         //lookup for maker parent fa
         val makerParentFinancialAction = financeActionLoader.findLast(trade.makerUuid, trade.makerOuid)
-        log.info("trade event makerParentFinancialAction {} ", makerParentFinancialAction)
+        logger.info("trade event makerParentFinancialAction {} ", makerParentFinancialAction)
 
         //create fa for transfer taker uuid symbol exchange wallet to maker symbol main wallet
         /*
@@ -84,7 +85,7 @@ open class TradeManagerImpl(
             "main",
             LocalDateTime.now()
         )
-        log.info("trade event takerTransferAction {}", takerTransferAction)
+        logger.info("trade event takerTransferAction {}", takerTransferAction)
         financialActions.add(takerTransferAction)
 
         //update taker order status
@@ -93,7 +94,7 @@ open class TradeManagerImpl(
             takerOrder.status = 1
         }
         orderPersister.save(takerOrder)
-        log.info("taker order saved {}", takerOrder)
+        logger.info("taker order saved {}", takerOrder)
         publishTakerRichOrderUpdate(takerOrder, trade)
 
         //create fa for transfer makerUuid symbol exchange wallet to taker symbol main wallet
@@ -113,7 +114,7 @@ open class TradeManagerImpl(
             "main",
             LocalDateTime.now()
         )
-        log.info("trade event makerTransferAction {}", makerTransferAction)
+        logger.info("trade event makerTransferAction {}", makerTransferAction)
         financialActions.add(makerTransferAction)
 
         //update maker order status
@@ -122,7 +123,7 @@ open class TradeManagerImpl(
             makerOrder.status = 1
         }
         orderPersister.save(makerOrder)
-        log.info("maker order saved {}", makerOrder)
+        logger.info("maker order saved {}", makerOrder)
         publishMakerRichOrderUpdate(makerOrder, trade)
 
         val feeActions = feeCalculator.createFeeActions(
@@ -168,7 +169,7 @@ open class TradeManagerImpl(
                 trade.eventDate
             )
         )
-        return financeActionPersister.persist(financialActions)
+        return financeActionPersister.persist(financialActions).also { publishFinancialActions(it) }
     }
 
     private suspend fun publishTakerRichOrderUpdate(takerOrder: Order, trade: TradeEvent) {
@@ -190,5 +191,30 @@ open class TradeManagerImpl(
             OrderStatus.PARTIALLY_FILLED
 
         richOrderPublisher.publish(RichOrderUpdate(order.ouid, price, order.origQuantity, remainedQty, status))
+    }
+
+    private suspend fun publishFinancialActions(financialActions: List<FinancialAction>) {
+        val list = arrayListOf<FinancialAction>()
+        financialActions.forEach { extractFAParents(it, list) }
+        for (fa in list) {
+            if (fa.status == FinancialActionStatus.CREATED) {
+                try {
+                    financialActionPublisher.publish(fa)
+                } catch (e: Exception) {
+                    logger.error("Cannot publish fa ${fa.uuid}", e)
+                    break
+                }
+                financeActionPersister.updateStatus(fa, FinancialActionStatus.PROCESSED)
+            }
+        }
+    }
+
+    private fun extractFAParents(financialAction: FinancialAction, list: ArrayList<FinancialAction>) {
+        if (financialAction.parent != null) {
+            extractFAParents(financialAction.parent, list)
+        }
+
+        if (!list.contains(financialAction))
+            list.add(financialAction)
     }
 }
