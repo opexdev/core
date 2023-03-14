@@ -48,5 +48,7 @@ services:
     build: captcha/captcha-app
   admin:
     build: admin/admin-app
+  logstash:
+    build: docker-images/logstash
   filebeat:
     build: docker-images/filebeat

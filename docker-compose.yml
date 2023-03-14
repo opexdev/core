@@ -206,6 +206,8 @@ services:
       - consul
       - vault
       - postgres-accountant
+    labels:
+      collect_logs: ${COLLECT_LOGS}
     deploy:
       restart_policy:
         condition: on-failure
@@ -227,6 +229,8 @@ services:
       - consul
       - vault
       - postgres-eventlog
+    labels:
+      collect_logs: ${COLLECT_LOGS}
     deploy:
       restart_policy:
         condition: on-failure
@@ -246,6 +250,8 @@ services:
       - kafka-2
       - kafka-3
       - redis
+    labels:
+      collect_logs: ${COLLECT_LOGS}
     deploy:
       restart_policy:
         condition: on-failure
@@ -264,6 +270,8 @@ services:
       - auth
       - consul
       - matching-engine
+    labels:
+      collect_logs: ${COLLECT_LOGS}
     deploy:
       restart_policy:
         condition: on-failure
@@ -294,6 +302,8 @@ services:
       - postgres-auth
     networks:
       - default
+    labels:
+      collect_logs: ${COLLECT_LOGS}
     deploy:
       restart_policy:
         condition: on-failure
@@ -320,6 +330,8 @@ services:
       - postgres-wallet
     networks:
       - default
+    labels:
+      collect_logs: ${COLLECT_LOGS}
     deploy:
       restart_policy:
         condition: on-failure
@@ -344,6 +356,8 @@ services:
       - postgres-market
     networks:
       - default
+    labels:
+      collect_logs: ${COLLECT_LOGS}
     deploy:
       restart_policy:
         condition: on-failure
@@ -372,6 +386,8 @@ services:
       - postgres-api
     networks:
       - default
+    labels:
+      collect_logs: ${COLLECT_LOGS}
     deploy:
       restart_policy:
         condition: on-failure
@@ -394,6 +410,8 @@ services:
       - postgres-api
     networks:
       - default
+    labels:
+      collect_logs: ${COLLECT_LOGS}
     deploy:
       restart_policy:
         condition: on-failure
@@ -421,6 +439,8 @@ services:
       - postgres-bc-gateway
     networks:
       - default
+    labels:
+      collect_logs: ${COLLECT_LOGS}
     deploy:
       restart_policy:
         condition: on-failure
@@ -438,6 +458,8 @@ services:
       - consul
     networks:
       - default
+    labels:
+      collect_logs: ${COLLECT_LOGS}
     deploy:
       restart_policy:
         condition: on-failure
@@ -460,6 +482,8 @@ services:
       - consul
       - postgres-referral
       - vault
+    labels:
+      collect_logs: ${COLLECT_LOGS}
     deploy:
       restart_policy:
         condition: on-failure
@@ -471,6 +495,8 @@ services:
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
     depends_on:
       - consul
+    labels:
+      collect_logs: ${COLLECT_LOGS}
     deploy:
       restart_policy:
         condition: on-failure
@@ -494,38 +520,45 @@ services:
       - vault
     networks:
       - default
+    labels:
+      collect_logs: ${COLLECT_LOGS}
     deploy:
       restart_policy:
         condition: on-failure
   elasticsearch:
-    image: elastic/elasticsearch:8.3.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
     environment:
       - ES_JAVA_OPTS=-Xms1g -Xmx1g
       - discovery.type=single-node
-      - ingest.geoip.downloader.enabled=false
       - node.name=elasticsearch
       - network.publish_host=elasticsearch
     volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
+      - elasticsearch-data:/usr/share/elasticsearch/data
     networks:
       - default
-  kibana:
-    image: elastic/kibana:8.3.2
-    environment:
-      - SERVER_PUBLICBASEURL=$KIBANA_PUBLIC_URL
-      - ELASTICSEARCH_SSL_VERIFICATIONMODE=certificate
-    networks:
-      - default
+  logstash:
+    image: ghcr.io/opexdev/opex-logstash
+    restart: on-failure
+    depends_on:
+      - elasticsearch
   filebeat:
     image: ghcr.io/opexdev/opex-filebeat
     user: root
     environment:
       - FILEBEAT_API_KEY=$FILEBEAT_API_KEY
     volumes:
-      - /var/lib/docker:/var/lib/docker:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - logstash
     networks:
       - default
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.2.0
+    networks:
+      - default
+    depends_on:
+      - elasticsearch
 volumes:
   zookeeper-data:
   zookeeper-log:
@@ -545,7 +578,7 @@ volumes:
   referral-data:
   storage-data:
   admin-data:
-  elasticsearch_data:
+  elasticsearch-data:
 networks:
   default:
     driver: bridge
