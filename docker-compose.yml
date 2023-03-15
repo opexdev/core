@@ -207,7 +207,7 @@ services:
       - vault
       - postgres-accountant
     labels:
-      collect_logs: ${COLLECT_LOGS}
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
@@ -230,7 +230,7 @@ services:
       - vault
       - postgres-eventlog
     labels:
-      collect_logs: ${COLLECT_LOGS}
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
@@ -251,7 +251,7 @@ services:
       - kafka-3
       - redis
     labels:
-      collect_logs: ${COLLECT_LOGS}
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
@@ -271,7 +271,7 @@ services:
       - consul
       - matching-engine
     labels:
-      collect_logs: ${COLLECT_LOGS}
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
@@ -303,7 +303,7 @@ services:
     networks:
       - default
     labels:
-      collect_logs: ${COLLECT_LOGS}
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
@@ -331,7 +331,7 @@ services:
     networks:
       - default
     labels:
-      collect_logs: ${COLLECT_LOGS}
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
@@ -357,7 +357,7 @@ services:
     networks:
       - default
     labels:
-      collect_logs: ${COLLECT_LOGS}
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
@@ -387,7 +387,7 @@ services:
     networks:
       - default
     labels:
-      collect_logs: ${COLLECT_LOGS}
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
@@ -411,7 +411,7 @@ services:
     networks:
       - default
     labels:
-      collect_logs: ${COLLECT_LOGS}
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
@@ -440,7 +440,7 @@ services:
     networks:
       - default
     labels:
-      collect_logs: ${COLLECT_LOGS}
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
@@ -459,7 +459,7 @@ services:
     networks:
       - default
     labels:
-      collect_logs: ${COLLECT_LOGS}
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
@@ -483,7 +483,7 @@ services:
       - postgres-referral
       - vault
     labels:
-      collect_logs: ${COLLECT_LOGS}
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
@@ -496,7 +496,7 @@ services:
     depends_on:
       - consul
     labels:
-      collect_logs: ${COLLECT_LOGS}
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
@@ -521,17 +521,21 @@ services:
     networks:
       - default
     labels:
-      collect_logs: ${COLLECT_LOGS}
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2
     environment:
       - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - ELASTIC_USERNAME=${ELASTIC_USERNAME}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - discovery.type=single-node
       - node.name=elasticsearch
       - network.publish_host=elasticsearch
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
     networks:
@@ -539,6 +543,11 @@ services:
   logstash:
     image: ghcr.io/opexdev/opex-logstash
     restart: on-failure
+    environment:
+      - ELASTIC_USERNAME=${ELASTIC_USERNAME}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - xpack.monitoring.elasticsearch.username=${ELASTIC_USERNAME}
+      - xpack.monitoring.elasticsearch.password=${ELASTIC_PASSWORD}
     depends_on:
       - elasticsearch
   filebeat:
@@ -546,6 +555,11 @@ services:
     user: root
     environment:
       - FILEBEAT_API_KEY=$FILEBEAT_API_KEY
+      - setup.kibana.host=kibana:5601
+      - ELASTIC_USERNAME=${ELASTIC_USERNAME}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - xpack.monitoring.elasticsearch.username=${ELASTIC_USERNAME}
+      - xpack.monitoring.elasticsearch.password=${ELASTIC_PASSWORD}
     volumes:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock
@@ -554,7 +568,7 @@ services:
     networks:
       - default
   kibana:
-    image: docker.elastic.co/kibana/kibana:7.2.0
+    image: docker.elastic.co/kibana/kibana:8.6.2
     networks:
       - default
     depends_on:

@@ -1,2 +1,2 @@
-FROM docker.elastic.co/logstash/logstash:7.2.0
+FROM docker.elastic.co/logstash/logstash:8.6.2
 COPY logstash.conf /usr/share/logstash/pipeline/logstash.conf
