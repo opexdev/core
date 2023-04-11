@@ -43,6 +43,19 @@ spring:
         prefer-ip-address: true
   config:
     import: vault://secret/${spring.application.name}
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: ["health", "prometheus", "metrics"]
+  endpoint:
+    health:
+      show-details: always
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
 app:
   auth:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs

@@ -6,11 +6,13 @@ import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfigurati
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.ComponentScan
+import org.springframework.scheduling.annotation.EnableScheduling
 
 @SpringBootApplication(exclude = [LiquibaseAutoConfiguration::class])
 @ComponentScan("co.nilin.opex")
 @EnableOpexErrorHandler
 @EnableConfigurationProperties
+@EnableScheduling
 class KeycloakGatewayApp
 
 fun main(args: Array<String>) {

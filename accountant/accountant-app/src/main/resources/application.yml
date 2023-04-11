@@ -44,6 +44,22 @@ spring:
         prefer-ip-address: true
   config:
     import: vault://secret/${spring.application.name}
+management:
+  health:
+    db:
+      enabled: true
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: [ "health", "prometheus", "metrics" ]
+  endpoint:
+    health:
+      show-details: always
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
 app:
   address: 1
   wallet:

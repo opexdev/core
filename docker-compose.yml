@@ -29,7 +29,7 @@ services:
       restart_policy:
         condition: on-failure
   kafka-1:
-    image: confluentinc/cp-kafka:7.1.1
+    image: ghcr.io/opexdev/kafka
     hostname: kafka-1
     volumes:
       - kafka-1:/var/lib/kafka/data
@@ -41,6 +41,7 @@ services:
       - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-1:29092,EXTERNAL://kafka-1:9092
       - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
       - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+      - KAFKA_OPTS=-javaagent:/opt/prometheus/jmx-exporter-0.15.0.jar=1234:/opt/prometheus/kafka-jmx-exporter.yml
     depends_on:
       - zookeeper
     networks:
@@ -49,7 +50,7 @@ services:
       restart_policy:
         condition: on-failure
   kafka-2:
-    image: confluentinc/cp-kafka:7.1.1
+    image: ghcr.io/opexdev/kafka
     hostname: kafka-2
     volumes:
       - kafka-2:/var/lib/kafka/data
@@ -61,6 +62,7 @@ services:
       - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-2:29092,EXTERNAL://kafka-2:9092
       - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
       - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+      - KAFKA_OPTS=-javaagent:/opt/prometheus/jmx-exporter-0.15.0.jar=1234:/opt/prometheus/kafka-jmx-exporter.yml
     depends_on:
       - zookeeper
     networks:
@@ -69,7 +71,7 @@ services:
       restart_policy:
         condition: on-failure
   kafka-3:
-    image: confluentinc/cp-kafka:7.1.1
+    image: ghcr.io/opexdev/kafka
     hostname: kafka-3
     volumes:
       - kafka-3:/var/lib/kafka/data
@@ -81,6 +83,7 @@ services:
       - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-3:29092,EXTERNAL://kafka-3:9092
       - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
       - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+      - KAFKA_OPTS=-javaagent:/opt/prometheus/jmx-exporter-0.15.0.jar=1234:/opt/prometheus/kafka-jmx-exporter.yml
     depends_on:
       - zookeeper
     networks:
@@ -573,6 +576,23 @@ services:
       - default
     depends_on:
       - elasticsearch
+  prometheus:
+    image: ghcr.io/opexdev/opex-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+    networks:
+      - default
+  grafana:
+    image: grafana/grafana-oss:8.5.2
+    restart: unless-stopped
+    volumes:
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_SERVER_DOMAIN=localhost
+    networks:
+      - default
 volumes:
   zookeeper-data:
   zookeeper-log:
@@ -593,6 +613,7 @@ volumes:
   storage-data:
   admin-data:
   elasticsearch-data:
+  grafana-data:
 networks:
   default:
     driver: bridge

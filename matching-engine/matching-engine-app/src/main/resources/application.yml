@@ -10,3 +10,16 @@ spring:
   redis:
     host: ${REDIS_HOST:localhost}
     port: 6379
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: ["health", "prometheus", "metrics"]
+  endpoint:
+    health:
+      show-details: always
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
