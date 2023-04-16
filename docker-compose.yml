@@ -532,37 +532,29 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2
     environment:
       - ES_JAVA_OPTS=-Xms1g -Xmx1g
-      - ELASTIC_USERNAME=${ELASTIC_USERNAME}
-      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - discovery.type=single-node
       - node.name=elasticsearch
       - network.publish_host=elasticsearch
-      - xpack.security.enabled=false
-      - xpack.security.enrollment.enabled=false
+      - xpack.security.enabled=true
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
     networks:
       - default
   logstash:
     image: ghcr.io/opexdev/opex-logstash
-    restart: on-failure
     environment:
-      - ELASTIC_USERNAME=${ELASTIC_USERNAME}
-      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
-      - xpack.monitoring.elasticsearch.username=${ELASTIC_USERNAME}
-      - xpack.monitoring.elasticsearch.password=${ELASTIC_PASSWORD}
+      - LS_JAVA_OPTS=-Xmx256m -Xms256m
+      - xpack.monitoring.elasticsearch.url=elasticsearch:9200
+      - xpack.monitoring.elasticsearch.username=${LOGSTASH_ELASTIC_USER}
+      - xpack.monitoring.elasticsearch.password=${LOGSTASH_ELASTIC_PASSWORD}
+      - ELASTIC_USER=${LOGSTASH_ELASTIC_USER}
+      - ELASTIC_PASSWORD=${LOGSTASH_ELASTIC_PASSWORD}
+    restart: on-failure
     depends_on:
       - elasticsearch
   filebeat:
     image: ghcr.io/opexdev/opex-filebeat
     user: root
-    environment:
-      - FILEBEAT_API_KEY=$FILEBEAT_API_KEY
-      - setup.kibana.host=kibana:5601
-      - ELASTIC_USERNAME=${ELASTIC_USERNAME}
-      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
-      - xpack.monitoring.elasticsearch.username=${ELASTIC_USERNAME}
-      - xpack.monitoring.elasticsearch.password=${ELASTIC_PASSWORD}
     volumes:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock
@@ -572,6 +564,13 @@ services:
       - default
   kibana:
     image: docker.elastic.co/kibana/kibana:8.6.2
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=${KIBANA_ELASTIC_USER}
+      - ELASTICSEARCH_PASSWORD=${KIBANA_ELASTIC_PASSWORD}
+      - XPACK_MONITORING_ENABLED=true
+      - XPACK_MONITORING_COLLECTION_ENABLED=true
+      - XPACK_SECURITY_ENABLED=true
     networks:
       - default
     depends_on:
