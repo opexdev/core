@@ -29,7 +29,7 @@ services:
       restart_policy:
         condition: on-failure
   kafka-1:
-    image: confluentinc/cp-kafka:7.1.1
+    image: ghcr.io/opexdev/kafka
     hostname: kafka-1
     volumes:
       - kafka-1:/var/lib/kafka/data
@@ -41,6 +41,7 @@ services:
       - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-1:29092,EXTERNAL://kafka-1:9092
       - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
       - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+      - KAFKA_OPTS=-javaagent:/opt/prometheus/jmx-exporter-0.15.0.jar=1234:/opt/prometheus/kafka-jmx-exporter.yml
     depends_on:
       - zookeeper
     networks:
@@ -49,7 +50,7 @@ services:
       restart_policy:
         condition: on-failure
   kafka-2:
-    image: confluentinc/cp-kafka:7.1.1
+    image: ghcr.io/opexdev/kafka
     hostname: kafka-2
     volumes:
       - kafka-2:/var/lib/kafka/data
@@ -61,6 +62,7 @@ services:
       - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-2:29092,EXTERNAL://kafka-2:9092
       - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
       - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+      - KAFKA_OPTS=-javaagent:/opt/prometheus/jmx-exporter-0.15.0.jar=1234:/opt/prometheus/kafka-jmx-exporter.yml
     depends_on:
       - zookeeper
     networks:
@@ -69,7 +71,7 @@ services:
       restart_policy:
         condition: on-failure
   kafka-3:
-    image: confluentinc/cp-kafka:7.1.1
+    image: ghcr.io/opexdev/kafka
     hostname: kafka-3
     volumes:
       - kafka-3:/var/lib/kafka/data
@@ -81,6 +83,7 @@ services:
       - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-3:29092,EXTERNAL://kafka-3:9092
       - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
       - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+      - KAFKA_OPTS=-javaagent:/opt/prometheus/jmx-exporter-0.15.0.jar=1234:/opt/prometheus/kafka-jmx-exporter.yml
     depends_on:
       - zookeeper
     networks:
@@ -206,6 +209,8 @@ services:
       - consul
       - vault
       - postgres-accountant
+    labels:
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
@@ -227,6 +232,8 @@ services:
       - consul
       - vault
       - postgres-eventlog
+    labels:
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
@@ -246,6 +253,8 @@ services:
       - kafka-2
       - kafka-3
       - redis
+    labels:
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
@@ -264,6 +273,8 @@ services:
       - auth
       - consul
       - matching-engine
+    labels:
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
@@ -294,6 +305,8 @@ services:
       - postgres-auth
     networks:
       - default
+    labels:
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
@@ -320,6 +333,8 @@ services:
       - postgres-wallet
     networks:
       - default
+    labels:
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
@@ -344,6 +359,8 @@ services:
       - postgres-market
     networks:
       - default
+    labels:
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
@@ -372,6 +389,8 @@ services:
       - postgres-api
     networks:
       - default
+    labels:
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
@@ -394,6 +413,8 @@ services:
       - postgres-api
     networks:
       - default
+    labels:
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
@@ -421,6 +442,8 @@ services:
       - postgres-bc-gateway
     networks:
       - default
+    labels:
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
@@ -438,6 +461,8 @@ services:
       - consul
     networks:
       - default
+    labels:
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
@@ -460,6 +485,8 @@ services:
       - consul
       - postgres-referral
       - vault
+    labels:
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
@@ -471,6 +498,8 @@ services:
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
     depends_on:
       - consul
+    labels:
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
@@ -494,36 +523,73 @@ services:
       - vault
     networks:
       - default
+    labels:
+      collect_logs: "true"
     deploy:
       restart_policy:
         condition: on-failure
   elasticsearch:
-    image: elastic/elasticsearch:8.3.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2
     environment:
       - ES_JAVA_OPTS=-Xms1g -Xmx1g
       - discovery.type=single-node
-      - ingest.geoip.downloader.enabled=false
       - node.name=elasticsearch
       - network.publish_host=elasticsearch
+      - xpack.security.enabled=true
     volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
+      - elasticsearch-data:/usr/share/elasticsearch/data
     networks:
       - default
-  kibana:
-    image: elastic/kibana:8.3.2
+  logstash:
+    image: ghcr.io/opexdev/opex-logstash
     environment:
-      - SERVER_PUBLICBASEURL=$KIBANA_PUBLIC_URL
-      - ELASTICSEARCH_SSL_VERIFICATIONMODE=certificate
-    networks:
-      - default
+      - LS_JAVA_OPTS=-Xmx256m -Xms256m
+      - xpack.monitoring.elasticsearch.url=elasticsearch:9200
+      - xpack.monitoring.elasticsearch.username=${LOGSTASH_ELASTIC_USER}
+      - xpack.monitoring.elasticsearch.password=${LOGSTASH_ELASTIC_PASSWORD}
+      - ELASTIC_USER=${LOGSTASH_ELASTIC_USER}
+      - ELASTIC_PASSWORD=${LOGSTASH_ELASTIC_PASSWORD}
+    restart: on-failure
+    depends_on:
+      - elasticsearch
   filebeat:
     image: ghcr.io/opexdev/opex-filebeat
     user: root
-    environment:
-      - FILEBEAT_API_KEY=$FILEBEAT_API_KEY
     volumes:
-      - /var/lib/docker:/var/lib/docker:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - logstash
+    networks:
+      - default
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.6.2
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=${KIBANA_ELASTIC_USER}
+      - ELASTICSEARCH_PASSWORD=${KIBANA_ELASTIC_PASSWORD}
+      - XPACK_MONITORING_ENABLED=true
+      - XPACK_MONITORING_COLLECTION_ENABLED=true
+      - XPACK_SECURITY_ENABLED=true
+    networks:
+      - default
+    depends_on:
+      - elasticsearch
+  prometheus:
+    image: ghcr.io/opexdev/opex-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+    networks:
+      - default
+  grafana:
+    image: grafana/grafana-oss:8.5.2
+    restart: unless-stopped
+    volumes:
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_SERVER_DOMAIN=localhost
     networks:
       - default
 volumes:
@@ -545,7 +611,8 @@ volumes:
   referral-data:
   storage-data:
   admin-data:
-  elasticsearch_data:
+  elasticsearch-data:
+  grafana-data:
 networks:
   default:
     driver: bridge

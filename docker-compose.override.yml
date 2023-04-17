@@ -1,5 +1,11 @@
 version: '3.8'
 services:
+  kafka-1:
+    build: docker-images/kafka
+  kafka-2:
+    build: docker-images/kafka
+  kafka-3:
+    build: docker-images/kafka
   vault:
     build: docker-images/vault
   postgres-opex:
@@ -48,5 +54,9 @@ services:
     build: captcha/captcha-app
   admin:
     build: admin/admin-app
+  logstash:
+    build: docker-images/logstash
   filebeat:
     build: docker-images/filebeat
+  prometheus:
+    build: docker-images/prometheus
