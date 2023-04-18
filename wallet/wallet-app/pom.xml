@@ -111,6 +111,11 @@
             <groupId>co.nilin.opex.utility.preferences</groupId>
             <artifactId>preferences</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+            <scope>runtime</scope>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>

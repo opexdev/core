@@ -29,3 +29,16 @@ spring:
         application-name: ${spring.application.name}
   config:
     import: vault://secret/${spring.application.name}
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: ["health", "prometheus", "metrics"]
+  endpoint:
+    health:
+      show-details: always
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
