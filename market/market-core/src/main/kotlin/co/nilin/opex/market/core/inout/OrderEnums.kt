@@ -31,10 +31,6 @@ enum class OrderStatus(val code: Int, val orderOfAppearance: Int) {
         return orderOfAppearance > status.orderOfAppearance
     }
 
-    fun isOpenOrder(): Boolean {
-        return this == NEW || this == PARTIALLY_FILLED
-    }
-
     companion object {
         fun fromCode(code: Int?): OrderStatus? {
             if (code == null)

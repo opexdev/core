@@ -5,30 +5,25 @@ import co.nilin.opex.market.core.event.RichOrderUpdate
 import co.nilin.opex.market.core.inout.Order
 import co.nilin.opex.market.core.inout.OrderStatus
 import co.nilin.opex.market.core.spi.OrderPersister
-import co.nilin.opex.market.ports.postgres.dao.OpenOrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderStatusRepository
 import co.nilin.opex.market.ports.postgres.model.OrderModel
 import co.nilin.opex.market.ports.postgres.model.OrderStatusModel
 import co.nilin.opex.market.ports.postgres.util.asOrderDTO
 import kotlinx.coroutines.reactive.awaitFirstOrNull
-import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Component
 class OrderPersisterImpl(
     private val orderRepository: OrderRepository,
-    private val orderStatusRepository: OrderStatusRepository,
-    private val openOrderRepository: OpenOrderRepository,
+    private val orderStatusRepository: OrderStatusRepository
 ) : OrderPersister {
 
     private val logger = LoggerFactory.getLogger(OrderPersisterImpl::class.java)
 
-    @Transactional
     override suspend fun save(order: RichOrder) {
         orderRepository.save(
             OrderModel(
@@ -55,46 +50,33 @@ class OrderPersisterImpl(
         ).awaitFirstOrNull()
         logger.info("order ${order.ouid} saved")
 
-        orderStatusRepository.insert(
-            order.ouid,
-            order.executedQuantity,
-            order.accumulativeQuoteQty,
-            OrderStatus.NEW.code,
-            OrderStatus.NEW.orderOfAppearance
+        orderStatusRepository.save(
+            OrderStatusModel(
+                order.ouid,
+                order.executedQuantity,
+                order.accumulativeQuoteQty,
+                OrderStatus.NEW.code,
+                OrderStatus.NEW.orderOfAppearance
+            )
         ).awaitFirstOrNull()
         logger.info("OrderStatus ${order.ouid} saved with status of 'NEW'")
-
-        val lastStatus = orderStatusRepository.findMostRecentByOUID(order.ouid).awaitSingle()
-        if (OrderStatus.fromCode(lastStatus.status)!!.isOpenOrder()) {
-            openOrderRepository.insertOrUpdate(order.ouid, lastStatus.executedQuantity, lastStatus.status)
-                .awaitFirstOrNull()
-            logger.info("Order ${order.ouid} added to open orders")
-        } else {
-            openOrderRepository.delete(order.ouid).awaitSingleOrNull()
-            logger.info("Order ${order.ouid} deleted from open orders")
-        }
     }
 
-    @Transactional
     override suspend fun update(orderUpdate: RichOrderUpdate) {
-        orderStatusRepository.insert(
-            orderUpdate.ouid,
-            orderUpdate.executedQuantity(),
-            orderUpdate.accumulativeQuoteQuantity(),
-            orderUpdate.status.code,
-            orderUpdate.status.orderOfAppearance
-        ).awaitFirstOrNull()
-        logger.info("OrderStatus ${orderUpdate.ouid} updated with status of ${orderUpdate.status}")
-
-        val lastStatus = orderStatusRepository.findMostRecentByOUID(orderUpdate.ouid).awaitSingle()
-        if (OrderStatus.fromCode(lastStatus.status)!!.isOpenOrder()) {
-            openOrderRepository.insertOrUpdate(orderUpdate.ouid, lastStatus.executedQuantity, lastStatus.status)
-                .awaitFirstOrNull()
-            logger.info("Order ${orderUpdate.ouid} added to open orders")
-        } else {
-            openOrderRepository.delete(orderUpdate.ouid).awaitSingleOrNull()
-            logger.info("Order ${orderUpdate.ouid} deleted from open orders")
+        try {
+            orderStatusRepository.save(
+                OrderStatusModel(
+                    orderUpdate.ouid,
+                    orderUpdate.executedQuantity(),
+                    orderUpdate.accumulativeQuoteQuantity(),
+                    orderUpdate.status.code,
+                    orderUpdate.status.orderOfAppearance
+                )
+            ).awaitFirstOrNull()
+        } catch (e: Exception) {
+            logger.error("Error updating order status: ${e.message}")
         }
+        logger.info("OrderStatus ${orderUpdate.ouid} updated with status of ${orderUpdate.status}")
     }
 
     override suspend fun load(ouid: String): Order? {

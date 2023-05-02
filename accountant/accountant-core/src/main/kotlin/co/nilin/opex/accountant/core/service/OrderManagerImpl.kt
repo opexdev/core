@@ -204,7 +204,7 @@ open class OrderManagerImpl(
                 order.price.toBigDecimal(),
                 order.quantity.toBigDecimal(),
                 cancelOrderEvent.remainedQuantity.toBigDecimal(),
-                OrderStatus.CANCELED
+                OrderStatus.REJECTED
             )
         )
         val fa = financialActionPersister.persist(listOf(financialAction))
