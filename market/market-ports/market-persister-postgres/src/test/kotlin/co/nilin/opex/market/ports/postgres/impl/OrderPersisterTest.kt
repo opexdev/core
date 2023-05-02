@@ -1,5 +1,6 @@
 package co.nilin.opex.market.ports.postgres.impl
 
+import co.nilin.opex.market.ports.postgres.dao.OpenOrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderStatusRepository
 import co.nilin.opex.market.ports.postgres.impl.sample.VALID
@@ -13,7 +14,8 @@ import reactor.core.publisher.Mono
 class OrderPersisterTest {
     private val orderRepository: OrderRepository = mockk()
     private val orderStatusRepository: OrderStatusRepository = mockk()
-    private val orderPersister = OrderPersisterImpl(orderRepository, orderStatusRepository)
+    private val openOrderRepository: OpenOrderRepository = mockk()
+    private val orderPersister = OrderPersisterImpl(orderRepository, orderStatusRepository, openOrderRepository)
 
     @Test
     fun givenOrderRepo_whenSaveRichOrder_thenSuccess(): Unit = runBlocking {
@@ -21,8 +23,17 @@ class OrderPersisterTest {
             orderRepository.save(any())
         } returns Mono.just(VALID.MAKER_ORDER_MODEL)
         every {
-            orderStatusRepository.save(any())
+            orderStatusRepository.insert(any(), any(), any(), any(), any(), any())
+        } returns Mono.empty()
+        every {
+            orderStatusRepository.findMostRecentByOUID(any())
         } returns Mono.just(VALID.MAKER_ORDER_STATUS_MODEL)
+        every {
+            openOrderRepository.insertOrUpdate(any(), any(), any())
+        } returns Mono.empty()
+        every {
+            openOrderRepository.delete(any<String>())
+        } returns Mono.empty()
 
         assertThatNoException().isThrownBy { runBlocking { orderPersister.save(VALID.RICH_ORDER) } }
     }
@@ -30,8 +41,17 @@ class OrderPersisterTest {
     @Test
     fun givenOrderRepo_whenUpdateRichOrder_thenSuccess(): Unit = runBlocking {
         every {
-            orderStatusRepository.save(any())
+            orderStatusRepository.insert(any(), any(), any(), any(), any(), any())
+        } returns Mono.empty()
+        every {
+            orderStatusRepository.findMostRecentByOUID(any())
         } returns Mono.just(VALID.MAKER_ORDER_STATUS_MODEL)
+        every {
+            openOrderRepository.insertOrUpdate(any(), any(), any())
+        } returns Mono.empty()
+        every {
+            openOrderRepository.delete(any<String>())
+        } returns Mono.empty()
 
         assertThatNoException().isThrownBy { runBlocking { orderPersister.update(VALID.RICH_ORDER_UPDATE) } }
     }
