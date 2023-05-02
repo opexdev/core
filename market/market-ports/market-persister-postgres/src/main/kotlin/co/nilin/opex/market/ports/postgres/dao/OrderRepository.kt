@@ -40,10 +40,8 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
     @Query(
         """
         select * from orders
-        join order_status os on orders.ouid = os.ouid
+        join open_orders oo on orders.ouid = oo.ouid
         where uuid = :uuid and (:symbol is null or symbol = :symbol) and status in (:statuses)
-            and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
-            and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
         order by create_date desc
         limit :limit
     """
@@ -81,13 +79,11 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
 
     @Query(
         """
-        select price, (sum(quantity) - sum(os.executed_quantity)) as quantity from orders 
-        join order_status os on orders.ouid = os.ouid
-        where symbol = :symbol and side = :direction and os.status in (:statuses) 
-            and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
-            and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
+        select price, (sum(quantity) - sum(oo.executed_quantity)) as quantity from orders 
+        join open_orders oo on orders.ouid = oo.ouid
+        where symbol = :symbol and side = :direction and status in (:statuses) 
         group by price 
-        order by price asc 
+        order by price asc
         limit :limit
     """
     )
@@ -104,11 +100,9 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
 
     @Query(
         """
-        select price, (sum(quantity) - sum(executed_quantity)) as quantity from orders 
-        join order_status os on orders.ouid = os.ouid
+        select price, (sum(quantity) - sum(oo.executed_quantity)) as quantity from orders 
+        join open_orders oo on orders.ouid = oo.ouid
         where symbol = :symbol and side = :direction and status in (:statuses) 
-            and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
-            and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
         group by price 
         order by price desc
         limit :limit

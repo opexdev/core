@@ -34,6 +34,14 @@ CREATE TABLE IF NOT EXISTS order_status
     UNIQUE (ouid, status, appearance, executed_quantity)
 );
 
+CREATE TABLE IF NOT EXISTS open_orders
+(
+    id                SERIAL PRIMARY KEY,
+    ouid              VARCHAR(72) NOT NULL UNIQUE ,
+    executed_quantity DECIMAL,
+    status            INTEGER     NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS trades
 (
     id                     SERIAL PRIMARY KEY,
