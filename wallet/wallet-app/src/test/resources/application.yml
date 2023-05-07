@@ -41,6 +41,8 @@ spring:
       enabled: false
       config:
         enabled: false
+    vault:
+      enabled: false
 app:
   auth:
     cert-url: none
