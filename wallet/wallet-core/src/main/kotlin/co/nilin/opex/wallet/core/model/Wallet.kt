@@ -5,5 +5,6 @@ data class Wallet(
     val owner: WalletOwner,
     val balance: Amount,
     val currency: Currency,
-    val type: String
+    val type: String,
+    val version: Long?
 )

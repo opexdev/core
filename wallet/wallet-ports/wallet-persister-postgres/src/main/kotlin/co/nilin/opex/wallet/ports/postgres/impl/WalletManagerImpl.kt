@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
+import co.nilin.opex.wallet.core.exc.ConcurrentBalanceChangException
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.model.Wallet
@@ -11,6 +12,7 @@ import co.nilin.opex.wallet.ports.postgres.model.WalletModel
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.time.LocalDateTime
@@ -23,6 +25,9 @@ class WalletManagerImpl(
     val walletOwnerRepository: WalletOwnerRepository,
     val currencyRepository: CurrencyRepository
 ) : WalletManager {
+
+    val logger = LoggerFactory.getLogger(WalletManagerImpl::class.java)
+
 
     override suspend fun isDepositAllowed(wallet: Wallet, amount: BigDecimal): Boolean {
         var limit = walletLimitsRepository.findByOwnerAndCurrencyAndWalletAndAction(
@@ -119,14 +124,20 @@ class WalletManagerImpl(
 
     override suspend fun increaseBalance(wallet: Wallet, amount: BigDecimal) {
         require(amount >= BigDecimal.ZERO)
+        logger.info("Increase balance {}, {}, {}, {}", wallet.id, wallet.balance, amount, wallet.version)
         val updateCount = walletRepository.updateBalance(wallet.id!!, amount).awaitFirst()
-        assert(updateCount == 1) { "Decrease wallet balance failed" }
+        if (updateCount != 1) {
+            throw ConcurrentBalanceChangException("Increase wallet balance failed")
+        }
     }
 
     override suspend fun decreaseBalance(wallet: Wallet, amount: BigDecimal) {
         require(amount >= BigDecimal.ZERO)
-        val updateCount = walletRepository.updateBalance(wallet.id!!, -amount).awaitFirst()
-        assert(updateCount == 1) { "Decrease wallet balance failed" }
+        logger.info("Decrease balance {}, {}, {}, {}", wallet.id, wallet.balance, amount, wallet.version)
+        val updateCount = walletRepository.updateBalance(wallet.id!!, -amount, wallet.version!!).awaitFirst()
+        if (updateCount != 1) {
+            throw ConcurrentBalanceChangException("Decrease wallet balance failed")
+        }
     }
 
     override suspend fun findWalletByOwnerAndCurrencyAndType(
@@ -147,7 +158,8 @@ class WalletManagerImpl(
             walletOwner,
             Amount(existingCurrency.toPlainObject(), walletModel.balance),
             existingCurrency.toPlainObject(),
-            walletModel.type
+            walletModel.type,
+            walletModel.version
         )
     }
 
@@ -163,7 +175,8 @@ class WalletManagerImpl(
                     ownerModel.toPlainObject(),
                     Amount(currency.toPlainObject(), it.balance),
                     currency.toPlainObject(),
-                    it.type
+                    it.type,
+                    it.version
                 )
             }
     }
@@ -180,7 +193,8 @@ class WalletManagerImpl(
                     ownerModel.toPlainObject(),
                     Amount(currency.toPlainObject(), it.balance),
                     currency.toPlainObject(),
-                    it.type
+                    it.type,
+                    it.version
                 )
             }
     }
@@ -197,7 +211,8 @@ class WalletManagerImpl(
                     ownerModel.toPlainObject(),
                     Amount(currency.toPlainObject(), it.balance),
                     currency.toPlainObject(),
-                    it.type
+                    it.type,
+                    it.version
                 )
             }
     }
@@ -211,7 +226,8 @@ class WalletManagerImpl(
             owner,
             Amount(currency, walletModel.balance),
             currency,
-            walletModel.type
+            walletModel.type,
+            walletModel.version
         )
         return wallet
 
@@ -229,7 +245,8 @@ class WalletManagerImpl(
             walletOwnerRepository.findById(walletModel.owner).awaitFirst().toPlainObject(),
             Amount(existingCurrency.toPlainObject(), walletModel.balance),
             existingCurrency.toPlainObject(),
-            walletModel.type
+            walletModel.type,
+            walletModel.version
         )
     }
 }

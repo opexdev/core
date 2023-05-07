@@ -26,6 +26,8 @@ CREATE TABLE IF NOT EXISTS wallet
     UNIQUE (owner, wallet_type, currency)
 );
 
+ALTER TABLE wallet ADD COLUMN IF NOT EXISTS version INTEGER;
+
 CREATE TABLE IF NOT EXISTS transaction
 (
     id               SERIAL PRIMARY KEY,

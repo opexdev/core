@@ -382,7 +382,7 @@ private class WalletManagerTest {
     @Test
     fun givenWrongAmount_whenIncreaseBalance_thenThrow(): Unit = runBlocking {
         every {
-            walletRepository.updateBalance(eq(20), any())
+            walletRepository.updateBalance(eq(20), any(), any())
         } returns Mono.just(0)
 
         assertThatThrownBy {
@@ -398,7 +398,7 @@ private class WalletManagerTest {
     @Test
     fun givenWallet_whenDecreaseBalance_thenSuccess(): Unit = runBlocking {
         every {
-            walletRepository.updateBalance(eq(VALID.WALLET.id!!), eq(BigDecimal.valueOf(-1)))
+            walletRepository.updateBalance(eq(VALID.WALLET.id!!), eq(BigDecimal.valueOf(-1)), any())
         } returns Mono.just(1)
 
         assertThatNoException().isThrownBy {
@@ -414,7 +414,7 @@ private class WalletManagerTest {
     @Test
     fun givenNoWallet_whenDecreaseBalance_thenThrow(): Unit = runBlocking {
         every {
-            walletRepository.updateBalance(any(), eq(BigDecimal.valueOf(-1)))
+            walletRepository.updateBalance(any(), eq(BigDecimal.valueOf(-1)), any())
         } returns Mono.just(0)
 
         assertThatThrownBy {
@@ -430,7 +430,7 @@ private class WalletManagerTest {
     @Test
     fun givenWrongAmount_whenDecreaseBalance_thenThrow(): Unit = runBlocking {
         every {
-            walletRepository.updateBalance(eq(VALID.WALLET_OWNER.id!!), eq(BigDecimal.valueOf(-1)))
+            walletRepository.updateBalance(eq(VALID.WALLET_OWNER.id!!), eq(BigDecimal.valueOf(-1)), any())
         } returns Mono.just(0)
 
         assertThatThrownBy {
