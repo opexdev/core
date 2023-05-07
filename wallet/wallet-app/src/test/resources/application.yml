@@ -1,10 +1,13 @@
 server.port: 8080
 management:
+  health:
+    vault:
+      enabled: false
   endpoints:
     web:
       base-path: /actuator
       exposure:
-        include: ["health", "prometheus", "metrics"]
+        include: ["health", "metrics"]
   endpoint:
     health:
       show-details: always
