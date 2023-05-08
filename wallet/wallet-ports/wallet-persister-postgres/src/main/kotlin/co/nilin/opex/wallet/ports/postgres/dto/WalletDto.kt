@@ -11,7 +11,8 @@ fun WalletModel.toPlainObject(walletOwner: WalletOwner, currency: Currency) = Wa
     walletOwner,
     Amount(currency, balance),
     currency,
-    type
+    type,
+    version
 )
 
 fun Wallet.toModel() = WalletModel(

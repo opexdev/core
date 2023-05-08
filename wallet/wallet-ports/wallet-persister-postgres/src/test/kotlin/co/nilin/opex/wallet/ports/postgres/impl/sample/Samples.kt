@@ -33,7 +33,8 @@ object VALID {
         WALLET_OWNER,
         Amount(CURRENCY, BigDecimal.valueOf(1.5)),
         CURRENCY,
-        WALLET_TYPE_MAIN
+        WALLET_TYPE_MAIN,
+        0
     )
 
     val WALLET_LIMITS_MODEL_WITHDRAW = WalletLimitsModel(
