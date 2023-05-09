@@ -63,7 +63,8 @@ app:
     uuid: 1
 logging:
   level:
+    root: INFO
     org.apache.kafka: ERROR
-    co.nilin: DEBUG
-    reactor.netty.http.client: DEBUG
+    co.nilin: INFO
+    reactor.netty.http.client: INFO
 swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token

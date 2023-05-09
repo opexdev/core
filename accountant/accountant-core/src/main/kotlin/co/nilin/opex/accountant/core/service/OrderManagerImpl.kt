@@ -96,9 +96,9 @@ open class OrderManagerImpl(
                 OrderStatus.REQUESTED.code
             )
         )
-        val fa = financialActionPersister.persist(listOf(financialAction))
-        publishFinancialAction(financialAction)
-        return fa
+        return financialActionPersister.persist(listOf(financialAction))
+        /*publishFinancialAction(financialAction)
+        return fa*/
     }
 
     @Transactional
@@ -161,9 +161,9 @@ open class OrderManagerImpl(
                 OrderStatus.REJECTED
             )
         )
-        val fa = financialActionPersister.persist(listOf(financialAction))
-        publishFinancialAction(financialAction)
-        return fa
+        return financialActionPersister.persist(listOf(financialAction))
+        /*publishFinancialAction(financialAction)
+        return fa*/
     }
 
     @Transactional
@@ -207,9 +207,9 @@ open class OrderManagerImpl(
                 OrderStatus.CANCELED
             )
         )
-        val fa = financialActionPersister.persist(listOf(financialAction))
-        publishFinancialAction(financialAction)
-        return fa
+        return financialActionPersister.persist(listOf(financialAction))
+        /*publishFinancialAction(financialAction)
+        return fa*/
     }
 
     private suspend fun publishRichOrder(order: Order, remainedQuantity: BigDecimal, status: OrderStatus? = null) {

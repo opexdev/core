@@ -1,5 +1,6 @@
 package co.nilin.opex.accountant.app.scheduler
 
+import co.nilin.opex.accountant.core.api.FinancialActionJobManager
 import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -8,12 +9,12 @@ import org.springframework.stereotype.Service
 
 @Service
 @Profile("scheduled")
-class FinancialActionsJob() {
+class FinancialActionsJob(private val financialActionJobManager: FinancialActionJobManager) {
 
     private val log = LoggerFactory.getLogger(FinancialActionsJob::class.java)
     private val scope = CoroutineScope(Dispatchers.IO)
 
-    //@Scheduled(fixedDelay = 10000, initialDelay = 10000)
+    @Scheduled(fixedDelay = 10000, initialDelay = 10000)
     fun processFinancialActions() {
         scope.ensureActive()
         if (!scope.isCompleted())
@@ -22,9 +23,9 @@ class FinancialActionsJob() {
         scope.launch {
             try {
                 //read unprocessed fa records and call transfer
-                //financialActionProcessor.batchProcess(0, 100)
+                financialActionJobManager.processFinancialActions(0, 100)
             } catch (e: Exception) {
-                log.error("Financial action manager unable to batch process", e)
+                log.error("Job error!", e)
             }
         }
     }

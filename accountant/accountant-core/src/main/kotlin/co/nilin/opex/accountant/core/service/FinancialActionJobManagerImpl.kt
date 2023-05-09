@@ -13,28 +13,29 @@ import org.slf4j.LoggerFactory
 class FinancialActionJobManagerImpl(
     private val financialActionLoader: FinancialActionLoader,
     private val financialActionPersister: FinancialActionPersister,
-    private val financialActionPublisher: FinancialActionPublisher,
+    private val walletProxy: WalletProxy
 ) : FinancialActionJobManager {
 
     private val logger = LoggerFactory.getLogger(FinancialActionJobManagerImpl::class.java)
 
     override suspend fun processFinancialActions(offset: Long, size: Long) {
         val factions = financialActionLoader.loadUnprocessed(offset, size)
-        publishFinancialActions(factions)
-    }
-
-    private suspend fun publishFinancialActions(financialActions: List<FinancialAction>) {
-        val list = arrayListOf<FinancialAction>()
-        financialActions.forEach { extractFAParents(it, list) }
-        for (fa in list) {
-            if (fa.status == FinancialActionStatus.CREATED) {
-                try {
-                    financialActionPublisher.publish(fa)
-                } catch (e: Exception) {
-                    logger.error("Cannot publish fa ${fa.uuid}", e)
-                    break
-                }
-                financialActionPersister.updateStatus(fa, FinancialActionStatus.PROCESSED)
+        factions.forEach {
+            try {
+                walletProxy.transfer(
+                    it.symbol,
+                    it.senderWalletType,
+                    it.sender,
+                    it.receiverWalletType,
+                    it.receiver,
+                    it.amount,
+                    it.eventType + it.pointer,
+                    null
+                )
+                financialActionPersister.updateStatus(it, FinancialActionStatus.PROCESSED)
+            } catch (e: Exception) {
+                logger.error("financial job error", e)
+                financialActionPersister.updateStatus(it, FinancialActionStatus.ERROR)
             }
         }
     }

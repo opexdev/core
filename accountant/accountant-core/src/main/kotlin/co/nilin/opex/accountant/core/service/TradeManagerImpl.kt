@@ -169,7 +169,8 @@ open class TradeManagerImpl(
                 trade.eventDate
             )
         )
-        return financeActionPersister.persist(financialActions).also { publishFinancialActions(it) }
+        return financeActionPersister.persist(financialActions)
+        //return financeActionPersister.persist(financialActions).also { publishFinancialActions(it) }
     }
 
     private suspend fun publishTakerRichOrderUpdate(takerOrder: Order, trade: TradeEvent) {
