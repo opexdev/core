@@ -14,4 +14,5 @@ interface FinancialActionPersister {
     suspend fun updateStatus(faUuid: String, status: FinancialActionStatus)
 
     suspend fun updateBatchStatus(financialAction: List<FinancialAction>, status: FinancialActionStatus)
+    suspend fun updateStatusNewTx(financialAction: FinancialAction, status: FinancialActionStatus)
 }
