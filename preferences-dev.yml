@@ -10,38 +10,84 @@ chains:
       - url: http://bitcoin-scanner:8080
         maxBlockRange: 30
         delayOnRateLimit: 5
-    schedule:
-      delay: 600
-      errorDelay: 60
-      timeout: 30
-      maxRetries: 5
-      confirmations: 0
-      enabled: false
+        maxParallelCall: 2
+    schedules:
+      - workerType: MAIN
+        delay: 600
+        timeout: 30
+        maxRetries: 5
+        confirmations: 0
+        maxBlockCount: 4
+        enabled: false
+      - workerType: ERROR
+        delay: 600
+        timeout: 30
+        maxRetries: 5
+        confirmations: 0
+        maxBlockCount: 4
+        enabled: false
+      - workerType: DELAYED
+        delay: 300
+        timeout: 30
+        maxRetries: 5
+        confirmations: 0
+        maxBlockCount: 2
+        enabled: false
   - name: test-ethereum
     addressType: ethereum
     scanners:
       - url: http://ethereum-scanner:8080
         maxBlockRange: 30
         delayOnRateLimit: 5
-    schedule:
-      delay: 15
-      errorDelay: 7
-      timeout: 30
-      maxRetries: 5
-      confirmations: 0
-      enabled: false
+        maxParallelCall: 3
+    schedules:
+      - workerType: MAIN
+        delay: 15
+        timeout: 30
+        maxRetries: 5
+        confirmations: 0
+        maxBlockCount: 10
+        enabled: false
+      - workerType: ERROR
+        delay: 7
+        timeout: 30
+        maxRetries: 5
+        confirmations: 0
+        maxBlockCount: 10
+        enabled: false
+      - workerType: DELAYED
+        delay: 15
+        timeout: 30
+        maxRetries: 5
+        confirmations: 0
+        maxBlockCount: 5
+        enabled: false
   - name: test-bsc
     addressType: ethereum
     scanners:
       - url: http://bsc-scanner:8080
         maxBlockRange: 10
         delayOnRateLimit: 300
-    schedule:
-      delay: 6
-      errorDelay: 3
-      timeout: 30
-      maxRetries: 50
-      confirmations: 0
+        maxParallelCall: 5
+    schedules:
+      - workerType: MAIN
+        delay: 6
+        timeout: 30
+        maxRetries: 5
+        confirmations: 0
+        maxBlockCount: 30
+      - workerType: ERROR
+        delay: 3
+        timeout: 30
+        maxRetries: 5
+        confirmations: 0
+        maxBlockCount: 20
+      - workerType: DELAYED
+        delay: 10
+        timeout: 30
+        maxRetries: 5
+        confirmations: 0
+        maxBlockCount: 10
 currencies:
   - symbol: IRT
     name: Toman

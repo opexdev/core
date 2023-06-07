@@ -6,15 +6,14 @@ import co.nilin.opex.matching.engine.core.model.OrderType
 import co.nilin.opex.matching.engine.core.model.Pair
 import java.util.*
 
-data class OrderSubmitRequest(
-    val uuid: String,
-    val pair: Pair,
+class OrderSubmitRequestEvent(
+    uuid: String,
+    pair: Pair,
     val price: Long,
     val quantity: Long,
     val direction: OrderDirection,
     val matchConstraint: MatchConstraint,
     val orderType: OrderType,
     val userLevel: String,
-    val ouid: String = UUID.randomUUID().toString(),
     val orderId: Long? = null,
-)
+) : OrderRequestEvent(UUID.randomUUID().toString(), uuid, pair)

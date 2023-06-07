@@ -1,7 +1,8 @@
 package co.nilin.opex.matching.engine.ports.kafka.listener.config
 
 import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
-import co.nilin.opex.matching.engine.core.inout.OrderSubmitRequest
+import co.nilin.opex.matching.engine.core.inout.OrderRequestEvent
+import co.nilin.opex.matching.engine.core.inout.OrderSubmitRequestEvent
 import co.nilin.opex.matching.engine.ports.kafka.listener.consumer.EventKafkaListener
 import co.nilin.opex.matching.engine.ports.kafka.listener.consumer.OrderKafkaListener
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -40,12 +41,12 @@ class OrderKafkaConfig {
             ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
             ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JsonDeserializer::class.java,
             JsonDeserializer.TRUSTED_PACKAGES to "co.nilin.opex.*",
-            JsonDeserializer.TYPE_MAPPINGS to "order_request:co.nilin.opex.matching.engine.core.inout.OrderSubmitRequest"
+            JsonDeserializer.TYPE_MAPPINGS to "order_request_event=co.nilin.opex.matching.engine.core.inout.OrderRequestEvent,order_request_submit:co.nilin.opex.matching.engine.core.inout.OrderSubmitRequestEvent,order_request_cancel:co.nilin.opex.matching.engine.core.inout.OrderCancelRequestEvent"
         )
     }
 
     @Bean("orderConsumerFactory")
-    fun consumerFactory(@Qualifier("consumerConfigs") consumerConfigs: Map<String, Any>): ConsumerFactory<String, OrderSubmitRequest> {
+    fun consumerFactory(@Qualifier("consumerConfigs") consumerConfigs: Map<String, Any>): ConsumerFactory<String, OrderRequestEvent> {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
 
@@ -57,8 +58,8 @@ class OrderKafkaConfig {
     @Autowired
     fun configureListener(
         orderKafkaListener: OrderKafkaListener,
-        @Qualifier("orderKafkaTemplate") template: KafkaTemplate<String?, OrderSubmitRequest>,
-        @Qualifier("orderConsumerFactory") consumerFactory: ConsumerFactory<String, OrderSubmitRequest>
+        @Qualifier("orderKafkaTemplate") template: KafkaTemplate<String?, OrderRequestEvent>,
+        @Qualifier("orderConsumerFactory") consumerFactory: ConsumerFactory<String, OrderRequestEvent>
     ) {
         val topics = symbols.map { s -> "orders_$s" }.toTypedArray()
         val containerProps = ContainerProperties(*topics)

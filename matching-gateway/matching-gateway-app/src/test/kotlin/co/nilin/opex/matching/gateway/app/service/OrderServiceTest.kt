@@ -7,7 +7,7 @@ import co.nilin.opex.matching.gateway.app.spi.PairConfigLoader
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.inout.OrderSubmitResult
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.EventSubmitter
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.KafkaHealthIndicator
-import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.OrderSubmitter
+import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.OrderRequestEventSubmitter
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
@@ -17,13 +17,13 @@ import java.math.BigDecimal
 
 private class OrderServiceTest {
     private val accountantApiProxy: AccountantApiProxy = mockk()
-    private val orderSubmitter: OrderSubmitter = mockk()
+    private val orderRequestEventSubmitter: OrderRequestEventSubmitter = mockk()
     private val eventSubmitter: EventSubmitter = mockk()
     private val pairConfigLoader: PairConfigLoader = mockk()
     private val kafkaHealthIndicator: KafkaHealthIndicator = mockk()
     private val orderService: OrderService = OrderService(
         accountantApiProxy,
-        orderSubmitter,
+        orderRequestEventSubmitter,
         eventSubmitter,
         pairConfigLoader,
         kafkaHealthIndicator
@@ -44,7 +44,7 @@ private class OrderServiceTest {
             )
         } returns true
         coEvery {
-            orderSubmitter.submit(any())
+            orderRequestEventSubmitter.submit(any())
         } returns OrderSubmitResult(null)
         coEvery {
             kafkaHealthIndicator.isHealthy
@@ -66,7 +66,7 @@ private class OrderServiceTest {
             )
         } returns true
         coEvery {
-            orderSubmitter.submit(any())
+            orderRequestEventSubmitter.submit(any())
         } returns OrderSubmitResult(null)
         coEvery {
             kafkaHealthIndicator.isHealthy
