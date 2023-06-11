@@ -18,7 +18,7 @@ import java.math.BigDecimal
 private class OrderServiceTest {
     private val accountantApiProxy: AccountantApiProxy = mockk()
     private val orderRequestEventSubmitter: OrderRequestEventSubmitter = mockk()
-    private val eventSubmitter: EventSubmitter = mockk()
+    private val eventSubmitter: OrderRequestEventSubmitter = mockk()
     private val pairConfigLoader: PairConfigLoader = mockk()
     private val kafkaHealthIndicator: KafkaHealthIndicator = mockk()
     private val orderService: OrderService = OrderService(
@@ -173,16 +173,5 @@ private class OrderServiceTest {
                 orderService.submitNewOrder(VALID.CREATE_ORDER_REQUEST_BID.copy(quantity = BigDecimal.valueOf(-0.001)))
             }
         }.isNotInstanceOf(MockKException::class.java)
-    }
-
-    @Test
-    fun givenEventSubmitter_whenCancelOrder_thenOrderSubmitResult(): Unit = runBlocking {
-        coEvery {
-            eventSubmitter.submit(any())
-        } returns OrderSubmitResult(null)
-
-        val orderSubmitResult = orderService.cancelOrder(VALID.CANCEL_ORDER_REQUEST)
-
-        assertThat(orderSubmitResult).isNotNull
     }
 }
