@@ -5,15 +5,15 @@ import co.nilin.opex.matching.engine.core.model.OrderDirection
 import co.nilin.opex.matching.engine.core.model.OrderType
 import co.nilin.opex.matching.engine.core.model.Pair
 
-data class OrderSubmitRequest(
-    val ouid: String,
-    val uuid: String,
-    val orderId: Long?,
-    val pair: Pair,
-    val price: Long = 0,
-    val quantity: Long = 0,
+class OrderSubmitRequestEvent(
+    ouid: String,
+    uuid: String,
+    pair: Pair,
+    val price: Long,
+    val quantity: Long,
     val direction: OrderDirection,
     val matchConstraint: MatchConstraint,
     val orderType: OrderType,
-    val userLevel: String
-)
+    val userLevel: String,
+    val orderId: Long? = null,
+) : OrderRequestEvent(ouid, uuid, pair)

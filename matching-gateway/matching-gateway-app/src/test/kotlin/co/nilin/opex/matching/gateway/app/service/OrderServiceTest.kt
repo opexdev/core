@@ -24,7 +24,6 @@ private class OrderServiceTest {
     private val orderService: OrderService = OrderService(
         accountantApiProxy,
         orderRequestEventSubmitter,
-        eventSubmitter,
         pairConfigLoader,
         kafkaHealthIndicator
     )
