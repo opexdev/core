@@ -189,7 +189,7 @@ open class OrderManagerImpl(
         //create fa for transfer remaining transfered uuid symbol exchange wallet to uuid main exchange wallet
         val financialAction = FinancialAction(
             parentFinancialAction,
-            CancelOrderEvent::class.simpleName!!,
+            RejectOrderEvent::class.simpleName!!,
             cancelOrderEvent.ouid,
             symbol,
             order.remainedTransferAmount,
