@@ -222,7 +222,7 @@ internal class OrderManagerImplTest {
             "user_1",
             56,
             Pair("BTC", "USDT"),
-            RequestedOperation.CANCEL_ORDER,
+            RequestedOperation.PLACE_ORDER,
             RejectReason.ORDER_NOT_FOUND
         )
 
@@ -232,6 +232,21 @@ internal class OrderManagerImplTest {
 
         assertThat(fa.size).isEqualTo(0)
         coVerify(exactly = 1) { tempEventPersister.saveTempEvent(any(), any()) }
+    }
+
+    @Test
+    fun givenRejectOrderReceived_whenOperationNotPlaceOrder_returnEmptyFA(): Unit = runBlocking {
+        val orderEvent = RejectOrderEvent(
+            "ouid",
+            "user_1",
+            56,
+            Pair("BTC", "USDT"),
+            RequestedOperation.CANCEL_ORDER,
+            RejectReason.ORDER_NOT_FOUND
+        )
+
+        val fa = orderManager.handleRejectOrder(orderEvent)
+        assertThat(fa.size).isEqualTo(0)
     }
 
     @Test
@@ -246,7 +261,7 @@ internal class OrderManagerImplTest {
             OrderDirection.BID,
             MatchConstraint.GTC,
             OrderType.LIMIT_ORDER,
-            RequestedOperation.CANCEL_ORDER,
+            RequestedOperation.PLACE_ORDER,
             RejectReason.ORDER_NOT_FOUND,
         )
         coEvery { orderPersister.load(any()) } returns Valid.order
