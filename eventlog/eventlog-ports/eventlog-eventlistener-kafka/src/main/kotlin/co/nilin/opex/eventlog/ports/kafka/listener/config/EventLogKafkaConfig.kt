@@ -4,6 +4,7 @@ import co.nilin.opex.eventlog.ports.kafka.listener.consumer.DLTKafkaListener
 import co.nilin.opex.eventlog.ports.kafka.listener.consumer.EventKafkaListener
 import co.nilin.opex.eventlog.ports.kafka.listener.consumer.OrderKafkaListener
 import co.nilin.opex.eventlog.ports.kafka.listener.consumer.TradeKafkaListener
+import co.nilin.opex.eventlog.ports.kafka.listener.inout.OrderRequestEvent
 import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.serialization.StringDeserializer
@@ -37,7 +38,7 @@ class EventLogKafkaConfig {
             ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
             ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JsonDeserializer::class.java,
             JsonDeserializer.TRUSTED_PACKAGES to "co.nilin.opex.*",
-            JsonDeserializer.TYPE_MAPPINGS to "order_request:co.nilin.opex.eventlog.ports.kafka.listener.inout.OrderSubmitRequest"
+            JsonDeserializer.TYPE_MAPPINGS to "order_request_event:co.nilin.opex.eventlog.ports.kafka.listener.inout.OrderRequestEvent,order_request_submit:co.nilin.opex.eventlog.ports.kafka.listener.inout.OrderSubmitRequestEvent,order_request_cancel:co.nilin.opex.eventlog.ports.kafka.listener.inout.OrderCancelRequestEvent"
         )
     }
 
@@ -54,6 +55,11 @@ class EventLogKafkaConfig {
 
     @Bean("eventLogConsumerFactory")
     fun consumerFactory(@Qualifier("eventLogConsumerConfig") consumerConfigs: Map<String, Any>): ConsumerFactory<String, CoreEvent> {
+        return DefaultKafkaConsumerFactory(consumerConfigs)
+    }
+
+    @Bean("orderRequestConsumerFactory")
+    fun orderRequestConsumerFactory(@Qualifier("eventLogConsumerConfig") consumerConfigs: Map<String, Any>): ConsumerFactory<String, OrderRequestEvent> {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
 
@@ -92,7 +98,7 @@ class EventLogKafkaConfig {
     @ConditionalOnBean(OrderKafkaListener::class)
     fun configureOrderListener(
         orderListener: OrderKafkaListener,
-        @Qualifier("eventLogConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>
+        @Qualifier("orderRequestConsumerFactory") consumerFactory: ConsumerFactory<String, OrderRequestEvent>
     ) {
         val containerProps = ContainerProperties(Pattern.compile("orders_.*"))
         containerProps.messageListener = orderListener

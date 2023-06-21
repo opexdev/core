@@ -9,7 +9,9 @@ import org.springframework.stereotype.Component
 
 @Component
 class EventKafkaListener : MessageListener<String, CoreEvent> {
-    val eventListeners = arrayListOf<EventListener>()
+
+    private val eventListeners = arrayListOf<EventListener>()
+
     override fun onMessage(data: ConsumerRecord<String, CoreEvent>) {
         eventListeners.forEach { tl ->
             tl.onEvent(data.value(), data.partition(), data.offset(), data.timestamp())
