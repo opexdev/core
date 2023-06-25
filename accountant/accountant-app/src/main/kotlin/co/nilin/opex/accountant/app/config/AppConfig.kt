@@ -23,6 +23,19 @@ import org.springframework.scheduling.annotation.EnableScheduling
 class AppConfig {
 
     @Bean
+    fun getFinancialActionJobManager(
+        financialActionLoader: FinancialActionLoader,
+        financialActionPersister: FinancialActionPersister,
+        walletProxy: WalletProxy
+    ): FinancialActionJobManager {
+        return FinancialActionJobManagerImpl(
+            financialActionLoader,
+            financialActionPersister,
+            walletProxy
+        )
+    }
+
+    @Bean
     fun orderManager(
         pairConfigLoader: PairConfigLoader,
         userLevelLoader: UserLevelLoader,

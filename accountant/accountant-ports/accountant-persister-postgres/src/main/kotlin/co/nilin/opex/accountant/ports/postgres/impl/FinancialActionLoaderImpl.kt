@@ -18,8 +18,15 @@ import java.math.BigDecimal
 class FinancialActionLoaderImpl(val financialActionRepository: FinancialActionRepository) : FinancialActionLoader {
 
     override suspend fun loadUnprocessed(offset: Long, size: Long): List<FinancialAction> {
-        return financialActionRepository.findByStatus(
-            FinancialActionStatus.CREATED.name,
+        return financialActionRepository.findByStatusNot(
+            FinancialActionStatus.PROCESSED.name,
+            PageRequest.of(offset.toInt(), size.toInt(), Sort.by(Sort.Direction.ASC, "createDate"))
+        ).map { loadFinancialAction(it.id)!! }
+            .toList()
+    }
+
+    override suspend fun loadReadyToProcess(offset: Long, size: Long): List<FinancialAction> {
+        return financialActionRepository.findReadyToProcess(
             PageRequest.of(offset.toInt(), size.toInt(), Sort.by(Sort.Direction.ASC, "createDate"))
         ).map { loadFinancialAction(it.id)!! }
             .toList()
@@ -33,15 +40,15 @@ class FinancialActionLoaderImpl(val financialActionRepository: FinancialActionRe
     }
 
     override suspend fun countUnprocessed(userUuid: String, symbol: String, eventType: String): Long {
-        return financialActionRepository.findByUuidAndSymbolAndEventTypeAndStatus(
+        return financialActionRepository.countByUuidAndSymbolAndEventTypeAndStatusNot(
             userUuid,
             symbol,
             eventType,
-            FinancialActionStatus.CREATED
+            FinancialActionStatus.PROCESSED
         ).awaitFirstOrElse { BigDecimal.ZERO }.toLong()
     }
 
-    private suspend fun loadFinancialAction(id: Long?): FinancialAction? {
+    override suspend fun loadFinancialAction(id: Long?): FinancialAction? {
         if (id != null) {
             val fim = financialActionRepository.findById(id).awaitFirst()
             return FinancialAction(

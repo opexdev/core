@@ -7,7 +7,7 @@ import co.nilin.opex.matching.gateway.app.spi.PairConfigLoader
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.inout.OrderSubmitResult
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.EventSubmitter
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.KafkaHealthIndicator
-import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.OrderSubmitter
+import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.OrderRequestEventSubmitter
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
@@ -17,14 +17,13 @@ import java.math.BigDecimal
 
 private class OrderServiceTest {
     private val accountantApiProxy: AccountantApiProxy = mockk()
-    private val orderSubmitter: OrderSubmitter = mockk()
-    private val eventSubmitter: EventSubmitter = mockk()
+    private val orderRequestEventSubmitter: OrderRequestEventSubmitter = mockk()
+    private val eventSubmitter: OrderRequestEventSubmitter = mockk()
     private val pairConfigLoader: PairConfigLoader = mockk()
     private val kafkaHealthIndicator: KafkaHealthIndicator = mockk()
     private val orderService: OrderService = OrderService(
         accountantApiProxy,
-        orderSubmitter,
-        eventSubmitter,
+        orderRequestEventSubmitter,
         pairConfigLoader,
         kafkaHealthIndicator
     )
@@ -44,7 +43,7 @@ private class OrderServiceTest {
             )
         } returns true
         coEvery {
-            orderSubmitter.submit(any())
+            orderRequestEventSubmitter.submit(any())
         } returns OrderSubmitResult(null)
         coEvery {
             kafkaHealthIndicator.isHealthy
@@ -66,7 +65,7 @@ private class OrderServiceTest {
             )
         } returns true
         coEvery {
-            orderSubmitter.submit(any())
+            orderRequestEventSubmitter.submit(any())
         } returns OrderSubmitResult(null)
         coEvery {
             kafkaHealthIndicator.isHealthy
@@ -174,16 +173,5 @@ private class OrderServiceTest {
                 orderService.submitNewOrder(VALID.CREATE_ORDER_REQUEST_BID.copy(quantity = BigDecimal.valueOf(-0.001)))
             }
         }.isNotInstanceOf(MockKException::class.java)
-    }
-
-    @Test
-    fun givenEventSubmitter_whenCancelOrder_thenOrderSubmitResult(): Unit = runBlocking {
-        coEvery {
-            eventSubmitter.submit(any())
-        } returns OrderSubmitResult(null)
-
-        val orderSubmitResult = orderService.cancelOrder(VALID.CANCEL_ORDER_REQUEST)
-
-        assertThat(orderSubmitResult).isNotNull
     }
 }

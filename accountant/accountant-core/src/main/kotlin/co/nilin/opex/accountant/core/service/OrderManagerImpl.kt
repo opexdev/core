@@ -9,6 +9,7 @@ import co.nilin.opex.accountant.core.model.FinancialActionStatus
 import co.nilin.opex.accountant.core.model.Order
 import co.nilin.opex.accountant.core.spi.*
 import co.nilin.opex.matching.engine.core.eventh.events.*
+import co.nilin.opex.matching.engine.core.inout.RequestedOperation
 import co.nilin.opex.matching.engine.core.model.OrderDirection
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
@@ -96,9 +97,9 @@ open class OrderManagerImpl(
                 OrderStatus.REQUESTED.code
             )
         )
-        val fa = financialActionPersister.persist(listOf(financialAction))
-        publishFinancialAction(financialAction)
-        return fa
+        return financialActionPersister.persist(listOf(financialAction))
+        /*publishFinancialAction(financialAction)
+        return fa*/
     }
 
     @Transactional
@@ -122,6 +123,9 @@ open class OrderManagerImpl(
 
     @Transactional
     override suspend fun handleRejectOrder(rejectOrderEvent: RejectOrderEvent): List<FinancialAction> {
+        if (rejectOrderEvent.requestedOperation != RequestedOperation.PLACE_ORDER)
+            return emptyList()
+
         //order by ouid
         val order = orderPersister.load(rejectOrderEvent.ouid)
         if (order == null) {
@@ -161,9 +165,9 @@ open class OrderManagerImpl(
                 OrderStatus.REJECTED
             )
         )
-        val fa = financialActionPersister.persist(listOf(financialAction))
-        publishFinancialAction(financialAction)
-        return fa
+        return financialActionPersister.persist(listOf(financialAction))
+        /*publishFinancialAction(financialAction)
+        return fa*/
     }
 
     @Transactional
@@ -207,9 +211,9 @@ open class OrderManagerImpl(
                 OrderStatus.CANCELED
             )
         )
-        val fa = financialActionPersister.persist(listOf(financialAction))
-        publishFinancialAction(financialAction)
-        return fa
+        return financialActionPersister.persist(listOf(financialAction))
+        /*publishFinancialAction(financialAction)
+        return fa*/
     }
 
     private suspend fun publishRichOrder(order: Order, remainedQuantity: BigDecimal, status: OrderStatus? = null) {

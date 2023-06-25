@@ -1,7 +1,8 @@
 package co.nilin.opex.matching.engine.ports.kafka.submitter.config
 
 import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
-import co.nilin.opex.matching.engine.core.inout.OrderSubmitRequest
+import co.nilin.opex.matching.engine.core.inout.OrderRequestEvent
+import co.nilin.opex.matching.engine.core.inout.OrderSubmitRequestEvent
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.beans.factory.annotation.Qualifier
@@ -40,12 +41,12 @@ class EventsKafkaConfig {
     }
 
     @Bean("orderProducerFactory")
-    fun orderProducerFactory(@Qualifier("producerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, OrderSubmitRequest> {
+    fun orderProducerFactory(@Qualifier("producerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, OrderRequestEvent> {
         return DefaultKafkaProducerFactory(producerConfigs)
     }
 
     @Bean("orderKafkaTemplate")
-    fun orderKafkaTemplate(@Qualifier("orderProducerFactory") producerFactory: ProducerFactory<String?, OrderSubmitRequest>): KafkaTemplate<String?, OrderSubmitRequest> {
+    fun orderKafkaTemplate(@Qualifier("orderProducerFactory") producerFactory: ProducerFactory<String?, OrderRequestEvent>): KafkaTemplate<String?, OrderRequestEvent> {
         return KafkaTemplate(producerFactory)
     }
 

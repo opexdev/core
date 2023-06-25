@@ -10,6 +10,7 @@ import co.nilin.opex.wallet.core.spi.CurrencyService
 import co.nilin.opex.wallet.core.spi.TransferManager
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
@@ -21,6 +22,8 @@ class TransferService(
     private val walletManager: WalletManager,
     private val walletOwnerManager: WalletOwnerManager
 ) {
+
+    private val logger = LoggerFactory.getLogger(TransferService::class.java)
 
     @Transactional
     suspend fun transfer(
@@ -54,6 +57,12 @@ class TransferService(
             currency,
             receiverWalletType
         )
+
+        logger.info(
+            "Transferring funds: $amount ${sourceWallet.owner.id}-${sourceWallet.currency.symbol}-$senderWalletType " +
+                    "==> ${receiverWallet.owner.id}-${receiverWallet.currency.symbol}-$receiverWalletType "
+        )
+
         return transferManager.transfer(
             TransferCommand(
                 sourceWallet,

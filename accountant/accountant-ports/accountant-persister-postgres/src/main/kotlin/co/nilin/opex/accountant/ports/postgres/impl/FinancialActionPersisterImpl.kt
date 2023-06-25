@@ -9,6 +9,8 @@ import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 
 @Component
 class FinancialActionPersisterImpl(private val financialActionRepository: FinancialActionRepository) :
@@ -60,7 +62,12 @@ class FinancialActionPersisterImpl(private val financialActionRepository: Financ
         ).awaitSingle()
     }
 
+
     override suspend fun updateStatus(financialAction: FinancialAction, status: FinancialActionStatus) {
+        financialActionRepository.updateStatus(financialAction.id!!, status).awaitSingleOrNull()
+    }
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    override suspend fun updateStatusNewTx(financialAction: FinancialAction, status: FinancialActionStatus) {
         financialActionRepository.updateStatus(financialAction.id!!, status).awaitSingleOrNull()
     }
 

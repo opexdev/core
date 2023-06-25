@@ -30,7 +30,7 @@ spring:
       auto-offset-reset: earliest
       group-id: wallet
   r2dbc:
-    url: r2dbc:tc:postgresql:///databasename?TC_IMAGE_TAG=9.6.8
+    url: r2dbc:tc:postgresql:///wallet?TC_IMAGE_TAG=9.6.8
     initialization-mode: always
   cloud:
     bootstrap:
