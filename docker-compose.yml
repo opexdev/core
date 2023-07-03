@@ -321,6 +321,8 @@ services:
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
       - PREFERENCES=$PREFERENCES
+      - DRIVE_FOLDER_ID=$DRIVE_FOLDER_ID
+      - BACKUP_ENABLED=$WALLET_BACKUP_ENABLED
     configs:
       - preferences.yml
     depends_on:
@@ -382,7 +384,6 @@ services:
       - matching-gateway
       - wallet
       - market
-      - bc-gateway
       - auth
       - consul
       - vault

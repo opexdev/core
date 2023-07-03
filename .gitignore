@@ -26,6 +26,7 @@ docker-compose.legacy.yml
 application-local.yml
 mvnw
 mvnw.cmd
+drive-key.json
 
 ### NetBeans ###
 /nbproject/private/

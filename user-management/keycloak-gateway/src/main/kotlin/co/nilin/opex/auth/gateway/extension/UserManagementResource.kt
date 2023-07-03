@@ -32,6 +32,7 @@ import org.keycloak.utils.TotpUtils
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import java.util.concurrent.TimeUnit
+import java.util.stream.Collectors
 import javax.ws.rs.*
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
@@ -96,7 +97,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             isEmailVerified = false
 
             addRequiredAction(UserModel.RequiredAction.VERIFY_EMAIL)
-            val actions = requiredActionsStream.toList()
+            val actions = requiredActionsStream.collect(Collectors.toList())
             val token = ActionTokenHelper.generateRequiredActionsToken(session, opexRealm, this, actions)
             val url = "${session.context.getUri(UrlType.BACKEND).baseUri}/realms/opex/user-management/user/verify"
             val link = ActionTokenHelper.attachTokenToLink(url, token)
