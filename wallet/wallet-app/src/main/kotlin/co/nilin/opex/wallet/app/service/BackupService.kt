@@ -16,6 +16,7 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Profile
 import com.google.api.services.drive.model.File as GoogleFile
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -25,6 +26,7 @@ import java.time.LocalDateTime
 import java.util.concurrent.Executors
 
 @Service
+@Profile("!test")
 class BackupService(
     private val walletManager: WalletManager,
     private val walletOwnerManager: WalletOwnerManager,
