@@ -39,4 +39,7 @@ interface WalletRepository : ReactiveCrudRepository<WalletModel, Long> {
     @Modifying
     @Query("update wallet set balance = balance + :balance, version = version + 1 where id = :id")
     fun updateBalance(id: Long, delta: BigDecimal): Mono<Int>
+
+    @Query("select * from wallet where owner = :ownerId and balance > 0")
+    fun findAllAmountNotZero(ownerId: Long): Flux<WalletModel>
 }

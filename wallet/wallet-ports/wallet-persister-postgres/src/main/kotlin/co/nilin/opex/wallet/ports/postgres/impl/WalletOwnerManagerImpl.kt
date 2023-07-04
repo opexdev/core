@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.onEmpty
 import kotlinx.coroutines.flow.reduce
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrDefault
+import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -129,5 +130,22 @@ class WalletOwnerManagerImpl(
 
     override suspend fun createWalletOwner(uuid: String, title: String, userLevel: String): WalletOwner {
         return walletOwnerRepository.save(WalletOwnerModel(null, uuid, title, userLevel)).awaitFirst().toPlainObject()
+    }
+
+    override suspend fun findAllWalletOwners(): List<WalletOwner> {
+        return walletOwnerRepository.findAll()
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+            .map {
+                WalletOwner(
+                    it.id,
+                    it.uuid,
+                    it.title,
+                    it.level,
+                    it.isTradeAllowed,
+                    it.isWithdrawAllowed,
+                    it.isDepositAllowed
+                )
+            }
     }
 }

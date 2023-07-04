@@ -1,4 +1,4 @@
-package co.nilin.opex.util.vault
+package co.nilin.opex.auth.gateway.utils
 
 import org.springframework.vault.authentication.AppIdUserIdMechanism
 

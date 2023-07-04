@@ -32,6 +32,7 @@ services:
     build: wallet/wallet-app
     volumes:
       - "./preferences-dev.yml:/preferences.yml"
+      - "./drive-key.json:/drive-key.json"
   market:
     build: market/market-app
     volumes:

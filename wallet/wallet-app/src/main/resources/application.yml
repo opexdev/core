@@ -4,7 +4,7 @@ management:
     web:
       base-path: /actuator
       exposure:
-        include: ["health", "prometheus", "metrics"]
+        include: [ "health", "prometheus", "metrics" ]
   endpoint:
     health:
       show-details: always
@@ -61,6 +61,10 @@ app:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
   system:
     uuid: 1
+  backup:
+    enabled: ${BACKUP_ENABLED:false}
+    drive:
+      folder: ${DRIVE_FOLDER_ID:-}
 logging:
   level:
     root: INFO

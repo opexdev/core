@@ -33,7 +33,7 @@ spring:
       scheme: http
       authentication: APPID
       app-id:
-        user-id: co.nilin.opex.util.vault.VaultUserIdMechanism
+        user-id: co.nilin.opex.auth.gateway.utils.VaultUserIdMechanism
       fail-fast: true
       kv:
         enabled: true
