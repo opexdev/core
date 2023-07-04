@@ -42,7 +42,7 @@ class BackupService(
 
     data class OwnerAndWallets(val owner: WalletOwner, val wallets: List<BriefWallet>)
 
-    @Scheduled(initialDelay = 5000, fixedDelay = 1000 * 30)
+    @Scheduled(initialDelay = 60000, fixedDelay = 1000 * 60 * 10)
     private fun backup() {
         if (!isBackupEnabled) return
         runBlocking(dispatcher) {
