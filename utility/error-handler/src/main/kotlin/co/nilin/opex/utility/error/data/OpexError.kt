@@ -71,6 +71,10 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
 
     // code 11000: market
 
+
+    //code 12000 profile
+    UserIdAlreadyExists(120001, "User with this id or email is already registered", HttpStatus.BAD_REQUEST),
+
     ;
 
     fun exception(): OpexException {

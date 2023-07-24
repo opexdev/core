@@ -185,6 +185,10 @@ services:
     <<: *postgres-db
     volumes:
       - referral-data:/var/lib/postgresql/data/
+  postgres-profile:
+    <<: *postgres-db
+    volumes:
+      - profile-data:/var/lib/postgresql/data/
   accountant:
     image: ghcr.io/opexdev/accountant
     environment:
@@ -490,6 +494,29 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  profile:
+    image: ghcr.io/opexdev/profile
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
+      - CONSUL_HOST=consul
+      - DB_IP_PORT=postgres-profile
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_HOST=vault
+      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
+    depends_on:
+      - auth
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - consul
+      - postgres-profile
+      - vault
+    labels:
+      collect_logs: "true"
+    deploy:
+      restart_policy:
+        condition: on-failure
   captcha:
     image: ghcr.io/opexdev/captcha
     environment:
@@ -613,6 +640,7 @@ volumes:
   admin-data:
   elasticsearch-data:
   grafana-data:
+  profile-data:
 networks:
   default:
     driver: bridge
