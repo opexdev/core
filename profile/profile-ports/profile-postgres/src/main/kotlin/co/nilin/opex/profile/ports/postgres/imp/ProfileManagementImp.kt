@@ -95,7 +95,7 @@ class ProfileManagementImp(private var profileRepository: ProfileRepository,
     }
 
     fun isContactChanches(oldData: ProfileModel, newData: Profile): Boolean {
-        return !oldData.email.equals(newData.email) || !oldData.mobile.equals(newData.mobile)
+        return oldData.email != newData.email || !oldData.mobile.equals(newData.mobile)
     }
 
 }
