@@ -20,27 +20,43 @@ class LimitationController(private var limitManagement: LimitationManagement) {
         limitManagement.updateLimitation(permissionRequest)
     }
 
-    @GetMapping("/{userId}/{action}")
-    suspend fun getLimitationPerUserAction(@PathVariable("userId") userId: String,
-                                           @PathVariable("action") action: ActionType):LimitationPerUserActionResponse {
-      return LimitationPerUserActionResponse(limitManagement.getLimitation(userId, action))
-    }
-
-    @GetMapping("/{userId}")
-    suspend fun getLimitationPerUser(@PathVariable("userId") userId: String): LimitationPerUserResponse {
-        return LimitationPerUserResponse(limitManagement.getLimitation(userId, null)?.groupBy { g -> g.userId!! })
-    }
-
-    @GetMapping("/{action}")
-    suspend fun getLimitationPerAction(
-            @PathVariable("action") action: ActionType): LimitationPerActionResponse {
-        return LimitationPerActionResponse(limitManagement.getLimitation(null, action)?.groupBy { g -> g.actionType!!.name })
-    }
-
     @GetMapping("")
-    suspend fun getLimitations() {
-        limitManagement.getLimitation(null, null)
+    suspend fun getLimitation(@RequestParam("userId") userId: String?,
+                              @RequestParam("action") action: ActionType?,
+                              @RequestParam("reason") reason: LimitationReason?,
+                              @RequestParam("groupBy") groupBy: String?,
+                              @RequestParam("size") size: Int?,
+                              @RequestParam("offset") offset: Int?): LimitationResponse? {
+
+        var res = limitManagement.getLimitation(userId, action, reason, offset ?: 0, size ?: 1000)
+
+        return when (groupBy) {
+            "user" -> LimitationResponse(res?.groupBy { r -> r.userId })
+            "action" -> LimitationResponse(res?.groupBy { r -> r.actionType?.name })
+            "reason" -> LimitationResponse(res?.groupBy { r -> (r.reason ?: LimitationReason.Other).name })
+            else -> {
+                LimitationResponse(totalData = res)
+            }
+        }
+
     }
 
+    @GetMapping("/history")
+    suspend fun getLimitationHistory(@RequestParam("userId") userId: String?,
+                                     @RequestParam("action") action: ActionType?,
+                                     @RequestParam("reason") reason: LimitationReason?,
+                                     @RequestParam("groupBy") groupBy: String?,
+                                     @RequestParam("size") size: Int?,
+                                     @RequestParam("offset") offset: Int?): LimitationHistoryResponse? {
 
+        var res = limitManagement.getLimitationHistory(userId, action,reason, offset ?: 0, size ?: 1000)
+        return when (groupBy) {
+            "user" -> LimitationHistoryResponse(res?.groupBy { r -> r.userId })
+            "action" -> LimitationHistoryResponse(res?.groupBy { r -> r.actionType?.name })
+            "reason" -> LimitationHistoryResponse(res?.groupBy { r -> (r.reason ?: LimitationReason.Other).name })
+            else -> {
+                LimitationHistoryResponse(totalData = res)
+            }
+        }
+    }
 }

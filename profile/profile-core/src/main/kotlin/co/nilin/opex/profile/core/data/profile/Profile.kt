@@ -21,7 +21,5 @@ data class Profile(
         var status: UserStatus?=null,
         var createDate:LocalDateTime?=null,
         var lastUpdateDate:LocalDateTime?=null,
-        var creator:String?=null,
-        var requiredUserActions : RequiredUserActions?=null,
-        var requiredAdminActions : RequiredAdminActions?=null
+        var creator:String?=null
 )

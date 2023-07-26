@@ -60,6 +60,8 @@ CREATE TABLE IF NOT EXISTS limitation
     limitation_on     VARCHAR(100) UNIQUE NOT NULL,
     description       VARCHAR(100)
 );
+
+Alter table limitation add column reason Varchar(100);
 CREATE TABLE IF NOT EXISTS limitation_history
 (
     id                SERIAL PRIMARY KEY,
@@ -75,6 +77,7 @@ CREATE TABLE IF NOT EXISTS limitation_history
     description       VARCHAR(100)
     );
 
+Alter table limitation_history add column reason Varchar(100);
 
 
 

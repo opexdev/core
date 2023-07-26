@@ -24,5 +24,6 @@ data class ProfileHistory(
         var creator:String?=null,
         var issuer: String?,
         var changeRequestDate: LocalDateTime?,
-        var changeRequestType: String?
+        var changeRequestType: String?,
+        var updatedItem:List<String>?
 )

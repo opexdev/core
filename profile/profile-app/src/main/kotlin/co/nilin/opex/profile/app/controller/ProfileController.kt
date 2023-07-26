@@ -21,7 +21,7 @@ class ProfileController(val profileManagement: ProfileManagement) {
     private val logger = LoggerFactory.getLogger(ProfileController::class.java)
     @GetMapping("")
     suspend fun getProfiles(@RequestParam offset: Int?, @RequestParam size: Int?): List<Profile>? {
-        return profileManagement.getAllProfiles(offset=0, size=1000)
+        return profileManagement.getAllProfiles(offset?:0, size?:1000)
     }
 
     @GetMapping("/{userId}")
@@ -48,7 +48,7 @@ class ProfileController(val profileManagement: ProfileManagement) {
     @GetMapping("/history/{userId}")
     suspend fun getHistory(@PathVariable("userId") userId: String,
                            @RequestParam offset: Int?, @RequestParam size: Int?): List<ProfileHistory>? {
-        return profileManagement.getHistory(userId,offset=0,size=1000)
+        return profileManagement.getHistory(userId,offset?:0,size?:1000)
     }
 
 

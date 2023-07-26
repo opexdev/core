@@ -5,7 +5,8 @@ data class UpdateLimitationRequest(var userId: String?,
                                    var exprTime: Long?,
                                    var updateType: LimitationUpdateType,
                                    var description: String?,
-                                   var detail: String?
+                                   var detail: String?,
+                                   var reason: LimitationReason?
 )
 
 

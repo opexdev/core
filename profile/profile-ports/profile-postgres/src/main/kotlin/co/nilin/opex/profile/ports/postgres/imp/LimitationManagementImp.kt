@@ -1,10 +1,8 @@
 package co.nilin.opex.profile.ports.postgres.imp
 
-import co.nilin.opex.profile.core.data.limitation.ActionType
-import co.nilin.opex.profile.core.data.limitation.Limitation
-import co.nilin.opex.profile.core.data.limitation.LimitationUpdateType
-import co.nilin.opex.profile.core.data.limitation.UpdateLimitationRequest
+import co.nilin.opex.profile.core.data.limitation.*
 import co.nilin.opex.profile.core.spi.LimitationPersister
+import co.nilin.opex.profile.ports.postgres.dao.LimitationHistoryRepository
 import co.nilin.opex.profile.ports.postgres.dao.ProfileRepository
 import co.nilin.opex.profile.ports.postgres.dao.LimitationRepository
 import co.nilin.opex.profile.ports.postgres.model.entity.LimitationModel
@@ -15,13 +13,16 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Service
 class LimitationManagementImp(private var limitationRepository: LimitationRepository,
-                              private var profileRepository: ProfileRepository) : LimitationPersister {
+                              private var profileRepository: ProfileRepository,
+                              private var limitationHistoryRepository: LimitationHistoryRepository) : LimitationPersister {
     private val logger = LoggerFactory.getLogger(LimitationManagementImp::class.java)
 
     @Transactional
@@ -89,9 +90,13 @@ class LimitationManagementImp(private var limitationRepository: LimitationReposi
 
     }
 
-    override suspend fun getLimitation(userId: String?, action: ActionType?): List<Limitation> ?{
-      return  limitationRepository.findAllLimitation(userId, action)?.map { l -> l.convert(Limitation::class.java) }?.toList()
+
+    override suspend fun getLimitation(userId: String?, action: ActionType?,reason:LimitationReason?, offset: Int, size: Int): List<Limitation>? {
+        return limitationRepository.findAllLimitation(userId, action,reason, offset, size, PageRequest.of(offset, size, Sort.by(Sort.Direction.DESC, "id")))?.map { l -> l.convert(Limitation::class.java) }?.toList()
     }
 
+    override suspend fun getLimitationHistory(userId: String?, action: ActionType?,reason:LimitationReason?, offset: Int, size: Int): List<LimitationHistory>? {
+        return limitationHistoryRepository.findAllLimitationHistory(userId, action,reason, offset, size, PageRequest.of(offset, size, Sort.by(Sort.Direction.DESC, "id")))?.map { l -> l.convert(LimitationHistory::class.java) }?.toList()
+    }
 
 }

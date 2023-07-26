@@ -1,6 +1,7 @@
 package co.nilin.opex.profile.ports.postgres.model.base
 
 import co.nilin.opex.profile.core.data.limitation.ActionType
+import co.nilin.opex.profile.core.data.limitation.LimitationReason
 import java.time.LocalDateTime
 import java.util.*
 
@@ -12,4 +13,5 @@ open class Limitation {
     var detail:String?=null
     var limitationOn:String?=null
     var description:String?=null
+    var reason: LimitationReason?=null
 }

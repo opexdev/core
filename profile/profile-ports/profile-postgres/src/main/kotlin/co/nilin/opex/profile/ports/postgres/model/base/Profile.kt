@@ -1,8 +1,6 @@
 package co.nilin.opex.profile.ports.postgres.model.base
 
 import co.nilin.opex.profile.core.data.profile.UserStatus
-import co.nilin.opex.profile.core.data.profile.RequiredAdminActions
-import co.nilin.opex.profile.core.data.profile.RequiredUserActions
 import java.time.LocalDateTime
 
 open class Profile {
@@ -22,6 +20,5 @@ open class Profile {
      var createDate: LocalDateTime?=null
      var lastUpdateDate: LocalDateTime?=null
      var creator:String?=null
-     var requiredUserActions : RequiredUserActions?=null
-     var requiredAdminActions : RequiredAdminActions?=null
+
  }
