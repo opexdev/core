@@ -17,28 +17,29 @@ import java.io.File
 import java.nio.charset.StandardCharsets
 
 @RestController
+@RequestMapping("/v1/address")
 class AddressController(
     private val assignAddressService: AssignAddressService,
     private val reservedAddressHandler: ReservedAddressHandler,
     private val addressTypeHandler: AddressTypeHandler
 ) {
-    data class AssignAddressRequest(val uuid: String, val currency: String)
+    data class AssignAddressRequest(val uuid: String, val currency: String, val chain: String)
     data class AssignAddressResponse(val addresses: List<AssignedAddress>)
 
-    @PostMapping("/address/assign")
+    @PostMapping("/assign")
     suspend fun assignAddress(@RequestBody assignAddressRequest: AssignAddressRequest): AssignAddressResponse {
-        val assignedAddress = assignAddressService
-            .assignAddress(
-                assignAddressRequest.uuid,
-                Currency(assignAddressRequest.currency, assignAddressRequest.currency)
-            )
+        val assignedAddress = assignAddressService.assignAddress(
+            assignAddressRequest.uuid,
+            Currency(assignAddressRequest.currency, assignAddressRequest.currency),
+            assignAddressRequest.chain
+        )
         return AssignAddressResponse(assignedAddress)
     }
 
     /**
      * (address, regex, address_type)
      */
-    @PutMapping("/addresses")
+    @PutMapping
     suspend fun putAddresses(@RequestPart("file") file: Mono<FilePart>) {
         val f = File("reserved.csv")
         file.awaitSingle().transferTo(f).awaitSingleOrNull() ?: throw OpexException(

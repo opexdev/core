@@ -27,6 +27,7 @@ class AssignAddressServiceImplUnitTest {
     val assignAddressServiceImpl: AssignAddressServiceImpl
 
     val currency = Currency("ETH", "Ethereum")
+    val chain = "Ethereum"
     val ethAddressType = AddressType(1, "ETH", "+*", ".*")
     val ethMemoAddressType = AddressType(2, "ETH", "+*", "+*")
     val ethChain = Chain("ETH_MAINNET", arrayListOf(ethAddressType))
@@ -90,7 +91,7 @@ class AssignAddressServiceImplUnitTest {
             Mockito.`when`(reservedAddressHandler.peekReservedAddress(ethMemoAddressType)).thenReturn(
                 ReservedAddress("0x2", "Memo", ethMemoAddressType)
             )
-            val assignedAddress = assignAddressServiceImpl.assignAddress(user, currency)
+            val assignedAddress = assignAddressServiceImpl.assignAddress(user, currency, chain)
             Assertions.assertEquals(
                 listOf(
                     AssignedAddress(
@@ -128,7 +129,7 @@ class AssignAddressServiceImplUnitTest {
 
             Assertions.assertThrows(RuntimeException::class.java) {
                 runBlocking {
-                    assignAddressServiceImpl.assignAddress(user, currency)
+                    assignAddressServiceImpl.assignAddress(user, currency, chain)
                 }
             }
         }
@@ -160,7 +161,7 @@ class AssignAddressServiceImplUnitTest {
             Mockito.`when`(reservedAddressHandler.peekReservedAddress(ethMemoAddressType)).thenReturn(
                 ReservedAddress("0x2", "Memo", ethMemoAddressType)
             )
-            val assignedAddress = assignAddressServiceImpl.assignAddress(user, currency)
+            val assignedAddress = assignAddressServiceImpl.assignAddress(user, currency, chain)
             Assertions.assertEquals(
                 listOf(
                     AssignedAddress(

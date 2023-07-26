@@ -6,7 +6,7 @@ import co.nilin.opex.api.core.inout.DepositDetails
 
 interface BlockchainGatewayProxy {
 
-    suspend fun assignAddress(uuid: String, currency: String): AssignResponse?
+    suspend fun assignAddress(uuid: String, currency: String, chain: String): AssignResponse?
 
     suspend fun getDepositDetails(refs: List<String>): List<DepositDetails>
 
