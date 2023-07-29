@@ -1,13 +1,13 @@
 package co.nilin.opex.kyc.app.listener
 
-import co.nilin.opex.kyc.app.service.KYCManagement
+import co.nilin.opex.kyc.app.service.KycManagement
 import co.nilin.opex.profile.core.spi.UserCreatedEventListener
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import co.nilin.opex.profile.core.data.profile.UserCreatedEvent
 @Component
-class UserCreatedListener(val kycManagement: KYCManagement) : UserCreatedEventListener {
+class UserCreatedListener(val kycManagement: KycManagement) : UserCreatedEventListener {
 
     private val logger = LoggerFactory.getLogger(UserCreatedListener::class.java)
 
