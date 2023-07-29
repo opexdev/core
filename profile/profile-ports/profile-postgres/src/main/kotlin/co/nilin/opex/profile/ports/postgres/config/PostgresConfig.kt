@@ -4,9 +4,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.io.Resource
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories
-import org.springframework.data.repository.RepositoryDefinition
 import org.springframework.r2dbc.core.DatabaseClient
-import org.springframework.stereotype.Repository
 
 @Configuration
 @EnableR2dbcRepositories(basePackages = ["co.nilin.opex"])

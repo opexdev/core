@@ -1,6 +1,5 @@
 package co.nilin.opex.profile.ports.postgres.utils
 
-import co.nilin.opex.profile.core.data.profile.ProfileHistory
 import kotlin.reflect.full.memberProperties
 
  fun Any.compare( s2: Any): List<String>? {

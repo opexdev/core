@@ -21,5 +21,6 @@ data class Profile(
         var status: UserStatus?=null,
         var createDate:LocalDateTime?=null,
         var lastUpdateDate:LocalDateTime?=null,
-        var creator:String?=null
+        var creator:String?=null,
+        var kycLevel:KYCLevel?=null
 )

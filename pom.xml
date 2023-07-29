@@ -36,6 +36,7 @@
         <module>referral</module>
         <module>captcha</module>
         <module>profile</module>
+        <module>kyc</module>
     </modules>
 
     <dependencies>

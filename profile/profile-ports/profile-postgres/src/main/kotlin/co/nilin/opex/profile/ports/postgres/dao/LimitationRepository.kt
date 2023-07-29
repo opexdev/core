@@ -2,9 +2,7 @@ package co.nilin.opex.profile.ports.postgres.dao
 
 import co.nilin.opex.profile.core.data.limitation.ActionType
 import co.nilin.opex.profile.core.data.limitation.LimitationReason
-import co.nilin.opex.profile.core.data.limitation.LimitationResponse
 import co.nilin.opex.profile.ports.postgres.model.entity.LimitationModel
-import co.nilin.opex.profile.ports.postgres.model.entity.ProfileModel
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.domain.Pageable
 import org.springframework.data.r2dbc.repository.Query

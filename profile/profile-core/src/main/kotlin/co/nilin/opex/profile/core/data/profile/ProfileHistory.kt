@@ -25,5 +25,6 @@ data class ProfileHistory(
         var issuer: String?,
         var changeRequestDate: LocalDateTime?,
         var changeRequestType: String?,
-        var updatedItem:List<String>?
+        var updatedItem:List<String>?,
+        var kycLevel:KYCLevel?=null
 )

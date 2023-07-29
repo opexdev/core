@@ -71,6 +71,11 @@
                 <artifactId>interceptors</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.kyc</groupId>
+                <artifactId>kyc-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

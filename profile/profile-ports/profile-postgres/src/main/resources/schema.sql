@@ -18,9 +18,11 @@ CREATE TABLE IF NOT EXISTS profile
     creator           VARCHAR(100),
     last_update_date  TIMESTAMP DEFAULT CURRENT_DATE,
     required_user_actions VARCHAR(100),
-    required_admin_actions VARCHAR(100)
+    required_admin_actions VARCHAR(100),
+    kyc_level varchar(100)
  );
 
+Alter table profile add column     kyc_level varchar(100);
 
 CREATE TABLE IF NOT EXISTS profile_history
 (
@@ -46,8 +48,12 @@ CREATE TABLE IF NOT EXISTS profile_history
     change_request_date TIMESTAMP,
     change_request_type VARCHAR(100),
     required_user_actions VARCHAR(100),
-    required_admin_actions VARCHAR(100)
+    required_admin_actions VARCHAR(100),
+    kyc_level varchar(100)
+
     );
+Alter table profile_history add column     kyc_level varchar(100);
+
 
 CREATE TABLE IF NOT EXISTS limitation
 (
@@ -58,10 +64,10 @@ CREATE TABLE IF NOT EXISTS limitation
     exp_time          VARCHAR(100),
     detail            VARCHAR(100),
     limitation_on     VARCHAR(100) UNIQUE NOT NULL,
-    description       VARCHAR(100)
+    description       VARCHAR(100),
+    reason             VARCHAR(100)
 );
 
-Alter table limitation add column reason Varchar(100);
 CREATE TABLE IF NOT EXISTS limitation_history
 (
     id                SERIAL PRIMARY KEY,
@@ -74,7 +80,8 @@ CREATE TABLE IF NOT EXISTS limitation_history
     change_request_date TIMESTAMP,
     change_request_type VARCHAR(100),
     limitation_on     VARCHAR(100),
-    description       VARCHAR(100)
+    description       VARCHAR(100),
+    reason             VARCHAR(100)
     );
 
 Alter table limitation_history add column reason Varchar(100);
@@ -91,8 +98,8 @@ DROP TRIGGER IF EXISTS limitation_log_delete on public.limitation;
 CREATE OR REPLACE FUNCTION triger_function() RETURNS TRIGGER AS
 $BODY$
 BEGIN
-INSERT INTO public.profile_history (original_data_id,change_request_date,change_request_type,email,user_id,create_date,identifier,address,first_name,last_name,mobile,telephone,nationality,gender,birth_date,status,postal_code,creator)
-VALUES(OLD.id,now(),'UPDATE',OLD.email,OLD.user_id,OLD.create_date,OLD.identifier,OLD.address,OLD.first_name,OLD.last_name,OLD.mobile,OLD.telephone,OLD.nationality,OLD.gender,OLD.birth_date,OLD.status,OLD.postal_code,OLD.creator);
+INSERT INTO public.profile_history (original_data_id,change_request_date,change_request_type,email,user_id,create_date,identifier,address,first_name,last_name,mobile,telephone,nationality,gender,birth_date,status,postal_code,creator,kyc_level)
+VALUES(OLD.id,now(),'UPDATE',OLD.email,OLD.user_id,OLD.create_date,OLD.identifier,OLD.address,OLD.first_name,OLD.last_name,OLD.mobile,OLD.telephone,OLD.nationality,OLD.gender,OLD.birth_date,OLD.status,OLD.postal_code,OLD.creator,OLD.kyc_level);
 RETURN NULL;
 END;
 $BODY$
@@ -104,8 +111,8 @@ language plpgsql;
 CREATE OR REPLACE FUNCTION triger_delete_function() RETURNS TRIGGER AS
 $BODY$
 BEGIN
-INSERT INTO public.profile_history (original_data_id,change_request_date,change_request_type,email,user_id,create_date,identifier,address,first_name,last_name,mobile,telephone,nationality,gender,birth_date,status,postal_code,creator)
-VALUES(OLD.id,now(),'DELETE',OLD.email,OLD.user_id,OLD.create_date,OLD.identifier,OLD.address,OLD.first_name,OLD.last_name,OLD.mobile,OLD.telephone,OLD.nationality,OLD.gender,OLD.birth_date,OLD.status,OLD.postal_code,OLD.creator);
+INSERT INTO public.profile_history (original_data_id,change_request_date,change_request_type,email,user_id,create_date,identifier,address,first_name,last_name,mobile,telephone,nationality,gender,birth_date,status,postal_code,creator,kyc_level)
+VALUES(OLD.id,now(),'DELETE',OLD.email,OLD.user_id,OLD.create_date,OLD.identifier,OLD.address,OLD.first_name,OLD.last_name,OLD.mobile,OLD.telephone,OLD.nationality,OLD.gender,OLD.birth_date,OLD.status,OLD.postal_code,OLD.creator,OLD.kyc_level);
 RETURN NULL;
 END;
 $BODY$
@@ -116,8 +123,8 @@ language plpgsql;
 CREATE OR REPLACE FUNCTION triger_limitation_function() RETURNS TRIGGER AS
 $BODY$
 BEGIN
-INSERT INTO public.limitation_history (change_request_date,change_request_type,user_id,create_date,action_type,exp_time,detail,limitation_on,description)
-VALUES(now(),'UPDATE',OLD.user_id,OLD.create_date,OLD.action_type,OLD.exp_time,OLD.detail,OLD.limitation_on,OLD.description);
+INSERT INTO public.limitation_history (change_request_date,change_request_type,user_id,create_date,action_type,exp_time,detail,limitation_on,description,reason)
+VALUES(now(),'UPDATE',OLD.user_id,OLD.create_date,OLD.action_type,OLD.exp_time,OLD.detail,OLD.limitation_on,OLD.description,OLD.reason);
 RETURN NULL;
 END;
 $BODY$
@@ -129,8 +136,8 @@ language plpgsql;
 CREATE OR REPLACE FUNCTION triger_delete_limitation_function() RETURNS TRIGGER AS
 $BODY$
 BEGIN
-INSERT INTO public.limitation_history (change_request_date,change_request_type,user_id,create_date,action_type,exp_time,detail,limitation_on,description)
-VALUES(now(),'DELETE',OLD.user_id,OLD.create_date,OLD.action_type,OLD.exp_time,OLD.detail,OLD.limitation_on,OLD.description);
+INSERT INTO public.limitation_history (change_request_date,change_request_type,user_id,create_date,action_type,exp_time,detail,limitation_on,description,reason)
+VALUES(now(),'DELETE',OLD.user_id,OLD.create_date,OLD.action_type,OLD.exp_time,OLD.detail,OLD.limitation_on,OLD.description,OLD.reason);
 RETURN NULL;
 END;
 $BODY$
