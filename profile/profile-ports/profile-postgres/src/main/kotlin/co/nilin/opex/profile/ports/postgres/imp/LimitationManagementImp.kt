@@ -6,7 +6,7 @@ import co.nilin.opex.profile.ports.postgres.dao.LimitationHistoryRepository
 import co.nilin.opex.profile.ports.postgres.dao.ProfileRepository
 import co.nilin.opex.profile.ports.postgres.dao.LimitationRepository
 import co.nilin.opex.profile.ports.postgres.model.entity.LimitationModel
-import co.nilin.opex.profile.ports.postgres.utils.convert
+import co.nilin.opex.profile.core.utils.convert
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.flow.map

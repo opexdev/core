@@ -101,6 +101,14 @@
             <groupId>co.nilin.opex.kyc</groupId>
             <artifactId>kyc-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>co.nilin.opex.kyc.ports</groupId>
+            <artifactId>kyc-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>co.nilin.opex.kyc.ports</groupId>
+            <artifactId>kyc-postgres</artifactId>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>

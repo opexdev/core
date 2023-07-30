@@ -1,4 +1,4 @@
-package co.nilin.opex.profile.ports.postgres.utils
+package co.nilin.opex.profile.core.utils
 
 import kotlin.reflect.full.memberProperties
 

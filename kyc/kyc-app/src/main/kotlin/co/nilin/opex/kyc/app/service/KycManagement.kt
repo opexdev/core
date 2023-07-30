@@ -1,28 +1,19 @@
 package co.nilin.opex.kyc.app.service
 
 
-import co.nilin.opex.profile.core.data.profile.KYCLevel
+import co.nilin.opex.core.data.KycRequest
 import org.springframework.stereotype.Component
-import co.nilin.opex.profile.core.data.profile.UserCreatedEvent
-import data.UpdateKYCLevelRequest
 import org.slf4j.LoggerFactory
-import spi.KYCPersister
-import java.time.LocalDateTime
+import co.nilin.opex.core.spi.KYCPersister
 
 @Component
 class KycManagement(
         private val kycPersister: KYCPersister
 ) {
     private val logger = LoggerFactory.getLogger(KycManagement::class.java)
-    suspend fun updateKycLevel(event: UserCreatedEvent) {
-        with(event) {
-            kycPersister.createOrUpdateKYCLevel(UpdateKYCLevelRequest(userId = event.uuid, kycLevel = KYCLevel.Level1, reason = "registerUser", lastUpdateDate = LocalDateTime.now()))
-        }
-    }
-    suspend fun updateKycLevel(request: UpdateKYCLevelRequest) {
 
-            kycPersister.createOrUpdateKYCLevel(request)
-
+    suspend fun kycProcess(kycRequest: KycRequest) {
+        kycPersister.kycProcess(kycRequest)
     }
 
 }

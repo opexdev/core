@@ -22,5 +22,5 @@ data class Profile(
         var createDate:LocalDateTime?=null,
         var lastUpdateDate:LocalDateTime?=null,
         var creator:String?=null,
-        var kycLevel:KYCLevel?=null
+        var kycLevel:KycLevel?=null
 )

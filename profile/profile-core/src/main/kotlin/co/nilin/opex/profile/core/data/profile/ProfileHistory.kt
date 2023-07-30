@@ -26,5 +26,5 @@ data class ProfileHistory(
         var changeRequestDate: LocalDateTime?,
         var changeRequestType: String?,
         var updatedItem:List<String>?,
-        var kycLevel:KYCLevel?=null
+        var kycLevel:KycLevel?=null
 )

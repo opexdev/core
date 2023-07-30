@@ -10,7 +10,7 @@ import co.nilin.opex.profile.core.spi.ProfilePersister
 import co.nilin.opex.profile.ports.postgres.dao.ProfileHistoryRepository
 import co.nilin.opex.profile.ports.postgres.dao.ProfileRepository
 import co.nilin.opex.profile.ports.postgres.model.entity.ProfileModel
-import co.nilin.opex.profile.ports.postgres.utils.convert
+import co.nilin.opex.profile.core.utils.convert
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.flow.map
@@ -21,7 +21,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import co.nilin.opex.profile.ports.postgres.utils.compare
+import co.nilin.opex.profile.core.utils.compare
 
 @Service
 class ProfileManagementImp(private var profileRepository: ProfileRepository,

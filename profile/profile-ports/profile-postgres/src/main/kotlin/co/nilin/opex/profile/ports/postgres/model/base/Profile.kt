@@ -1,6 +1,6 @@
 package co.nilin.opex.profile.ports.postgres.model.base
 
-import co.nilin.opex.profile.core.data.profile.KYCLevel
+import co.nilin.opex.profile.core.data.profile.KycLevel
 import co.nilin.opex.profile.core.data.profile.UserStatus
 import java.time.LocalDateTime
 
@@ -22,7 +22,7 @@ open class Profile {
      var lastUpdateDate: LocalDateTime?=null
      var creator:String?=null
 
-     var kycLevel: KYCLevel?=KYCLevel.Level1
+     var kycLevel: KycLevel?=KycLevel.Level1
 
 
  }

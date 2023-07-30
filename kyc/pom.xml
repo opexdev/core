@@ -59,6 +59,16 @@
                 <artifactId>kyc-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.kyc.ports</groupId>
+                <artifactId>kyc-kafka</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.kyc.ports</groupId>
+                <artifactId>kyc-postgres</artifactId>
+                <version>${project.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

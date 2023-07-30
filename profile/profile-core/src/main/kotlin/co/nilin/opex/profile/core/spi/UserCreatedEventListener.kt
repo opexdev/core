@@ -5,4 +5,6 @@ import co.nilin.opex.profile.core.data.profile.UserCreatedEvent
 interface UserCreatedEventListener {
     fun id(): String
     fun onEvent(event: UserCreatedEvent, partition: Int, offset: Long, timestamp: Long)
+    fun onEvent(event: UserCreatedEvent, partition: Int, offset: Long, timestamp: Long, eventId:String)
+
 }
