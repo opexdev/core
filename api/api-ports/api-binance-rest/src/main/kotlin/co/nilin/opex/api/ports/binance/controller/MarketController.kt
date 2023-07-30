@@ -189,7 +189,7 @@ class MarketController(
                     pair.first.name,
                     pair.second.map {
                         CurrencyNetwork(
-                            it.implCurrency.name,
+                            it.chain.name,
                             it.implCurrency.symbol,
                             it.withdrawMin,
                             it.withdrawFee,
