@@ -22,5 +22,6 @@ data class Profile(
         var createDate:LocalDateTime?=null,
         var lastUpdateDate:LocalDateTime?=null,
         var creator:String?=null,
+        //todo set read only
         var kycLevel:KycLevel?=null
 )

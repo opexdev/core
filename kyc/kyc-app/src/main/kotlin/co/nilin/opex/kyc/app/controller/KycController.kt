@@ -1,8 +1,8 @@
 package co.nilin.opex.kyc.app.controller
 
+import co.nilin.opex.core.data.*
 import co.nilin.opex.kyc.app.service.KycManagement
-import co.nilin.opex.core.data.KycRequest
-import co.nilin.opex.core.data.KycStep
+import org.springframework.http.codec.multipart.FilePart
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -17,21 +17,45 @@ import java.util.UUID
 class KycController(private val kycManagement: KycManagement) {
 
     @PostMapping("/{userId}")
-    suspend fun updateKYcLevel(@PathVariable("userId") userId: String,
-                               @RequestBody kycRequest: KycRequest,
-                               @RequestParam("frame1") frame1:MultipartFile,
-                               @RequestParam("frame2") frame2:MultipartFile,
-                               @RequestParam("frame3") frame3:MultipartFile
+    suspend fun uploadData(@PathVariable("userId") userId: String,
+                               @RequestBody uploadDataRequest: UploadDataRequest,
+                               @RequestParam("frame1") frame1: FilePart,
+                               @RequestParam("frame2") frame2: FilePart,
+                               @RequestParam("frame3") frame3: FilePart
     ) {
         //todo check token
-        kycRequest.userId = userId
-        kycRequest.step=KycStep.UploadDataForLevel2
-        kycRequest.processId=UUID.randomUUID().toString()
-        kycRequest.frame1=frame1
-        kycRequest.frame2=frame2
-        kycRequest.frame3=frame3
-        kycManagement.kycProcess(kycRequest)
+        uploadDataRequest.userId = userId
+        uploadDataRequest.step = KycStep.UploadDataForLevel2
+        uploadDataRequest.processId = UUID.randomUUID().toString()
+        var fails = mutableMapOf<String, FilePart>()
+        fails[frame1.filename()]=frame1
+        fails[frame2.filename()]=frame2
+        fails[frame3.filename()]=frame3
+        uploadDataRequest.files=fails
+        kycManagement.uploadData(uploadDataRequest)
 
+    }
+
+    //todo just admin
+    @PostMapping("/{processId}")
+    suspend fun manualReview(@PathVariable("processId") processId: String,
+                               @RequestBody  manualReviewRequest: ManualReviewRequest,
+
+    ) {
+        manualReviewRequest.processId = processId
+        manualReviewRequest.step = KycStep.ManualReview
+        kycManagement.manualReview(manualReviewRequest)
+    }
+    //todo just admin
+
+    @PostMapping("/{userId}")
+    suspend fun manualUpdate(@PathVariable("userId") userId: String,
+                             @RequestBody  manualUpdateRequest: ManualUpdateRequest,
+                             ) {
+        manualUpdateRequest.userId = userId
+        manualUpdateRequest.processId = UUID.randomUUID().toString()
+        manualUpdateRequest.step = KycStep.ManualReview
+        kycManagement.manualUpdate(manualUpdateRequest)
     }
 
 }

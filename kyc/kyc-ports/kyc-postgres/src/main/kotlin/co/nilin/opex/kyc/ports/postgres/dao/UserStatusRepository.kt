@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository
 @Repository
 interface UserStatusRepository :ReactiveCrudRepository<UserStatusModel,Long>{
     fun findByUserId(userId:String):UserStatusModel?
+    fun findByUserIdAndProcessId(userId:String,processId:String):UserStatusModel?
+
 }

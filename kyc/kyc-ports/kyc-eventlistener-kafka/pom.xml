@@ -9,19 +9,15 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <groupId>co.nilin.opex.kyc.ports</groupId>
-    <artifactId>kyc-postgres</artifactId>
-    <name>kyc-postgres</name>
-    <description>kyc-postgres</description>
+    <artifactId>kyc-eventlistener-kafka</artifactId>
+    <name>kyc-kafka</name>
+    <description>kyc-kafka</description>
 
      <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
-         <dependency>
-             <groupId>co.nilin.opex.utility.error</groupId>
-             <artifactId>error-handler</artifactId>
-         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-reflect</artifactId>
@@ -31,20 +27,10 @@
             <artifactId>kotlin-stdlib</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-r2dbc</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>r2dbc-postgresql</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <scope>runtime</scope>
-        </dependency>
+         <dependency>
+             <groupId>org.springframework.kafka</groupId>
+             <artifactId>spring-kafka</artifactId>
+         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -52,16 +38,16 @@
         </dependency>
 
          <dependency>
+             <groupId>co.nilin.opex.profile</groupId>
+             <artifactId>profile-core</artifactId>
+         </dependency>
+
+         <dependency>
              <groupId>co.nilin.opex.kyc</groupId>
              <artifactId>kyc-core</artifactId>
          </dependency>
-         <dependency>
-             <groupId>org.springframework.boot</groupId>
-             <artifactId>spring-boot-starter-aop</artifactId>
-         </dependency>
 
      </dependencies>
-
 
 
 </project>

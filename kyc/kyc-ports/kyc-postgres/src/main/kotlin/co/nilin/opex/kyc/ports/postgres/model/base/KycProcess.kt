@@ -12,4 +12,5 @@ open class KycProcess {
     var status: KycStatus?=null
     var createDate:LocalDateTime?= LocalDateTime.now()
     var description:String?=null
+    var input:String?=null
 }

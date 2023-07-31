@@ -4,7 +4,6 @@ import co.nilin.opex.core.data.KycRequest
 import co.nilin.opex.core.data.KycStep
 import co.nilin.opex.kyc.ports.postgres.dao.KycProcessRepository
 import co.nilin.opex.kyc.ports.postgres.dao.UserStatusRepository
-import co.nilin.opex.profile.core.data.profile.KycLevel
 import co.nilin.opex.profile.core.data.profile.KycLevelDetail
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
@@ -32,8 +31,8 @@ fun KycRequest.verifyRequest() {
         }
 
         KycStep.ManualReview -> {
-            val previousValidSteps = KycLevelDetail.SuccessfulManualReview.previousValidSteps
-            userStatusRepository.findByUserId(this.userId)?.let {
+            val previousValidSteps = KycLevelDetail.AcceptedManualReview.previousValidSteps
+            userStatusRepository.findByUserIdAndProcessId(this.userId, this.processId!!)?.let {
                 if (previousValidSteps != null) {
                     if (it.kycLevel in previousValidSteps) {
                     } else

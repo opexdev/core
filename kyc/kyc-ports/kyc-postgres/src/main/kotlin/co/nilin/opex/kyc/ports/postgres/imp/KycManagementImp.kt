@@ -1,8 +1,6 @@
 package co.nilin.opex.kyc.ports.postgres.imp
 
-import co.nilin.opex.core.data.KycRequest
-import co.nilin.opex.core.data.KycStatus
-import co.nilin.opex.core.data.KycStep
+import co.nilin.opex.core.data.*
 import org.springframework.stereotype.Component
 import co.nilin.opex.core.spi.KYCPersister
 import co.nilin.opex.kyc.ports.postgres.dao.KycProcessRepository
@@ -24,18 +22,21 @@ import java.time.LocalDateTime
 @Transactional
 class KycManagementImp(private val kycProcessRepository: KycProcessRepository,
                        private val userStatusRepository: UserStatusRepository) : KYCPersister {
-    override suspend fun kycProcess(kycRequest: KycRequest) {
+    override suspend fun kycProcess(kycRequest: KycRequest): KycResponse ?{
         kycRequest.verifyRequest()
-        when (kycRequest.step) {
+        return when (kycRequest.step) {
             KycStep.Register -> registerNewUser(kycRequest)
-            KycStep.UploadDataForLevel2 -> uploadData(kycRequest)
-            KycStep.ManualReview -> reviewManually(kycRequest)
-            KycStep.ManualUpdate -> updateManually(kycRequest)
+            KycStep.UploadDataForLevel2 -> uploadData(kycRequest as UploadDataRequest)
+            KycStep.ManualReview -> reviewManually(kycRequest as ManualReviewRequest)
+            KycStep.ManualUpdate -> updateManually(kycRequest as ManualUpdateRequest)
 
+            else -> {
+                null
+            }
         }
     }
 
-    suspend fun registerNewUser(kycRequest: KycRequest) {
+    suspend fun registerNewUser(kycRequest: KycRequest): KycResponse {
 
         var kycProcessModel = kycRequest.convert(KycProcessModel::class.java)
         kycProcessModel.status = KycStatus.Successful
@@ -47,14 +48,15 @@ class KycManagementImp(private val kycProcessRepository: KycProcessRepository,
                     processId = kycRequest.processId
                 }.convert(UserStatusModel::class.java))
         ).awaitFirstOrNull()
-
+        return KycResponse(processId = kycRequest.processId!!)
     }
 
-    suspend fun uploadData(kycRequest: KycRequest) {
+    suspend fun uploadData(kycRequest: UploadDataRequest): KycResponse {
 
 
         var kycProcessModel = kycRequest.convert(KycProcessModel::class.java)
         kycProcessModel.status = KycStatus.Successful
+        kycProcessModel.input = kycRequest.filesPath.keys.joinToString("#")
         kycProcessRepository.save(kycProcessModel).zipWith(
                 userStatusRepository.save(UserStatus().apply {
                     kycLevel = KycLevelDetail.UploadDataForLevel2
@@ -63,35 +65,37 @@ class KycManagementImp(private val kycProcessRepository: KycProcessRepository,
                     processId = kycRequest.processId
                 }.convert(UserStatusModel::class.java))
         ).awaitFirstOrNull()
-return kycRequest
-
+        return KycResponse(processId = kycRequest.processId!!)
     }
 
-    suspend fun reviewManually(kycRequest: KycRequest) {
+    suspend fun reviewManually(kycRequest: ManualReviewRequest): KycResponse {
         var kycProcessModel = kycRequest.convert(KycProcessModel::class.java)
         kycProcessModel.status = kycRequest.status
         kycProcessRepository.save(kycProcessModel).zipWith(
                 userStatusRepository.save(UserStatus().apply {
-                    kycLevel = if (kycRequest.status == KycStatus.Accept) KycLevelDetail.SuccessfulManualReview else KycLevelDetail.FailedManualReview
+                    kycLevel = if (kycRequest.status == KycStatus.Accept) KycLevelDetail.AcceptedManualReview else KycLevelDetail.RejectedManualReview
                     lastUpdateDate = LocalDateTime.now()
                     userId = kycRequest.userId
                     processId = kycRequest.processId
                 }.convert(UserStatusModel::class.java))
         ).awaitFirstOrNull()
+        return KycResponse(processId = kycRequest.processId!!)
     }
 
 
-    suspend fun updateManually(kycRequest: KycRequest) {
+    suspend fun updateManually(kycRequest: ManualUpdateRequest):KycResponse {
         var kycProcessModel = kycRequest.convert(KycProcessModel::class.java)
-        kycProcessModel.status = kycRequest.status
         kycProcessRepository.save(kycProcessModel).zipWith(
                 userStatusRepository.save(UserStatus().apply {
-                    kycLevel = if (kycRequest.kycLevel == KycLevel.Level1) KycLevelDetail.Registered else KycLevelDetail.SuccessfulManualReview
+                    kycLevel = if (kycRequest.kycLevel == KycLevel.Level1) KycLevelDetail.Registered
+                    else if (kycRequest.kycLevel == KycLevel.Level2) KycLevelDetail.AcceptedManualReview
+                    else throw OpexException(OpexError.Error)
                     lastUpdateDate = LocalDateTime.now()
                     userId = kycRequest.userId
-                    processId = "system"
+                    processId = "system_${kycRequest.processId}"
                 }.convert(UserStatusModel::class.java))
         ).awaitFirstOrNull()
+        return KycResponse(processId = kycRequest.processId!!)
     }
 
 
