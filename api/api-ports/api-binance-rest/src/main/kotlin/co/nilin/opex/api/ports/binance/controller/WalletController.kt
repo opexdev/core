@@ -9,6 +9,7 @@ import co.nilin.opex.api.ports.binance.util.jwtAuthentication
 import co.nilin.opex.api.ports.binance.util.tokenValue
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
+import co.nilin.opex.utility.error.data.throwError
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.GetMapping
@@ -33,17 +34,18 @@ class WalletController(
     suspend fun assignAddress(
         @RequestParam
         coin: String,
-        @RequestParam(required = false)
-        network: String?,
+        @RequestParam
+        network: String,
         @RequestParam(required = false)
         recvWindow: Long?, //The value cannot be greater than 60000
         @RequestParam
         timestamp: Long,
         @CurrentSecurityContext securityContext: SecurityContext
     ): AssignAddressResponse {
-        val response = bcGatewayProxy.assignAddress(securityContext.jwtAuthentication().name, coin)
-        val address = if (response?.addresses?.isNotEmpty() == true) response.addresses[0] else null
-        return AssignAddressResponse(address?.address ?: "", coin, "", "")
+        val response = bcGatewayProxy.assignAddress(securityContext.jwtAuthentication().name, coin, network)
+        val address = response?.addresses
+        if (address.isNullOrEmpty()) throw OpexError.InternalServerError.exception()
+        return AssignAddressResponse(address[0].address, coin, network, "", "")
     }
 
     @GetMapping("/v1/capital/deposit/hisrec")

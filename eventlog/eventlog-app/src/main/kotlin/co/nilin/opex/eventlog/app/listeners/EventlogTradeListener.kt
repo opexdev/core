@@ -15,7 +15,7 @@ class EventlogTradeListener(private val tradePersister: TradePersister) : TradeL
     }
 
     override fun onTrade(tradeEvent: TradeEvent, partition: Int, offset: Long, timestamp: Long) {
-        log.debug("Receive TradeEvent {}", tradeEvent)
+        log.info("Receive TradeEvent {}", tradeEvent)
         runBlocking {
             tradePersister.saveTrade(tradeEvent)
         }

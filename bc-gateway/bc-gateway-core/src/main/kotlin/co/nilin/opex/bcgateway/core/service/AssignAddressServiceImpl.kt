@@ -17,10 +17,11 @@ class AssignAddressServiceImpl(
     private val reservedAddressHandler: ReservedAddressHandler
 ) : AssignAddressService {
 
-    override suspend fun assignAddress(user: String, currency: Currency): List<AssignedAddress> {
+    override suspend fun assignAddress(user: String, currency: Currency, chain: String): List<AssignedAddress> {
         val currencyInfo = currencyHandler.fetchCurrencyInfo(currency.symbol)
         val chains = currencyInfo.implementations
             .map { imp -> imp.chain }
+            .filter { it.name.equals(chain, true) }
         val addressTypes = chains
             .flatMap { chain -> chain.addressTypes }
             .distinct()

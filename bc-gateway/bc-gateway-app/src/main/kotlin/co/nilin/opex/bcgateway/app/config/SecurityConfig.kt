@@ -28,7 +28,7 @@ class SecurityConfig(@Qualifier("loadBalanced") private val webClient: WebClient
             .pathMatchers("/currency/**").permitAll()
             .pathMatchers("/filter/**").hasAuthority("SCOPE_trust")
             .pathMatchers("/admin/**").hasRole("SCOPE_trust", "admin_system")
-            .pathMatchers("/address/**").permitAll()
+            .pathMatchers("/v1/address/**").permitAll()
             .pathMatchers("/deposit/**").permitAll()
             .pathMatchers("/addresses/**").hasRole("SCOPE_trust", "admin_system")
             .anyExchange().authenticated()

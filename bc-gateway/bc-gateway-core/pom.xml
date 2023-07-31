@@ -45,6 +45,10 @@
             <artifactId>mockito-kotlin</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.mockk</groupId>
+            <artifactId>mockk</artifactId>
+        </dependency>
+        <dependency>
             <groupId>co.nilin.opex.utility.error</groupId>
             <artifactId>error-handler</artifactId>
         </dependency>
