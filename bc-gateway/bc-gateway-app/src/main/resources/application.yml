@@ -50,7 +50,7 @@ management:
         include: ["health", "prometheus", "metrics"]
   endpoint:
     health:
-      show-details: always
+      show-details: when_authorized
     metrics:
       enabled: true
     prometheus:
@@ -58,7 +58,7 @@ management:
 logging:
   level:
     org.apache.kafka: ERROR
-    co.nilin: DEBUG
+    co.nilin: INFO
 swagger:
   authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
 app:
