@@ -1,7 +1,7 @@
 package co.nilin.opex.kyc.ports.postgres.imp
 
-import co.nilin.opex.core.event.KycLevelUpdatedEvent
-import co.nilin.opex.core.spi.KycLevelUpdatedPublisher
+import co.nilin.opex.kyc.core.data.event.KycLevelUpdatedEvent
+import co.nilin.opex.kyc.core.spi.KycLevelUpdatedPublisher
 import co.nilin.opex.kyc.ports.postgres.model.entity.UserStatusModel
 import org.aspectj.lang.annotation.Around
 import org.springframework.stereotype.Component

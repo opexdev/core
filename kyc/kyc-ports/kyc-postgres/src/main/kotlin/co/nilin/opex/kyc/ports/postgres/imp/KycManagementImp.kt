@@ -1,8 +1,9 @@
 package co.nilin.opex.kyc.ports.postgres.imp
 
-import co.nilin.opex.core.data.*
+import co.nilin.opex.kyc.core.data.*
 import org.springframework.stereotype.Component
-import co.nilin.opex.core.spi.KYCPersister
+import co.nilin.opex.kyc.core.spi.KYCPersister
+import co.nilin.opex.kyc.core.data.*
 import co.nilin.opex.kyc.ports.postgres.dao.KycProcessRepository
 import co.nilin.opex.kyc.ports.postgres.dao.UserStatusRepository
 import co.nilin.opex.kyc.ports.postgres.model.base.UserStatus
@@ -22,7 +23,7 @@ import java.time.LocalDateTime
 @Transactional
 class KycManagementImp(private val kycProcessRepository: KycProcessRepository,
                        private val userStatusRepository: UserStatusRepository) : KYCPersister {
-    override suspend fun kycProcess(kycRequest: KycRequest): KycResponse ?{
+    override suspend fun kycProcess(kycRequest: KycRequest): KycResponse?{
         kycRequest.verifyRequest()
         return when (kycRequest.step) {
             KycStep.Register -> registerNewUser(kycRequest)
@@ -83,7 +84,7 @@ class KycManagementImp(private val kycProcessRepository: KycProcessRepository,
     }
 
 
-    suspend fun updateManually(kycRequest: ManualUpdateRequest):KycResponse {
+    suspend fun updateManually(kycRequest: ManualUpdateRequest): KycResponse {
         var kycProcessModel = kycRequest.convert(KycProcessModel::class.java)
         kycProcessRepository.save(kycProcessModel).zipWith(
                 userStatusRepository.save(UserStatus().apply {

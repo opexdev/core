@@ -1,6 +1,5 @@
-package co.nilin.opex.core.data
+package co.nilin.opex.kyc.core.data
 
-import co.nilin.opex.profile.core.data.profile.KycLevel
 
 enum class KycStep() {
     UploadDataForLevel2(), ManualReview(), Register(), ManualUpdate()

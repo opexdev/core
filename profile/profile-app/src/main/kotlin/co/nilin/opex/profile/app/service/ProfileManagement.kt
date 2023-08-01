@@ -5,7 +5,8 @@ import co.nilin.opex.profile.core.data.profile.Profile
 import co.nilin.opex.profile.core.data.profile.ProfileHistory
 import co.nilin.opex.profile.core.spi.ProfilePersister
 import org.springframework.stereotype.Component
-import co.nilin.opex.profile.core.data.profile.UserCreatedEvent
+import co.nilin.opex.profile.core.data.event.UserCreatedEvent
+import co.nilin.opex.profile.core.data.profile.KycLevel
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 
@@ -43,6 +44,10 @@ class ProfileManagement(
     }
     suspend fun getHistory(userId: String,offset:Int,size:Int): List<ProfileHistory>? {
         return profilePersister.getHistory(userId,offset,size)
+    }
+
+     fun updateUserLevel(userId: String,userLevel:KycLevel) {
+         profilePersister.updateUserLevel(userId,userLevel)
     }
 }
 

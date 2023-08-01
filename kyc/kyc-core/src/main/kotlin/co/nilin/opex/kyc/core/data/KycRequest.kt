@@ -1,9 +1,6 @@
-package co.nilin.opex.core.data
+package co.nilin.opex.kyc.core.data
 
-import co.nilin.opex.profile.core.data.profile.KycLevel
-import co.nilin.opex.profile.core.data.profile.KycLevelDetail
-import org.springframework.http.codec.multipart.FilePart
-import org.springframework.web.multipart.MultipartFile
+
 import java.time.LocalDateTime
 
  open class KycRequest {

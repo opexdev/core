@@ -64,7 +64,12 @@
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.kyc.ports</groupId>
-                <artifactId>kyc-kafka</artifactId>
+                <artifactId>kyc-submitter-kafka</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.kyc.ports</groupId>
+                <artifactId>kyc-eventlistener-kafka</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -72,11 +77,13 @@
                 <artifactId>kyc-postgres</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>co.nilin.opex.storage.app</groupId>
                 <artifactId>storage-app</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
         </dependencies>
     </dependencyManagement>
 

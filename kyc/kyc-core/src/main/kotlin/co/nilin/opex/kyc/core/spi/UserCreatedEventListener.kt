@@ -1,6 +1,6 @@
-package co.nilin.opex.profile.core.spi
+package co.nilin.opex.kyc.core.spi
 
-import co.nilin.opex.profile.core.data.event.UserCreatedEvent
+import co.nilin.opex.kyc.core.data.event.UserCreatedEvent
 
 
 interface UserCreatedEventListener {

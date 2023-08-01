@@ -4,6 +4,7 @@ import co.nilin.opex.profile.core.data.limitation.ActionType
 import co.nilin.opex.profile.core.data.limitation.LimitationReason
 import co.nilin.opex.profile.core.data.limitation.LimitationUpdateType
 import co.nilin.opex.profile.core.data.limitation.UpdateLimitationRequest
+import co.nilin.opex.profile.core.data.profile.KycLevel
 import co.nilin.opex.profile.core.data.profile.Profile
 import co.nilin.opex.profile.core.data.profile.ProfileHistory
 import co.nilin.opex.profile.core.spi.ProfilePersister
@@ -110,6 +111,13 @@ class ProfileManagementImp(private var profileRepository: ProfileRepository,
         return resp.toList()
     }
 
+    override  fun updateUserLevel(userId: String, userLevel: KycLevel) {
+        profileRepository.findByUserId(userId)?.block()?.let { profileModel ->
+            profileModel.kycLevel = userLevel
+            profileRepository.save(profileModel).block()
+
+        } ?: throw OpexException(OpexError.UserNotFound)
+    }
 
 
     fun isMajorChanges(oldData: ProfileModel, newData: Profile): Boolean {

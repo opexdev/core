@@ -1,7 +1,11 @@
 package co.nilin.opex.kyc.app.controller
 
-import co.nilin.opex.core.data.*
+import co.nilin.opex.kyc.core.data.*
 import co.nilin.opex.kyc.app.service.KycManagement
+import co.nilin.opex.kyc.core.data.KycStep
+import co.nilin.opex.kyc.core.data.ManualReviewRequest
+import co.nilin.opex.kyc.core.data.ManualUpdateRequest
+import co.nilin.opex.kyc.core.data.UploadDataRequest
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -18,10 +22,10 @@ class KycController(private val kycManagement: KycManagement) {
 
     @PostMapping("/{userId}")
     suspend fun uploadData(@PathVariable("userId") userId: String,
-                               @RequestBody uploadDataRequest: UploadDataRequest,
-                               @RequestParam("frame1") frame1: FilePart,
-                               @RequestParam("frame2") frame2: FilePart,
-                               @RequestParam("frame3") frame3: FilePart
+                           @RequestBody uploadDataRequest: UploadDataRequest,
+                           @RequestParam("frame1") frame1: FilePart,
+                           @RequestParam("frame2") frame2: FilePart,
+                           @RequestParam("frame3") frame3: FilePart
     ) {
         //todo check token
         uploadDataRequest.userId = userId
@@ -39,9 +43,9 @@ class KycController(private val kycManagement: KycManagement) {
     //todo just admin
     @PostMapping("/{processId}")
     suspend fun manualReview(@PathVariable("processId") processId: String,
-                               @RequestBody  manualReviewRequest: ManualReviewRequest,
+                             @RequestBody  manualReviewRequest: ManualReviewRequest,
 
-    ) {
+                             ) {
         manualReviewRequest.processId = processId
         manualReviewRequest.step = KycStep.ManualReview
         kycManagement.manualReview(manualReviewRequest)

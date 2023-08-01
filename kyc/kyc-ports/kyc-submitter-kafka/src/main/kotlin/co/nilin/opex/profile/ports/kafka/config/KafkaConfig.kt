@@ -1,7 +1,7 @@
 package co.nilin.opex.kyc.ports.kafka.config
 
 
-import co.nilin.opex.core.event.KycLevelUpdatedEvent
+import co.nilin.opex.kyc.core.data.event.KycLevelUpdatedEvent
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value

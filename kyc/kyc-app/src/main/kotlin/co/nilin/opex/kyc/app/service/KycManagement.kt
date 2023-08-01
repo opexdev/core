@@ -1,10 +1,10 @@
 package co.nilin.opex.kyc.app.service
 
 
-import co.nilin.opex.core.data.*
+import co.nilin.opex.kyc.core.data.*
 import org.springframework.stereotype.Component
 import org.slf4j.LoggerFactory
-import co.nilin.opex.core.spi.KYCPersister
+import co.nilin.opex.kyc.core.spi.KYCPersister
 import co.nilin.opex.storage.app.controller.FileController
 
 @Component
@@ -31,7 +31,7 @@ class KycManagement(
     suspend fun manualReview(manualReviewRequest: ManualReviewRequest): KycResponse? {
         return kycPersister.kycProcess(manualReviewRequest)
     }
-    suspend fun manualUpdate(manualUpdateRequest: ManualUpdateRequest): KycResponse ?{
+    suspend fun manualUpdate(manualUpdateRequest: ManualUpdateRequest): KycResponse?{
         return kycPersister.kycProcess(manualUpdateRequest)
     }
 

@@ -60,10 +60,12 @@ init_secrets() {
   vault write auth/app-id/map/app-id/scanner-scheduler value=backend-policy display_name=scanner-scheduler
   vault write auth/app-id/map/app-id/opex-referral value=backend-policy display_name=opex-referral
   vault write auth/app-id/map/app-id/opex-profile value=backend-policy display_name=opex-profile
+  vault write auth/app-id/map/app-id/opex-profile value=backend-policy display_name=opex-kyc
+
 
   ## Enable user-id
   vault write auth/app-id/map/user-id/${BACKEND_USER} \
-    value=opex-wallet,opex-websocket,opex-eventlog,opex-auth,opex-accountant,opex-api,opex-market,opex-bc-gateway,opex-payment,opex-admin,bitcoin-scanner,ethereum-scanner,tron-scanner,scanner-scheduler,opex-referral,opex-profile
+    value=opex-wallet,opex-websocket,opex-eventlog,opex-auth,opex-accountant,opex-api,opex-market,opex-bc-gateway,opex-payment,opex-admin,bitcoin-scanner,ethereum-scanner,tron-scanner,scanner-scheduler,opex-referral,opex-profile,opex-kyc
 
   ## Check login app-id
   vault write auth/app-id/login/opex-accountant user_id=${BACKEND_USER}
@@ -82,6 +84,7 @@ init_secrets() {
   vault write auth/app-id/login/scanner-scheduler user_id=${BACKEND_USER}
   vault write auth/app-id/login/opex-referral user_id=${BACKEND_USER}
   vault write auth/app-id/login/opex-profile user_id=${BACKEND_USER}
+  vault write auth/app-id/login/opex-kyc user_id=${BACKEND_USER}
 
   ## Add secret values
   vault kv put secret/opex smtppass=${SMTP_PASS}
@@ -101,6 +104,7 @@ init_secrets() {
   vault kv put secret/scanner-scheduler dbusername=${DB_USER} dbpassword=${DB_PASS}
   vault kv put secret/opex-referral dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}
   vault kv put secret/opex-profile dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}
+  vault kv put secret/opex-kyc dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}
 
 }
 

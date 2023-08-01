@@ -1,4 +1,4 @@
-package co.nilin.opex.core.data
+package co.nilin.opex.kyc.core.data
 
 import org.springframework.http.codec.multipart.FilePart
 

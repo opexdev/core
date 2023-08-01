@@ -19,7 +19,7 @@ import org.springframework.kafka.listener.*
 import org.springframework.kafka.support.serializer.JsonDeserializer
 import org.springframework.util.backoff.FixedBackOff
 import java.util.regex.Pattern
-import co.nilin.opex.profile.core.data.profile.UserCreatedEvent
+import co.nilin.opex.profile.core.data.event.UserCreatedEvent
 @Configuration
 class KafkaConfig {
     private val logger = LoggerFactory.getLogger(KafkaConfig::class.java)
@@ -37,7 +37,7 @@ class KafkaConfig {
             ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
             ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JsonDeserializer::class.java,
             JsonDeserializer.TRUSTED_PACKAGES to "co.nilin.opex.*",
-            JsonDeserializer.TYPE_MAPPINGS to "user_created_event:co.nilin.opex.profile.core.data.profile.UserCreatedEvent"
+            JsonDeserializer.TYPE_MAPPINGS to "user_created_event:co.nilin.opex.profile.core.data.event.UserCreatedEvent"
 
         )
     }

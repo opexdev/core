@@ -1,7 +1,7 @@
 package co.nilin.opex.kyc.ports.postgres.model.base
 
-import co.nilin.opex.core.data.KycStatus
-import co.nilin.opex.core.data.KycStep
+import co.nilin.opex.kyc.core.data.KycStatus
+import co.nilin.opex.kyc.core.data.KycStep
 import java.time.LocalDateTime
 
 open class KycProcess {

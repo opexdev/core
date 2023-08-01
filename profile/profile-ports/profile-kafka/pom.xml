@@ -43,6 +43,11 @@
          </dependency>
 
 
+         <dependency>
+             <groupId>co.nilin.opex.kyc</groupId>
+             <artifactId>kyc-core</artifactId>
+         </dependency>
+
      </dependencies>
 
 

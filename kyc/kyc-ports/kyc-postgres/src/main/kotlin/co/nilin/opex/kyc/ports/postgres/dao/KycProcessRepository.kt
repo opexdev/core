@@ -1,6 +1,6 @@
 package co.nilin.opex.kyc.ports.postgres.dao
 
-import co.nilin.opex.core.data.KycStep
+import co.nilin.opex.kyc.core.data.KycStep
 import co.nilin.opex.kyc.ports.postgres.model.base.KycProcess
 import co.nilin.opex.kyc.ports.postgres.model.entity.KycProcessModel
 import kotlinx.coroutines.flow.Flow
