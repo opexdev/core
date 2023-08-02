@@ -92,11 +92,7 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-consul-all</artifactId>
         </dependency>
-        <dependency>
-            <groupId>co.nilin.opex.profile</groupId>
-            <artifactId>profile-core</artifactId>
-        </dependency>
-
+       
         <dependency>
             <groupId>co.nilin.opex.kyc</groupId>
             <artifactId>kyc-core</artifactId>
@@ -114,8 +110,8 @@
             <artifactId>kyc-postgres</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.storage.app</groupId>
-            <artifactId>storage-app</artifactId>
+            <groupId>co.nilin.opex.kyc.ports</groupId>
+            <artifactId>storage-proxy</artifactId>
         </dependency>
 
     </dependencies>

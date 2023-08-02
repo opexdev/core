@@ -10,9 +10,9 @@ import co.nilin.opex.kyc.ports.postgres.model.base.UserStatus
 import co.nilin.opex.kyc.ports.postgres.model.entity.KycProcessModel
 import co.nilin.opex.kyc.ports.postgres.model.entity.UserStatusModel
 import co.nilin.opex.kyc.ports.postgres.utils.verifyRequest
-import co.nilin.opex.profile.core.data.profile.KycLevel
-import co.nilin.opex.profile.core.data.profile.KycLevelDetail
-import co.nilin.opex.profile.core.utils.convert
+import co.nilin.opex.kyc.core.data.KycLevel
+import co.nilin.opex.kyc.core.data.KycLevelDetail
+import co.nilin.opex.kyc.core.utils.convert
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.reactive.awaitFirstOrNull

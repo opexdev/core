@@ -1,10 +1,10 @@
 package co.nilin.opex.kyc.ports.postgres.utils
 
+import co.nilin.opex.kyc.core.data.KycLevelDetail
 import co.nilin.opex.kyc.core.data.KycRequest
 import co.nilin.opex.kyc.core.data.KycStep
 import co.nilin.opex.kyc.ports.postgres.dao.KycProcessRepository
 import co.nilin.opex.kyc.ports.postgres.dao.UserStatusRepository
-import co.nilin.opex.profile.core.data.profile.KycLevelDetail
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 

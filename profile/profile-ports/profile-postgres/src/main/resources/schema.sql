@@ -17,12 +17,9 @@ CREATE TABLE IF NOT EXISTS profile
     postal_code       VARCHAR(100),
     creator           VARCHAR(100),
     last_update_date  TIMESTAMP DEFAULT CURRENT_DATE,
-    required_user_actions VARCHAR(100),
-    required_admin_actions VARCHAR(100),
     kyc_level varchar(100)
  );
 
-Alter table profile add column     kyc_level varchar(100);
 
 CREATE TABLE IF NOT EXISTS profile_history
 (
@@ -47,12 +44,9 @@ CREATE TABLE IF NOT EXISTS profile_history
     postal_code            VARCHAR(100),
     change_request_date TIMESTAMP,
     change_request_type VARCHAR(100),
-    required_user_actions VARCHAR(100),
-    required_admin_actions VARCHAR(100),
     kyc_level varchar(100)
 
     );
-Alter table profile_history add column     kyc_level varchar(100);
 
 
 CREATE TABLE IF NOT EXISTS limitation

@@ -25,6 +25,7 @@
     <module>kyc-ports/kyc-postgres</module>
     <module>kyc-ports/kyc-eventlistener-kafka</module>
     <module>kyc-ports/kyc-submitter-kafka</module>
+    <module>kyc-ports/storage-proxy</module>
 
 </modules>
 
@@ -52,11 +53,7 @@
                 <artifactId>interceptors</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>co.nilin.opex.profile</groupId>
-                <artifactId>profile-core</artifactId>
-                <version>${project.version}</version>
-            </dependency>
+
             <dependency>
                 <groupId>co.nilin.opex.kyc</groupId>
                 <artifactId>kyc-core</artifactId>
@@ -77,12 +74,12 @@
                 <artifactId>kyc-postgres</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
             <dependency>
-                <groupId>co.nilin.opex.storage.app</groupId>
-                <artifactId>storage-app</artifactId>
+                <groupId>co.nilin.opex.kyc.ports</groupId>
+                <artifactId>storage-proxy</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
 
         </dependencies>
     </dependencyManagement>

@@ -192,7 +192,7 @@ services:
   postgres-kyc:
     <<: *postgres-db
     volumes:
-      - profile-data:/var/lib/postgresql/data/
+      - kyc-data:/var/lib/postgresql/data/
   accountant:
     image: ghcr.io/opexdev/accountant
     environment:
@@ -669,6 +669,7 @@ volumes:
   elasticsearch-data:
   grafana-data:
   profile-data:
+  kyc-data:
 networks:
   default:
     driver: bridge

@@ -1,4 +1,4 @@
-package co.nilin.opex.profile.ports.kafka.config
+package co.nilin.opex.kyc.ports.kafka.config
 
 import org.apache.kafka.clients.admin.NewTopic
 import org.springframework.beans.factory.annotation.Autowired

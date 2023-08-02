@@ -63,4 +63,4 @@ services:
   profile:
     build: profile/profile-app
   kyc:
-    build: profile/kyc-app
+    build: kyc/kyc-app

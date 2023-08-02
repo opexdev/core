@@ -1,12 +1,12 @@
-package co.nilin.opex.profile.ports.kafka.consumer
+package co.nilin.opex.kyc.ports.kafka.consumer
 
 
-import co.nilin.opex.profile.core.spi.UserCreatedEventListener
+import co.nilin.opex.kyc.core.data.event.UserCreatedEvent
+import co.nilin.opex.kyc.core.spi.UserCreatedEventListener
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.listener.MessageListener
 import org.springframework.stereotype.Component
-import co.nilin.opex.profile.core.data.event.UserCreatedEvent
 @Component
 class UserCreatedKafkaListener : MessageListener<String, UserCreatedEvent> {
     val eventListeners = arrayListOf<UserCreatedEventListener>()

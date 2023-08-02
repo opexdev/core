@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository
 interface KycProcessRepository : ReactiveCrudRepository<KycProcessModel,Long> {
 
     fun findByUserId(userId:String): Flow<KycProcessModel>?
-    fun findByUserIdAndKycStep(userId:String,kycStep: KycStep): Flow<KycProcessModel>?
+    fun findByUserIdAndStep(userId:String,kycStep: KycStep): Flow<KycProcessModel>?
 
     fun findByUserIdOrderByCreateDateDesc(userId:String): Flow<KycProcessModel>?
 

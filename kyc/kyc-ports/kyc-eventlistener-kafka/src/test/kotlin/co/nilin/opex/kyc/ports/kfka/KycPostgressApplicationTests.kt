@@ -1,4 +1,4 @@
-package co.nilin.opex.profile.ports.kafka
+package co.nilin.opex.kyc.ports.kfka
 
 //@SpringBootTest
 //class ProfilePostgressApplicationTests {

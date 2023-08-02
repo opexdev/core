@@ -1,4 +1,4 @@
-package co.nilin.opex.profile.ports.kafka.service
+package co.nilin.opex.kyc.ports.kafka.service
 
 
 import co.nilin.opex.kyc.core.data.event.KycLevelUpdatedEvent

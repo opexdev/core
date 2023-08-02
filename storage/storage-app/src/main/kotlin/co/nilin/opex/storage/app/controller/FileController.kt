@@ -25,8 +25,8 @@ class FileController(
 ) {
     data class FileUploadResponse(val path: String)
 
-    //todo check internal SecurityContext
-     suspend fun upload(uid: String, file: FilePart?, nameWithoutExtension: String? = null): FileUploadResponse {
+
+   private  suspend fun upload(uid: String, file: FilePart?, nameWithoutExtension: String? = null): FileUploadResponse {
         if (file == null) throw OpexException(OpexError.BadRequest, "File Not Provided")
         val filename = file.filename()
         val ext = filename.replace(Regex(".+(?<=\\.)"), "")

@@ -5,12 +5,13 @@ import co.nilin.opex.kyc.core.data.*
 import org.springframework.stereotype.Component
 import org.slf4j.LoggerFactory
 import co.nilin.opex.kyc.core.spi.KYCPersister
-import co.nilin.opex.storage.app.controller.FileController
+import co.nilin.opex.kyc.core.spi.StorageProxy
+
 
 @Component
 class KycManagement(
         private val kycPersister: KYCPersister,
-        private val fileController: FileController
+        private val storageProxy: StorageProxy
 ) {
     private val logger = LoggerFactory.getLogger(KycManagement::class.java)
 
@@ -21,7 +22,7 @@ class KycManagement(
     suspend fun uploadData(uploadDataRequest: UploadDataRequest): KycResponse? {
         var failsPath = mutableMapOf<String, String>()
         for (data in uploadDataRequest.files) {
-            val path = fileController.upload(uploadDataRequest.processId!!, data.value, data.key).path
+            val path = storageProxy.uploadFile(data.value, data.key,uploadDataRequest.processId!!).path
             failsPath[data.key] = path
         }
         uploadDataRequest.filesPath=failsPath

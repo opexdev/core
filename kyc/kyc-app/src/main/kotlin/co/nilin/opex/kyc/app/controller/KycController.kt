@@ -9,6 +9,7 @@ import co.nilin.opex.kyc.core.data.UploadDataRequest
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -20,7 +21,7 @@ import java.util.UUID
 @RequestMapping("/v2/kyc")
 class KycController(private val kycManagement: KycManagement) {
 
-    @PostMapping("/{userId}")
+    @PostMapping("/upload/{userId}")
     suspend fun uploadData(@PathVariable("userId") userId: String,
                            @RequestBody uploadDataRequest: UploadDataRequest,
                            @RequestParam("frame1") frame1: FilePart,
@@ -41,7 +42,7 @@ class KycController(private val kycManagement: KycManagement) {
     }
 
     //todo just admin
-    @PostMapping("/{processId}")
+    @PostMapping("/review/{processId}")
     suspend fun manualReview(@PathVariable("processId") processId: String,
                              @RequestBody  manualReviewRequest: ManualReviewRequest,
 
@@ -52,7 +53,7 @@ class KycController(private val kycManagement: KycManagement) {
     }
     //todo just admin
 
-    @PostMapping("/{userId}")
+    @PutMapping("/{userId}")
     suspend fun manualUpdate(@PathVariable("userId") userId: String,
                              @RequestBody  manualUpdateRequest: ManualUpdateRequest,
                              ) {

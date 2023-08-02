@@ -54,9 +54,9 @@ services:
   profile:
     image: ghcr.io/opexdev/profile:$TAG
     build: profile/profile-app
-  profile:
+  kyc:
     image: ghcr.io/opexdev/kyc:$TAG
-    build: profile/kyc-app
+    build: kyc/kyc-app
   captcha:
     image: ghcr.io/opexdev/captcha:$TAG
     build: captcha/captcha-app

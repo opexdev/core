@@ -1,6 +1,6 @@
 package co.nilin.opex.kyc.ports.postgres.model.base
 
-import co.nilin.opex.profile.core.data.profile.KycLevelDetail
+import co.nilin.opex.kyc.core.data.KycLevelDetail
 import java.time.LocalDateTime
 
 open class UserStatus{
