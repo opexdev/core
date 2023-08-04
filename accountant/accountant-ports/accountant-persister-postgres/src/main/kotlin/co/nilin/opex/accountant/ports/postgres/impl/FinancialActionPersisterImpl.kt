@@ -3,6 +3,7 @@ package co.nilin.opex.accountant.ports.postgres.impl
 import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.FinancialActionStatus
 import co.nilin.opex.accountant.core.spi.FinancialActionPersister
+import co.nilin.opex.accountant.core.spi.JsonMapper
 import co.nilin.opex.accountant.ports.postgres.dao.FinancialActionRepository
 import co.nilin.opex.accountant.ports.postgres.model.FinancialActionModel
 import kotlinx.coroutines.reactive.awaitFirstOrNull
@@ -13,7 +14,9 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 
 @Component
-class FinancialActionPersisterImpl(private val financialActionRepository: FinancialActionRepository) :
+class FinancialActionPersisterImpl(
+    private val financialActionRepository: FinancialActionRepository, private val jsonMapper: JsonMapper
+) :
     FinancialActionPersister {
 
     override suspend fun persist(financialActions: List<FinancialAction>): List<FinancialAction> {
@@ -30,6 +33,8 @@ class FinancialActionPersisterImpl(private val financialActionRepository: Financ
                 it.senderWalletType,
                 it.receiver,
                 it.receiverWalletType,
+                it.category,
+                jsonMapper.serialize(it.detail),
                 "",
                 "",
                 it.createDate
@@ -53,6 +58,8 @@ class FinancialActionPersisterImpl(private val financialActionRepository: Financ
                     senderWalletType,
                     receiver,
                     receiverWalletType,
+                    category,
+                    jsonMapper.serialize(detail),
                     "",
                     "",
                     createDate,

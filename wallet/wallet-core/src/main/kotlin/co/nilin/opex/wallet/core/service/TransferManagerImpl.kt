@@ -11,7 +11,6 @@ import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.Transaction
 import co.nilin.opex.wallet.core.spi.*
 import org.springframework.stereotype.Component
-import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
@@ -59,6 +58,8 @@ class TransferManagerImpl(
                 amountToTransfer,
                 transferCommand.description,
                 transferCommand.transferRef,
+                transferCommand.transferCategory,
+                transferCommand.additionalData,
                 LocalDateTime.now()
             )
         )

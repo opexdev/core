@@ -4,7 +4,10 @@ import co.nilin.opex.accountant.app.listener.AccountantEventListener
 import co.nilin.opex.accountant.app.listener.AccountantTempEventListener
 import co.nilin.opex.accountant.app.listener.AccountantTradeListener
 import co.nilin.opex.accountant.app.listener.OrderListener
-import co.nilin.opex.accountant.core.api.*
+import co.nilin.opex.accountant.core.api.FeeCalculator
+import co.nilin.opex.accountant.core.api.FinancialActionJobManager
+import co.nilin.opex.accountant.core.api.OrderManager
+import co.nilin.opex.accountant.core.api.TradeManager
 import co.nilin.opex.accountant.core.service.FinancialActionJobManagerImpl
 import co.nilin.opex.accountant.core.service.OrderManagerImpl
 import co.nilin.opex.accountant.core.service.TradeManagerImpl
@@ -13,6 +16,7 @@ import co.nilin.opex.accountant.ports.kafka.listener.consumer.EventKafkaListener
 import co.nilin.opex.accountant.ports.kafka.listener.consumer.OrderKafkaListener
 import co.nilin.opex.accountant.ports.kafka.listener.consumer.TempEventKafkaListener
 import co.nilin.opex.accountant.ports.kafka.listener.consumer.TradeKafkaListener
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -21,6 +25,24 @@ import org.springframework.scheduling.annotation.EnableScheduling
 @Configuration
 @EnableScheduling
 class AppConfig {
+
+    @Bean
+    fun getJsonMapper(objectMapper: ObjectMapper): JsonMapper {
+        return object : JsonMapper {
+            override fun serialize(input: Any): String? {
+                return objectMapper.writeValueAsString(input)
+            }
+
+            override fun <T> deserialize(input: String, t: Class<T>): T {
+                return objectMapper.readValue(input, t)
+            }
+
+            override fun toMap(input: Any): Map<String, Any> {
+                return objectMapper.convertValue(input, Map::class.java) as Map<String, Any>
+            }
+
+        }
+    }
 
     @Bean
     fun getFinancialActionJobManager(
@@ -46,6 +68,7 @@ class AppConfig {
         tempEventRepublisher: TempEventRepublisher,
         richOrderPublisher: RichOrderPublisher,
         financialActionPublisher: FinancialActionPublisher,
+        jsonMapper: JsonMapper
     ): OrderManager {
         return OrderManagerImpl(
             pairConfigLoader,
@@ -55,7 +78,8 @@ class AppConfig {
             orderPersister,
             tempEventPersister,
             richOrderPublisher,
-            financialActionPublisher
+            financialActionPublisher,
+            jsonMapper
         )
     }
 
@@ -69,6 +93,7 @@ class AppConfig {
         richOrderPublisher: RichOrderPublisher,
         feeCalculator: FeeCalculator,
         financialActionPublisher: FinancialActionPublisher,
+        jsonMapper: JsonMapper
     ): TradeManager {
         return TradeManagerImpl(
             financeActionPersister,
@@ -78,7 +103,8 @@ class AppConfig {
             richTradePublisher,
             richOrderPublisher,
             feeCalculator,
-            financialActionPublisher
+            financialActionPublisher,
+            jsonMapper
         )
     }
 

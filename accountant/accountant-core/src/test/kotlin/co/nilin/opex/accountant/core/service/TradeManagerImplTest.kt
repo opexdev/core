@@ -1,9 +1,6 @@
 package co.nilin.opex.accountant.core.service
 
-import co.nilin.opex.accountant.core.model.FinancialAction
-import co.nilin.opex.accountant.core.model.Order
-import co.nilin.opex.accountant.core.model.PairConfig
-import co.nilin.opex.accountant.core.model.PairFeeConfig
+import co.nilin.opex.accountant.core.model.*
 import co.nilin.opex.accountant.core.spi.*
 import co.nilin.opex.matching.engine.core.eventh.events.SubmitOrderEvent
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
@@ -29,6 +26,7 @@ internal class TradeManagerImplTest {
     private val richTradePublisher = mockk<RichTradePublisher>()
     private val userLevelLoader = mockk<UserLevelLoader>()
     private val financialActionPublisher = mockk<FinancialActionPublisher>()
+    private val jsonMapper = JsonMapperTestImpl()
 
     private val orderManager = OrderManagerImpl(
         pairConfigLoader,
@@ -38,7 +36,8 @@ internal class TradeManagerImplTest {
         orderPersister,
         tempEventPersister,
         richOrderPublisher,
-        financialActionPublisher
+        financialActionPublisher,
+        jsonMapper
     )
 
     private val tradeManager = TradeManagerImpl(
@@ -48,8 +47,9 @@ internal class TradeManagerImplTest {
         tempEventPersister,
         richTradePublisher,
         richOrderPublisher,
-        FeeCalculatorImpl("0x0"),
-        financialActionPublisher
+        FeeCalculatorImpl("0x0", jsonMapper),
+        financialActionPublisher,
+        jsonMapper
     )
 
     init {
@@ -109,6 +109,12 @@ internal class TradeManagerImplTest {
         val tradeFinancialActions = tradeManager.handleTrade(tradeEvent)
 
         assertThat(tradeFinancialActions.size).isEqualTo(4)
+        assertThat(tradeFinancialActions[0].category).isEqualTo(FinancialActionCategory.TRADE)
+        assertThat(tradeFinancialActions[0].detail).containsKeys("userLevel", "direction", "matchConstraint", "orderType", "eventDate", "tradeId", "makerOrderId", "takerOrderId")
+        assertThat(tradeFinancialActions[1].category).isEqualTo(FinancialActionCategory.TRADE)
+        assertThat(tradeFinancialActions[2].category).isEqualTo(FinancialActionCategory.FEE)
+        assertThat(tradeFinancialActions[3].category).isEqualTo(FinancialActionCategory.FEE)
+
         assertThat((makerSubmitOrderEvent.price.toBigDecimal() * pairConfig.rightSideFraction).stripTrailingZeros())
             .isEqualTo(tradeFinancialActions[0].amount.stripTrailingZeros())
     }
