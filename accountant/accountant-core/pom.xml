@@ -57,5 +57,10 @@
             <groupId>io.mockk</groupId>
             <artifactId>mockk</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

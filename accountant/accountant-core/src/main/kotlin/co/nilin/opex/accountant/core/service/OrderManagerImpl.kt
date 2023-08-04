@@ -5,6 +5,7 @@ import co.nilin.opex.accountant.core.inout.OrderStatus
 import co.nilin.opex.accountant.core.inout.RichOrder
 import co.nilin.opex.accountant.core.inout.RichOrderUpdate
 import co.nilin.opex.accountant.core.model.FinancialAction
+import co.nilin.opex.accountant.core.model.FinancialActionCategory
 import co.nilin.opex.accountant.core.model.FinancialActionStatus
 import co.nilin.opex.accountant.core.model.Order
 import co.nilin.opex.accountant.core.spi.*
@@ -23,7 +24,8 @@ open class OrderManagerImpl(
     private val orderPersister: OrderPersister,
     private val tempEventPersister: TempEventPersister,
     private val richOrderPublisher: RichOrderPublisher,
-    private val financialActionPublisher: FinancialActionPublisher
+    private val financialActionPublisher: FinancialActionPublisher,
+    private val jsonMapper: JsonMapper,
 ) : OrderManager {
 
     @Transactional
@@ -51,26 +53,17 @@ open class OrderManagerImpl(
         amount for sell (ask): quantity
         amount for buy (bid): quantity * price
          */
-        val financialAction = FinancialAction(
-            null,
-            SubmitOrderEvent::class.simpleName!!,
-            submitOrderEvent.ouid,
-            symbol,
-            if (submitOrderEvent.direction == OrderDirection.ASK) {
-                BigDecimal(submitOrderEvent.quantity).multiply(pairFeeConfig.pairConfig.leftSideFraction)
-            } else {
-                BigDecimal(submitOrderEvent.quantity).multiply(pairFeeConfig.pairConfig.leftSideFraction)
-                    .multiply(submitOrderEvent.price.toBigDecimal())
-                    .multiply(pairFeeConfig.pairConfig.rightSideFraction)
-            },
-            submitOrderEvent.uuid,
-            "main",
-            submitOrderEvent.uuid,
-            "exchange",
-            LocalDateTime.now()
-        )
+
+        val amount = if (submitOrderEvent.direction == OrderDirection.ASK) {
+            BigDecimal(submitOrderEvent.quantity).multiply(pairFeeConfig.pairConfig.leftSideFraction)
+        } else {
+            BigDecimal(submitOrderEvent.quantity).multiply(pairFeeConfig.pairConfig.leftSideFraction)
+                .multiply(submitOrderEvent.price.toBigDecimal())
+                .multiply(pairFeeConfig.pairConfig.rightSideFraction)
+        }
+
         //store order (ouid, uuid, fees, userlevel, pair, direction, price, quantity, filledQ, status, transfered)
-        orderPersister.save(
+        val order = orderPersister.save(
             Order(
                 submitOrderEvent.pair.toString(),
                 submitOrderEvent.ouid,
@@ -92,10 +85,24 @@ open class OrderManagerImpl(
                 submitOrderEvent.quantity.toBigDecimal()
                     .multiply(pairFeeConfig.pairConfig.leftSideFraction),
                 BigDecimal(submitOrderEvent.quantity - submitOrderEvent.remainedQuantity).multiply(pairFeeConfig.pairConfig.leftSideFraction),
-                financialAction.amount,
-                financialAction.amount,
+                amount,
+                amount,
                 OrderStatus.REQUESTED.code
             )
+        )
+        val financialAction = FinancialAction(
+            null,
+            SubmitOrderEvent::class.simpleName!!,
+            submitOrderEvent.ouid,
+            symbol,
+            amount,
+            submitOrderEvent.uuid,
+            "main",
+            submitOrderEvent.uuid,
+            "exchange",
+            LocalDateTime.now(),
+            FinancialActionCategory.ORDER_CREATE,
+            createMap(submitOrderEvent, order)
         )
         return financialActionPersister.persist(listOf(financialAction))
         /*publishFinancialAction(financialAction)
@@ -120,6 +127,7 @@ open class OrderManagerImpl(
     override suspend fun handleUpdateOrder(updatedOrderEvent: UpdatedOrderEvent): List<FinancialAction> {
         TODO("Not yet implemented")
     }
+
 
     @Transactional
     override suspend fun handleRejectOrder(rejectOrderEvent: RejectOrderEvent): List<FinancialAction> {
@@ -151,7 +159,9 @@ open class OrderManagerImpl(
             "exchange",
             rejectOrderEvent.uuid,
             "main",
-            LocalDateTime.now()
+            LocalDateTime.now(),
+            FinancialActionCategory.ORDER_CANCEL,
+            createMap(rejectOrderEvent, order)
         )
         //update order status
         order.status = OrderStatus.REJECTED.code
@@ -169,6 +179,7 @@ open class OrderManagerImpl(
         /*publishFinancialAction(financialAction)
         return fa*/
     }
+
 
     @Transactional
     override suspend fun handleCancelOrder(cancelOrderEvent: CancelOrderEvent): List<FinancialAction> {
@@ -197,7 +208,9 @@ open class OrderManagerImpl(
             "exchange",
             cancelOrderEvent.uuid,
             "main",
-            LocalDateTime.now()
+            LocalDateTime.now(),
+            FinancialActionCategory.ORDER_CANCEL,
+            createMap(cancelOrderEvent, order)
         )
         //update order status
         order.status = OrderStatus.CANCELED.code
@@ -215,6 +228,7 @@ open class OrderManagerImpl(
         /*publishFinancialAction(financialAction)
         return fa*/
     }
+
 
     private suspend fun publishRichOrder(order: Order, remainedQuantity: BigDecimal, status: OrderStatus? = null) {
         richOrderPublisher.publish(
@@ -259,4 +273,23 @@ open class OrderManagerImpl(
             financialActionPersister.updateStatus(financialAction.uuid, FinancialActionStatus.PROCESSED)
         }
     }
+
+    private fun createMap(rejectOrderEvent: RejectOrderEvent, order: Order): Map<String, Any> {
+        val orderMap: Map<String, Any> = jsonMapper.toMap(order)
+        val eventMap: Map<String, Any> = jsonMapper.toMap(rejectOrderEvent)
+        return orderMap + eventMap
+    }
+
+    private fun createMap(cancelOrderEvent: CancelOrderEvent, order: Order): Map<String, Any> {
+        val orderMap: Map<String, Any> = jsonMapper.toMap(order)
+        val eventMap: Map<String, Any> = jsonMapper.toMap(cancelOrderEvent)
+        return orderMap + eventMap
+    }
+
+    private fun createMap(submitOrderEvent: SubmitOrderEvent, order: Order): Map<String, Any> {
+        val orderMap: Map<String, Any> = jsonMapper.toMap(order)
+        val eventMap: Map<String, Any> = jsonMapper.toMap(submitOrderEvent)
+        return orderMap + eventMap
+    }
+
 }

@@ -11,6 +11,7 @@ spring:
     allow-circular-references: true
   kafka:
     bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
+    replica: 1
     consumer:
       group-id: accountant
   r2dbc:
@@ -47,4 +48,4 @@ management:
 app:
   address: 1
   wallet:
-    url: ""
+    url: "http://localhost:8090"

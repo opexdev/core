@@ -35,7 +35,9 @@ class FinancialActionJobManagerImpl(
                     it.receiver,
                     it.amount,
                     it.eventType + it.pointer,
-                    null
+                    it.id.toString(),
+                    it.category.toString(),
+                    it.detail
                 )
                 financialActionPersister.updateStatusNewTx(it, FinancialActionStatus.PROCESSED)
 
