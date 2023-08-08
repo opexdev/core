@@ -144,7 +144,7 @@ object Valid {
         "system",
         "main",
         FinancialActionCategory.TRADE,
-        "",
+        "{}",
         "",
         "",
         currentTime,
