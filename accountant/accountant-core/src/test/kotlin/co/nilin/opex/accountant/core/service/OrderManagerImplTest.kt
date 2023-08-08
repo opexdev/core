@@ -175,10 +175,10 @@ internal class OrderManagerImplTest {
             assertThat(senderWalletType).isEqualTo(financialActions[0].senderWalletType)
             assertThat(receiver).isEqualTo(financialActions[0].receiver)
             assertThat(receiverWalletType).isEqualTo(financialActions[0].receiverWalletType)
-            assertThat(category).isEqualTo(FinancialActionCategory.ORDER_CREATE)
-            assertThat(detail).containsKeys("userLevel", "direction", "matchConstraint", "orderType", "eventDate")
-
         }
+        assertThat(financialActions[0].category).isEqualTo(FinancialActionCategory.ORDER_CREATE)
+        assertThat(financialActions[0].detail).containsKeys("userLevel", "direction", "matchConstraint", "orderType", "eventDate")
+
     }
 
     @Test
