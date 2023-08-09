@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 enum class FinancialActionCategory {
-    ORDER_CREATE, ORDER_CANCEL, TRADE, FEE
+    ORDER_CREATE, ORDER_CANCEL, ORDER_FINALIZED, TRADE, FEE
 }
 
 class FinancialAction(
@@ -26,7 +26,6 @@ class FinancialAction(
     val id: Long? = null
 ) {
 
-
     override fun equals(other: Any?): Boolean {
         if (other == null || other !is FinancialAction) return false
         return if (id != null && other.id != null)
@@ -35,9 +34,8 @@ class FinancialAction(
             uuid == other.uuid
     }
 
-
     override fun toString(): String {
-        return "FinancialAction(id=$id, parent=$parent, eventType='$eventType', pointer='$pointer', symbol='$symbol', amount=$amount, sender='$sender', senderWalletType='$senderWalletType', receiver='$receiver', receiverWalletType='$receiverWalletType', createDate=$createDate)"
+        return "FinancialAction(parent=$parent, eventType='$eventType', pointer='$pointer', symbol='$symbol', amount=$amount, sender='$sender', senderWalletType='$senderWalletType', receiver='$receiver', receiverWalletType='$receiverWalletType', createDate=$createDate, category=$category, detail=$detail, status=$status, uuid='$uuid', id=$id)"
     }
 
     override fun hashCode(): Int {
