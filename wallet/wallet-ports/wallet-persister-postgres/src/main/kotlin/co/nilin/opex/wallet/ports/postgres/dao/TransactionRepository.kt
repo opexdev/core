@@ -84,6 +84,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
     @Query(
         """
         select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
+        , t.transfer_category as category, t.transfer_detail_json as detail
         from wallet as w
         inner join wallet_owner as wo on (w.owner = wo.id)
         inner join transaction as t on (w.id = t.dest_wallet)
@@ -104,6 +105,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
     @Query(
         """
         select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
+        , t.transfer_category as category, t.transfer_detail_json as detail
         from wallet as w
         inner join wallet_owner as wo on (w.owner = wo.id)
         inner join transaction as t on (w.id = t.source_wallet)
@@ -123,6 +125,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
     @Query(
         """
         select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
+               , t.transfer_category as category, t.transfer_detail_json as detail
         from wallet as w
         inner join wallet_owner as wo on (w.owner = wo.id)
         inner join transaction as t on (w.id = t.dest_wallet)
@@ -145,6 +148,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
     @Query(
         """
         select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
+        , t.transfer_category as category, t.transfer_detail_json as detail
         from wallet as w
         inner join wallet_owner as wo on (w.owner = wo.id)
         inner join transaction as t on (w.id = t.source_wallet)
@@ -161,6 +165,32 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
         @Param("startTime") startTime: LocalDateTime,
         @Param("endTime") endTime: LocalDateTime,
         @Param("limit") limit: Int,
+    ): Flux<DepositWithdrawTransaction>
+
+    @Query(
+        """
+        select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
+        , t.transfer_category as category, t.transfer_detail_json as detail
+        from wallet as w
+        inner join wallet_owner as wo on (w.owner = wo.id)
+        inner join transaction as t on w.id in (t.source_wallet, t.dest_wallet)
+        where wo.uuid = :uuid
+        and t.transaction_date > :startTime 
+        and t.transaction_date <= :endTime
+        and (:category is null or t.transfer_category = :category) 
+        and (:currency is null or w.currency = :currency) 
+        limit :limit
+        offset :offset
+        """
+    )
+    suspend fun findTransactions(
+        @Param("uuid") uuid: String,
+        @Param("currency") currency: String?,
+        @Param("category") category: String?,
+        @Param("startTime") startTime: LocalDateTime,
+        @Param("endTime") endTime: LocalDateTime,
+        @Param("limit") limit: Int,
+        @Param("offset") offset: Int,
     ): Flux<DepositWithdrawTransaction>
 
 }

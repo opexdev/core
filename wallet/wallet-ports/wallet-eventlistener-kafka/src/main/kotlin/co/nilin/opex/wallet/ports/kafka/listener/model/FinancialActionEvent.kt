@@ -14,6 +14,8 @@ class FinancialActionEvent {
     lateinit var receiverWalletType: String
     lateinit var createDate: LocalDateTime
     var transferRef: String? = null
+    lateinit var transferCategory: String
+    var additionalData: Map<String, Any>? = null
     lateinit var description: String
 
     constructor() {
@@ -30,7 +32,9 @@ class FinancialActionEvent {
         receiverWalletType: String,
         createDate: LocalDateTime,
         transferRef: String,
-        description: String
+        description: String,
+        transferCategory: String,
+        additionalData: Map<String, Any>?
     ) {
         this.uuid = uuid
         this.symbol = symbol
@@ -42,5 +46,7 @@ class FinancialActionEvent {
         this.createDate = createDate
         this.transferRef = transferRef
         this.description = description
+        this.transferCategory = transferCategory
+        this.additionalData = additionalData
     }
 }

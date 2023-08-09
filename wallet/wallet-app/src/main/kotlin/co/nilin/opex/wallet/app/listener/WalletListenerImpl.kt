@@ -15,7 +15,7 @@ class WalletListenerImpl(val withdrawRepository: WithdrawRepository) : WalletLis
         amount: Amount,
         finalAmount: BigDecimal,
         transaction: String,
-        additionalData: Map<String, String?>?
+        additionalData: Map<String, Any>?
     ) {
 
     }
@@ -25,7 +25,7 @@ class WalletListenerImpl(val withdrawRepository: WithdrawRepository) : WalletLis
         destWallet: Wallet,
         amount: Amount,
         transaction: String,
-        additionalData: Map<String, String?>?
+        additionalData: Map<String, Any>?
     ) {
 
     }

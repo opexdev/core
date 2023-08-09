@@ -6,6 +6,7 @@ import co.nilin.opex.accountant.core.inout.OrderStatus
 import co.nilin.opex.accountant.core.inout.RichOrderUpdate
 import co.nilin.opex.accountant.core.inout.RichTrade
 import co.nilin.opex.accountant.core.model.FinancialAction
+import co.nilin.opex.accountant.core.model.FinancialActionCategory
 import co.nilin.opex.accountant.core.model.FinancialActionStatus
 import co.nilin.opex.accountant.core.model.Order
 import co.nilin.opex.accountant.core.spi.*
@@ -23,7 +24,8 @@ open class TradeManagerImpl(
     private val richTradePublisher: RichTradePublisher,
     private val richOrderPublisher: RichOrderPublisher,
     private val feeCalculator: FeeCalculator,
-    private val financialActionPublisher: FinancialActionPublisher
+    private val financialActionPublisher: FinancialActionPublisher,
+    private val jsonMapper: JsonMapper
 ) : TradeManager {
 
     private val logger = LoggerFactory.getLogger(TradeManagerImpl::class.java)
@@ -83,7 +85,9 @@ open class TradeManagerImpl(
             "exchange",
             trade.makerUuid,
             "main",
-            LocalDateTime.now()
+            LocalDateTime.now(),
+            FinancialActionCategory.TRADE,
+            createMap(trade, makerOrder)
         )
         logger.info("trade event takerTransferAction {}", takerTransferAction)
         financialActions.add(takerTransferAction)
@@ -112,7 +116,9 @@ open class TradeManagerImpl(
             "exchange",
             trade.takerUuid,
             "main",
-            LocalDateTime.now()
+            LocalDateTime.now(),
+            FinancialActionCategory.TRADE,
+            createMap(trade, takerOrder)
         )
         logger.info("trade event makerTransferAction {}", makerTransferAction)
         financialActions.add(makerTransferAction)
@@ -217,5 +223,11 @@ open class TradeManagerImpl(
 
         if (!list.contains(financialAction))
             list.add(financialAction)
+    }
+
+    private fun createMap(tradeEvent: TradeEvent, order: Order): Map<String, Any> {
+        val orderMap: Map<String, Any> = jsonMapper.toMap(order)
+        val eventMap: Map<String, Any> = jsonMapper.toMap(tradeEvent)
+        return orderMap + eventMap
     }
 }

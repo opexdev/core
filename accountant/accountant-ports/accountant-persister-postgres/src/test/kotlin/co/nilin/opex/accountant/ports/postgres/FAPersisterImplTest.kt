@@ -19,7 +19,7 @@ class FAPersisterImplTest {
         coEvery { saveAll(any() as Iterable<FinancialActionModel>) } returns Flux.just(Valid.faModel)
         coEvery { updateBatchStatus(any(), any()) } returns Mono.empty()
     }
-    private val faPersister = FinancialActionPersisterImpl(financialActionRepository)
+    private val faPersister = FinancialActionPersisterImpl(financialActionRepository, JsonMapperTestImpl())
 
     @Test
     fun givenListOfActions_whenSaving_callSaveAll(): Unit = runBlocking {

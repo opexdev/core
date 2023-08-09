@@ -27,4 +27,20 @@ class TransactionController(private val manager: TransactionManager) {
         )
     }
 
+    @PostMapping("/{uuid}")
+    suspend fun getTransactionsForUser(
+        @PathVariable("uuid") uuid: String,
+        @RequestBody request: TransactionRequest
+    ): List<TransactionHistory> {
+        return manager.findTransactions(
+            uuid,
+            request.coin,
+            request.category,
+            LocalDateTime.ofInstant(Instant.ofEpochMilli(request.startTime), ZoneId.systemDefault()),
+            LocalDateTime.ofInstant(Instant.ofEpochMilli(request.endTime), ZoneId.systemDefault()),
+            request.limit,
+            request.offset
+        )
+    }
+
 }
