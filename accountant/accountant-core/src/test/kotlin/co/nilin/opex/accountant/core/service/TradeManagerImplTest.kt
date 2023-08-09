@@ -65,9 +65,113 @@ internal class TradeManagerImplTest {
     }
 
     @Test
-    fun givenSellOrder_WhenMatchBuyOrderCome_thenFAMatched(): Unit = runBlocking {
+    fun givenSellOrder_whenMatchBuyOrderCome_thenFAMatched(): Unit = runBlocking {
+        //given
+        val pair = Pair("btc", "eth")
+        val pairConfig = PairConfig(
+            pair.toString(),
+            pair.leftSideName,
+            pair.rightSideName,
+            BigDecimal.valueOf(1.0),
+            BigDecimal.valueOf(0.01)
+        )
+        val makerSubmitOrderEvent = SubmitOrderEvent(
+            "mouid",
+            "muuid",
+            null,
+            pair,
+            60000,
+            2,
+            1,
+            OrderDirection.ASK,
+            MatchConstraint.GTC,
+            OrderType.LIMIT_ORDER
+        )
+        prepareOrder(pair, pairConfig, makerSubmitOrderEvent, BigDecimal.valueOf(0.1), BigDecimal.valueOf(0.12))
+
+        val takerSubmitOrderEvent = SubmitOrderEvent(
+            "touid",
+            "tuuid",
+            null,
+            pair,
+            70000,
+            2,
+            1,
+            OrderDirection.BID,
+            MatchConstraint.GTC,
+            OrderType.LIMIT_ORDER
+        )
+
+        prepareOrder(pair, pairConfig, takerSubmitOrderEvent, BigDecimal.valueOf(0.08), BigDecimal.valueOf(0.1))
+
+        val tradeEvent = makeTradeEvent(pair, takerSubmitOrderEvent, makerSubmitOrderEvent)
+        //when
+        val tradeFinancialActions = tradeManager.handleTrade(tradeEvent)
+
+        assertThat(tradeFinancialActions.size).isEqualTo(4)
+        assertThat(tradeFinancialActions[0].category).isEqualTo(FinancialActionCategory.TRADE)
+        assertThat(tradeFinancialActions[0].detail).containsKeys("userLevel", "direction", "matchConstraint", "orderType", "eventDate", "tradeId", "makerOrderId", "takerOrderId")
+        assertThat(tradeFinancialActions[1].category).isEqualTo(FinancialActionCategory.TRADE)
+        assertThat(tradeFinancialActions[2].category).isEqualTo(FinancialActionCategory.FEE)
+        assertThat(tradeFinancialActions[3].category).isEqualTo(FinancialActionCategory.FEE)
+
+        assertThat((makerSubmitOrderEvent.price.toBigDecimal() * pairConfig.rightSideFraction).stripTrailingZeros())
+            .isEqualTo(tradeFinancialActions[0].amount.stripTrailingZeros())
+    }
+
+    @Test
+    fun givenBuyOrder_whenMatchSellOrderCome_thenFAMatched(): Unit = runBlocking {
         //given
         val pair = Pair("eth", "btc")
+        val pairConfig = PairConfig(
+            pair.toString(),
+            pair.leftSideName,
+            pair.rightSideName,
+            BigDecimal.valueOf(1.0),
+            BigDecimal.valueOf(0.001)
+        )
+        val makerSubmitOrderEvent = SubmitOrderEvent(
+            "mouid",
+            "muuid",
+            null,
+            pair,
+            70000,
+            2,
+            1,
+            OrderDirection.BID,
+            MatchConstraint.GTC,
+            OrderType.LIMIT_ORDER
+        )
+        prepareOrder(pair, pairConfig, makerSubmitOrderEvent, BigDecimal.valueOf(0.1), BigDecimal.valueOf(0.12))
+
+        val takerSubmitOrderEvent = SubmitOrderEvent(
+            "touid",
+            "tuuid",
+            null,
+            pair,
+            60000,
+            2,
+            1,
+            OrderDirection.ASK,
+            MatchConstraint.GTC,
+            OrderType.LIMIT_ORDER
+        )
+
+        prepareOrder(pair, pairConfig, takerSubmitOrderEvent, BigDecimal.valueOf(0.08), BigDecimal.valueOf(0.1))
+
+        val tradeEvent = makeTradeEvent(pair, takerSubmitOrderEvent, makerSubmitOrderEvent)
+        //when
+        val tradeFinancialActions = tradeManager.handleTrade(tradeEvent)
+
+        assertThat(tradeFinancialActions.size).isEqualTo(4)
+        assertThat((makerSubmitOrderEvent.price.toBigDecimal() * pairConfig.rightSideFraction).stripTrailingZeros())
+            .isEqualTo(tradeFinancialActions[1].amount.stripTrailingZeros())
+    }
+
+    @Test
+    fun givenSellOrderWith1Remains_whenMatchBuyOrderCome_thenFAMatched(): Unit = runBlocking {
+        //given
+        val pair = Pair("btc", "eth")
         val pairConfig = PairConfig(
             pair.toString(),
             pair.leftSideName,
@@ -95,8 +199,8 @@ internal class TradeManagerImplTest {
             null,
             pair,
             70000,
+            2,
             1,
-            0,
             OrderDirection.BID,
             MatchConstraint.GTC,
             OrderType.LIMIT_ORDER
@@ -108,37 +212,38 @@ internal class TradeManagerImplTest {
         //when
         val tradeFinancialActions = tradeManager.handleTrade(tradeEvent)
 
-        assertThat(tradeFinancialActions.size).isEqualTo(4)
+        assertThat(tradeFinancialActions.size).isEqualTo(5)
         assertThat(tradeFinancialActions[0].category).isEqualTo(FinancialActionCategory.TRADE)
         assertThat(tradeFinancialActions[0].detail).containsKeys("userLevel", "direction", "matchConstraint", "orderType", "eventDate", "tradeId", "makerOrderId", "takerOrderId")
         assertThat(tradeFinancialActions[1].category).isEqualTo(FinancialActionCategory.TRADE)
-        assertThat(tradeFinancialActions[2].category).isEqualTo(FinancialActionCategory.FEE)
+        assertThat(tradeFinancialActions[2].category).isEqualTo(FinancialActionCategory.ORDER_FINALIZED)
         assertThat(tradeFinancialActions[3].category).isEqualTo(FinancialActionCategory.FEE)
+        assertThat(tradeFinancialActions[4].category).isEqualTo(FinancialActionCategory.FEE)
 
         assertThat((makerSubmitOrderEvent.price.toBigDecimal() * pairConfig.rightSideFraction).stripTrailingZeros())
             .isEqualTo(tradeFinancialActions[0].amount.stripTrailingZeros())
     }
 
     @Test
-    fun givenBuyOrder_WhenMatchSellOrderCome_thenFAMatched(): Unit = runBlocking {
+    fun givenSellOrder_whenMatchBuyOrderWith1RemainsCome_thenFAMatched(): Unit = runBlocking {
         //given
-        val pair = Pair("eth", "btc")
+        val pair = Pair("btc", "eth")
         val pairConfig = PairConfig(
             pair.toString(),
             pair.leftSideName,
             pair.rightSideName,
             BigDecimal.valueOf(1.0),
-            BigDecimal.valueOf(0.001)
+            BigDecimal.valueOf(0.01)
         )
         val makerSubmitOrderEvent = SubmitOrderEvent(
             "mouid",
             "muuid",
             null,
             pair,
-            70000,
+            60000,
+            2,
             1,
-            0,
-            OrderDirection.BID,
+            OrderDirection.ASK,
             MatchConstraint.GTC,
             OrderType.LIMIT_ORDER
         )
@@ -149,10 +254,10 @@ internal class TradeManagerImplTest {
             "tuuid",
             null,
             pair,
-            60000,
+            70000,
             1,
             0,
-            OrderDirection.ASK,
+            OrderDirection.BID,
             MatchConstraint.GTC,
             OrderType.LIMIT_ORDER
         )
@@ -163,9 +268,16 @@ internal class TradeManagerImplTest {
         //when
         val tradeFinancialActions = tradeManager.handleTrade(tradeEvent)
 
-        assertThat(tradeFinancialActions.size).isEqualTo(4)
+        assertThat(tradeFinancialActions.size).isEqualTo(5)
+        assertThat(tradeFinancialActions[0].category).isEqualTo(FinancialActionCategory.TRADE)
+        assertThat(tradeFinancialActions[0].detail).containsKeys("userLevel", "direction", "matchConstraint", "orderType", "eventDate", "tradeId", "makerOrderId", "takerOrderId")
+        assertThat(tradeFinancialActions[1].category).isEqualTo(FinancialActionCategory.ORDER_FINALIZED)
+        assertThat(tradeFinancialActions[2].category).isEqualTo(FinancialActionCategory.TRADE)
+        assertThat(tradeFinancialActions[3].category).isEqualTo(FinancialActionCategory.FEE)
+        assertThat(tradeFinancialActions[4].category).isEqualTo(FinancialActionCategory.FEE)
+
         assertThat((makerSubmitOrderEvent.price.toBigDecimal() * pairConfig.rightSideFraction).stripTrailingZeros())
-            .isEqualTo(tradeFinancialActions[1].amount.stripTrailingZeros())
+            .isEqualTo(tradeFinancialActions[0].amount.stripTrailingZeros())
     }
 
     private fun makeTradeEvent(
@@ -181,14 +293,14 @@ internal class TradeManagerImplTest {
             takerSubmitOrderEvent.orderId ?: -1,
             takerSubmitOrderEvent.direction,
             takerSubmitOrderEvent.price,
-            0,
+            takerSubmitOrderEvent.remainedQuantity,
             makerSubmitOrderEvent.ouid,
             makerSubmitOrderEvent.uuid,
             makerSubmitOrderEvent.orderId ?: 1,
             makerSubmitOrderEvent.direction,
             makerSubmitOrderEvent.price,
-            makerSubmitOrderEvent.quantity - takerSubmitOrderEvent.quantity,
-            takerSubmitOrderEvent.quantity
+            makerSubmitOrderEvent.remainedQuantity,
+            makerSubmitOrderEvent.quantity - makerSubmitOrderEvent.remainedQuantity
         )
     }
 
