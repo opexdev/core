@@ -1,9 +1,6 @@
 package co.nilin.opex.accountant.core.service
 
-import co.nilin.opex.accountant.core.model.FinancialAction
-import co.nilin.opex.accountant.core.model.Order
-import co.nilin.opex.accountant.core.model.PairConfig
-import co.nilin.opex.accountant.core.model.PairFeeConfig
+import co.nilin.opex.accountant.core.model.*
 import co.nilin.opex.accountant.core.spi.*
 import co.nilin.opex.matching.engine.core.eventh.events.SubmitOrderEvent
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
@@ -29,6 +26,7 @@ internal class TradeManagerImplTest {
     private val richTradePublisher = mockk<RichTradePublisher>()
     private val userLevelLoader = mockk<UserLevelLoader>()
     private val financialActionPublisher = mockk<FinancialActionPublisher>()
+    private val jsonMapper = JsonMapperTestImpl()
 
     private val orderManager = OrderManagerImpl(
         pairConfigLoader,
@@ -38,7 +36,8 @@ internal class TradeManagerImplTest {
         orderPersister,
         tempEventPersister,
         richOrderPublisher,
-        financialActionPublisher
+        financialActionPublisher,
+        jsonMapper
     )
 
     private val tradeManager = TradeManagerImpl(

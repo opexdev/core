@@ -2,7 +2,11 @@ package co.nilin.opex.accountant.core.model
 
 import java.math.BigDecimal
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
+
+enum class FinancialActionCategory {
+    ORDER_CREATE, ORDER_CANCEL, ORDER_FINALIZED, TRADE, FEE
+}
 
 class FinancialAction(
     val parent: FinancialAction?,
