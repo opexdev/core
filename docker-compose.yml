@@ -132,7 +132,7 @@ services:
       restart_policy:
         condition: on-failure
   consul:
-    image: consul
+    image: hashicorp/consul
     environment:
       - CONSUL_BIND_INTERFACE=eth0
     networks:

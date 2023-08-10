@@ -1,4 +1,4 @@
-package co.nilin.opex.kyc.ports.kafka.service
+package co.nilin.opex.kyc.ports.kafka.submitter.service
 
 
 import co.nilin.opex.kyc.core.data.event.KycLevelUpdatedEvent
@@ -19,7 +19,7 @@ class KycLevelSubmitter(
 
     private val logger = LoggerFactory.getLogger(KycLevelSubmitter::class.java)
 
-    override val topic = "kycLevelUpdated"
+    override val topic = "kyc_level_updated"
 
     override suspend fun publish(update: KycLevelUpdatedEvent): Unit = suspendCoroutine { cont ->
         logger.info("Submitting RichOrder")

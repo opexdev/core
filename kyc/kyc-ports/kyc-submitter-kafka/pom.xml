@@ -10,7 +10,7 @@
     </parent>
     <groupId>co.nilin.opex.kyc.ports</groupId>
     <artifactId>kyc-submitter-kafka</artifactId>
-    <name>kyc-kafka</name>
+    <name>kyc-submitter-kafka</name>
     <description>kyc-kafka</description>
 
      <dependencies>

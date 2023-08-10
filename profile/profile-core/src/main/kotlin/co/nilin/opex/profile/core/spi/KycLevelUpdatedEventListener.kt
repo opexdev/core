@@ -1,6 +1,6 @@
 package co.nilin.opex.profile.core.spi
 
-import co.nilin.opex.core.event.KycLevelUpdatedEvent
+import co.nilin.opex.profile.core.data.event.KycLevelUpdatedEvent
 
 
 interface KycLevelUpdatedEventListener {

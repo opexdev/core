@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS limitation_history
     reason             VARCHAR(100)
     );
 
-Alter table limitation_history add column reason Varchar(100);
+-- Alter table limitation_history add column reason Varchar(100);
 
 
 

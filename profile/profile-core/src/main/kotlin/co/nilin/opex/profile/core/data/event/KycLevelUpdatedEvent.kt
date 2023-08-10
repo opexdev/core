@@ -1,4 +1,4 @@
-package co.nilin.opex.core.event
+package co.nilin.opex.profile.core.data.event
 
 import co.nilin.opex.profile.core.data.profile.KycLevel
 import java.time.LocalDateTime

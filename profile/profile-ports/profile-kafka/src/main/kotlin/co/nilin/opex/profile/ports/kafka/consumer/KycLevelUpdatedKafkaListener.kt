@@ -1,7 +1,6 @@
 package co.nilin.opex.profile.ports.kafka.consumer
 
-import co.nilin.opex.core.event.KycLevelUpdatedEvent
-import co.nilin.opex.profile.core.data.event.UserCreatedEvent
+import co.nilin.opex.profile.core.data.event.KycLevelUpdatedEvent
 import co.nilin.opex.profile.core.spi.KycLevelUpdatedEventListener
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory

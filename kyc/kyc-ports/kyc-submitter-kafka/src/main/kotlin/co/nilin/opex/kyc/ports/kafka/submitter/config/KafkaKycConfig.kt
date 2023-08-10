@@ -1,4 +1,4 @@
-package co.nilin.opex.kyc.ports.kafka.config
+package co.nilin.opex.kyc.ports.kafka.submitter.config
 
 
 import co.nilin.opex.kyc.core.data.event.KycLevelUpdatedEvent
@@ -14,8 +14,8 @@ import org.springframework.kafka.core.*
 import org.springframework.kafka.support.serializer.JsonSerializer
 
 @Configuration
-class KafkaConfig {
-    private val logger = LoggerFactory.getLogger(KafkaConfig::class.java)
+class KafkaKycConfig {
+    private val logger = LoggerFactory.getLogger(KafkaKycConfig::class.java)
     @Value("\${spring.kafka.bootstrap-servers}")
     private lateinit var bootstrapServers: String
 

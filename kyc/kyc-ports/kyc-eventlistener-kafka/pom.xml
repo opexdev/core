@@ -10,7 +10,7 @@
     </parent>
     <groupId>co.nilin.opex.kyc.ports</groupId>
     <artifactId>kyc-eventlistener-kafka</artifactId>
-    <name>kyc-kafka</name>
+    <name>kyc-eventlistener-kafka</name>
     <description>kyc-kafka</description>
 
      <dependencies>
@@ -43,6 +43,7 @@
              <groupId>co.nilin.opex.kyc</groupId>
              <artifactId>kyc-core</artifactId>
          </dependency>
+
 
      </dependencies>
 
