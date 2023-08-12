@@ -28,7 +28,9 @@ class FinancialActionEventListenerImpl(private val transferService: TransferServ
                 event.receiver,
                 event.amount,
                 event.description,
-                event.transferRef
+                event.transferRef,
+                event.transferCategory,
+                event.additionalData
             )
         }
     }

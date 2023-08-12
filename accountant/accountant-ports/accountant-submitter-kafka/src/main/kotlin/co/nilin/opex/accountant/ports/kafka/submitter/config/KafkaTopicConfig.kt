@@ -4,6 +4,7 @@ import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.common.config.TopicConfig
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.support.GenericApplicationContext
 import org.springframework.kafka.config.TopicBuilder
@@ -14,6 +15,9 @@ class KafkaTopicConfig {
 
     private val logger = LoggerFactory.getLogger(KafkaTopicConfig::class.java)
 
+    @Value("\${spring.kafka.replica:1}")
+    private var replicaCount: Int = 3
+
     @Autowired
     fun createTopics(applicationContext: GenericApplicationContext) {
         logger.info("Creating kafka topic beans...")
@@ -22,7 +26,7 @@ class KafkaTopicConfig {
             registerBean("topic_richOrder", NewTopic::class.java, Supplier {
                 TopicBuilder.name("richOrder")
                     .partitions(10)
-                    .replicas(3)
+                    .replicas(replicaCount)
                     .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
                     .build()
             })
@@ -30,7 +34,7 @@ class KafkaTopicConfig {
             registerBean("topic_richTrade", NewTopic::class.java, Supplier {
                 TopicBuilder.name("richTrade")
                     .partitions(10)
-                    .replicas(3)
+                    .replicas(replicaCount)
                     .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
                     .build()
             })
@@ -38,7 +42,7 @@ class KafkaTopicConfig {
             registerBean("topic_fiAction", NewTopic::class.java, Supplier {
                 TopicBuilder.name("fiAction")
                     .partitions(10)
-                    .replicas(3)
+                    .replicas(replicaCount)
                     .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
                     .build()
             })

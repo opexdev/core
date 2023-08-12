@@ -6,6 +6,7 @@ import co.nilin.opex.accountant.core.inout.OrderStatus
 import co.nilin.opex.accountant.core.inout.RichOrderUpdate
 import co.nilin.opex.accountant.core.inout.RichTrade
 import co.nilin.opex.accountant.core.model.FinancialAction
+import co.nilin.opex.accountant.core.model.FinancialActionCategory
 import co.nilin.opex.accountant.core.model.FinancialActionStatus
 import co.nilin.opex.accountant.core.model.Order
 import co.nilin.opex.accountant.core.spi.*
@@ -23,7 +24,8 @@ open class TradeManagerImpl(
     private val richTradePublisher: RichTradePublisher,
     private val richOrderPublisher: RichOrderPublisher,
     private val feeCalculator: FeeCalculator,
-    private val financialActionPublisher: FinancialActionPublisher
+    private val financialActionPublisher: FinancialActionPublisher,
+    private val jsonMapper: JsonMapper
 ) : TradeManager {
 
     private val logger = LoggerFactory.getLogger(TradeManagerImpl::class.java)
@@ -83,7 +85,9 @@ open class TradeManagerImpl(
             "exchange",
             trade.makerUuid,
             "main",
-            LocalDateTime.now()
+            LocalDateTime.now(),
+            FinancialActionCategory.TRADE,
+            createMap(trade, makerOrder)
         )
         logger.info("trade event takerTransferAction {}", takerTransferAction)
         financialActions.add(takerTransferAction)
@@ -92,6 +96,8 @@ open class TradeManagerImpl(
         takerOrder.remainedTransferAmount -= takerMatchedAmount
         if (takerOrder.filledQuantity == takerOrder.quantity) {
             takerOrder.status = 1
+            financialActions.add(createFinalizeOrderFinancialAction(takerTransferAction, takerOrder, trade))
+            takerOrder.remainedTransferAmount = BigDecimal.ZERO
         }
         orderPersister.save(takerOrder)
         logger.info("taker order saved {}", takerOrder)
@@ -112,7 +118,9 @@ open class TradeManagerImpl(
             "exchange",
             trade.takerUuid,
             "main",
-            LocalDateTime.now()
+            LocalDateTime.now(),
+            FinancialActionCategory.TRADE,
+            createMap(trade, takerOrder)
         )
         logger.info("trade event makerTransferAction {}", makerTransferAction)
         financialActions.add(makerTransferAction)
@@ -121,6 +129,8 @@ open class TradeManagerImpl(
         makerOrder.remainedTransferAmount -= makerMatchedAmount
         if (makerOrder.filledQuantity == makerOrder.quantity) {
             makerOrder.status = 1
+            financialActions.add(createFinalizeOrderFinancialAction(makerTransferAction, makerOrder, trade))
+            makerOrder.remainedTransferAmount = BigDecimal.ZERO
         }
         orderPersister.save(makerOrder)
         logger.info("maker order saved {}", makerOrder)
@@ -173,6 +183,25 @@ open class TradeManagerImpl(
         //return financeActionPersister.persist(financialActions).also { publishFinancialActions(it) }
     }
 
+    private fun createFinalizeOrderFinancialAction(
+        takerTransferAction: FinancialAction,
+        takerOrder: Order,
+        trade: TradeEvent
+    ) = FinancialAction(
+        takerTransferAction,
+        TradeEvent::class.simpleName!!,
+        takerOrder.ouid,
+        if (takerOrder.isAsk()) trade.pair.leftSideName else trade.pair.rightSideName,
+        takerOrder.remainedTransferAmount,
+        takerOrder.uuid,
+        "exchange",
+        takerOrder.uuid,
+        "main",
+        LocalDateTime.now(),
+        FinancialActionCategory.ORDER_FINALIZED,
+        createMap(trade, takerOrder)
+    )
+
     private suspend fun publishTakerRichOrderUpdate(takerOrder: Order, trade: TradeEvent) {
         val price = trade.takerPrice.toBigDecimal().multiply(takerOrder.rightSideFraction)
         val remained = trade.takerRemainedQuantity.toBigDecimal().multiply(takerOrder.leftSideFraction)
@@ -217,5 +246,11 @@ open class TradeManagerImpl(
 
         if (!list.contains(financialAction))
             list.add(financialAction)
+    }
+
+    private fun createMap(tradeEvent: TradeEvent, order: Order): Map<String, Any> {
+        val orderMap: Map<String, Any> = jsonMapper.toMap(order)
+        val eventMap: Map<String, Any> = jsonMapper.toMap(tradeEvent)
+        return orderMap + eventMap
     }
 }

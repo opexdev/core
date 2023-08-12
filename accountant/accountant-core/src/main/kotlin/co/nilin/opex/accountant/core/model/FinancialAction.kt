@@ -2,7 +2,11 @@ package co.nilin.opex.accountant.core.model
 
 import java.math.BigDecimal
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
+
+enum class FinancialActionCategory {
+    ORDER_CREATE, ORDER_CANCEL, ORDER_FINALIZED, TRADE, FEE
+}
 
 class FinancialAction(
     val parent: FinancialAction?,
@@ -15,6 +19,8 @@ class FinancialAction(
     val receiver: String,
     val receiverWalletType: String,
     val createDate: LocalDateTime,
+    val category: FinancialActionCategory,
+    val detail: Map<String, Any> = emptyMap(),
     val status: FinancialActionStatus = FinancialActionStatus.CREATED,
     val uuid: String = UUID.randomUUID().toString(),
     val id: Long? = null
@@ -29,7 +35,13 @@ class FinancialAction(
     }
 
     override fun toString(): String {
-        return "FinancialAction(id=$id, parent=$parent, eventType='$eventType', pointer='$pointer', symbol='$symbol', amount=$amount, sender='$sender', senderWalletType='$senderWalletType', receiver='$receiver', receiverWalletType='$receiverWalletType', createDate=$createDate)"
+        return "FinancialAction(parent=$parent, eventType='$eventType', pointer='$pointer', symbol='$symbol', amount=$amount, sender='$sender', senderWalletType='$senderWalletType', receiver='$receiver', receiverWalletType='$receiverWalletType', createDate=$createDate, category=$category, detail=$detail, status=$status, uuid='$uuid', id=$id)"
+    }
+
+    override fun hashCode(): Int {
+        var result = uuid.hashCode()
+        result = 31 * result + (id?.hashCode() ?: 0)
+        return result
     }
 }
 

@@ -13,7 +13,9 @@ interface WalletProxy {
         receiverUuid: String,
         amount: BigDecimal,
         description: String?,
-        transferRef: String?
+        transferRef: String?,
+        transferCategory: String,
+        additionalData: Map<String, Any>?
     )
 
     suspend fun batchTransfer(transfers: List<TransferRequest>)

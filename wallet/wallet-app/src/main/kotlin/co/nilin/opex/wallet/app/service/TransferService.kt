@@ -34,7 +34,9 @@ class TransferService(
         receiverUuid: String,
         amount: BigDecimal,
         description: String?,
-        transferRef: String?
+        transferRef: String?,
+        transferCategory: String = "NO_CATEGORY",
+        additionalData: Map<String, Any>? = emptyMap()
     ): TransferResult {
         if (senderWalletType == "cashout" || receiverWalletType == "cashout")
             throw OpexException(OpexError.InvalidCashOutUsage)
@@ -68,7 +70,7 @@ class TransferService(
                 sourceWallet,
                 receiverWallet,
                 Amount(sourceWallet.currency, amount),
-                description, transferRef, emptyMap()
+                description, transferRef, transferCategory, additionalData
             )
         ).transferResult
     }
@@ -103,7 +105,8 @@ class TransferService(
                         Amount(sourceWallet.currency, it.amount),
                         it.description,
                         it.transferRef,
-                        emptyMap()
+                        it.transferCategory,
+                        it.additionalData
                     )
                 )
             }
@@ -143,7 +146,7 @@ class TransferService(
                 sourceWallet,
                 receiverWallet,
                 Amount(sourceWallet.currency, amount),
-                description, transferRef, emptyMap()
+                description, transferRef, "DEPOSIT", emptyMap()
             )
         ).transferResult
     }

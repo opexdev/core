@@ -11,7 +11,7 @@ interface WalletListener {
         amount: Amount,
         finalAmount: BigDecimal,
         transaction: String,
-        additionalData: Map<String, String?>?
+        additionalData: Map<String, Any>?
     )
 
     suspend fun onWithdraw(
@@ -19,6 +19,6 @@ interface WalletListener {
         destWallet: Wallet,
         amount: Amount,
         transaction: String,
-        additionalData: Map<String, String?>?
+        additionalData: Map<String, Any>?
     )
 }

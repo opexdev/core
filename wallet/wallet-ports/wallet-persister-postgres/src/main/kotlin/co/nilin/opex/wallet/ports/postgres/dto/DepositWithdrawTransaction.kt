@@ -9,5 +9,7 @@ data class DepositWithdrawTransaction(
     val amount: BigDecimal,
     val description: String?,
     val ref: String?,
-    val date: LocalDateTime
+    val date: LocalDateTime,
+    val category: String,
+    val detail: String?
 )

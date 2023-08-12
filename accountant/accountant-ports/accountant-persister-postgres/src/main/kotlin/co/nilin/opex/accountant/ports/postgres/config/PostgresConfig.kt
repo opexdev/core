@@ -20,6 +20,6 @@ class PostgresConfig(
         val initDb = db.sql { schema }
         initDb // initialize the database
             .then()
-            .subscribe() // execute
+            .block() // execute
     }
 }

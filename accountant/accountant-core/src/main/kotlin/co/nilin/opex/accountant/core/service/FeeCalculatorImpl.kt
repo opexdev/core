@@ -3,7 +3,9 @@ package co.nilin.opex.accountant.core.service
 import co.nilin.opex.accountant.core.api.FeeCalculator
 import co.nilin.opex.accountant.core.model.FeeFinancialActions
 import co.nilin.opex.accountant.core.model.FinancialAction
+import co.nilin.opex.accountant.core.model.FinancialActionCategory
 import co.nilin.opex.accountant.core.model.Order
+import co.nilin.opex.accountant.core.spi.JsonMapper
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -11,7 +13,9 @@ import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 
 @Component
-class FeeCalculatorImpl(@Value("\${app.address}") private val platformAddress: String) : FeeCalculator {
+class FeeCalculatorImpl(
+    @Value("\${app.address}") private val platformAddress: String, private val jsonMapper: JsonMapper
+) : FeeCalculator {
 
     private val logger = LoggerFactory.getLogger(FeeCalculatorImpl::class.java)
 
@@ -53,7 +57,9 @@ class FeeCalculatorImpl(@Value("\${app.address}") private val platformAddress: S
             "main",
             platformAddress,
             "exchange",
-            LocalDateTime.now()
+            LocalDateTime.now(),
+            FinancialActionCategory.FEE,
+            createMap(trade, makerOrder)
         )
         logger.info("trade event makerFeeAction $makerFeeAction")
 
@@ -68,10 +74,18 @@ class FeeCalculatorImpl(@Value("\${app.address}") private val platformAddress: S
             "main",
             platformAddress,
             "exchange",
-            LocalDateTime.now()
+            LocalDateTime.now(),
+            FinancialActionCategory.FEE,
+            createMap(trade, makerOrder)
         )
         logger.info("trade event takerFeeAction $takerFeeAction")
 
         return FeeFinancialActions(makerFeeAction, takerFeeAction)
+    }
+
+    private fun createMap(tradeEvent: TradeEvent, order: Order): Map<String, Any> {
+        val orderMap: Map<String, Any> = jsonMapper.toMap(order)
+        val eventMap: Map<String, Any> = jsonMapper.toMap(tradeEvent)
+        return orderMap + eventMap
     }
 }
