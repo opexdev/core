@@ -2,25 +2,21 @@ package co.nilin.opex.websocket.app.service
 
 import co.nilin.opex.websocket.app.dto.DepthResponse
 import co.nilin.opex.websocket.app.dto.Interval
-import co.nilin.opex.websocket.app.dto.RecentTradeResponse
-import co.nilin.opex.websocket.core.inout.PriceChangeResponse
-import co.nilin.opex.websocket.core.inout.PriceTickerResponse
-import co.nilin.opex.websocket.core.spi.MarketQueryHandler
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toList
+import co.nilin.opex.websocket.app.proxy.MarketProxy
+import co.nilin.opex.websocket.core.inout.*
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.time.ZoneId
 
 @Service
-class MarketService(private val marketQueryHandler: MarketQueryHandler) {
+class MarketService(private val marketProxy: MarketProxy) {
 
     suspend fun getOrderBookDepth(symbol: String): DepthResponse {
         val mappedBidOrders = ArrayList<ArrayList<BigDecimal>>()
         val mappedAskOrders = ArrayList<ArrayList<BigDecimal>>()
 
-        val bidOrders = marketQueryHandler.openBidOrders(symbol, 500)
-        val askOrders = marketQueryHandler.openAskOrders(symbol, 500)
+        val bidOrders = marketProxy.openBidOrders(symbol, 500)
+        val askOrders = marketProxy.openAskOrders(symbol, 500)
 
         bidOrders.forEach {
             val mapped = arrayListOf<BigDecimal>().apply {
@@ -38,7 +34,7 @@ class MarketService(private val marketQueryHandler: MarketQueryHandler) {
             mappedAskOrders.add(mapped)
         }
 
-        val lastOrder = marketQueryHandler.lastOrder(symbol)
+        val lastOrder = marketProxy.lastOrder(symbol)
         return DepthResponse(lastOrder?.orderId ?: -1, mappedBidOrders, mappedAskOrders)
     }
 
@@ -46,7 +42,7 @@ class MarketService(private val marketQueryHandler: MarketQueryHandler) {
         val i = Interval.findByLabel(duration) ?: return emptyList()
 
         val list = ArrayList<ArrayList<Any>>()
-        marketQueryHandler.getCandleInfo(symbol, "${i.duration} ${i.unit}", null, null, 500)
+        marketProxy.getCandleInfo(symbol, "${i.duration} ${i.unit}", null, null, 500)
             .forEach {
                 list.add(
                     arrayListOf(
@@ -68,30 +64,17 @@ class MarketService(private val marketQueryHandler: MarketQueryHandler) {
         return list
     }
 
-    suspend fun getPriceChange(): List<PriceTickerResponse> {
-        return marketQueryHandler.lastPrice(null)
+    suspend fun getPriceChange(): List<PriceTicker> {
+        return marketProxy.lastPrice(null)
     }
 
-    suspend fun getPriceOverview(symbol: String, duration: String): List<PriceChangeResponse> {
-        val startDate = Interval.findByLabel(duration)?.getLocalDateTime() ?: Interval.Week.getLocalDateTime()
-        return listOf(marketQueryHandler.getTradeTickerDataBySymbol(symbol, startDate))
+    suspend fun getPriceOverview(symbol: String, duration: String): List<PriceChange> {
+        val startDate = Interval.findByLabel(duration)?.getDate()?.time ?: Interval.Week.getDate().time
+        return listOf(marketProxy.getTradeTickerDataBySymbol(symbol, startDate))
     }
 
-    suspend fun getRecentTrades(symbol: String): List<RecentTradeResponse> {
-        return marketQueryHandler.recentTrades(symbol, 500)
-            .map {
-                RecentTradeResponse(
-                    it.symbol,
-                    it.id,
-                    it.price,
-                    it.qty,
-                    it.quoteQty,
-                    it.time,
-                    it.isBestMatch,
-                    it.isMakerBuyer
-                )
-            }
-            .toList()
+    suspend fun getRecentTrades(symbol: String): List<MarketTrade> {
+        return marketProxy.recentTrades(symbol, 500)
     }
 
 }
