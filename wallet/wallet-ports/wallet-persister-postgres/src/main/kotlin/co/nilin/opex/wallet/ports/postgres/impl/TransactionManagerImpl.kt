@@ -14,7 +14,8 @@ import java.time.ZoneId
 
 @Service
 class TransactionManagerImpl(
-    val transactionRepository: TransactionRepository, val objectMapper: ObjectMapper
+    private val transactionRepository: TransactionRepository,
+    private val objectMapper: ObjectMapper
 ) : TransactionManager {
 
     override suspend fun save(transaction: Transaction): String {
