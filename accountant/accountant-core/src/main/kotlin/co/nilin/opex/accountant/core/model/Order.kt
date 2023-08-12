@@ -20,7 +20,7 @@ data class Order(
     val orderType: OrderType,
     val price: Long,
     val quantity: Long,
-    val filledQuantity: Long,
+    var filledQuantity: Long,
     val origPrice: BigDecimal,
     val origQuantity: BigDecimal,
     val filledOrigQuantity: BigDecimal,
