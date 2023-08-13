@@ -7,6 +7,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.listener.MessageListener
 import org.springframework.stereotype.Component
+import java.util.UUID
 
 @Component
 class UserCreatedKafkaListener : MessageListener<String, UserCreatedEvent> {
@@ -14,9 +15,10 @@ class UserCreatedKafkaListener : MessageListener<String, UserCreatedEvent> {
     private val logger = LoggerFactory.getLogger(UserCreatedKafkaListener::class.java)
     override fun onMessage(data: ConsumerRecord<String, UserCreatedEvent>) {
         logger.info("kyc on message listener ................")
+        logger.info(eventListeners.size.toString())
         eventListeners.forEach { tl ->
             logger.info("incoming new event " + tl.id())
-            tl.onEvent(data.value(), data.partition(), data.offset(), data.timestamp(), tl.id())
+            tl.onEvent(data.value(), data.partition(), data.offset(), data.timestamp(), UUID.randomUUID().toString())
         }
     }
 

@@ -59,8 +59,9 @@ class KycController(private val kycManagement: KycManagement) {
                              ) {
         manualUpdateRequest.userId = userId
         manualUpdateRequest.processId = UUID.randomUUID().toString()
-        manualUpdateRequest.step = KycStep.ManualReview
+        manualUpdateRequest.step = KycStep.ManualUpdate
         kycManagement.manualUpdate(manualUpdateRequest)
     }
+
 
 }

@@ -111,10 +111,10 @@ class ProfileManagementImp(private var profileRepository: ProfileRepository,
         return resp.toList()
     }
 
-    override  fun updateUserLevel(userId: String, userLevel: KycLevel) {
+    override suspend fun updateUserLevel(userId: String, userLevel: KycLevel) {
         profileRepository.findByUserId(userId)?.block()?.let { profileModel ->
             profileModel.kycLevel = userLevel
-            profileRepository.save(profileModel).block()
+            profileRepository.save(profileModel).awaitFirstOrNull()
 
         } ?: throw OpexException(OpexError.UserNotFound)
     }

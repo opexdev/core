@@ -7,42 +7,49 @@ import co.nilin.opex.kyc.ports.postgres.dao.KycProcessRepository
 import co.nilin.opex.kyc.ports.postgres.dao.UserStatusRepository
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 
 class Process
 
-lateinit var kycProcessRepository: KycProcessRepository
-lateinit var userStatusRepository: UserStatusRepository
-fun KycRequest.verifyRequest() {
+suspend fun KycRequest.verifyRequest(kycProcessRepository: KycProcessRepository, userStatusRepository: UserStatusRepository): Long? =
 
     when (this.step) {
         KycStep.Register -> {
+             null
         }
 
         KycStep.UploadDataForLevel2 -> {
             val previousValidSteps = KycLevelDetail.UploadDataForLevel2.previousValidSteps
-            userStatusRepository.findByUserId(this.userId)?.let {
+            userStatusRepository.findByUserId(this.userId)?.awaitFirstOrNull()?.let {
                 if (previousValidSteps != null) {
                     if (it.kycLevel in previousValidSteps) {
+                        return it.id
                     } else
                         throw OpexException(OpexError.Error)
                 }
+                else
+                    null
             }
-                    ?: run { OpexException(OpexError.UserNotFound) }
+                    ?: run {throw OpexException(OpexError.UserNotFound) }
         }
 
         KycStep.ManualReview -> {
             val previousValidSteps = KycLevelDetail.AcceptedManualReview.previousValidSteps
-            userStatusRepository.findByUserIdAndProcessId(this.userId, this.processId!!)?.let {
+            userStatusRepository.findByUserIdAndProcessId(this.userId, this.processId!!)?.awaitFirstOrNull()?.let {
                 if (previousValidSteps != null) {
                     if (it.kycLevel in previousValidSteps) {
+                          userStatusRepository.findByUserId(this.userId)?.awaitFirstOrNull()?.id
                     } else
                         throw OpexException(OpexError.Error)
-                }
+                }else
+                    null
             }
-                    ?: run { OpexException(OpexError.UserNotFound) }
+                    ?: run { throw OpexException(OpexError.UserNotFound) }
         }
 
         KycStep.ManualUpdate -> {
+              userStatusRepository.findByUserId(this.userId)?.awaitFirstOrNull()?.id
         }
+
+        else -> {null}
     }
-}

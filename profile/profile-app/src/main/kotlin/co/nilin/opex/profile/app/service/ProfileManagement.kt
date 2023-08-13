@@ -46,7 +46,7 @@ class ProfileManagement(
         return profilePersister.getHistory(userId,offset,size)
     }
 
-     fun updateUserLevel(userId: String,userLevel:KycLevel) {
+    suspend fun updateUserLevel(userId: String,userLevel:KycLevel) {
          profilePersister.updateUserLevel(userId,userLevel)
     }
 }

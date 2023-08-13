@@ -22,7 +22,4 @@ open class AppConfig {
         useCreatedKafkaListener.addEventListener(userCreatedEventListener)
     }
 
-
-
-
 }

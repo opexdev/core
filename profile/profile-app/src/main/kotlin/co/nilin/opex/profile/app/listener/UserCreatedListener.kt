@@ -6,11 +6,15 @@ import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import co.nilin.opex.profile.core.data.event.UserCreatedEvent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+
 @Component
 class UserCreatedListener(val userRegistrationService: ProfileManagement) : UserCreatedEventListener {
 
     private val logger = LoggerFactory.getLogger(UserCreatedListener::class.java)
-
+    val scope= CoroutineScope(Dispatchers.IO)
     override fun id(): String {
         return "UserCreatedEventListener"
     }
@@ -21,7 +25,7 @@ class UserCreatedListener(val userRegistrationService: ProfileManagement) : User
         logger.info("==========================================================================")
         logger.info("Incoming UserCreated event: $event")
         logger.info("==========================================================================")
-        runBlocking {
+        scope.launch {
             userRegistrationService.registerNewUser(event)
         }
     }

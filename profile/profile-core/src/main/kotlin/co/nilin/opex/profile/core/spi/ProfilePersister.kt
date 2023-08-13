@@ -13,7 +13,7 @@ interface ProfilePersister {
     suspend fun getAllProfile(offset:Int,size:Int): List<Profile>
     suspend fun getHistory(userId:String,offset:Int,size:Int): List<ProfileHistory>
 
-     fun updateUserLevel(userId:String,userLevel:KycLevel)
+    suspend fun updateUserLevel(userId:String,userLevel:KycLevel)
 
 }
 

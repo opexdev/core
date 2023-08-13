@@ -22,7 +22,7 @@ class KycLevelSubmitter(
     override val topic = "kyc_level_updated"
 
     override suspend fun publish(update: KycLevelUpdatedEvent): Unit = suspendCoroutine { cont ->
-        logger.info("Submitting RichOrder")
+        logger.info("Submitting kycLevelUpdated")
 
         val sendFuture = kafkaTemplate.send(topic, update)
         sendFuture.addCallback({
@@ -32,4 +32,6 @@ class KycLevelSubmitter(
             cont.resumeWithException(it)
         })
     }
+
+
 }

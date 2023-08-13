@@ -27,6 +27,7 @@ import co.nilin.opex.profile.ports.kafka.consumer.KycLevelUpdatedKafkaListener
 @Configuration
 class KafkaConfig {
     private val logger = LoggerFactory.getLogger(KafkaConfig::class.java)
+
     @Value("\${spring.kafka.bootstrap-servers}")
     private lateinit var bootstrapServers: String
 
@@ -37,16 +38,15 @@ class KafkaConfig {
     fun consumerConfigs(): Map<String, Any?> {
 
         return mapOf(
-            ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
-            ConsumerConfig.GROUP_ID_CONFIG to groupId,
-            ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
-            ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JsonDeserializer::class.java,
-            JsonDeserializer.TRUSTED_PACKAGES to "co.nilin.opex.*",
-            JsonDeserializer.TYPE_MAPPINGS to "user_created_event:co.nilin.opex.profile.core.data.event.UserCreatedEvent,kyc_level_updated_event:co.nilin.opex.profile.core.data.event.KycLevelUpdatedEvent"
+                ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
+                ConsumerConfig.GROUP_ID_CONFIG to groupId,
+                ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
+                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JsonDeserializer::class.java,
+                JsonDeserializer.TRUSTED_PACKAGES to "co.nilin.opex.*",
+                JsonDeserializer.TYPE_MAPPINGS to "user_created_event:co.nilin.opex.profile.core.data.event.UserCreatedEvent,kyc_level_updated_event:co.nilin.opex.profile.core.data.event.KycLevelUpdatedEvent"
 
         )
     }
-
 
 
     @Bean("ProfileConsumerFactory")

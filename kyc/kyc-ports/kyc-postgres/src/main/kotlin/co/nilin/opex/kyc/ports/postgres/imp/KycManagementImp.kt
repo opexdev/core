@@ -16,6 +16,7 @@ import co.nilin.opex.kyc.core.utils.convert
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import org.slf4j.LoggerFactory
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
@@ -23,13 +24,17 @@ import java.time.LocalDateTime
 @Transactional
 class KycManagementImp(private val kycProcessRepository: KycProcessRepository,
                        private val userStatusRepository: UserStatusRepository) : KYCPersister {
-    override suspend fun kycProcess(kycRequest: KycRequest): KycResponse?{
-        kycRequest.verifyRequest()
+    private val logger = LoggerFactory.getLogger(KycManagementImp::class.java)
+
+    override suspend fun kycProcess(kycRequest: KycRequest): KycResponse? {
+        val previousUserStatus= kycRequest.verifyRequest(kycProcessRepository, userStatusRepository)
+        logger.info("-------------------------------------")
+        logger.info(previousUserStatus.toString())
         return when (kycRequest.step) {
             KycStep.Register -> registerNewUser(kycRequest)
-            KycStep.UploadDataForLevel2 -> uploadData(kycRequest as UploadDataRequest)
-            KycStep.ManualReview -> reviewManually(kycRequest as ManualReviewRequest)
-            KycStep.ManualUpdate -> updateManually(kycRequest as ManualUpdateRequest)
+            KycStep.UploadDataForLevel2 -> uploadData(kycRequest as UploadDataRequest,previousUserStatus)
+            KycStep.ManualReview -> reviewManually(kycRequest as ManualReviewRequest,previousUserStatus)
+            KycStep.ManualUpdate -> updateManually(kycRequest as ManualUpdateRequest,previousUserStatus)
 
             else -> {
                 null
@@ -52,7 +57,7 @@ class KycManagementImp(private val kycProcessRepository: KycProcessRepository,
         return KycResponse(processId = kycRequest.processId!!)
     }
 
-    suspend fun uploadData(kycRequest: UploadDataRequest): KycResponse {
+    suspend fun uploadData(kycRequest: UploadDataRequest,previousUserStatus:Long?): KycResponse {
 
 
         var kycProcessModel = kycRequest.convert(KycProcessModel::class.java)
@@ -64,12 +69,12 @@ class KycManagementImp(private val kycProcessRepository: KycProcessRepository,
                     lastUpdateDate = LocalDateTime.now()
                     userId = kycRequest.userId
                     processId = kycRequest.processId
-                }.convert(UserStatusModel::class.java))
+                }.convert(UserStatusModel::class.java).apply { previousUserStatus?.let { id=previousUserStatus } })
         ).awaitFirstOrNull()
         return KycResponse(processId = kycRequest.processId!!)
     }
 
-    suspend fun reviewManually(kycRequest: ManualReviewRequest): KycResponse {
+    suspend fun reviewManually(kycRequest: ManualReviewRequest,previousUserStatus:Long?): KycResponse {
         var kycProcessModel = kycRequest.convert(KycProcessModel::class.java)
         kycProcessModel.status = kycRequest.status
         kycProcessRepository.save(kycProcessModel).zipWith(
@@ -78,13 +83,13 @@ class KycManagementImp(private val kycProcessRepository: KycProcessRepository,
                     lastUpdateDate = LocalDateTime.now()
                     userId = kycRequest.userId
                     processId = kycRequest.processId
-                }.convert(UserStatusModel::class.java))
+                }.convert(UserStatusModel::class.java).apply { previousUserStatus?.let { id=previousUserStatus } })
         ).awaitFirstOrNull()
         return KycResponse(processId = kycRequest.processId!!)
     }
 
 
-    suspend fun updateManually(kycRequest: ManualUpdateRequest): KycResponse {
+    suspend fun updateManually(kycRequest: ManualUpdateRequest,previousUserStatus:Long?): KycResponse {
         var kycProcessModel = kycRequest.convert(KycProcessModel::class.java)
         kycProcessRepository.save(kycProcessModel).zipWith(
                 userStatusRepository.save(UserStatus().apply {
@@ -94,7 +99,8 @@ class KycManagementImp(private val kycProcessRepository: KycProcessRepository,
                     lastUpdateDate = LocalDateTime.now()
                     userId = kycRequest.userId
                     processId = "system_${kycRequest.processId}"
-                }.convert(UserStatusModel::class.java))
+                    detail=kycRequest.step?.name
+                }.convert(UserStatusModel::class.java).apply { previousUserStatus?.let { id=previousUserStatus } })
         ).awaitFirstOrNull()
         return KycResponse(processId = kycRequest.processId!!)
     }
