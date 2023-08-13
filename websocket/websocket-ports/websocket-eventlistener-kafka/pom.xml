@@ -24,14 +24,6 @@
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.matching.engine.core</groupId>
-            <artifactId>matching-engine-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>co.nilin.opex.accountant.core</groupId>
-            <artifactId>accountant-core</artifactId>
-        </dependency>
-        <dependency>
             <groupId>co.nilin.opex.websocket.core</groupId>
             <artifactId>websocket-core</artifactId>
         </dependency>

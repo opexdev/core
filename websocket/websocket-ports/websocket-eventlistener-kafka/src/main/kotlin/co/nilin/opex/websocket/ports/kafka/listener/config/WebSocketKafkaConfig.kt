@@ -1,8 +1,7 @@
 package co.nilin.opex.websocket.ports.kafka.listener.config
 
-import co.nilin.opex.accountant.core.inout.RichOrderEvent
-import co.nilin.opex.accountant.core.inout.RichTrade
-import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
+import co.nilin.opex.websocket.core.inout.RichOrderEvent
+import co.nilin.opex.websocket.core.inout.RichTrade
 import co.nilin.opex.websocket.ports.kafka.listener.consumer.OrderKafkaListener
 import co.nilin.opex.websocket.ports.kafka.listener.consumer.TradeKafkaListener
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -38,14 +37,9 @@ class WebSocketKafkaConfig {
             ConsumerConfig.GROUP_ID_CONFIG to groupId,
             ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
             ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JsonDeserializer::class.java,
-            JsonDeserializer.TYPE_MAPPINGS to "rich_order_event:co.nilin.opex.accountant.core.inout.RichOrderEvent,rich_order:co.nilin.opex.accountant.core.inout.RichOrder,rich_order_update:co.nilin.opex.accountant.core.inout.RichOrderUpdate, rich_trade:co.nilin.opex.accountant.core.inout.RichTrade",
+            JsonDeserializer.TYPE_MAPPINGS to "rich_order_event:co.nilin.opex.websocket.core.inout.RichOrderEvent,rich_order:co.nilin.opex.websocket.core.inout.RichOrder,rich_order_update:co.nilin.opex.websocket.core.inout.RichOrderUpdate,rich_trade:co.nilin.opex.websocket.core.inout.RichTrade",
             JsonDeserializer.TRUSTED_PACKAGES to "co.nilin.opex.*",
         )
-    }
-
-    @Bean("eventConsumerFactory")
-    fun consumerFactory(@Qualifier("consumerConfigs") consumerConfigs: Map<String, Any>): ConsumerFactory<String, CoreEvent> {
-        return DefaultKafkaConsumerFactory(consumerConfigs)
     }
 
     @Bean("richTradeConsumerFactory")

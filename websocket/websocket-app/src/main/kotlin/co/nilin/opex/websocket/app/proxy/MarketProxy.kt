@@ -16,10 +16,21 @@ import java.util.*
 @Component
 class MarketProxy(private val webClient: WebClient) {
 
-    private val logger =LoggerFactory.getLogger(MarketProxy::class.java)
+    private val logger = LoggerFactory.getLogger(MarketProxy::class.java)
 
     @Value("\${app.market.url}")
     private lateinit var baseUrl: String
+
+    suspend fun getOrder(ouid: String): Order? {
+        return webClient.get()
+            .uri("$baseUrl/v1/order/$ouid")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<Order>()
+            .awaitSingleOrNull()
+    }
 
     suspend fun getTradeTickerDataBySymbol(symbol: String, startFrom: Long): PriceChange {
         return webClient.get()

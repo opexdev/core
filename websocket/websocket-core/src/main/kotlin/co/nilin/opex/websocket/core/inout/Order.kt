@@ -1,6 +1,5 @@
 package co.nilin.opex.websocket.core.inout
 
-import co.nilin.opex.websocket.core.inout.OrderStatus
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
