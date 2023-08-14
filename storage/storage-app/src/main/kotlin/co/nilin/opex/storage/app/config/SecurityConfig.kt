@@ -19,17 +19,18 @@ class SecurityConfig(private val webClient: WebClient) {
     @Bean
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
         http.csrf().disable()
-            .authorizeExchange()
-            .pathMatchers("/actuator/**").permitAll()
-            .pathMatchers("/swagger-ui/**").permitAll()
-            .pathMatchers("/swagger-resources/**").permitAll()
-            .pathMatchers("/v2/api-docs").permitAll()
-            .pathMatchers("/admin/**").hasRole("SCOPE_trust", "admin_finance")
-            .pathMatchers("/**").hasAuthority("SCOPE_trust")
-            .anyExchange().authenticated()
-            .and()
-            .oauth2ResourceServer()
-            .jwt()
+                .authorizeExchange()
+                .pathMatchers("/**").permitAll()
+//            .pathMatchers("/actuator/**").permitAll()
+//            .pathMatchers("/swagger-ui/**").permitAll()
+//            .pathMatchers("/swagger-resources/**").permitAll()
+//            .pathMatchers("/v2/api-docs").permitAll()
+//            .pathMatchers("/admin/**").hasRole("SCOPE_trust", "admin_finance")
+//            .pathMatchers("/**").hasAuthority("SCOPE_trust")
+//                .anyExchange().authenticated()
+//                .and()
+//                .oauth2ResourceServer()
+//                .jwt()
         return http.build()
     }
 
@@ -37,7 +38,7 @@ class SecurityConfig(private val webClient: WebClient) {
     @Throws(Exception::class)
     fun reactiveJwtDecoder(): ReactiveJwtDecoder? {
         return NimbusReactiveJwtDecoder.withJwkSetUri(jwkUrl)
-            .webClient(webClient)
-            .build()
+                .webClient(webClient)
+                .build()
     }
 }

@@ -6,6 +6,8 @@ import org.springframework.stereotype.Component
 import org.slf4j.LoggerFactory
 import co.nilin.opex.kyc.core.spi.KYCPersister
 import co.nilin.opex.kyc.core.spi.StorageProxy
+import kotlinx.coroutines.flow.Flow
+import org.springframework.http.codec.multipart.FilePart
 
 
 @Component
@@ -21,8 +23,8 @@ class KycManagement(
 
     suspend fun uploadData(uploadDataRequest: UploadDataRequest): KycResponse? {
         var failsPath = mutableMapOf<String, String>()
-        for (data in uploadDataRequest.files) {
-            val path = storageProxy.uploadFile(data.value, data.key,uploadDataRequest.processId!!).path
+        for (data in uploadDataRequest.files!!) {
+            val path = storageProxy.uploadFile(data.value , data.key,uploadDataRequest.processId!!).path
             failsPath[data.key] = path
         }
         uploadDataRequest.filesPath=failsPath
@@ -34,6 +36,10 @@ class KycManagement(
     }
     suspend fun manualUpdate(manualUpdateRequest: ManualUpdateRequest): KycResponse?{
         return kycPersister.kycProcess(manualUpdateRequest)
+    }
+
+    suspend fun getKycData(kycDataRequest: KycDataRequest): Flow<KycProcess>?{
+        return kycPersister.getData(kycDataRequest)
     }
 
 }

@@ -3,7 +3,6 @@ package co.nilin.opex.kyc.ports.postgres.imp
 import co.nilin.opex.kyc.core.data.*
 import org.springframework.stereotype.Component
 import co.nilin.opex.kyc.core.spi.KYCPersister
-import co.nilin.opex.kyc.core.data.*
 import co.nilin.opex.kyc.ports.postgres.dao.KycProcessRepository
 import co.nilin.opex.kyc.ports.postgres.dao.UserStatusRepository
 import co.nilin.opex.kyc.ports.postgres.model.base.UserStatus
@@ -28,8 +27,7 @@ class KycManagementImp(private val kycProcessRepository: KycProcessRepository,
 
     override suspend fun kycProcess(kycRequest: KycRequest): KycResponse? {
         val previousUserStatus= kycRequest.verifyRequest(kycProcessRepository, userStatusRepository)
-        logger.info("-------------------------------------")
-        logger.info(previousUserStatus.toString())
+
         return when (kycRequest.step) {
             KycStep.Register -> registerNewUser(kycRequest)
             KycStep.UploadDataForLevel2 -> uploadData(kycRequest as UploadDataRequest,previousUserStatus)
@@ -62,10 +60,10 @@ class KycManagementImp(private val kycProcessRepository: KycProcessRepository,
 
         var kycProcessModel = kycRequest.convert(KycProcessModel::class.java)
         kycProcessModel.status = KycStatus.Successful
-        kycProcessModel.input = kycRequest.filesPath.keys.joinToString("#")
+        kycProcessModel.input = kycRequest.filesPath!!.values.joinToString("#")
         kycProcessRepository.save(kycProcessModel).zipWith(
                 userStatusRepository.save(UserStatus().apply {
-                    kycLevel = KycLevelDetail.UploadDataForLevel2
+                    kycLevel = KycLevelDetail.UploadDataLevel2
                     lastUpdateDate = LocalDateTime.now()
                     userId = kycRequest.userId
                     processId = kycRequest.processId
@@ -91,6 +89,7 @@ class KycManagementImp(private val kycProcessRepository: KycProcessRepository,
 
     suspend fun updateManually(kycRequest: ManualUpdateRequest,previousUserStatus:Long?): KycResponse {
         var kycProcessModel = kycRequest.convert(KycProcessModel::class.java)
+        kycProcessModel.status=KycStatus.Successful
         kycProcessRepository.save(kycProcessModel).zipWith(
                 userStatusRepository.save(UserStatus().apply {
                     kycLevel = if (kycRequest.kycLevel == KycLevel.Level1) KycLevelDetail.Registered
@@ -105,5 +104,13 @@ class KycManagementImp(private val kycProcessRepository: KycProcessRepository,
         return KycResponse(processId = kycRequest.processId!!)
     }
 
+
+    suspend fun getKycData(kycDataRequest: KycDataRequest){
+
+
+        kycProcessRepository.
+
+
+    }
 
 }
