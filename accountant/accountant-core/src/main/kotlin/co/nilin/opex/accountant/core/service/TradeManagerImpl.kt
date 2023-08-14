@@ -95,7 +95,7 @@ open class TradeManagerImpl(
         //update taker order status
         takerOrder.remainedTransferAmount -= takerMatchedAmount
         takerOrder.filledQuantity = takerOrder.quantity - trade.takerRemainedQuantity
-        if (takerOrder.filledQuantity == takerOrder.quantity) {
+        if (trade.takerRemainedQuantity == 0L) {
             takerOrder.status = OrderStatus.FILLED.code
             financialActions.add(createFinalizeOrderFinancialAction(takerTransferAction, takerOrder, trade))
             takerOrder.remainedTransferAmount = BigDecimal.ZERO
@@ -129,7 +129,7 @@ open class TradeManagerImpl(
         //update maker order status
         makerOrder.remainedTransferAmount -= makerMatchedAmount
         makerOrder.filledQuantity = makerOrder.quantity - trade.makerRemainedQuantity
-        if (makerOrder.filledQuantity == makerOrder.quantity) {
+        if (trade.makerRemainedQuantity == 0L) {
             makerOrder.status = OrderStatus.FILLED.code
             financialActions.add(createFinalizeOrderFinancialAction(makerTransferAction, makerOrder, trade))
             makerOrder.remainedTransferAmount = BigDecimal.ZERO
