@@ -10,7 +10,7 @@ import java.io.File
 
 @Configuration
 class ReadPreferences(
-    @Value("\${PREFERENCES:classpath:preferences.yml}")
+    @Value("\${PREFERENCES:/preferences.yml}")
     private val preferencesYmlPath: String
 ) {
     private val mapper = ObjectMapper(YAMLFactory())
@@ -18,7 +18,13 @@ class ReadPreferences(
     @Bean
     fun preferences(): Preferences = runCatching {
         if (preferencesYmlPath.isBlank()) return Preferences()
-        val preferencesYml = File(preferencesYmlPath)
-        return if (preferencesYml.exists()) mapper.readValue(preferencesYml, Preferences::class.java) else Preferences()
+        if (File(preferencesYmlPath).exists()) {
+            return@runCatching mapper.readValue(File(preferencesYmlPath), Preferences::class.java)
+        } else {
+            val ymlInputStream = javaClass.getResourceAsStream(preferencesYmlPath)
+            if (ymlInputStream != null)
+                return@runCatching mapper.readValue(ymlInputStream, Preferences::class.java)
+            Preferences()
+        }
     }.getOrElse { throw IllegalStateException("Failed to load preferences: ${it.message}") }
 }

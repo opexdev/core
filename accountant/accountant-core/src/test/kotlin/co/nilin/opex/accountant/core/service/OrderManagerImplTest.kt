@@ -335,10 +335,6 @@ internal class OrderManagerImplTest {
         coVerify(exactly = 1) { orderPersister.save(any()) }
     }
 
-    //TODO
-    @Test
-    fun handleUpdateOrder() {
-    }
 
 }
 
