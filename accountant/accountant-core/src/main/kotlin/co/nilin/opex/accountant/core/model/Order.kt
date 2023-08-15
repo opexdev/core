@@ -23,7 +23,7 @@ data class Order(
     var filledQuantity: Long,
     val origPrice: BigDecimal,
     val origQuantity: BigDecimal,
-    val filledOrigQuantity: BigDecimal,
+    var filledOrigQuantity: BigDecimal,
     val firstTransferAmount: BigDecimal,
     var remainedTransferAmount: BigDecimal,
     var status: Int,

@@ -87,7 +87,7 @@ open class TradeManagerImpl(
             "main",
             LocalDateTime.now(),
             FinancialActionCategory.TRADE,
-            createMap(trade, makerOrder)
+            createMap(trade, takerOrder)
         )
         logger.info("trade event takerTransferAction {}", takerTransferAction)
         financialActions.add(takerTransferAction)
@@ -95,10 +95,14 @@ open class TradeManagerImpl(
         //update taker order status
         takerOrder.remainedTransferAmount -= takerMatchedAmount
         takerOrder.filledQuantity = takerOrder.quantity - trade.takerRemainedQuantity
+        takerOrder.filledOrigQuantity = BigDecimal(takerOrder.filledQuantity).multiply(takerOrder.leftSideFraction)
+
         if (trade.takerRemainedQuantity == 0L) {
             takerOrder.status = OrderStatus.FILLED.code
-            financialActions.add(createFinalizeOrderFinancialAction(takerTransferAction, takerOrder, trade))
-            takerOrder.remainedTransferAmount = BigDecimal.ZERO
+            if (takerOrder.remainedTransferAmount > BigDecimal.ZERO) {
+                financialActions.add(createFinalizeOrderFinancialAction(takerParentFinancialAction, takerOrder, trade))
+                takerOrder.remainedTransferAmount = BigDecimal.ZERO
+            }
         }
         orderPersister.save(takerOrder)
         logger.info("taker order saved {}", takerOrder)
@@ -121,7 +125,7 @@ open class TradeManagerImpl(
             "main",
             LocalDateTime.now(),
             FinancialActionCategory.TRADE,
-            createMap(trade, takerOrder)
+            createMap(trade, makerOrder)
         )
         logger.info("trade event makerTransferAction {}", makerTransferAction)
         financialActions.add(makerTransferAction)
@@ -129,10 +133,13 @@ open class TradeManagerImpl(
         //update maker order status
         makerOrder.remainedTransferAmount -= makerMatchedAmount
         makerOrder.filledQuantity = makerOrder.quantity - trade.makerRemainedQuantity
+        makerOrder.filledOrigQuantity = BigDecimal(takerOrder.filledQuantity).multiply(takerOrder.leftSideFraction)
         if (trade.makerRemainedQuantity == 0L) {
             makerOrder.status = OrderStatus.FILLED.code
-            financialActions.add(createFinalizeOrderFinancialAction(makerTransferAction, makerOrder, trade))
-            makerOrder.remainedTransferAmount = BigDecimal.ZERO
+            if (makerOrder.remainedTransferAmount > BigDecimal.ZERO) {
+                financialActions.add(createFinalizeOrderFinancialAction(makerParentFinancialAction, makerOrder, trade))
+                makerOrder.remainedTransferAmount = BigDecimal.ZERO
+            }
         }
         orderPersister.save(makerOrder)
         logger.info("maker order saved {}", makerOrder)
@@ -186,7 +193,7 @@ open class TradeManagerImpl(
     }
 
     private fun createFinalizeOrderFinancialAction(
-        takerTransferAction: FinancialAction,
+        takerTransferAction: FinancialAction?,
         takerOrder: Order,
         trade: TradeEvent
     ) = FinancialAction(
