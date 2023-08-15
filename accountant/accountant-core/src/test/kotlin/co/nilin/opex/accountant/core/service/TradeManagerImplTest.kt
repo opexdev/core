@@ -82,7 +82,7 @@ internal class TradeManagerImplTest {
             pair,
             60000,
             2,
-            1,
+            2,
             OrderDirection.ASK,
             MatchConstraint.GTC,
             OrderType.LIMIT_ORDER
@@ -96,7 +96,7 @@ internal class TradeManagerImplTest {
             pair,
             70000,
             2,
-            1,
+            2,
             OrderDirection.BID,
             MatchConstraint.GTC,
             OrderType.LIMIT_ORDER
@@ -104,7 +104,7 @@ internal class TradeManagerImplTest {
 
         prepareOrder(pair, pairConfig, takerSubmitOrderEvent, BigDecimal.valueOf(0.08), BigDecimal.valueOf(0.1))
 
-        val tradeEvent = makeTradeEvent(pair, takerSubmitOrderEvent, makerSubmitOrderEvent)
+        val tradeEvent = makeTradeEvent(pair, takerSubmitOrderEvent, makerSubmitOrderEvent, 1)
         //when
         val tradeFinancialActions = tradeManager.handleTrade(tradeEvent)
 
@@ -137,7 +137,7 @@ internal class TradeManagerImplTest {
             pair,
             70000,
             2,
-            1,
+            2,
             OrderDirection.BID,
             MatchConstraint.GTC,
             OrderType.LIMIT_ORDER
@@ -151,7 +151,7 @@ internal class TradeManagerImplTest {
             pair,
             60000,
             2,
-            1,
+            2,
             OrderDirection.ASK,
             MatchConstraint.GTC,
             OrderType.LIMIT_ORDER
@@ -159,7 +159,7 @@ internal class TradeManagerImplTest {
 
         prepareOrder(pair, pairConfig, takerSubmitOrderEvent, BigDecimal.valueOf(0.08), BigDecimal.valueOf(0.1))
 
-        val tradeEvent = makeTradeEvent(pair, takerSubmitOrderEvent, makerSubmitOrderEvent)
+        val tradeEvent = makeTradeEvent(pair, takerSubmitOrderEvent, makerSubmitOrderEvent, 1)
         //when
         val tradeFinancialActions = tradeManager.handleTrade(tradeEvent)
 
@@ -186,7 +186,7 @@ internal class TradeManagerImplTest {
             pair,
             60000,
             1,
-            0,
+            1,
             OrderDirection.ASK,
             MatchConstraint.GTC,
             OrderType.LIMIT_ORDER
@@ -200,7 +200,7 @@ internal class TradeManagerImplTest {
             pair,
             70000,
             2,
-            1,
+            2,
             OrderDirection.BID,
             MatchConstraint.GTC,
             OrderType.LIMIT_ORDER
@@ -208,17 +208,16 @@ internal class TradeManagerImplTest {
 
         prepareOrder(pair, pairConfig, takerSubmitOrderEvent, BigDecimal.valueOf(0.08), BigDecimal.valueOf(0.1))
 
-        val tradeEvent = makeTradeEvent(pair, takerSubmitOrderEvent, makerSubmitOrderEvent)
+        val tradeEvent = makeTradeEvent(pair, takerSubmitOrderEvent, makerSubmitOrderEvent, 1)
         //when
         val tradeFinancialActions = tradeManager.handleTrade(tradeEvent)
 
-        assertThat(tradeFinancialActions.size).isEqualTo(5)
+        assertThat(tradeFinancialActions.size).isEqualTo(4)
         assertThat(tradeFinancialActions[0].category).isEqualTo(FinancialActionCategory.TRADE)
         assertThat(tradeFinancialActions[0].detail).containsKeys("userLevel", "direction", "matchConstraint", "orderType", "eventDate", "tradeId", "makerOrderId", "takerOrderId")
         assertThat(tradeFinancialActions[1].category).isEqualTo(FinancialActionCategory.TRADE)
-        assertThat(tradeFinancialActions[2].category).isEqualTo(FinancialActionCategory.ORDER_FINALIZED)
+        assertThat(tradeFinancialActions[2].category).isEqualTo(FinancialActionCategory.FEE)
         assertThat(tradeFinancialActions[3].category).isEqualTo(FinancialActionCategory.FEE)
-        assertThat(tradeFinancialActions[4].category).isEqualTo(FinancialActionCategory.FEE)
 
         assertThat((makerSubmitOrderEvent.price.toBigDecimal() * pairConfig.rightSideFraction).stripTrailingZeros())
             .isEqualTo(tradeFinancialActions[0].amount.stripTrailingZeros())
@@ -242,7 +241,7 @@ internal class TradeManagerImplTest {
             pair,
             60000,
             2,
-            1,
+            2,
             OrderDirection.ASK,
             MatchConstraint.GTC,
             OrderType.LIMIT_ORDER
@@ -256,7 +255,7 @@ internal class TradeManagerImplTest {
             pair,
             70000,
             1,
-            0,
+            1,
             OrderDirection.BID,
             MatchConstraint.GTC,
             OrderType.LIMIT_ORDER
@@ -264,7 +263,7 @@ internal class TradeManagerImplTest {
 
         prepareOrder(pair, pairConfig, takerSubmitOrderEvent, BigDecimal.valueOf(0.08), BigDecimal.valueOf(0.1))
 
-        val tradeEvent = makeTradeEvent(pair, takerSubmitOrderEvent, makerSubmitOrderEvent)
+        val tradeEvent = makeTradeEvent(pair, takerSubmitOrderEvent, makerSubmitOrderEvent, 1)
         //when
         val tradeFinancialActions = tradeManager.handleTrade(tradeEvent)
 
@@ -283,7 +282,8 @@ internal class TradeManagerImplTest {
     private fun makeTradeEvent(
         pair: Pair,
         takerSubmitOrderEvent: SubmitOrderEvent,
-        makerSubmitOrderEvent: SubmitOrderEvent
+        makerSubmitOrderEvent: SubmitOrderEvent,
+        matchedQuantity: Long
     ): TradeEvent {
         return TradeEvent(
             0,
@@ -300,7 +300,7 @@ internal class TradeManagerImplTest {
             makerSubmitOrderEvent.direction,
             makerSubmitOrderEvent.price,
             makerSubmitOrderEvent.remainedQuantity,
-            makerSubmitOrderEvent.quantity - makerSubmitOrderEvent.remainedQuantity
+            matchedQuantity
         )
     }
 

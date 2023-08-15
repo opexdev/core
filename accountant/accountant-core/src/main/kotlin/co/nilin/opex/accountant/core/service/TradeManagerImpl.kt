@@ -87,18 +87,22 @@ open class TradeManagerImpl(
             "main",
             LocalDateTime.now(),
             FinancialActionCategory.TRADE,
-            createMap(trade, makerOrder)
+            createMap(trade, takerOrder)
         )
         logger.info("trade event takerTransferAction {}", takerTransferAction)
         financialActions.add(takerTransferAction)
 
         //update taker order status
         takerOrder.remainedTransferAmount -= takerMatchedAmount
-        takerOrder.filledQuantity = takerOrder.quantity - trade.takerRemainedQuantity
+        takerOrder.filledQuantity = takerOrder.filledQuantity + trade.matchedQuantity
+        takerOrder.filledOrigQuantity = BigDecimal(takerOrder.filledQuantity).multiply(takerOrder.leftSideFraction)
+
         if (takerOrder.filledQuantity == takerOrder.quantity) {
             takerOrder.status = OrderStatus.FILLED.code
-            financialActions.add(createFinalizeOrderFinancialAction(takerTransferAction, takerOrder, trade))
-            takerOrder.remainedTransferAmount = BigDecimal.ZERO
+            if (takerOrder.remainedTransferAmount > BigDecimal.ZERO) {
+                financialActions.add(createFinalizeOrderFinancialAction(takerParentFinancialAction, takerOrder, trade))
+                takerOrder.remainedTransferAmount = BigDecimal.ZERO
+            }
         }
         orderPersister.save(takerOrder)
         logger.info("taker order saved {}", takerOrder)
@@ -121,18 +125,21 @@ open class TradeManagerImpl(
             "main",
             LocalDateTime.now(),
             FinancialActionCategory.TRADE,
-            createMap(trade, takerOrder)
+            createMap(trade, makerOrder)
         )
         logger.info("trade event makerTransferAction {}", makerTransferAction)
         financialActions.add(makerTransferAction)
 
         //update maker order status
         makerOrder.remainedTransferAmount -= makerMatchedAmount
-        makerOrder.filledQuantity = makerOrder.quantity - trade.makerRemainedQuantity
+        makerOrder.filledQuantity = makerOrder.filledQuantity + trade.matchedQuantity
+        makerOrder.filledOrigQuantity = BigDecimal(makerOrder.filledQuantity).multiply(makerOrder.leftSideFraction)
         if (makerOrder.filledQuantity == makerOrder.quantity) {
             makerOrder.status = OrderStatus.FILLED.code
-            financialActions.add(createFinalizeOrderFinancialAction(makerTransferAction, makerOrder, trade))
-            makerOrder.remainedTransferAmount = BigDecimal.ZERO
+            if (makerOrder.remainedTransferAmount > BigDecimal.ZERO) {
+                financialActions.add(createFinalizeOrderFinancialAction(makerParentFinancialAction, makerOrder, trade))
+                makerOrder.remainedTransferAmount = BigDecimal.ZERO
+            }
         }
         orderPersister.save(makerOrder)
         logger.info("maker order saved {}", makerOrder)
@@ -186,22 +193,22 @@ open class TradeManagerImpl(
     }
 
     private fun createFinalizeOrderFinancialAction(
-        takerTransferAction: FinancialAction,
-        takerOrder: Order,
+        parentTransferAction: FinancialAction?,
+        order: Order,
         trade: TradeEvent
     ) = FinancialAction(
-        takerTransferAction,
+        parentTransferAction,
         TradeEvent::class.simpleName!!,
-        takerOrder.ouid,
-        if (takerOrder.isAsk()) trade.pair.leftSideName else trade.pair.rightSideName,
-        takerOrder.remainedTransferAmount,
-        takerOrder.uuid,
+        order.ouid,
+        if (order.isAsk()) trade.pair.leftSideName else trade.pair.rightSideName,
+        order.remainedTransferAmount,
+        order.uuid,
         "exchange",
-        takerOrder.uuid,
+        order.uuid,
         "main",
         LocalDateTime.now(),
         FinancialActionCategory.ORDER_FINALIZED,
-        createMap(trade, takerOrder)
+        createMap(trade, order)
     )
 
     private suspend fun publishTakerRichOrderUpdate(takerOrder: Order, trade: TradeEvent) {

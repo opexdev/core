@@ -1,4 +1,4 @@
-package co.nilin.opex.accountant.app.api;
+package co.nilin.opex.accountant.app.scheduler
 
 import co.nilin.opex.accountant.core.api.FinancialActionJobManager
 import co.nilin.opex.accountant.core.model.FinancialAction
@@ -52,7 +52,7 @@ class FinancialActionJobManagerIT {
         val uuid = UUID.randomUUID().toString()
         val ouid = UUID.randomUUID().toString()
         val symbol = "SY"
-        var parent1 = FinancialAction(
+        val parent1 = FinancialAction(
             null,
             "Parent",
             ouid,
@@ -116,7 +116,7 @@ class FinancialActionJobManagerIT {
         val uuid = UUID.randomUUID().toString()
         val ouid = UUID.randomUUID().toString()
         val symbol = "SY"
-        var parent1 = FinancialAction(
+        val parent1 = FinancialAction(
             null,
             "Parent",
             ouid,
@@ -137,7 +137,7 @@ class FinancialActionJobManagerIT {
             val parent1Saved = financialActionLoader.findLast(uuid, ouid)!!
             financialActionPersister.updateStatus(parent1Saved, FinancialActionStatus.ERROR)
 
-            var child1 = FinancialAction(
+            val child1 = FinancialAction(
                 parent1Saved,
                 "Child",
                 ouid,
@@ -150,7 +150,7 @@ class FinancialActionJobManagerIT {
                 LocalDateTime.now(),
                 FinancialActionCategory.TRADE
             )
-            var parent2 = FinancialAction(
+            val parent2 = FinancialAction(
                 null,
                 "Parent",
                 UUID.randomUUID().toString(),
@@ -179,7 +179,7 @@ class FinancialActionJobManagerIT {
         val uuid = UUID.randomUUID().toString()
         val ouid = UUID.randomUUID().toString()
         val symbol = "SY"
-        var parent1 = FinancialAction(
+        val parent1 = FinancialAction(
             null,
             "Parent",
             ouid,
