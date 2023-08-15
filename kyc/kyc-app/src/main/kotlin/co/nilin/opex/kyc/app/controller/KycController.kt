@@ -6,7 +6,6 @@ import co.nilin.opex.kyc.core.data.KycStep
 import co.nilin.opex.kyc.core.data.ManualReviewRequest
 import co.nilin.opex.kyc.core.data.ManualUpdateRequest
 import co.nilin.opex.kyc.core.data.UploadDataRequest
-import co.nilin.opex.kyc.ports.postgres.model.base.KycProcess
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.flow.Flow
@@ -22,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile
 import reactor.core.publisher.Flux
 import java.awt.PageAttributes
 import java.util.*
+import kotlin.reflect.jvm.internal.impl.load.java.lazy.descriptors.DeclaredMemberIndex.Empty
 
 @RestController
 @RequestMapping("/v2/kyc")
@@ -40,7 +40,7 @@ class KycController(private val kycManagement: KycManagement) {
         var uploadDataRequest = UploadDataRequest(files = files).apply {
             this.userId = userId
             step = KycStep.UploadDataForLevel2
-            processId = UUID.randomUUID().toString()
+            stepId = UUID.randomUUID().toString()
         }
 
         kycManagement.uploadData(uploadDataRequest)
@@ -48,13 +48,14 @@ class KycController(private val kycManagement: KycManagement) {
     }
 
     //todo just admin
-    @PostMapping("/review/{processId}")
+    @PostMapping("/review/{referenceId}")
     suspend fun manualReview(
-            @PathVariable("processId") processId: String,
+            @PathVariable("referenceId") referenceId: String,
             @RequestBody manualReviewRequest: ManualReviewRequest,
 
             ) {
-        manualReviewRequest.processId = processId
+        manualReviewRequest.referenceId = referenceId
+        manualReviewRequest.stepId=UUID.randomUUID().toString()
         manualReviewRequest.step = KycStep.ManualReview
         kycManagement.manualReview(manualReviewRequest)
     }
@@ -66,18 +67,21 @@ class KycController(private val kycManagement: KycManagement) {
             @RequestBody manualUpdateRequest: ManualUpdateRequest,
     ) {
         manualUpdateRequest.userId = userId
-        manualUpdateRequest.processId = UUID.randomUUID().toString()
+        manualUpdateRequest.stepId = UUID.randomUUID().toString()
         manualUpdateRequest.step = KycStep.ManualUpdate
         kycManagement.manualUpdate(manualUpdateRequest)
     }
 
-    @GetMapping("/data/{processId}/{step}/{userId}")
+    @GetMapping("/data")
     suspend fun getData(
-            @PathVariable("userId") userId: String?,
-            @PathVariable("processId") processId: String?,
-            @PathVariable("step") step: String?,
-    ):Flow<KycProcess> {
-        kycManagement.getKycData(KycDataRequest(userId,processId, step))
+            @RequestParam("userId") userId: String?,
+            @RequestParam("step") step: KycStep?,
+            @RequestParam("status") status: KycStatus?,
+            @RequestParam("offset") offset: Int?,
+            @RequestParam("size") size: Int?
+    ): Flow<KycProcess>? {
+
+        return kycManagement.getKycData(KycDataRequest(userId, step, status, offset ?: 0, size ?: 1000))
     }
 
 

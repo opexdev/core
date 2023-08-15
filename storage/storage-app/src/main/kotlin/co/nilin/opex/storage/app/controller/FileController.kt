@@ -72,6 +72,8 @@ class FileController(
         return download(uid, filename)
     }
 
+
+
     @GetMapping("/admin/download/{uid}/{filename}")
     @ResponseBody
     suspend fun adminFileDownload(

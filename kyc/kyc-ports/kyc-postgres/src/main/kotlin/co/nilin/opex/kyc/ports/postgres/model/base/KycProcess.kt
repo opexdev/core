@@ -5,7 +5,7 @@ import co.nilin.opex.kyc.core.data.KycStep
 import java.time.LocalDateTime
 
 open class KycProcess {
-    lateinit var processId: String
+    lateinit var stepId: String
     lateinit var userId: String
     var issuer: String? = null
     var step: KycStep? = null
@@ -13,4 +13,6 @@ open class KycProcess {
     var createDate:LocalDateTime?= LocalDateTime.now()
     var description:String?=null
     var input:String?=null
+    var referenceId:String?=null
+
 }

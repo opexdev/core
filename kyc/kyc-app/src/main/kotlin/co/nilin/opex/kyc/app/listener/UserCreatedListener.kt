@@ -33,7 +33,7 @@ class UserCreatedListener(val kycManagement: KycManagement) : UserCreatedEventLi
             var data = KycRequest().apply {
                 userId = event.uuid
                 step = KycStep.Register
-                processId = id
+                stepId = id
             }
             kycManagement.kycProcess(data)
         }

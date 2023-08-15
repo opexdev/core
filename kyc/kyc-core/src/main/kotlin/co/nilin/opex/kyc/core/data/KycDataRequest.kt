@@ -2,6 +2,8 @@ package co.nilin.opex.kyc.core.data
 
 data class KycDataRequest(
         var userId: String?,
-        var processId: String?,
-        var step: KycLevelDetail?
+        var step: KycStep?,
+        var status: KycStatus?,
+        var offset:Int?,
+        var size:Int?
 )

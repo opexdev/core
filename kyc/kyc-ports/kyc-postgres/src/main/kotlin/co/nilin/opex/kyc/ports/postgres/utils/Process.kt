@@ -1,9 +1,6 @@
 package co.nilin.opex.kyc.ports.postgres.utils
 
-import co.nilin.opex.kyc.core.data.KycLevelDetail
-import co.nilin.opex.kyc.core.data.KycRequest
-import co.nilin.opex.kyc.core.data.KycStep
-import co.nilin.opex.kyc.core.data.UploadDataRequest
+import co.nilin.opex.kyc.core.data.*
 import co.nilin.opex.kyc.ports.postgres.dao.KycProcessRepository
 import co.nilin.opex.kyc.ports.postgres.dao.UserStatusRepository
 import co.nilin.opex.utility.error.data.OpexError
@@ -22,35 +19,39 @@ suspend fun KycRequest.verifyRequest(kycProcessRepository: KycProcessRepository,
                 val request = this as UploadDataRequest
                 request.filesPath?.let { if (it.size != 3) throw throw OpexException(OpexError.InvalidRequestBody) }
                         ?: throw OpexException(OpexError.InvalidRequestBody)
+
                 val previousValidSteps = KycLevelDetail.UploadDataLevel2.previousValidSteps
 
                 userStatusRepository.findByUserId(this.userId)?.awaitFirstOrNull()?.let {
-                    if (previousValidSteps != null) {
-                        if (it.kycLevel in previousValidSteps) {
-                            return it.id
-                        } else
-                            throw OpexException(OpexError.Error)
-                    } else
-                        null
-                }
-                        ?: run { throw OpexException(OpexError.UserNotFound) }
+                    if (previousValidSteps != null && it.kycLevel !in previousValidSteps) {
+                        throw OpexException(OpexError.Error)
+                    }
+                    it.id
+
+                } ?: run { throw OpexException(OpexError.UserNotFound) }
             }
 
             KycStep.ManualReview -> {
-                val previousValidSteps = KycLevelDetail.AcceptedManualReview.previousValidSteps
-                userStatusRepository.findByUserIdAndProcessId(this.userId, this.processId!!)?.awaitFirstOrNull()?.let {
-                    if (previousValidSteps != null) {
-                        if (it.kycLevel in previousValidSteps) {
-                            userStatusRepository.findByUserId(this.userId)?.awaitFirstOrNull()?.id
-                        } else
+                if ((this as ManualReviewRequest).status !in arrayListOf(KycStatus.Accepted, KycStatus.Rejected))
+                    throw OpexException(OpexError.InvalidRequestBody)
+
+                val previousValidSteps = if (this.status == KycStatus.Accepted) KycLevelDetail.AcceptedManualReview.previousValidSteps
+                else KycLevelDetail.RejectedManualReview.previousValidSteps
+
+                kycProcessRepository.findByUserIdAndStepId(this.userId, this.referenceId!!)?.awaitFirstOrNull()?.let {
+                    userStatusRepository.findByUserId(this.userId)?.awaitFirstOrNull()?.let {
+                        if ((previousValidSteps != null) && it.kycLevel !in previousValidSteps) {
                             throw OpexException(OpexError.Error)
-                    } else
-                        null
-                }
-                        ?: run { throw OpexException(OpexError.UserNotFound) }
+                        }
+                        it.id
+                    } ?: throw OpexException(OpexError.UserNotFound)
+
+                } ?: run { throw OpexException(OpexError.BadReviewRequest) }
             }
 
             KycStep.ManualUpdate -> {
+                if ((this as ManualUpdateRequest).level !in arrayListOf(KycLevelDetail.ManualUpdateLevel1, KycLevelDetail.ManualUpdateLevel2))
+                    throw OpexException(OpexError.InvalidRequestBody)
                 userStatusRepository.findByUserId(this.userId)?.awaitFirstOrNull()?.id
             }
 
@@ -58,3 +59,15 @@ suspend fun KycRequest.verifyRequest(kycProcessRepository: KycProcessRepository,
                 null
             }
         }
+
+
+// fun KycDataRequest.verify() {
+//    step?.let {
+//        if (step !in arrayListOf(KycLevelDetail.UploadDataLevel2))
+//            throw OpexException(OpexError.InvalidRequestBody)
+//    }
+//    status?.let {
+//        if (status !in arrayListOf(KycStatus.Accepted, KycStatus.Rejected))
+//            throw OpexException(OpexError.InvalidRequestBody)
+//    }
+//}

@@ -14,8 +14,11 @@ import co.nilin.opex.kyc.core.data.KycLevelDetail
 import co.nilin.opex.kyc.core.utils.convert
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
@@ -26,19 +29,20 @@ class KycManagementImp(private val kycProcessRepository: KycProcessRepository,
     private val logger = LoggerFactory.getLogger(KycManagementImp::class.java)
 
     override suspend fun kycProcess(kycRequest: KycRequest): KycResponse? {
-        val previousUserStatus= kycRequest.verifyRequest(kycProcessRepository, userStatusRepository)
+        val previousUserStatus = kycRequest.verifyRequest(kycProcessRepository, userStatusRepository)
 
         return when (kycRequest.step) {
             KycStep.Register -> registerNewUser(kycRequest)
-            KycStep.UploadDataForLevel2 -> uploadData(kycRequest as UploadDataRequest,previousUserStatus)
-            KycStep.ManualReview -> reviewManually(kycRequest as ManualReviewRequest,previousUserStatus)
-            KycStep.ManualUpdate -> updateManually(kycRequest as ManualUpdateRequest,previousUserStatus)
+            KycStep.UploadDataForLevel2 -> uploadData(kycRequest as UploadDataRequest, previousUserStatus)
+            KycStep.ManualReview -> reviewManually(kycRequest as ManualReviewRequest, previousUserStatus)
+            KycStep.ManualUpdate -> updateManually(kycRequest as ManualUpdateRequest, previousUserStatus)
 
             else -> {
                 null
             }
         }
     }
+
 
     suspend fun registerNewUser(kycRequest: KycRequest): KycResponse {
 
@@ -49,13 +53,13 @@ class KycManagementImp(private val kycProcessRepository: KycProcessRepository,
                     kycLevel = KycLevelDetail.Registered
                     lastUpdateDate = LocalDateTime.now()
                     userId = kycRequest.userId
-                    processId = kycRequest.processId
+                    referenceId = kycRequest.stepId
                 }.convert(UserStatusModel::class.java))
         ).awaitFirstOrNull()
-        return KycResponse(processId = kycRequest.processId!!)
+        return KycResponse(processId = kycRequest.stepId!!)
     }
 
-    suspend fun uploadData(kycRequest: UploadDataRequest,previousUserStatus:Long?): KycResponse {
+    suspend fun uploadData(kycRequest: UploadDataRequest, previousUserStatus: Long?): KycResponse {
 
 
         var kycProcessModel = kycRequest.convert(KycProcessModel::class.java)
@@ -66,51 +70,50 @@ class KycManagementImp(private val kycProcessRepository: KycProcessRepository,
                     kycLevel = KycLevelDetail.UploadDataLevel2
                     lastUpdateDate = LocalDateTime.now()
                     userId = kycRequest.userId
-                    processId = kycRequest.processId
-                }.convert(UserStatusModel::class.java).apply { previousUserStatus?.let { id=previousUserStatus } })
+                    referenceId = kycRequest.stepId
+                }.convert(UserStatusModel::class.java).apply { previousUserStatus?.let { id = previousUserStatus } })
         ).awaitFirstOrNull()
-        return KycResponse(processId = kycRequest.processId!!)
+        return KycResponse(processId = kycRequest.stepId!!)
     }
 
-    suspend fun reviewManually(kycRequest: ManualReviewRequest,previousUserStatus:Long?): KycResponse {
+    suspend fun reviewManually(kycRequest: ManualReviewRequest, previousUserStatus: Long?): KycResponse {
         var kycProcessModel = kycRequest.convert(KycProcessModel::class.java)
         kycProcessModel.status = kycRequest.status
         kycProcessRepository.save(kycProcessModel).zipWith(
                 userStatusRepository.save(UserStatus().apply {
-                    kycLevel = if (kycRequest.status == KycStatus.Accept) KycLevelDetail.AcceptedManualReview else KycLevelDetail.RejectedManualReview
+                    kycLevel = if (kycRequest.status == KycStatus.Accepted) KycLevelDetail.AcceptedManualReview else KycLevelDetail.RejectedManualReview
                     lastUpdateDate = LocalDateTime.now()
                     userId = kycRequest.userId
-                    processId = kycRequest.processId
-                }.convert(UserStatusModel::class.java).apply { previousUserStatus?.let { id=previousUserStatus } })
+                    referenceId = kycRequest.stepId
+                }.convert(UserStatusModel::class.java).apply { previousUserStatus?.let { id = previousUserStatus } })
         ).awaitFirstOrNull()
-        return KycResponse(processId = kycRequest.processId!!)
+        return KycResponse(processId = kycRequest.stepId!!)
     }
 
 
-    suspend fun updateManually(kycRequest: ManualUpdateRequest,previousUserStatus:Long?): KycResponse {
+    suspend fun updateManually(kycRequest: ManualUpdateRequest, previousUserStatus: Long?): KycResponse {
         var kycProcessModel = kycRequest.convert(KycProcessModel::class.java)
-        kycProcessModel.status=KycStatus.Successful
+        kycProcessModel.status = KycStatus.Successful
         kycProcessRepository.save(kycProcessModel).zipWith(
                 userStatusRepository.save(UserStatus().apply {
-                    kycLevel = if (kycRequest.kycLevel == KycLevel.Level1) KycLevelDetail.Registered
-                    else if (kycRequest.kycLevel == KycLevel.Level2) KycLevelDetail.AcceptedManualReview
-                    else throw OpexException(OpexError.Error)
+                    kycLevel = kycRequest.level
                     lastUpdateDate = LocalDateTime.now()
                     userId = kycRequest.userId
-                    processId = "system_${kycRequest.processId}"
-                    detail=kycRequest.step?.name
-                }.convert(UserStatusModel::class.java).apply { previousUserStatus?.let { id=previousUserStatus } })
+                    referenceId = kycRequest.stepId
+                    detail = kycRequest.step?.name
+                }.convert(UserStatusModel::class.java).apply { previousUserStatus?.let { id = previousUserStatus } })
         ).awaitFirstOrNull()
-        return KycResponse(processId = kycRequest.processId!!)
+        return KycResponse(processId = kycRequest.stepId!!)
     }
 
 
-    suspend fun getKycData(kycDataRequest: KycDataRequest){
-
-
-        kycProcessRepository.
-
-
+    override suspend fun getData(kycDataRequest: KycDataRequest): Flow<KycProcess>? {
+        //   kycDataRequest.verify()
+        return kycProcessRepository.findAllKycProcess(kycDataRequest.userId, kycDataRequest.step, kycDataRequest.status, kycDataRequest.offset!!, kycDataRequest.size!!, PageRequest.of(kycDataRequest.offset!!, kycDataRequest.size!!, Sort.by(Sort.Direction.DESC, "id")))
+                ?.map { d ->
+                    d.convert(KycProcess::class.java)
+                }
     }
+
 
 }

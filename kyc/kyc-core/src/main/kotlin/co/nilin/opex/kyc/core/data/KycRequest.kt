@@ -5,7 +5,8 @@ import java.time.LocalDateTime
 
  open class KycRequest {
      lateinit var userId: String
-     var processId: String? = null
+     var stepId: String? = null
+     var referenceId:String?=null
      var issuer: String? = null
      var step: KycStep? = null
      var createDate: LocalDateTime? = LocalDateTime.now()

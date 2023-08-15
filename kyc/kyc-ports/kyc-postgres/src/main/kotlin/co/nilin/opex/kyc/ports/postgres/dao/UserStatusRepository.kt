@@ -9,7 +9,7 @@ import reactor.core.publisher.Mono
 @Repository
 interface UserStatusRepository : ReactiveCrudRepository<UserStatusModel, Long> {
     fun findByUserId(userId: String): Mono<UserStatusModel>?
-    fun findByUserIdAndProcessId(userId: String, processId: String): Mono<UserStatusModel>?
+    fun findByUserIdAndReferenceId(userId: String, stepId: String): Mono<UserStatusModel>?
 
     @Override
     @KycLevelUpdated
