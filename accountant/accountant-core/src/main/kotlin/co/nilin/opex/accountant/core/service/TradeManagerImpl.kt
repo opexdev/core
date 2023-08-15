@@ -94,10 +94,10 @@ open class TradeManagerImpl(
 
         //update taker order status
         takerOrder.remainedTransferAmount -= takerMatchedAmount
-        takerOrder.filledQuantity = takerOrder.quantity - trade.takerRemainedQuantity
+        takerOrder.filledQuantity = takerOrder.filledQuantity + trade.matchedQuantity
         takerOrder.filledOrigQuantity = BigDecimal(takerOrder.filledQuantity).multiply(takerOrder.leftSideFraction)
 
-        if (trade.takerRemainedQuantity == 0L) {
+        if (takerOrder.filledQuantity == takerOrder.quantity) {
             takerOrder.status = OrderStatus.FILLED.code
             if (takerOrder.remainedTransferAmount > BigDecimal.ZERO) {
                 financialActions.add(createFinalizeOrderFinancialAction(takerParentFinancialAction, takerOrder, trade))
@@ -132,9 +132,9 @@ open class TradeManagerImpl(
 
         //update maker order status
         makerOrder.remainedTransferAmount -= makerMatchedAmount
-        makerOrder.filledQuantity = makerOrder.quantity - trade.makerRemainedQuantity
-        makerOrder.filledOrigQuantity = BigDecimal(takerOrder.filledQuantity).multiply(takerOrder.leftSideFraction)
-        if (trade.makerRemainedQuantity == 0L) {
+        makerOrder.filledQuantity = makerOrder.filledQuantity + trade.matchedQuantity
+        makerOrder.filledOrigQuantity = BigDecimal(makerOrder.filledQuantity).multiply(makerOrder.leftSideFraction)
+        if (makerOrder.filledQuantity == makerOrder.quantity) {
             makerOrder.status = OrderStatus.FILLED.code
             if (makerOrder.remainedTransferAmount > BigDecimal.ZERO) {
                 financialActions.add(createFinalizeOrderFinancialAction(makerParentFinancialAction, makerOrder, trade))
@@ -193,22 +193,22 @@ open class TradeManagerImpl(
     }
 
     private fun createFinalizeOrderFinancialAction(
-        takerTransferAction: FinancialAction?,
-        takerOrder: Order,
+        parentTransferAction: FinancialAction?,
+        order: Order,
         trade: TradeEvent
     ) = FinancialAction(
-        takerTransferAction,
+        parentTransferAction,
         TradeEvent::class.simpleName!!,
-        takerOrder.ouid,
-        if (takerOrder.isAsk()) trade.pair.leftSideName else trade.pair.rightSideName,
-        takerOrder.remainedTransferAmount,
-        takerOrder.uuid,
+        order.ouid,
+        if (order.isAsk()) trade.pair.leftSideName else trade.pair.rightSideName,
+        order.remainedTransferAmount,
+        order.uuid,
         "exchange",
-        takerOrder.uuid,
+        order.uuid,
         "main",
         LocalDateTime.now(),
         FinancialActionCategory.ORDER_FINALIZED,
-        createMap(trade, takerOrder)
+        createMap(trade, order)
     )
 
     private suspend fun publishTakerRichOrderUpdate(takerOrder: Order, trade: TradeEvent) {
