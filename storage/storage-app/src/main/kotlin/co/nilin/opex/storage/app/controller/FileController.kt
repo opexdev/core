@@ -5,6 +5,7 @@ import co.nilin.opex.storage.app.service.StringToHashService
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -24,6 +25,7 @@ class FileController(
     @Value("\${app.root-dir}") private val rootDir: String
 ) {
     data class FileUploadResponse(val path: String)
+    private val logger = LoggerFactory.getLogger(FileController::class.java)
 
 
    private  suspend fun upload(uid: String, file: FilePart?, nameWithoutExtension: String? = null): FileUploadResponse {

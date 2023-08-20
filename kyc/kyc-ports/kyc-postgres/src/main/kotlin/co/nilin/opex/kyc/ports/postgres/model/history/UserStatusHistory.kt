@@ -1,5 +1,6 @@
 package co.nilin.opex.kyc.ports.postgres.model.history
 
+import co.nilin.opex.kyc.ports.postgres.model.base.UserStatus
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 import java.time.LocalDateTime
@@ -8,7 +9,7 @@ import java.time.LocalDateTime
 data class UserStatusHistory (
     @Id
     var id: Long,
-    var issuer: String?,
+    var changeIssuer: String?,
     var changeRequestDate: LocalDateTime?,
     var changeRequestType: String?
-)
+):UserStatus()

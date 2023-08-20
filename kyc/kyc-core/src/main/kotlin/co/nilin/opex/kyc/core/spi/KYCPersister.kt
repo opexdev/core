@@ -1,14 +1,17 @@
 package co.nilin.opex.kyc.core.spi
 
-import co.nilin.opex.kyc.core.data.KycDataRequest
-import co.nilin.opex.kyc.core.data.KycProcess
-import co.nilin.opex.kyc.core.data.KycResponse
-import co.nilin.opex.kyc.core.data.KycRequest
+import co.nilin.opex.kyc.core.data.*
 import kotlinx.coroutines.flow.Flow
+import reactor.core.publisher.Mono
 
 interface KYCPersister {
     suspend fun kycProcess(kycRequest: KycRequest): KycResponse?
 
-    suspend fun getData(kycDataRequest: KycDataRequest): Flow<KycProcess>?
+    suspend fun getSteps(kycDataRequest: KycDataRequest): Flow<KycProcess>?
+
+    suspend fun getStepData(stepId: String): Flow<KycProcessDetail>?
+
+    suspend fun userLevelHistory(userId: String): Flow<UserLevelHistory>?
+
 
 }

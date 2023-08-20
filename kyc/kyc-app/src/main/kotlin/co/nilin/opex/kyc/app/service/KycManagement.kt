@@ -7,8 +7,7 @@ import org.slf4j.LoggerFactory
 import co.nilin.opex.kyc.core.spi.KYCPersister
 import co.nilin.opex.kyc.core.spi.StorageProxy
 import kotlinx.coroutines.flow.*
-import org.springframework.http.codec.multipart.FilePart
-import java.util.Arrays
+import reactor.core.publisher.Mono
 
 
 @Component
@@ -40,8 +39,13 @@ class KycManagement(
         return kycPersister.kycProcess(manualUpdateRequest)
     }
 
-    suspend fun getKycData(kycDataRequest: KycDataRequest): Flow<KycProcess>? {
-        val resp = kycPersister.getData(kycDataRequest)
+    suspend fun getKycStep(kycDataRequest: KycDataRequest): Flow<KycProcess>? {
+        return kycPersister.getSteps(kycDataRequest)
+
+    }
+
+    suspend fun getStepData(stepId: String): KycProcessDetail? {
+        val resp = kycPersister.getStepData(stepId)
         return resp?.map { r ->
             var dataInput = ArrayList<String>()
             if (r.step?.name?.lowercase()?.contains("upload") == true) {
@@ -52,7 +56,11 @@ class KycManagement(
                 r
             }
             r
-        }
+        }?.filter { r -> r.stepId == stepId }?.first()
+    }
+
+    suspend fun getUserLevelHistory(userId: String): Flow<UserLevelHistory>? {
+      return kycPersister.userLevelHistory(userId)
     }
 }
 

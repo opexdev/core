@@ -11,10 +11,11 @@ open class KycProcess {
     var step: KycStep? = null
     var status: KycStatus? = null
     var createDate: LocalDateTime? = LocalDateTime.now()
-    var description: String? = null
-    var input: String? = null
-    var data: ArrayList<String>? = null
-    var relatedStep: List<KycProcess>?=null
-    var referenceId:String?=null
 
 }
+
+data class KycProcessDetail(var description: String? = null,
+                            var input: String? = null,
+                            var data: ArrayList<String>? = null,
+                            var relatedStep: List<KycProcess>? = null,
+                            var referenceId: String? = null) : KycProcess()

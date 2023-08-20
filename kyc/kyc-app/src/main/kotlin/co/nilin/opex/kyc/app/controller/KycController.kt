@@ -6,22 +6,18 @@ import co.nilin.opex.kyc.core.data.KycStep
 import co.nilin.opex.kyc.core.data.ManualReviewRequest
 import co.nilin.opex.kyc.core.data.ManualUpdateRequest
 import co.nilin.opex.kyc.core.data.UploadDataRequest
+import co.nilin.opex.kyc.ports.postgres.dao.UserStatusHistoryRepository
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitLast
 import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType
 import org.springframework.http.codec.multipart.FilePart
-import org.springframework.http.codec.multipart.Part
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.multipart.MultipartFile
 import reactor.core.publisher.Flux
-import java.awt.PageAttributes
+import reactor.core.publisher.Mono
 import java.util.*
-import kotlin.reflect.jvm.internal.impl.load.java.lazy.descriptors.DeclaredMemberIndex.Empty
 
 @RestController
 @RequestMapping("/v2/kyc")
@@ -72,7 +68,7 @@ class KycController(private val kycManagement: KycManagement) {
         kycManagement.manualUpdate(manualUpdateRequest)
     }
 
-    @GetMapping("/data")
+    @GetMapping("/step")
     suspend fun getData(
             @RequestParam("userId") userId: String?,
             @RequestParam("step") step: KycStep?,
@@ -81,8 +77,21 @@ class KycController(private val kycManagement: KycManagement) {
             @RequestParam("size") size: Int?
     ): Flow<KycProcess>? {
 
-        return kycManagement.getKycData(KycDataRequest(userId, step, status, offset ?: 0, size ?: 1000))
+        return kycManagement.getKycStep(KycDataRequest(userId, step, status, offset ?: 0, size ?: 1000))
+    }
+    @GetMapping("/step/{stepId}")
+    suspend fun getData(
+            @PathVariable("stepId") stepId:String
+    ): KycProcessDetail? {
+        return kycManagement.getStepData(stepId)
     }
 
+
+    @GetMapping("/history/{userId}")
+    suspend fun getKycLevelHistory(
+            @PathVariable("userId") userId:String
+    ): Flow<UserLevelHistory>? {
+        return kycManagement.getUserLevelHistory(userId)
+    }
 
 }
