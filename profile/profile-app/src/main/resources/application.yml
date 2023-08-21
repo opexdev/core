@@ -14,7 +14,7 @@ spring:
     consumer:
       group-id: profile
   r2dbc:
-    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
+    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex?createDatabaseIfNotExist=true
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
     initialization-mode: always
@@ -48,3 +48,5 @@ swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/proto
 app:
   auth:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
+  kyc:
+    url: lb://kyc-opex/v1/admin/kyc/internal

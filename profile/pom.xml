@@ -25,6 +25,7 @@
         <module>profile-app</module>
         <module>profile-ports/profile-kafka</module>
         <module>profile-ports/profile-postgres</module>
+        <module>profile-ports/profile-kyc-proxy</module>
 
     </modules>
 
@@ -74,6 +75,11 @@
             <dependency>
                 <groupId>co.nilin.opex.kyc</groupId>
                 <artifactId>kyc-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.profile.ports</groupId>
+                <artifactId>profile-kyc-proxy</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

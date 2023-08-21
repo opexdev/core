@@ -74,6 +74,13 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
 
     //code 12000 profile
     UserIdAlreadyExists(120001, "User with this id or email is already registered", HttpStatus.BAD_REQUEST),
+    InvalidLinkedAccount(120002, "irrelevant account", HttpStatus.BAD_REQUEST),
+    AccountNotFound(120003, " account not found", HttpStatus.BAD_REQUEST),
+    DuplicateAccount(120004, " duplicate account", HttpStatus.BAD_REQUEST),
+    InvalidIban(120005, " invalid iban number", HttpStatus.BAD_REQUEST),
+    InvalidCard(120006, " invalid card number", HttpStatus.BAD_REQUEST),
+
+
 
 
     //kyc

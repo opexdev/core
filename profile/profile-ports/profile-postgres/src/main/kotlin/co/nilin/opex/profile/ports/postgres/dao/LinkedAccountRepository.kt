@@ -15,6 +15,6 @@ interface LinkedAccountRepository:ReactiveCrudRepository<LinkedBankAccountModel,
 
     fun findByAccountId(accountId: String):Mono<LinkedBankAccountModel>?
 
-    fun deleteByAccountId(accountId: String):Mono<Void>
+    fun deleteByAccountIdAndUserId(accountId: String,userId: String):Mono<Void>
 
 }

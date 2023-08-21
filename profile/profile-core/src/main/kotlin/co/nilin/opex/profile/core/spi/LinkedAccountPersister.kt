@@ -1,9 +1,6 @@
 package co.nilin.opex.profile.core.spi
 
-import co.nilin.opex.profile.core.data.linkedbankAccount.LinkedAccountResponse
-import co.nilin.opex.profile.core.data.linkedbankAccount.LinkedBankAccountRequest
-import co.nilin.opex.profile.core.data.linkedbankAccount.UpdateRelatedAccountRequest
-import co.nilin.opex.profile.core.data.linkedbankAccount.VerifyLinkedAccountRequest
+import co.nilin.opex.profile.core.data.linkedbankAccount.*
 import kotlinx.coroutines.flow.Flow
 import reactor.core.publisher.Mono
 
@@ -17,6 +14,6 @@ interface LinkedAccountPersister {
 
     suspend fun verifyAccount(verifyRequest:VerifyLinkedAccountRequest): Mono<LinkedAccountResponse>?
 
-    suspend fun deleteAccount(accountId:String)
+    suspend fun deleteAccount(deleteLinkedAccountRequest: DeleteLinkedAccountRequest)
 
 }

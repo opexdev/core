@@ -81,7 +81,7 @@ class LimitationManagementImp(private var limitationRepository: LimitationReposi
                     logger.info("reset limitations for all users on some actions")
                     if (updatePermissionRequest.actions?.contains(ActionType.All) == true) {
                         limitationRepository.deleteAll().awaitFirstOrNull()
-                        //todo break
+                       //break
                     }
                     limitationRepository.deleteByActionType(it).awaitFirstOrNull()
                 }

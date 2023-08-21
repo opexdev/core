@@ -26,7 +26,7 @@ class LinkAccountManagementImp(val linkedAccountRepository: LinkedAccountReposit
                 verify = false
                 accountId = UUID.randomUUID().toString()
                 registerDate = LocalDateTime.now()
-            }).doOnError { throw OpexException(OpexError.Error) }
+            }).doOnError { throw OpexException(OpexError.DuplicateAccount) }
                     .map { d -> d.convert(LinkedAccountResponse::class.java) }
         } ?: throw OpexException(OpexError.UserNotFound)
     }
@@ -37,7 +37,7 @@ class LinkAccountManagementImp(val linkedAccountRepository: LinkedAccountReposit
                     d.enable = updateRelatedAccountRequest.status == Status.Enable
                     linkedAccountRepository.save(d)
 
-                }?.map { d -> d.convert(LinkedAccountResponse::class.java) } ?: throw OpexException(OpexError.Error)
+                }?.map { d -> d.convert(LinkedAccountResponse::class.java) } ?: throw OpexException(OpexError.InvalidLinkedAccount)
     }
 
     override suspend fun getAccounts(userId: String): Flow<LinkedAccountResponse>? {
@@ -51,13 +51,16 @@ class LinkAccountManagementImp(val linkedAccountRepository: LinkedAccountReposit
                 ?.awaitFirstOrNull()?.let { d ->
                     d.apply {
                         verify = verifyRequest.verify
+                        verifier=verifyRequest.verifier
                         description = verifyRequest.description
                     }
                 }
-                ?: throw OpexException(OpexError.Error))?.map { d -> d?.convert(LinkedAccountResponse::class.java) }
+                ?: throw OpexException(OpexError.AccountNotFound))?.map { d -> d?.convert(LinkedAccountResponse::class.java) }
     }
 
-    override suspend fun deleteAccount(accountId: String) {
-        linkedAccountRepository.deleteByAccountId(accountId)?.awaitFirstOrNull()
+    override suspend fun deleteAccount(deleteLinkedAccountRequest: DeleteLinkedAccountRequest) {
+        linkedAccountRepository.findAllByUserIdAndAccountId(deleteLinkedAccountRequest.userId, deleteLinkedAccountRequest.accountId)?.awaitFirstOrNull()?.let {
+            linkedAccountRepository.deleteByAccountIdAndUserId(deleteLinkedAccountRequest.accountId, deleteLinkedAccountRequest.userId)?.awaitFirstOrNull()
+        } ?: throw OpexException(OpexError.AccountNotFound)
     }
 }

@@ -24,6 +24,8 @@ interface KycProcessRepository : ReactiveCrudRepository<KycProcessModel,Long> {
     @Query("select * from kyc_process kp where (:userId is NULL or kp.user_id= :userId)  And (:step is NULL or kp.step=:step) And (:status is NULL or kp.status=:status) OFFSET :offset LIMIT :size; ")
     fun findAllKycProcess(userId:String?,step:KycStep?,status:KycStatus?,offset:Int,size:Int ,pageable: Pageable) : Flow<KycProcessModel>?
 
-    fun findByStepIdOrReferenceId(stepId: String,referenceId:String):Flow<KycProcessModel>?
+    @Query("select * from kyc_process kp where (:userId is NULL or kp.user_id= :userId)  And ( kp.step_id=:stepId) OR ( kp.reference_id=:referenceId)  ")
+
+    fun findByStepIdOrReferenceId(stepId: String,referenceId:String, userId:String?):Flow<KycProcessModel>?
 
 }

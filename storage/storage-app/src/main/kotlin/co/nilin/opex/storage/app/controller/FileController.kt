@@ -59,7 +59,7 @@ class FileController(
         @CurrentSecurityContext securityContext: SecurityContext
     ): FileUploadResponse {
         //todo reset authentication filter
-      //  if (securityContext.authentication.name != uid) throw OpexException(OpexError.UnAuthorized)
+        if (securityContext.authentication.name != uid) throw OpexException(OpexError.UnAuthorized)
         return upload(uid, file.awaitFirstOrNull(), stringToHashService.digest(UUID.randomUUID().toString()))
     }
 

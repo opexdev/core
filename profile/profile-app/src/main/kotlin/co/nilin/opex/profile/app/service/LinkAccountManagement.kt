@@ -37,14 +37,14 @@ class LinkAccountManagement(val linkedAccountPersister: LinkedAccountPersister) 
 
     }
 
-    suspend fun deleteAccount(accountId:String) {
-         linkedAccountPersister.deleteAccount(accountId)
+    suspend fun deleteAccount(deleteLinkedAccountRequest: DeleteLinkedAccountRequest) {
+         linkedAccountPersister.deleteAccount(deleteLinkedAccountRequest)
 
     }
     private fun LinkedBankAccountRequest.verifyRegisterNewAccount() {
         when (bankAccountType) {
-            BankAccountType.Sheba -> if(!number.isValidIBAN()) throw OpexException(OpexError.Error)
-            BankAccountType.Card -> if(!number.isValidCardNumber())  throw OpexException(OpexError.Error)
+            BankAccountType.Sheba -> if(!number.isValidIBAN()) throw OpexException(OpexError.InvalidIban)
+            BankAccountType.Card -> if(!number.isValidCardNumber())  throw OpexException(OpexError.InvalidCard)
         }
     }
 

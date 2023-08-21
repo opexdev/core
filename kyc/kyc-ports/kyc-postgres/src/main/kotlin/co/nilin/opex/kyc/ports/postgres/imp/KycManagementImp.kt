@@ -119,8 +119,8 @@ class KycManagementImp(private val kycProcessRepository: KycProcessRepository,
                 }
     }
 
-    override suspend fun getStepData(stepId: String): Flow<KycProcessDetail>? {
-        return kycProcessRepository.findByStepIdOrReferenceId(stepId, stepId)
+    override suspend fun getStepData(stepId: String,userId:String?): Flow<KycProcessDetail>? {
+        return kycProcessRepository.findByStepIdOrReferenceId(stepId, stepId, userId)
                 ?.map { d ->
                     d.convert(KycProcessDetail::class.java)
                 }

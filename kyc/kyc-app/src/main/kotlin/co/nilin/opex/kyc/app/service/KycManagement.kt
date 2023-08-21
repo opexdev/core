@@ -44,8 +44,8 @@ class KycManagement(
 
     }
 
-    suspend fun getStepData(stepId: String): KycProcessDetail? {
-        val resp = kycPersister.getStepData(stepId)
+    suspend fun getStepData(stepId: String,userId: String?): KycProcessDetail? {
+        val resp = kycPersister.getStepData(stepId,userId)
         return resp?.map { r ->
             var dataInput = ArrayList<String>()
             if (r.step?.name?.lowercase()?.contains("upload") == true) {

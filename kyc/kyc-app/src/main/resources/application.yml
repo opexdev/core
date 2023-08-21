@@ -49,4 +49,4 @@ app:
   auth:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
   storage:
-    url: lb://storage
+    url: lb://storage/internal

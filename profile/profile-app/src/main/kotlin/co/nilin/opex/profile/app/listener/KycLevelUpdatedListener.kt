@@ -17,7 +17,8 @@ class KycLevelUpdatedListener(val userRegistrationService: ProfileManagement) : 
         return "KycLevelUpdatedListener"
     }
 
-    override fun onEvent(event: co.nilin.opex.profile.core.data.event.KycLevelUpdatedEvent, partition: Int, offset: Long, timestamp: Long, eventId: String) {
+    override fun onEvent(event: co.nilin.opex.profile.core.data.event.KycLevelUpdatedEvent,
+                         partition: Int, offset: Long, timestamp: Long, eventId: String) {
         logger.info("==========================================================================")
         logger.info("Incoming UserLevelUpdated event: $event")
         logger.info("==========================================================================")
