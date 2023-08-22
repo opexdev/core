@@ -22,6 +22,7 @@ class SecurityConfig(private val webClient: WebClient) {
             .authorizeExchange()
             .pathMatchers("/auth/**").hasRole("SCOPE_trust", "admin_finance")
             .pathMatchers("/system/**").hasRole("SCOPE_trust", "admin_system")
+            .pathMatchers("/blockchain/**").hasRole("SCOPE_trust", "admin_system")
             .pathMatchers("/actuator/health").permitAll()
             .anyExchange().authenticated()
             .and()
