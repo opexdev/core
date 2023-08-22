@@ -59,8 +59,8 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
 
     @Query(
         """
-        with first_trade as (select id, symbol, matched_price, matched_quantity from trades where id in (select min(id) from trades where create_date > :since group by symbol)),
-            last_trade as (select id, symbol, matched_price, matched_quantity from trades where id in (select max(id) from trades where create_date > :since group by symbol))
+        with first_trade as (select id, symbol, matched_price, matched_quantity from trades where id in (select min(id) from trades where create_date > :date group by symbol)),
+            last_trade as (select id, symbol, matched_price, matched_quantity from trades where id in (select max(id) from trades where create_date > :date group by symbol))
         select symbol, 
         (select matched_price from last_trade where symbol=t.symbol) - (select matched_price from first_trade where symbol=t.symbol) as price_change,
         ((((select matched_price from last_trade where symbol=t.symbol) - (select matched_price from first_trade where symbol=t.symbol))/(select matched_price from first_trade where symbol=t.symbol))*100) as price_change_percent, 
