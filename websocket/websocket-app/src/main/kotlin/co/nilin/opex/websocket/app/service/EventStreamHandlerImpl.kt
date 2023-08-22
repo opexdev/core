@@ -1,28 +1,21 @@
 package co.nilin.opex.websocket.app.service
 
-import co.nilin.opex.accountant.core.inout.RichOrder
-import co.nilin.opex.accountant.core.inout.RichOrderUpdate
-import co.nilin.opex.accountant.core.inout.RichTrade
-import co.nilin.opex.matching.engine.core.model.OrderDirection
 import co.nilin.opex.websocket.app.config.AppDispatchers
 import co.nilin.opex.websocket.app.dto.OrderResponse
+import co.nilin.opex.websocket.app.proxy.MarketProxy
 import co.nilin.opex.websocket.app.utils.*
-import co.nilin.opex.websocket.core.inout.TradeResponse
+import co.nilin.opex.websocket.core.inout.*
 import co.nilin.opex.websocket.core.spi.EventStreamHandler
-import co.nilin.opex.websocket.ports.postgres.dao.OrderRepository
-import co.nilin.opex.websocket.ports.postgres.model.OrderModel
-import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.runBlocking
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.messaging.simp.user.SimpUserRegistry
 import org.springframework.stereotype.Component
-import java.math.BigDecimal
 import java.util.*
 
 @Component
 class EventStreamHandlerImpl(
     private val template: SimpMessagingTemplate,
-    private val orderRepository: OrderRepository,
+    private val marketProxy: MarketProxy,
     private val registry: SimpUserRegistry
 ) : EventStreamHandler {
 
@@ -39,7 +32,7 @@ class EventStreamHandlerImpl(
             order.accumulativeQuoteQty,
             order.status.toOrderStatus(),
             order.constraint.toTimeInForce(),
-            order.type.toWebsocketOrderType(),
+            order.type.toWebSocketOrderType(),
             order.direction.toOrderSide(),
             Date(),
             Date(),
@@ -52,25 +45,25 @@ class EventStreamHandlerImpl(
     override fun handleOrderUpdate(orderUpdate: RichOrderUpdate) {
         run {
             val status = orderUpdate.status.code.toOrderStatus()
-            val order = orderRepository.findByOuid(orderUpdate.ouid).awaitFirstOrNull() ?: return@run
+            val order = marketProxy.getOrder(orderUpdate.ouid) ?: return@run
             val response = OrderResponse(
                 order.ouid,
                 order.symbol,
                 order.orderId ?: -1,
                 -1,
                 null,
-                order.price ?: BigDecimal.ZERO,
+                order.price,
                 orderUpdate.quantity,
                 orderUpdate.executedQuantity(),
                 orderUpdate.accumulativeQuoteQuantity(),
                 status,
-                order.constraint?.toTimeInForce(),
-                order.type?.toWebsocketOrderType(),
-                order.direction?.toOrderSide(),
+                order.constraint.toTimeInForce(),
+                order.type.toWebSocketOrderType(),
+                order.direction.toOrderSide(),
                 Date(),
                 Date(),
                 status.isWorking(),
-                order.quoteQuantity ?: BigDecimal.ZERO
+                order.quoteQuantity
             )
             template.convertAndSendToUser(order.uuid, EventDestinations.Order.path, response)
         }
@@ -78,8 +71,8 @@ class EventStreamHandlerImpl(
 
     override fun handleTrade(trade: RichTrade) {
         run {
-            val takerOrder = orderRepository.findByOuid(trade.takerOuid).awaitFirstOrNull()
-            val makerOrder = orderRepository.findByOuid(trade.makerOuid).awaitFirstOrNull()
+            val takerOrder = marketProxy.getOrder(trade.takerOuid)
+            val makerOrder = marketProxy.getOrder(trade.makerOuid)
             if (makerOrder == null || takerOrder == null)
                 return@run
 
@@ -92,8 +85,8 @@ class EventStreamHandlerImpl(
 
     private fun RichTrade.buildTradeResponse(
         uuid: String,
-        makerOrder: OrderModel,
-        takerOrder: OrderModel
+        makerOrder: Order,
+        takerOrder: Order
     ): TradeResponse {
         val isMakerBuyer = makerOrder.direction == OrderDirection.BID
         return TradeResponse(
@@ -104,9 +97,9 @@ class EventStreamHandlerImpl(
             if (takerUuid == uuid) takerPrice else makerPrice,
             matchedQuantity,
             if (isMakerBuyer)
-                makerOrder.quoteQuantity ?: BigDecimal.ZERO
+                makerOrder.quoteQuantity
             else
-                takerOrder.quoteQuantity ?: BigDecimal.ZERO,
+                takerOrder.quoteQuantity,
             if (takerUuid == uuid) takerCommision else makerCommision,
             if (takerUuid == uuid) takerCommisionAsset else makerCommisionAsset,
             Date(),

@@ -20,21 +20,10 @@
         <module>websocket-app</module>
         <module>websocket-core</module>
         <module>websocket-ports/websocket-eventlistener-kafka</module>
-        <module>websocket-ports/websocket-persister-postgres</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>co.nilin.opex.matching.engine.core</groupId>
-                <artifactId>matching-engine-core</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>co.nilin.opex.accountant.core</groupId>
-                <artifactId>accountant-core</artifactId>
-                <version>${project.version}</version>
-            </dependency>
             <dependency>
                 <groupId>co.nilin.opex.websocket.core</groupId>
                 <artifactId>websocket-core</artifactId>

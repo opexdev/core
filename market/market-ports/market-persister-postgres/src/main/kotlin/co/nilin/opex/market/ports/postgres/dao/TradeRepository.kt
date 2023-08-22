@@ -59,8 +59,8 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
 
     @Query(
         """
-        with first_trade as (select * from trades where create_date > :date order by create_date limit 1),
-             last_trade as (select * from trades where create_date > :date order by create_date desc limit 1)
+        with first_trade as (select id, symbol, matched_price, matched_quantity from trades where id in (select min(id) from trades where create_date > :since group by symbol)),
+            last_trade as (select id, symbol, matched_price, matched_quantity from trades where id in (select max(id) from trades where create_date > :since group by symbol))
         select symbol, 
         (select matched_price from last_trade where symbol=t.symbol) - (select matched_price from first_trade where symbol=t.symbol) as price_change,
         ((((select matched_price from last_trade where symbol=t.symbol) - (select matched_price from first_trade where symbol=t.symbol))/(select matched_price from first_trade where symbol=t.symbol))*100) as price_change_percent, 
@@ -69,26 +69,20 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         (select matched_quantity from last_trade where symbol=t.symbol) as last_qty, 
         (
             select price from orders
-            join order_status os on orders.ouid = os.ouid
-            where create_date > :date and symbol=t.symbol and status in (1, 4) and side='BID' 
-            and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
-            and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
+            inner join open_orders oo on orders.ouid = oo.ouid
+            where create_date > :date and symbol=t.symbol and side='BID'
             order by create_date desc limit 1
         ) as bid_price,
         (
-            select price from orders 
-            join order_status os on orders.ouid = os.ouid
-            where create_date > :date and symbol=t.symbol and status in (1, 4) and side='ASK' 
-            and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
-            and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
-            order by create_date limit 1
+            select price from orders
+            inner join open_orders oo on orders.ouid = oo.ouid
+            where create_date > :date and symbol=t.symbol and side='ASK'
+            order by create_date desc limit 1
         ) as ask_price,
         (
-            select price from orders 
-            join order_status os on orders.ouid = os.ouid
-            where create_date > :date and symbol=t.symbol and status in (1, 4) 
-            and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
-            and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
+            select price from orders
+            inner join open_orders oo on orders.ouid = oo.ouid
+            where create_date > :date and symbol=t.symbol
             order by create_date desc limit 1
         ) as open_price,
         max(matched_price) as high_price, 
@@ -116,26 +110,20 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         (select matched_quantity from last_trade) as last_qty, 
         (
             select price from orders
-            join order_status os on orders.ouid = os.ouid
-            where create_date > :date and symbol=t.symbol and status in (1, 4) and side='BID' 
-            and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
-            and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
+            inner join open_orders oo on orders.ouid = oo.ouid
+            where create_date > :date and symbol=t.symbol and side='BID'
             order by create_date desc limit 1
         ) as bid_price,
         (
-            select price from orders 
-            join order_status os on orders.ouid = os.ouid
-            where create_date > :date and symbol=t.symbol and status in (1, 4) and side='ASK' 
-            and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
-            and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
-            order by create_date limit 1
+            select price from orders
+            inner join open_orders oo on orders.ouid = oo.ouid
+            where create_date > :date and symbol=t.symbol and side='ASK'
+            order by create_date desc limit 1
         ) as ask_price,
         (
-            select price from orders 
-            join order_status os on orders.ouid = os.ouid
-            where create_date > :date and symbol=t.symbol and status in (1, 4) 
-            and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
-            and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
+            select price from orders
+            inner join open_orders oo on orders.ouid = oo.ouid
+            where create_date > :date and symbol=t.symbol
             order by create_date desc limit 1
         ) as open_price,
         max(matched_price) as high_price, 
@@ -161,18 +149,14 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
             select symbol, 
             (
                 select price from orders
-                join order_status os on orders.ouid = os.ouid
-                where symbol = t.symbol and status in (1, 4) and side = 'BID' 
-                and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
-                and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
+                inner join open_orders oo on orders.ouid = oo.ouid
+                where symbol = t.symbol and side='BID'
                 order by create_date desc limit 1
             ) as bid_price,
             (
-                select price from orders 
-                join order_status os on orders.ouid = os.ouid
-                where symbol = t.symbol and status in (1, 4) and side = 'ASK' 
-                and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
-                and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
+                select price from orders
+                inner join open_orders oo on orders.ouid = oo.ouid
+                where symbol = t.symbol and side='ASK'
                 order by create_date limit 1
             ) as ask_price
             from trades as t
@@ -186,18 +170,14 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
             select symbol,
             (
                 select price from orders
-                join order_status os on orders.ouid = os.ouid
-                where symbol = t.symbol and status in (1, 4) and side = 'BID' 
-                and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
-                and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
+                inner join open_orders oo on orders.ouid = oo.ouid
+                where symbol = t.symbol and side='BID'
                 order by create_date desc limit 1
             ) as bid_price,
             (
-                select price from orders 
-                join order_status os on orders.ouid = os.ouid
-                where symbol = t.symbol and status in (1, 4) and side = 'ASK' 
-                and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
-                and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
+                select price from orders
+                inner join open_orders oo on orders.ouid = oo.ouid
+                where symbol = t.symbol and side='ASK'
                 order by create_date limit 1
             ) as ask_price
             from trades as t 
@@ -212,18 +192,14 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
             select symbol, 
             (
                 select price from orders
-                join order_status os on orders.ouid = os.ouid
-                where symbol = t.symbol and status in (1, 4) and side = 'BID' 
-                and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
-                and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
+                inner join open_orders oo on orders.ouid = oo.ouid
+                where symbol = t.symbol and side='BID'
                 order by create_date desc limit 1
             ) as bid_price,
             (
-                select price from orders 
-                join order_status os on orders.ouid = os.ouid
-                where symbol = t.symbol and status in (1, 4) and side = 'ASK' 
-                and appearance = (select max(appearance) from order_status where ouid = orders.ouid)
-                and executed_quantity = (select max(executed_quantity) from order_status where ouid = orders.ouid)
+                select price from orders
+                inner join open_orders oo on orders.ouid = oo.ouid
+                where symbol = t.symbol and side='ASK'
                 order by create_date limit 1
             ) as ask_price
             from trades as t 
@@ -287,8 +263,8 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
 
     @Query(
         """
-        with first_trade as (select matched_price, symbol from trades where create_date > :since order by create_date limit 1),
-             last_trade as (select matched_price, symbol from trades where create_date > :since order by create_date desc limit 1)
+        with first_trade as (select id, symbol, matched_price from trades where id in (select min(id) from trades where create_date > :since group by symbol)),
+             last_trade as (select id, symbol, matched_price from trades where id in (select max(id) from trades where create_date > :since group by symbol))
         select 
             symbol,
             coalesce((select matched_price from last_trade where symbol = t.symbol), 0.0) as last_price,
@@ -316,8 +292,8 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
 
     @Query(
         """
-        with first_trade as (select matched_price, symbol from trades where create_date > :since order by create_date limit 1),
-             last_trade as (select matched_price, symbol from trades where create_date > :since order by create_date desc limit 1)
+        with first_trade as (select id, symbol, matched_price from trades where id in (select min(id) from trades where create_date > :since group by symbol)),
+             last_trade as (select id, symbol, matched_price from trades where id in (select max(id) from trades where create_date > :since group by symbol))
         select 
             symbol,
             coalesce((select matched_price from last_trade where symbol = t.symbol), 0.0) as last_price,
@@ -345,8 +321,8 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
 
     @Query(
         """
-        with first_trade as (select matched_quantity as mq, symbol from trades where create_date > :since order by create_date limit 1),
-             last_trade as (select matched_quantity as mq, symbol from trades where create_date > :since order by create_date desc limit 1)
+        with first_trade as (select symbol, matched_quantity mq from trades where id in (select min(id) from trades where create_date > :since group by symbol)),
+             last_trade as (select  symbol, matched_quantity mq from trades where id in (select max(id) from trades where create_date > :since group by symbol))
         select 
             symbol, 
             coalesce(sum(matched_quantity), 0.0) as volume, 
@@ -369,8 +345,8 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
 
     @Query(
         """
-        with first_trade as (select matched_quantity as mq, symbol from trades where create_date > :since order by create_date limit 1),
-             last_trade as (select matched_quantity as mq, symbol from trades where create_date > :since order by create_date desc limit 1)
+        with first_trade as (select symbol, matched_quantity mq from trades where id in (select min(id) from trades where create_date > :since group by symbol)),
+             last_trade as (select  symbol, matched_quantity mq from trades where id in (select max(id) from trades where create_date > :since group by symbol))
         select 
             symbol, 
             coalesce(sum(matched_quantity), 0.0) as volume, 
