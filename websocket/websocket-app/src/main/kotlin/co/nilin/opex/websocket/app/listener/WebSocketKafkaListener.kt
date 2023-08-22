@@ -1,9 +1,9 @@
 package co.nilin.opex.websocket.app.listener
 
-import co.nilin.opex.accountant.core.inout.RichOrder
-import co.nilin.opex.accountant.core.inout.RichOrderEvent
-import co.nilin.opex.accountant.core.inout.RichOrderUpdate
-import co.nilin.opex.accountant.core.inout.RichTrade
+import co.nilin.opex.websocket.core.inout.RichOrder
+import co.nilin.opex.websocket.core.inout.RichOrderEvent
+import co.nilin.opex.websocket.core.inout.RichOrderUpdate
+import co.nilin.opex.websocket.core.inout.RichTrade
 import co.nilin.opex.websocket.core.spi.EventStreamHandler
 import co.nilin.opex.websocket.ports.kafka.listener.spi.RichOrderListener
 import co.nilin.opex.websocket.ports.kafka.listener.spi.RichTradeListener
