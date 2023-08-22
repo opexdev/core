@@ -1,5 +1,6 @@
 package co.nilin.opex.profile.ports.postgres.model.base
 
+import co.nilin.opex.profile.core.data.profile.Gender
 import co.nilin.opex.profile.core.data.profile.KycLevel
 import co.nilin.opex.profile.core.data.profile.UserStatus
 import java.time.LocalDateTime
@@ -15,7 +16,7 @@ open class Profile {
      var postalCode: String?=null
      var nationality: String?=null
      var identifier: String?=null
-     var gender: Boolean?=null
+     var gender: Gender?=null
      lateinit var birthDate: LocalDateTime
      var status: UserStatus?=null
      var createDate: LocalDateTime?=null

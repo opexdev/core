@@ -16,12 +16,11 @@ data class Profile(
         var postalCode:String?=null,
         var nationality:String?=null,
         var identifier:String?=null,
-        var gender:Boolean?=null,
+        var gender:Gender?=null,
         var birthDate: LocalDateTime?=null,
         var status: UserStatus?=null,
         var createDate:LocalDateTime?=null,
         var lastUpdateDate:LocalDateTime?=null,
         var creator:String?=null,
-        //todo set read only
         var kycLevel:KycLevel?=null
 )

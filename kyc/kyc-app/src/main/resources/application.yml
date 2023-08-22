@@ -14,6 +14,7 @@ spring:
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
     initialization-mode: always
+
   kafka:
     bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
     consumer:

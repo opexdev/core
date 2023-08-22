@@ -23,8 +23,8 @@
 
         <module>profile-core</module>
         <module>profile-app</module>
-        <module>profile-ports/profile-kafka</module>
         <module>profile-ports/profile-postgres</module>
+        <module>profile-ports/profile-kafka</module>
         <module>profile-ports/profile-kyc-proxy</module>
 
     </modules>

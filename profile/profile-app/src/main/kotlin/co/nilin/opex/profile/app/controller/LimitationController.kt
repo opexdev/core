@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/v1/profile/limitation")
+@RequestMapping("/v2/profile/limitation")
 
 class LimitationController(private var limitManagement: LimitationManagement) {
     @GetMapping("/{userId}")

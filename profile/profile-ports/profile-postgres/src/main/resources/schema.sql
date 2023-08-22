@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS profile
     telephone         VARCHAR(256),
     mobile            VARCHAR(256),
     nationality       VARCHAR(256),
-    gender            BOOLEAN,
+    gender            VARCHAR(50),
     birth_date        TIMESTAMP,
     status            VARCHAR(100),
     postal_code       VARCHAR(100),
@@ -19,7 +19,6 @@ CREATE TABLE IF NOT EXISTS profile
     last_update_date  TIMESTAMP DEFAULT CURRENT_DATE,
     kyc_level varchar(100)
  );
-
 
 CREATE TABLE IF NOT EXISTS profile_history
 (

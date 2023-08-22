@@ -6,9 +6,7 @@ import co.nilin.opex.profile.core.data.limitation.ActionType
 import co.nilin.opex.profile.core.data.limitation.LimitationReason
 import co.nilin.opex.profile.core.data.limitation.LimitationUpdateType
 import co.nilin.opex.profile.core.data.limitation.UpdateLimitationRequest
-import co.nilin.opex.profile.core.data.profile.KycLevel
-import co.nilin.opex.profile.core.data.profile.Profile
-import co.nilin.opex.profile.core.data.profile.ProfileHistory
+import co.nilin.opex.profile.core.data.profile.*
 import co.nilin.opex.profile.core.spi.ProfilePersister
 import co.nilin.opex.profile.ports.postgres.dao.ProfileHistoryRepository
 import co.nilin.opex.profile.ports.postgres.dao.ProfileRepository
@@ -27,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional
 import co.nilin.opex.profile.core.utils.compare
 import co.nilin.opex.profile.ports.kyc.imp.KycProxyImp
 import kotlinx.coroutines.reactive.awaitFirst
+import java.time.LocalDateTime
 
 @Service
 class ProfileManagementImp(private var profileRepository: ProfileRepository,
@@ -36,15 +35,11 @@ class ProfileManagementImp(private var profileRepository: ProfileRepository,
     private val logger = LoggerFactory.getLogger(ProfileManagementImp::class.java)
 
     @Transactional
-    override suspend fun updateProfile(id: String, data: Profile): Profile {
+    override suspend fun updateProfile(id: String, data: UpdateProfileRequest): Profile {
         var newKycLevel: KycLevel? = null
         return profileRepository.findByUserId(id)?.awaitFirstOrNull()?.let { it ->
             with(data) {
-                this.status = status
-                this.lastUpdateDate = java.time.LocalDateTime.now()
-                this.createDate = createDate
-                this.email = email
-                this.userId = id
+
                 if (isMajorChanges(it, this)) {
                     newKycLevel = applyMajorChangesRequirements(it, this)
                 }
@@ -52,9 +47,22 @@ class ProfileManagementImp(private var profileRepository: ProfileRepository,
                     newKycLevel = applyContactChangesRequirements(it, this)
             }
             var newProfileModel = data.convert(ProfileModel::class.java)
+
             newProfileModel.id = it.id
-            newKycLevel?.let { kl -> newProfileModel.kycLevel = kl }
+            newProfileModel.kycLevel = it.kycLevel
+            newProfileModel.userId = it.userId
+            newProfileModel.email = it.email
+            newProfileModel.status = it.status
+            newProfileModel.createDate = it.createDate
+            newProfileModel.lastUpdateDate = LocalDateTime.now()
+
+            // 1.new kyc level was sent to kyc module
+            // 2.kyc module as soon as possible will push that message into all module includes profile
+            // 3. we return new kyc level to user locally and based on changes of close future in database
+
             profileRepository.save(newProfileModel).awaitFirstOrNull()!!.convert(Profile::class.java)
+                    .apply { newKycLevel.let { this.kycLevel = it } }
+
         } ?: throw OpexException(OpexError.UserNotFound)
     }
 
@@ -126,20 +134,21 @@ class ProfileManagementImp(private var profileRepository: ProfileRepository,
     }
 
 
-    fun isMajorChanges(oldData: ProfileModel, newData: Profile): Boolean {
-        return !oldData.firstName.equals(newData.firstName) || !oldData.firstName.equals(newData.firstName)
+    fun isMajorChanges(oldData: ProfileModel, newData: UpdateProfileRequest): Boolean {
+        return !oldData.firstName.equals(newData.firstName) || !oldData.lastName.equals(newData.lastName)
     }
 
-    fun isContactChanges(oldData: ProfileModel, newData: Profile): Boolean {
-        return oldData.email != newData.email || !oldData.mobile.equals(newData.mobile)
+    fun isContactChanges(oldData: ProfileModel, newData: UpdateProfileRequest): Boolean {
+        // return oldData.email != newData.email ||
+        return !oldData.mobile.equals(newData.mobile)
     }
 
-    suspend fun applyMajorChangesRequirements(oldData: ProfileModel, newData: Profile): KycLevel? {
+    suspend fun applyMajorChangesRequirements(oldData: ProfileModel, newData: UpdateProfileRequest): KycLevel? {
         //todo
         //read from panel
         val newKycLevel = KycLevel.Level1
 
-        updateKycLevel(userId = newData.userId!!, kycLevel = newKycLevel, LimitationReason.MajorProfileChange.name)
+        updateKycLevel(userId = oldData.userId!!, kycLevel = newKycLevel, LimitationReason.MajorProfileChange.name)
         limitationManagementImp.updateLimitation(UpdateLimitationRequest(oldData.userId, arrayOf(
 
                 ActionType.CashOut, ActionType.Withdraw).asList(), null, LimitationUpdateType.Revoke, null, null, LimitationReason.MajorProfileChange))
@@ -147,12 +156,12 @@ class ProfileManagementImp(private var profileRepository: ProfileRepository,
         return newKycLevel
     }
 
-    suspend fun applyContactChangesRequirements(oldData: ProfileModel, newData: Profile): KycLevel? {
+    suspend fun applyContactChangesRequirements(oldData: ProfileModel, newData: UpdateProfileRequest): KycLevel? {
         //todo
         //read from panel
         val newKycLevel = KycLevel.Level1
 
-        updateKycLevel(userId = newData.userId!!, kycLevel = newKycLevel, LimitationReason.MajorProfileChange.name)
+        updateKycLevel(userId = oldData.userId!!, kycLevel = newKycLevel, LimitationReason.MajorProfileChange.name)
         limitationManagementImp.updateLimitation(UpdateLimitationRequest(oldData.userId, arrayOf(
 
                 ActionType.Withdraw).asList(), null, LimitationUpdateType.Revoke, null, null, LimitationReason.ContactProfileChange))

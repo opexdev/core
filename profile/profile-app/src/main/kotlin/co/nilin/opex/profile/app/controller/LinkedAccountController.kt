@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
 
 @RestController
-@RequestMapping("/v1/profile/related-account")
+@RequestMapping("/v2/profile/related-account")
 class LinkedAccountController(val linkedAccountManagement: LinkAccountManagement) {
     @PostMapping("/{userId}")
     suspend fun addLinkedAccount(@PathVariable userId: String,

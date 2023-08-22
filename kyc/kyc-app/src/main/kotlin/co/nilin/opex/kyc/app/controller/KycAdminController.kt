@@ -3,6 +3,7 @@ package co.nilin.opex.kyc.app.controller
 import co.nilin.opex.kyc.app.service.KycManagement
 import co.nilin.opex.kyc.core.data.*
 import kotlinx.coroutines.flow.Flow
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
@@ -65,11 +66,11 @@ class KycAdminController(private val kycManagement: KycManagement) {
     suspend fun internalManualUpdate(
             @PathVariable("userId") userId: String,
             @RequestBody manualUpdateRequest: ManualUpdateRequest,
-    ) {
+    ):HttpStatus {
         manualUpdateRequest.userId = userId
         manualUpdateRequest.stepId = UUID.randomUUID().toString()
         manualUpdateRequest.step = KycStep.ManualUpdate
-        kycManagement.manualUpdate(manualUpdateRequest)
+        return  kycManagement.manualUpdate(manualUpdateRequest)?.processId?.let { HttpStatus.ACCEPTED }?:HttpStatus.INTERNAL_SERVER_ERROR
     }
 
 }

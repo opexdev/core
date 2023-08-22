@@ -7,6 +7,7 @@ import co.nilin.opex.profile.core.spi.ProfilePersister
 import org.springframework.stereotype.Component
 import co.nilin.opex.profile.core.data.event.UserCreatedEvent
 import co.nilin.opex.profile.core.data.profile.KycLevel
+import co.nilin.opex.profile.core.data.profile.UpdateProfileRequest
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 
@@ -31,11 +32,11 @@ class ProfileManagement(
         return profilePersister.getProfile(userId)
     }
 
-    suspend fun update(userId: String, newProfile: Profile): Profile? {
+    suspend fun update(userId: String, newProfile: UpdateProfileRequest): Profile? {
         return profilePersister.updateProfile(userId, newProfile)
     }
     suspend fun updateAsAdmin(userId: String, newProfile: Profile): Profile? {
-        return profilePersister.updateProfile(userId, newProfile)
+        return profilePersister.updateProfileAsAdmin(userId, newProfile)
     }
 
     suspend fun create(userId: String, newProfile: Profile): Profile? {
