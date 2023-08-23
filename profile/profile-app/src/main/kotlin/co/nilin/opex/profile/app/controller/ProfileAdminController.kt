@@ -3,6 +3,7 @@ package co.nilin.opex.profile.app.controller
 import co.nilin.opex.profile.app.service.LinkAccountManagement
 import co.nilin.opex.profile.app.service.ProfileManagement
 import co.nilin.opex.profile.core.data.limitation.*
+import co.nilin.opex.profile.core.data.linkedbankAccount.LinkedAccountHistoryResponse
 import co.nilin.opex.profile.core.data.linkedbankAccount.LinkedAccountResponse
 import co.nilin.opex.profile.core.data.linkedbankAccount.LinkedBankAccountRequest
 import co.nilin.opex.profile.core.data.linkedbankAccount.VerifyLinkedAccountRequest
@@ -22,12 +23,12 @@ class ProfileAdminController(val profileManagement: ProfileManagement,
                              val linkAccountManagement: LinkAccountManagement,
                              val limitManagement: LimitationManagementImp) {
 
-    @PostMapping("/create/{userId}")
+    @PostMapping("/{userId}")
     suspend fun createManually(@PathVariable("userId") userId: String, @RequestBody newProfile: Profile): Profile? {
         return profileManagement.create(userId, newProfile)
     }
 
-    @PutMapping("/update/{userId}")
+    @PutMapping("/{userId}")
     suspend fun updateAsAdmin(@PathVariable("userId") userId: String, @RequestBody newProfile: Profile): Profile? {
         return profileManagement.updateAsAdmin(userId, newProfile)
     }
@@ -53,11 +54,14 @@ class ProfileAdminController(val profileManagement: ProfileManagement,
     // =====================================linked accounts====================================
 
     @GetMapping("/linked-account/{userId}")
-    //check userId and ContextSecurity
-    suspend fun getLinkedAccount(@PathVariable userId: String,
-                                 @CurrentSecurityContext securityContext: SecurityContext): Flow<LinkedAccountResponse>? {
-
+    suspend fun getLinkedAccount(@PathVariable userId: String): Flow<LinkedAccountResponse>? {
         return linkAccountManagement.getAccounts(userId)
+    }
+
+    @GetMapping("/linked-account/history/{accountId}")
+    suspend fun getHistoryLinkedAccount(@PathVariable accountId: String): Flow<LinkedAccountHistoryResponse>? {
+
+        return linkAccountManagement.getHistoryLinkedAccount(accountId)
     }
 
     @PostMapping("/linked-account/{userId}")

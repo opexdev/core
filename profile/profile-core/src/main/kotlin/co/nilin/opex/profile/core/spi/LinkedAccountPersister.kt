@@ -12,6 +12,9 @@ interface LinkedAccountPersister {
 
     suspend fun getAccounts(userId:String): Flow<LinkedAccountResponse>?
 
+    suspend fun getHistory(userId:String): Flow<LinkedAccountHistoryResponse>?
+
+
     suspend fun verifyAccount(verifyRequest:VerifyLinkedAccountRequest): Mono<LinkedAccountResponse>?
 
     suspend fun deleteAccount(deleteLinkedAccountRequest: DeleteLinkedAccountRequest)

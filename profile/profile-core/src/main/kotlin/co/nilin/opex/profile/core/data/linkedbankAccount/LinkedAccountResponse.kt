@@ -8,6 +8,6 @@ data class LinkedAccountResponse(var userId: String?,
                                  var verifiedDate: LocalDateTime? = null,
                                  var number: String,
                                  var accountId: String? = null,
-                                 var enable: Boolean?,
-                                 var verify: Boolean?,
+                                 var enabled: Boolean?,
+                                 var verified: Boolean?,
                                  var description: String?)

@@ -3,6 +3,7 @@ package co.nilin.opex.profile.ports.postgres.imp
 import co.nilin.opex.kyc.core.utils.convert
 import co.nilin.opex.profile.core.data.linkedbankAccount.*
 import co.nilin.opex.profile.core.spi.LinkedAccountPersister
+import co.nilin.opex.profile.ports.postgres.dao.LinkedAccountHistoryRepository
 import co.nilin.opex.profile.ports.postgres.dao.LinkedAccountRepository
 import co.nilin.opex.profile.ports.postgres.dao.ProfileRepository
 import co.nilin.opex.profile.ports.postgres.model.base.LinkedBankAccount
@@ -18,12 +19,14 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 @Component
-class LinkAccountManagementImp(val linkedAccountRepository: LinkedAccountRepository, val profileRepository: ProfileRepository) : LinkedAccountPersister {
+class LinkAccountManagementImp(val linkedAccountRepository: LinkedAccountRepository,
+                               val profileRepository: ProfileRepository,
+                               val linkedAccountHistoryRepository: LinkedAccountHistoryRepository) : LinkedAccountPersister {
     override suspend fun addNewAccount(linkedBankAccountRequest: LinkedBankAccountRequest): Mono<LinkedAccountResponse> {
         return profileRepository.findByUserId(linkedBankAccountRequest.userId!!)?.let {
             linkedAccountRepository.save(linkedBankAccountRequest.convert(LinkedBankAccountModel::class.java).apply {
-                enable = false
-                verify = false
+                enabled = true
+                verified = false
                 accountId = UUID.randomUUID().toString()
                 registerDate = LocalDateTime.now()
             }).doOnError { throw OpexException(OpexError.DuplicateAccount) }
@@ -34,24 +37,29 @@ class LinkAccountManagementImp(val linkedAccountRepository: LinkedAccountReposit
     override suspend fun updateAccount(updateRelatedAccountRequest: UpdateRelatedAccountRequest): Mono<LinkedAccountResponse>? {
         return linkedAccountRepository.findAllByUserIdAndAccountId(updateRelatedAccountRequest.userId!!, updateRelatedAccountRequest.accountId!!)?.awaitFirstOrNull()
                 ?.let { d ->
-                    d.enable = updateRelatedAccountRequest.status == Status.Enable
+                    d.enabled = updateRelatedAccountRequest.status == Status.Enable
                     linkedAccountRepository.save(d)
 
-                }?.map { d -> d.convert(LinkedAccountResponse::class.java) } ?: throw OpexException(OpexError.InvalidLinkedAccount)
+                }?.map { d -> d.convert(LinkedAccountResponse::class.java) }
+                ?: throw OpexException(OpexError.InvalidLinkedAccount)
     }
 
     override suspend fun getAccounts(userId: String): Flow<LinkedAccountResponse>? {
-        return profileRepository.findByUserId(userId).let {
+        return profileRepository.findByUserId(userId)?.awaitFirstOrNull()?.let {
             linkedAccountRepository.findAllByUserId(userId)?.map { d -> d.convert(LinkedAccountResponse::class.java) }
         } ?: throw OpexException(OpexError.UserNotFound)
+    }
+
+    override suspend fun getHistory(userId: String): Flow<LinkedAccountHistoryResponse>? {
+          return  linkedAccountHistoryRepository.findAllByAccountId(userId)?.map { d -> d.convert(LinkedAccountHistoryResponse::class.java) }
     }
 
     override suspend fun verifyAccount(verifyRequest: VerifyLinkedAccountRequest): Mono<LinkedAccountResponse>? {
         return linkedAccountRepository.save(linkedAccountRepository.findByAccountId(verifyRequest.accountId!!)
                 ?.awaitFirstOrNull()?.let { d ->
                     d.apply {
-                        verify = verifyRequest.verify
-                        verifier=verifyRequest.verifier
+                        verified = verifyRequest.verified
+                        verifier = verifyRequest.verifier
                         description = verifyRequest.description
                     }
                 }

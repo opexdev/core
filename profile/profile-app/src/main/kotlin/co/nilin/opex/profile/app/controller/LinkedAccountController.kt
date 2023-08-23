@@ -12,15 +12,13 @@ import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
 
 @RestController
-@RequestMapping("/v2/profile/related-account")
+@RequestMapping("/v2/profile/linked-account")
 class LinkedAccountController(val linkedAccountManagement: LinkAccountManagement) {
-    @PostMapping("/{userId}")
-    suspend fun addLinkedAccount(@PathVariable userId: String,
+    @PostMapping("")
+    suspend fun addLinkedAccount(
                                  @RequestBody linkedBankAccountRequest: LinkedBankAccountRequest,
                                  @CurrentSecurityContext securityContext: SecurityContext): LinkedAccountResponse? {
-        if (securityContext.authentication.name != userId)
-            throw OpexException(OpexError.Forbidden)
-        linkedBankAccountRequest.userId = userId
+        linkedBankAccountRequest.userId = securityContext.authentication.name
         return linkedAccountManagement.addNewAccount(linkedBankAccountRequest)?.awaitFirstOrNull()
     }
 
@@ -36,13 +34,11 @@ class LinkedAccountController(val linkedAccountManagement: LinkAccountManagement
         })?.awaitFirstOrNull()
     }
 
-    @GetMapping("/{userId}")
+    @GetMapping("")
     //check userId and ContextSecurity
-    suspend fun getLinkedAccount(@PathVariable userId: String,
-                                 @CurrentSecurityContext securityContext: SecurityContext): Flow<LinkedAccountResponse>? {
-        if (securityContext.authentication.name != userId)
-            throw OpexException(OpexError.Forbidden)
-        return linkedAccountManagement.getAccounts(userId)
+    suspend fun getLinkedAccount(@CurrentSecurityContext securityContext: SecurityContext): Flow<LinkedAccountResponse>? {
+
+        return linkedAccountManagement.getAccounts(securityContext.authentication.name)
     }
 
     @DeleteMapping("/{accountId}")

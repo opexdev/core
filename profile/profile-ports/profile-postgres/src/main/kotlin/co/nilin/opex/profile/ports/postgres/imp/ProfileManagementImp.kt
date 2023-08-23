@@ -66,12 +66,17 @@ class ProfileManagementImp(private var profileRepository: ProfileRepository,
         } ?: throw OpexException(OpexError.UserNotFound)
     }
 
+    //todo
+    //update shared fields in keycloak
     override suspend fun updateProfileAsAdmin(id: String, data: Profile): Profile {
 
         return profileRepository.findByUserId(id)?.awaitFirstOrNull()?.let {
             with(data) {
                 this.lastUpdateDate = java.time.LocalDateTime.now()
                 this.createDate = createDate
+                this.kycLevel=kycLevel
+                this.email=email
+                this.userId=userId
             }
             var newProfileModel = data.convert(ProfileModel::class.java)
             newProfileModel.id = it.id

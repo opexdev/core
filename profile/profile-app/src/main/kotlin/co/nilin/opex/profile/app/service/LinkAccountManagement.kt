@@ -31,6 +31,11 @@ class LinkAccountManagement(val linkedAccountPersister: LinkedAccountPersister) 
 
     }
 
+    suspend fun getHistoryLinkedAccount(accountId:String): Flow<LinkedAccountHistoryResponse>? {
+        return linkedAccountPersister.getHistory(accountId)
+
+    }
+
 
     suspend fun verifyAccount(verifyRequest: VerifyLinkedAccountRequest): Mono<LinkedAccountResponse>? {
         return linkedAccountPersister.verifyAccount(verifyRequest)

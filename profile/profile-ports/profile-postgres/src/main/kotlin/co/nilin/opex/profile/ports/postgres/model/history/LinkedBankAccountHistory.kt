@@ -11,7 +11,6 @@ import java.util.*
 data class LinkedBankAccountHistory(
         @Id
         var id: Long,
-        var issuer: String?,
         var changeRequestDate: LocalDateTime?,
         var changeRequestType: String?
 ) : LinkedBankAccount()
