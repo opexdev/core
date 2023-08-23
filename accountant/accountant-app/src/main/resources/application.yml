@@ -18,6 +18,13 @@ spring:
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
     initialization-mode: always
+    pool:
+      #max-idle-time: 5m
+      #max-life-time: 5m
+      #max-acquire-time: 5m
+      initial-size: 10
+      max-size: 32
+      validation-query: select 1
   cloud:
     bootstrap:
       enabled: true
