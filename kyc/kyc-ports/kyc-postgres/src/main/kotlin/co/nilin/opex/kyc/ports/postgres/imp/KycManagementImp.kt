@@ -94,7 +94,8 @@ class KycManagementImp(private val kycProcessRepository: KycProcessRepository,
         return KycResponse(processId = kycRequest.stepId!!)
     }
 
-
+    //todo
+    // set "old level" and "new level" in description
     suspend fun updateManually(kycRequest: ManualUpdateRequest, previousUserStatus: Long?): KycResponse {
         var kycProcessModel = kycRequest.convert(KycProcessModel::class.java)
         kycProcessModel.status = KycStatus.Successful
@@ -119,7 +120,7 @@ class KycManagementImp(private val kycProcessRepository: KycProcessRepository,
                 }
     }
 
-    override suspend fun getStepData(stepId: String,userId:String?): Flow<KycProcessDetail>? {
+    override suspend fun getStepData(stepId: String, userId: String?): Flow<KycProcessDetail>? {
         return kycProcessRepository.findByStepIdOrReferenceId(stepId, stepId, userId)
                 ?.map { d ->
                     d.convert(KycProcessDetail::class.java)
@@ -127,7 +128,7 @@ class KycManagementImp(private val kycProcessRepository: KycProcessRepository,
     }
 
     override suspend fun userLevelHistory(userId: String): Flow<UserLevelHistory>? {
-        return userStatusHistoryRepository.findAllByUserId(userId)?.map { d->d.convert(UserLevelHistory::class.java) }
+        return userStatusHistoryRepository.findAllByUserId(userId)?.map { d -> d.convert(UserLevelHistory::class.java) }
     }
 
 

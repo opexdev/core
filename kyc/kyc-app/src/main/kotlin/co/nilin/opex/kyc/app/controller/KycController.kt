@@ -26,24 +26,29 @@ import java.util.*
 class KycController(private val kycManagement: KycManagement) {
     private val logger = LoggerFactory.getLogger(KycController::class.java)
 
-    @PostMapping("/upload/{userId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
-    suspend fun uploadData(@PathVariable("userId") userId: String,
-                           @RequestPart("files") partFlux: Flux<FilePart>,
+    @PostMapping("/upload", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    suspend fun uploadData(@RequestPart("files") partFlux: Flux<FilePart>,
                            @CurrentSecurityContext securityContext: SecurityContext
     ) {
-        if (userId != securityContext.authentication.name)
-            throw OpexException(OpexError.Forbidden)
         partFlux.switchIfEmpty { throw OpexException(OpexError.InvalidRequestBody) }
         var files = mutableMapOf<String, FilePart>()
         partFlux.log().doOnNext { f -> files[f.filename()] = f }.awaitLast()
         if (files.isEmpty() || files == null)
             throw OpexException(OpexError.InvalidRequestBody)
         var uploadDataRequest = UploadDataRequest(files = files).apply {
-            this.userId = userId
+            this.userId = securityContext.authentication.name
             step = KycStep.UploadDataForLevel2
             stepId = UUID.randomUUID().toString()
         }
         kycManagement.uploadData(uploadDataRequest)
+    }
+
+    @GetMapping("/step")
+    suspend fun getData(
+            @CurrentSecurityContext securityContext: SecurityContext
+    ): Flow<KycProcess>? {
+
+        return kycManagement.getKycStep(KycDataRequest(securityContext.authentication.name, null, null,  0,  1000))
     }
 
 

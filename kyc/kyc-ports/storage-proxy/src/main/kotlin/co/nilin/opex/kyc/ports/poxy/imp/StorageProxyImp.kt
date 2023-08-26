@@ -2,6 +2,8 @@ package co.nilin.opex.kyc.ports.poxy.imp
 
 import co.nilin.opex.kyc.core.data.UploadResult
 import co.nilin.opex.kyc.core.spi.StorageProxy
+import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.reactive.awaitFirst
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
@@ -32,7 +34,7 @@ class StorageProxyImp(@Qualifier("loadBalanced") private val webClient: WebClien
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .body(BodyInserters.fromMultipartData(builder.build()))
                 .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
+                .onStatus({ t -> t.isError }, { throw OpexException(OpexError.UnableToUploadFiles)})
                 .bodyToMono(typeRef<UploadResult>())
                 .log()
                 .awaitFirst()

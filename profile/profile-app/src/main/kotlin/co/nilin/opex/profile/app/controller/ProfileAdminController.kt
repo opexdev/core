@@ -87,6 +87,7 @@ class ProfileAdminController(val profileManagement: ProfileManagement,
 
     @PostMapping("/limitation")
     suspend fun updateLimitation(@RequestBody permissionRequest: UpdateLimitationRequest) {
+        permissionRequest.reason ?:LimitationReason.Other
         limitManagement.updateLimitation(permissionRequest)
     }
 

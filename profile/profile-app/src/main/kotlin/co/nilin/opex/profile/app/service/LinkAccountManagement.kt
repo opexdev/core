@@ -42,8 +42,8 @@ class LinkAccountManagement(val linkedAccountPersister: LinkedAccountPersister) 
 
     }
 
-    suspend fun deleteAccount(deleteLinkedAccountRequest: DeleteLinkedAccountRequest) {
-         linkedAccountPersister.deleteAccount(deleteLinkedAccountRequest)
+    suspend fun deleteAccount(deleteLinkedAccountRequest: DeleteLinkedAccountRequest):Mono<String>? {
+        return linkedAccountPersister.deleteAccount(deleteLinkedAccountRequest)
 
     }
     private fun LinkedBankAccountRequest.verifyRegisterNewAccount() {

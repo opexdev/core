@@ -5,6 +5,7 @@ import co.nilin.opex.profile.core.data.linkedbankAccount.*
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
@@ -16,8 +17,8 @@ import reactor.core.publisher.Mono
 class LinkedAccountController(val linkedAccountManagement: LinkAccountManagement) {
     @PostMapping("")
     suspend fun addLinkedAccount(
-                                 @RequestBody linkedBankAccountRequest: LinkedBankAccountRequest,
-                                 @CurrentSecurityContext securityContext: SecurityContext): LinkedAccountResponse? {
+            @RequestBody linkedBankAccountRequest: LinkedBankAccountRequest,
+            @CurrentSecurityContext securityContext: SecurityContext): LinkedAccountResponse? {
         linkedBankAccountRequest.userId = securityContext.authentication.name
         return linkedAccountManagement.addNewAccount(linkedBankAccountRequest)?.awaitFirstOrNull()
     }
@@ -35,16 +36,15 @@ class LinkedAccountController(val linkedAccountManagement: LinkAccountManagement
     }
 
     @GetMapping("")
-    //check userId and ContextSecurity
     suspend fun getLinkedAccount(@CurrentSecurityContext securityContext: SecurityContext): Flow<LinkedAccountResponse>? {
 
         return linkedAccountManagement.getAccounts(securityContext.authentication.name)
     }
 
     @DeleteMapping("/{accountId}")
-    suspend//check userId and ContextSecurity
-    fun deleteAccount(@PathVariable accountId: String,@CurrentSecurityContext securityContext: SecurityContext) {
-        linkedAccountManagement.deleteAccount(DeleteLinkedAccountRequest(accountId,securityContext.authentication.name))
+    suspend fun deleteAccount(@PathVariable accountId: String, @CurrentSecurityContext securityContext: SecurityContext): DeleteAccountResponse? {
+        return linkedAccountManagement
+                .deleteAccount(DeleteLinkedAccountRequest(accountId, securityContext.authentication.name))?.let {ac-> DeleteAccountResponse(ac.awaitFirst()) }
 
     }
 }

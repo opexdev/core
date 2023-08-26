@@ -17,14 +17,14 @@ suspend fun KycRequest.verifyRequest(kycProcessRepository: KycProcessRepository,
 
             KycStep.UploadDataForLevel2 -> {
                 val request = this as UploadDataRequest
-                request.filesPath?.let { if (it.size != 3) throw throw OpexException(OpexError.InvalidRequestBody) }
-                        ?: throw OpexException(OpexError.InvalidRequestBody)
+                request.filesPath?.let { if (it.size != 3) throw throw OpexException(OpexError.InvalidUploadFileRequest) }
+                        ?: throw OpexException(OpexError.InvalidUploadFileRequest)
 
                 val previousValidSteps = KycLevelDetail.UploadDataLevel2.previousValidSteps
 
                 userStatusRepository.findByUserId(this.userId)?.awaitFirstOrNull()?.let {
                     if (previousValidSteps != null && it.kycLevel !in previousValidSteps) {
-                        throw OpexException(OpexError.Error)
+                        throw OpexException(OpexError.InvalidKycRequest)
                     }
                     it.id
 
@@ -33,7 +33,7 @@ suspend fun KycRequest.verifyRequest(kycProcessRepository: KycProcessRepository,
 
             KycStep.ManualReview -> {
                 if ((this as ManualReviewRequest).status !in arrayListOf(KycStatus.Accepted, KycStatus.Rejected))
-                    throw OpexException(OpexError.InvalidRequestBody)
+                    throw OpexException(OpexError.InvalidStatus)
 
                 val previousValidSteps = if (this.status == KycStatus.Accepted) KycLevelDetail.AcceptedManualReview.previousValidSteps
                 else KycLevelDetail.RejectedManualReview.previousValidSteps
@@ -41,7 +41,7 @@ suspend fun KycRequest.verifyRequest(kycProcessRepository: KycProcessRepository,
                 kycProcessRepository.findByUserIdAndStepId(this.userId, this.referenceId!!)?.awaitFirstOrNull()?.let {
                     userStatusRepository.findByUserId(this.userId)?.awaitFirstOrNull()?.let {
                         if ((previousValidSteps != null) && it.kycLevel !in previousValidSteps) {
-                            throw OpexException(OpexError.Error)
+                            throw OpexException(OpexError.InvalidKycRequest)
                         }
                         it.id
                     } ?: throw OpexException(OpexError.UserNotFound)
@@ -51,7 +51,7 @@ suspend fun KycRequest.verifyRequest(kycProcessRepository: KycProcessRepository,
 
             KycStep.ManualUpdate -> {
                 if ((this as ManualUpdateRequest).level !in arrayListOf(KycLevelDetail.ManualUpdateLevel1, KycLevelDetail.ManualUpdateLevel2))
-                    throw OpexException(OpexError.InvalidRequestBody)
+                    throw OpexException(OpexError.InvalidKycUpdateRequest)
                 userStatusRepository.findByUserId(this.userId)?.awaitFirstOrNull()?.id
             }
 

@@ -17,6 +17,6 @@ interface LinkedAccountPersister {
 
     suspend fun verifyAccount(verifyRequest:VerifyLinkedAccountRequest): Mono<LinkedAccountResponse>?
 
-    suspend fun deleteAccount(deleteLinkedAccountRequest: DeleteLinkedAccountRequest)
+    suspend fun deleteAccount(deleteLinkedAccountRequest: DeleteLinkedAccountRequest):Mono<String>?
 
 }

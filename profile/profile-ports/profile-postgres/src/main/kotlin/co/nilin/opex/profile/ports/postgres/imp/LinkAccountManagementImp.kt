@@ -13,6 +13,8 @@ import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactive.awaitLast
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
@@ -22,6 +24,8 @@ import java.util.UUID
 class LinkAccountManagementImp(val linkedAccountRepository: LinkedAccountRepository,
                                val profileRepository: ProfileRepository,
                                val linkedAccountHistoryRepository: LinkedAccountHistoryRepository) : LinkedAccountPersister {
+    private val logger = LoggerFactory.getLogger(LinkAccountManagementImp::class.java)
+
     override suspend fun addNewAccount(linkedBankAccountRequest: LinkedBankAccountRequest): Mono<LinkedAccountResponse> {
         return profileRepository.findByUserId(linkedBankAccountRequest.userId!!)?.let {
             linkedAccountRepository.save(linkedBankAccountRequest.convert(LinkedBankAccountModel::class.java).apply {
@@ -51,7 +55,7 @@ class LinkAccountManagementImp(val linkedAccountRepository: LinkedAccountReposit
     }
 
     override suspend fun getHistory(userId: String): Flow<LinkedAccountHistoryResponse>? {
-          return  linkedAccountHistoryRepository.findAllByAccountId(userId)?.map { d -> d.convert(LinkedAccountHistoryResponse::class.java) }
+        return linkedAccountHistoryRepository.findAllByAccountId(userId)?.map { d -> d.convert(LinkedAccountHistoryResponse::class.java) }
     }
 
     override suspend fun verifyAccount(verifyRequest: VerifyLinkedAccountRequest): Mono<LinkedAccountResponse>? {
@@ -66,9 +70,11 @@ class LinkAccountManagementImp(val linkedAccountRepository: LinkedAccountReposit
                 ?: throw OpexException(OpexError.AccountNotFound))?.map { d -> d?.convert(LinkedAccountResponse::class.java) }
     }
 
-    override suspend fun deleteAccount(deleteLinkedAccountRequest: DeleteLinkedAccountRequest) {
-        linkedAccountRepository.findAllByUserIdAndAccountId(deleteLinkedAccountRequest.userId, deleteLinkedAccountRequest.accountId)?.awaitFirstOrNull()?.let {
-            linkedAccountRepository.deleteByAccountIdAndUserId(deleteLinkedAccountRequest.accountId, deleteLinkedAccountRequest.userId)?.awaitFirstOrNull()
-        } ?: throw OpexException(OpexError.AccountNotFound)
+    override suspend fun deleteAccount(deleteLinkedAccountRequest: DeleteLinkedAccountRequest): Mono<String>? {
+
+        return linkedAccountRepository.findAllByUserIdAndAccountId(deleteLinkedAccountRequest.userId, deleteLinkedAccountRequest.accountId)?.awaitFirstOrNull()?.let {
+            linkedAccountRepository.deleteByAccountIdAndUserId(deleteLinkedAccountRequest.accountId, deleteLinkedAccountRequest.userId)
+                    .awaitFirstOrNull().run { return Mono.just(deleteLinkedAccountRequest.accountId) }
+        } ?: throw OpexException(OpexError.InvalidLinkedAccount)
     }
 }

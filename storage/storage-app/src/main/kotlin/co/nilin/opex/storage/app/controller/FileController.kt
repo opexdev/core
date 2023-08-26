@@ -58,8 +58,15 @@ class FileController(
         @RequestPart("file") file: Mono<FilePart>,
         @CurrentSecurityContext securityContext: SecurityContext
     ): FileUploadResponse {
-        //todo reset authentication filter
         if (securityContext.authentication.name != uid) throw OpexException(OpexError.UnAuthorized)
+        return upload(uid, file.awaitFirstOrNull(), stringToHashService.digest(UUID.randomUUID().toString()))
+    }
+    @PostMapping("/internal/{uid}")
+    suspend fun internalFileUploadPost(
+            @PathVariable("uid") uid: String,
+            @RequestPart("file") file: Mono<FilePart>,
+    ): FileUploadResponse {
+        //todo set authentication filter
         return upload(uid, file.awaitFirstOrNull(), stringToHashService.digest(UUID.randomUUID().toString()))
     }
 

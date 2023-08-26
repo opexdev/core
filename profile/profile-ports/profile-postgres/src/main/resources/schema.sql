@@ -193,7 +193,7 @@ CREATE OR REPLACE FUNCTION triger_delete_linked_account_function() RETURNS TRIGG
 $BODY$
 BEGIN
 INSERT INTO public.linked_bank_account_history (change_request_date,change_request_type,user_id,verified_date,enabled,verified,verifier,number,description,account_id)
-VALUES(now(),'DELETE',OLD.user_id,OLD.verified_date,OLD.enabled,OLD.verifid,OLD.verifier,OLD.number,OLD.description,OLD.account_id);
+VALUES(now(),'DELETE',OLD.user_id,OLD.verified_date,OLD.enabled,OLD.verified,OLD.verifier,OLD.number,OLD.description,OLD.account_id);
 RETURN NULL;
 END;
 $BODY$

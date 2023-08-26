@@ -20,16 +20,13 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/v2/profile/limitation")
 
 class LimitationController(private var limitManagement: LimitationManagement) {
-    @GetMapping("/{userId}")
-    suspend fun getLimitation(@PathVariable userId: String,
-                              @RequestParam("action") action: ActionType?,
+    @GetMapping("")
+    suspend fun getLimitation(@RequestParam("action") action: ActionType?,
                               @RequestParam("reason") reason: LimitationReason?,
                               @CurrentSecurityContext securityContext: SecurityContext): LimitationResponse? {
 
-        if (userId != securityContext.authentication.name)
-            throw OpexException(OpexError.Forbidden)
-        return limitManagement.getLimitation(userId, action, reason, 0, 1000)
-                ?.convert(LimitationResponse::class.java)
+        return LimitationResponse(totalData = limitManagement.getLimitation(securityContext.authentication.name, action, reason, 0, 1000))
+
 
     }
 }
