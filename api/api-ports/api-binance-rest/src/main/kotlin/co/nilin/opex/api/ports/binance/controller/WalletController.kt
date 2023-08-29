@@ -140,7 +140,7 @@ class WalletController(
                 status,
                 it.appliedFee.toString(),
                 3,
-                it.withdrawId.toString(),
+                it.destTransactionRef ?: it.withdrawId.toString(),
                 if (status == 1 && it.acceptDate != null) it.acceptDate!! else it.createDate
             )
         }
