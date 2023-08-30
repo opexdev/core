@@ -1,6 +1,6 @@
 scrape_configs:
   - job_name: "Kafka cluster"
-    scrape_interval: 5s
+    scrape_interval: 30s
     static_configs:
       - targets:
           - "kafka-1:1234"
@@ -10,7 +10,7 @@ scrape_configs:
           env: "dev"
   - job_name: 'Spring Boot Application input'
     metrics_path: '/actuator/prometheus'
-    scrape_interval: 5s
+    scrape_interval: 15s
     static_configs:
       - targets: [ 'accountant:8080' ]
         labels:
