@@ -48,6 +48,18 @@ class LinkAccountManagementImp(val linkedAccountRepository: LinkedAccountReposit
                 ?: throw OpexException(OpexError.InvalidLinkedAccount)
     }
 
+    override suspend fun getOwner(accountNumber: String, partialSearch: Boolean?): Flow<LinkedAccountResponse>? {
+        if (partialSearch == false) {
+            logger.info("==========================$accountNumber")
+            return linkedAccountRepository.findAllByNumber(accountNumber)?.map { d -> d.convert(LinkedAccountResponse::class.java) }
+
+        }  else {
+            logger.info("==========------------==========$accountNumber")
+
+            return linkedAccountRepository.searchAllByNumber(accountNumber)?.map { d -> d.convert(LinkedAccountResponse::class.java) }
+        }
+    }
+
     override suspend fun getAccounts(userId: String): Flow<LinkedAccountResponse>? {
         return profileRepository.findByUserId(userId)?.awaitFirstOrNull()?.let {
             linkedAccountRepository.findAllByUserId(userId)?.map { d -> d.convert(LinkedAccountResponse::class.java) }

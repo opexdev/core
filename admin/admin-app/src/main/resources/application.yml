@@ -44,3 +44,5 @@ app:
       realm: opex
       client-id: opex-admin
       client-secret: ${keycloak_client_secret:secret}
+  profile:
+    url: lb://opex-profile/v2/admin/profile

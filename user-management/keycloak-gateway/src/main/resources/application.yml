@@ -19,11 +19,17 @@ spring:
     initialization-mode: always
   jpa:
     hibernate:
-      ddl-auto: none
-    properties.hibernate:
-      jdbc.lob.non_contextual_creation: true
-      dialect: org.hibernate.dialect.PostgreSQLDialect
+      ddl-auto: create
+    properties:
+      hibernate:
+        jdbc.lob.non_contextual_creation: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show_sql: false
+        default_schema: schema.sql
     open-in-view: false
+    show-sql: false
+
+
   cloud:
     bootstrap:
       enabled: true

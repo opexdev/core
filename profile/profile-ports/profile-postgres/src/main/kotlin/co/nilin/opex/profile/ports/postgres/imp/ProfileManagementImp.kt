@@ -24,7 +24,9 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import co.nilin.opex.profile.core.utils.compare
 import co.nilin.opex.profile.ports.kyc.imp.KycProxyImp
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.awaitFirst
+import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 
 @Service
@@ -35,7 +37,7 @@ class ProfileManagementImp(private var profileRepository: ProfileRepository,
     private val logger = LoggerFactory.getLogger(ProfileManagementImp::class.java)
 
     @Transactional
-    override suspend fun updateProfile(id: String, data: UpdateProfileRequest): Profile {
+    override suspend fun updateProfile(id: String, data: UpdateProfileRequest): Mono<Profile> {
         var newKycLevel: KycLevel? = null
         return profileRepository.findByUserId(id)?.awaitFirstOrNull()?.let { it ->
             with(data) {
@@ -60,51 +62,62 @@ class ProfileManagementImp(private var profileRepository: ProfileRepository,
             // 2.kyc module as soon as possible will push that message into all module includes profile
             // 3. we return new kyc level to user locally and based on changes of close future in database
 
-            profileRepository.save(newProfileModel).awaitFirstOrNull()!!.convert(Profile::class.java)
-                    .apply { newKycLevel.let { this.kycLevel = it } }
+            profileRepository.save(newProfileModel).map { convert(Profile::class.java) }.map { d-> newKycLevel.let { d.kycLevel=newKycLevel}
+                d }
+
 
         } ?: throw OpexException(OpexError.UserNotFound)
     }
 
     //todo
     //update shared fields in keycloak
-    override suspend fun updateProfileAsAdmin(id: String, data: Profile): Profile {
+    override suspend fun updateProfileAsAdmin(id: String, data: Profile): Mono<Profile> {
 
         return profileRepository.findByUserId(id)?.awaitFirstOrNull()?.let {
             with(data) {
                 this.lastUpdateDate = java.time.LocalDateTime.now()
                 this.createDate = createDate
-                this.kycLevel=kycLevel
-                this.email=email
-                this.userId=userId
+                this.kycLevel = kycLevel
+                this.email = email
+                this.userId = userId
             }
             var newProfileModel = data.convert(ProfileModel::class.java)
             newProfileModel.id = it.id
-            profileRepository.save(newProfileModel).awaitFirstOrNull()!!.convert(Profile::class.java)
+            profileRepository.save(newProfileModel).map { convert(Profile::class.java) }
         } ?: throw OpexException(OpexError.UserNotFound)
     }
 
 
-    override suspend fun createProfile(data: Profile): Profile {
+    override suspend fun createProfile(data: Profile): Mono<Profile> {
         profileRepository.findByUserIdOrEmail(data.userId!!, data.email!!)?.awaitFirstOrNull()?.let {
             throw OpexException(OpexError.UserIdAlreadyExists)
         } ?: run {
             val profile: ProfileModel = data.convert(ProfileModel::class.java)
             profileRepository.save(profile).awaitFirstOrNull()
-            return data
+            return Mono.just(data)
         }
     }
 
-    override suspend fun getProfile(id: String): Profile? {
+    override suspend fun getProfile(id: String): Mono<Profile>? {
 
-        return profileRepository.findByUserId(id)?.awaitFirstOrNull()?.let {
+        return profileRepository.findByUserId(id)?.map {
             it.convert(Profile::class.java)
         } ?: throw OpexException(OpexError.UserNotFound)
 
     }
 
-    override suspend fun getAllProfile(offset: Int, size: Int): List<Profile> {
-        return profileRepository.findBy(PageRequest.of(offset, size, Sort.by(Sort.Direction.ASC, "id"))).map { p -> p.convert(Profile::class.java) }.toList()
+    override suspend fun getAllProfile(offset: Int, size: Int, profileRequest: ProfileRequest): Flow<Profile>? {
+        if (profileRequest.partialSearch == false)
+            return profileRepository.findUsersBy(profileRequest.userId, profileRequest.mobile,
+                    profileRequest.email, profileRequest.firstName, profileRequest.lastName,
+                    profileRequest.nationalCode, profileRequest.createDateFrom, profileRequest.createDateTo,
+                    PageRequest.of(offset, size, Sort.by(Sort.Direction.ASC, "id")))?.map { p -> p.convert(Profile::class.java) }
+        else {
+            return profileRepository.searchUsersBy(profileRequest.userId, profileRequest.mobile,
+                    profileRequest.email, profileRequest.firstName, profileRequest.lastName,
+                    profileRequest.nationalCode, profileRequest.createDateFrom, profileRequest.createDateTo,
+                    PageRequest.of(offset, size, Sort.by(Sort.Direction.ASC, "id")))?.map { p -> p.convert(Profile::class.java) }
+        }
     }
 
     override suspend fun getHistory(userId: String, offset: Int, size: Int): List<ProfileHistory> {

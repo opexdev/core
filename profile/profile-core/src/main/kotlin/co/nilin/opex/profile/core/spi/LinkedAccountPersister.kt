@@ -12,6 +12,10 @@ interface LinkedAccountPersister {
 
     suspend fun getAccounts(userId:String): Flow<LinkedAccountResponse>?
 
+    suspend fun getOwner(accountNumber:String,partialSearch:Boolean?): Flow<LinkedAccountResponse>?
+
+
+
     suspend fun getHistory(userId:String): Flow<LinkedAccountHistoryResponse>?
 
 

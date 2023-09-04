@@ -9,8 +9,10 @@ import co.nilin.opex.profile.core.data.linkedbankAccount.LinkedBankAccountReques
 import co.nilin.opex.profile.core.data.linkedbankAccount.VerifyLinkedAccountRequest
 import co.nilin.opex.profile.core.data.profile.Profile
 import co.nilin.opex.profile.core.data.profile.ProfileHistory
+import co.nilin.opex.profile.core.data.profile.ProfileRequest
 import co.nilin.opex.profile.ports.postgres.imp.LimitationManagementImp
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
@@ -25,12 +27,12 @@ class ProfileAdminController(val profileManagement: ProfileManagement,
 
     @PostMapping("/{userId}")
     suspend fun createManually(@PathVariable("userId") userId: String, @RequestBody newProfile: Profile): Profile? {
-        return profileManagement.create(userId, newProfile)
+        return profileManagement.create(userId, newProfile)?.awaitFirstOrNull()
     }
 
     @PutMapping("/{userId}")
     suspend fun updateAsAdmin(@PathVariable("userId") userId: String, @RequestBody newProfile: Profile): Profile? {
-        return profileManagement.updateAsAdmin(userId, newProfile)
+        return profileManagement.updateAsAdmin(userId, newProfile)?.awaitFirstOrNull()
     }
 
     @GetMapping("/history/{userId}")
@@ -39,15 +41,16 @@ class ProfileAdminController(val profileManagement: ProfileManagement,
         return profileManagement.getHistory(userId, offset ?: 0, size ?: 1000)
     }
 
-    @GetMapping("")
-    suspend fun getProfiles(@RequestParam offset: Int?, @RequestParam size: Int?): List<Profile>? {
-        return profileManagement.getAllProfiles(offset ?: 0, size ?: 1000)
+    @PostMapping("")
+    suspend fun getProfiles(@RequestParam offset: Int?, @RequestParam size: Int?,
+                            @RequestBody profileRequest: ProfileRequest): List<Profile?>? {
+        return profileManagement.getAllProfiles(offset ?: 0, size ?: 1000, profileRequest)?.toList()
     }
 
 
     @GetMapping("/{userId}")
     suspend fun getProfile(@PathVariable("userId") userId: String): Profile? {
-        return profileManagement.getProfile(userId)
+        return profileManagement.getProfile(userId)?.awaitFirstOrNull()
     }
 
 
@@ -87,7 +90,7 @@ class ProfileAdminController(val profileManagement: ProfileManagement,
 
     @PostMapping("/limitation")
     suspend fun updateLimitation(@RequestBody permissionRequest: UpdateLimitationRequest) {
-        permissionRequest.reason ?:LimitationReason.Other
+        permissionRequest.reason ?: LimitationReason.Other
         limitManagement.updateLimitation(permissionRequest)
     }
 
@@ -99,7 +102,7 @@ class ProfileAdminController(val profileManagement: ProfileManagement,
                               @RequestParam("size") size: Int?,
                               @RequestParam("offset") offset: Int?): LimitationResponse? {
 
-        var res = limitManagement.getLimitation(userId, action, reason, offset ?: 0, size ?: 1000)
+        var res = limitManagement.getLimitation(userId, action, reason, offset ?: 0, size ?: 1000)?.toList()
 
         return when (groupBy) {
             "user" -> LimitationResponse(res?.groupBy { r -> r.userId })
@@ -120,7 +123,7 @@ class ProfileAdminController(val profileManagement: ProfileManagement,
                                      @RequestParam("size") size: Int?,
                                      @RequestParam("offset") offset: Int?): LimitationHistoryResponse? {
 
-        var res = limitManagement.getLimitationHistory(userId, action, reason, offset ?: 0, size ?: 1000)
+        var res = limitManagement.getLimitationHistory(userId, action, reason, offset ?: 0, size ?: 1000)?.toList()
         return when (groupBy) {
             "user" -> LimitationHistoryResponse(res?.groupBy { r -> r.userId })
             "action" -> LimitationHistoryResponse(res?.groupBy { r -> r.actionType?.name })

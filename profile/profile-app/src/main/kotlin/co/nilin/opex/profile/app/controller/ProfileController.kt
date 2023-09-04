@@ -6,6 +6,7 @@ import co.nilin.opex.profile.core.data.profile.ProfileHistory
 import co.nilin.opex.profile.core.data.profile.UpdateProfileRequest
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
@@ -26,14 +27,14 @@ class ProfileController(val profileManagement: ProfileManagement) {
 
     @GetMapping("")
     suspend fun getProfile(@CurrentSecurityContext securityContext: SecurityContext): Profile? {
-        return profileManagement.getProfile(securityContext.authentication.name)
+        return profileManagement.getProfile(securityContext.authentication.name)?.awaitFirstOrNull()
     }
 
 
     @PutMapping("")
     suspend fun update( @RequestBody newProfile: UpdateProfileRequest,
                        @CurrentSecurityContext securityContext: SecurityContext): Profile? {
-        return profileManagement.update(securityContext.authentication.name, newProfile)
+        return profileManagement.update(securityContext.authentication.name, newProfile)?.awaitFirstOrNull()
     }
 
 

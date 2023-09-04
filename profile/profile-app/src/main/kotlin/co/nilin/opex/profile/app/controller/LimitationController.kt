@@ -5,6 +5,7 @@ import co.nilin.opex.profile.app.service.LimitationManagement
 import co.nilin.opex.profile.core.data.limitation.*
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
+import kotlinx.coroutines.flow.toList
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.stereotype.Controller
@@ -25,7 +26,7 @@ class LimitationController(private var limitManagement: LimitationManagement) {
                               @RequestParam("reason") reason: LimitationReason?,
                               @CurrentSecurityContext securityContext: SecurityContext): LimitationResponse? {
 
-        return LimitationResponse(totalData = limitManagement.getLimitation(securityContext.authentication.name, action, reason, 0, 1000))
+        return LimitationResponse(totalData = limitManagement.getLimitation(securityContext.authentication.name, action, reason, 0, 1000)?.toList())
 
 
     }

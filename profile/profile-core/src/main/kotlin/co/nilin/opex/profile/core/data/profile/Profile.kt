@@ -1,5 +1,7 @@
 package co.nilin.opex.profile.core.data.profile
 
+import co.nilin.opex.profile.core.data.limitation.Limitation
+import co.nilin.opex.profile.core.data.linkedbankAccount.LinkedAccountResponse
 import com.fasterxml.jackson.annotation.JsonInclude
 import java.time.LocalDateTime
 import java.util.*
@@ -22,5 +24,7 @@ data class Profile(
         var createDate:LocalDateTime?=null,
         var lastUpdateDate:LocalDateTime?=null,
         var creator:String?=null,
-        var kycLevel:KycLevel?=null
+        var kycLevel:KycLevel?=null,
+        var linkedAccounts:List<LinkedAccountResponse>?=null,
+        var limitations:List<Limitation>?=null
 )

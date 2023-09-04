@@ -2,7 +2,7 @@ package co.nilin.opex.profile.core.data.linkedbankAccount
 
 import java.time.LocalDateTime
 
-data class LinkedAccountResponse(var userId: String?,
+data class LinkedAccountResponse(var userId: String,
                                  var bankAccountType: BankAccountType,
                                  var registerDate: LocalDateTime? = null,
                                  var verifiedDate: LocalDateTime? = null,

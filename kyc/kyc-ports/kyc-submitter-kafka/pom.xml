@@ -13,7 +13,7 @@
     <name>kyc-submitter-kafka</name>
     <description>kyc-kafka</description>
 
-     <dependencies>
+    <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
@@ -27,24 +27,21 @@
             <artifactId>kotlin-stdlib</artifactId>
         </dependency>
 
-         <dependency>
-             <groupId>org.springframework.kafka</groupId>
-             <artifactId>spring-kafka</artifactId>
-         </dependency>
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>co.nilin.opex.kyc</groupId>
+            <artifactId>kyc-core</artifactId>
+        </dependency>
 
-
-
-         <dependency>
-             <groupId>co.nilin.opex.kyc</groupId>
-             <artifactId>kyc-core</artifactId>
-         </dependency>
-
-     </dependencies>
+    </dependencies>
 
 
 </project>

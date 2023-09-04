@@ -67,6 +67,10 @@
         </dependency>
         <dependency>
             <groupId>co.nilin.opex.admin</groupId>
+            <artifactId>admin-service-profile</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>co.nilin.opex.admin</groupId>
             <artifactId>admin-submitter-kafka</artifactId>
         </dependency>
         <dependency>

@@ -9,6 +9,7 @@ import co.nilin.opex.profile.ports.postgres.model.entity.LimitationModel
 import co.nilin.opex.profile.core.utils.convert
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirstOrNull
@@ -90,13 +91,15 @@ class LimitationManagementImp(private var limitationRepository: LimitationReposi
 
     }
 
-
-    override suspend fun getLimitation(userId: String?, action: ActionType?,reason:LimitationReason?, offset: Int, size: Int): List<Limitation>? {
-        return limitationRepository.findAllLimitation(userId, action,reason, offset, size, PageRequest.of(offset, size, Sort.by(Sort.Direction.DESC, "id")))?.map { l -> l.convert(Limitation::class.java) }?.toList()
+    override suspend fun getLimitation(userId: String?, action: ActionType?, reason: LimitationReason?, offset: Int?, size: Int?): Flow<Limitation>? {
+        return limitationRepository.findAllLimitation(userId, action,reason, offset!!, size!!, PageRequest.of(offset, size, Sort.by(Sort.Direction.DESC, "id")))?.map { l -> l.convert(Limitation::class.java) }
     }
 
-    override suspend fun getLimitationHistory(userId: String?, action: ActionType?,reason:LimitationReason?, offset: Int, size: Int): List<LimitationHistory>? {
-        return limitationHistoryRepository.findAllLimitationHistory(userId, action,reason, offset, size, PageRequest.of(offset, size, Sort.by(Sort.Direction.DESC, "id")))?.map { l -> l.convert(LimitationHistory::class.java) }?.toList()
+
+
+
+    override suspend fun getLimitationHistory(userId: String?, action: ActionType?,reason:LimitationReason?, offset: Int, size: Int): Flow<LimitationHistory>? {
+        return limitationHistoryRepository.findAllLimitationHistory(userId, action,reason, offset, size, PageRequest.of(offset, size, Sort.by(Sort.Direction.DESC, "id")))?.map { l -> l.convert(LimitationHistory::class.java) }
     }
 
 }
