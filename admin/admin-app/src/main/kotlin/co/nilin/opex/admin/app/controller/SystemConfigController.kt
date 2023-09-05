@@ -30,4 +30,17 @@ class SystemConfigController(private val service: SystemConfigService) {
         service.deleteCurrency(name)
     }
 
+    @PostMapping("/whitelist")
+    suspend fun updateWhitelist(@RequestBody users: List<String>) {
+        service.deleteCurrency(name)
+    }
+    @GetMapping("/whitelist")
+    suspend fun getWhitelist() {
+        service.deleteCurrency(name)
+    }
+
+    @DeleteMapping("/whitelist")
+    suspend fun deleteWhitelist(@RequestBody users: List<String>) {
+        service.deleteCurrency(name)
+    }
 }

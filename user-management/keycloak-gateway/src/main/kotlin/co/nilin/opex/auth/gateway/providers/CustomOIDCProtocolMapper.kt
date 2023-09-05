@@ -1,5 +1,9 @@
 package co.nilin.opex.auth.gateway.providers
 
+import co.nilin.opex.auth.gateway.model.WhiteListModel
+import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.utility.error.data.OpexException
+import org.keycloak.connections.jpa.JpaConnectionProvider
 import org.keycloak.models.ClientSessionContext
 import org.keycloak.models.KeycloakSession
 import org.keycloak.models.ProtocolMapperModel
@@ -9,6 +13,9 @@ import org.keycloak.protocol.oidc.mappers.*
 import org.keycloak.provider.ProviderConfigProperty
 import org.keycloak.representations.AccessToken
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
+import java.util.stream.Collectors
+import javax.persistence.EntityManager
 
 
 class CustomOIDCProtocolMapper() : AbstractOIDCProtocolMapper(), OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
@@ -16,28 +23,11 @@ class CustomOIDCProtocolMapper() : AbstractOIDCProtocolMapper(), OIDCAccessToken
 
     private val PROVIDER_ID = "oidc-customprotocolmapper"
     private val configProperties: List<ProviderConfigProperty> = ArrayList()
-//    private val opexRealm = session.realms().getRealm("opex")
 
-    /**
-     * Maybe you want to have config fields for your Mapper
-     */
-    /*
-    static {
-        ProviderConfigProperty property;
-        property = new ProviderConfigProperty();
-        property.setName(ProtocolMapperUtils.USER_ATTRIBUTE);
-        property.setLabel(ProtocolMapperUtils.USER_MODEL_ATTRIBUTE_LABEL);
-        property.setHelpText(ProtocolMapperUtils.USER_MODEL_ATTRIBUTE_HELP_TEXT);
-        property.setType(ProviderConfigProperty.STRING_TYPE);
-        configProperties.add(property);
-property = new ProviderConfigProperty();
-        property.setName(ProtocolMapperUtils.MULTIVALUED);
-        property.setLabel(ProtocolMapperUtils.MULTIVALUED_LABEL);
-        property.setHelpText(ProtocolMapperUtils.MULTIVALUED_HELP_TEXT);
-        property.setType(ProviderConfigProperty.BOOLEAN_TYPE);
-        configProperties.add(property);
-    }
-     */
+    @Value("\${app.whitelist.login.enable}")
+    private var loginWhitelistIsEnable: Boolean? = true
+
+
     override fun getConfigProperties(): List<ProviderConfigProperty>? {
         return configProperties
     }
@@ -63,8 +53,17 @@ property = new ProviderConfigProperty();
 
         token.otherClaims["kyc_level"] = userSession?.user?.attributes?.get("kycLevel")
         setClaim(token, mappingModel, userSession, keycloakSession, clientSessionCtx)
-        userI
+        if (loginWhitelistIsEnable == true) {
+            logger.info("login whitelist is enable, going to filter login requests ........")
+            val em: EntityManager = keycloakSession!!.getProvider(JpaConnectionProvider::class.java).entityManager
+            val result: List<WhiteListModel> = em.createQuery("from whitelist", WhiteListModel::class.java).resultList
+            if (!result.stream()
+                            .map(WhiteListModel::identifier)
+                            .collect(Collectors.toList()).contains(userSession?.user?.email))
+                throw OpexException(OpexError.LoginIsLimited)
+        }
         return token
+
     }
 
     fun create(name: String?,

@@ -5,6 +5,7 @@ import co.nilin.opex.auth.gateway.data.*
 import co.nilin.opex.auth.gateway.model.ActionTokenResult
 import co.nilin.opex.auth.gateway.model.AuthEvent
 import co.nilin.opex.auth.gateway.model.UserCreatedEvent
+import co.nilin.opex.auth.gateway.model.WhiteListModel
 import co.nilin.opex.auth.gateway.providers.CustomEmailTemplateProvider
 import co.nilin.opex.auth.gateway.utils.*
 import co.nilin.opex.utility.error.data.OpexError
@@ -15,6 +16,7 @@ import org.apache.http.client.utils.URIBuilder
 import org.apache.http.impl.client.HttpClientBuilder
 import org.keycloak.authentication.actiontoken.execactions.ExecuteActionsActionToken
 import org.keycloak.common.util.Time
+import org.keycloak.connections.jpa.JpaConnectionProvider
 import org.keycloak.email.EmailTemplateProvider
 import org.keycloak.models.Constants
 import org.keycloak.models.KeycloakSession
@@ -23,6 +25,7 @@ import org.keycloak.models.UserModel
 import org.keycloak.models.credential.OTPCredentialModel
 import org.keycloak.models.utils.CredentialValidation
 import org.keycloak.models.utils.HmacOTP
+import org.keycloak.models.utils.KeycloakModelUtils
 import org.keycloak.policy.PasswordPolicyManagerProvider
 import org.keycloak.representations.idm.UserRepresentation
 import org.keycloak.services.managers.AuthenticationManager
@@ -32,12 +35,15 @@ import org.keycloak.urls.UrlType
 import org.keycloak.utils.CredentialHelper
 import org.keycloak.utils.TotpUtils
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Component
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import java.util.concurrent.TimeUnit
+import java.util.stream.Collectors
+import javax.persistence.EntityManager
 import javax.ws.rs.*
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
@@ -59,11 +65,26 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         ApplicationContextHolder.getCurrentContext()!!.getBean("authKafkaTemplate") as KafkaTemplate<String, AuthEvent>
     }
 
+    @Value("\${app.whitelist.register.enable}")
+    private var registerWhitelistIsEnable: Boolean? = true
+
+
     @POST
     @Path("user")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     fun registerUser(request: RegisterUserRequest): Response {
+
+        if (registerWhitelistIsEnable == true) {
+            logger.info("register whitelist is enable, going to filter register requests ........")
+            val em: EntityManager = session!!.getProvider(JpaConnectionProvider::class.java).entityManager
+            val result: List<WhiteListModel> = em.createQuery("from whitelist", WhiteListModel::class.java).resultList
+            if (!result.stream()
+                            .map(WhiteListModel::identifier)
+                            .collect(Collectors.toList()).contains(request.email))
+                throw OpexException(OpexError.RegisterIsLimited)
+        }
+
         val auth = ResourceAuthenticator.bearerAuth(session)
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
         if (whitelist.isEnabled && request.email != null && !whitelist.emails.contains(request.email!!.toLowerCase())) {
@@ -422,7 +443,20 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         }
     }
 
-
+    @POST
+    @Path("admin/whitelist")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    fun addWhitelist(request: WhiteListRequest): Response {
+        val em: EntityManager = session!!.getProvider(JpaConnectionProvider::class.java).entityManager
+        for (d in request?.data!!) {
+            val data = WhiteListModel()
+            data.identifier = d
+            data.id=KeycloakModelUtils.generateId()
+            em.merge(data)
+        }
+        return Response.noContent().build()
+    }
 
 
     override fun close() {

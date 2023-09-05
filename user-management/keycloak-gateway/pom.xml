@@ -108,10 +108,7 @@
             <groupId>co.nilin.opex.auth.ports</groupId>
             <artifactId>user-management-kafka-listener</artifactId>
         </dependency>
-        <dependency>
-            <groupId>co.nilin.opex.auth.ports</groupId>
-            <artifactId>user-management-postgres</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>co.nilin.opex.auth</groupId>
             <artifactId>user-management-core</artifactId>
