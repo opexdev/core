@@ -9,10 +9,10 @@ open class KycProcess {
     lateinit var userId: String
     var issuer: String? = null
     var step: KycStep? = null
-    var status: KycStatus?=null
-    var createDate:LocalDateTime?= LocalDateTime.now()
-    var description:String?=null
-    var input:String?=null
-    var referenceId:String?=null
+    var status: KycStatus? = null
+    var createDate: LocalDateTime? = LocalDateTime.now()
+    var description: String? = null
+    var input: String? = null
+    var referenceId: String? = null
 
 }

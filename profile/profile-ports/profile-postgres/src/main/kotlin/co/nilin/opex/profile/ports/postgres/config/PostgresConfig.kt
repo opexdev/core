@@ -10,8 +10,8 @@ import org.springframework.r2dbc.core.DatabaseClient
 @EnableR2dbcRepositories(basePackages = ["co.nilin.opex"])
 
 class PostgresConfig(
-    db: DatabaseClient,
-    @Value("classpath:schema.sql") private val schemaResource: Resource
+        db: DatabaseClient,
+        @Value("classpath:schema.sql") private val schemaResource: Resource
 ) {
     init {
         val schemaReader = schemaResource.inputStream.reader()
@@ -19,7 +19,7 @@ class PostgresConfig(
         schemaReader.close()
         val initDb = db.sql { schema }
         initDb // initialize the database
-            .then()
-            .subscribe() // execute
+                .then()
+                .subscribe() // execute
     }
 }

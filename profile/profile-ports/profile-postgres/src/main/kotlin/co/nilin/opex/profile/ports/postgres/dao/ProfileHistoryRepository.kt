@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface ProfileHistoryRepository : ReactiveCrudRepository<ProfileHistory, Long> {
-    fun findByUserId(userId:String,pageable: Pageable):  Flow<ProfileHistory>
+    fun findByUserId(userId: String, pageable: Pageable): Flow<ProfileHistory>
 }

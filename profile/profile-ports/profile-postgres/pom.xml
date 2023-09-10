@@ -13,15 +13,15 @@
     <name>profile-postgres</name>
     <description>profile-postgres</description>
 
-     <dependencies>
+    <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
-         <dependency>
-             <groupId>co.nilin.opex.utility.error</groupId>
-             <artifactId>error-handler</artifactId>
-         </dependency>
+        <dependency>
+            <groupId>co.nilin.opex.utility.error</groupId>
+            <artifactId>error-handler</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-reflect</artifactId>
@@ -51,20 +51,19 @@
             <scope>test</scope>
         </dependency>
 
-         <dependency>
-             <groupId>co.nilin.opex.profile</groupId>
-             <artifactId>profile-core</artifactId>
-         </dependency>
-         <dependency>
-             <groupId>co.nilin.opex.kyc</groupId>
-             <artifactId>kyc-core</artifactId>
-         </dependency>
-         <dependency>
-         <groupId>co.nilin.opex.profile.ports</groupId>
-         <artifactId>profile-kyc-proxy</artifactId>
-         </dependency>
-     </dependencies>
-
+        <dependency>
+            <groupId>co.nilin.opex.profile</groupId>
+            <artifactId>profile-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>co.nilin.opex.kyc</groupId>
+            <artifactId>kyc-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>co.nilin.opex.profile.ports</groupId>
+            <artifactId>profile-kyc-proxy</artifactId>
+        </dependency>
+    </dependencies>
 
 
 </project>

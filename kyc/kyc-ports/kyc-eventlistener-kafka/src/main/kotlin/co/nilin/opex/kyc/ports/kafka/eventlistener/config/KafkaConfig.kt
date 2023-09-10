@@ -49,6 +49,7 @@ class KafkaConfig {
     fun consumerFactory(@Qualifier("consumerConfigs") consumerConfigs: Map<String, Any?>): ConsumerFactory<String, UserCreatedEvent> {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
+
     @Bean("userCreatedProducerFactory")
     fun producerFactory(@Qualifier("consumerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String, UserCreatedEvent> {
         return DefaultKafkaProducerFactory(producerConfigs)
@@ -58,6 +59,7 @@ class KafkaConfig {
     fun kafkaTemplate(@Qualifier("userCreatedProducerFactory") producerFactory: ProducerFactory<String, UserCreatedEvent>): KafkaTemplate<String, UserCreatedEvent> {
         return KafkaTemplate(producerFactory)
     }
+
     @Autowired
     @ConditionalOnBean(UserCreatedKafkaListener::class)
     fun configureUserCreatedListener(
@@ -72,9 +74,6 @@ class KafkaConfig {
         container.commonErrorHandler = createConsumerErrorHandler(template, "auth_user_created.DLT")
         container.start()
     }
-
-
-
 
 
     private fun createConsumerErrorHandler(kafkaTemplate: KafkaTemplate<*, *>, dltTopic: String): CommonErrorHandler {

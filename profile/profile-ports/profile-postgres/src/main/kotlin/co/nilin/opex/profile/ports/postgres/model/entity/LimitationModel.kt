@@ -5,4 +5,4 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 
 @Table("limitation")
-data class LimitationModel (@Id var id: Long):Limitation()
+data class LimitationModel(@Id var id: Long) : Limitation()

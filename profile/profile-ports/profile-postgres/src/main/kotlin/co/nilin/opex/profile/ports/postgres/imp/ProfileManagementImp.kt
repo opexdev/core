@@ -62,8 +62,10 @@ class ProfileManagementImp(private var profileRepository: ProfileRepository,
             // 2.kyc module as soon as possible will push that message into all module includes profile
             // 3. we return new kyc level to user locally and based on changes of close future in database
 
-            profileRepository.save(newProfileModel).map { convert(Profile::class.java) }.map { d-> newKycLevel.let { d.kycLevel=newKycLevel}
-                d }
+            profileRepository.save(newProfileModel).map { convert(Profile::class.java) }.map { d ->
+                newKycLevel.let { d.kycLevel = newKycLevel }
+                d
+            }
 
 
         } ?: throw OpexException(OpexError.UserNotFound)

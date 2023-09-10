@@ -12,12 +12,12 @@ class LimitationManagement(private var limitationPersister: LimitationPersister)
 
     }
 
-    suspend fun getLimitation(userId: String?, action: ActionType?,reason: LimitationReason?,offset:Int,size:Int): Flow<Limitation>? {
-        return limitationPersister.getLimitation(userId, action,reason,offset,size)
+    suspend fun getLimitation(userId: String?, action: ActionType?, reason: LimitationReason?, offset: Int, size: Int): Flow<Limitation>? {
+        return limitationPersister.getLimitation(userId, action, reason, offset, size)
     }
 
-    suspend fun getLimitationHistory(userId: String?, action: ActionType?,reason:LimitationReason?,offset:Int,size:Int): Flow<LimitationHistory>? {
-        return limitationPersister.getLimitationHistory(userId, action,reason,offset,size)
+    suspend fun getLimitationHistory(userId: String?, action: ActionType?, reason: LimitationReason?, offset: Int, size: Int): Flow<LimitationHistory>? {
+        return limitationPersister.getLimitationHistory(userId, action, reason, offset, size)
     }
 
 }

@@ -82,7 +82,7 @@ class LimitationManagementImp(private var limitationRepository: LimitationReposi
                     logger.info("reset limitations for all users on some actions")
                     if (updatePermissionRequest.actions?.contains(ActionType.All) == true) {
                         limitationRepository.deleteAll().awaitFirstOrNull()
-                       //break
+                        //break
                     }
                     limitationRepository.deleteByActionType(it).awaitFirstOrNull()
                 }
@@ -92,14 +92,12 @@ class LimitationManagementImp(private var limitationRepository: LimitationReposi
     }
 
     override suspend fun getLimitation(userId: String?, action: ActionType?, reason: LimitationReason?, offset: Int?, size: Int?): Flow<Limitation>? {
-        return limitationRepository.findAllLimitation(userId, action,reason, offset!!, size!!, PageRequest.of(offset, size, Sort.by(Sort.Direction.DESC, "id")))?.map { l -> l.convert(Limitation::class.java) }
+        return limitationRepository.findAllLimitation(userId, action, reason, offset!!, size!!, PageRequest.of(offset, size, Sort.by(Sort.Direction.DESC, "id")))?.map { l -> l.convert(Limitation::class.java) }
     }
 
 
-
-
-    override suspend fun getLimitationHistory(userId: String?, action: ActionType?,reason:LimitationReason?, offset: Int, size: Int): Flow<LimitationHistory>? {
-        return limitationHistoryRepository.findAllLimitationHistory(userId, action,reason, offset, size, PageRequest.of(offset, size, Sort.by(Sort.Direction.DESC, "id")))?.map { l -> l.convert(LimitationHistory::class.java) }
+    override suspend fun getLimitationHistory(userId: String?, action: ActionType?, reason: LimitationReason?, offset: Int, size: Int): Flow<LimitationHistory>? {
+        return limitationHistoryRepository.findAllLimitationHistory(userId, action, reason, offset, size, PageRequest.of(offset, size, Sort.by(Sort.Direction.DESC, "id")))?.map { l -> l.convert(LimitationHistory::class.java) }
     }
 
 }

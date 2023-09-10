@@ -13,7 +13,7 @@
     <name>profile-kyc-proxy</name>
     <description>profile-kyc-proxy</description>
 
-     <dependencies>
+    <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
@@ -33,17 +33,17 @@
             <scope>test</scope>
         </dependency>
 
-         <dependency>
-             <groupId>co.nilin.opex.profile</groupId>
-             <artifactId>profile-core</artifactId>
-         </dependency>
+        <dependency>
+            <groupId>co.nilin.opex.profile</groupId>
+            <artifactId>profile-core</artifactId>
+        </dependency>
 
-         <dependency>
-             <groupId>co.nilin.opex.kyc</groupId>
-             <artifactId>kyc-core</artifactId>
-         </dependency>
+        <dependency>
+            <groupId>co.nilin.opex.kyc</groupId>
+            <artifactId>kyc-core</artifactId>
+        </dependency>
 
-     </dependencies>
+    </dependencies>
 
 
 </project>

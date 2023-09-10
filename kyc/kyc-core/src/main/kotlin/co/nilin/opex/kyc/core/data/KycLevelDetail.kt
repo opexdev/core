@@ -12,10 +12,12 @@ enum class KycLevelDetail(val kycLevel: KycLevel) {
     public val previousValidSteps: List<KycLevelDetail>?
         get() = when (this) {
             Registered -> null
-            UploadDataLevel2 -> arrayOf(Registered, RejectedManualReview,ManualUpdateLevel1,ManualUpdateLevel2).asList()
-            AcceptedManualReview -> arrayOf(UploadDataLevel2,RejectedManualReview,ManualUpdateLevel1,ManualUpdateLevel2).asList()
-            RejectedManualReview -> arrayOf(UploadDataLevel2,AcceptedManualReview,ManualUpdateLevel1,ManualUpdateLevel2).asList()
-            else -> {null}
+            UploadDataLevel2 -> arrayOf(Registered, RejectedManualReview, ManualUpdateLevel1, ManualUpdateLevel2).asList()
+            AcceptedManualReview -> arrayOf(UploadDataLevel2, RejectedManualReview, ManualUpdateLevel1, ManualUpdateLevel2).asList()
+            RejectedManualReview -> arrayOf(UploadDataLevel2, AcceptedManualReview, ManualUpdateLevel1, ManualUpdateLevel2).asList()
+            else -> {
+                null
+            }
         }
 
 }

@@ -14,7 +14,7 @@ import kotlin.coroutines.suspendCoroutine
 @Component
 class KycLevelSubmitter(
         @Qualifier("kycEventKafkaTemplate")
-    private val kafkaTemplate: KafkaTemplate<String, KycLevelUpdatedEvent>,
+        private val kafkaTemplate: KafkaTemplate<String, KycLevelUpdatedEvent>,
 ) : KycLevelUpdatedPublisher, EventPublisher {
 
     private val logger = LoggerFactory.getLogger(KycLevelSubmitter::class.java)

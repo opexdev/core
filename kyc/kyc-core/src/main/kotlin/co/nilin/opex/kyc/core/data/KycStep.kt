@@ -6,5 +6,5 @@ enum class KycStep() {
 }
 
 enum class KycStatus {
-    Successful,Failed,Rejected,Accepted
+    Successful, Failed, Rejected, Accepted
 }

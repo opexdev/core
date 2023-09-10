@@ -9,6 +9,6 @@ data class LinkedBankAccountRequest(
         var verifiedDate: LocalDateTime? = null,
         var number: String,
         var accountId: String? = null,
-        var description:String?
+        var description: String?
 
 )

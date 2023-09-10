@@ -7,16 +7,20 @@ import org.keycloak.connections.jpa.JpaConnectionProvider
 import org.keycloak.models.ClientSessionContext
 import org.keycloak.models.KeycloakSession
 import org.keycloak.models.ProtocolMapperModel
+import org.keycloak.models.RoleModel
 import org.keycloak.models.UserSessionModel
 import org.keycloak.protocol.oidc.OIDCLoginProtocol
 import org.keycloak.protocol.oidc.mappers.*
 import org.keycloak.provider.ProviderConfigProperty
 import org.keycloak.representations.AccessToken
+import org.keycloak.representations.AccessToken.Access
+import org.keycloak.services.ErrorResponseException
+import org.keycloak.services.error.KeycloakErrorHandler
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import java.util.stream.Collectors
 import javax.persistence.EntityManager
-
+import javax.ws.rs.core.Response
 
 class CustomOIDCProtocolMapper() : AbstractOIDCProtocolMapper(), OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
     private val logger = LoggerFactory.getLogger(CustomOIDCProtocolMapper::class.java)
@@ -53,14 +57,15 @@ class CustomOIDCProtocolMapper() : AbstractOIDCProtocolMapper(), OIDCAccessToken
 
         token.otherClaims["kyc_level"] = userSession?.user?.attributes?.get("kycLevel")
         setClaim(token, mappingModel, userSession, keycloakSession, clientSessionCtx)
-        if (loginWhitelistIsEnable == true) {
-            logger.info("login whitelist is enable, going to filter login requests ........")
+
+        if (loginWhitelistIsEnable == true && !userIsAdmin(userSession)) {
+            logger.info("login whitelist is enable and user is not admin; going to filter login requests ........")
             val em: EntityManager = keycloakSession!!.getProvider(JpaConnectionProvider::class.java).entityManager
             val result: List<WhiteListModel> = em.createQuery("from whitelist", WhiteListModel::class.java).resultList
             if (!result.stream()
                             .map(WhiteListModel::identifier)
                             .collect(Collectors.toList()).contains(userSession?.user?.email))
-                throw OpexException(OpexError.LoginIsLimited)
+                throw ErrorResponseException(OpexError.LoginIsLimited.name,OpexError.LoginIsLimited.message,Response.Status.BAD_REQUEST)
         }
         return token
 
@@ -78,4 +83,12 @@ class CustomOIDCProtocolMapper() : AbstractOIDCProtocolMapper(), OIDCAccessToken
         mapper.config = config
         return mapper
     }
+
+
+    private fun userIsAdmin(userSession: UserSessionModel?): Boolean {
+        val roles = userSession?.user?.roleMappingsStream?.map(RoleModel::getName)?.collect(Collectors.toList())
+        return roles?.contains("admin_finance") == true || roles?.contains("admin_system") == true
+
+    }
+
 }

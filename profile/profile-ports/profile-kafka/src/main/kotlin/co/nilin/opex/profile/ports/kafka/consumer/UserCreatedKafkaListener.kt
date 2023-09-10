@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.kafka.listener.MessageListener
 import org.springframework.stereotype.Component
 import co.nilin.opex.profile.core.data.event.UserCreatedEvent
+
 @Component
 class UserCreatedKafkaListener : MessageListener<String, UserCreatedEvent> {
     val eventListeners = arrayListOf<UserCreatedEventListener>()
@@ -14,8 +15,8 @@ class UserCreatedKafkaListener : MessageListener<String, UserCreatedEvent> {
     override fun onMessage(data: ConsumerRecord<String, UserCreatedEvent>) {
 
         eventListeners.forEach { tl ->
-            logger.info("incoming new event "+tl.id())
-            tl.onEvent(data.value(), data.partition(), data.offset(), data.timestamp(),tl.id())
+            logger.info("incoming new event " + tl.id())
+            tl.onEvent(data.value(), data.partition(), data.offset(), data.timestamp(), tl.id())
         }
     }
 

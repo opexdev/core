@@ -9,20 +9,20 @@ import org.springframework.stereotype.Repository
 import reactor.core.publisher.Mono
 
 @Repository
-interface LinkedAccountRepository:ReactiveCrudRepository<LinkedBankAccountModel,Long> {
+interface LinkedAccountRepository : ReactiveCrudRepository<LinkedBankAccountModel, Long> {
 
-    fun findAllByUserIdAndAccountId(userId:String,accountId:String): Mono<LinkedBankAccountModel>?
+    fun findAllByUserIdAndAccountId(userId: String, accountId: String): Mono<LinkedBankAccountModel>?
 
-    fun findAllByUserId(userId:String): Flow<LinkedBankAccountModel>?
+    fun findAllByUserId(userId: String): Flow<LinkedBankAccountModel>?
 
-    fun findAllByNumber(accountNumber:String): Flow<LinkedBankAccountModel>?
+    fun findAllByNumber(accountNumber: String): Flow<LinkedBankAccountModel>?
 
     @Query("select * from linked_bank_account lbc where position(lower(:accountNumber) in lower(lbc.number))>0 ")
-    fun searchAllByNumber(accountNumber:String): Flow<LinkedBankAccountModel>?
+    fun searchAllByNumber(accountNumber: String): Flow<LinkedBankAccountModel>?
 
 
-    fun findByAccountId(accountId: String):Mono<LinkedBankAccountModel>?
+    fun findByAccountId(accountId: String): Mono<LinkedBankAccountModel>?
 
-    fun deleteByAccountIdAndUserId(accountId: String,userId: String):Mono<Void>
+    fun deleteByAccountIdAndUserId(accountId: String, userId: String): Mono<Void>
 
 }

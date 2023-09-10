@@ -15,7 +15,7 @@ import org.springframework.web.reactive.function.client.WebClient
 
 
 @EnableWebFluxSecurity
-class SecurityConfig(private val webClient: WebClient)  {
+class SecurityConfig(private val webClient: WebClient) {
 
     @Value("\${app.auth.cert-url}")
     private lateinit var jwkUrl: String
@@ -23,15 +23,15 @@ class SecurityConfig(private val webClient: WebClient)  {
     @Bean
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
         http.csrf().disable()
-            .authorizeExchange()
-            .pathMatchers("/auth/**").hasRole("SCOPE_trust", "admin_finance")
-            .pathMatchers("/system/**").hasRole("SCOPE_trust", "admin_system")
-            .pathMatchers("/admin/**").hasRole("SCOPE_trust", "admin_system")
-            .pathMatchers("/actuator/health").permitAll()
-            .anyExchange().authenticated()
-            .and()
-            .oauth2ResourceServer()
-            .jwt()
+                .authorizeExchange()
+                .pathMatchers("/auth/**").hasRole("SCOPE_trust", "admin_finance")
+                .pathMatchers("/system/**").hasRole("SCOPE_trust", "admin_system")
+                .pathMatchers("/admin/**").hasRole("SCOPE_trust", "admin_system")
+                .pathMatchers("/actuator/health").permitAll()
+                .anyExchange().authenticated()
+                .and()
+                .oauth2ResourceServer()
+                .jwt()
 
         return http.build()
     }
@@ -40,11 +40,9 @@ class SecurityConfig(private val webClient: WebClient)  {
     @Throws(Exception::class)
     fun reactiveJwtDecoder(): ReactiveJwtDecoder? {
         return NimbusReactiveJwtDecoder.withJwkSetUri(jwkUrl)
-            .webClient(webClient)
-            .build()
+                .webClient(webClient)
+                .build()
     }
-
-
 
 
 }

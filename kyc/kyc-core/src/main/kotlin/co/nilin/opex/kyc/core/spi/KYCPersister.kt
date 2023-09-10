@@ -9,7 +9,7 @@ interface KYCPersister {
 
     suspend fun getSteps(kycDataRequest: KycDataRequest): Flow<KycProcess>?
 
-    suspend fun getStepData(stepId: String,userId:String?): Flow<KycProcessDetail>?
+    suspend fun getStepData(stepId: String, userId: String?): Flow<KycProcessDetail>?
 
     suspend fun userLevelHistory(userId: String): Flow<UserLevelHistory>?
 

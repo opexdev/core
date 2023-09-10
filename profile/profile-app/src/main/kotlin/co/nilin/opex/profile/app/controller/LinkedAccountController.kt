@@ -44,7 +44,7 @@ class LinkedAccountController(val linkedAccountManagement: LinkAccountManagement
     @DeleteMapping("/{accountId}")
     suspend fun deleteAccount(@PathVariable accountId: String, @CurrentSecurityContext securityContext: SecurityContext): DeleteAccountResponse? {
         return linkedAccountManagement
-                .deleteAccount(DeleteLinkedAccountRequest(accountId, securityContext.authentication.name))?.let {ac-> DeleteAccountResponse(ac.awaitFirst()) }
+                .deleteAccount(DeleteLinkedAccountRequest(accountId, securityContext.authentication.name))?.let { ac -> DeleteAccountResponse(ac.awaitFirst()) }
 
     }
 }

@@ -4,4 +4,4 @@ data class ManualReviewRequest(
         val status: KycStatus,
 
 
-        ): KycRequest()
+        ) : KycRequest()

@@ -6,6 +6,6 @@ import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface UserStatusHistoryRepository :ReactiveCrudRepository<UserStatusHistory,Long>{
-    fun findAllByUserId (userId:String): Flow<UserStatusHistory>?
+interface UserStatusHistoryRepository : ReactiveCrudRepository<UserStatusHistory, Long> {
+    fun findAllByUserId(userId: String): Flow<UserStatusHistory>?
 }

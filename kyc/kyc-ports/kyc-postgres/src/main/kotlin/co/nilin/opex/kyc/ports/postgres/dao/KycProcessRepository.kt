@@ -13,19 +13,19 @@ import org.springframework.stereotype.Repository
 import reactor.core.publisher.Mono
 
 @Repository
-interface KycProcessRepository : ReactiveCrudRepository<KycProcessModel,Long> {
+interface KycProcessRepository : ReactiveCrudRepository<KycProcessModel, Long> {
 
-    fun findByUserId(userId:String): Flow<KycProcessModel>?
-    fun findByUserIdAndStepId(userId:String,stepId: String): Mono<KycProcessModel>?
+    fun findByUserId(userId: String): Flow<KycProcessModel>?
+    fun findByUserIdAndStepId(userId: String, stepId: String): Mono<KycProcessModel>?
 
-    fun findByUserIdOrderByCreateDateDesc(userId:String): Flow<KycProcessModel>?
+    fun findByUserIdOrderByCreateDateDesc(userId: String): Flow<KycProcessModel>?
 
 
     @Query("select * from kyc_process kp where (:userId is NULL or kp.user_id= :userId)  And (:step is NULL or kp.step=:step) And (:status is NULL or kp.status=:status) OFFSET :offset LIMIT :size; ")
-    fun findAllKycProcess(userId:String?,step:KycStep?,status:KycStatus?,offset:Int,size:Int ,pageable: Pageable) : Flow<KycProcessModel>?
+    fun findAllKycProcess(userId: String?, step: KycStep?, status: KycStatus?, offset: Int, size: Int, pageable: Pageable): Flow<KycProcessModel>?
 
     @Query("select * from kyc_process kp where (:userId is NULL or kp.user_id= :userId)  And ( kp.step_id=:stepId) OR ( kp.reference_id=:referenceId)  ")
 
-    fun findByStepIdOrReferenceId(stepId: String,referenceId:String, userId:String?):Flow<KycProcessModel>?
+    fun findByStepIdOrReferenceId(stepId: String, referenceId: String, userId: String?): Flow<KycProcessModel>?
 
 }

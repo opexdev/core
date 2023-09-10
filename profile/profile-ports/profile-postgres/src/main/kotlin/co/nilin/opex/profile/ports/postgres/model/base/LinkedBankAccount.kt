@@ -10,8 +10,8 @@ open class LinkedBankAccount {
     var verifiedDate: LocalDateTime? = null
     var enabled: Boolean? = false
     var verified: Boolean? = false
-    var verifier: String?=null
-    var number:String?=null
-    var accountId:String?=null
-    var description:String?=null
+    var verifier: String? = null
+    var number: String? = null
+    var accountId: String? = null
+    var description: String? = null
 }

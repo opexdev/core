@@ -6,11 +6,11 @@ import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface LinkedAccountHistoryRepository:ReactiveCrudRepository<LinkedBankAccountHistory,Long> {
+interface LinkedAccountHistoryRepository : ReactiveCrudRepository<LinkedBankAccountHistory, Long> {
 
-    fun findAllByUserId(userId:String) :Flow<LinkedBankAccountHistory>?
+    fun findAllByUserId(userId: String): Flow<LinkedBankAccountHistory>?
 
-    fun findAllByAccountId(accountId:String) :Flow<LinkedBankAccountHistory>?
+    fun findAllByAccountId(accountId: String): Flow<LinkedBankAccountHistory>?
 
 
 }

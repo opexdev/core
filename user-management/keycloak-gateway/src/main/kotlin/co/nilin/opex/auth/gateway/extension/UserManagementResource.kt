@@ -15,7 +15,6 @@ import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.utils.URIBuilder
 import org.apache.http.impl.client.HttpClientBuilder
 import org.keycloak.authentication.actiontoken.execactions.ExecuteActionsActionToken
-import org.keycloak.common.util.Time
 import org.keycloak.connections.jpa.JpaConnectionProvider
 import org.keycloak.email.EmailTemplateProvider
 import org.keycloak.models.Constants
@@ -27,20 +26,15 @@ import org.keycloak.models.utils.CredentialValidation
 import org.keycloak.models.utils.HmacOTP
 import org.keycloak.models.utils.KeycloakModelUtils
 import org.keycloak.policy.PasswordPolicyManagerProvider
-import org.keycloak.representations.idm.UserRepresentation
+import org.keycloak.services.ErrorResponseException
 import org.keycloak.services.managers.AuthenticationManager
 import org.keycloak.services.resource.RealmResourceProvider
-import org.keycloak.services.resource.RealmResourceSPI
 import org.keycloak.urls.UrlType
 import org.keycloak.utils.CredentialHelper
 import org.keycloak.utils.TotpUtils
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.kafka.core.KafkaTemplate
-import org.springframework.stereotype.Component
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RestController
 import java.util.concurrent.TimeUnit
 import java.util.stream.Collectors
 import javax.persistence.EntityManager
@@ -48,7 +42,6 @@ import javax.ws.rs.*
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
 import javax.ws.rs.core.UriBuilder
-import kotlin.streams.toList
 
 class UserManagementResource(private val session: KeycloakSession) : RealmResourceProvider {
 
@@ -82,7 +75,8 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             if (!result.stream()
                             .map(WhiteListModel::identifier)
                             .collect(Collectors.toList()).contains(request.email))
-                throw OpexException(OpexError.RegisterIsLimited)
+                throw ErrorResponseException(OpexError.RegisterIsLimited.name, OpexError.RegisterIsLimited.message, Response.Status.BAD_REQUEST)
+
         }
 
         val auth = ResourceAuthenticator.bearerAuth(session)
@@ -447,17 +441,40 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @Path("admin/whitelist")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    fun addWhitelist(request: WhiteListRequest): Response {
+    fun addWhitelist(request: WhiteListAdaptor): WhiteListAdaptor? {
         val em: EntityManager = session!!.getProvider(JpaConnectionProvider::class.java).entityManager
         for (d in request?.data!!) {
             val data = WhiteListModel()
             data.identifier = d
-            data.id=KeycloakModelUtils.generateId()
-            em.merge(data)
+            data.id = KeycloakModelUtils.generateId()
+            em.persist(data)
         }
-        return Response.noContent().build()
+        return getWhitelist()
     }
 
+
+    @GET
+    @Path("admin/whitelist")
+    @Produces(MediaType.APPLICATION_JSON)
+    fun getWhitelist(): WhiteListAdaptor? {
+        val em: EntityManager = session!!.getProvider(JpaConnectionProvider::class.java).entityManager
+        return em.createQuery("select w from whitelist w", WhiteListModel::class.java)
+                ?.resultList?.stream()?.map(WhiteListModel::identifier)
+                ?.collect(Collectors.toList())?.let { WhiteListAdaptor(it) }
+    }
+
+
+    @POST
+    @Path("admin/delete/whitelist")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    fun deleteWhitelist(request: WhiteListAdaptor?): WhiteListAdaptor? {
+        val em: EntityManager = session!!.getProvider(JpaConnectionProvider::class.java).entityManager
+        var query = em.createQuery("delete  from whitelist w where w.identifier in :removedWhitelist")
+        query.setParameter("removedWhitelist", request?.data)
+        query.executeUpdate()
+        return getWhitelist()
+    }
 
     override fun close() {
 

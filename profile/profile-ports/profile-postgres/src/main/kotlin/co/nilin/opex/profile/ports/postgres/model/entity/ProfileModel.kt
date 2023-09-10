@@ -6,5 +6,5 @@ import org.springframework.data.relational.core.mapping.Table
 
 @Table("profile")
 data class ProfileModel(
-    @Id var id: Long
+        @Id var id: Long
 ) : Profile()

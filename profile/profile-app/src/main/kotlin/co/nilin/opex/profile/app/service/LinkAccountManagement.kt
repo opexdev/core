@@ -15,23 +15,24 @@ import reactor.core.publisher.Mono
 class LinkAccountManagement(val linkedAccountPersister: LinkedAccountPersister) {
 
 
-    suspend fun addNewAccount(linkedBankAccountRequest: LinkedBankAccountRequest):Mono<LinkedAccountResponse>? {
+    suspend fun addNewAccount(linkedBankAccountRequest: LinkedBankAccountRequest): Mono<LinkedAccountResponse>? {
         linkedBankAccountRequest.verifyRegisterNewAccount()
-       return linkedAccountPersister.addNewAccount(linkedBankAccountRequest)
+        return linkedAccountPersister.addNewAccount(linkedBankAccountRequest)
 
     }
 
 
-    suspend fun updateAccount(updateRelatedAccountRequest: UpdateRelatedAccountRequest):Mono<LinkedAccountResponse>? {
-       return linkedAccountPersister.updateAccount(updateRelatedAccountRequest)
+    suspend fun updateAccount(updateRelatedAccountRequest: UpdateRelatedAccountRequest): Mono<LinkedAccountResponse>? {
+        return linkedAccountPersister.updateAccount(updateRelatedAccountRequest)
 
     }
-    suspend fun getAccounts(userId:String): Flow<LinkedAccountResponse>? {
+
+    suspend fun getAccounts(userId: String): Flow<LinkedAccountResponse>? {
         return linkedAccountPersister.getAccounts(userId)
 
     }
 
-    suspend fun getHistoryLinkedAccount(accountId:String): Flow<LinkedAccountHistoryResponse>? {
+    suspend fun getHistoryLinkedAccount(accountId: String): Flow<LinkedAccountHistoryResponse>? {
         return linkedAccountPersister.getHistory(accountId)
 
     }
@@ -42,14 +43,15 @@ class LinkAccountManagement(val linkedAccountPersister: LinkedAccountPersister) 
 
     }
 
-    suspend fun deleteAccount(deleteLinkedAccountRequest: DeleteLinkedAccountRequest):Mono<String>? {
+    suspend fun deleteAccount(deleteLinkedAccountRequest: DeleteLinkedAccountRequest): Mono<String>? {
         return linkedAccountPersister.deleteAccount(deleteLinkedAccountRequest)
 
     }
+
     private fun LinkedBankAccountRequest.verifyRegisterNewAccount() {
         when (bankAccountType) {
-            BankAccountType.Sheba -> if(!number.isValidIBAN()) throw OpexException(OpexError.InvalidIban)
-            BankAccountType.Card -> if(!number.isValidCardNumber())  throw OpexException(OpexError.InvalidCard)
+            BankAccountType.Sheba -> if (!number.isValidIBAN()) throw OpexException(OpexError.InvalidIban)
+            BankAccountType.Card -> if (!number.isValidCardNumber()) throw OpexException(OpexError.InvalidCard)
         }
     }
 

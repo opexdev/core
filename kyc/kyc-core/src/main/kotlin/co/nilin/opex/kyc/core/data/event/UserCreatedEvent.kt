@@ -2,7 +2,7 @@ package co.nilin.opex.kyc.core.data.event
 
 import java.time.LocalDateTime
 
-class UserCreatedEvent  {
+class UserCreatedEvent {
     var eventDate: LocalDateTime = LocalDateTime.now()
     lateinit var uuid: String
     var firstName: String? = null

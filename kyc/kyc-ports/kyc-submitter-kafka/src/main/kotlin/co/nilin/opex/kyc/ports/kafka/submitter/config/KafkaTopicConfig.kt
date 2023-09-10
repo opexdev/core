@@ -14,9 +14,9 @@ class KafkaTopicConfig {
     fun createTopics(applicationContext: GenericApplicationContext) {
         applicationContext.registerBean("topic_kyc_level_updated", NewTopic::class.java, Supplier {
             TopicBuilder.name("kyc_level_updated")
-                .partitions(1)
-                .replicas(1)
-                .build()
+                    .partitions(1)
+                    .replicas(1)
+                    .build()
         })
     }
 

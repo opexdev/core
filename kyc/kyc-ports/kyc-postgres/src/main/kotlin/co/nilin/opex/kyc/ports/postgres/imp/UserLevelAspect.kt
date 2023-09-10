@@ -26,6 +26,7 @@ import java.time.LocalDateTime
 class UserLevelAspect(val kycLevelUpdatedPublisher: KycLevelUpdatedPublisher) {
     private val logger = LoggerFactory.getLogger(UserLevelAspect::class.java)
     val scope = CoroutineScope(Dispatchers.IO)
+
     @Around(
             """
         @annotation(co.nilin.opex.kyc.core.data.annotation.KycLevelUpdated) &&

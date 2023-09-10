@@ -17,6 +17,7 @@ import org.springframework.kafka.support.serializer.JsonSerializer
 @Configuration
 class KafkaKycConfig {
     private val logger = LoggerFactory.getLogger(KafkaKycConfig::class.java)
+
     @Value("\${spring.kafka.bootstrap-servers}")
     private lateinit var bootstrapServers: String
 

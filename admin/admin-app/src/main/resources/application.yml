@@ -39,6 +39,7 @@ app:
   auth:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
     token-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/token
+    admin-url: lb://opex-auth//auth/realms/opex/user-management/admin
     keycloak:
       url: http://auth:8080/auth
       realm: opex

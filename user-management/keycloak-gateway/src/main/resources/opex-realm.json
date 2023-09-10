@@ -2825,15 +2825,6 @@
           }
         }
       ]
-    },
-    {
-      "id": "ae9ae31e-d88f-466c-b45d-baaa223aa018",
-      "name": "kyc-level",
-      "protocol": "openid-connect",
-      "attributes": {
-        "include.in.token.scope": "true",
-        "display.on.consent.screen": "true"
-      }
     }
   ],
   "defaultDefaultClientScopes": [
@@ -2848,8 +2839,7 @@
     "offline_access",
     "address",
     "phone",
-    "microprofile-jwt",
-    "kyc-level"
+    "microprofile-jwt"
 
   ],
   "browserSecurityHeaders": {

@@ -14,11 +14,10 @@ import kotlinx.coroutines.launch
 class UserCreatedListener(val userRegistrationService: ProfileManagement) : UserCreatedEventListener {
 
     private val logger = LoggerFactory.getLogger(UserCreatedListener::class.java)
-    val scope= CoroutineScope(Dispatchers.IO)
+    val scope = CoroutineScope(Dispatchers.IO)
     override fun id(): String {
         return "UserCreatedEventListener"
     }
-
 
 
     override fun onEvent(event: UserCreatedEvent, partition: Int, offset: Long, timestamp: Long, eventId: String) {

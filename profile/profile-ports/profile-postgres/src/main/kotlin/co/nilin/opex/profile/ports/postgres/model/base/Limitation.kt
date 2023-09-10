@@ -7,11 +7,11 @@ import java.util.*
 
 open class Limitation {
     lateinit var userId: String;
-    var actionType: ActionType?=null;
-    var createDate: LocalDateTime?=null;
-    var expTime:Long?=null;
-    var detail:String?=null
-    var limitationOn:String?=null
-    var description:String?=null
-    var reason: LimitationReason?=null
+    var actionType: ActionType? = null;
+    var createDate: LocalDateTime? = null;
+    var expTime: Long? = null;
+    var detail: String? = null
+    var limitationOn: String? = null
+    var description: String? = null
+    var reason: LimitationReason? = null
 }

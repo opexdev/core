@@ -6,5 +6,5 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 
 @Table("linked_bank_account")
-data class LinkedBankAccountModel (
-        @Id var id: Long): LinkedBankAccount()
+data class LinkedBankAccountModel(
+        @Id var id: Long) : LinkedBankAccount()

@@ -28,7 +28,7 @@ class KycProxyImp(@Qualifier("loadBalanced") private val webClient: WebClient) :
 
 
     override suspend fun updateKycLevel(updateKycLevelRequest: ManualUpdateRequest) {
-         webClient.put()
+        webClient.put()
                 .uri(URI.create("$baseUrl/${updateKycLevelRequest.userId}"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(updateKycLevelRequest))

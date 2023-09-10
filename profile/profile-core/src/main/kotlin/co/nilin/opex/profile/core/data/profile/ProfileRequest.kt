@@ -10,8 +10,8 @@ data class ProfileRequest(var userId: String?,
                           var firstName: String?,
                           var lastName: String?,
                           var createDateFrom: LocalDateTime?,
-                          var accountNumber:String?,
+                          var accountNumber: String?,
                           var createDateTo: LocalDateTime?,
-                          var includeLimitation:Boolean?,
-                          var includeLinkedAccount:Boolean?,
-                          var partialSearch: Boolean?=false)
+                          var includeLimitation: Boolean?,
+                          var includeLinkedAccount: Boolean?,
+                          var partialSearch: Boolean? = false)

@@ -51,7 +51,7 @@ class KycAdminController(private val kycManagement: KycManagement) {
     suspend fun getData(
             @PathVariable("stepId") stepId: String
     ): KycProcessDetail? {
-        return kycManagement.getStepData(stepId,null)
+        return kycManagement.getStepData(stepId, null)
     }
 
 
@@ -66,11 +66,12 @@ class KycAdminController(private val kycManagement: KycManagement) {
     suspend fun internalManualUpdate(
             @PathVariable("userId") userId: String,
             @RequestBody manualUpdateRequest: ManualUpdateRequest,
-    ):HttpStatus {
+    ): HttpStatus {
         manualUpdateRequest.userId = userId
         manualUpdateRequest.stepId = UUID.randomUUID().toString()
         manualUpdateRequest.step = KycStep.ManualUpdate
-        return  kycManagement.manualUpdate(manualUpdateRequest)?.processId?.let { HttpStatus.ACCEPTED }?:HttpStatus.INTERNAL_SERVER_ERROR
+        return kycManagement.manualUpdate(manualUpdateRequest)?.processId?.let { HttpStatus.ACCEPTED }
+                ?: HttpStatus.INTERNAL_SERVER_ERROR
     }
 
 }

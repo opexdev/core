@@ -19,15 +19,15 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-<modules>
-    <module>kyc-app</module>
-    <module>kyc-core</module>
-    <module>kyc-ports/kyc-postgres</module>
-    <module>kyc-ports/kyc-eventlistener-kafka</module>
-    <module>kyc-ports/kyc-submitter-kafka</module>
-    <module>kyc-ports/storage-proxy</module>
+    <modules>
+        <module>kyc-app</module>
+        <module>kyc-core</module>
+        <module>kyc-ports/kyc-postgres</module>
+        <module>kyc-ports/kyc-eventlistener-kafka</module>
+        <module>kyc-ports/kyc-submitter-kafka</module>
+        <module>kyc-ports/storage-proxy</module>
 
-</modules>
+    </modules>
 
     <dependencyManagement>
         <dependencies>

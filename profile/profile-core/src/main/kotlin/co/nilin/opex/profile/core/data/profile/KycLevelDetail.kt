@@ -11,8 +11,8 @@ enum class KycLevelDetail(val kycLevel: KycLevel) {
         get() = when (this) {
             Registered -> null
             UploadDataForLevel2 -> arrayOf(Registered, RejectedManualReview).asList()
-            AcceptedManualReview -> arrayOf(UploadDataForLevel2,RejectedManualReview).asList()
-            RejectedManualReview -> arrayOf(UploadDataForLevel2,AcceptedManualReview).asList()
+            AcceptedManualReview -> arrayOf(UploadDataForLevel2, RejectedManualReview).asList()
+            RejectedManualReview -> arrayOf(UploadDataForLevel2, AcceptedManualReview).asList()
         }
 
 }

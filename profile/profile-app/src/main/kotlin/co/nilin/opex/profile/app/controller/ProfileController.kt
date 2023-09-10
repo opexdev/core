@@ -32,7 +32,7 @@ class ProfileController(val profileManagement: ProfileManagement) {
 
 
     @PutMapping("")
-    suspend fun update( @RequestBody newProfile: UpdateProfileRequest,
+    suspend fun update(@RequestBody newProfile: UpdateProfileRequest,
                        @CurrentSecurityContext securityContext: SecurityContext): Profile? {
         return profileManagement.update(securityContext.authentication.name, newProfile)?.awaitFirstOrNull()
     }

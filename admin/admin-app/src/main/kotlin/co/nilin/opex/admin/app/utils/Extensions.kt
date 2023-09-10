@@ -23,8 +23,8 @@ fun ServerHttpSecurity.AuthorizeExchangeSpec.Access.hasRole(
     mono.map { auth ->
         val hasAuthority = auth.authorities.any { it.authority == authority }
         val hasRole = ((auth.principal as Jwt).claims["roles"] as JSONArray?)?.contains(role) == true
-        ReactiveSecurityContextHolder.getContext().map { s->s.authentication=auth }
-        SecurityContextHolder.getContext().authentication=auth
+        ReactiveSecurityContextHolder.getContext().map { s -> s.authentication = auth }
+        SecurityContextHolder.getContext().authentication = auth
         val logger = LoggerFactory.getLogger(WebClientConfig::class.java)
         AuthorizationDecision(hasAuthority && hasRole)
     }

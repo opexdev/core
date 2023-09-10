@@ -24,14 +24,15 @@ class WebClientConfig {
                 )
                 .build()
     }
+
     @Bean
     fun webClient(loadBalancerFactory: ReactiveLoadBalancer.Factory<ServiceInstance>): WebClient {
         return WebClient.builder()
-            .filter(
-                ReactorLoadBalancerExchangeFilterFunction(
-                    loadBalancerFactory, LoadBalancerProperties(), emptyList()
+                .filter(
+                        ReactorLoadBalancerExchangeFilterFunction(
+                                loadBalancerFactory, LoadBalancerProperties(), emptyList()
+                        )
                 )
-            )
-            .build()
+                .build()
     }
 }

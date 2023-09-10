@@ -34,7 +34,7 @@ class StorageProxyImp(@Qualifier("loadBalanced") private val webClient: WebClien
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .body(BodyInserters.fromMultipartData(builder.build()))
                 .retrieve()
-                .onStatus({ t -> t.isError }, { throw OpexException(OpexError.UnableToUploadFiles)})
+                .onStatus({ t -> t.isError }, { throw OpexException(OpexError.UnableToUploadFiles) })
                 .bodyToMono(typeRef<UploadResult>())
                 .log()
                 .awaitFirst()

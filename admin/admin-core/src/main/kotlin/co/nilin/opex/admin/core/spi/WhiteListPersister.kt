@@ -1,11 +1,13 @@
 package co.nilin.opex.admin.core.spi
 
+import co.nilin.opex.admin.core.data.WhitelistAdaptor
+
 interface WhiteListPersister {
 
-    fun addToWhiteList(users:List<String>)
+    suspend fun addToWhiteList(users: WhitelistAdaptor):WhitelistAdaptor?
 
-    fun deleteFromWhiteList(users: List<String>)
+    suspend fun deleteFromWhiteList(users: WhitelistAdaptor):WhitelistAdaptor?
 
 
-    fun getWhiteList():List<String>?
+    suspend fun getWhiteList(): WhitelistAdaptor?
 }

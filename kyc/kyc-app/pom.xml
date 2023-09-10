@@ -93,7 +93,7 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-consul-all</artifactId>
         </dependency>
-       
+
         <dependency>
             <groupId>co.nilin.opex.kyc</groupId>
             <artifactId>kyc-core</artifactId>

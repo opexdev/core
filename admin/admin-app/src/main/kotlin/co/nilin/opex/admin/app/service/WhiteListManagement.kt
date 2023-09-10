@@ -1,17 +1,20 @@
 package co.nilin.opex.admin.app.service
 
+import co.nilin.opex.admin.core.data.WhitelistAdaptor
 import co.nilin.opex.admin.core.spi.WhiteListPersister
+import org.springframework.stereotype.Component
 
+@Component
 class WhiteListManagement(private val whiteListPersister: WhiteListPersister) {
-    override fun addToWhiteList(users: List<String>) {
-        TODO("Not yet implemented")
+    suspend fun addToWhiteList(users: WhitelistAdaptor): WhitelistAdaptor? {
+        return whiteListPersister.addToWhiteList(users)
     }
 
-    override fun deleteFromWhiteList(users: List<String>) {
-        TODO("Not yet implemented")
+    suspend fun deleteFromWhiteList(users: WhitelistAdaptor): WhitelistAdaptor? {
+        return whiteListPersister.deleteFromWhiteList(users)
     }
 
-    override fun getWhiteList(): List<String>? {
-        TODO("Not yet implemented")
+    suspend fun getWhiteList(): WhitelistAdaptor? {
+        return whiteListPersister.getWhiteList()
     }
 }

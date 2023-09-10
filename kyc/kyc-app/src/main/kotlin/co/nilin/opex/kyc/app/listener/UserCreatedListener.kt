@@ -18,11 +18,10 @@ class UserCreatedListener(val kycManagement: KycManagement) : UserCreatedEventLi
 
     private val logger = LoggerFactory.getLogger(UserCreatedListener::class.java)
 
-    val scope= CoroutineScope(Dispatchers.Default)
+    val scope = CoroutineScope(Dispatchers.Default)
     override fun id(): String {
         return "UserCreatedEventListener"
     }
-
 
 
     override fun onEvent(event: UserCreatedEvent, partition: Int, offset: Long, timestamp: Long, id: String) {

@@ -42,7 +42,7 @@ class WebClientConfig {
 
     @Bean
     @Qualifier("logRequest")
-    fun backgroundSecurityWebClient( loadBalancerFactory: ReactiveLoadBalancer.Factory<ServiceInstance>): WebClient {
+    fun backgroundSecurityWebClient(loadBalancerFactory: ReactiveLoadBalancer.Factory<ServiceInstance>): WebClient {
         return WebClient.builder()
                 .filter(
                         ReactorLoadBalancerExchangeFilterFunction(
@@ -52,6 +52,7 @@ class WebClientConfig {
                 .filter(logRequest())
                 .build()
     }
+
     private fun logRequest(): ExchangeFilterFunction {
         return ExchangeFilterFunction.ofRequestProcessor { clientRequest: ClientRequest ->
             logger.info("Request: {} {}", clientRequest.method(), clientRequest.url())
@@ -59,6 +60,7 @@ class WebClientConfig {
             Mono.just<ClientRequest>(clientRequest)
         }
     }
+
     @Bean
     fun initializingBean(): InitializingBean? {
         return InitializingBean {
@@ -66,9 +68,6 @@ class WebClientConfig {
                     SecurityContextHolder.MODE_INHERITABLETHREADLOCAL)
         }
     }
-
-
-
 
 
 }

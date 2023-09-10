@@ -53,7 +53,7 @@ class LinkAccountManagementImp(val linkedAccountRepository: LinkedAccountReposit
             logger.info("==========================$accountNumber")
             return linkedAccountRepository.findAllByNumber(accountNumber)?.map { d -> d.convert(LinkedAccountResponse::class.java) }
 
-        }  else {
+        } else {
             logger.info("==========------------==========$accountNumber")
 
             return linkedAccountRepository.searchAllByNumber(accountNumber)?.map { d -> d.convert(LinkedAccountResponse::class.java) }

@@ -48,7 +48,7 @@ class KycController(private val kycManagement: KycManagement) {
             @CurrentSecurityContext securityContext: SecurityContext
     ): Flow<KycProcess>? {
 
-        return kycManagement.getKycStep(KycDataRequest(securityContext.authentication.name, null, null,  0,  1000))
+        return kycManagement.getKycStep(KycDataRequest(securityContext.authentication.name, null, null, 0, 1000))
     }
 
 
