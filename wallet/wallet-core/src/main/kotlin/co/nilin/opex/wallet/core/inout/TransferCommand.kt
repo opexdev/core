@@ -9,5 +9,6 @@ data class TransferCommand(
     val amount: Amount,
     val description: String?,
     val transferRef: String?,
-    val additionalData: Map<String, String?>?
+    val transferCategory: String,
+    val additionalData: Map<String, Any>?
 )

@@ -10,6 +10,7 @@ import co.nilin.opex.wallet.core.spi.CurrencyService
 import co.nilin.opex.wallet.core.spi.TransferManager
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
@@ -22,6 +23,8 @@ class TransferService(
     private val walletOwnerManager: WalletOwnerManager
 ) {
 
+    private val logger = LoggerFactory.getLogger(TransferService::class.java)
+
     @Transactional
     suspend fun transfer(
         symbol: String,
@@ -31,7 +34,9 @@ class TransferService(
         receiverUuid: String,
         amount: BigDecimal,
         description: String?,
-        transferRef: String?
+        transferRef: String?,
+        transferCategory: String = "NO_CATEGORY",
+        additionalData: Map<String, Any>? = emptyMap()
     ): TransferResult {
         if (senderWalletType == "cashout" || receiverWalletType == "cashout")
             throw OpexException(OpexError.InvalidCashOutUsage)
@@ -54,12 +59,18 @@ class TransferService(
             currency,
             receiverWalletType
         )
+
+        logger.info(
+            "Transferring funds: $amount ${sourceWallet.owner.id}-${sourceWallet.currency.symbol}-$senderWalletType " +
+                    "==> ${receiverWallet.owner.id}-${receiverWallet.currency.symbol}-$receiverWalletType "
+        )
+
         return transferManager.transfer(
             TransferCommand(
                 sourceWallet,
                 receiverWallet,
                 Amount(sourceWallet.currency, amount),
-                description, transferRef, emptyMap()
+                description, transferRef, transferCategory, additionalData
             )
         ).transferResult
     }
@@ -94,7 +105,8 @@ class TransferService(
                         Amount(sourceWallet.currency, it.amount),
                         it.description,
                         it.transferRef,
-                        emptyMap()
+                        it.transferCategory,
+                        it.additionalData
                     )
                 )
             }
@@ -134,7 +146,7 @@ class TransferService(
                 sourceWallet,
                 receiverWallet,
                 Amount(sourceWallet.currency, amount),
-                description, transferRef, emptyMap()
+                description, transferRef, "DEPOSIT", emptyMap()
             )
         ).transferResult
     }

@@ -116,7 +116,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             isEmailVerified = false
 
             addRequiredAction(UserModel.RequiredAction.VERIFY_EMAIL)
-            val actions = requiredActionsStream.toList()
+            val actions = requiredActionsStream.collect(Collectors.toList())
             val token = ActionTokenHelper.generateRequiredActionsToken(session, opexRealm, this, actions)
             val url = "${session.context.getUri(UrlType.BACKEND).baseUri}/realms/opex/user-management/user/verify"
             val link = ActionTokenHelper.attachTokenToLink(url, token)

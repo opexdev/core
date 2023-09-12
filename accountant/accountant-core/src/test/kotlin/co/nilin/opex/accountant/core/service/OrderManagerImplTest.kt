@@ -2,6 +2,7 @@ package co.nilin.opex.accountant.core.service
 
 import co.nilin.opex.accountant.core.inout.OrderStatus
 import co.nilin.opex.accountant.core.model.FinancialAction
+import co.nilin.opex.accountant.core.model.FinancialActionCategory
 import co.nilin.opex.accountant.core.model.PairConfig
 import co.nilin.opex.accountant.core.model.PairFeeConfig
 import co.nilin.opex.accountant.core.spi.*
@@ -43,7 +44,8 @@ internal class OrderManagerImplTest {
         orderPersister,
         tempEventPersister,
         richOrderPublisher,
-        financialActionPublisher
+        financialActionPublisher,
+        JsonMapperTestImpl()
     )
 
     init {
@@ -101,7 +103,9 @@ internal class OrderManagerImplTest {
             "main",
             submitOrderEvent.uuid,
             "exchange",
-            Valid.currentTime
+            Valid.currentTime,
+            FinancialActionCategory.ORDER_CREATE,
+            emptyMap()
         )
 
         with(expectedFinancialAction) {
@@ -159,7 +163,9 @@ internal class OrderManagerImplTest {
             "main",
             submitOrderEvent.uuid,
             "exchange",
-            Valid.currentTime
+            Valid.currentTime,
+            FinancialActionCategory.ORDER_CREATE,
+            emptyMap()
         )
         with(expectedFinancialAction) {
             assertThat(eventType).isEqualTo(financialActions[0].eventType)
@@ -170,6 +176,9 @@ internal class OrderManagerImplTest {
             assertThat(receiver).isEqualTo(financialActions[0].receiver)
             assertThat(receiverWalletType).isEqualTo(financialActions[0].receiverWalletType)
         }
+        assertThat(financialActions[0].category).isEqualTo(FinancialActionCategory.ORDER_CREATE)
+        assertThat(financialActions[0].detail).containsKeys("userLevel", "direction", "matchConstraint", "orderType", "eventDate")
+
     }
 
     @Test
@@ -222,7 +231,7 @@ internal class OrderManagerImplTest {
             "user_1",
             56,
             Pair("BTC", "USDT"),
-            RequestedOperation.CANCEL_ORDER,
+            RequestedOperation.PLACE_ORDER,
             RejectReason.ORDER_NOT_FOUND
         )
 
@@ -232,6 +241,21 @@ internal class OrderManagerImplTest {
 
         assertThat(fa.size).isEqualTo(0)
         coVerify(exactly = 1) { tempEventPersister.saveTempEvent(any(), any()) }
+    }
+
+    @Test
+    fun givenRejectOrderReceived_whenOperationNotPlaceOrder_returnEmptyFA(): Unit = runBlocking {
+        val orderEvent = RejectOrderEvent(
+            "ouid",
+            "user_1",
+            56,
+            Pair("BTC", "USDT"),
+            RequestedOperation.CANCEL_ORDER,
+            RejectReason.ORDER_NOT_FOUND
+        )
+
+        val fa = orderManager.handleRejectOrder(orderEvent)
+        assertThat(fa.size).isEqualTo(0)
     }
 
     @Test
@@ -246,7 +270,7 @@ internal class OrderManagerImplTest {
             OrderDirection.BID,
             MatchConstraint.GTC,
             OrderType.LIMIT_ORDER,
-            RequestedOperation.CANCEL_ORDER,
+            RequestedOperation.PLACE_ORDER,
             RejectReason.ORDER_NOT_FOUND,
         )
         coEvery { orderPersister.load(any()) } returns Valid.order
@@ -255,6 +279,9 @@ internal class OrderManagerImplTest {
 
         assertThat(fa.amount).isEqualTo(Valid.order.remainedTransferAmount)
         assertThat(fa.symbol).isEqualTo(orderEvent.pair.rightSideName)
+        assertThat(fa.category).isEqualTo(FinancialActionCategory.ORDER_CANCEL)
+        assertThat(fa.detail).containsKeys("userLevel", "direction", "matchConstraint", "orderType", "eventDate")
+
         assertThat(Valid.order.status).isEqualTo(OrderStatus.REJECTED.code)
 
         coVerify(exactly = 1) { richOrderPublisher.publish(any()) }
@@ -300,16 +327,14 @@ internal class OrderManagerImplTest {
 
         assertThat(fa.amount).isEqualTo(Valid.order.remainedTransferAmount)
         assertThat(fa.symbol).isEqualTo(orderEvent.pair.rightSideName)
+        assertThat(fa.category).isEqualTo(FinancialActionCategory.ORDER_CANCEL)
+        assertThat(fa.detail).containsKeys("userLevel", "direction", "matchConstraint", "orderType", "eventDate")
         assertThat(Valid.order.status).isEqualTo(OrderStatus.CANCELED.code)
 
         coVerify(exactly = 1) { richOrderPublisher.publish(any()) }
         coVerify(exactly = 1) { orderPersister.save(any()) }
     }
 
-    //TODO
-    @Test
-    fun handleUpdateOrder() {
-    }
 
 }
 

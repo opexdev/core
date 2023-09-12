@@ -3,10 +3,8 @@ package co.nilin.opex.wallet.app.service
 import co.nilin.opex.wallet.core.exc.ConcurrentBalanceChangException
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.model.Amount
-import co.nilin.opex.wallet.core.spi.CurrencyService
-import co.nilin.opex.wallet.core.spi.TransferManager
-import co.nilin.opex.wallet.core.spi.WalletManager
-import co.nilin.opex.wallet.core.spi.WalletOwnerManager
+import co.nilin.opex.wallet.core.spi.*
+import co.nilin.opex.wallet.ports.postgres.dao.TransactionRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -20,6 +18,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import java.math.BigDecimal
+import java.time.LocalDateTime
 import java.util.*
 
 @SpringBootTest
@@ -38,6 +37,12 @@ class TransferManagerImplIT {
 
     @Autowired
     lateinit var walletOwnerManager: WalletOwnerManager
+
+    @Autowired
+    lateinit var transactionManager: TransactionManager
+
+    @Autowired
+    lateinit var transactionRepository: TransactionRepository
 
     val senderWalletType = "main"
     val receiverWalletType = "exchange"
@@ -67,7 +72,7 @@ class TransferManagerImplIT {
                             sourceWallet!!,
                             receiverWallet!!,
                             Amount(sourceWallet.currency, amount),
-                            "Amount1 ${System.currentTimeMillis()}", "Ref1 ${System.currentTimeMillis()}", emptyMap()
+                            "Amount1 ${System.currentTimeMillis()}", "Ref1 ${System.currentTimeMillis()}", "NORMAL", emptyMap()
                         )
                     )
                 }
@@ -77,7 +82,7 @@ class TransferManagerImplIT {
                             sourceWallet!!,
                             receiverWallet!!,
                             Amount(sourceWallet.currency, amount),
-                            "Amount2 ${System.currentTimeMillis()}", "Ref2 ${System.currentTimeMillis()}", emptyMap()
+                            "Amount2 ${System.currentTimeMillis()}", "Ref2 ${System.currentTimeMillis()}", "NORMAL", emptyMap()
                         )
                     )
                 }
@@ -117,7 +122,7 @@ class TransferManagerImplIT {
                         sourceWallet1!!,
                         receiverWallet!!,
                         Amount(sourceWallet1.currency, amount),
-                        "Amount1 ${System.currentTimeMillis()}", "Ref1 ${System.currentTimeMillis()}", emptyMap()
+                        "Amount1 ${System.currentTimeMillis()}", "Ref1 ${System.currentTimeMillis()}", "NORMAL", emptyMap()
                     )
                 )
             }
@@ -128,7 +133,7 @@ class TransferManagerImplIT {
                         sourceWallet2!!,
                         receiverWallet!!,
                         Amount(sourceWallet2.currency, amount),
-                        "Amount2 ${System.currentTimeMillis()}", "Ref2 ${System.currentTimeMillis()}", emptyMap()
+                        "Amount2 ${System.currentTimeMillis()}", "Ref2 ${System.currentTimeMillis()}", "NORMAL", emptyMap()
                     )
                 )
             }
@@ -162,7 +167,7 @@ class TransferManagerImplIT {
                         sourceWallet!!,
                         receiverWallet!!,
                         Amount(sourceWallet.currency, amount),
-                        "Amount1 ${System.currentTimeMillis()}", "Ref1 ${System.currentTimeMillis()}", emptyMap()
+                        "Amount1 ${System.currentTimeMillis()}", "Ref1 ${System.currentTimeMillis()}", "NORMAL", emptyMap()
                     )
                 )
             }.await()
@@ -174,8 +179,8 @@ class TransferManagerImplIT {
                     TransferCommand(
                         sourceWallet!!,
                         receiverWallet!!,
-                        Amount(sourceWallet!!.currency, amount),
-                        "Amount2 ${System.currentTimeMillis()}", "Ref2 ${System.currentTimeMillis()}", emptyMap()
+                        Amount(sourceWallet.currency, amount),
+                        "Amount2 ${System.currentTimeMillis()}", "Ref2 ${System.currentTimeMillis()}", "NORMAL", emptyMap()
                     )
                 )
             }.await()
@@ -184,6 +189,50 @@ class TransferManagerImplIT {
 
             assertEquals(BigDecimal.ZERO, sourceWallet!!.balance.amount)
             assertEquals(amount.plus(amount), receiverWallet!!.balance.amount)
+        }
+    }
+
+    @Test
+    fun whenTransferWithAdditionalData_thenDataIsPersistedAndRetrievable() {
+        runBlocking {
+            val currency = currencyService.getCurrency(cc)!!
+            val owner = walletOwnerManager.findWalletOwner(sourceUuid!!)
+
+            val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner!!, senderWalletType, currency)
+            val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, receiverWalletType, currency)
+
+            val additionalData = mapOf(Pair("key1", "value"), Pair("key2", "value"))
+            val result = transferManager.transfer(
+                TransferCommand(
+                    sourceWallet!!,
+                    receiverWallet!!,
+                    Amount(sourceWallet.currency, amount),
+                    "Amount1 ${System.currentTimeMillis()}", "Ref1 ${System.currentTimeMillis()}",
+                    "NORMAL",
+                    additionalData
+                )
+            )
+
+            val thw = transactionManager.findWithdrawTransactions(
+                owner.uuid, currency.symbol, LocalDateTime.now().minusHours(1), LocalDateTime.now(), 100, 0
+            )
+
+            val thd = transactionManager.findDepositTransactions(
+                owner.uuid, currency.symbol, LocalDateTime.now().minusHours(1), LocalDateTime.now(), 100, 0
+            )
+            val thwMatch = thw.find { th -> th.id.toString().equals(result.tx) }
+            assertNotNull(thwMatch)
+            val thdMatch = thd.find { th -> th.id.toString().equals(result.tx) }
+            assertNotNull(thdMatch)
+
+            assertEquals(additionalData, thwMatch!!.additionalData)
+
+            val th = transactionManager.findTransactions(
+                owner.uuid, currency.symbol, "NORMAL", LocalDateTime.now().minusHours(1), LocalDateTime.now(), 100, 0
+            )
+
+            val thMatch = th.find { i -> i.id.toString().equals(result.tx) }
+            assertEquals(additionalData, thMatch!!.additionalData)
         }
     }
 
@@ -203,7 +252,10 @@ class TransferManagerImplIT {
                 currency,
                 receiverWalletType
             )
+
         }
     }
+
+
 }
 

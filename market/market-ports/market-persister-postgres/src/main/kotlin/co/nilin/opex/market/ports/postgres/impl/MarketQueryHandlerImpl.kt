@@ -36,7 +36,6 @@ class MarketQueryHandlerImpl(
             .collectList()
             .awaitFirstOrElse { emptyList() }
             .map { it.asPriceChangeResponse(Date().time, startFrom.toInstant(ZoneOffset.UTC).toEpochMilli()) }
-
     }
 
     override suspend fun getTradeTickerDateBySymbol(symbol: String, startFrom: LocalDateTime): PriceChange? {

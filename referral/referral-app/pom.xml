@@ -7,7 +7,7 @@
     <parent>
         <artifactId>referral</artifactId>
         <groupId>co.nilin.opex.referral</groupId>
-        <version>1.0.0-beta.3</version>
+        <version>1.0.1-beta.7</version>
     </parent>
 
     <groupId>co.nilin.opex.referral.app</groupId>

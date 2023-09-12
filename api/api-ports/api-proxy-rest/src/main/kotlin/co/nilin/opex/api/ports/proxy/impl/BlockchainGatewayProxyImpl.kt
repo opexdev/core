@@ -26,13 +26,13 @@ class BlockchainGatewayProxyImpl(private val client: WebClient) : BlockchainGate
     @Value("\${app.opex-bc-gateway.url}")
     private lateinit var baseUrl: String
 
-    override suspend fun assignAddress(uuid: String, currency: String): AssignResponse? {
+    override suspend fun assignAddress(uuid: String, currency: String, chain: String): AssignResponse? {
         logger.info("calling bc-gateway assign")
         return client.post()
-            .uri(URI.create("$baseUrl/address/assign"))
+            .uri(URI.create("$baseUrl/v1/address/assign"))
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
-            .body(Mono.just(AssignAddressRequest(uuid, currency)))
+            .body(Mono.just(AssignAddressRequest(uuid, currency, chain)))
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono(AssignResponse::class.java)

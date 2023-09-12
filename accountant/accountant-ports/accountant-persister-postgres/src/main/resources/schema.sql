@@ -46,6 +46,9 @@ CREATE TABLE IF NOT EXISTS fi_actions
     status               VARCHAR(20)
 );
 
+ALTER TABLE fi_actions ADD COLUMN IF NOT EXISTS detail_json TEXT;
+ALTER TABLE fi_actions ADD COLUMN IF NOT EXISTS category_name VARCHAR(36);
+
 CREATE TABLE IF NOT EXISTS pair_config
 (
     pair                     VARCHAR(72) PRIMARY KEY,

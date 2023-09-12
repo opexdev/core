@@ -6,7 +6,7 @@
     <parent>
         <groupId>co.nilin.opex.accountant</groupId>
         <artifactId>accountant</artifactId>
-        <version>1.0.0-beta.3</version>
+        <version>1.0.1-beta.7</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -31,11 +31,41 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-r2dbc</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.r2dbc</groupId>
+                    <artifactId>r2dbc-pool</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.r2dbc</groupId>
+                    <artifactId>r2dbc-spi</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>r2dbc-postgresql</artifactId>
             <scope>runtime</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.r2dbc</groupId>
+                    <artifactId>r2dbc-pool</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.r2dbc</groupId>
+                    <artifactId>r2dbc-spi</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.r2dbc</groupId>
+            <artifactId>r2dbc-pool</artifactId>
+            <version>1.0.1.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>io.r2dbc</groupId>
+            <artifactId>r2dbc-spi</artifactId>
+            <version>1.0.0.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>

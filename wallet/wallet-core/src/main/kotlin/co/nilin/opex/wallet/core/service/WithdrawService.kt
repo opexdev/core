@@ -42,6 +42,7 @@ class WithdrawService(
                 Amount(currency, withdrawCommand.amount),
                 withdrawCommand.description,
                 withdrawCommand.transferRef,
+                "WITHDRAW",
                 emptyMap()
             )
         )
@@ -94,7 +95,7 @@ class WithdrawService(
                 sourceWallet,
                 receiverWallet,
                 Amount(sourceWallet.currency, withdraw.amount),
-                null, null, emptyMap()
+                null, null, "WITHDRAW", emptyMap()
             )
         )
 
@@ -147,7 +148,7 @@ class WithdrawService(
                 sourceWallet,
                 receiverWallet,
                 Amount(sourceWallet.currency, withdraw.amount),
-                rejectCommand.statusReason, null, emptyMap()
+                rejectCommand.statusReason, null, "WITHDRAW", emptyMap()
             )
         )
         val updateWithdraw = withdrawPersister.persist(

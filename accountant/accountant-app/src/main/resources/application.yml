@@ -1,8 +1,8 @@
 server.port: 8080
 logging:
   level:
-    co.nilin: DEBUG
-    reactor.netty.http.client: DEBUG
+    co.nilin: INFO
+    reactor.netty.http.client: INFO
 spring:
   application:
     name: opex-accountant
@@ -18,6 +18,13 @@ spring:
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
     initialization-mode: always
+    pool:
+      #max-idle-time: 5m
+      #max-life-time: 5m
+      #max-acquire-time: 5m
+      initial-size: 10
+      max-size: 32
+      validation-query: select 1
   cloud:
     bootstrap:
       enabled: true
@@ -27,7 +34,7 @@ spring:
       scheme: http
       authentication: APPID
       app-id:
-        user-id: co.nilin.opex.util.vault.VaultUserIdMechanism
+        user-id: co.nilin.opex.accountant.app.utils.VaultUserIdMechanism
       fail-fast: true
       kv:
         enabled: true
@@ -55,7 +62,7 @@ management:
         include: [ "health", "prometheus", "metrics" ]
   endpoint:
     health:
-      show-details: always
+      show-details: when_authorized
     metrics:
       enabled: true
     prometheus:

@@ -1,6 +1,6 @@
 package co.nilin.opex.websocket.ports.kafka.listener.consumer
 
-import co.nilin.opex.accountant.core.inout.RichOrderEvent
+import co.nilin.opex.websocket.core.inout.RichOrderEvent
 import co.nilin.opex.websocket.ports.kafka.listener.spi.RichOrderListener
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.kafka.listener.MessageListener

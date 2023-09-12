@@ -1,16 +1,16 @@
 package co.nilin.opex.accountant.core.service
 
 import co.nilin.opex.accountant.core.model.FinancialAction
+import co.nilin.opex.accountant.core.model.FinancialActionCategory
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import java.time.LocalDateTime
 
 internal class FeeCalculatorImplTest {
 
     private val receiverAddress = "0x0"
-    private val feeCalculator = FeeCalculatorImpl(receiverAddress)
+    private val feeCalculator = FeeCalculatorImpl(receiverAddress, JsonMapperTestImpl())
 
     @Test
     fun givenTradeEventsAndOrders_whenFeeCalculated_feeActionsNotNull(): Unit = runBlocking {
@@ -55,7 +55,9 @@ internal class FeeCalculatorImplTest {
             "main",
             "system",
             "main",
-            Valid.currentTime
+            Valid.currentTime,
+            FinancialActionCategory.TRADE,
+            emptyMap()
         )
 
         val actions = feeCalculator.createFeeActions(

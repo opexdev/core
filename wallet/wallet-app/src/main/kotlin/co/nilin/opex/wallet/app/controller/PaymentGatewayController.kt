@@ -62,6 +62,7 @@ class PaymentGatewayController(
                 Amount(sourceWallet.currency, convertedAmount.toBigDecimal()),
                 request.description,
                 request.reference,
+                "DEPOSIT",
                 emptyMap()
             )
         )

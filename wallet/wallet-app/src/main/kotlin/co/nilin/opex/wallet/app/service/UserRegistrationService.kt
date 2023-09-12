@@ -24,7 +24,8 @@ class UserRegistrationService(
 
     @Transactional
     suspend fun registerNewUser(event: UserCreatedEvent) {
-        val owner = walletOwnerManager.createWalletOwner(event.uuid, "${event.firstName} ${event.lastName}", "1")
+        val owner =
+            walletOwnerManager.createWalletOwner(event.uuid, "${event.email}-${event.firstName} ${event.lastName}", "1")
 
         preferences.currencies.forEach {
             val currency = currencyService.getCurrency(it.symbol) ?: throw OpexException(OpexError.CurrencyNotFound)

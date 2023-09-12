@@ -3,8 +3,7 @@ server:
   port: 8080
 logging:
   level:
-    co.nilin: DEBUG
-    reactor.netty.http.client: DEBUG
+    co.nilin: INFO
 spring:
   application:
     name: opex-captcha
@@ -29,7 +28,7 @@ management:
         include: ["health", "prometheus", "metrics"]
   endpoint:
     health:
-      show-details: always
+      show-details: when_authorized
     metrics:
       enabled: true
     prometheus:

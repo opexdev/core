@@ -19,7 +19,7 @@ class EventlogEventListener(
     }
 
     override fun onEvent(coreEvent: CoreEvent, partition: Int, offset: Long, timestamp: Long) {
-        log.debug("Receive CoreEvent $coreEvent")
+        log.info("Receive CoreEvent $coreEvent")
         runBlocking {
             when (coreEvent) {
                 is CreateOrderEvent -> orderPersister.saveOrder(coreEvent)

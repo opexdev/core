@@ -40,6 +40,9 @@ CREATE TABLE IF NOT EXISTS transaction
     transaction_date TIMESTAMP NOT NULL DEFAULT CURRENT_DATE
 );
 
+ALTER TABLE transaction ADD COLUMN IF NOT EXISTS transfer_detail_json TEXT;
+ALTER TABLE transaction ADD COLUMN IF NOT EXISTS transfer_category VARCHAR(36);
+
 CREATE TABLE IF NOT EXISTS wallet_limits
 (
     id            SERIAL PRIMARY KEY,
