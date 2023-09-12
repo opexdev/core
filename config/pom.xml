@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>core</artifactId>
+        <groupId>co.nilin.opex</groupId>
+        <version>1.0.1-beta.7</version>
+    </parent>
+
+    <artifactId>config</artifactId>
+    <name>config</name>
+    <packaging>pom</packaging>
+    <description>Config management root of Opex</description>
+
+    <modules>
+        <module>config-core</module>
+        <module>config-app</module>
+        <module>config-ports/config-persister-postgres</module>
+    </modules>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+        </dependency>
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>co.nilin.opex.config.ports.postgres</groupId>
+                <artifactId>config-persister-postgres</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.config.ports.kafka.listener</groupId>
+                <artifactId>config-eventlistener-kafka</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.config.core</groupId>
+                <artifactId>config-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.utility.error</groupId>
+                <artifactId>error-handler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.utility.log</groupId>
+                <artifactId>logging-handler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.utility.interceptors</groupId>
+                <artifactId>interceptors</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.utility.preferences</groupId>
+                <artifactId>preferences</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

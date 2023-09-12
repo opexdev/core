@@ -35,6 +35,7 @@
         <module>admin</module>
         <module>referral</module>
         <module>captcha</module>
+        <module>config</module>
     </modules>
 
     <dependencies>
