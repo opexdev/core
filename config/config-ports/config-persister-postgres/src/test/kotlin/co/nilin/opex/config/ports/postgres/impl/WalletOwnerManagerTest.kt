@@ -1,13 +1,7 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
-import co.nilin.opex.wallet.core.model.Amount
-import co.nilin.opex.wallet.ports.postgres.dao.TransactionRepository
-import co.nilin.opex.wallet.ports.postgres.dao.WalletConfigRepository
-import co.nilin.opex.wallet.ports.postgres.dao.WalletLimitsRepository
-import co.nilin.opex.wallet.ports.postgres.dao.WalletOwnerRepository
 import co.nilin.opex.wallet.ports.postgres.dto.toModel
 import co.nilin.opex.wallet.ports.postgres.impl.sample.VALID
-import co.nilin.opex.wallet.ports.postgres.model.WalletConfigModel
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.flow

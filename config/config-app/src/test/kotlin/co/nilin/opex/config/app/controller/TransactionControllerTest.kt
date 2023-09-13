@@ -1,7 +1,5 @@
 package co.nilin.opex.wallet.app.controller
 
-import co.nilin.opex.wallet.core.model.TransactionHistory
-import co.nilin.opex.wallet.core.spi.TransactionManager
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.*

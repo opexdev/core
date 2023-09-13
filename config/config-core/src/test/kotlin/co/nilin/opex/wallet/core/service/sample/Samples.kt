@@ -1,10 +1,5 @@
 package co.nilin.opex.wallet.core.service.sample
 
-import co.nilin.opex.wallet.core.inout.TransferCommand
-import co.nilin.opex.wallet.core.model.Amount
-import co.nilin.opex.wallet.core.model.Currency
-import co.nilin.opex.wallet.core.model.Wallet
-import co.nilin.opex.wallet.core.model.WalletOwner
 import java.math.BigDecimal
 
 object VALID {
