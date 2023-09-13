@@ -2,7 +2,6 @@ package co.nilin.opex.user.managment.ports.kafka.config
 
 
 import co.nilin.opex.auth.core.data.KycLevelUpdatedEvent
-import co.nilin.opex.kyc.core.data.event.UserCreatedEvent
 import co.nilin.opex.user.managment.ports.kafka.consumer.KycLevelUpdatedKafkaListener
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.TopicPartition
