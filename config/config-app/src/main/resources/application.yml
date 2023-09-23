@@ -6,11 +6,6 @@ spring:
     bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
     consumer:
       group-id: wallet
-  r2dbc:
-    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
-    username: ${dbusername:opex}
-    password: ${dbpassword:hiopex}
-    initialization-mode: always
   cloud:
     bootstrap:
       enabled: true
@@ -22,11 +17,13 @@ spring:
         instance-id: ${spring.application.name}:${server.port}
         healthCheckInterval: 20s
         prefer-ip-address: true
-  config:
-    import: vault://secret/${spring.application.name}
   jackson:
     serialization:
       write-dates-as-timestamps: false
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: 6379
 management:
   endpoints:
     web:

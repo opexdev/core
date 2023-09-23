@@ -1,6 +1,6 @@
 package co.nilin.opex.config.app.utils
 
-import com.nimbusds.jose.shaded.json.JSONArray
+import org.json.JSONArray
 import org.springframework.security.authorization.AuthorizationDecision
 import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.oauth2.jwt.Jwt

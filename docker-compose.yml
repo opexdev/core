@@ -153,6 +153,18 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  redis-config:
+    image: redis/redis-stack:latest
+    volumes:
+      - redis-config-data:/data
+    environment:
+      - REDIS_REPLICATION_MODE=master
+      - REDIS_ARGS= --save 20 1
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
   postgres-accountant:
     <<: *postgres-db
     volumes:
@@ -527,6 +539,25 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  config:
+    image: ghcr.io/opexdev/config
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - REDIS_HOST=redis-config
+      - CONSUL_HOST=consul
+      - PREFERENCES=$PREFERENCES
+    configs:
+      - preferences.yml
+    depends_on:
+      - consul
+      - redis-config
+    networks:
+      - default
+    labels:
+      collect_logs: "true"
+    deploy:
+      restart_policy:
+        condition: on-failure
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2
     environment:
@@ -600,6 +631,7 @@ volumes:
   vault-data:
   redis-data:
   redis.conf:
+  redis-config-data:
   accountant-data:
   eventlog-data:
   auth-data:
