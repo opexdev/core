@@ -17,7 +17,6 @@
     <modules>
         <module>config-core</module>
         <module>config-app</module>
-        <module>config-ports/config-persister-postgres</module>
         <module>config-ports/config-persister-redis</module>
     </modules>
 
@@ -37,11 +36,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>co.nilin.opex.config.ports.postgres</groupId>
-                <artifactId>config-persister-postgres</artifactId>
-                <version>${project.version}</version>
-            </dependency>
             <dependency>
                 <groupId>co.nilin.opex.config.ports.redis</groupId>
                 <artifactId>config-persister-redis</artifactId>

@@ -7,9 +7,8 @@ import org.springframework.context.annotation.ComponentScan
 import org.springframework.scheduling.annotation.EnableScheduling
 
 @SpringBootApplication
-@ComponentScan("co.nilin.opex")
+@ComponentScan("co.nilin.opex.*")
 @EnableOpexErrorHandler
-@EnableScheduling
 class WalletApp
 
 fun main(args: Array<String>) {

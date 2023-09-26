@@ -31,10 +31,5 @@
             <groupId>io.mockk</groupId>
             <artifactId>mockk</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.jetbrains.kotlinx</groupId>
-            <artifactId>kotlinx-coroutines-core</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 </project>

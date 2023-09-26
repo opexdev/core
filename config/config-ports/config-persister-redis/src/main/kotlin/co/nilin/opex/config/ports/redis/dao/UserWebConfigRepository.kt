@@ -1,9 +1,12 @@
 package co.nilin.opex.config.ports.redis.dao
 
-import co.nilin.opex.config.ports.redis.document.SystemConfigDocument
+import co.nilin.opex.config.ports.redis.document.UserWebConfigDocument
 import com.redis.om.spring.repository.RedisDocumentRepository
 import org.springframework.stereotype.Component
 
 @Component
-interface SystemConfigRepository : RedisDocumentRepository<SystemConfigDocument, String> {
+interface UserWebConfigRepository : RedisDocumentRepository<UserWebConfigDocument, String> {
+
+
+
 }
