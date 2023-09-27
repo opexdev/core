@@ -1,6 +1,6 @@
 package co.nilin.opex.config.app.dto
 
-data class UpdateSystemConfigRequest(
+data class UpdateWebConfigRequest(
     val logoUrl: String?,
     val title: String?,
     val description: String?,

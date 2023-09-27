@@ -1,6 +1,6 @@
 package co.nilin.opex.config.core.inout
 
-data class SystemConfig(
+data class WebConfig(
     val logoUrl: String?,
     val title: String?,
     val description: String?,

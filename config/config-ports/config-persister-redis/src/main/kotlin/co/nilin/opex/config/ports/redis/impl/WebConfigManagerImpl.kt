@@ -1,20 +1,20 @@
 package co.nilin.opex.config.ports.redis.impl
 
-import co.nilin.opex.config.core.inout.SystemConfig
-import co.nilin.opex.config.core.spi.SystemConfigManager
-import co.nilin.opex.config.ports.redis.dao.SystemConfigRepository
-import co.nilin.opex.config.ports.redis.document.SystemConfigDocument
+import co.nilin.opex.config.core.inout.WebConfig
+import co.nilin.opex.config.core.spi.WebConfigManager
+import co.nilin.opex.config.ports.redis.dao.WebConfigRepository
+import co.nilin.opex.config.ports.redis.document.WebConfigDocument
 import co.nilin.opex.config.ports.redis.utils.asDTO
 import org.springframework.stereotype.Component
 
 @Component
-class SystemConfigManagerImpl(private val systemConfigRepository: SystemConfigRepository) : SystemConfigManager {
+class WebConfigManagerImpl(private val webConfigRepository: WebConfigRepository) : WebConfigManager {
 
-    override fun getConfig(): SystemConfig {
+    override fun getConfig(): WebConfig {
         return getConfigOrCreate().asDTO()
     }
 
-    override fun updateConfig(config: SystemConfig): SystemConfig {
+    override fun updateConfig(config: WebConfig): WebConfig {
         val savedConfig = getConfigOrCreate()
         config.apply {
             logoUrl?.let { savedConfig.logoUrl = it }
@@ -27,11 +27,11 @@ class SystemConfigManagerImpl(private val systemConfigRepository: SystemConfigRe
             baseCurrency?.let { savedConfig.baseCurrency = it }
             dateType?.let { savedConfig.dateType = it }
         }
-        return systemConfigRepository.save(savedConfig).asDTO()
+        return webConfigRepository.save(savedConfig).asDTO()
     }
 
-    private fun getConfigOrCreate(): SystemConfigDocument {
-        return systemConfigRepository.findById(SystemConfigDocument.ID)
-            .orElseGet { systemConfigRepository.save(SystemConfigDocument.default()) }
+    private fun getConfigOrCreate(): WebConfigDocument {
+        return webConfigRepository.findById(WebConfigDocument.ID)
+            .orElseGet { webConfigRepository.save(WebConfigDocument.default()) }
     }
 }

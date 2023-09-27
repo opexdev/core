@@ -5,7 +5,7 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.redis.core.index.Indexed
 
 @Document
-data class SystemConfigDocument(
+data class WebConfigDocument(
     var logoUrl: String,
     var title: String,
     var description: String?,
@@ -23,7 +23,7 @@ data class SystemConfigDocument(
     companion object {
         const val ID = "SystemConfig"
 
-        fun default() = SystemConfigDocument(
+        fun default() = WebConfigDocument(
             "",
             "Opex",
             "",
