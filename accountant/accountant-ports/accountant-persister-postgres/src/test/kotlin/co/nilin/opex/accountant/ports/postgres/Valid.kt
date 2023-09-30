@@ -110,7 +110,7 @@ object Valid {
         1,
         "event_1",
         TestCoreEvent::class.java.name,
-        "{\"leftSidePair\":\"BTC\",\"rightSidePair\":\"USDT\",\"pair\":{\"leftSideName\":\"BTC\",\"rightSideName\":\"USDT\"},\"eventDate\":{\"date\":{\"year\":2022,\"month\":5,\"day\":30},\"time\":{\"hour\":16,\"minute\":57,\"second\":44,\"nano\":809838600}}}",
+        "{\"leftSidePair\":\"BTC\",\"rightSidePair\":\"USDT\",\"pair\":{\"leftSideName\":\"BTC\",\"rightSideName\":\"USDT\"},\"eventDate\":[2023,9,30,15,56,11,210882700]}",
         currentTime
     )
 
