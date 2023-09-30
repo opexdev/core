@@ -1,5 +1,6 @@
 package co.nilin.opex.config.app.config
 
+import co.nilin.opex.config.app.utils.hasRole
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -13,7 +14,7 @@ import org.springframework.security.web.SecurityFilterChain
 @Profile("!test")
 @Configuration
 @EnableWebSecurity
-class SecurityConfig  {
+class SecurityConfig {
 
     @Value("\${app.auth.cert-url}")
     private lateinit var jwkUrl: String
@@ -22,7 +23,8 @@ class SecurityConfig  {
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http.csrf().disable()
             .authorizeHttpRequests()
-            .anyRequest().permitAll()
+            .requestMatchers("/web/**").hasRole("SCOPE_trust", "admin_system")
+            .requestMatchers("/user/**").hasAuthority("SCOPE_trust")
             .and()
             .oauth2ResourceServer()
             .jwt()
