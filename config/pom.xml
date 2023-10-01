@@ -1,91 +1,70 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>co.nilin.opex</groupId>
-    <artifactId>core</artifactId>
-    <packaging>pom</packaging>
-    <version>1.0.1-beta.7</version>
+    <parent>
+        <artifactId>core</artifactId>
+        <groupId>co.nilin.opex</groupId>
+        <version>1.0.1-beta.7</version>
+    </parent>
 
-    <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <java.version>11</java.version>
-        <kotlin.version>1.6.0</kotlin.version>
-        <spring.version>2.7.6</spring.version>
-        <spring-cloud.version>2021.0.5</spring-cloud.version>
-        <skip.unit.tests>true</skip.unit.tests>
-    </properties>
+    <artifactId>config</artifactId>
+    <name>config</name>
+    <packaging>pom</packaging>
+    <description>Config management root of Opex</description>
 
     <modules>
-        <module>accountant</module>
-        <module>api</module>
-        <module>bc-gateway</module>
-        <module>eventlog</module>
-        <module>market</module>
-        <module>matching-engine</module>
-        <module>matching-gateway</module>
-        <module>storage</module>
-        <module>user-management</module>
-        <module>utility</module>
-        <module>wallet</module>
-        <module>websocket</module>
-        <module>admin</module>
-        <module>referral</module>
-        <module>captcha</module>
-        <module>config</module>
+        <module>config-core</module>
+        <module>config-app</module>
+        <module>config-ports/config-persister-redis</module>
     </modules>
+
+    <properties>
+        <java.version>17</java.version>
+        <spring-cloud.version>2022.0.4</spring-cloud.version>
+        <kotlin.version>1.8.0</kotlin.version>
+        <spring.version>3.0.10</spring.version>
+    </properties>
 
     <dependencies>
         <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib-jdk8</artifactId>
-            <version>${kotlin.version}</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
         </dependency>
     </dependencies>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
+                <groupId>co.nilin.opex.config.ports.redis</groupId>
+                <artifactId>config-persister-redis</artifactId>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-test</artifactId>
-                <version>${spring.version}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.mockito</groupId>
-                        <artifactId>mockito-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.mockito</groupId>
-                        <artifactId>mockito-junit-jupiter</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.junit.vintage</groupId>
-                        <artifactId>junit-vintage-engine</artifactId>
-                    </exclusion>
-                </exclusions>
+                <groupId>co.nilin.opex.config.core</groupId>
+                <artifactId>config-core</artifactId>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.mockito.kotlin</groupId>
-                <artifactId>mockito-kotlin</artifactId>
-                <version>4.0.0</version>
-                <scope>test</scope>
+                <groupId>co.nilin.opex.utility.error</groupId>
+                <artifactId>error-handler</artifactId>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.mockk</groupId>
-                <artifactId>mockk</artifactId>
-                <version>1.12.4</version>
-                <scope>test</scope>
+                <groupId>co.nilin.opex.utility.log</groupId>
+                <artifactId>logging-handler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.utility.interceptors</groupId>
+                <artifactId>interceptors</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.utility.preferences</groupId>
+                <artifactId>preferences</artifactId>
+                <version>${project.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -57,6 +57,9 @@ services:
   admin:
     image: ghcr.io/opexdev/admin:$TAG
     build: admin/admin-app
+  config:
+    image: ghcr.io/opexdev/config:$TAG
+    build: config/config-app
   logstash:
     image: ghcr.io/opexdev/opex-logstash:$TAG
     build: docker-images/logstash
