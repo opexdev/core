@@ -33,8 +33,8 @@ app:
     cert-url: http://auth:8080/auth/realms/opex/protocol/openid-connect/certs
 logging:
   level:
-    root: INFO
+    root: DEBUG
     org.apache.kafka: ERROR
-    co.nilin: INFO
+    co.nilin: DEBUG
     reactor.netty.http.client: INFO
 swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
