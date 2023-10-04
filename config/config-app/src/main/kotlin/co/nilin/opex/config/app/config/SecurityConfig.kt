@@ -23,6 +23,7 @@ class SecurityConfig {
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http.csrf().disable()
             .authorizeHttpRequests()
+            .requestMatchers("/actuator/**").permitAll()
             .requestMatchers("/web/**").hasRole("SCOPE_trust", "admin_system")
             .requestMatchers("/user/**").hasAuthority("SCOPE_trust")
             .and()
