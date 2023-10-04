@@ -5,10 +5,13 @@ import co.nilin.opex.config.core.spi.UserConfigManager
 import co.nilin.opex.config.ports.redis.dao.UserWebConfigRepository
 import co.nilin.opex.config.ports.redis.document.UserWebConfigDocument
 import co.nilin.opex.config.ports.redis.utils.asDTO
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
 class UserConfigManagerImpl(private val userWebConfigRepository: UserWebConfigRepository) : UserConfigManager {
+
+    private val logger = LoggerFactory.getLogger(UserConfigManagerImpl::class.java)
 
     override fun saveNewUserWebConfig(
         uuid: String,
@@ -53,6 +56,9 @@ class UserConfigManagerImpl(private val userWebConfigRepository: UserWebConfigRe
 
     private fun getOrCreateConfig(uuid: String): UserWebConfigDocument {
         return userWebConfigRepository.findById(uuid)
-            .orElseGet { userWebConfigRepository.save(UserWebConfigDocument.default(uuid)) }
+            .orElseGet {
+                logger.info("Unable to find config for user $uuid. Creating new config object.")
+                userWebConfigRepository.save(UserWebConfigDocument.default(uuid))
+            }
     }
 }

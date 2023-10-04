@@ -5,10 +5,13 @@ import co.nilin.opex.config.core.spi.WebConfigManager
 import co.nilin.opex.config.ports.redis.dao.WebConfigRepository
 import co.nilin.opex.config.ports.redis.document.WebConfigDocument
 import co.nilin.opex.config.ports.redis.utils.asDTO
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
 class WebConfigManagerImpl(private val webConfigRepository: WebConfigRepository) : WebConfigManager {
+
+    private val logger = LoggerFactory.getLogger(WebConfigManagerImpl::class.java)
 
     override fun getConfig(): WebConfig {
         return getConfigOrCreate().asDTO()
@@ -32,6 +35,9 @@ class WebConfigManagerImpl(private val webConfigRepository: WebConfigRepository)
 
     private fun getConfigOrCreate(): WebConfigDocument {
         return webConfigRepository.findById(WebConfigDocument.ID)
-            .orElseGet { webConfigRepository.save(WebConfigDocument.default()) }
+            .orElseGet {
+                logger.info("Unable to find config for system. Creating new config object.")
+                webConfigRepository.save(WebConfigDocument.default())
+            }
     }
 }

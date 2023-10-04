@@ -29,6 +29,6 @@ app:
     cert-url: http://auth:8080/auth/realms/opex/protocol/openid-connect/certs
 logging:
   level:
-    root: DEBUG
-    co.nilin: DEBUG
+    root: INFO
+    co.nilin: INFO
     reactor.netty.http.client: INFO
