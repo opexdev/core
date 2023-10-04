@@ -4,10 +4,6 @@ spring:
     allow-bean-definition-overriding: true
   application:
     name: opex-config
-  kafka:
-    bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
-    consumer:
-      group-id: wallet
   jackson:
     serialization:
       write-dates-as-timestamps: false
@@ -34,7 +30,5 @@ app:
 logging:
   level:
     root: DEBUG
-    org.apache.kafka: ERROR
     co.nilin: DEBUG
     reactor.netty.http.client: INFO
-swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
