@@ -26,7 +26,7 @@ spring:
       scheme: http
       authentication: APPID
       app-id:
-        user-id: co.nilin.opex.util.vault.VaultUserIdMechanism
+        user-id: co.nilin.opex.admin.app.utils.VaultUserIdMechanism
       fail-fast: true
       kv:
         enabled: true
@@ -39,7 +39,7 @@ app:
   auth:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
     token-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/token
-    admin-url: lb://opex-auth//auth/realms/opex/user-management/admin
+    admin-url: lb://opex-auth/auth/realms/opex/user-management/admin
     keycloak:
       url: http://auth:8080/auth
       realm: opex
@@ -47,3 +47,5 @@ app:
       client-secret: ${keycloak_client_secret:secret}
   profile:
     url: lb://opex-profile/v2/admin/profile
+  scheduler:
+    url: http://scanner-scheduler:8080

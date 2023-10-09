@@ -1,6 +1,6 @@
 package co.nilin.opex.eventlog.ports.kafka.listener.consumer
 
-import co.nilin.opex.eventlog.ports.kafka.listener.inout.OrderSubmitRequest
+import co.nilin.opex.eventlog.ports.kafka.listener.inout.OrderRequestEvent
 import co.nilin.opex.eventlog.ports.kafka.listener.spi.OrderSubmitRequestListener
 import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import kotlinx.coroutines.runBlocking
@@ -10,9 +10,11 @@ import org.springframework.kafka.listener.MessageListener
 
 
 class OrderKafkaListener(private val executorCoroutineDispatcher: ExecutorCoroutineDispatcher) :
-    MessageListener<String, OrderSubmitRequest> {
-    val orderListeners = arrayListOf<OrderSubmitRequestListener>()
-    override fun onMessage(data: ConsumerRecord<String, OrderSubmitRequest>) {
+    MessageListener<String, OrderRequestEvent> {
+
+    private val orderListeners = arrayListOf<OrderSubmitRequestListener>()
+
+    override fun onMessage(data: ConsumerRecord<String, OrderRequestEvent>) {
         runBlocking {
             orderListeners.forEach { tl ->
                 withContext(executorCoroutineDispatcher) {

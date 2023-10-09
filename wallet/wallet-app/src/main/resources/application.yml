@@ -4,10 +4,10 @@ management:
     web:
       base-path: /actuator
       exposure:
-        include: ["health", "prometheus", "metrics"]
+        include: [ "health", "prometheus", "metrics" ]
   endpoint:
     health:
-      show-details: always
+      show-details: when_authorized
     metrics:
       enabled: true
     prometheus:
@@ -61,9 +61,14 @@ app:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
   system:
     uuid: 1
+  backup:
+    enabled: ${BACKUP_ENABLED:false}
+    drive:
+      folder: ${DRIVE_FOLDER_ID:-}
 logging:
   level:
+    root: INFO
     org.apache.kafka: ERROR
-    co.nilin: DEBUG
-    reactor.netty.http.client: DEBUG
+    co.nilin: INFO
+    reactor.netty.http.client: INFO
 swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token

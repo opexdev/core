@@ -1,7 +1,7 @@
 server.port: 8080
 logging:
   level:
-    co.nilin: DEBUG
+    co.nilin: INFO
     reactor.netty.http.client: DEBUG
 spring:
   application:
@@ -51,7 +51,7 @@ management:
         include: ["health", "prometheus", "metrics"]
   endpoint:
     health:
-      show-details: always
+      show-details: when_authorized
     metrics:
       enabled: true
     prometheus:
@@ -59,4 +59,5 @@ management:
 app:
   auth:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
-swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
+swagger:
+  authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token

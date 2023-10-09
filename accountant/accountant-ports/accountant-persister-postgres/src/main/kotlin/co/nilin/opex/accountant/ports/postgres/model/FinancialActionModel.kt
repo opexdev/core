@@ -1,5 +1,6 @@
 package co.nilin.opex.accountant.ports.postgres.model
 
+import co.nilin.opex.accountant.core.model.FinancialActionCategory
 import co.nilin.opex.accountant.core.model.FinancialActionStatus
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
@@ -20,6 +21,8 @@ data class FinancialActionModel(
     @Column("sender_wallet_type") val senderWalletType: String,
     val receiver: String,
     @Column("receiver_wallet_type") val receiverWalletType: String,
+    @Column("category_name") val category: FinancialActionCategory,
+    @Column("detail_json") val detail: String?,
     val agent: String,
     val ip: String,
     @Column("create_date") val createDate: LocalDateTime,

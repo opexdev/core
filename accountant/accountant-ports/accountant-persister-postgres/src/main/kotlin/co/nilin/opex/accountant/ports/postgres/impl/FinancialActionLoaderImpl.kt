@@ -3,6 +3,7 @@ package co.nilin.opex.accountant.ports.postgres.impl
 import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.FinancialActionStatus
 import co.nilin.opex.accountant.core.spi.FinancialActionLoader
+import co.nilin.opex.accountant.core.spi.JsonMapper
 import co.nilin.opex.accountant.ports.postgres.dao.FinancialActionRepository
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
@@ -15,11 +16,24 @@ import org.springframework.stereotype.Component
 import java.math.BigDecimal
 
 @Component
-class FinancialActionLoaderImpl(val financialActionRepository: FinancialActionRepository) : FinancialActionLoader {
+class FinancialActionLoaderImpl(
+    val financialActionRepository: FinancialActionRepository, val jsonMapper: JsonMapper
+) : FinancialActionLoader {
 
     override suspend fun loadUnprocessed(offset: Long, size: Long): List<FinancialAction> {
-        return financialActionRepository.findByStatus(
-            FinancialActionStatus.CREATED.name,
+        return financialActionRepository.findByStatusNot(
+            FinancialActionStatus.PROCESSED.name,
+            PageRequest.of(
+                offset.toInt(), size.toInt(
+
+                ), Sort.by(Sort.Direction.ASC, "createDate")
+            )
+        ).map { loadFinancialAction(it.id)!! }
+            .toList()
+    }
+
+    override suspend fun loadReadyToProcess(offset: Long, size: Long): List<FinancialAction> {
+        return financialActionRepository.findReadyToProcess(
             PageRequest.of(offset.toInt(), size.toInt(), Sort.by(Sort.Direction.ASC, "createDate"))
         ).map { loadFinancialAction(it.id)!! }
             .toList()
@@ -33,15 +47,15 @@ class FinancialActionLoaderImpl(val financialActionRepository: FinancialActionRe
     }
 
     override suspend fun countUnprocessed(userUuid: String, symbol: String, eventType: String): Long {
-        return financialActionRepository.findByUuidAndSymbolAndEventTypeAndStatus(
+        return financialActionRepository.countByUuidAndSymbolAndEventTypeAndStatusNot(
             userUuid,
             symbol,
             eventType,
-            FinancialActionStatus.CREATED
+            FinancialActionStatus.PROCESSED
         ).awaitFirstOrElse { BigDecimal.ZERO }.toLong()
     }
 
-    private suspend fun loadFinancialAction(id: Long?): FinancialAction? {
+    override suspend fun loadFinancialAction(id: Long?): FinancialAction? {
         if (id != null) {
             val fim = financialActionRepository.findById(id).awaitFirst()
             return FinancialAction(
@@ -55,6 +69,8 @@ class FinancialActionLoaderImpl(val financialActionRepository: FinancialActionRe
                 fim.receiver,
                 fim.receiverWalletType,
                 fim.createDate,
+                fim.category,
+                if (fim.detail != null) jsonMapper.toMap(jsonMapper.deserialize(fim.detail, Map::class.java)) else emptyMap(),
                 fim.status,
                 fim.uuid,
                 fim.id

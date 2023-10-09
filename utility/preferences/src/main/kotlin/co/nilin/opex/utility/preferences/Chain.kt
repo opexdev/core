@@ -4,5 +4,5 @@ data class Chain(
     var name: String = "",
     var addressType: String = "",
     val scanners: List<Scanner> = emptyList(),
-    var schedule: ChainSyncSchedule? = null
+    var schedules: List<ChainSyncSchedule> = emptyList()
 )

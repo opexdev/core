@@ -6,7 +6,7 @@
     <parent>
         <groupId>co.nilin.opex.accountant</groupId>
         <artifactId>accountant</artifactId>
-        <version>1.0.0-beta.3</version>
+        <version>1.0.1-beta.7</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -69,6 +69,12 @@
         <dependency>
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mock-server</groupId>
+            <artifactId>mockserver-netty</artifactId>
+            <version>5.15.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

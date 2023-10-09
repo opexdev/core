@@ -10,9 +10,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.body
 import org.springframework.web.reactive.function.client.bodyToMono
-import reactor.core.publisher.Mono
 import java.math.BigDecimal
 
 @Component
@@ -20,6 +18,13 @@ class WalletProxyImpl(
     @Value("\${app.wallet.url}") val walletBaseUrl: String,
     val webClient: WebClient
 ) : WalletProxy {
+
+    data class TransferBody(
+        val description: String?,
+        val transferRef: String?,
+        val transferCategory: String,
+        val additionalData: Map<String, Any>?
+    )
 
     override suspend fun transfer(
         symbol: String,
@@ -29,11 +34,14 @@ class WalletProxyImpl(
         receiverUuid: String,
         amount: BigDecimal,
         description: String?,
-        transferRef: String?
+        transferRef: String?,
+        transferCategory: String,
+        additionalData: Map<String, Any>?
     ) {
         webClient.post()
-            .uri("$walletBaseUrl/transfer/${amount}_$symbol/from/${senderUuid}_$senderWalletType/to/${receiverUuid}_$receiverWalletType")
+            .uri("$walletBaseUrl/v2/transfer/${amount}_$symbol/from/${senderUuid}_$senderWalletType/to/${receiverUuid}_$receiverWalletType")
             .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(TransferBody(description, transferRef, transferCategory, additionalData))
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<TransferResult>()
@@ -45,7 +53,7 @@ class WalletProxyImpl(
         webClient.post()
             .uri("$walletBaseUrl/transfer/batch")
             .contentType(MediaType.APPLICATION_JSON)
-            .body(Mono.just(transfers))
+            .bodyValue(transfers)
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<TransferResult>()

@@ -1,7 +1,7 @@
 server.port: 8080
 logging:
   level:
-    co.nilin: DEBUG
+    co.nilin: INFO
     reactor.netty.http.client: DEBUG
 spring:
   application:
@@ -49,10 +49,10 @@ management:
     web:
       base-path: /actuator
       exposure:
-        include: ["health", "prometheus", "metrics"]
+        include: [ "health", "prometheus", "metrics" ]
   endpoint:
     health:
-      show-details: always
+      show-details: when_authorized
     metrics:
       enabled: true
     prometheus:

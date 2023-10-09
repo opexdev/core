@@ -73,9 +73,14 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             val em: EntityManager = session!!.getProvider(JpaConnectionProvider::class.java).entityManager
             val result: List<WhiteListModel> = em.createQuery("from whitelist", WhiteListModel::class.java).resultList
             if (!result.stream()
-                            .map(WhiteListModel::identifier)
-                            .collect(Collectors.toList()).contains(request.email))
-                throw ErrorResponseException(OpexError.RegisterIsLimited.name, OpexError.RegisterIsLimited.message, Response.Status.BAD_REQUEST)
+                    .map(WhiteListModel::identifier)
+                    .collect(Collectors.toList()).contains(request.email)
+            )
+                throw ErrorResponseException(
+                    OpexError.RegisterIsLimited.name,
+                    OpexError.RegisterIsLimited.message,
+                    Response.Status.BAD_REQUEST
+                )
 
         }
 
@@ -101,7 +106,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             return ErrorHandler.badRequest("Invalid password confirmation")
 
         val error = session.getProvider(PasswordPolicyManagerProvider::class.java)
-                .validate(request.email, request.password)
+            .validate(request.email, request.password)
 
         if (error != null) {
             logger.error(error.message)
@@ -116,7 +121,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             isEmailVerified = false
 
             addRequiredAction(UserModel.RequiredAction.VERIFY_EMAIL)
-            val actions = requiredActionsStream.toList()
+            val actions = requiredActionsStream.collect(Collectors.toList())
             val token = ActionTokenHelper.generateRequiredActionsToken(session, opexRealm, this, actions)
             val url = "${session.context.getUri(UrlType.BACKEND).baseUri}/realms/opex/user-management/user/verify"
             val link = ActionTokenHelper.attachTokenToLink(url, token)
@@ -126,7 +131,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         }
 
         session.userCredentialManager()
-                .updateCredential(opexRealm, user, UserCredentialModel.password(request.password, false))
+            .updateCredential(opexRealm, user, UserCredentialModel.password(request.password, false))
 
         logger.info("User create response ${user.id}")
         sendUserEvent(user)
@@ -138,8 +143,8 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @Path("user/request-forgot")
     @Produces(MediaType.APPLICATION_JSON)
     fun forgotPassword(
-            @QueryParam("email") email: String?,
-            @QueryParam("captcha") captcha: String
+        @QueryParam("email") email: String?,
+        @QueryParam("captcha") captcha: String
     ): Response {
         val uri = UriBuilder.fromUri(forgotUrl)
 
@@ -152,11 +157,11 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         val user = session.users().getUserByEmail(email, opexRealm)
         if (user != null) {
             val token = ActionTokenHelper.generateRequiredActionsToken(
-                    session,
-                    opexRealm,
-                    user,
-                    listOf(UserModel.RequiredAction.UPDATE_PASSWORD.name),
-                    verifyUrl
+                session,
+                opexRealm,
+                user,
+                listOf(UserModel.RequiredAction.UPDATE_PASSWORD.name),
+                verifyUrl
             )
 
             val link = uri.queryParam("key", token).build().toString()
@@ -182,14 +187,14 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             return ErrorHandler.badRequest("Invalid password confirmation")
 
         val error = session.getProvider(PasswordPolicyManagerProvider::class.java)
-                .validate(user.email, body.password)
+            .validate(user.email, body.password)
 
         if (error != null) {
             logger.error(error.message)
             return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.InvalidPassword)
         }
         session.userCredentialManager()
-                .updateCredential(opexRealm, user, UserCredentialModel.password(body.password, false))
+            .updateCredential(opexRealm, user, UserCredentialModel.password(body.password, false))
 
         return Response.noContent().build()
     }
@@ -227,7 +232,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             return ErrorHandler.badRequest("User already verified")
 
         if (user != null) {
-            val actions = user.requiredActionsStream.toList()
+            val actions = user.requiredActionsStream.collect(Collectors.toList())
             val token = ActionTokenHelper.generateRequiredActionsToken(session, opexRealm, user, actions)
             val url = "${session.context.getUri(UrlType.BACKEND).baseUri}/realms/opex/user-management/user/verify"
             val link = ActionTokenHelper.attachTokenToLink(url, token)
@@ -258,7 +263,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             return ErrorHandler.badRequest("Invalid password confirmation")
 
         session.userCredentialManager()
-                .updateCredential(opexRealm, user, UserCredentialModel.password(body.newPassword, false))
+            .updateCredential(opexRealm, user, UserCredentialModel.password(body.newPassword, false))
 
         return Response.noContent().build()
     }
@@ -292,8 +297,8 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
 
         val otpCredential = OTPCredentialModel.createFromPolicy(opexRealm, body.secret)
         if (!CredentialValidation.validOTP(
-                        body.initialCode, otpCredential, opexRealm.otpPolicy.lookAheadWindow
-                )
+                body.initialCode, otpCredential, opexRealm.otpPolicy.lookAheadWindow
+            )
         ) return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.InvalidOTP)
 
         CredentialHelper.createOTPCredential(session, opexRealm, user, body.initialCode, otpCredential)
@@ -314,8 +319,8 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         if (!is2FAEnabled(user)) return response
 
         session.userCredentialManager().getStoredCredentialsByTypeStream(opexRealm, user, OTPCredentialModel.TYPE)
-                .toList().find { it.type == OTPCredentialModel.TYPE }
-                ?.let { session.userCredentialManager().removeStoredCredential(opexRealm, user, it.id) }
+            .collect(Collectors.toList()).find { it.type == OTPCredentialModel.TYPE }
+            ?.let { session.userCredentialManager().removeStoredCredential(opexRealm, user, it.id) }
 
         return response
     }
@@ -328,7 +333,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
         val user = session.users().getUserByUsername(username, opexRealm) ?: return Response.ok(
-                UserSecurityCheckResponse(false)
+            UserSecurityCheckResponse(false)
         ).build()
 
         return Response.ok(UserSecurityCheckResponse(is2FAEnabled(user))).build()
@@ -354,8 +359,10 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
         val currentSession = auth.token?.sessionState!!
-        session.sessions().getUserSessionsStream(opexRealm, auth.user).toList().filter { it.id != currentSession }
-                .forEach { AuthenticationManager.backchannelLogout(session, it, true) }
+        session.sessions().getUserSessionsStream(opexRealm, auth.user)
+            .collect(Collectors.toList())
+            .filter { it.id != currentSession }
+            .forEach { AuthenticationManager.backchannelLogout(session, it, true) }
 
         return Response.noContent().build()
     }
@@ -368,7 +375,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
         val userSession = session.sessions().getUserSession(opexRealm, sessionId)
-                ?: return ErrorHandler.notFound("Session not found")
+            ?: return ErrorHandler.notFound("Session not found")
 
         if (userSession.user.id != auth.getUserId()) return ErrorHandler.forbidden()
 
@@ -385,17 +392,17 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
 
         val user = session.users().getUserById(auth.getUserId(), opexRealm) ?: return ErrorHandler.userNotFound()
         val sessions = session.sessions().getUserSessionsStream(opexRealm, user)
-                .filter { tryOrElse(null) { it.notes["agent"] } != "opex-admin" }.map {
-                    UserSessionResponse(
-                            it.id,
-                            it.ipAddress,
-                            it.started.toLong(),
-                            it.lastSessionRefresh.toLong(),
-                            it.state?.name,
-                            tryOrElse(null) { it.notes["agent"] },
-                            auth.token?.sessionState == it.id
-                    )
-                }.toList()
+            .filter { tryOrElse(null) { it.notes["agent"] } != "opex-admin" }.map {
+                UserSessionResponse(
+                    it.id,
+                    it.ipAddress,
+                    it.started.toLong(),
+                    it.lastSessionRefresh.toLong(),
+                    it.state?.name,
+                    tryOrElse(null) { it.notes["agent"] },
+                    auth.token?.sessionState == it.id
+                )
+            }.collect(Collectors.toList())
 
         return Response.ok(sessions).build()
     }
@@ -408,7 +415,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
 
         try {
             val provider = session.getAllProviders(EmailTemplateProvider::class.java)
-                    .find { it is CustomEmailTemplateProvider }!!
+                .find { it is CustomEmailTemplateProvider }!!
             //val provider = session.getProvider(CustomEmailTemplateProvider::class.java)
             sendAction(provider.setRealm(opexRealm).setUser(user))
         } catch (e: Exception) {
@@ -459,8 +466,8 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     fun getWhitelist(): WhiteListAdaptor? {
         val em: EntityManager = session!!.getProvider(JpaConnectionProvider::class.java).entityManager
         return em.createQuery("select w from whitelist w", WhiteListModel::class.java)
-                ?.resultList?.stream()?.map(WhiteListModel::identifier)
-                ?.collect(Collectors.toList())?.let { WhiteListAdaptor(it) }
+            ?.resultList?.stream()?.map(WhiteListModel::identifier)
+            ?.collect(Collectors.toList())?.let { WhiteListAdaptor(it) }
     }
 
 

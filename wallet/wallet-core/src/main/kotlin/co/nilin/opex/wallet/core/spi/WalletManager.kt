@@ -1,9 +1,6 @@
 package co.nilin.opex.wallet.core.spi
 
-import co.nilin.opex.wallet.core.model.Amount
-import co.nilin.opex.wallet.core.model.Currency
-import co.nilin.opex.wallet.core.model.Wallet
-import co.nilin.opex.wallet.core.model.WalletOwner
+import co.nilin.opex.wallet.core.model.*
 import java.math.BigDecimal
 
 interface WalletManager {
@@ -32,4 +29,6 @@ interface WalletManager {
     ): Wallet
 
     suspend fun findWalletById(walletId: Long): Wallet?
+
+    suspend fun findAllWalletsBriefNotZero(ownerId: Long): List<BriefWallet>
 }

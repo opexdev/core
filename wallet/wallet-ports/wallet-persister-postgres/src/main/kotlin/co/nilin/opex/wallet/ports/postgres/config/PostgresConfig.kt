@@ -17,8 +17,6 @@ class PostgresConfig(
         val schema = schemaReader.readText().trim()
         schemaReader.close()
         val initDb = db.sql { schema }
-        initDb // initialize the database
-            .then()
-            .subscribe() // execute
+        initDb.then().block()
     }
 }

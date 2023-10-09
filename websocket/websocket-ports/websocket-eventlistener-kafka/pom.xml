@@ -6,7 +6,7 @@
     <parent>
         <groupId>co.nilin.opex.websocket</groupId>
         <artifactId>websocket</artifactId>
-        <version>1.0.0-beta.3</version>
+        <version>1.0.1-beta.7</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -22,14 +22,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>co.nilin.opex.matching.engine.core</groupId>
-            <artifactId>matching-engine-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>co.nilin.opex.accountant.core</groupId>
-            <artifactId>accountant-core</artifactId>
         </dependency>
         <dependency>
             <groupId>co.nilin.opex.websocket.core</groupId>

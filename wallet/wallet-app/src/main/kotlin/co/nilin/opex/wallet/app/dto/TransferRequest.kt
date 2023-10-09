@@ -10,5 +10,7 @@ data class TransferRequest(
     val receiverUuid: String,
     val receiverWalletType: String,
     val transferRef: String?,
-    val description: String?
+    val description: String?,
+    val transferCategory: String,
+    val additionalData: Map<String, Any>?
 )

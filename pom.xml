@@ -7,7 +7,7 @@
     <groupId>co.nilin.opex</groupId>
     <artifactId>core</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0-beta.3</version>
+    <version>1.0.1-beta.7</version>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -37,6 +37,7 @@
         <module>captcha</module>
         <module>profile</module>
         <module>kyc</module>
+        <module>config</module>
     </modules>
 
     <dependencies>

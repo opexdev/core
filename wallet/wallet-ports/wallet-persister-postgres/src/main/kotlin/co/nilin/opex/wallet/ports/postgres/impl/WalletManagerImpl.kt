@@ -1,15 +1,13 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.wallet.core.exc.ConcurrentBalanceChangException
-import co.nilin.opex.wallet.core.model.Amount
-import co.nilin.opex.wallet.core.model.Currency
-import co.nilin.opex.wallet.core.model.Wallet
-import co.nilin.opex.wallet.core.model.WalletOwner
+import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.ports.postgres.dao.*
 import co.nilin.opex.wallet.ports.postgres.dto.toPlainObject
 import co.nilin.opex.wallet.ports.postgres.model.WalletModel
 import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
 import org.slf4j.LoggerFactory
@@ -248,5 +246,20 @@ class WalletManagerImpl(
             walletModel.type,
             walletModel.version
         )
+    }
+
+    override suspend fun findAllWalletsBriefNotZero(ownerId: Long): List<BriefWallet> {
+        return walletRepository.findAllAmountNotZero(ownerId)
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+            .map {
+                BriefWallet(
+                    it.id,
+                    it.owner,
+                    it.balance,
+                    it.currency,
+                    it.type,
+                )
+            }
     }
 }

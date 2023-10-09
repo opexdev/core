@@ -1,13 +1,23 @@
 package co.nilin.opex.accountant.app.config
 
 import co.nilin.opex.accountant.app.listener.*
-import co.nilin.opex.accountant.core.api.*
+import co.nilin.opex.accountant.app.listener.AccountantEventListener
+import co.nilin.opex.accountant.app.listener.AccountantTempEventListener
+import co.nilin.opex.accountant.app.listener.AccountantTradeListener
+import co.nilin.opex.accountant.app.listener.OrderListener
+import co.nilin.opex.accountant.core.api.FeeCalculator
+import co.nilin.opex.accountant.core.api.FinancialActionJobManager
+import co.nilin.opex.accountant.core.api.OrderManager
+import co.nilin.opex.accountant.core.api.TradeManager
 import co.nilin.opex.accountant.core.service.FinancialActionJobManagerImpl
 import co.nilin.opex.accountant.core.service.OrderManagerImpl
 import co.nilin.opex.accountant.core.service.TradeManagerImpl
 import co.nilin.opex.accountant.core.spi.*
 import co.nilin.opex.accountant.ports.kafka.listener.consumer.*
-import co.nilin.opex.accountant.ports.postgres.impl.UserLevelLoaderImpl
+import co.nilin.opex.accountant.ports.kafka.listener.consumer.EventKafkaListener
+import co.nilin.opex.accountant.ports.kafka.listener.consumer.OrderKafkaListener
+import co.nilin.opex.accountant.ports.kafka.listener.consumer.TempEventKafkaListener
+import co.nilin.opex.accountant.ports.kafka.listener.consumer.TradeKafkaListener
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -16,6 +26,19 @@ import org.springframework.scheduling.annotation.EnableScheduling
 @Configuration
 @EnableScheduling
 class AppConfig {
+
+    @Bean
+    fun getFinancialActionJobManager(
+        financialActionLoader: FinancialActionLoader,
+        financialActionPersister: FinancialActionPersister,
+        walletProxy: WalletProxy
+    ): FinancialActionJobManager {
+        return FinancialActionJobManagerImpl(
+            financialActionLoader,
+            financialActionPersister,
+            walletProxy
+        )
+    }
 
     @Bean
     fun orderManager(
@@ -28,6 +51,7 @@ class AppConfig {
         tempEventRepublisher: TempEventRepublisher,
         richOrderPublisher: RichOrderPublisher,
         financialActionPublisher: FinancialActionPublisher,
+        jsonMapper: JsonMapper
     ): OrderManager {
         return OrderManagerImpl(
             pairConfigLoader,
@@ -37,7 +61,8 @@ class AppConfig {
             orderPersister,
             tempEventPersister,
             richOrderPublisher,
-            financialActionPublisher
+            financialActionPublisher,
+            jsonMapper
         )
     }
 
@@ -51,6 +76,7 @@ class AppConfig {
         richOrderPublisher: RichOrderPublisher,
         feeCalculator: FeeCalculator,
         financialActionPublisher: FinancialActionPublisher,
+        jsonMapper: JsonMapper
     ): TradeManager {
         return TradeManagerImpl(
             financeActionPersister,
@@ -60,7 +86,8 @@ class AppConfig {
             richTradePublisher,
             richOrderPublisher,
             feeCalculator,
-            financialActionPublisher
+            financialActionPublisher,
+            jsonMapper
         )
     }
 

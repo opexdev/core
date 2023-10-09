@@ -23,16 +23,16 @@ class SecurityConfig(private val webClient: WebClient) {
     @Bean
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
         http.csrf().disable()
-                .authorizeExchange()
-                .pathMatchers("/auth/**").hasRole("SCOPE_trust", "admin_finance")
-                .pathMatchers("/system/**").hasRole("SCOPE_trust", "admin_system")
-                .pathMatchers("/admin/**").hasRole("SCOPE_trust", "admin_system")
-                .pathMatchers("/actuator/health").permitAll()
-                .anyExchange().authenticated()
-                .and()
-                .oauth2ResourceServer()
-                .jwt()
-
+            .authorizeExchange()
+            .pathMatchers("/auth/**").hasRole("SCOPE_trust", "admin_finance")
+            .pathMatchers("/system/**").hasRole("SCOPE_trust", "admin_system")
+            .pathMatchers("/admin/**").hasRole("SCOPE_trust", "admin_system")
+            .pathMatchers("/blockchain/**").hasRole("SCOPE_trust", "admin_system")
+            .pathMatchers("/actuator/health").permitAll()
+            .anyExchange().authenticated()
+            .and()
+            .oauth2ResourceServer()
+            .jwt()
         return http.build()
     }
 

@@ -21,16 +21,16 @@ interface FinancialActionRepository : ReactiveCrudRepository<FinancialActionMode
         paging: Pageable
     ): Flow<FinancialActionModel>
 
-    @Query("select count(1) from fi_actions fi where fi.sender = :uuid and fi.symbol = :symbol and fi.event_type = :eventType and fi.status = :status")
-    fun findByUuidAndSymbolAndEventTypeAndStatus(
+    @Query("select count(1) from fi_actions fi where fi.sender = :uuid and fi.symbol = :symbol and fi.event_type = :eventType and fi.status != :status")
+    fun countByUuidAndSymbolAndEventTypeAndStatusNot(
         @Param("uuid") uuid: String,
         @Param("symbol") symbol: String,
         @Param("eventType") eventType: String,
         @Param("status") financialActionStatus: FinancialActionStatus
     ): Mono<BigDecimal>
 
-    @Query("select * from fi_actions fi where status = :status")
-    fun findByStatus(@Param("status") status: String, paging: Pageable): Flow<FinancialActionModel>
+    @Query("select * from fi_actions fi where status != :status")
+    fun findByStatusNot(@Param("status") status: String, paging: Pageable): Flow<FinancialActionModel>
 
     @Query("update fi_actions set status = :status where id = :id")
     fun updateStatus(@Param("id") id: Long, @Param("status") status: FinancialActionStatus): Mono<Int>
@@ -40,4 +40,9 @@ interface FinancialActionRepository : ReactiveCrudRepository<FinancialActionMode
 
     @Query("update fi_actions set status = :status where id in (:ids)")
     fun updateBatchStatus(ids: List<Long>, status: FinancialActionStatus): Mono<Int>
+    @Query("select * from fi_actions fi where status = 'CREATED' " +
+            "and ( parent_id is null " +
+            "      or 'ERROR' != (select pfi.status from fi_actions pfi where pfi.id = fi.parent_id)" +
+            ")")
+    fun findReadyToProcess(of: Pageable): Flow<FinancialActionModel>
 }

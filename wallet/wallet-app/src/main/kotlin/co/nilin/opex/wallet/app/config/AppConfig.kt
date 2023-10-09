@@ -33,13 +33,4 @@ class AppConfig {
         financialActionKafkaListener.addEventListener(financialActionEventListener)
     }
 
-    @Bean
-    @Primary
-    fun objectMapper(builder: Jackson2ObjectMapperBuilder): ObjectMapper {
-        return builder.build<ObjectMapper>().apply {
-            configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-            registerKotlinModule()
-        }
-    }
-
 }

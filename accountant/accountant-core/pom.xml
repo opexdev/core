@@ -6,7 +6,7 @@
     <parent>
         <groupId>co.nilin.opex.accountant</groupId>
         <artifactId>accountant</artifactId>
-        <version>1.0.0-beta.3</version>
+        <version>1.0.1-beta.7</version>
     </parent>
 
     <groupId>co.nilin.opex.accountant.core</groupId>
@@ -56,6 +56,15 @@
         <dependency>
             <groupId>io.mockk</groupId>
             <artifactId>mockk</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>2.15.2</version>
         </dependency>
     </dependencies>
 </project>
