@@ -5,6 +5,7 @@ import co.nilin.opex.auth.gateway.data.*
 import co.nilin.opex.auth.gateway.model.ActionTokenResult
 import co.nilin.opex.auth.gateway.model.AuthEvent
 import co.nilin.opex.auth.gateway.model.UserCreatedEvent
+import co.nilin.opex.auth.gateway.model.WhiteListModel
 import co.nilin.opex.auth.gateway.providers.CustomEmailTemplateProvider
 import co.nilin.opex.auth.gateway.utils.*
 import co.nilin.opex.utility.error.data.OpexError
@@ -14,7 +15,7 @@ import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.utils.URIBuilder
 import org.apache.http.impl.client.HttpClientBuilder
 import org.keycloak.authentication.actiontoken.execactions.ExecuteActionsActionToken
-import org.keycloak.common.util.Time
+import org.keycloak.connections.jpa.JpaConnectionProvider
 import org.keycloak.email.EmailTemplateProvider
 import org.keycloak.models.Constants
 import org.keycloak.models.KeycloakSession
@@ -23,27 +24,30 @@ import org.keycloak.models.UserModel
 import org.keycloak.models.credential.OTPCredentialModel
 import org.keycloak.models.utils.CredentialValidation
 import org.keycloak.models.utils.HmacOTP
+import org.keycloak.models.utils.KeycloakModelUtils
 import org.keycloak.policy.PasswordPolicyManagerProvider
+import org.keycloak.services.ErrorResponseException
 import org.keycloak.services.managers.AuthenticationManager
 import org.keycloak.services.resource.RealmResourceProvider
 import org.keycloak.urls.UrlType
 import org.keycloak.utils.CredentialHelper
 import org.keycloak.utils.TotpUtils
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.kafka.core.KafkaTemplate
 import java.util.concurrent.TimeUnit
 import java.util.stream.Collectors
+import javax.persistence.EntityManager
 import javax.ws.rs.*
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
 import javax.ws.rs.core.UriBuilder
-import kotlin.streams.toList
 
 class UserManagementResource(private val session: KeycloakSession) : RealmResourceProvider {
 
     private val logger = LoggerFactory.getLogger(UserManagementResource::class.java)
     private val opexRealm = session.realms().getRealm("opex")
-    private val whitelist by lazy { ApplicationContextHolder.getCurrentContext()!!.getBean("whitelist") as Whitelist }
+    val whitelist by lazy { ApplicationContextHolder.getCurrentContext()!!.getBean("whitelist") as Whitelist }
     private val verifyUrl by lazy {
         ApplicationContextHolder.getCurrentContext()!!.environment.resolvePlaceholders("\${verify-redirect-url}")
     }
@@ -54,14 +58,34 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         ApplicationContextHolder.getCurrentContext()!!.getBean("authKafkaTemplate") as KafkaTemplate<String, AuthEvent>
     }
 
+    @Value("\${app.whitelist.register.enable}")
+    private var registerWhitelistIsEnable: Boolean? = true
+
+
     @POST
     @Path("user")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     fun registerUser(request: RegisterUserRequest): Response {
+
+        if (registerWhitelistIsEnable == true) {
+            logger.info("register whitelist is enable, going to filter register requests ........")
+            val em: EntityManager = session!!.getProvider(JpaConnectionProvider::class.java).entityManager
+            val result: List<WhiteListModel> = em.createQuery("from whitelist", WhiteListModel::class.java).resultList
+            if (!result.stream()
+                    .map(WhiteListModel::identifier)
+                    .collect(Collectors.toList()).contains(request.email)
+            )
+                throw ErrorResponseException(
+                    OpexError.RegisterIsLimited.name,
+                    OpexError.RegisterIsLimited.message,
+                    Response.Status.BAD_REQUEST
+                )
+
+        }
+
         val auth = ResourceAuthenticator.bearerAuth(session)
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
-
         if (whitelist.isEnabled && request.email != null && !whitelist.emails.contains(request.email!!.toLowerCase())) {
             return ErrorHandler.forbidden()
         }
@@ -208,7 +232,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             return ErrorHandler.badRequest("User already verified")
 
         if (user != null) {
-            val actions = user.requiredActionsStream.toList()
+            val actions = user.requiredActionsStream.collect(Collectors.toList())
             val token = ActionTokenHelper.generateRequiredActionsToken(session, opexRealm, user, actions)
             val url = "${session.context.getUri(UrlType.BACKEND).baseUri}/realms/opex/user-management/user/verify"
             val link = ActionTokenHelper.attachTokenToLink(url, token)
@@ -295,7 +319,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         if (!is2FAEnabled(user)) return response
 
         session.userCredentialManager().getStoredCredentialsByTypeStream(opexRealm, user, OTPCredentialModel.TYPE)
-            .toList().find { it.type == OTPCredentialModel.TYPE }
+            .collect(Collectors.toList()).find { it.type == OTPCredentialModel.TYPE }
             ?.let { session.userCredentialManager().removeStoredCredential(opexRealm, user, it.id) }
 
         return response
@@ -335,7 +359,9 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
         val currentSession = auth.token?.sessionState!!
-        session.sessions().getUserSessionsStream(opexRealm, auth.user).toList().filter { it.id != currentSession }
+        session.sessions().getUserSessionsStream(opexRealm, auth.user)
+            .collect(Collectors.toList())
+            .filter { it.id != currentSession }
             .forEach { AuthenticationManager.backchannelLogout(session, it, true) }
 
         return Response.noContent().build()
@@ -376,7 +402,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
                     tryOrElse(null) { it.notes["agent"] },
                     auth.token?.sessionState == it.id
                 )
-            }.toList()
+            }.collect(Collectors.toList())
 
         return Response.ok(sessions).build()
     }
@@ -416,6 +442,45 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             check(response.statusLine.statusCode / 500 != 5) { "Could not connect to Opex-Captcha service." }
             require(response.statusLine.statusCode / 100 == 2) { "Invalid captcha" }
         }
+    }
+
+    @POST
+    @Path("admin/whitelist")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    fun addWhitelist(request: WhiteListAdaptor): WhiteListAdaptor? {
+        val em: EntityManager = session!!.getProvider(JpaConnectionProvider::class.java).entityManager
+        for (d in request?.data!!) {
+            val data = WhiteListModel()
+            data.identifier = d
+            data.id = KeycloakModelUtils.generateId()
+            em.persist(data)
+        }
+        return getWhitelist()
+    }
+
+
+    @GET
+    @Path("admin/whitelist")
+    @Produces(MediaType.APPLICATION_JSON)
+    fun getWhitelist(): WhiteListAdaptor? {
+        val em: EntityManager = session!!.getProvider(JpaConnectionProvider::class.java).entityManager
+        return em.createQuery("select w from whitelist w", WhiteListModel::class.java)
+            ?.resultList?.stream()?.map(WhiteListModel::identifier)
+            ?.collect(Collectors.toList())?.let { WhiteListAdaptor(it) }
+    }
+
+
+    @POST
+    @Path("admin/delete/whitelist")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    fun deleteWhitelist(request: WhiteListAdaptor?): WhiteListAdaptor? {
+        val em: EntityManager = session!!.getProvider(JpaConnectionProvider::class.java).entityManager
+        var query = em.createQuery("delete  from whitelist w where w.identifier in :removedWhitelist")
+        query.setParameter("removedWhitelist", request?.data)
+        query.executeUpdate()
+        return getWhitelist()
     }
 
     override fun close() {

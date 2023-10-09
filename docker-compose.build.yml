@@ -51,6 +51,12 @@ services:
   referral:
     image: ghcr.io/opexdev/referral:$TAG
     build: referral/referral-app
+  profile:
+    image: ghcr.io/opexdev/profile:$TAG
+    build: profile/profile-app
+  kyc:
+    image: ghcr.io/opexdev/kyc:$TAG
+    build: kyc/kyc-app
   captcha:
     image: ghcr.io/opexdev/captcha:$TAG
     build: captcha/captcha-app

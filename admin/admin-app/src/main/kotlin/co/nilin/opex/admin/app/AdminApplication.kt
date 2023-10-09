@@ -11,5 +11,5 @@ import org.springframework.context.annotation.ComponentScan
 class AdminApplication
 
 fun main(args: Array<String>) {
-	runApplication<AdminApplication>(*args)
+    runApplication<AdminApplication>(*args)
 }

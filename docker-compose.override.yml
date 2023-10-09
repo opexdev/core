@@ -65,3 +65,7 @@ services:
     build: docker-images/filebeat
   prometheus:
     build: docker-images/prometheus
+  profile:
+    build: profile/profile-app
+  kyc:
+    build: kyc/kyc-app

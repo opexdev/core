@@ -5,6 +5,7 @@ import co.nilin.opex.storage.app.service.StringToHashService
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -24,8 +25,10 @@ class FileController(
     @Value("\${app.root-dir}") private val rootDir: String
 ) {
     data class FileUploadResponse(val path: String)
+    private val logger = LoggerFactory.getLogger(FileController::class.java)
 
-    private suspend fun upload(uid: String, file: FilePart?, nameWithoutExtension: String? = null): FileUploadResponse {
+
+   private  suspend fun upload(uid: String, file: FilePart?, nameWithoutExtension: String? = null): FileUploadResponse {
         if (file == null) throw OpexException(OpexError.BadRequest, "File Not Provided")
         val filename = file.filename()
         val ext = filename.replace(Regex(".+(?<=\\.)"), "")
@@ -58,6 +61,14 @@ class FileController(
         if (securityContext.authentication.name != uid) throw OpexException(OpexError.UnAuthorized)
         return upload(uid, file.awaitFirstOrNull(), stringToHashService.digest(UUID.randomUUID().toString()))
     }
+    @PostMapping("/internal/{uid}")
+    suspend fun internalFileUploadPost(
+            @PathVariable("uid") uid: String,
+            @RequestPart("file") file: Mono<FilePart>,
+    ): FileUploadResponse {
+        //todo set authentication filter
+        return upload(uid, file.awaitFirstOrNull(), stringToHashService.digest(UUID.randomUUID().toString()))
+    }
 
     @GetMapping("/{uid}/{filename}")
     @ResponseBody
@@ -69,6 +80,8 @@ class FileController(
         if (securityContext.authentication.name != uid) throw OpexException(OpexError.UnAuthorized)
         return download(uid, filename)
     }
+
+
 
     @GetMapping("/admin/download/{uid}/{filename}")
     @ResponseBody
