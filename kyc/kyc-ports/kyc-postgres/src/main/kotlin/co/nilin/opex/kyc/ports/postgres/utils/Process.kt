@@ -3,12 +3,13 @@ package co.nilin.opex.kyc.ports.postgres.utils
 import co.nilin.opex.kyc.core.data.*
 import co.nilin.opex.kyc.ports.postgres.dao.KycProcessRepository
 import co.nilin.opex.kyc.ports.postgres.dao.UserStatusRepository
+import co.nilin.opex.kyc.ports.postgres.model.entity.UserStatusModel
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 
 
-suspend fun KycRequest.verifyRequest(kycProcessRepository: KycProcessRepository, userStatusRepository: UserStatusRepository): Long? =
+suspend fun KycRequest.verifyRequest(kycProcessRepository: KycProcessRepository, userStatusRepository: UserStatusRepository): UserStatusModel? =
 
         when (this.step) {
             KycStep.Register -> {
@@ -26,7 +27,7 @@ suspend fun KycRequest.verifyRequest(kycProcessRepository: KycProcessRepository,
                     if (previousValidSteps != null && it.kycLevel !in previousValidSteps) {
                         throw OpexException(OpexError.InvalidKycRequest)
                     }
-                    it.id
+                    it
 
                 } ?: run { throw OpexException(OpexError.UserNotFound) }
             }
@@ -43,7 +44,7 @@ suspend fun KycRequest.verifyRequest(kycProcessRepository: KycProcessRepository,
                         if ((previousValidSteps != null) && it.kycLevel !in previousValidSteps) {
                             throw OpexException(OpexError.InvalidKycRequest)
                         }
-                        it.id
+                        it
                     } ?: throw OpexException(OpexError.UserNotFound)
 
                 } ?: run { throw OpexException(OpexError.BadReviewRequest) }
@@ -52,7 +53,7 @@ suspend fun KycRequest.verifyRequest(kycProcessRepository: KycProcessRepository,
             KycStep.ManualUpdate -> {
                 if ((this as ManualUpdateRequest).level !in arrayListOf(KycLevelDetail.ManualUpdateLevel1, KycLevelDetail.ManualUpdateLevel2))
                     throw OpexException(OpexError.InvalidKycUpdateRequest)
-                userStatusRepository.findByUserId(this.userId)?.awaitFirstOrNull()?.id
+                userStatusRepository.findByUserId(this.userId)?.awaitFirstOrNull()
             }
 
             else -> {

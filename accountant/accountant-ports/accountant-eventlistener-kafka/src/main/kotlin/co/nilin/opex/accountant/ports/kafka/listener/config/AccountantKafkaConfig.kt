@@ -1,9 +1,7 @@
 package co.nilin.opex.accountant.ports.kafka.listener.config
 
-import co.nilin.opex.accountant.ports.kafka.listener.consumer.EventKafkaListener
-import co.nilin.opex.accountant.ports.kafka.listener.consumer.OrderKafkaListener
-import co.nilin.opex.accountant.ports.kafka.listener.consumer.TempEventKafkaListener
-import co.nilin.opex.accountant.ports.kafka.listener.consumer.TradeKafkaListener
+import co.nilin.opex.accountant.core.inout.KycLevelUpdatedEvent
+import co.nilin.opex.accountant.ports.kafka.listener.consumer.*
 import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.TopicPartition
@@ -14,9 +12,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.kafka.core.ConsumerFactory
-import org.springframework.kafka.core.DefaultKafkaConsumerFactory
-import org.springframework.kafka.core.KafkaTemplate
+import org.springframework.kafka.core.*
 import org.springframework.kafka.listener.*
 import org.springframework.kafka.support.serializer.JsonDeserializer
 import org.springframework.util.backoff.FixedBackOff
@@ -39,12 +35,17 @@ class AccountantKafkaConfig {
             ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
             ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JsonDeserializer::class.java,
             JsonDeserializer.TRUSTED_PACKAGES to "co.nilin.opex.*",
-            JsonDeserializer.TYPE_MAPPINGS to "order_request_event:co.nilin.opex.accountant.ports.kafka.listener.inout.OrderRequestEvent,order_request_submit:co.nilin.opex.accountant.ports.kafka.listener.inout.OrderSubmitRequestEvent,order_request_cancel:co.nilin.opex.accountant.ports.kafka.listener.inout.OrderCancelRequestEvent"
+            JsonDeserializer.TYPE_MAPPINGS to "order_request_event:co.nilin.opex.accountant.ports.kafka.listener.inout.OrderRequestEvent,order_request_submit:co.nilin.opex.accountant.ports.kafka.listener.inout.OrderSubmitRequestEvent,order_request_cancel:co.nilin.opex.accountant.ports.kafka.listener.inout.OrderCancelRequestEvent,kyc_level_updated_event:co.nilin.opex.accountant.core.inout.KycLevelUpdatedEvent"
         )
     }
 
     @Bean("accountantConsumerFactory")
     fun consumerFactory(@Qualifier("consumerConfig") consumerConfigs: Map<String, Any?>): ConsumerFactory<String, CoreEvent> {
+        return DefaultKafkaConsumerFactory(consumerConfigs)
+    }
+
+    @Bean("KycConsumerFactory")
+    fun kycConsumerFactory(@Qualifier("consumerConfig") consumerConfigs: Map<String, Any?>): ConsumerFactory<String, KycLevelUpdatedEvent> {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
 
@@ -107,6 +108,31 @@ class AccountantKafkaConfig {
         container.commonErrorHandler = createConsumerErrorHandler(template, "tempevents.DLT")
         container.start()
     }
+
+    @Bean("kycLevelUpdatedProducerFactory")
+    fun producerFactory(@Qualifier("consumerConfig") producerConfigs: Map<String, Any>): ProducerFactory<String, KycLevelUpdatedEvent> {
+        return DefaultKafkaProducerFactory(producerConfigs)
+    }
+
+    @Bean("kycLevelUpdatedKafkaTemplate")
+    fun kafkaTemplate(@Qualifier("kycLevelUpdatedProducerFactory") producerFactory: ProducerFactory<String, KycLevelUpdatedEvent>): KafkaTemplate<String, KycLevelUpdatedEvent> {
+        return KafkaTemplate(producerFactory)
+    }
+    @Autowired
+    @ConditionalOnBean(KycLevelUpdatedKafkaListener::class)
+    fun configureKycLevelUpdatedListener(
+            listener: KycLevelUpdatedKafkaListener,
+            @Qualifier("kycLevelUpdatedKafkaTemplate") template: KafkaTemplate<String, KycLevelUpdatedEvent>,
+            @Qualifier("KycConsumerFactory") consumerFactory: ConsumerFactory<String, KycLevelUpdatedEvent>
+    ) {
+        val containerProps = ContainerProperties(Pattern.compile("kyc_level_updated"))
+        containerProps.messageListener = listener
+        val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
+        container.setBeanName("KycLevelUpdatedKafkaListenerContainer")
+        container.commonErrorHandler = createConsumerErrorHandler(template, "kyc_level_updated.DLT")
+        container.start()
+    }
+
 
     private fun createConsumerErrorHandler(kafkaTemplate: KafkaTemplate<*, *>, dltTopic: String): CommonErrorHandler {
         val recoverer = DeadLetterPublishingRecoverer(kafkaTemplate) { cr, _ ->

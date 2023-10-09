@@ -63,7 +63,7 @@ class KycManagementImp(private val kycProcessRepository: KycProcessRepository,
         return KycResponse(processId = kycRequest.stepId!!)
     }
 
-    suspend fun uploadData(kycRequest: UploadDataRequest, previousUserStatus: Long?): KycResponse {
+    suspend fun uploadData(kycRequest: UploadDataRequest, previousUserStatus: UserStatusModel?): KycResponse {
 
 
         var kycProcessModel = kycRequest.convert(KycProcessModel::class.java)
@@ -75,12 +75,12 @@ class KycManagementImp(private val kycProcessRepository: KycProcessRepository,
                     lastUpdateDate = LocalDateTime.now()
                     userId = kycRequest.userId
                     referenceId = kycRequest.stepId
-                }.convert(UserStatusModel::class.java).apply { previousUserStatus?.let { id = previousUserStatus } })
+                }.convert(UserStatusModel::class.java).apply { previousUserStatus?.let { id = it.id } })
         ).awaitFirstOrNull()
         return KycResponse(processId = kycRequest.stepId!!)
     }
 
-    suspend fun reviewManually(kycRequest: ManualReviewRequest, previousUserStatus: Long?): KycResponse {
+    suspend fun reviewManually(kycRequest: ManualReviewRequest, previousUserStatus: UserStatusModel?): KycResponse {
         var kycProcessModel = kycRequest.convert(KycProcessModel::class.java)
         kycProcessModel.status = kycRequest.status
         kycProcessRepository.save(kycProcessModel).zipWith(
@@ -89,14 +89,13 @@ class KycManagementImp(private val kycProcessRepository: KycProcessRepository,
                     lastUpdateDate = LocalDateTime.now()
                     userId = kycRequest.userId
                     referenceId = kycRequest.stepId
-                }.convert(UserStatusModel::class.java).apply { previousUserStatus?.let { id = previousUserStatus } })
+                }.convert(UserStatusModel::class.java).apply { previousUserStatus?.let { id = it.id } })
         ).awaitFirstOrNull()
         return KycResponse(processId = kycRequest.stepId!!)
     }
 
-    //todo
-    // set "old level" and "new level" in description
-    suspend fun updateManually(kycRequest: ManualUpdateRequest, previousUserStatus: Long?): KycResponse {
+
+    suspend fun updateManually(kycRequest: ManualUpdateRequest, previousUserStatus: UserStatusModel?): KycResponse {
         var kycProcessModel = kycRequest.convert(KycProcessModel::class.java)
         kycProcessModel.status = KycStatus.Successful
         kycProcessRepository.save(kycProcessModel).zipWith(
@@ -105,8 +104,9 @@ class KycManagementImp(private val kycProcessRepository: KycProcessRepository,
                     lastUpdateDate = LocalDateTime.now()
                     userId = kycRequest.userId
                     referenceId = kycRequest.stepId
+                    description="System request to update : ${previousUserStatus?.kycLevel?.kycLevel}_to_${kycRequest.level.kycLevel}"
                     detail = kycRequest.step?.name
-                }.convert(UserStatusModel::class.java).apply { previousUserStatus?.let { id = previousUserStatus } })
+                }.convert(UserStatusModel::class.java).apply { previousUserStatus?.let { id = it.id } })
         ).awaitFirstOrNull()
         return KycResponse(processId = kycRequest.stepId!!)
     }
@@ -128,7 +128,7 @@ class KycManagementImp(private val kycProcessRepository: KycProcessRepository,
     }
 
     override suspend fun userLevelHistory(userId: String): Flow<UserLevelHistory>? {
-        return userStatusHistoryRepository.findAllByUserId(userId)?.map { d -> d.convert(UserLevelHistory::class.java) }
+        return userStatusHistoryRepository.findAllByUserIdOrderByChangeRequestDateDesc(userId)?.map { d -> d.convert(UserLevelHistory::class.java) }
     }
 
 

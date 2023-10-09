@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface UserStatusHistoryRepository : ReactiveCrudRepository<UserStatusHistory, Long> {
-    fun findAllByUserId(userId: String): Flow<UserStatusHistory>?
+    fun findAllByUserIdOrderByChangeRequestDateDesc(userId: String): Flow<UserStatusHistory>?
 }
