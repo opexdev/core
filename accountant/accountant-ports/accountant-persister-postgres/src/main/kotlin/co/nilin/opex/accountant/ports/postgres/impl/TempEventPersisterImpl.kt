@@ -5,7 +5,8 @@ import co.nilin.opex.accountant.core.spi.TempEventPersister
 import co.nilin.opex.accountant.ports.postgres.dao.TempEventRepository
 import co.nilin.opex.accountant.ports.postgres.model.TempEventModel
 import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
-import com.google.gson.Gson
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirstOrNull
@@ -16,7 +17,10 @@ import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 
 @Component
-class TempEventPersisterImpl(private val tempEventRepository: TempEventRepository) : TempEventPersister {
+class TempEventPersisterImpl(
+    private val tempEventRepository: TempEventRepository,
+    private val objectMapper: ObjectMapper
+) : TempEventPersister {
 
     override suspend fun saveTempEvent(ouid: String, event: CoreEvent) {
         tempEventRepository.save(
@@ -24,7 +28,7 @@ class TempEventPersisterImpl(private val tempEventRepository: TempEventRepositor
                 null,
                 ouid,
                 event.javaClass.name,
-                Gson().toJson(event),
+                objectMapper.writeValueAsString(event),
                 LocalDateTime.now()
             )
         ).awaitSingleOrNull()
@@ -33,7 +37,7 @@ class TempEventPersisterImpl(private val tempEventRepository: TempEventRepositor
     override suspend fun loadTempEvents(ouid: String): List<CoreEvent> {
         return tempEventRepository
             .findByOuid(ouid)
-            .map { Gson().fromJson(it.eventBody, Class.forName(it.eventType)) as CoreEvent }
+            .map { objectMapper.readValue<CoreEvent>(it.eventBody) }
             .toList()
     }
 
@@ -52,7 +56,7 @@ class TempEventPersisterImpl(private val tempEventRepository: TempEventRepositor
                 TempEvent(
                     it.id!!,
                     it.ouid,
-                    Gson().fromJson(it.eventBody, Class.forName(it.eventType)) as CoreEvent,
+                    objectMapper.readValue(it.eventBody),
                     it.eventDate
                 )
             }

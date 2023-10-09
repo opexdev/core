@@ -37,6 +37,7 @@
         <module>captcha</module>
         <module>profile</module>
         <module>kyc</module>
+        <module>config</module>
     </modules>
 
     <dependencies>

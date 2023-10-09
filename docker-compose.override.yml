@@ -55,6 +55,10 @@ services:
     build: captcha/captcha-app
   admin:
     build: admin/admin-app
+  config:
+    build: config/config-app
+    volumes:
+      - "./preferences-dev.yml:/preferences.yml"
   logstash:
     build: docker-images/logstash
   filebeat:
