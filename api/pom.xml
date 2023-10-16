@@ -21,6 +21,7 @@
         <module>api-ports/api-persister-postgres</module>
         <module>api-ports/api-binance-rest</module>
         <module>api-ports/api-proxy-rest</module>
+        <module>api-ports/api-opex-rest</module>
     </modules>
 
     <dependencies>

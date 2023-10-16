@@ -1,6 +1,8 @@
 package co.nilin.opex.auth.gateway.config
 
+import co.nilin.opex.auth.core.spi.KycLevelUpdatedEventListener
 import co.nilin.opex.auth.gateway.model.AuthEvent
+import co.nilin.opex.user.managment.ports.kafka.consumer.KycLevelUpdatedKafkaListener
 import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringSerializer
@@ -26,11 +28,11 @@ class KafkaConfig {
     @Bean("authProducerConfigs")
     fun producerConfigs(): Map<String, Any> {
         return mapOf(
-            ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
-            ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
-            ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JsonSerializer::class.java,
-            ProducerConfig.ACKS_CONFIG to "all",
-            JsonSerializer.TYPE_MAPPINGS to "user_created_event:co.nilin.opex.auth.gateway.model.UserCreatedEvent"
+                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
+                ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
+                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JsonSerializer::class.java,
+                ProducerConfig.ACKS_CONFIG to "all",
+                JsonSerializer.TYPE_MAPPINGS to "user_created_event:co.nilin.opex.auth.gateway.model.UserCreatedEvent"
         )
     }
 
@@ -48,9 +50,19 @@ class KafkaConfig {
     fun createUserCreatedTopics(applicationContext: GenericApplicationContext) {
         applicationContext.registerBean("topic_auth_user_created", NewTopic::class.java, Supplier {
             TopicBuilder.name("auth_user_created")
-                .partitions(1)
-                .replicas(1)
-                .build()
+                    .partitions(1)
+                    .replicas(1)
+                    .build()
         })
+    }
+
+    @Autowired
+    fun configureEventListeners(
+
+            kycLevelUpdatedKafkaListener: KycLevelUpdatedKafkaListener,
+            kycLevelUpdatedEventListener: KycLevelUpdatedEventListener
+    ) {
+        kycLevelUpdatedKafkaListener.addEventListener(kycLevelUpdatedEventListener)
+
     }
 }

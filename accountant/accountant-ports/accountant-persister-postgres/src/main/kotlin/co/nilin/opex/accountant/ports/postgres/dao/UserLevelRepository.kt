@@ -9,6 +9,7 @@ import reactor.core.publisher.Mono
 @Repository
 interface UserLevelRepository : ReactiveCrudRepository<UserLevelModel, String> {
 
+    fun findByLevel(level: String): Mono<UserLevelModel>
     @Query("insert into user_level (level) values (:level) on conflict do nothing")
     fun insert(level: String): Mono<Void>
 

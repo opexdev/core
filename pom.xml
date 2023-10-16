@@ -35,6 +35,9 @@
         <module>admin</module>
         <module>referral</module>
         <module>captcha</module>
+        <module>profile</module>
+        <module>kyc</module>
+        <module>config</module>
     </modules>
 
     <dependencies>

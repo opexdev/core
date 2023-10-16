@@ -55,9 +55,17 @@ services:
     build: captcha/captcha-app
   admin:
     build: admin/admin-app
+  config:
+    build: config/config-app
+    volumes:
+      - "./preferences-dev.yml:/preferences.yml"
   logstash:
     build: docker-images/logstash
   filebeat:
     build: docker-images/filebeat
   prometheus:
     build: docker-images/prometheus
+  profile:
+    build: profile/profile-app
+  kyc:
+    build: kyc/kyc-app
