@@ -37,7 +37,7 @@ class TempEventPersisterImpl(
     override suspend fun loadTempEvents(ouid: String): List<CoreEvent> {
         return tempEventRepository
             .findByOuid(ouid)
-            .map { objectMapper.readValue<CoreEvent>(it.eventBody) }
+            .map { objectMapper.readValue(it.eventBody, Class.forName(it.eventType)) as CoreEvent }
             .toList()
     }
 
@@ -56,7 +56,7 @@ class TempEventPersisterImpl(
                 TempEvent(
                     it.id!!,
                     it.ouid,
-                    objectMapper.readValue(it.eventBody),
+                    objectMapper.readValue(it.eventBody, Class.forName(it.eventType)) as CoreEvent,
                     it.eventDate
                 )
             }

@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
+import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.oauth2.jwt.JwtDecoder
@@ -23,9 +24,10 @@ class SecurityConfig {
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http.csrf().disable()
             .authorizeHttpRequests()
-            .requestMatchers("/actuator/**").permitAll()
-            .requestMatchers("/web/**").hasRole("SCOPE_trust", "admin_system")
             .requestMatchers("/user/**").hasAuthority("SCOPE_trust")
+            .requestMatchers(HttpMethod.GET, "/web/v1").permitAll()
+            .requestMatchers("/web/**").hasRole("SCOPE_trust", "admin_system")
+            .requestMatchers("/actuator/**").permitAll()
             .and()
             .oauth2ResourceServer()
             .jwt()
