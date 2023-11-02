@@ -40,8 +40,10 @@ class TransferManagerImpl(
 
         val destWallet = transferCommand.destWallet
         val destWalletOwner = destWallet.owner
+        if (destWallet.currency != transferCommand.destAmount.currency)
+            throw CurrencyNotMatchedException()
         //check wallet if it can accept the value type
-        val amountToTransfer = transferCommand.amount.amount
+        val amountToTransfer = transferCommand.destAmount.amount
 
         if (!walletOwnerManager.isDepositAllowed(destWalletOwner, Amount(destWallet.currency, amountToTransfer)))
             throw DepositLimitExceededException()
