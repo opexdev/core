@@ -1,4 +1,9 @@
 package co.nilin.opex.wallet.app.dto
 
-class SetCurrencyExchangeRateRequest {
-}
+import java.math.BigDecimal
+
+class SetCurrencyExchangeRateRequest(
+    val sourceSymbol: String,
+    val destSymbol: String,
+    val rate: BigDecimal
+)
