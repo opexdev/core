@@ -37,6 +37,11 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     UserKYCBlocked(5008, "User is blocked from KYC", HttpStatus.BAD_REQUEST),
     InvalidPassword(5009, "Password is not valid", HttpStatus.BAD_REQUEST),
     UserAlreadyExists(5009, "User with email is already registered", HttpStatus.BAD_REQUEST),
+    LoginIsLimited(5010, "Your email is not in whitelist", HttpStatus.BAD_REQUEST),
+    RegisterIsLimited(5011, "Your email is not in whitelist", HttpStatus.BAD_REQUEST),
+
+
+
 
     // code 6000: wallet
     WalletOwnerNotFound(6001, null, HttpStatus.NOT_FOUND),
@@ -71,6 +76,31 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     InvalidCaptcha(10001, "Captcha is not valid", HttpStatus.BAD_REQUEST),
 
     // code 11000: market
+
+
+    //code 12000 profile
+    UserIdAlreadyExists(120001, "User with this id or email is already registered", HttpStatus.BAD_REQUEST),
+    InvalidLinkedAccount(120002, "Irrelevant account", HttpStatus.BAD_REQUEST),
+    AccountNotFound(120003, " Account not found", HttpStatus.BAD_REQUEST),
+    DuplicateAccount(120004, " Duplicate account", HttpStatus.BAD_REQUEST),
+    InvalidIban(120005, " Invalid iban number", HttpStatus.BAD_REQUEST),
+    InvalidCard(120006, " Invalid card number", HttpStatus.BAD_REQUEST),
+
+
+
+
+    //kyc
+    BadReviewRequest(130001, "Invalid reference", HttpStatus.BAD_REQUEST),
+    UnableToUploadFiles(130002, "Unable to upload", HttpStatus.BAD_REQUEST),
+    DuplicateRequest(130003, "There is another request which is under review ", HttpStatus.BAD_REQUEST),
+    InvalidKycRequest(130004, "Invalid kyc request", HttpStatus.BAD_REQUEST),
+    InvalidUploadFileRequest(130005, "There is not enough data", HttpStatus.BAD_REQUEST),
+    InvalidStatus(130006, "Invalid status", HttpStatus.BAD_REQUEST),
+    InvalidKycUpdateRequest(130007, "Invalid update request", HttpStatus.BAD_REQUEST),
+
+
+
+
 
     ;
 

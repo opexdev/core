@@ -1,0 +1,34 @@
+server.port: 8080
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  application:
+    name: opex-config
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: 6379
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: [ "health", "prometheus", "metrics" ]
+  endpoint:
+    health:
+      show-details: when_authorized
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+app:
+  auth:
+    cert-url: http://auth:8080/auth/realms/opex/protocol/openid-connect/certs
+logging:
+  level:
+    root: INFO
+    co.nilin: INFO
+    reactor.netty.http.client: INFO

@@ -252,4 +252,11 @@ class CurrencyGraph {
     fun getTransitiveSymbols(): List<String> {
         return transitiveSymbols.toList()
     }
+
+    fun reset() {
+        transitiveSymbols.clear()
+        forbiddenRateNames.clear()
+        rates.clear()
+        routesWithMax2Step.clear()
+    }
 }

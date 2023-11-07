@@ -3,13 +3,17 @@ package co.nilin.opex.admin.app.controller
 import co.nilin.opex.admin.app.data.AddCurrencyRequest
 import co.nilin.opex.admin.app.data.EditCurrencyRequest
 import co.nilin.opex.admin.app.service.SystemConfigService
+import co.nilin.opex.admin.app.service.WhiteListManagement
+import co.nilin.opex.admin.core.data.WhitelistAdaptor
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import org.springframework.web.bind.annotation.*
+import javax.ws.rs.core.Response
 
 @RestController
 @RequestMapping("/system/v1")
-class SystemConfigController(private val service: SystemConfigService) {
+class SystemConfigController(private val service: SystemConfigService,
+                             private val whiteListManagement: WhiteListManagement) {
 
     @PostMapping("/currency")
     suspend fun addCurrency(@RequestBody body: AddCurrencyRequest) {
@@ -30,4 +34,20 @@ class SystemConfigController(private val service: SystemConfigService) {
         service.deleteCurrency(name)
     }
 
+    @PostMapping("/whitelist")
+    suspend fun updateWhitelist(@RequestBody users: WhitelistAdaptor): WhitelistAdaptor? {
+        return whiteListManagement.addToWhiteList(users)
+
+    }
+
+    @GetMapping("/whitelist")
+    suspend fun getWhitelist(): WhitelistAdaptor? {
+        return whiteListManagement.getWhiteList()
+    }
+
+    @DeleteMapping("/whitelist")
+    suspend fun deleteWhitelist(@RequestBody users: WhitelistAdaptor): WhitelistAdaptor? {
+        return whiteListManagement.deleteFromWhiteList(users)
+
+    }
 }

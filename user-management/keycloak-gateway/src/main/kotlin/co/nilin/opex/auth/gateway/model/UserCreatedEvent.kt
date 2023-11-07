@@ -13,7 +13,6 @@ class UserCreatedEvent : AuthEvent {
         this.lastName = lastName
         this.email = email
     }
-
     constructor() : super()
 
     override fun toString(): String {

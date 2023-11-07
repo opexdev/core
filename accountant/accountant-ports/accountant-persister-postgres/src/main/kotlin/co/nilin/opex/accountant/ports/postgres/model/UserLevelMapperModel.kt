@@ -5,7 +5,7 @@ import org.springframework.data.relational.core.mapping.Table
 
 @Table("user_level_mapper")
 data class UserLevelMapperModel(
-    @Id val id: Long,
-    val uuid: String,
-    val userLevel: String
+        @Id val id: Long?,
+        val uuid: String,
+        val userLevel: String
 )
