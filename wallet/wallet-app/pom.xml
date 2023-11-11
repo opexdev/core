@@ -61,11 +61,11 @@
             <artifactId>wallet-eventlistener-kafka</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.utility.error</groupId>
+            <groupId>co.nilin.opex.utility</groupId>
             <artifactId>error-handler</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.utility.log</groupId>
+            <groupId>co.nilin.opex.utility</groupId>
             <artifactId>logging-handler</artifactId>
         </dependency>
         <dependency>
@@ -95,7 +95,7 @@
             <version>3.0.0</version>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.utility.interceptors</groupId>
+            <groupId>co.nilin.opex.utility</groupId>
             <artifactId>interceptors</artifactId>
         </dependency>
         <dependency>
@@ -108,7 +108,7 @@
             <artifactId>spring-cloud-starter-vault-config</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.utility.preferences</groupId>
+            <groupId>co.nilin.opex.utility</groupId>
             <artifactId>preferences</artifactId>
         </dependency>
         <dependency>

@@ -48,11 +48,11 @@
             <artifactId>accountant-wallet-proxy</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.utility.error</groupId>
+            <groupId>co.nilin.opex.utility</groupId>
             <artifactId>error-handler</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.utility.log</groupId>
+            <groupId>co.nilin.opex.utility</groupId>
             <artifactId>logging-handler</artifactId>
         </dependency>
         <dependency>
@@ -69,7 +69,7 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.utility.preferences</groupId>
+            <groupId>co.nilin.opex.utility</groupId>
             <artifactId>preferences</artifactId>
         </dependency>
         <dependency>
