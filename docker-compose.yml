@@ -1,5 +1,5 @@
 x-postgres-db: &postgres-db
-  image: ghcr.io/opexdev/postgres-opex
+  image: registry.opex.dev/repository/dockernilin-repo/postgres-opex
   environment:
     - POSTGRES_USER=${DB_USER:-opex}
     - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
@@ -29,7 +29,7 @@ services:
       restart_policy:
         condition: on-failure
   kafka-1:
-    image: ghcr.io/opexdev/kafka
+    image: registry.opex.dev/repository/dockernilin-repo/kafka
     hostname: kafka-1
     volumes:
       - kafka-1:/var/lib/kafka/data
@@ -50,7 +50,7 @@ services:
       restart_policy:
         condition: on-failure
   kafka-2:
-    image: ghcr.io/opexdev/kafka
+    image: registry.opex.dev/repository/dockernilin-repo/kafka
     hostname: kafka-2
     volumes:
       - kafka-2:/var/lib/kafka/data
@@ -71,7 +71,7 @@ services:
       restart_policy:
         condition: on-failure
   kafka-3:
-    image: ghcr.io/opexdev/kafka
+    image: registry.opex.dev/repository/dockernilin-repo/kafka
     hostname: kafka-3
     volumes:
       - kafka-3:/var/lib/kafka/data
@@ -110,7 +110,7 @@ services:
       restart_policy:
         condition: on-failure
   vault:
-    image: ghcr.io/opexdev/vault-opex
+    image: registry.opex.dev/repository/dockernilin-repo/vault-opex
     volumes:
       - vault-data:/vault/file
     environment:
@@ -178,7 +178,7 @@ services:
     volumes:
       - api-data:/var/lib/postgresql/data/
   accountant:
-    image: ghcr.io/opexdev/accountant
+    image: registry.opex.dev/repository/dockernilin-repo/accountant
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - SPRING_PROFILES_ACTIVE=scheduled
@@ -208,7 +208,7 @@ services:
         condition: on-failure
 
   eventlog:
-    image: ghcr.io/opexdev/eventlog
+    image: registry.opex.dev/repository/dockernilin-repo/eventlog
     environment:
       - JAVA_OPTS=-Xmx256m
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
@@ -231,7 +231,7 @@ services:
       restart_policy:
         condition: on-failure
   matching-engine:
-    image: ghcr.io/opexdev/matching-engine
+    image: registry.opex.dev/repository/dockernilin-repo/matching-engine
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
@@ -252,7 +252,7 @@ services:
       restart_policy:
         condition: on-failure
   matching-gateway:
-    image: ghcr.io/opexdev/matching-gateway
+    image: registry.opex.dev/repository/dockernilin-repo/matching-gateway
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
@@ -272,7 +272,7 @@ services:
       restart_policy:
         condition: on-failure
   auth:
-    image: ghcr.io/opexdev/auth
+    image: registry.opex.dev/repository/dockernilin-repo/auth
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
@@ -304,7 +304,7 @@ services:
       restart_policy:
         condition: on-failure
   wallet:
-    image: ghcr.io/opexdev/wallet
+    image: registry.opex.dev/repository/dockernilin-repo/wallet
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
@@ -334,7 +334,7 @@ services:
       restart_policy:
         condition: on-failure
   market:
-    image: ghcr.io/opexdev/market
+    image: registry.opex.dev/repository/dockernilin-repo/market
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
@@ -360,7 +360,7 @@ services:
       restart_policy:
         condition: on-failure
   api:
-    image: ghcr.io/opexdev/api
+    image: registry.opex.dev/repository/dockernilin-repo/api
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - CONSUL_HOST=consul

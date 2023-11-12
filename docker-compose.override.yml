@@ -1,16 +1,5 @@
 version: '3.8'
 services:
-  kafka-1:
-    build: docker-images/kafka
-  kafka-2:
-    build: docker-images/kafka
-  kafka-3:
-    build: docker-images/kafka
-  vault:
-    build: docker-images/vault
-  postgres-opex:
-    image: ghcr.io/opexdev/postgres-opex
-    build: docker-images/postgres
   accountant:
     build: accountant/accountant-app
     volumes:

@@ -30,13 +30,9 @@ jobs:
         env:
           TAG: dev
         run: docker-compose -f docker-compose.build.yml build
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v1
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Push images to GitHub Container Registry
+      - name: Login to Registry
+        run: docker login -u ${{ secrets.DOCKER_REPO_USERNAME }} -p ${{ secrets.DOCKER_REPO_PASSWORD }} registry.opex.dev
+      - name: Push images to Registry
         env:
           TAG: dev
         run: docker-compose -f docker-compose.build.yml push
