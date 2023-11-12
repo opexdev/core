@@ -3,18 +3,20 @@ package co.nilin.opex.wallet.app.controller
 import co.nilin.opex.wallet.app.dto.TransferPreEvaluateResponse
 import co.nilin.opex.wallet.app.dto.TransferReserveRequest
 import co.nilin.opex.wallet.app.dto.TransferReserveResponse
+import co.nilin.opex.wallet.app.service.TransferService
 import co.nilin.opex.wallet.core.inout.TransferResult
-import co.nilin.opex.wallet.core.model.Amount
-import co.nilin.opex.wallet.core.model.Currency
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
-import java.util.*
 
 @RestController
 class AdvancedTransferController {
+
+    @Autowired
+    lateinit var transferService: TransferService
 
     @GetMapping("/v3/amount/{amount}_{symbol}/{destSymbol}")
     @ApiResponse(
@@ -30,9 +32,9 @@ class AdvancedTransferController {
     suspend fun calculateDestinationAmount(
         @PathVariable("symbol") symbol: String,
         @PathVariable("amount") amount: BigDecimal,
-        @PathVariable("symbol") destSymbol: String,
+        @PathVariable("destSymbol") destSymbol: String,
     ): TransferPreEvaluateResponse {
-        return TransferPreEvaluateResponse(amount.multiply(BigDecimal.TEN))
+        return TransferPreEvaluateResponse(transferService.calculateDestinationAmount(symbol, amount, destSymbol))
     }
 
     @PostMapping("/v3/transfer/reserve")
@@ -50,7 +52,10 @@ class AdvancedTransferController {
     suspend fun reserve(
         @RequestBody request: TransferReserveRequest
     ): TransferReserveResponse {
-        return TransferReserveResponse(UUID.randomUUID().toString(), BigDecimal.ONE)
+        val reservation = transferService.reserveTransfer(
+            request.sourceAmount, request.sourceSymbol, request.destSymbol, request.senderUuid, request.senderWalletType, request.receiverUuid, request.receiverWalletType
+        )
+        return TransferReserveResponse(reservation.first, reservation.second)
     }
 
     @PostMapping("/v3/transfer/{reserveUuid}")
@@ -65,16 +70,10 @@ class AdvancedTransferController {
         )
     )
     suspend fun finalizeTransfer(
-        @PathVariable("reserveUuid") reserveUuid: String
+        @PathVariable("reserveUuid") reserveUuid: String,
+        @RequestParam("description") description: String?,
+        @RequestParam("transferRef") transferRef: String?
     ): TransferResult {
-        return TransferResult(
-            System.currentTimeMillis(),
-            UUID.randomUUID().toString(), "main",
-            Amount(Currency("BTC", "BTC", BigDecimal.ONE), BigDecimal.ONE),
-            Amount(Currency("BTC", "BTC", BigDecimal.ONE), BigDecimal.ONE),
-            Amount(Currency("BTC", "BTC", BigDecimal.ONE), BigDecimal.ONE),
-            UUID.randomUUID().toString(), "main",
-            Amount(Currency("ETH", "ETH", BigDecimal.TEN), BigDecimal.ONE)
-        )
+        return transferService.advanceTransfer(reserveUuid, description, transferRef)
     }
 }
