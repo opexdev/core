@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+
+  postgres-opex:
+    image: ghcr.io/opexdev/postgres-opex
+    build: docker-images/postgres
+
+  wallet:
+    build: wallet/wallet-app
+    volumes:
+      - "./preferences-dev.yml:/preferences.yml"
+      - "./drive-key.json:/drive-key.json"
+  vault:
+    build: docker-images/vault

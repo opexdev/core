@@ -1,0 +1,86 @@
+x-postgres-db: &postgres-db
+  image: ghcr.io/opexdev/postgres-opex
+  environment:
+    - POSTGRES_USER=${DB_USER:-opex}
+    - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
+    - POSTGRES_DB=${DB_USER:-opex}
+    - POSTGRES_READ_ONLY_USER=${DB_READ_ONLY_USER:-opex_reader}
+    - POSTGRES_READ_ONLY_PASSWORD=${DB_READ_ONLY_PASS:-hiopex}
+  networks:
+    - default
+  deploy:
+    restart_policy:
+      condition: on-failure
+
+version: '3.8'
+services:
+  postgres-wallet:
+    <<: *postgres-db
+    volumes:
+      - wallet-data:/var/lib/postgresql/data/
+
+  wallet:
+    image: ghcr.io/opexdev/wallet
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - CONSUL_HOST=consul
+      - DB_IP_PORT=postgres-wallet
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_HOST=vault
+      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
+      - PREFERENCES=$PREFERENCES
+      - DRIVE_FOLDER_ID=$DRIVE_FOLDER_ID
+      - BACKUP_ENABLED=$WALLET_BACKUP_ENABLED
+      - SPRING_PROFILES_ACTIVE=otc
+    configs:
+      - preferences.yml
+    depends_on:
+      - postgres-wallet
+      - vault
+    networks:
+      - default
+    labels:
+      collect_logs: "true"
+    deploy:
+      restart_policy:
+        condition: on-failure
+  vault:
+    image: ghcr.io/opexdev/vault-opex
+    volumes:
+      - vault-data:/vault/file
+    environment:
+      - VAULT_ADDR=http://0.0.0.0:8200
+      - PANEL_PASS=${PANEL_PASS}
+      - BACKEND_USER=${BACKEND_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - DB_USER=${DB_USER:-opex}
+      - DB_PASS=${DB_PASS:-hiopex}
+      - DB_READ_ONLY_USER=${DB_READ_ONLY_USER:-opex_reader}
+      - DB_READ_ONLY_PASS=${DB_READ_ONLY_PASS:-hiopex}
+      - KEYCLOAK_ADMIN_USERNAME=${KEYCLOAK_ADMIN_USERNAME:-opex-admin}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-hiopex}
+      - OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET=${OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET}
+      - VANDAR_API_KEY=$VANDAR_API_KEY
+    cap_add:
+      - IPC_LOCK
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+volumes:
+
+  wallet-data:
+  vault-data:
+
+networks:
+  default:
+    driver: bridge
+secrets:
+  opex_dev_crt:
+    file: opex.dev.crt
+  private_pem:
+    file: private.pem
+configs:
+  preferences.yml:
+    file: preferences.yml

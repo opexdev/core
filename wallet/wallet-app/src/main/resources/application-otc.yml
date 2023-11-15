@@ -1,0 +1,74 @@
+server.port: 8080
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: [ "health", "prometheus", "metrics" ]
+  endpoint:
+    health:
+      show-details: when_authorized
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+spring:
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+  application:
+    name: opex-wallet
+  main:
+    allow-bean-definition-overriding: false
+    allow-circular-references: true
+#  kafka:
+#    bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
+#    consumer:
+#      group-id: wallet
+#  r2dbc:
+#    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
+#    username: ${dbusername:opex}
+#    password: ${dbpassword:hiopex}
+#    initialization-mode: always
+  cloud:
+    bootstrap:
+      enabled: true
+    vault:
+      host: ${VAULT_HOST}
+      port: 8200
+      scheme: http
+      authentication: APPID
+      app-id:
+        user-id: co.nilin.opex.wallet.app.utils.VaultUserIdMechanism
+      fail-fast: true
+      kv:
+        enabled: true
+        backend: secret
+        profile-separator: '/'
+        application-name: ${spring.application.name}
+#    consul:
+#      host: ${CONSUL_HOST:localhost}
+#      port: 8500
+#      discovery:
+#        #healthCheckPath: ${management.context-path}/health
+#        instance-id: ${spring.application.name}:${server.port}
+#        healthCheckInterval: 20s
+#        prefer-ip-address: true
+  config:
+    import: vault://secret/${spring.application.name}
+app:
+  auth:
+    cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
+  system:
+    uuid: 1
+  backup:
+    enabled: ${BACKUP_ENABLED:false}
+    drive:
+      folder: ${DRIVE_FOLDER_ID:-}
+logging:
+  level:
+    root: INFO
+    org.apache.kafka: ERROR
+    co.nilin: INFO
+    reactor.netty.http.client: INFO
+swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
