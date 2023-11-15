@@ -24,6 +24,7 @@ target/
 docker-compose.local.yml
 docker-compose.legacy.yml
 application-local.yml
+application-local-otc.yml
 mvnw
 mvnw.cmd
 drive-key.json
