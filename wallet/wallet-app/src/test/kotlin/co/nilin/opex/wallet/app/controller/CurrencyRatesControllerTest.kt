@@ -14,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWeb
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration
 import org.springframework.context.annotation.Import
+import org.springframework.context.annotation.Profile
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -22,6 +23,8 @@ import java.math.BigDecimal
 @SpringBootTest
 @ActiveProfiles("test")
 @AutoConfigureWebTestClient
+@Profile("!otc")
+
 @Import(TestChannelBinderConfiguration::class)
 class CurrencyRatesControllerTest {
     @Autowired

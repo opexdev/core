@@ -9,6 +9,7 @@ import org.springframework.web.reactive.function.client.WebClient
 
 @EnableWebFluxSecurity
 @Profile("test")
+
 class TestProfileSecurityConfig(private val webClient: WebClient) {
     @Bean
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {

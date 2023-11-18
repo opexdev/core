@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration
 import org.springframework.context.annotation.Import
+import org.springframework.context.annotation.Profile
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -26,6 +27,8 @@ import java.time.ZoneId
 @ActiveProfiles("test")
 @AutoConfigureWebTestClient
 @Import(TestChannelBinderConfiguration::class)
+@Profile("!otc")
+
 class TransactionControllerTest {
     @Autowired
     private lateinit var webClient: WebTestClient
