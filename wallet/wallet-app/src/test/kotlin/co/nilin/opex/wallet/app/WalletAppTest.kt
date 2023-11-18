@@ -11,7 +11,6 @@ import org.springframework.test.context.ActiveProfiles
 
 @SpringBootTest
 @DirtiesContext
-@Profile("!otc")
 @ActiveProfiles("test")
 @Import(TestChannelBinderConfiguration::class)
 @EmbeddedKafka(partitions = 1, brokerProperties = ["listeners=PLAINTEXT://localhost:9092", "port=9092"])
@@ -19,6 +18,5 @@ class WalletAppTest {
 
     @Test
     fun contextLoad() {
-
     }
 }

@@ -26,7 +26,6 @@ import java.util.*
 @DirtiesContext
 @ActiveProfiles("test")
 @Import(TestChannelBinderConfiguration::class)
-@Profile("!otc")
 
 class TransferManagerImplIT {
     @Autowired

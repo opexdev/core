@@ -27,7 +27,6 @@ import java.time.ZoneId
 @ActiveProfiles("test")
 @AutoConfigureWebTestClient
 @Import(TestChannelBinderConfiguration::class)
-@Profile("!otc")
 
 class TransactionControllerTest {
     @Autowired

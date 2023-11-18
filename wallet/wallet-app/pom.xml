@@ -14,7 +14,32 @@
     <name>wallet-app</name>
     <description>Wallet management app of Opex</description>
 
+    <profiles>
+        <profile>
+            <id>default</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.springframework.cloud</groupId>
+                    <artifactId>spring-cloud-starter-consul-all</artifactId>
+<!--                    <version>3.2.6</version>-->
+                </dependency>
+            </dependencies>
+
+        </profile>
+        <profile>
+            <id>test</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.springframework.cloud</groupId>
+                    <artifactId>spring-cloud-starter-consul-all</artifactId>
+<!--                    <version>3.2.6</version>-->
+                </dependency>
+            </dependencies>
+        </profile>
+
+    </profiles>
     <dependencies>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
@@ -151,9 +176,14 @@
             <version>1.18.0</version>
             <scope>test</scope>
         </dependency>
-
-
-
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-stream</artifactId>
+            <version>3.2.6</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+            <classifier>test-binder</classifier>
+        </dependency>
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka-test</artifactId>
@@ -183,34 +213,9 @@
             <version>5.4.0</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-stream</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
-            <classifier>test-binder</classifier>
-        </dependency>
+
     </dependencies>
-    <profiles>
-        <profile>
-            <id>default</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.springframework.cloud</groupId>
-                    <artifactId>spring-cloud-starter-consul-all</artifactId>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>test</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.springframework.cloud</groupId>
-                    <artifactId>spring-cloud-starter-consul-all</artifactId>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
+
     <dependencyManagement>
         <dependencies>
             <dependency>

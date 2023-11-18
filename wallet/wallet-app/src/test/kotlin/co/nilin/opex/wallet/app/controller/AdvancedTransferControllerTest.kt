@@ -28,7 +28,6 @@ import java.util.*
 
 @SpringBootTest
 @ActiveProfiles("test")
-@Profile("!otc")
 @AutoConfigureWebTestClient
 @Import(TestChannelBinderConfiguration::class)
 class AdvancedTransferControllerTest {

@@ -23,7 +23,6 @@ import java.math.BigDecimal
 @SpringBootTest
 @ActiveProfiles("test")
 @AutoConfigureWebTestClient
-@Profile("!otc")
 
 @Import(TestChannelBinderConfiguration::class)
 class CurrencyRatesControllerTest {
