@@ -76,7 +76,7 @@ class FeeCalculatorImpl(
             "exchange",
             LocalDateTime.now(),
             FinancialActionCategory.FEE,
-            createMap(trade, makerOrder)
+            createMap(trade, takerOrder)
         )
         logger.info("trade event takerFeeAction $takerFeeAction")
 
