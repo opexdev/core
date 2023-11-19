@@ -46,7 +46,19 @@ spring:
         backend: secret
         profile-separator: '/'
         application-name: ${spring.application.name}
-#    consul:
+    bus:
+      enabled: false
+    consul:
+      enabled: false
+
+#      config:
+#        enabled: false
+
+#      config:
+#        enabled: false
+    #    consul:
+
+
 #      host: ${CONSUL_HOST:localhost}
 #      port: 8500
 #      discovery:
@@ -54,6 +66,7 @@ spring:
 #        instance-id: ${spring.application.name}:${server.port}
 #        healthCheckInterval: 20s
 #        prefer-ip-address: true
+
   config:
     import: vault://secret/${spring.application.name}
 app:

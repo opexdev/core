@@ -16,30 +16,40 @@
 
     <profiles>
         <profile>
-            <id>default</id>
+            <id>otc</id>
             <dependencies>
                 <dependency>
                     <groupId>org.springframework.cloud</groupId>
                     <artifactId>spring-cloud-starter-consul-all</artifactId>
-<!--                    <version>3.2.6</version>-->
+                    <version>3.1.2</version>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>org.springframework.cloud</groupId>
+                            <artifactId>spring-cloud-consul-binder</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.springframework.cloud</groupId>
+                            <artifactId>spring-cloud-bus</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.springframework.cloud</groupId>
+                            <artifactId>spring-cloud-starter-consul-config</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.springframework.cloud</groupId>
+                            <artifactId>spring-cloud-starter-consul-bus</artifactId>
+                        </exclusion>
+                    </exclusions>
+                    <scope>provided</scope>
                 </dependency>
             </dependencies>
-
         </profile>
-        <profile>
-            <id>test</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.springframework.cloud</groupId>
-                    <artifactId>spring-cloud-starter-consul-all</artifactId>
-<!--                    <version>3.2.6</version>-->
-                </dependency>
-            </dependencies>
-        </profile>
-
     </profiles>
     <dependencies>
-
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-consul-all</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
