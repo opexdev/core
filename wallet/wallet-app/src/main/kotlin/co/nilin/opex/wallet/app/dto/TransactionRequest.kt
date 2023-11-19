@@ -6,5 +6,6 @@ data class TransactionRequest(
     val startTime: Long,
     val endTime: Long,
     val limit: Int,
-    val offset: Int
+    val offset: Int,
+    val ascendingByTime: Boolean = false
 )
