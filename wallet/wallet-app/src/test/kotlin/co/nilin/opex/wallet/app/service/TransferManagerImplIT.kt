@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration
 import org.springframework.context.annotation.Import
+import org.springframework.context.annotation.Profile
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import java.math.BigDecimal
@@ -25,6 +26,7 @@ import java.util.*
 @DirtiesContext
 @ActiveProfiles("test")
 @Import(TestChannelBinderConfiguration::class)
+
 class TransferManagerImplIT {
     @Autowired
     lateinit var transferManager: TransferManager

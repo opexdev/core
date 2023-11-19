@@ -10,7 +10,7 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 
 @Component
-@Profile("!test")
+@Profile("!test & !otc")
 class PrometheusHealthExtension(
     private val registry: MeterRegistry,
     private val endpoint: HealthEndpoint

@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+
+  postgres-wallet:
+    ports:
+      - "5435:5432"
+
+  wallet:
+    ports:
+      - "127.0.0.1:8091:8080"
+      - "127.0.0.1:1049:5005"
+  vault:
+    ports:
+      - "8200:8200"
+
