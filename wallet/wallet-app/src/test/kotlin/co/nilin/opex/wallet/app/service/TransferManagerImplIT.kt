@@ -51,6 +51,7 @@ class TransferManagerImplIT {
     val cc = "CC"
     val amount = BigDecimal.valueOf(10)
     var sourceUuid: String? = null
+    var destUuid: String? = null
 
     @BeforeEach
     fun setup() {
@@ -224,17 +225,74 @@ class TransferManagerImplIT {
             )
             val thwMatch = thw.find { th -> th.id.toString().equals(result.tx) }
             assertNotNull(thwMatch)
+
             val thdMatch = thd.find { th -> th.id.toString().equals(result.tx) }
             assertNotNull(thdMatch)
 
             assertEquals(additionalData, thwMatch!!.additionalData)
 
             val th = transactionManager.findTransactions(
-                owner.uuid, currency.symbol, "NORMAL", LocalDateTime.now().minusHours(1), LocalDateTime.now(), 100, 0
+                owner.uuid, currency.symbol, "NORMAL", LocalDateTime.now().minusHours(1), LocalDateTime.now(), true, 100, 0
             )
 
             val thMatch = th.find { i -> i.id.toString().equals(result.tx) }
             assertEquals(additionalData, thMatch!!.additionalData)
+        }
+    }
+
+    @Test
+    fun whenTransfer_thenWithdrawFlagIsCorrect() {
+        runBlocking {
+            val currency = currencyService.getCurrency(cc)!!
+
+            destUuid = UUID.randomUUID().toString()
+            setupWallets(destUuid!!)
+
+            val sender = walletOwnerManager.findWalletOwner(sourceUuid!!)
+            val receiver = walletOwnerManager.findWalletOwner(destUuid!!)
+
+
+            val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(sender!!, senderWalletType, currency)
+            val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(receiver!!, receiverWalletType, currency)
+
+            val result = transferManager.transfer(
+                TransferCommand(
+                    sourceWallet!!,
+                    receiverWallet!!,
+                    Amount(sourceWallet.currency, amount),
+                    "Amount1 ${System.currentTimeMillis()}", "Ref1 ${System.currentTimeMillis()}",
+                    "NORMAL",
+                    emptyMap()
+                )
+            )
+
+            val thw = transactionManager.findWithdrawTransactions(
+                sender.uuid, currency.symbol, LocalDateTime.now().minusHours(1), LocalDateTime.now(), 100, 0
+            )
+
+            val thd = transactionManager.findDepositTransactions(
+                receiver.uuid, currency.symbol, LocalDateTime.now().minusHours(1), LocalDateTime.now(), 100, 0
+            )
+
+            val thwMatch = thw.find { th -> th.id.toString().equals(result.tx) }
+            assertNotNull(thwMatch)
+            assertTrue(thwMatch!!.withdraw)
+
+            val thdMatch = thd.find { th -> th.id.toString().equals(result.tx) }
+            assertNotNull(thdMatch)
+            assertFalse(thdMatch!!.withdraw)
+
+            val thSender = transactionManager.findTransactions(
+                sender.uuid, currency.symbol, "NORMAL", LocalDateTime.now().minusHours(1), LocalDateTime.now(), true, 100, 0
+            )
+            val thSenderMatch = thSender.find { i -> i.id.toString().equals(result.tx) }
+            assertTrue(thSenderMatch!!.withdraw)
+
+            val thReceiver = transactionManager.findTransactions(
+                receiver.uuid, currency.symbol, "NORMAL", LocalDateTime.now().minusHours(1), LocalDateTime.now(), true, 100, 0
+            )
+            val thReceiverMatch = thReceiver.find { i -> i.id.toString().equals(result.tx) }
+            assertFalse(thReceiverMatch!!.withdraw)
         }
     }
 
