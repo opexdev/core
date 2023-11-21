@@ -3,12 +3,14 @@ package co.nilin.opex.wallet.ports.postgres.impl
 import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.spi.CurrencyService
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepository
+import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
+import java.time.LocalDateTime
 
 @Service
 class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : CurrencyService {
@@ -21,11 +23,29 @@ class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : Currency
         }
     }
 
+
     override suspend fun addCurrency(name: String, symbol: String, precision: BigDecimal) {
         try {
-            currencyRepository.insert(name, symbol, precision).awaitSingleOrNull()
+            addCurrency(Currency(symbol, name, precision))
         } catch (e: Exception) {
             logger.error("Could not insert new currency $name", e)
+        }
+    }
+
+    override suspend fun addCurrency(request: Currency) {
+        try {
+            currencyRepository.save(request.toModel()).awaitSingleOrNull()
+        } catch (e: Exception) {
+            logger.error("Could not insert new currency ${request.symbol}", e)
+        }
+    }
+
+
+    private fun Currency.toModel(): CurrencyModel {
+        return with(this) {
+            CurrencyModel(
+                    symbol, name, precision, title, alias, maxDeposit, minDeposit, minWithdraw, maxWithdraw, icon, LocalDateTime.now(), LocalDateTime.now()
+            )
         }
     }
 

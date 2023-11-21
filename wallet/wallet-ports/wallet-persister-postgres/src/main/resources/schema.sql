@@ -2,8 +2,32 @@ CREATE TABLE IF NOT EXISTS currency
 (
     symbol    VARCHAR(25) PRIMARY KEY,
     name      VARCHAR(25),
-    precision DECIMAL NOT NULL
+    precision DECIMAL NOT NULL,
+    title VARCHAR(25),
+    alias VARCHAR(25),
+    max_deposit DECIMAL,
+    min_deposit DECIMAL,
+    min_Withdraw DECIMAL,
+    max_withdraw DECIMAL,
+    icon TEXT,
+    last_update_date TIMESTAMP,
+    craete_date TIMESTAMP
 );
+
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS title  VARCHAR(25);
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS alias  VARCHAR(25);
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS max_deposit  DECIMAL;
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS min_deposit  DECIMAL;
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS min_Withdraw  DECIMAL;
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS max_withdraw  DECIMAL;
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS icon  TEXT;
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS last_update_date TIMESTAMP;
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS create_date TIMESTAMP;
+
+
+
+
+
 
 CREATE TABLE IF NOT EXISTS wallet_owner
 (
@@ -87,3 +111,13 @@ CREATE TABLE IF NOT EXISTS withdraws
     create_date          TIMESTAMP NOT NULL,
     accept_date          TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS rate
+(
+    id SERIAL PRIMARY KEY,
+    source_currency VARCHAR(25) NOT NULL REFERENCES currency (symbol),
+    destination_currency VARCHAR(25) NOT NULL REFERENCES currency (symbol),
+    rate         DECIMAL ,
+    is_forbidden BOOLEAN,
+    last_update_date TIMESTAMP
+    );

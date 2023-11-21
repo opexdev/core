@@ -22,10 +22,10 @@ import java.util.*
 
 @Service
 class TransferService(
-    private val transferManager: TransferManager,
-    private val currencyService: CurrencyService,
-    private val walletManager: WalletManager,
-    private val walletOwnerManager: WalletOwnerManager
+        private val transferManager: TransferManager,
+        private val currencyService: CurrencyService,
+        private val walletManager: WalletManager,
+        private val walletOwnerManager: WalletOwnerManager
 ) {
 
     private val logger = LoggerFactory.getLogger(TransferService::class.java)

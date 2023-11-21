@@ -1,10 +1,8 @@
 package co.nilin.opex.wallet.app.controller
 
-import co.nilin.opex.wallet.app.dto.CurrencyExchangeRate
-import co.nilin.opex.wallet.app.dto.CurrencyExchangeRatesResponse
-import co.nilin.opex.wallet.app.dto.CurrencyPair
-import co.nilin.opex.wallet.app.dto.SetCurrencyExchangeRateRequest
+import co.nilin.opex.wallet.app.dto.*
 import co.nilin.opex.wallet.app.service.otc.CurrencyGraph
+import co.nilin.opex.wallet.core.spi.CurrencyService
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
@@ -12,10 +10,17 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 
 @RestController
-class CurrencyRatesController {
+@RequestMapping("/otc")
+class CurrencyRatesController(private val currencyService: CurrencyService) {
 
     @Autowired
     lateinit var currencyGraph: CurrencyGraph
+
+    @PostMapping("/currency")
+    fun addCurrency(@RequestBody request:AddCurrencyRequest):
+    {
+        currencyService.addCurrency(request)
+    }
 
     @GetMapping("/rates/{sourceSymbol}/{destSymbol}")
     @ApiResponse(

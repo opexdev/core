@@ -68,8 +68,10 @@ services:
       restart_policy:
         condition: on-failure
 
-volumes:
 
+
+
+volumes:
   wallet-data:
   vault-data:
 
