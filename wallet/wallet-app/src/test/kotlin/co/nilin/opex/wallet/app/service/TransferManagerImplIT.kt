@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration
 import org.springframework.context.annotation.Import
-import org.springframework.context.annotation.Profile
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import java.math.BigDecimal
@@ -277,22 +276,28 @@ class TransferManagerImplIT {
             val thwMatch = thw.find { th -> th.id.toString().equals(result.tx) }
             assertNotNull(thwMatch)
             assertTrue(thwMatch!!.withdraw)
+            assertEquals("NORMAL", thwMatch.category)
 
             val thdMatch = thd.find { th -> th.id.toString().equals(result.tx) }
             assertNotNull(thdMatch)
             assertFalse(thdMatch!!.withdraw)
+            assertEquals("NORMAL", thdMatch.category)
 
             val thSender = transactionManager.findTransactions(
                 sender.uuid, currency.symbol, "NORMAL", LocalDateTime.now().minusHours(1), LocalDateTime.now(), true, 100, 0
             )
             val thSenderMatch = thSender.find { i -> i.id.toString().equals(result.tx) }
             assertTrue(thSenderMatch!!.withdraw)
+            assertEquals("NORMAL", thSenderMatch.category)
+
 
             val thReceiver = transactionManager.findTransactions(
                 receiver.uuid, currency.symbol, "NORMAL", LocalDateTime.now().minusHours(1), LocalDateTime.now(), true, 100, 0
             )
             val thReceiverMatch = thReceiver.find { i -> i.id.toString().equals(result.tx) }
             assertFalse(thReceiverMatch!!.withdraw)
+            assertEquals("NORMAL", thReceiverMatch.category)
+
         }
     }
 
