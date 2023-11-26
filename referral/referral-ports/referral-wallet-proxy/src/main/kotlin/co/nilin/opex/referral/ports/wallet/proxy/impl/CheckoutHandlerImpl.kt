@@ -51,8 +51,7 @@ class CheckoutHandlerImpl(
                         uuid,
                         totalShare,
                         "",
-                        transferRef
-                    )
+                        transferRef)
                     c.forEach { launch { checkoutRecordHandler.checkout(it.commissionReward.id, transferRef) } }
                 }
             }
