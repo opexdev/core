@@ -45,7 +45,7 @@ class TransferService(
         amount: BigDecimal,
         description: String?,
         transferRef: String?,
-        transferCategory: String = "NO_CATEGORY",
+        transferCategory: String? = "NO_CATEGORY",
         additionalData: Map<String, Any>? = emptyMap()
     ): TransferResult {
         return _transfer(symbol, senderWalletType, senderUuid, receiverWalletType, receiverUuid, amount, description, transferRef)
@@ -142,7 +142,7 @@ class TransferService(
         transferRef: String?,
         destSymbol: String = symbol,
         destAmount: BigDecimal = amount,
-        transferCategory: String = "NO_CATEGORY",
+        transferCategory: String? = "NO_CATEGORY",
         additionalData: Map<String, Any>? = emptyMap()
     ): TransferResult {
         if (senderWalletType == "cashout" || receiverWalletType == "cashout")
@@ -178,7 +178,7 @@ class TransferService(
                 sourceWallet,
                 receiverWallet,
                 Amount(sourceWallet.currency, amount),
-                description, transferRef, transferCategory, additionalData,
+                description, transferRef, transferCategory!!, additionalData,
                 Amount(receiverWallet.currency, destAmount)
             )
         ).transferResult
