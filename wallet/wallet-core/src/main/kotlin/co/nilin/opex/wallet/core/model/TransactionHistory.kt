@@ -10,5 +10,6 @@ data class TransactionHistory(
     val ref: String?,
     val date: Long,
     val category: String?,
-    val additionalData: Map<String, Any>?
+    val additionalData: Map<String, Any>?,
+    val withdraw: Boolean
 )
