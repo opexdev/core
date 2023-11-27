@@ -84,11 +84,11 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         val auth = ResourceAuthenticator.bearerAuth(session)
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
-        /*runCatching {
+        runCatching {
             validateCaptcha("${request.captchaAnswer}-${session.context.connection.remoteAddr}")
         }.onFailure {
             return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.InvalidCaptcha)
-        }*/
+        }
 
         if (!request.isValid())
             return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.BadRequest)
