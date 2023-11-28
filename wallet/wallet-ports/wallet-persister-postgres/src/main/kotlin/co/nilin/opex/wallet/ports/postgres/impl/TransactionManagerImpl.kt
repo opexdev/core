@@ -8,8 +8,6 @@ import co.nilin.opex.wallet.ports.postgres.model.TransactionModel
 import com.fasterxml.jackson.databind.ObjectMapper
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitSingle
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -108,7 +106,11 @@ class TransactionManagerImpl(
         offset: Int
     ): List<TransactionHistory> {
         val transactions =
-            transactionRepository.findTransactions(uuid, coin, category, startTime, endTime, PageRequest.of(offset, limit, Sort.by(if (asc) Sort.Direction.ASC else Sort.Direction.DESC, "transaction_date")))
+            if (asc)
+                transactionRepository.findTransactionsAsc(uuid, coin, category, startTime, endTime, limit, offset)
+            else
+                transactionRepository.findTransactionsDesc(uuid, coin, category, startTime, endTime, limit, offset)
+
         return transactions.collectList()
             .awaitFirstOrElse { emptyList() }
             .map {
