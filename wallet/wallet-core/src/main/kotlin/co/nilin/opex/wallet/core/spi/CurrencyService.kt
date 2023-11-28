@@ -7,7 +7,10 @@ interface CurrencyService {
 
     suspend fun getCurrency(symbol: String): Currency?
     suspend fun addCurrency(name: String, symbol: String, precision: BigDecimal)
-    suspend fun addCurrency(request: Currency)
+    suspend fun addCurrency(request: Currency): Currency?
+    suspend fun updateCurrency(request: Currency): Currency?
     suspend fun editCurrency(name: String, symbol: String, precision: BigDecimal)
-    suspend fun deleteCurrency(name: String)
+    suspend fun deleteCurrency(name: String): List<Currency>?
+
+    suspend fun getCurrencies(): List<Currency>?
 }

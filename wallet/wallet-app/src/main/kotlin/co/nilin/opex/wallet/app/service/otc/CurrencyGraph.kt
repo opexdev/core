@@ -1,11 +1,11 @@
 package co.nilin.opex.wallet.app.service.otc
 
+import co.nilin.opex.wallet.core.model.otc.Rate
+import co.nilin.opex.wallet.core.service.otc.GraphService
 import java.math.BigDecimal
 
-class CurrencyGraph {
-    data class Rate(
-        val sourceSymbol: String, val destSymbol: String, val rate: BigDecimal
-    )
+class CurrencyGraph(private val graphService: GraphService) {
+
 
     data class Route(val rates: List<Rate>) {
         fun getSourceSymbol(): String {
@@ -24,6 +24,17 @@ class CurrencyGraph {
 
     }
 
+
+    @Throws(Exception::class)
+    suspend fun addCurrencyRateV2(
+            sourceSymbol: String, destSymbol: String, rate: BigDecimal
+    ) {
+        val existingRate: Rate? = findEdge(sourceSymbol, destSymbol)
+        graphService.addRate(Rate(sourceSymbol, destSymbol, rate))
+
+    }
+
+
     private val forbiddenRateNames: MutableList<String> = mutableListOf()
 
     private val rates: MutableList<Rate> = mutableListOf()
@@ -41,7 +52,7 @@ class CurrencyGraph {
 
     @Throws(Exception::class)
     fun addCurrencyRate(
-        sourceSymbol: String, destSymbol: String, rate: BigDecimal
+            sourceSymbol: String, destSymbol: String, rate: BigDecimal
     ) {
         if (forbiddenRateNames.contains(getRateName(sourceSymbol, destSymbol))) {
             throw Exception("This source & dest is forbidden")
@@ -141,10 +152,11 @@ class CurrencyGraph {
 
     fun findRoute(sourceSymbol: String, destSymbol: String): Rate? {
         val rateName = getRateName(sourceSymbol, destSymbol)
+        //todo create routesagain
         return routesWithMax2Step
-            .filter { route -> getRateName(route.getSourceSymbol(), route.getDestSymbol()) == rateName }
-            .map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }
-            .firstOrNull()
+                .filter { route -> getRateName(route.getSourceSymbol(), route.getDestSymbol()) == rateName }
+                .map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }
+                .firstOrNull()
     }
 
 
@@ -167,11 +179,11 @@ class CurrencyGraph {
     }
 
     private fun findRoutesWithMax2Edges(
-        currentVertex: String,
-        adjacencyMap: Map<String, MutableList<Rate>>,
-        visited: MutableSet<String>,
-        currentLength: Int,
-        currentRoute: MutableList<Rate>
+            currentVertex: String,
+            adjacencyMap: Map<String, MutableList<Rate>>,
+            visited: MutableSet<String>,
+            currentLength: Int,
+            currentRoute: MutableList<Rate>
     ) {
         if (currentLength == 3) {
             return
@@ -189,7 +201,7 @@ class CurrencyGraph {
                         routesWithMax2Step.remove(existingRoute)
                         addCurrentRoute(currentRoute)
                     } else if (existingRoute.rates.size == currentRoute.size
-                        && existingRoute.rates != currentRoute
+                            && existingRoute.rates != currentRoute
                     ) {
                         throw Exception("Only one route should be available between two symbols")
                     }
@@ -202,11 +214,11 @@ class CurrencyGraph {
             if (!visited.contains(edge.destSymbol)) {
                 currentRoute.add(edge)
                 findRoutesWithMax2Edges(
-                    edge.destSymbol,
-                    adjacencyMap,
-                    visited,
-                    currentLength + 1,
-                    currentRoute
+                        edge.destSymbol,
+                        adjacencyMap,
+                        visited,
+                        currentLength + 1,
+                        currentRoute
                 )
                 currentRoute.removeAt(currentRoute.size - 1)
             }
@@ -223,9 +235,9 @@ class CurrencyGraph {
 
     private fun fetchAllSymbols(): List<String> {
         return rates
-            .flatMap { rate -> listOf(rate.sourceSymbol, rate.destSymbol) }
-            .filter { symbol -> !transitiveSymbols.contains(symbol) }
-            .distinct()
+                .flatMap { rate -> listOf(rate.sourceSymbol, rate.destSymbol) }
+                .filter { symbol -> !transitiveSymbols.contains(symbol) }
+                .distinct()
     }
 
     private fun getRateName(sourceSymbol: String, destSymbol: String): String {
