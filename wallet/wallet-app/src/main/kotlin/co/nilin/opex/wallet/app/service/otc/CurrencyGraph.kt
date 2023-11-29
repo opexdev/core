@@ -1,6 +1,9 @@
 package co.nilin.opex.wallet.app.service.otc
 
+import co.nilin.opex.wallet.core.model.otc.ForbiddenPair
+import co.nilin.opex.wallet.core.model.otc.ForbiddenPairs
 import co.nilin.opex.wallet.core.model.otc.Rate
+import co.nilin.opex.wallet.core.model.otc.Rates
 import co.nilin.opex.wallet.core.service.otc.GraphService
 import java.math.BigDecimal
 
@@ -29,10 +32,64 @@ class CurrencyGraph(private val graphService: GraphService) {
     suspend fun addCurrencyRateV2(
             sourceSymbol: String, destSymbol: String, rate: BigDecimal
     ) {
-        val existingRate: Rate? = findEdge(sourceSymbol, destSymbol)
         graphService.addRate(Rate(sourceSymbol, destSymbol, rate))
-
     }
+
+
+    @Throws(Exception::class)
+    suspend fun removeCurrencyRateV2(sourceSymbol: String, destSymbol: String): Rates {
+        return graphService.deleteRate(Rate(sourceSymbol, destSymbol, BigDecimal.ZERO))
+    }
+
+    suspend fun getRatesV2(): Rates {
+        return graphService.getRates()
+    }
+
+
+    suspend fun getRatesV2(sourceSymbol:String, destinationSymbol:String): Rates {
+        return graphService.getRates(sourceSymbol,destinationSymbol)
+    }
+
+    suspend fun updateRate(rate:Rate) {
+         graphService.updateRate(rate)
+    }
+
+
+
+
+
+    @Throws(Exception::class)
+    suspend fun addForbiddenRateNamesV2(sourceSymbol: String, destSymbol: String) {
+      graphService.addForbiddenPair(ForbiddenPair(sourceSymbol,destSymbol))
+    }
+
+
+    @Throws(Exception::class)
+    suspend fun removeForbiddenRateNamesV2(sourceSymbol: String, destSymbol: String): ForbiddenPairs {
+     return  graphService.deleteForbiddenPair(ForbiddenPair(sourceSymbol,destSymbol))
+    }
+
+
+    @Throws(Exception::class)
+    suspend fun getForbiddenRateNamesV2(): ForbiddenPairs {
+        return  graphService.getForbiddenPairs()
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     private val forbiddenRateNames: MutableList<String> = mutableListOf()

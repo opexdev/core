@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
+import co.nilin.opex.wallet.core.model.Currencies
 import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.spi.CurrencyService
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepository
@@ -99,7 +100,7 @@ class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : Currency
         }
     }
 
-    override suspend fun deleteCurrency(name: String): List<Currency>? {
+    override suspend fun deleteCurrency(name: String): Currencies {
 
         return currencyRepository.findBySymbol(name).awaitFirstOrNull()?.let {
             currencyRepository.deleteBySymbol(name).awaitFirstOrNull().let { getCurrencies() }
@@ -107,7 +108,7 @@ class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : Currency
 
     }
 
-    override suspend fun getCurrencies(): List<Currency>? {
-        return currencyRepository.findAll()?.map { it.toDto() }.collect(Collectors.toList()).awaitFirstOrNull()
+    override suspend fun getCurrencies(): Currencies {
+        return Currencies(currencyRepository.findAll()?.map { it.toDto() }.collect(Collectors.toList()).awaitFirstOrNull())
     }
 }

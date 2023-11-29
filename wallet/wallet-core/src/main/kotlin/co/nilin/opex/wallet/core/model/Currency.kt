@@ -13,3 +13,6 @@ data class Currency(var symbol: String,
                     var minWithdraw: BigDecimal? = BigDecimal.TEN,
                     var maxWithdraw: BigDecimal? = BigDecimal.ZERO,
                     var icon: String? = null)
+
+
+data class Currencies(var currencies:List<Currency>?)
