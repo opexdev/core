@@ -13,7 +13,7 @@ import java.time.LocalDateTime
 interface CurrencyRepository : ReactiveCrudRepository<CurrencyModel, String> {
 
     @Query("select * from currency where symbol = :symbol")
-    fun findBySymbol(symbol: String): Mono<CurrencyModel>
+    fun findBySymbol(symbol: String): Mono<CurrencyModel>?
 
     @Query("insert into currency values (:symbol, :name, :precision) on conflict do nothing")
     fun insert(name: String, symbol: String, precision: BigDecimal): Mono<CurrencyModel>
@@ -33,6 +33,6 @@ interface CurrencyRepository : ReactiveCrudRepository<CurrencyModel, String> {
                maxWithdraw: BigDecimal? = BigDecimal.ZERO,
                icon: String? = null,
                createDate: LocalDateTime? = null,
-               lastUpdateDate: LocalDateTime? = null): Mono<CurrencyModel>
+               lastUpdateDate: LocalDateTime? = null): Mono<CurrencyModel>?
 
 }

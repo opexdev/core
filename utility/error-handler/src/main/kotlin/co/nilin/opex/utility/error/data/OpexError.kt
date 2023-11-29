@@ -53,6 +53,8 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     CurrencyIsExist(6007, null, HttpStatus.BAD_REQUEST),
     PairIsExist(6008, null, HttpStatus.BAD_REQUEST),
     ForbiddenPair(6009, null, HttpStatus.BAD_REQUEST),
+    InvalidRate(6010, null, HttpStatus.BAD_REQUEST),
+    PairNotFound(6011, null, HttpStatus.BAD_REQUEST),
 
 
     // code 7000: api

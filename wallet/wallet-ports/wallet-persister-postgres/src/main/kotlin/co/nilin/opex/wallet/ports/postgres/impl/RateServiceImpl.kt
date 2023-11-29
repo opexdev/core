@@ -7,6 +7,7 @@ import co.nilin.opex.wallet.core.model.otc.ForbiddenPairs
 import co.nilin.opex.wallet.core.model.otc.Rate
 import co.nilin.opex.wallet.core.model.otc.Rates
 import co.nilin.opex.wallet.core.service.otc.GraphService
+import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepository
 import co.nilin.opex.wallet.ports.postgres.dao.ForbiddenPairRepository
 import co.nilin.opex.wallet.ports.postgres.dao.RatesRepository
 import co.nilin.opex.wallet.ports.postgres.model.otc.ForbiddenPairModel
@@ -18,9 +19,11 @@ import java.util.stream.Collectors
 
 @Component
 class RateServiceImpl(private val ratesRepository: RatesRepository,
-                      private val forbiddenPairRepository: ForbiddenPairRepository) : GraphService {
+                      private val forbiddenPairRepository: ForbiddenPairRepository,
+                      private val currencyRepository: CurrencyRepository) : GraphService {
 
     override suspend fun addRate(rate: Rate) {
+         rate.isValid()
         ratesRepository.findBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destSymbol)
                 ?.let {
                     throw OpexException(OpexError.PairIsExist)
@@ -42,8 +45,8 @@ class RateServiceImpl(private val ratesRepository: RatesRepository,
     }
 
 
-    override suspend fun getRates(sourceSymbol:String, destinationSymbol:String): Rates {
-        return Rates(ratesRepository.findRoutes(sourceSymbol,destinationSymbol)?.map { it.toDto() }?.collect(Collectors.toList())?.awaitFirstOrNull())
+    override suspend fun getRates(sourceSymbol: String, destinationSymbol: String): Rates {
+        return Rates(ratesRepository.findRoutes(sourceSymbol, destinationSymbol)?.map { it.toDto() }?.collect(Collectors.toList())?.awaitFirstOrNull())
     }
 
     override suspend fun deleteRate(rate: Rate): Rates {
@@ -52,15 +55,22 @@ class RateServiceImpl(private val ratesRepository: RatesRepository,
                     ratesRepository.deleteBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destSymbol)?.awaitFirstOrNull().let {
                         ratesRepository.findAll()?.map { it.toDto() }?.collect(Collectors.toList()).awaitFirstOrNull()
                     }
-                            ?: throw OpexException(OpexError.PairIsExist)
+                            ?: throw OpexException(OpexError.PairNotFound)
 
                 })
     }
 
-    override suspend fun updateRate(rate: Rate) {
+    override suspend fun updateRate(rate: Rate) :Rates{
 
+        return Rates(ratesRepository
+                .findBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destSymbol)?.let {
+                    ratesRepository.save(RateModel(it.id,rate.sourceSymbol, rate.destSymbol,rate.rate ,LocalDateTime.now(),it.createDate))?.awaitFirstOrNull().let {
+                        ratesRepository.findAll()?.map { it.toDto() }?.collect(Collectors.toList()).awaitFirstOrNull()
+                    }
+                            ?: throw OpexException(OpexError.PairNotFound)
+
+                })
     }
-
 
     override suspend fun addForbiddenPair(forbiddenRate: ForbiddenPair) {
         forbiddenPairRepository.findBySourceSymbolAndDestinationSymbol(forbiddenRate.sourceSymbol, forbiddenRate.destSymbol)?.let {
@@ -79,7 +89,7 @@ class RateServiceImpl(private val ratesRepository: RatesRepository,
     }
 
 
-    override suspend fun getForbiddenPairs(): ForbiddenPairs{
+    override suspend fun getForbiddenPairs(): ForbiddenPairs {
 
         return ForbiddenPairs(forbiddenPairRepository.findAll()?.map { it.toDto() }.collect(Collectors.toList()).awaitFirstOrNull())
     }
@@ -126,5 +136,12 @@ class RateServiceImpl(private val ratesRepository: RatesRepository,
 
                 )
 
+    }
+
+    private fun Rate.isValid(){
+        currencyRepository.findBySymbol(this.sourceSymbol)?.let {
+           currencyRepository.findBySymbol(this.destSymbol)?.let {
+           } ?: throw OpexException(OpexError.CurrencyNotFound)
+        }?: throw OpexException(OpexError.CurrencyNotFound)
     }
 }

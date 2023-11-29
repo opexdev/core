@@ -16,7 +16,7 @@ interface GraphService {
     suspend fun getRates(sourceSymbol:String,destinationSymbol:String):Rates
 
 
-    suspend fun updateRate(rate: Rate)
+    suspend fun updateRate(rate: Rate):Rates
 
     suspend fun addForbiddenPair(forbiddenPair:ForbiddenPair)
 

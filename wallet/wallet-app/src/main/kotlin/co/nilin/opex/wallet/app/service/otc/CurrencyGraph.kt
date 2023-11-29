@@ -5,10 +5,12 @@ import co.nilin.opex.wallet.core.model.otc.ForbiddenPairs
 import co.nilin.opex.wallet.core.model.otc.Rate
 import co.nilin.opex.wallet.core.model.otc.Rates
 import co.nilin.opex.wallet.core.service.otc.GraphService
+import org.springframework.beans.factory.annotation.Autowired
 import java.math.BigDecimal
 
-class CurrencyGraph(private val graphService: GraphService) {
-
+class CurrencyGraph() {
+    @Autowired
+    lateinit var  graphService: GraphService
 
     data class Route(val rates: List<Rate>) {
         fun getSourceSymbol(): String {
@@ -282,6 +284,11 @@ class CurrencyGraph(private val graphService: GraphService) {
         }
         visited.remove(currentVertex)
     }
+
+    public fun getAvailableRoutesV2(){
+
+    }
+
 
     private fun addCurrentRoute(currentRoute: MutableList<Rate>) {
         val route = Route(currentRoute.toList());

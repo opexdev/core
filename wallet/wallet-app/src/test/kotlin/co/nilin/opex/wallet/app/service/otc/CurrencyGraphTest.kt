@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.app.service.otc
 
+import co.nilin.opex.wallet.core.model.otc.Rate
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
@@ -19,9 +20,9 @@ class CurrencyGraphTest {
         val routes = graph.getAvailableRoutes();
         assertEquals(8, routes.size)
         val adRate = graph.findRoute("A", "D")
-        assertEquals(adRate, CurrencyGraph.Rate("A", "D", BigDecimal.TEN))
+        assertEquals(adRate, Rate("A", "D", BigDecimal.TEN))
         val acRate = graph.findRoute("A", "C")
-        assertEquals(acRate, CurrencyGraph.Rate("A", "C", BigDecimal.valueOf(100)))
+        assertEquals(acRate, Rate("A", "C", BigDecimal.valueOf(100)))
     }
 
     @Test
@@ -37,9 +38,9 @@ class CurrencyGraphTest {
         val routes = graph.getAvailableRoutes();
         assertEquals(8, routes.size)
         val adRate = graph.findRoute("A", "D")
-        assertEquals(adRate, CurrencyGraph.Rate("A", "D", BigDecimal.valueOf(100)))
+        assertEquals(adRate, Rate("A", "D", BigDecimal.valueOf(100)))
         val acRate = graph.findRoute("A", "C")
-        assertEquals(acRate, CurrencyGraph.Rate("A", "C", BigDecimal.valueOf(100)))
+        assertEquals(acRate, Rate("A", "C", BigDecimal.valueOf(100)))
 
     }
 
@@ -91,7 +92,7 @@ class CurrencyGraphTest {
         val routes = graph.getAvailableRoutes();
         assertEquals(8, routes.size)
         val acRate = graph.findRoute("A", "C")
-        assertEquals(acRate, CurrencyGraph.Rate("A", "C", BigDecimal.valueOf(100)))
+        assertEquals(acRate, Rate("A", "C", BigDecimal.valueOf(100)))
     }
 
     @Test

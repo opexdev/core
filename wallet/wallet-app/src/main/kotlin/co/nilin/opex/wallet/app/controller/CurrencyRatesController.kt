@@ -47,7 +47,7 @@ class CurrencyRatesController(private val currencyService: CurrencyService) {
     }
 
 
-    @PostMapping("/rates")
+    @PostMapping("/rate")
     @ApiResponse(
             message = "OK",
             code = 200,
@@ -58,7 +58,7 @@ class CurrencyRatesController(private val currencyService: CurrencyService) {
     }
 
 
-    @PutMapping("/rates")
+    @PutMapping("/rate")
     @ApiResponse(
             message = "OK",
             code = 200,
@@ -68,7 +68,7 @@ class CurrencyRatesController(private val currencyService: CurrencyService) {
         currencyGraph.updateRate(Rate(request.sourceSymbol, request.destSymbol, request.rate))
     }
 
-    @DeleteMapping("/rates/{sourceSymbol}/{destSymbol}")
+    @DeleteMapping("/rate/{sourceSymbol}/{destSymbol}")
     @ApiResponse(
             message = "OK",
             code = 200,
@@ -78,7 +78,19 @@ class CurrencyRatesController(private val currencyService: CurrencyService) {
         return currencyGraph.removeCurrencyRateV2(sourceSymbol, destSymbol)
     }
 
-    @GetMapping("/rates")
+
+    @GetMapping("/routes")
+    suspend fun fetchRoutes(): CurrencyExchangeRatesResponse {
+        return CurrencyExchangeRatesResponse(
+                currencyGraph
+                        .getAvailableRoutes()
+                        .map { route ->
+                            CurrencyExchangeRate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate())
+                        }
+        )
+    }
+
+    @GetMapping("/rate")
     @ApiResponse(
             message = "OK",
             code = 200,
@@ -109,7 +121,7 @@ class CurrencyRatesController(private val currencyService: CurrencyService) {
     }
 
 
-    @GetMapping("/rates/{sourceSymbol}/{destSymbol}")
+    @GetMapping("/rate/{sourceSymbol}/{destSymbol}")
     @ApiResponse(
             message = "OK",
             code = 200,
@@ -235,10 +247,6 @@ class CurrencyRatesController(private val currencyService: CurrencyService) {
         return currencyGraph.getTransitiveSymbols()
     }
 
-    @GetMapping("/routes")
-    suspend fun fetchRoutes(): Rates {
-        return currencyGraph.getRatesV2()
-    }
 
 
 }
