@@ -1,4 +1,4 @@
-package co.nilin.opex.wallet.ports.postgres.model.otc
+package co.nilin.opex.wallet.ports.postgres.model
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 data class RateModel(
         @Id var id: Long?,
         @Column("source_symbol") var sourceSymbol: String,
-        @Column("destination_symbol") var destinationSymbol: String,
+        @Column("dest_symbol") var destinationSymbol: String,
         var rate: BigDecimal,
         @Column("last_update_date") var lastUpdateDate: LocalDateTime= LocalDateTime.now(),
         @Column("create_date") var createDate: LocalDateTime)

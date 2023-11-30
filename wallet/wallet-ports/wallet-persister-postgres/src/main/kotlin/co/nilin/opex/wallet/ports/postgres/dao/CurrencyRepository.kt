@@ -5,8 +5,10 @@ import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
+import java.security.cert.TrustAnchor
 import java.time.LocalDateTime
 
 @Repository
@@ -34,5 +36,7 @@ interface CurrencyRepository : ReactiveCrudRepository<CurrencyModel, String> {
                icon: String? = null,
                createDate: LocalDateTime? = null,
                lastUpdateDate: LocalDateTime? = null): Mono<CurrencyModel>?
+
+    fun findByIsTransitive(isTransitive:Boolean):Flux<CurrencyModel>?
 
 }

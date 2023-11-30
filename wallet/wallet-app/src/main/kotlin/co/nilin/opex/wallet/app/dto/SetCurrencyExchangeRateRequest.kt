@@ -14,8 +14,11 @@ class SetCurrencyExchangeRateRequest(
 ){
 
     fun validate(){
-        if(rate<= BigDecimal.ZERO)
+        if(rate<= BigDecimal.ZERO )
             throw OpexException(OpexError.InvalidRate)
+        else if(sourceSymbol==destSymbol)
+            throw OpexException(OpexError.SourceIsEqualDest)
+
 
     }
 }

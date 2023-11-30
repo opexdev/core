@@ -23,6 +23,7 @@ ALTER TABLE currency ADD COLUMN IF NOT EXISTS max_withdraw  DECIMAL;
 ALTER TABLE currency ADD COLUMN IF NOT EXISTS icon  TEXT;
 ALTER TABLE currency ADD COLUMN IF NOT EXISTS last_update_date TIMESTAMP;
 ALTER TABLE currency ADD COLUMN IF NOT EXISTS create_date TIMESTAMP;
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS is_transitive BOOLEAN  NOT NULL DEFAULT FALSE;
 
 
 
@@ -114,21 +115,22 @@ CREATE TABLE IF NOT EXISTS withdraws
 CREATE TABLE IF NOT EXISTS rate
 (
     id SERIAL PRIMARY KEY,
-    source_currency VARCHAR(25) NOT NULL REFERENCES currency (symbol),
-    destination_currency VARCHAR(25) NOT NULL REFERENCES currency (symbol),
+    source_symbol VARCHAR(25) NOT NULL REFERENCES currency (symbol),
+    dest_symbol VARCHAR(25) NOT NULL REFERENCES currency (symbol),
     rate         DECIMAL ,
-    is_forbidden BOOLEAN,
     last_update_date TIMESTAMP,
     create_date TIMESTAMP
     );
-ALTER TABLE rate ADD COLUMN IF NOT EXISTS create_date TIMESTAMP;
 
 
 CREATE TABLE IF NOT EXISTS forbidden_rate
 (
     id SERIAL PRIMARY KEY,
-    source_currency VARCHAR(25) NOT NULL REFERENCES currency (symbol),
-    destination_currency VARCHAR(25) NOT NULL REFERENCES currency (symbol),
+    source_symbol VARCHAR(25) NOT NULL REFERENCES currency (symbol),
+    dest_symbol VARCHAR(25) NOT NULL REFERENCES currency (symbol),
     last_update_date TIMESTAMP,
     create_date TIMESTAMP
     );
+
+
+

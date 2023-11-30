@@ -26,7 +26,7 @@ class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : Currency
 
     override suspend fun getCurrency(symbol: String): Currency? {
 
-        return currencyRepository.findBySymbol(symbol).awaitFirstOrNull()?.let { it.toDto() }
+        return currencyRepository.findBySymbol(symbol)?.awaitFirstOrNull()?.let { it.toDto() }
                 ?: throw OpexException(OpexError.CurrencyNotFound)
 
     }
@@ -50,7 +50,7 @@ class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : Currency
                 val cm = request.toModel()
                 return currencyRepository.insert(cm.name, cm.symbol, cm.precision,
                         cm.title, cm.alias, cm.maxDeposit, cm.minDeposit, cm.minWithdraw, cm.maxWithdraw,
-                        cm.icon, cm.createDate, cm.lastUpdateDate).awaitSingleOrNull()?.toDto()
+                        cm.icon, cm.createDate, cm.lastUpdateDate)?.awaitSingleOrNull()?.toDto()
             } catch (e: Exception) {
                 logger.error("Could not insert new currency ${request.symbol}", e)
                 throw OpexException(OpexError.Error)
@@ -102,7 +102,7 @@ class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : Currency
 
     override suspend fun deleteCurrency(name: String): Currencies {
 
-        return currencyRepository.findBySymbol(name).awaitFirstOrNull()?.let {
+        return currencyRepository.findBySymbol(name)?.awaitFirstOrNull()?.let {
             currencyRepository.deleteBySymbol(name).awaitFirstOrNull().let { getCurrencies() }
         } ?: throw OpexException(OpexError.CurrencyNotFound)
 

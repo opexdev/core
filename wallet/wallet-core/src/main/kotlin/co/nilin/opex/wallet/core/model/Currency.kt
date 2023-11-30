@@ -12,7 +12,8 @@ data class Currency(var symbol: String,
                     var minDeposit: BigDecimal? = BigDecimal.ZERO,
                     var minWithdraw: BigDecimal? = BigDecimal.TEN,
                     var maxWithdraw: BigDecimal? = BigDecimal.ZERO,
-                    var icon: String? = null)
+                    var icon: String? = null,
+                    var isTransitive: Boolean? = false)
 
 
-data class Currencies(var currencies:List<Currency>?)
+data class Currencies(var currencies: List<Currency>?)

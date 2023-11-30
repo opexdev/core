@@ -1,16 +1,20 @@
 package co.nilin.opex.wallet.app.service.otc
 
-import co.nilin.opex.wallet.core.model.otc.ForbiddenPair
-import co.nilin.opex.wallet.core.model.otc.ForbiddenPairs
-import co.nilin.opex.wallet.core.model.otc.Rate
-import co.nilin.opex.wallet.core.model.otc.Rates
+import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.utility.error.data.OpexException
+import co.nilin.opex.wallet.core.model.Currency
+import co.nilin.opex.wallet.core.model.otc.*
 import co.nilin.opex.wallet.core.service.otc.GraphService
+import co.nilin.opex.wallet.core.spi.CurrencyService
 import org.springframework.beans.factory.annotation.Autowired
 import java.math.BigDecimal
 
 class CurrencyGraph() {
     @Autowired
-    lateinit var  graphService: GraphService
+    lateinit var graphService: GraphService
+
+    @Autowired
+    lateinit var currencyService: CurrencyService
 
     data class Route(val rates: List<Rate>) {
         fun getSourceSymbol(): String {
@@ -48,50 +52,31 @@ class CurrencyGraph() {
     }
 
 
-    suspend fun getRatesV2(sourceSymbol:String, destinationSymbol:String): Rates {
-        return graphService.getRates(sourceSymbol,destinationSymbol)
+    suspend fun getRatesV2(sourceSymbol: String, destinationSymbol: String): Rate? {
+        return graphService.getRates(sourceSymbol, destinationSymbol)
     }
 
-    suspend fun updateRate(rate:Rate) {
-         graphService.updateRate(rate)
+    suspend fun updateRate(rate: Rate): Rates {
+        return graphService.updateRate(rate)
     }
-
-
-
 
 
     @Throws(Exception::class)
     suspend fun addForbiddenRateNamesV2(sourceSymbol: String, destSymbol: String) {
-      graphService.addForbiddenPair(ForbiddenPair(sourceSymbol,destSymbol))
+        graphService.addForbiddenPair(ForbiddenPair(sourceSymbol, destSymbol))
     }
 
 
     @Throws(Exception::class)
     suspend fun removeForbiddenRateNamesV2(sourceSymbol: String, destSymbol: String): ForbiddenPairs {
-     return  graphService.deleteForbiddenPair(ForbiddenPair(sourceSymbol,destSymbol))
+        return graphService.deleteForbiddenPair(ForbiddenPair(sourceSymbol, destSymbol))
     }
 
 
     @Throws(Exception::class)
     suspend fun getForbiddenRateNamesV2(): ForbiddenPairs {
-        return  graphService.getForbiddenPairs()
+        return graphService.getForbiddenPairs()
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     private val forbiddenRateNames: MutableList<String> = mutableListOf()
@@ -179,6 +164,21 @@ class CurrencyGraph() {
         }
     }
 
+
+    @Throws(Exception::class)
+    suspend fun addTransitiveSymbolsV2(symbols: Symbols) {
+        graphService.addTransitiveSymbols(symbols)
+    }
+
+    @Throws(Exception::class)
+    suspend fun removeTransitiveSymbolsV2(symbols: Symbols): Symbols {
+        return graphService.deleteTransitiveSymbols(symbols)
+    }
+
+    suspend fun getTransitiveSymbolsV2(): Symbols {
+        return graphService.getTransitiveSymbols()
+    }
+
     @Throws(Exception::class)
     fun addTransitiveSymbols(symbols: List<String>) {
         if (!transitiveSymbols.containsAll(symbols)) {
@@ -192,6 +192,7 @@ class CurrencyGraph() {
             }
         }
     }
+
 
     @Throws(Exception::class)
     fun removeTransitiveSymbols(symbols: List<String>) {
@@ -237,7 +238,7 @@ class CurrencyGraph() {
         return adjacencyMap
     }
 
-    private fun findRoutesWithMax2Edges(
+    private  fun findRoutesWithMax2Edges(
             currentVertex: String,
             adjacencyMap: Map<String, MutableList<Rate>>,
             visited: MutableSet<String>,
@@ -285,9 +286,6 @@ class CurrencyGraph() {
         visited.remove(currentVertex)
     }
 
-    public fun getAvailableRoutesV2(){
-
-    }
 
 
     private fun addCurrentRoute(currentRoute: MutableList<Rate>) {
@@ -335,4 +333,81 @@ class CurrencyGraph() {
         rates.clear()
         routesWithMax2Step.clear()
     }
+
+
+    suspend fun buildRoutes() {
+        val adjencyMap: Map<String, MutableList<Rate>> = createAdjacencyMap()
+        val systemCurrencies = currencyService.getCurrencies()?.currencies
+        val vertice: List<String> = systemCurrencies?.filter { it.isTransitive == false }?.map(Currency::symbol)
+                ?: throw OpexException(OpexError.NoRecordFound)
+        val transitiveSymbols: List<String> = systemCurrencies?.filter { it.isTransitive == true }?.map(Currency::symbol)
+                ?: throw OpexException(OpexError.NoRecordFound)
+        for (vertex in vertice) {
+            val visited = mutableSetOf<String>()
+            findRoutesWithMax2EdgesV2(vertex, adjencyMap, visited, 0, mutableListOf(), transitiveSymbols)
+        }
+    }
+
+    private suspend fun findRoutesWithMax2EdgesV2(
+            currentVertex: String,
+            adjacencyMap: Map<String, MutableList<Rate>>,
+            visited: MutableSet<String>,
+            currentLength: Int,
+            currentRoute: MutableList<Rate>,
+            transitiveSymbols: List<String>
+    ) {
+
+        if (currentLength == 3) {
+            return
+        }
+        visited.add(currentVertex)
+        if (currentLength >= 1) {
+            if (!transitiveSymbols.contains(currentRoute.get(currentRoute.lastIndex).destSymbol)) {
+                val existingRoute = routesWithMax2Step.find { route ->
+                    route.getSourceSymbol() == currentRoute.get(0).sourceSymbol
+                            &&
+                            route.getDestSymbol() == currentRoute.get(currentRoute.lastIndex).destSymbol
+                }
+                if (existingRoute != null) {
+                    if (existingRoute.rates.size > currentRoute.size) {
+                        routesWithMax2Step.remove(existingRoute)
+                        addCurrentRouteV2(currentRoute)
+                    } else if (existingRoute.rates.size == currentRoute.size
+                            && existingRoute.rates != currentRoute
+                    ) {
+                        throw Exception("Only one route should be available between two symbols")
+                    }
+                } else {
+                    addCurrentRouteV2(currentRoute)
+                }
+            }
+        }
+        val totalEdge=adjacencyMap[currentVertex] ?: emptyList()
+        val forbiddenEdge= graphService.getForbiddenPairs().forbiddenPairs
+        val validEdge=totalEdge.filter {forbiddenEdge?.contains(it) ==false  }
+        for (edge in adjacencyMap[currentVertex] ?: emptyList()) {
+
+            if (!visited.contains(edge.destSymbol)) {
+                currentRoute.add(edge)
+                findRoutesWithMax2Edges(
+                        edge.destSymbol,
+                        adjacencyMap,
+                        visited,
+                        currentLength + 1,
+                        currentRoute
+                )
+                currentRoute.removeAt(currentRoute.size - 1)
+            }
+        }
+        visited.remove(currentVertex)
+    }
+
+    private suspend fun addCurrentRouteV2(currentRoute: MutableList<Rate>) {
+        val route = Route(currentRoute.toList());
+        graphService.getForbiddenPairs().forbiddenPairs?.stream()?.filter{
+            it.sourceSymbol==route.getSourceSymbol() && it.destSymbol==route.getDestSymbol()
+        }?: routesWithMax2Step.add(route)
+
+    }
+
 }

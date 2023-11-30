@@ -20,6 +20,7 @@ data class CurrencyModel(
         @Column("max_withdraw") var maxWithdraw: BigDecimal? = BigDecimal.ZERO,
         var icon: String? = null,
         @Column("create_date") var createDate: LocalDateTime? = LocalDateTime.now(),
-        @Column("last_update_date") var lastUpdateDate: LocalDateTime? = LocalDateTime.now()
+        @Column("last_update_date") var lastUpdateDate: LocalDateTime? = LocalDateTime.now(),
+        @Column("is_transitive") var isTransitive:Boolean?=false
 
 )

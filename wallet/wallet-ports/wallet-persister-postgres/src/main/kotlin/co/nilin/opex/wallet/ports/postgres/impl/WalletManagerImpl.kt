@@ -149,13 +149,13 @@ class WalletManagerImpl(
             currency.symbol
         ).awaitFirstOrNull() ?: return null
 
-        val existingCurrency = currencyRepository.findBySymbol(walletModel.currency).awaitFirst()
+        val existingCurrency = currencyRepository.findBySymbol(walletModel.currency)?.awaitFirst()
         val walletOwner = walletOwnerRepository.findById(walletModel.owner).awaitFirst().toPlainObject()
         return Wallet(
             walletModel.id!!,
             walletOwner,
-            Amount(existingCurrency.toPlainObject(), walletModel.balance),
-            existingCurrency.toPlainObject(),
+            Amount(existingCurrency!!.toPlainObject(), walletModel.balance),
+            existingCurrency!!.toPlainObject(),
             walletModel.type,
             walletModel.version
         )
