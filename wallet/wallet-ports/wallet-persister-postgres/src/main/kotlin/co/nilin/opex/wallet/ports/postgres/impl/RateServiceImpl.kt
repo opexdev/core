@@ -106,11 +106,11 @@ class RateServiceImpl(private val ratesRepository: RatesRepository,
                 currencyRepository.save(it.apply { isTransitive = false }).awaitFirstOrNull()
             }
         }
-        return Symbols(currencyRepository.findByIsTransitive(true)?.map (CurrencyModel::symbol)?.collect(Collectors.toList())?.awaitFirstOrNull())
+        return Symbols(currencyRepository.findByIsTransitive(true)?.map(CurrencyModel::symbol)?.collect(Collectors.toList())?.awaitFirstOrNull())
     }
 
     override suspend fun getTransitiveSymbols(): Symbols {
-        return Symbols(currencyRepository.findByIsTransitive(true)?.map (CurrencyModel::symbol)?.collect(Collectors.toList())?.awaitFirstOrNull())
+        return Symbols(currencyRepository.findByIsTransitive(true)?.map(CurrencyModel::symbol)?.collect(Collectors.toList())?.awaitFirstOrNull())
     }
 
 
@@ -158,10 +158,14 @@ class RateServiceImpl(private val ratesRepository: RatesRepository,
     }
 
     private suspend fun Rate.isValid() {
-        currencyRepository.findBySymbol(this.sourceSymbol)?.awaitFirstOrNull()?.let {
-            currencyRepository.findBySymbol(this.destSymbol)?.awaitFirstOrNull()?.let {
+        val transitives = getTransitiveSymbols().symbols
+        if (!(transitives?.contains(this.sourceSymbol) == true || transitives?.contains(this.destSymbol) == true))
+            throw OpexException(OpexError.AtLeastNeedOneTransitiveSymbol)
+
+            currencyRepository.findBySymbol(this.sourceSymbol)?.awaitFirstOrNull()?.let {
+                currencyRepository.findBySymbol(this.destSymbol)?.awaitFirstOrNull()?.let {
+                } ?: throw OpexException(OpexError.CurrencyNotFound)
             } ?: throw OpexException(OpexError.CurrencyNotFound)
-        } ?: throw OpexException(OpexError.CurrencyNotFound)
     }
 
     private suspend fun ForbiddenPair.isValid() {

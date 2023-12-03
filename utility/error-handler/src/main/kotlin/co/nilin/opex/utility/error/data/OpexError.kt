@@ -56,6 +56,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     InvalidRate(6010, null, HttpStatus.BAD_REQUEST),
     PairNotFound(6011, null, HttpStatus.BAD_REQUEST),
     SourceIsEqualDest(6012, null, HttpStatus.BAD_REQUEST),
+    AtLeastNeedOneTransitiveSymbol(6013, null, HttpStatus.BAD_REQUEST),
 
 
     // code 7000: api

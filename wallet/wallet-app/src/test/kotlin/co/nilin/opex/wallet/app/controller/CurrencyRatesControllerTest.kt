@@ -34,13 +34,13 @@ class CurrencyRatesControllerTest {
 
     @BeforeEach
     fun setup() {
-        currencyGraph.reset()
+//        currencyGraph.reset()
     }
 
     @Test
     fun whenSetCurrencyExchangeRateIsOK_thenRetrieveRoute() {
         runBlocking {
-            webClient.post().uri("/rates").accept(MediaType.APPLICATION_JSON)
+            webClient.post().uri("/otc/rate").accept(MediaType.APPLICATION_JSON)
                 .bodyValue(SetCurrencyExchangeRateRequest("ETH", "USDT", BigDecimal.TEN))
                 .exchange()
                 .expectStatus().isOk

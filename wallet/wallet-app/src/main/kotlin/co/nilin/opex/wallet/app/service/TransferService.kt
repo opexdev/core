@@ -8,6 +8,7 @@ import co.nilin.opex.wallet.app.service.otc.CurrencyGraph
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.service.otc.GraphService
 import co.nilin.opex.wallet.core.spi.CurrencyService
 import co.nilin.opex.wallet.core.spi.TransferManager
 import co.nilin.opex.wallet.core.spi.WalletManager
@@ -25,7 +26,8 @@ class TransferService(
         private val transferManager: TransferManager,
         private val currencyService: CurrencyService,
         private val walletManager: WalletManager,
-        private val walletOwnerManager: WalletOwnerManager
+        private val walletOwnerManager: WalletOwnerManager,
+        private val graphService: GraphService
 ) {
 
     private val logger = LoggerFactory.getLogger(TransferService::class.java)
@@ -77,7 +79,7 @@ class TransferService(
         amount: BigDecimal,
         destSymbol: String,
     ): BigDecimal {
-        val rate = currencyGraph.findRoute(symbol, destSymbol) ?: throw OpexException(OpexError.NOT_EXCHANGEABLE_CURRENCIES)
+        val rate = graphService.getRates(symbol, destSymbol) ?: throw OpexException(OpexError.NOT_EXCHANGEABLE_CURRENCIES)
         return amount.multiply(rate.rate)
     }
 
@@ -90,7 +92,7 @@ class TransferService(
         receiverUuid: String,
         receiverWalletType: String
     ): Pair<String, BigDecimal> {
-        val rate = currencyGraph.findRoute(sourceSymbol, destSymbol) ?: throw OpexException(OpexError.NOT_EXCHANGEABLE_CURRENCIES)
+        val rate = graphService.getRates(sourceSymbol, destSymbol) ?: throw OpexException(OpexError.NOT_EXCHANGEABLE_CURRENCIES)
         val finalAmount = sourceAmount.multiply(rate.rate)
         val reserveNumber = UUID.randomUUID().toString()
         reserved.put(

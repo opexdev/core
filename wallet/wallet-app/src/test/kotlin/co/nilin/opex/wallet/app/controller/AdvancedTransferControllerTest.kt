@@ -47,7 +47,7 @@ class AdvancedTransferControllerTest {
 
     @BeforeEach
     fun setup() {
-        currencyGraph.reset()
+     //   currencyGraph.reset()
         runBlocking {
             currencyService.addCurrency("ETH", "ETH", BigDecimal.TEN)
             currencyService.addCurrency("BTC", "BTC", BigDecimal.TEN)

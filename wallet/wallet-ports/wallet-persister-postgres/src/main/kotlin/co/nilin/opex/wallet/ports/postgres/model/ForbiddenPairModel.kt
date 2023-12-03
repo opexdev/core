@@ -5,7 +5,7 @@ import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import java.time.LocalDateTime
 
-@Table("forbidden_rate")
+@Table("forbidden_pair")
 data class ForbiddenPairModel (
         @Id
     var id: Long?,

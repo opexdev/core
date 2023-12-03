@@ -78,7 +78,7 @@ class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : Currency
     private fun Currency.toModel(): CurrencyModel {
         return with(this) {
             CurrencyModel(
-                    symbol, name, precision, title, alias, maxDeposit, minDeposit, minWithdraw, maxWithdraw, icon, LocalDateTime.now(), LocalDateTime.now()
+                    symbol, name, precision, title, alias, maxDeposit, minDeposit, minWithdraw, maxWithdraw, icon, LocalDateTime.now(), LocalDateTime.now(),isTransitive
             )
         }
     }
@@ -86,7 +86,7 @@ class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : Currency
     private fun CurrencyModel.toDto(): Currency {
         return with(this) {
             Currency(
-                    symbol, name, precision, title, alias, maxDeposit, minDeposit, minWithdraw, maxWithdraw, icon
+                    symbol, name, precision, title, alias, maxDeposit, minDeposit, minWithdraw, maxWithdraw, icon,isTransitive
             )
         }
     }

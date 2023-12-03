@@ -123,7 +123,7 @@ CREATE TABLE IF NOT EXISTS rate
     );
 
 
-CREATE TABLE IF NOT EXISTS forbidden_rate
+CREATE TABLE IF NOT EXISTS forbidden_pair
 (
     id SERIAL PRIMARY KEY,
     source_symbol VARCHAR(25) NOT NULL REFERENCES currency (symbol),
