@@ -31,7 +31,10 @@ class CustomOIDCProtocolMapper : AbstractOIDCProtocolMapper(), OIDCAccessTokenMa
     private val configProperties: List<ProviderConfigProperty> = ArrayList()
 
     private val loginWhitelistIsEnable by lazy {
-        ApplicationContextHolder.getCurrentContext()!!.environment.resolvePlaceholders("\${app.whitelist.login.enabled}")
+        ApplicationContextHolder.getCurrentContext()!!
+            .environment
+            .resolvePlaceholders("\${app.whitelist.login.enabled}")
+            .toBoolean()
     }
 
     override fun getConfigProperties(): List<ProviderConfigProperty>? {
@@ -64,7 +67,7 @@ class CustomOIDCProtocolMapper : AbstractOIDCProtocolMapper(), OIDCAccessTokenMa
         token.otherClaims["kyc_level"] = userSession?.user?.attributes?.get("kycLevel")
         setClaim(token, mappingModel, userSession, keycloakSession, clientSessionCtx)
 
-        if (loginWhitelistIsEnable == true && !userIsAdmin(userSession)) {
+        if (loginWhitelistIsEnable && !userIsAdmin(userSession)) {
             logger.info("login whitelist is enable and user is not admin; going to filter login requests ........")
             val em: EntityManager = keycloakSession!!.getProvider(JpaConnectionProvider::class.java).entityManager
             val result: List<WhiteListModel> = em.createQuery("from whitelist", WhiteListModel::class.java).resultList
