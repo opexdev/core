@@ -27,7 +27,6 @@ services:
     build: user-management/keycloak-gateway
     volumes:
       - "./preferences-dev.yml:/preferences.yml"
-      - "./whitelist.txt:/whitelist.txt"
   wallet:
     build: wallet/wallet-app
     volumes:

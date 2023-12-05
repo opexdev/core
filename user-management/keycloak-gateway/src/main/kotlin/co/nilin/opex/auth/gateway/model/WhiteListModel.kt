@@ -6,8 +6,8 @@ import javax.persistence.*
 
 @Entity(name = "whitelist")
 @Table
-class WhiteListModel{
-        @Id
-        var id :String?=null
-        var identifier: String?=null
+class WhiteListModel {
+    @Id
+    var id: String? = null
+    var identifier: String? = null
 }

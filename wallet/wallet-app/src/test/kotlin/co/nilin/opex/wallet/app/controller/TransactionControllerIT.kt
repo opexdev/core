@@ -5,7 +5,6 @@ import co.nilin.opex.wallet.core.model.TransactionHistory
 import co.nilin.opex.wallet.core.spi.TransactionManager
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers.*
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
@@ -26,7 +25,8 @@ import java.time.ZoneId
 @ActiveProfiles("test")
 @AutoConfigureWebTestClient
 @Import(TestChannelBinderConfiguration::class)
-class TransactionControllerTest {
+
+class TransactionControllerIT {
     @Autowired
     private lateinit var webClient: WebTestClient
 
@@ -38,16 +38,16 @@ class TransactionControllerTest {
         val uuid = "uuid";
         val t = System.currentTimeMillis()
         val history = TransactionHistory(
-            1L, "c", BigDecimal.ONE, "desc", "ref", System.currentTimeMillis(), "cat", mapOf(Pair("key1", "val1"))
+            1L, "c", BigDecimal.ONE, "desc", "ref", System.currentTimeMillis(), "cat", mapOf(Pair("key1", "val1")), true
         )
         runBlocking {
             Mockito.`when`(
                 manager.findTransactions(
-                    uuid, "c", null, LocalDateTime.ofInstant(Instant.ofEpochMilli(t), ZoneId.systemDefault()), LocalDateTime.ofInstant(Instant.ofEpochMilli(t), ZoneId.systemDefault()), 1, 1
+                    uuid, "c", null, LocalDateTime.ofInstant(Instant.ofEpochMilli(t), ZoneId.systemDefault()), LocalDateTime.ofInstant(Instant.ofEpochMilli(t), ZoneId.systemDefault()), true, 1, 1
                 )
             ).thenReturn(listOf(history))
             webClient.post().uri("/transaction/$uuid").accept(MediaType.APPLICATION_JSON)
-                .bodyValue(TransactionRequest("c", null, t, t, 1, 1))
+                .bodyValue(TransactionRequest("c", null, t, t, 1, 1, true))
                 .exchange()
                 .expectStatus().isOk
                 .expectBodyList(TransactionHistory::class.java)

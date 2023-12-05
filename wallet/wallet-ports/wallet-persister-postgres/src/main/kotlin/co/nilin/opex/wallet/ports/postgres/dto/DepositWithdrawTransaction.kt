@@ -11,5 +11,8 @@ data class DepositWithdrawTransaction(
     val ref: String?,
     val date: LocalDateTime,
     val category: String,
-    val detail: String?
+    val detail: String?,
+    val sender: Long?,
+    val receiver: Long?,
+    val owner: Long?
 )

@@ -743,7 +743,7 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "3d5dc66b-5576-4b62-87cf-1c2b008046d4",
+      "secret": "**********",
       "defaultRoles": [
         "manage-account",
         "view-profile"
@@ -811,7 +811,7 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "8a3fa345-2543-4070-871d-2c19f1e8a59d",
+      "secret": "**********",
       "redirectUris": [
         "/realms/opex/account/*",
         "http://localhost:3000/*",
@@ -930,7 +930,7 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "0247ee8c-ca5a-4f68-a3a7-c668aaa05751",
+      "secret": "**********",
       "redirectUris": [],
       "webOrigins": [
         "*"
@@ -1065,7 +1065,7 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "a8fae04d-7966-46eb-b9f2-ccc37b7d6862",
+      "secret": "**********",
       "redirectUris": [
         "http://localhost:3000/*",
         "https://opex.dev/*"
@@ -1128,7 +1128,7 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "c538c83a-9c2a-4758-abae-046db42aacdc",
+      "secret": "**********",
       "redirectUris": [],
       "webOrigins": [],
       "notBefore": 0,
@@ -1186,7 +1186,7 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "b01a5a5a-5f99-4efb-9189-1dfb1798850f",
+      "secret": "**********",
       "redirectUris": [
         "*"
       ],
@@ -1360,7 +1360,7 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "7abe18a6-408f-4918-b620-bca4bfe9e48a",
+      "secret": "**********",
       "redirectUris": [],
       "webOrigins": [],
       "notBefore": 0,
@@ -2059,7 +2059,7 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "10594c9f-3666-4e35-bc34-4a3de5ab9c0d",
+      "secret": "**********",
       "redirectUris": [
         "/admin/opex/console/*"
       ],
@@ -2137,7 +2137,7 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "d3d927e4-6ad6-4545-9f6f-0725a79b2d9e",
+      "secret": "**********",
       "redirectUris": [
         "*"
       ],
@@ -2221,6 +2221,14 @@
             "claim.name": "clientId",
             "jsonType.label": "String"
           }
+        },
+        {
+          "id": "35eb08d6-1b86-428c-a878-c8959e37bdb5",
+          "name": "Custom mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-customprotocolmapper",
+          "consentRequired": false,
+          "config": {}
         }
       ],
       "defaultClientScopes": [
@@ -2942,13 +2950,13 @@
         "config": {
           "allowed-protocol-mapper-types": [
             "saml-user-property-mapper",
-            "saml-user-attribute-mapper",
             "oidc-usermodel-attribute-mapper",
             "oidc-sha256-pairwise-sub-mapper",
-            "oidc-full-name-mapper",
-            "oidc-usermodel-property-mapper",
             "saml-role-list-mapper",
-            "oidc-address-mapper"
+            "oidc-address-mapper",
+            "oidc-usermodel-property-mapper",
+            "oidc-full-name-mapper",
+            "saml-user-attribute-mapper"
           ]
         }
       },
@@ -2968,14 +2976,14 @@
         "subComponents": {},
         "config": {
           "allowed-protocol-mapper-types": [
-            "oidc-address-mapper",
             "oidc-usermodel-property-mapper",
-            "oidc-full-name-mapper",
-            "saml-role-list-mapper",
             "oidc-sha256-pairwise-sub-mapper",
+            "saml-role-list-mapper",
+            "saml-user-property-mapper",
+            "oidc-address-mapper",
+            "oidc-full-name-mapper",
             "oidc-usermodel-attribute-mapper",
-            "saml-user-attribute-mapper",
-            "saml-user-property-mapper"
+            "saml-user-attribute-mapper"
           ]
         }
       }

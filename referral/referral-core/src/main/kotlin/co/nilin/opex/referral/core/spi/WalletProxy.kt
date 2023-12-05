@@ -11,7 +11,7 @@ interface WalletProxy {
         receiverUuid: String,
         amount: BigDecimal,
         description: String?,
-        transferRef: String?
+        transferRef: String?,
     )
 
     suspend fun canFulfil(symbol: String, walletType: String, uuid: String, amount: BigDecimal): Boolean

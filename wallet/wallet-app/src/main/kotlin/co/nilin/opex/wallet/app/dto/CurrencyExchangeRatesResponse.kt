@@ -6,8 +6,7 @@ import java.math.BigDecimal
 data class CurrencyExchangeRate(
     val sourceSymbol: String,
     val destSymbol: String,
-    val rate: BigDecimal,
-    val fee: BigDecimal
+    val rate: BigDecimal
 )
 
-class CurrencyExchangeRatesResponse(val rates: List<CurrencyExchangeRate>)
+data class CurrencyExchangeRatesResponse(val rates: List<CurrencyExchangeRate>)

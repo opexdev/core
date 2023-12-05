@@ -59,7 +59,8 @@ class TransactionManagerImpl(
                     it.ref,
                     it.date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
                     it.category,
-                    if (it.detail == null) emptyMap() else objectMapper.readValue(it.detail, Map::class.java) as Map<String, Any>?
+                    if (it.detail == null) emptyMap() else objectMapper.readValue(it.detail, Map::class.java) as Map<String, Any>?,
+                    it.sender == it.owner
                 )
             }
     }
@@ -88,7 +89,8 @@ class TransactionManagerImpl(
                     it.ref,
                     it.date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
                     it.category,
-                    if (it.detail == null) emptyMap() else objectMapper.readValue(it.detail, Map::class.java) as Map<String, Any>?
+                    if (it.detail == null) emptyMap() else objectMapper.readValue(it.detail, Map::class.java) as Map<String, Any>?,
+                    it.sender == it.owner
                 )
             }
     }
@@ -99,11 +101,16 @@ class TransactionManagerImpl(
         category: String?,
         startTime: LocalDateTime,
         endTime: LocalDateTime,
+        asc: Boolean,
         limit: Int,
         offset: Int
     ): List<TransactionHistory> {
         val transactions =
-            transactionRepository.findTransactions(uuid, coin, category, startTime, endTime, limit, offset)
+            if (asc)
+                transactionRepository.findTransactionsAsc(uuid, coin, category, startTime, endTime, limit, offset)
+            else
+                transactionRepository.findTransactionsDesc(uuid, coin, category, startTime, endTime, limit, offset)
+
         return transactions.collectList()
             .awaitFirstOrElse { emptyList() }
             .map {
@@ -115,7 +122,8 @@ class TransactionManagerImpl(
                     it.ref,
                     it.date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
                     it.category,
-                    if (it.detail == null) emptyMap() else objectMapper.readValue(it.detail, Map::class.java) as Map<String, Any>?
+                    if (it.detail == null) emptyMap() else objectMapper.readValue(it.detail, Map::class.java) as Map<String, Any>?,
+                    it.sender == it.owner
                 )
             }
     }

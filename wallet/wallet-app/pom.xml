@@ -14,7 +14,42 @@
     <name>wallet-app</name>
     <description>Wallet management app of Opex</description>
 
+    <profiles>
+        <profile>
+            <id>otc</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.springframework.cloud</groupId>
+                    <artifactId>spring-cloud-starter-consul-all</artifactId>
+                    <version>3.1.2</version>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>org.springframework.cloud</groupId>
+                            <artifactId>spring-cloud-consul-binder</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.springframework.cloud</groupId>
+                            <artifactId>spring-cloud-bus</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.springframework.cloud</groupId>
+                            <artifactId>spring-cloud-starter-consul-config</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.springframework.cloud</groupId>
+                            <artifactId>spring-cloud-starter-consul-bus</artifactId>
+                        </exclusion>
+                    </exclusions>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
     <dependencies>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-consul-all</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
@@ -68,10 +103,7 @@
             <groupId>co.nilin.opex.utility.log</groupId>
             <artifactId>logging-handler</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-consul-all</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
@@ -154,11 +186,10 @@
             <version>1.18.0</version>
             <scope>test</scope>
         </dependency>
-
-
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-stream</artifactId>
+            <version>3.2.6</version>
             <type>test-jar</type>
             <scope>test</scope>
             <classifier>test-binder</classifier>
@@ -192,7 +223,9 @@
             <version>5.4.0</version>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
