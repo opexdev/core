@@ -53,12 +53,12 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     private val forgotUrl by lazy {
         ApplicationContextHolder.getCurrentContext()!!.environment.resolvePlaceholders("\${forgot-redirect-url}")
     }
+    private val registerWhitelistIsEnable by lazy {
+        ApplicationContextHolder.getCurrentContext()!!.environment.resolvePlaceholders("\${app.whitelist.register.enabled}")
+    }
     private val kafkaTemplate by lazy {
         ApplicationContextHolder.getCurrentContext()!!.getBean("authKafkaTemplate") as KafkaTemplate<String, AuthEvent>
     }
-
-    @Value("\${app.whitelist.register.enable}")
-    private var registerWhitelistIsEnable: Boolean? = true
 
     @POST
     @Path("user")

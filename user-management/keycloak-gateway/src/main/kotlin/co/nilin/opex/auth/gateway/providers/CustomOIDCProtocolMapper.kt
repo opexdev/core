@@ -1,5 +1,6 @@
 package co.nilin.opex.auth.gateway.providers
 
+import co.nilin.opex.auth.gateway.ApplicationContextHolder
 import co.nilin.opex.auth.gateway.model.WhiteListModel
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
@@ -22,16 +23,16 @@ import java.util.stream.Collectors
 import javax.persistence.EntityManager
 import javax.ws.rs.core.Response
 
-class CustomOIDCProtocolMapper() : AbstractOIDCProtocolMapper(), OIDCAccessTokenMapper, OIDCIDTokenMapper,
+class CustomOIDCProtocolMapper : AbstractOIDCProtocolMapper(), OIDCAccessTokenMapper, OIDCIDTokenMapper,
     UserInfoTokenMapper {
     private val logger = LoggerFactory.getLogger(CustomOIDCProtocolMapper::class.java)
 
     private val PROVIDER_ID = "oidc-customprotocolmapper"
     private val configProperties: List<ProviderConfigProperty> = ArrayList()
 
-    @Value("\${app.whitelist.login.enable}")
-    private var loginWhitelistIsEnable: Boolean? = true
-
+    private val loginWhitelistIsEnable by lazy {
+        ApplicationContextHolder.getCurrentContext()!!.environment.resolvePlaceholders("\${app.whitelist.login.enabled}")
+    }
 
     override fun getConfigProperties(): List<ProviderConfigProperty>? {
         return configProperties
