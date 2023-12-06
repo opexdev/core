@@ -1,5 +1,20 @@
 version: '3.8'
 services:
+  kafka-1:
+    image: ghcr.io/opexdev/kafka:$TAG
+    build: docker-images/kafka
+  kafka-2:
+    image: ghcr.io/opexdev/kafka:$TAG
+    build: docker-images/kafka
+  kafka-3:
+    image: ghcr.io/opexdev/kafka:$TAG
+    build: docker-images/kafka
+  vault:
+    image: ghcr.io/opexdev/vault-opex:$TAG
+    build: docker-images/vault
+  postgres-opex:
+    image: ghcr.io/opexdev/postgres-opex:$TAG
+    build: docker-images/postgres
   accountant:
     image: ghcr.io/opexdev/accountant:$TAG
     build: accountant/accountant-app
