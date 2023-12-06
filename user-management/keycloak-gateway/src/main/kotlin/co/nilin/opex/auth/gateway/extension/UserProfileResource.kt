@@ -19,10 +19,10 @@ import org.springframework.core.io.buffer.DefaultDataBufferFactory
 import reactor.core.publisher.Flux
 import java.io.File
 import java.nio.file.Paths
+import java.util.stream.Collectors
 import javax.ws.rs.*
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
-import kotlin.streams.toList
 
 class UserProfileResource(private val session: KeycloakSession) : RealmResourceProvider {
 
@@ -119,7 +119,7 @@ class UserProfileResource(private val session: KeycloakSession) : RealmResourceP
         if (kycRequestGroup == null || kycRejectGroup == null) {
             val groups = session.groups()
                 .getGroupsStream(opexRealm)
-                .toList()
+                .collect(Collectors.toList())
 
             kycRequestGroup = groups.find { it.name == "kyc-requested" }
             kycRejectGroup = groups.find { it.name == "kyc-rejected" }
@@ -168,28 +168,28 @@ class UserProfileResource(private val session: KeycloakSession) : RealmResourceP
     private fun isInKycGroups(user: UserModel): Boolean {
         return user.groupsStream.map { it.name }
             .filter { it == "kyc-accepted" || it == "kyc-rejected" || it == "kyc-requested" || it == "kyc-blocked" }
-            .toList()
+            .collect(Collectors.toList())
             .isNotEmpty()
     }
 
     private fun isInNonRetryableKycGroups(user: UserModel): Boolean {
         return user.groupsStream.map { it.name }
             .filter { it == "kyc-accepted" || it == "kyc-requested" }
-            .toList()
+            .collect(Collectors.toList())
             .isNotEmpty()
     }
 
     private fun isInBlockedKycGroups(user: UserModel): Boolean {
         return user.groupsStream.map { it.name }
             .filter { it == "kyc-blocked" }
-            .toList()
+            .collect(Collectors.toList())
             .isNotEmpty()
     }
 
     private fun getUserKycGroup(user: UserModel): String? {
         val kycGroups = user.groupsStream.map { it.name }
             .filter { it == "kyc-accepted" || it == "kyc-rejected" || it == "kyc-requested" || it == "kyc-blocked" }
-            .toList()
+            .collect(Collectors.toList())
         return if (kycGroups.isEmpty()) null else kycGroups[0]
     }
 

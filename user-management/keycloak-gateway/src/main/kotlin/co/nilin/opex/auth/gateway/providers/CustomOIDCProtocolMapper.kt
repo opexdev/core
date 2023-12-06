@@ -1,5 +1,6 @@
 package co.nilin.opex.auth.gateway.providers
 
+import co.nilin.opex.auth.gateway.ApplicationContextHolder
 import co.nilin.opex.auth.gateway.model.WhiteListModel
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
@@ -22,15 +23,19 @@ import java.util.stream.Collectors
 import javax.persistence.EntityManager
 import javax.ws.rs.core.Response
 
-class CustomOIDCProtocolMapper() : AbstractOIDCProtocolMapper(), OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
+class CustomOIDCProtocolMapper : AbstractOIDCProtocolMapper(), OIDCAccessTokenMapper, OIDCIDTokenMapper,
+    UserInfoTokenMapper {
     private val logger = LoggerFactory.getLogger(CustomOIDCProtocolMapper::class.java)
 
     private val PROVIDER_ID = "oidc-customprotocolmapper"
     private val configProperties: List<ProviderConfigProperty> = ArrayList()
 
-    @Value("\${app.whitelist.login.enable}")
-    private var loginWhitelistIsEnable: Boolean? = true
-
+    private val loginWhitelistIsEnable by lazy {
+        ApplicationContextHolder.getCurrentContext()!!
+            .environment
+            .resolvePlaceholders("\${app.whitelist.login.enabled}")
+            .toBoolean()
+    }
 
     override fun getConfigProperties(): List<ProviderConfigProperty>? {
         return configProperties
@@ -52,27 +57,40 @@ class CustomOIDCProtocolMapper() : AbstractOIDCProtocolMapper(), OIDCAccessToken
         return "some help text"
     }
 
-    override fun transformAccessToken(token: AccessToken, mappingModel: ProtocolMapperModel?, keycloakSession: KeycloakSession?,
-                                      userSession: UserSessionModel?, clientSessionCtx: ClientSessionContext?): AccessToken? {
-
+    override fun transformAccessToken(
+        token: AccessToken,
+        mappingModel: ProtocolMapperModel?,
+        keycloakSession: KeycloakSession?,
+        userSession: UserSessionModel?,
+        clientSessionCtx: ClientSessionContext?
+    ): AccessToken? {
         token.otherClaims["kyc_level"] = userSession?.user?.attributes?.get("kycLevel")
         setClaim(token, mappingModel, userSession, keycloakSession, clientSessionCtx)
 
-        if (loginWhitelistIsEnable == true && !userIsAdmin(userSession)) {
+        if (loginWhitelistIsEnable && !userIsAdmin(userSession)) {
             logger.info("login whitelist is enable and user is not admin; going to filter login requests ........")
             val em: EntityManager = keycloakSession!!.getProvider(JpaConnectionProvider::class.java).entityManager
             val result: List<WhiteListModel> = em.createQuery("from whitelist", WhiteListModel::class.java).resultList
             if (!result.stream()
-                            .map(WhiteListModel::identifier)
-                            .collect(Collectors.toList()).contains(userSession?.user?.email))
-                throw ErrorResponseException(OpexError.LoginIsLimited.name,OpexError.LoginIsLimited.message,Response.Status.BAD_REQUEST)
+                    .map(WhiteListModel::identifier)
+                    .collect(Collectors.toList()).contains(userSession?.user?.email)
+            )
+                throw ErrorResponseException(
+                    OpexError.LoginIsLimited.name,
+                    OpexError.LoginIsLimited.message,
+                    Response.Status.BAD_REQUEST
+                )
         }
         return token
 
     }
 
-    fun create(name: String?,
-               accessToken: Boolean, idToken: Boolean, userInfo: Boolean): ProtocolMapperModel? {
+    fun create(
+        name: String?,
+        accessToken: Boolean,
+        idToken: Boolean,
+        userInfo: Boolean
+    ): ProtocolMapperModel? {
         val mapper = ProtocolMapperModel()
         mapper.name = name
         mapper.protocolMapper = PROVIDER_ID
@@ -84,11 +102,9 @@ class CustomOIDCProtocolMapper() : AbstractOIDCProtocolMapper(), OIDCAccessToken
         return mapper
     }
 
-
     private fun userIsAdmin(userSession: UserSessionModel?): Boolean {
         val roles = userSession?.user?.roleMappingsStream?.map(RoleModel::getName)?.collect(Collectors.toList())
         return roles?.contains("admin_finance") == true || roles?.contains("admin_system") == true
-
     }
 
 }
