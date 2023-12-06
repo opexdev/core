@@ -1,5 +1,5 @@
 x-postgres-db: &postgres-db
-  image: registry.opex.dev/repository/dockernilin-repo/postgres-opex
+  image: ghcr.io/opexdev/postgres-opex
   environment:
     - POSTGRES_USER=${DB_USER:-opex}
     - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
@@ -29,7 +29,7 @@ services:
       restart_policy:
         condition: on-failure
   kafka-1:
-    image: registry.opex.dev/repository/dockernilin-repo/kafka
+    image: ghcr.io/opexdev/kafka
     hostname: kafka-1
     volumes:
       - kafka-1:/var/lib/kafka/data
@@ -50,7 +50,7 @@ services:
       restart_policy:
         condition: on-failure
   kafka-2:
-    image: registry.opex.dev/repository/dockernilin-repo/kafka
+    image: ghcr.io/opexdev/kafka
     hostname: kafka-2
     volumes:
       - kafka-2:/var/lib/kafka/data
@@ -71,7 +71,7 @@ services:
       restart_policy:
         condition: on-failure
   kafka-3:
-    image: registry.opex.dev/repository/dockernilin-repo/kafka
+    image: ghcr.io/opexdev/kafka
     hostname: kafka-3
     volumes:
       - kafka-3:/var/lib/kafka/data
@@ -110,7 +110,7 @@ services:
       restart_policy:
         condition: on-failure
   vault:
-    image: registry.opex.dev/repository/dockernilin-repo/vault-opex
+    image: ghcr.io/opexdev/vault-opex
     volumes:
       - vault-data:/vault/file
     environment:
@@ -177,8 +177,12 @@ services:
     <<: *postgres-db
     volumes:
       - api-data:/var/lib/postgresql/data/
+  postgres-bc-gateway:
+    <<: *postgres-db
+    volumes:
+      - bc-gateway-data:/var/lib/postgresql/data/
   accountant:
-    image: registry.opex.dev/repository/dockernilin-repo/accountant
+    image: ghcr.io/opexdev/accountant
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - SPRING_PROFILES_ACTIVE=scheduled
@@ -208,7 +212,7 @@ services:
         condition: on-failure
 
   eventlog:
-    image: registry.opex.dev/repository/dockernilin-repo/eventlog
+    image: ghcr.io/opexdev/eventlog
     environment:
       - JAVA_OPTS=-Xmx256m
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
@@ -231,7 +235,7 @@ services:
       restart_policy:
         condition: on-failure
   matching-engine:
-    image: registry.opex.dev/repository/dockernilin-repo/matching-engine
+    image: ghcr.io/opexdev/matching-engine
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
@@ -252,7 +256,7 @@ services:
       restart_policy:
         condition: on-failure
   matching-gateway:
-    image: registry.opex.dev/repository/dockernilin-repo/matching-gateway
+    image: ghcr.io/opexdev/matching-gateway
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
@@ -272,7 +276,7 @@ services:
       restart_policy:
         condition: on-failure
   auth:
-    image: registry.opex.dev/repository/dockernilin-repo/auth
+    image: ghcr.io/opexdev/auth
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
@@ -306,7 +310,7 @@ services:
       restart_policy:
         condition: on-failure
   wallet:
-    image: registry.opex.dev/repository/dockernilin-repo/wallet
+    image: ghcr.io/opexdev/wallet
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
@@ -336,7 +340,7 @@ services:
       restart_policy:
         condition: on-failure
   market:
-    image: registry.opex.dev/repository/dockernilin-repo/market
+    image: ghcr.io/opexdev/market
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
@@ -362,7 +366,7 @@ services:
       restart_policy:
         condition: on-failure
   api:
-    image: registry.opex.dev/repository/dockernilin-repo/api
+    image: ghcr.io/opexdev/api
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - CONSUL_HOST=consul
@@ -390,6 +394,35 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  bc-gateway:
+    image: ghcr.io/opexdev/bc-gateway
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - CONSUL_HOST=consul
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - DB_IP_PORT=postgres-bc-gateway
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_HOST=vault
+      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
+      - PREFERENCES=$PREFERENCES
+    configs:
+      - preferences.yml
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - auth
+      - wallet
+      - consul
+      - vault
+      - postgres-bc-gateway
+    networks:
+      - default
+    labels:
+      collect_logs: "true"
+    deploy:
+      restart_policy:
+        condition: on-failure
 volumes:
   zookeeper-data:
   zookeeper-log:
@@ -405,6 +438,7 @@ volumes:
   wallet-data:
   market-data:
   api-data:
+  bc-gateway-data:
 networks:
   default:
     driver: bridge

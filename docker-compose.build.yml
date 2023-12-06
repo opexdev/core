@@ -1,26 +1,29 @@
 version: '3.8'
 services:
   accountant:
-    image: registry.opex.dev/repository/dockernilin-repo/accountant:$TAG
+    image: ghcr.io/opexdev/accountant:$TAG
     build: accountant/accountant-app
   eventlog:
-    image: registry.opex.dev/repository/dockernilin-repo/eventlog:$TAG
+    image: ghcr.io/opexdev/eventlog:$TAG
     build: eventlog/eventlog-app
   matching-engine:
-    image: registry.opex.dev/repository/dockernilin-repo/matching-engine:$TAG
+    image: ghcr.io/opexdev/matching-engine:$TAG
     build: matching-engine/matching-engine-app
   matching-gateway:
-    image: registry.opex.dev/repository/dockernilin-repo/matching-gateway:$TAG
+    image: ghcr.io/opexdev/matching-gateway:$TAG
     build: matching-gateway/matching-gateway-app
   auth:
-    image: registry.opex.dev/repository/dockernilin-repo/auth:$TAG
+    image: ghcr.io/opexdev/auth:$TAG
     build: user-management/keycloak-gateway
   wallet:
-    image: registry.opex.dev/repository/dockernilin-repo/wallet:$TAG
+    image: ghcr.io/opexdev/wallet:$TAG
     build: wallet/wallet-app
   market:
-    image: registry.opex.dev/repository/dockernilin-repo/market:$TAG
+    image: ghcr.io/opexdev/market:$TAG
     build: market/market-app
   api:
-    image: registry.opex.dev/repository/dockernilin-repo/api:$TAG
+    image: ghcr.io/opexdev/api:$TAG
     build: api/api-app
+  bc-gateway:
+    image: ghcr.io/opexdev/bc-gateway:$TAG
+    build: bc-gateway/bc-gateway-app

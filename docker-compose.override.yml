@@ -29,3 +29,7 @@ services:
     build: api/api-app
     volumes:
       - "./preferences-dev.yml:/preferences.yml"
+  bc-gateway:
+    build: bc-gateway/bc-gateway-app
+    volumes:
+      - "./preferences-dev.yml:/preferences.yml"
