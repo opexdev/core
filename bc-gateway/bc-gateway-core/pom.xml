@@ -49,7 +49,7 @@
             <artifactId>mockk</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.utility.error</groupId>
+            <groupId>co.nilin.opex.utility</groupId>
             <artifactId>error-handler</artifactId>
         </dependency>
     </dependencies>

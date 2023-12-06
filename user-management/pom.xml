@@ -33,7 +33,7 @@
             <artifactId>spring-boot-starter-test</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.utility.preferences</groupId>
+            <groupId>co.nilin.opex.utility</groupId>
             <artifactId>preferences</artifactId>
         </dependency>
         <dependency>
@@ -46,14 +46,14 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>co.nilin.opex.utility.error</groupId>
+                <groupId>co.nilin.opex.utility</groupId>
                 <artifactId>error-handler</artifactId>
-                <version>${project.version}</version>
+                <version>${error-hanlder.version}</version>
             </dependency>
             <dependency>
-                <groupId>co.nilin.opex.utility.preferences</groupId>
+                <groupId>co.nilin.opex.utility</groupId>
                 <artifactId>preferences</artifactId>
-                <version>${project.version}</version>
+                <version>${preferences.version}</version>
             </dependency>
 
             <dependency>
