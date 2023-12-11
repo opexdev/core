@@ -42,14 +42,15 @@ class CurrencyGraph() {
         val routesWithMax2StepV2: MutableList<Route> = mutableListOf()
         val adjencyMap: Map<String, MutableList<Rate>> = createAdjacencyMapV2()
         val systemCurrencies = currencyService.getCurrencies()?.currencies
-        val vertice: List<String> = systemCurrencies?.filter { it.isTransitive == false && it.isActive==true }?.map(Currency::symbol)
+        val vertice: List<String> = systemCurrencies?.filter { it.isTransitive == false && it.isActive == true }?.map(Currency::symbol)
                 ?: throw OpexException(OpexError.NoRecordFound)
         val transitiveSymbols: List<String> = systemCurrencies?.filter { it.isTransitive == true }?.map(Currency::symbol)
                 ?: throw OpexException(OpexError.NoRecordFound)
         for (vertex in vertice) {
             if (source == null || vertex == source) {
                 val visited = mutableSetOf<String>()
-                findRoutesWithMax2EdgesV2(vertex, adjencyMap, visited, 0, mutableListOf(), transitiveSymbols, routesWithMax2StepV2, dest)
+                findRoutesWithMax2EdgesV2(vertex, adjencyMap, visited, 0,
+                        mutableListOf(), transitiveSymbols, routesWithMax2StepV2, dest, vertice)
             }
         }
         return routesWithMax2StepV2
@@ -63,14 +64,16 @@ class CurrencyGraph() {
             currentRoute: MutableList<Rate>,
             transitiveSymbols: List<String>,
             routesWithMax2StepV2: MutableList<Route>,
-            dest: String? = null
+            dest: String? = null,
+            availableCurrency:List<String>
     ) {
         if (currentLength == 3) {
             return
         }
         visited.add(currentVertex)
         if (currentLength >= 1) {
-            if (!transitiveSymbols.contains(currentRoute[currentRoute.lastIndex].destSymbol)) {
+            if ((!transitiveSymbols.contains(currentRoute[currentRoute.lastIndex].destSymbol)) &&
+                    availableCurrency.contains(currentRoute[currentRoute.lastIndex].destSymbol)) {
                 val existingRoute = routesWithMax2StepV2.find { route ->
                     route.getSourceSymbol() == currentRoute[0].sourceSymbol
                             &&
@@ -102,7 +105,8 @@ class CurrencyGraph() {
                         currentRoute,
                         transitiveSymbols,
                         routesWithMax2StepV2,
-                        dest
+                        dest,
+                        availableCurrency
 
                 )
                 currentRoute.removeAt(currentRoute.size - 1)
@@ -129,48 +133,7 @@ class CurrencyGraph() {
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-     //todo
+    //todo
     //========================save these lines up to redesign tests===============================
 
 //
@@ -474,10 +437,6 @@ class CurrencyGraph() {
 //        rates.clear()
 //        routesWithMax2Step.clear()
 //    }
-
-
-
-
 
 
 }
