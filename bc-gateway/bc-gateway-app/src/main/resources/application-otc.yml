@@ -5,10 +5,10 @@ spring:
   main:
     allow-bean-definition-overriding: false
     allow-circular-references: true
-  kafka:
-    bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
-    consumer:
-      group-id: bc-gateway
+#  kafka:
+#    bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
+#    consumer:
+#      group-id: bc-gateway
   r2dbc:
     url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
     username: ${dbusername:opex}
@@ -30,14 +30,18 @@ spring:
         backend: secret
         profile-separator: '/'
         application-name: ${spring.application.name}
+    bus:
+      enabled: false
     consul:
-      host: ${CONSUL_HOST:localhost}
-      port: 8500
-      discovery:
-        #healthCheckPath: ${management.context-path}/health
-        instance-id: ${spring.application.name}:${server.port}
-        healthCheckInterval: 20s
-        prefer-ip-address: true
+      enabled: false
+#    consul:
+#      host: ${CONSUL_HOST:localhost}
+#      port: 8500
+#      discovery:
+#        #healthCheckPath: ${management.context-path}/health
+#        instance-id: ${spring.application.name}:${server.port}
+#        healthCheckInterval: 20s
+#        prefer-ip-address: true
   config:
     import: vault://secret/${spring.application.name}
   codec:

@@ -13,8 +13,18 @@ CREATE TABLE IF NOT EXISTS assigned_addresses
     address      VARCHAR(72) NOT NULL,
     memo         VARCHAR(72) NOT NULL,
     addr_type_id INTEGER     NOT NULL REFERENCES address_types (id),
+    create_date TIMESTAMP,
+    status VARCHAR(25),
+    exp_time TIMESTAMP,
     UNIQUE (address, memo)
 );
+
+ALTER TABLE assigned_addresses ADD COLUMN IF NOT EXISTS create_date TIMESTAMP;
+ALTER TABLE assigned_addresses ADD COLUMN IF NOT EXISTS exp_time TIMESTAMP;
+ALTER TABLE assigned_addresses ADD COLUMN IF NOT EXISTS status VARCHAR(25);
+
+
+
 
 CREATE TABLE IF NOT EXISTS reserved_addresses
 (

@@ -12,3 +12,8 @@ services:
       - "./drive-key.json:/drive-key.json"
   vault:
     build: docker-images/vault
+
+  bc-gateway:
+    build: bc-gateway/bc-gateway-app
+    volumes:
+      - "./preferences-dev.yml:/preferences.yml"

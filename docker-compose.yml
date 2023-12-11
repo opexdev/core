@@ -405,6 +405,7 @@ services:
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
       - PREFERENCES=$PREFERENCES
+      - ADDRESS_EXP_TIME=null
     configs:
       - preferences.yml
     depends_on:

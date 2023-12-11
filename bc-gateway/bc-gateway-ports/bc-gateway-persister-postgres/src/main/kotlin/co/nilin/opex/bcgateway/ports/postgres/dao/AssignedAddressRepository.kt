@@ -1,5 +1,6 @@
 package co.nilin.opex.bcgateway.ports.postgres.dao
 
+import co.nilin.opex.bcgateway.core.model.AddressStatus
 import co.nilin.opex.bcgateway.ports.postgres.model.AssignedAddressModel
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.r2dbc.repository.Query
@@ -11,10 +12,11 @@ import reactor.core.publisher.Mono
 @Repository
 interface AssignedAddressRepository : ReactiveCrudRepository<AssignedAddressModel, Long> {
 
-    @Query("select * from assigned_addresses where uuid = :uuid and addr_type_id in (:addressTypes)")
-    fun findByUuidAndAddressType(
+    @Query("select * from assigned_addresses where uuid = :uuid and addr_type_id in (:addressTypes) and (:status is null or status =:status) ")
+    fun findByUuidAndAddressTypeAndStatus(
         @Param("uuid") uuid: String,
-        @Param("addressTypes") types: List<Long>
+        @Param("addressTypes") types: List<Long>,
+        @Param("status") status:AddressStatus?=null
     ): Flow<AssignedAddressModel>
 
     @Query("select * from assigned_addresses where address = :address and (memo is null or memo = '' or memo = :memo)")
