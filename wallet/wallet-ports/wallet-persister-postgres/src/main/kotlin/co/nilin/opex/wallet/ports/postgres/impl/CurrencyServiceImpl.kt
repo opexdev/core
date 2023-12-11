@@ -62,6 +62,8 @@ class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : Currency
     override suspend fun updateCurrency(request: Currency): Currency? {
 
         currencyRepository.findBySymbol(request.symbol)?.awaitSingleOrNull()?.let {
+            if(it.isTransitive==true && request.isActive==false)
+                throw OpexException(OpexError.CurrencyIsTransitiveAndDisablingIsImposible)
             try {
                 val cm = request.toModel()
                 return currencyRepository.save(cm.apply { this.createDate = it.createDate }).awaitSingleOrNull()?.toDto()
@@ -78,7 +80,9 @@ class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : Currency
     private fun Currency.toModel(): CurrencyModel {
         return with(this) {
             CurrencyModel(
-                    symbol, name, precision, title, alias, maxDeposit, minDeposit, minWithdraw, maxWithdraw, icon, LocalDateTime.now(), LocalDateTime.now(),isTransitive
+                    symbol, name, precision, title, alias, maxDeposit, minDeposit,
+                    minWithdraw, maxWithdraw, icon, LocalDateTime.now(),
+                    LocalDateTime.now(), isTransitive, isActive, sign, description, shortDescription
             )
         }
     }
@@ -86,7 +90,9 @@ class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : Currency
     private fun CurrencyModel.toDto(): Currency {
         return with(this) {
             Currency(
-                    symbol, name, precision, title, alias, maxDeposit, minDeposit, minWithdraw, maxWithdraw, icon,isTransitive
+                    symbol, name, precision, title, alias, maxDeposit, minDeposit,
+                    minWithdraw, maxWithdraw, icon, isTransitive, isActive, sign,
+                    description, shortDescription
             )
         }
     }

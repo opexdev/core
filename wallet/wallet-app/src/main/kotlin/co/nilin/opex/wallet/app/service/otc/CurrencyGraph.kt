@@ -42,7 +42,7 @@ class CurrencyGraph() {
         val routesWithMax2StepV2: MutableList<Route> = mutableListOf()
         val adjencyMap: Map<String, MutableList<Rate>> = createAdjacencyMapV2()
         val systemCurrencies = currencyService.getCurrencies()?.currencies
-        val vertice: List<String> = systemCurrencies?.filter { it.isTransitive == false }?.map(Currency::symbol)
+        val vertice: List<String> = systemCurrencies?.filter { it.isTransitive == false && it.isActive==true }?.map(Currency::symbol)
                 ?: throw OpexException(OpexError.NoRecordFound)
         val transitiveSymbols: List<String> = systemCurrencies?.filter { it.isTransitive == true }?.map(Currency::symbol)
                 ?: throw OpexException(OpexError.NoRecordFound)

@@ -94,7 +94,8 @@ class RateServiceImpl(private val ratesRepository: RatesRepository,
 
         symbols.symbols?.forEach {
             currencyRepository.findBySymbol(it)?.awaitFirstOrNull()?.let {
-                currencyRepository.save(it.apply { isTransitive = true }).awaitFirstOrNull()
+                if (it.isActive == true)
+                    currencyRepository.save(it.apply { isTransitive = true }).awaitFirstOrNull()
             }
         }
 
@@ -162,10 +163,14 @@ class RateServiceImpl(private val ratesRepository: RatesRepository,
         if (!(transitives?.contains(this.sourceSymbol) == true || transitives?.contains(this.destSymbol) == true))
             throw OpexException(OpexError.AtLeastNeedOneTransitiveSymbol)
 
-            currencyRepository.findBySymbol(this.sourceSymbol)?.awaitFirstOrNull()?.let {
-                currencyRepository.findBySymbol(this.destSymbol)?.awaitFirstOrNull()?.let {
-                } ?: throw OpexException(OpexError.CurrencyNotFound)
+        currencyRepository.findBySymbol(this.sourceSymbol)?.awaitFirstOrNull()?.let {
+            if (it.isActive == false)
+                throw OpexException(OpexError.CurrencyIsDisable)
+            currencyRepository.findBySymbol(this.destSymbol)?.awaitFirstOrNull()?.let {
+                if (it.isActive == false)
+                    throw OpexException(OpexError.CurrencyIsDisable)
             } ?: throw OpexException(OpexError.CurrencyNotFound)
+        } ?: throw OpexException(OpexError.CurrencyNotFound)
     }
 
     private suspend fun ForbiddenPair.isValid() {

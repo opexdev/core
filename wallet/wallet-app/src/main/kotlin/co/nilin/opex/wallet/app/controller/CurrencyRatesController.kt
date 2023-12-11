@@ -42,10 +42,6 @@ class CurrencyRatesController(private val currencyService: CurrencyService,
         return currencyService.getCurrencies()
     }
 
-    @DeleteMapping("/currency/{symbol}")
-    suspend fun deleteCurrency(@PathVariable("symbol") symbol: String): Currencies {
-        return currencyService.deleteCurrency(symbol)
-    }
 
 
     @PostMapping("/rate")

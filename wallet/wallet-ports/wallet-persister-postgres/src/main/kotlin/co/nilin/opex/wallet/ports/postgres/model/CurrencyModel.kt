@@ -21,6 +21,10 @@ data class CurrencyModel(
         var icon: String? = null,
         @Column("create_date") var createDate: LocalDateTime? = LocalDateTime.now(),
         @Column("last_update_date") var lastUpdateDate: LocalDateTime? = LocalDateTime.now(),
-        @Column("is_transitive") var isTransitive:Boolean?=false
+        @Column("is_transitive") var isTransitive:Boolean?=false,
+        @Column("is_active") var isActive:Boolean?=true,
+        @Column("sign") var sign:String?=null,
+        @Column("description") var description:String?=null,
+        @Column("short_description") var shortDescription:String?=null
 
 )

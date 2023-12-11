@@ -11,7 +11,14 @@ CREATE TABLE IF NOT EXISTS currency
     max_withdraw DECIMAL,
     icon TEXT,
     last_update_date TIMESTAMP,
-    create_date TIMESTAMP
+    create_date TIMESTAMP,
+    is_transitive BOOLEAN  NOT NULL DEFAULT FALSE,
+    is_active BOOLEAN  NOT NULL DEFAULT TRUE,
+    sign  VARCHAR(25),
+    description  TEXT,
+    short_description  TEXT
+
+
 );
 
 ALTER TABLE currency ADD COLUMN IF NOT EXISTS title  VARCHAR(25);
@@ -24,7 +31,10 @@ ALTER TABLE currency ADD COLUMN IF NOT EXISTS icon  TEXT;
 ALTER TABLE currency ADD COLUMN IF NOT EXISTS last_update_date TIMESTAMP;
 ALTER TABLE currency ADD COLUMN IF NOT EXISTS create_date TIMESTAMP;
 ALTER TABLE currency ADD COLUMN IF NOT EXISTS is_transitive BOOLEAN  NOT NULL DEFAULT FALSE;
-
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS is_active BOOLEAN  NOT NULL DEFAULT TRUE;
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS sign  VARCHAR(25);
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS description  TEXT;
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS short_description  TEXT;
 
 
 

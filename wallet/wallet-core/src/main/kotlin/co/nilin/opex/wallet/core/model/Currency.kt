@@ -13,7 +13,11 @@ data class Currency(var symbol: String,
                     var minWithdraw: BigDecimal? = BigDecimal.TEN,
                     var maxWithdraw: BigDecimal? = BigDecimal.ZERO,
                     var icon: String? = null,
-                    var isTransitive: Boolean? = false)
+                    var isTransitive: Boolean? = false,
+                    var isActive: Boolean? = true,
+                    var sign: String? = null,
+                    var description: String? = null,
+                    var shortDescription: String? = null)
 
 
 data class Currencies(var currencies: List<Currency>?)
