@@ -50,7 +50,7 @@ class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : Currency
                 val cm = request.toModel()
                 return currencyRepository.insert(cm.name, cm.symbol, cm.precision,
                         cm.title, cm.alias, cm.maxDeposit, cm.minDeposit, cm.minWithdraw, cm.maxWithdraw,
-                        cm.icon, cm.createDate, cm.lastUpdateDate)?.awaitSingleOrNull()?.toDto()
+                        cm.icon,  cm.createDate,cm.lastUpdateDate, cm.isTransitive, cm.isActive,cm.sign,cm.description, cm.shortDescription)?.awaitSingleOrNull()?.toDto()
             } catch (e: Exception) {
                 logger.error("Could not insert new currency ${request.symbol}", e)
                 throw OpexException(OpexError.Error)

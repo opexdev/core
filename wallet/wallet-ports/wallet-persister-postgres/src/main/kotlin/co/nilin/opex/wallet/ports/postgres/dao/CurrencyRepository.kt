@@ -24,8 +24,9 @@ interface CurrencyRepository : ReactiveCrudRepository<CurrencyModel, String> {
     fun deleteByName(name: String): Mono<Void>
 
 
-    fun deleteBySymbol(symbol:String): Mono<Void>
-    @Query("insert into currency values (:symbol, :name, :precision, :title, :alias, :maxDeposit, :minDeposit, :minWithdraw, :maxWithdraw, :icon, :createDate, :lastUpdateDate) on conflict do nothing")
+    fun deleteBySymbol(symbol: String): Mono<Void>
+
+    @Query("insert into currency values (:symbol, :name, :precision, :title, :alias, :maxDeposit, :minDeposit, :minWithdraw, :maxWithdraw, :icon, :createDate, :lastUpdateDate, :isTransitive, :isActive, :sign, :description, :shortDescription) on conflict do nothing")
     fun insert(name: String, symbol: String, precision: BigDecimal,
                title: String? = null,
                alias: String? = null,
@@ -35,8 +36,13 @@ interface CurrencyRepository : ReactiveCrudRepository<CurrencyModel, String> {
                maxWithdraw: BigDecimal? = BigDecimal.ZERO,
                icon: String? = null,
                createDate: LocalDateTime? = null,
-               lastUpdateDate: LocalDateTime? = null): Mono<CurrencyModel>?
+               lastUpdateDate: LocalDateTime? = null,
+               isTransitive: Boolean? = false,
+               isActive: Boolean? = true,
+               sign: String? = null,
+               description: String? = null,
+               shortDescription: String? = null): Mono<CurrencyModel>?
 
-    fun findByIsTransitive(isTransitive:Boolean):Flux<CurrencyModel>?
+    fun findByIsTransitive(isTransitive: Boolean): Flux<CurrencyModel>?
 
 }
