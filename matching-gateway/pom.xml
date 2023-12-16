@@ -40,19 +40,19 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>co.nilin.opex.utility.error</groupId>
+                <groupId>co.nilin.opex.utility</groupId>
                 <artifactId>error-handler</artifactId>
-                <version>${project.version}</version>
+                <version>${error-hanlder.version}</version>
             </dependency>
             <dependency>
-                <groupId>co.nilin.opex.utility.log</groupId>
+                <groupId>co.nilin.opex.utility</groupId>
                 <artifactId>logging-handler</artifactId>
-                <version>${project.version}</version>
+                <version>${logging-handler.version}</version>
             </dependency>
             <dependency>
-                <groupId>co.nilin.opex.utility.interceptors</groupId>
+                <groupId>co.nilin.opex.utility</groupId>
                 <artifactId>interceptors</artifactId>
-                <version>${project.version}</version>
+                <version>${interceptor.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

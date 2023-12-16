@@ -153,18 +153,6 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-  redis-config:
-    image: redis/redis-stack:latest
-    volumes:
-      - redis-config-data:/data
-    environment:
-      - REDIS_REPLICATION_MODE=master
-      - REDIS_ARGS= --save 20 1
-    networks:
-      - default
-    deploy:
-      restart_policy:
-        condition: on-failure
   postgres-accountant:
     <<: *postgres-db
     volumes:
@@ -193,18 +181,6 @@ services:
     <<: *postgres-db
     volumes:
       - bc-gateway-data:/var/lib/postgresql/data/
-  postgres-referral:
-    <<: *postgres-db
-    volumes:
-      - referral-data:/var/lib/postgresql/data/
-  postgres-profile:
-    <<: *postgres-db
-    volumes:
-      - profile-data:/var/lib/postgresql/data/
-  postgres-kyc:
-    <<: *postgres-db
-    volumes:
-      - kyc-data:/var/lib/postgresql/data/
   accountant:
     image: ghcr.io/opexdev/accountant
     environment:
@@ -418,28 +394,6 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-  websocket:
-    image: ghcr.io/opexdev/websocket
-    environment:
-      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
-      - CONSUL_HOST=consul
-      - BACKEND_USER=${BACKEND_USER}
-      - VAULT_HOST=vault
-    depends_on:
-      - kafka-1
-      - kafka-2
-      - kafka-3
-      - auth
-      - consul
-      - vault
-    networks:
-      - default
-    labels:
-      collect_logs: "true"
-    deploy:
-      restart_policy:
-        condition: on-failure
   bc-gateway:
     image: ghcr.io/opexdev/bc-gateway
     environment:
@@ -469,216 +423,6 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-  storage:
-    image: ghcr.io/opexdev/storage
-    environment:
-      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-      - CONSUL_HOST=consul
-      - ROOT_DIR=/storage
-      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
-    volumes:
-      - storage-data:/storage
-    depends_on:
-      - auth
-      - consul
-    networks:
-      - default
-    labels:
-      collect_logs: "true"
-    deploy:
-      restart_policy:
-        condition: on-failure
-  referral:
-    image: ghcr.io/opexdev/referral
-    environment:
-      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
-      - CONSUL_HOST=consul
-      - DB_IP_PORT=postgres-referral
-      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
-      - BACKEND_USER=${BACKEND_USER}
-      - VAULT_HOST=vault
-      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
-    depends_on:
-      - auth
-      - accountant
-      - kafka-1
-      - kafka-2
-      - kafka-3
-      - consul
-      - postgres-referral
-      - vault
-    labels:
-      collect_logs: "true"
-    deploy:
-      restart_policy:
-        condition: on-failure
-  profile:
-    image: ghcr.io/opexdev/profile
-    environment:
-      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
-      - CONSUL_HOST=consul
-      - DB_IP_PORT=postgres-profile
-      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
-      - BACKEND_USER=${BACKEND_USER}
-      - VAULT_HOST=vault
-      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
-    depends_on:
-      - auth
-      - kafka-1
-      - kafka-2
-      - kafka-3
-      - consul
-      - postgres-profile
-      - vault
-    labels:
-      collect_logs: "true"
-    deploy:
-      restart_policy:
-        condition: on-failure
-  kyc:
-    image: ghcr.io/opexdev/kyc
-    environment:
-      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
-      - CONSUL_HOST=consul
-      - DB_IP_PORT=postgres-kyc
-      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
-      - BACKEND_USER=${BACKEND_USER}
-      - VAULT_HOST=vault
-      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
-    depends_on:
-      - auth
-      - kafka-1
-      - kafka-2
-      - kafka-3
-      - consul
-      - postgres-kyc
-      - vault
-    labels:
-      collect_logs: "true"
-    deploy:
-      restart_policy:
-        condition: on-failure
-  captcha:
-    image: ghcr.io/opexdev/captcha
-    environment:
-      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044
-      - CONSUL_HOST=consul
-      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
-    depends_on:
-      - consul
-    labels:
-      collect_logs: "true"
-    deploy:
-      restart_policy:
-        condition: on-failure
-  admin:
-    image: ghcr.io/opexdev/admin
-    environment:
-      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
-      - CONSUL_HOST=consul
-      - VAULT_HOST=vault
-      - BACKEND_USER=${BACKEND_USER}
-      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
-    volumes:
-      - admin-data:/admin
-    depends_on:
-      - kafka-1
-      - kafka-2
-      - kafka-3
-      - consul
-      - auth
-      - vault
-    networks:
-      - default
-    labels:
-      collect_logs: "true"
-    deploy:
-      restart_policy:
-        condition: on-failure
-  config:
-    image: ghcr.io/opexdev/config
-    environment:
-      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-      - REDIS_HOST=redis-config
-      - CONSUL_HOST=consul
-      - PREFERENCES=$PREFERENCES
-    configs:
-      - preferences.yml
-    depends_on:
-      - consul
-      - redis-config
-    networks:
-      - default
-    labels:
-      collect_logs: "true"
-    deploy:
-      restart_policy:
-        condition: on-failure
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2
-    environment:
-      - ES_JAVA_OPTS=-Xms1g -Xmx1g
-      - discovery.type=single-node
-      - node.name=elasticsearch
-      - network.publish_host=elasticsearch
-      - xpack.security.enabled=true
-    volumes:
-      - elasticsearch-data:/usr/share/elasticsearch/data
-    networks:
-      - default
-  logstash:
-    image: ghcr.io/opexdev/opex-logstash
-    environment:
-      - LS_JAVA_OPTS=-Xmx256m -Xms256m
-      - xpack.monitoring.elasticsearch.url=elasticsearch:9200
-      - xpack.monitoring.elasticsearch.username=${LOGSTASH_ELASTIC_USER}
-      - xpack.monitoring.elasticsearch.password=${LOGSTASH_ELASTIC_PASSWORD}
-      - ELASTIC_USER=${LOGSTASH_ELASTIC_USER}
-      - ELASTIC_PASSWORD=${LOGSTASH_ELASTIC_PASSWORD}
-    restart: on-failure
-    depends_on:
-      - elasticsearch
-  filebeat:
-    image: ghcr.io/opexdev/opex-filebeat
-    user: root
-    volumes:
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /var/run/docker.sock:/var/run/docker.sock
-    depends_on:
-      - logstash
-    networks:
-      - default
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.6.2
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - ELASTICSEARCH_USERNAME=${KIBANA_ELASTIC_USER}
-      - ELASTICSEARCH_PASSWORD=${KIBANA_ELASTIC_PASSWORD}
-      - XPACK_MONITORING_ENABLED=true
-      - XPACK_MONITORING_COLLECTION_ENABLED=true
-      - XPACK_SECURITY_ENABLED=true
-    networks:
-      - default
-    depends_on:
-      - elasticsearch
-  prometheus:
-    image: ghcr.io/opexdev/opex-prometheus
-    restart: unless-stopped
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yaml'
-    networks:
-      - default
-  grafana:
-    image: grafana/grafana-oss:8.5.2
-    restart: unless-stopped
-    volumes:
-      - grafana-data:/var/lib/grafana
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
-      - GF_SERVER_DOMAIN=localhost
-    networks:
-      - default
 volumes:
   zookeeper-data:
   zookeeper-log:
@@ -688,7 +432,6 @@ volumes:
   vault-data:
   redis-data:
   redis.conf:
-  redis-config-data:
   accountant-data:
   eventlog-data:
   auth-data:
@@ -696,13 +439,6 @@ volumes:
   market-data:
   api-data:
   bc-gateway-data:
-  referral-data:
-  storage-data:
-  admin-data:
-  elasticsearch-data:
-  grafana-data:
-  profile-data:
-  kyc-data:
 networks:
   default:
     driver: bridge

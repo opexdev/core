@@ -16,28 +16,23 @@
         <kotlin.version>1.6.0</kotlin.version>
         <spring.version>2.7.6</spring.version>
         <spring-cloud.version>2021.0.5</spring-cloud.version>
+        <error-hanlder.version>1.0.0</error-hanlder.version>
+        <logging-handler.version>1.0.0</logging-handler.version>
+        <preferences.version>1.0.0</preferences.version>
+        <interceptor.version>1.0.0</interceptor.version>
         <skip.unit.tests>true</skip.unit.tests>
     </properties>
 
     <modules>
         <module>accountant</module>
         <module>api</module>
-        <module>bc-gateway</module>
         <module>eventlog</module>
         <module>market</module>
         <module>matching-engine</module>
         <module>matching-gateway</module>
-        <module>storage</module>
         <module>user-management</module>
-        <module>utility</module>
         <module>wallet</module>
-        <module>websocket</module>
-        <module>admin</module>
-        <module>referral</module>
-        <module>captcha</module>
-        <module>profile</module>
-        <module>kyc</module>
-        <module>config</module>
+        <module>bc-gateway</module>
     </modules>
 
     <dependencies>
@@ -91,6 +86,13 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <repositories>
+        <repository>
+            <id>nilin</id>
+            <url>https://maven.opex.dev/repository/maven-releases/</url>
+        </repository>
+    </repositories>
 
     <build>
         <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>

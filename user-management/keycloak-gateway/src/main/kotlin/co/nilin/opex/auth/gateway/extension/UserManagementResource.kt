@@ -53,19 +53,22 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     private val forgotUrl by lazy {
         ApplicationContextHolder.getCurrentContext()!!.environment.resolvePlaceholders("\${forgot-redirect-url}")
     }
+    private val registerWhitelistIsEnable by lazy {
+        ApplicationContextHolder.getCurrentContext()!!
+            .environment
+            .resolvePlaceholders("\${app.whitelist.register.enabled}")
+            .toBoolean()
+    }
     private val kafkaTemplate by lazy {
         ApplicationContextHolder.getCurrentContext()!!.getBean("authKafkaTemplate") as KafkaTemplate<String, AuthEvent>
     }
-
-    @Value("\${app.whitelist.register.enable}")
-    private var registerWhitelistIsEnable: Boolean? = true
 
     @POST
     @Path("user")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     fun registerUser(request: RegisterUserRequest): Response {
-        if (registerWhitelistIsEnable == true) {
+        if (registerWhitelistIsEnable) {
             logger.info("register whitelist is enable, going to filter register requests ........")
             val em: EntityManager = session.getProvider(JpaConnectionProvider::class.java).entityManager
             val result: List<WhiteListModel> = em.createQuery("from whitelist", WhiteListModel::class.java).resultList
