@@ -12,7 +12,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration
 import org.springframework.context.annotation.Import
-import org.springframework.context.annotation.Profile
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -39,7 +38,7 @@ class TransactionControllerTest {
         val uuid = "uuid";
         val t = System.currentTimeMillis()
         val history = TransactionHistory(
-            1L, "c", BigDecimal.ONE, "desc", "ref", System.currentTimeMillis(), "cat", mapOf(Pair("key1", "val1")), true
+            1L, "c", "w", BigDecimal.ONE, "desc", "ref", System.currentTimeMillis(), "cat", mapOf(Pair("key1", "val1")), true
         )
         runBlocking {
             Mockito.`when`(
