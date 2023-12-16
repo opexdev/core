@@ -26,7 +26,7 @@ interface CurrencyRepository : ReactiveCrudRepository<CurrencyModel, String> {
 
     fun deleteBySymbol(symbol: String): Mono<Void>
 
-    @Query("insert into currency values (:symbol, :name, :precision, :title, :alias, :maxDeposit, :minDeposit, :minWithdraw, :maxWithdraw, :icon, :createDate, :lastUpdateDate, :isTransitive, :isActive, :sign, :description, :shortDescription) on conflict do nothing")
+    @Query("insert into currency values (:symbol, :name, :precision, :title, :alias, :maxDeposit, :minDeposit, :minWithdraw, :maxWithdraw, :icon, :lastUpdateDate, :createDate, :isTransitive, :isActive, :sign, :description, :shortDescription) on conflict do nothing")
     fun insert(name: String, symbol: String, precision: BigDecimal,
                title: String? = null,
                alias: String? = null,

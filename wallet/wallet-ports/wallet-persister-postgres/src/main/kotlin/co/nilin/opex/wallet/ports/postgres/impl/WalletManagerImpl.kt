@@ -1,28 +1,36 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
+import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.core.exc.ConcurrentBalanceChangException
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.ports.postgres.dao.*
 import co.nilin.opex.wallet.ports.postgres.dto.toPlainObject
 import co.nilin.opex.wallet.ports.postgres.model.WalletModel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Service
 class WalletManagerImpl(
-    val walletLimitsRepository: WalletLimitsRepository,
-    val transactionRepository: TransactionRepository,
-    val walletRepository: WalletRepository,
-    val walletOwnerRepository: WalletOwnerRepository,
-    val currencyRepository: CurrencyRepository
-) : WalletManager {
+        val walletLimitsRepository: WalletLimitsRepository,
+        val transactionRepository: TransactionRepository,
+        val walletRepository: WalletRepository,
+        val walletOwnerRepository: WalletOwnerRepository,
+        val currencyRepository: CurrencyRepository,
+        @Value("b58dc8b2-9c0f-11ee-8c90-0242ac120002") val adminUuid: String?="",
+        @Value("10000") val minimumBalance: BigDecimal?=BigDecimal(10000)
+
+        ) : WalletManager {
 
     val logger = LoggerFactory.getLogger(WalletManagerImpl::class.java)
 
@@ -179,6 +187,19 @@ class WalletManagerImpl(
             }
     }
 
+     suspend fun addSystemAndAdminWalletForNewCurrency(currency:Currency)  {
+        val adminWallet = walletOwnerRepository.findByUuid(adminUuid!!).awaitSingleOrNull()?: throw OpexException(OpexError.Error)
+
+        val items =
+            listOf(
+                    WalletModel(null, 1, "main", currency.symbol, minimumBalance!!),
+                    WalletModel(null, 1, "exchange", currency.symbol, BigDecimal.ZERO),
+                    WalletModel(null, adminWallet.id!!, "main", currency.symbol, minimumBalance!!),
+                    WalletModel(null, adminWallet.id!!, "exchange", currency.symbol, BigDecimal.ZERO)
+
+            )
+      walletRepository.saveAll(items).collectList().awaitSingleOrNull()
+    }
     override suspend fun findWalletsByOwner(owner: WalletOwner): List<Wallet> {
         val ownerModel = walletOwnerRepository.findById(owner.id!!).awaitFirst()
         return walletRepository.findByOwner(owner.id!!)
