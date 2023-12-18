@@ -41,7 +41,7 @@ interface CurrencyRepository : ReactiveCrudRepository<CurrencyModel, String> {
                isActive: Boolean? = true,
                sign: String? = null,
                description: String? = null,
-               shortDescription: String? = null): Mono<CurrencyModel>?
+               shortDescription: String? = null): Mono<CurrencyModel?>?
 
     fun findByIsTransitive(isTransitive: Boolean): Flux<CurrencyModel>?
 

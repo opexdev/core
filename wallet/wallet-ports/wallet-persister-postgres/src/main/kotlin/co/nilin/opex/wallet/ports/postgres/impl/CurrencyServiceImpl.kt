@@ -47,17 +47,18 @@ class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : Currency
 
 
     override suspend fun addCurrency(request: Currency): Currency? {
-
+        logger.info("************************")
         currencyRepository.findBySymbol(request.symbol)?.awaitSingleOrNull()?.let {
             throw OpexException(OpexError.CurrencyIsExist)
         } ?: run {
             try {
+
                 val cm = request.toModel()
                 return currencyRepository.insert(cm.name, cm.symbol, cm.precision,
                         cm.title, cm.alias, cm.maxDeposit, cm.minDeposit, cm.minWithdraw, cm.maxWithdraw,
-                        cm.icon, cm.createDate, cm.lastUpdateDate, cm.isTransitive, cm.isActive, cm.sign, cm.description, cm.shortDescription)?.awaitSingleOrNull()?.let {
-                    walletManagerImpl.addSystemAndAdminWalletForNewCurrency(request)
-                    it
+                        cm.icon, cm.createDate, cm.lastUpdateDate, cm.isTransitive, cm.isActive, cm.sign, cm.description, cm.shortDescription)?.awaitSingleOrNull().run {
+                    walletManagerImpl.addSystemAndAdminWalletForNewCurrency(request)?.let { cm }
+
                 }?.toDto()
             } catch (e: Exception) {
                 logger.error("Could not insert new currency ${request.symbol}", e)
