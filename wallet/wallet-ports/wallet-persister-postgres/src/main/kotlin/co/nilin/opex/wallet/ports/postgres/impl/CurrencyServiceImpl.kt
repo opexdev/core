@@ -47,7 +47,6 @@ class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : Currency
 
 
     override suspend fun addCurrency(request: Currency): Currency? {
-        logger.info("************************")
         currencyRepository.findBySymbol(request.symbol)?.awaitSingleOrNull()?.let {
             throw OpexException(OpexError.CurrencyIsExist)
         } ?: run {
