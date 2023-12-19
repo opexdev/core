@@ -38,7 +38,7 @@ class TransactionControllerIT {
         val uuid = "uuid";
         val t = System.currentTimeMillis()
         val history = TransactionHistory(
-            1L, "c", BigDecimal.ONE, "desc", "ref", System.currentTimeMillis(), "cat", mapOf(Pair("key1", "val1")), true
+            1L, "c", "w", BigDecimal.ONE, "desc", "ref", System.currentTimeMillis(), "cat", mapOf(Pair("key1", "val1")), true
         )
         runBlocking {
             Mockito.`when`(
