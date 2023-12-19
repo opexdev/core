@@ -82,7 +82,7 @@
             <artifactId>bc-gateway-eventlistener-kafka</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.utility.preferences</groupId>
+            <groupId>co.nilin.opex.utility</groupId>
             <artifactId>preferences</artifactId>
         </dependency>
         <dependency>

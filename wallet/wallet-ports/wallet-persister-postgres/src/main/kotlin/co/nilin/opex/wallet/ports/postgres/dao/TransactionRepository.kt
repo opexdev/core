@@ -3,7 +3,6 @@ package co.nilin.opex.wallet.ports.postgres.dao
 import co.nilin.opex.wallet.ports.postgres.dto.DepositWithdrawTransaction
 import co.nilin.opex.wallet.ports.postgres.dto.TransactionStat
 import co.nilin.opex.wallet.ports.postgres.model.TransactionModel
-import org.springframework.data.domain.Pageable
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
@@ -180,15 +179,46 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
         and t.transaction_date <= :endTime
         and (:category is null or t.transfer_category = :category) 
         and (:currency is null or w.currency = :currency) 
+        order by date asc
+        limit :limit
+        offset :offset 
         """
     )
-    fun findTransactions(
+    fun findTransactionsAsc(
         @Param("uuid") uuid: String,
         @Param("currency") currency: String?,
         @Param("category") category: String?,
         @Param("startTime") startTime: LocalDateTime,
         @Param("endTime") endTime: LocalDateTime,
-        pageable: Pageable
+        @Param("limit") limit: Int,
+        @Param("offset") offset: Int,
+    ): Flux<DepositWithdrawTransaction>
+
+    @Query(
+        """
+        select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
+        , t.transfer_category as category, t.transfer_detail_json as detail,  t.source_wallet as sender, t.dest_wallet as receiver, w.id as owner
+        from wallet as w
+        inner join wallet_owner as wo on (w.owner = wo.id)
+        inner join transaction as t on w.id in (t.source_wallet, t.dest_wallet)
+        where wo.uuid = :uuid
+        and t.transaction_date > :startTime 
+        and t.transaction_date <= :endTime
+        and (:category is null or t.transfer_category = :category) 
+        and (:currency is null or w.currency = :currency) 
+        order by date desc
+        limit :limit
+        offset :offset     
+        """
+    )
+    fun findTransactionsDesc(
+        @Param("uuid") uuid: String,
+        @Param("currency") currency: String?,
+        @Param("category") category: String?,
+        @Param("startTime") startTime: LocalDateTime,
+        @Param("endTime") endTime: LocalDateTime,
+        @Param("limit") limit: Int,
+        @Param("offset") offset: Int,
     ): Flux<DepositWithdrawTransaction>
 
 }
