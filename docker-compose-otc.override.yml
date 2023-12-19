@@ -12,3 +12,4 @@ services:
       - "./drive-key.json:/drive-key.json"
   vault:
     build: docker-images/vault
+
