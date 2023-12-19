@@ -54,6 +54,7 @@ class TransactionManagerImpl(
                 TransactionHistory(
                     it.id,
                     it.currency,
+                    it.wallet,
                     it.amount,
                     it.description,
                     it.ref,
@@ -84,6 +85,7 @@ class TransactionManagerImpl(
                 TransactionHistory(
                     it.id,
                     it.currency,
+                    it.wallet,
                     it.amount,
                     it.description,
                     it.ref,
@@ -117,6 +119,7 @@ class TransactionManagerImpl(
                 TransactionHistory(
                     it.id,
                     it.currency,
+                    it.wallet,
                     it.amount,
                     it.description,
                     it.ref,

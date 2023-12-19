@@ -4,7 +4,6 @@ services:
   postgres-opex:
     image: ghcr.io/opexdev/postgres-opex:$TAG
     build: docker-images/postgres
-
   wallet:
     image: ghcr.io/opexdev/wallet:$TAG
     build: wallet/wallet-app

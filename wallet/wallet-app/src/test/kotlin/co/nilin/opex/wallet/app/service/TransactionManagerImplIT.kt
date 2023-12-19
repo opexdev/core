@@ -85,7 +85,8 @@ class TransactionManagerImplIT {
 
             assertEquals(2, thSender.size)
             assertTrue(thSender.first().date.compareTo(thSender.last().date) < 0)
-
+            assertTrue(thSender.all { th -> th.withdraw })
+            assertTrue(thSender.all { th -> th.wallet == senderWalletType })
 
             val thReceiver = transactionManager.findTransactions(
                 receiver.uuid, currency.symbol, "NORMAL", LocalDateTime.now().minusHours(1), LocalDateTime.now(), false, 3, 1
@@ -93,12 +94,13 @@ class TransactionManagerImplIT {
 
             assertEquals(3, thReceiver.size)
             assertTrue(thReceiver.first().date.compareTo(thReceiver.last().date) > 0)
+            assertTrue(thReceiver.none { th -> th.withdraw })
+            assertTrue(thReceiver.all { th -> th.wallet == receiverWalletType })
 
             val thReceiverAll = transactionManager.findTransactions(
                 receiver.uuid, null, null, LocalDateTime.now().minusHours(1), LocalDateTime.now(), true, 100, 0
             )
             assertEquals(count, thReceiverAll.size)
-
         }
     }
 

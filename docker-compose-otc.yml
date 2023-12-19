@@ -98,6 +98,7 @@ services:
     volumes:
       - bc-gateway-data:/var/lib/postgresql/data/
 
+
 volumes:
   wallet-data:
   vault-data:
