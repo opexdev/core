@@ -8,6 +8,37 @@ interface CurrencyHandler {
 
     suspend fun addCurrency(name: String, symbol: String)
 
+    suspend fun addCurrencyImplementationV2(
+        currencySymbol: String,
+        implementationSymbol: String,
+        currencyName:String,
+        chain: String,
+        tokenName: String?,
+        tokenAddress: String?,
+        isToken: Boolean,
+        withdrawFee: BigDecimal,
+        minimumWithdraw: BigDecimal,
+        isWithdrawEnabled: Boolean,
+        decimal: Int
+    ): CurrencyImplementation?
+
+
+    suspend fun updateCurrencyImplementation(
+        currencySymbol: String,
+        implementationSymbol: String,
+        currencyName:String,
+        newChain: String,
+        tokenName: String?,
+        tokenAddress: String?,
+        isToken: Boolean,
+        withdrawFee: BigDecimal,
+        minimumWithdraw: BigDecimal,
+        isWithdrawEnabled: Boolean,
+        decimal: Int,
+        oldChain:String
+    ): CurrencyImplementation?
+
+
     suspend fun editCurrency(name: String, symbol: String)
 
     suspend fun deleteCurrency(name: String)

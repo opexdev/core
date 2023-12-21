@@ -40,6 +40,8 @@ services:
       - vault
     networks:
       - default
+      - otc-network
+
     labels:
       collect_logs: "true"
     deploy:
@@ -88,6 +90,7 @@ services:
       - postgres-bc-gateway
     networks:
       - default
+      - otc-network
     labels:
       collect_logs: "true"
     deploy:
@@ -107,6 +110,8 @@ volumes:
 networks:
   default:
     driver: bridge
+  otc-network:
+    external: true
 secrets:
   opex_dev_crt:
     file: opex.dev.crt

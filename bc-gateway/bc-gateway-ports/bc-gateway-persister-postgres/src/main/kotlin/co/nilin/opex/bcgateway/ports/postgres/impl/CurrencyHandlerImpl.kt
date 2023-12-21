@@ -37,6 +37,74 @@ class CurrencyHandlerImpl(
         }
     }
 
+    override suspend fun addCurrencyImplementationV2(
+        currencySymbol: String,
+        implementationSymbol: String,
+        currencyName: String,
+        chain: String,
+        tokenName: String?,
+        tokenAddress: String?,
+        isToken: Boolean,
+        withdrawFee: BigDecimal,
+        minimumWithdraw: BigDecimal,
+        isWithdrawEnabled: Boolean,
+        decimal: Int
+    ): CurrencyImplementation {
+        currencyRepository.findBySymbol(currencySymbol).awaitFirstOrNull()?.let {
+            throw OpexException(OpexError.CurrencyIsExist)
+        } ?: run {
+            addCurrency(currencyName, currencySymbol)
+            return addCurrencyImplementation(
+                currencySymbol,
+                implementationSymbol,
+                chain,
+                tokenName,
+                tokenAddress,
+                isToken,
+                withdrawFee,
+                minimumWithdraw,
+                isWithdrawEnabled,
+                decimal
+            )
+        }
+    }
+
+    override suspend fun updateCurrencyImplementation(
+        currencySymbol: String,
+        implementationSymbol: String,
+        currencyName: String,
+        chain: String,
+        tokenName: String?,
+        tokenAddress: String?,
+        isToken: Boolean,
+        withdrawFee: BigDecimal,
+        minimumWithdraw: BigDecimal,
+        isWithdrawEnabled: Boolean,
+        decimal: Int,
+        oldChain: String
+    ): CurrencyImplementation? {
+        currencyRepository.findBySymbol(currencySymbol).awaitFirstOrNull()?.let {cm->
+            currencyRepository.save(CurrencyModel(currencySymbol, currencyName)).awaitSingleOrNull()
+            return currencyImplementationRepository.findByCurrencySymbolAndChain(currencySymbol, oldChain)
+                ?.awaitSingleOrNull()
+                ?.let {
+                    it.apply {
+                        this.implementationSymbol = implementationSymbol
+                        this.chain = chain
+                        this.decimal = decimal
+                        this.token = isToken
+                        this.tokenAddress = tokenAddress
+                        this.tokenName = tokenName
+                        this.withdrawEnabled = isWithdrawEnabled
+                        this.withdrawFee = withdrawFee
+                        this.withdrawMin = minimumWithdraw
+                    }
+                    currencyImplementationRepository.save(it).awaitSingleOrNull()?.let {icm-> projectCurrencyImplementation(icm, cm) }
+                }
+
+        } ?: throw OpexException(OpexError.CurrencyNotFound)
+    }
+
     override suspend fun editCurrency(name: String, symbol: String) {
         val currency = currencyRepository.findBySymbol(symbol).awaitFirstOrNull()
         if (currency != null) {

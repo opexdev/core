@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.app.config
 
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.cloud.client.ServiceInstance
 import org.springframework.cloud.client.loadbalancer.LoadBalancerProperties
 import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalancer
@@ -26,6 +27,7 @@ class WebClientConfig {
 
     @Bean
     @Profile("otc")
+    @Qualifier("otcWebClient")
     fun webClient(): WebClient {
         return WebClient.builder()
                 .build()

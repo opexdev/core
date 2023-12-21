@@ -4,12 +4,10 @@ import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.app.dto.AdvanceReservedTransferData
 import co.nilin.opex.wallet.app.dto.TransferRequest
-import co.nilin.opex.wallet.app.service.otc.CurrencyGraph
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.otc.Rate
-import co.nilin.opex.wallet.core.service.otc.GraphService
 import co.nilin.opex.wallet.core.spi.CurrencyService
 import co.nilin.opex.wallet.core.spi.TransferManager
 import co.nilin.opex.wallet.core.spi.WalletManager
@@ -28,13 +26,13 @@ class TransferService(
     private val currencyService: CurrencyService,
     private val walletManager: WalletManager,
     private val walletOwnerManager: WalletOwnerManager,
-    private val graphService: GraphService
+    private val graphService: co.nilin.opex.wallet.core.service.otc.GraphService
 ) {
 
     private val logger = LoggerFactory.getLogger(TransferService::class.java)
 
     @Autowired
-    lateinit var currencyGraph: CurrencyGraph
+    lateinit var currencyGraph: co.nilin.opex.wallet.app.service.otc.GraphService
 
     val reserved: MutableMap<String, AdvanceReservedTransferData> = mutableMapOf()
 
