@@ -10,3 +10,6 @@ services:
   vault:
     image: ghcr.io/opexdev/vault-opex:$TAG
     build: docker-images/vault
+  bc-gateway:
+    image: ghcr.io/opexdev/bc-gateway:$TAG
+    build: bc-gateway/bc-gateway-app

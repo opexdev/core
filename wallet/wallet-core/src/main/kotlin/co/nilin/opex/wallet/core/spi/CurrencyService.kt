@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.core.spi
 
 import co.nilin.opex.wallet.core.model.Currencies
 import co.nilin.opex.wallet.core.model.Currency
+import co.nilin.opex.wallet.core.model.CurrencyImp
 import java.math.BigDecimal
 
 interface CurrencyService {

@@ -13,7 +13,37 @@
     <artifactId>bc-gateway-app</artifactId>
     <name>bc-gateway-app</name>
     <description>Blockchain gateway app of Opex</description>
-
+    <profiles>
+        <profile>
+            <id>otc</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.springframework.cloud</groupId>
+                    <artifactId>spring-cloud-starter-consul-all</artifactId>
+                    <version>3.1.2</version>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>org.springframework.cloud</groupId>
+                            <artifactId>spring-cloud-consul-binder</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.springframework.cloud</groupId>
+                            <artifactId>spring-cloud-bus</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.springframework.cloud</groupId>
+                            <artifactId>spring-cloud-starter-consul-config</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.springframework.cloud</groupId>
+                            <artifactId>spring-cloud-starter-consul-bus</artifactId>
+                        </exclusion>
+                    </exclusions>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
     <dependencies>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>

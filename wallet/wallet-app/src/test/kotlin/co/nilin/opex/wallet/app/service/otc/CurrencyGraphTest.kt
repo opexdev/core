@@ -1,13 +1,8 @@
 package co.nilin.opex.wallet.app.service.otc
 
-import co.nilin.opex.wallet.core.model.otc.Rate
-import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Test
-import java.math.BigDecimal
-
 class CurrencyGraphTest {
 
-    var graph: CurrencyGraph = CurrencyGraph()
+    var graph: GraphService = GraphService()
 
 //    @Test
 //    fun givenTwoPossibleRoute_whenAddCurrencyRates_thenShorterRouteIsAvailable() {

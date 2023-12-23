@@ -1,11 +1,10 @@
 package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.wallet.app.dto.*
-import co.nilin.opex.wallet.app.service.otc.CurrencyGraph
 import co.nilin.opex.wallet.core.model.Currencies
 import co.nilin.opex.wallet.core.model.Currency
+import co.nilin.opex.wallet.core.model.CurrencyImp
 import co.nilin.opex.wallet.core.model.otc.*
-import co.nilin.opex.wallet.core.service.otc.GraphService
 import co.nilin.opex.wallet.core.spi.CurrencyService
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
@@ -16,30 +15,32 @@ import java.math.BigDecimal
 
 @RestController
 @RequestMapping("/otc")
-class CurrencyRatesController(private val currencyService: CurrencyService,
-        private val graphService: GraphService) {
+class CurrencyRatesController(private val currencyServiceSpi: CurrencyService,
+                              private val graphService: co.nilin.opex.wallet.core.service.otc.GraphService,
+                              private val currencyService: co.nilin.opex.wallet.app.service.otc.CurrencyService
+) {
 
     @Autowired
-    lateinit var currencyGraph: CurrencyGraph
+    lateinit var currencyGraph: co.nilin.opex.wallet.app.service.otc.GraphService
 
     @PostMapping("/currency")
-    suspend fun addCurrency(@RequestBody request: Currency): Currency? {
+    suspend fun addCurrency(@RequestBody request: CurrencyImp): Currency? {
         return currencyService.addCurrency(request)
     }
 
     @PutMapping("/currency")
-    suspend fun updateCurrency(@RequestBody request: Currency): Currency? {
+    suspend fun updateCurrency(@RequestBody request: CurrencyImp): Currency? {
         return currencyService.updateCurrency(request)
     }
 
     @GetMapping("/currency/{symbol}")
     suspend fun getCurrency(@PathVariable("symbol") symbol: String): Currency? {
-        return currencyService.getCurrency(symbol)
+        return currencyService.fetchCurrency(symbol)
     }
 
     @GetMapping("/currency")
-    suspend fun getCurrencies(): Currencies {
-        return currencyService.getCurrencies()
+    suspend fun getCurrencies(): Currencies? {
+        return currencyService.fetchCurrencies()
     }
 
 

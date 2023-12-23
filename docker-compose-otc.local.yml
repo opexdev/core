@@ -12,5 +12,12 @@ services:
   vault:
     ports:
       - "8200:8200"
+  bc-gateway:
+    ports:
+      - "0.0.0.0:8095:8080"
+      - "127.0.0.1:1052:5005"
+  postgres-bc-gateway:
+    ports:
+      - "5437:5432"
 
 

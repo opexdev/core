@@ -38,8 +38,11 @@ services:
     depends_on:
       - postgres-wallet
       - vault
+      - bc-gateway
     networks:
       - default
+      - otc-network
+
     labels:
       collect_logs: "true"
     deploy:
@@ -67,17 +70,48 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-
-
+  bc-gateway:
+    image: ghcr.io/opexdev/bc-gateway
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - CONSUL_HOST=consul
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - DB_IP_PORT=postgres-bc-gateway
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_HOST=vault
+      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
+      - PREFERENCES=$PREFERENCES
+      - ADDRESS_EXP_TIME=2
+      - SPRING_PROFILES_ACTIVE=otc
+    configs:
+      - preferences.yml
+    depends_on:
+      - vault
+      - postgres-bc-gateway
+    networks:
+      - default
+      - otc-network
+    labels:
+      collect_logs: "true"
+    deploy:
+      restart_policy:
+        condition: on-failure
+  postgres-bc-gateway:
+    <<: *postgres-db
+    volumes:
+      - bc-gateway-data:/var/lib/postgresql/data/
 
 
 volumes:
   wallet-data:
   vault-data:
+  bc-gateway-data:
 
 networks:
   default:
     driver: bridge
+  otc-network:
+    external: true
 secrets:
   opex_dev_crt:
     file: opex.dev.crt

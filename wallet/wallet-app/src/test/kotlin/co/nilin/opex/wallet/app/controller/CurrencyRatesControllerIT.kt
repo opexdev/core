@@ -4,7 +4,7 @@ import co.nilin.opex.wallet.app.dto.CurrencyExchangeRate
 import co.nilin.opex.wallet.app.dto.CurrencyExchangeRatesResponse
 import co.nilin.opex.wallet.app.dto.CurrencyPair
 import co.nilin.opex.wallet.app.dto.SetCurrencyExchangeRateRequest
-import co.nilin.opex.wallet.app.service.otc.CurrencyGraph
+import co.nilin.opex.wallet.app.service.otc.GraphService
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -29,7 +29,7 @@ class CurrencyRatesControllerIT {
     private lateinit var webClient: WebTestClient
 
     @Autowired
-    private lateinit var currencyGraph: CurrencyGraph
+    private lateinit var graphService: GraphService
 
     @BeforeEach
     fun setup() {

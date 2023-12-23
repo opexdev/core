@@ -2,7 +2,6 @@ package co.nilin.opex.wallet.app.service.otc
 
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
-import co.nilin.opex.wallet.app.service.TransferService
 import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.model.otc.*
 import co.nilin.opex.wallet.core.service.otc.GraphService
@@ -11,13 +10,13 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import java.math.BigDecimal
 
-class CurrencyGraph() {
+class GraphService() {
     @Autowired
     lateinit var graphService: GraphService
 
     @Autowired
     lateinit var currencyService: CurrencyService
-    private val logger = LoggerFactory.getLogger(CurrencyGraph::class.java)
+    private val logger = LoggerFactory.getLogger(GraphService::class.java)
 
 
     data class Route(val rates: List<Rate>) {

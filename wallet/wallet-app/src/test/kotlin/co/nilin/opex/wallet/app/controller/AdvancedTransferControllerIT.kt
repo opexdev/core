@@ -4,7 +4,7 @@ import co.nilin.opex.wallet.app.dto.SetCurrencyExchangeRateRequest
 import co.nilin.opex.wallet.app.dto.TransferPreEvaluateResponse
 import co.nilin.opex.wallet.app.dto.TransferReserveRequest
 import co.nilin.opex.wallet.app.dto.TransferReserveResponse
-import co.nilin.opex.wallet.app.service.otc.CurrencyGraph
+import co.nilin.opex.wallet.app.service.otc.GraphService
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.spi.CurrencyService
@@ -34,7 +34,7 @@ class AdvancedTransferControllerIT {
     private lateinit var webClient: WebTestClient
 
     @Autowired
-    private lateinit var currencyGraph: CurrencyGraph
+    private lateinit var graphService: GraphService
 
     @Autowired
     private lateinit var currencyService: CurrencyService
