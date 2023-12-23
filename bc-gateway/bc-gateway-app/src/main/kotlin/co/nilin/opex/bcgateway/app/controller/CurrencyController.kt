@@ -1,7 +1,6 @@
 package co.nilin.opex.bcgateway.app.controller
 
 import co.nilin.opex.bcgateway.app.dto.AddCurrencyRequest
-import co.nilin.opex.bcgateway.core.model.Currency
 import co.nilin.opex.bcgateway.core.model.CurrencyImplementation
 import co.nilin.opex.bcgateway.core.model.CurrencyInfo
 import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
@@ -58,7 +57,7 @@ class CurrencyController(val currencyHandler: CurrencyHandler) {
            return currencyHandler.updateCurrencyImplementation(this.currencySymbol!!,
                 this.implementationSymbol,
                 this.currencyName,
-                this.chain,
+                this.newChain,
                 this.tokenName,
                 this.tokenAddress,
                 this.isToken!!,
@@ -66,7 +65,7 @@ class CurrencyController(val currencyHandler: CurrencyHandler) {
                 this.minimumWithdraw,
                 this.isWithdrawEnabled!!,
                 this.decimal,
-                this.oldChain!!
+                this.chain
             )
         }
     }

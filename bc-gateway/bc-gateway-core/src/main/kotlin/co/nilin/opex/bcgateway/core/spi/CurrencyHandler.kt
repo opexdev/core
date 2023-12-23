@@ -27,7 +27,7 @@ interface CurrencyHandler {
         currencySymbol: String,
         implementationSymbol: String,
         currencyName:String,
-        newChain: String,
+        newChain: String?=null,
         tokenName: String?,
         tokenAddress: String?,
         isToken: Boolean,
@@ -35,7 +35,7 @@ interface CurrencyHandler {
         minimumWithdraw: BigDecimal,
         isWithdrawEnabled: Boolean,
         decimal: Int,
-        oldChain:String
+        chain:String
     ): CurrencyImplementation?
 
 

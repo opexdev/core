@@ -38,6 +38,7 @@ services:
     depends_on:
       - postgres-wallet
       - vault
+      - bc-gateway
     networks:
       - default
       - otc-network
@@ -85,7 +86,6 @@ services:
     configs:
       - preferences.yml
     depends_on:
-      - wallet
       - vault
       - postgres-bc-gateway
     networks:

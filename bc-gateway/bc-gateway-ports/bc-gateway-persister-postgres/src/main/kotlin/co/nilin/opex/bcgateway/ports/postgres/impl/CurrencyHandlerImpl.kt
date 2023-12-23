@@ -73,7 +73,7 @@ class CurrencyHandlerImpl(
         currencySymbol: String,
         implementationSymbol: String,
         currencyName: String,
-        chain: String,
+        newChain: String?,
         tokenName: String?,
         tokenAddress: String?,
         isToken: Boolean,
@@ -90,7 +90,7 @@ class CurrencyHandlerImpl(
                 ?.let {
                     it.apply {
                         this.implementationSymbol = implementationSymbol
-                        this.chain = chain
+                        this.chain = newChain?:oldChain
                         this.decimal = decimal
                         this.token = isToken
                         this.tokenAddress = tokenAddress

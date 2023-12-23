@@ -20,7 +20,7 @@
         <module>wallet-app</module>
         <module>wallet-ports/wallet-persister-postgres</module>
         <module>wallet-ports/wallet-eventlistener-kafka</module>
-        <module>wallet-ports/wallet-bc-gateway-proxy</module>
+        <module>wallet-ports/wallet-bcgateway-proxy</module>
 
     </modules>
 
