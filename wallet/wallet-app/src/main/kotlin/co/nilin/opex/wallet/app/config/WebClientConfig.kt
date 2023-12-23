@@ -27,7 +27,6 @@ class WebClientConfig {
 
     @Bean
     @Profile("otc")
-    @Qualifier("otcWebClient")
     fun webClient(): WebClient {
         return WebClient.builder()
                 .build()

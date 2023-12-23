@@ -15,7 +15,7 @@ import java.net.URI
 inline fun <reified T : Any> typeRef(): ParameterizedTypeReference<T> = object : ParameterizedTypeReference<T>() {}
 
 @Component
-class WalletProxyImpl(@Qualifier("otcWebClient") private val webClient: WebClient) : BcGatewayProxy {
+class WalletProxyImpl( private val webClient: WebClient) : BcGatewayProxy {
 
     @Value("\${app.bc-gateway.url}")
     private lateinit var baseUrl: String
