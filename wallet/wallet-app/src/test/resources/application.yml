@@ -46,6 +46,8 @@ spring:
 app:
   auth:
     cert-url: none
+  bc-gateway:
+    url: http://bc-gateway:8080
   system:
     uuid: 1
 logging:

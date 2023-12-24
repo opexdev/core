@@ -92,6 +92,10 @@
             <artifactId>wallet-persister-postgres</artifactId>
         </dependency>
         <dependency>
+            <groupId>co.nilin.opex.wallet.ports.bcgateway</groupId>
+            <artifactId>wallet-bcgateway-proxy</artifactId>
+        </dependency>
+        <dependency>
             <groupId>co.nilin.opex.wallet.ports.kafka.listener</groupId>
             <artifactId>wallet-eventlistener-kafka</artifactId>
         </dependency>

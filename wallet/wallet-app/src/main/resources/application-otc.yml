@@ -78,6 +78,8 @@ app:
     enabled: ${BACKUP_ENABLED:false}
     drive:
       folder: ${DRIVE_FOLDER_ID:-}
+  bc-gateway:
+    url: http://bc-gateway:8080
 logging:
   level:
     root: INFO

@@ -66,3 +66,5 @@ app:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
   wallet:
     url: lb://opex-wallet
+  address:
+    exp-time: ${ADDRESS_EXP_TIME}

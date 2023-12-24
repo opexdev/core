@@ -1,143 +1,200 @@
 package co.nilin.opex.wallet.app.controller
 
-import co.nilin.opex.wallet.app.dto.CurrencyExchangeRate
-import co.nilin.opex.wallet.app.dto.CurrencyExchangeRatesResponse
-import co.nilin.opex.wallet.app.dto.CurrencyPair
-import co.nilin.opex.wallet.app.dto.SetCurrencyExchangeRateRequest
-import co.nilin.opex.wallet.app.service.otc.CurrencyGraph
+import co.nilin.opex.wallet.app.dto.*
+import co.nilin.opex.wallet.core.model.Currencies
+import co.nilin.opex.wallet.core.model.Currency
+import co.nilin.opex.wallet.core.model.CurrencyImp
+import co.nilin.opex.wallet.core.model.otc.*
+import co.nilin.opex.wallet.core.spi.CurrencyService
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
+import java.math.BigDecimal
 
 @RestController
-class CurrencyRatesController {
+@RequestMapping("/otc")
+class CurrencyRatesController(private val currencyServiceSpi: CurrencyService,
+                              private val graphService: co.nilin.opex.wallet.core.service.otc.GraphService,
+                              private val currencyService: co.nilin.opex.wallet.app.service.otc.CurrencyService
+) {
 
     @Autowired
-    lateinit var currencyGraph: CurrencyGraph
+    lateinit var currencyGraph: co.nilin.opex.wallet.app.service.otc.GraphService
 
-    @GetMapping("/rates/{sourceSymbol}/{destSymbol}")
+    @PostMapping("/currency")
+    suspend fun addCurrency(@RequestBody request: CurrencyImp): Currency? {
+        return currencyService.addCurrency(request)
+    }
+
+    @PutMapping("/currency")
+    suspend fun updateCurrency(@RequestBody request: CurrencyImp): Currency? {
+        return currencyService.updateCurrency(request)
+    }
+
+    @GetMapping("/currency/{symbol}")
+    suspend fun getCurrency(@PathVariable("symbol") symbol: String): Currency? {
+        return currencyService.fetchCurrency(symbol)
+    }
+
+    @GetMapping("/currency")
+    suspend fun getCurrencies(): Currencies? {
+        return currencyService.fetchCurrencies()
+    }
+
+
+
+    @PostMapping("/rate")
     @ApiResponse(
-        message = "OK",
-        code = 200,
-        examples = Example(
-            ExampleProperty(
-                value = "{ \"rates\": [{\"sourceSymbol\": \"BTC\",\n" +
-                        "               \"destSymbol\": \"ETH\",\n" +
-                        " \"rate\": \"100.0\"}] }",
-                mediaType = "application/json"
-            )
-        )
+            message = "OK",
+            code = 200,
     )
-    fun fetchRates(@PathVariable sourceSymbol: String, @PathVariable destSymbol: String): CurrencyExchangeRatesResponse {
-        return CurrencyExchangeRatesResponse(
-            currencyGraph.getRates()
-                .filter { rate ->
-                    (sourceSymbol == "all" || rate.sourceSymbol == sourceSymbol)
-                            && (destSymbol == "all" || rate.destSymbol == destSymbol)
-                }
-                .map { rate ->
-                    CurrencyExchangeRate(
-                        rate.sourceSymbol, rate.destSymbol, rate.rate
+    suspend fun createRate(@RequestBody request: SetCurrencyExchangeRateRequest) {
+        request.validate()
+        graphService.addRate(Rate(request.sourceSymbol, request.destSymbol, request.rate))
+    }
+
+
+    @PutMapping("/rate")
+    @ApiResponse(
+            message = "OK",
+            code = 200,
+    )
+    suspend fun updateRate(@RequestBody request: SetCurrencyExchangeRateRequest):Rates {
+        request.validate()
+      return  graphService.updateRate(Rate(request.sourceSymbol, request.destSymbol, request.rate))
+    }
+
+    @DeleteMapping("/rate/{sourceSymbol}/{destSymbol}")
+    @ApiResponse(
+            message = "OK",
+            code = 200,
+    )
+    suspend fun deleteRate(@PathVariable sourceSymbol: String, @PathVariable destSymbol: String): Rates {
+        return graphService.deleteRate(Rate(sourceSymbol, destSymbol, BigDecimal.ZERO))
+    }
+
+
+    @GetMapping("/rate")
+    @ApiResponse(
+            message = "OK",
+            code = 200,
+            examples = Example(
+                    ExampleProperty(
+                            value = "{ \"rates\": [{\"sourceSymbol\": \"BTC\",\n" +
+                                    "               \"destSymbol\": \"ETH\",\n" +
+                                    " \"rate\": \"100.0\"}] }",
+                            mediaType = "application/json"
                     )
-                }
-        )
-    }
-
-    @GetMapping("/routes")
-    fun fetchRoutes(): CurrencyExchangeRatesResponse {
-        return CurrencyExchangeRatesResponse(
-            currencyGraph
-                .getAvailableRoutes()
-                .map { route ->
-                    CurrencyExchangeRate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate())
-                }
-        )
-    }
-
-    @PostMapping("/rates")
-    @ApiResponse(
-        message = "OK",
-        code = 200,
+            )
     )
-    fun updateOrCreateRate(@RequestBody request: SetCurrencyExchangeRateRequest) {
-        currencyGraph.addCurrencyRate(request.sourceSymbol, request.destSymbol, request.rate)
+    suspend fun fetchRates(): Rates {
+
+        return graphService.getRates()
     }
 
-    @DeleteMapping("/rates/{sourceSymbol}/{destSymbol}")
+
+    @GetMapping("/rate/{sourceSymbol}/{destSymbol}")
     @ApiResponse(
-        message = "OK",
-        code = 200,
+            message = "OK",
+            code = 200,
+            examples = Example(
+                    ExampleProperty(
+                            value = "{ \"rates\": [{\"sourceSymbol\": \"BTC\",\n" +
+                                    "               \"destSymbol\": \"ETH\",\n" +
+                                    " \"rate\": \"100.0\"}] }",
+                            mediaType = "application/json"
+                    )
+            )
     )
-    fun deleteRate(@PathVariable sourceSymbol: String, @PathVariable destSymbol: String) {
-        currencyGraph.removeCurrencyRate(sourceSymbol, destSymbol)
+    suspend fun fetchRates(@PathVariable sourceSymbol: String, @PathVariable destSymbol: String): Rate? {
+        return graphService.getRates(sourceSymbol, destSymbol)
     }
+
 
     @PostMapping("/forbidden-pairs")
     @ApiResponse(
-        message = "OK",
-        code = 200,
+            message = "OK",
+            code = 200,
     )
-    fun addForbiddenPair(@RequestBody request: CurrencyPair) {
-        currencyGraph.addForbiddenRateNames(request.sourceSymbol, request.destSymbol)
+    suspend fun addForbiddenPair(@RequestBody request: CurrencyPair) {
+        request.validate()
+        graphService.addForbiddenPair(ForbiddenPair(request.sourceSymbol, request.destSymbol))
     }
 
     @DeleteMapping("/forbidden-pairs/{sourceSymbol}/{destSymbol}")
     @ApiResponse(
-        message = "OK",
-        code = 200,
+            message = "OK",
+            code = 200,
     )
-    fun deleteForbiddenPair(@PathVariable sourceSymbol: String, @PathVariable destSymbol: String) {
-        currencyGraph.removeForbiddenRateNames(sourceSymbol, destSymbol)
+    suspend fun deleteForbiddenPair(@PathVariable sourceSymbol: String, @PathVariable destSymbol: String): ForbiddenPairs {
+        return graphService.deleteForbiddenPair(ForbiddenPair(sourceSymbol, destSymbol))
     }
 
     @GetMapping("/forbidden-pairs")
     @ApiResponse(
-        message = "OK",
-        code = 200,
-        examples = Example(
-            ExampleProperty(
-                value = "[{\"sourceSymbol\": \"BTC\",\n" +
-                        "               \"destSymbol\": \"ETH\" }]",
-                mediaType = "application/json"
+            message = "OK",
+            code = 200,
+            examples = Example(
+                    ExampleProperty(
+                            value = "[{\"sourceSymbol\": \"BTC\",\n" +
+                                    "               \"destSymbol\": \"ETH\" }]",
+                            mediaType = "application/json"
+                    )
             )
-        )
     )
-    fun fetchForbiddenPairs(): List<CurrencyPair> {
-        return currencyGraph.getForbiddenNames().map { p -> CurrencyPair(p.first, p.second) }
+    suspend fun fetchForbiddenPairs(): ForbiddenPairs {
+
+        return graphService.getForbiddenPairs()
     }
+
+
 
     @PostMapping("/transitive-symbols")
     @ApiResponse(
-        message = "OK",
-        code = 200,
+            message = "OK",
+            code = 200,
     )
-    fun addTransitiveSymbols(@RequestBody symbols: List<String>) {
-        currencyGraph.addTransitiveSymbols(symbols)
+    suspend fun addTransitiveSymbols(@RequestBody symbols: Symbols) {
+        graphService.addTransitiveSymbols(symbols)
     }
 
-    @DeleteMapping("/transitive-symbols/{symbol}")
+    @DeleteMapping("/transitive-symbols")
     @ApiResponse(
-        message = "OK",
-        code = 200,
+            message = "OK",
+            code = 200,
     )
-    fun deleteTransitiveSymbols(@PathVariable symbol: String) {
-        currencyGraph.removeTransitiveSymbols(listOf(symbol))
+    suspend fun deleteTransitiveSymbols(@RequestBody symbols: Symbols):Symbols {
+     return   graphService.deleteTransitiveSymbols(symbols)
     }
 
     @GetMapping("/transitive-symbols")
     @ApiResponse(
-        message = "OK",
-        code = 200,
-        examples = Example(
-            ExampleProperty(
-                value = "[\"Z\",\"Y\"]",
-                mediaType = "application/json"
+            message = "OK",
+            code = 200,
+            examples = Example(
+                    ExampleProperty(
+                            value = "[\"Z\",\"Y\"]",
+                            mediaType = "application/json"
+                    )
             )
-        )
     )
-    fun fetchTransitiveSymbols(): List<String> {
-        return currencyGraph.getTransitiveSymbols()
+    suspend fun fetchTransitiveSymbols(): Symbols {
+        return graphService.getTransitiveSymbols()
     }
+
+
+
+
+    @PostMapping("/route")
+    suspend fun fetchRoutes(@RequestParam("sourceSymbol")  sourceSymbol:String?=null,
+                            @RequestParam("destSymbol")  destSymbol:String?=null): CurrencyExchangeRatesResponse {
+        return CurrencyExchangeRatesResponse(
+                currencyGraph.buildRoutes(sourceSymbol,destSymbol).map {  CurrencyExchangeRate(it.getSourceSymbol(), it.getDestSymbol(), it.getRate()) }
+        )
+    }
+
+
+
 }

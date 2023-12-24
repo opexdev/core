@@ -1,9 +1,43 @@
 CREATE TABLE IF NOT EXISTS currency
 (
-    symbol    VARCHAR(25) PRIMARY KEY,
+    symbol    VARCHAR(25)  PRIMARY KEY,
     name      VARCHAR(25),
-    precision DECIMAL NOT NULL
+    precision DECIMAL NOT NULL,
+    title VARCHAR(25),
+    alias VARCHAR(25),
+    max_deposit DECIMAL,
+    min_deposit DECIMAL,
+    min_Withdraw DECIMAL,
+    max_withdraw DECIMAL,
+    icon TEXT,
+    last_update_date TIMESTAMP,
+    create_date TIMESTAMP,
+    is_transitive BOOLEAN  NOT NULL DEFAULT FALSE,
+    is_active BOOLEAN  NOT NULL DEFAULT TRUE,
+    sign  VARCHAR(25),
+    description  TEXT,
+    short_description  TEXT
+
+
 );
+
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS title  VARCHAR(25);
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS alias  VARCHAR(25);
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS max_deposit  DECIMAL;
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS min_deposit  DECIMAL;
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS min_Withdraw  DECIMAL;
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS max_withdraw  DECIMAL;
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS icon  TEXT;
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS last_update_date TIMESTAMP;
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS create_date TIMESTAMP;
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS is_transitive BOOLEAN  NOT NULL DEFAULT FALSE;
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS is_active BOOLEAN  NOT NULL DEFAULT TRUE;
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS sign  VARCHAR(25);
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS description  TEXT;
+ALTER TABLE currency ADD COLUMN IF NOT EXISTS short_description  TEXT;
+
+
+
 
 CREATE TABLE IF NOT EXISTS wallet_owner
 (
@@ -87,3 +121,26 @@ CREATE TABLE IF NOT EXISTS withdraws
     create_date          TIMESTAMP NOT NULL,
     accept_date          TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS rate
+(
+    id SERIAL PRIMARY KEY,
+    source_symbol VARCHAR(25) NOT NULL REFERENCES currency (symbol),
+    dest_symbol VARCHAR(25) NOT NULL REFERENCES currency (symbol),
+    rate         DECIMAL ,
+    last_update_date TIMESTAMP,
+    create_date TIMESTAMP
+    );
+
+
+CREATE TABLE IF NOT EXISTS forbidden_pair
+(
+    id SERIAL PRIMARY KEY,
+    source_symbol VARCHAR(25) NOT NULL REFERENCES currency (symbol),
+    dest_symbol VARCHAR(25) NOT NULL REFERENCES currency (symbol),
+    last_update_date TIMESTAMP,
+    create_date TIMESTAMP
+    );
+
+
+
