@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.app.controller
 
+import co.nilin.opex.wallet.app.dto.ManualTransferRequest
 import co.nilin.opex.wallet.app.dto.TransferRequest
 import co.nilin.opex.wallet.app.service.TransferService
 import co.nilin.opex.wallet.core.inout.TransferResult
@@ -113,5 +114,28 @@ class TransferController(private val transferService: TransferService) {
             @RequestParam("transferRef") transferRef: String?
     ): TransferResult {
         return transferService.deposit(symbol, receiverUuid, receiverWalletType, amount, description, transferRef)
+    }
+
+
+    //
+    @PostMapping("/deposit/manually/{amount}_{symbol}/{receiverUuid}")
+    @ApiResponse(
+            message = "OK",
+            code = 200,
+            examples = Example(
+                    ExampleProperty(
+                            value = "{ }",
+                            mediaType = "application/json"
+                    )
+            )
+    )
+    suspend fun depositManually(
+            @PathVariable("symbol") symbol: String,
+            @PathVariable("receiverUuid") receiverUuid: String,
+            @PathVariable("receiverWalletType") receiverWalletType: String?="main",
+            @PathVariable("amount") amount: BigDecimal,
+            @RequestBody request: ManualTransferRequest
+    ): TransferResult {
+        return transferService.depositManually(symbol, receiverUuid, receiverWalletType!!, amount,request )
     }
 }
