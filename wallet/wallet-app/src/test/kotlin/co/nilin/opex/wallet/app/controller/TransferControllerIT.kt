@@ -54,12 +54,12 @@ class TransferControllerIT {
     fun givenCategory_whenTransfer_thenCategoryMatches() {
         runBlocking {
             val t = System.currentTimeMillis()
-            val sender = walletOwnerManager.findWalletOwner("1")!!
+            val sender = walletOwnerManager.createWalletOwner(UUID.randomUUID().toString(), "sender", "")
             val receiver = UUID.randomUUID().toString()
             val srcCurrency = currencyService.getCurrency("ETH")!!
             walletManager.createWallet(sender, Amount(srcCurrency, BigDecimal.valueOf(100)), srcCurrency, "main")
 
-            val transfer = webClient.post().uri("/v2/transfer/1_ETH/from/1_main/to/${receiver}_main").accept(MediaType.APPLICATION_JSON)
+            val transfer = webClient.post().uri("/v2/transfer/1_ETH/from/${sender.uuid}_main/to/${receiver}_main").accept(MediaType.APPLICATION_JSON)
                 .bodyValue(TransferController.TransferBody("desc", "ref", "NORMAL", mapOf(Pair("key", "value"))))
                 .exchange()
                 .expectStatus().isOk
@@ -67,8 +67,12 @@ class TransferControllerIT {
                 .returnResult().responseBody!!
             Assertions.assertEquals(BigDecimal.ONE, transfer.amount.amount)
             Assertions.assertEquals("ETH", transfer.amount.currency.symbol)
+            val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(
+                walletOwnerManager.findWalletOwner(receiver)!!, "main", srcCurrency
+            )
+            Assertions.assertEquals(BigDecimal.ONE, receiverWallet!!.balance.amount)
             val txList = webClient.post().uri("/transaction/$receiver").accept(MediaType.APPLICATION_JSON)
-                .bodyValue(TransactionRequest("ETH", null, t, System.currentTimeMillis(), 1, 1, true))
+                .bodyValue(TransactionRequest("ETH", null, t, System.currentTimeMillis(), 1, 0, true))
                 .exchange()
                 .expectStatus().isOk
                 .expectBodyList(TransactionHistory::class.java)
