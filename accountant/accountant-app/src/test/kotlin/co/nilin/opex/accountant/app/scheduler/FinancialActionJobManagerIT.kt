@@ -1,12 +1,12 @@
 package co.nilin.opex.accountant.app.scheduler
 
+import co.nilin.opex.accountant.app.KafkaEnabledTest
 import co.nilin.opex.accountant.core.api.FinancialActionJobManager
 import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.FinancialActionCategory
 import co.nilin.opex.accountant.core.model.FinancialActionStatus
 import co.nilin.opex.accountant.core.spi.FinancialActionLoader
 import co.nilin.opex.accountant.core.spi.FinancialActionPersister
-import co.nilin.opex.accountant.core.spi.JsonMapper
 import co.nilin.opex.accountant.core.spi.WalletProxy
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -17,20 +17,12 @@ import org.mockito.Mockito.any
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.eq
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration
-import org.springframework.context.annotation.Import
-import org.springframework.test.context.ActiveProfiles
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.*
 
-
-@SpringBootTest
-@ActiveProfiles("test")
-@Import(TestChannelBinderConfiguration::class)
-class FinancialActionJobManagerIT {
+class FinancialActionJobManagerIT : KafkaEnabledTest() {
 
     @Autowired
     lateinit var financialActionJobManager: FinancialActionJobManager
@@ -40,9 +32,6 @@ class FinancialActionJobManagerIT {
 
     @Autowired
     lateinit var financialActionPersister: FinancialActionPersister
-
-    @Autowired
-    lateinit var jsonMapper: JsonMapper
 
     @MockBean
     lateinit var walletProxy: WalletProxy
@@ -100,7 +89,7 @@ class FinancialActionJobManagerIT {
 
             financialActionPersister.persist(listOf(child1, parent2))
 
-            financialActionJobManager.processFinancialActions(0, 100);
+            financialActionJobManager.processFinancialActions(0, 100)
 
             assertEquals(0, financialActionLoader.countUnprocessed(uuid, symbol, child1.eventType))
             val orderVerifier = Mockito.inOrder(walletProxy)
@@ -165,7 +154,7 @@ class FinancialActionJobManagerIT {
             )
 
             financialActionPersister.persist(listOf(child1, parent2))
-            financialActionJobManager.processFinancialActions(0, 100);
+            financialActionJobManager.processFinancialActions(0, 100)
 
             assertEquals(1, financialActionLoader.countUnprocessed(uuid, symbol, child1.eventType))
             val orderVerifier = Mockito.inOrder(walletProxy)
@@ -243,7 +232,7 @@ class FinancialActionJobManagerIT {
             ).thenAnswer {
                 throw Exception("transfer failed")
             }
-            financialActionJobManager.processFinancialActions(0, 100);
+            financialActionJobManager.processFinancialActions(0, 100)
 
             assertEquals(1, financialActionLoader.countUnprocessed(uuid, symbol, child1.eventType))
             val orderVerifier = Mockito.inOrder(walletProxy)

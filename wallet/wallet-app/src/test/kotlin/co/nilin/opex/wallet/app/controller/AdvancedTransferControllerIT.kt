@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.utility.error.controller.ExceptionController
+import co.nilin.opex.wallet.app.KafkaEnabledTest
 import co.nilin.opex.wallet.app.dto.SetCurrencyExchangeRateRequest
 import co.nilin.opex.wallet.app.dto.TransferPreEvaluateResponse
 import co.nilin.opex.wallet.app.dto.TransferReserveRequest
@@ -20,20 +21,14 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration
-import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
-import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import java.math.BigDecimal
 import java.util.*
 
-@SpringBootTest
-@ActiveProfiles("test")
+
 @AutoConfigureWebTestClient
-@Import(TestChannelBinderConfiguration::class)
-class AdvancedTransferControllerIT {
+class AdvancedTransferControllerIT : KafkaEnabledTest() {
     @Autowired
     private lateinit var webClient: WebTestClient
 
@@ -90,9 +85,9 @@ class AdvancedTransferControllerIT {
             val system = walletOwnerManager.findWalletOwner(walletOwnerManager.systemUuid)!!
             val srcCurrency = currencyService.getCurrency("ETH")!!
             val destCurrency = currencyService.getCurrency("USDT")!!
-            val senderInitWallet = createWalletWithCurrencyAndBalance(sender, "main", srcCurrency, BigDecimal.valueOf(1))
+            createWalletWithCurrencyAndBalance(sender, "main", srcCurrency, BigDecimal.valueOf(1))
             //not enough balance
-            val systemDestCurrencyInitWallet = createWalletWithCurrencyAndBalance(system, "main", destCurrency, BigDecimal.valueOf(1))
+            createWalletWithCurrencyAndBalance(system, "main", destCurrency, BigDecimal.valueOf(1))
 
             webClient.post().uri("/v3/transfer/reserve").accept(MediaType.APPLICATION_JSON)
                 .bodyValue(TransferReserveRequest(BigDecimal.ONE, "ETH", "USDT", sender.uuid, "main", receiver, "main"))
@@ -147,16 +142,16 @@ class AdvancedTransferControllerIT {
     }
 
     private suspend fun createWalletWithCurrencyAndBalance(system: WalletOwner, walletType: String, destCurrency: Currency, balance: BigDecimal): Wallet {
-        val wallet = walletManager.findWalletByOwnerAndCurrencyAndType(system, walletType, destCurrency);
-        if (wallet != null) {
+        val wallet = walletManager.findWalletByOwnerAndCurrencyAndType(system, walletType, destCurrency)
+        return if (wallet != null) {
             val amount = balance - wallet.balance.amount
             if (amount > BigDecimal.ZERO)
                 walletManager.increaseBalance(wallet, amount)
             else if (amount < BigDecimal.ZERO)
                 walletManager.decreaseBalance(wallet, -amount)
-            return walletManager.findWalletByOwnerAndCurrencyAndType(system, walletType, destCurrency)!!
+            walletManager.findWalletByOwnerAndCurrencyAndType(system, walletType, destCurrency)!!
         } else {
-            return walletManager.createWallet(system, Amount(destCurrency, balance), destCurrency, walletType)
+            walletManager.createWallet(system, Amount(destCurrency, balance), destCurrency, walletType)
         }
     }
 }

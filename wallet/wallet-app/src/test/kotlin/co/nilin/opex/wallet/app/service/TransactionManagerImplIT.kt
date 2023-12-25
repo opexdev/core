@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.app.service
 
+import co.nilin.opex.wallet.app.KafkaEnabledTest
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.spi.*
@@ -9,21 +10,11 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration
-import org.springframework.context.annotation.Import
-import org.springframework.test.annotation.DirtiesContext
-import org.springframework.test.context.ActiveProfiles
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.*
 
-@SpringBootTest
-@DirtiesContext
-@ActiveProfiles("test")
-@Import(TestChannelBinderConfiguration::class)
-
-class TransactionManagerImplIT {
+class TransactionManagerImplIT : KafkaEnabledTest() {
     @Autowired
     lateinit var transferManager: TransferManager
 

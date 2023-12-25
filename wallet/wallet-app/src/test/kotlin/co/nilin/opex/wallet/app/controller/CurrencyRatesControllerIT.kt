@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.app.controller
 
+import co.nilin.opex.wallet.app.KafkaEnabledTest
 import co.nilin.opex.wallet.app.dto.CurrencyExchangeRate
 import co.nilin.opex.wallet.app.dto.CurrencyExchangeRatesResponse
 import co.nilin.opex.wallet.app.dto.CurrencyPair
@@ -17,19 +18,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration
-import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
-import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import java.math.BigDecimal
 
-@SpringBootTest
-@ActiveProfiles("test")
+
 @AutoConfigureWebTestClient
-@Import(TestChannelBinderConfiguration::class)
-class CurrencyRatesControllerIT {
+class CurrencyRatesControllerIT : KafkaEnabledTest() {
 
     @Autowired
     private lateinit var webClient: WebTestClient
@@ -49,7 +44,7 @@ class CurrencyRatesControllerIT {
         runBlocking {
             val currencies = listOf("E", "B", "U", "Z")
             val systemCurrencies = currencyService
-                .getCurrencies().currencies?.filter { c -> currencies.contains(c.name) }?.map { currency -> currency.name };
+                .getCurrencies().currencies?.filter { c -> currencies.contains(c.name) }?.map { currency -> currency.name }
             val fpair = rateService.getForbiddenPairs()
             val rates = rateService.getRate()
             fpair.forbiddenPairs!!.forEach { p -> rateService.deleteForbiddenPair(p) }
@@ -65,7 +60,7 @@ class CurrencyRatesControllerIT {
     private suspend fun addCurrency(c: String, precision: BigDecimal) {
         try {
             currencyService.deleteCurrency(c)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
 
         }
         currencyService.addCurrency(c, c, precision)

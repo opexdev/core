@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.app.service.otc
 
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
+import co.nilin.opex.wallet.app.KafkaEnabledTest
 import co.nilin.opex.wallet.core.model.otc.ForbiddenPair
 import co.nilin.opex.wallet.core.model.otc.Rate
 import co.nilin.opex.wallet.core.model.otc.Symbols
@@ -13,22 +14,13 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration
-import org.springframework.context.annotation.Import
-import org.springframework.test.annotation.DirtiesContext
-import org.springframework.test.context.ActiveProfiles
 import java.math.BigDecimal
 
 
-@SpringBootTest
-@DirtiesContext
-@ActiveProfiles("test")
-@Import(TestChannelBinderConfiguration::class)
-class CurrencyGraphTest {
+class CurrencyGraphIT : KafkaEnabledTest() {
 
     @Autowired
-    lateinit var graphService: GraphService;
+    lateinit var graphService: GraphService
 
     @Autowired
     lateinit var rateService: RateService
@@ -44,7 +36,7 @@ class CurrencyGraphTest {
         runBlocking {
             val currencies = listOf("A", "B", "C", "D", "Z")
             val systemCurrencies = currencyService
-                .getCurrencies().currencies?.filter { c -> currencies.contains(c.name) }?.map { currency -> currency.name };
+                .getCurrencies().currencies?.filter { c -> currencies.contains(c.name) }?.map { currency -> currency.name }
             val fpair = rateService.getForbiddenPairs()
             val rates = rateService.getRate()
             fpair.forbiddenPairs!!.forEach { p -> rateService.deleteForbiddenPair(p) }
