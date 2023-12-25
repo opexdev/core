@@ -25,7 +25,6 @@ import java.util.*
 @DirtiesContext
 @ActiveProfiles("test")
 @Import(TestChannelBinderConfiguration::class)
-
 class TransferManagerImplIT {
     @Autowired
     lateinit var transferManager: TransferManager
@@ -303,12 +302,14 @@ class TransferManagerImplIT {
 
     fun setupWallets(sourceUuid: String) {
         runBlocking {
-            var currency = currencyService.getCurrency(cc)
-            if (currency == null) {
+            try {
                 currencyService.deleteCurrency(cc)
-                currencyService.addCurrency(cc, cc, BigDecimal.ONE)
-                currency = currencyService.getCurrency(cc)
+            } catch (_: Exception) {
+
             }
+            currencyService.addCurrency(cc, cc, BigDecimal.ONE)
+            val currency = currencyService.getCurrency(cc)
+
             val sourceOwner = walletOwnerManager.createWalletOwner(sourceUuid, "not set", "")
             walletManager.createWallet(sourceOwner, Amount(currency!!, amount.multiply(BigDecimal.valueOf(2))), currency, senderWalletType)
             walletManager.createWallet(

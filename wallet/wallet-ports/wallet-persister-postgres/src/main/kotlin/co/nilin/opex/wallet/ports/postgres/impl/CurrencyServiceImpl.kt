@@ -8,24 +8,21 @@ import co.nilin.opex.wallet.core.model.CurrencyImp
 import co.nilin.opex.wallet.core.spi.CurrencyService
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepository
 import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
-import co.nilin.opex.wallet.ports.postgres.model.WalletModel
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
-import kotlinx.coroutines.reactive.awaitLast
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.r2dbc.repository.Query
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.time.LocalDateTime
-import java.util.stream.Collector
 import java.util.stream.Collectors
 
 @Service
 class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : CurrencyService {
+    //TODO avoid injecting impl classes when there is an interface
+    //TODO as we already have the OTCCurrencyService to synchronize with bc-gateway, this extra logic for
+    //creating the wallet can also move there
     @Autowired
     private lateinit var walletManagerImpl: WalletManagerImpl
 

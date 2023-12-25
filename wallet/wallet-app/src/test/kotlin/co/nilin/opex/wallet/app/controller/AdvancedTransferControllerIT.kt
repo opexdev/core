@@ -5,12 +5,12 @@ import co.nilin.opex.wallet.app.dto.SetCurrencyExchangeRateRequest
 import co.nilin.opex.wallet.app.dto.TransferPreEvaluateResponse
 import co.nilin.opex.wallet.app.dto.TransferReserveRequest
 import co.nilin.opex.wallet.app.dto.TransferReserveResponse
-import co.nilin.opex.wallet.app.service.otc.GraphService
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.model.Wallet
 import co.nilin.opex.wallet.core.model.WalletOwner
+import co.nilin.opex.wallet.core.model.otc.Symbols
 import co.nilin.opex.wallet.core.spi.CurrencyService
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
@@ -38,9 +38,6 @@ class AdvancedTransferControllerIT {
     private lateinit var webClient: WebTestClient
 
     @Autowired
-    private lateinit var graphService: GraphService
-
-    @Autowired
     private lateinit var currencyService: CurrencyService
 
     @Autowired
@@ -51,26 +48,28 @@ class AdvancedTransferControllerIT {
 
     @BeforeEach
     fun setup() {
-     //   currencyGraph.reset()
+
         runBlocking {
             currencyService.addCurrency("ETH", "ETH", BigDecimal.TEN)
             currencyService.addCurrency("BTC", "BTC", BigDecimal.TEN)
             currencyService.addCurrency("USDT", "USDT", BigDecimal.valueOf(2))
+            currencyService.addCurrency("Z", "Z", BigDecimal.valueOf(2))
         }
 
-        webClient.post().uri("/rates").accept(MediaType.APPLICATION_JSON)
+        webClient.post().uri("/otc/rate").accept(MediaType.APPLICATION_JSON)
             .bodyValue(SetCurrencyExchangeRateRequest("ETH", "Z", BigDecimal.valueOf(100)))
             .exchange()
-        webClient.post().uri("/rates").accept(MediaType.APPLICATION_JSON)
+        webClient.post().uri("/otc/rate").accept(MediaType.APPLICATION_JSON)
             .bodyValue(SetCurrencyExchangeRateRequest("BTC", "Z", BigDecimal.TEN))
             .exchange()
-        webClient.post().uri("/rates").accept(MediaType.APPLICATION_JSON)
+        webClient.post().uri("/otc/rate").accept(MediaType.APPLICATION_JSON)
             .bodyValue(SetCurrencyExchangeRateRequest("Z", "USDT", BigDecimal.valueOf(2)))
             .exchange()
-        webClient.post().uri("/transitive-symbols").accept(MediaType.APPLICATION_JSON)
-            .bodyValue(listOf("Z"))
+        webClient.post().uri("/otc/transitive-symbols").accept(MediaType.APPLICATION_JSON)
+            .bodyValue(Symbols(listOf("Z")))
             .exchange()
             .expectStatus().isOk
+
     }
 
     @Test
@@ -115,7 +114,6 @@ class AdvancedTransferControllerIT {
             val senderInitWallet = createWalletWithCurrencyAndBalance(sender, "main", srcCurrency, BigDecimal.valueOf(1))
             val systemDestCurrencyInitWallet = createWalletWithCurrencyAndBalance(system, "main", destCurrency, BigDecimal.valueOf(200))
             val systemSrcCurrencyInitWallet = createWalletWithCurrencyAndBalance(system, "main", srcCurrency, BigDecimal.valueOf(0))
-
             val reserve = webClient.post().uri("/v3/transfer/reserve").accept(MediaType.APPLICATION_JSON)
                 .bodyValue(TransferReserveRequest(BigDecimal.ONE, "ETH", "USDT", sender.uuid, "main", receiver, "main"))
                 .exchange()
@@ -141,7 +139,7 @@ class AdvancedTransferControllerIT {
             val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(walletOwnerManager.findWalletOwner(receiver)!!, "main", destCurrency)!!
 
             Assertions.assertEquals(senderInitWallet.balance.amount - transfer.amount.amount, senderWallet.balance.amount)
-            Assertions.assertEquals(transfer.amount.amount, systemWalletSrcCurrency.balance.amount)
+            Assertions.assertEquals(systemSrcCurrencyInitWallet.balance.amount + transfer.amount.amount, systemWalletSrcCurrency.balance.amount)
             Assertions.assertEquals(systemDestCurrencyInitWallet.balance.amount - transfer.receivedAmount.amount, systemWalletDestCurrency.balance.amount)
             Assertions.assertEquals(transfer.receivedAmount.amount, receiverWallet.balance.amount)
 

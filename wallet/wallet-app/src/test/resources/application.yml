@@ -32,6 +32,11 @@ spring:
   r2dbc:
     url: r2dbc:tc:postgresql:///wallet?TC_IMAGE_TAG=9.6.8
     initialization-mode: always
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
   cloud:
     bootstrap:
       enabled: true
@@ -55,6 +60,10 @@ logging:
     org.apache.kafka: ERROR
     co.nilin: DEBUG
     reactor.netty.http.client: DEBUG
+    org.springframework.data.r2dbc: DEBUG
+    org.hibernate:
+      SQL: DEBUG
+      type.descriptor.sql.BasicBinder: TRACE
 swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
 test:
   topic: embedded-test-topic

@@ -4,7 +4,6 @@ import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.app.dto.AdvanceReservedTransferData
 import co.nilin.opex.wallet.app.dto.TransferRequest
-import co.nilin.opex.wallet.app.service.otc.CurrencyGraph
 import co.nilin.opex.wallet.core.exc.NotEnoughBalanceException
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
@@ -15,7 +14,6 @@ import co.nilin.opex.wallet.core.spi.TransferManager
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
@@ -28,13 +26,10 @@ class TransferService(
     private val currencyService: CurrencyService,
     private val walletManager: WalletManager,
     private val walletOwnerManager: WalletOwnerManager,
-    private val graphService: co.nilin.opex.wallet.core.service.otc.GraphService
+    private val currencyGraph: co.nilin.opex.wallet.app.service.otc.GraphService
 ) {
 
     private val logger = LoggerFactory.getLogger(TransferService::class.java)
-
-    @Autowired
-    lateinit var currencyGraph: co.nilin.opex.wallet.app.service.otc.GraphService
 
     val reserved: MutableMap<String, AdvanceReservedTransferData> = mutableMapOf()
 
@@ -117,7 +112,7 @@ class TransferService(
             destSymbol: String,
     ): BigDecimal {
         val rate = currencyGraph.buildRoutes(symbol, destSymbol)
-            ?.map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }
+            .map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }
             .firstOrNull() ?: throw OpexException(OpexError.NOT_EXCHANGEABLE_CURRENCIES)
         return amount.multiply(rate.rate)
     }
@@ -132,9 +127,10 @@ class TransferService(
             receiverWalletType: String
     ): Pair<String, BigDecimal> {
         val rate = currencyGraph.buildRoutes(sourceSymbol, destSymbol)
-            ?.map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }
+            .map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }
             .firstOrNull() ?: throw OpexException(OpexError.NOT_EXCHANGEABLE_CURRENCIES)
         val finalAmount = sourceAmount.multiply(rate.rate)
+        checkIfSystemHasEnoughBalance(destSymbol, receiverWalletType, finalAmount)
         val reserveNumber = UUID.randomUUID().toString()
         reserved.put(
             reserveNumber, AdvanceReservedTransferData(
@@ -257,6 +253,15 @@ class TransferService(
                 Amount(receiverWallet.currency, destAmount)
             )
         ).transferResult
+    }
+
+    private suspend fun checkIfSystemHasEnoughBalance(destSymbol: String, receiverWalletType: String, finalAmount: BigDecimal?) {
+        val destCurrency = currencyService.getCurrency(destSymbol)!!
+        val system = walletOwnerManager.findWalletOwner(walletOwnerManager.systemUuid) ?: throw OpexException(OpexError.WalletOwnerNotFound)
+        val systemWallet = walletManager.findWalletByOwnerAndCurrencyAndType(system, receiverWalletType, destCurrency) ?: throw OpexException(OpexError.WalletNotFound)
+        if (systemWallet.balance.amount < finalAmount) {
+            throw NotEnoughBalanceException()
+        }
     }
 
 }
