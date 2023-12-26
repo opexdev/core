@@ -2,16 +2,15 @@ package co.nilin.opex.wallet.core.service.otc
 
 import co.nilin.opex.wallet.core.model.otc.*
 
-interface GraphService {
+interface RateService {
 
     suspend fun addRate(rate: Rate)
 
     suspend fun deleteRate(rate: Rate): Rates
 
-    suspend fun getRates():Rates
+    suspend fun getRate(): Rates
 
-    suspend fun getRates(sourceSymbol:String,destinationSymbol:String):Rate?
-
+    suspend fun getRate(sourceSymbol: String, destinationSymbol: String): Rate?
 
     suspend fun updateRate(rate: Rate):Rates
 
@@ -27,7 +26,5 @@ interface GraphService {
     suspend fun deleteTransitiveSymbols(symbols:Symbols):Symbols
 
     suspend fun getTransitiveSymbols():Symbols
-
-
 
 }

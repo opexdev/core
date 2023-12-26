@@ -1,7 +1,5 @@
 package co.nilin.opex.wallet.app.service.otc
 
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.core.model.Currencies
 import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.model.CurrencyImp
@@ -9,19 +7,18 @@ import co.nilin.opex.wallet.core.model.PropagateCurrencyChanges
 import co.nilin.opex.wallet.core.model.otc.FetchCurrencyInfo
 import co.nilin.opex.wallet.core.spi.BcGatewayProxy
 import co.nilin.opex.wallet.core.spi.CurrencyService
-import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.math.BigDecimal
-import java.util.Arrays
-import java.util.stream.Collector
 import java.util.stream.Collectors
 
 //propagate currency's info changes
+//TODO find a better name, I just renamed it to avoid the conflict of names which is confusing for later usages
 @Service
-class CurrencyService(
+class OTCCurrencyService(
         private val currencyService: CurrencyService,
+    //TODO: let's do it event based (kafka) or in a more general way, we shouldn't assume a direct dependency between wallet and bc-gateway
+    //and also as we need to create wallet for admins for new currency, it completely makes sense to put them all together in one place, or maybe as some listener to currency_add event!
         private val bcGatewayProxy: BcGatewayProxy
 ) {
 

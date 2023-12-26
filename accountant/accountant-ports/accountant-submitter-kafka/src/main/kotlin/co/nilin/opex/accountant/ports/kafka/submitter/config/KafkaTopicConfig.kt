@@ -15,8 +15,14 @@ class KafkaTopicConfig {
 
     private val logger = LoggerFactory.getLogger(KafkaTopicConfig::class.java)
 
-    @Value("\${spring.kafka.replica:1}")
+    @Value("\${spring.kafka.replica:3}")
     private var replicaCount: Int = 3
+
+    @Value("\${spring.kafka.partitions:10}")
+    private var partitionCount: Int = 10
+
+    @Value("\${spring.kafka.min-sync-replica:2}")
+    private lateinit var minSyncReplicaCount: String
 
     @Autowired
     fun createTopics(applicationContext: GenericApplicationContext) {
@@ -25,25 +31,25 @@ class KafkaTopicConfig {
         with(applicationContext) {
             registerBean("topic_richOrder", NewTopic::class.java, Supplier {
                 TopicBuilder.name("richOrder")
-                    .partitions(10)
+                    .partitions(partitionCount)
                     .replicas(replicaCount)
-                    .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
+                    .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, minSyncReplicaCount)
                     .build()
             })
 
             registerBean("topic_richTrade", NewTopic::class.java, Supplier {
                 TopicBuilder.name("richTrade")
-                    .partitions(10)
+                    .partitions(partitionCount)
                     .replicas(replicaCount)
-                    .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
+                    .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, minSyncReplicaCount)
                     .build()
             })
 
             registerBean("topic_fiAction", NewTopic::class.java, Supplier {
                 TopicBuilder.name("fiAction")
-                    .partitions(10)
+                    .partitions(partitionCount)
                     .replicas(replicaCount)
-                    .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
+                    .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, minSyncReplicaCount)
                     .build()
             })
 
