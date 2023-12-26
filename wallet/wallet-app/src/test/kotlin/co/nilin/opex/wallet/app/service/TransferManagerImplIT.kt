@@ -1,10 +1,10 @@
 package co.nilin.opex.wallet.app.service
 
+import co.nilin.opex.wallet.app.KafkaEnabledTest
 import co.nilin.opex.wallet.core.exc.ConcurrentBalanceChangException
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.spi.*
-import co.nilin.opex.wallet.ports.postgres.dao.TransactionRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -12,21 +12,12 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration
-import org.springframework.context.annotation.Import
-import org.springframework.test.annotation.DirtiesContext
-import org.springframework.test.context.ActiveProfiles
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.*
 
-@SpringBootTest
-@DirtiesContext
-@ActiveProfiles("test")
-@Import(TestChannelBinderConfiguration::class)
 
-class TransferManagerImplIT {
+class TransferManagerImplIT : KafkaEnabledTest() {
     @Autowired
     lateinit var transferManager: TransferManager
 
@@ -41,9 +32,6 @@ class TransferManagerImplIT {
 
     @Autowired
     lateinit var transactionManager: TransactionManager
-
-    @Autowired
-    lateinit var transactionRepository: TransactionRepository
 
     val senderWalletType = "main"
     val receiverWalletType = "exchange"
@@ -303,12 +291,14 @@ class TransferManagerImplIT {
 
     fun setupWallets(sourceUuid: String) {
         runBlocking {
-            var currency = currencyService.getCurrency(cc)
-            if (currency == null) {
+            try {
                 currencyService.deleteCurrency(cc)
-                currencyService.addCurrency(cc, cc, BigDecimal.ONE)
-                currency = currencyService.getCurrency(cc)
+            } catch (_: Exception) {
+
             }
+            currencyService.addCurrency(cc, cc, BigDecimal.ONE)
+            val currency = currencyService.getCurrency(cc)
+
             val sourceOwner = walletOwnerManager.createWalletOwner(sourceUuid, "not set", "")
             walletManager.createWallet(sourceOwner, Amount(currency!!, amount.multiply(BigDecimal.valueOf(2))), currency, senderWalletType)
             walletManager.createWallet(

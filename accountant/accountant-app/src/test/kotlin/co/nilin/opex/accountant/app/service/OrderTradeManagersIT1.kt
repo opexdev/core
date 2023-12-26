@@ -1,5 +1,6 @@
 package co.nilin.opex.accountant.app.service
 
+import co.nilin.opex.accountant.app.KafkaEnabledTest
 import co.nilin.opex.accountant.core.api.OrderManager
 import co.nilin.opex.accountant.core.api.TradeManager
 import co.nilin.opex.accountant.core.inout.OrderStatus
@@ -18,18 +19,10 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration
-import org.springframework.context.annotation.Import
-import org.springframework.test.context.ActiveProfiles
 import java.math.BigDecimal
 import java.util.*
 
-
-@SpringBootTest
-@ActiveProfiles("test")
-@Import(TestChannelBinderConfiguration::class)
-class OrderTradeManagersIT {
+class OrderTradeManagersIT1 : KafkaEnabledTest() {
     @Autowired
     lateinit var orderManager: OrderManager
 

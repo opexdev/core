@@ -10,12 +10,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import java.math.BigDecimal
 
-class GraphService() {
-    @Autowired
-    lateinit var graphService: GraphService
-
-    @Autowired
-    lateinit var currencyService: CurrencyService
+class GraphService(    private val rateService: RateService, private val currencyService: CurrencyService
+){
     private val logger = LoggerFactory.getLogger(GraphService::class.java)
 
 
@@ -36,15 +32,16 @@ class GraphService() {
 
     }
 
-
     suspend fun buildRoutes(source: String? = null, dest: String? = null): MutableList<Route> {
         val routesWithMax2StepV2: MutableList<Route> = mutableListOf()
         val adjencyMap: Map<String, MutableList<Rate>> = createAdjacencyMapV2()
-        val systemCurrencies = currencyService.getCurrencies()?.currencies
-        val vertice: List<String> = systemCurrencies?.filter { it.isTransitive == false && it.isActive == true }?.map(Currency::symbol)
-                ?: throw OpexException(OpexError.NoRecordFound)
-        val transitiveSymbols: List<String> = systemCurrencies?.filter { it.isTransitive == true }?.map(Currency::symbol)
-                ?: throw OpexException(OpexError.NoRecordFound)
+        val systemCurrencies = currencyService.getCurrencies().currencies
+        val vertice: List<String> = systemCurrencies?.filter {
+            it.isTransitive == false && it.isActive == true
+        }
+            ?.map(Currency::symbol)
+            ?: throw OpexException(OpexError.NoRecordFound)
+        val transitiveSymbols: List<String> = systemCurrencies.filter { it.isTransitive == true }.map(Currency::symbol)
         for (vertex in vertice) {
             if (source == null || vertex == source) {
                 val visited = mutableSetOf<String>()
@@ -53,6 +50,17 @@ class GraphService() {
             }
         }
         return routesWithMax2StepV2
+    }
+
+
+    suspend fun getAvailableRoutes(): List<Route> {
+        return buildRoutes(null, null)
+    }
+
+    suspend fun findRoute(source: String, dest: String): Rate? {
+        return buildRoutes(source, dest)
+            .map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }
+            .firstOrNull()
     }
 
     private suspend fun findRoutesWithMax2EdgesV2(
@@ -117,7 +125,7 @@ class GraphService() {
     private suspend fun addCurrentRouteV2(routesWithMax2Step: MutableList<Route>, currentRoute: MutableList<Rate>, dest: String? = null) {
 
         val route = Route(currentRoute.toList());
-        if ((graphService.getForbiddenPairs().forbiddenPairs?.contains(ForbiddenPair(route.getSourceSymbol(), route.getDestSymbol())) == false)
+        if ((rateService.getForbiddenPairs().forbiddenPairs?.contains(ForbiddenPair(route.getSourceSymbol(), route.getDestSymbol())) == false)
                 && (dest == null || route.getDestSymbol() == dest))
             routesWithMax2Step.add(route)
 
@@ -125,7 +133,7 @@ class GraphService() {
 
     private suspend fun createAdjacencyMapV2(): Map<String, MutableList<Rate>> {
         val adjacencyMap = mutableMapOf<String, MutableList<Rate>>()
-        graphService.getRates().rates?.forEach { rate ->
+        rateService.getRate().rates?.forEach { rate ->
             adjacencyMap.computeIfAbsent(rate.sourceSymbol) { mutableListOf() }.add(rate)
         }
         return adjacencyMap
@@ -438,4 +446,6 @@ class GraphService() {
 //    }
 
 
+=======
+>>>>>>> origin/dev
 }

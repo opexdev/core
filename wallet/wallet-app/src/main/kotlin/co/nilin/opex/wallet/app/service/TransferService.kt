@@ -5,6 +5,7 @@ import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.app.dto.AdvanceReservedTransferData
 import co.nilin.opex.wallet.app.dto.ManualTransferRequest
 import co.nilin.opex.wallet.app.dto.TransferRequest
+import co.nilin.opex.wallet.core.exc.NotEnoughBalanceException
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.Amount
@@ -14,7 +15,6 @@ import co.nilin.opex.wallet.core.spi.TransferManager
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
@@ -24,17 +24,14 @@ import java.util.*
 
 @Service
 class TransferService(
-        private val transferManager: TransferManager,
-        private val currencyService: CurrencyService,
-        private val walletManager: WalletManager,
-        private val walletOwnerManager: WalletOwnerManager,
-        private val graphService: co.nilin.opex.wallet.core.service.otc.GraphService
+    private val transferManager: TransferManager,
+    private val currencyService: CurrencyService,
+    private val walletManager: WalletManager,
+    private val walletOwnerManager: WalletOwnerManager,
+    private val currencyGraph: co.nilin.opex.wallet.app.service.otc.GraphService
 ) {
 
     private val logger = LoggerFactory.getLogger(TransferService::class.java)
-
-    @Autowired
-    lateinit var currencyGraph: co.nilin.opex.wallet.app.service.otc.GraphService
 
     val reserved: MutableMap<String, AdvanceReservedTransferData> = mutableMapOf()
 
@@ -52,38 +49,38 @@ class TransferService(
             additionalData: Map<String, Any>? = emptyMap()
     ): TransferResult {
         return _transfer(
-                symbol,
-                senderWalletType,
-                senderUuid,
-                receiverWalletType,
-                receiverUuid,
-                amount,
-                description,
-                transferRef,
-                transferCategory,
-                additionalData
+            symbol,
+            senderWalletType,
+            senderUuid,
+            receiverWalletType,
+            receiverUuid,
+            amount,
+            description,
+            transferRef,
+            transferCategory,
+            additionalData
         )
     }
 
     @Transactional
     suspend fun batchTransfer(request: List<TransferRequest>) {
         request.filter { it.receiverWalletType != "cashout" && it.senderWalletType != "cashout" }
-                .forEach {
-                    _transfer(
-                            it.symbol,
-                            it.senderWalletType,
-                            it.senderUuid,
-                            it.receiverWalletType,
-                            it.receiverUuid,
-                            it.amount,
-                            it.description,
-                            it.transferRef,
-                            it.transferCategory,
-                            it.additionalData,
-                            it.symbol,
-                            it.amount
-                    )
-                }
+            .forEach {
+                _transfer(
+                    it.symbol,
+                    it.senderWalletType,
+                    it.senderUuid,
+                    it.receiverWalletType,
+                    it.receiverUuid,
+                    it.amount,
+                    it.description,
+                    it.transferRef,
+                    it.transferCategory,
+                    it.additionalData,
+                    it.symbol,
+                    it.amount
+                )
+            }
     }
 
     @Transactional
@@ -95,51 +92,19 @@ class TransferService(
             description: String?,
             transferRef: String?
     ): TransferResult {
-        val systemUuid = "1"
         return _transfer(
-                symbol,
-                "main",
-                systemUuid,
-                receiverWalletType,
-                receiverUuid,
-                amount,
-                description,
-                transferRef,
-                "DEPOSIT",
-                null,
-                symbol,
-                amount
-        )
-    }
-
-
-    @Transactional
-    suspend fun depositManually(
-            symbol: String,
-            receiverUuid: String,
-            senderUuid:String,
-            receiverWalletType: String,
-            amount: BigDecimal,
-            request: ManualTransferRequest
-    ): TransferResult {
-        logger.info("deposit manually: $senderUuid to $receiverUuid on $symbol at ${LocalDateTime.now()}")
-        val systemUuid = "1"
-        //todo customize error message
-        if (walletOwnerManager.findWalletOwner(receiverUuid)?.level != "basic")
-            throw OpexException(OpexError.Error)
-        return _transfer(
-                symbol,
-                "main",
-                senderUuid,
-                receiverWalletType,
-                receiverUuid,
-                amount,
-                request.description,
-                request.ref,
-                "DEPOSIT_MANUALLY",
-                null,
-                symbol,
-                amount
+            symbol,
+            "main",
+            walletOwnerManager.systemUuid,
+            receiverWalletType,
+            receiverUuid,
+            amount,
+            description,
+            transferRef,
+            "DEPOSIT",
+            null,
+            symbol,
+            amount
         )
     }
 
@@ -149,8 +114,8 @@ class TransferService(
             destSymbol: String,
     ): BigDecimal {
         val rate = currencyGraph.buildRoutes(symbol, destSymbol)
-                ?.map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }
-                .firstOrNull() ?: throw OpexException(OpexError.NOT_EXCHANGEABLE_CURRENCIES)
+            .map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }
+            .firstOrNull() ?: throw OpexException(OpexError.NOT_EXCHANGEABLE_CURRENCIES)
         return amount.multiply(rate.rate)
     }
 
@@ -164,12 +129,13 @@ class TransferService(
             receiverWalletType: String
     ): Pair<String, BigDecimal> {
         val rate = currencyGraph.buildRoutes(sourceSymbol, destSymbol)
-                ?.map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }
-                .firstOrNull() ?: throw OpexException(OpexError.NOT_EXCHANGEABLE_CURRENCIES)
+            .map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }
+            .firstOrNull() ?: throw OpexException(OpexError.NOT_EXCHANGEABLE_CURRENCIES)
         val finalAmount = sourceAmount.multiply(rate.rate)
+        checkIfSystemHasEnoughBalance(destSymbol, receiverWalletType, finalAmount)
         val reserveNumber = UUID.randomUUID().toString()
         reserved.put(
-                reserveNumber, AdvanceReservedTransferData(
+            reserveNumber, AdvanceReservedTransferData(
                 sourceSymbol,
                 destSymbol,
                 senderWalletType,
@@ -179,19 +145,19 @@ class TransferService(
                 sourceAmount,
                 finalAmount,
                 Date()
-        )
+            )
         )
         return Pair(reserveNumber, finalAmount)
     }
 
     @Transactional
     suspend fun advanceTransfer(
-            reserveNumber: String,
-            description: String?,
-            transferRef: String?,
-            //todo need to review
-            transferCategory: String? = "PURCHASE_FINALIZED",
-            additionalData: Map<String, Any>? = emptyMap()
+        reserveNumber: String,
+        description: String?,
+        transferRef: String?,
+        //todo need to review
+        transferCategory: String? = "PURCHASE_FINALIZED",
+        additionalData: Map<String, Any>? = emptyMap()
     ): TransferResult {
         val reservations = reserved.get(reserveNumber) ?: throw Exception()
         val calendar = Calendar.getInstance()
@@ -200,18 +166,37 @@ class TransferService(
         if (reservations.reserveTime.before(calendar.time))
             throw Exception("Expired Reservation")
 
-        return _transfer(
-                reservations.sourceSymbol,
-                reservations.senderWalletType,
-                reservations.senderUuid,
-                reservations.receiverWalletType,
-                reservations.receiverUuid,
-                reservations.sourceAmount,
-                description,
-                transferRef,
-                transferCategory, additionalData,
-                reservations.destSymbol,
-                reservations.reservedDestAmount
+        val senderTransfer = _transfer(
+            reservations.sourceSymbol,
+            reservations.senderWalletType,
+            reservations.senderUuid,
+            "main",
+            walletOwnerManager.systemUuid,
+            reservations.sourceAmount,
+            description,
+            "$transferRef-withdraw",
+            transferCategory, additionalData,
+            reservations.sourceSymbol,
+            reservations.sourceAmount
+        )
+
+        val receiverTransfer = _transfer(
+            reservations.destSymbol,
+            "main",
+            walletOwnerManager.systemUuid,
+            reservations.receiverWalletType,
+            reservations.receiverUuid,
+            reservations.reservedDestAmount,
+            description,
+            "$transferRef-deposit",
+            transferCategory, additionalData,
+            reservations.destSymbol,
+            reservations.reservedDestAmount
+        )
+
+        return TransferResult(
+            senderTransfer.date, senderTransfer.sourceUuid, senderTransfer.sourceWalletType, senderTransfer.sourceBalanceBeforeAction, senderTransfer.sourceBalanceAfterAction,
+            senderTransfer.amount, receiverTransfer.destUuid, receiverTransfer.destWalletType, receiverTransfer.receivedAmount
         )
     }
 
@@ -235,10 +220,10 @@ class TransferService(
             throw OpexException(OpexError.InvalidCashOutUsage)
         val sourceCurrency = currencyService.getCurrency(symbol) ?: throw OpexException(OpexError.CurrencyNotFound)
         val sourceOwner = walletOwnerManager.findWalletOwner(senderUuid)
-                ?: throw OpexException(OpexError.WalletOwnerNotFound)
+            ?: throw OpexException(OpexError.WalletOwnerNotFound)
         val sourceWallet =
-                walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner, senderWalletType, sourceCurrency)
-                        ?: throw OpexException(OpexError.WalletNotFound)
+            walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner, senderWalletType, sourceCurrency)
+                ?: throw OpexException(OpexError.WalletNotFound)
 
         val receiverOwner = walletOwnerManager.findWalletOwner(receiverUuid) ?: walletOwnerManager.createWalletOwner(
                 receiverUuid,
@@ -246,30 +231,39 @@ class TransferService(
                 ""
         )
         val receiverCurrency = currencyService.getCurrency(destSymbol)
-                ?: throw OpexException(OpexError.CurrencyNotFound)
+            ?: throw OpexException(OpexError.CurrencyNotFound)
         val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(
-                receiverOwner, receiverWalletType, receiverCurrency
+            receiverOwner, receiverWalletType, receiverCurrency
         ) ?: walletManager.createWallet(
-                receiverOwner,
-                Amount(receiverCurrency, BigDecimal.ZERO),
-                receiverCurrency,
-                receiverWalletType
+            receiverOwner,
+            Amount(receiverCurrency, BigDecimal.ZERO),
+            receiverCurrency,
+            receiverWalletType
         )
 
         logger.info(
-                "Transferring funds: $amount ${sourceWallet.owner.id}-${sourceWallet.currency.symbol}-$senderWalletType " +
-                        "==> ${receiverWallet.owner.id}-${receiverWallet.currency.symbol}-$receiverWalletType "
+            "Transferring funds: $amount ${sourceWallet.owner.id}-${sourceWallet.currency.symbol}-$senderWalletType " +
+                    "==> ${receiverWallet.owner.id}-${receiverWallet.currency.symbol}-$receiverWalletType "
         )
 
         return transferManager.transfer(
-                TransferCommand(
-                        sourceWallet,
-                        receiverWallet,
-                        Amount(sourceWallet.currency, amount),
-                        description, transferRef, transferCategory!!, additionalData,
-                        Amount(receiverWallet.currency, destAmount)
-                )
+            TransferCommand(
+                sourceWallet,
+                receiverWallet,
+                Amount(sourceWallet.currency, amount),
+                description, transferRef, transferCategory!!, additionalData,
+                Amount(receiverWallet.currency, destAmount)
+            )
         ).transferResult
+    }
+
+    private suspend fun checkIfSystemHasEnoughBalance(destSymbol: String, receiverWalletType: String, finalAmount: BigDecimal?) {
+        val destCurrency = currencyService.getCurrency(destSymbol)!!
+        val system = walletOwnerManager.findWalletOwner(walletOwnerManager.systemUuid) ?: throw OpexException(OpexError.WalletOwnerNotFound)
+        val systemWallet = walletManager.findWalletByOwnerAndCurrencyAndType(system, receiverWalletType, destCurrency) ?: throw OpexException(OpexError.WalletNotFound)
+        if (systemWallet.balance.amount < finalAmount) {
+            throw NotEnoughBalanceException()
+        }
     }
 
 }
