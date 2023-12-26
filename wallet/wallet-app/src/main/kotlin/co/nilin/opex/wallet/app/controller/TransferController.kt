@@ -7,6 +7,8 @@ import co.nilin.opex.wallet.core.inout.TransferResult
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 
@@ -116,8 +118,8 @@ class TransferController(private val transferService: TransferService) {
         return transferService.deposit(symbol, receiverUuid, receiverWalletType, amount, description, transferRef)
     }
 
-
-    //
+    //todo
+    //hasRole (admin ,system)
     @PostMapping("/deposit/manually/{amount}_{symbol}/{receiverUuid}")
     @ApiResponse(
             message = "OK",
@@ -132,10 +134,12 @@ class TransferController(private val transferService: TransferService) {
     suspend fun depositManually(
             @PathVariable("symbol") symbol: String,
             @PathVariable("receiverUuid") receiverUuid: String,
-            @PathVariable("receiverWalletType") receiverWalletType: String?="main",
+            @PathVariable("receiverWalletType") receiverWalletType: String = "main",
             @PathVariable("amount") amount: BigDecimal,
-            @RequestBody request: ManualTransferRequest
+            @RequestBody request: ManualTransferRequest,
+            @CurrentSecurityContext securityContext: SecurityContext
     ): TransferResult {
-        return transferService.depositManually(symbol, receiverUuid, receiverWalletType!!, amount,request )
+
+        return transferService.depositManually(symbol, receiverUuid, securityContext.authentication.name, receiverWalletType!!, amount, request)
     }
 }

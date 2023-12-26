@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
+import java.time.LocalDateTime
 import java.util.*
 
 
@@ -116,10 +117,12 @@ class TransferService(
     suspend fun depositManually(
             symbol: String,
             receiverUuid: String,
+            senderUuid:String,
             receiverWalletType: String,
             amount: BigDecimal,
             request: ManualTransferRequest
     ): TransferResult {
+        logger.info("deposit manually: $senderUuid to $receiverUuid on $symbol at ${LocalDateTime.now()}")
         val systemUuid = "1"
         //todo customize error message
         if (walletOwnerManager.findWalletOwner(receiverUuid)?.level != "basic")
@@ -127,7 +130,7 @@ class TransferService(
         return _transfer(
                 symbol,
                 "main",
-                systemUuid,
+                senderUuid,
                 receiverWalletType,
                 receiverUuid,
                 amount,
