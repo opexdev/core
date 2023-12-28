@@ -134,12 +134,12 @@ class TransferController(private val transferService: TransferService) {
     suspend fun depositManually(
             @PathVariable("symbol") symbol: String,
             @PathVariable("receiverUuid") receiverUuid: String,
-            @PathVariable("receiverWalletType") receiverWalletType: String = "main",
             @PathVariable("amount") amount: BigDecimal,
             @RequestBody request: ManualTransferRequest,
-            @CurrentSecurityContext securityContext: SecurityContext
+          //  @CurrentSecurityContext securityContext: SecurityContext
     ): TransferResult {
+      //  securityContext.authentication.name
 
-        return transferService.depositManually(symbol, receiverUuid, securityContext.authentication.name, receiverWalletType!!, amount, request)
+        return transferService.depositManually(symbol, receiverUuid,"b58dc8b2-9c0f-11ee-8c90-0242ac120002" , amount, request)
     }
 }

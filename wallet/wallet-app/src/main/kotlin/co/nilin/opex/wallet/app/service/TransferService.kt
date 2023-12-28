@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.app.service
 
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
+import co.nilin.opex.utility.preferences.Preferences
 import co.nilin.opex.wallet.app.dto.AdvanceReservedTransferData
 import co.nilin.opex.wallet.app.dto.ManualTransferRequest
 import co.nilin.opex.wallet.app.dto.TransferRequest
@@ -15,6 +16,7 @@ import co.nilin.opex.wallet.core.spi.TransferManager
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
@@ -30,6 +32,8 @@ class TransferService(
     private val walletOwnerManager: WalletOwnerManager,
     private val currencyGraph: co.nilin.opex.wallet.app.service.otc.GraphService
 ) {
+    @Autowired
+    private lateinit var preferences: Preferences
 
     private val logger = LoggerFactory.getLogger(TransferService::class.java)
 
@@ -197,6 +201,45 @@ class TransferService(
         return TransferResult(
             senderTransfer.date, senderTransfer.sourceUuid, senderTransfer.sourceWalletType, senderTransfer.sourceBalanceBeforeAction, senderTransfer.sourceBalanceAfterAction,
             senderTransfer.amount, receiverTransfer.destUuid, receiverTransfer.destWalletType, receiverTransfer.receivedAmount
+        )
+    }
+
+    @Transactional
+    suspend fun depositManually(
+            symbol: String,
+            receiverUuid: String,
+            senderUuid:String,
+            amount: BigDecimal,
+            request: ManualTransferRequest
+    ): TransferResult {
+        logger.info("deposit manually: $senderUuid to $receiverUuid on $symbol at ${LocalDateTime.now()}")
+        val systemUuid = "1"
+        //todo customize error message
+        val senderLevel=walletOwnerManager.findWalletOwner(senderUuid)?.let {it.level }?:throw OpexException(OpexError.WalletOwnerNotFound)
+        val receiverLevel=walletOwnerManager.findWalletOwner(receiverUuid)?.let {it.level }?:throw OpexException(OpexError.WalletOwnerNotFound)
+
+        if ( senderLevel !in arrayListOf<String>(preferences.admin.walletLevel,preferences.system.walletLevel))
+            throw OpexException(OpexError.Forbidden)
+
+        if(senderLevel == preferences.system.walletLevel && receiverLevel !=preferences.admin.walletLevel)
+            throw OpexException(OpexError.Forbidden)
+
+        if (walletOwnerManager.findWalletOwner(receiverUuid)?.level !in arrayListOf<String>(preferences.admin.walletLevel,preferences.system.walletLevel))
+            throw OpexException(OpexError.Error)
+        return _transfer(
+                symbol,
+                "main",
+                senderUuid,
+                "main",
+                receiverUuid,
+                amount,
+                request.description,
+                request.ref,
+                "DEPOSIT_MANUALLY",
+                null,
+                symbol,
+                amount
+
         )
     }
 

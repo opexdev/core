@@ -4,13 +4,15 @@ import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.model.otc.*
-import co.nilin.opex.wallet.core.service.otc.GraphService
+import co.nilin.opex.wallet.core.service.otc.RateService
 import co.nilin.opex.wallet.core.spi.CurrencyService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Service
 import java.math.BigDecimal
 
-class GraphService(    private val rateService: RateService, private val currencyService: CurrencyService
+@Service
+class GraphService(private val rateService: RateService, private val currencyService: CurrencyService
 ){
     private val logger = LoggerFactory.getLogger(GraphService::class.java)
 
@@ -445,7 +447,4 @@ class GraphService(    private val rateService: RateService, private val currenc
 //        routesWithMax2Step.clear()
 //    }
 
-
-=======
->>>>>>> origin/dev
 }
