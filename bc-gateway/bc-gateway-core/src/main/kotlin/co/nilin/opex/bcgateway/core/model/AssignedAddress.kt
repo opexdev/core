@@ -9,7 +9,7 @@ data class AssignedAddress(
         val type: AddressType,
         val chains: MutableList<Chain>,
         val expTime: LocalDateTime? = null,
-        val status: AddressStatus?=AddressStatus.Reserved
+        var status: AddressStatus?=AddressStatus.Reserved
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

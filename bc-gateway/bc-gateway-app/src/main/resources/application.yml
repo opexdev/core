@@ -67,4 +67,6 @@ app:
   wallet:
     url: lb://opex-wallet
   address:
-    exp-time: ${ADDRESS_EXP_TIME}
+    life-time:
+      value: ${ADDRESS_EXP_TIME}
+      unit: minute

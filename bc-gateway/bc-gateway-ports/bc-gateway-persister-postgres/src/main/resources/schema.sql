@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS assigned_addresses
     create_date TIMESTAMP,
     status VARCHAR(25),
     exp_time TIMESTAMP,
-    UNIQUE (address, memo)
+    UNIQUE (address, memo, exp_time)
 );
 
 ALTER TABLE assigned_addresses ADD COLUMN IF NOT EXISTS create_date TIMESTAMP;

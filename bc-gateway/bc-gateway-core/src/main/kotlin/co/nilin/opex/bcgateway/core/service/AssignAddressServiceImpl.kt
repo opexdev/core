@@ -15,8 +15,11 @@ class AssignAddressServiceImpl(
         private val assignedAddressHandler: AssignedAddressHandler,
         private val reservedAddressHandler: ReservedAddressHandler
 ) : AssignAddressService {
-    @Value("\${app.address.exp-time}")
-    private var expTime: Long?=null
+    @Value("\${app.address.life-time.value}")
+    private var lifeTime: Long? = null
+
+    @Value("\${app.address.life-time.unit}")
+    private var lifeUnit: String? = "minute"
     override suspend fun assignAddress(user: String, currency: Currency, chain: String): List<AssignedAddress> {
         val currencyInfo = currencyHandler.fetchCurrencyInfo(currency.symbol)
         val chains = currencyInfo.implementations
@@ -52,9 +55,10 @@ class AssignAddressServiceImpl(
                             reservedAddress.memo,
                             addressType,
                             chainAddressTypeMap[addressType]!!,
-                            expTime?.let { LocalDateTime.now().plusHours(expTime!!)} ?: null,
+                            lifeTime?.let { if (lifeUnit == "minute") LocalDateTime.now().plusMinutes(lifeTime!!) else null }
+                                    ?: null,
                             AddressStatus.Assigned
-                            )
+                    )
                     reservedAddressHandler.remove(reservedAddress)
                     result.add(newAssigned)
                 } else {
