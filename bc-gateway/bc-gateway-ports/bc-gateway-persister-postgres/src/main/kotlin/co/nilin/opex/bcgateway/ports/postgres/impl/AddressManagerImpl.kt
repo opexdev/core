@@ -6,6 +6,7 @@ import co.nilin.opex.bcgateway.core.spi.AddressManager
 import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
+import java.time.LocalDateTime
 
 @Component
 class AddressManagerImpl(private val addressHandlerImpl: AssignedAddressHandlerImpl,
@@ -14,10 +15,10 @@ class AddressManagerImpl(private val addressHandlerImpl: AssignedAddressHandlerI
 
     override suspend fun revokeExpiredAddress() {
         addressHandlerImpl.fetchExpiredAssignedAddresses()?.map {
-            logger.info("000000000000000")
-            logger.info(it.address)
             addressHandlerImpl.revoke(it.apply {
+                id=it.id
                 status = AddressStatus.Revoked
+                revokedDate= LocalDateTime.now()
             })
             reservedAddressHandlerImpl.addReservedAddress(listOf(ReservedAddress(it.address, it.memo, it.type)))
 

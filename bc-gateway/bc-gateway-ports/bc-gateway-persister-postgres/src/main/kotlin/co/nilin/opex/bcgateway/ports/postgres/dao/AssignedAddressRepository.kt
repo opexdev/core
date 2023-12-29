@@ -26,7 +26,7 @@ interface AssignedAddressRepository : ReactiveCrudRepository<AssignedAddressMode
         @Param("memo") memo: String?
     ): Mono<AssignedAddressModel>
 
-    @Query("select * from assigned_addresses where (:windowPoint is null or create_date > :windowPoint ) and (:now is null or exp_time > :now ) and (:status is null or status =:status) ")
+    @Query("select * from assigned_addresses where (:windowPoint is null or create_date > :windowPoint ) and (:now is null or exp_time< :now ) and (:status is null or status =:status) ")
     fun findPotentialExpAddress(
             @Param("windowPoint") windowPont: LocalDateTime?,
             @Param("now") now: LocalDateTime?,
