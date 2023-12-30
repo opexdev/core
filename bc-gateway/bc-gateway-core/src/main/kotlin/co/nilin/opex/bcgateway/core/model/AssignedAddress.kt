@@ -12,7 +12,7 @@ data class AssignedAddress(
     var assignedDate: LocalDateTime? = null,
     var revokedDate: LocalDateTime? = null,
     var status: AddressStatus? = AddressStatus.Reserved,
-    var id: Long?
+    var id: Long?=null
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

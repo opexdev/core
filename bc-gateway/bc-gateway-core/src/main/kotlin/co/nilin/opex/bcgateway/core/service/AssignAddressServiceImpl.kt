@@ -5,12 +5,15 @@ import co.nilin.opex.bcgateway.core.model.*
 import co.nilin.opex.bcgateway.core.spi.AssignedAddressHandler
 import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
 import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
+import co.nilin.opex.bcgateway.core.utils.LoggerDelegate
 import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
+import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
-class AssignAddressServiceImpl(
+open class AssignAddressServiceImpl(
         private val currencyHandler: CurrencyHandler,
         private val assignedAddressHandler: AssignedAddressHandler,
         private val reservedAddressHandler: ReservedAddressHandler
@@ -20,6 +23,9 @@ class AssignAddressServiceImpl(
 
     @Value("\${app.address.life-time.unit}")
     private var lifeUnit: String? = "minute"
+    private val logger: Logger by LoggerDelegate()
+
+    @Transactional
     override suspend fun assignAddress(user: String, currency: Currency, chain: String): List<AssignedAddress> {
         val currencyInfo = currencyHandler.fetchCurrencyInfo(currency.symbol)
         val chains = currencyInfo.implementations
@@ -57,7 +63,10 @@ class AssignAddressServiceImpl(
                             chainAddressTypeMap[addressType]!!,
                             lifeTime?.let { if (lifeUnit == "minute") LocalDateTime.now().plusMinutes(lifeTime!!) else null }
                                     ?: null,
-                            AddressStatus.Assigned
+                            LocalDateTime.now(),
+                            null,
+                            AddressStatus.Assigned,
+                            null
                     )
                     reservedAddressHandler.remove(reservedAddress)
                     result.add(newAssigned)
@@ -71,6 +80,7 @@ class AssignAddressServiceImpl(
             }
         }
         result.forEach { address ->
+            logger.info(address.address)
             assignedAddressHandler.persist(address)
         }
         return result.toMutableList()

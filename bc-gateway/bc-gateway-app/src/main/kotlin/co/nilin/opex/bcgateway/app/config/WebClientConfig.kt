@@ -27,6 +27,7 @@ class WebClientConfig {
     }
 
     @Bean
+    @Qualifier("decWebClient")
     fun webClient(): WebClient {
         return WebClient.builder()
             .exchangeStrategies(

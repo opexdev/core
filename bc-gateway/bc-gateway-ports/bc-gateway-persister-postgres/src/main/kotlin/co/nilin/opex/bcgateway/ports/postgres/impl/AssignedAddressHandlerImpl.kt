@@ -5,6 +5,7 @@ import co.nilin.opex.bcgateway.core.model.AddressType
 import co.nilin.opex.bcgateway.core.model.AssignedAddress
 import co.nilin.opex.bcgateway.core.spi.AssignedAddressHandler
 import co.nilin.opex.bcgateway.core.spi.ChainLoader
+import co.nilin.opex.bcgateway.core.utils.LoggerDelegate
 import co.nilin.opex.bcgateway.ports.postgres.dao.AddressTypeRepository
 import co.nilin.opex.bcgateway.ports.postgres.dao.AssignedAddressChainRepository
 import co.nilin.opex.bcgateway.ports.postgres.dao.AssignedAddressRepository
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
@@ -30,6 +32,8 @@ class AssignedAddressHandlerImpl(
 
     @Value("\${app.address.life-time.unit}")
     private var lifeUnit: String? = "minute"
+    private val logger: Logger by LoggerDelegate()
+
     override suspend fun fetchAssignedAddresses(user: String, addressTypes: List<AddressType>): List<AssignedAddress> {
         if (addressTypes.isEmpty()) return emptyList()
         val addressTypeMap = addressTypeRepository.findAll().map { aam ->
@@ -43,7 +47,8 @@ class AssignedAddressHandlerImpl(
     }
 
     override suspend fun persist(assignedAddress: AssignedAddress) {
-        runCatching {
+
+            logger.info("going to save new address .............")
             assignedAddressRepository.save(
                 AssignedAddressModel(
                     null,
@@ -57,8 +62,7 @@ class AssignedAddressHandlerImpl(
                     null,
                     assignedAddress.status
                 )
-            ).awaitFirst()
-        }
+            ).awaitFirstOrNull()
     }
 
 
@@ -89,13 +93,18 @@ class AssignedAddressHandlerImpl(
         val addressTypeMap = addressTypeRepository.findAll().map { aam ->
             AddressType(aam.id!!, aam.type, aam.addressRegex, aam.memoRegex)
         }.collectMap { it.id }.awaitFirst()
+        logger.info("-----------------------------------------------------------")
+        logger.info( if (lifeUnit == "minute") (now.minusMinutes(lifeTime!!)).toString() else null)
+        logger.info(now.toString())
+        //for having significant margin : (minus(5 mints)
         return assignedAddressRepository.findPotentialExpAddress(
-            if (lifeUnit == "minute") (now.minusMinutes(lifeTime!!)) else null,
+            if (lifeUnit == "minute") (now.minusMinutes(lifeTime!!+1)).minusMinutes(5) else null,
             now,
             AddressStatus.Assigned
         )?.filter {
             it.expTime != null
         }?.map {
+            logger.info(it.address)
             it.toDto(addressTypeMap).apply { id = it.id }
         }?.toList()
     }

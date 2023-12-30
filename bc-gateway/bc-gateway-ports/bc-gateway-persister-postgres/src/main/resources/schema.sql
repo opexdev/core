@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS assigned_addresses
     UNIQUE (address, memo, exp_time)
 );
 
-ALTER TABLE assigned_addresses ADD COLUMN IF NOT EXISTS asigned_date TIMESTAMP;
+ALTER TABLE assigned_addresses ADD COLUMN IF NOT EXISTS assigned_date TIMESTAMP;
 ALTER TABLE assigned_addresses ADD COLUMN IF NOT EXISTS revoked_date TIMESTAMP;
 ALTER TABLE assigned_addresses ADD COLUMN IF NOT EXISTS exp_time TIMESTAMP;
 ALTER TABLE assigned_addresses ADD COLUMN IF NOT EXISTS status VARCHAR(25);

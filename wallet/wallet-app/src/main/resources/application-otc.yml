@@ -71,7 +71,7 @@ spring:
     import: vault://secret/${spring.application.name}
 app:
   auth:
-    cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
+    cert-url: https://polban.catchprice.app/api/v1/jwk
   system:
     uuid: 1
   backup:

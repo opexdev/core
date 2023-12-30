@@ -67,7 +67,7 @@ swagger:
   authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
 app:
   auth:
-    cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
+    cert-url: https://polban.catchprice.app/api/v1/jwk
   wallet:
     url: lb://opex-wallet
   address:
