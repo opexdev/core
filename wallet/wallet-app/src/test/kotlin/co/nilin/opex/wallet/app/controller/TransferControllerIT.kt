@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.app.controller
 
+import co.nilin.opex.wallet.app.KafkaEnabledTest
 import co.nilin.opex.wallet.app.dto.TransactionRequest
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.Amount
@@ -13,20 +14,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration
-import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
-import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import java.math.BigDecimal
 import java.util.*
 
-@SpringBootTest
-@ActiveProfiles("test")
 @AutoConfigureWebTestClient
-@Import(TestChannelBinderConfiguration::class)
-class TransferControllerIT {
+class TransferControllerIT : KafkaEnabledTest() {
     @Autowired
     private lateinit var webClient: WebTestClient
 
@@ -54,12 +48,12 @@ class TransferControllerIT {
     fun givenCategory_whenTransfer_thenCategoryMatches() {
         runBlocking {
             val t = System.currentTimeMillis()
-            val sender = walletOwnerManager.findWalletOwner("1")!!
+            val sender = walletOwnerManager.createWalletOwner(UUID.randomUUID().toString(), "sender", "")
             val receiver = UUID.randomUUID().toString()
             val srcCurrency = currencyService.getCurrency("ETH")!!
             walletManager.createWallet(sender, Amount(srcCurrency, BigDecimal.valueOf(100)), srcCurrency, "main")
 
-            val transfer = webClient.post().uri("/v2/transfer/1_ETH/from/1_main/to/${receiver}_main").accept(MediaType.APPLICATION_JSON)
+            val transfer = webClient.post().uri("/v2/transfer/1_ETH/from/${sender.uuid}_main/to/${receiver}_main").accept(MediaType.APPLICATION_JSON)
                 .bodyValue(TransferController.TransferBody("desc", "ref", "NORMAL", mapOf(Pair("key", "value"))))
                 .exchange()
                 .expectStatus().isOk
@@ -67,8 +61,12 @@ class TransferControllerIT {
                 .returnResult().responseBody!!
             Assertions.assertEquals(BigDecimal.ONE, transfer.amount.amount)
             Assertions.assertEquals("ETH", transfer.amount.currency.symbol)
+            val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(
+                walletOwnerManager.findWalletOwner(receiver)!!, "main", srcCurrency
+            )
+            Assertions.assertEquals(BigDecimal.ONE, receiverWallet!!.balance.amount)
             val txList = webClient.post().uri("/transaction/$receiver").accept(MediaType.APPLICATION_JSON)
-                .bodyValue(TransactionRequest("ETH", null, t, System.currentTimeMillis(), 1, 1, true))
+                .bodyValue(TransactionRequest("ETH", null, t, System.currentTimeMillis(), 1, 0, true))
                 .exchange()
                 .expectStatus().isOk
                 .expectBodyList(TransactionHistory::class.java)

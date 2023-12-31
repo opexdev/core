@@ -20,6 +20,8 @@
         <module>wallet-app</module>
         <module>wallet-ports/wallet-persister-postgres</module>
         <module>wallet-ports/wallet-eventlistener-kafka</module>
+        <module>wallet-ports/wallet-bcgateway-proxy</module>
+
     </modules>
 
     <dependencies>
@@ -34,6 +36,11 @@
             <dependency>
                 <groupId>co.nilin.opex.wallet.ports.postgres</groupId>
                 <artifactId>wallet-persister-postgres</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.wallet.ports.bcgateway</groupId>
+                <artifactId>wallet-bcgateway-proxy</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

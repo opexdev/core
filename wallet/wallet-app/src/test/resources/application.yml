@@ -25,13 +25,17 @@ spring:
     allow-bean-definition-overriding: false
     allow-circular-references: true
   kafka:
-    bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
     consumer:
       auto-offset-reset: earliest
       group-id: wallet
   r2dbc:
     url: r2dbc:tc:postgresql:///wallet?TC_IMAGE_TAG=9.6.8
     initialization-mode: always
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
   cloud:
     bootstrap:
       enabled: true
@@ -46,6 +50,8 @@ spring:
 app:
   auth:
     cert-url: none
+  bc-gateway:
+    url: http://bc-gateway:8080
   system:
     uuid: 1
 logging:
@@ -53,6 +59,10 @@ logging:
     org.apache.kafka: ERROR
     co.nilin: DEBUG
     reactor.netty.http.client: DEBUG
+    org.springframework.data.r2dbc: DEBUG
+    org.hibernate:
+      SQL: DEBUG
+      type.descriptor.sql.BasicBinder: TRACE
 swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
 test:
   topic: embedded-test-topic

@@ -1,6 +1,7 @@
 package co.nilin.opex.bcgateway.app.config
 
 import co.nilin.opex.bcgateway.app.utils.hasRole
+import co.nilin.opex.bcgateway.app.utils.hasRoles
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -50,13 +51,14 @@ class SecurityConfig(@Qualifier("loadBalanced") private val webClient: WebClient
                 .pathMatchers("/actuator/**").permitAll()
                 .pathMatchers("/swagger-ui/**").permitAll()
                 .pathMatchers("/swagger-resources/**").permitAll()
-                .pathMatchers("/wallet-sync/**").permitAll()
-                .pathMatchers("/currency/**").permitAll()
-                .pathMatchers("/filter/**").hasAuthority("SCOPE_trust")
-                .pathMatchers("/admin/**").hasRole("SCOPE_trust", "admin_system")
-                .pathMatchers("/v1/address/**").authenticated()
-                .pathMatchers("/deposit/**").permitAll()
-                .pathMatchers("/addresses/**").hasRole("SCOPE_trust", "admin_system")
+                .pathMatchers("/admin/**").hasRoles(listOf("Admin","Super Admin"))
+//                .pathMatchers("/wallet-sync/**").permitAll()
+//                .pathMatchers("/currency/**").permitAll()
+//                .pathMatchers("/filter/**").hasAuthority("SCOPE_trust")
+//                .pathMatchers("/admin/**").hasRole("SCOPE_trust", "admin_system")
+//                .pathMatchers("/v1/address/**").authenticated()
+//                .pathMatchers("/deposit/**").permitAll()
+//                .pathMatchers("/addresses/**").hasRole("SCOPE_trust", "admin_system")
                 .anyExchange().authenticated()
                 .and()
                 .oauth2ResourceServer()

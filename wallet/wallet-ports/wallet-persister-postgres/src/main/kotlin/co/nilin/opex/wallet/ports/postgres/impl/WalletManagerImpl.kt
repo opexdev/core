@@ -187,16 +187,16 @@ class WalletManagerImpl(
                 }
     }
 
-    suspend fun addSystemAndAdminWalletForNewCurrency(currency: Currency) {
+    suspend fun addSystemAndAdminWalletForNewCurrency(symbol: String) {
         val adminWallet = walletOwnerRepository.findByUuid(adminUuid!!).awaitSingleOrNull()
                 ?: throw OpexException(OpexError.Error)
 
         val items =
                 listOf(
-                        WalletModel(null, 1, "main", currency.symbol, minimumBalance!!),
-                        WalletModel(null, 1, "exchange", currency.symbol, BigDecimal.ZERO),
-                        WalletModel(null, adminWallet.id!!, "main", currency.symbol, minimumBalance!!),
-                        WalletModel(null, adminWallet.id!!, "exchange", currency.symbol, BigDecimal.ZERO)
+                        WalletModel(null, 1, "main", symbol, minimumBalance!!),
+                        WalletModel(null, 1, "exchange", symbol, BigDecimal.ZERO),
+                        WalletModel(null, adminWallet.id!!, "main",symbol, minimumBalance!!),
+                        WalletModel(null, adminWallet.id!!, "exchange", symbol, BigDecimal.ZERO)
 
                 )
         walletRepository.saveAll(items).collectList().awaitSingleOrNull()

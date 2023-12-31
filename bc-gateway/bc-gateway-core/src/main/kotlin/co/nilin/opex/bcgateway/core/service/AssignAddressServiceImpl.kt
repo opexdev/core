@@ -72,15 +72,14 @@ open class AssignAddressServiceImpl(
                     result.add(newAssigned)
                 } else {
                     throw OpexException(
-                            OpexError.ReservedAddressNotAvailable,
-                            "No reserved address available for $addressType"
+                        OpexError.ReservedAddressNotAvailable,
+                        "No reserved address available for $addressType"
                     )
                 }
 
             }
         }
         result.forEach { address ->
-            logger.info(address.address)
             assignedAddressHandler.persist(address)
         }
         return result.toMutableList()

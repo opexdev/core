@@ -38,8 +38,11 @@ services:
     depends_on:
       - postgres-wallet
       - vault
+      - bc-gateway
     networks:
       - default
+      - otc-network
+
     labels:
       collect_logs: "true"
     deploy:
@@ -83,11 +86,11 @@ services:
     configs:
       - preferences.yml
     depends_on:
-      - wallet
       - vault
       - postgres-bc-gateway
     networks:
       - default
+      - otc-network
     labels:
       collect_logs: "true"
     deploy:
@@ -107,6 +110,8 @@ volumes:
 networks:
   default:
     driver: bridge
+  otc-network:
+    external: true
 secrets:
   opex_dev_crt:
     file: opex.dev.crt

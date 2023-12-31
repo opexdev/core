@@ -22,10 +22,10 @@ import java.time.LocalDateTime
 
 @Service
 class AssignedAddressHandlerImpl(
-    val assignedAddressRepository: AssignedAddressRepository,
-    val addressTypeRepository: AddressTypeRepository,
-    val assignedAddressChainRepository: AssignedAddressChainRepository,
-    val chainLoader: ChainLoader
+        val assignedAddressRepository: AssignedAddressRepository,
+        val addressTypeRepository: AddressTypeRepository,
+        val assignedAddressChainRepository: AssignedAddressChainRepository,
+        val chainLoader: ChainLoader
 ) : AssignedAddressHandler {
     @Value("\${app.address.life-time.value}")
     private var lifeTime: Long? = null

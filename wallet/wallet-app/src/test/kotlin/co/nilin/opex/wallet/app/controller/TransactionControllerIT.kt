@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.app.controller
 
+import co.nilin.opex.wallet.app.KafkaEnabledTest
 import co.nilin.opex.wallet.app.dto.TransactionRequest
 import co.nilin.opex.wallet.core.model.TransactionHistory
 import co.nilin.opex.wallet.core.spi.TransactionManager
@@ -8,12 +9,8 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration
-import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
-import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import java.math.BigDecimal
 import java.time.Instant
@@ -21,12 +18,8 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 
 
-@SpringBootTest
-@ActiveProfiles("test")
 @AutoConfigureWebTestClient
-@Import(TestChannelBinderConfiguration::class)
-
-class TransactionControllerIT {
+class TransactionControllerIT : KafkaEnabledTest() {
     @Autowired
     private lateinit var webClient: WebTestClient
 
@@ -35,7 +28,7 @@ class TransactionControllerIT {
 
     @Test
     fun whenGetTransactionsForUser_thenReturnsHistory() {
-        val uuid = "uuid";
+        val uuid = "uuid"
         val t = System.currentTimeMillis()
         val history = TransactionHistory(
             1L, "c", "w", BigDecimal.ONE, "desc", "ref", System.currentTimeMillis(), "cat", mapOf(Pair("key1", "val1")), true
