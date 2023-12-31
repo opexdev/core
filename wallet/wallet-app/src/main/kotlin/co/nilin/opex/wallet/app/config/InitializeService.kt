@@ -77,7 +77,7 @@ class InitializeService(
 
         val adminWallet: WalletOwnerModel? =
                 walletOwnerRepository.findByUuid(adminUuid).awaitSingleOrNull()
-                        ?: walletOwnerRepository.save(WalletOwnerModel(null, adminUuid, "admin", p.system.walletLevel))
+                        ?: walletOwnerRepository.save(WalletOwnerModel(null, adminUuid, p.admin.walletTitle, p.admin.walletLevel))
                                 .awaitSingleOrNull()
 
 

@@ -167,7 +167,6 @@ class CurrencyRatesController(
     }
 
 
-    //TODO: is it really working? at least in WebClient, body for DELETE is not working
     @DeleteMapping("/transitive-symbols")
     @ApiResponse(
         message = "OK",
