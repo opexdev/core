@@ -151,6 +151,7 @@ class WalletManagerImpl(
             walletType: String,
             currency: Currency
     ): Wallet? {
+
         val walletModel = walletRepository.findByOwnerAndTypeAndCurrency(
                 owner.id!!,
                 walletType,
