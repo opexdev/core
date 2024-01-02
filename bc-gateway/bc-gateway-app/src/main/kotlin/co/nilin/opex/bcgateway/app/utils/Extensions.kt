@@ -18,14 +18,14 @@ fun ServerHttpSecurity.AuthorizeExchangeSpec.Access.hasRole(
     }
 }
 
-fun ServerHttpSecurity.AuthorizeExchangeSpec.Access.hasRoles(
-        roles: List<String>
+fun ServerHttpSecurity.AuthorizeExchangeSpec.Access.hasRoleAndLevel(
+        role: String,
+        level: String?=null
 ): ServerHttpSecurity.AuthorizeExchangeSpec = access { mono, _ ->
     mono.map { auth ->
-        roles.forEach { r ->
-            if (((auth.principal as Jwt).claims["roles"] as JSONArray?)?.contains(r) != true)
-                throw OpexException(OpexError.Forbidden)
-        }
-        AuthorizationDecision(true)
+        val hasLevel = level?.let { ((auth.principal as Jwt).claims["level"] as String?)?.equals(level) == true }
+                ?: true
+        val hasRole = ((auth.principal as Jwt).claims["roles"] as JSONArray?)?.contains(role) == true
+        AuthorizationDecision(hasLevel && hasRole)
     }
 }

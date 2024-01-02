@@ -1,11 +1,13 @@
 package co.nilin.opex.bcgateway.app.config
 
 import co.nilin.opex.bcgateway.app.utils.hasRole
-import co.nilin.opex.bcgateway.app.utils.hasRoles
+import co.nilin.opex.bcgateway.app.utils.hasRole
+import co.nilin.opex.bcgateway.app.utils.hasRoleAndLevel
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Profile
+import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder
@@ -14,8 +16,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain
 import org.springframework.web.reactive.function.client.WebClient
 
 @EnableWebFluxSecurity
-class SecurityConfig(@Qualifier("loadBalanced") private val webClient: WebClient,
-                     @Qualifier("decWebClient") private val decWebClient: WebClient ) {
+class SecurityConfig(private val webClient: WebClient) {
 
     @Value("\${app.auth.cert-url}")
     private lateinit var jwkUrl: String
@@ -51,9 +52,9 @@ class SecurityConfig(@Qualifier("loadBalanced") private val webClient: WebClient
                 .pathMatchers("/actuator/**").permitAll()
                 .pathMatchers("/swagger-ui/**").permitAll()
                 .pathMatchers("/swagger-resources/**").permitAll()
-                .pathMatchers("/admin/**").hasRoles(listOf("Admin","Super Admin"))
-//                .pathMatchers("/wallet-sync/**").permitAll()
-//                .pathMatchers("/currency/**").permitAll()
+                .pathMatchers("/admin/**").hasRoleAndLevel("Admin")
+                .pathMatchers("/wallet-sync/**").hasRoleAndLevel("Admin")
+                .pathMatchers("/currency/**").hasRoleAndLevel("System")
 //                .pathMatchers("/filter/**").hasAuthority("SCOPE_trust")
 //                .pathMatchers("/admin/**").hasRole("SCOPE_trust", "admin_system")
 //                .pathMatchers("/v1/address/**").authenticated()
@@ -80,7 +81,7 @@ class SecurityConfig(@Qualifier("loadBalanced") private val webClient: WebClient
     @Throws(Exception::class)
     fun otcReactiveJwtDecoder(): ReactiveJwtDecoder? {
         return NimbusReactiveJwtDecoder.withJwkSetUri(jwkUrl)
-                .webClient(decWebClient)
+                .webClient(webClient)
                 .build()
     }
 }
