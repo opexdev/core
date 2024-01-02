@@ -15,6 +15,7 @@ class WebClientConfig {
 
     @Bean
     @Profile("!otc")
+    @Qualifier("loadBalanced")
     fun loadBalancedWebClient(loadBalancerFactory: ReactiveLoadBalancer.Factory<ServiceInstance>): WebClient {
         return WebClient.builder()
             .filter(
@@ -27,6 +28,7 @@ class WebClientConfig {
 
     @Bean
     @Profile("otc")
+    @Qualifier("decWebClient")
     fun webClient(): WebClient {
         return WebClient.builder()
                 .build()
