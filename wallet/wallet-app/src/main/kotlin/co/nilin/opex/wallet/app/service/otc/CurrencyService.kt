@@ -1,7 +1,5 @@
 package co.nilin.opex.wallet.app.service.otc
 
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.core.model.Currencies
 import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.model.CurrencyImp
@@ -9,13 +7,9 @@ import co.nilin.opex.wallet.core.model.PropagateCurrencyChanges
 import co.nilin.opex.wallet.core.model.otc.FetchCurrencyInfo
 import co.nilin.opex.wallet.core.spi.BcGatewayProxy
 import co.nilin.opex.wallet.core.spi.CurrencyService
-import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.math.BigDecimal
-import java.util.Arrays
-import java.util.stream.Collector
 import java.util.stream.Collectors
 
 //propagate currency's info changes

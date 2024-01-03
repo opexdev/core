@@ -5,18 +5,15 @@ import co.nilin.opex.accountant.core.model.PairFeeConfig
 import co.nilin.opex.accountant.core.spi.PairConfigLoader
 import co.nilin.opex.accountant.ports.postgres.dao.PairConfigRepository
 import co.nilin.opex.accountant.ports.postgres.dao.PairFeeConfigRepository
-import co.nilin.opex.accountant.ports.postgres.dao.UserLevelMapperRepository
 import co.nilin.opex.accountant.ports.postgres.model.PairConfigModel
 import co.nilin.opex.accountant.ports.postgres.model.PairFeeConfigModel
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.matching.engine.core.model.OrderDirection
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.stereotype.Component
-import java.math.BigDecimal
 
 @Component
 class PairConfigLoaderImpl(
@@ -76,8 +73,7 @@ class PairConfigLoaderImpl(
 
     override suspend fun load(pair: String, direction: OrderDirection, userLevel: String): PairFeeConfig {
         val pairConfig = pairConfigRepository.findById(pair).awaitFirstOrElse {
-            val error = OpexError.InvalidPair
-            throw OpexException(error, String.format(error.message!!, pair))
+            throw OpexError.InvalidPair.messageFormattedException(pair)
         }
 
         var pairFeeConfig: PairFeeConfigModel?
@@ -85,8 +81,7 @@ class PairConfigLoaderImpl(
             pairFeeConfig = pairFeeConfigRepository
                 .findByPairAndDirectionAndUserLevel(pair, direction, "*")
                 .awaitFirstOrElse {
-                    val error = OpexError.InvalidPair
-                    throw OpexException(error, String.format(error.message!!, pair))
+                    throw OpexError.InvalidPair.messageFormattedException(pair)
                 }
         } else {
             pairFeeConfig = pairFeeConfigRepository
@@ -96,8 +91,7 @@ class PairConfigLoaderImpl(
                 pairFeeConfig = pairFeeConfigRepository
                     .findByPairAndDirectionAndUserLevel(pair, direction, "*")
                     .awaitFirstOrElse {
-                        val error = OpexError.InvalidPairFee
-                        throw OpexException(error, String.format(error.message!!, pair))
+                        throw OpexError.InvalidPair.messageFormattedException(pair)
                     }
             }
         }
@@ -120,8 +114,7 @@ class PairConfigLoaderImpl(
     override suspend fun load(pair: String, direction: OrderDirection): PairConfig {
         return pairConfigRepository
             .findById(pair).awaitFirstOrElse {
-                val error = OpexError.InvalidPair
-                throw OpexException(error, String.format(error.message!!, pair))
+                throw OpexError.InvalidPair.messageFormattedException(pair)
             }.let {
                 PairConfig(
                     it.pair,

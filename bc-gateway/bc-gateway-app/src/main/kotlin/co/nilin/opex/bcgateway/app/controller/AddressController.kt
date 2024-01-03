@@ -6,8 +6,7 @@ import co.nilin.opex.bcgateway.core.model.Currency
 import co.nilin.opex.bcgateway.core.model.ReservedAddress
 import co.nilin.opex.bcgateway.core.spi.AddressTypeHandler
 import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
+import co.nilin.opex.common.OpexError
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.http.codec.multipart.FilePart
@@ -42,16 +41,13 @@ class AddressController(
     @PutMapping
     suspend fun putAddresses(@RequestPart("file") file: Mono<FilePart>) {
         val f = File("reserved.csv")
-        file.awaitSingle().transferTo(f).awaitSingleOrNull() ?: throw OpexException(
-            OpexError.BadRequest,
-            "Invalid File"
-        )
+        file.awaitSingle().transferTo(f).awaitSingleOrNull() ?: throw OpexError.BadRequest.exception("Invalid File")
         val csv = f.readLines(StandardCharsets.UTF_8)
         val addressTypes = addressTypeHandler.fetchAll().associateBy { it.type }
         val items = csv.map {
             val columns = it.split(",")
-            if (columns.size != 3) throw OpexException(OpexError.BadRequest, "Invalid CSV File")
-            val at = addressTypes[columns[2]] ?: throw OpexException(OpexError.BadRequest, "Invalid Address Type")
+            if (columns.size != 3) throw OpexError.BadRequest.exception("Invalid CSV File")
+            val at = addressTypes[columns[2]] ?: throw OpexError.BadRequest.exception("Invalid Address Type")
             ReservedAddress(columns[0], columns[1], at)
         }
         // Do nothing in case of duplication (Or any constraint issue)

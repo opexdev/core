@@ -1,7 +1,6 @@
 package co.nilin.opex.wallet.app.controller
 
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.spi.CurrencyService
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
@@ -42,7 +41,7 @@ class BalanceController(
     ): BalanceResponse {
         val owner = walletOwnerManager.findWalletOwner(principal.name)
         if (owner != null) {
-            val c = currencyService.getCurrency(currency) ?: throw OpexException(OpexError.CurrencyNotFound)
+            val c = currencyService.getCurrency(currency) ?: throw OpexError.CurrencyNotFound.exception()
             val wallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, walletType, c)
             return BalanceResponse(wallet?.balance?.amount ?: BigDecimal.ZERO)
         }

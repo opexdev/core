@@ -6,8 +6,7 @@ import co.nilin.opex.bcgateway.core.model.AddressType
 import co.nilin.opex.bcgateway.core.spi.AddressTypeHandler
 import co.nilin.opex.bcgateway.core.spi.ChainLoader
 import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
+import co.nilin.opex.common.OpexError
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 
@@ -28,7 +27,7 @@ class AdminController(
     @PostMapping("/chain")
     suspend fun addChain(@RequestBody body: AddChainRequest) {
         if (!body.isValid())
-            throw OpexException(OpexError.InvalidRequestBody)
+            throw OpexError.InvalidRequestBody.exception()
         service.addChain(body)
     }
 
@@ -40,7 +39,7 @@ class AdminController(
     @PostMapping("/address/type")
     suspend fun addAddressType(@RequestBody body: AddressTypeRequest) {
         if (body.name.isNullOrEmpty() || body.addressRegex.isNullOrEmpty())
-            throw OpexException(OpexError.InvalidRequestBody)
+            throw OpexError.InvalidRequestBody.exception()
         service.addAddressType(body.name, body.addressRegex, body.memoRegex)
     }
 
@@ -64,7 +63,7 @@ class AdminController(
 
     @PostMapping("/token")
     suspend fun addCurrencyImplementation(@RequestBody body: TokenRequest): TokenResponse {
-        val ex = OpexException(OpexError.InvalidRequestBody)
+        val ex = OpexError.InvalidRequestBody.exception()
         with(body) {
             if (currencySymbol.isNullOrEmpty() || chain.isNullOrEmpty()) throw ex
             if (isToken && (tokenName.isNullOrEmpty() || tokenAddress.isNullOrEmpty())) throw ex

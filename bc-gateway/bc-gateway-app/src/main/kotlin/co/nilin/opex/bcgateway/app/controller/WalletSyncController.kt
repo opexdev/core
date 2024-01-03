@@ -4,8 +4,7 @@ import co.nilin.opex.bcgateway.core.api.WalletSyncService
 import co.nilin.opex.bcgateway.core.model.Transfer
 import co.nilin.opex.bcgateway.core.utils.LoggerDelegate
 import co.nilin.opex.bcgateway.ports.postgres.impl.ChainHandler
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
+import co.nilin.opex.common.OpexError
 import org.slf4j.Logger
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
@@ -23,7 +22,7 @@ class WalletSyncController(private val chainHandler: ChainHandler, private val w
         runCatching {
             chainHandler.fetchChainInfo(chain)
         }.onFailure {
-            throw OpexException(OpexError.NotFound)
+            throw OpexError.NotFound.exception()
         }.onSuccess {
             walletSyncService.syncTransfers(transfers)
         }

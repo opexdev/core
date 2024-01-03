@@ -7,8 +7,7 @@ import co.nilin.opex.bcgateway.ports.postgres.dao.CurrencyImplementationReposito
 import co.nilin.opex.bcgateway.ports.postgres.dao.CurrencyRepository
 import co.nilin.opex.bcgateway.ports.postgres.model.CurrencyImplementationModel
 import co.nilin.opex.bcgateway.ports.postgres.model.CurrencyModel
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
+import co.nilin.opex.common.OpexError
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
@@ -51,7 +50,7 @@ class CurrencyHandlerImpl(
         decimal: Int
     ): CurrencyImplementation {
         currencyRepository.findBySymbol(currencySymbol).awaitFirstOrNull()?.let {
-            throw OpexException(OpexError.CurrencyIsExist)
+            throw OpexError.CurrencyIsExist.exception()
         } ?: run {
             addCurrency(currencyName, currencySymbol)
             return addCurrencyImplementation(
@@ -102,7 +101,7 @@ class CurrencyHandlerImpl(
                     currencyImplementationRepository.save(it).awaitSingleOrNull()?.let {icm-> projectCurrencyImplementation(icm, cm) }
                 }
 
-        } ?: throw OpexException(OpexError.CurrencyNotFound)
+        } ?: throw OpexError.CurrencyNotFound.exception()
     }
 
     override suspend fun editCurrency(name: String, symbol: String) {
@@ -134,14 +133,14 @@ class CurrencyHandlerImpl(
         decimal: Int
     ): CurrencyImplementation {
         val chainModel = chainRepository.findByName(chain).awaitFirstOrNull()
-            ?: throw OpexException(OpexError.ChainNotFound)
+            ?: throw OpexError.ChainNotFound.exception()
 
         currencyImplementationRepository.findByCurrencySymbolAndChain(currencySymbol.uppercase(), chain)
             .awaitFirstOrNull()
-            ?.let { throw OpexException(OpexError.DuplicateToken) }
+            ?.let { throw OpexError.DuplicateToken.exception() }
 
         val currency = currencyRepository.findBySymbol(currencySymbol.uppercase()).awaitFirstOrNull()
-            ?: throw OpexException(OpexError.CurrencyNotFoundBC)
+            ?: throw OpexError.CurrencyNotFoundBC.exception()
 
         val model = currencyImplementationRepository.save(
             CurrencyImplementationModel(
@@ -208,7 +207,7 @@ class CurrencyHandlerImpl(
 
     override suspend fun changeWithdrawStatus(symbol: String, chain: String, status: Boolean) {
         val impl = currencyImplementationRepository.findByCurrencySymbolAndChain(symbol, chain).awaitSingleOrNull()
-            ?: throw OpexException(OpexError.TokenNotFound)
+            ?: throw OpexError.TokenNotFound.exception()
 
         impl.apply {
             withdrawEnabled = status

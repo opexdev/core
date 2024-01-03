@@ -8,8 +8,7 @@ import co.nilin.opex.auth.gateway.model.UserCreatedEvent
 import co.nilin.opex.auth.gateway.model.WhiteListModel
 import co.nilin.opex.auth.gateway.providers.CustomEmailTemplateProvider
 import co.nilin.opex.auth.gateway.utils.*
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
+import co.nilin.opex.common.OpexError
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.utils.URIBuilder
@@ -405,10 +404,10 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     }
 
     private fun sendEmail(user: UserModel, sendAction: (EmailTemplateProvider) -> Unit) {
-        if (!user.isEnabled) throw OpexException(OpexError.BadRequest, "User is disabled")
+        if (!user.isEnabled) throw OpexError.BadRequest.exception("User is disabled")
         val clientId = Constants.ACCOUNT_MANAGEMENT_CLIENT_ID
         val client = session.clients().getClientByClientId(opexRealm, clientId)
-        if (client == null || !client.isEnabled) throw OpexException(OpexError.BadRequest, "Client error")
+        if (client == null || !client.isEnabled) throw OpexError.BadRequest.exception("Client error")
 
         try {
             val provider = session.getAllProviders(EmailTemplateProvider::class.java)
