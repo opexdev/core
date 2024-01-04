@@ -55,8 +55,8 @@ class SecurityConfig(private val  webClient: WebClient) {
                 .pathMatchers("/admin/**").hasRoleAndLevel("Admin")
                 .pathMatchers(HttpMethod.PUT,"/otc/**").hasRoleAndLevel("Admin")
                 .pathMatchers(HttpMethod.POST,"/otc/**").hasRoleAndLevel("Admin")
-                .pathMatchers("/deposit/**").hasRoleAndLevel("System")
                 .pathMatchers("/deposit/manually/**").hasRoleAndLevel("Admin")
+                .pathMatchers("/deposit/**").hasRoleAndLevel("System")
 
 
 //                .pathMatchers("/payment/internal/**").permitAll()
