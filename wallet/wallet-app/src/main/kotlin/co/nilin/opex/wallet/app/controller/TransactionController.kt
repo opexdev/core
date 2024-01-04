@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.wallet.app.dto.TransactionRequest
 import co.nilin.opex.wallet.core.model.TransactionHistory
+import co.nilin.opex.wallet.core.model.TransactionWithDetailHistory
 import co.nilin.opex.wallet.core.spi.TransactionManager
 import org.springframework.web.bind.annotation.*
 import java.time.Instant
@@ -31,7 +32,7 @@ class TransactionController(private val manager: TransactionManager) {
     suspend fun getTransactionsForUser(
         @PathVariable("uuid") uuid: String,
         @RequestBody request: TransactionRequest
-    ): List<TransactionHistory> {
+    ): List<TransactionWithDetailHistory> {
         return manager.findTransactions(
             uuid,
             request.coin,

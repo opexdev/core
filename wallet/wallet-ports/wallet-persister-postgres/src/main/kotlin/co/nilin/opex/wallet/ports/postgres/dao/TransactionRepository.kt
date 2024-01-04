@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.ports.postgres.dao
 
 import co.nilin.opex.wallet.ports.postgres.dto.DepositWithdrawTransaction
 import co.nilin.opex.wallet.ports.postgres.dto.TransactionStat
+import co.nilin.opex.wallet.ports.postgres.dto.TransactionWithDetail
 import co.nilin.opex.wallet.ports.postgres.model.TransactionModel
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.query.Param
@@ -84,7 +85,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
     @Query(
         """
         select distinct t.id, w.currency, w.wallet_type as wallet, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
-        , t.transfer_category as category, t.transfer_detail_json as detail,  t.source_wallet as sender, t.dest_wallet as receiver, w.id as owner
+        , t.transfer_category as category, t.transfer_detail_json as detail
         from wallet as w
         inner join wallet_owner as wo on (w.owner = wo.id)
         inner join transaction as t on (w.id = t.dest_wallet)
@@ -105,7 +106,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
     @Query(
         """
         select distinct t.id, w.currency, w.wallet_type as wallet, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
-        , t.transfer_category as category, t.transfer_detail_json as detail,  t.source_wallet as sender, t.dest_wallet as receiver, w.id as owner
+        , t.transfer_category as category, t.transfer_detail_json as detail
         from wallet as w
         inner join wallet_owner as wo on (w.owner = wo.id)
         inner join transaction as t on (w.id = t.source_wallet)
@@ -125,7 +126,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
     @Query(
         """
         select distinct t.id, w.currency, w.wallet_type as wallet, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
-               , t.transfer_category as category, t.transfer_detail_json as detail,  t.source_wallet as sender, t.dest_wallet as receiver, w.id as owner
+               , t.transfer_category as category, t.transfer_detail_json as detail
         from wallet as w
         inner join wallet_owner as wo on (w.owner = wo.id)
         inner join transaction as t on (w.id = t.dest_wallet)
@@ -148,7 +149,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
     @Query(
         """
         select distinct t.id, w.currency, w.wallet_type as wallet, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
-        , t.transfer_category as category, t.transfer_detail_json as detail, t.source_wallet as sender, t.dest_wallet as receiver, w.id as owner
+        , t.transfer_category as category, t.transfer_detail_json as detail
         from wallet as w
         inner join wallet_owner as wo on (w.owner = wo.id)
         inner join transaction as t on (w.id = t.source_wallet)
@@ -169,16 +170,18 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
 
     @Query(
         """
-        select distinct t.id, w.currency, w.wallet_type as wallet, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
-        , t.transfer_category as category, t.transfer_detail_json as detail,  t.source_wallet as sender, t.dest_wallet as receiver, w.id as owner
-        from wallet as w
-        inner join wallet_owner as wo on (w.owner = wo.id)
-        inner join transaction as t on w.id in (t.source_wallet, t.dest_wallet)
-        where wo.uuid = :uuid
+        select distinct t.id, sw.wallet_type as src_wallet, dw.wallet_type as dest_wallet, swo.uuid as sender_uuid, dwo.uuid as receiver_uuid, sw.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
+        , t.transfer_category as category, t.transfer_detail_json as detail
+        from transaction as t
+        inner join wallet as sw on sw.id  = t.source_wallet
+        inner join wallet_owner as swo on (sw.owner = swo.id)
+        inner join wallet as dw on dw.id  = t.dest_wallet
+        inner join wallet_owner as dwo on (dw.owner = dwo.id)
+        where :uuid in (swo.uuid, dwo.uuid)
         and t.transaction_date > :startTime 
         and t.transaction_date <= :endTime
         and (:category is null or t.transfer_category = :category) 
-        and (:currency is null or w.currency = :currency) 
+        and (:currency is null or sw.currency = :currency) 
         order by date asc
         limit :limit
         offset :offset 
@@ -192,20 +195,22 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
         @Param("endTime") endTime: LocalDateTime,
         @Param("limit") limit: Int,
         @Param("offset") offset: Int,
-    ): Flux<DepositWithdrawTransaction>
+    ): Flux<TransactionWithDetail>
 
     @Query(
         """
-        select distinct t.id, w.currency, w.wallet_type as wallet, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
-        , t.transfer_category as category, t.transfer_detail_json as detail,  t.source_wallet as sender, t.dest_wallet as receiver, w.id as owner
-        from wallet as w
-        inner join wallet_owner as wo on (w.owner = wo.id)
-        inner join transaction as t on w.id in (t.source_wallet, t.dest_wallet)
-        where wo.uuid = :uuid
+        select distinct t.id, sw.wallet_type as src_wallet, dw.wallet_type as dest_wallet, swo.uuid as sender_uuid, dwo.uuid as receiver_uuid, sw.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
+        , t.transfer_category as category, t.transfer_detail_json as detail
+        from transaction as t
+        inner join wallet as sw on sw.id  = t.source_wallet
+        inner join wallet_owner as swo on (sw.owner = swo.id)
+        inner join wallet as dw on dw.id  = t.dest_wallet
+        inner join wallet_owner as dwo on (dw.owner = dwo.id)
+        where :uuid in (swo.uuid, dwo.uuid)
         and t.transaction_date > :startTime 
         and t.transaction_date <= :endTime
         and (:category is null or t.transfer_category = :category) 
-        and (:currency is null or w.currency = :currency) 
+        and (:currency is null or sw.currency = :currency) 
         order by date desc
         limit :limit
         offset :offset     
@@ -219,6 +224,6 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
         @Param("endTime") endTime: LocalDateTime,
         @Param("limit") limit: Int,
         @Param("offset") offset: Int,
-    ): Flux<DepositWithdrawTransaction>
+    ): Flux<TransactionWithDetail>
 
 }
