@@ -309,7 +309,10 @@ userLevels:
   - "nofee"
 system:
   walletTitle: system
-  walletLevel: basic
+  walletLevel: system
+admin:
+  walletTitle: admin
+  walletLevel: admin
 auth:
   whitelist:
     enabled: false
