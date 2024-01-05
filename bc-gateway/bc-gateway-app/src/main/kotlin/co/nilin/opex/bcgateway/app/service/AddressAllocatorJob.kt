@@ -16,10 +16,6 @@ class AddressAllocatorJob(private val addressManager: AddressManager) {
     @Value("\${app.address.life-time.value}")
     private var lifeTime: Long? = null
 
-    @Value("\${app.address.life-time.unit}")
-    private var lifeUnit: String? = "minute"
-
-    //todo flexibleUnitTime
     @Scheduled(fixedDelayString = "\${app.address.life-time.value:0}000")
     fun revokeExpiredAddress() {
         if (lifeTime != null) {

@@ -51,15 +51,11 @@ class SecurityConfig(private val webClient: WebClient) {
                 .authorizeExchange()
                 .pathMatchers("/actuator/**").permitAll()
                 .pathMatchers("/swagger-ui/**").permitAll()
+                .pathMatchers(HttpMethod.PUT,"/v1/address").hasRoleAndLevel("Admin")
                 .pathMatchers("/swagger-resources/**").permitAll()
                 .pathMatchers("/admin/**").hasRoleAndLevel("Admin")
                 .pathMatchers("/wallet-sync/**").hasRoleAndLevel("Admin")
                 .pathMatchers("/currency/**").hasRoleAndLevel("System")
-//                .pathMatchers("/filter/**").hasAuthority("SCOPE_trust")
-//                .pathMatchers("/admin/**").hasRole("SCOPE_trust", "admin_system")
-//                .pathMatchers("/v1/address/**").authenticated()
-//                .pathMatchers("/deposit/**").permitAll()
-//                .pathMatchers("/addresses/**").hasRole("SCOPE_trust", "admin_system")
                 .anyExchange().authenticated()
                 .and()
                 .oauth2ResourceServer()
@@ -68,7 +64,6 @@ class SecurityConfig(private val webClient: WebClient) {
     }
 
     @Bean
-    @Profile("!otc")
     @Throws(Exception::class)
     fun reactiveJwtDecoder(): ReactiveJwtDecoder? {
         return NimbusReactiveJwtDecoder.withJwkSetUri(jwkUrl)
@@ -76,12 +71,5 @@ class SecurityConfig(private val webClient: WebClient) {
                 .build()
     }
 
-    @Bean
-    @Profile("otc")
-    @Throws(Exception::class)
-    fun otcReactiveJwtDecoder(): ReactiveJwtDecoder? {
-        return NimbusReactiveJwtDecoder.withJwkSetUri(jwkUrl)
-                .webClient(webClient)
-                .build()
-    }
+
 }

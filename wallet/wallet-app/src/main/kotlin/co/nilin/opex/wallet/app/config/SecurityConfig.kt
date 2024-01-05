@@ -16,7 +16,7 @@ import org.springframework.web.reactive.function.client.WebClient
 
 @EnableWebFluxSecurity
 @Profile("!test")
-class SecurityConfig(private val  webClient: WebClient) {
+class SecurityConfig(private val webClient: WebClient) {
 
     @Value("\${app.auth.cert-url}")
     private lateinit var jwkUrl: String
@@ -26,41 +26,15 @@ class SecurityConfig(private val  webClient: WebClient) {
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
 
         http.csrf().disable()
-            .authorizeExchange()
-            .pathMatchers("/balanceOf/**").hasAuthority("SCOPE_trust")
-            .pathMatchers("/owner/**").hasAuthority("SCOPE_trust")
-            .pathMatchers("/withdraw").hasAuthority("SCOPE_trust")
-            .pathMatchers("/withdraw/**").hasAuthority("SCOPE_trust")
-            .pathMatchers("/transaction/**").hasAuthority("SCOPE_trust")
-            .pathMatchers("/admin/**").hasRole("SCOPE_trust","admin_finance")
-            .pathMatchers("/payment/internal/**").permitAll()
-            .pathMatchers("/**").permitAll()
-            .anyExchange().authenticated()
-            .and()
-            .oauth2ResourceServer()
-            .jwt()
-        return http.build()
-    }
-
-
-
-    @Bean
-    @Profile("otc")
-    fun decSpringSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
-
-        http.csrf().disable()
                 .authorizeExchange()
-                .pathMatchers("/withdraw/**").hasRoleAndLevel("User")
+                .pathMatchers("/balanceOf/**").hasAuthority("SCOPE_trust")
+                .pathMatchers("/owner/**").hasAuthority("SCOPE_trust")
+                .pathMatchers("/withdraw").hasAuthority("SCOPE_trust")
+                .pathMatchers("/withdraw/**").hasAuthority("SCOPE_trust")
                 .pathMatchers("/transaction/**").hasAuthority("SCOPE_trust")
-                .pathMatchers("/admin/**").hasRoleAndLevel("Admin")
-                .pathMatchers(HttpMethod.PUT,"/otc/**").hasRoleAndLevel("Admin")
-                .pathMatchers(HttpMethod.POST,"/otc/**").hasRoleAndLevel("Admin")
-                .pathMatchers("/deposit/manually/**").hasRoleAndLevel("Admin")
-                .pathMatchers("/deposit/**").hasRoleAndLevel("System")
-
-
-//                .pathMatchers("/payment/internal/**").permitAll()
-//                .pathMatchers("/**").permitAll()
+                .pathMatchers("/admin/**").hasRole("SCOPE_trust", "admin_finance")
+                .pathMatchers("/payment/internal/**").permitAll()
+                .pathMatchers("/**").permitAll()
                 .anyExchange().authenticated()
                 .and()
                 .oauth2ResourceServer()
@@ -68,23 +42,38 @@ class SecurityConfig(private val  webClient: WebClient) {
         return http.build()
     }
 
-    @Bean
-    @Profile("!otc")
-    @Throws(Exception::class)
-    fun reactiveJwtDecoder(): ReactiveJwtDecoder? {
-        return NimbusReactiveJwtDecoder.withJwkSetUri(jwkUrl)
-            .webClient(webClient)
-            .build()
-    }
 
     @Bean
     @Profile("otc")
+    fun decSpringSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
+        //todo
+        //.pathMatchers("/payment/internal/**").permitAll()
+
+        http.csrf().disable()
+                .authorizeExchange()
+                .pathMatchers("/withdraw/**").hasRoleAndLevel("User")
+                .pathMatchers("/transaction/**").hasAuthority("SCOPE_trust")
+                .pathMatchers("/admin/**").hasRoleAndLevel("Admin")
+                .pathMatchers(HttpMethod.PUT, "/otc/**").hasRoleAndLevel("Admin")
+                .pathMatchers(HttpMethod.POST, "/otc/**").hasRoleAndLevel("Admin")
+                .pathMatchers("/deposit/manually/**").hasRoleAndLevel("Admin")
+                .pathMatchers("/deposit/**").hasRoleAndLevel("System")
+                .pathMatchers("/withdraw").hasRoleAndLevel("Basic", "Level1")
+                .pathMatchers("/withdraw/**").hasRoleAndLevel("Basic", "Level1")
+                .anyExchange().authenticated()
+                .and()
+                .oauth2ResourceServer()
+                .jwt()
+        return http.build()
+    }
+
+
+    @Bean
     @Throws(Exception::class)
-    fun decReactiveJwtDecoder(): ReactiveJwtDecoder? {
+    fun reactiveJwtDecoder(): ReactiveJwtDecoder? {
         return NimbusReactiveJwtDecoder.withJwkSetUri(jwkUrl)
                 .webClient(webClient)
                 .build()
     }
-
 
 }

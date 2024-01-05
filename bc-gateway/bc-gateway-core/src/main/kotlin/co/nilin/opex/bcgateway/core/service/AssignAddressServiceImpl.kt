@@ -20,9 +20,6 @@ open class AssignAddressServiceImpl(
 ) : AssignAddressService {
     @Value("\${app.address.life-time.value}")
     private var lifeTime: Long? = null
-
-    @Value("\${app.address.life-time.unit}")
-    private var lifeUnit: String? = "minute"
     private val logger: Logger by LoggerDelegate()
 
     @Transactional
@@ -61,7 +58,7 @@ open class AssignAddressServiceImpl(
                             reservedAddress.memo,
                             addressType,
                             chainAddressTypeMap[addressType]!!,
-                            lifeTime?.let { if (lifeUnit == "minute") LocalDateTime.now().plusMinutes(lifeTime!!) else null }
+                            lifeTime?.let { LocalDateTime.now().plusSeconds(lifeTime!!) }
                                     ?: null,
                             LocalDateTime.now(),
                             null,
@@ -72,8 +69,8 @@ open class AssignAddressServiceImpl(
                     result.add(newAssigned)
                 } else {
                     throw OpexException(
-                        OpexError.ReservedAddressNotAvailable,
-                        "No reserved address available for $addressType"
+                            OpexError.ReservedAddressNotAvailable,
+                            "No reserved address available for $addressType"
                     )
                 }
 

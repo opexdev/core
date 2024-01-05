@@ -67,10 +67,10 @@ swagger:
   authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
 app:
   auth:
+    url: https://polban.catchprice.app
     cert-url: https://polban.catchprice.app/api/v1/jwk
   wallet:
     url: lb://opex-wallet
   address:
     life-time:
-      value: ${ADDRESS_EXP_TIME}
-      unit: minute
+      value: ${ADDRESS_EXP_TIME}  #    second

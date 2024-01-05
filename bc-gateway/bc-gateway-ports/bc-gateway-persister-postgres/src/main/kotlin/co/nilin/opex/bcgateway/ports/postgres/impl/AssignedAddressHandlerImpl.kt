@@ -30,8 +30,6 @@ class AssignedAddressHandlerImpl(
     @Value("\${app.address.life-time.value}")
     private var lifeTime: Long? = null
 
-    @Value("\${app.address.life-time.unit}")
-    private var lifeUnit: String? = "minute"
     private val logger: Logger by LoggerDelegate()
 
     override suspend fun fetchAssignedAddresses(user: String, addressTypes: List<AddressType>): List<AssignedAddress> {
@@ -40,7 +38,7 @@ class AssignedAddressHandlerImpl(
             AddressType(aam.id!!, aam.type, aam.addressRegex, aam.memoRegex)
         }.collectMap { it.id }.awaitFirst()
         return assignedAddressRepository.findByUuidAndAddressTypeAndStatus(
-            user, addressTypes.map(AddressType::id), AddressStatus.Reserved
+                user, addressTypes.map(AddressType::id), AddressStatus.Reserved
         ).map { model ->
             model.toDto(addressTypeMap)
         }.filter { it.expTime?.let { it > LocalDateTime.now() } ?: true }.toList()
@@ -48,38 +46,38 @@ class AssignedAddressHandlerImpl(
 
     override suspend fun persist(assignedAddress: AssignedAddress) {
 
-            logger.info("going to save new address .............")
-            assignedAddressRepository.save(
+        logger.info("going to save new address .............")
+        assignedAddressRepository.save(
                 AssignedAddressModel(
-                    null,
-                    assignedAddress.uuid,
-                    assignedAddress.address,
-                    assignedAddress.memo,
-                    assignedAddress.type.id,
-                    lifeTime?.let { if (lifeUnit == "minute") (LocalDateTime.now().plusMinutes(lifeTime!!)) else null }
-                        ?: null,
-                    LocalDateTime.now(),
-                    null,
-                    assignedAddress.status
+                        null,
+                        assignedAddress.uuid,
+                        assignedAddress.address,
+                        assignedAddress.memo,
+                        assignedAddress.type.id,
+                        lifeTime?.let { (LocalDateTime.now().plusSeconds(lifeTime!!)) }
+                                ?: null,
+                        LocalDateTime.now(),
+                        null,
+                        assignedAddress.status
                 )
-            ).awaitFirstOrNull()
+        ).awaitFirstOrNull()
     }
 
 
     override suspend fun revoke(assignedAddress: AssignedAddress) {
 
         assignedAddressRepository.save(
-            AssignedAddressModel(
-                assignedAddress.id,
-                assignedAddress.uuid,
-                assignedAddress.address,
-                assignedAddress.memo,
-                assignedAddress.type.id,
-                assignedAddress.expTime,
-                assignedAddress.assignedDate,
-                assignedAddress.revokedDate,
-                assignedAddress.status
-            )
+                AssignedAddressModel(
+                        assignedAddress.id,
+                        assignedAddress.uuid,
+                        assignedAddress.address,
+                        assignedAddress.memo,
+                        assignedAddress.type.id,
+                        assignedAddress.expTime,
+                        assignedAddress.assignedDate,
+                        assignedAddress.revokedDate,
+                        assignedAddress.status
+                )
         ).awaitFirst()
 
     }
@@ -93,14 +91,11 @@ class AssignedAddressHandlerImpl(
         val addressTypeMap = addressTypeRepository.findAll().map { aam ->
             AddressType(aam.id!!, aam.type, aam.addressRegex, aam.memoRegex)
         }.collectMap { it.id }.awaitFirst()
-        logger.info("-----------------------------------------------------------")
-        logger.info( if (lifeUnit == "minute") (now.minusMinutes(lifeTime!!)).toString() else null)
-        logger.info(now.toString())
         //for having significant margin : (minus(5 mints)
         return assignedAddressRepository.findPotentialExpAddress(
-            if (lifeUnit == "minute") (now.minusMinutes(lifeTime!!+1)).minusMinutes(5) else null,
-            now,
-            AddressStatus.Assigned
+                (now.minusSeconds(lifeTime!!)).minusMinutes(5),
+                now,
+                AddressStatus.Assigned
         )?.filter {
             it.expTime != null
         }?.map {
@@ -111,18 +106,18 @@ class AssignedAddressHandlerImpl(
 
     private suspend fun AssignedAddressModel.toDto(addressTypeMap: MutableMap<Long, AddressType>): AssignedAddress {
         return AssignedAddress(
-            this.uuid,
-            this.address,
-            this.memo,
-            addressTypeMap.getValue(this.addressTypeId),
-            assignedAddressChainRepository.findByAssignedAddress(this.id!!).map { cm ->
-                chainLoader.fetchChainInfo(cm.chain)
-            }.toList().toMutableList(),
-            this.expTime,
-            this.assignedDate,
-            this.revokedDate,
-            this.status,
-            null
+                this.uuid,
+                this.address,
+                this.memo,
+                addressTypeMap.getValue(this.addressTypeId),
+                assignedAddressChainRepository.findByAssignedAddress(this.id!!).map { cm ->
+                    chainLoader.fetchChainInfo(cm.chain)
+                }.toList().toMutableList(),
+                this.expTime,
+                this.assignedDate,
+                this.revokedDate,
+                this.status,
+                null
         )
     }
 }
