@@ -8,7 +8,6 @@ import co.nilin.opex.bcgateway.core.spi.AddressTypeHandler
 import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.utility.error.data.OpexException
-import co.nilin.opex.utility.error.data.OpexError
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.http.codec.multipart.FilePart
@@ -22,9 +21,9 @@ import java.nio.charset.StandardCharsets
 @RestController
 @RequestMapping("/v1/address")
 class AddressController(
-    private val assignAddressService: AssignAddressService,
-    private val reservedAddressHandler: ReservedAddressHandler,
-    private val addressTypeHandler: AddressTypeHandler
+        private val assignAddressService: AssignAddressService,
+        private val reservedAddressHandler: ReservedAddressHandler,
+        private val addressTypeHandler: AddressTypeHandler
 ) {
     data class AssignAddressRequest(val uuid: String, val currency: String, val chain: String)
     data class AssignAddressResponse(val addresses: List<AssignedAddress>)
@@ -33,7 +32,7 @@ class AddressController(
     suspend fun assignAddress(@RequestBody assignAddressRequest: AssignAddressRequest,
                               @CurrentSecurityContext securityContext: SecurityContext?): AssignAddressResponse {
         if (!(securityContext == null || securityContext.authentication.name == assignAddressRequest.uuid))
-            throw OpexException(OpexError.Forbidden)
+            throw OpexError.Forbidden.exception()
         val assignedAddress = assignAddressService.assignAddress(
                 assignAddressRequest.uuid,
                 Currency(assignAddressRequest.currency, assignAddressRequest.currency),
@@ -48,10 +47,7 @@ class AddressController(
     @PutMapping
     suspend fun putAddresses(@RequestPart("file") file: Mono<FilePart>) {
         val f = File("reserved.csv")
-        file.awaitSingle().transferTo(f).awaitSingleOrNull() ?: throw OpexException(
-            OpexError.BadRequest,
-            "Invalid File"
-        )
+        file.awaitSingle().transferTo(f).awaitSingleOrNull() ?: OpexError.BadRequest.exception("Invalid File")
         val csv = f.readLines(StandardCharsets.UTF_8)
         val addressTypes = addressTypeHandler.fetchAll().associateBy { it.type }
         val items = csv.map {

@@ -1,7 +1,6 @@
 package co.nilin.opex.wallet.app.service
 
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.utility.preferences.Preferences
 import co.nilin.opex.wallet.app.dto.AdvanceReservedTransferData
@@ -225,8 +224,9 @@ class TransferService(
         if(senderLevel == preferences.system.walletLevel && receiverLevel !=preferences.admin.walletLevel)
             throw OpexError.Forbidden.exception()
 
-        if (walletOwnerManager.findWalletOwner(receiverUuid)?.level !in arrayListOf<String>(preferences.admin.walletLevel,preferences.system.walletLevel))
-            throw OpexException(OpexError.Error)
+//        if (walletOwnerManager.findWalletOwner(receiverUuid)?.level !in arrayListOf<String>(preferences.admin.walletLevel,preferences.system.walletLevel))
+//            throw OpexError.Forbidden.exception()
+
         return _transfer(
                 symbol,
                 "main",

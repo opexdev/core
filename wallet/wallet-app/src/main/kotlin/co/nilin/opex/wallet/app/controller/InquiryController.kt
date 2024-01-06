@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.spi.CurrencyService
 import co.nilin.opex.wallet.core.spi.WalletManager

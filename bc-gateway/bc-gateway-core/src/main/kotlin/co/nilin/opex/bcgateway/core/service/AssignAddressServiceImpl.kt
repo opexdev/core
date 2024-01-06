@@ -6,14 +6,14 @@ import co.nilin.opex.bcgateway.core.spi.AssignedAddressHandler
 import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
 import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
 import co.nilin.opex.bcgateway.core.utils.LoggerDelegate
-import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
-class AssignAddressServiceImpl(
+open class AssignAddressServiceImpl(
         private val currencyHandler: CurrencyHandler,
         private val assignedAddressHandler: AssignedAddressHandler,
         private val reservedAddressHandler: ReservedAddressHandler
@@ -68,8 +68,8 @@ class AssignAddressServiceImpl(
                     reservedAddressHandler.remove(reservedAddress)
                     result.add(newAssigned)
                 } else {
-                    throw OpexError.ReservedAddressNotAvailable
-                        .exception("No reserved address available for $addressType")
+                    logger.info("No reserved address available for $addressType")
+                    throw OpexError.ReservedAddressNotAvailable.exception()
                 }
 
             }

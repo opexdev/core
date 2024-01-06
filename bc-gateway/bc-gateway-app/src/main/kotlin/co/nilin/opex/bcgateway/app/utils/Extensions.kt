@@ -1,7 +1,5 @@
 package co.nilin.opex.bcgateway.app.utils
 
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
 import com.nimbusds.jose.shaded.json.JSONArray
 import org.springframework.security.authorization.AuthorizationDecision
 import org.springframework.security.config.web.server.ServerHttpSecurity

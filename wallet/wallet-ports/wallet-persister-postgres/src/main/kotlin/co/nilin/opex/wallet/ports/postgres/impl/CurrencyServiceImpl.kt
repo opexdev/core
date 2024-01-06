@@ -2,7 +2,6 @@ package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.utility.error.data.OpexException
-import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.wallet.core.model.Currencies
 import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.model.CurrencyImp
