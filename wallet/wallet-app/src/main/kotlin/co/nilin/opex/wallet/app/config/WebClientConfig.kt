@@ -14,8 +14,7 @@ import org.springframework.web.reactive.function.client.WebClient
 class WebClientConfig {
 
     @Bean
-    @Profile("otc")
-    @Qualifier("lb")
+    @Profile("!otc")
     fun loadBalancedWebClient(loadBalancerFactory: ReactiveLoadBalancer.Factory<ServiceInstance>): WebClient {
         return WebClient.builder()
             .filter(
