@@ -1,6 +1,5 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
-import co.nilin.opex.utility.error.data.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepository
 import co.nilin.opex.wallet.ports.postgres.dto.toModel
@@ -40,7 +39,5 @@ private class CurrencyServiceTest {
     fun givenNoCurrency_whenGetCurrencyWithEmptySymbol_thenThrowException(): Unit = runBlocking {
         every { currencyRepository.findBySymbol("") } returns Mono.empty()
         assertThrows(OpexException::class.java) { runBlocking {  currencyService.getCurrency("") }}
-
-
     }
 }

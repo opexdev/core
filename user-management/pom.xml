@@ -40,7 +40,10 @@
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>co.nilin.opex</groupId>
+            <artifactId>common</artifactId>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>
@@ -55,14 +58,11 @@
                 <artifactId>preferences</artifactId>
                 <version>${preferences.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>co.nilin.opex.auth</groupId>
                 <artifactId>user-management-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
-
             <dependency>
                 <groupId>co.nilin.opex.auth.ports</groupId>
                 <artifactId>user-management-kafka-listener</artifactId>
@@ -73,7 +73,6 @@
                 <artifactId>spring-kafka</artifactId>
                 <version>2.8.11</version>
             </dependency>
-
         </dependencies>
     </dependencyManagement>
 </project>

@@ -1,13 +1,11 @@
 package co.nilin.opex.wallet.app.service.otc
 
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.model.otc.*
 import co.nilin.opex.wallet.core.service.otc.RateService
 import co.nilin.opex.wallet.core.spi.CurrencyService
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 
@@ -42,7 +40,7 @@ class GraphService(private val rateService: RateService, private val currencySer
             it.isTransitive == false && it.isActive == true
         }
             ?.map(Currency::symbol)
-            ?: throw OpexException(OpexError.NoRecordFound)
+            ?: throw OpexError.NoRecordFound.exception()
         val transitiveSymbols: List<String> = systemCurrencies.filter { it.isTransitive == true }.map(Currency::symbol)
         for (vertex in vertice) {
             if (source == null || vertex == source) {

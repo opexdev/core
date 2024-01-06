@@ -6,7 +6,7 @@ import co.nilin.opex.auth.gateway.data.KycRequest
 import co.nilin.opex.auth.gateway.data.UserProfileInfo
 import co.nilin.opex.auth.gateway.utils.ErrorHandler
 import co.nilin.opex.auth.gateway.utils.ResourceAuthenticator
-import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.common.OpexError
 import org.jboss.resteasy.plugins.providers.multipart.InputPart
 import org.keycloak.models.GroupModel
 import org.keycloak.models.KeycloakSession

@@ -1,5 +1,6 @@
 package co.nilin.opex.matching.gateway.app.service
 
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.matching.engine.core.model.OrderDirection
 import co.nilin.opex.matching.engine.core.model.Pair
 import co.nilin.opex.matching.gateway.app.inout.CancelOrderRequest
@@ -11,8 +12,6 @@ import co.nilin.opex.matching.gateway.ports.kafka.submitter.inout.OrderSubmitReq
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.inout.OrderSubmitResult
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.KafkaHealthIndicator
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.OrderRequestEventSubmitter
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
@@ -48,10 +47,10 @@ class OrderService(
         }.onFailure { logger.error(it.message) }.getOrElse { false }
 
         if (!canCreateOrder)
-            throw OpexException(OpexError.SubmitOrderForbiddenByAccountant)
+            throw OpexError.SubmitOrderForbiddenByAccountant.exception()
 
         if (!kafkaHealthIndicator.isHealthy)
-            throw OpexException(OpexError.ServiceUnavailable)
+            throw OpexError.ServiceUnavailable.exception()
 
         val orderSubmitRequest = OrderSubmitRequestEvent(
             createOrderRequest.uuid!!, //get from auth2

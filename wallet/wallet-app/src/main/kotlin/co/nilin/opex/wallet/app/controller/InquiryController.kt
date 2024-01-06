@@ -1,7 +1,6 @@
 package co.nilin.opex.wallet.app.controller
 
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.spi.CurrencyService
 import co.nilin.opex.wallet.core.spi.WalletManager
@@ -19,7 +18,7 @@ import java.math.BigDecimal
 class InquiryController(
     val walletManager: WalletManager, val walletOwnerManager: WalletOwnerManager, val currencyService: CurrencyService
 ) {
-    val logger = LoggerFactory.getLogger(InquiryController::class.java)
+    private val logger = LoggerFactory.getLogger(InquiryController::class.java)
 
     data class BooleanResponse(val result: Boolean)
 
@@ -43,7 +42,7 @@ class InquiryController(
         logger.info("canFullFill: {} {} {} {}", uuid, currency, walletType, amount)
         val owner = walletOwnerManager.findWalletOwner(uuid)
         if (owner != null) {
-            val c = currencyService.getCurrency(currency) ?: throw OpexException(OpexError.CurrencyNotFound)
+            val c = currencyService.getCurrency(currency) ?: throw OpexError.CurrencyNotFound.exception()
             val wallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, walletType, c)
             if (wallet != null) {
                 return BooleanResponse(

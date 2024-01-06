@@ -1,7 +1,5 @@
 package co.nilin.opex.wallet.app.config
 
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.utility.preferences.Currency
 import co.nilin.opex.utility.preferences.Preferences
 import co.nilin.opex.utility.preferences.UserLimit

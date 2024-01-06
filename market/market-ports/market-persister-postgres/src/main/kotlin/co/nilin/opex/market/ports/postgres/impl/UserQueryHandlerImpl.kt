@@ -1,13 +1,12 @@
 package co.nilin.opex.market.ports.postgres.impl
 
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.market.core.inout.*
 import co.nilin.opex.market.core.spi.UserQueryHandler
 import co.nilin.opex.market.ports.postgres.dao.OrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderStatusRepository
 import co.nilin.opex.market.ports.postgres.dao.TradeRepository
 import co.nilin.opex.market.ports.postgres.util.asOrderDTO
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -41,7 +40,7 @@ class UserQueryHandlerImpl(
         }).awaitFirstOrNull() ?: return null
 
         if (order.uuid != uuid)
-            throw OpexException(OpexError.Forbidden)
+            throw OpexError.Forbidden.exception()
 
         val status = orderStatusRepository.findMostRecentByOUID(order.ouid).awaitFirstOrNull()
         return order.asOrderDTO(status)
