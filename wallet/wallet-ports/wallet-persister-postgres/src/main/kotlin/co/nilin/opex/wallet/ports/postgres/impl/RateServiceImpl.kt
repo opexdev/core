@@ -11,6 +11,7 @@ import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
 import co.nilin.opex.wallet.ports.postgres.model.ForbiddenPairModel
 import co.nilin.opex.wallet.ports.postgres.model.RateModel
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 import java.util.stream.Collectors
@@ -21,6 +22,8 @@ class RateServiceImpl(
     private val forbiddenPairRepository: ForbiddenPairRepository,
     private val currencyRepository: CurrencyRepository
 ) : RateService {
+    private val logger = LoggerFactory.getLogger(RateServiceImpl::class.java)
+
 
     override suspend fun addRate(rate: Rate) {
         rate.isValid()

@@ -16,7 +16,7 @@ import org.springframework.web.reactive.function.client.WebClient
 
 @EnableWebFluxSecurity
 @Profile("!test")
-class SecurityConfig(private val webClient: WebClient) {
+class SecurityConfig(@Qualifier("loadBalanced")private val webClient: WebClient,@Qualifier("decWebClient")private val decWebClient: WebClient) {
 
     @Value("\${app.auth.cert-url}")
     private lateinit var jwkUrl: String
@@ -69,10 +69,21 @@ class SecurityConfig(private val webClient: WebClient) {
 
 
     @Bean
+    @Profile("!otc")
     @Throws(Exception::class)
     fun reactiveJwtDecoder(): ReactiveJwtDecoder? {
         return NimbusReactiveJwtDecoder.withJwkSetUri(jwkUrl)
                 .webClient(webClient)
+                .build()
+    }
+
+
+    @Bean
+    @Profile("otc")
+    @Throws(Exception::class)
+    fun decReactiveJwtDecoder(): ReactiveJwtDecoder? {
+        return NimbusReactiveJwtDecoder.withJwkSetUri(jwkUrl)
+                .webClient(decWebClient)
                 .build()
     }
 
