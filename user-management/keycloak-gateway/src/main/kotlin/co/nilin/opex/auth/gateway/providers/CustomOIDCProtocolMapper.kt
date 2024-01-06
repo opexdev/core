@@ -2,23 +2,15 @@ package co.nilin.opex.auth.gateway.providers
 
 import co.nilin.opex.auth.gateway.ApplicationContextHolder
 import co.nilin.opex.auth.gateway.model.WhiteListModel
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
+import co.nilin.opex.common.OpexError
 import org.keycloak.connections.jpa.JpaConnectionProvider
-import org.keycloak.models.ClientSessionContext
-import org.keycloak.models.KeycloakSession
-import org.keycloak.models.ProtocolMapperModel
-import org.keycloak.models.RoleModel
-import org.keycloak.models.UserSessionModel
+import org.keycloak.models.*
 import org.keycloak.protocol.oidc.OIDCLoginProtocol
 import org.keycloak.protocol.oidc.mappers.*
 import org.keycloak.provider.ProviderConfigProperty
 import org.keycloak.representations.AccessToken
-import org.keycloak.representations.AccessToken.Access
 import org.keycloak.services.ErrorResponseException
-import org.keycloak.services.error.KeycloakErrorHandler
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import java.util.stream.Collectors
 import javax.persistence.EntityManager
 import javax.ws.rs.core.Response

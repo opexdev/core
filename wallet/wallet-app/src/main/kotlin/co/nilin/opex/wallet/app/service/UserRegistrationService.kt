@@ -1,7 +1,6 @@
 package co.nilin.opex.wallet.app.service
 
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.utility.preferences.Preferences
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.spi.CurrencyService
@@ -11,7 +10,6 @@ import co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
-import java.math.BigDecimal
 
 @Component
 class UserRegistrationService(
@@ -28,7 +26,7 @@ class UserRegistrationService(
             walletOwnerManager.createWalletOwner(event.uuid, "${event.email}-${event.firstName} ${event.lastName}", "1")
 
         preferences.currencies.forEach {
-            val currency = currencyService.getCurrency(it.symbol) ?: throw OpexException(OpexError.CurrencyNotFound)
+            val currency = currencyService.getCurrency(it.symbol) ?: throw OpexError.CurrencyNotFound.exception()
             walletManager.createWallet(owner, Amount(currency, it.gift), currency, "main")
         }
     }

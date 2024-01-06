@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
-open class AssignAddressServiceImpl(
+class AssignAddressServiceImpl(
         private val currencyHandler: CurrencyHandler,
         private val assignedAddressHandler: AssignedAddressHandler,
         private val reservedAddressHandler: ReservedAddressHandler
@@ -68,10 +68,8 @@ open class AssignAddressServiceImpl(
                     reservedAddressHandler.remove(reservedAddress)
                     result.add(newAssigned)
                 } else {
-                    throw OpexException(
-                            OpexError.ReservedAddressNotAvailable,
-                            "No reserved address available for $addressType"
-                    )
+                    throw OpexError.ReservedAddressNotAvailable
+                        .exception("No reserved address available for $addressType")
                 }
 
             }

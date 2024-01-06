@@ -8,7 +8,6 @@
         <version>1.0.1-beta.7</version>
     </parent>
 
-    <groupId>co.nilin.opex.auth</groupId>
     <artifactId>user-management-core</artifactId>
     <name>user-management-core</name>
     <description>user-management-core</description>
@@ -34,7 +33,6 @@
             <groupId>org.jetbrains.kotlinx</groupId>
             <artifactId>kotlinx-coroutines-core</artifactId>
         </dependency>
-
     </dependencies>
 
 
