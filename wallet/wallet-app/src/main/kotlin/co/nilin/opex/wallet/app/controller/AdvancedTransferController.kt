@@ -53,10 +53,9 @@ class AdvancedTransferController {
     )
     suspend fun reserve(
             @RequestBody request: TransferReserveRequest,
-            @CurrentSecurityContext securityContext: SecurityContext
+            @CurrentSecurityContext securityContext: SecurityContext?
     ): TransferReserveResponse {
-        request.senderUuid = securityContext.authentication.name
-
+        securityContext?.let {request.senderUuid = it.authentication.name }
         val reservation = transferService.reserveTransfer(
                 request.sourceAmount, request.sourceSymbol, request.destSymbol, request.senderUuid!!, request.senderWalletType, request.receiverUuid, request.receiverWalletType
         )
