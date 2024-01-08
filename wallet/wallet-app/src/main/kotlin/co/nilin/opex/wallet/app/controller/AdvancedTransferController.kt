@@ -1,5 +1,7 @@
 package co.nilin.opex.wallet.app.controller
 
+import co.nilin.opex.common.OpexError
+import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.app.dto.TransferPreEvaluateResponse
 import co.nilin.opex.wallet.app.dto.TransferReserveRequest
 import co.nilin.opex.wallet.app.dto.TransferReserveResponse
@@ -55,7 +57,10 @@ class AdvancedTransferController {
             @RequestBody request: TransferReserveRequest,
             @CurrentSecurityContext securityContext: SecurityContext?
     ): TransferReserveResponse {
-        securityContext?.let {request.senderUuid = it.authentication.name }
+        securityContext?.let {
+            if(request.senderUuid != it.authentication.name)
+                throw  OpexException(OpexError.Forbidden)
+            request.senderUuid = it.authentication.name }
         val reservation = transferService.reserveTransfer(
                 request.sourceAmount, request.sourceSymbol, request.destSymbol, request.senderUuid!!, request.senderWalletType, request.receiverUuid, request.receiverWalletType
         )

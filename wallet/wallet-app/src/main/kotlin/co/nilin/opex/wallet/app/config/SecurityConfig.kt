@@ -60,6 +60,7 @@ class SecurityConfig(private val webClient: WebClient) {
                 .pathMatchers("/deposit/**").hasRoleAndLevel("System")
                 .pathMatchers("/withdraw").hasRoleAndLevel("Basic", "Level1")
                 .pathMatchers("/withdraw/**").hasRoleAndLevel("Basic", "Level1")
+                .pathMatchers(HttpMethod.GET, "/otc/**").permitAll()
                 .anyExchange().authenticated()
                 .and()
                 .oauth2ResourceServer()

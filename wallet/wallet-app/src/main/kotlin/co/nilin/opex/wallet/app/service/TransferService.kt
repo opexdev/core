@@ -216,7 +216,7 @@ class TransferService(
         val systemUuid = "1"
         //todo customize error message
         val senderLevel=walletOwnerManager.findWalletOwner(senderUuid)?.let {it.level }?:throw OpexError.WalletOwnerNotFound.exception()
-        val receiverLevel=walletOwnerManager.findWalletOwner(receiverUuid)?.let {it.level }?:throw OpexError.WalletOwnerNotFound.exception()
+        val receiverLevel=walletOwnerManager.findWalletOwner(receiverUuid)?.let {it.level }
 
         if ( senderLevel !in arrayListOf<String>(preferences.admin.walletLevel,preferences.system.walletLevel))
             throw OpexError.Forbidden.exception()
@@ -272,7 +272,7 @@ class TransferService(
         val receiverOwner = walletOwnerManager.findWalletOwner(receiverUuid) ?: walletOwnerManager.createWalletOwner(
                 receiverUuid,
                 "not set",
-                ""
+                "1"
         )
         val receiverCurrency = currencyService.getCurrency(destSymbol)
             ?: throw OpexError.CurrencyNotFound.exception()
