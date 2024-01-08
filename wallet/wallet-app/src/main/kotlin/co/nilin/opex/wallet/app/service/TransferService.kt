@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.app.service
 
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.utility.preferences.Preferences
 import co.nilin.opex.wallet.app.dto.AdvanceReservedTransferData
 import co.nilin.opex.wallet.app.dto.ManualTransferRequest
@@ -215,7 +216,7 @@ class TransferService(
         val systemUuid = "1"
         //todo customize error message
         val senderLevel=walletOwnerManager.findWalletOwner(senderUuid)?.let {it.level }?:throw OpexError.WalletOwnerNotFound.exception()
-        val receiverLevel=walletOwnerManager.findWalletOwner(receiverUuid)?.let {it.level }?:throw OpexError.WalletOwnerNotFound.exception()
+        val receiverLevel=walletOwnerManager.findWalletOwner(receiverUuid)?.let {it.level }
 
         if ( senderLevel !in arrayListOf<String>(preferences.admin.walletLevel,preferences.system.walletLevel))
             throw OpexError.Forbidden.exception()
@@ -223,8 +224,9 @@ class TransferService(
         if(senderLevel == preferences.system.walletLevel && receiverLevel !=preferences.admin.walletLevel)
             throw OpexError.Forbidden.exception()
 
-        if (walletOwnerManager.findWalletOwner(receiverUuid)?.level !in arrayListOf<String>(preferences.admin.walletLevel,preferences.system.walletLevel))
-            throw OpexError.Error.exception()
+//        if (walletOwnerManager.findWalletOwner(receiverUuid)?.level !in arrayListOf<String>(preferences.admin.walletLevel,preferences.system.walletLevel))
+//            throw OpexError.Forbidden.exception()
+
         return _transfer(
                 symbol,
                 "main",
@@ -270,7 +272,7 @@ class TransferService(
         val receiverOwner = walletOwnerManager.findWalletOwner(receiverUuid) ?: walletOwnerManager.createWalletOwner(
                 receiverUuid,
                 "not set",
-                ""
+                "1"
         )
         val receiverCurrency = currencyService.getCurrency(destSymbol)
             ?: throw OpexError.CurrencyNotFound.exception()

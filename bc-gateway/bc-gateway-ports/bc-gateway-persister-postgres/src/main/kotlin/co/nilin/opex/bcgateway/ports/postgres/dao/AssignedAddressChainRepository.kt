@@ -11,4 +11,6 @@ import org.springframework.stereotype.Repository
 interface AssignedAddressChainRepository : ReactiveCrudRepository<AssignedAddressChainModel, Long> {
     @Query("select * from assigned_address_chains where assigned_address_id = :assignedAddress")
     fun findByAssignedAddress(@Param("assignedAddress") type: Long): Flow<AssignedAddressChainModel>
+
+
 }

@@ -14,8 +14,10 @@ data class AssignedAddressModel(
         val memo: String?,
         @Column("addr_type_id") val addressTypeId: Long,
         @Column("exp_time") val expTime: LocalDateTime?=null,
-        @Column("create_date") val createDate: LocalDateTime?=null,
+        @Column("assigned_Date") val assignedDate: LocalDateTime?=null,
+        @Column("revoked_Date") val revokedDate: LocalDateTime?=null,
         val status: AddressStatus?=null,
+
 
 )
 

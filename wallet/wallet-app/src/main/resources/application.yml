@@ -58,6 +58,7 @@ spring:
     import: vault://secret/${spring.application.name}
 app:
   auth:
+    url: lb://opex-auth
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
   system:
     uuid: 1

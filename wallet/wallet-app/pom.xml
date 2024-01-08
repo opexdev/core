@@ -96,8 +96,16 @@
             <artifactId>wallet-bcgateway-proxy</artifactId>
         </dependency>
         <dependency>
+            <groupId>co.nilin.opex.wallet.ports.auth</groupId>
+            <artifactId>wallet-auth-proxy</artifactId>
+        </dependency>
+        <dependency>
             <groupId>co.nilin.opex.wallet.ports.kafka.listener</groupId>
             <artifactId>wallet-eventlistener-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>co.nilin.opex.wallet.ports.auth</groupId>
+            <artifactId>wallet-auth-proxy</artifactId>
         </dependency>
         <dependency>
             <groupId>co.nilin.opex.utility</groupId>
@@ -233,6 +241,7 @@
             <version>5.4.0</version>
             <scope>test</scope>
         </dependency>
+
 
     </dependencies>
 

@@ -98,6 +98,7 @@ class AssignAddressServiceImplUnitTest {
                         null,
                         ethAddressType,
                         mutableListOf(ethChain)
+
                     )
                 )
             )

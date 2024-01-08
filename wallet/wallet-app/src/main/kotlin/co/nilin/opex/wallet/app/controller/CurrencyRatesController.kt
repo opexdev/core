@@ -89,6 +89,7 @@ class CurrencyRatesController(
         )
     )
     suspend fun fetchRates(): Rates {
+
         return rateService.getRate()
     }
 

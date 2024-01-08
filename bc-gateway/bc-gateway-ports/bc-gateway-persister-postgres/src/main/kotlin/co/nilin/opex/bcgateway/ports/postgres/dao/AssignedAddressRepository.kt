@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Mono
+import java.time.LocalDateTime
 
 @Repository
 interface AssignedAddressRepository : ReactiveCrudRepository<AssignedAddressModel, Long> {
@@ -24,4 +25,11 @@ interface AssignedAddressRepository : ReactiveCrudRepository<AssignedAddressMode
         @Param("address") address: String,
         @Param("memo") memo: String?
     ): Mono<AssignedAddressModel>
+
+    @Query("select * from assigned_addresses where (:windowPoint is null or assigned_date > :windowPoint ) and (:now is null or exp_time< :now ) and (:status is null or status =:status) ")
+    fun findPotentialExpAddress(
+            @Param("windowPoint") windowPont: LocalDateTime?,
+            @Param("now") now: LocalDateTime?,
+            @Param("status") status:AddressStatus?=null
+    ): Flow<AssignedAddressModel>?
 }
