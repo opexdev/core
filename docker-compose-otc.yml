@@ -42,7 +42,10 @@ services:
     networks:
       - default
       - otc-network
-
+    dns:
+      - "8.8.8.8"
+    extra_hosts:
+      - "polban.catchprice.app:2606:4700:3034::6815:4e64"
     labels:
       collect_logs: "true"
     deploy:
@@ -83,6 +86,10 @@ services:
       - PREFERENCES=$PREFERENCES
       - ADDRESS_EXP_TIME=7600
       - SPRING_PROFILES_ACTIVE=otc
+    dns:
+      - "8.8.8.8"
+    extra_hosts:
+      - "polban.catchprice.app:2606:4700:3034::6815:4e64"
     configs:
       - preferences.yml
     depends_on:
