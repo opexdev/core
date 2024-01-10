@@ -21,7 +21,7 @@ data class Currency(
         var sign: String? = null,
         var description: String? = null,
         var shortDescription: String? = null,
-        var currencyImpData: FetchCurrencyInfo?=null
+        var currencyImpData: FetchCurrencyInfo? = null
 )
 
 
@@ -44,31 +44,34 @@ data class CurrencyImp(
         var sign: String? = null,
         var description: String? = null,
         var shortDescription: String? = null,
-        var implementationSymbol: String,
-        var newChain: String?=null,
+        var implementationSymbol: String?,
+        var newChain: String? = null,
         var tokenName: String?,
         var tokenAddress: String?,
         var isToken: Boolean? = false,
-        var withdrawFee: BigDecimal,
-        var minimumWithdraw: BigDecimal,
+        var withdrawFee: BigDecimal?,
         var isWithdrawEnabled: Boolean? = true,
-        var decimal: Int,
-        var chain: String
-)
+        var decimal: Int?,
+        var chain: String?
+) {
+    fun isValidForPropagatingOnChain(): Boolean {
+        return (chain != null && implementationSymbol != null && decimal != null && withdrawFee!=null && minWithdraw !=null)
 
+    }
+}
 
-data class PropagateCurrencyChanges(
+    data class PropagateCurrencyChanges(
 
-        var currencySymbol: String,
-        var currencyName: String,
-        var implementationSymbol: String,
-        var newChain: String?=null,
-        var tokenName: String?,
-        var tokenAddress: String?,
-        var isToken: Boolean? = false,
-        var withdrawFee: BigDecimal,
-        var minimumWithdraw: BigDecimal,
-        var isWithdrawEnabled: Boolean? = true,
-        var decimal: Int,
-        var chain: String
-)
+            var currencySymbol: String,
+            var currencyName: String,
+            var implementationSymbol: String,
+            var newChain: String? = null,
+            var tokenName: String?,
+            var tokenAddress: String?,
+            var isToken: Boolean? = false,
+            var withdrawFee: BigDecimal,
+            var minimumWithdraw: BigDecimal,
+            var isWithdrawEnabled: Boolean? = true,
+            var decimal: Int,
+            var chain: String
+    )

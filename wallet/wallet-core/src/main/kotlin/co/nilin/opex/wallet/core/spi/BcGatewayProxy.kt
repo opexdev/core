@@ -7,9 +7,9 @@ import co.nilin.opex.wallet.core.model.otc.CurrencyImplementationResponse
 import co.nilin.opex.wallet.core.model.otc.FetchCurrencyInfo
 
 interface BcGatewayProxy {
-   suspend fun createCurrency(currencyImp: PropagateCurrencyChanges):CurrencyImplementationResponse
+   suspend fun createCurrency(currencyImp: PropagateCurrencyChanges):CurrencyImplementationResponse?
 
-    suspend fun  updateCurrency(currencyImp: PropagateCurrencyChanges):CurrencyImplementationResponse
+    suspend fun  updateCurrency(currencyImp: PropagateCurrencyChanges):CurrencyImplementationResponse?
 
     suspend fun getCurrencyInfo(symbol:String):FetchCurrencyInfo?
 

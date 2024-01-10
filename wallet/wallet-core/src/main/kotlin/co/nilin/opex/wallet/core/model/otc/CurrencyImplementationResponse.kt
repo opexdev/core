@@ -19,4 +19,4 @@ data class Chain(val name: String)
 
 data class Currency(val name:String, val symbol:String)
 
-data class FetchCurrencyInfo(val currency: Currency, val implementations: List<CurrencyImplementationResponse>)
+data class FetchCurrencyInfo(val currency: Currency, val implementations: List<CurrencyImplementationResponse?>)
