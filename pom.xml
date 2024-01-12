@@ -33,6 +33,7 @@
         <module>user-management</module>
         <module>wallet</module>
         <module>bc-gateway</module>
+        <module>common</module>
     </modules>
 
     <dependencies>
@@ -83,6 +84,11 @@
                 <artifactId>mockk</artifactId>
                 <version>1.12.4</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex</groupId>
+                <artifactId>common</artifactId>
+                <version>${project.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

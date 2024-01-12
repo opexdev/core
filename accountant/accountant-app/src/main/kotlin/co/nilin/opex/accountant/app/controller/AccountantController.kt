@@ -7,10 +7,9 @@ import co.nilin.opex.accountant.core.spi.FinancialActionLoader
 import co.nilin.opex.accountant.core.spi.PairConfigLoader
 import co.nilin.opex.accountant.core.spi.WalletProxy
 import co.nilin.opex.accountant.ports.walletproxy.data.BooleanResponse
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.matching.engine.core.eventh.events.SubmitOrderEvent
 import co.nilin.opex.matching.engine.core.model.OrderDirection
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -36,9 +35,10 @@ class AccountantController(
         val canFulfil = runCatching { walletProxy.canFulfil(currency, "main", uuid, amount) }
             .onFailure { logger.error(it.message) }
             .getOrElse { false }
-        if ( canFulfil ) {
-            val unprocessed = financialActionLoader.countUnprocessed(uuid, currency, SubmitOrderEvent::class.simpleName!!)
-            return BooleanResponse(unprocessed <= 0 )
+        if (canFulfil) {
+            val unprocessed =
+                financialActionLoader.countUnprocessed(uuid, currency, SubmitOrderEvent::class.simpleName!!)
+            return BooleanResponse(unprocessed <= 0)
         } else
             return BooleanResponse(false)
     }
@@ -78,7 +78,7 @@ class AccountantController(
         @RequestParam(required = false) userLevel: String?
     ): PairFeeResponse {
         val fee = pairConfigLoader.loadPairFeeConfigs(pair, direction ?: OrderDirection.BID, userLevel ?: "*")
-            ?: throw OpexException(OpexError.PairFeeNotFound)
+            ?: throw OpexError.PairFeeNotFound.exception()
         return PairFeeResponse(fee.pairConfig.pair, fee.direction, fee.userLevel, fee.makerFee, fee.takerFee)
     }
 }

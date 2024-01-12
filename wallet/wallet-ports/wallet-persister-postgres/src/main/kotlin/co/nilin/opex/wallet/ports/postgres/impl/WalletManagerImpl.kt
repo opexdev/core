@@ -1,14 +1,12 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.exc.ConcurrentBalanceChangException
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.ports.postgres.dao.*
 import co.nilin.opex.wallet.ports.postgres.dto.toPlainObject
 import co.nilin.opex.wallet.ports.postgres.model.WalletModel
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
@@ -190,7 +188,7 @@ class WalletManagerImpl(
 
     suspend fun addSystemAndAdminWalletForNewCurrency(symbol: String) {
         val adminWallet = walletOwnerRepository.findByUuid(adminUuid!!).awaitSingleOrNull()
-                ?: throw OpexException(OpexError.Error)
+                ?: throw OpexError.Error.exception()
 
         val items =
                 listOf(

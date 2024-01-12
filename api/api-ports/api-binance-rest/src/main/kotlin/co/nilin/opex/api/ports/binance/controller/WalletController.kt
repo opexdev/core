@@ -7,9 +7,7 @@ import co.nilin.opex.api.core.utils.Interval
 import co.nilin.opex.api.ports.binance.data.*
 import co.nilin.opex.api.ports.binance.util.jwtAuthentication
 import co.nilin.opex.api.ports.binance.util.tokenValue
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
-import co.nilin.opex.utility.error.data.throwError
+import co.nilin.opex.common.OpexError
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.GetMapping
@@ -156,7 +154,7 @@ class WalletController(
         timestamp: Long
     ): List<PairFeeResponse> {
         return if (symbol != null) {
-            val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+            val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexError.SymbolNotFound.exception()
 
             val fee = accountantProxy.getFeeConfig(internalSymbol)
             arrayListOf<PairFeeResponse>().apply {

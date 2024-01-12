@@ -7,8 +7,7 @@ import co.nilin.opex.api.core.spi.SymbolMapper
 import co.nilin.opex.api.core.spi.WalletProxy
 import co.nilin.opex.api.ports.binance.data.*
 import co.nilin.opex.api.ports.binance.util.*
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
+import co.nilin.opex.common.OpexError
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
@@ -89,7 +88,7 @@ class AccountController(
         timestamp: Long,
         @CurrentSecurityContext securityContext: SecurityContext
     ): NewOrderResponse {
-        val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+        val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexError.SymbolNotFound.exception()
         validateNewOrderParams(type, price, quantity, timeInForce, stopPrice, quoteOrderQty)
 
         matchingGatewayProxy.createNewOrder(
@@ -143,12 +142,12 @@ class AccountController(
         timestamp: Long,
         @CurrentSecurityContext securityContext: SecurityContext
     ): CancelOrderResponse {
-        val localSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+        val localSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexError.SymbolNotFound.exception()
         if (orderId == null && origClientOrderId == null)
-            throw OpexException(OpexError.BadRequest, message = "'orderId' or 'origClientOrderId' must be sent")
+            throw OpexError.BadRequest.exception("'orderId' or 'origClientOrderId' must be sent")
 
         val order = queryHandler.queryOrder(principal, localSymbol, orderId, origClientOrderId)
-            ?: throw OpexException(OpexError.OrderNotFound)
+            ?: throw OpexError.OrderNotFound.exception()
 
         val response = CancelOrderResponse(
             symbol,
@@ -170,7 +169,7 @@ class AccountController(
             return response
 
         if (order.status.equalsAny(OrderStatus.REJECTED, OrderStatus.EXPIRED, OrderStatus.FILLED))
-            throw OpexException(OpexError.CancelOrderNotAllowed)
+            throw OpexError.CancelOrderNotAllowed.exception()
 
 
         matchingGatewayProxy.cancelOrder(
@@ -218,11 +217,11 @@ class AccountController(
         @RequestParam
         timestamp: Long
     ): QueryOrderResponse {
-        val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+        val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexError.SymbolNotFound.exception()
         return queryHandler.queryOrder(principal, internalSymbol, orderId, origClientOrderId)
             ?.asQueryOrderResponse()
             ?.apply { this.symbol = symbol }
-            ?: throw OpexException(OpexError.OrderNotFound)
+            ?: throw OpexError.OrderNotFound.exception()
     }
 
     /*
@@ -259,7 +258,7 @@ class AccountController(
         @RequestParam(required = false)
         limit: Int?
     ): List<QueryOrderResponse> {
-        val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+        val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexError.SymbolNotFound.exception()
         return queryHandler.openOrders(principal, internalSymbol, limit).map {
             it.asQueryOrderResponse().apply { symbol?.let { s -> this.symbol = s } }
         }
@@ -302,7 +301,7 @@ class AccountController(
         @RequestParam
         timestamp: Long
     ): List<QueryOrderResponse> {
-        val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+        val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexError.SymbolNotFound.exception()
         return queryHandler.allOrders(principal, internalSymbol, startTime, endTime, limit).map {
             it.asQueryOrderResponse().apply { symbol?.let { s -> this.symbol = s } }
         }
@@ -310,7 +309,7 @@ class AccountController(
 
     /*
     Get trades for a specific account and symbol.
-    If fromId is set, it will get trades >= that fromId. Otherwise most recent trades are returned.
+    If fromId is set, it will get trades >= that fromId. Otherwise, most recent trades are returned.
     Weight: 10 with symbol
     Data Source: Database
     */
@@ -349,7 +348,7 @@ class AccountController(
         @RequestParam
         timestamp: Long
     ): List<TradeResponse> {
-        val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexException(OpexError.SymbolNotFound)
+        val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexError.SymbolNotFound.exception()
 
         return queryHandler.allTrades(principal, internalSymbol, fromId, startTime, endTime, limit)
             .map {
@@ -470,12 +469,12 @@ class AccountController(
 
     private fun checkDecimal(decimal: BigDecimal?, paramName: String) {
         if (decimal == null || decimal <= BigDecimal.ZERO)
-            throw OpexException(OpexError.InvalidRequestParam, "Parameter '$paramName' is either missing or invalid")
+            throw OpexError.InvalidRequestParam.exception("Parameter '$paramName' is either missing or invalid")
     }
 
     private fun checkNull(obj: Any?, paramName: String) {
         if (obj == null)
-            throw OpexException(OpexError.InvalidRequestParam, "Parameter '$paramName' is either missing or invalid")
+            throw OpexError.InvalidRequestParam.exception("Parameter '$paramName' is either missing or invalid")
     }
 
     private fun Order.asQueryOrderResponse() = QueryOrderResponse(

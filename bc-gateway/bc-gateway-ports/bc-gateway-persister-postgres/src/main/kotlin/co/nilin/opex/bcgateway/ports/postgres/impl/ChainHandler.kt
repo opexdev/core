@@ -7,8 +7,6 @@ import co.nilin.opex.bcgateway.ports.postgres.dao.AddressTypeRepository
 import co.nilin.opex.bcgateway.ports.postgres.dao.ChainAddressTypeRepository
 import co.nilin.opex.bcgateway.ports.postgres.dao.ChainRepository
 import co.nilin.opex.bcgateway.ports.postgres.model.ChainAddressTypeModel
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
@@ -16,6 +14,7 @@ import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.stereotype.Component
+import co.nilin.opex.common.OpexError
 
 @Component
 class ChainHandler(
@@ -27,10 +26,10 @@ class ChainHandler(
     override suspend fun addChain(name: String, addressType: String): Chain {
         val chain = chainRepository.findByName(name).awaitFirstOrNull()
         if (chain != null)
-            throw OpexException(OpexError.BadRequest)
+            throw OpexError.BadRequest.exception()
 
         val type = addressTypeRepository.findByType(addressType).awaitFirstOrNull()
-            ?: throw OpexException(OpexError.InvalidAddressType)
+            ?: throw OpexError.InvalidAddressType.exception()
 
         chainRepository.insert(name).awaitFirstOrNull()
         val model = chainRepository.findByName(name).awaitFirst()

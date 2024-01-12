@@ -1,9 +1,6 @@
 package co.nilin.opex.wallet.app.dto
 
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
-import co.nilin.opex.wallet.core.spi.CurrencyService
-import org.springframework.beans.factory.annotation.Autowired
+import co.nilin.opex.common.OpexError
 import java.math.BigDecimal
 
 class SetCurrencyExchangeRateRequest(
@@ -11,14 +8,12 @@ class SetCurrencyExchangeRateRequest(
     val destSymbol: String,
     val rate: BigDecimal
 
-){
+) {
 
-    fun validate(){
-        if(rate<= BigDecimal.ZERO )
-            throw OpexException(OpexError.InvalidRate)
-        else if(sourceSymbol==destSymbol)
-            throw OpexException(OpexError.SourceIsEqualDest)
-
-
+    fun validate() {
+        if (rate <= BigDecimal.ZERO)
+            throw OpexError.InvalidRate.exception()
+        else if (sourceSymbol == destSymbol)
+            throw OpexError.SourceIsEqualDest.exception()
     }
 }

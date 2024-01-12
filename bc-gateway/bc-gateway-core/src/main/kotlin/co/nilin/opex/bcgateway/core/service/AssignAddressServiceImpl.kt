@@ -5,18 +5,24 @@ import co.nilin.opex.bcgateway.core.model.*
 import co.nilin.opex.bcgateway.core.spi.AssignedAddressHandler
 import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
 import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
-import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.bcgateway.core.utils.LoggerDelegate
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.utility.error.data.OpexException
+import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
-class AssignAddressServiceImpl(
+open class AssignAddressServiceImpl(
         private val currencyHandler: CurrencyHandler,
         private val assignedAddressHandler: AssignedAddressHandler,
         private val reservedAddressHandler: ReservedAddressHandler
 ) : AssignAddressService {
-    @Value("\${app.address.exp-time}")
-    private var expTime: Long?=null
+    @Value("\${app.address.life-time.value}")
+    private var lifeTime: Long? = null
+    private val logger: Logger by LoggerDelegate()
+
+    @Transactional
     override suspend fun assignAddress(user: String, currency: Currency, chain: String): List<AssignedAddress> {
         val currencyInfo = currencyHandler.fetchCurrencyInfo(currency.symbol)
         val chains = currencyInfo.implementations
@@ -52,16 +58,18 @@ class AssignAddressServiceImpl(
                             reservedAddress.memo,
                             addressType,
                             chainAddressTypeMap[addressType]!!,
-                            expTime?.let { LocalDateTime.now().plusHours(expTime!!)} ?: null,
-                            AddressStatus.Assigned
-                            )
+                            lifeTime?.let { LocalDateTime.now().plusSeconds(lifeTime!!) }
+                                    ?: null,
+                            LocalDateTime.now(),
+                            null,
+                            AddressStatus.Assigned,
+                            null
+                    )
                     reservedAddressHandler.remove(reservedAddress)
                     result.add(newAssigned)
                 } else {
-                    throw OpexException(
-                            OpexError.ReservedAddressNotAvailable,
-                            "No reserved address available for $addressType"
-                    )
+                    logger.info("No reserved address available for $addressType")
+                    throw OpexError.ReservedAddressNotAvailable.exception()
                 }
 
             }

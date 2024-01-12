@@ -118,8 +118,7 @@ class TransferController(private val transferService: TransferService) {
         return transferService.deposit(symbol, receiverUuid, receiverWalletType, amount, description, transferRef)
     }
 
-    //todo
-    //hasRole (admin ,system)
+
     @PostMapping("/deposit/manually/{amount}_{symbol}/{receiverUuid}")
     @ApiResponse(
             message = "OK",
@@ -136,10 +135,11 @@ class TransferController(private val transferService: TransferService) {
             @PathVariable("receiverUuid") receiverUuid: String,
             @PathVariable("amount") amount: BigDecimal,
             @RequestBody request: ManualTransferRequest,
-          //  @CurrentSecurityContext securityContext: SecurityContext
+            @CurrentSecurityContext securityContext: SecurityContext
     ): TransferResult {
-      //  securityContext.authentication.name
 
-        return transferService.depositManually(symbol, receiverUuid,"b58dc8b2-9c0f-11ee-8c90-0242ac120002" , amount, request)
+        return transferService.depositManually(symbol, receiverUuid,
+                securityContext.authentication.name
+                , amount, request)
     }
 }

@@ -5,10 +5,10 @@ spring:
   main:
     allow-bean-definition-overriding: false
     allow-circular-references: true
-#  kafka:
-#    bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
-#    consumer:
-#      group-id: bc-gateway
+  #  kafka:
+  #    bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
+  #    consumer:
+  #      group-id: bc-gateway
   r2dbc:
     url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
     username: ${dbusername:opex}
@@ -34,14 +34,14 @@ spring:
       enabled: false
     consul:
       enabled: false
-#    consul:
-#      host: ${CONSUL_HOST:localhost}
-#      port: 8500
-#      discovery:
-#        #healthCheckPath: ${management.context-path}/health
-#        instance-id: ${spring.application.name}:${server.port}
-#        healthCheckInterval: 20s
-#        prefer-ip-address: true
+  #    consul:
+  #      host: ${CONSUL_HOST:localhost}
+  #      port: 8500
+  #      discovery:
+  #        #healthCheckPath: ${management.context-path}/health
+  #        instance-id: ${spring.application.name}:${server.port}
+  #        healthCheckInterval: 20s
+  #        prefer-ip-address: true
   config:
     import: vault://secret/${spring.application.name}
   codec:
@@ -51,7 +51,7 @@ management:
     web:
       base-path: /actuator
       exposure:
-        include: ["health", "prometheus", "metrics"]
+        include: [ "health", "prometheus", "metrics" ]
   endpoint:
     health:
       show-details: when_authorized
@@ -67,8 +67,10 @@ swagger:
   authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
 app:
   auth:
-    cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
+    url: https://polban.catchprice.app
+    cert-url: https://polban.catchprice.app/api/v1/jwk
   wallet:
     url: lb://opex-wallet
   address:
-    exp-time: ${ADDRESS_EXP_TIME}
+    life-time:
+      value: ${ADDRESS_EXP_TIME}  #    second

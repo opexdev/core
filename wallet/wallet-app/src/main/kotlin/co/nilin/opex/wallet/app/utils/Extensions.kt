@@ -15,3 +15,15 @@ fun ServerHttpSecurity.AuthorizeExchangeSpec.Access.hasRole(
         AuthorizationDecision(hasAuthority && hasRole)
     }
 }
+
+fun ServerHttpSecurity.AuthorizeExchangeSpec.Access.hasRoleAndLevel(
+        role: String?=null,
+        level: String?=null
+): ServerHttpSecurity.AuthorizeExchangeSpec = access { mono, _ ->
+    mono.map { auth ->
+        val hasLevel = level?.let { ((auth.principal as Jwt).claims["level"] as String?)?.equals(level) == true }
+                ?: true
+        val hasRole = ((auth.principal as Jwt).claims["roles"] as JSONArray?)?.contains(role) == true
+        AuthorizationDecision(hasLevel && hasRole)
+    }
+}

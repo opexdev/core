@@ -1,6 +1,6 @@
 package co.nilin.opex.wallet.app.service
 
-import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.utility.preferences.Preferences
 import co.nilin.opex.wallet.app.dto.AdvanceReservedTransferData
@@ -119,7 +119,7 @@ class TransferService(
     ): BigDecimal {
         val rate = currencyGraph.buildRoutes(symbol, destSymbol)
             .map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }
-            .firstOrNull() ?: throw OpexException(OpexError.NOT_EXCHANGEABLE_CURRENCIES)
+            .firstOrNull() ?: throw OpexError.NOT_EXCHANGEABLE_CURRENCIES.exception()
         return amount.multiply(rate.rate)
     }
 
@@ -134,7 +134,7 @@ class TransferService(
     ): Pair<String, BigDecimal> {
         val rate = currencyGraph.buildRoutes(sourceSymbol, destSymbol)
             .map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }
-            .firstOrNull() ?: throw OpexException(OpexError.NOT_EXCHANGEABLE_CURRENCIES)
+            .firstOrNull() ?: throw OpexError.NOT_EXCHANGEABLE_CURRENCIES.exception()
         val finalAmount = sourceAmount.multiply(rate.rate)
         checkIfSystemHasEnoughBalance(destSymbol, receiverWalletType, finalAmount)
         val reserveNumber = UUID.randomUUID().toString()
@@ -215,17 +215,18 @@ class TransferService(
         logger.info("deposit manually: $senderUuid to $receiverUuid on $symbol at ${LocalDateTime.now()}")
         val systemUuid = "1"
         //todo customize error message
-        val senderLevel=walletOwnerManager.findWalletOwner(senderUuid)?.let {it.level }?:throw OpexException(OpexError.WalletOwnerNotFound)
-        val receiverLevel=walletOwnerManager.findWalletOwner(receiverUuid)?.let {it.level }?:throw OpexException(OpexError.WalletOwnerNotFound)
+        val senderLevel=walletOwnerManager.findWalletOwner(senderUuid)?.let {it.level }?:throw OpexError.WalletOwnerNotFound.exception()
+        val receiverLevel=walletOwnerManager.findWalletOwner(receiverUuid)?.let {it.level }
 
         if ( senderLevel !in arrayListOf<String>(preferences.admin.walletLevel,preferences.system.walletLevel))
-            throw OpexException(OpexError.Forbidden)
+            throw OpexError.Forbidden.exception()
 
         if(senderLevel == preferences.system.walletLevel && receiverLevel !=preferences.admin.walletLevel)
-            throw OpexException(OpexError.Forbidden)
+            throw OpexError.Forbidden.exception()
 
-        if (walletOwnerManager.findWalletOwner(receiverUuid)?.level !in arrayListOf<String>(preferences.admin.walletLevel,preferences.system.walletLevel))
-            throw OpexException(OpexError.Error)
+//        if (walletOwnerManager.findWalletOwner(receiverUuid)?.level !in arrayListOf<String>(preferences.admin.walletLevel,preferences.system.walletLevel))
+//            throw OpexError.Forbidden.exception()
+
         return _transfer(
                 symbol,
                 "main",
@@ -260,21 +261,21 @@ class TransferService(
 
     ): TransferResult {
         if (senderWalletType == "cashout" || receiverWalletType == "cashout")
-            throw OpexException(OpexError.InvalidCashOutUsage)
-        val sourceCurrency = currencyService.getCurrency(symbol) ?: throw OpexException(OpexError.CurrencyNotFound)
+            throw OpexError.InvalidCashOutUsage.exception()
+        val sourceCurrency = currencyService.getCurrency(symbol) ?: throw OpexError.CurrencyNotFound.exception()
         val sourceOwner = walletOwnerManager.findWalletOwner(senderUuid)
-            ?: throw OpexException(OpexError.WalletOwnerNotFound)
+            ?: throw OpexError.WalletOwnerNotFound.exception()
         val sourceWallet =
             walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner, senderWalletType, sourceCurrency)
-                ?: throw OpexException(OpexError.WalletNotFound)
+                ?: throw OpexError.WalletNotFound.exception()
 
         val receiverOwner = walletOwnerManager.findWalletOwner(receiverUuid) ?: walletOwnerManager.createWalletOwner(
                 receiverUuid,
                 "not set",
-                ""
+                "1"
         )
         val receiverCurrency = currencyService.getCurrency(destSymbol)
-            ?: throw OpexException(OpexError.CurrencyNotFound)
+            ?: throw OpexError.CurrencyNotFound.exception()
         val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(
             receiverOwner, receiverWalletType, receiverCurrency
         ) ?: walletManager.createWallet(
@@ -302,8 +303,10 @@ class TransferService(
 
     private suspend fun checkIfSystemHasEnoughBalance(destSymbol: String, receiverWalletType: String, finalAmount: BigDecimal?) {
         val destCurrency = currencyService.getCurrency(destSymbol)!!
-        val system = walletOwnerManager.findWalletOwner(walletOwnerManager.systemUuid) ?: throw OpexException(OpexError.WalletOwnerNotFound)
-        val systemWallet = walletManager.findWalletByOwnerAndCurrencyAndType(system, receiverWalletType, destCurrency) ?: throw OpexException(OpexError.WalletNotFound)
+        val system = walletOwnerManager.findWalletOwner(walletOwnerManager.systemUuid)
+            ?: throw OpexError.WalletOwnerNotFound.exception()
+        val systemWallet = walletManager.findWalletByOwnerAndCurrencyAndType(system, receiverWalletType, destCurrency)
+            ?: throw OpexError.WalletNotFound.exception()
         if (systemWallet.balance.amount < finalAmount) {
             throw NotEnoughBalanceException()
         }

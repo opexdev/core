@@ -1,6 +1,6 @@
 package co.nilin.opex.wallet.app.service.otc
 
-import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.app.KafkaEnabledTest
 import co.nilin.opex.wallet.core.model.otc.ForbiddenPair
