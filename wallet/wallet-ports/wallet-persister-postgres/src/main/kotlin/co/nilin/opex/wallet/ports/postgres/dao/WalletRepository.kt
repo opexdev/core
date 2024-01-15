@@ -1,5 +1,7 @@
 package co.nilin.opex.wallet.ports.postgres.dao
 
+import co.nilin.opex.wallet.core.inout.WalletData
+import co.nilin.opex.wallet.core.inout.WalletType
 import co.nilin.opex.wallet.ports.postgres.model.WalletModel
 import org.springframework.data.r2dbc.repository.Modifying
 import org.springframework.data.r2dbc.repository.Query
@@ -42,4 +44,22 @@ interface WalletRepository : ReactiveCrudRepository<WalletModel, Long> {
 
     @Query("select * from wallet where owner = :ownerId and balance > 0")
     fun findAllAmountNotZero(ownerId: Long): Flux<WalletModel>
+
+    @Query(
+        """
+        select wo.uuid, wo.title, w.wallet_type, w.currency, w.balance from wallet_owner wo
+        join wallet w on w.owner = wo.id
+        where (:walletType is NULL or wallet_type = :walletType)
+            and (:currency is null or w.currency = :currency)
+            and (:uuid is null or wo.uuid = :uuid)
+        limit :limit offset :offset
+    """
+    )
+    fun findWalletDataByCriteria(
+        uuid: String?,
+        walletType: String?,
+        currency: String?,
+        limit: Int,
+        offset: Int
+    ): Flux<WalletData>
 }
