@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component
 
 
 @Component
-@Profile("otc")
 class ExtractBackgroundAuth(private val authProxy: AuthProxy, private val environment: Environment) {
+
 
     @Value("\${app.auth.client-id}")
     private lateinit var clientId: String
@@ -22,7 +22,6 @@ class ExtractBackgroundAuth(private val authProxy: AuthProxy, private val enviro
     private lateinit var clientSecret: String
     suspend fun extractToken(): String? {
         if (environment.activeProfiles.contains("otc"))
-            //todo read using vault
             return authProxy.getToken(LoginRequest(clientId, clientSecret)).data.accessToken
         return null
     }

@@ -19,7 +19,6 @@ import java.util.function.Function
 
 
 @Component
-@Profile("otc")
 class ExtractBackgroundAuth(private val authProxy: AuthProxy, private val environment: Environment) {
 
     @Value("\${app.auth.client-id}")

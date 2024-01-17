@@ -60,6 +60,8 @@ app:
   auth:
     url: lb://opex-auth
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
+    client-id: none
+    client-secret: none
   system:
     uuid: 1
   backup:
