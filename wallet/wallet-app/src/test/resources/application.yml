@@ -51,10 +51,14 @@ app:
   auth:
     url: none
     cert-url: none
+    client-id: none
+    client-secret: none
   bc-gateway:
     url: http://bc-gateway:8080
   system:
     uuid: 1
+  reserved-transfer:
+    life-time: 15 #minutes
 logging:
   level:
     org.apache.kafka: ERROR

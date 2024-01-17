@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.utility.error.data.OpexException
+import co.nilin.opex.wallet.app.dto.ReservedTransferResponse
 import co.nilin.opex.wallet.app.dto.TransferPreEvaluateResponse
 import co.nilin.opex.wallet.app.dto.TransferReserveRequest
 import co.nilin.opex.wallet.app.dto.TransferReserveResponse
@@ -56,15 +57,16 @@ class AdvancedTransferController {
     suspend fun reserve(
             @RequestBody request: TransferReserveRequest,
             @CurrentSecurityContext securityContext: SecurityContext?
-    ): TransferReserveResponse {
+    ): ReservedTransferResponse {
         securityContext?.let {
-            if(request.senderUuid != it.authentication.name)
-                throw  OpexException(OpexError.Forbidden)
-            request.senderUuid = it.authentication.name }
-        val reservation = transferService.reserveTransfer(
+            if (request.senderUuid != it.authentication.name)
+                throw OpexException(OpexError.Forbidden)
+            request.senderUuid = it.authentication.name
+        }
+        return transferService.reserveTransfer(
                 request.sourceAmount, request.sourceSymbol, request.destSymbol, request.senderUuid!!, request.senderWalletType, request.receiverUuid, request.receiverWalletType
         )
-        return TransferReserveResponse(reservation.first, reservation.second)
+
     }
 
     @PostMapping("/v3/transfer/{reserveUuid}")
@@ -81,8 +83,9 @@ class AdvancedTransferController {
     suspend fun finalizeTransfer(
             @PathVariable("reserveUuid") reserveUuid: String,
             @RequestParam("description") description: String?,
-            @RequestParam("transferRef") transferRef: String?
+            @RequestParam("transferRef") transferRef: String?,
+            @CurrentSecurityContext securityContext: SecurityContext?
     ): TransferResult {
-        return transferService.advanceTransfer(reserveUuid, description, transferRef)
+        return transferService.advanceTransfer(reserveUuid, description, transferRef, securityContext?.authentication?.name)
     }
 }

@@ -3,6 +3,8 @@ package co.nilin.opex.bcgateway.ports.walletproxy.impl
 
 import co.nilin.opex.bcgateway.core.model.otc.LoginRequest
 import co.nilin.opex.bcgateway.core.spi.AuthProxy
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 
 import org.springframework.stereotype.Component
@@ -10,12 +12,18 @@ import org.springframework.stereotype.Component
 
 
 @Component
+@Profile("otc")
 class ExtractBackgroundAuth(private val authProxy: AuthProxy, private val environment: Environment) {
 
+    @Value("\${app.auth.client-id}")
+    private lateinit var clientId: String
+
+    @Value("\${app.auth.client-secret}")
+    private lateinit var clientSecret: String
     suspend fun extractToken(): String? {
         if (environment.activeProfiles.contains("otc"))
             //todo read using vault
-            return authProxy.getToken(LoginRequest("0955555555555", "Pol@Sys204Hg@d5*P")).data.accessToken
+            return authProxy.getToken(LoginRequest(clientId, clientSecret)).data.accessToken
         return null
     }
 

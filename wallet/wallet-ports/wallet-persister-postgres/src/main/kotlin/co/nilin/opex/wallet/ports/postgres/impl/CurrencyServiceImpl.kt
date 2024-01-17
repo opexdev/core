@@ -1,7 +1,6 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.core.model.Currencies
 import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.model.CurrencyImp
@@ -14,7 +13,6 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.stream.Collectors
@@ -88,7 +86,7 @@ class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : Currency
 
         currencyRepository.findBySymbol(request.symbol)?.awaitSingleOrNull()?.let {
             if (it.isTransitive == true && request.isActive == false)
-                throw OpexError.CurrencyIsTransitiveAndDisablingIsImposible.exception()
+                throw OpexError.CurrencyIsTransitiveAndDisablingIsImpossible.exception()
             try {
                 val cm = request.toModel()
                 return currencyRepository.save(cm.apply {
