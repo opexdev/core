@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.service.WithdrawService
+import co.nilin.opex.wallet.core.spi.WalletDataManager
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
@@ -10,7 +11,7 @@ import java.math.BigDecimal
 
 @RestController
 @RequestMapping("/admin")
-class AdminController(private val withdrawService: WithdrawService) {
+class AdminController(private val withdrawService: WithdrawService, private val walletDataManager: WalletDataManager) {
 
     @GetMapping("/withdraw")
     @ApiResponse(
@@ -84,6 +85,17 @@ class AdminController(private val withdrawService: WithdrawService) {
         @RequestParam("fee", required = false) fee: BigDecimal = BigDecimal.ZERO,
     ): WithdrawResult {
         return withdrawService.acceptWithdraw(WithdrawAcceptCommand(withdrawId, destTransactionRef, destNote, fee))
+    }
+
+    @GetMapping("/wallets")
+    suspend fun walletData(
+        @RequestParam(required = false) uuid: String?,
+        @RequestParam(required = false) walletType: WalletType?,
+        @RequestParam(required = false) currency: String?,
+        @RequestParam limit: Int,
+        @RequestParam offset: Int
+    ): List<WalletData> {
+        return walletDataManager.findWalletDataByCriteria(uuid, walletType, currency, limit, offset)
     }
 
 }
