@@ -24,7 +24,7 @@ class WalletProxyImpl(private val webClient: WebClient,
         webClient.post()
                 .uri(URI.create("$baseUrl/deposit/${amount}_${symbol}/${uuid}_main?transferRef=$hash"))
                 .header("Content-Type", "application/json")
-                .header("Authentication", "Bearer ${extractBackgroundAuth.extractToken()}")
+                .header("Authorization", "Bearer ${extractBackgroundAuth.extractToken()}")
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToMono(typeRef<TransferResult>())

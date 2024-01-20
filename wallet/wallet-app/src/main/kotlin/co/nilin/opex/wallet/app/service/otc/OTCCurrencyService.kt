@@ -4,15 +4,11 @@ import co.nilin.opex.wallet.core.model.Currencies
 import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.model.CurrencyImp
 import co.nilin.opex.wallet.core.model.PropagateCurrencyChanges
+import co.nilin.opex.wallet.core.model.otc.CurrencyImplementationResponse
 import co.nilin.opex.wallet.core.model.otc.FetchCurrencyInfo
-import co.nilin.opex.wallet.core.model.otc.LoginRequest
-import co.nilin.opex.wallet.core.spi.AuthProxy
 import co.nilin.opex.wallet.core.spi.BcGatewayProxy
 import co.nilin.opex.wallet.core.spi.CurrencyService
 import kotlinx.coroutines.runBlocking
-import org.springframework.context.annotation.ConditionContext
-import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.stream.Collectors
@@ -27,12 +23,12 @@ class OTCCurrencyService(
         //and also as we need to create wallet for admins for new currency, it completely makes sense to put them all together in one place, or maybe as some listener to currency_add event!
         private val bcGatewayProxy: BcGatewayProxy,
 
-) {
+        ) {
 
     @Transactional
     suspend fun addCurrency(request: CurrencyImp): Currency? {
 
-        return currencyService.addCurrency(
+        val curr = currencyService.addCurrency(
                 Currency(
                         request.symbol.uppercase(),
                         request.name,
@@ -51,34 +47,39 @@ class OTCCurrencyService(
                         request.shortDescription
                 )
 
-        )?.let {
-            val imp = bcGatewayProxy.createCurrency(
+        )
+        var imp: CurrencyImplementationResponse? = null
+        if (request.isValidForPropagatingOnChain()) {
+            imp = bcGatewayProxy.createCurrency(
                     PropagateCurrencyChanges(
                             request.symbol.uppercase(),
                             request.name,
-                            request.implementationSymbol,
+                            request.implementationSymbol!!,
                             request.newChain,
                             request.tokenName,
                             request.tokenAddress,
                             request.isToken,
-                            request.withdrawFee,
-                            request.minimumWithdraw,
+                            request.withdrawFee!!,
+                            request.minWithdraw!!,
                             request.isWithdrawEnabled,
-                            request.decimal,
-                            request.chain
+                            request.decimal!!,
+                            request.chain!!
                     )
             )
-            it.apply {
-                currencyImpData = FetchCurrencyInfo(co.nilin.opex.wallet.core.model.otc.Currency(request.name, request.symbol),
-                        listOf(imp))
-            }
         }
+
+
+        return curr?.apply {
+            currencyImpData = FetchCurrencyInfo(co.nilin.opex.wallet.core.model.otc.Currency(request.name, request.symbol),
+                    listOf(imp))
+        }
+
     }
 
 
     @Transactional
     suspend fun updateCurrency(request: CurrencyImp): Currency? {
-        return currencyService.updateCurrency(
+        val curr = currencyService.updateCurrency(
                 Currency(
                         request.symbol.uppercase(),
                         request.name,
@@ -97,47 +98,55 @@ class OTCCurrencyService(
                         request.shortDescription
                 )
 
-        )?.let {
+        )
 
-            val imp = bcGatewayProxy.updateCurrency(
+        var imp: CurrencyImplementationResponse? = null
+        if (request.isValidForPropagatingOnChain()) {
+            bcGatewayProxy.updateCurrency(
                     PropagateCurrencyChanges(
                             request.symbol.uppercase(),
                             request.name,
-                            request.implementationSymbol,
+                            request.implementationSymbol!!,
                             request.newChain,
                             request.tokenName,
                             request.tokenAddress,
                             request.isToken,
-                            request.withdrawFee,
-                            request.minimumWithdraw,
+                            request.withdrawFee!!,
+                            request.minWithdraw!!,
                             request.isWithdrawEnabled,
-                            request.decimal,
-                            request.chain
+                            request.decimal!!,
+                            request.chain!!
                     )
             )
-            it.apply {
-                currencyImpData = FetchCurrencyInfo(co.nilin.opex.wallet.core.model.otc.Currency(request.name, request.symbol),
-                        listOf(imp))
-            }
         }
+        return curr?.apply {
+            currencyImpData = FetchCurrencyInfo(co.nilin.opex.wallet.core.model.otc.Currency(request.name, request.symbol),
+                    listOf(imp))
+        }
+
     }
 
     @Transactional
     suspend fun fetchCurrency(symbol: String): Currency? {
         return currencyService.getCurrency(symbol.uppercase())
                 ?.let {
-                    it.apply { currencyImpData = bcGatewayProxy.getCurrencyInfo(symbol.uppercase()) } }
+                    it.apply { currencyImpData = bcGatewayProxy.getCurrencyInfo(symbol.uppercase()) }
+                }
     }
 
     @Transactional
     suspend fun fetchCurrencies(): Currencies? {
         return Currencies(currencyService.getCurrencies()
                 .currencies?.stream()
-                ?.map { it.apply { currencyImpData = runBlocking {
-                    bcGatewayProxy.getCurrencyInfo(it.symbol.uppercase()) } } }
+                ?.map {
+                    it.apply {
+                        currencyImpData = runBlocking {
+                            bcGatewayProxy.getCurrencyInfo(it.symbol.uppercase())
+                        }
+                    }
+                }
                 ?.collect(Collectors.toList()))
     }
-
 
 
 }

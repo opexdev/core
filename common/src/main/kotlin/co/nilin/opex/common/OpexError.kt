@@ -57,8 +57,9 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     SourceIsEqualDest(6012, null, HttpStatus.BAD_REQUEST),
     AtLeastNeedOneTransitiveSymbol(6013, null, HttpStatus.BAD_REQUEST),
     CurrencyIsDisable(6014, null, HttpStatus.BAD_REQUEST),
-    CurrencyIsTransitiveAndDisablingIsImposible(6015, null, HttpStatus.BAD_REQUEST),
-
+    CurrencyIsTransitiveAndDisablingIsImpossible(6015, null, HttpStatus.BAD_REQUEST),
+    InvalidReserveNumber(6016, null, HttpStatus.BAD_REQUEST),
+    CurrentSystemAssetsAreNotEnough(6017, null, HttpStatus.INTERNAL_SERVER_ERROR),
     // code 7000: api
     OrderNotFound(7001, "No order found", HttpStatus.NOT_FOUND),
     SymbolNotFound(7002, "No symbol found", HttpStatus.NOT_FOUND),

@@ -119,7 +119,7 @@ class TransferController(private val transferService: TransferService) {
     }
 
 
-    @PostMapping("/deposit/manually/{amount}_{symbol}/{receiverUuid}")
+    @PostMapping("/manually/deposit/{amount}_{symbol}/{receiverUuid}")
     @ApiResponse(
             message = "OK",
             code = 200,

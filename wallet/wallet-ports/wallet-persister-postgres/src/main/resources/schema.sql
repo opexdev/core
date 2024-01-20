@@ -144,3 +144,22 @@ CREATE TABLE IF NOT EXISTS forbidden_pair
 
 
 
+CREATE TABLE IF NOT EXISTS reserved_transfer
+(
+    id SERIAL PRIMARY KEY,
+    reserve_number VARCHAR(100) NOT NULL UNIQUE,
+    source_symbol VARCHAR(25) NOT NULL REFERENCES currency (symbol),
+    dest_symbol VARCHAR(25) NOT NULL REFERENCES currency (symbol),
+    sender_wallet_type VARCHAR(25) NOT NULL ,
+    sender_uuid VARCHAR(100) NOT NULL ,
+    receiver_wallet_type VARCHAR(25) NOT NULL ,
+    receiver_uuid VARCHAR(100) NOT NULL ,
+    source_amount DECIMAL NOT NULL ,
+    reserved_dest_amount DECIMAL NOT NULL ,
+    reserve_date TIMESTAMP,
+    exp_date TIMESTAMP,
+    status  VARCHAR(25)
+    );
+
+
+

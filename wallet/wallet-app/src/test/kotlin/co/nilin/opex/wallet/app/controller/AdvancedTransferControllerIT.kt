@@ -2,10 +2,7 @@ package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.utility.error.controller.ExceptionController
 import co.nilin.opex.wallet.app.KafkaEnabledTest
-import co.nilin.opex.wallet.app.dto.SetCurrencyExchangeRateRequest
-import co.nilin.opex.wallet.app.dto.TransferPreEvaluateResponse
-import co.nilin.opex.wallet.app.dto.TransferReserveRequest
-import co.nilin.opex.wallet.app.dto.TransferReserveResponse
+import co.nilin.opex.wallet.app.dto.*
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.Currency
@@ -113,9 +110,9 @@ class AdvancedTransferControllerIT : KafkaEnabledTest() {
                 .bodyValue(TransferReserveRequest(BigDecimal.ONE, "ETH", "USDT", sender.uuid, "main", receiver, "main"))
                 .exchange()
                 .expectStatus().isOk
-                .expectBody(TransferReserveResponse::class.java)
+                .expectBody(ReservedTransferResponse::class.java)
                 .returnResult().responseBody!!
-            val transfer = webClient.post().uri("/v3/transfer/${reserve.reserveUuid}?description=desc&transferRef=T${UUID.randomUUID()}").accept(MediaType.APPLICATION_JSON)
+            val transfer = webClient.post().uri("/v3/transfer/${reserve.reserveNumber}?description=desc&transferRef=T${UUID.randomUUID()}").accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isOk
                 .expectBody(TransferResult::class.java)
