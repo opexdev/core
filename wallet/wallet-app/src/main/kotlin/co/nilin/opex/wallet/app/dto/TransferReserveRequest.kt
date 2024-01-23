@@ -6,7 +6,7 @@ data class TransferReserveRequest(
     val sourceAmount: BigDecimal,
     val sourceSymbol: String,
     val destSymbol: String,
-    val senderUuid: String,
+    var senderUuid: String?,
     val senderWalletType: String,
     val receiverUuid: String,
     val receiverWalletType: String

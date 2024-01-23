@@ -7,6 +7,7 @@ import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalanc
 import org.springframework.cloud.client.loadbalancer.reactive.ReactorLoadBalancerExchangeFilterFunction
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import org.springframework.web.reactive.function.client.ExchangeStrategies
 import org.springframework.web.reactive.function.client.WebClient
 
@@ -14,7 +15,7 @@ import org.springframework.web.reactive.function.client.WebClient
 class WebClientConfig {
 
     @Bean
-    @Qualifier("loadBalanced")
+@Profile("!otc")
     fun loadBalancedWebClient(loadBalancerFactory: ReactiveLoadBalancer.Factory<ServiceInstance>): WebClient {
         return WebClient.builder()
             .filter(ReactorLoadBalancerExchangeFilterFunction(loadBalancerFactory, emptyList()))
@@ -27,6 +28,7 @@ class WebClientConfig {
     }
 
     @Bean
+    @Profile("otc")
     fun webClient(): WebClient {
         return WebClient.builder()
             .exchangeStrategies(

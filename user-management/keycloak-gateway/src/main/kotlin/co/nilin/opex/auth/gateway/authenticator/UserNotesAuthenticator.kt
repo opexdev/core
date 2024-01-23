@@ -1,7 +1,7 @@
 package co.nilin.opex.auth.gateway.authenticator
 
 import co.nilin.opex.auth.gateway.utils.ErrorHandler
-import co.nilin.opex.utility.error.data.OpexError
+import co.nilin.opex.common.OpexError
 import org.keycloak.authentication.AuthenticationFlowContext
 import org.keycloak.authentication.AuthenticationFlowError
 import org.keycloak.authentication.authenticators.directgrant.AbstractDirectGrantAuthenticator

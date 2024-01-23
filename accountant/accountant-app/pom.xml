@@ -48,11 +48,11 @@
             <artifactId>accountant-wallet-proxy</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.utility.error</groupId>
+            <groupId>co.nilin.opex.utility</groupId>
             <artifactId>error-handler</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.utility.log</groupId>
+            <groupId>co.nilin.opex.utility</groupId>
             <artifactId>logging-handler</artifactId>
         </dependency>
         <dependency>
@@ -69,12 +69,18 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.utility.preferences</groupId>
+            <groupId>co.nilin.opex.utility</groupId>
             <artifactId>preferences</artifactId>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
+            <version>1.18.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
             <version>1.18.0</version>
             <scope>test</scope>
         </dependency>
@@ -90,7 +96,6 @@
             <version>1.18.0</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-stream</artifactId>

@@ -5,8 +5,7 @@ import co.nilin.opex.api.core.inout.APIKey
 import co.nilin.opex.api.core.spi.APIKeyService
 import co.nilin.opex.api.ports.postgres.dao.APIKeyRepository
 import co.nilin.opex.api.ports.postgres.model.APIKeyModel
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
+import co.nilin.opex.common.OpexError
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.awaitFirstOrElse
@@ -47,7 +46,7 @@ class APIKeyServiceImpl(
         currentToken: String
     ): Pair<String, APIKey> {
         if (apiKeyRepository.countByUserId(userId).awaitFirstOrElse { 0 } >= 10)
-            throw OpexException(OpexError.APIKeyLimitReached)
+            throw OpexError.APIKeyLimitReached.exception()
 
         val secret = generateSecret()
         val tokenResponse = authProxy.exchangeToken(clientSecret, currentToken)
@@ -111,17 +110,17 @@ class APIKeyServiceImpl(
     }
 
     override suspend fun changeKeyState(userId: String, key: String, isEnabled: Boolean) {
-        val apiKey = apiKeyRepository.findByKey(key).awaitSingleOrNull() ?: throw OpexException(OpexError.NotFound)
+        val apiKey = apiKeyRepository.findByKey(key).awaitSingleOrNull() ?: throw OpexError.NotFound.exception()
         if (apiKey.userId != userId)
-            throw OpexException(OpexError.Forbidden)
+            throw OpexError.Forbidden.exception()
         apiKey.isEnabled = isEnabled
         apiKeyRepository.save(apiKey).awaitSingle()
     }
 
     override suspend fun deleteKey(userId: String, key: String) {
-        val apiKey = apiKeyRepository.findByKey(key).awaitSingleOrNull() ?: throw OpexException(OpexError.NotFound)
+        val apiKey = apiKeyRepository.findByKey(key).awaitSingleOrNull() ?: throw OpexError.NotFound.exception()
         if (apiKey.userId != userId)
-            throw OpexException(OpexError.Forbidden)
+            throw OpexError.Forbidden.exception()
         apiKeyRepository.delete(apiKey).awaitFirstOrNull()
     }
 

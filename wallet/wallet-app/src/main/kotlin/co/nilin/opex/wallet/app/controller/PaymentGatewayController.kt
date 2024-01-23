@@ -1,7 +1,6 @@
 package co.nilin.opex.wallet.app.controller
 
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.PaymentCurrency
 import co.nilin.opex.wallet.app.dto.PaymentDepositRequest
 import co.nilin.opex.wallet.app.dto.PaymentDepositResponse
@@ -28,16 +27,15 @@ class PaymentGatewayController(
 
     @PostMapping("/internal/deposit")
     suspend fun paymentDeposit(@RequestBody request: PaymentDepositRequest): PaymentDepositResponse {
-        val systemUuid = "1"
         val receiverWalletType = "main"
         val convertedAmount = when (request.currency) {
             PaymentCurrency.RIALS -> (request.amount / BigDecimal.valueOf(10)).toLong()
             PaymentCurrency.TOMAN -> request.amount.toLong()
         }
 
-        val currency = currencyService.getCurrency("IRT") ?: throw OpexException(OpexError.CurrencyNotFound)
-        val sourceOwner = walletOwnerManager.findWalletOwner(systemUuid)
-            ?: throw OpexException(OpexError.WalletOwnerNotFound)
+        val currency = currencyService.getCurrency("IRT") ?: throw OpexError.CurrencyNotFound.exception()
+        val sourceOwner = walletOwnerManager.findWalletOwner(walletOwnerManager.systemUuid)
+            ?: throw OpexError.WalletOwnerNotFound.exception()
         val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner, "main", currency)
             ?: walletManager.createWallet(sourceOwner, Amount(currency, BigDecimal.ZERO), currency, "main")
 

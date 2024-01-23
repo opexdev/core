@@ -38,8 +38,14 @@ services:
     depends_on:
       - postgres-wallet
       - vault
+      - bc-gateway
     networks:
       - default
+      - otc-network
+    dns:
+      - "8.8.8.8"
+    extra_hosts:
+      - "polban.catchprice.app:2606:4700:3034::6815:4e64"
     labels:
       collect_logs: "true"
     deploy:
@@ -62,20 +68,59 @@ services:
       - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-hiopex}
       - OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET=${OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET}
       - VANDAR_API_KEY=$VANDAR_API_KEY
+      - CLIENT_SECRET=${CLIENT_SECRET}
+      - CLIENT_ID=${CLIENT_ID}
     cap_add:
       - IPC_LOCK
     deploy:
       restart_policy:
         condition: on-failure
+  bc-gateway:
+    image: ghcr.io/opexdev/bc-gateway
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - CONSUL_HOST=consul
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - DB_IP_PORT=postgres-bc-gateway
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_HOST=vault
+      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
+      - PREFERENCES=$PREFERENCES
+      - ADDRESS_EXP_TIME=7600
+      - SPRING_PROFILES_ACTIVE=otc
+    dns:
+      - "8.8.8.8"
+    extra_hosts:
+      - "polban.catchprice.app:2606:4700:3034::6815:4e64"
+    configs:
+      - preferences.yml
+    depends_on:
+      - vault
+      - postgres-bc-gateway
+    networks:
+      - default
+      - otc-network
+    labels:
+      collect_logs: "true"
+    deploy:
+      restart_policy:
+        condition: on-failure
+  postgres-bc-gateway:
+    <<: *postgres-db
+    volumes:
+      - bc-gateway-data:/var/lib/postgresql/data/
+
 
 volumes:
-
   wallet-data:
   vault-data:
+  bc-gateway-data:
 
 networks:
   default:
     driver: bridge
+  otc-network:
+    external: true
 secrets:
   opex_dev_crt:
     file: opex.dev.crt

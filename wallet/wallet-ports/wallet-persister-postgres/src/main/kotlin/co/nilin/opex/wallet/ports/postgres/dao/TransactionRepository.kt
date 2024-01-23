@@ -83,7 +83,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
 
     @Query(
         """
-        select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
+        select distinct t.id, w.currency, w.wallet_type as wallet, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
         , t.transfer_category as category, t.transfer_detail_json as detail,  t.source_wallet as sender, t.dest_wallet as receiver, w.id as owner
         from wallet as w
         inner join wallet_owner as wo on (w.owner = wo.id)
@@ -104,7 +104,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
 
     @Query(
         """
-        select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
+        select distinct t.id, w.currency, w.wallet_type as wallet, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
         , t.transfer_category as category, t.transfer_detail_json as detail,  t.source_wallet as sender, t.dest_wallet as receiver, w.id as owner
         from wallet as w
         inner join wallet_owner as wo on (w.owner = wo.id)
@@ -124,7 +124,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
 
     @Query(
         """
-        select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
+        select distinct t.id, w.currency, w.wallet_type as wallet, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
                , t.transfer_category as category, t.transfer_detail_json as detail,  t.source_wallet as sender, t.dest_wallet as receiver, w.id as owner
         from wallet as w
         inner join wallet_owner as wo on (w.owner = wo.id)
@@ -147,7 +147,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
 
     @Query(
         """
-        select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
+        select distinct t.id, w.currency, w.wallet_type as wallet, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
         , t.transfer_category as category, t.transfer_detail_json as detail, t.source_wallet as sender, t.dest_wallet as receiver, w.id as owner
         from wallet as w
         inner join wallet_owner as wo on (w.owner = wo.id)
@@ -169,7 +169,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
 
     @Query(
         """
-        select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
+        select distinct t.id, w.currency, w.wallet_type as wallet, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
         , t.transfer_category as category, t.transfer_detail_json as detail,  t.source_wallet as sender, t.dest_wallet as receiver, w.id as owner
         from wallet as w
         inner join wallet_owner as wo on (w.owner = wo.id)
@@ -196,7 +196,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
 
     @Query(
         """
-        select distinct t.id, w.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
+        select distinct t.id, w.currency, w.wallet_type as wallet, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
         , t.transfer_category as category, t.transfer_detail_json as detail,  t.source_wallet as sender, t.dest_wallet as receiver, w.id as owner
         from wallet as w
         inner join wallet_owner as wo on (w.owner = wo.id)

@@ -224,7 +224,10 @@ userLimits:
     monthlyCount: 3000
 system:
   walletTitle: system
-  walletLevel: basic
+  walletLevel: system
+admin:
+  walletTitle: admin
+  walletLevel: admin
 userLevels:
   - "*"
   - "nofee"

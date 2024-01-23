@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.exc.ConcurrentBalanceChangException
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.spi.WalletManager
@@ -10,7 +11,9 @@ import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.time.LocalDateTime
@@ -21,7 +24,9 @@ class WalletManagerImpl(
     val transactionRepository: TransactionRepository,
     val walletRepository: WalletRepository,
     val walletOwnerRepository: WalletOwnerRepository,
-    val currencyRepository: CurrencyRepository
+    val currencyRepository: CurrencyRepository,
+    @Value("b58dc8b2-9c0f-11ee-8c90-0242ac120002") val adminUuid: String? = "",
+    @Value("10000") val minimumBalance: BigDecimal? = BigDecimal(10000)
 ) : WalletManager {
 
     val logger = LoggerFactory.getLogger(WalletManagerImpl::class.java)
@@ -143,19 +148,20 @@ class WalletManagerImpl(
         walletType: String,
         currency: Currency
     ): Wallet? {
+
         val walletModel = walletRepository.findByOwnerAndTypeAndCurrency(
             owner.id!!,
             walletType,
             currency.symbol
         ).awaitFirstOrNull() ?: return null
 
-        val existingCurrency = currencyRepository.findBySymbol(walletModel.currency).awaitFirst()
+        val existingCurrency = currencyRepository.findBySymbol(walletModel.currency)?.awaitFirst()
         val walletOwner = walletOwnerRepository.findById(walletModel.owner).awaitFirst().toPlainObject()
         return Wallet(
             walletModel.id!!,
             walletOwner,
-            Amount(existingCurrency.toPlainObject(), walletModel.balance),
-            existingCurrency.toPlainObject(),
+            Amount(existingCurrency!!.toPlainObject(), walletModel.balance),
+            existingCurrency!!.toPlainObject(),
             walletModel.type,
             walletModel.version
         )
@@ -177,6 +183,21 @@ class WalletManagerImpl(
                     it.version
                 )
             }
+    }
+
+    suspend fun addSystemAndAdminWalletForNewCurrency(symbol: String) {
+        val adminWallet = walletOwnerRepository.findByUuid(adminUuid!!).awaitSingleOrNull()
+            ?: throw OpexError.Error.exception()
+
+        val items =
+            listOf(
+                WalletModel(null, 1, "main", symbol, minimumBalance!!),
+                WalletModel(null, 1, "exchange", symbol, BigDecimal.ZERO),
+                WalletModel(null, adminWallet.id!!, "main", symbol, minimumBalance!!),
+                WalletModel(null, adminWallet.id!!, "exchange", symbol, BigDecimal.ZERO)
+
+            )
+        walletRepository.saveAll(items).collectList().awaitSingleOrNull()
     }
 
     override suspend fun findWalletsByOwner(owner: WalletOwner): List<Wallet> {

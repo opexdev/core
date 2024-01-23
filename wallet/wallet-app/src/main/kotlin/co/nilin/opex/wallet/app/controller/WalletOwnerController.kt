@@ -1,7 +1,6 @@
 package co.nilin.opex.wallet.app.controller
 
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.OwnerLimitsResponse
 import co.nilin.opex.wallet.app.dto.WalletData
 import co.nilin.opex.wallet.app.utils.BalanceParser
@@ -34,7 +33,7 @@ class WalletOwnerController(
         )
     )
     suspend fun getAllWallets(@PathVariable uuid: String): List<WalletData> {
-        val owner = walletOwnerManager.findWalletOwner(uuid) ?: throw OpexException(OpexError.WalletOwnerNotFound)
+        val owner = walletOwnerManager.findWalletOwner(uuid) ?: throw OpexError.WalletOwnerNotFound.exception()
         val wallets = walletManager.findWalletsByOwner(owner)
         return BalanceParser.parse(wallets)
     }
@@ -51,9 +50,9 @@ class WalletOwnerController(
         )
     )
     suspend fun getWallet(@PathVariable uuid: String, @PathVariable symbol: String): WalletData {
-        val owner = walletOwnerManager.findWalletOwner(uuid) ?: throw OpexException(OpexError.WalletOwnerNotFound)
+        val owner = walletOwnerManager.findWalletOwner(uuid) ?: throw OpexError.WalletOwnerNotFound.exception()
         val wallets = walletManager.findWalletByOwnerAndSymbol(owner, symbol)
-        return BalanceParser.parseSingleCurrency(wallets) ?: throw OpexException(OpexError.WalletNotFound)
+        return BalanceParser.parseSingleCurrency(wallets) ?: throw OpexError.WalletNotFound.exception()
     }
 
     @GetMapping("/{uuid}/limits")
@@ -68,7 +67,7 @@ class WalletOwnerController(
         )
     )
     suspend fun getWalletOwnerLimits(@PathVariable uuid: String): OwnerLimitsResponse {
-        val owner = walletOwnerManager.findWalletOwner(uuid) ?: throw OpexException(OpexError.WalletOwnerNotFound)
+        val owner = walletOwnerManager.findWalletOwner(uuid) ?: throw OpexError.WalletOwnerNotFound.exception()
         return OwnerLimitsResponse(owner.isTradeAllowed, owner.isWithdrawAllowed, owner.isDepositAllowed)
     }
 }

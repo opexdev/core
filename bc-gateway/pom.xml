@@ -19,6 +19,7 @@
         <module>bc-gateway-app</module>
         <module>bc-gateway-ports/bc-gateway-persister-postgres</module>
         <module>bc-gateway-ports/bc-gateway-wallet-proxy</module>
+        <module>bc-gateway-ports/bc-gateway-auth-proxy</module>
         <module>bc-gateway-ports/bc-gateway-eventlistener-kafka</module>
     </modules>
 
@@ -26,6 +27,10 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>co.nilin.opex</groupId>
+            <artifactId>common</artifactId>
         </dependency>
     </dependencies>
 
@@ -47,29 +52,40 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
+                <groupId>co.nilin.opex.bcgateway.ports.authproxy</groupId>
+                <artifactId>bc-gateway-auth-proxy</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>co.nilin.opex.bcgateway.ports.kafka.listener</groupId>
                 <artifactId>bc-gateway-eventlistener-kafka</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>co.nilin.opex.utility.error</groupId>
+                <groupId>co.nilin.opex.utility</groupId>
                 <artifactId>error-handler</artifactId>
-                <version>${project.version}</version>
+                <version>${error-hanlder.version}</version>
             </dependency>
             <dependency>
-                <groupId>co.nilin.opex.utility.log</groupId>
+                <groupId>co.nilin.opex.utility</groupId>
                 <artifactId>logging-handler</artifactId>
-                <version>${project.version}</version>
+                <version>${logging-handler.version}</version>
             </dependency>
             <dependency>
-                <groupId>co.nilin.opex.utility.interceptors</groupId>
+                <groupId>co.nilin.opex.utility</groupId>
                 <artifactId>interceptors</artifactId>
-                <version>${project.version}</version>
+                <version>${interceptor.version}</version>
             </dependency>
             <dependency>
-                <groupId>co.nilin.opex.utility.preferences</groupId>
+                <groupId>co.nilin.opex.utility</groupId>
                 <artifactId>preferences</artifactId>
-                <version>${project.version}</version>
+                <version>${preferences.version}</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/org.springframework.batch/spring-batch-core -->
+            <dependency>
+                <groupId>org.springframework.batch</groupId>
+                <artifactId>spring-batch-core</artifactId>
+                <version>5.1.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

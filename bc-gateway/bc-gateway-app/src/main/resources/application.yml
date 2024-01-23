@@ -63,6 +63,13 @@ swagger:
   authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
 app:
   auth:
+    url: lb://opex-auth
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
+    client-id: none
+    client-secret: none
   wallet:
     url: lb://opex-wallet
+  address:
+    life-time:
+      value: ${ADDRESS_EXP_TIME}  #    second
+

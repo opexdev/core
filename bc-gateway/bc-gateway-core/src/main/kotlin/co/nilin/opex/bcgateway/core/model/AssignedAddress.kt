@@ -1,11 +1,18 @@
 package co.nilin.opex.bcgateway.core.model
 
+import java.time.LocalDateTime
+
 data class AssignedAddress(
     val uuid: String,
     val address: String,
     val memo: String?,
     val type: AddressType,
-    val chains: MutableList<Chain>
+    val chains: MutableList<Chain>,
+    var expTime: LocalDateTime? = null,
+    var assignedDate: LocalDateTime? = null,
+    var revokedDate: LocalDateTime? = null,
+    var status: AddressStatus? = AddressStatus.Reserved,
+    var id: Long?=null
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

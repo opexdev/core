@@ -58,13 +58,20 @@ spring:
     import: vault://secret/${spring.application.name}
 app:
   auth:
+    url: lb://opex-auth
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
+    client-id: none
+    client-secret: none
   system:
     uuid: 1
   backup:
     enabled: ${BACKUP_ENABLED:false}
     drive:
       folder: ${DRIVE_FOLDER_ID:-}
+  bc-gateway:
+    url: http://bc-gateway:8080
+  reserved-transfer:
+    life-time: 15 #minutes
 logging:
   level:
     root: INFO

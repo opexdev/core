@@ -5,6 +5,7 @@ import java.time.LocalDateTime
 
 data class DepositWithdrawTransaction(
     val id: Long,
+    val wallet: String,
     val currency: String,
     val amount: BigDecimal,
     val description: String?,

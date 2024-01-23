@@ -1,8 +1,8 @@
 package co.nilin.opex.market.app.controller
 
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.market.core.inout.Order
 import co.nilin.opex.market.core.spi.OrderPersister
-import co.nilin.opex.utility.error.data.OpexError
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping

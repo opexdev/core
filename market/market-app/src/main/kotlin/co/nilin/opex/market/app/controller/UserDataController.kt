@@ -1,9 +1,8 @@
 package co.nilin.opex.market.app.controller
 
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.market.core.inout.*
 import co.nilin.opex.market.core.spi.UserQueryHandler
-import co.nilin.opex.utility.error.data.OpexError
-import co.nilin.opex.utility.error.data.OpexException
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -12,12 +11,12 @@ class UserDataController(private val userQueryHandler: UserQueryHandler) {
 
     @GetMapping("/{uuid}/order/{ouid}")
     suspend fun getOrder(@PathVariable uuid: String, @PathVariable ouid: String): Order {
-        return userQueryHandler.getOrder(uuid, ouid) ?: throw OpexException(OpexError.NotFound)
+        return userQueryHandler.getOrder(uuid, ouid) ?: throw OpexError.NotFound.exception()
     }
 
     @PostMapping("/{uuid}/order/query")
     suspend fun queryUserOrder(@PathVariable uuid: String, @RequestBody request: QueryOrderRequest): Order {
-        return userQueryHandler.queryOrder(uuid, request) ?: throw OpexException(OpexError.NotFound)
+        return userQueryHandler.queryOrder(uuid, request) ?: throw OpexError.NotFound.exception()
     }
 
     @GetMapping("/{uuid}/orders/{symbol}/open")

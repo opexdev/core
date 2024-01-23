@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
+import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepository
 import co.nilin.opex.wallet.ports.postgres.dto.toModel
 import co.nilin.opex.wallet.ports.postgres.impl.sample.VALID
@@ -7,6 +8,7 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import reactor.core.publisher.Mono
 
@@ -27,20 +29,15 @@ private class CurrencyServiceTest {
     }
 
     @Test
-    fun givenNoCurrency_whenGetCurrency_thenReturnNull(): Unit = runBlocking {
+    fun givenNoCurrency_whenGetCurrency_thenThrowException(): Unit = runBlocking {
         every { currencyRepository.findBySymbol(VALID.CURRENCY.symbol) } returns Mono.empty()
+            assertThrows(OpexException::class.java) { runBlocking {  currencyService.getCurrency(VALID.CURRENCY.symbol) }}
 
-        val c = currencyService.getCurrency(VALID.CURRENCY.symbol)
-
-        assertThat(c).isNull()
     }
 
     @Test
-    fun givenNoCurrency_whenGetCurrencyWithEmptySymbol_thenReturnNull(): Unit = runBlocking {
+    fun givenNoCurrency_whenGetCurrencyWithEmptySymbol_thenThrowException(): Unit = runBlocking {
         every { currencyRepository.findBySymbol("") } returns Mono.empty()
-
-        val c = currencyService.getCurrency("")
-
-        assertThat(c).isNull()
+        assertThrows(OpexException::class.java) { runBlocking {  currencyService.getCurrency("") }}
     }
 }

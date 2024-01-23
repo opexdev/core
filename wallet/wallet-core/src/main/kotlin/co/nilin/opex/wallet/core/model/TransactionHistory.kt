@@ -5,6 +5,7 @@ import java.math.BigDecimal
 data class TransactionHistory(
     val id: Long,
     val currency: String,
+    val wallet: String,
     val amount: BigDecimal,
     val description: String?,
     val ref: String?,
