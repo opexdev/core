@@ -76,6 +76,7 @@ open class AssignAddressServiceImpl(
         }
         result.forEach { address ->
             assignedAddressHandler.persist(address)
+            address.apply { id=null }
         }
         return result.toMutableList()
     }
