@@ -38,7 +38,7 @@ class AssignedAddressHandlerImpl(
             AddressType(aam.id!!, aam.type, aam.addressRegex, aam.memoRegex)
         }.collectMap { it.id }.awaitFirst()
         return assignedAddressRepository.findByUuidAndAddressTypeAndStatus(
-                user, addressTypes.map(AddressType::id), AddressStatus.Reserved
+                user, addressTypes.map(AddressType::id), AddressStatus.Assigned
         ).map { model ->
             model.toDto(addressTypeMap)
         }.filter { it.expTime?.let { it > LocalDateTime.now() } ?: true }.toList()
