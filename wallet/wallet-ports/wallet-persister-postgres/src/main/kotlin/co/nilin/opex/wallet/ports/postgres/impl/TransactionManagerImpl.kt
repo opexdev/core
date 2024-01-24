@@ -8,6 +8,7 @@ import co.nilin.opex.wallet.ports.postgres.model.TransactionModel
 import com.fasterxml.jackson.databind.ObjectMapper
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitSingle
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -17,6 +18,7 @@ class TransactionManagerImpl(
     private val transactionRepository: TransactionRepository,
     private val objectMapper: ObjectMapper
 ) : TransactionManager {
+    private val logger = LoggerFactory.getLogger(TransactionManagerImpl::class.java)
 
     override suspend fun save(transaction: Transaction): String {
         return transactionRepository.save(
