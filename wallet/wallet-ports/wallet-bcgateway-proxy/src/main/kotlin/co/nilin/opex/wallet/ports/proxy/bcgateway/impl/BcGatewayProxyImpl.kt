@@ -30,10 +30,16 @@ class BcGatewayProxyImpl(private val webClient: WebClient,
     private val logger = LoggerFactory.getLogger(BcGatewayProxyImpl::class.java)
 
     override suspend fun createCurrency(currencyImp: PropagateCurrencyChanges): CurrencyImplementationResponse {
+        val token = extractBackgroundAuth.extractToken()
         return webClient.post()
                 .uri(URI.create("$baseUrl/currency/${currencyImp.currencySymbol}"))
-                .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer ${extractBackgroundAuth.extractToken()}")
+
+                .headers { httpHeaders ->
+                    run {
+                        httpHeaders.add("Content-Type", "application/json");
+                        token?.let { httpHeaders.add("Authorization", "Bearer $it") }
+                    }
+                }
                 .bodyValue(currencyImp)
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
@@ -43,11 +49,16 @@ class BcGatewayProxyImpl(private val webClient: WebClient,
     }
 
     override suspend fun updateCurrency(currencyImp: PropagateCurrencyChanges): CurrencyImplementationResponse {
+        val token = extractBackgroundAuth.extractToken()
 
         return webClient.put()
                 .uri(URI.create("$baseUrl/currency/${currencyImp.currencySymbol}"))
-                .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer ${extractBackgroundAuth.extractToken()}")
+                .headers { httpHeaders ->
+                    run {
+                        httpHeaders.add("Content-Type", "application/json");
+                        token?.let { httpHeaders.add("Authorization", "Bearer $it") }
+                    }
+                }
                 .bodyValue(currencyImp)
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
@@ -58,10 +69,16 @@ class BcGatewayProxyImpl(private val webClient: WebClient,
 
 
     override suspend fun getCurrencyInfo(symbol: String): FetchCurrencyInfo? {
+        val token = extractBackgroundAuth.extractToken()
+
         return webClient.get()
                 .uri(URI.create("$baseUrl/currency/${symbol}"))
-                .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer ${extractBackgroundAuth.extractToken()}")
+                .headers { httpHeaders ->
+                    run {
+                        httpHeaders.add("Content-Type", "application/json");
+                        token?.let { httpHeaders.add("Authorization", "Bearer $it") }
+                    }
+                }
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToMono(typeRef<FetchCurrencyInfo>())
