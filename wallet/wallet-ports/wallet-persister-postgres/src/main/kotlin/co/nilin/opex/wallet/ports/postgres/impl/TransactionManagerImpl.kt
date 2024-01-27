@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.wallet.core.model.Transaction
 import co.nilin.opex.wallet.core.model.TransactionHistory
+import co.nilin.opex.wallet.core.model.TransactionWithDetailHistory
 import co.nilin.opex.wallet.core.spi.TransactionManager
 import co.nilin.opex.wallet.ports.postgres.dao.TransactionRepository
 import co.nilin.opex.wallet.ports.postgres.model.TransactionModel
@@ -63,7 +64,6 @@ class TransactionManagerImpl(
                     it.date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
                     it.category,
                     if (it.detail == null) emptyMap() else objectMapper.readValue(it.detail, Map::class.java) as Map<String, Any>?,
-                    it.sender == it.owner
                 )
             }
     }
@@ -94,7 +94,6 @@ class TransactionManagerImpl(
                     it.date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
                     it.category,
                     if (it.detail == null) emptyMap() else objectMapper.readValue(it.detail, Map::class.java) as Map<String, Any>?,
-                    it.sender == it.owner
                 )
             }
     }
@@ -108,7 +107,7 @@ class TransactionManagerImpl(
         asc: Boolean,
         limit: Int,
         offset: Int
-    ): List<TransactionHistory> {
+    ): List<TransactionWithDetailHistory> {
         val transactions =
             if (asc)
                 transactionRepository.findTransactionsAsc(uuid, coin, category, startTime, endTime, limit, offset)
@@ -118,17 +117,19 @@ class TransactionManagerImpl(
         return transactions.collectList()
             .awaitFirstOrElse { emptyList() }
             .map {
-                TransactionHistory(
+                TransactionWithDetailHistory(
                     it.id,
+                    it.srcWallet,
+                    it.destWallet,
+                    it.senderUuid,
+                    it.receiverUuid,
                     it.currency,
-                    it.wallet,
                     it.amount,
                     it.description,
                     it.ref,
                     it.date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
                     it.category,
                     if (it.detail == null) emptyMap() else objectMapper.readValue(it.detail, Map::class.java) as Map<String, Any>?,
-                    it.sender == it.owner
                 )
             }
     }

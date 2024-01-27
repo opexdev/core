@@ -2,7 +2,7 @@ package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.wallet.app.KafkaEnabledTest
 import co.nilin.opex.wallet.app.dto.TransactionRequest
-import co.nilin.opex.wallet.core.model.TransactionHistory
+import co.nilin.opex.wallet.core.model.TransactionWithDetailHistory
 import co.nilin.opex.wallet.core.spi.TransactionManager
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
@@ -30,8 +30,8 @@ class TransactionControllerIT : KafkaEnabledTest() {
     fun whenGetTransactionsForUser_thenReturnsHistory() {
         val uuid = "uuid"
         val t = System.currentTimeMillis()
-        val history = TransactionHistory(
-            1L, "c", "w", BigDecimal.ONE, "desc", "ref", System.currentTimeMillis(), "cat", mapOf(Pair("key1", "val1")), true
+        val history = TransactionWithDetailHistory(
+            1L, "sw", "dw", "su", "du", "c", BigDecimal.ONE, "desc", "ref", System.currentTimeMillis(), "cat", mapOf(Pair("key1", "val1"))
         )
         runBlocking {
             Mockito.`when`(
@@ -43,7 +43,7 @@ class TransactionControllerIT : KafkaEnabledTest() {
                 .bodyValue(TransactionRequest("c", null, t, t, 1, 1, true))
                 .exchange()
                 .expectStatus().isOk
-                .expectBodyList(TransactionHistory::class.java)
+                .expectBodyList(TransactionWithDetailHistory::class.java)
                 .contains(history)
         }
 

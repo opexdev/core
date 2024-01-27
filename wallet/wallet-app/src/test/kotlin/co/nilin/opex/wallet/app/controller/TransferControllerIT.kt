@@ -4,7 +4,7 @@ import co.nilin.opex.wallet.app.KafkaEnabledTest
 import co.nilin.opex.wallet.app.dto.TransactionRequest
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.Amount
-import co.nilin.opex.wallet.core.model.TransactionHistory
+import co.nilin.opex.wallet.core.model.TransactionWithDetailHistory
 import co.nilin.opex.wallet.core.spi.CurrencyService
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
@@ -49,11 +49,11 @@ class TransferControllerIT : KafkaEnabledTest() {
         runBlocking {
             val t = System.currentTimeMillis()
             val sender = walletOwnerManager.createWalletOwner(UUID.randomUUID().toString(), "sender", "")
-            val receiver = UUID.randomUUID().toString()
+            val receiver = sender.uuid
             val srcCurrency = currencyService.getCurrency("ETH")!!
             walletManager.createWallet(sender, Amount(srcCurrency, BigDecimal.valueOf(100)), srcCurrency, "main")
 
-            val transfer = webClient.post().uri("/v2/transfer/1_ETH/from/${sender.uuid}_main/to/${receiver}_main").accept(MediaType.APPLICATION_JSON)
+            val transfer = webClient.post().uri("/v2/transfer/1_ETH/from/${sender.uuid}_main/to/${receiver}_exchange").accept(MediaType.APPLICATION_JSON)
                 .bodyValue(TransferController.TransferBody("desc", "ref", "NORMAL", mapOf(Pair("key", "value"))))
                 .exchange()
                 .expectStatus().isOk
@@ -62,20 +62,24 @@ class TransferControllerIT : KafkaEnabledTest() {
             Assertions.assertEquals(BigDecimal.ONE, transfer.amount.amount)
             Assertions.assertEquals("ETH", transfer.amount.currency.symbol)
             val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(
-                walletOwnerManager.findWalletOwner(receiver)!!, "main", srcCurrency
+                walletOwnerManager.findWalletOwner(receiver)!!, "exchange", srcCurrency
             )
             Assertions.assertEquals(BigDecimal.ONE, receiverWallet!!.balance.amount)
             val txList = webClient.post().uri("/transaction/$receiver").accept(MediaType.APPLICATION_JSON)
                 .bodyValue(TransactionRequest("ETH", null, t, System.currentTimeMillis(), 1, 0, true))
                 .exchange()
                 .expectStatus().isOk
-                .expectBodyList(TransactionHistory::class.java)
+                .expectBodyList(TransactionWithDetailHistory::class.java)
                 .returnResult().responseBody
             Assertions.assertEquals(1, txList!!.size)
             with(txList[0]) {
                 Assertions.assertEquals("NORMAL", this.category)
                 Assertions.assertEquals(mapOf(Pair("key", "value")), this.additionalData)
                 Assertions.assertEquals("ETH", this.currency)
+                Assertions.assertEquals("main", this.srcWallet)
+                Assertions.assertEquals("exchange", this.destWallet)
+                Assertions.assertEquals(sender.uuid, this.senderUuid)
+                Assertions.assertEquals(receiverUuid, this.receiverUuid)
             }
         }
     }
