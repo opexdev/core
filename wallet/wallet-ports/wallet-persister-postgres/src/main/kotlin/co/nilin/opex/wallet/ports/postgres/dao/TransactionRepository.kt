@@ -168,20 +168,50 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
     ): Flux<DepositWithdrawTransaction>
 
     @Query(
+//        """
+//        select distinct t.id, w.currency, w.wallet_type as wallet, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
+//        , t.transfer_category as category, t.transfer_detail_json as detail,  t.source_wallet as sender, t.dest_wallet as receiver, w.id as owner
+//        from wallet as w
+//        inner join wallet_owner as wo on (w.owner = wo.id)
+//        inner join transaction as t on w.id in (t.source_wallet, t.dest_wallet)
+//        where wo.uuid = :uuid
+//        and t.transaction_date > :startTime
+//        and t.transaction_date <= :endTime
+//        and (:category is null or t.transfer_category = :category)
+//        and (:currency is null or w.currency = :currency)
+//        order by date asc
+//        limit :limit
+//        offset :offset
+//        """
+
+
         """
-        select distinct t.id, w.currency, w.wallet_type as wallet, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
-        , t.transfer_category as category, t.transfer_detail_json as detail,  t.source_wallet as sender, t.dest_wallet as receiver, w.id as owner
-        from wallet as w
-        inner join wallet_owner as wo on (w.owner = wo.id)
-        inner join transaction as t on w.id in (t.source_wallet, t.dest_wallet)
-        where wo.uuid = :uuid
-        and t.transaction_date > :startTime 
-        and t.transaction_date <= :endTime
-        and (:category is null or t.transfer_category = :category) 
-        and (:currency is null or w.currency = :currency) 
-        order by date asc
-        limit :limit
-        offset :offset 
+            select distinct t.id, w.currency, w.wallet_type as wallet, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date 
+            , t.transfer_category as category, t.transfer_detail_json as detail, t.source_wallet as sender, t.dest_wallet as receiver, w.id as owner
+            from wallet as w left join wallet_owner as wo on (w.owner = wo.id)
+            inner join transaction as t on w.id = t.source_wallet
+            where wo.uuid = :uuid 
+            and t.transaction_date > :startTime 
+            and t.transaction_date <= :endTime 
+            and (:category is null or t.transfer_category = :category) 
+            and (:currency is null or w.currency = :currency) 
+            
+            union 
+            
+            select distinct t.id, w.currency, w.wallet_type as wallet, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date , 
+            t.transfer_category as category, t.transfer_detail_json as detail, t.source_wallet as sender, t.dest_wallet as receiver, w.id as owner 
+            from wallet as w left join wallet_owner as wo on (w.owner = wo.id) 
+            inner join transaction as t on w.id = t.dest_wallet
+            where wo.uuid = :uuid
+            and t.transaction_date > :startTime 
+            and t.transaction_date <= :endTime 
+            and (:category is null or t.transfer_category = :category) 
+            and (:currency is null or w.currency = :currency) 
+            
+            order by date asc 
+            limit :limit
+            offset :offset ;
+            
         """
     )
     fun findTransactionsAsc(
@@ -195,20 +225,48 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
     ): Flux<DepositWithdrawTransaction>
 
     @Query(
-        """
-        select distinct t.id, w.currency, w.wallet_type as wallet, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
-        , t.transfer_category as category, t.transfer_detail_json as detail,  t.source_wallet as sender, t.dest_wallet as receiver, w.id as owner
-        from wallet as w
-        inner join wallet_owner as wo on (w.owner = wo.id)
-        inner join transaction as t on w.id in (t.source_wallet, t.dest_wallet)
-        where wo.uuid = :uuid
-        and t.transaction_date > :startTime 
-        and t.transaction_date <= :endTime
-        and (:category is null or t.transfer_category = :category) 
-        and (:currency is null or w.currency = :currency) 
-        order by date desc
-        limit :limit
-        offset :offset     
+//        """
+//        select distinct t.id, w.currency, w.wallet_type as wallet, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
+//        , t.transfer_category as category, t.transfer_detail_json as detail,  t.source_wallet as sender, t.dest_wallet as receiver, w.id as owner
+//        from wallet as w
+//        inner join wallet_owner as wo on (w.owner = wo.id)
+//        inner join transaction as t on w.id in (t.source_wallet, t.dest_wallet)
+//        where wo.uuid = :uuid
+//        and t.transaction_date > :startTime
+//        and t.transaction_date <= :endTime
+//        and (:category is null or t.transfer_category = :category)
+//        and (:currency is null or w.currency = :currency)
+//        order by date desc
+//        limit :limit
+//        offset :offset
+//        """
+            """
+            select distinct t.id, w.currency, w.wallet_type as wallet, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date 
+            , t.transfer_category as category, t.transfer_detail_json as detail, t.source_wallet as sender, t.dest_wallet as receiver, w.id as owner
+            from wallet as w left join wallet_owner as wo on (w.owner = wo.id)
+            inner join transaction as t on w.id = t.source_wallet
+            where wo.uuid = :uuid 
+            and t.transaction_date > :startTime 
+            and t.transaction_date <= :endTime 
+            and (:category is null or t.transfer_category = :category) 
+            and (:currency is null or w.currency = :currency) 
+            
+            union 
+            
+            select distinct t.id, w.currency, w.wallet_type as wallet, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date , 
+            t.transfer_category as category, t.transfer_detail_json as detail, t.source_wallet as sender, t.dest_wallet as receiver, w.id as owner 
+            from wallet as w left join wallet_owner as wo on (w.owner = wo.id) 
+            inner join transaction as t on w.id = t.dest_wallet
+            where wo.uuid = :uuid
+            and t.transaction_date > :startTime 
+            and t.transaction_date <= :endTime 
+            and (:category is null or t.transfer_category = :category) 
+            and (:currency is null or w.currency = :currency) 
+            
+            order by date desc 
+            limit :limit
+            offset :offset ;
+            
         """
     )
     fun findTransactionsDesc(
