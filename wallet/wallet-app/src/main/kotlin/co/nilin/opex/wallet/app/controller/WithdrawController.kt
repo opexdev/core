@@ -80,7 +80,7 @@ class WithdrawController(private val withdrawService: WithdrawService) {
         @RequestParam("fee") fee: BigDecimal,
         @RequestParam("destSymbol") destSymbol: String,
         @RequestParam("destAddress") destAddress: String,
-        @RequestParam("destNetwork") destNetwork: String,
+        @RequestParam("destNetwork") destNetwork: String?,
         @RequestParam("destNote", required = false) destNote: String?,
     ): WithdrawResult {
         return withdrawService.requestWithdraw(
