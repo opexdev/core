@@ -6,6 +6,7 @@ import co.nilin.opex.market.ports.postgres.dao.OrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderStatusRepository
 import co.nilin.opex.market.ports.postgres.dao.TradeRepository
 import co.nilin.opex.market.ports.postgres.model.TradeTickerData
+import co.nilin.opex.market.ports.postgres.util.CacheWrapper
 import co.nilin.opex.market.ports.postgres.util.asOrderDTO
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.singleOrNull
@@ -14,6 +15,7 @@ import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import org.springframework.cache.CacheManager
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
 import java.time.Instant
@@ -26,22 +28,29 @@ import java.util.*
 class MarketQueryHandlerImpl(
     private val orderRepository: OrderRepository,
     private val tradeRepository: TradeRepository,
-    private val orderStatusRepository: OrderStatusRepository
+    private val orderStatusRepository: OrderStatusRepository,
+    private val cacheManager: CacheManager
 ) : MarketQueryHandler {
+
+    private val cacheWrapper = CacheWrapper(cacheManager, "marketQuery")
 
     //TODO merge order and status fetching in query
 
     override suspend fun getTradeTickerData(startFrom: LocalDateTime): List<PriceChange> {
-        return tradeRepository.tradeTicker(startFrom)
-            .collectList()
-            .awaitFirstOrElse { emptyList() }
-            .map { it.asPriceChangeResponse(Date().time, startFrom.toInstant(ZoneOffset.UTC).toEpochMilli()) }
+        return cacheWrapper.getTimeBasedOrElse("tradeTickerData", LocalDateTime.now().plusMinutes(1)) {
+            tradeRepository.tradeTicker(startFrom)
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
+                .map { it.asPriceChangeResponse(Date().time, startFrom.toInstant(ZoneOffset.UTC).toEpochMilli()) }
+        }
     }
 
     override suspend fun getTradeTickerDateBySymbol(symbol: String, startFrom: LocalDateTime): PriceChange? {
-        return tradeRepository.tradeTickerBySymbol(symbol, startFrom)
-            .awaitFirstOrNull()
-            ?.asPriceChangeResponse(Date().time, startFrom.toInstant(ZoneOffset.UTC).toEpochMilli())
+        return cacheWrapper.getTimeBasedOrElse("tradeTickerData:$symbol", LocalDateTime.now().plusMinutes(1)) {
+            tradeRepository.tradeTickerBySymbol(symbol, startFrom)
+                .awaitFirstOrNull()
+                ?.asPriceChangeResponse(Date().time, startFrom.toInstant(ZoneOffset.UTC).toEpochMilli())
+        }
     }
 
     override suspend fun openBidOrders(symbol: String, limit: Int): List<OrderBook> {
