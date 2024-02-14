@@ -130,7 +130,7 @@ class TransactionManagerImpl(
                             it.date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
                             it.category,
                             if (it.detail == null) emptyMap() else objectMapper.readValue(it.detail, Map::class.java) as Map<String, Any>?,
-                            it.senderUuid == uuid
+                            (it.senderUuid == uuid ) && (it.senderUuid !=it.receiverUuid)
                     )
                 }
     }
