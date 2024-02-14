@@ -36,8 +36,10 @@ class MarketQueryHandlerImpl(
 
     //TODO merge order and status fetching in query
 
+    //TODO need cache
     override suspend fun getTradeTickerData(startFrom: LocalDateTime): List<PriceChange> {
-        return cacheWrapper.getTimeBasedOrElse("tradeTickerData", LocalDateTime.now().plusMinutes(1)) {
+        val timeId = timeframeCacheId(startFrom)
+        return cacheWrapper.getTimeBasedOrElse("tradeTickerData:$timeId", LocalDateTime.now().plusMinutes(2)) {
             tradeRepository.tradeTicker(startFrom)
                 .collectList()
                 .awaitFirstOrElse { emptyList() }
@@ -45,8 +47,10 @@ class MarketQueryHandlerImpl(
         }
     }
 
+    //TODO need cache
     override suspend fun getTradeTickerDateBySymbol(symbol: String, startFrom: LocalDateTime): PriceChange? {
-        return cacheWrapper.getTimeBasedOrElse("tradeTickerData:$symbol", LocalDateTime.now().plusMinutes(1)) {
+        val cacheId = "tradeTickerData:$symbol:${timeframeCacheId(startFrom)}"
+        return cacheWrapper.getTimeBasedOrElse(cacheId, LocalDateTime.now().plusMinutes(2)) {
             tradeRepository.tradeTickerBySymbol(symbol, startFrom)
                 .awaitFirstOrNull()
                 ?.asPriceChangeResponse(Date().time, startFrom.toInstant(ZoneOffset.UTC).toEpochMilli())
@@ -75,12 +79,14 @@ class MarketQueryHandlerImpl(
             .map { OrderBook(it.price, it.quantity) }
     }
 
+    //TODO need cache
     override suspend fun lastOrder(symbol: String): Order? {
         val order = orderRepository.findLastOrderBySymbol(symbol).awaitFirstOrNull() ?: return null
         val status = orderStatusRepository.findMostRecentByOUID(order.ouid).awaitFirstOrNull()
         return order.asOrderDTO(status)
     }
 
+    //TODO need better query
     override suspend fun recentTrades(symbol: String, limit: Int): List<MarketTrade> {
         return tradeRepository.findBySymbolSortDescendingByCreateDate(symbol, limit)
             .map {
@@ -105,6 +111,7 @@ class MarketQueryHandlerImpl(
             }.toList()
     }
 
+    //TODO need cache
     override suspend fun lastPrice(symbol: String?): List<PriceTicker> {
         val list = if (symbol.isNullOrEmpty())
             tradeRepository.findAllGroupBySymbol()
@@ -115,6 +122,7 @@ class MarketQueryHandlerImpl(
             .map { PriceTicker(it.symbol, it.matchedPrice.toString()) }
     }
 
+    //TODO need cache
     override suspend fun getBestPriceForSymbols(symbols: List<String>): List<BestPrice> {
         return tradeRepository.bestAskAndBidPrice(symbols)
             .collectList()
@@ -164,10 +172,12 @@ class MarketQueryHandlerImpl(
             }
     }
 
+    //TODO need cache
     override suspend fun numberOfActiveUsers(interval: LocalDateTime): Long {
         return orderRepository.countUsersWhoMadeOrder(interval).singleOrNull() ?: 0L
     }
 
+    //TODO need cache
     override suspend fun numberOfTrades(interval: LocalDateTime, pair: String?): Long {
         return if (pair != null)
             tradeRepository.countBySymbolNewerThan(interval, pair).singleOrNull() ?: 0
@@ -175,6 +185,7 @@ class MarketQueryHandlerImpl(
             tradeRepository.countNewerThan(interval).singleOrNull() ?: 0
     }
 
+    //TODO need cache
     override suspend fun numberOfOrders(interval: LocalDateTime, pair: String?): Long {
         return if (pair != null)
             orderRepository.countBySymbolNewerThan(interval, pair).singleOrNull() ?: 0
@@ -182,24 +193,38 @@ class MarketQueryHandlerImpl(
             orderRepository.countNewerThan(interval).singleOrNull() ?: 0
     }
 
+    //TODO need cache
     override suspend fun mostIncreasePrice(interval: LocalDateTime, limit: Int): List<PriceStat> {
         return tradeRepository.findByMostIncreasedPrice(interval, limit)
             .collectList()
             .awaitFirstOrElse { emptyList() }
     }
 
+    //TODO need cache
     override suspend fun mostDecreasePrice(interval: LocalDateTime, limit: Int): List<PriceStat> {
         return tradeRepository.findByMostDecreasedPrice(interval, limit)
             .collectList()
             .awaitFirstOrElse { emptyList() }
     }
 
+    //TODO need cache
     override suspend fun mostVolume(interval: LocalDateTime): TradeVolumeStat? {
         return tradeRepository.findByMostVolume(interval).awaitSingleOrNull()
     }
 
+    //TODO need cache
     override suspend fun mostTrades(interval: LocalDateTime): TradeVolumeStat? {
         return tradeRepository.findByMostTrades(interval).awaitSingleOrNull()
+    }
+
+    private fun timeframeCacheId(time: LocalDateTime): String {
+        val now = LocalDateTime.now()
+        return when {
+            time.isBefore(now.plusDays(1)) -> "24h"
+            time.isBefore(now.plusDays(7)) -> "7d"
+            time.isBefore(now.plusDays(30)) -> "1M"
+            else -> "noTime"
+        }
     }
 
     private fun TradeTickerData.asPriceChangeResponse(openTime: Long, closeTime: Long) = PriceChange(
