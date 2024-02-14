@@ -307,7 +307,6 @@ services:
       - WHITELIST_REGISTER_ENABLED=$WHITELIST_REGISTER_ENABLED
       - WHITELIST_LOGIN_ENABLED=$WHITELIST_LOGIN_ENABLED
     depends_on:
-      - captcha
       - kafka-1
       - kafka-2
       - kafka-3
@@ -421,7 +420,7 @@ services:
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
       - PREFERENCES=$PREFERENCES
-      - ADDRESS_EXP_TIME=null
+      - ADDRESS_EXP_TIME=100
     configs:
       - preferences.yml
     depends_on:

@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.ports.postgres.dao
 
 import co.nilin.opex.wallet.ports.postgres.dto.DepositWithdrawTransaction
 import co.nilin.opex.wallet.ports.postgres.dto.TransactionStat
+import co.nilin.opex.wallet.ports.postgres.dto.TransactionWithDetail
 import co.nilin.opex.wallet.ports.postgres.model.TransactionModel
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.query.Param
@@ -84,7 +85,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
     @Query(
         """
         select distinct t.id, w.currency, w.wallet_type as wallet, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
-        , t.transfer_category as category, t.transfer_detail_json as detail,  t.source_wallet as sender, t.dest_wallet as receiver, w.id as owner
+        , t.transfer_category as category, t.transfer_detail_json as detail
         from wallet as w
         inner join wallet_owner as wo on (w.owner = wo.id)
         inner join transaction as t on (w.id = t.dest_wallet)
@@ -105,7 +106,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
     @Query(
         """
         select distinct t.id, w.currency, w.wallet_type as wallet, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
-        , t.transfer_category as category, t.transfer_detail_json as detail,  t.source_wallet as sender, t.dest_wallet as receiver, w.id as owner
+        , t.transfer_category as category, t.transfer_detail_json as detail
         from wallet as w
         inner join wallet_owner as wo on (w.owner = wo.id)
         inner join transaction as t on (w.id = t.source_wallet)
@@ -125,7 +126,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
     @Query(
         """
         select distinct t.id, w.currency, w.wallet_type as wallet, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
-               , t.transfer_category as category, t.transfer_detail_json as detail,  t.source_wallet as sender, t.dest_wallet as receiver, w.id as owner
+               , t.transfer_category as category, t.transfer_detail_json as detail
         from wallet as w
         inner join wallet_owner as wo on (w.owner = wo.id)
         inner join transaction as t on (w.id = t.dest_wallet)
@@ -148,7 +149,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
     @Query(
         """
         select distinct t.id, w.currency, w.wallet_type as wallet, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
-        , t.transfer_category as category, t.transfer_detail_json as detail, t.source_wallet as sender, t.dest_wallet as receiver, w.id as owner
+        , t.transfer_category as category, t.transfer_detail_json as detail
         from wallet as w
         inner join wallet_owner as wo on (w.owner = wo.id)
         inner join transaction as t on (w.id = t.source_wallet)
@@ -222,9 +223,10 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
         @Param("endTime") endTime: LocalDateTime,
         @Param("limit") limit: Int,
         @Param("offset") offset: Int,
-    ): Flux<DepositWithdrawTransaction>
+    ): Flux<TransactionWithDetail>
 
     @Query(
+
 //        """
 //        select distinct t.id, w.currency, w.wallet_type as wallet, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
 //        , t.transfer_category as category, t.transfer_detail_json as detail,  t.source_wallet as sender, t.dest_wallet as receiver, w.id as owner
@@ -277,6 +279,6 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
         @Param("endTime") endTime: LocalDateTime,
         @Param("limit") limit: Int,
         @Param("offset") offset: Int,
-    ): Flux<DepositWithdrawTransaction>
+    ): Flux<TransactionWithDetail>
 
 }

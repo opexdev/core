@@ -87,15 +87,4 @@ class AdminController(private val withdrawService: WithdrawService, private val 
         return withdrawService.acceptWithdraw(WithdrawAcceptCommand(withdrawId, destTransactionRef, destNote, fee))
     }
 
-    @GetMapping("/wallets")
-    suspend fun walletData(
-        @RequestParam(required = false) uuid: String?,
-        @RequestParam(required = false) walletType: WalletType?,
-        @RequestParam(required = false) currency: String?,
-        @RequestParam limit: Int,
-        @RequestParam offset: Int
-    ): List<WalletData> {
-        return walletDataManager.findWalletDataByCriteria(uuid, walletType, currency, limit, offset)
-    }
-
 }

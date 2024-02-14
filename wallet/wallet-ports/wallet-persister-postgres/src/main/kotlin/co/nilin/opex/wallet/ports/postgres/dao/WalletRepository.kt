@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.ports.postgres.dao
 
 import co.nilin.opex.wallet.core.inout.WalletData
+import co.nilin.opex.wallet.core.inout.WalletTotal
 import co.nilin.opex.wallet.core.inout.WalletType
 import co.nilin.opex.wallet.ports.postgres.model.WalletModel
 import org.springframework.data.r2dbc.repository.Modifying
@@ -62,4 +63,46 @@ interface WalletRepository : ReactiveCrudRepository<WalletModel, Long> {
         limit: Int,
         offset: Int
     ): Flux<WalletData>
+
+
+    @Query(
+        """
+        select wo.uuid, wo.title, w.wallet_type, w.currency, w.balance from wallet_owner wo
+        join wallet w on w.owner = wo.id
+        where (:walletType is NULL or wallet_type = :walletType)
+            and (:currency is null or w.currency = :currency)
+            and (:uuid is null or wo.uuid = :uuid)
+            and uuid != '1'
+        limit :limit offset :offset
+    """
+    )
+    fun findWalletDataByCriteriaExcludeSystem(
+        uuid: String?,
+        walletType: String?,
+        currency: String?,
+        limit: Int,
+        offset: Int
+    ): Flux<WalletData>
+
+    @Query(
+        """
+        select w.currency, sum(balance) as balance from wallet w
+        join wallet_owner wo on w.owner = wo.id
+        where wo.uuid = '1' and wallet_type in ('main', 'exchange')
+        group by w.currency
+    """
+    )
+    fun findSystemWalletsTotal(): Flux<WalletTotal>
+
+    @Query(
+        """
+        select currency, sum(balance) as balance from wallet w
+        join wallet_owner wo on w.owner = wo.id
+        where wallet_type in ('main', 'exchange')
+            and wo.uuid != '1'
+            and w.id not in (select wallet_id from wallet_stat_exclusion) 
+        group by currency
+    """
+    )
+    fun findUserWalletsTotal(): Flux<WalletTotal>
 }

@@ -38,9 +38,9 @@ class AssignedAddressHandlerImpl(
             AddressType(aam.id!!, aam.type, aam.addressRegex, aam.memoRegex)
         }.collectMap { it.id }.awaitFirst()
         return assignedAddressRepository.findByUuidAndAddressTypeAndStatus(
-                user, addressTypes.map(AddressType::id), AddressStatus.Reserved
+                user, addressTypes.map(AddressType::id), AddressStatus.Assigned
         ).map { model ->
-            model.toDto(addressTypeMap)
+            model.toDto(addressTypeMap).apply { id = model.id }
         }.filter { it.expTime?.let { it > LocalDateTime.now() } ?: true }.toList()
     }
 
@@ -49,14 +49,15 @@ class AssignedAddressHandlerImpl(
         logger.info("going to save new address .............")
         assignedAddressRepository.save(
                 AssignedAddressModel(
-                        null,
+                        assignedAddress.id ?: null,
                         assignedAddress.uuid,
                         assignedAddress.address,
                         assignedAddress.memo,
                         assignedAddress.type.id,
-                        lifeTime?.let { (LocalDateTime.now().plusSeconds(lifeTime!!)) }
-                                ?: null,
-                        LocalDateTime.now(),
+                        assignedAddress.id?.let { assignedAddress.expTime }
+                                ?: (lifeTime?.let { (LocalDateTime.now().plusSeconds(lifeTime!!)) }
+                                        ?: null),
+                        assignedAddress.id?.let { assignedAddress.assignedDate } ?: LocalDateTime.now(),
                         null,
                         assignedAddress.status
                 )
@@ -83,7 +84,7 @@ class AssignedAddressHandlerImpl(
     }
 
     override suspend fun findUuid(address: String, memo: String?): String? {
-        return assignedAddressRepository.findByAddressAndMemo(address, memo).awaitFirstOrNull()?.uuid
+        return assignedAddressRepository.findByAddressAndMemoAndStatus(address, memo, AddressStatus.Assigned).awaitFirstOrNull()?.uuid
     }
 
     override suspend fun fetchExpiredAssignedAddresses(): List<AssignedAddress>? {
@@ -99,7 +100,6 @@ class AssignedAddressHandlerImpl(
         )?.filter {
             it.expTime != null
         }?.map {
-            logger.info(it.address)
             it.toDto(addressTypeMap).apply { id = it.id }
         }?.toList()
     }

@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.wallet.core.inout.WalletData
+import co.nilin.opex.wallet.core.inout.WalletTotal
 import co.nilin.opex.wallet.core.inout.WalletType
 import co.nilin.opex.wallet.core.spi.WalletDataManager
 import co.nilin.opex.wallet.ports.postgres.dao.WalletRepository
@@ -14,15 +15,31 @@ class WalletDataManagerImpl(private val walletRepository: WalletRepository) : Wa
         uuid: String?,
         walletType: WalletType?,
         currency: String?,
+        excludeSystem: Boolean,
         limit: Int,
         offset: Int
     ): List<WalletData> {
-        return walletRepository.findWalletDataByCriteria(
+        return (if (!excludeSystem) walletRepository.findWalletDataByCriteria(
             uuid,
             walletType?.name?.lowercase(),
             currency,
             limit,
             offset
-        ).collectList().awaitFirstOrElse { emptyList() }
+        ) else
+            walletRepository.findWalletDataByCriteriaExcludeSystem(
+                uuid,
+                walletType?.name?.lowercase(),
+                currency,
+                limit,
+                offset
+            )).collectList().awaitFirstOrElse { emptyList() }
+    }
+
+    override suspend fun findSystemWalletsTotal(): List<WalletTotal> {
+        return walletRepository.findSystemWalletsTotal().collectList().awaitFirstOrElse { emptyList() }
+    }
+
+    override suspend fun findUserWalletsTotal(): List<WalletTotal> {
+        return walletRepository.findUserWalletsTotal().collectList().awaitFirstOrElse { emptyList() }
     }
 }
