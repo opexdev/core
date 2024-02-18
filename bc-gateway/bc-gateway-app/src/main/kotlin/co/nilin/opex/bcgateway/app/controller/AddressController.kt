@@ -17,6 +17,10 @@ import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
 import java.io.File
 import java.nio.charset.StandardCharsets
+import java.time.ZoneId
+import java.util.Collections
+import java.util.stream.Collector
+import java.util.stream.Collectors
 
 @RestController
 @RequestMapping("/v1/address")
@@ -38,7 +42,14 @@ class AddressController(
                 Currency(assignAddressRequest.currency, assignAddressRequest.currency),
                 assignAddressRequest.chain
         )
-        return AssignAddressResponse(assignedAddress)
+
+        return AssignAddressResponse(assignedAddress.stream().map { it ->
+            it.apply {
+                this.expTime = this.expTime?.atZone(ZoneId.systemDefault())?.withZoneSameInstant(ZoneId.of("Asia/Tehran"))?.toLocalDateTime()
+                this.assignedDate = this.assignedDate?.atZone(ZoneId.systemDefault())?.toLocalDateTime()
+
+            }
+        }.collect(Collectors.toList()))
     }
 
     /**
