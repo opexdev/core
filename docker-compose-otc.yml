@@ -86,7 +86,7 @@ services:
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
       - PREFERENCES=$PREFERENCES
-      - ADDRESS_EXP_TIME=7600
+      - ADDRESS_EXP_TIME=120
       - SPRING_PROFILES_ACTIVE=otc
     dns:
       - "8.8.8.8"
