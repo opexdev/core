@@ -75,6 +75,8 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+    networks:
+      - otc-network
   bc-gateway:
     image: ghcr.io/opexdev/bc-gateway
     environment:
