@@ -9,7 +9,7 @@ import co.nilin.opex.market.ports.postgres.dao.OpenOrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderStatusRepository
 import co.nilin.opex.market.ports.postgres.model.OrderModel
-import co.nilin.opex.market.ports.postgres.model.OrderStatusModel
+import co.nilin.opex.market.ports.postgres.util.CacheHelper
 import co.nilin.opex.market.ports.postgres.util.asOrderDTO
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingle
@@ -24,35 +24,35 @@ class OrderPersisterImpl(
     private val orderRepository: OrderRepository,
     private val orderStatusRepository: OrderStatusRepository,
     private val openOrderRepository: OpenOrderRepository,
+    private val cacheHelper: CacheHelper
 ) : OrderPersister {
 
     private val logger = LoggerFactory.getLogger(OrderPersisterImpl::class.java)
 
     @Transactional
     override suspend fun save(order: RichOrder) {
-        orderRepository.save(
-            OrderModel(
-                null,
-                order.ouid,
-                order.uuid,
-                null,
-                order.pair,
-                order.orderId,
-                order.makerFee,
-                order.takerFee,
-                order.leftSideFraction,
-                order.rightSideFraction,
-                order.userLevel,
-                order.direction,
-                order.constraint,
-                order.type,
-                order.price,
-                order.quantity,
-                order.quoteQuantity,
-                LocalDateTime.now(),
-                LocalDateTime.now()
-            )
-        ).awaitFirstOrNull()
+        val orderModel = OrderModel(
+            null,
+            order.ouid,
+            order.uuid,
+            null,
+            order.pair,
+            order.orderId,
+            order.makerFee,
+            order.takerFee,
+            order.leftSideFraction,
+            order.rightSideFraction,
+            order.userLevel,
+            order.direction,
+            order.constraint,
+            order.type,
+            order.price,
+            order.quantity,
+            order.quoteQuantity,
+            LocalDateTime.now(),
+            LocalDateTime.now()
+        )
+        orderRepository.save(orderModel).awaitFirstOrNull()
         logger.info("order ${order.ouid} saved")
 
         orderStatusRepository.insert(
@@ -73,6 +73,8 @@ class OrderPersisterImpl(
             openOrderRepository.delete(order.ouid).awaitSingleOrNull()
             logger.info("Order ${order.ouid} deleted from open orders")
         }
+
+        cacheHelper.put("lastOrder", orderModel.asOrderDTO(lastStatus))
     }
 
     @Transactional

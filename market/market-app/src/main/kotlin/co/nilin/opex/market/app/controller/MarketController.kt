@@ -1,5 +1,6 @@
 package co.nilin.opex.market.app.controller
 
+import co.nilin.opex.common.utils.Interval
 import co.nilin.opex.market.app.data.CountResponse
 import co.nilin.opex.market.app.utils.asLocalDateTime
 import co.nilin.opex.market.core.inout.*
@@ -11,16 +12,16 @@ import org.springframework.web.bind.annotation.*
 class MarketController(private val marketQueryHandler: MarketQueryHandler) {
 
     @GetMapping("/ticker")
-    suspend fun priceChangeSince(@RequestParam since: Long): List<PriceChange> {
-        return marketQueryHandler.getTradeTickerData(since.asLocalDateTime())
+    suspend fun priceChangeSince(@RequestParam interval: Interval): List<PriceChange> {
+        return marketQueryHandler.getTradeTickerData(interval)
     }
 
     @GetMapping("/{symbol}/ticker")
     suspend fun priceChangeForSymbolSince(
         @PathVariable symbol: String,
-        @RequestParam since: Long
+        @RequestParam interval: Interval
     ): PriceChange? {
-        return marketQueryHandler.getTradeTickerDateBySymbol(symbol, since.asLocalDateTime())
+        return marketQueryHandler.getTradeTickerDateBySymbol(symbol, interval)
     }
 
     @GetMapping("/{symbol}/order-book")
@@ -59,26 +60,26 @@ class MarketController(private val marketQueryHandler: MarketQueryHandler) {
     }
 
     @GetMapping("/active-users")
-    suspend fun getNumberOfActiveUsers(@RequestParam interval: Long): CountResponse {
-        val active = marketQueryHandler.numberOfActiveUsers(interval.asLocalDateTime())
+    suspend fun getNumberOfActiveUsers(@RequestParam interval: Interval): CountResponse {
+        val active = marketQueryHandler.numberOfActiveUsers(interval)
         return CountResponse(active)
     }
 
     @GetMapping("/orders-count")
     suspend fun getNumberOfOrders(
-        @RequestParam interval: Long,
+        @RequestParam interval: Interval,
         @RequestParam(required = false) symbol: String?
     ): CountResponse {
-        val count = marketQueryHandler.numberOfOrders(interval.asLocalDateTime(), symbol)
+        val count = marketQueryHandler.numberOfOrders(interval, symbol)
         return CountResponse(count)
     }
 
     @GetMapping("/trades-count")
     suspend fun getNumberOfTrades(
-        @RequestParam interval: Long,
+        @RequestParam interval: Interval,
         @RequestParam(required = false) symbol: String?
     ): CountResponse {
-        val count = marketQueryHandler.numberOfTrades(interval.asLocalDateTime(), symbol)
+        val count = marketQueryHandler.numberOfTrades(interval, symbol)
         return CountResponse(count)
     }
 

@@ -6,6 +6,7 @@ import co.nilin.opex.market.ports.postgres.dao.OrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderStatusRepository
 import co.nilin.opex.market.ports.postgres.dao.TradeRepository
 import co.nilin.opex.market.ports.postgres.impl.sample.VALID
+import co.nilin.opex.market.ports.postgres.util.CacheHelper
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.flow
@@ -16,10 +17,12 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 class MarketQueryHandlerTest {
-    private val orderRepository: OrderRepository = mockk()
-    private val tradeRepository: TradeRepository = mockk()
-    private val orderStatusRepository: OrderStatusRepository = mockk()
-    private val marketQueryHandler = MarketQueryHandlerImpl(orderRepository, tradeRepository, orderStatusRepository)
+    private val orderRepository = mockk<OrderRepository>()
+    private val tradeRepository = mockk<TradeRepository>()
+    private val orderStatusRepository = mockk<OrderStatusRepository>()
+    private val cacheHelper = mockk<CacheHelper>()
+    private val marketQueryHandler =
+        MarketQueryHandlerImpl(orderRepository, tradeRepository, orderStatusRepository, cacheHelper)
 
     @Test
     fun givenAggregatedOrderPrice_whenOpenASKOrders_thenReturnOrderBookResponseList(): Unit = runBlocking {
@@ -76,10 +79,10 @@ class MarketQueryHandlerTest {
     fun givenOrderAndTradeAndSymbolAlias_whenLastPrice_thenPriceTickerResponse(): Unit = runBlocking {
         every {
             tradeRepository.findAllGroupBySymbol()
-        } returns Flux.just(VALID.TRADE_MODEL)
+        } returns Flux.just(VALID.LAST_PRICE_MODEL)
         every {
             tradeRepository.findBySymbolGroupBySymbol(VALID.ETH_USDT)
-        } returns Flux.just(VALID.TRADE_MODEL)
+        } returns Flux.just(VALID.LAST_PRICE_MODEL)
         every {
             orderRepository.findByOuid(VALID.MAKER_ORDER_MODEL.ouid)
         } returns Mono.just(VALID.MAKER_ORDER_MODEL)
@@ -89,7 +92,8 @@ class MarketQueryHandlerTest {
         assertThat(priceTickerResponse).isNotNull
         assertThat(priceTickerResponse.size).isEqualTo(1)
         assertThat(priceTickerResponse.first().symbol).isEqualTo("ETH_USDT")
-        assertThat(priceTickerResponse.first().price).isEqualTo(VALID.TRADE_MODEL.let { it.makerPrice.min(it.takerPrice) }.toString())
+        assertThat(priceTickerResponse.first().price).isEqualTo(VALID.TRADE_MODEL.let { it.makerPrice.min(it.takerPrice) }
+            .toString())
     }
 
     @Test

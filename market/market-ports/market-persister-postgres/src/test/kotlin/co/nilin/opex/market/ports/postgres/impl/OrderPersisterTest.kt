@@ -4,6 +4,7 @@ import co.nilin.opex.market.ports.postgres.dao.OpenOrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderStatusRepository
 import co.nilin.opex.market.ports.postgres.impl.sample.VALID
+import co.nilin.opex.market.ports.postgres.util.CacheHelper
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
@@ -12,10 +13,12 @@ import org.junit.jupiter.api.Test
 import reactor.core.publisher.Mono
 
 class OrderPersisterTest {
-    private val orderRepository: OrderRepository = mockk()
-    private val orderStatusRepository: OrderStatusRepository = mockk()
-    private val openOrderRepository: OpenOrderRepository = mockk()
-    private val orderPersister = OrderPersisterImpl(orderRepository, orderStatusRepository, openOrderRepository)
+    private val orderRepository = mockk<OrderRepository>()
+    private val orderStatusRepository = mockk<OrderStatusRepository>()
+    private val openOrderRepository = mockk<OpenOrderRepository>()
+    private val cacheHelper = mockk<CacheHelper>()
+    private val orderPersister =
+        OrderPersisterImpl(orderRepository, orderStatusRepository, openOrderRepository, cacheHelper)
 
     @Test
     fun givenOrderRepo_whenSaveRichOrder_thenSuccess(): Unit = runBlocking {
