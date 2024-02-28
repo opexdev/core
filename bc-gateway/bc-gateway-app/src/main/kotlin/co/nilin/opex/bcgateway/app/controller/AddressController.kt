@@ -43,13 +43,14 @@ class AddressController(
                 assignAddressRequest.chain
         )
 
-        return AssignAddressResponse(assignedAddress.stream().map { it ->
-            it.apply {
-                this.expTime = this.expTime?.atZone(ZoneId.systemDefault())?.withZoneSameInstant(ZoneId.of("Asia/Tehran"))?.toLocalDateTime()
-                this.assignedDate = this.assignedDate?.atZone(ZoneId.systemDefault())?.withZoneSameInstant(ZoneId.of("Asia/Tehran"))?.toLocalDateTime()
-                this.revokedDate = this.revokedDate?.atZone(ZoneId.systemDefault())?.withZoneSameInstant(ZoneId.of("Asia/Tehran"))?.toLocalDateTime()
-            }
-        }.collect(Collectors.toList()))
+      return AssignAddressResponse(assignedAddress);
+    //        stream().map { it ->
+//            it.apply {
+//                this.expTime = this.expTime?.atZone(ZoneId.systemDefault())?.withZoneSameInstant(ZoneId.of("Asia/Tehran"))?.toLocalDateTime()
+//                this.assignedDate = this.assignedDate?.atZone(ZoneId.systemDefault())?.withZoneSameInstant(ZoneId.of("Asia/Tehran"))?.toLocalDateTime()
+//                this.revokedDate = this.revokedDate?.atZone(ZoneId.systemDefault())?.withZoneSameInstant(ZoneId.of("Asia/Tehran"))?.toLocalDateTime()
+//            }
+//        }.collect(Collectors.toList()))
     }
 
     /**
