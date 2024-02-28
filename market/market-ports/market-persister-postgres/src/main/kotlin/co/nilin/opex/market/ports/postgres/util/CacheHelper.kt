@@ -4,6 +4,7 @@ import co.nilin.opex.common.utils.DynamicInterval
 import co.nilin.opex.common.utils.LoggerDelegate
 import org.springframework.cache.CacheManager
 import java.time.LocalDateTime
+import java.util.Date
 
 class CacheHelper(private val manager: CacheManager, private val cacheName: String) {
 
@@ -15,7 +16,7 @@ class CacheHelper(private val manager: CacheManager, private val cacheName: Stri
         cache.put(key, value)
     }
 
-    fun putIfAbsent(key: Any, value: Any) {
+    fun putIfAbsent(key: Any, value: Any?) {
         cache.putIfAbsent(key, value)
     }
 
@@ -23,8 +24,8 @@ class CacheHelper(private val manager: CacheManager, private val cacheName: Stri
         val value = cache.get(key) ?: return null
         val item = value.get() ?: return null
 
-        if (item is TimedCacheItem<*>) {
-            if (item.evictionTime.isBefore(LocalDateTime.now())) {
+        if (item is TimedCacheItem) {
+            if (item.evictionTime < Date().time) {
                 cache.evict(key)
                 logger.info("Cache $key evicted")
             }
@@ -45,21 +46,24 @@ class CacheHelper(private val manager: CacheManager, private val cacheName: Stri
         return item
     }
 
-    fun putTimeBased(key: Any, value: Any, evictionTime: LocalDateTime) {
+    fun putTimeBased(key: Any, value: Any?, evictionTime: Long, ignoreNullOrEmpty: Boolean = true) {
         logger.info("Putting time based cache with key $key")
+        // Do not put if item is a Collection and is empty
+        if (value == null || (value is Collection<*> && ignoreNullOrEmpty && value.isEmpty())) return
         val timedCacheItem = TimedCacheItem(value, evictionTime)
         cache.putIfAbsent(key, timedCacheItem)
     }
 
-    fun putTimeBased(key: Any, value: Any, evictIn: DynamicInterval) {
-        putTimeBased(key, value, evictIn.localDateTimeInFuture())
+    fun putTimeBased(key: Any, value: Any, evictIn: DynamicInterval, ignoreNullOrEmpty: Boolean = true) {
+        putTimeBased(key, value, evictIn.timeInFuture(), ignoreNullOrEmpty)
     }
 
     @Suppress("UNCHECKED_CAST")
     suspend fun <T : Any?> getTimeBasedOrElse(
         key: Any,
-        evictionTime: LocalDateTime,
+        evictionTime: Long,
         put: Boolean = true,
+        ignoreNullOrEmpty: Boolean = true,
         action: suspend () -> T
     ): T {
         val value = get(key)
@@ -67,7 +71,7 @@ class CacheHelper(private val manager: CacheManager, private val cacheName: Stri
             return value as T
 
         val item = action()
-        if (put) putTimeBased(key, item!!, evictionTime)
+        if (put) putTimeBased(key, item, evictionTime, ignoreNullOrEmpty)
         return item
     }
 
@@ -75,9 +79,10 @@ class CacheHelper(private val manager: CacheManager, private val cacheName: Stri
         key: Any,
         evictIn: DynamicInterval,
         put: Boolean = true,
+        ignoreNullOrEmpty: Boolean = true,
         action: suspend () -> T
     ): T {
-        return getTimeBasedOrElse(key, evictIn.localDateTimeInFuture(), put, action)
+        return getTimeBasedOrElse(key, evictIn.timeInFuture(), put, ignoreNullOrEmpty, action)
     }
 
 }
