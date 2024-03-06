@@ -23,9 +23,13 @@ jobs:
           java-version: ${{ matrix.java }}
       #          cache: maven
       - name: Build
-        run:  mvn -pl wallet,bc-gateway,common -amd  -B -T 1C clean install -Potc
+        run:  |
+          mvn -pl common -am  -B -T 1C clean install -Potc
+          mvn -pl wallet,bc-gateway -amd  -B -T 1C clean install -Potc
       - name: Run Tests
-        run: mvn -pl wallet,bc-gateway,common -amd  -B -T 1C -Dskip.unit.tests=false surefire:test
+        run: |
+          mvn -pl common -am -B -T 1C -Dskip.unit.tests=false surefire:test
+          mvn -pl wallet,bc-gateway -amd  -B -T 1C -Dskip.unit.tests=false surefire:test
       - name: Build Docker images
         env:
           TAG: otc-dev
