@@ -25,7 +25,7 @@ jobs:
       - name: Build
         run:  mvn -pl wallet,bc-gateway -am  -B -T 1C clean install -Potc
       - name: Run Tests
-        run: mvn -B -T 1C -Dskip.unit.tests=false surefire:test
+        run: mvn -pl wallet,bc-gateway -am  -B -T 1C -Dskip.unit.tests=false surefire:test
       - name: Build Docker images
         env:
           TAG: otc-dev
