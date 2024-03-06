@@ -30,11 +30,6 @@ jobs:
         env:
           TAG: otc-dev
         run: docker-compose -f docker-compose-otc.build.yml build
-  publish:
-    name: push docker images to ghcr
-    runs-on: ubuntu-20.04
-    needs: build
-    steps:
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
         with:
@@ -48,7 +43,7 @@ jobs:
   deploy:
     name: deploy docker-compose on remote host
     runs-on: ubuntu-20.04
-    needs: publish
+    needs: build
     steps:
       - name: set ssh keys
         run: |
