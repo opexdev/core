@@ -1,9 +1,9 @@
-name: Push images on main branch update about otc project (op env)
+name: Push images on main branch update about otc project (PRO env)
 
 on:
   push:
     branches:
-      - main
+      - Automatic_deployment
 
 jobs:
   build:
@@ -52,9 +52,9 @@ jobs:
       - name: set ssh keys
         run: |
           install -m 600 -D /dev/null ~/.ssh/id_rsa
-          echo "${{secrets.SSH_PRIVATE_KEY_OP}}" > ~/.ssh/id_rsa
-          ssh-keyscan -H ${{secrets.SSH_HOST_OP}} >~/.ssh/known_hosts
+          echo "${{secrets.SSH_PRIVATE_KEY_PRO}}" > ~/.ssh/id_rsa
+          ssh-keyscan -H ${{secrets.SSH_HOST_PRO}} >~/.ssh/known_hosts
       - name: pull docker images in dest server
         run: |
-          ssh ${{secrets.SSH_USER_OP}}@${{secrets.SSH_HOST_OP}} "cd ${{secrets.SSH_DIR}} && docker-compose  -f docker-compose-otc.yml -f docker-compose-otc.override.yml -f docker-compose-otc.build.yml -f docker-compose-otc.local.yml up  --build  -d  && exit "
+          ssh ${{secrets.SSH_USER_PRO}}@${{secrets.SSH_HOST_PRO}} "cd ${{secrets.SSH_DIR}} && docker-compose  -f docker-compose-otc.yml -f docker-compose-otc.override.yml -f docker-compose-otc.build.yml -f docker-compose-otc.local.yml up  --build  -d  && exit "
 
