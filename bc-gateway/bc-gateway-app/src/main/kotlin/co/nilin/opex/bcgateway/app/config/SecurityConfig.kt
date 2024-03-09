@@ -55,6 +55,7 @@ class SecurityConfig(private val webClient: WebClient) {
                 .pathMatchers("/swagger-resources/**").permitAll()
                 .pathMatchers("/admin/**").hasRoleAndLevel("Admin")
                 .pathMatchers("/wallet-sync/**").hasRoleAndLevel("Admin")
+                .pathMatchers("/currency/chains").hasRoleAndLevel("user")
                 .pathMatchers("/currency/**").hasRoleAndLevel("System")
                 .anyExchange().authenticated()
                 .and()
