@@ -1,5 +1,5 @@
 x-postgres-db: &postgres-db
-  image: ghcr.io/opexdev/postgres-opex
+  image: ghcr.io/opexdev/postgres-opex:$TAG
   environment:
     - POSTGRES_USER=${DB_USER:-opex}
     - POSTGRES_PASSWORD=${DB_PASS:-hiopex}
@@ -20,7 +20,7 @@ services:
       - wallet-data:/var/lib/postgresql/data/
 
   wallet:
-    image: ghcr.io/opexdev/wallet
+    image: ghcr.io/opexdev/wallet:$TAG
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
@@ -52,7 +52,7 @@ services:
       restart_policy:
         condition: on-failure
   vault:
-    image: ghcr.io/opexdev/vault-opex
+    image: ghcr.io/opexdev/vault-opex:$TAG
     volumes:
       - vault-data:/vault/file
     environment:
@@ -78,7 +78,7 @@ services:
     networks:
       - otc-network
   bc-gateway:
-    image: ghcr.io/opexdev/bc-gateway
+    image: ghcr.io/opexdev/bc-gateway:$TAG
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - CONSUL_HOST=consul
