@@ -60,3 +60,4 @@ jobs:
         run: |
           ssh ${{secrets.SSH_USER_PRO}}@${{secrets.SSH_HOST_PRO}} "cd ${{secrets.SSH_DIR}} && docker compose  -f docker-compose-otc.yml  -f docker-compose-otc.local.yml up  --build  -d  && exit "
 
+
