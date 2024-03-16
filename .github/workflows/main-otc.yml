@@ -12,6 +12,8 @@ jobs:
       matrix:
         java: [ 17 ]
     name: Build OPEX and run tests with java ${{ matrix.java }}
+    env:
+      TAG: otc-op
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v2
@@ -31,8 +33,6 @@ jobs:
           mvn -pl common -am -B -T 1C -Dskip.unit.tests=false surefire:test
           mvn -pl wallet,bc-gateway -amd  -B -T 1C -Dskip.unit.tests=false surefire:test
       - name: Build Docker images
-        env:
-          TAG: otc-op
         run: docker-compose -f docker-compose-otc.build.yml build
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
@@ -41,13 +41,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Push images to GitHub Container Registry
-        env:
-          TAG: otc-op
         run: docker-compose -f docker-compose-otc.build.yml push
   deploy:
     name: deploy docker-compose on remote host
     runs-on: ubuntu-20.04
     needs: build
+    env:
+      TAG: otc-op
     steps:
       - name: set ssh keys
         run: |
@@ -55,8 +55,6 @@ jobs:
           echo "${{secrets.SSH_PRIVATE_KEY_PRO}}" > ~/.ssh/id_rsa
           ssh-keyscan -H ${{secrets.SSH_HOST_PRO}} >~/.ssh/known_hosts
       - name: pull docker images in dest server
-        env:
-          TAG: otc-op
         run: |
           ssh ${{secrets.SSH_USER_PRO}}@${{secrets.SSH_HOST_PRO}} "cd ${{secrets.SSH_DIR}}  \
           && docker compose -f docker-compose-otc.yml pull \

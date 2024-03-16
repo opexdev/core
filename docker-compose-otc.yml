@@ -107,6 +107,8 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+    env_file:
+      - .env
   postgres-bc-gateway:
     <<: *postgres-db
     volumes:
