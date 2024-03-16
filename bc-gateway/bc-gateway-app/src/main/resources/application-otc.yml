@@ -72,7 +72,7 @@ app:
     client-id: ${client_id}
     client-secret: ${client_secret}
   wallet:
-    url: lb://opex-wallet
+    url: http://wallet:8080
   address:
     life-time:
       value: ${ADDRESS_EXP_TIME}  #    second
