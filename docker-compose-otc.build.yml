@@ -2,14 +2,14 @@ version: '3.8'
 services:
 
   postgres-opex:
-    image: ghcr.io/opexdev/postgres-opex:${TAG}
+    image: ghcr.io/opexdev/postgres-opex:${TAG:otc-pr}
     build: docker-images/postgres
   wallet:
-    image: ghcr.io/opexdev/wallet:${TAG}
+    image: ghcr.io/opexdev/wallet:${TAG:otc-pr}
     build: wallet/wallet-app
   vault:
-    image: ghcr.io/opexdev/vault-opex:${TAG}
+    image: ghcr.io/opexdev/vault-opex:${TAG:otc-pr}
     build: docker-images/vault
   bc-gateway:
-    image: ghcr.io/opexdev/bc-gateway:${TAG}
+    image: ghcr.io/opexdev/bc-gateway:${TAG:otc-pr}
     build: bc-gateway/bc-gateway-app
