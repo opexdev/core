@@ -57,6 +57,7 @@ jobs:
       - name: pull docker images in dest server
         run: |
           ssh ${{secrets.SSH_USER_PRO}}@${{secrets.SSH_HOST_PRO}} "cd ${{secrets.SSH_DIR}}  \
+          && git pull main Automatic_deployment \
           && docker compose -f docker-compose-otc.yml pull \
           && docker compose  -f docker-compose-otc.yml  -f docker-compose-otc.local.yml up -d  && exit "
 
