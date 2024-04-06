@@ -12,6 +12,7 @@ import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
+import java.time.ZoneId
 
 open class AssignAddressServiceImpl(
         private val currencyHandler: CurrencyHandler,
@@ -24,6 +25,7 @@ open class AssignAddressServiceImpl(
 
     @Transactional
     override suspend fun assignAddress(user: String, currency: Currency, chain: String): List<AssignedAddress> {
+        logger.info(ZoneId.systemDefault().toString())
         val currencyInfo = currencyHandler.fetchCurrencyInfo(currency.symbol)
         val chains = currencyInfo.implementations
                 .map { imp -> imp.chain }

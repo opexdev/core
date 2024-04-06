@@ -100,11 +100,11 @@ init_secrets() {
   vault kv put secret/opex-websocket dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}
   vault kv put secret/opex-payment dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS} vandar_api_key=${VANDAR_API_KEY}
   vault kv put secret/opex-admin keycloak_client_secret=${OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET}
-  vault kv put secret/bitcoin-scanner dbusername=${DB_USER} dbpassword=${DB_PASS}
-  vault kv put secret/ethereum-scanner dbusername=${DB_USER} dbpassword=${DB_PASS}
-  vault kv put secret/tron-scanner dbusername=${DB_USER} dbpassword=${DB_PASS}
-  vault kv put secret/scanner-scheduler dbusername=${DB_USER} dbpassword=${DB_PASS}
-  vault kv put secret/scanner-liaison dbusername=${DB_USER} dbpassword=${DB_PASS}
+  vault kv put secret/bitcoin-scanner dbusername=${DB_USER} dbpassword=${DB_PASS}  client_id=${CLIENT_ID}  client_secret=${CLIENT_SECRET}
+  vault kv put secret/ethereum-scanner dbusername=${DB_USER} dbpassword=${DB_PASS}   client_id=${CLIENT_ID}  client_secret=${CLIENT_SECRET}
+  vault kv put secret/tron-scanner dbusername=${DB_USER} dbpassword=${DB_PASS}   client_id=${CLIENT_ID}  client_secret=${CLIENT_SECRET}
+  vault kv put secret/scanner-scheduler dbusername=${DB_USER} dbpassword=${DB_PASS}  client_id=${CLIENT_ID}  client_secret=${CLIENT_SECRET}
+  vault kv put secret/scanner-liaison dbusername=${DB_USER} dbpassword=${DB_PASS}   client_id=${CLIENT_ID}  client_secret=${CLIENT_SECRET}
   vault kv put secret/opex-referral dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}
   vault kv put secret/opex-profile dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}
   vault kv put secret/opex-kyc dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}
