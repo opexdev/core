@@ -3,7 +3,7 @@ name: Push images on main branch update about otc project (PRO env)
 on:
   push:
     branches:
-      - Automatic_deployment
+      - main
 
 jobs:
   build:
@@ -57,7 +57,7 @@ jobs:
       - name: pull docker images in dest server
         run: |
           ssh ${{secrets.SSH_USER_PRO}}@${{secrets.SSH_HOST_PRO}} "cd ${{secrets.SSH_DIR}}  \
-          && git pull origin Automatic_deployment \
+          && git pull origin main \
           && docker compose -f docker-compose-otc.yml pull \
           && docker compose  -f docker-compose-otc.yml  -f docker-compose-otc.local.yml up -d  && exit "
 
