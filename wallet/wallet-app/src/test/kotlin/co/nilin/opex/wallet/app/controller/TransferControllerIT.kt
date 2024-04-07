@@ -5,7 +5,7 @@ import co.nilin.opex.wallet.app.dto.TransactionRequest
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.TransactionWithDetailHistory
-import co.nilin.opex.wallet.core.spi.CurrencyService
+import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import kotlinx.coroutines.runBlocking
@@ -26,7 +26,7 @@ class TransferControllerIT : KafkaEnabledTest() {
 
 
     @Autowired
-    private lateinit var currencyService: CurrencyService
+    private lateinit var currencyService: CurrencyServiceManager
 
     @Autowired
     private lateinit var walletManager: WalletManager

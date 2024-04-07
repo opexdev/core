@@ -1,7 +1,7 @@
 package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.wallet.core.spi.CurrencyService
+import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import io.swagger.annotations.ApiResponse
@@ -16,7 +16,7 @@ import java.security.Principal
 
 @RestController
 class BalanceController(
-    val walletManager: WalletManager, val walletOwnerManager: WalletOwnerManager, val currencyService: CurrencyService
+    val walletManager: WalletManager, val walletOwnerManager: WalletOwnerManager, val currencyService: CurrencyServiceManager
 ) {
 
     private val logger = LoggerFactory.getLogger(BalanceController::class.java)

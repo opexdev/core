@@ -10,7 +10,7 @@ import co.nilin.opex.wallet.core.model.otc.ForbiddenPairs
 import co.nilin.opex.wallet.core.model.otc.Rate
 import co.nilin.opex.wallet.core.model.otc.Symbols
 import co.nilin.opex.wallet.core.service.otc.RateService
-import co.nilin.opex.wallet.core.spi.CurrencyService
+import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.ports.postgres.dao.WalletRepository
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
@@ -30,7 +30,7 @@ class CurrencyRatesControllerIT : KafkaEnabledTest() {
     private lateinit var webClient: WebTestClient
 
     @Autowired
-    private lateinit var currencyService: CurrencyService
+    private lateinit var currencyService: CurrencyServiceManager
 
 
     @Autowired

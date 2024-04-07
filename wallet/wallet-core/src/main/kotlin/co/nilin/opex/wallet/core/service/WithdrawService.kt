@@ -18,7 +18,7 @@ class WithdrawService(
         private val withdrawPersister: WithdrawPersister,
         private val walletManager: WalletManager,
         private val walletOwnerManager: WalletOwnerManager,
-        private val currencyService: CurrencyService,
+        private val currencyService: CurrencyServiceManager,
         private val transferManager: TransferManager,
         @Value("\${app.system.uuid}") private val systemUuid: String
 ) {

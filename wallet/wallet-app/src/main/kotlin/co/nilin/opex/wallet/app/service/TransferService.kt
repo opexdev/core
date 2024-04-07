@@ -1,13 +1,11 @@
 package co.nilin.opex.wallet.app.service
 
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.utility.preferences.Preferences
 import co.nilin.opex.wallet.app.dto.AdvanceReservedTransferData
 import co.nilin.opex.wallet.app.dto.ManualTransferRequest
 import co.nilin.opex.wallet.app.dto.ReservedTransferResponse
 import co.nilin.opex.wallet.app.dto.TransferRequest
-import co.nilin.opex.wallet.core.exc.NotEnoughBalanceException
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.Amount
@@ -26,7 +24,7 @@ import java.util.*
 @Service
 class TransferService(
         private val transferManager: TransferManager,
-        private val currencyService: CurrencyService,
+        private val currencyService: CurrencyServiceManager,
         private val walletManager: WalletManager,
         private val walletOwnerManager: WalletOwnerManager,
         private val currencyGraph: co.nilin.opex.wallet.app.service.otc.GraphService,

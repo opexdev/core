@@ -1,11 +1,22 @@
 package co.nilin.opex.wallet.core.spi
 
+import co.nilin.opex.wallet.core.inout.CryptoCurrencyCommand
+import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import co.nilin.opex.wallet.core.model.Currencies
 import co.nilin.opex.wallet.core.model.Currency
-import co.nilin.opex.wallet.core.model.CurrencyImp
+import co.nilin.opex.wallet.core.model.FetchCurrency
 import java.math.BigDecimal
 
-interface CurrencyService {
+interface CurrencyServiceManager {
+
+
+    suspend fun createNewCurrency(request: CurrencyCommand): CurrencyCommand?
+    suspend fun currency2Crypto(request: CryptoCurrencyCommand): CurrencyCommand?
+
+    suspend fun fetchCurrency(request: FetchCurrency): CurrencyCommand?
+
+    suspend fun updateCurrency(request: CurrencyCommand)
+
 
     suspend fun getCurrency(symbol: String): Currency?
     suspend fun addCurrency(name: String, symbol: String, precision: BigDecimal)

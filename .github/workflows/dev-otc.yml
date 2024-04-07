@@ -1,4 +1,4 @@
-name: Push images on dev branch update about otc project
+name: Push images on main branch update about otc project (dev env)
 
 on:
   push:
@@ -12,6 +12,8 @@ jobs:
       matrix:
         java: [ 17 ]
     name: Build OPEX and run tests with java ${{ matrix.java }}
+    env:
+      TAG: otc-dev
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v2
@@ -31,9 +33,7 @@ jobs:
           mvn -pl common -am -B -T 1C -Dskip.unit.tests=false surefire:test
           mvn -pl wallet,bc-gateway -amd  -B -T 1C -Dskip.unit.tests=false surefire:test
       - name: Build Docker images
-        env:
-          TAG: otc-dev
-        run: docker-compose -f docker-compose-otc.build.yml build
+        run: docker compose -f docker-compose-otc.build.yml build
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
         with:
@@ -41,13 +41,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Push images to GitHub Container Registry
-        env:
-          TAG: otc-dev
-        run: docker-compose -f docker-compose-otc.build.yml push
+        run: docker compose -f docker-compose-otc.build.yml push
   deploy:
     name: deploy docker-compose on remote host
     runs-on: ubuntu-20.04
     needs: build
+    env:
+      TAG: otc-dev
     steps:
       - name: set ssh keys
         run: |
@@ -56,5 +56,15 @@ jobs:
           ssh-keyscan -H ${{secrets.SSH_HOST}} >~/.ssh/known_hosts
       - name: pull docker images in dest server
         run: |
-          ssh ${{secrets.SSH_USER}}@${{secrets.SSH_HOST}} "cd ${{secrets.SSH_DIR}} && docker-compose  -f docker-compose-otc.yml -f docker-compose-otc.override.yml -f docker-compose-otc.build.yml -f docker-compose-otc.local.yml up  --build  -d  && exit "
+          ssh ${{secrets.SSH_USER}}@${{secrets.SSH_HOST}} "cd ${{secrets.SSH_DIR}}  \
+          && git pull origin dev \
+          && docker compose -f docker-compose-otc.yml pull \
+          && docker compose  -f docker-compose-otc.yml  -f docker-compose-otc.local.yml up -d  && exit "
+
+
+
+
+
+
+
 

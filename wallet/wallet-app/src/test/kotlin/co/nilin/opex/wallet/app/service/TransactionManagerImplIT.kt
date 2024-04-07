@@ -19,7 +19,7 @@ class TransactionManagerImplIT : KafkaEnabledTest() {
     lateinit var transferManager: TransferManager
 
     @Autowired
-    lateinit var currencyService: CurrencyService
+    lateinit var currencyService: CurrencyServiceManager
 
     @Autowired
     lateinit var walletManager: WalletManager

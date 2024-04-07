@@ -9,7 +9,7 @@ import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.model.Wallet
 import co.nilin.opex.wallet.core.model.WalletOwner
 import co.nilin.opex.wallet.core.model.otc.Symbols
-import co.nilin.opex.wallet.core.spi.CurrencyService
+import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import kotlinx.coroutines.runBlocking
@@ -30,7 +30,7 @@ class AdvancedTransferControllerIT : KafkaEnabledTest() {
     private lateinit var webClient: WebTestClient
 
     @Autowired
-    private lateinit var currencyService: CurrencyService
+    private lateinit var currencyService: CurrencyServiceManager
 
     @Autowired
     private lateinit var walletManager: WalletManager

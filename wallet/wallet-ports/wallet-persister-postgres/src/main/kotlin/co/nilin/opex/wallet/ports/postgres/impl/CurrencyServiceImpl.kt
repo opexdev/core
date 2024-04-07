@@ -4,7 +4,7 @@ import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.model.Currencies
 import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.model.CurrencyImp
-import co.nilin.opex.wallet.core.spi.CurrencyService
+import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepository
 import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
 import kotlinx.coroutines.reactive.awaitFirst
@@ -18,7 +18,7 @@ import java.time.LocalDateTime
 import java.util.stream.Collectors
 
 @Service
-class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : CurrencyService {
+class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : CurrencyServiceManager {
     //TODO avoid injecting impl classes when there is an interface
     //TODO as we already have the OTCCurrencyService to synchronize with bc-gateway, this extra logic for
     //creating the wallet can also move there

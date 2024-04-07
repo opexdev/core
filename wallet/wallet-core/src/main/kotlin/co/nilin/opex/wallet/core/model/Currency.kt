@@ -21,7 +21,12 @@ data class Currency(
         var sign: String? = null,
         var description: String? = null,
         var shortDescription: String? = null,
-        var currencyImpData: FetchCurrencyInfo? = null
+        var currencyImpData: FetchCurrencyInfo? = null,
+        var isCryptoCurrency:Boolean?=true,
+        var depositMethods:List<DepositMethod>?,
+        var withdrawMethods:List<WhithdrawMethod>?,
+        var externalLink:String?=null,
+
 )
 
 

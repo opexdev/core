@@ -7,7 +7,7 @@ import co.nilin.opex.wallet.core.model.otc.ForbiddenPair
 import co.nilin.opex.wallet.core.model.otc.Rate
 import co.nilin.opex.wallet.core.model.otc.Symbols
 import co.nilin.opex.wallet.core.service.otc.RateService
-import co.nilin.opex.wallet.core.spi.CurrencyService
+import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.ports.postgres.dao.WalletRepository
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
@@ -26,7 +26,7 @@ class CurrencyGraphIT : KafkaEnabledTest() {
     lateinit var rateService: RateService
 
     @Autowired
-    lateinit var currencyService: CurrencyService
+    lateinit var currencyService: CurrencyServiceManager
 
     @Autowired
     lateinit var walletRepository: WalletRepository

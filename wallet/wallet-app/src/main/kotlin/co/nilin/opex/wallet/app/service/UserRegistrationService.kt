@@ -3,7 +3,7 @@ package co.nilin.opex.wallet.app.service
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.utility.preferences.Preferences
 import co.nilin.opex.wallet.core.model.Amount
-import co.nilin.opex.wallet.core.spi.CurrencyService
+import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent
@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional
 class UserRegistrationService(
     val walletOwnerManager: WalletOwnerManager,
     val walletManager: WalletManager,
-    val currencyService: CurrencyService
+    val currencyService: CurrencyServiceManager
 ) {
     @Autowired
     private lateinit var preferences: Preferences

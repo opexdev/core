@@ -4,13 +4,13 @@ import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.model.otc.*
 import co.nilin.opex.wallet.core.service.otc.RateService
-import co.nilin.opex.wallet.core.spi.CurrencyService
+import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 
 @Service
-class GraphService(private val rateService: RateService, private val currencyService: CurrencyService
+class GraphService(private val rateService: RateService, private val currencyService: CurrencyServiceManager
 ){
     private val logger = LoggerFactory.getLogger(GraphService::class.java)
 

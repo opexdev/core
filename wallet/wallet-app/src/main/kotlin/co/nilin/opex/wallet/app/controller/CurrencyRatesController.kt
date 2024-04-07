@@ -19,29 +19,9 @@ import java.math.BigDecimal
 @RequestMapping("/otc")
 class CurrencyRatesController(
     private val rateService: co.nilin.opex.wallet.core.service.otc.RateService,
-    private val OTCCurrencyService: co.nilin.opex.wallet.app.service.otc.OTCCurrencyService,
     private val graphService: GraphService
 ) {
 
-    @PostMapping("/currency")
-    suspend fun addCurrency(@RequestBody request: CurrencyImp): Currency? {
-        return OTCCurrencyService.addCurrency(request)
-    }
-
-    @PutMapping("/currency")
-    suspend fun updateCurrency(@RequestBody request: CurrencyImp): Currency? {
-        return OTCCurrencyService.updateCurrency(request)
-    }
-
-    @GetMapping("/currency/{symbol}")
-    suspend fun getCurrency(@PathVariable("symbol") symbol: String): Currency? {
-        return OTCCurrencyService.fetchCurrency(symbol)
-    }
-
-    @GetMapping("/currency")
-    suspend fun getCurrencies(): Currencies? {
-        return OTCCurrencyService.fetchCurrencies()
-    }
 
 
     @PostMapping("/rate")

@@ -6,7 +6,7 @@ import co.nilin.opex.wallet.app.dto.PaymentDepositRequest
 import co.nilin.opex.wallet.app.dto.PaymentDepositResponse
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.model.Amount
-import co.nilin.opex.wallet.core.spi.CurrencyService
+import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.core.spi.TransferManager
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
@@ -19,10 +19,10 @@ import java.math.BigDecimal
 @RestController
 @RequestMapping("/payment")
 class PaymentGatewayController(
-    val transferManager: TransferManager,
-    val currencyService: CurrencyService,
-    val walletManager: WalletManager,
-    val walletOwnerManager: WalletOwnerManager
+        val transferManager: TransferManager,
+        val currencyService: CurrencyServiceManager,
+        val walletManager: WalletManager,
+        val walletOwnerManager: WalletOwnerManager
 ) {
 
     @PostMapping("/internal/deposit")
