@@ -60,7 +60,7 @@ class AdvancedTransferController {
     ): ReservedTransferResponse {
         securityContext?.let {
             if (request.senderUuid != it.authentication.name)
-                throw OpexException(OpexError.Forbidden)
+                throw OpexError.Forbidden.exception()
             request.senderUuid = it.authentication.name
         }
         return transferService.reserveTransfer(

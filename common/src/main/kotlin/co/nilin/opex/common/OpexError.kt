@@ -60,6 +60,10 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     CurrencyIsTransitiveAndDisablingIsImpossible(6015, null, HttpStatus.BAD_REQUEST),
     InvalidReserveNumber(6016, null, HttpStatus.BAD_REQUEST),
     CurrentSystemAssetsAreNotEnough(6017, null, HttpStatus.INTERNAL_SERVER_ERROR),
+    NotEnoughBalance(6018, null, HttpStatus.BAD_REQUEST),
+    WithdrawNotAllowed(6019, null, HttpStatus.BAD_REQUEST),
+
+
     // code 7000: api
     OrderNotFound(7001, "No order found", HttpStatus.NOT_FOUND),
     SymbolNotFound(7002, "No symbol found", HttpStatus.NOT_FOUND),

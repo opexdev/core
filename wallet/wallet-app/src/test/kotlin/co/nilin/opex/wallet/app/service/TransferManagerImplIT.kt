@@ -8,7 +8,8 @@ import co.nilin.opex.wallet.core.spi.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -263,19 +264,17 @@ class TransferManagerImplIT : KafkaEnabledTest() {
 
             val thwMatch = thw.find { th -> th.id.toString().equals(result.tx) }
             assertNotNull(thwMatch)
-            assertTrue(thwMatch!!.withdraw)
-            assertEquals("NORMAL", thwMatch.category)
+            assertEquals("NORMAL", thwMatch!!.category)
 
             val thdMatch = thd.find { th -> th.id.toString().equals(result.tx) }
             assertNotNull(thdMatch)
-            assertFalse(thdMatch!!.withdraw)
-            assertEquals("NORMAL", thdMatch.category)
+            assertEquals("NORMAL", thdMatch!!.category)
 
             val thSender = transactionManager.findTransactions(
                 sender.uuid, currency.symbol, "NORMAL", LocalDateTime.now().minusHours(1), LocalDateTime.now(), true, 100, 0
             )
             val thSenderMatch = thSender.find { i -> i.id.toString().equals(result.tx) }
-            assertTrue(thSenderMatch!!.withdraw)
+            assertEquals(sender.uuid, thSenderMatch!!.senderUuid)
             assertEquals("NORMAL", thSenderMatch.category)
 
 
@@ -283,7 +282,7 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                 receiver.uuid, currency.symbol, "NORMAL", LocalDateTime.now().minusHours(1), LocalDateTime.now(), true, 100, 0
             )
             val thReceiverMatch = thReceiver.find { i -> i.id.toString().equals(result.tx) }
-            assertFalse(thReceiverMatch!!.withdraw)
+            assertEquals(receiver.uuid, thReceiverMatch!!.receiverUuid)
             assertEquals("NORMAL", thReceiverMatch.category)
 
         }

@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.wallet.app.dto.TransactionRequest
 import co.nilin.opex.wallet.core.model.TransactionHistory
+import co.nilin.opex.wallet.core.model.TransactionWithDetailHistory
 import co.nilin.opex.wallet.core.spi.TransactionManager
 import org.springframework.web.bind.annotation.*
 import java.time.Instant
@@ -14,33 +15,43 @@ class TransactionController(private val manager: TransactionManager) {
 
     @PostMapping("/deposit/{uuid}")
     suspend fun getDepositTransactionsForUser(
-        @PathVariable("uuid") uuid: String,
-        @RequestBody request: TransactionRequest
+            @PathVariable("uuid") uuid: String,
+            @RequestBody request: TransactionRequest
     ): List<TransactionHistory> {
         return manager.findDepositTransactions(
-            uuid,
-            request.coin,
-            LocalDateTime.ofInstant(Instant.ofEpochMilli(request.startTime), ZoneId.systemDefault()),
-            LocalDateTime.ofInstant(Instant.ofEpochMilli(request.endTime), ZoneId.systemDefault()),
-            request.limit,
-            request.offset
+                uuid,
+                request.coin,
+                request.startTime?.let {
+                    LocalDateTime.ofInstant(Instant.ofEpochMilli(request.startTime), ZoneId.systemDefault())
+                }
+                        ?: null,
+                request.endTime?.let {
+                    LocalDateTime.ofInstant(Instant.ofEpochMilli(request.endTime), ZoneId.systemDefault())
+                } ?: null,
+                request.limit!!,
+                request.offset!!
         )
     }
 
     @PostMapping("/{uuid}")
     suspend fun getTransactionsForUser(
-        @PathVariable("uuid") uuid: String,
-        @RequestBody request: TransactionRequest
-    ): List<TransactionHistory> {
+            @PathVariable("uuid") uuid: String,
+            @RequestBody request: TransactionRequest
+    ): List<TransactionWithDetailHistory> {
         return manager.findTransactions(
-            uuid,
-            request.coin,
-            request.category,
-            LocalDateTime.ofInstant(Instant.ofEpochMilli(request.startTime), ZoneId.systemDefault()),
-            LocalDateTime.ofInstant(Instant.ofEpochMilli(request.endTime), ZoneId.systemDefault()),
-            request.ascendingByTime,
-            request.limit,
-            request.offset
+                uuid,
+                request.coin,
+                request.category,
+                request.startTime?.let {
+                    LocalDateTime.ofInstant(Instant.ofEpochMilli(request.startTime), ZoneId.systemDefault())
+                }
+                        ?: null,
+                request.endTime?.let {
+                    LocalDateTime.ofInstant(Instant.ofEpochMilli(request.endTime), ZoneId.systemDefault())
+                } ?: null,
+                request.ascendingByTime,
+                request.limit!!,
+                request.offset!!
         )
     }
 
