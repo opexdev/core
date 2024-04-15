@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - Automatic_deployment
-    workflow_dispatch:
+  workflow_dispatch:
       inputs:
         partner_name:
           type: string
