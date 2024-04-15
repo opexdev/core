@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - Automatic_deployment
-    defaults:
-      partner_name: default
     workflow_dispatch:
       inputs:
         partner_name:
@@ -26,6 +24,7 @@ jobs:
     name: Build OPEX and run tests with java ${{ matrix.java }} (otc)
     env:
       TAG: otc-pr
+      DEFAULT_PARTNER_NAME: default
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v2
@@ -46,10 +45,10 @@ jobs:
       - name: Fetch Partner data
         run: |
           source partner_mappings.yml  
-          SSH_SECRET=${!partner_mappings[$PARTNER_NAME].ssh_secret}
-          SSH_USER=${!partner_mappings[$PARTNER_NAME].ssh_user}
-          SSH_DIR=${!partner_mappings[$PARTNER_NAME].ssh_dir}
-          SSH_HOST=${!partner_mappings[$PARTNER_NAME].ssh_host}
+          SSH_SECRET=${!partner_mappings[$PARTNER_NAME:DEFAULT_PARTNER_NAME].ssh_secret}
+          SSH_USER=${!partner_mappings[$PARTNER_NAME:DEFAULT_PARTNER_NAME].ssh_user}:
+          SSH_DIR=${!partner_mappings[$PARTNER_NAME:DEFAULT_PARTNER_NAME].ssh_dir}
+          SSH_HOST=${!partner_mappings[$PARTNER_NAME:DEFAULT_PARTNER_NAME].ssh_host}
       - name: Build
         run:  |
           mvn -pl common -am  -B -T 1C clean install -Potc
