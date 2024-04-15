@@ -5,16 +5,13 @@ on:
     branches:
       - Automatic_deployment
     defaults:
-      # Set the default value for partner_name using the environment variable
-      partner_name: ${{ secrets.DEFAULT_PARTNER_NAME }}
+      partner_name: default
     workflow_dispatch:
       inputs:
         partner_name:
           type: string
           description: 'The name of the partner (provided during workflow execution)'
           required: true# Allow manual triggering
-
-
 jobs:
   build:
     runs-on: ubuntu-20.04
