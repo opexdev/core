@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - Automatic_deployment
+    workflow_dispatch:  # Allow manual triggering
+
 
 jobs:
   build:
