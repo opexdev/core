@@ -1,0 +1,83 @@
+name:  Build, Test, and Deploy otc services for specific partner (DEV env)
+
+on:
+  push:
+    branches:
+      - Automatic_deployment
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    inputs:
+      partner_name:
+        type: string
+        description: 'The name of the partner (provided during workflow execution)'
+        required: true
+    strategy:
+      matrix:
+        java: [ 17 ]
+    name: Build OPEX and run tests with java ${{ matrix.java }} (otc)
+    env:
+      TAG: otc-pr
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v2
+      - name: Setup Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-package: jdk
+          java-version: ${{ matrix.java }}
+      #          cache: maven
+      - name: load partners config
+        uses: actions/download-artifact@v2
+        with:
+          name: partner_mappings
+          path: .
+          repo: opexdev/partners
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Fetch Partner data
+        run: |
+          source partner_mappings.yml  
+          SSH_SECRET=${!partner_mappings[$PARTNER_NAME].ssh_secret}
+          SSH_USER=${!partner_mappings[$PARTNER_NAME].ssh_user}
+          SSH_DIR=${!partner_mappings[$PARTNER_NAME].ssh_dir}
+          SSH_HOST=${!partner_mappings[$PARTNER_NAME].ssh_host}
+      - name: Build
+        run:  |
+          mvn -pl common -am  -B -T 1C clean install -Potc
+          mvn -pl wallet,bc-gateway -amd  -B -T 1C clean install -Potc
+      - name: Run Tests
+        run: |
+          mvn -pl common -am -B -T 1C -Dskip.unit.tests=false surefire:test
+          mvn -pl wallet,bc-gateway -amd  -B -T 1C -Dskip.unit.tests=false surefire:test
+      - name: Build Docker images
+        run: docker compose -f docker-compose-otc.build.yml build
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push images to GitHub Container Registry
+        run: docker compose -f docker-compose-otc.build.yml push
+  deploy:
+    name: deploy docker-compose on remote host
+    runs-on: ubuntu-20.04
+    needs: build
+    env:
+      TAG: otc-pr
+    steps:
+      - name: set ssh keys
+        run: |
+          install -m 600 -D /dev/null ~/.ssh/id_rsa
+          echo $SSH_SECRET" > ~/.ssh/id_rsa
+          ssh-keyscan -H "$SSH_HOST" >~/.ssh/known_hosts
+      - name: pull docker images in dest server
+        run: |
+          ssh "$SSH_USER"@"$SSH_HOST" "cd "$SSH_DIR"  \
+          && git pull origin Automatic_deployment \
+          && docker compose -f docker-compose-otc.yml pull \
+          && docker compose  -f docker-compose-otc.yml  -f docker-compose-otc.local.yml up -d  && exit "
+
+
