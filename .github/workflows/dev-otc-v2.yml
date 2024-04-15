@@ -5,7 +5,7 @@ on:
     branches:
       - Automatic_deployment
   workflow_dispatch:
-      inputs:
+    inputs:
         partner_name:
           type: string
           description: 'The name of the partner (provided during workflow execution)'
@@ -82,7 +82,7 @@ jobs:
       - name: pull docker images in dest server
         run: |
           ssh "$SSH_USER"@"$SSH_HOST" "cd "$SSH_DIR"  \
-          && git pull origin Automatic_deployment \
+          && git pull origin main \
           && docker compose -f docker-compose-otc.yml pull \
           && docker compose  -f docker-compose-otc.yml  -f docker-compose-otc.local.yml up -d  && exit "
 
