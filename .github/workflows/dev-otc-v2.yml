@@ -1,31 +1,30 @@
 name:  Build, Test, and Deploy otc services for specific partner (DEV env)
-
 on:
-#  push:
-#    branches:
-#      - Automatic_deployment
-  workflow_dispatch:
-    inputs:
-        partner_name:
-          type: string
-          description: 'The name of the partner (provided during workflow execution)'
-          required: true# Allow manual triggering
+  push:
+    branches:
+      - Automatic_deployment
 
-jobs:
-  build:
-    runs-on: ubuntu-20.04
+
+  workflow_dispatch:
     inputs:
       partner_name:
         type: string
         description: 'The name of the partner (provided during workflow execution)'
         required: true
+        default: default
+
+jobs:
+
+  build:
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         java: [ 17 ]
     name: Build OPEX and run tests with java ${{ matrix.java }} (otc)
     env:
       TAG: otc-pr
-      DEFAULT_PARTNER_NAME: default
+      PARTNER: ${{ github.event.inputs.partner_name || 'default' }}
+
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v2
@@ -35,21 +34,41 @@ jobs:
           distribution: 'adopt'
           java-package: jdk
           java-version: ${{ matrix.java }}
-      #          cache: maven
       - name: load partners config
-        uses: actions/download-artifact@v2
-        with:
-          name: partner_mappings
-          path: .
-          repo: opexdev/partners
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Fetch Partner data
+        id: download_partners_data
         run: |
-          source partner_mappings.yml  
-          SSH_SECRET=${!partner_mappings[$PARTNER_NAME:DEFAULT_PARTNER_NAME].ssh_secret}
-          SSH_USER=${!partner_mappings[$PARTNER_NAME:DEFAULT_PARTNER_NAME].ssh_user}:
-          SSH_DIR=${!partner_mappings[$PARTNER_NAME:DEFAULT_PARTNER_NAME].ssh_dir}
-          SSH_HOST=${!partner_mappings[$PARTNER_NAME:DEFAULT_PARTNER_NAME].ssh_host}
+          echo $PARTNER
+          curl -L -o partner_mappings.yml -H "Authorization: token ${{ secrets.GITHUB_TOKEN }} " https://raw.githubusercontent.com/opexdev/partners/main/partner_mappings.yml
+          cat partner_mappings.yml
+      - name: Fetch Partner data
+        uses: christian-ci/action-yaml-github-output@v2
+        id: read_partners_data
+        with:
+          file_path: partner_mappings.yml
+          main_key: partners
+          sub_key: ${{env.PARTNER}}
+
+      - name: parse-yaml-file
+        run: |
+          echo ${{env.PARTNER}}
+#          echo "ssh private key: ${{ steps.read_partners_data.outputs.SSH_PRIVATE_KEY }}"
+#          echo "ssh dir: ${{ steps.read_partners_data.outputs.SSH_DIR }}"
+#          echo "ssh host: ${{ steps.read_partners_data.outputs.SSH_HOST }}"
+#          echo "ssh user : ${{ steps.read_partners_data.outputs.SSH_USER }}"
+
+      - name: Decrypt data
+        run: |
+          
+          echo ${{ steps.read_partners_data.outputs.SSH_HOST }} | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_ssh_host.txt
+          echo ${{ steps.read_partners_data.outputs.SSH_DIR }} | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_dir.txt
+          echo ${{ steps.read_partners_data.outputs.SSH_USER }} | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_user.txt
+          echo ${{ steps.read_partners_data.outputs.SSH_PRIVATE_KEY }} | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_private_key.txt
+          
+          export SSH_HOST=$(cat decrypted_ssh_host.txt) 
+          export SSH_DIR=$(cat decrypted_dir.txt) 
+          export SSH_USER=$(cat decrypted_user.txt) 
+          export SSH_SECRET=$(cat decrypted_private_key.txt) 
+
       - name: Build
         run:  |
           mvn -pl common -am  -B -T 1C clean install -Potc
@@ -78,13 +97,11 @@ jobs:
       - name: set ssh keys
         run: |
           install -m 600 -D /dev/null ~/.ssh/id_rsa
-          echo $SSH_SECRET" > ~/.ssh/id_rsa
+          echo "$SSH_SECRET" > ~/.ssh/id_rsa
           ssh-keyscan -H "$SSH_HOST" >~/.ssh/known_hosts
       - name: pull docker images in dest server
         run: |
           ssh "$SSH_USER"@"$SSH_HOST" "cd "$SSH_DIR"  \
-          && git pull origin main \
+          && git pull origin dev \
           && docker compose -f docker-compose-otc.yml pull \
           && docker compose  -f docker-compose-otc.yml  -f docker-compose-otc.local.yml up -d  && exit "
-
-
