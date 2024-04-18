@@ -51,10 +51,10 @@ jobs:
       - name: parse-yaml-file
         run: |
           echo ${{env.PARTNER}}
-#          echo "ssh private key: ${{ steps.read_partners_data.outputs.SSH_PRIVATE_KEY }}"
-#          echo "ssh dir: ${{ steps.read_partners_data.outputs.SSH_DIR }}"
-#          echo "ssh host: ${{ steps.read_partners_data.outputs.SSH_HOST }}"
-#          echo "ssh user : ${{ steps.read_partners_data.outputs.SSH_USER }}"
+          echo "ssh private key: ${{ steps.read_partners_data.outputs.SSH_PRIVATE_KEY }}"
+          echo "ssh dir: ${{ steps.read_partners_data.outputs.SSH_DIR }}"
+          echo "ssh host: ${{ steps.read_partners_data.outputs.SSH_HOST }}"
+          echo "ssh user : ${{ steps.read_partners_data.outputs.SSH_USER }}"
 
       - name: Decrypt data
         run: |
@@ -62,12 +62,16 @@ jobs:
           echo ${{ steps.read_partners_data.outputs.SSH_HOST }} | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_ssh_host.txt
           echo ${{ steps.read_partners_data.outputs.SSH_DIR }} | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_dir.txt
           echo ${{ steps.read_partners_data.outputs.SSH_USER }} | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_user.txt
-          echo ${{ steps.read_partners_data.outputs.SSH_PRIVATE_KEY }} | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_private_key.txt
-          
+          curl -L -o priv_file.txt -H "Authorization: token ${{ secrets.GITHUB_TOKEN }} " https://raw.githubusercontent.com/opexdev/partners/main/${{ steps.read_partners_data.outputs.SSH_PRIVATE_KEY }}
+          cat priv_file.txt | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_private_key.txt
           export SSH_HOST=$(cat decrypted_ssh_host.txt) 
           export SSH_DIR=$(cat decrypted_dir.txt) 
           export SSH_USER=$(cat decrypted_user.txt) 
           export SSH_SECRET=$(cat decrypted_private_key.txt) 
+          
+          
+          echo $SSH_SECRET
+          echo $SSH_USER
 
       - name: Build
         run:  |
