@@ -41,7 +41,7 @@ jobs:
           echo ${{secrets.PARTNERS_ACCESS_TOKEN}}
           echo "==============="
 
-          curl -L -o partner_mappings.yml -H "Authorization: token token ${{secrets.PARTNERS_ACCESS_TOKEN}} " https://raw.githubusercontent.com/opexdev/partners/main/partner_mappings.yml
+          curl -L -o partner_mappings.yml -H "Authorization: token  ${{secrets.PARTNERS_ACCESS_TOKEN}} " https://raw.githubusercontent.com/opexdev/partners/main/partner_mappings.yml
           cat partner_mappings.yml
       - name: Fetch Partner data
         uses: christian-ci/action-yaml-github-output@v2
@@ -65,7 +65,7 @@ jobs:
           echo ${{ steps.read_partners_data.outputs.SSH_HOST }} | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_ssh_host.txt
           echo ${{ steps.read_partners_data.outputs.SSH_DIR }} | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_dir.txt
           echo ${{ steps.read_partners_data.outputs.SSH_USER }} | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_user.txt
-          curl -L -o priv_file.txt -H "Authorization: token token ${{secrets.PARTNERS_ACCESS_TOKEN}} " https://raw.githubusercontent.com/opexdev/partners/main/${{ steps.read_partners_data.outputs.SSH_PRIVATE_KEY }}
+          curl -L -o priv_file.txt -H "Authorization: token  ${{secrets.PARTNERS_ACCESS_TOKEN}} " https://raw.githubusercontent.com/opexdev/partners/main/${{ steps.read_partners_data.outputs.SSH_PRIVATE_KEY }}
           cat priv_file.txt | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_private_key.txt
           export SSH_HOST=$(cat decrypted_ssh_host.txt) 
           export SSH_DIR=$(cat decrypted_dir.txt) 
