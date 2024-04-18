@@ -39,6 +39,8 @@ jobs:
         run: |
           echo $PARTNER
           echo ${{secrets.PARTNERS_ACCESS_TOKEN}}
+          echo "==============="
+
           curl -L -o partner_mappings.yml -H "Authorization: token token ${{secrets.PARTNERS_ACCESS_TOKEN}} " https://raw.githubusercontent.com/opexdev/partners/main/partner_mappings.yml
           cat partner_mappings.yml
       - name: Fetch Partner data
