@@ -65,6 +65,7 @@ jobs:
           curl -L -o priv_file.txt -H "Authorization: token  ${{secrets.PARTNERS_ACCESS_TOKEN}} " https://raw.githubusercontent.com/opexdev/partners/main/${{ steps.read_partners_data.outputs.SSH_PRIVATE_KEY }}
           cat priv_file.txt | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_private_key.txt
           
+          echo ${{ steps.read_partners_data.outputs.SSH_PRIVATE_KEY }}  
           cat decrypted_private_key
           export SSH_SECRET_NN=$( cat decrypted_private_key.txt | tr -s '\r\n' '#')                    
           echo "ssh_user=$(cat decrypted_user.txt)" >> $GITHUB_OUTPUT
