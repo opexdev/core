@@ -22,7 +22,7 @@ jobs:
         java: [ 17 ]
     name: Build OPEX and run tests with java ${{ matrix.java }} (otc)
     env:
-      TAG: otc-pr
+      TAG: otc-dev
       PARTNER: ${{ github.event.inputs.partner_name || 'default' }}
 
     steps:
@@ -38,9 +38,6 @@ jobs:
         id: download_partners_data
         run: |
           echo $PARTNER
-          echo ${{secrets.PARTNERS_ACCESS_TOKEN}}
-          echo "==============="
-
           curl -L -o partner_mappings.yml -H "Authorization: token  ${{secrets.PARTNERS_ACCESS_TOKEN}} " https://raw.githubusercontent.com/opexdev/partners/main/partner_mappings.yml
           cat partner_mappings.yml
       - name: Fetch Partner data
@@ -67,14 +64,12 @@ jobs:
           echo ${{ steps.read_partners_data.outputs.SSH_USER }} | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_user.txt
           curl -L -o priv_file.txt -H "Authorization: token  ${{secrets.PARTNERS_ACCESS_TOKEN}} " https://raw.githubusercontent.com/opexdev/partners/main/${{ steps.read_partners_data.outputs.SSH_PRIVATE_KEY }}
           cat priv_file.txt | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_private_key.txt
-          export SSH_HOST=$(cat decrypted_ssh_host.txt) 
-          export SSH_DIR=$(cat decrypted_dir.txt) 
-          export SSH_USER=$(cat decrypted_user.txt) 
-          export SSH_SECRET=$(cat decrypted_private_key.txt) 
           
-          
-          echo $SSH_SECRET
-          echo $SSH_USER
+          export SSH_SECRET_NN=$( cat decrypted_private_key.txt | tr -s '\r\n' '#')                    
+          echo "ssh_user=$(cat decrypted_user.txt)" >> $GITHUB_OUTPUT
+          echo "ssh_dir=$(cat decrypted_dir.txt)" >> $GITHUB_OUTPUT
+          echo "ssh_host=$(cat decrypted_ssh_host.txt)" >> $GITHUB_OUTPUT
+          echo "ssh_secret=$SSH_SECRET_NN" >> $GITHUB_OUTPUT
 
       - name: Build
         run:  |
@@ -99,10 +94,15 @@ jobs:
     runs-on: ubuntu-20.04
     needs: build
     env:
-      TAG: otc-pr
+      TAG: otc-dev
+      SSH_USER: ${{ needs.build.outputs.ssh_user }}
+      SSH_SECRET_NN: ${{ needs.build.outputs.ssh_secret }}
+      SSH_DIR: ${{ needs.build.outputs.ssh_dir }}
+      SSH_HOST: ${{ needs.build.outputs.ssh_host }}
     steps:
       - name: set ssh keys
         run: |
+          export SSH_SECRET=$( tr  '#' '\n' <<< "$SSH_SECRET_NN")
           install -m 600 -D /dev/null ~/.ssh/id_rsa
           echo "$SSH_SECRET" > ~/.ssh/id_rsa
           ssh-keyscan -H "$SSH_HOST" >~/.ssh/known_hosts
