@@ -113,6 +113,8 @@ jobs:
       - name: set ssh keys
         run: |
           echo "---------"
+          echo ${{ needs.build.outputs.ssh_user }}
+          echo ${{ needs.build.outputs.ssh_secret }}
           echo $SSH_SECRET_NN
           export SSH_SECRET=$( tr '#' '\n' <<< "$SSH_SECRET_NN")
           install -m 600 -D /dev/null ~/.ssh/id_rsa
