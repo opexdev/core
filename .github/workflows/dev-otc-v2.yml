@@ -65,6 +65,8 @@ jobs:
           curl -L -o priv_file.txt -H "Authorization: token  ${{secrets.PARTNERS_ACCESS_TOKEN}} " https://raw.githubusercontent.com/opexdev/partners/main/${{ steps.read_partners_data.outputs.SSH_PRIVATE_KEY }}
           cat priv_file.txt | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_private_key.txt
           
+          cat decrypted_user.txt
+          
           export SSH_SECRET_NN=$( cat decrypted_private_key.txt | tr -s '\r\n' '#')                    
           echo "ssh_user=$(cat decrypted_user.txt)" >> $GITHUB_OUTPUT
           echo "ssh_dir=$(cat decrypted_dir.txt)" >> $GITHUB_OUTPUT
@@ -95,13 +97,16 @@ jobs:
     needs: build
     env:
       TAG: otc-dev
-      SSH_USER: ${{ needs.build.outputs.ssh_user }}
-      SSH_SECRET_NN: ${{ needs.build.outputs.ssh_secret }}
-      SSH_DIR: ${{ needs.build.outputs.ssh_dir }}
-      SSH_HOST: ${{ needs.build.outputs.ssh_host }}
     steps:
       - name: set ssh keys
         run: |
+          export SSH_USER=${{ needs.build.outputs.ssh_user }}
+          echo "========="
+          echo $SSH_USER
+          echo "==========="
+          export SSH_SECRET_NN=${{ needs.build.outputs.ssh_secret }}
+          export SSH_DIR=${{ needs.build.outputs.ssh_dir }}
+          export SSH_HOST=${{ needs.build.outputs.ssh_host }}
           export SSH_SECRET=$( tr  '#' '\n' <<< "$SSH_SECRET_NN")
           install -m 600 -D /dev/null ~/.ssh/id_rsa
           echo "$SSH_SECRET" > ~/.ssh/id_rsa
