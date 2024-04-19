@@ -101,16 +101,13 @@ jobs:
     needs: build
     env:
       TAG: otc-dev
+      SSH_USER: ${{ needs.build.outputs.ssh_user }}
+      SSH_SECRET_NN: ${{ needs.build.outputs.ssh_secret }}
+      SSH_DIR: ${{ needs.build.outputs.ssh_dir }}
+      SSH_HOST: ${{ needs.build.outputs.ssh_host }}
     steps:
       - name: set ssh keys
         run: |
-          export SSH_USER=${{ needs.build.outputs.ssh_user }}
-          echo "========="
-          echo $SSH_USER
-          echo "==========="
-          export SSH_SECRET_NN=${{ needs.build.outputs.ssh_secret }}
-          export SSH_DIR=${{ needs.build.outputs.ssh_dir }}
-          export SSH_HOST=${{ needs.build.outputs.ssh_host }}
           export SSH_SECRET=$( tr  '#' '\n' <<< "$SSH_SECRET_NN")
           install -m 600 -D /dev/null ~/.ssh/id_rsa
           echo "$SSH_SECRET" > ~/.ssh/id_rsa
