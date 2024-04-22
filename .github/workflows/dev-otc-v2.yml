@@ -55,6 +55,8 @@ jobs:
           echo "ssh dir: ${{ steps.read_partners_data.outputs.SSH_DIR }}"
           echo "ssh host: ${{ steps.read_partners_data.outputs.SSH_HOST }}"
           echo "ssh user : ${{ steps.read_partners_data.outputs.SSH_USER }}"
+          echo "password : ${{ steps.read_partners_data.outputs.PASSWORD }}"
+
 
       - name: Decrypt data
         id: decrypt_data
@@ -63,6 +65,8 @@ jobs:
           echo ${{ steps.read_partners_data.outputs.SSH_HOST }} | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_ssh_host.txt
           echo ${{ steps.read_partners_data.outputs.SSH_DIR }} | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_dir.txt
           echo ${{ steps.read_partners_data.outputs.SSH_USER }} | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_user.txt
+          echo ${{ steps.read_partners_data.outputs.PASSWORD }} | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_password.txt
+
           curl -L -o priv_file.txt -H "Authorization: token  ${{secrets.PARTNERS_ACCESS_TOKEN}} " https://raw.githubusercontent.com/opexdev/partners/main/${{ steps.read_partners_data.outputs.SSH_PRIVATE_KEY }}
           cat priv_file.txt | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_private_key.txt
           echo ${{ steps.read_partners_data.outputs.SSH_PRIVATE_KEY }}  
@@ -71,7 +75,11 @@ jobs:
           echo "ssh_dir=$(cat decrypted_dir.txt)" >> $GITHUB_OUTPUT
           echo "ssh_host=$(cat decrypted_ssh_host.txt)" >> $GITHUB_OUTPUT
           echo "ssh_secret=$SSH_SECRET_NN" >> $GITHUB_OUTPUT
-          
+          echo "password=$(cat decrypted_password.txt)" >> $GITHUB_OUTPUT
+      
+      
+      
+      
 
       - name: Build
         run:  |
@@ -96,6 +104,8 @@ jobs:
       ssh_secret: ${{ steps.decrypt_data.outputs.ssh_secret }}
       ssh_dir: ${{ steps.decrypt_data.outputs.ssh_dir }}
       ssh_host: ${{ steps.decrypt_data.outputs.ssh_host }}
+      server_password: ${{ steps.decrypt_data.outputs.password }}
+
   deploy:
     name: deploy docker-compose on remote host
     runs-on: ubuntu-20.04
@@ -106,6 +116,8 @@ jobs:
       SSH_SECRET_NN: ${{ needs.build.outputs.ssh_secret }}
       SSH_DIR: ${{ needs.build.outputs.ssh_dir }}
       SSH_HOST: ${{ needs.build.outputs.ssh_host }}
+      SERVER_PASSWORD: ${{ needs.build.outputs.server_password }}
+
     steps:
       - name: set ssh keys
         run: |
@@ -116,6 +128,6 @@ jobs:
       - name: pull docker images in dest server
         run: |
           ssh "$SSH_USER"@"$SSH_HOST" "cd "$SSH_DIR"  \
-          && git pull origin dev \
-          && docker compose -f docker-compose-otc.yml pull \
-          && docker compose  -f docker-compose-otc.yml  -f docker-compose-otc.local.yml up -d  && exit "
+          &&  echo $SERVER_PASSWORD | sudo -S git pull origin dev \
+          &&  echo $SERVER_PASSWORD | sudo -S docker compose -f docker-compose-otc.yml pull \
+          &&  echo $SERVER_PASSWORD | sudo -S docker compose  -f docker-compose-otc.yml  -f docker-compose-otc.local.yml up -d  && exit "
