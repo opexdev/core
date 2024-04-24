@@ -33,13 +33,14 @@ jobs:
           distribution: 'adopt'
           java-package: jdk
           java-version: ${{ matrix.java }}
-      - name: load partners config
+      - name: Load partners config
         id: download_partners_data
         run: |
           echo $PARTNER
           curl -L -o partner_mappings.yml -H "Authorization: token  ${{secrets.PARTNERS_ACCESS_TOKEN}} " https://raw.githubusercontent.com/opexdev/partners/main/partner_mappings.yml
           cat partner_mappings.yml
-      - name: Fetch Partner data
+
+      - name: Fetch partner data
         uses: christian-ci/action-yaml-github-output@v2
         id: read_partners_data
         with:
@@ -72,6 +73,7 @@ jobs:
         run:  |
           mvn -pl common -am  -B -T 1C clean install -Potc
           mvn -pl wallet,bc-gateway -amd  -B -T 1C clean install -Potc
+
       - name: Run Tests
         run: |
           mvn -pl common -am -B -T 1C -Dskip.unit.tests=false surefire:test
@@ -96,7 +98,7 @@ jobs:
 
 
   deploy:
-    name: deploy docker-compose on remote host
+    name: Deploy docker-compose file on remote host
     runs-on: ubuntu-20.04
     needs: build
     env:
@@ -108,14 +110,14 @@ jobs:
       SERVER_PASSWORD: ${{ needs.build.outputs.server_password }}
       ENV_PATH: ${{ needs.build.outputs.env_path }}
     steps:
-      - name: set ssh keys
+      - name: Set ssh key to have access
         run: |
           export SSH_SECRET=$( tr '#' '\n' <<< "$SSH_SECRET_NN")
           install -m 600 -D /dev/null ~/.ssh/id_rsa
           echo "$SSH_SECRET" > ~/.ssh/id_rsa
           ssh-keyscan -H "$SSH_HOST" >~/.ssh/known_hosts
 
-      - name: pull docker images in dest server
+      - name: Pull docker images in dest server
         env:
           token: ${{secrets.PARTNERS_ACCESS_TOKEN}}
         run: |
