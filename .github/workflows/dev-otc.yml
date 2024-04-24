@@ -14,7 +14,6 @@ on:
         default: default
 
 jobs:
-
   build:
     runs-on: ubuntu-20.04
     strategy:
@@ -48,16 +47,6 @@ jobs:
           main_key: partners
           sub_key: ${{env.PARTNER}}
 
-      - name: parse-yaml-file
-        run: |
-          echo ${{env.PARTNER}}
-          echo "ssh private key: ${{ steps.read_partners_data.outputs.SSH_PRIVATE_KEY }}"
-          echo "ssh dir: ${{ steps.read_partners_data.outputs.SSH_DIR }}"
-          echo "ssh host: ${{ steps.read_partners_data.outputs.SSH_HOST }}"
-          echo "ssh user : ${{ steps.read_partners_data.outputs.SSH_USER }}"
-          echo "password : ${{ steps.read_partners_data.outputs.PASSWORD }}"
-
-
       - name: Decrypt data
         id: decrypt_data
         run: |
@@ -68,18 +57,16 @@ jobs:
           echo ${{ steps.read_partners_data.outputs.PASSWORD }} | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_password.txt
 
           curl -L -o priv_file.txt -H "Authorization: token  ${{secrets.PARTNERS_ACCESS_TOKEN}} " https://raw.githubusercontent.com/opexdev/partners/main/${{ steps.read_partners_data.outputs.SSH_PRIVATE_KEY }}
-          cat priv_file.txt | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_private_key.txt
-          echo ${{ steps.read_partners_data.outputs.SSH_PRIVATE_KEY }}  
-          export SSH_SECRET_NN=$( cat decrypted_private_key.txt | tr -s '\r\n' '#')                    
+          cat priv_file.txt | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_private_key.txt  
+          export SSH_SECRET_NN=$( cat decrypted_private_key.txt | tr -s '\r\n' '#')  
+          
+          
           echo "ssh_user=$(cat decrypted_user.txt)" >> $GITHUB_OUTPUT
           echo "ssh_dir=$(cat decrypted_dir.txt)" >> $GITHUB_OUTPUT
           echo "ssh_host=$(cat decrypted_ssh_host.txt)" >> $GITHUB_OUTPUT
           echo "ssh_secret=$SSH_SECRET_NN" >> $GITHUB_OUTPUT
+          echo "env_path=${{ steps.read_partners_data.outputs.ENV_PATH }}" >> $GITHUB_OUTPUT
           echo "password=$(cat decrypted_password.txt)" >> $GITHUB_OUTPUT
-      
-      
-      
-      
 
       - name: Build
         run:  |
@@ -104,7 +91,9 @@ jobs:
       ssh_secret: ${{ steps.decrypt_data.outputs.ssh_secret }}
       ssh_dir: ${{ steps.decrypt_data.outputs.ssh_dir }}
       ssh_host: ${{ steps.decrypt_data.outputs.ssh_host }}
+      env_path: ${{ steps.decrypt_data.outputs.env_path }}
       server_password: ${{ steps.decrypt_data.outputs.password }}
+
 
   deploy:
     name: deploy docker-compose on remote host
@@ -117,7 +106,7 @@ jobs:
       SSH_DIR: ${{ needs.build.outputs.ssh_dir }}
       SSH_HOST: ${{ needs.build.outputs.ssh_host }}
       SERVER_PASSWORD: ${{ needs.build.outputs.server_password }}
-
+      ENV_PATH: ${{ needs.build.outputs.env_path }}
     steps:
       - name: set ssh keys
         run: |
@@ -125,9 +114,13 @@ jobs:
           install -m 600 -D /dev/null ~/.ssh/id_rsa
           echo "$SSH_SECRET" > ~/.ssh/id_rsa
           ssh-keyscan -H "$SSH_HOST" >~/.ssh/known_hosts
+
       - name: pull docker images in dest server
+        env:
+          token: ${{secrets.PARTNERS_ACCESS_TOKEN}}
         run: |
-          ssh "$SSH_USER"@"$SSH_HOST" "cd "$SSH_DIR"  \
-          &&  echo $SERVER_PASSWORD | sudo -S git pull origin dev \
-          &&  echo $SERVER_PASSWORD | sudo -S docker compose -f docker-compose-otc.yml pull \
-          &&  echo $SERVER_PASSWORD | sudo -S docker compose  -f docker-compose-otc.yml  -f docker-compose-otc.local.yml up -d  && exit "
+          sshpass -p"$SERVER_PASSWORD" ssh "$SSH_USER"@"$SSH_HOST" "cd "$SSH_DIR"; git pull origin dev; \
+          curl  https://raw.githubusercontent.com/opexdev/partners/main/"$ENV_PATH"  -L -o .env -H 'Authorization:token $token' ; \
+          echo $SERVER_PASSWORD | sudo -S docker-compose -f docker-compose-otc.yml pull; \
+          echo $SERVER_PASSWORD | sudo -S docker network create --driver bridge otc-network || true; \
+          echo $SERVER_PASSWORD | sudo -S docker-compose -f docker-compose-otc.yml -f docker-compose-otc.local.yml up -d  && exit"
