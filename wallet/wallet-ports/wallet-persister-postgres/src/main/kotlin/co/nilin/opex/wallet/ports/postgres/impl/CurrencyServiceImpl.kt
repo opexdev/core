@@ -1,9 +1,12 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.wallet.core.inout.CryptoCurrencyCommand
+import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import co.nilin.opex.wallet.core.model.Currencies
 import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.model.CurrencyImp
+import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepository
 import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
@@ -22,6 +25,7 @@ class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : Currency
     //TODO avoid injecting impl classes when there is an interface
     //TODO as we already have the OTCCurrencyService to synchronize with bc-gateway, this extra logic for
     //creating the wallet can also move there
+
     @Autowired
     private lateinit var walletManagerImpl: WalletManagerImpl
 
@@ -156,4 +160,26 @@ class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : Currency
                 currencyRepository.findAll()?.map { it.toDto() }.collect(Collectors.toList()).awaitFirstOrNull()
         )
     }
+
+
+
+    override suspend fun createNewCurrency(request: CurrencyCommand): CurrencyCommand? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun currency2Crypto(request: CryptoCurrencyCommand): CurrencyCommand? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun fetchCurrency(request: FetchCurrency): CurrencyCommand? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun updateCurrency(request: CurrencyCommand): CurrencyCommand? {
+        TODO("Not yet implemented")
+    }
+
+
+
+
 }
