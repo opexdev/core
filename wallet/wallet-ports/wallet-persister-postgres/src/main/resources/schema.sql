@@ -17,8 +17,6 @@ CREATE TABLE IF NOT EXISTS currency
     sign              VARCHAR(25),
     description       TEXT,
     short_description TEXT
-
-
 );
 
 ALTER TABLE currency

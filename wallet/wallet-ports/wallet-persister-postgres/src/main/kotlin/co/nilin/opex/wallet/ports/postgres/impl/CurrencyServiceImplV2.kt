@@ -18,9 +18,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.time.LocalDateTime
+import java.util.Objects
 import java.util.stream.Collectors
 
-@Service
+@Service("newVersion")
 class CurrencyServiceImplV2(val currencyRepository: CurrencyRepository) : CurrencyServiceManager {
 
 
@@ -158,7 +159,7 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepository) : Curren
 
 
     override suspend fun createNewCurrency(request: CurrencyCommand): CurrencyCommand? {
-        currencyRepository.save(request)
+        currencyRepository.insert(request)
     }
 
     override suspend fun currency2Crypto(request: CryptoCurrencyCommand): CurrencyCommand? {
@@ -172,6 +173,46 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepository) : Curren
     override suspend fun updateCurrency(request: CurrencyCommand): CurrencyCommand? {
         TODO("Not yet implemented")
     }
+
+    override suspend fun updateCurrency(request: Currency): Currency? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getCurrency(symbol: String): Currency? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun addCurrency(name: String, symbol: String, precision: BigDecimal) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun addCurrency(request: Currency): Currency? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun editCurrency(name: String, symbol: String, precision: BigDecimal) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteCurrency(name: String): Currencies {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getCurrencies(): Currencies {
+        TODO("Not yet implemented")
+    }
+
+
+
+
+
+    fun CurrencyCommand.toModel(){
+
+    }
+
+
+
+
 
 
 }

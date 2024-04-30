@@ -7,13 +7,14 @@ import co.nilin.opex.wallet.core.inout.WithdrawMethod
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import org.apache.kafka.common.requests.FetchRequest
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 @Service
 class CurrencyServiceV2(
-        private val currencyServiceManager: CurrencyServiceManager,
+        @Qualifier("newVersion") private val currencyServiceManager: CurrencyServiceManager,
 ) {
 
     suspend fun createNewCurrency(request: CurrencyCommand): CurrencyCommand? {
