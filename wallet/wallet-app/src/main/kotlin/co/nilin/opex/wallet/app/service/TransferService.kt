@@ -289,7 +289,6 @@ class TransferService(
 
 //        if (walletOwnerManager.findWalletOwner(receiverUuid)?.level !in arrayListOf<String>(preferences.admin.walletLevel,preferences.system.walletLevel))
 //            throw OpexException(OpexError.Error)
-
         return _transfer(
                 symbol,
                 "main",
