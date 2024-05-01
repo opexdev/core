@@ -224,30 +224,69 @@ class TransferService(
         )
     }
 
+//    @Transactional
+//    suspend fun depositManually(
+//            symbol: String,
+//            receiverUuid: String,
+//            senderUuid: String,
+//            amount: BigDecimal,
+//            request: ManualTransferRequest
+//    ): TransferResult {
+//        logger.info("deposit manually: $senderUuid to $receiverUuid on $symbol at ${LocalDateTime.now()}")
+//        val systemUuid = "1"
+//        //todo customize error message
+//        val senderLevel = walletOwnerManager.findWalletOwner(senderUuid)?.let { it.level }
+//                ?: throw OpexError.WalletOwnerNotFound.exception()
+//        val receiverLevel = walletOwnerManager.findWalletOwner(receiverUuid)?.let { it.level }
+//
+//        if (senderLevel !in arrayListOf<String>(preferences.admin.walletLevel, preferences.system.walletLevel))
+//            throw OpexError.Forbidden.exception()
+//
+//        if (senderLevel == preferences.system.walletLevel && receiverLevel != preferences.admin.walletLevel)
+//            throw OpexError.Forbidden.exception()
+//
+////        if (walletOwnerManager.findWalletOwner(receiverUuid)?.level !in arrayListOf<String>(preferences.admin.walletLevel,preferences.system.walletLevel))
+////            throw OpexError.Forbidden.exception()
+//
+//        return _transfer(
+//                symbol,
+//                "main",
+//                senderUuid,
+//                "main",
+//                receiverUuid,
+//                amount,
+//                request.description,
+//                request.ref,
+//                "DEPOSIT_MANUALLY",
+//                null,
+//                symbol,
+//                amount
+//
+//        )
+//    }
+
     @Transactional
     suspend fun depositManually(
             symbol: String,
             receiverUuid: String,
-            senderUuid: String,
+            senderUuid:String,
             amount: BigDecimal,
             request: ManualTransferRequest
     ): TransferResult {
         logger.info("deposit manually: $senderUuid to $receiverUuid on $symbol at ${LocalDateTime.now()}")
         val systemUuid = "1"
         //todo customize error message
-        val senderLevel = walletOwnerManager.findWalletOwner(senderUuid)?.let { it.level }
-                ?: throw OpexError.WalletOwnerNotFound.exception()
-        val receiverLevel = walletOwnerManager.findWalletOwner(receiverUuid)?.let { it.level }
+        val senderLevel=walletOwnerManager.findWalletOwner(senderUuid)?.let {it.level }?:throw OpexException(OpexError.WalletOwnerNotFound)
+        val receiverLevel=walletOwnerManager.findWalletOwner(receiverUuid)?.let {it.level }?:throw OpexException(OpexError.WalletOwnerNotFound)
 
-        if (senderLevel !in arrayListOf<String>(preferences.admin.walletLevel, preferences.system.walletLevel))
-            throw OpexError.Forbidden.exception()
+        if ( senderLevel !in arrayListOf<String>(preferences.admin.walletLevel,preferences.system.walletLevel))
+            throw OpexException(OpexError.Forbidden)
 
-        if (senderLevel == preferences.system.walletLevel && receiverLevel != preferences.admin.walletLevel)
-            throw OpexError.Forbidden.exception()
+        if(senderLevel == preferences.system.walletLevel && receiverLevel !=preferences.admin.walletLevel)
+            throw OpexException(OpexError.Forbidden)
 
 //        if (walletOwnerManager.findWalletOwner(receiverUuid)?.level !in arrayListOf<String>(preferences.admin.walletLevel,preferences.system.walletLevel))
-//            throw OpexError.Forbidden.exception()
-
+//            throw OpexException(OpexError.Error)
         return _transfer(
                 symbol,
                 "main",
