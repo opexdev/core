@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.app.service
 
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.utility.preferences.Preferences
 import co.nilin.opex.wallet.app.dto.AdvanceReservedTransferData
 import co.nilin.opex.wallet.app.dto.ManualTransferRequest
@@ -269,20 +270,22 @@ class TransferService(
     suspend fun depositManually(
             symbol: String,
             receiverUuid: String,
-            senderUuid:String,
+            senderUuid: String,
             amount: BigDecimal,
             request: ManualTransferRequest
     ): TransferResult {
         logger.info("deposit manually: $senderUuid to $receiverUuid on $symbol at ${LocalDateTime.now()}")
         val systemUuid = "1"
         //todo customize error message
-        val senderLevel=walletOwnerManager.findWalletOwner(senderUuid)?.let {it.level }?:throw OpexException(OpexError.WalletOwnerNotFound)
-        val receiverLevel=walletOwnerManager.findWalletOwner(receiverUuid)?.let {it.level }?:throw OpexException(OpexError.WalletOwnerNotFound)
+        val senderLevel = walletOwnerManager.findWalletOwner(senderUuid)?.let { it.level }
+                ?: throw OpexException(OpexError.WalletOwnerNotFound)
+        val receiverLevel = walletOwnerManager.findWalletOwner(receiverUuid)?.let { it.level }
+                ?: throw OpexException(OpexError.WalletOwnerNotFound)
 
-        if ( senderLevel !in arrayListOf<String>(preferences.admin.walletLevel,preferences.system.walletLevel))
+        if (senderLevel !in arrayListOf<String>(preferences.admin.walletLevel, preferences.system.walletLevel))
             throw OpexException(OpexError.Forbidden)
 
-        if(senderLevel == preferences.system.walletLevel && receiverLevel !=preferences.admin.walletLevel)
+        if (senderLevel == preferences.system.walletLevel && receiverLevel != preferences.admin.walletLevel)
             throw OpexException(OpexError.Forbidden)
 
 //        if (walletOwnerManager.findWalletOwner(receiverUuid)?.level !in arrayListOf<String>(preferences.admin.walletLevel,preferences.system.walletLevel))

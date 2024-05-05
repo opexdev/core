@@ -23,12 +23,6 @@ class CurrencyController(private val currencyService: CurrencyServiceV2) {
         return currencyService.updateCurrency(request)
     }
 
-    @PostMapping("/currency/{currencyUuid}/depositMethod")
-    suspend fun defineNewDepositMethodForACurrency(@PathVariable("currencyUuid") currencyUuid: String,
-                                                   @RequestBody request: DepositMethod): CurrencyCommand? {
-//todo
-        return null
-    }
 
     @PostMapping("/currency/{currencyUuid}/imp")
     suspend fun addImp2Currency(@PathVariable("currencyUuid") currencyUuid: String,

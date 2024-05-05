@@ -1,6 +1,6 @@
 package co.nilin.opex.wallet.core.inout
 
-import co.nilin.opex.wallet.core.model.otc.FetchCurrencyInfo
+
 import java.math.BigDecimal
 import java.util.UUID
 
@@ -29,9 +29,15 @@ data class CurrencyCommand(
     fun toUpdate(newData: CurrencyCommand): CurrencyCommand {
 
             return newData.apply {
+
                 this.uuid = uuid
                 this.symbol = symbol
             }
         }
 
+
+
 }
+
+
+data class CurrenciesCommand(var currencies: List<CurrencyCommand>?)

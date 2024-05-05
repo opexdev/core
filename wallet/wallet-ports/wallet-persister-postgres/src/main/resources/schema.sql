@@ -175,4 +175,28 @@ CREATE TABLE IF NOT EXISTS wallet_stat_exclusion
 (
     id        SERIAL PRIMARY KEY,
     wallet_id INTEGER NOT NULL UNIQUE REFERENCES wallet (id)
-)
+);
+
+
+
+
+
+CREATE TABLE IF NOT EXISTS  new_currency (
+      id SERIAL              PRIMARY KEY,
+      symbol                 VARCHAR(255) UNIQUE NOT NULL,  -- Assuming symbol length won't exceed 255 characters
+      uuid                   VARCHAR(255) UNIQUE NOT NULL,  -- Assuming UUID length won't exceed 255 characters
+      name                   VARCHAR(255) NOT NULL,
+      precision              NUMERIC,  -- Adjust data type based on your BigDecimal precision needs
+      title                  VARCHAR(255),
+      alias                  VARCHAR(255),
+      icon                   VARCHAR(255),
+      is_transitive          BOOLEAN DEFAULT FALSE,
+      is_active              BOOLEAN DEFAULT TRUE,
+      sign                   VARCHAR(255),
+      description            TEXT,  -- Use TEXT for potentially long descriptions
+      short_description      VARCHAR(255),
+      is_withdraw_enable     BOOLEAN DEFAULT TRUE,
+      withdraw_fee           NUMERIC,  -- Adjust data type based on your BigDecimal precision needs
+      external_url           VARCHAR(255),
+      is_crypto_currency     BOOLEAN DEFAULT FALSE
+);

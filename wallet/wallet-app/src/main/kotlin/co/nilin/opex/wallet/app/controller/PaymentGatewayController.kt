@@ -6,6 +6,7 @@ import co.nilin.opex.wallet.app.dto.PaymentDepositRequest
 import co.nilin.opex.wallet.app.dto.PaymentDepositResponse
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.core.spi.TransferManager
 import co.nilin.opex.wallet.core.spi.WalletManager
@@ -33,7 +34,7 @@ class PaymentGatewayController(
             PaymentCurrency.TOMAN -> request.amount.toLong()
         }
 
-        val currency = currencyService.getCurrency("IRT") ?: throw OpexError.CurrencyNotFound.exception()
+        val currency = currencyService.fetchCurrencies(FetchCurrency(symbol = "IRT"))?.currencies?.firstOrNull() ?: throw OpexError.CurrencyNotFound.exception()
         val sourceOwner = walletOwnerManager.findWalletOwner(walletOwnerManager.systemUuid)
             ?: throw OpexError.WalletOwnerNotFound.exception()
         val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner, "main", currency)

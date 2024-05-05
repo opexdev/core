@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.exc.ConcurrentBalanceChangException
+import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.ports.postgres.dao.*
@@ -24,7 +25,7 @@ class WalletManagerImpl(
     val transactionRepository: TransactionRepository,
     val walletRepository: WalletRepository,
     val walletOwnerRepository: WalletOwnerRepository,
-    val currencyRepository: CurrencyRepository,
+    val currencyRepository: CurrencyRepositoryV2,
     @Value("b58dc8b2-9c0f-11ee-8c90-0242ac120002") val adminUuid: String? = "",
     @Value("10000") val minimumBalance: BigDecimal? = BigDecimal(10000)
 ) : WalletManager {
@@ -146,7 +147,7 @@ class WalletManagerImpl(
     override suspend fun findWalletByOwnerAndCurrencyAndType(
         owner: WalletOwner,
         walletType: String,
-        currency: Currency
+        currency: CurrencyCommand
     ): Wallet? {
 
         val walletModel = walletRepository.findByOwnerAndTypeAndCurrency(
@@ -173,12 +174,12 @@ class WalletManagerImpl(
             .collectList()
             .awaitSingle()
             .map {
-                val currency = currencyRepository.findById(it.currency).awaitFirst()
+                val currency = currencyRepository.findBySymbol(it.currency)?.awaitFirst()
                 Wallet(
                     it.id!!,
                     ownerModel.toPlainObject(),
-                    Amount(currency.toPlainObject(), it.balance),
-                    currency.toPlainObject(),
+                    Amount(currency?.toPlainObject(), it.balance),
+                    currency?.toPlainObject(),
                     it.type,
                     it.version
                 )
@@ -206,12 +207,12 @@ class WalletManagerImpl(
             .collectList()
             .awaitSingle()
             .map {
-                val currency = currencyRepository.findById(it.currency).awaitFirst()
+                val currency = currencyRepository.findBySymbol(it.currency)?.awaitFirst()
                 Wallet(
                     it.id!!,
                     ownerModel.toPlainObject(),
-                    Amount(currency.toPlainObject(), it.balance),
-                    currency.toPlainObject(),
+                    Amount(currency?.toPlainObject(), it.balance),
+                    currency?.toPlainObject(),
                     it.type,
                     it.version
                 )
@@ -224,19 +225,19 @@ class WalletManagerImpl(
             .collectList()
             .awaitSingle()
             .map {
-                val currency = currencyRepository.findById(it.currency).awaitFirst()
+                val currency = currencyRepository.findBySymbol(it.currency)?.awaitFirst()
                 Wallet(
                     it.id!!,
                     ownerModel.toPlainObject(),
-                    Amount(currency.toPlainObject(), it.balance),
-                    currency.toPlainObject(),
+                    Amount(currency?.toPlainObject(), it.balance),
+                    currency?.toPlainObject(),
                     it.type,
                     it.version
                 )
             }
     }
 
-    override suspend fun createWallet(owner: WalletOwner, balance: Amount, currency: Currency, type: String): Wallet {
+    override suspend fun createWallet(owner: WalletOwner, balance: Amount, currency: CurrencyCommand, type: String): Wallet {
         val walletModel = walletRepository
             .save(WalletModel(null, owner.id!!, type, currency.symbol, balance.amount))
             .awaitFirst()
@@ -258,12 +259,12 @@ class WalletManagerImpl(
         val walletModel = walletRepository.findById(walletId).awaitFirstOrNull()
         if (walletModel == null)
             return null
-        val existingCurrency = currencyRepository.findById(walletModel.currency).awaitFirst()
+        val existingCurrency = currencyRepository.findBySymbol(walletModel.currency)?.awaitFirst()
         return Wallet(
             walletModel.id!!,
             walletOwnerRepository.findById(walletModel.owner).awaitFirst().toPlainObject(),
-            Amount(existingCurrency.toPlainObject(), walletModel.balance),
-            existingCurrency.toPlainObject(),
+            Amount(existingCurrency?.toPlainObject(), walletModel.balance),
+            existingCurrency?.toPlainObject(),
             walletModel.type,
             walletModel.version
         )
