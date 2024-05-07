@@ -17,3 +17,5 @@ data class CryptoCurrencyCommand(
         var decimal: Int?,
         var chain: String?
 )
+
+data class CryptoImps(var imps: List<CryptoCurrencyCommand>?)

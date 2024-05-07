@@ -62,6 +62,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     CurrentSystemAssetsAreNotEnough(6017, null, HttpStatus.INTERNAL_SERVER_ERROR),
     NotEnoughBalance(6018, null, HttpStatus.BAD_REQUEST),
     WithdrawNotAllowed(6019, null, HttpStatus.BAD_REQUEST),
+    ImpNotFound(6020, null, HttpStatus.NOT_FOUND),
 
 
     // code 7000: api

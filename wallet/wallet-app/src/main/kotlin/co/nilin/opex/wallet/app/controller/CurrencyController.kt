@@ -3,10 +3,6 @@ package co.nilin.opex.wallet.app.controller
 import co.nilin.opex.wallet.app.service.CurrencyServiceV2
 import co.nilin.opex.wallet.core.inout.CryptoCurrencyCommand
 import co.nilin.opex.wallet.core.inout.CurrencyCommand
-import co.nilin.opex.wallet.core.inout.DepositMethod
-import co.nilin.opex.wallet.core.model.Currencies
-import co.nilin.opex.wallet.core.model.Currency
-import co.nilin.opex.wallet.core.model.CurrencyImp
 import org.springframework.web.bind.annotation.*
 
 @RestController

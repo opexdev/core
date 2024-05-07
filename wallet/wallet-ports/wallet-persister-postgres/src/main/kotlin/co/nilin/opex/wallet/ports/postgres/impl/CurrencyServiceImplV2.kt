@@ -74,9 +74,6 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
     }
 
 
-    override suspend fun currency2Crypto(request: CryptoCurrencyCommand): CurrencyCommand? {
-        TODO("Not yet implemented")
-    }
 
     override suspend fun fetchCurrencies(request: FetchCurrency): CurrenciesCommand? {
         TODO("Not yet implemented")

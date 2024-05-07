@@ -1,16 +1,13 @@
 package co.nilin.opex.wallet.core.spi
 
-import co.nilin.opex.wallet.core.model.CurrencyImp
-import co.nilin.opex.wallet.core.model.PropagateCurrencyChanges
-import co.nilin.opex.wallet.core.model.otc.Currency
-import co.nilin.opex.wallet.core.model.otc.CurrencyImplementationResponse
-import co.nilin.opex.wallet.core.model.otc.FetchCurrencyInfo
+import co.nilin.opex.wallet.core.inout.CryptoCurrencyCommand
+import co.nilin.opex.wallet.core.inout.CryptoImps
 
 interface BcGatewayProxy {
-   suspend fun createCurrency(currencyImp: PropagateCurrencyChanges):CurrencyImplementationResponse?
+    suspend fun createNewCurrency(currencyImp: CryptoCurrencyCommand, internalToken: String?): CryptoImps?
 
-    suspend fun  updateCurrency(currencyImp: PropagateCurrencyChanges):CurrencyImplementationResponse?
+    suspend fun updateImpOfCryptoCurrency(currencyImp: CryptoCurrencyCommand, internalToken: String?): CryptoImps?
 
-    suspend fun getCurrencyInfo(symbol:String):FetchCurrencyInfo?
+    suspend fun fetchImpsOfCryptoCurrency(symbol: String, internalToken: String? ): CryptoImps?
 
 }

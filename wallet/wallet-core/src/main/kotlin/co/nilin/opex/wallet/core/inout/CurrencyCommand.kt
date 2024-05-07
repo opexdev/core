@@ -23,7 +23,7 @@ data class CurrencyCommand(
         var withdrawMethods: List<WithdrawMethod>?,
         var externalUrl: String? = null,
         var isCryptoCurrency: Boolean? = false,
-        var impls: List<CryptoCurrencyCommand>
+        var impls: List<CryptoCurrencyCommand>?
 
 ) {
     fun toUpdate(newData: CurrencyCommand): CurrencyCommand {
