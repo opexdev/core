@@ -46,5 +46,9 @@ class FinancialAction(
 }
 
 enum class FinancialActionStatus {
-    CREATED, PROCESSED, ERROR
+    CREATED,
+    SENT,
+    PROCESSED,
+    RETRY,
+    ERROR
 }

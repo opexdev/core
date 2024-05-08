@@ -2,6 +2,7 @@ package co.nilin.opex.accountant.ports.kafka.listener.config
 
 import co.nilin.opex.accountant.core.inout.KycLevelUpdatedEvent
 import co.nilin.opex.accountant.ports.kafka.listener.consumer.*
+import co.nilin.opex.accountant.ports.kafka.listener.inout.FinancialActionResponseEvent
 import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.TopicPartition
@@ -35,7 +36,7 @@ class AccountantKafkaConfig {
             ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
             ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JsonDeserializer::class.java,
             JsonDeserializer.TRUSTED_PACKAGES to "co.nilin.opex.*",
-            JsonDeserializer.TYPE_MAPPINGS to "order_request_event:co.nilin.opex.accountant.ports.kafka.listener.inout.OrderRequestEvent,order_request_submit:co.nilin.opex.accountant.ports.kafka.listener.inout.OrderSubmitRequestEvent,order_request_cancel:co.nilin.opex.accountant.ports.kafka.listener.inout.OrderCancelRequestEvent,kyc_level_updated_event:co.nilin.opex.accountant.core.inout.KycLevelUpdatedEvent"
+            JsonDeserializer.TYPE_MAPPINGS to "order_request_event:co.nilin.opex.accountant.ports.kafka.listener.inout.OrderRequestEvent,order_request_submit:co.nilin.opex.accountant.ports.kafka.listener.inout.OrderSubmitRequestEvent,order_request_cancel:co.nilin.opex.accountant.ports.kafka.listener.inout.OrderCancelRequestEvent,kyc_level_updated_event:co.nilin.opex.accountant.core.inout.KycLevelUpdatedEvent,fiAction_response_event:co.nilin.opex.accountant.ports.kafka.listener.inout.FinancialActionResponseEvent"
         )
     }
 
@@ -46,6 +47,11 @@ class AccountantKafkaConfig {
 
     @Bean("KycConsumerFactory")
     fun kycConsumerFactory(@Qualifier("consumerConfig") consumerConfigs: Map<String, Any?>): ConsumerFactory<String, KycLevelUpdatedEvent> {
+        return DefaultKafkaConsumerFactory(consumerConfigs)
+    }
+
+    @Bean("faResponseConsumerFactory")
+    fun faResponseConsumerFactory(@Qualifier("consumerConfig") consumerConfigs: Map<String, Any?>): ConsumerFactory<String, FinancialActionResponseEvent> {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
 
@@ -109,6 +115,22 @@ class AccountantKafkaConfig {
         container.start()
     }
 
+    @Autowired
+    @ConditionalOnBean(FAResponseKafkaListener::class)
+    fun configureEventListener(
+        eventListener: FAResponseKafkaListener,
+        //@Qualifier("accountantEventKafkaTemplate") template: KafkaTemplate<String?, CoreEvent>,
+        @Qualifier("faResponseConsumerFactory") consumerFactory: ConsumerFactory<String, FinancialActionResponseEvent>
+    ) {
+        val containerProps = ContainerProperties(Pattern.compile("fiAction_response"))
+        containerProps.messageListener = eventListener
+        val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
+        container.setBeanName("FAResponseKafkaListenerContainer")
+        //TODO add error handler
+        //container.commonErrorHandler = createConsumerErrorHandler(template, "events.DLT")
+        container.start()
+    }
+
     @Bean("kycLevelUpdatedProducerFactory")
     fun producerFactory(@Qualifier("consumerConfig") producerConfigs: Map<String, Any>): ProducerFactory<String, KycLevelUpdatedEvent> {
         return DefaultKafkaProducerFactory(producerConfigs)
@@ -118,12 +140,13 @@ class AccountantKafkaConfig {
     fun kafkaTemplate(@Qualifier("kycLevelUpdatedProducerFactory") producerFactory: ProducerFactory<String, KycLevelUpdatedEvent>): KafkaTemplate<String, KycLevelUpdatedEvent> {
         return KafkaTemplate(producerFactory)
     }
+
     @Autowired
     @ConditionalOnBean(KycLevelUpdatedKafkaListener::class)
     fun configureKycLevelUpdatedListener(
-            listener: KycLevelUpdatedKafkaListener,
-            @Qualifier("kycLevelUpdatedKafkaTemplate") template: KafkaTemplate<String, KycLevelUpdatedEvent>,
-            @Qualifier("KycConsumerFactory") consumerFactory: ConsumerFactory<String, KycLevelUpdatedEvent>
+        listener: KycLevelUpdatedKafkaListener,
+        @Qualifier("kycLevelUpdatedKafkaTemplate") template: KafkaTemplate<String, KycLevelUpdatedEvent>,
+        @Qualifier("KycConsumerFactory") consumerFactory: ConsumerFactory<String, KycLevelUpdatedEvent>
     ) {
         val containerProps = ContainerProperties(Pattern.compile("kyc_level_updated"))
         containerProps.messageListener = listener
@@ -132,7 +155,6 @@ class AccountantKafkaConfig {
         container.commonErrorHandler = createConsumerErrorHandler(template, "kyc_level_updated.DLT")
         container.start()
     }
-
 
     private fun createConsumerErrorHandler(kafkaTemplate: KafkaTemplate<*, *>, dltTopic: String): CommonErrorHandler {
         val recoverer = DeadLetterPublishingRecoverer(kafkaTemplate) { cr, _ ->

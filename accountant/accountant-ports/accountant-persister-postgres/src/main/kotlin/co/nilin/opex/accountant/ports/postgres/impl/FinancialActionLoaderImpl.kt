@@ -17,17 +17,14 @@ import java.math.BigDecimal
 
 @Component
 class FinancialActionLoaderImpl(
-    val financialActionRepository: FinancialActionRepository, val jsonMapper: JsonMapper
+    private val financialActionRepository: FinancialActionRepository,
+    private val jsonMapper: JsonMapper
 ) : FinancialActionLoader {
 
     override suspend fun loadUnprocessed(offset: Long, size: Long): List<FinancialAction> {
         return financialActionRepository.findByStatusNot(
             FinancialActionStatus.PROCESSED.name,
-            PageRequest.of(
-                offset.toInt(), size.toInt(
-
-                ), Sort.by(Sort.Direction.ASC, "createDate")
-            )
+            PageRequest.of(offset.toInt(), size.toInt(), Sort.by(Sort.Direction.ASC, "createDate"))
         ).map { loadFinancialAction(it.id)!! }
             .toList()
     }
@@ -70,7 +67,12 @@ class FinancialActionLoaderImpl(
                 fim.receiverWalletType,
                 fim.createDate,
                 fim.category,
-                if (fim.detail != null) jsonMapper.toMap(jsonMapper.deserialize(fim.detail, Map::class.java)) else emptyMap(),
+                if (fim.detail != null) jsonMapper.toMap(
+                    jsonMapper.deserialize(
+                        fim.detail,
+                        Map::class.java
+                    )
+                ) else emptyMap(),
                 fim.status,
                 fim.uuid,
                 fim.id

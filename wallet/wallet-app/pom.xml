@@ -104,8 +104,8 @@
             <artifactId>wallet-eventlistener-kafka</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.wallet.ports.auth</groupId>
-            <artifactId>wallet-auth-proxy</artifactId>
+            <groupId>co.nilin.opex.wallet.ports.kafka.submitter</groupId>
+            <artifactId>wallet-submitter-kafka</artifactId>
         </dependency>
         <dependency>
             <groupId>co.nilin.opex.utility</groupId>
