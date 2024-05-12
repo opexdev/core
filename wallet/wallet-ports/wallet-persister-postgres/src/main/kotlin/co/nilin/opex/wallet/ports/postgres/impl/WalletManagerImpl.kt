@@ -79,46 +79,47 @@ class WalletManagerImpl(
     }
 
     override suspend fun isWithdrawAllowed(wallet: Wallet, amount: BigDecimal): Boolean {
-        require(amount >= BigDecimal.ZERO)
+        if (amount <= BigDecimal.ZERO)
+            throw OpexError.InvalidAmount.exception()
+
         var evaluate = wallet.balance.amount >= amount
         if (!evaluate) return false
-        if (evaluate) {
-            var limit = walletLimitsRepository.findByOwnerAndCurrencyAndWalletAndAction(
-                wallet.owner.id!!, wallet.currency.symbol, wallet.id!!, "withdraw"
+
+        var limit = walletLimitsRepository.findByOwnerAndCurrencyAndWalletAndAction(
+            wallet.owner.id!!, wallet.currency.symbol, wallet.id!!, "withdraw"
+        ).awaitFirstOrNull()
+        if (limit == null) {
+            limit = walletLimitsRepository.findByOwnerAndCurrencyAndActionAndWalletType(
+                wallet.owner.id!!, wallet.currency.symbol, "withdraw", wallet.type
             ).awaitFirstOrNull()
             if (limit == null) {
-                limit = walletLimitsRepository.findByOwnerAndCurrencyAndActionAndWalletType(
-                    wallet.owner.id!!, wallet.currency.symbol, "withdraw", wallet.type
+                limit = walletLimitsRepository.findByLevelAndCurrencyAndActionAndWalletType(
+                    wallet.owner.level, wallet.currency.symbol, "withdraw", wallet.type
                 ).awaitFirstOrNull()
-                if (limit == null) {
-                    limit = walletLimitsRepository.findByLevelAndCurrencyAndActionAndWalletType(
-                        wallet.owner.level, wallet.currency.symbol, "withdraw", wallet.type
-                    ).awaitFirstOrNull()
+            }
+        }
+
+        if (limit != null) {
+            if (limit.dailyCount != null || limit.dailyTotal != null) {
+                val ts = transactionRepository.calculateWithdrawStatistics(
+                    wallet.owner.id!!, wallet.id!!, LocalDateTime.now().minusDays(1)
+                        .withHour(0).withMinute(0).withSecond(0), LocalDateTime.now()
+                ).awaitFirstOrNull()
+                if (ts != null) {
+                    evaluate = (limit.dailyCount != null && ts.cnt!! >= limit.dailyCount!!)
+                            || (limit.dailyTotal != null && ts.total!! >= limit.dailyTotal)
                 }
             }
 
-            if (limit != null) {
-                if (limit.dailyCount != null || limit.dailyTotal != null) {
-                    val ts = transactionRepository.calculateWithdrawStatistics(
-                        wallet.owner.id!!, wallet.id!!, LocalDateTime.now().minusDays(1)
-                            .withHour(0).withMinute(0).withSecond(0), LocalDateTime.now()
-                    ).awaitFirstOrNull()
-                    if (ts != null) {
-                        evaluate = (limit.dailyCount != null && ts.cnt!! >= limit.dailyCount!!)
-                                || (limit.dailyTotal != null && ts.total!! >= limit.dailyTotal)
-                    }
-                }
-
-                if (evaluate && (limit.monthlyCount != null || limit.monthlyTotal != null)) {
-                    val ts = transactionRepository.calculateWithdrawStatistics(
-                        wallet.owner.id!!, wallet.id!!, LocalDateTime.now().minusMonths(1)
-                            .withDayOfMonth(1)
-                            .withHour(0).withMinute(0).withSecond(0), LocalDateTime.now()
-                    ).awaitFirstOrNull()
-                    if (ts != null) {
-                        evaluate = (limit.dailyCount != null && ts.cnt!! >= limit.dailyCount!!)
-                                || (limit.dailyTotal != null && ts.total!! >= limit.dailyTotal)
-                    }
+            if (evaluate && (limit.monthlyCount != null || limit.monthlyTotal != null)) {
+                val ts = transactionRepository.calculateWithdrawStatistics(
+                    wallet.owner.id!!, wallet.id!!, LocalDateTime.now().minusMonths(1)
+                        .withDayOfMonth(1)
+                        .withHour(0).withMinute(0).withSecond(0), LocalDateTime.now()
+                ).awaitFirstOrNull()
+                if (ts != null) {
+                    evaluate = (limit.dailyCount != null && ts.cnt!! >= limit.dailyCount!!)
+                            || (limit.dailyTotal != null && ts.total!! >= limit.dailyTotal)
                 }
             }
         }

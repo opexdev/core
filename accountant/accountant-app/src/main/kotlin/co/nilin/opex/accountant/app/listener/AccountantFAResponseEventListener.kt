@@ -1,15 +1,20 @@
 package co.nilin.opex.accountant.app.listener
 
+import co.nilin.opex.accountant.core.spi.FinancialActionPersister
 import co.nilin.opex.accountant.ports.kafka.listener.inout.FinancialActionResponseEvent
 import co.nilin.opex.accountant.ports.kafka.listener.spi.FAResponseListener
+import kotlinx.coroutines.runBlocking
 
-class AccountantFAResponseEventListener : FAResponseListener {
+class AccountantFAResponseEventListener(private val financialActionPersister: FinancialActionPersister) :
+    FAResponseListener {
 
     override fun id(): String {
         return "FAResponseEventListener"
     }
 
     override fun onEvent(event: FinancialActionResponseEvent, partition: Int, offset: Long, timestamp: Long) {
-        TODO("Not yet implemented")
+        runBlocking {
+            financialActionPersister.updateStatus(event.uuid, event.status)
+        }
     }
 }

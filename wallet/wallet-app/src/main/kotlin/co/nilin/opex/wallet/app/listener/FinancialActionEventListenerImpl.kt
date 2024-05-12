@@ -44,6 +44,7 @@ class FinancialActionEventListenerImpl(
             } catch (e: OpexException) {
                 responseEvent.apply {
                     status = Status.ERROR
+                    errorCode = e.error.code()
                     reason = e.error.errorName()
                 }
             } catch (e: Exception) {

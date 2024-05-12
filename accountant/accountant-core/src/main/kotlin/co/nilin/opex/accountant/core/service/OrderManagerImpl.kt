@@ -176,9 +176,9 @@ open class OrderManagerImpl(
                 OrderStatus.REJECTED
             )
         )
-        return financialActionPersister.persist(listOf(financialAction))
-        /*publishFinancialAction(financialAction)
-        return fa*/
+        val fa = financialActionPersister.persist(listOf(financialAction))
+        publishFinancialAction(financialAction)
+        return fa
     }
 
 
@@ -225,9 +225,9 @@ open class OrderManagerImpl(
                 OrderStatus.CANCELED
             )
         )
-        return financialActionPersister.persist(listOf(financialAction))
-        /*publishFinancialAction(financialAction)
-        return fa*/
+        val fa = financialActionPersister.persist(listOf(financialAction))
+        publishFinancialAction(financialAction)
+        return fa
     }
 
 

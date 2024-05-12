@@ -5,5 +5,6 @@ import co.nilin.opex.accountant.core.model.FinancialActionStatus
 data class FinancialActionResponseEvent(
     val uuid: String,
     val status: FinancialActionStatus,
-    val reason:String?
+    val errorCode: Int?,
+    val reason: String?
 )
