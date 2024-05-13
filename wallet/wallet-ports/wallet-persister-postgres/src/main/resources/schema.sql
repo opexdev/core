@@ -195,7 +195,8 @@ CREATE TABLE IF NOT EXISTS  new_currency (
       sign                   VARCHAR(255),
       description            TEXT,  -- Use TEXT for potentially long descriptions
       short_description      VARCHAR(255),
-      is_withdraw_enable     BOOLEAN DEFAULT TRUE,
+      withdraw_is_enable     BOOLEAN DEFAULT TRUE,
+      deposit_is_enable      BOOLEAN DEFAULT TRUE,
       withdraw_fee           NUMERIC,  -- Adjust data type based on your BigDecimal precision needs
       external_url           VARCHAR(255),
       is_crypto_currency     BOOLEAN DEFAULT FALSE

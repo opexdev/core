@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.wallet.app.service.CurrencyServiceV2
 import co.nilin.opex.wallet.core.inout.CryptoCurrencyCommand
+import co.nilin.opex.wallet.core.inout.CurrenciesCommand
 import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import org.springframework.web.bind.annotation.*
 
@@ -20,21 +21,29 @@ class CurrencyController(private val currencyService: CurrencyServiceV2) {
     }
 
 
-    @PostMapping("/currency/{currencyUuid}/imp")
+    @PostMapping("/currency/{currencyUuid}/impl")
     suspend fun addImp2Currency(@PathVariable("currencyUuid") currencyUuid: String,
                                 @RequestBody request: CryptoCurrencyCommand): CurrencyCommand? {
         return currencyService.addImp2Currency(request.apply { this.currencyUUID = currencyUUID })
     }
 
+    @GetMapping("/currency/{currencyUuid}")
+    suspend fun getCurrency(@PathVariable("currencyUuid") currencyUuid: String,
+                            @RequestParam("includeImp") includeImp: Boolean? = false): CurrencyCommand? {
 
-//    @GetMapping("/currency/{symbol}")
-//    suspend fun getCurrency(@PathVariable("symbol") symbol: String): Currency? {
-//        return currencyService.fetchCurrency(symbol)
-//    }
-//
-//    @GetMapping("/currency")
-//    suspend fun getCurrencies(): Currencies? {
-//        return currencyService.fetchCurrencies()
-//    }
+        return currencyService.fetchCurrencyWithImps(currencyUuid, includeImp!!)
+    }
+
+    @GetMapping("/currency")
+    suspend fun getCurrencies(@RequestParam("includeImp") includeImp: Boolean? = false): CurrenciesCommand? {
+        return currencyService.fetchCurrenciesWithImps(includeImp!!)
+    }
+
+
+    @PutMapping("/currency/impl/{implUuid}")
+    suspend fun updateImpl(@PathVariable("implUuid") implUuid: String, @RequestBody request: CryptoCurrencyCommand): CurrencyCommand? {
+        return currencyService.updateImp(request.apply { currencyImpUuid = implUuid })
+    }
+
 
 }

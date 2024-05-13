@@ -17,7 +17,8 @@ data class CurrencyCommand(
         var sign: String? = null,
         var description: String? = null,
         var shortDescription: String? = null,
-        var isWithdrawEnable: Boolean? = true,
+        var withdrawIsEnable: Boolean? = true,
+        var depositIsEnable: Boolean? = true,
         var withdrawFee: BigDecimal?,
         var depositMethods: List<DepositMethod>?,
         var withdrawMethods: List<WithdrawMethod>?,
@@ -26,7 +27,7 @@ data class CurrencyCommand(
         var impls: List<CryptoCurrencyCommand>?
 
 ) {
-    fun toUpdate(newData: CurrencyCommand): CurrencyCommand {
+    fun updateTo(newData: CurrencyCommand): CurrencyCommand {
 
             return newData.apply {
 

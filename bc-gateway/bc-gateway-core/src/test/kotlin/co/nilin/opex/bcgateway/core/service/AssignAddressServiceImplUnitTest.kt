@@ -1,9 +1,8 @@
 package co.nilin.opex.bcgateway.core.service
 
 import co.nilin.opex.bcgateway.core.model.*
-import co.nilin.opex.bcgateway.core.model.Currency
 import co.nilin.opex.bcgateway.core.spi.AssignedAddressHandler
-import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
+import co.nilin.opex.bcgateway.core.spi.CryptoCurrencyHandler
 import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -15,7 +14,7 @@ import java.util.*
 
 class AssignAddressServiceImplUnitTest {
 
-    private val currencyHandler = mockk<CurrencyHandler>()
+    private val currencyHandler = mockk<CryptoCurrencyHandler>()
     private val assignedAddressHandler = mockk<AssignedAddressHandler>()
     private val reservedAddressHandler = mockk<ReservedAddressHandler>()
 

@@ -27,8 +27,10 @@ data class NewCurrencyModel(
         var description: String? = null,
         @Column("short_description")
         var shortDescription: String? = null,
-        @Column("is_withdraw_enable")
-        var isWithdrawEnable: Boolean? = true,
+        @Column("withdraw_is_enable")
+        var withdrawIsEnable: Boolean? = true,
+        @Column("deposit_is_enable")
+        var depositIsEnable: Boolean? = true,
         @Column("withdraw_fee")
         var withdrawFee: BigDecimal?,
         @Column("external_url")

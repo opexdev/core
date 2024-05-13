@@ -1,9 +1,9 @@
 package co.nilin.opex.bcgateway.app.controller
 
 import co.nilin.opex.bcgateway.app.dto.AddCurrencyRequest
-import co.nilin.opex.bcgateway.core.model.CurrencyImplementation
-import co.nilin.opex.bcgateway.core.model.CurrencyInfo
-import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
+import co.nilin.opex.bcgateway.core.model.CryptoCurrencyCommand
+import co.nilin.opex.bcgateway.core.model.CurrencyImps
+import co.nilin.opex.bcgateway.core.spi.CryptoCurrencyHandlerV2
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -14,36 +14,30 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/currency")
-class CurrencyController(val currencyHandler: CurrencyHandler) {
+@RequestMapping("/crypto-currency")
+class CryptoCurrencyController(val cryptoCurrencyHandler: CryptoCurrencyHandlerV2) {
 
-    @GetMapping("/{currency}")
-    suspend fun fetchCurrencyInfo(@PathVariable("currency") currency: String): CurrencyInfo {
-        return currencyHandler.fetchCurrencyInfo(currency)
+    @GetMapping("/{currencyUuid}/impls")
+    suspend fun fetchCurrencyImpls(@PathVariable("currencyUuid") currency: String): CurrencyImps {
+        return cryptoCurrencyHandler.fetchCurrencyInfo(currency)
     }
 
 
-    @PostMapping("/{currency}")
-    suspend fun addCurrencyInfo(
-        @PathVariable("currency") currencySymbol: String,
-        @RequestBody addCurrencyRequest: AddCurrencyRequest
-    ): CurrencyImplementation? {
-        addCurrencyRequest.currencySymbol = currencySymbol
-        with(addCurrencyRequest) {
 
-       return  currencyHandler.addCurrencyImplementationV2(this.currencySymbol!!,
-             this.implementationSymbol,
-             this.currencyName,
-             this.chain,
-             this.tokenName,
-             this.tokenAddress,
-             this.isToken!!,
-             this.withdrawFee,
-             this.minimumWithdraw,
-             this.isWithdrawEnabled!!,
-             this.decimal
-             )
-        }
+    @GetMapping("/impls")
+    suspend fun fetchCurrenciesImpls(): CurrencyInfo {
+        return cryptoCurrencyHandler.fetchCurrencyInfo(currency)
+    }
+
+
+
+    @PostMapping("/{currencyUuid}/imp/{impUuid}")
+    suspend fun addCurrencyInfo(
+        @PathVariable("currencyUuid") currencySymbol: String,
+        @PathVariable("impUuid") impUuid:String,
+        @RequestBody request: CryptoCurrencyCommand
+    ): CryptoCurrencyCommand? {
+       cryptoCurrencyHandler
     }
 
     @PutMapping("/{currency}")

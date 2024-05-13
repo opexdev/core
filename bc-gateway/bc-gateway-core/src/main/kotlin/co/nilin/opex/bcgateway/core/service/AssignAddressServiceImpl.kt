@@ -3,11 +3,10 @@ package co.nilin.opex.bcgateway.core.service
 import co.nilin.opex.bcgateway.core.api.AssignAddressService
 import co.nilin.opex.bcgateway.core.model.*
 import co.nilin.opex.bcgateway.core.spi.AssignedAddressHandler
-import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
+import co.nilin.opex.bcgateway.core.spi.CryptoCurrencyHandler
 import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
 import co.nilin.opex.bcgateway.core.utils.LoggerDelegate
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.utility.error.data.OpexException
 import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.transaction.annotation.Transactional
@@ -15,7 +14,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 
 open class AssignAddressServiceImpl(
-        private val currencyHandler: CurrencyHandler,
+        private val currencyHandler: CryptoCurrencyHandler,
         private val assignedAddressHandler: AssignedAddressHandler,
         private val reservedAddressHandler: ReservedAddressHandler
 ) : AssignAddressService {

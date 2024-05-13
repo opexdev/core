@@ -1,7 +1,7 @@
 package co.nilin.opex.bcgateway.ports.postgres.impl
 
 import co.nilin.opex.bcgateway.core.model.*
-import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
+import co.nilin.opex.bcgateway.core.spi.CryptoCurrencyHandler
 import co.nilin.opex.bcgateway.ports.postgres.dao.ChainRepository
 import co.nilin.opex.bcgateway.ports.postgres.dao.CurrencyImplementationRepository
 import co.nilin.opex.bcgateway.ports.postgres.dao.CurrencyRepository
@@ -24,9 +24,9 @@ class CurrencyHandlerImpl(
     private val chainRepository: ChainRepository,
     private val currencyRepository: CurrencyRepository,
     private val currencyImplementationRepository: CurrencyImplementationRepository
-) : CurrencyHandler {
+) : CryptoCurrencyHandler {
 
-    private val logger = LoggerFactory.getLogger(CurrencyHandler::class.java)
+    private val logger = LoggerFactory.getLogger(CryptoCurrencyHandler::class.java)
 
     override suspend fun addCurrency(name: String, symbol: String) {
         try {

@@ -1,10 +1,8 @@
 package co.nilin.opex.bcgateway.core.spi
 
-import co.nilin.opex.bcgateway.core.model.CurrencyImplementation
-import co.nilin.opex.bcgateway.core.model.CurrencyInfo
 import java.math.BigDecimal
 
-interface CurrencyHandler {
+interface CryptoCurrencyHandler {
 
     suspend fun addCurrency(name: String, symbol: String)
 

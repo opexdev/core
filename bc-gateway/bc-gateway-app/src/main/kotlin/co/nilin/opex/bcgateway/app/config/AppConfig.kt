@@ -6,7 +6,7 @@ import co.nilin.opex.bcgateway.core.api.InfoService
 import co.nilin.opex.bcgateway.core.service.AssignAddressServiceImpl
 import co.nilin.opex.bcgateway.core.service.InfoServiceImpl
 import co.nilin.opex.bcgateway.core.spi.AssignedAddressHandler
-import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
+import co.nilin.opex.bcgateway.core.spi.CryptoCurrencyHandler
 import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
 import co.nilin.opex.bcgateway.ports.kafka.listener.consumer.AdminEventKafkaListener
 import co.nilin.opex.bcgateway.ports.kafka.listener.spi.AdminEventListener
@@ -19,9 +19,9 @@ class AppConfig {
 
     @Bean
     fun assignAddressService(
-        currencyHandler: CurrencyHandler,
-        assignedAddressHandler: AssignedAddressHandler,
-        reservedAddressHandler: ReservedAddressHandler
+            currencyHandler: CryptoCurrencyHandler,
+            assignedAddressHandler: AssignedAddressHandler,
+            reservedAddressHandler: ReservedAddressHandler
     ): AssignAddressService {
         return AssignAddressServiceImpl(currencyHandler, assignedAddressHandler, reservedAddressHandler)
     }
