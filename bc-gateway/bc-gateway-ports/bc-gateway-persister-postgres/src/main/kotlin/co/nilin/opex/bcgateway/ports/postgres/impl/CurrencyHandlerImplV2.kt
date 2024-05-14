@@ -22,7 +22,9 @@ import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
+import reactor.core.publisher.Flux
 import java.math.BigDecimal
+import java.util.stream.Collectors
 
 @Component
 class CurrencyHandlerImplV2(
@@ -31,38 +33,42 @@ class CurrencyHandlerImplV2(
 ) : CryptoCurrencyHandlerV2 {
 
     private val logger = LoggerFactory.getLogger(CryptoCurrencyHandler::class.java)
-    override suspend fun createImpl(request: CryptoCurrencyCommand) {
-        doSave(request.toModel());
+    override suspend fun createImpl(request: CryptoCurrencyCommand): CryptoCurrencyCommand? {
+        return doSave(request.toModel())?.toDto();
     }
 
-    override suspend fun updateImpl(request: CryptoCurrencyCommand):CryptoCurrencyCommand? {
-       return fetchImpl(request.currencyImpUuid)?.let {
+    override suspend fun updateImpl(request: CryptoCurrencyCommand): CryptoCurrencyCommand? {
+        return loadImpls(FetchImpls(implUuid = request.currencyImpUuid))?.awaitFirstOrElse { throw OpexError.CurrencyNotFound.exception() }?.let {
             doSave(it.toDto().updateTo(request).toModel().apply { id = it.id })?.toDto()
-
-        }?:throw OpexError.CurrencyNotFound.exception()
-
-    }
-
-    override suspend fun fetchCurrencyImpls(currencyUuid: String) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun fetchImpls(request: String) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun fetchImpl(request: String) {
-        return currencyImplementationRepository.findByCurrencyImplUuid(request)?.awaitFirstOrElse {
-            throw OpexError.CurrencyNotFound.exception()
-        }    }
-
-    private suspend fun loadImpl(uuid: String): NewCurrencyImplementationModel? {
-        return currencyImplementationRepository.findByCurrencyImplUuid(uuid)?.awaitFirstOrElse {
-            throw OpexError.CurrencyNotFound.exception()
         }
 
     }
 
+    override suspend fun fetchCurrencyImpls(currencyUuid: String): CurrencyImps? {
+
+        return CurrencyImps(loadImpls(FetchImpls(currencyUuid = currencyUuid))?.toStream()
+                ?.map { it.toDto() }?.collect(Collectors.toList()))
+    }
+
+    override suspend fun fetchCurrencyImpls(data: FetchImpls): CurrencyImps? {
+        return CurrencyImps(loadImpls(data)?.toStream()
+                ?.map { it.toDto() }?.collect(Collectors.toList()))    }
+
+    override suspend fun fetchImpls(): CurrencyImps? {
+        return CurrencyImps(loadImpls(FetchImpls())?.toStream()?.map { it.toDto() }?.collect(Collectors.toList()))
+    }
+
+    override suspend fun fetchImpl(request: String): CryptoCurrencyCommand? {
+        return loadImpls(FetchImpls(implUuid = request))?.awaitFirstOrElse {
+            throw OpexError.CurrencyNotFound.exception()
+        }?.toDto()
+    }
+
+    private suspend fun loadImpls(request: FetchImpls): Flux<NewCurrencyImplementationModel>? {
+        return currencyImplementationRepository.findImpls(request.currencyUuid, request.implUuid, request.chain, request.currencyImplementationName)? {
+            throw OpexError.CurrencyNotFound.exception()
+        }
+    }
 
     private suspend fun doSave(request: NewCurrencyImplementationModel): NewCurrencyImplementationModel? {
         return currencyImplementationRepository.save(request).awaitSingleOrNull()

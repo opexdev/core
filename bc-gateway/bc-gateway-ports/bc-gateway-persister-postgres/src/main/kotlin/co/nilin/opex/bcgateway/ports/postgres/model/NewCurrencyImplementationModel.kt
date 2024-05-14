@@ -7,7 +7,7 @@ import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
 import java.util.*
 
-@Table("currency_implementations_new")
+@Table("new_currency_implementations")
 class NewCurrencyImplementationModel(
         @Id var id: Long?,
         @Column("currency_uuid") val currencyUuid: String,
