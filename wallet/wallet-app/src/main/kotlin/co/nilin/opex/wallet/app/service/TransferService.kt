@@ -10,6 +10,7 @@ import co.nilin.opex.wallet.app.dto.TransferRequest
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.model.otc.Rate
 import co.nilin.opex.wallet.core.model.otc.ReservedTransfer
 import co.nilin.opex.wallet.core.spi.*
@@ -277,10 +278,15 @@ class TransferService(
         logger.info("deposit manually: $senderUuid to $receiverUuid on $symbol at ${LocalDateTime.now()}")
         val systemUuid = "1"
         //todo customize error message
+
         val senderLevel = walletOwnerManager.findWalletOwner(senderUuid)?.let { it.level }
                 ?: throw OpexException(OpexError.WalletOwnerNotFound)
         val receiverLevel = walletOwnerManager.findWalletOwner(receiverUuid)?.let { it.level }
-                ?: throw OpexException(OpexError.WalletOwnerNotFound)
+                ?: walletOwnerManager.createWalletOwner(
+                        receiverUuid,
+                        "not set",
+                        "1"
+                ).level
 
         if (senderLevel !in arrayListOf<String>(preferences.admin.walletLevel, preferences.system.walletLevel))
             throw OpexException(OpexError.Forbidden)
@@ -365,7 +371,7 @@ class TransferService(
     }
 
     private suspend fun checkIfSystemHasEnoughBalance(destSymbol: String, receiverWalletType: String, finalAmount: BigDecimal?) {
-        val destCurrency = currencyService.getCurrency(destSymbol)!!
+        val destCurrency = currencyService.fetchCurrencies(FetchCurrency(symbol = destSymbol))!!
         val system = walletOwnerManager.findWalletOwner(walletOwnerManager.systemUuid)
                 ?: throw OpexError.WalletOwnerNotFound.exception()
         val systemWallet = walletManager.findWalletByOwnerAndCurrencyAndType(system, receiverWalletType, destCurrency)

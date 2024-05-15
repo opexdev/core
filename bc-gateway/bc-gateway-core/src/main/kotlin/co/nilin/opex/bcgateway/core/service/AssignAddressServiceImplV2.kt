@@ -21,62 +21,49 @@ open class AssignAddressServiceImplV2(
     private var lifeTime: Long? = null
     private val logger: Logger by LoggerDelegate()
 
-    @Transactional
-    override suspend fun assignAddress(user: String, currencyImplUuid: String): List<AssignedAddress> {
+    override suspend fun assignAddress(user: String, currencyImplUuid: String): List<AssignedAddressV2> {
         logger.info(ZoneId.systemDefault().toString())
-        val implsInfo = currencyHandler.fetchCurrencyImpls(FetchImpls(currencyImplUuid))?.imps?.firstOrNull()?.let {
-            val requestedAddressType = chainLoader.fetchChainInfo(it.chain!!).addressTypes.map { it->it.type }.forEach { it.equals() }
-            reservedAddressHandler.peekReservedAddress(requestedAddressType)
-                    .flatMap { chain -> chain.addressTypes }
-                    .distinct()
-            val chainAddressTypeMap = HashMap<AddressType, MutableList<Chain>>()
-            chains.forEach { chain ->
-                chain.addressTypes.forEach { addressType ->
-                    chainAddressTypeMap.putIfAbsent(addressType, mutableListOf())
-                    chainAddressTypeMap.getValue(addressType).add(chain)
-                }
-            }
-            val userAssignedAddresses = (assignedAddressHandler.fetchAssignedAddresses(user, addressTypes)).toMutableList()
-            val result = mutableSetOf<AssignedAddress>()
-            addressTypes.forEach { addressType ->
-                val assigned = userAssignedAddresses.firstOrNull { assignAddress -> assignAddress.type == addressType }
-                if (assigned != null) {
-                    chainAddressTypeMap[addressType]?.forEach { chain ->
-                        if (!assigned.chains.contains(chain)) {
-                            assigned.chains.add(chain)
-                        }
-                    }
-                    result.add(assigned)
-                } else {
-                    val reservedAddress = reservedAddressHandler.peekReservedAddress(addressType)
-                    if (reservedAddress != null) {
-                        val newAssigned = AssignedAddress(
-                                user,
-                                reservedAddress.address,
-                                reservedAddress.memo,
-                                addressType,
-                                chainAddressTypeMap[addressType]!!,
-                                lifeTime?.let { LocalDateTime.now().plusSeconds(lifeTime!!) }
-                                        ?: null,
-                                LocalDateTime.now(),
-                                null,
-                                AddressStatus.Assigned,
-                                null
-                        )
-                        reservedAddressHandler.remove(reservedAddress)
-                        result.add(newAssigned)
-                    } else {
-                        logger.info("No reserved address available for $addressType")
-                        throw OpexError.ReservedAddressNotAvailable.exception()
-                    }
+        val result = mutableSetOf<AssignedAddressV2>()
+        currencyHandler.fetchCurrencyImpls(FetchImpls(currencyImplUuid))
+                ?.imps?.firstOrNull()?.let { it ->
+                    //for requested chain check all available address types and for each of them do :
+                    chainLoader.fetchChainInfo(it.chain!!).addressTypes.map { it -> it.id }.distinct()
+                            .forEach { addressType ->
+                                //check: Is there any assigned address(user, specific address type on requested chain)
+                                assignedAddressHandler.fetchAssignedAddresses(user, addressType)?.let {
+                                    result.add(it)
+                                } ?: run {
+                                    // there is no assigned address(user,specific address type on requested chain)
+                                    //then assign new address (ip applicable)
+                                    assignNewAddress(user, addressType)?.let { ra ->
+                                        result.add(ra)
+                                    }
+                                }
 
-                }
-            }
-            result.forEach { address ->
-                assignedAddressHandler.persist(address)
-                address.apply { id = null }
-            }
-            return result.toMutableList()
-        }
+
+                            }
+                    if (result.size == 0)
+                        throw OpexError.ReservedAddressNotAvailable.exception()
+                    return result.toMutableList()
+                } ?: throw OpexError.BadRequest.exception()
+
     }
+
+    @Transactional
+    open suspend fun assignNewAddress(user: String, addressTypeId: Long): AssignedAddressV2? {
+        reservedAddressHandler.peekReservedAddress(addressTypeId)?.let {//
+            reservedAddressHandler.remove(it)
+            return assignedAddressHandler.persist(user,
+                    AssignedAddressV2(addressTypeId, it.address, it.memo,
+                            lifeTime?.let { LocalDateTime.now().plusSeconds(lifeTime!!) } ?: null,
+                            LocalDateTime.now(),
+                            null,
+                            AddressStatus.Assigned,
+                            null))
+        }
+
+                ?: run { return null }
+
+    }
+
 }

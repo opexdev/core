@@ -23,7 +23,7 @@ class AddressController(
         private val reservedAddressHandler: ReservedAddressHandler,
         private val addressTypeHandler: AddressTypeHandler
 ) {
-    data class AssignAddressRequest(val uuid: String, val currency: String, val chain: String)
+    data class AssignAddressRequest(val uuid: String, val currencyImplUuid: String)
     data class AssignAddressResponse(val addresses: List<AssignedAddress>)
 
     @PostMapping("/assign")
@@ -33,8 +33,7 @@ class AddressController(
             throw OpexError.Forbidden.exception()
         val assignedAddress = assignAddressService.assignAddress(
                 assignAddressRequest.uuid,
-                Currency(assignAddressRequest.currency, assignAddressRequest.currency),
-                assignAddressRequest.chain
+                assignAddressRequest.currencyImplUuid
         )
 
       return AssignAddressResponse(assignedAddress);
