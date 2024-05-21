@@ -1,9 +1,17 @@
-name: Push images on dev branch update about otc project
-
+name:  Build, Test, and Deploy otc services for specific partner (DEV env)
 on:
   push:
     branches:
       - dev
+
+
+  workflow_dispatch:
+    inputs:
+      partner_name:
+        type: string
+        description: 'The name of the partner (provided during workflow execution)'
+        required: true
+        default: default
 
 jobs:
   build:
@@ -11,7 +19,11 @@ jobs:
     strategy:
       matrix:
         java: [ 17 ]
-    name: Build OPEX and run tests with java ${{ matrix.java }}
+    name: Build OPEX and run tests with java ${{ matrix.java }} (otc)
+    env:
+      TAG: otc-dev
+      PARTNER: ${{ github.event.inputs.partner_name || 'default' }}
+
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v2
@@ -21,19 +33,53 @@ jobs:
           distribution: 'adopt'
           java-package: jdk
           java-version: ${{ matrix.java }}
-      #          cache: maven
+      - name: Load partners config
+        id: download_partners_data
+        run: |
+          echo $PARTNER
+          curl -L -o partner_mappings.yml -H "Authorization: token  ${{secrets.PARTNERS_ACCESS_TOKEN}} " https://raw.githubusercontent.com/opexdev/partners/main/partner_mappings.yml
+          cat partner_mappings.yml
+
+      - name: Fetch partner data
+        uses: christian-ci/action-yaml-github-output@v2
+        id: read_partners_data
+        with:
+          file_path: partner_mappings.yml
+          main_key: partners
+          sub_key: ${{env.PARTNER}}
+
+      - name: Decrypt data
+        id: decrypt_data
+        run: |
+          
+          echo ${{ steps.read_partners_data.outputs.SSH_HOST }} | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_ssh_host.txt
+          echo ${{ steps.read_partners_data.outputs.SSH_DIR }} | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_dir.txt
+          echo ${{ steps.read_partners_data.outputs.SSH_USER }} | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_user.txt
+          echo ${{ steps.read_partners_data.outputs.PASSWORD }} | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_password.txt
+
+          curl -L -o priv_file.txt -H "Authorization: token  ${{secrets.PARTNERS_ACCESS_TOKEN}} " https://raw.githubusercontent.com/opexdev/partners/main/${{ steps.read_partners_data.outputs.SSH_PRIVATE_KEY }}
+          cat priv_file.txt | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_private_key.txt  
+          export SSH_SECRET_NN=$( cat decrypted_private_key.txt | tr -s '\r\n' '#')  
+          
+          
+          echo "ssh_user=$(cat decrypted_user.txt)" >> $GITHUB_OUTPUT
+          echo "ssh_dir=$(cat decrypted_dir.txt)" >> $GITHUB_OUTPUT
+          echo "ssh_host=$(cat decrypted_ssh_host.txt)" >> $GITHUB_OUTPUT
+          echo "ssh_secret=$SSH_SECRET_NN" >> $GITHUB_OUTPUT
+          echo "env_path=${{ steps.read_partners_data.outputs.ENV_PATH }}" >> $GITHUB_OUTPUT
+          echo "password=$(cat decrypted_password.txt)" >> $GITHUB_OUTPUT
+
       - name: Build
         run:  |
           mvn -pl common -am  -B -T 1C clean install -Potc
           mvn -pl wallet,bc-gateway -amd  -B -T 1C clean install -Potc
+
       - name: Run Tests
         run: |
           mvn -pl common -am -B -T 1C -Dskip.unit.tests=false surefire:test
           mvn -pl wallet,bc-gateway -amd  -B -T 1C -Dskip.unit.tests=false surefire:test
       - name: Build Docker images
-        env:
-          TAG: otc-dev
-        run: docker-compose -f docker-compose-otc.build.yml build
+        run: docker compose -f docker-compose-otc.build.yml build
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
         with:
@@ -41,20 +87,42 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Push images to GitHub Container Registry
-        env:
-          TAG: otc-dev
-        run: docker-compose -f docker-compose-otc.build.yml push
+        run: docker compose -f docker-compose-otc.build.yml push
+    outputs:
+      ssh_user: ${{ steps.decrypt_data.outputs.ssh_user }}
+      ssh_secret: ${{ steps.decrypt_data.outputs.ssh_secret }}
+      ssh_dir: ${{ steps.decrypt_data.outputs.ssh_dir }}
+      ssh_host: ${{ steps.decrypt_data.outputs.ssh_host }}
+      env_path: ${{ steps.decrypt_data.outputs.env_path }}
+      server_password: ${{ steps.decrypt_data.outputs.password }}
+
+
   deploy:
-    name: deploy docker-compose on remote host
+    name: Deploy docker-compose file on remote host
     runs-on: ubuntu-20.04
     needs: build
+    env:
+      TAG: otc-dev
+      SSH_USER: ${{ needs.build.outputs.ssh_user }}
+      SSH_SECRET_NN: ${{ needs.build.outputs.ssh_secret }}
+      SSH_DIR: ${{ needs.build.outputs.ssh_dir }}
+      SSH_HOST: ${{ needs.build.outputs.ssh_host }}
+      SERVER_PASSWORD: ${{ needs.build.outputs.server_password }}
+      ENV_PATH: ${{ needs.build.outputs.env_path }}
     steps:
-      - name: set ssh keys
+      - name: Set ssh key to have access
         run: |
+          export SSH_SECRET=$( tr '#' '\n' <<< "$SSH_SECRET_NN")
           install -m 600 -D /dev/null ~/.ssh/id_rsa
-          echo "${{secrets.SSH_PRIVATE_KEY}}" > ~/.ssh/id_rsa
-          ssh-keyscan -H ${{secrets.SSH_HOST}} >~/.ssh/known_hosts
-      - name: pull docker images in dest server
-        run: |
-          ssh ${{secrets.SSH_USER}}@${{secrets.SSH_HOST}} "cd ${{secrets.SSH_DIR}} && docker-compose  -f docker-compose-otc.yml -f docker-compose-otc.override.yml -f docker-compose-otc.build.yml -f docker-compose-otc.local.yml up  --build  -d  && exit "
+          echo "$SSH_SECRET" > ~/.ssh/id_rsa
+          ssh-keyscan -H "$SSH_HOST" >~/.ssh/known_hosts
 
+      - name: Pull docker images in dest server
+        env:
+          token: ${{secrets.PARTNERS_ACCESS_TOKEN}}
+        run: |
+          sshpass -p"$SERVER_PASSWORD" ssh "$SSH_USER"@"$SSH_HOST" "cd "$SSH_DIR"; git pull origin dev; \
+          curl  https://raw.githubusercontent.com/opexdev/partners/main/"$ENV_PATH"  -L -o .env -H 'Authorization:token $token' ; \
+          echo $SERVER_PASSWORD | sudo -S docker-compose -f docker-compose-otc.yml pull; \
+          echo $SERVER_PASSWORD | sudo -S docker network create --driver bridge otc-network || true; \
+          echo $SERVER_PASSWORD | sudo -S docker-compose -f docker-compose-otc.yml -f docker-compose-otc.local.yml up -d  && exit"
