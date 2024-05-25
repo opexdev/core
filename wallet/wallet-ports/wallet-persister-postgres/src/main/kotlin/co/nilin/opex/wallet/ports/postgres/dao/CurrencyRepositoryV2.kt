@@ -14,7 +14,7 @@ import java.time.LocalDateTime
 @Repository
 interface CurrencyRepositoryV2 : ReactiveCrudRepository<NewCurrencyModel, Long> {
 
-//    @Query("select * from currency where symbol = :symbol")
+    //    @Query("select * from currency where symbol = :symbol")
 //    fun findBySymbol(symbol: String): Mono<CurrencyModel>?
 //
 //    @Query("insert into currency values (:symbol, :name, :precision) on conflict do nothing")
@@ -27,7 +27,7 @@ interface CurrencyRepositoryV2 : ReactiveCrudRepository<NewCurrencyModel, Long> 
 //    fun deleteBySymbol(symbol: String): Mono<Void>
 //
 //
-//    fun findByIsTransitive(isTransitive: Boolean): Flux<CurrencyModel>?
+    fun findByIsTransitive(isTransitive: Boolean): Flux<NewCurrencyModel>?
 
     @Query("select * from new_currency where (:uuid=null or :uuid=uuid) and (:symbol =null or symbol like CONCAT('%',:symbol,'%') ) and (:name =null or name like CONCAT('%',:name,'%') )  ")
     fun fetchCurrencies(uuid: String? = null, symbol: String? = null, name: String? = null): Flux<NewCurrencyModel>?

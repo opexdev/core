@@ -1,11 +1,14 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.utility.error.data.OpexException
-import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepository
+import co.nilin.opex.wallet.core.model.FetchCurrency
+import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepositoryV2
 import co.nilin.opex.wallet.ports.postgres.dto.toModel
 import co.nilin.opex.wallet.ports.postgres.impl.sample.VALID
+import co.nilin.opex.wallet.ports.postgres.util.toModel
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -13,14 +16,14 @@ import org.junit.jupiter.api.Test
 import reactor.core.publisher.Mono
 
 private class CurrencyServiceTest {
-    private val currencyRepository: CurrencyRepository = mockk()
-    private val currencyService: CurrencyServiceImpl = CurrencyServiceImpl(currencyRepository)
+    private val currencyRepository: CurrencyRepositoryV2 = mockk()
+    private val currencyService: CurrencyServiceImplV2 = CurrencyServiceImplV2(currencyRepository)
 
     @Test
     fun givenCurrency_whenGetCurrency_thenReturnCurrency(): Unit = runBlocking {
-        every { currencyRepository.findBySymbol(VALID.CURRENCY.symbol) } returns Mono.just(VALID.CURRENCY.toModel())
+        every { currencyRepository.fetchCurrencies(symbol = VALID.CURRENCY.symbol)?.first() } returns Mono.just(VALID.CURRENCY.toModel())
 
-        val c = currencyService.getCurrency(VALID.CURRENCY.symbol)
+        val c = currencyService.fetchCurrencies(FetchCurrency(symbol =  VALID.CURRENCY.symbol))?.currencies?.firstOrNull()
 
         assertThat(c).isNotNull
         assertThat(c!!.symbol).isEqualTo(VALID.CURRENCY.symbol)
@@ -30,7 +33,7 @@ private class CurrencyServiceTest {
 
     @Test
     fun givenNoCurrency_whenGetCurrency_thenThrowException(): Unit = runBlocking {
-        every { currencyRepository.findBySymbol(VALID.CURRENCY.symbol) } returns Mono.empty()
+        every { currencyRepository.fetchCurrencies(FetchCurrency(symbol = VALID.CURRENCY.symbol))? } returns Mono.empty()
             assertThrows(OpexException::class.java) { runBlocking {  currencyService.getCurrency(VALID.CURRENCY.symbol) }}
 
     }

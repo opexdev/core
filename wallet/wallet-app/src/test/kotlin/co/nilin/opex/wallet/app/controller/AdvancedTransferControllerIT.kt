@@ -3,11 +3,9 @@ package co.nilin.opex.wallet.app.controller
 import co.nilin.opex.utility.error.controller.ExceptionController
 import co.nilin.opex.wallet.app.KafkaEnabledTest
 import co.nilin.opex.wallet.app.dto.*
+import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
-import co.nilin.opex.wallet.core.model.Amount
-import co.nilin.opex.wallet.core.model.Currency
-import co.nilin.opex.wallet.core.model.Wallet
-import co.nilin.opex.wallet.core.model.WalletOwner
+import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.model.otc.Symbols
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.core.spi.WalletManager
@@ -42,10 +40,12 @@ class AdvancedTransferControllerIT : KafkaEnabledTest() {
     fun setup() {
 
         runBlocking {
-            currencyService.addCurrency("ETH", "ETH", BigDecimal.TEN)
-            currencyService.addCurrency("BTC", "BTC", BigDecimal.TEN)
-            currencyService.addCurrency("USDT", "USDT", BigDecimal.valueOf(2))
-            currencyService.addCurrency("Z", "Z", BigDecimal.valueOf(2))
+            currencyService.createNewCurrency(CurrencyCommand("ETH", null,"ETH", BigDecimal.TEN))
+            currencyService.createNewCurrency(CurrencyCommand("BTC", null,"BTC", BigDecimal.TEN))
+            currencyService.createNewCurrency(CurrencyCommand("USDT", null,"USDT", BigDecimal.valueOf(2)))
+            currencyService.createNewCurrency(CurrencyCommand("Z", null,"Z", BigDecimal.valueOf(2)))
+
+
         }
 
         webClient.post().uri("/otc/rate").accept(MediaType.APPLICATION_JSON)
@@ -80,8 +80,8 @@ class AdvancedTransferControllerIT : KafkaEnabledTest() {
             val sender = walletOwnerManager.createWalletOwner(UUID.randomUUID().toString(), "sender", "")
             val receiver = UUID.randomUUID().toString()
             val system = walletOwnerManager.findWalletOwner(walletOwnerManager.systemUuid)!!
-            val srcCurrency = currencyService.getCurrency("ETH")!!
-            val destCurrency = currencyService.getCurrency("USDT")!!
+            val srcCurrency = currencyService.fetchCurrencies(FetchCurrency(symbol = "ETH"))?.currencies?.first()!!
+            val destCurrency = currencyService.fetchCurrencies(FetchCurrency(symbol = "USDT"))?.currencies?.first()!!
             createWalletWithCurrencyAndBalance(sender, "main", srcCurrency, BigDecimal.valueOf(1))
             //not enough balance
             createWalletWithCurrencyAndBalance(system, "main", destCurrency, BigDecimal.valueOf(1))
@@ -101,8 +101,8 @@ class AdvancedTransferControllerIT : KafkaEnabledTest() {
             val sender = walletOwnerManager.createWalletOwner(UUID.randomUUID().toString(), "sender", "")
             val receiver = UUID.randomUUID().toString()
             val system = walletOwnerManager.findWalletOwner(walletOwnerManager.systemUuid)!!
-            val srcCurrency = currencyService.getCurrency("ETH")!!
-            val destCurrency = currencyService.getCurrency("USDT")!!
+            val srcCurrency = currencyService.fetchCurrencies(FetchCurrency(symbol = "ETH"))?.currencies?.first()!!
+            val destCurrency = currencyService.fetchCurrencies(FetchCurrency(symbol = "USDT"))?.currencies?.first()!!
             val senderInitWallet = createWalletWithCurrencyAndBalance(sender, "main", srcCurrency, BigDecimal.valueOf(1))
             val systemDestCurrencyInitWallet = createWalletWithCurrencyAndBalance(system, "main", destCurrency, BigDecimal.valueOf(200))
             val systemSrcCurrencyInitWallet = createWalletWithCurrencyAndBalance(system, "main", srcCurrency, BigDecimal.valueOf(0))
@@ -138,7 +138,7 @@ class AdvancedTransferControllerIT : KafkaEnabledTest() {
         }
     }
 
-    private suspend fun createWalletWithCurrencyAndBalance(system: WalletOwner, walletType: String, destCurrency: Currency, balance: BigDecimal): Wallet {
+    private suspend fun createWalletWithCurrencyAndBalance(system: WalletOwner, walletType: String, destCurrency: CurrencyCommand, balance: BigDecimal): Wallet {
         val wallet = walletManager.findWalletByOwnerAndCurrencyAndType(system, walletType, destCurrency)
         return if (wallet != null) {
             val amount = balance - wallet.balance.amount

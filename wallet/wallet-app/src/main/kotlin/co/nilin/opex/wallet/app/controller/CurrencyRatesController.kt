@@ -5,9 +5,7 @@ import co.nilin.opex.wallet.app.dto.CurrencyExchangeRatesResponse
 import co.nilin.opex.wallet.app.dto.CurrencyPair
 import co.nilin.opex.wallet.app.dto.SetCurrencyExchangeRateRequest
 import co.nilin.opex.wallet.app.service.otc.GraphService
-import co.nilin.opex.wallet.core.model.Currencies
-import co.nilin.opex.wallet.core.model.Currency
-import co.nilin.opex.wallet.core.model.CurrencyImp
+
 import co.nilin.opex.wallet.core.model.otc.*
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
