@@ -3,9 +3,7 @@ package co.nilin.opex.accountant.core.service
 import co.nilin.opex.accountant.core.api.FinancialActionJobManager
 import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.FinancialActionStatus
-import co.nilin.opex.accountant.core.spi.FinancialActionLoader
-import co.nilin.opex.accountant.core.spi.FinancialActionPersister
-import co.nilin.opex.accountant.core.spi.WalletProxy
+import co.nilin.opex.accountant.core.spi.*
 import org.slf4j.LoggerFactory
 
 class FinancialActionJobManagerImpl(
@@ -16,7 +14,7 @@ class FinancialActionJobManagerImpl(
 
     private val logger = LoggerFactory.getLogger(FinancialActionJobManagerImpl::class.java)
 
-    override suspend fun processFinancialActions(offset: Long, size: Long){
+    override suspend fun processFinancialActions(offset: Long, size: Long) {
         val factions = financialActionLoader.loadReadyToProcess(offset, size)
         factions.forEach {
             try {
@@ -43,7 +41,8 @@ class FinancialActionJobManagerImpl(
 
             } catch (e: Exception) {
                 logger.error("financial job error", e)
-                financialActionPersister.updateStatusNewTx(it, FinancialActionStatus.ERROR)
+                financialActionPersister.updateStatusNewTx(it, FinancialActionStatus.RETRYING)
+
             }
         }
     }

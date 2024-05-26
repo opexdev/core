@@ -9,6 +9,8 @@ interface FinancialActionPersister {
 
     suspend fun persistWithStatus(financialAction: FinancialAction, status: FinancialActionStatus)
 
+    suspend fun persistWithError(financialAction: FinancialAction, error: String, message: String?, )
+
     suspend fun updateStatus(financialAction: FinancialAction, status: FinancialActionStatus)
 
     suspend fun updateStatus(faUuid: String, status: FinancialActionStatus)

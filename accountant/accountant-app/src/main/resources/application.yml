@@ -71,3 +71,8 @@ app:
   address: 1
   wallet:
     url: lb://opex-wallet/
+  fi-action:
+    retry:
+      count: 5
+      delay-seconds: 4
+      delay-multiplier: 3

@@ -22,7 +22,6 @@
         <module>wallet-ports/wallet-eventlistener-kafka</module>
         <module>wallet-ports/wallet-bcgateway-proxy</module>
         <module>wallet-ports/wallet-auth-proxy</module>
-        <module>wallet-ports/wallet-submitter-kafka</module>
     </modules>
 
     <dependencies>
@@ -56,11 +55,6 @@
             <dependency>
                 <groupId>co.nilin.opex.wallet.ports.kafka.listener</groupId>
                 <artifactId>wallet-eventlistener-kafka</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>co.nilin.opex.wallet.ports.kafka.submitter</groupId>
-                <artifactId>wallet-submitter-kafka</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

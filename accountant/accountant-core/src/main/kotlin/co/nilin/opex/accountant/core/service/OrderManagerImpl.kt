@@ -105,9 +105,9 @@ open class OrderManagerImpl(
             createMap(submitOrderEvent, order)
         )
 
-        val fa = financialActionPersister.persist(listOf(financialAction))
-        publishFinancialAction(financialAction)
-        return fa
+        return financialActionPersister.persist(listOf(financialAction))
+        /*publishFinancialAction(financialAction)
+        return fa*/
     }
 
     @Transactional
@@ -176,9 +176,9 @@ open class OrderManagerImpl(
                 OrderStatus.REJECTED
             )
         )
-        val fa = financialActionPersister.persist(listOf(financialAction))
-        publishFinancialAction(financialAction)
-        return fa
+        return financialActionPersister.persist(listOf(financialAction))
+        /*publishFinancialAction(financialAction)
+        return fa*/
     }
 
 
@@ -225,9 +225,9 @@ open class OrderManagerImpl(
                 OrderStatus.CANCELED
             )
         )
-        val fa = financialActionPersister.persist(listOf(financialAction))
-        publishFinancialAction(financialAction)
-        return fa
+        return financialActionPersister.persist(listOf(financialAction))
+        /*publishFinancialAction(financialAction)
+        return fa*/
     }
 
 

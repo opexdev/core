@@ -104,10 +104,6 @@
             <artifactId>wallet-eventlistener-kafka</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.wallet.ports.kafka.submitter</groupId>
-            <artifactId>wallet-submitter-kafka</artifactId>
-        </dependency>
-        <dependency>
             <groupId>co.nilin.opex.utility</groupId>
             <artifactId>error-handler</artifactId>
         </dependency>

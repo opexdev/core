@@ -29,7 +29,7 @@ class WalletManagerImpl(
     @Value("10000") val minimumBalance: BigDecimal? = BigDecimal(10000)
 ) : WalletManager {
 
-    val logger = LoggerFactory.getLogger(WalletManagerImpl::class.java)
+    private val logger = LoggerFactory.getLogger(WalletManagerImpl::class.java)
 
 
     override suspend fun isDepositAllowed(wallet: Wallet, amount: BigDecimal): Boolean {
