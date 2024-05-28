@@ -35,12 +35,12 @@ class AccountantController(
         val canFulfil = runCatching { walletProxy.canFulfil(currency, "main", uuid, amount) }
             .onFailure { logger.error(it.message) }
             .getOrElse { false }
-        if (canFulfil) {
+        return if (canFulfil) {
             val unprocessed =
                 financialActionLoader.countUnprocessed(uuid, currency, SubmitOrderEvent::class.simpleName!!)
-            return BooleanResponse(unprocessed <= 0)
+            BooleanResponse(unprocessed <= 0)
         } else
-            return BooleanResponse(false)
+            BooleanResponse(false)
     }
 
     @GetMapping("/config/{pair}/fee/{direction}-{userLevel}")

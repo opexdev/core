@@ -18,6 +18,7 @@ import co.nilin.opex.accountant.ports.kafka.listener.consumer.EventKafkaListener
 import co.nilin.opex.accountant.ports.kafka.listener.consumer.OrderKafkaListener
 import co.nilin.opex.accountant.ports.kafka.listener.consumer.TempEventKafkaListener
 import co.nilin.opex.accountant.ports.kafka.listener.consumer.TradeKafkaListener
+import co.nilin.opex.accountant.ports.kafka.listener.spi.FAResponseListener
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -114,9 +115,10 @@ class AppConfig {
         return AccountantTempEventListener(orderManager, tradeManager)
     }
 
-
-
-
+    @Bean
+    fun faResponseListener(financialActionPersister: FinancialActionPersister): FAResponseListener {
+        return AccountantFAResponseEventListener(financialActionPersister)
+    }
 
     @Autowired
     fun configureOrderListener(orderKafkaListener: OrderKafkaListener, orderListener: OrderListener) {
@@ -133,22 +135,19 @@ class AppConfig {
 
     @Autowired
     fun configureEventListener(
-            eventKafkaListener: EventKafkaListener,
-            accountantEventListener: AccountantEventListener,
-            kycLevelUpdatedKafkaListener: KycLevelUpdatedKafkaListener,
-            kycLevelUpdatedEventListener: KycLevelUpdatedListener
+        eventKafkaListener: EventKafkaListener,
+        accountantEventListener: AccountantEventListener,
+        kycLevelUpdatedKafkaListener: KycLevelUpdatedKafkaListener,
+        kycLevelUpdatedEventListener: KycLevelUpdatedListener
     ) {
         eventKafkaListener.addListener(accountantEventListener)
         kycLevelUpdatedKafkaListener.addEventListener(kycLevelUpdatedEventListener)
-
     }
 
     @Autowired
     fun configureTempEventListener(
         tempEventKafkaListener: TempEventKafkaListener,
-        accountantTempEventListener: AccountantTempEventListener,
-
-    ) {
+        accountantTempEventListener: AccountantTempEventListener) {
         tempEventKafkaListener.addListener(accountantTempEventListener)
     }
 
