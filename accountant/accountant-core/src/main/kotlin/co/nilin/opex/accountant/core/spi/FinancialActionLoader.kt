@@ -8,4 +8,5 @@ interface FinancialActionLoader {
     suspend fun countUnprocessed(userUuid: String, symbol: String, eventType: String): Long
     suspend fun loadReadyToProcess(offset: Long, size: Long): List<FinancialAction>
     suspend fun loadFinancialAction(id: Long?): FinancialAction?
+    suspend fun loadRetries(limit: Int): List<FinancialAction>
 }

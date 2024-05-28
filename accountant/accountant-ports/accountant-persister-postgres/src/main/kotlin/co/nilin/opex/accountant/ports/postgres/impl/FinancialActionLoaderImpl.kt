@@ -4,7 +4,9 @@ import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.FinancialActionStatus
 import co.nilin.opex.accountant.core.spi.FinancialActionLoader
 import co.nilin.opex.accountant.core.spi.JsonMapper
+import co.nilin.opex.accountant.ports.postgres.dao.FinancialActionErrorRepository
 import co.nilin.opex.accountant.ports.postgres.dao.FinancialActionRepository
+import co.nilin.opex.accountant.ports.postgres.dao.FinancialActionRetryRepository
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -14,10 +16,13 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
+import java.time.LocalDateTime
 
 @Component
 class FinancialActionLoaderImpl(
     private val financialActionRepository: FinancialActionRepository,
+    private val faRetryRepository: FinancialActionRetryRepository,
+    private val faErrorRepository: FinancialActionErrorRepository,
     private val jsonMapper: JsonMapper
 ) : FinancialActionLoader {
 
@@ -79,5 +84,35 @@ class FinancialActionLoaderImpl(
             )
         }
         return null
+    }
+
+    override suspend fun loadRetries(limit: Int): List<FinancialAction> {
+        return faRetryRepository.findAllRetries(LocalDateTime.now(), limit)
+            .map {
+                FinancialAction(
+                    null, // Skipping parent. If it's in retry, it means its parent is already processed
+                    it.eventType,
+                    it.pointer,
+                    it.symbol,
+                    it.amount,
+                    it.sender,
+                    it.senderWalletType,
+                    it.receiver,
+                    it.receiverWalletType,
+                    it.createDate,
+                    it.category,
+                    if (it.detail != null) jsonMapper.toMap(
+                        jsonMapper.deserialize(
+                            it.detail,
+                            Map::class.java
+                        )
+                    ) else emptyMap(),
+                    it.status,
+                    it.uuid,
+                    it.id
+                )
+            }
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
     }
 }

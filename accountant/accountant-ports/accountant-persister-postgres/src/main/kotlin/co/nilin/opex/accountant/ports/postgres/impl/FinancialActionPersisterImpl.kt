@@ -4,7 +4,6 @@ import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.FinancialActionStatus
 import co.nilin.opex.accountant.core.spi.FinancialActionPersister
 import co.nilin.opex.accountant.core.spi.JsonMapper
-import co.nilin.opex.accountant.ports.postgres.config.FinancialActionProperties
 import co.nilin.opex.accountant.ports.postgres.dao.FinancialActionErrorRepository
 import co.nilin.opex.accountant.ports.postgres.dao.FinancialActionRepository
 import co.nilin.opex.accountant.ports.postgres.dao.FinancialActionRetryRepository
@@ -14,6 +13,7 @@ import co.nilin.opex.accountant.ports.postgres.model.FinancialActionRetryModel
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -24,9 +24,17 @@ class FinancialActionPersisterImpl(
     private val repository: FinancialActionRepository,
     private val faRetryRepository: FinancialActionRetryRepository,
     private val faErrorRepository: FinancialActionErrorRepository,
-    private val faConfig: FinancialActionProperties,
     private val jsonMapper: JsonMapper
 ) : FinancialActionPersister {
+
+    @Value("\${app.fi-action.retry.count}")
+    private var retryCount: Int = 5
+
+    @Value("\${app.fi-action.retry.delay-seconds}")
+    private var delaySeconds: Long = 4
+
+    @Value("\${app.fi-action.retry.delay-multiplier}")
+    private var delayMultiplier: Int = 3
 
     override suspend fun persist(financialActions: List<FinancialAction>): List<FinancialAction> {
         repository.saveAll(financialActions.map {
@@ -78,23 +86,25 @@ class FinancialActionPersisterImpl(
         ).awaitSingle()
     }
 
-    override suspend fun persistWithError(financialAction: FinancialAction, error: String, message: String?) {
+    override suspend fun updateWithError(financialAction: FinancialAction, error: String, message: String?) {
         val faId = financialAction.id!!
         val retryModel = faRetryRepository.findByFaId(faId).awaitSingleOrNull()
 
         var status = FinancialActionStatus.RETRYING
         if (retryModel == null) {
-            val runTime = LocalDateTime.now().plusSeconds(faConfig.retry.delaySeconds)
+            val runTime = LocalDateTime.now().plusSeconds(delaySeconds)
             faRetryRepository.save(FinancialActionRetryModel(faId, runTime)).awaitSingleOrNull()
         } else if (retryModel.isResolved || retryModel.hasGivenUp) {
             //Do nothing
         } else {
-            faRetryRepository.save(retryModel.apply {
-                retries += 1
-                nextRunTime = LocalDateTime.now()
-                    .plusSeconds(retries * faConfig.retry.delayMultiplier * faConfig.retry.delaySeconds)
-                hasGivenUp = retries >= faConfig.retry.count
-            }).awaitSingleOrNull()
+            with(retryModel){
+                faRetryRepository.scheduleNext(
+                    id!!,
+                    retries + 1,
+                    LocalDateTime.now().plusSeconds(retries * delayMultiplier * delaySeconds),
+                    hasGivenUp = retries >= retryCount
+                ).awaitSingleOrNull()
+            }
 
             if (retryModel.hasGivenUp)
                 status = FinancialActionStatus.ERROR
@@ -114,6 +124,10 @@ class FinancialActionPersisterImpl(
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     override suspend fun updateStatusNewTx(financialAction: FinancialAction, status: FinancialActionStatus) {
         repository.updateStatus(financialAction.id!!, status).awaitSingleOrNull()
+    }
+
+    override suspend fun retrySuccessful(financialAction: FinancialAction) {
+        faRetryRepository.updateResolvedTrue(financialAction.id!!).awaitSingleOrNull()
     }
 
     override suspend fun updateStatus(faUuid: String, status: FinancialActionStatus) {

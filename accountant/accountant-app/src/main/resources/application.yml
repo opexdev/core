@@ -73,6 +73,6 @@ app:
     url: lb://opex-wallet/
   fi-action:
     retry:
-      count: 5
-      delay-seconds: 4
+      count: 10
+      delay-seconds: 5
       delay-multiplier: 3

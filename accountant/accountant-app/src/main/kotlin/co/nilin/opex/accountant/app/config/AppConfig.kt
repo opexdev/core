@@ -142,15 +142,12 @@ class AppConfig {
     ) {
         eventKafkaListener.addListener(accountantEventListener)
         kycLevelUpdatedKafkaListener.addEventListener(kycLevelUpdatedEventListener)
-
     }
 
     @Autowired
     fun configureTempEventListener(
         tempEventKafkaListener: TempEventKafkaListener,
-        accountantTempEventListener: AccountantTempEventListener,
-
-        ) {
+        accountantTempEventListener: AccountantTempEventListener) {
         tempEventKafkaListener.addListener(accountantTempEventListener)
     }
 
