@@ -8,11 +8,13 @@ import co.nilin.opex.wallet.ports.postgres.impl.sample.VALID
 import co.nilin.opex.wallet.ports.postgres.util.toModel
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 private class CurrencyServiceTest {
@@ -21,7 +23,7 @@ private class CurrencyServiceTest {
 
     @Test
     fun givenCurrency_whenGetCurrency_thenReturnCurrency(): Unit = runBlocking {
-        every { currencyRepository.fetchCurrencies(symbol = VALID.CURRENCY.symbol)?.first() } returns Mono.just(VALID.CURRENCY.toModel())
+        every { currencyRepository.fetchCurrencies(symbol = VALID.CURRENCY.symbol) } returns Flux.just(VALID.CURRENCY.toModel())
 
         val c = currencyService.fetchCurrencies(FetchCurrency(symbol =  VALID.CURRENCY.symbol))?.currencies?.firstOrNull()
 
@@ -33,14 +35,14 @@ private class CurrencyServiceTest {
 
     @Test
     fun givenNoCurrency_whenGetCurrency_thenThrowException(): Unit = runBlocking {
-        every { currencyRepository.fetchCurrencies(FetchCurrency(symbol = VALID.CURRENCY.symbol))? } returns Mono.empty()
-            assertThrows(OpexException::class.java) { runBlocking {  currencyService.getCurrency(VALID.CURRENCY.symbol) }}
+        every { currencyRepository.fetchCurrencies(symbol = VALID.CURRENCY.symbol) } returns Flux.empty()
+            assertThrows(OpexException::class.java) { runBlocking {  currencyService.fetchCurrencies(FetchCurrency(symbol = VALID.CURRENCY.symbol) )}}
 
     }
 
     @Test
     fun givenNoCurrency_whenGetCurrencyWithEmptySymbol_thenThrowException(): Unit = runBlocking {
-        every { currencyRepository.findBySymbol("") } returns Mono.empty()
-        assertThrows(OpexException::class.java) { runBlocking {  currencyService.getCurrency("") }}
+        every { currencyRepository.fetchCurrencies(symbol = "") } returns Flux.empty()
+        assertThrows(OpexException::class.java) { runBlocking {  currencyService.fetchCurrencies(FetchCurrency(symbol = "")) }}
     }
 }

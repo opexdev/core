@@ -10,6 +10,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
 
@@ -17,7 +18,7 @@ private class WalletManagerTest {
     private val walletLimitsRepository: WalletLimitsRepository = mockk()
     private val walletRepository: WalletRepository = mockk()
     private val walletOwnerRepository: WalletOwnerRepository = mockk()
-    private val currencyRepository: CurrencyRepository = mockk()
+    private val currencyRepository: CurrencyRepositoryV2 = mockk()
 
     private var transactionRepository: TransactionRepository = mockk {
         every {
@@ -38,7 +39,7 @@ private class WalletManagerTest {
         } returns Mono.empty()
     }
 
-    private val walletManagerImpl: WalletManagerImpl = WalletManagerImpl(
+    private val walletManagerImpl: WalletManagerImplV2 = WalletManagerImplV2(
         walletLimitsRepository, transactionRepository, walletRepository, walletOwnerRepository, currencyRepository
     )
 
@@ -314,8 +315,8 @@ private class WalletManagerTest {
             )
         } returns Mono.just(VALID.WALLET.toModel())
         every {
-            currencyRepository.findBySymbol(VALID.CURRENCY.symbol)
-        } returns Mono.just(VALID.CURRENCY.toModel())
+            currencyRepository.fetchCurrencies(symbol = VALID.CURRENCY.symbol)
+        } returns Flux.just(VALID.CURRENCY.toModel())
 
         val wallet = walletManagerImpl.findWalletByOwnerAndCurrencyAndType(
             VALID.WALLET_OWNER,
@@ -451,8 +452,8 @@ private class WalletManagerTest {
             walletOwnerRepository.findById(VALID.WALLET_OWNER.id!!)
         } returns Mono.just(VALID.WALLET_OWNER.toModel())
         every {
-            currencyRepository.findById(VALID.CURRENCY.symbol)
-        } returns Mono.just(VALID.CURRENCY.toModel())
+            currencyRepository.fetchCurrencies(symbol = VALID.CURRENCY.symbol)
+        } returns Flux.just(VALID.CURRENCY.toModel())
 
         val wallet = walletManagerImpl.findWalletById(VALID.WALLET.id!!)
 
