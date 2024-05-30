@@ -9,10 +9,15 @@ interface FinancialActionPersister {
 
     suspend fun persistWithStatus(financialAction: FinancialAction, status: FinancialActionStatus)
 
+    suspend fun updateWithError(financialAction: FinancialAction, error: String, message: String?)
+
     suspend fun updateStatus(financialAction: FinancialAction, status: FinancialActionStatus)
 
     suspend fun updateStatus(faUuid: String, status: FinancialActionStatus)
 
     suspend fun updateBatchStatus(financialAction: List<FinancialAction>, status: FinancialActionStatus)
+
     suspend fun updateStatusNewTx(financialAction: FinancialAction, status: FinancialActionStatus)
+
+    suspend fun retrySuccessful(financialAction: FinancialAction)
 }
