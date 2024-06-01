@@ -59,12 +59,12 @@ CREATE TABLE IF NOT EXISTS fi_action_retry
 CREATE TABLE IF NOT EXISTS fi_action_error
 (
     id       SERIAL PRIMARY KEY,
-    fa_id    INTEGER      NOT NULL REFERENCES fi_actions (id),
-    error    VARCHAR(128) NOT NULL,
-    message  TEXT         NOT NULL,
-    is_retry BOOLEAN      NOT NULL DEFAULT false,
-    retry_id INTEGER UNIQUE REFERENCES fi_action_retry (id),
-    date     TIMESTAMP    NOT NULL DEFAULT CURRENT_DATE
+    fa_id    INTEGER   NOT NULL REFERENCES fi_actions (id),
+    error    TEXT      NOT NULL,
+    message  TEXT      NOT NULL,
+    body     TEXT,
+    retry_id INTEGER REFERENCES fi_action_retry (id),
+    date     TIMESTAMP NOT NULL DEFAULT CURRENT_DATE
 );
 
 ALTER TABLE fi_actions

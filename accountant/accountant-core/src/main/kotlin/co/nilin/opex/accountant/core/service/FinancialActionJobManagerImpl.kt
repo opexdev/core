@@ -6,6 +6,7 @@ import co.nilin.opex.accountant.core.model.FinancialActionStatus
 import co.nilin.opex.accountant.core.spi.*
 import co.nilin.opex.utility.error.data.OpexException
 import org.slf4j.LoggerFactory
+import org.springframework.web.reactive.function.client.WebClientResponseException
 
 class FinancialActionJobManagerImpl(
     private val financialActionLoader: FinancialActionLoader,
@@ -41,11 +42,14 @@ class FinancialActionJobManagerImpl(
                     )
                     financialActionPersister.updateStatusNewTx(it, FinancialActionStatus.PROCESSED)
 
+                } catch (e: WebClientResponseException) {
+                    logger.error("Retry financial job error for ${it.uuid}: ${e.message}")
+                    financialActionPersister.updateWithError(it, e.javaClass.name, e.message, e.responseBodyAsString)
                 } catch (e: Exception) {
-                    logger.error("Financial job error for ${it.uuid}: ${e.message}")
+                    logger.error("Retry financial job error for ${it.uuid}: ${e.message}")
                     financialActionPersister.updateWithError(
                         it,
-                        if (e is OpexException) e.error.errorName() ?: "" else e.javaClass.simpleName,
+                        if (e is OpexException) e.error.errorName() ?: "" else e.javaClass.name,
                         e.message
                     )
                 }
@@ -73,11 +77,14 @@ class FinancialActionJobManagerImpl(
                         updateStatusNewTx(it, FinancialActionStatus.PROCESSED)
                         retrySuccessful(it)
                     }
+                } catch (e: WebClientResponseException) {
+                    logger.error("Retry financial job error for ${it.uuid}: ${e.message}")
+                    financialActionPersister.updateWithError(it, e.javaClass.name, e.message, e.responseBodyAsString)
                 } catch (e: Exception) {
                     logger.error("Retry financial job error for ${it.uuid}: ${e.message}")
                     financialActionPersister.updateWithError(
                         it,
-                        if (e is OpexException) e.error.errorName() ?: "" else e.javaClass.simpleName,
+                        if (e is OpexException) e.error.errorName() ?: "" else e.javaClass.name,
                         e.message
                     )
                 }

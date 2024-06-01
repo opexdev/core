@@ -9,7 +9,7 @@ data class FinancialActionErrorModel(
     val faId: Long,
     val error: String,
     val message: String?,
-    val isRetry: Boolean,
+    val body: String?,
     val retryId: Long? = null,
     val date: LocalDateTime = LocalDateTime.now(),
     @Id var id: Long? = null
