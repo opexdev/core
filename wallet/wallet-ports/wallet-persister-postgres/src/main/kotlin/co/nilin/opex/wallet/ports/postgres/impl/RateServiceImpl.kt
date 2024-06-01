@@ -3,11 +3,11 @@ package co.nilin.opex.wallet.ports.postgres.impl
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.model.otc.*
 import co.nilin.opex.wallet.core.service.otc.RateService
-import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepository
+import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepositoryV2
 import co.nilin.opex.wallet.ports.postgres.dao.ForbiddenPairRepository
 import co.nilin.opex.wallet.ports.postgres.dao.RatesRepository
-import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
 import co.nilin.opex.wallet.ports.postgres.model.ForbiddenPairModel
+import co.nilin.opex.wallet.ports.postgres.model.NewCurrencyModel
 import co.nilin.opex.wallet.ports.postgres.model.RateModel
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
@@ -19,7 +19,7 @@ import java.util.stream.Collectors
 class RateServiceImpl(
     private val ratesRepository: RatesRepository,
     private val forbiddenPairRepository: ForbiddenPairRepository,
-    private val currencyRepository: CurrencyRepository
+    private val currencyRepository: CurrencyRepositoryV2
 ) : RateService {
     private val logger = LoggerFactory.getLogger(RateServiceImpl::class.java)
 
@@ -95,7 +95,7 @@ class RateServiceImpl(
     override suspend fun addTransitiveSymbols(symbols: Symbols) {
 
         symbols.symbols?.forEach {
-            currencyRepository.findBySymbol(it)?.awaitFirstOrNull()?.let {
+            currencyRepository.fetchCurrencies(symbol = it)?.awaitFirstOrNull()?.let {
                 if (it.isActive == true)
                     currencyRepository.save(it.apply { isTransitive = true }).awaitFirstOrNull()
             }
@@ -105,15 +105,15 @@ class RateServiceImpl(
 
     override suspend fun deleteTransitiveSymbols(symbols: Symbols): Symbols {
         symbols.symbols?.forEach {
-            currencyRepository.findBySymbol(it)?.awaitFirstOrNull()?.let {
+            currencyRepository.fetchCurrencies(symbol = it)?.awaitFirstOrNull()?.let {
                 currencyRepository.save(it.apply { isTransitive = false }).awaitFirstOrNull()
             }
         }
-        return Symbols(currencyRepository.findByIsTransitive(true)?.map(CurrencyModel::symbol)?.collect(Collectors.toList())?.awaitFirstOrNull())
+        return Symbols(currencyRepository.findByIsTransitive(true)?.map(NewCurrencyModel::symbol)?.collect(Collectors.toList())?.awaitFirstOrNull())
     }
 
     override suspend fun getTransitiveSymbols(): Symbols {
-        return Symbols(currencyRepository.findByIsTransitive(true)?.map(CurrencyModel::symbol)?.collect(Collectors.toList())?.awaitFirstOrNull())
+        return Symbols(currencyRepository.findByIsTransitive(true)?.map(NewCurrencyModel::symbol)?.collect(Collectors.toList())?.awaitFirstOrNull())
     }
 
 
@@ -166,10 +166,10 @@ class RateServiceImpl(
                 if (!(transitives?.contains(this.sourceSymbol) == true || transitives?.contains(this.destSymbol) == true))
                     throw OpexException(OpexError.AtLeastNeedOneTransitiveSymbol)*/
 
-        currencyRepository.findBySymbol(this.sourceSymbol)?.awaitFirstOrNull()?.let { it ->
+        currencyRepository.fetchCurrencies(symbol = this.sourceSymbol)?.awaitFirstOrNull()?.let { it ->
             if (it.isActive == false)
                 throw OpexError.CurrencyIsDisable.exception()
-            currencyRepository.findBySymbol(this.destSymbol)?.awaitFirstOrNull()?.let {
+            currencyRepository.fetchCurrencies(symbol = this.destSymbol)?.awaitFirstOrNull()?.let {
                 if (it.isActive == false)
                     throw OpexError.CurrencyIsDisable.exception()
             } ?: throw OpexError.CurrencyNotFound.exception()
@@ -177,8 +177,8 @@ class RateServiceImpl(
     }
 
     private suspend fun ForbiddenPair.isValid() {
-        currencyRepository.findBySymbol(this.sourceSymbol)?.awaitFirstOrNull()?.let {
-            currencyRepository.findBySymbol(this.destSymbol)?.awaitFirstOrNull()?.let {
+        currencyRepository.fetchCurrencies(symbol = this.sourceSymbol)?.awaitFirstOrNull()?.let {
+            currencyRepository.fetchCurrencies(symbol = this.destSymbol)?.awaitFirstOrNull()?.let {
             } ?: throw OpexError.CurrencyNotFound.exception()
         } ?: throw OpexError.CurrencyNotFound.exception()
     }

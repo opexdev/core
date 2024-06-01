@@ -2,8 +2,10 @@ package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.wallet.app.KafkaEnabledTest
 import co.nilin.opex.wallet.app.dto.TransactionRequest
+import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.model.TransactionWithDetailHistory
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.core.spi.WalletManager
@@ -37,9 +39,9 @@ class TransferControllerIT : KafkaEnabledTest() {
     @BeforeEach
     fun setup() {
         runBlocking {
-            currencyService.addCurrency("ETH", "ETH", BigDecimal.TEN)
-            currencyService.addCurrency("BTC", "BTC", BigDecimal.TEN)
-            currencyService.addCurrency("USDT", "USDT", BigDecimal.valueOf(2))
+            currencyService.createNewCurrency(CurrencyCommand("ETH", null,"ETH", BigDecimal.TEN))
+            currencyService.createNewCurrency(CurrencyCommand("BTC", null,"BTC", BigDecimal.TEN))
+            currencyService.createNewCurrency(CurrencyCommand("USDT", null,"USDT", BigDecimal.valueOf(2)))
         }
     }
 
@@ -50,7 +52,7 @@ class TransferControllerIT : KafkaEnabledTest() {
             val t = System.currentTimeMillis()
             val sender = walletOwnerManager.createWalletOwner(UUID.randomUUID().toString(), "sender", "")
             val receiver = sender.uuid
-            val srcCurrency = currencyService.getCurrency("ETH")!!
+            val srcCurrency = currencyService.fetchCurrencies(FetchCurrency(symbol = "ETH"))?.currencies?.first()!!
             walletManager.createWallet(sender, Amount(srcCurrency, BigDecimal.valueOf(100)), srcCurrency, "main")
 
             val transfer = webClient.post().uri("/v2/transfer/1_ETH/from/${sender.uuid}_main/to/${receiver}_exchange").accept(MediaType.APPLICATION_JSON)

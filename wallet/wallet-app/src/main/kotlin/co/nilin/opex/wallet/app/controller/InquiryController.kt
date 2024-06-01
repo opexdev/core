@@ -3,6 +3,7 @@ package co.nilin.opex.wallet.app.controller
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
@@ -52,7 +53,7 @@ class InquiryController(
         logger.info("canFullFill: {} {} {} {}", uuid, currency, walletType, amount)
         val owner = walletOwnerManager.findWalletOwner(uuid)
         if (owner != null) {
-            val c = currencyService.getCurrency(currency) ?: throw OpexError.CurrencyNotFound.exception()
+            val c = currencyService.fetchCurrencies(FetchCurrency(symbol =  currency))?.currencies?.first() ?: throw OpexError.CurrencyNotFound.exception()
             val wallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, walletType, c)
             if (wallet != null) {
                 return BooleanResponse(

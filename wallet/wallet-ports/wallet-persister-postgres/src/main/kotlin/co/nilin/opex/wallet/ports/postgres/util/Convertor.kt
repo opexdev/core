@@ -9,6 +9,6 @@ fun CurrencyCommand.toModel():NewCurrencyModel{
 }
 
 
-fun NewCurrencyModel.toDto():CurrencyCommand{
+fun NewCurrencyModel.toCommand():CurrencyCommand{
     return ModelMapper().map(this,CurrencyCommand::class.java)
 }

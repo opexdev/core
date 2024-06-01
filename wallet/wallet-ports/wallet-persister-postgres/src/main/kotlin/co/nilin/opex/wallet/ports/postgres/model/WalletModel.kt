@@ -11,7 +11,7 @@ data class WalletModel(
     @Id @Column("id") val id: Long?,
     @Column("owner") val owner: Long,
     @Column("wallet_type") val type: String,
-    @Column("currency") val currency: String,
+    @Column("currency") val currency: Long,
     @Column("balance") val balance: BigDecimal,
     @Version
     var version: Long? = null
