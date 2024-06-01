@@ -86,7 +86,12 @@ class FinancialActionPersisterImpl(
         ).awaitSingle()
     }
 
-    override suspend fun updateWithError(financialAction: FinancialAction, error: String, message: String?) {
+    override suspend fun updateWithError(
+        financialAction: FinancialAction,
+        error: String,
+        message: String?,
+        body: String?
+    ) {
         val faId = financialAction.id!!
         val retryModel = faRetryRepository.findByFaId(faId).awaitSingleOrNull()
 
@@ -97,23 +102,22 @@ class FinancialActionPersisterImpl(
         } else if (retryModel.isResolved || retryModel.hasGivenUp) {
             //Do nothing
         } else {
-            with(retryModel){
+            with(retryModel) {
                 faRetryRepository.scheduleNext(
                     id!!,
                     retries + 1,
                     LocalDateTime.now().plusSeconds(retries * delayMultiplier * delaySeconds),
-                    hasGivenUp = retries >= retryCount
+                    retries >= retryCount
                 ).awaitSingleOrNull()
-            }
 
-            if (retryModel.hasGivenUp)
-                status = FinancialActionStatus.ERROR
+                if (hasGivenUp)
+                    status = FinancialActionStatus.ERROR
+            }
         }
 
         repository.updateStatus(faId, status).awaitSingleOrNull()
 
-        val isRetrying = retryModel != null
-        faErrorRepository.save(FinancialActionErrorModel(faId, error, message, isRetrying, retryModel?.id))
+        faErrorRepository.save(FinancialActionErrorModel(faId, error, message, body, retryModel?.id))
             .awaitSingleOrNull()
     }
 
