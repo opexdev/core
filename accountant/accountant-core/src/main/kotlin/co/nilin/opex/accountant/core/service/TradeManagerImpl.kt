@@ -32,7 +32,7 @@ open class TradeManagerImpl(
 
     @Transactional
     override suspend fun handleTrade(trade: TradeEvent): List<FinancialAction> {
-        logger.info("trade event started {}", trade)
+        logger.info("Trade event started ${trade.tradeId}")
         val financialActions = mutableListOf<FinancialAction>()
         //taker order by ouid
         val takerOrder = orderPersister.load(trade.takerOuid)
@@ -61,14 +61,14 @@ open class TradeManagerImpl(
             trade.matchedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction)
                 .multiply(trade.makerPrice.toBigDecimal()).multiply(makerOrder.rightSideFraction)
         }
-        logger.info("trade event configs loaded")
+        logger.info("Trade event configs loaded")
 
         //lookup for taker parent fa
         val takerParentFinancialAction = financeActionLoader.findLast(trade.takerUuid, trade.takerOuid)
-        logger.info("trade event takerParentFinancialAction {} ", takerParentFinancialAction)
+        logger.info("Trade event takerParentFinancialAction ${takerParentFinancialAction?.uuid}")
         //lookup for maker parent fa
         val makerParentFinancialAction = financeActionLoader.findLast(trade.makerUuid, trade.makerOuid)
-        logger.info("trade event makerParentFinancialAction {} ", makerParentFinancialAction)
+        logger.info("Trade event makerParentFinancialAction ${makerParentFinancialAction?.uuid}")
 
         //create fa for transfer taker uuid symbol exchange wallet to maker symbol main wallet
         /*
@@ -89,7 +89,7 @@ open class TradeManagerImpl(
             FinancialActionCategory.TRADE,
             createMap(trade, takerOrder)
         )
-        logger.info("trade event takerTransferAction {}", takerTransferAction)
+        logger.info("Trade event takerTransferAction ${takerTransferAction.uuid}")
         financialActions.add(takerTransferAction)
 
         //update taker order status
@@ -105,7 +105,7 @@ open class TradeManagerImpl(
             }
         }
         orderPersister.save(takerOrder)
-        logger.info("taker order saved {}", takerOrder)
+        logger.info("Taker order saved: uuid=${takerOrder.uuid}")
         publishTakerRichOrderUpdate(takerOrder, trade)
 
         //create fa for transfer makerUuid symbol exchange wallet to taker symbol main wallet
@@ -127,7 +127,7 @@ open class TradeManagerImpl(
             FinancialActionCategory.TRADE,
             createMap(trade, makerOrder)
         )
-        logger.info("trade event makerTransferAction {}", makerTransferAction)
+        logger.info("Trade event makerTransferAction ${makerTransferAction.uuid}")
         financialActions.add(makerTransferAction)
 
         //update maker order status
@@ -142,7 +142,7 @@ open class TradeManagerImpl(
             }
         }
         orderPersister.save(makerOrder)
-        logger.info("maker order saved {}", makerOrder)
+        logger.info("Maker order saved: uuid=${makerOrder.uuid}")
         publishMakerRichOrderUpdate(makerOrder, trade)
 
         val feeActions = feeCalculator.createFeeActions(

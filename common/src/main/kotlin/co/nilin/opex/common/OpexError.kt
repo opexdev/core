@@ -62,8 +62,12 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     CurrentSystemAssetsAreNotEnough(6017, null, HttpStatus.INTERNAL_SERVER_ERROR),
     NotEnoughBalance(6018, null, HttpStatus.BAD_REQUEST),
     WithdrawNotAllowed(6019, null, HttpStatus.BAD_REQUEST),
-    ImpNotFound(6020, null, HttpStatus.NOT_FOUND),
 
+
+    DepositLimitExceeded(6020, "Deposit limit exceeded", HttpStatus.BAD_REQUEST),
+    InvalidAmount(6021, "Invalid amount", HttpStatus.BAD_REQUEST),
+
+    ImpNotFound(6022, null, HttpStatus.NOT_FOUND),
 
     // code 7000: api
     OrderNotFound(7001, "No order found", HttpStatus.NOT_FOUND),

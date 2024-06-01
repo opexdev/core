@@ -40,9 +40,11 @@ interface FinancialActionRepository : ReactiveCrudRepository<FinancialActionMode
 
     @Query("update fi_actions set status = :status where id in (:ids)")
     fun updateBatchStatus(ids: List<Long>, status: FinancialActionStatus): Mono<Int>
-    @Query("select * from fi_actions fi where status = 'CREATED' " +
-            "and ( parent_id is null " +
-            "      or 'ERROR' != (select pfi.status from fi_actions pfi where pfi.id = fi.parent_id)" +
-            ")")
+
+    @Query("""
+        select * from fi_actions fi 
+        where status = 'CREATED'
+            and (parent_id is null or 'ERROR' != (select pfi.status from fi_actions pfi where pfi.id = fi.parent_id))
+    """)
     fun findReadyToProcess(of: Pageable): Flow<FinancialActionModel>
 }
