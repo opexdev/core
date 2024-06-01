@@ -22,7 +22,6 @@ class JsonMapperConfig {
             override fun toMap(input: Any): Map<String, Any> {
                 return objectMapper.convertValue(input, Map::class.java) as Map<String, Any>
             }
-
         }
     }
 

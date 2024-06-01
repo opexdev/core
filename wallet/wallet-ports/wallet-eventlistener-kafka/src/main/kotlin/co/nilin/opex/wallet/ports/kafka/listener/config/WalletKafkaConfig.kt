@@ -41,7 +41,6 @@ class WalletKafkaConfig(private val environment: Environment) {
 
     @Bean("consumerConfigs")
     fun consumerConfigs(): Map<String, Any?> {
-
         logger.info("=======================")
         this.environment.activeProfiles.toList().forEach {
             (logger.info(it));

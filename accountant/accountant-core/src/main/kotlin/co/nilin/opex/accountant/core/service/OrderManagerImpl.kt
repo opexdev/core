@@ -104,6 +104,7 @@ open class OrderManagerImpl(
             FinancialActionCategory.ORDER_CREATE,
             createMap(submitOrderEvent, order)
         )
+
         return financialActionPersister.persist(listOf(financialAction))
         /*publishFinancialAction(financialAction)
         return fa*/
@@ -270,7 +271,7 @@ open class OrderManagerImpl(
 
         if (financialAction.status == FinancialActionStatus.CREATED) {
             financialActionPublisher.publish(financialAction)
-            financialActionPersister.updateStatus(financialAction.uuid, FinancialActionStatus.PROCESSED)
+            financialActionPersister.updateStatus(financialAction.uuid, FinancialActionStatus.SENT)
         }
     }
 

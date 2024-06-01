@@ -13,6 +13,7 @@ class FinancialActionsJob(private val financialActionJobManager: FinancialAction
 
     private val log = LoggerFactory.getLogger(FinancialActionsJob::class.java)
     private val scope = CoroutineScope(Dispatchers.IO)
+    private val retryScope = CoroutineScope(Dispatchers.IO)
 
     @Scheduled(fixedDelay = 10000, initialDelay = 10000)
     fun processFinancialActions() {
@@ -25,7 +26,22 @@ class FinancialActionsJob(private val financialActionJobManager: FinancialAction
                 //read unprocessed fa records and call transfer
                 financialActionJobManager.processFinancialActions(0, 100)
             } catch (e: Exception) {
-                log.error("Job error!", e)
+                log.error("Financial action PROCESS error: ${e.message}")
+            }
+        }
+    }
+
+    @Scheduled(fixedDelay = 2000, initialDelay = 15000)
+    fun retryFinancialActions() {
+        retryScope.ensureActive()
+        if (!retryScope.isCompleted())
+            return
+
+        retryScope.launch {
+            try {
+                financialActionJobManager.retryFinancialActions(10)
+            } catch (e: Exception) {
+                log.error("Financial action RETRY error: ${e.message}")
             }
         }
     }

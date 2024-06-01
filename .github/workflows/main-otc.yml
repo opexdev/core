@@ -4,7 +4,6 @@ on:
     branches:
       - main
 
-
   workflow_dispatch:
     inputs:
       partner_name:
@@ -19,6 +18,7 @@ jobs:
     strategy:
       matrix:
         java: [ 17 ]
+
     name: Build OPEX and run tests with java ${{ matrix.java }} (otc)
     env:
       TAG: otc-pr
@@ -27,47 +27,84 @@ jobs:
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v2
+
       - name: Setup Java
         uses: actions/setup-java@v2
         with:
           distribution: 'adopt'
           java-package: jdk
           java-version: ${{ matrix.java }}
-      - name: Load partners config
+
+      - name: Fetch partners config
         id: download_partners_data
         run: |
-          echo $PARTNER
           curl -L -o partner_mappings.yml -H "Authorization: token  ${{secrets.PARTNERS_ACCESS_TOKEN}} " https://raw.githubusercontent.com/opexdev/partners/main/partner_mappings.yml
-          cat partner_mappings.yml
 
-      - name: Fetch partner data
-        uses: christian-ci/action-yaml-github-output@v2
+      - name: Pars partners config file
         id: read_partners_data
-        with:
-          file_path: partner_mappings.yml
-          main_key: partners
-          sub_key: ${{env.PARTNER}}
+        run: |
+          yaml() {
+           python3 -c "import yaml;print(yaml.safe_load(open('$1'))$2)"
+          }
+          export SSH_HOST=$(yaml partner_mappings.yml "['partners']['${{env.PARTNER}}']['SSH_HOST']")
+          export SSH_DIR=$(yaml partner_mappings.yml "['partners']['${{env.PARTNER}}']['SSH_DIR']")
+          export SSH_PRIVATE_KEY=$(yaml partner_mappings.yml "['partners']['${{env.PARTNER}}']['SSH_PRIVATE_KEY']")
+          export SSH_USER=$(yaml partner_mappings.yml "['partners']['${{env.PARTNER}}']['SSH_USER']")
+          export PASSWORD=$(yaml partner_mappings.yml "['partners']['${{env.PARTNER}}']['PASSWORD']")
+          export ENV_PATH=$(yaml partner_mappings.yml "['partners']['${{env.PARTNER}}']['ENV_PATH']")
+          export SSH_PORT=$(yaml partner_mappings.yml "['partners']['${{env.PARTNER}}']['SSH_PORT']")
+          
+          echo "::add-mask::$SSH_HOST"
+          echo "::add-mask::$SSH_DIR"
+          echo "::add-mask::$SSH_PRIVATE_KEY"
+          echo "::add-mask::$SSH_USER"
+          echo "::add-mask::$PASSWORD"
+          echo "::add-mask::$ENV_PATH"
+          echo "::add-mask::$SSH_PORT"
+          
+          echo "SSH_HOST=$SSH_HOST" >> $GITHUB_OUTPUT
+          echo "SSH_DIR=$SSH_DIR" >> $GITHUB_OUTPUT
+          echo "SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY" >> $GITHUB_OUTPUT
+          echo "SSH_USER=$SSH_USER" >> $GITHUB_OUTPUT
+          echo "PASSWORD=$PASSWORD" >> $GITHUB_OUTPUT
+          echo "ENV_PATH=$ENV_PATH" >> $GITHUB_OUTPUT
+          echo "SSH_PORT=$SSH_PORT" >> $GITHUB_OUTPUT
 
       - name: Decrypt data
         id: decrypt_data
+
         run: |
-          
           echo ${{ steps.read_partners_data.outputs.SSH_HOST }} | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_ssh_host.txt
           echo ${{ steps.read_partners_data.outputs.SSH_DIR }} | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_dir.txt
           echo ${{ steps.read_partners_data.outputs.SSH_USER }} | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_user.txt
           echo ${{ steps.read_partners_data.outputs.PASSWORD }} | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_password.txt
-
+          
           curl -L -o priv_file.txt -H "Authorization: token  ${{secrets.PARTNERS_ACCESS_TOKEN}} " https://raw.githubusercontent.com/opexdev/partners/main/${{ steps.read_partners_data.outputs.SSH_PRIVATE_KEY }}
           cat priv_file.txt | openssl aes-256-cbc -d -a -pass pass:${{secrets.PARTNERS_KEY }} > decrypted_private_key.txt  
           export SSH_SECRET_NN=$( cat decrypted_private_key.txt | tr -s '\r\n' '#')  
           
+          export user_ssh=$(cat decrypted_user.txt)
+          export ssh_dir=$(cat decrypted_dir.txt)
+          export ssh_host=$(cat decrypted_ssh_host.txt)
+          export env_path=${{ steps.read_partners_data.outputs.ENV_PATH }}
+          export ssh_port=${{ steps.read_partners_data.outputs.SSH_PORT}}
+          export server_pass=$(cat decrypted_password.txt)
           
-          echo "ssh_user=$(cat decrypted_user.txt)" >> $GITHUB_OUTPUT
-          echo "ssh_dir=$(cat decrypted_dir.txt)" >> $GITHUB_OUTPUT
-          echo "ssh_host=$(cat decrypted_ssh_host.txt)" >> $GITHUB_OUTPUT
+          echo "::add-mask::$ssh_dir"
+          echo "::add-mask::$SSH_SECRET_NN"
+          echo "::add-mask::$ssh_host"
+          echo "::add-mask::$env_path"
+          echo "::add-mask::$server_pass"
+          echo "::add-mask::$user_ssh"
+          echo "::add-mask::$ssh_port"
+          
+          echo "ssh_user=$user_ssh" >> $GITHUB_OUTPUT
+          echo "ssh_dir=$ssh_dir" >> $GITHUB_OUTPUT
+          echo "ssh_host=$ssh_host" >> $GITHUB_OUTPUT
           echo "ssh_secret=$SSH_SECRET_NN" >> $GITHUB_OUTPUT
-          echo "env_path=${{ steps.read_partners_data.outputs.ENV_PATH }}" >> $GITHUB_OUTPUT
-          echo "password=$(cat decrypted_password.txt)" >> $GITHUB_OUTPUT
+          echo "env_path=$env_path" >> $GITHUB_OUTPUT
+          echo "ssh_port=$ssh_port" >> $GITHUB_OUTPUT
+          echo "password=$server_pass" >> $GITHUB_OUTPUT
 
       - name: Build
         run:  |
@@ -78,51 +115,37 @@ jobs:
         run: |
           mvn -pl common -am -B -T 1C -Dskip.unit.tests=false surefire:test
           mvn -pl wallet,bc-gateway -amd  -B -T 1C -Dskip.unit.tests=false surefire:test
+
       - name: Build Docker images
         run: docker compose -f docker-compose-otc.build.yml build
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Push images to GitHub Container Registry
         run: docker compose -f docker-compose-otc.build.yml push
-    outputs:
-      ssh_user: ${{ steps.decrypt_data.outputs.ssh_user }}
-      ssh_secret: ${{ steps.decrypt_data.outputs.ssh_secret }}
-      ssh_dir: ${{ steps.decrypt_data.outputs.ssh_dir }}
-      ssh_host: ${{ steps.decrypt_data.outputs.ssh_host }}
-      env_path: ${{ steps.decrypt_data.outputs.env_path }}
-      server_password: ${{ steps.decrypt_data.outputs.password }}
 
-
-  deploy:
-    name: Deploy docker-compose file on remote host
-    runs-on: ubuntu-20.04
-    needs: build
-    env:
-      TAG: otc-pr
-      SSH_USER: ${{ needs.build.outputs.ssh_user }}
-      SSH_SECRET_NN: ${{ needs.build.outputs.ssh_secret }}
-      SSH_DIR: ${{ needs.build.outputs.ssh_dir }}
-      SSH_HOST: ${{ needs.build.outputs.ssh_host }}
-      SERVER_PASSWORD: ${{ needs.build.outputs.server_password }}
-      ENV_PATH: ${{ needs.build.outputs.env_path }}
-    steps:
-      - name: Set ssh key to have access
-        run: |
-          export SSH_SECRET=$( tr '#' '\n' <<< "$SSH_SECRET_NN")
-          install -m 600 -D /dev/null ~/.ssh/id_rsa
-          echo "$SSH_SECRET" > ~/.ssh/id_rsa
-          ssh-keyscan -H "$SSH_HOST" >~/.ssh/known_hosts
 
       - name: Pull docker images in dest server
         env:
           token: ${{secrets.PARTNERS_ACCESS_TOKEN}}
+
         run: |
-          sshpass -p"$SERVER_PASSWORD" ssh "$SSH_USER"@"$SSH_HOST" "cd "$SSH_DIR"; git pull origin main; \
-          curl  https://raw.githubusercontent.com/opexdev/partners/main/"$ENV_PATH"  -L -o .env -H 'Authorization:token $token' ; \
-          echo $SERVER_PASSWORD | sudo -S docker-compose -f docker-compose-otc.yml pull; \
-          echo $SERVER_PASSWORD | sudo -S docker network create --driver bridge otc-network || true; \
-          echo $SERVER_PASSWORD | sudo -S docker-compose -f docker-compose-otc.yml -f docker-compose-otc.local.yml up -d  && exit"
+          export SSH_USER=${{steps.decrypt_data.outputs.ssh_user }}
+          export SSH_DIR=${{ steps.decrypt_data.outputs.ssh_dir }}
+          export SSH_HOST=${{ steps.decrypt_data.outputs.ssh_host }}
+          export SERVER_PASSWORD='${{ steps.decrypt_data.outputs.password }}'
+          export ENV_PATH=${{ steps.decrypt_data.outputs.env_path }}
+          export SSH_PORT=${{ steps.decrypt_data.outputs.ssh_port }}
+          
+          sshpass -p $SERVER_PASSWORD ssh  -o StrictHostKeyChecking=no  "$SSH_USER"@"$SSH_HOST" -p "$SSH_PORT"  " \
+          cd "$SSH_DIR"; \
+          git pull origin main || true; \
+          curl https://raw.githubusercontent.com/opexdev/partners/main/"$ENV_PATH"  -L -o .env -H 'Authorization:token $token' ; \
+          echo '$SERVER_PASSWORD' | sudo -S docker-compose -f docker-compose-otc.yml pull; \
+          echo '$SERVER_PASSWORD' | sudo -S docker network create --driver bridge otc-network || true; \
+          echo '$SERVER_PASSWORD' | sudo -S docker-compose -f docker-compose-otc.yml -f docker-compose-otc.local.yml up -d  && exit "
