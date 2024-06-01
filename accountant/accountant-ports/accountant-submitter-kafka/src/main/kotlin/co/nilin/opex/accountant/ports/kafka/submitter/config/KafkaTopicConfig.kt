@@ -45,13 +45,13 @@ class KafkaTopicConfig {
                     .build()
             })
 
-            registerBean("topic_fiAction", NewTopic::class.java, Supplier {
+            /*registerBean("topic_fiAction", NewTopic::class.java, Supplier {
                 TopicBuilder.name("fiAction")
                     .partitions(partitionCount)
                     .replicas(replicaCount)
                     .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, minSyncReplicaCount)
                     .build()
-            })
+            })*/
 
             registerBean("topic_tempevents", NewTopic::class.java, "tempevents", 1, 1)
         }

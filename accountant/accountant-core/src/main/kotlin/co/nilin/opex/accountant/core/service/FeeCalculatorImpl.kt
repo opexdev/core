@@ -14,7 +14,8 @@ import java.time.LocalDateTime
 
 @Component
 class FeeCalculatorImpl(
-    @Value("\${app.address}") private val platformAddress: String, private val jsonMapper: JsonMapper
+    @Value("\${app.address}") private val platformAddress: String,
+    private val jsonMapper: JsonMapper
 ) : FeeCalculator {
 
     private val logger = LoggerFactory.getLogger(FeeCalculatorImpl::class.java)
@@ -61,7 +62,7 @@ class FeeCalculatorImpl(
             FinancialActionCategory.FEE,
             createMap(trade, makerOrder)
         )
-        logger.info("trade event makerFeeAction $makerFeeAction")
+        logger.info("Trade event makerFeeAction: uuid=${makerFeeAction.uuid}")
 
         //calculate taker fee
         val takerFeeAction = FinancialAction(
@@ -78,7 +79,7 @@ class FeeCalculatorImpl(
             FinancialActionCategory.FEE,
             createMap(trade, takerOrder)
         )
-        logger.info("trade event takerFeeAction $takerFeeAction")
+        logger.info("Trade event takerFeeAction: uuid=${takerFeeAction.uuid}")
 
         return FeeFinancialActions(makerFeeAction, takerFeeAction)
     }

@@ -5,10 +5,10 @@ import co.nilin.opex.wallet.app.dto.CurrencyExchangeRatesResponse
 import co.nilin.opex.wallet.app.dto.CurrencyPair
 import co.nilin.opex.wallet.app.dto.SetCurrencyExchangeRateRequest
 import co.nilin.opex.wallet.app.service.otc.GraphService
-import co.nilin.opex.wallet.core.model.Currencies
-import co.nilin.opex.wallet.core.model.Currency
-import co.nilin.opex.wallet.core.model.CurrencyImp
+
 import co.nilin.opex.wallet.core.model.otc.*
+
+import co.nilin.opex.wallet.core.service.otc.RateService
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
@@ -19,9 +19,9 @@ import java.math.BigDecimal
 @RequestMapping("/otc")
 class CurrencyRatesController(
     private val rateService: co.nilin.opex.wallet.core.service.otc.RateService,
+
     private val graphService: GraphService
 ) {
-
 
 
     @PostMapping("/rate")
@@ -33,7 +33,6 @@ class CurrencyRatesController(
         request.validate()
         rateService.addRate(Rate(request.sourceSymbol, request.destSymbol, request.rate))
     }
-
 
     @PutMapping("/rate")
     @ApiResponse(
@@ -54,7 +53,6 @@ class CurrencyRatesController(
         return rateService.deleteRate(Rate(sourceSymbol, destSymbol, BigDecimal.ZERO))
     }
 
-
     @GetMapping("/rate")
     @ApiResponse(
         message = "OK",
@@ -73,7 +71,6 @@ class CurrencyRatesController(
         return rateService.getRate()
     }
 
-
     //TODO: please verify. With this change we don't support {sourceSymbol}/all or all/{destSymbol} any more, isn't it needed in UI?
     @GetMapping("/rate/{sourceSymbol}/{destSymbol}")
     @ApiResponse(
@@ -91,7 +88,6 @@ class CurrencyRatesController(
     suspend fun fetchRate(@PathVariable sourceSymbol: String, @PathVariable destSymbol: String): Rate? {
         return rateService.getRate(sourceSymbol, destSymbol)
     }
-
 
     @PostMapping("/forbidden-pairs")
     @ApiResponse(
@@ -128,7 +124,6 @@ class CurrencyRatesController(
         return rateService.getForbiddenPairs()
     }
 
-
     @PostMapping("/transitive-symbols")
     @ApiResponse(
         message = "OK",
@@ -146,7 +141,6 @@ class CurrencyRatesController(
     suspend fun deleteTransitiveSymbols(@PathVariable symbol: String): Symbols {
         return rateService.deleteTransitiveSymbols(Symbols(listOf(symbol)))
     }
-
 
     @DeleteMapping("/transitive-symbols")
     @ApiResponse(
@@ -172,7 +166,6 @@ class CurrencyRatesController(
         return rateService.getTransitiveSymbols()
     }
 
-
     //TODO why this endpoint is a POST method?
     @RequestMapping("/route", method = [RequestMethod.POST, RequestMethod.GET])
     suspend fun fetchRoutes(
@@ -183,6 +176,5 @@ class CurrencyRatesController(
             graphService.buildRoutes(sourceSymbol, destSymbol).map { CurrencyExchangeRate(it.getSourceSymbol(), it.getDestSymbol(), it.getRate()) }
         )
     }
-
 
 }
