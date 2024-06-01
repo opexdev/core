@@ -10,7 +10,7 @@ import java.util.*
 @Table("new_currency")
 data class NewCurrencyModel(
         @Id
-        var id:Long,
+        var id:Long?=null,
         //todo unique
         var symbol: String,
         var uuid: String? = UUID.randomUUID().toString(),
@@ -32,7 +32,7 @@ data class NewCurrencyModel(
         @Column("deposit_is_enable")
         var depositIsEnable: Boolean? = true,
         @Column("withdraw_fee")
-        var withdrawFee: BigDecimal?,
+        var withdrawFee: BigDecimal?=BigDecimal.ZERO,
         @Column("external_url")
         var externalUrl: String? = null,
         @Column("is_crypto_currency")

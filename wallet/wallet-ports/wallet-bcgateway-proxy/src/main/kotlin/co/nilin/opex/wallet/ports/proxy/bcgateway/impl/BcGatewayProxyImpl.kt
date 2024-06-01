@@ -21,7 +21,7 @@ class BcGatewayProxyImpl(private val webClient: WebClient) : BcGatewayProxy {
 
     private val logger = LoggerFactory.getLogger(BcGatewayProxyImpl::class.java)
 
-    override suspend fun createNewCurrency(currencyImp: CryptoCurrencyCommand, internalToken: String?): CryptoCurrencyCommand? {
+    override suspend fun createNewCurrency(currencyImp: CryptoCurrencyCommand, internalToken: String?): CryptoImps? {
         return webClient.post()
                 .uri(URI.create("$baseUrl/currency/${currencyImp.currencyUUID}"))
 
@@ -34,12 +34,12 @@ class BcGatewayProxyImpl(private val webClient: WebClient) : BcGatewayProxy {
                 .bodyValue(currencyImp)
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono(typeRef<CryptoCurrencyCommand>())
+                .bodyToMono(typeRef<CryptoImps>())
                 .log()
                 .awaitFirst()
     }
 
-    override suspend fun updateImpOfCryptoCurrency(currencyImp: CryptoCurrencyCommand,internalToken: String?): CryptoCurrencyCommand? {
+    override suspend fun updateImpOfCryptoCurrency(currencyImp: CryptoCurrencyCommand,internalToken: String?): CryptoImps? {
 
         return webClient.put()
                 .uri(URI.create("$baseUrl/currency/${currencyImp.currencyUUID}"))
@@ -52,7 +52,7 @@ class BcGatewayProxyImpl(private val webClient: WebClient) : BcGatewayProxy {
                 .bodyValue(currencyImp)
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono(typeRef<CryptoCurrencyCommand>())
+                .bodyToMono(typeRef<CryptoImps>())
                 .log()
                 .awaitFirst()
     }
