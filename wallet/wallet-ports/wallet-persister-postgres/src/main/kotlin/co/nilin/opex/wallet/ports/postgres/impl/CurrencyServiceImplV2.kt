@@ -16,15 +16,15 @@ import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import java.util.stream.Collectors
 
 @Service("newVersion")
 class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : CurrencyServiceManager {
 
-    private val logger = LoggerFactory.getLogger(CurrencyServiceImplV2::class.java)
 
     override suspend fun createNewCurrency(request: CurrencyCommand): CurrencyCommand? {
-        return loadCurrencies(FetchCurrency(symbol = request.symbol))?.awaitFirstOrNull()?.let {
+        return loadCurrency(FetchCurrency(symbol = request.symbol))?.awaitFirstOrNull()?.let {
             throw OpexError.CurrencyIsExist.exception()
         } ?: run {
             return doSave(request.toModel())?.toCommand()
@@ -33,7 +33,7 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
 
 
     override suspend fun updateCurrency(request: CurrencyCommand): CurrencyCommand? {
-        return loadCurrencies(FetchCurrency(uuid = request.uuid))
+        return loadCurrency(FetchCurrency(uuid = request.uuid))
                 ?.awaitFirstOrNull()?.let {
                     doSave(it.toCommand().updateTo(request).toModel().apply { id = it.id })?.toCommand()
                 } ?: throw OpexError.CurrencyNotFound.exception()
@@ -41,19 +41,25 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
     }
 
     override suspend fun prepareCurrencyToBeACryptoCurrency(request: String): CurrencyCommand? {
-        return loadCurrencies(FetchCurrency(uuid = request))?.awaitFirstOrNull()?.let {
+        return loadCurrency(FetchCurrency(uuid = request))?.awaitFirstOrNull()?.let {
             if (it.isCryptoCurrency == false)
                 return doSave(it.apply { isCryptoCurrency = true })?.toCommand()
             it.toCommand()
         } ?: throw OpexError.CurrencyNotFound.exception()
     }
 
-    override suspend fun deleteCurrency(request: String) {
-        TODO("Not yet implemented")
+    override suspend fun deleteCurrencies(request: FetchCurrency) {
+        loadCurrency(request)?.map {
+            currencyRepository.delete(it)
+        }?.awaitFirstOrNull()
+    }
+
+    private suspend fun loadCurrency(request: FetchCurrency): Mono<NewCurrencyModel>? {
+        return currencyRepository.fetchCurrency(request.uuid, request.symbol)
     }
 
     private suspend fun loadCurrencies(request: FetchCurrency): Flux<NewCurrencyModel>? {
-        return currencyRepository.fetchCurrencies(request.uuid, request.symbol, request.name)
+        return currencyRepository.fetchSemiCurrencies(request.uuid, request.symbol, request.name)
     }
 
 
@@ -63,13 +69,13 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
     }
 
 
-    override suspend fun fetchCurrencies(request: FetchCurrency): CurrenciesCommand? {
+    override suspend fun fetchCurrencs(request: FetchCurrency): CurrenciesCommand? {
         return CurrenciesCommand(loadCurrencies(request)?.map { it.toCommand() }
                 ?.collect(Collectors.toList())?.awaitFirstOrNull())
     }
 
-    override suspend fun deleteCurrencies(request: FetchCurrency): CurrenciesCommand? {
-        TODO("Not yet implemented")
+    override suspend fun fetchCurrency(request: FetchCurrency): CurrencyCommand? {
+        return loadCurrency(request)?.awaitFirstOrNull()?.toCommand()
     }
 
 

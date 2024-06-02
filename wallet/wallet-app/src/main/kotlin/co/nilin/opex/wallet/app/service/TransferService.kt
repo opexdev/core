@@ -331,7 +331,7 @@ class TransferService(
     ): TransferResult {
         if (senderWalletType == "cashout" || receiverWalletType == "cashout")
             throw OpexError.InvalidCashOutUsage.exception()
-        val sourceCurrency = currencyService.fetchCurrencies(FetchCurrency(symbol=destSymbol))?.currencies?.firstOrNull() ?: throw OpexError.CurrencyNotFound.exception()
+        val sourceCurrency = currencyService.fetchCurrency(FetchCurrency(symbol=destSymbol))?: throw OpexError.CurrencyNotFound.exception()
         val sourceOwner = walletOwnerManager.findWalletOwner(senderUuid)
                 ?: throw OpexError.WalletOwnerNotFound.exception()
         val sourceWallet =
@@ -343,7 +343,7 @@ class TransferService(
                 "not set",
                 "1"
         )
-        val receiverCurrency = currencyService.fetchCurrencies(FetchCurrency(symbol=destSymbol))?.currencies?.first()
+        val receiverCurrency = currencyService.fetchCurrency(FetchCurrency(symbol=destSymbol))
                 ?: throw OpexError.CurrencyNotFound.exception()
         val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(
                 receiverOwner, receiverWalletType, receiverCurrency
@@ -371,7 +371,7 @@ class TransferService(
     }
 
     private suspend fun checkIfSystemHasEnoughBalance(destSymbol: String, receiverWalletType: String, finalAmount: BigDecimal?) {
-        val destCurrency = currencyService.fetchCurrencies(FetchCurrency(symbol = destSymbol))?.currencies?.first()!!
+        val destCurrency = currencyService.fetchCurrency(FetchCurrency(symbol = destSymbol))!!
         val system = walletOwnerManager.findWalletOwner(walletOwnerManager.systemUuid)
                 ?: throw OpexError.WalletOwnerNotFound.exception()
         val systemWallet = walletManager.findWalletByOwnerAndCurrencyAndType(system, receiverWalletType, destCurrency)

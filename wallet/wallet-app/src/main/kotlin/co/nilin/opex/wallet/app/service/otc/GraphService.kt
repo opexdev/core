@@ -1,7 +1,8 @@
 package co.nilin.opex.wallet.app.service.otc
 
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.wallet.core.model.Currency
+import co.nilin.opex.wallet.core.inout.CurrencyCommand
+import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.model.otc.*
 import co.nilin.opex.wallet.core.service.otc.RateService
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
@@ -35,13 +36,13 @@ class GraphService(private val rateService: RateService, private val currencySer
     suspend fun buildRoutes(source: String? = null, dest: String? = null): MutableList<Route> {
         val routesWithMax2StepV2: MutableList<Route> = mutableListOf()
         val adjencyMap: Map<String, MutableList<Rate>> = createAdjacencyMapV2()
-        val systemCurrencies = currencyService.getCurrencies().currencies
+        val systemCurrencies = currencyService.fetchCurrencs(FetchCurrency())?.currencies
         val vertice: List<String> = systemCurrencies?.filter {
             it.isTransitive == false && it.isActive == true
         }
-            ?.map(Currency::symbol)
+            ?.map(CurrencyCommand::symbol)
             ?: throw OpexError.NoRecordFound.exception()
-        val transitiveSymbols: List<String> = systemCurrencies.filter { it.isTransitive == true }.map(Currency::symbol)
+        val transitiveSymbols: List<String> = systemCurrencies.filter { it.isTransitive == true }.map(CurrencyCommand::symbol)
         for (vertex in vertice) {
             if (source == null || vertex == source) {
                 val visited = mutableSetOf<String>()

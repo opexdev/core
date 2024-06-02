@@ -22,13 +22,6 @@ class CurrencyController(private val currencyService: CurrencyServiceV2) {
         return currencyService.updateCurrency(request)
     }
 
-
-    @PostMapping("/currency/{currencyUuid}/impl")
-    suspend fun addImp2Currency(@PathVariable("currencyUuid") currencyUuid: String,
-                                @RequestBody request: CryptoCurrencyCommand): CurrencyDto? {
-        return currencyService.addImp2Currency(request.apply { this.currencyUUID = currencyUUID })
-    }
-
     @GetMapping("/currency/{currencyUuid}")
     suspend fun getCurrency(@PathVariable("currencyUuid") currencyUuid: String,
                             @RequestParam("includeImp") includeImp: Boolean? = false): CurrencyDto? {
@@ -41,10 +34,21 @@ class CurrencyController(private val currencyService: CurrencyServiceV2) {
         return currencyService.fetchCurrenciesWithImps(includeImp!!)
     }
 
+    @PostMapping("/currency/{currencyUuid}/impl")
+    suspend fun addImp2Currency(@PathVariable("currencyUuid") currencyUuid: String,
+                                @RequestBody request: CryptoCurrencyCommand): CurrencyDto? {
+        return currencyService.addImp2Currency(request.apply { this.currencyUUID = currencyUUID })
+    }
+
 
     @PutMapping("/currency/impl/{implUuid}")
     suspend fun updateImpl(@PathVariable("implUuid") implUuid: String, @RequestBody request: CryptoCurrencyCommand): CurrencyDto? {
         return currencyService.updateImp(request.apply { currencyImpUuid = implUuid })
+    }
+
+    @GetMapping("/currency/impl/{implUuid}")
+    suspend fun getImpl(@PathVariable("implUuid") implUuid: String): CryptoCurrencyCommand? {
+        return currencyService.fetchCurrencyImp(implUuid)
     }
 
 

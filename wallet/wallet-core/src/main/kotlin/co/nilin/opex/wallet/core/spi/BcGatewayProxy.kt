@@ -10,4 +10,7 @@ interface BcGatewayProxy {
 
     suspend fun fetchImpsOfCryptoCurrency(symbol: String, internalToken: String? ): CryptoImps?
 
+    suspend fun fetchImplDetail(symbol: String, internalToken: String? ): CryptoCurrencyCommand?
+
+
 }

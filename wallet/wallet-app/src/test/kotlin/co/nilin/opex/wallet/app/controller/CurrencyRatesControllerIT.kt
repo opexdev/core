@@ -45,22 +45,23 @@ class CurrencyRatesControllerIT : KafkaEnabledTest() {
     fun setup() {
         runBlocking {
             val currencies = listOf("E", "B", "U", "Z")
-            val systemCurrencies = currencyService.fetchCurrencies(FetchCurrency())?.currencies?.filter { c -> currencies.contains(c.name) }?.map { currency -> currency.name }
+            val systemCurrencies = currencyService.fetchCurrencs(FetchCurrency())?.currencies?.filter { c -> currencies.contains(c.name) }?.map { currency -> currency.name }
             val fpair = rateService.getForbiddenPairs()
             val rates = rateService.getRate()
             fpair.forbiddenPairs!!.forEach { p -> rateService.deleteForbiddenPair(p) }
             rates.rates!!.forEach { r -> rateService.deleteRate(r) }
             //TODO: after moving the wallet creation to otcservice we can remove these two lines
             val wallets = walletRepository.findAll().collectList().block()
-            wallets?.map {w->currencyService.fetchCurrencies(FetchCurrency(id=w.currency))?.currencies?.first()?.name }?.filter { w -> currencies.contains(w) }?.forEach { w -> walletRepository.delete(w).block() }
-            systemCurrencies?.filter { c -> true }?.forEach { c -> currencyService.deleteCurrency(c) }
+            //todo
+//            wallets?.map {w->currencyService.fetchCurrencies(FetchCurrency(id=w.currency))?.currencies?.first()?.name }?.filter { w -> currencies.contains(w) }?.forEach { w -> walletRepository.delete(w).block() }
+            systemCurrencies?.filter { c -> true }?.forEach { c -> currencyService.deleteCurrencies(FetchCurrency(name = c)) }
             currencies.forEach { c -> addCurrency(c, BigDecimal.TEN) }
         }
     }
 
     private suspend fun addCurrency(c: String, precision: BigDecimal) {
         try {
-            currencyService.deleteCurrency(c)
+            currencyService.deleteCurrencies(FetchCurrency(symbol = c))
         } catch (_: Exception) {
 
         }

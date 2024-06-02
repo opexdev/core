@@ -315,8 +315,8 @@ private class WalletManagerTest {
             )
         } returns Mono.just(VALID.WALLET.toModel())
         every {
-            currencyRepository.fetchCurrencies(symbol = VALID.CURRENCY.symbol)
-        } returns Flux.just(VALID.CURRENCY.toModel())
+            currencyRepository.fetchCurrency(symbol = VALID.CURRENCY.symbol)
+        } returns Mono.just(VALID.CURRENCY.toModel())
 
         val wallet = walletManagerImpl.findWalletByOwnerAndCurrencyAndType(
             VALID.WALLET_OWNER,
@@ -452,8 +452,8 @@ private class WalletManagerTest {
             walletOwnerRepository.findById(VALID.WALLET_OWNER.id!!)
         } returns Mono.just(VALID.WALLET_OWNER.toModel())
         every {
-            currencyRepository.fetchCurrencies(symbol = VALID.CURRENCY.symbol)
-        } returns Flux.just(VALID.CURRENCY.toModel())
+            currencyRepository.fetchCurrency(symbol = VALID.CURRENCY.symbol)
+        } returns Mono.just(VALID.CURRENCY.toModel())
 
         val wallet = walletManagerImpl.findWalletById(VALID.WALLET.id!!)
 

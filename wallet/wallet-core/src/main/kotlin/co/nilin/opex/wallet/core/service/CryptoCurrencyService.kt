@@ -24,7 +24,10 @@ class CryptoCurrencyService(private val bcGatewayProxy: BcGatewayProxy,
         return bcGatewayProxy.fetchImpsOfCryptoCurrency(currencyUuid, token)
     }
 
-
+    suspend fun fetchImp(currencyImplUuid:String): CryptoCurrencyCommand? {
+        val token = authService.extractToken()
+        return bcGatewayProxy.fetchImplDetail(currencyImplUuid, token)
+    }
 
 }
 

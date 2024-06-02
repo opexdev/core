@@ -1,11 +1,13 @@
 package co.nilin.opex.wallet.app.listener
 
+import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.ports.kafka.listener.model.AddCurrencyEvent
 import co.nilin.opex.wallet.ports.kafka.listener.model.AdminEvent
 import co.nilin.opex.wallet.ports.kafka.listener.model.DeleteCurrencyEvent
 import co.nilin.opex.wallet.ports.kafka.listener.model.EditCurrencyEvent
 import co.nilin.opex.wallet.ports.kafka.listener.spi.AdminEventListener
+import co.nilin.opex.wallet.ports.postgres.model.NewCurrencyModel
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -20,9 +22,10 @@ class AdminEventListenerImpl(private val currencyService: CurrencyServiceManager
     override fun onEvent(event: AdminEvent, partition: Int, offset: Long, timestamp: Long): Unit = runBlocking {
         logger.info("Incoming admin event $event")
         when (event) {
-            is AddCurrencyEvent -> currencyService.addCurrency(event.name, event.symbol, event.precision)
-            is EditCurrencyEvent -> currencyService.editCurrency(event.name, event.symbol, event.precision)
-            is DeleteCurrencyEvent -> currencyService.deleteCurrency(event.name)
+            is AddCurrencyEvent -> currencyService.createNewCurrency(CurrencyCommand(name =event.name, symbol =  event.symbol, precision =  event.precision))
+//                             //todo
+//            is EditCurrencyEvent -> currencyService.editCurrency(event.name, event.symbol, event.precision)
+//            is DeleteCurrencyEvent -> currencyService.deleteCurrency(event.name)
             else -> {}
         }
     }

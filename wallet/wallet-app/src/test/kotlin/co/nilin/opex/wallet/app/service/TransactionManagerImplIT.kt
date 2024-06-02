@@ -1,8 +1,10 @@
 package co.nilin.opex.wallet.app.service
 
 import co.nilin.opex.wallet.app.KafkaEnabledTest
+import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.spi.*
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -46,7 +48,7 @@ class TransactionManagerImplIT : KafkaEnabledTest() {
     @Test
     fun givenMultipleTransfer_whenFindTransactions_thenOrderedAndPaginated() {
         runBlocking {
-            val currency = currencyService.getCurrency(cc)!!
+            val currency = currencyService.fetchCurrency(FetchCurrency( symbol = cc))!!
 
             destUuid = UUID.randomUUID().toString()
             setupWallets(destUuid!!)
@@ -98,12 +100,12 @@ class TransactionManagerImplIT : KafkaEnabledTest() {
     fun setupWallets(sourceUuid: String) {
         runBlocking {
             try {
-                currencyService.deleteCurrency(cc)
+                currencyService.deleteCurrencies(FetchCurrency(symbol = cc))
             } catch (_: Exception) {
 
             }
-            currencyService.addCurrency(cc, cc, BigDecimal.ONE)
-            val currency = currencyService.getCurrency(cc)
+            currencyService.createNewCurrency(CurrencyCommand(name =  cc, symbol =  cc, precision =  BigDecimal.ONE))
+            val currency = currencyService.fetchCurrency(FetchCurrency(symbol = cc))
             val sourceOwner = walletOwnerManager.createWalletOwner(sourceUuid, "not set", "")
             walletManager.createWallet(sourceOwner, Amount(currency!!, amount.multiply(BigDecimal.valueOf(2))), currency, senderWalletType)
             walletManager.createWallet(

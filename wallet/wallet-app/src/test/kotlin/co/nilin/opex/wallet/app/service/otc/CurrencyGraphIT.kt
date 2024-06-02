@@ -38,7 +38,7 @@ class CurrencyGraphIT : KafkaEnabledTest() {
         runBlocking {
             val currencies = listOf("A", "B", "C", "D", "Z")
             val systemCurrencies = currencyService
-                .fetchCurrencies(FetchCurrency())?.currencies?.filter { c -> currencies.contains(c.name) }?.map { currency -> currency.id.toString() }
+                .fetchCurrencs(FetchCurrency())?.currencies?.filter { c -> currencies.contains(c.name) }?.map { currency -> currency.id.toString() }
             val fpair = rateService.getForbiddenPairs()
             val rates = rateService.getRate()
             fpair.forbiddenPairs!!.forEach { p -> rateService.deleteForbiddenPair(p) }
@@ -46,7 +46,7 @@ class CurrencyGraphIT : KafkaEnabledTest() {
             //TODO: after moving the wallet creation to otcservice we can remove these two lines
             val wallets = walletRepository.findAll().collectList().block()
             wallets?.filter { w -> currencies.contains(w.currency.toString()) }?.forEach { w -> walletRepository.delete(w).block() }
-            systemCurrencies?.filter { c -> true }?.forEach { c -> currencyService.deleteCurrency(c) }
+            systemCurrencies?.filter { c -> true }?.forEach { c -> currencyService.deleteCurrencies(FetchCurrency(name = c)) }
             currencies.forEach { c -> addCurrency(c) }
         }
     }

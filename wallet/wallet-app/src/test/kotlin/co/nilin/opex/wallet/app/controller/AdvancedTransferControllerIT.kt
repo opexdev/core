@@ -80,8 +80,8 @@ class AdvancedTransferControllerIT : KafkaEnabledTest() {
             val sender = walletOwnerManager.createWalletOwner(UUID.randomUUID().toString(), "sender", "")
             val receiver = UUID.randomUUID().toString()
             val system = walletOwnerManager.findWalletOwner(walletOwnerManager.systemUuid)!!
-            val srcCurrency = currencyService.fetchCurrencies(FetchCurrency(symbol = "ETH"))?.currencies?.first()!!
-            val destCurrency = currencyService.fetchCurrencies(FetchCurrency(symbol = "USDT"))?.currencies?.first()!!
+            val srcCurrency = currencyService.fetchCurrency(FetchCurrency(symbol = "ETH"))!!
+            val destCurrency = currencyService.fetchCurrency(FetchCurrency(symbol = "USDT"))!!
             createWalletWithCurrencyAndBalance(sender, "main", srcCurrency, BigDecimal.valueOf(1))
             //not enough balance
             createWalletWithCurrencyAndBalance(system, "main", destCurrency, BigDecimal.valueOf(1))
@@ -101,8 +101,8 @@ class AdvancedTransferControllerIT : KafkaEnabledTest() {
             val sender = walletOwnerManager.createWalletOwner(UUID.randomUUID().toString(), "sender", "")
             val receiver = UUID.randomUUID().toString()
             val system = walletOwnerManager.findWalletOwner(walletOwnerManager.systemUuid)!!
-            val srcCurrency = currencyService.fetchCurrencies(FetchCurrency(symbol = "ETH"))?.currencies?.first()!!
-            val destCurrency = currencyService.fetchCurrencies(FetchCurrency(symbol = "USDT"))?.currencies?.first()!!
+            val srcCurrency = currencyService.fetchCurrency(FetchCurrency(symbol = "ETH"))!!
+            val destCurrency = currencyService.fetchCurrency(FetchCurrency(symbol = "USDT"))!!
             val senderInitWallet = createWalletWithCurrencyAndBalance(sender, "main", srcCurrency, BigDecimal.valueOf(1))
             val systemDestCurrencyInitWallet = createWalletWithCurrencyAndBalance(system, "main", destCurrency, BigDecimal.valueOf(200))
             val systemSrcCurrencyInitWallet = createWalletWithCurrencyAndBalance(system, "main", srcCurrency, BigDecimal.valueOf(0))

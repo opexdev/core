@@ -53,7 +53,7 @@ class InquiryController(
         logger.info("canFullFill: {} {} {} {}", uuid, currency, walletType, amount)
         val owner = walletOwnerManager.findWalletOwner(uuid)
         if (owner != null) {
-            val c = currencyService.fetchCurrencies(FetchCurrency(symbol =  currency))?.currencies?.first() ?: throw OpexError.CurrencyNotFound.exception()
+            val c = currencyService.fetchCurrency(FetchCurrency(symbol =  currency)) ?: throw OpexError.CurrencyNotFound.exception()
             val wallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, walletType, c)
             if (wallet != null) {
                 return BooleanResponse(

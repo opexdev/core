@@ -34,7 +34,7 @@ class PaymentGatewayController(
             PaymentCurrency.TOMAN -> request.amount.toLong()
         }
 
-        val currency = currencyService.fetchCurrencies(FetchCurrency(symbol = "IRT"))?.currencies?.firstOrNull() ?: throw OpexError.CurrencyNotFound.exception()
+        val currency = currencyService.fetchCurrency(FetchCurrency(symbol = "IRT")) ?: throw OpexError.CurrencyNotFound.exception()
         val sourceOwner = walletOwnerManager.findWalletOwner(walletOwnerManager.systemUuid)
             ?: throw OpexError.WalletOwnerNotFound.exception()
         val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner, "main", currency)

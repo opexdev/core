@@ -27,7 +27,7 @@ class WithdrawService(
 
     @Transactional
     suspend fun requestWithdraw(withdrawCommand: WithdrawCommand): WithdrawResult {
-        val currency = currencyService.fetchCurrencies(FetchCurrency(symbol = withdrawCommand.currency))?.currencies?.firstOrNull() ?: throw IllegalArgumentException()
+        val currency = currencyService.fetchCurrency(FetchCurrency(symbol = withdrawCommand.currency)) ?: throw IllegalArgumentException()
         val owner = walletOwnerManager.findWalletOwner(withdrawCommand.uuid) ?: throw IllegalArgumentException()
         val sourceWallet =
                 walletManager.findWalletByOwnerAndCurrencyAndType(owner, "main", currency)

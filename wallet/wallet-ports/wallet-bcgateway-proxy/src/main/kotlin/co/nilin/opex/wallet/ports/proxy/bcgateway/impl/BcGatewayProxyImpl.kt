@@ -71,4 +71,8 @@ class BcGatewayProxyImpl(private val webClient: WebClient) : BcGatewayProxy {
                 .bodyToMono(typeRef<CryptoImps>())
                 .log()
                 .awaitFirst()    }
+
+    override suspend fun fetchImplDetail(symbol: String, internalToken: String?): CryptoCurrencyCommand? {
+        TODO("Not yet implemented")
+    }
 }

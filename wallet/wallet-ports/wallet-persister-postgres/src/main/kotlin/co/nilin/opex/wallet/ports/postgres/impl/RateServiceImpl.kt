@@ -95,7 +95,7 @@ class RateServiceImpl(
     override suspend fun addTransitiveSymbols(symbols: Symbols) {
 
         symbols.symbols?.forEach {
-            currencyRepository.fetchCurrencies(symbol = it)?.awaitFirstOrNull()?.let {
+            currencyRepository.fetchCurrency(symbol = it)?.awaitFirstOrNull()?.let {
                 if (it.isActive == true)
                     currencyRepository.save(it.apply { isTransitive = true }).awaitFirstOrNull()
             }
@@ -105,7 +105,7 @@ class RateServiceImpl(
 
     override suspend fun deleteTransitiveSymbols(symbols: Symbols): Symbols {
         symbols.symbols?.forEach {
-            currencyRepository.fetchCurrencies(symbol = it)?.awaitFirstOrNull()?.let {
+            currencyRepository.fetchCurrency(symbol = it)?.awaitFirstOrNull()?.let {
                 currencyRepository.save(it.apply { isTransitive = false }).awaitFirstOrNull()
             }
         }
@@ -166,10 +166,10 @@ class RateServiceImpl(
                 if (!(transitives?.contains(this.sourceSymbol) == true || transitives?.contains(this.destSymbol) == true))
                     throw OpexException(OpexError.AtLeastNeedOneTransitiveSymbol)*/
 
-        currencyRepository.fetchCurrencies(symbol = this.sourceSymbol)?.awaitFirstOrNull()?.let { it ->
+        currencyRepository.fetchCurrency(symbol = this.sourceSymbol)?.awaitFirstOrNull()?.let { it ->
             if (it.isActive == false)
                 throw OpexError.CurrencyIsDisable.exception()
-            currencyRepository.fetchCurrencies(symbol = this.destSymbol)?.awaitFirstOrNull()?.let {
+            currencyRepository.fetchCurrency(symbol = this.destSymbol)?.awaitFirstOrNull()?.let {
                 if (it.isActive == false)
                     throw OpexError.CurrencyIsDisable.exception()
             } ?: throw OpexError.CurrencyNotFound.exception()
@@ -177,8 +177,8 @@ class RateServiceImpl(
     }
 
     private suspend fun ForbiddenPair.isValid() {
-        currencyRepository.fetchCurrencies(symbol = this.sourceSymbol)?.awaitFirstOrNull()?.let {
-            currencyRepository.fetchCurrencies(symbol = this.destSymbol)?.awaitFirstOrNull()?.let {
+        currencyRepository.fetchCurrency(symbol = this.sourceSymbol)?.awaitFirstOrNull()?.let {
+            currencyRepository.fetchCurrency(symbol = this.destSymbol)?.awaitFirstOrNull()?.let {
             } ?: throw OpexError.CurrencyNotFound.exception()
         } ?: throw OpexError.CurrencyNotFound.exception()
     }

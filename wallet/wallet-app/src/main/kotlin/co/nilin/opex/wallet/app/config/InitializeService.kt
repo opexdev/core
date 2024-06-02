@@ -82,10 +82,10 @@ class InitializeService(
 
         val items = p.currencies.flatMap { currency ->
             listOf(
-                    WalletModel(null, 1, "main", currency.symbol, currency.mainBalance),
-                    WalletModel(null, 1, "exchange", currency.symbol, BigDecimal.ZERO),
-                    WalletModel(null, adminWallet?.id!!, "main", currency.symbol, currency.mainBalance),
-                    WalletModel(null, adminWallet?.id!!, "exchange", currency.symbol, BigDecimal.ZERO)
+                    WalletModel(null, 1, "main", currency.id, currency.mainBalance),
+                    WalletModel(null, 1, "exchange", currency.id, BigDecimal.ZERO),
+                    WalletModel(null, adminWallet?.id!!, "main", currency.id, currency.mainBalance),
+                    WalletModel(null, adminWallet?.id!!, "exchange", currency.id, BigDecimal.ZERO)
 
             )
         }
