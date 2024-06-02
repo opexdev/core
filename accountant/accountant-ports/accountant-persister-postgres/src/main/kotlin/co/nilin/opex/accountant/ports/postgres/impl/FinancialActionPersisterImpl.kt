@@ -103,14 +103,15 @@ class FinancialActionPersisterImpl(
             //Do nothing
         } else {
             with(retryModel) {
+                val giveUp = retries + 1 >= retryCount
                 faRetryRepository.scheduleNext(
                     id!!,
                     retries + 1,
                     LocalDateTime.now().plusSeconds(retries * delayMultiplier * delaySeconds),
-                    retries >= retryCount
+                    giveUp
                 ).awaitSingleOrNull()
 
-                if (hasGivenUp)
+                if (giveUp)
                     status = FinancialActionStatus.ERROR
             }
         }

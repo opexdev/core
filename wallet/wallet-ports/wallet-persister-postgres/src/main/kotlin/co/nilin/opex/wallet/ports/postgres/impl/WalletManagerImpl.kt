@@ -79,7 +79,7 @@ class WalletManagerImpl(
     }
 
     override suspend fun isWithdrawAllowed(wallet: Wallet, amount: BigDecimal): Boolean {
-        if (amount <= BigDecimal.ZERO)
+        if (amount < BigDecimal.ZERO)
             throw OpexError.InvalidAmount.exception()
 
         var evaluate = wallet.balance.amount >= amount
