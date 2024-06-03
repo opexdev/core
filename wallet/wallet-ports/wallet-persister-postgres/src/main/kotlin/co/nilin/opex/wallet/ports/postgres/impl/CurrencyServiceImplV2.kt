@@ -21,6 +21,7 @@ import java.util.stream.Collectors
 
 @Service("newVersion")
 class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : CurrencyServiceManager {
+    private val logger = LoggerFactory.getLogger(CurrencyServiceImplV2::class.java)
 
 
     override suspend fun createNewCurrency(request: CurrencyCommand): CurrencyCommand? {
@@ -54,8 +55,17 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
         }?.awaitFirstOrNull()
     }
 
+    override suspend fun fetchCurrencs(request: FetchCurrency): CurrenciesCommand? {
+        return CurrenciesCommand(loadCurrencies(request)?.map { it.toCommand() }
+                ?.collect(Collectors.toList())?.awaitFirstOrNull())
+    }
+
+    override suspend fun fetchCurrency(request: FetchCurrency): CurrencyCommand? {
+        return loadCurrency(request)?.awaitFirstOrNull()?.toCommand()
+    }
+
     private suspend fun loadCurrency(request: FetchCurrency): Mono<NewCurrencyModel>? {
-        return currencyRepository.fetchCurrency(request.uuid, request.symbol)
+       return currencyRepository.fetchCurrency(symbol =  request.symbol, uuid = request.uuid)
     }
 
     private suspend fun loadCurrencies(request: FetchCurrency): Flux<NewCurrencyModel>? {
@@ -69,14 +79,7 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
     }
 
 
-    override suspend fun fetchCurrencs(request: FetchCurrency): CurrenciesCommand? {
-        return CurrenciesCommand(loadCurrencies(request)?.map { it.toCommand() }
-                ?.collect(Collectors.toList())?.awaitFirstOrNull())
-    }
 
-    override suspend fun fetchCurrency(request: FetchCurrency): CurrencyCommand? {
-        return loadCurrency(request)?.awaitFirstOrNull()?.toCommand()
-    }
 
 
 }

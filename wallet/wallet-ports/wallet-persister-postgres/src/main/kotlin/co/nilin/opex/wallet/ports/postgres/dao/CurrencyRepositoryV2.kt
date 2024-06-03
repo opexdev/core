@@ -25,10 +25,13 @@ interface CurrencyRepositoryV2 : ReactiveCrudRepository<NewCurrencyModel, Long> 
 //
     fun findByIsTransitive(isTransitive: Boolean): Flux<NewCurrencyModel>?
 
-    @Query("select * from new_currency where (:uuid=null or uuid=:uuid) and (:symbol=null or symbol=:symbol )  ")
+    @Query("select * from new_currency where (:symbol is null or symbol=:symbol ) and (:uuid is null or uuid=:uuid ) ")
     fun fetchCurrency(uuid: String? = null, symbol: String? = null): Mono<NewCurrencyModel>?
 
-    @Query("select * from new_currency where (:uuid=null or :uuid=uuid) and (:symbol =null or symbol like CONCAT('%',:symbol,'%') ) and (:name =null or name like CONCAT('%',:name,'%') )  ")
+
+    fun findBySymbol(symbol: String?=null): Mono<NewCurrencyModel>?
+
+    @Query("select * from new_currency where (:uuid= is null  or :uuid=uuid) and (:symbol is null  or symbol like CONCAT('%',:symbol,'%') ) and (:name is null  or name like CONCAT('%',:name,'%') )  ")
     fun fetchSemiCurrencies(uuid: String? = null, symbol: String? = null, name: String? = null): Flux<NewCurrencyModel>?
 
 }

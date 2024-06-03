@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.wallet.app.KafkaEnabledTest
 import co.nilin.opex.wallet.app.dto.TransactionRequest
+import co.nilin.opex.wallet.app.service.TransactionManagerImplIT
 import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.Amount
@@ -14,6 +15,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
 import org.springframework.http.MediaType
@@ -35,13 +37,14 @@ class TransferControllerIT : KafkaEnabledTest() {
 
     @Autowired
     private lateinit var walletOwnerManager: WalletOwnerManager
+    private val logger = LoggerFactory.getLogger(TransferControllerIT::class.java)
 
     @BeforeEach
     fun setup() {
         runBlocking {
-            currencyService.createNewCurrency(CurrencyCommand("ETH", null,"ETH", BigDecimal.TEN))
-            currencyService.createNewCurrency(CurrencyCommand("BTC", null,"BTC", BigDecimal.TEN))
-            currencyService.createNewCurrency(CurrencyCommand("USDT", null,"USDT", BigDecimal.valueOf(2)))
+            currencyService.createNewCurrency(CurrencyCommand("ETH", name = "ETH", precision = BigDecimal.TEN))
+            currencyService.createNewCurrency(CurrencyCommand("BTC", name = "BTC", precision = BigDecimal.TEN))
+            currencyService.createNewCurrency(CurrencyCommand("USDT", name = "USDT", precision = BigDecimal.valueOf(2)))
         }
     }
 
@@ -53,26 +56,27 @@ class TransferControllerIT : KafkaEnabledTest() {
             val sender = walletOwnerManager.createWalletOwner(UUID.randomUUID().toString(), "sender", "")
             val receiver = sender.uuid
             val srcCurrency = currencyService.fetchCurrency(FetchCurrency(symbol = "ETH"))!!
+            logger.info(srcCurrency.symbol)
             walletManager.createWallet(sender, Amount(srcCurrency, BigDecimal.valueOf(100)), srcCurrency, "main")
 
             val transfer = webClient.post().uri("/v2/transfer/1_ETH/from/${sender.uuid}_main/to/${receiver}_exchange").accept(MediaType.APPLICATION_JSON)
-                .bodyValue(TransferController.TransferBody("desc", "ref", "NORMAL", mapOf(Pair("key", "value"))))
-                .exchange()
-                .expectStatus().isOk
-                .expectBody(TransferResult::class.java)
-                .returnResult().responseBody!!
+                    .bodyValue(TransferController.TransferBody("desc", "ref", "NORMAL", mapOf(Pair("key", "value"))))
+                    .exchange()
+                    .expectStatus().isOk
+                    .expectBody(TransferResult::class.java)
+                    .returnResult().responseBody!!
             Assertions.assertEquals(BigDecimal.ONE, transfer.amount.amount)
             Assertions.assertEquals("ETH", transfer.amount.currency.symbol)
             val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(
-                walletOwnerManager.findWalletOwner(receiver)!!, "exchange", srcCurrency
+                    walletOwnerManager.findWalletOwner(receiver)!!, "exchange", srcCurrency
             )
             Assertions.assertEquals(BigDecimal.ONE, receiverWallet!!.balance.amount)
             val txList = webClient.post().uri("/transaction/$receiver").accept(MediaType.APPLICATION_JSON)
-                .bodyValue(TransactionRequest("ETH", null, t, System.currentTimeMillis(), 1, 0, true))
-                .exchange()
-                .expectStatus().isOk
-                .expectBodyList(TransactionWithDetailHistory::class.java)
-                .returnResult().responseBody
+                    .bodyValue(TransactionRequest("ETH", null, t, System.currentTimeMillis(), 1, 0, true))
+                    .exchange()
+                    .expectStatus().isOk
+                    .expectBodyList(TransactionWithDetailHistory::class.java)
+                    .returnResult().responseBody
             Assertions.assertEquals(1, txList!!.size)
             with(txList[0]) {
                 Assertions.assertEquals("NORMAL", this.category)

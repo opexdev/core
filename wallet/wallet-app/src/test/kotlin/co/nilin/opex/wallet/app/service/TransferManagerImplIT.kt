@@ -301,8 +301,10 @@ class TransferManagerImplIT : KafkaEnabledTest() {
             } catch (_: Exception) {
 
             }
-            currencyService.createNewCurrency(CurrencyCommand(name = cc, symbol = cc, precision = BigDecimal.ONE))
+            val result = currencyService.createNewCurrency(CurrencyCommand(name = cc, symbol = cc, precision = BigDecimal.ONE))
             logger.info("-------------------------------------------")
+            logger.info(result?.id.toString())
+            logger.info(result?.symbol)
             currencyService.fetchCurrencs(FetchCurrency())?.currencies?.map {
                 logger.info("=======================")
                 logger.info(it.id.toString())
