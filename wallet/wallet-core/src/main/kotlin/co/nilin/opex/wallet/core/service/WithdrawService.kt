@@ -27,7 +27,8 @@ class WithdrawService(
 
     @Transactional
     suspend fun requestWithdraw(withdrawCommand: WithdrawCommand): WithdrawResult {
-        val currency = currencyService.fetchCurrency(FetchCurrency(symbol = withdrawCommand.currency)) ?: throw IllegalArgumentException()
+        val currency = currencyService.fetchCurrency(FetchCurrency(symbol = withdrawCommand.currency))
+                ?: throw IllegalArgumentException()
         val owner = walletOwnerManager.findWalletOwner(withdrawCommand.uuid) ?: throw IllegalArgumentException()
         val sourceWallet =
                 walletManager.findWalletByOwnerAndCurrencyAndType(owner, "main", currency)
@@ -55,7 +56,7 @@ class WithdrawService(
                 Withdraw(
                         null,
                         owner.uuid,
-                        currency.symbol,
+                        currency.id!!,
                         receiverWallet.id!!,
                         withdrawCommand.amount,
                         transferResultDetailed.tx,
@@ -185,7 +186,7 @@ class WithdrawService(
     suspend fun findByCriteria(
             ownerUuid: String?,
             withdrawId: String?,
-            currency: String?,
+            currency: Long?,
             destTxRef: String?,
             destAddress: String?,
             noStatus: Boolean,
@@ -212,7 +213,7 @@ class WithdrawService(
     suspend fun findByCriteria(
             ownerUuid: String? = null,
             withdrawId: String? = null,
-            currency: String? = null,
+            currency: Long? = null,
             destTxRef: String? = null,
             destAddress: String? = null,
             noStatus: Boolean = true,
@@ -237,6 +238,10 @@ class WithdrawService(
             limit: Int,
             offset: Int
     ): List<Withdraw> {
-        return withdrawPersister.findWithdrawHistory(uuid, coin, startTime, endTime, limit, offset)
+        return withdrawPersister.findWithdrawHistory(uuid, coin?.CurrencyMappng(), startTime, endTime, limit, offset)
+    }
+
+    private suspend fun String.CurrencyMappng(): Long {
+        return currencyService.fetchCurrency(FetchCurrency(symbol = this))?.id!!
     }
 }

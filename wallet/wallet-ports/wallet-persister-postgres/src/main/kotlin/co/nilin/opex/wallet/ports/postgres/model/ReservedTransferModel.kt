@@ -12,8 +12,8 @@ import java.util.*
 data class ReservedTransferModel(
         @Id @Column("id") var id: Long?,
         @Column("reserve_number") var reserveNumber: String,
-        @Column("source_symbol") var sourceSymbol: String,
-        @Column("dest_symbol") var destSymbol: String,
+        @Column("source_symbol") var sourceSymbol: Long,
+        @Column("dest_symbol") var destSymbol: Long,
         @Column("sender_wallet_type") var senderWalletType: String,
         @Column("sender_uuid") var senderUuid: String,
         @Column("receiver_wallet_type") var receiverWalletType: String,

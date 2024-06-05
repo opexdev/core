@@ -41,7 +41,7 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, String> {
     fun findByCriteria(
         @Param("owner") ownerUuid: String?,
         @Param("withdraw_id") withdrawId: Long?,
-        @Param("currency") currency: String?,
+        @Param("currency") currency: Long?,
         @Param("dest_transaction_ref") destTxRef: String?,
         @Param("dest_address") destAddress: String?,
         @Param("no_status") noStatus: Boolean,
@@ -66,7 +66,7 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, String> {
     fun findByCriteria(
         @Param("owner") ownerUuid: String?,
         @Param("withdraw_id") withdrawId: Long?,
-        @Param("currency") currency: String?,
+        @Param("currency") currency: Long?,
         @Param("dest_transaction_ref") destTxRef: String?,
         @Param("dest_address") destAddress: String?,
         @Param("no_status") noStatus: Boolean,
@@ -91,7 +91,7 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, String> {
     fun countByCriteria(
         @Param("owner") ownerUuid: String?,
         @Param("withdraw_id") withdrawId: Long?,
-        @Param("currency") currency: String?,
+        @Param("currency") currency: Long?,
         @Param("dest_transaction_ref") destTxRef: String?,
         @Param("dest_address") destAddress: String?,
         @Param("no_status") noStatus: Boolean,
@@ -116,7 +116,7 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, String> {
     )
     fun findWithdrawHistory(
         @Param("uuid") uuid: String,
-        @Param("currency") currency: String,
+        @Param("currency") currency: Long,
         @Param("startTime") startTime: LocalDateTime?,
         @Param("endTime") endTime: LocalDateTime?,
         @Param("limit") limit: Int,

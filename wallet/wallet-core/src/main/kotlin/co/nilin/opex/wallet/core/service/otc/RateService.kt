@@ -10,7 +10,7 @@ interface RateService {
 
     suspend fun getRate(): Rates
 
-    suspend fun getRate(sourceSymbol: String, destinationSymbol: String): Rate?
+    suspend fun getRate(sourceSymbol: Long, destinationSymbol: Long): Rate?
 
     suspend fun updateRate(rate: Rate):Rates
 

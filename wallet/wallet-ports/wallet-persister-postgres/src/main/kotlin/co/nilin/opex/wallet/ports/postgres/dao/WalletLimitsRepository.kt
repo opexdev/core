@@ -13,7 +13,7 @@ interface WalletLimitsRepository : ReactiveCrudRepository<WalletLimitsModel, Lon
     @Query("select * from wallet_limits where level = :level and currency = :currency and action = :action and wallet_type = :walletType")
     fun findByLevelAndCurrencyAndActionAndWalletType(
         @Param("level") level: String,
-        @Param("currency") currency: String,
+        @Param("currency") currency: Long,
         @Param("action") action: String,
         @Param("walletType") walletType: String
     ): Mono<WalletLimitsModel?>
@@ -21,7 +21,7 @@ interface WalletLimitsRepository : ReactiveCrudRepository<WalletLimitsModel, Lon
     @Query("select * from wallet_Limits where owner = :owner and currency = :currency and action = :action and wallet_type = :walletType")
     fun findByOwnerAndCurrencyAndActionAndWalletType(
         @Param("owner") owner: Long,
-        @Param("currency") currency: String,
+        @Param("currency") currency: Long,
         @Param("action") action: String,
         @Param("walletType") walletType: String
     ): Mono<WalletLimitsModel?>
@@ -29,7 +29,7 @@ interface WalletLimitsRepository : ReactiveCrudRepository<WalletLimitsModel, Lon
     @Query("select * from wallet_limits where owner = :owner and currency = :currency and action = :action and wallet_id = :wallet")
     fun findByOwnerAndCurrencyAndWalletAndAction(
         @Param("owner") owner: Long,
-        @Param("currency") currency: String,
+        @Param("currency") currency: Long,
         @Param("wallet") wallet: Long,
         @Param("action") action: String
     ): Mono<WalletLimitsModel?>

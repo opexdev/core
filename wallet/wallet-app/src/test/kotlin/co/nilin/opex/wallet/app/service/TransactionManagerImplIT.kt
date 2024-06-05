@@ -100,7 +100,7 @@ class TransactionManagerImplIT : KafkaEnabledTest() {
     fun setupWallets(sourceUuid: String) {
         runBlocking {
             try {
-                currencyService.deleteCurrencies(FetchCurrency(symbol = cc))
+                currencyService.deleteCurrency(FetchCurrency(symbol = cc))
             } catch (_: Exception) {
 
             }

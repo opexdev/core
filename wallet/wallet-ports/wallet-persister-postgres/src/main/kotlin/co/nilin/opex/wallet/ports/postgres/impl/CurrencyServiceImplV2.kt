@@ -24,9 +24,12 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
     private val logger = LoggerFactory.getLogger(CurrencyServiceImplV2::class.java)
 
 
-    override suspend fun createNewCurrency(request: CurrencyCommand): CurrencyCommand? {
+    override suspend fun createNewCurrency(request: CurrencyCommand, ignoreIfExist: Boolean?): CurrencyCommand? {
         return loadCurrency(FetchCurrency(symbol = request.symbol))?.awaitFirstOrNull()?.let {
-            throw OpexError.CurrencyIsExist.exception()
+            if (!ignoreIfExist!!)
+                throw OpexError.CurrencyIsExist.exception()
+            else
+                return it.toCommand()
         } ?: run {
             return doSave(request.toModel())?.toCommand()
         }
@@ -49,13 +52,13 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
         } ?: throw OpexError.CurrencyNotFound.exception()
     }
 
-    override suspend fun deleteCurrencies(request: FetchCurrency) {
-        loadCurrency(request)?.map {
-            currencyRepository.delete(it)
-        }?.awaitFirstOrNull()
+    override suspend fun deleteCurrency(request: FetchCurrency): Void? {
+        return loadCurrency(request)?.awaitFirstOrNull()?.let {
+            currencyRepository.deleteById(it.id!!)?.awaitFirstOrNull()
+        }
     }
 
-    override suspend fun fetchCurrencs(request: FetchCurrency): CurrenciesCommand? {
+    override suspend fun fetchCurrencies(request: FetchCurrency): CurrenciesCommand? {
         return CurrenciesCommand(loadCurrencies(request)?.map { it.toCommand() }
                 ?.collect(Collectors.toList())?.awaitFirstOrNull())
     }
@@ -65,21 +68,15 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
     }
 
     private suspend fun loadCurrency(request: FetchCurrency): Mono<NewCurrencyModel>? {
-       return currencyRepository.fetchCurrency(symbol =  request.symbol, uuid = request.uuid)
+        return currencyRepository.fetchCurrency(symbol = request.symbol, uuid = request.uuid)
     }
 
     private suspend fun loadCurrencies(request: FetchCurrency): Flux<NewCurrencyModel>? {
         return currencyRepository.fetchSemiCurrencies(request.uuid, request.symbol, request.name)
     }
 
-
     private suspend fun doSave(request: NewCurrencyModel): NewCurrencyModel? {
         return currencyRepository.save(request).awaitFirstOrNull()
-
     }
-
-
-
-
 
 }

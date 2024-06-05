@@ -7,7 +7,6 @@ import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.spi.*
-import co.nilin.opex.wallet.ports.postgres.impl.CurrencyServiceImplV2
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -297,19 +296,15 @@ class TransferManagerImplIT : KafkaEnabledTest() {
     fun setupWallets(sourceUuid: String) {
         runBlocking {
             try {
-                currencyService.deleteCurrencies(FetchCurrency(symbol = cc))
+                currencyService.deleteCurrency(FetchCurrency(symbol = cc))
             } catch (_: Exception) {
 
             }
-            val result = currencyService.createNewCurrency(CurrencyCommand(name = cc, symbol = cc, precision = BigDecimal.ONE))
-            logger.info("-------------------------------------------")
-            logger.info(result?.id.toString())
-            logger.info(result?.symbol)
-            currencyService.fetchCurrencs(FetchCurrency())?.currencies?.map {
-                logger.info("=======================")
-                logger.info(it.id.toString())
+            val currency = currencyService.fetchCurrency(FetchCurrency(symbol = cc))?.let { it } ?: run {
+                currencyService.createNewCurrency(CurrencyCommand(name = cc, symbol = cc, precision = BigDecimal.ONE))
             }
-            val currency = currencyService.fetchCurrency(FetchCurrency(symbol = cc))
+
+//            val currency = currencyService.fetchCurrency(FetchCurrency(symbol = cc))
 
             val sourceOwner = walletOwnerManager.createWalletOwner(sourceUuid, "not set", "")
             walletManager.createWallet(sourceOwner, Amount(currency!!, amount.multiply(BigDecimal.valueOf(2))), currency, senderWalletType)

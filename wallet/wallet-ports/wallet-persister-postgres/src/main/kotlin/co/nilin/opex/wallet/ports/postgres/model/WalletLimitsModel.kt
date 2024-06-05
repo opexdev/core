@@ -11,7 +11,7 @@ data class WalletLimitsModel(
     val level: String?,
     val owner: Long?,
     val action: String?, //withdraw or deposit
-    val currency: String?,
+    val currency: Long?,
     @Column("wallet_type") val walletType: String,
     @Column("wallet_id") val walletId: Long?,
     @Column("daily_total") val dailyTotal: BigDecimal?,

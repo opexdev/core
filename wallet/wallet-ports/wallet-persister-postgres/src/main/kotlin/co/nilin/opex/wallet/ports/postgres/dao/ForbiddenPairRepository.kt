@@ -10,9 +10,9 @@ import reactor.core.publisher.Mono
 interface ForbiddenPairRepository :ReactiveCrudRepository<ForbiddenPairModel,Long>{
     fun findAllBy():Flux<ForbiddenPairModel>?
 
-    fun findBySourceSymbolAndDestinationSymbol(sourceSymbol:String, destinationSymbol:String): Mono<ForbiddenPairModel>?
+    fun findBySourceSymbolAndDestinationSymbol(sourceSymbol:Long, destinationSymbol:Long): Mono<ForbiddenPairModel>?
 
-    fun deleteBySourceSymbolAndDestinationSymbol(sourceSymbol:String, destinationSymbol:String): Mono<Void>?
+    fun deleteBySourceSymbolAndDestinationSymbol(sourceSymbol:Long, destinationSymbol:Long): Mono<Void>?
 
 
 }

@@ -36,15 +36,15 @@ class WalletManagerImplV2(
 
     override suspend fun isDepositAllowed(wallet: Wallet, amount: BigDecimal): Boolean {
         var limit = walletLimitsRepository.findByOwnerAndCurrencyAndWalletAndAction(
-            wallet.owner.id!!, wallet.currency.symbol, wallet.id!!, "deposit"
+            wallet.owner.id!!, wallet.currency.id!!, wallet.id!!, "deposit"
         ).awaitFirstOrNull()
         if (limit == null) {
             limit = walletLimitsRepository.findByOwnerAndCurrencyAndActionAndWalletType(
-                wallet.owner.id!!, wallet.currency.symbol, "deposit", wallet.type
+                wallet.owner.id!!, wallet.currency.id!!, "deposit", wallet.type
             ).awaitFirstOrNull()
             if (limit == null) {
                 limit = walletLimitsRepository.findByLevelAndCurrencyAndActionAndWalletType(
-                    wallet.owner.level, wallet.currency.symbol, "deposit", wallet.type
+                    wallet.owner.level, wallet.currency.id!!, "deposit", wallet.type
                 ).awaitFirstOrNull()
             }
         }
@@ -86,15 +86,15 @@ class WalletManagerImplV2(
         if (!evaluate) return false
         if (evaluate) {
             var limit = walletLimitsRepository.findByOwnerAndCurrencyAndWalletAndAction(
-                wallet.owner.id!!, wallet.currency.symbol, wallet.id!!, "withdraw"
+                wallet.owner.id!!, wallet.currency.id!!, wallet.id!!, "withdraw"
             ).awaitFirstOrNull()
             if (limit == null) {
                 limit = walletLimitsRepository.findByOwnerAndCurrencyAndActionAndWalletType(
-                    wallet.owner.id!!, wallet.currency.symbol, "withdraw", wallet.type
+                    wallet.owner.id!!, wallet.currency.id!!, "withdraw", wallet.type
                 ).awaitFirstOrNull()
                 if (limit == null) {
                     limit = walletLimitsRepository.findByLevelAndCurrencyAndActionAndWalletType(
-                        wallet.owner.level, wallet.currency.symbol, "withdraw", wallet.type
+                        wallet.owner.level, wallet.currency.id!!, "withdraw", wallet.type
                     ).awaitFirstOrNull()
                 }
             }
@@ -154,7 +154,7 @@ class WalletManagerImplV2(
         val walletModel = walletRepository.findByOwnerAndTypeAndCurrency(
             owner.id!!,
             walletType,
-            currency.symbol
+            currency.id!!
         ).awaitFirstOrNull() ?: return null
 
         val existingCurrency = currencyRepository.findById(walletModel.currency)?.awaitFirst()
@@ -222,7 +222,8 @@ class WalletManagerImplV2(
 
     override suspend fun findWalletByOwnerAndSymbol(owner: WalletOwner, symbol: String): List<Wallet> {
         val ownerModel = walletOwnerRepository.findById(owner.id!!).awaitFirst()
-        return walletRepository.findByOwnerAndCurrency(owner.id!!, symbol)
+        val currency=currencyRepository.fetchCurrency(symbol=symbol)?.awaitFirstOrNull()?:throw OpexError.CurrencyNotFound.exception()
+        return walletRepository.findByOwnerAndCurrency(owner.id!!, currency.id!!)
             .collectList()
             .awaitSingle()
             .map {

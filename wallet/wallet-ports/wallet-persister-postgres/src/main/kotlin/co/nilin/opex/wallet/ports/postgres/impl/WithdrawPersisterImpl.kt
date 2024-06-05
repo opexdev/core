@@ -25,7 +25,7 @@ class WithdrawPersisterImpl(
     override suspend fun findByCriteria(
         ownerUuid: String?,
         withdrawId: String?,
-        currency: String?,
+        currency: Long?,
         destTxRef: String?,
         destAddress: String?,
         noStatus: Boolean,
@@ -52,7 +52,7 @@ class WithdrawPersisterImpl(
     override suspend fun countByCriteria(
         ownerUuid: String?,
         withdrawId: String?,
-        currency: String?,
+        currency: Long?,
         destTxRef: String?,
         destAddress: String?,
         noStatus: Boolean,
@@ -72,7 +72,7 @@ class WithdrawPersisterImpl(
     override suspend fun findByCriteria(
         ownerUuid: String?,
         withdrawId: String?,
-        currency: String?,
+        currency: Long?,
         destTxRef: String?,
         destAddress: String?,
         noStatus: Boolean,
@@ -128,7 +128,7 @@ class WithdrawPersisterImpl(
 
     override suspend fun findWithdrawHistory(
         uuid: String,
-        coin: String?,
+        coin: Long?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
         limit: Int,

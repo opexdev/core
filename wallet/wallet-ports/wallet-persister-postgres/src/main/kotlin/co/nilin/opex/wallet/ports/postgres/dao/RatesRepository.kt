@@ -9,9 +9,9 @@ import reactor.core.publisher.Mono
 
 @Repository
 interface RatesRepository :ReactiveCrudRepository<RateModel,Long> {
-    fun findBySourceSymbolAndDestinationSymbol(sourceSymb:String, destSymb:String): Mono<RateModel?>?
+    fun findBySourceSymbolAndDestinationSymbol(sourceSymbol:Long, destSymbol:Long): Mono<RateModel?>?
 
-    fun deleteBySourceSymbolAndDestinationSymbol(sourceSymb:String, destSymb:String):Mono<Void>?
+    fun deleteBySourceSymbolAndDestinationSymbol(sourceSymbol:Long, destSymbol:Long):Mono<Void>?
 
 
 

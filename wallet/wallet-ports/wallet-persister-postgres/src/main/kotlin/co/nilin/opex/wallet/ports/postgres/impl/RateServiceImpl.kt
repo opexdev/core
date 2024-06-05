@@ -45,7 +45,7 @@ class RateServiceImpl(
     }
 
 
-    override suspend fun getRate(sourceSymbol: String, destinationSymbol: String): Rate? {
+    override suspend fun getRate(sourceSymbol: Long, destinationSymbol: Long): Rate? {
         return ratesRepository.findBySourceSymbolAndDestinationSymbol(sourceSymbol, destinationSymbol)
             ?.awaitFirstOrNull()
             ?.toDto() ?: throw OpexError.PairNotFound.exception()
@@ -166,10 +166,10 @@ class RateServiceImpl(
                 if (!(transitives?.contains(this.sourceSymbol) == true || transitives?.contains(this.destSymbol) == true))
                     throw OpexException(OpexError.AtLeastNeedOneTransitiveSymbol)*/
 
-        currencyRepository.fetchCurrency(symbol = this.sourceSymbol)?.awaitFirstOrNull()?.let { it ->
+        currencyRepository.fetchCurrency(id = this.sourceSymbol)?.awaitFirstOrNull()?.let { it ->
             if (it.isActive == false)
                 throw OpexError.CurrencyIsDisable.exception()
-            currencyRepository.fetchCurrency(symbol = this.destSymbol)?.awaitFirstOrNull()?.let {
+            currencyRepository.fetchCurrency(id = this.destSymbol)?.awaitFirstOrNull()?.let {
                 if (it.isActive == false)
                     throw OpexError.CurrencyIsDisable.exception()
             } ?: throw OpexError.CurrencyNotFound.exception()

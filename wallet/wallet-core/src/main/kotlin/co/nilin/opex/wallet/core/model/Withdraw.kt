@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 data class Withdraw(
     val withdrawId: Long? = null,
     val ownerUuid: String,
-    val currency: String,
+    val currency: Long,
     val wallet: Long,
     val amount: BigDecimal,
     val requestTransaction: String,

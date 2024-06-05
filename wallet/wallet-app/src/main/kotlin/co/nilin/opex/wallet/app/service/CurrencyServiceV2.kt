@@ -6,8 +6,6 @@ import co.nilin.opex.wallet.app.dto.CurrencyDto
 import co.nilin.opex.wallet.app.utils.toDto
 import co.nilin.opex.wallet.core.inout.CryptoCurrencyCommand
 import co.nilin.opex.wallet.core.inout.CryptoImps
-import co.nilin.opex.wallet.core.inout.CurrenciesCommand
-import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.service.CryptoCurrencyService
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
@@ -15,7 +13,6 @@ import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.Collections
 import java.util.UUID
 import java.util.stream.Collectors
 
@@ -76,7 +73,7 @@ class CurrencyServiceV2(
 
 
     suspend fun fetchCurrenciesWithImps(includeImpl: Boolean): CurrenciesDto? {
-        return CurrenciesDto(currencyServiceManager.fetchCurrencs(FetchCurrency())?.currencies?.stream()?.map {
+        return CurrenciesDto(currencyServiceManager.fetchCurrencies(FetchCurrency())?.currencies?.stream()?.map {
             if (it.isCryptoCurrency == true && includeImpl)
                 it.apply {
                     impls =

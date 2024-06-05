@@ -140,7 +140,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
     )
     fun findDepositTransactionsByUUIDAndCurrency(
         @Param("uuid") uuid: String,
-        @Param("currency") currency: String,
+        @Param("currency") currency: Long,
         @Param("startTime") startTime: LocalDateTime?,
         @Param("endTime") endTime: LocalDateTime?,
         @Param("limit") limit: Int,
@@ -162,7 +162,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
     )
     fun findWithdrawTransactionsByUUIDAndCurrency(
         @Param("uuid") uuid: String,
-        @Param("currency") currency: String,
+        @Param("currency") currency: Long,
         @Param("startTime") startTime: LocalDateTime?,
         @Param("endTime") endTime: LocalDateTime?,
         @Param("limit") limit: Int
@@ -210,7 +210,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
     )
     fun findTransactionsAsc(
         @Param("uuid") uuid: String,
-        @Param("currency") currency: String?,
+        @Param("currency") currency: Long?,
         @Param("category") category: String?,
         @Param("startTime") startTime: LocalDateTime?,
         @Param("endTime") endTime: LocalDateTime?,
@@ -256,7 +256,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
     )
     fun findTransactionsDesc(
         @Param("uuid") uuid: String,
-        @Param("currency") currency: String?,
+        @Param("currency") currency: Long?,
         @Param("category") category: String?,
         @Param("startTime") startTime: LocalDateTime?,
         @Param("endTime") endTime: LocalDateTime?,

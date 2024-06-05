@@ -40,10 +40,10 @@ class AdvancedTransferControllerIT : KafkaEnabledTest() {
     fun setup() {
 
         runBlocking {
-            currencyService.createNewCurrency(CurrencyCommand("ETH", null,"ETH", BigDecimal.TEN))
-            currencyService.createNewCurrency(CurrencyCommand("BTC", null,"BTC", BigDecimal.TEN))
-            currencyService.createNewCurrency(CurrencyCommand("USDT", null,"USDT", BigDecimal.valueOf(2)))
-            currencyService.createNewCurrency(CurrencyCommand("Z", null,"Z", BigDecimal.valueOf(2)))
+            currencyService.createNewCurrency(CurrencyCommand("ETH", name="ETH", precision = BigDecimal.TEN),true)
+            currencyService.createNewCurrency(CurrencyCommand("BTC", name="BTC", precision = BigDecimal.TEN),true)
+            currencyService.createNewCurrency(CurrencyCommand("USDT", name="USDT", precision = BigDecimal.valueOf(2)),true)
+            currencyService.createNewCurrency(CurrencyCommand("Z", name="Z", precision = BigDecimal.valueOf(2)),true)
 
 
         }

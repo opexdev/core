@@ -1,13 +1,16 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
+import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.model.Transaction
 import co.nilin.opex.wallet.core.model.TransactionHistory
 import co.nilin.opex.wallet.core.model.TransactionWithDetailHistory
 import co.nilin.opex.wallet.core.spi.TransactionManager
+import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepositoryV2
 import co.nilin.opex.wallet.ports.postgres.dao.TransactionRepository
 import co.nilin.opex.wallet.ports.postgres.model.TransactionModel
 import com.fasterxml.jackson.databind.ObjectMapper
 import kotlinx.coroutines.reactive.awaitFirstOrElse
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -17,6 +20,7 @@ import java.time.ZoneId
 @Service
 class TransactionManagerImpl(
         private val transactionRepository: TransactionRepository,
+        private val currencyRepositoryV2: CurrencyRepositoryV2,
         private val objectMapper: ObjectMapper
 ) : TransactionManager {
     private val logger = LoggerFactory.getLogger(TransactionManagerImpl::class.java)
@@ -46,8 +50,9 @@ class TransactionManagerImpl(
             limit: Int,
             offset: Int
     ): List<TransactionHistory> {
+
         val transactions = if (coin != null)
-            transactionRepository.findDepositTransactionsByUUIDAndCurrency(uuid, coin, startTime, endTime, limit)
+            transactionRepository.findDepositTransactionsByUUIDAndCurrency(uuid, coin.currencyMapping(), startTime, endTime, limit)
         else
             transactionRepository.findDepositTransactionsByUUID(uuid, startTime, endTime, limit)
 
@@ -77,7 +82,7 @@ class TransactionManagerImpl(
             offset: Int
     ): List<TransactionHistory> {
         val transactions = if (coin != null)
-            transactionRepository.findWithdrawTransactionsByUUIDAndCurrency(uuid, coin, startTime, endTime, limit)
+            transactionRepository.findWithdrawTransactionsByUUIDAndCurrency(uuid, coin.currencyMapping(), startTime, endTime, limit)
         else
             transactionRepository.findWithdrawTransactionsByUUID(uuid, startTime, endTime, limit)
 
@@ -110,9 +115,9 @@ class TransactionManagerImpl(
     ): List<TransactionWithDetailHistory> {
         val transactions =
                 if (asc)
-                    transactionRepository.findTransactionsAsc(uuid, coin, category, startTime, endTime, limit, offset)
+                    transactionRepository.findTransactionsAsc(uuid, coin?.currencyMapping(), category, startTime, endTime, limit, offset)
                 else
-                    transactionRepository.findTransactionsDesc(uuid, coin, category, startTime, endTime, limit, offset)
+                    transactionRepository.findTransactionsDesc(uuid, coin?.currencyMapping(), category, startTime, endTime, limit, offset)
 
         return transactions.collectList()
                 .awaitFirstOrElse { emptyList() }
@@ -130,8 +135,13 @@ class TransactionManagerImpl(
                             it.date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
                             it.category,
                             if (it.detail == null) emptyMap() else objectMapper.readValue(it.detail, Map::class.java) as Map<String, Any>?,
-                            (it.senderUuid == uuid ) && (it.senderUuid !=it.receiverUuid)
+                            (it.senderUuid == uuid) && (it.senderUuid != it.receiverUuid)
                     )
                 }
+    }
+
+
+    private suspend fun String.currencyMapping(): Long {
+        return currencyRepositoryV2.fetchCurrency(symbol = this)?.awaitFirstOrNull()?.id!!
     }
 }

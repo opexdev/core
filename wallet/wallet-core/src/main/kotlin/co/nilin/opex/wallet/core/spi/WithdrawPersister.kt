@@ -9,7 +9,7 @@ interface WithdrawPersister {
     suspend fun findByCriteria(
         ownerUuid: String?,
         withdrawId: String?,
-        currency: String?,
+        currency: Long?,
         destTxRef: String?,
         destAddress: String?,
         noStatus: Boolean,
@@ -19,7 +19,7 @@ interface WithdrawPersister {
     suspend fun countByCriteria(
         ownerUuid: String?,
         withdrawId: String?,
-        currency: String?,
+        currency: Long?,
         destTxRef: String?,
         destAddress: String?,
         noStatus: Boolean,
@@ -29,7 +29,7 @@ interface WithdrawPersister {
     suspend fun findByCriteria(
         ownerUuid: String?,
         withdrawId: String?,
-        currency: String?,
+        currency: Long?,
         destTxRef: String?,
         destAddress: String?,
         noStatus: Boolean,
@@ -44,7 +44,7 @@ interface WithdrawPersister {
 
     suspend fun findWithdrawHistory(
         uuid: String,
-        coin: String?,
+        coin: Long?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
         limit: Int,
