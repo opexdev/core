@@ -2,12 +2,11 @@ package co.nilin.opex.wallet.core.model.otc
 
 import java.math.BigDecimal
 import java.time.LocalDateTime
-import java.util.*
 
 data class ReservedTransfer(var id: Long? = null,
                             var reserveNumber: String,
                             var sourceSymbol: String,
-                            var destSymbol: String,
+                            var destinationSymbol: String,
                             var senderWalletType: String,
                             var senderUuid: String,
                             var receiverWalletType: String,
@@ -16,7 +15,9 @@ data class ReservedTransfer(var id: Long? = null,
                             var reservedDestAmount: BigDecimal,
                             var reserveDate: LocalDateTime? = LocalDateTime.now(),
                             var expDate: LocalDateTime?=null,
-                            var status: ReservedStatus?=null)
+                            var status: ReservedStatus?=null,
+                            var sourceSymbolId: Long?=null,
+                            var destinationSymbolId: Long?=null,)
 
 
 enum class ReservedStatus{

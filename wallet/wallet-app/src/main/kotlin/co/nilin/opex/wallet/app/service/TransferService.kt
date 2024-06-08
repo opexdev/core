@@ -141,7 +141,7 @@ class TransferService(
         val resp = reservedTransferManager.reserve(
                 ReservedTransfer(
                         reserveNumber = reserveNumber,
-                        destSymbol = destSymbol,
+                        destinationSymbol = destSymbol,
                         sourceSymbol = sourceSymbol,
                         sourceAmount = sourceAmount,
                         senderUuid = senderUuid,
@@ -206,7 +206,7 @@ class TransferService(
         )
 
         val receiverTransfer = _transfer(
-                reservations.destSymbol,
+                reservations.destinationSymbol,
                 "main",
                 walletOwnerManager.systemUuid,
                 reservations.receiverWalletType,
@@ -215,7 +215,7 @@ class TransferService(
                 description,
                 "$transferRef-$reserveNumber-deposit",
                 transferCategory, additionalData,
-                reservations.destSymbol,
+                reservations.destinationSymbol,
                 reservations.reservedDestAmount
         )
 

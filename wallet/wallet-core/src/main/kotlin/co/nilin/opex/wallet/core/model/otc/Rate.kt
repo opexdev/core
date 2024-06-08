@@ -3,7 +3,7 @@ package co.nilin.opex.wallet.core.model.otc
 import java.math.BigDecimal
 
 data class Rate(
-        val sourceSymbol: Long, val destSymbol: Long, val rate: BigDecimal
+        val sourceSymbol: String, val destinationSymbol: String, val rate: BigDecimal, var sourceSymbolId: Long?=null, var destinationSymbolId: Long?=null
 )
 
 data class Rates(

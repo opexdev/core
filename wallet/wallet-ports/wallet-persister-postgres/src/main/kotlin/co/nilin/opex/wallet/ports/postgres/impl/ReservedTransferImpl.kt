@@ -1,10 +1,13 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.model.otc.ReservedStatus
 import co.nilin.opex.wallet.core.model.otc.ReservedTransfer
 import co.nilin.opex.wallet.core.spi.ReservedTransferManager
+import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepositoryV2
 import co.nilin.opex.wallet.ports.postgres.dao.ReservedTransferRepository
 import co.nilin.opex.wallet.ports.postgres.model.ReservedTransferModel
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -12,7 +15,8 @@ import java.time.LocalDateTime
 import java.util.*
 
 @Component
-class ReservedTransferImpl(private val reservedTransferRepository: ReservedTransferRepository)
+class ReservedTransferImpl(private val reservedTransferRepository: ReservedTransferRepository,
+                           private val currencyRepository: CurrencyRepositoryV2)
     : ReservedTransferManager {
     @Value("\${app.reserved-transfer.life-time}")
     private var reservedTransferLifeTime: Long? = null
@@ -30,8 +34,10 @@ class ReservedTransferImpl(private val reservedTransferRepository: ReservedTrans
         }
     }
 
-    override suspend fun reserve(request: ReservedTransfer):ReservedTransfer {
+    override suspend fun reserve(request: ReservedTransfer): ReservedTransfer {
         request.apply {
+            sourceSymbolId = sourceSymbol.currencyMapping()
+            destinationSymbolId = destinationSymbol.currencyMapping()
             reserveDate = LocalDateTime.now()
             status = ReservedStatus.Created
             expDate = reservedTransferLifeTime?.let { LocalDateTime.now().plusMinutes(it) } ?: null
@@ -62,8 +68,8 @@ class ReservedTransferImpl(private val reservedTransferRepository: ReservedTrans
         return ReservedTransferModel(
                 null,
                 this.reserveNumber,
-                this.sourceSymbol,
-                this.destSymbol,
+                this.sourceSymbolId!!,
+                this.destinationSymbolId!!,
                 this.senderWalletType,
                 this.senderUuid,
                 this.receiverWalletType,
@@ -74,6 +80,11 @@ class ReservedTransferImpl(private val reservedTransferRepository: ReservedTrans
                 this.expDate,
                 this.status
         )
+    }
+
+    private suspend fun String.currencyMapping(): Long {
+        return currencyRepository.fetchCurrency(symbol = this)?.awaitFirstOrNull()?.let { it.id }
+                ?: throw OpexError.CurrencyNotFound.exception()
     }
 
 }

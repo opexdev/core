@@ -22,7 +22,7 @@ class GraphService(private val rateService: RateService, private val currencySer
         }
 
         fun getDestSymbol(): String {
-            return rates.get(rates.lastIndex).destSymbol
+            return rates.get(rates.lastIndex).destinationSymbol
         }
 
         fun getRate(): BigDecimal {
@@ -80,12 +80,12 @@ class GraphService(private val rateService: RateService, private val currencySer
         }
         visited.add(currentVertex)
         if (currentLength >= 1) {
-            if ((!transitiveSymbols.contains(currentRoute[currentRoute.lastIndex].destSymbol)) &&
-                    availableCurrency.contains(currentRoute[currentRoute.lastIndex].destSymbol)) {
+            if ((!transitiveSymbols.contains(currentRoute[currentRoute.lastIndex].destinationSymbol)) &&
+                    availableCurrency.contains(currentRoute[currentRoute.lastIndex].destinationSymbol)) {
                 val existingRoute = routesWithMax2StepV2.find { route ->
                     route.getSourceSymbol() == currentRoute[0].sourceSymbol
                             &&
-                            route.getDestSymbol() == currentRoute[currentRoute.lastIndex].destSymbol
+                            route.getDestSymbol() == currentRoute[currentRoute.lastIndex].destinationSymbol
                 }
                 if (existingRoute != null) {
                     if (existingRoute.rates.size > currentRoute.size) {
@@ -103,10 +103,10 @@ class GraphService(private val rateService: RateService, private val currencySer
         }
 
         for (edge in adjacencyMap[currentVertex] ?: emptyList()) {
-            if (!visited.contains(edge.destSymbol)) {
+            if (!visited.contains(edge.destinationSymbol)) {
                 currentRoute.add(edge)
                 findRoutesWithMax2EdgesV2(
-                        edge.destSymbol,
+                        edge.destinationSymbol,
                         adjacencyMap,
                         visited,
                         currentLength + 1,

@@ -8,7 +8,6 @@ import co.nilin.opex.wallet.app.service.otc.GraphService
 
 import co.nilin.opex.wallet.core.model.otc.*
 
-import co.nilin.opex.wallet.core.service.otc.RateService
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
