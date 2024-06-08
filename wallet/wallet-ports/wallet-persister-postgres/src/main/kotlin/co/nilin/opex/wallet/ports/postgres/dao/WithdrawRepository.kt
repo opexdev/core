@@ -109,16 +109,16 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, String> {
         select * from withdraws 
         where uuid = :uuid
             and currency = :currency
-            and create_date > :startTime 
-            and create_date <= :endTime
+            and (:startTime is null or create_date > :startTime )
+            and (:endTime is null or create_date <= :endTime)
         limit :limit
         """
     )
     fun findWithdrawHistory(
         @Param("uuid") uuid: String,
         @Param("currency") currency: String,
-        @Param("startTime") startTime: LocalDateTime,
-        @Param("endTime") endTime: LocalDateTime,
+        @Param("startTime") startTime: LocalDateTime?,
+        @Param("endTime") endTime: LocalDateTime?,
         @Param("limit") limit: Int,
     ): Flow<WithdrawModel>
 
@@ -126,15 +126,15 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, String> {
         """
         select * from withdraws 
         where uuid = :uuid
-            and create_date > :startTime 
-            and create_date <= :endTime
+            and (:startTime is null or create_date > :startTime )
+            and (:endTime is null or  create_date <= :endTime)
         limit :limit
         """
     )
     fun findWithdrawHistory(
         @Param("uuid") uuid: String,
-        @Param("startTime") startTime: LocalDateTime,
-        @Param("endTime") endTime: LocalDateTime,
+        @Param("startTime") startTime: LocalDateTime?,
+        @Param("endTime") endTime: LocalDateTime?,
         @Param("limit") limit: Int,
     ): Flow<WithdrawModel>
 

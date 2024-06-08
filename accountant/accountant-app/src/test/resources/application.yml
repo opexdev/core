@@ -50,3 +50,8 @@ app:
   address: 1
   wallet:
     url: "http://localhost:8090"
+  fi-action:
+    retry:
+      count: 10
+      delay-seconds: 5
+      delay-multiplier: 3

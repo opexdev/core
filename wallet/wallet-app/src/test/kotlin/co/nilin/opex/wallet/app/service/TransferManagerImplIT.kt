@@ -184,7 +184,7 @@ class TransferManagerImplIT : KafkaEnabledTest() {
     }
 
     @Test
-    fun whenTransferWithAdditionalData_thenDataIsPersistedAndRetrievable() {
+    fun dwhenTransferWithAdditionalData_thenDataIsPersistedAndRetrievable() {
         runBlocking {
             val currency = currencyService.getCurrency(cc)!!
             val owner = walletOwnerManager.findWalletOwner(sourceUuid!!)

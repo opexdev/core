@@ -10,7 +10,7 @@ class WithdrawCommand(
     val transferRef: String?,
     val destSymbol: String,
     val destAddress: String,
-    val destNetwork: String,
+    val destNetwork: String?,
     val destNote: String?,
     val acceptedFee: BigDecimal
 )

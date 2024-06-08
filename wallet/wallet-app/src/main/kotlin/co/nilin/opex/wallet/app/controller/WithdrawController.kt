@@ -80,7 +80,7 @@ class WithdrawController(private val withdrawService: WithdrawService) {
         @RequestParam("fee") fee: BigDecimal,
         @RequestParam("destSymbol") destSymbol: String,
         @RequestParam("destAddress") destAddress: String,
-        @RequestParam("destNetwork") destNetwork: String,
+        @RequestParam("destNetwork") destNetwork: String?,
         @RequestParam("destNote", required = false) destNote: String?,
     ): WithdrawResult {
         return withdrawService.requestWithdraw(
@@ -107,10 +107,15 @@ class WithdrawController(private val withdrawService: WithdrawService) {
         return withdrawService.findWithdrawHistory(
             uuid,
             request.coin,
-            LocalDateTime.ofInstant(Instant.ofEpochMilli(request.startTime), ZoneId.systemDefault()),
-            LocalDateTime.ofInstant(Instant.ofEpochMilli(request.endTime), ZoneId.systemDefault()),
-            request.limit,
-            request.offset
+                request.startTime?.let {
+                    LocalDateTime.ofInstant(Instant.ofEpochMilli(request.startTime), ZoneId.systemDefault())
+                }
+                        ?: null,
+                request.endTime?.let {
+                    LocalDateTime.ofInstant(Instant.ofEpochMilli(request.endTime), ZoneId.systemDefault())
+                } ?: null,
+            request.limit!!,
+            request.offset!!
         ).map {
             WithdrawHistoryResponse(
                 it.withdrawId,

@@ -453,6 +453,8 @@ volumes:
   api-data:
   bc-gateway-data:
 networks:
+  opex:
+    external: true
   default:
     driver: bridge
 secrets:

@@ -129,8 +129,8 @@ class WithdrawPersisterImpl(
     override suspend fun findWithdrawHistory(
         uuid: String,
         coin: String?,
-        startTime: LocalDateTime,
-        endTime: LocalDateTime,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
         limit: Int,
         offset: Int
     ): List<Withdraw> {

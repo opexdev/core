@@ -71,8 +71,8 @@ spring:
     import: vault://secret/${spring.application.name}
 app:
   auth:
-    url:  https://polban.catchprice.app
-    cert-url: https://polban.catchprice.app/api/v1/jwk
+    url: ${auth_url}
+    cert-url: ${auth_jwk_endpoint}
     client-id: ${client_id}
     client-secret: ${client_secret}
   system:

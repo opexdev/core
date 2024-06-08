@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.core.service
 
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.exc.CurrencyNotMatchedException
 import co.nilin.opex.wallet.core.exc.DepositLimitExceededException
 import co.nilin.opex.wallet.core.exc.NotEnoughBalanceException
@@ -10,6 +11,7 @@ import co.nilin.opex.wallet.core.inout.TransferResultDetailed
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.Transaction
 import co.nilin.opex.wallet.core.spi.*
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -22,6 +24,7 @@ class TransferManagerImpl(
     private val walletOwnerManager: WalletOwnerManager,
     private val transactionManager: TransactionManager
 ) : TransferManager {
+    private val logger = LoggerFactory.getLogger(TransferManagerImpl::class.java)
 
     @Transactional
     override suspend fun transfer(transferCommand: TransferCommand): TransferResultDetailed {
@@ -29,26 +32,29 @@ class TransferManagerImpl(
         val srcWallet = transferCommand.sourceWallet
         val srcWalletOwner = srcWallet.owner
         val srcWalletBalance = srcWallet.balance
-        if (srcWallet.currency != transferCommand.amount.currency)
-            throw CurrencyNotMatchedException()
+
+        //todo need to review(compare symbols instead of objects)
+        if (srcWallet.currency.symbol != transferCommand.amount.currency.symbol)
+            throw OpexError.BadRequest.exception()
         if (srcWalletBalance.amount < transferCommand.amount.amount)
-            throw NotEnoughBalanceException()
+            throw OpexError.NotEnoughBalance.exception()
         if (!walletOwnerManager.isWithdrawAllowed(srcWalletOwner, transferCommand.amount))
-            throw WithdrawLimitExceededException()
+            throw OpexError.WithdrawNotAllowed.exception()
         if (!walletManager.isWithdrawAllowed(srcWallet, transferCommand.amount.amount))
-            throw WithdrawLimitExceededException()
+            throw OpexError.WithdrawNotAllowed.exception()
 
         val destWallet = transferCommand.destWallet
         val destWalletOwner = destWallet.owner
-        if (destWallet.currency != transferCommand.destAmount.currency)
-            throw CurrencyNotMatchedException()
+        //todo need to review(compare symbols instead of objects)
+        if (destWallet.currency.symbol != transferCommand.destAmount.currency.symbol)
+            throw OpexError.BadRequest.exception()
         //check wallet if it can accept the value type
         val amountToTransfer = transferCommand.destAmount.amount
 
         if (!walletOwnerManager.isDepositAllowed(destWalletOwner, Amount(destWallet.currency, amountToTransfer)))
-            throw DepositLimitExceededException()
+            throw OpexError.DepositLimitExceeded.exception()
         if (!walletManager.isDepositAllowed(destWallet, amountToTransfer))
-            throw DepositLimitExceededException()
+            throw OpexError.DepositLimitExceeded.exception()
 
         walletManager.decreaseBalance(srcWallet, transferCommand.amount.amount)
         walletManager.increaseBalance(destWallet, amountToTransfer)
