@@ -26,14 +26,14 @@ class WalletDataManagerImpl(private val walletRepository: WalletRepository,
         return (if (!excludeSystem) walletRepository.findWalletDataByCriteria(
             uuid,
             walletType?.name?.lowercase(),
-            currency?.id,
+            currency?.symbol,
             limit,
             offset
         ) else
             walletRepository.findWalletDataByCriteriaExcludeSystem(
                 uuid,
                 walletType?.name?.lowercase(),
-                currency?.id,
+                currency?.symbol,
                 limit,
                 offset
             )).collectList().awaitFirstOrElse { emptyList() }

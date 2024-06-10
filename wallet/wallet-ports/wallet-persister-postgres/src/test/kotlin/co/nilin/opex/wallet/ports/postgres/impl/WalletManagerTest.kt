@@ -47,7 +47,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByOwnerAndCurrencyAndWalletAndAction(
                 VALID.WALLET_OWNER.id!!,
-                VALID.CURRENCY.id!!,
+                VALID.CURRENCY.symbol!!,
                 VALID.WALLET.id!!,
                 action
             )
@@ -55,7 +55,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByOwnerAndCurrencyAndActionAndWalletType(
                 VALID.WALLET_OWNER.id!!,
-                VALID.CURRENCY.id!!,
+                VALID.CURRENCY.symbol!!,
                 action,
                 VALID.WALLET_TYPE_MAIN
             )
@@ -63,7 +63,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByLevelAndCurrencyAndActionAndWalletType(
                 VALID.USER_LEVEL_REGISTERED,
-                VALID.CURRENCY.id!!,
+                VALID.CURRENCY.symbol!!,
                 action,
                 VALID.WALLET_TYPE_MAIN
             )
@@ -74,7 +74,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByOwnerAndCurrencyAndWalletAndAction(
                 VALID.WALLET_OWNER.id!!,
-                VALID.CURRENCY.id!!,
+                VALID.CURRENCY.symbol!!,
                 VALID.WALLET.id!!,
                 action
             )
@@ -82,7 +82,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByOwnerAndCurrencyAndActionAndWalletType(
                 VALID.WALLET_OWNER.id!!,
-                VALID.CURRENCY.id!!,
+                VALID.CURRENCY.symbol!!,
                 action,
                 VALID.WALLET_TYPE_MAIN
             )
@@ -90,7 +90,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByLevelAndCurrencyAndActionAndWalletType(
                 VALID.USER_LEVEL_REGISTERED,
-                VALID.CURRENCY.id!!,
+                VALID.CURRENCY.symbol!!,
                 action,
                 VALID.WALLET_TYPE_MAIN
             )
@@ -127,7 +127,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByOwnerAndCurrencyAndWalletAndAction(
                 VALID.WALLET_OWNER.id!!,
-                VALID.CURRENCY.id!!,
+                VALID.CURRENCY.symbol!!,
                 VALID.WALLET.id!!,
                 VALID.ACTION_WITHDRAW
             )
@@ -143,7 +143,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByLevelAndCurrencyAndActionAndWalletType(
                 VALID.USER_LEVEL_REGISTERED,
-                VALID.CURRENCY.id!!,
+                VALID.CURRENCY.symbol,
                 VALID.ACTION_WITHDRAW,
                 VALID.WALLET_TYPE_MAIN
             )
@@ -167,7 +167,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByOwnerAndCurrencyAndActionAndWalletType(
                 VALID.WALLET_OWNER.id!!,
-                VALID.CURRENCY.id!!,
+                VALID.CURRENCY.symbol!!,
                 VALID.ACTION_WITHDRAW,
                 VALID.WALLET_TYPE_MAIN
             )
@@ -175,7 +175,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByLevelAndCurrencyAndActionAndWalletType(
                 VALID.USER_LEVEL_REGISTERED,
-                VALID.CURRENCY.id!!,
+                VALID.CURRENCY.symbol!!,
                 VALID.ACTION_WITHDRAW,
                 VALID.WALLET_TYPE_MAIN
             )
@@ -191,7 +191,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByOwnerAndCurrencyAndWalletAndAction(
                 VALID.WALLET_OWNER.id!!,
-                VALID.CURRENCY.id!!,
+                VALID.CURRENCY.symbol!!,
                 VALID.WALLET.id!!,
                 VALID.ACTION_WITHDRAW
             )
@@ -199,7 +199,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByOwnerAndCurrencyAndActionAndWalletType(
                 VALID.WALLET_OWNER.id!!,
-                VALID.CURRENCY.id!!,
+                VALID.CURRENCY.symbol!!,
                 VALID.ACTION_WITHDRAW,
                 VALID.WALLET_TYPE_MAIN
             )
@@ -277,7 +277,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByOwnerAndCurrencyAndWalletAndAction(
                 VALID.WALLET_OWNER.id!!,
-                VALID.CURRENCY.id!!,
+                VALID.CURRENCY.symbol!!,
                 VALID.WALLET.id!!,
                 VALID.ACTION_DEPOSIT
             )
@@ -285,7 +285,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByOwnerAndCurrencyAndActionAndWalletType(
                 VALID.WALLET_OWNER.id!!,
-                VALID.CURRENCY.id!!,
+                VALID.CURRENCY.symbol!!,
                 VALID.ACTION_DEPOSIT,
                 VALID.WALLET_TYPE_MAIN
             )
@@ -293,7 +293,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByLevelAndCurrencyAndActionAndWalletType(
                 VALID.USER_LEVEL_REGISTERED,
-                VALID.CURRENCY.id!!,
+                VALID.CURRENCY.symbol!!,
                 VALID.ACTION_DEPOSIT,
                 VALID.WALLET_TYPE_MAIN
             )
@@ -311,7 +311,7 @@ private class WalletManagerTest {
             walletRepository.findByOwnerAndTypeAndCurrency(
                 VALID.WALLET_OWNER.id!!,
                 VALID.WALLET_TYPE_MAIN,
-                VALID.CURRENCY.id!!
+                VALID.CURRENCY.symbol!!
             )
         } returns Mono.just(VALID.WALLET.toModel())
         every {

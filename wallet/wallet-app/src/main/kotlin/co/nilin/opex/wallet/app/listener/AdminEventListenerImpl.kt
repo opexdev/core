@@ -4,10 +4,7 @@ import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.ports.kafka.listener.model.AddCurrencyEvent
 import co.nilin.opex.wallet.ports.kafka.listener.model.AdminEvent
-import co.nilin.opex.wallet.ports.kafka.listener.model.DeleteCurrencyEvent
-import co.nilin.opex.wallet.ports.kafka.listener.model.EditCurrencyEvent
 import co.nilin.opex.wallet.ports.kafka.listener.spi.AdminEventListener
-import co.nilin.opex.wallet.ports.postgres.model.NewCurrencyModel
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component

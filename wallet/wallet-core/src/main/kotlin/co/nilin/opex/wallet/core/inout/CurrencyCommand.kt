@@ -25,14 +25,12 @@ data class CurrencyCommand(
         var externalUrl: String? = null,
         var isCryptoCurrency: Boolean? = false,
         var impls: List<CryptoCurrencyCommand>?=null,
-        var id:Long?=null,
 
 
         ) {
     fun updateTo(newData: CurrencyCommand): CurrencyCommand {
 
             return newData.apply {
-                this.id=id
                 this.uuid = uuid
                 this.symbol = symbol
             }

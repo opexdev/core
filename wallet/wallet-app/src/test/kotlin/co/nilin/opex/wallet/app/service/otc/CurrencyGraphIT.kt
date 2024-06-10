@@ -38,7 +38,7 @@ class CurrencyGraphIT : KafkaEnabledTest() {
         runBlocking {
             val currencies = listOf("A", "B", "C", "D", "Z")
             val systemCurrencies = currencyService
-                .fetchCurrencies(FetchCurrency())?.currencies?.filter { c -> currencies.contains(c.name) }?.map { currency -> currency.id.toString() }
+                .fetchCurrencies(FetchCurrency())?.currencies?.filter { c -> currencies.contains(c.symbol) }?.map { currency -> currency.symbol }
             val fpair = rateService.getForbiddenPairs()
             val rates = rateService.getRate()
             fpair.forbiddenPairs!!.forEach { p -> rateService.deleteForbiddenPair(p) }

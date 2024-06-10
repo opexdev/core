@@ -19,6 +19,6 @@ fun Wallet.toModel() = WalletModel(
     id,
     owner.id!!,
     type,
-    currency.id!!,
+    currency.symbol!!,
     balance.amount
 )

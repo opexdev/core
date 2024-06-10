@@ -7,7 +7,7 @@ import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepositoryV2
 import co.nilin.opex.wallet.ports.postgres.dao.WalletLimitsRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletOwnerRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletRepository
-import co.nilin.opex.wallet.ports.postgres.model.NewCurrencyModel
+import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletLimitsModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletOwnerModel
@@ -18,7 +18,6 @@ import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.DependsOn
-import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
 import javax.annotation.PostConstruct
@@ -82,10 +81,10 @@ class InitializeService(
 
         val items = p.currencies.flatMap { currency ->
             listOf(
-                    WalletModel(null, 1, "main", currency.id, currency.mainBalance),
-                    WalletModel(null, 1, "exchange", currency.id, BigDecimal.ZERO),
-                    WalletModel(null, adminWallet?.id!!, "main", currency.id, currency.mainBalance),
-                    WalletModel(null, adminWallet?.id!!, "exchange", currency.id, BigDecimal.ZERO)
+                    WalletModel(null, 1, "main", currency.symbol, currency.mainBalance),
+                    WalletModel(null, 1, "exchange", currency.symbol, BigDecimal.ZERO),
+                    WalletModel(null, adminWallet?.id!!, "main", currency.symbol, currency.mainBalance),
+                    WalletModel(null, adminWallet?.id!!, "exchange", currency.symbol, BigDecimal.ZERO)
 
             )
         }
@@ -95,7 +94,7 @@ class InitializeService(
 
     private suspend fun addCurrencies(data: List<Currency>) = coroutineScope {
         data.forEach {
-            currencyRepository.save(NewCurrencyModel(name = it.name, symbol = it.symbol, precision = it.precision)).awaitSingleOrNull()
+            currencyRepository.save(CurrencyModel(name = it.name, symbol = it.symbol, precision = it.precision)).awaitSingleOrNull()
         }
     }
 }

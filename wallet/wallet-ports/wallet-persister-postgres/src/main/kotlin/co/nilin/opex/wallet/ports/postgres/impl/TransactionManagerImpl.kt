@@ -52,7 +52,7 @@ class TransactionManagerImpl(
     ): List<TransactionHistory> {
 
         val transactions = if (coin != null)
-            transactionRepository.findDepositTransactionsByUUIDAndCurrency(uuid, coin.currencyMapping(), startTime, endTime, limit)
+            transactionRepository.findDepositTransactionsByUUIDAndCurrency(uuid, coin, startTime, endTime, limit)
         else
             transactionRepository.findDepositTransactionsByUUID(uuid, startTime, endTime, limit)
 
@@ -82,7 +82,7 @@ class TransactionManagerImpl(
             offset: Int
     ): List<TransactionHistory> {
         val transactions = if (coin != null)
-            transactionRepository.findWithdrawTransactionsByUUIDAndCurrency(uuid, coin.currencyMapping(), startTime, endTime, limit)
+            transactionRepository.findWithdrawTransactionsByUUIDAndCurrency(uuid, coin, startTime, endTime, limit)
         else
             transactionRepository.findWithdrawTransactionsByUUID(uuid, startTime, endTime, limit)
 
@@ -115,9 +115,9 @@ class TransactionManagerImpl(
     ): List<TransactionWithDetailHistory> {
         val transactions =
                 if (asc)
-                    transactionRepository.findTransactionsAsc(uuid, coin?.currencyMapping(), category, startTime, endTime, limit, offset)
+                    transactionRepository.findTransactionsAsc(uuid, coin, category, startTime, endTime, limit, offset)
                 else
-                    transactionRepository.findTransactionsDesc(uuid, coin?.currencyMapping(), category, startTime, endTime, limit, offset)
+                    transactionRepository.findTransactionsDesc(uuid, coin, category, startTime, endTime, limit, offset)
 
         return transactions.collectList()
                 .awaitFirstOrElse { emptyList() }
@@ -141,7 +141,4 @@ class TransactionManagerImpl(
     }
 
 
-    private suspend fun String.currencyMapping(): Long {
-        return currencyRepositoryV2.fetchCurrency(symbol = this)?.awaitFirstOrNull()?.id!!
-    }
 }

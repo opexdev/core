@@ -36,15 +36,15 @@ class WalletManagerImplV2(
 
     override suspend fun isDepositAllowed(wallet: Wallet, amount: BigDecimal): Boolean {
         var limit = walletLimitsRepository.findByOwnerAndCurrencyAndWalletAndAction(
-            wallet.owner.id!!, wallet.currency.id!!, wallet.id!!, "deposit"
+            wallet.owner.id!!, wallet.currency.symbol!!, wallet.id!!, "deposit"
         ).awaitFirstOrNull()
         if (limit == null) {
             limit = walletLimitsRepository.findByOwnerAndCurrencyAndActionAndWalletType(
-                wallet.owner.id!!, wallet.currency.id!!, "deposit", wallet.type
+                wallet.owner.id!!, wallet.currency.symbol!!, "deposit", wallet.type
             ).awaitFirstOrNull()
             if (limit == null) {
                 limit = walletLimitsRepository.findByLevelAndCurrencyAndActionAndWalletType(
-                    wallet.owner.level, wallet.currency.id!!, "deposit", wallet.type
+                    wallet.owner.level, wallet.currency.symbol!!, "deposit", wallet.type
                 ).awaitFirstOrNull()
             }
         }
@@ -86,15 +86,15 @@ class WalletManagerImplV2(
         if (!evaluate) return false
         if (evaluate) {
             var limit = walletLimitsRepository.findByOwnerAndCurrencyAndWalletAndAction(
-                wallet.owner.id!!, wallet.currency.id!!, wallet.id!!, "withdraw"
+                wallet.owner.id!!, wallet.currency.symbol!!, wallet.id!!, "withdraw"
             ).awaitFirstOrNull()
             if (limit == null) {
                 limit = walletLimitsRepository.findByOwnerAndCurrencyAndActionAndWalletType(
-                    wallet.owner.id!!, wallet.currency.id!!, "withdraw", wallet.type
+                    wallet.owner.id!!, wallet.currency.symbol!!, "withdraw", wallet.type
                 ).awaitFirstOrNull()
                 if (limit == null) {
                     limit = walletLimitsRepository.findByLevelAndCurrencyAndActionAndWalletType(
-                        wallet.owner.level, wallet.currency.id!!, "withdraw", wallet.type
+                        wallet.owner.level, wallet.currency.symbol!!, "withdraw", wallet.type
                     ).awaitFirstOrNull()
                 }
             }
@@ -154,10 +154,10 @@ class WalletManagerImplV2(
         val walletModel = walletRepository.findByOwnerAndTypeAndCurrency(
             owner.id!!,
             walletType,
-            currency.id!!
+            currency.symbol!!
         ).awaitFirstOrNull() ?: return null
 
-        val existingCurrency = currencyRepository.findById(walletModel.currency)?.awaitFirst()
+        val existingCurrency = currencyRepository.fetchCurrency(symbol = walletModel.currency)?.awaitFirst()
         val walletOwner = walletOwnerRepository.findById(walletModel.owner).awaitFirst().toPlainObject()
         return Wallet(
             walletModel.id!!,
@@ -175,7 +175,7 @@ class WalletManagerImplV2(
             .collectList()
             .awaitSingle()
             .map {
-                val currency = currencyRepository.findById(it.currency)?.awaitFirst()
+                val currency = currencyRepository.fetchCurrency(symbol = it.currency)?.awaitFirst()?:throw OpexError.CurrencyNotFound.exception()
                 Wallet(
                     it.id!!,
                     ownerModel.toPlainObject(),
@@ -187,7 +187,7 @@ class WalletManagerImplV2(
             }
     }
 
-    suspend fun addSystemAndAdminWalletForNewCurrency(currency :Long) {
+    suspend fun addSystemAndAdminWalletForNewCurrency(currency :String) {
         val adminWallet = walletOwnerRepository.findByUuid(adminUuid!!).awaitSingleOrNull()
             ?: throw OpexError.Error.exception()
 
@@ -208,7 +208,7 @@ class WalletManagerImplV2(
             .collectList()
             .awaitSingle()
             .map {
-                val currency = currencyRepository.findById(it.currency)?.awaitFirst()
+                val currency = currencyRepository.fetchCurrency(symbol = it.currency)?.awaitFirst()?:throw OpexError.CurrencyNotFound.exception()
                 Wallet(
                     it.id!!,
                     ownerModel.toPlainObject(),
@@ -223,11 +223,11 @@ class WalletManagerImplV2(
     override suspend fun findWalletByOwnerAndSymbol(owner: WalletOwner, symbol: String): List<Wallet> {
         val ownerModel = walletOwnerRepository.findById(owner.id!!).awaitFirst()
         val currency=currencyRepository.fetchCurrency(symbol=symbol)?.awaitFirstOrNull()?:throw OpexError.CurrencyNotFound.exception()
-        return walletRepository.findByOwnerAndCurrency(owner.id!!, currency.id!!)
+        return walletRepository.findByOwnerAndCurrency(owner.id!!, currency.symbol!!)
             .collectList()
             .awaitSingle()
             .map {
-                val currency = currencyRepository.findById(it.currency)?.awaitFirst()
+                val currency = currencyRepository.fetchCurrency(symbol=it.currency)?.awaitFirst()?:throw OpexError.CurrencyNotFound.exception()
                 Wallet(
                     it.id!!,
                     ownerModel.toPlainObject(),
@@ -241,7 +241,7 @@ class WalletManagerImplV2(
 
     override suspend fun createWallet(owner: WalletOwner, balance: Amount, currency: CurrencyCommand, type: String): Wallet {
         val walletModel = walletRepository
-            .save(WalletModel(null, owner.id!!, type, currency.id!!, balance.amount))
+            .save(WalletModel(null, owner.id!!, type, currency.symbol!!, balance.amount))
             .awaitFirst()
         val wallet = Wallet(
             walletModel.id!!,
@@ -261,7 +261,7 @@ class WalletManagerImplV2(
         val walletModel = walletRepository.findById(walletId).awaitFirstOrNull()
         if (walletModel == null)
             return null
-        val existingCurrency = currencyRepository.findById(walletModel.currency)?.awaitFirst()
+        val existingCurrency = currencyRepository.fetchCurrency(symbol = walletModel.currency)?.awaitFirst()?:throw OpexError.CurrencyNotFound.exception()
         return Wallet(
             walletModel.id!!,
             walletOwnerRepository.findById(walletModel.owner).awaitFirst().toPlainObject(),

@@ -56,7 +56,7 @@ class WithdrawService(
                 Withdraw(
                         null,
                         owner.uuid,
-                        currency.id!!,
+                        currency.symbol,
                         receiverWallet.id!!,
                         withdrawCommand.amount,
                         transferResultDetailed.tx,
@@ -186,7 +186,7 @@ class WithdrawService(
     suspend fun findByCriteria(
             ownerUuid: String?,
             withdrawId: String?,
-            currency: Long?,
+            currency: String?,
             destTxRef: String?,
             destAddress: String?,
             noStatus: Boolean,
@@ -194,6 +194,7 @@ class WithdrawService(
             offset: Int,
             size: Int
     ): PagingWithdrawResponse {
+
         val count =
                 withdrawPersister.countByCriteria(ownerUuid, withdrawId, currency, destTxRef, destAddress, noStatus, status)
         val list = withdrawPersister.findByCriteria(
@@ -213,7 +214,7 @@ class WithdrawService(
     suspend fun findByCriteria(
             ownerUuid: String? = null,
             withdrawId: String? = null,
-            currency: Long? = null,
+            currency: String? = null,
             destTxRef: String? = null,
             destAddress: String? = null,
             noStatus: Boolean = true,
@@ -238,10 +239,8 @@ class WithdrawService(
             limit: Int,
             offset: Int
     ): List<Withdraw> {
-        return withdrawPersister.findWithdrawHistory(uuid, coin?.CurrencyMappng(), startTime, endTime, limit, offset)
+        return withdrawPersister.findWithdrawHistory(uuid, coin, startTime, endTime, limit, offset)
     }
 
-    private suspend fun String.CurrencyMappng(): Long {
-        return currencyService.fetchCurrency(FetchCurrency(symbol = this))?.id!!
-    }
+
 }

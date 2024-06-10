@@ -9,7 +9,7 @@ import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepositoryV2
-import co.nilin.opex.wallet.ports.postgres.model.NewCurrencyModel
+import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
 import co.nilin.opex.wallet.ports.postgres.util.toCommand
 import co.nilin.opex.wallet.ports.postgres.util.toModel
 import kotlinx.coroutines.reactive.awaitFirstOrNull
@@ -39,7 +39,7 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
     override suspend fun updateCurrency(request: CurrencyCommand): CurrencyCommand? {
         return loadCurrency(FetchCurrency(uuid = request.uuid))
                 ?.awaitFirstOrNull()?.let {
-                    doSave(it.toCommand().updateTo(request).toModel().apply { id = it.id })?.toCommand()
+                    doSave(it.toCommand().updateTo(request).toModel())?.toCommand()
                 } ?: throw OpexError.CurrencyNotFound.exception()
 
     }
@@ -54,7 +54,7 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
 
     override suspend fun deleteCurrency(request: FetchCurrency): Void? {
         return loadCurrency(request)?.awaitFirstOrNull()?.let {
-            currencyRepository.deleteById(it.id!!)?.awaitFirstOrNull()
+            currencyRepository.deleteById(it.symbol!!)?.awaitFirstOrNull()
         }
     }
 
@@ -67,15 +67,15 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
         return loadCurrency(request)?.awaitFirstOrNull()?.toCommand()
     }
 
-    private suspend fun loadCurrency(request: FetchCurrency): Mono<NewCurrencyModel>? {
+    private suspend fun loadCurrency(request: FetchCurrency): Mono<CurrencyModel>? {
         return currencyRepository.fetchCurrency(symbol = request.symbol, uuid = request.uuid)
     }
 
-    private suspend fun loadCurrencies(request: FetchCurrency): Flux<NewCurrencyModel>? {
+    private suspend fun loadCurrencies(request: FetchCurrency): Flux<CurrencyModel>? {
         return currencyRepository.fetchSemiCurrencies(request.uuid, request.symbol, request.name)
     }
 
-    private suspend fun doSave(request: NewCurrencyModel): NewCurrencyModel? {
+    private suspend fun doSave(request: CurrencyModel): CurrencyModel? {
         return currencyRepository.save(request).awaitFirstOrNull()
     }
 

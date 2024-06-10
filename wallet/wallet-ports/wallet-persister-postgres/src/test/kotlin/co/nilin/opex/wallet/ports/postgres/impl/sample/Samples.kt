@@ -17,7 +17,7 @@ object VALID {
 
     const val WALLET_TYPE_MAIN = "main"
 
-    val CURRENCY = CurrencyCommand("ETH", null,"Ethereum", BigDecimal.valueOf(0.0001),id=1)
+    val CURRENCY = CurrencyCommand("ETH", null,"Ethereum", BigDecimal.valueOf(0.0001))
 
     val WALLET_OWNER = WalletOwner(
         1L,
@@ -43,7 +43,7 @@ object VALID {
         USER_LEVEL_REGISTERED,
         WALLET_OWNER.id,
         ACTION_WITHDRAW,
-        CURRENCY.id!!,
+        CURRENCY.symbol!!,
         WALLET_TYPE_MAIN,
         WALLET.id,
         BigDecimal.valueOf(10),
@@ -59,7 +59,7 @@ object VALID {
         USER_LEVEL_REGISTERED,
         WALLET_OWNER.id,
         ACTION_WITHDRAW,
-        CURRENCY.id!!,
+        CURRENCY.symbol!!,
         WALLET_TYPE_MAIN,
         WALLET.id,
         BigDecimal.valueOf(10),

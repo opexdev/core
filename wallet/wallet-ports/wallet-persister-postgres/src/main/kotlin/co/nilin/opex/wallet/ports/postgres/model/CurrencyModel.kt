@@ -7,11 +7,9 @@ import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
 import java.util.*
 
-@Table("new_currency")
-data class NewCurrencyModel(
+@Table("currency")
+data class CurrencyModel(
         @Id
-        var id:Long?=null,
-        //todo unique
         var symbol: String,
         var uuid: String? = UUID.randomUUID().toString(),
         var name: String,

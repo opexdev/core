@@ -8,12 +8,12 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @Repository
-interface RatesRepository :ReactiveCrudRepository<RateModel,Long> {
-    fun findBySourceSymbolAndDestinationSymbol(sourceSymbol:Long, destSymbol:Long): Mono<RateModel?>?
-
-    fun deleteBySourceSymbolAndDestinationSymbol(sourceSymbol:Long, destSymbol:Long):Mono<Void>?
+interface RatesRepository : ReactiveCrudRepository<RateModel, Long> {
 
 
+    fun findBySourceSymbolAndDestinationSymbol(sourceSymbol: String, destSymbol: String): Mono<RateModel?>?
+
+    fun deleteBySourceSymbolAndDestinationSymbol(sourceSymbol: String, destSymbol: String): Mono<Void>?
 
 
 }

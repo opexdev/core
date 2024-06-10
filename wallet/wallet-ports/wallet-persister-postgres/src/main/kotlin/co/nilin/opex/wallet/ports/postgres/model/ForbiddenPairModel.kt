@@ -9,8 +9,8 @@ import java.time.LocalDateTime
 data class ForbiddenPairModel (
         @Id
     var id: Long?,
-        @Column("source_symbol") var sourceSymbol: Long,
-        @Column("dest_symbol") var destinationSymbol: Long,
+        @Column("source_symbol") var sourceSymbol: String,
+        @Column("dest_symbol") var destinationSymbol: String,
         @Column("last_update_date") var lastUpdateDate: LocalDateTime = LocalDateTime.now(),
         @Column("create_date") var createDate: LocalDateTime
 )

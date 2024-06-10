@@ -20,7 +20,7 @@ interface WalletRepository : ReactiveCrudRepository<WalletModel, Long> {
     fun findByOwnerAndTypeAndCurrency(
         @Param("owner") owner: Long,
         @Param("type") type: String,
-        @Param("currency") currency: Long
+        @Param("currency") currency: String
     ): Mono<WalletModel?>
 
     @Query("select * from wallet where owner = :owner and wallet_type = :type")
@@ -33,7 +33,7 @@ interface WalletRepository : ReactiveCrudRepository<WalletModel, Long> {
     fun findByOwner(@Param("owner") owner: Long): Flux<WalletModel>
 
     @Query("select * from wallet where owner = :owner and currency = :currency")
-    fun findByOwnerAndCurrency(owner: Long, currency: Long): Flux<WalletModel>
+    fun findByOwnerAndCurrency(owner: Long, currency: String): Flux<WalletModel>
 
     @Modifying
     @Query("update wallet set balance = balance + :balance, version = version + 1 where id = :id and version = :version")
@@ -59,7 +59,7 @@ interface WalletRepository : ReactiveCrudRepository<WalletModel, Long> {
     fun findWalletDataByCriteria(
         uuid: String?,
         walletType: String?,
-        currency: Long?,
+        currency: String?,
         limit: Int,
         offset: Int
     ): Flux<WalletData>
@@ -79,7 +79,7 @@ interface WalletRepository : ReactiveCrudRepository<WalletModel, Long> {
     fun findWalletDataByCriteriaExcludeSystem(
         uuid: String?,
         walletType: String?,
-        currency: Long?,
+        currency: String?,
         limit: Int,
         offset: Int
     ): Flux<WalletData>

@@ -16,8 +16,7 @@ data class ReservedTransfer(var id: Long? = null,
                             var reserveDate: LocalDateTime? = LocalDateTime.now(),
                             var expDate: LocalDateTime?=null,
                             var status: ReservedStatus?=null,
-                            var sourceSymbolId: Long?=null,
-                            var destinationSymbolId: Long?=null,)
+                           )
 
 
 enum class ReservedStatus{

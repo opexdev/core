@@ -1,13 +1,12 @@
 package co.nilin.opex.wallet.ports.postgres.util
 
 import co.nilin.opex.wallet.core.inout.CurrencyCommand
-import co.nilin.opex.wallet.ports.postgres.model.NewCurrencyModel
+import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
 
 
 
-fun CurrencyCommand.toModel(): NewCurrencyModel {
-    return NewCurrencyModel(
-            null,
+fun CurrencyCommand.toModel(): CurrencyModel {
+    return CurrencyModel(
             symbol,
             uuid,
             name,
@@ -29,7 +28,7 @@ fun CurrencyCommand.toModel(): NewCurrencyModel {
     )
 }
 
-fun NewCurrencyModel.toCommand(): CurrencyCommand {
+fun CurrencyModel.toCommand(): CurrencyCommand {
     return CurrencyCommand(symbol,
             uuid,
             name,
@@ -50,5 +49,5 @@ fun NewCurrencyModel.toCommand(): CurrencyCommand {
             externalUrl,
             isCryptoCurrency,
             null,
-            id)
+            )
 }
