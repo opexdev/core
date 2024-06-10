@@ -3,6 +3,7 @@ package co.nilin.opex.market.app.config
 import co.nilin.opex.market.ports.postgres.util.CacheHelper
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.springframework.cache.CacheManager
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.annotation.Bean
@@ -25,12 +26,9 @@ class CacheConfig {
     @Bean
     fun cacheManager(connectionFactory: RedisConnectionFactory, mapper: ObjectMapper): CacheManager {
         val newMapper = mapper.copy().apply {
+            activateDefaultTyping(mapper.polymorphicTypeValidator, ObjectMapper.DefaultTyping.NON_FINAL)
             findAndRegisterModules()
-            activateDefaultTyping(
-                polymorphicTypeValidator,
-                ObjectMapper.DefaultTyping.NON_FINAL,
-                JsonTypeInfo.As.PROPERTY
-            )
+            registerKotlinModule()
         }
         return RedisCacheManagerBuilder.fromConnectionFactory(connectionFactory)
             .withCacheConfiguration(
@@ -40,7 +38,7 @@ class CacheConfig {
                     .disableCachingNullValues()
                     .serializeValuesWith(
                         RedisSerializationContext.SerializationPair
-                            .fromSerializer(GenericJackson2JsonRedisSerializer())
+                            .fromSerializer(GenericJackson2JsonRedisSerializer(newMapper))
                     )
             )
             .build()
