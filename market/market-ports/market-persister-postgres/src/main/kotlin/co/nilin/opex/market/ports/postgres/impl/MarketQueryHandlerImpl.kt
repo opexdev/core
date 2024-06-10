@@ -17,7 +17,6 @@ import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingleOrNull
-import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
 import java.time.Instant
@@ -75,36 +74,43 @@ class MarketQueryHandlerImpl(
             .map { OrderBook(it.price, it.quantity) }
     }
 
-    @Cacheable(cacheNames = ["marketCache"], key = "'lastOrder'")
+    // @Cacheable does not support suspended functions. Spring 6.1 required.
+    //@Cacheable(cacheNames = ["marketCache"], key = "'lastOrder'")
     override suspend fun lastOrder(symbol: String): Order? {
+        val orderCache = cacheHelper.get("lastOrder")
+        if (orderCache != null && orderCache is Order?)
+            return orderCache
+
         val order = orderRepository.findLastOrderBySymbol(symbol).awaitFirstOrNull() ?: return null
         val status = orderStatusRepository.findMostRecentByOUID(order.ouid).awaitFirstOrNull()
-        return order.asOrderDTO(status)
+        return order.asOrderDTO(status).also { cacheHelper.put("lastOrder", it) }
     }
 
     //TODO need better query
     override suspend fun recentTrades(symbol: String, limit: Int): List<MarketTrade> {
-        return tradeRepository.findBySymbolSortDescendingByCreateDate(symbol, limit)
-            .map {
-                val takerOrder = orderRepository.findByOuid(it.takerOuid).awaitFirst()
-                val makerOrder = orderRepository.findByOuid(it.makerOuid).awaitFirst()
-                val isMakerBuyer = makerOrder.direction == OrderDirection.BID
-                MarketTrade(
-                    it.symbol,
-                    it.baseAsset,
-                    it.quoteAsset,
-                    it.tradeId,
-                    it.matchedPrice,
-                    it.matchedQuantity,
-                    if (isMakerBuyer)
-                        makerOrder.quoteQuantity!!
-                    else
-                        takerOrder.quoteQuantity!!,
-                    Date.from(it.createDate.atZone(ZoneId.systemDefault()).toInstant()),
-                    true,
-                    isMakerBuyer
-                )
-            }.toList()
+        return cacheHelper.getOrElse("recentTrades") {
+            tradeRepository.findBySymbolSortDescendingByCreateDate(symbol, limit)
+                .map {
+                    val takerOrder = orderRepository.findByOuid(it.takerOuid).awaitFirst()
+                    val makerOrder = orderRepository.findByOuid(it.makerOuid).awaitFirst()
+                    val isMakerBuyer = makerOrder.direction == OrderDirection.BID
+                    MarketTrade(
+                        it.symbol,
+                        it.baseAsset,
+                        it.quoteAsset,
+                        it.tradeId,
+                        it.matchedPrice,
+                        it.matchedQuantity,
+                        if (isMakerBuyer)
+                            makerOrder.quoteQuantity!!
+                        else
+                            takerOrder.quoteQuantity!!,
+                        Date.from(it.createDate.atZone(ZoneId.systemDefault()).toInstant()),
+                        true,
+                        isMakerBuyer
+                    )
+                }.toList()
+        }
     }
 
     override suspend fun lastPrice(symbol: String?): List<PriceTicker> {
@@ -118,9 +124,12 @@ class MarketQueryHandlerImpl(
     }
 
     override suspend fun getBestPriceForSymbols(symbols: List<String>): List<BestPrice> {
-        return tradeRepository.bestAskAndBidPrice(symbols)
-            .collectList()
-            .awaitFirstOrElse { emptyList() }
+        val id = symbols.joinToString { it }
+        return cacheHelper.getTimeBasedOrElse("bestPricesForSymbols:$id", 1.minutes()) {
+            tradeRepository.bestAskAndBidPrice(symbols)
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
+        }
     }
 
     override suspend fun getCandleInfo(
