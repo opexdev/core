@@ -25,10 +25,10 @@ data class CurrencyModel(
         var description: String? = null,
         @Column("short_description")
         var shortDescription: String? = null,
-        @Column("withdraw_is_enable")
-        var withdrawIsEnable: Boolean? = true,
-        @Column("deposit_is_enable")
-        var depositIsEnable: Boolean? = true,
+        @Column("withdraw_allowed")
+        var withdrawAllowed: Boolean? = true,
+        @Column("deposit_allowed")
+        var depositAllowed: Boolean? = true,
         @Column("withdraw_fee")
         var withdrawFee: BigDecimal?=BigDecimal.ZERO,
         @Column("external_url")

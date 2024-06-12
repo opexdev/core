@@ -31,7 +31,7 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
             else
                 return it.toCommand()
         } ?: run {
-            return doSave(request.toModel())?.toCommand()
+            return doPersist(request.toModel())?.toCommand()
         }
     }
 
@@ -77,6 +77,30 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
 
     private suspend fun doSave(request: CurrencyModel): CurrencyModel? {
         return currencyRepository.save(request).awaitFirstOrNull()
+    }
+
+    private suspend fun doPersist(request: CurrencyModel): CurrencyModel? {
+        with(request) {
+            return currencyRepository.insert(
+                    this.symbol,
+                    this.uuid!!,
+                    this.name,
+                    this.precision,
+                    this.title,
+                    this.alias,
+                    this.icon,
+                    this.depositAllowed,
+                    this.isActive,
+                    this.sign,
+                    this.description,
+                    this.shortDescription,
+                    this.withdrawAllowed,
+                    this.depositAllowed,
+                    this.withdrawFee,
+                    this.externalUrl,
+                    this.depositAllowed
+            ).awaitFirstOrNull()
+        }
     }
 
 }
