@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.springframework.data.redis.core.RedisTemplate
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
@@ -21,8 +22,9 @@ class MarketQueryHandlerTest {
     private val tradeRepository = mockk<TradeRepository>()
     private val orderStatusRepository = mockk<OrderStatusRepository>()
     private val cacheHelper = mockk<CacheHelper>()
+    private val redisTemplate = mockk<RedisTemplate<String, Any>>()
     private val marketQueryHandler =
-        MarketQueryHandlerImpl(orderRepository, tradeRepository, orderStatusRepository, cacheHelper)
+        MarketQueryHandlerImpl(orderRepository, tradeRepository, orderStatusRepository, cacheHelper, redisTemplate)
 
     @Test
     fun givenAggregatedOrderPrice_whenOpenASKOrders_thenReturnOrderBookResponseList(): Unit = runBlocking {

@@ -9,6 +9,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThatNoException
 import org.junit.jupiter.api.Test
+import org.springframework.data.redis.core.RedisTemplate
 import reactor.core.publisher.Mono
 
 class TradePersisterTest {
@@ -16,7 +17,8 @@ class TradePersisterTest {
     private val tradeRepository = mockk<TradeRepository>()
     private val currencyRateRepository = mockk<CurrencyRateRepository>()
     private val cacheHelper = mockk<CacheHelper>()
-    private val tradePersister = TradePersisterImpl(tradeRepository, currencyRateRepository, cacheHelper)
+    private val redisTemplate = mockk<RedisTemplate<String, Any>>()
+    private val tradePersister = TradePersisterImpl(tradeRepository, currencyRateRepository, cacheHelper, redisTemplate)
 
     @Test
     fun givenTradeRepo_whenSaveRichTrade_thenSuccess(): Unit = runBlocking {

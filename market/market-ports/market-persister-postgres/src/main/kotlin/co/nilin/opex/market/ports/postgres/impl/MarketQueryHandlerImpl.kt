@@ -17,6 +17,7 @@ import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
 import java.time.Instant
@@ -29,7 +30,8 @@ class MarketQueryHandlerImpl(
     private val orderRepository: OrderRepository,
     private val tradeRepository: TradeRepository,
     private val orderStatusRepository: OrderStatusRepository,
-    private val cacheHelper: CacheHelper
+    private val cacheHelper: CacheHelper,
+    private val redisTemplate: RedisTemplate<String, Any>
 ) : MarketQueryHandler {
 
     //TODO merge order and status fetching in query
@@ -75,7 +77,7 @@ class MarketQueryHandlerImpl(
     }
 
     // @Cacheable does not support suspended functions. Spring 6.1 required.
-    //@Cacheable(cacheNames = ["marketCache"], key = "'lastOrder'")
+    // @Cacheable(cacheNames = ["marketCache"], key = "'lastOrder'")
     override suspend fun lastOrder(symbol: String): Order? {
         val orderCache = cacheHelper.get("lastOrder")
         if (orderCache != null && orderCache is Order?)
@@ -88,29 +90,34 @@ class MarketQueryHandlerImpl(
 
     //TODO need better query
     override suspend fun recentTrades(symbol: String, limit: Int): List<MarketTrade> {
-        return cacheHelper.getOrElse("recentTrades") {
-            tradeRepository.findBySymbolSortDescendingByCreateDate(symbol, limit)
-                .map {
-                    val takerOrder = orderRepository.findByOuid(it.takerOuid).awaitFirst()
-                    val makerOrder = orderRepository.findByOuid(it.makerOuid).awaitFirst()
-                    val isMakerBuyer = makerOrder.direction == OrderDirection.BID
-                    MarketTrade(
-                        it.symbol,
-                        it.baseAsset,
-                        it.quoteAsset,
-                        it.tradeId,
-                        it.matchedPrice,
-                        it.matchedQuantity,
-                        if (isMakerBuyer)
-                            makerOrder.quoteQuantity!!
-                        else
-                            takerOrder.quoteQuantity!!,
-                        Date.from(it.createDate.atZone(ZoneId.systemDefault()).toInstant()),
-                        true,
-                        isMakerBuyer
-                    )
-                }.toList()
-        }
+        val ops = redisTemplate.opsForList()
+        val recentTradesCache = ops.range("recentTrades", 0, -1)
+        if (recentTradesCache?.isNotEmpty() == true)
+            return recentTradesCache as List<MarketTrade>
+
+        return tradeRepository.findBySymbolSortDescendingByCreateDate(symbol, limit)
+            .map {
+                val takerOrder = orderRepository.findByOuid(it.takerOuid).awaitFirst()
+                val makerOrder = orderRepository.findByOuid(it.makerOuid).awaitFirst()
+                val isMakerBuyer = makerOrder.direction == OrderDirection.BID
+                MarketTrade(
+                    it.symbol,
+                    it.baseAsset,
+                    it.quoteAsset,
+                    it.tradeId,
+                    it.matchedPrice,
+                    it.matchedQuantity,
+                    if (isMakerBuyer)
+                        makerOrder.quoteQuantity!!
+                    else
+                        takerOrder.quoteQuantity!!,
+                    Date.from(it.createDate.atZone(ZoneId.systemDefault()).toInstant()),
+                    true,
+                    isMakerBuyer
+                )
+            }.toList()
+            .onEach { ops.rightPush("recentTrades", it) }
+            .also { redisTemplate.expireAt("recentTrades", 60.minutes().dateInFuture()) }
     }
 
     override suspend fun lastPrice(symbol: String?): List<PriceTicker> {
@@ -140,16 +147,14 @@ class MarketQueryHandlerImpl(
         limit: Int
     ): List<CandleData> {
         val st = if (startTime == null)
-            tradeRepository.findFirstByCreateDate().awaitFirstOrNull()?.createDate
-                ?: LocalDateTime.now()
+            tradeRepository.findFirstByCreateDate().awaitFirstOrNull()?.createDate ?: LocalDateTime.now()
         else
             with(Instant.ofEpochMilli(startTime)) {
                 LocalDateTime.ofInstant(this, ZoneId.systemDefault())
             }
 
         val et = if (endTime == null)
-            tradeRepository.findLastByCreateDate().awaitFirstOrNull()?.createDate
-                ?: LocalDateTime.now()
+            tradeRepository.findLastByCreateDate().awaitFirstOrNull()?.createDate ?: LocalDateTime.now()
         else
             with(Instant.ofEpochMilli(endTime)) {
                 LocalDateTime.ofInstant(this, ZoneId.systemDefault())

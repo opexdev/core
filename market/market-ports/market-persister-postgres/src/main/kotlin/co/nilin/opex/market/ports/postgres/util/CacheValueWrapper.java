@@ -12,7 +12,7 @@ public class CacheValueWrapper {
 
     }
 
-    CacheValueWrapper(Object value) {
+    public CacheValueWrapper(Object value) {
         this.value = value;
         this.evictionTime = -1;
         this.isTimeBased = false;
