@@ -5,8 +5,8 @@ import co.nilin.opex.api.core.inout.TransactionHistoryResponse
 import co.nilin.opex.api.core.inout.Wallet
 import co.nilin.opex.api.core.inout.WithdrawHistoryResponse
 import co.nilin.opex.api.core.spi.WalletProxy
-import co.nilin.opex.api.core.utils.LoggerDelegate
 import co.nilin.opex.api.ports.proxy.data.TransactionRequest
+import co.nilin.opex.common.utils.LoggerDelegate
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.beans.factory.annotation.Value

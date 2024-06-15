@@ -1,4 +1,4 @@
-package co.nilin.opex.api.core.utils
+package co.nilin.opex.common.utils
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

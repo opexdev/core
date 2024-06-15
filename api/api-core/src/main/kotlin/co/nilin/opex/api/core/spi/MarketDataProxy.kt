@@ -1,13 +1,14 @@
 package co.nilin.opex.api.core.spi
 
 import co.nilin.opex.api.core.inout.*
+import co.nilin.opex.common.utils.Interval
 import java.time.LocalDateTime
 
 interface MarketDataProxy {
 
-    suspend fun getTradeTickerData(startFrom: Long): List<PriceChange>
+    suspend fun getTradeTickerData(interval: Interval): List<PriceChange>
 
-    suspend fun getTradeTickerDataBySymbol(symbol: String, startFrom: Long): PriceChange
+    suspend fun getTradeTickerDataBySymbol(symbol: String, interval: Interval): PriceChange
 
     suspend fun openBidOrders(symbol: String, limit: Int): List<OrderBook>
 
@@ -33,10 +34,10 @@ interface MarketDataProxy {
 
     suspend fun getExternalCurrencyRates(quote: String, base: String? = null): List<CurrencyRate>
 
-    suspend fun countActiveUsers(since: Long): Long
+    suspend fun countActiveUsers(interval: Interval): Long
 
-    suspend fun countTotalOrders(since: Long): Long
+    suspend fun countTotalOrders(interval: Interval): Long
 
-    suspend fun countTotalTrades(since: Long): Long
+    suspend fun countTotalTrades(interval: Interval): Long
 
 }

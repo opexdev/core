@@ -3,6 +3,7 @@ package co.nilin.opex.api.ports.proxy.impl
 import co.nilin.opex.api.core.inout.PriceStat
 import co.nilin.opex.api.core.inout.TradeVolumeStat
 import co.nilin.opex.api.core.spi.MarketStatProxy
+import co.nilin.opex.common.utils.Interval
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Value
@@ -20,7 +21,7 @@ class MarketStatProxyImpl(
     private val baseUrl: String
 ) : MarketStatProxy {
 
-    override suspend fun getMostIncreasedInPricePairs(interval: Long, limit: Int): List<PriceStat> {
+    override suspend fun getMostIncreasedInPricePairs(interval: Interval, limit: Int): List<PriceStat> {
         return webClient.get()
             .uri("$baseUrl/v1/stats/price/most-increased") {
                 it.queryParam("interval", interval)
@@ -35,7 +36,7 @@ class MarketStatProxyImpl(
             .awaitFirstOrElse { emptyList() }
     }
 
-    override suspend fun getMostDecreasedInPricePairs(interval: Long, limit: Int): List<PriceStat> {
+    override suspend fun getMostDecreasedInPricePairs(interval: Interval, limit: Int): List<PriceStat> {
         return webClient.get()
             .uri("$baseUrl/v1/stats/price/most-decreased") {
                 it.queryParam("interval", interval)
@@ -50,7 +51,7 @@ class MarketStatProxyImpl(
             .awaitFirstOrElse { emptyList() }
     }
 
-    override suspend fun getHighestVolumePair(interval: Long): TradeVolumeStat? {
+    override suspend fun getHighestVolumePair(interval: Interval): TradeVolumeStat? {
         return webClient.get()
             .uri("$baseUrl/v1/stats/volume/highest") {
                 it.queryParam("interval", interval)
@@ -63,7 +64,7 @@ class MarketStatProxyImpl(
             .awaitSingleOrNull()
     }
 
-    override suspend fun getTradeCountPair(interval: Long): TradeVolumeStat? {
+    override suspend fun getTradeCountPair(interval: Interval): TradeVolumeStat? {
         return webClient.get()
             .uri("$baseUrl/v1/stats/most-trades") {
                 it.queryParam("interval", interval)
