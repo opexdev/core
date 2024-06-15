@@ -54,7 +54,7 @@ class CurrencyRatesControllerIT : KafkaEnabledTest() {
             val wallets = walletRepository.findAll().collectList().block()
             //todo
 //            wallets?.map {w->currencyService.fetchCurrencies(FetchCurrency(id=w.currency))?.currencies?.first()?.name }?.filter { w -> currencies.contains(w) }?.forEach { w -> walletRepository.delete(w).block() }
-            systemCurrencies?.filter { c -> true }?.forEach { c -> currencyService.deleteCurrency(FetchCurrency(name = c)) }
+            systemCurrencies?.filter { c -> true }?.forEach { c -> currencyService.deleteCurrency(FetchCurrency(symbol = c)) }
             currencies.forEach { c -> addCurrency(c, BigDecimal.TEN) }
         }
     }

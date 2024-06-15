@@ -1,5 +1,7 @@
 package co.nilin.opex.bcgateway.core.spi
 
+import co.nilin.opex.bcgateway.core.model.CryptoCurrencyCommand
+import co.nilin.opex.bcgateway.core.model.CurrencyImps
 import java.math.BigDecimal
 
 interface CryptoCurrencyHandler {
@@ -18,7 +20,7 @@ interface CryptoCurrencyHandler {
         minimumWithdraw: BigDecimal,
         isWithdrawEnabled: Boolean,
         decimal: Int
-    ): CurrencyImplementation?
+    ): CryptoCurrencyCommand?
 
 
     suspend fun updateCurrencyImplementation(
@@ -34,7 +36,7 @@ interface CryptoCurrencyHandler {
         isWithdrawEnabled: Boolean,
         decimal: Int,
         chain:String
-    ): CurrencyImplementation?
+    ): CryptoCurrencyCommand?
 
 
     suspend fun editCurrency(name: String, symbol: String)
@@ -52,17 +54,17 @@ interface CryptoCurrencyHandler {
         minimumWithdraw: BigDecimal,
         isWithdrawEnabled: Boolean,
         decimal: Int
-    ): CurrencyImplementation
+    ): CryptoCurrencyCommand
 
-    suspend fun fetchAllImplementations(): List<CurrencyImplementation>
+    suspend fun fetchAllImplementations(): List<CurrencyImps>
 
-    suspend fun fetchCurrencyInfo(symbol: String): CurrencyInfo
+    suspend fun fetchCurrencyInfo(symbol: String): CryptoCurrencyCommand
 
-    suspend fun findByChainAndTokenAddress(chain: String, address: String?): CurrencyImplementation?
+    suspend fun findByChainAndTokenAddress(chain: String, address: String?): CryptoCurrencyCommand?
 
-    suspend fun findImplementationsWithTokenOnChain(chain: String): List<CurrencyImplementation>
+    suspend fun findImplementationsWithTokenOnChain(chain: String): List<CryptoCurrencyCommand>
 
-    suspend fun findImplementationsByCurrency(currency: String): List<CurrencyImplementation>
+    suspend fun findImplementationsByCurrency(currency: String): List<CryptoCurrencyCommand>
 
     suspend fun changeWithdrawStatus(symbol: String, chain: String, status: Boolean)
 

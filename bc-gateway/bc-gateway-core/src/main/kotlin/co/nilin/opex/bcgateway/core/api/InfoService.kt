@@ -1,6 +1,8 @@
 package co.nilin.opex.bcgateway.core.api
 
+import co.nilin.opex.bcgateway.core.model.CryptoCurrencyCommand
+
 interface InfoService {
     suspend fun countReservedAddresses(): Long
-    suspend fun getCurrencyInfo(): CurrencyInfo
+    suspend fun getCurrencyInfo(): CryptoCurrencyCommand
 }

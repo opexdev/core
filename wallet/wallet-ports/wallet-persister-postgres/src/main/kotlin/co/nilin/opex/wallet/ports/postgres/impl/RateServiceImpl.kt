@@ -25,14 +25,15 @@ class RateServiceImpl(
 
     //todo  change currency symbol -> uuid in all interfaces
 
-    override suspend fun addRate(rate: Rate) {
+    override suspend fun addRate(rate: Rate, ignoreIfExist: Boolean? ) {
         rate.isValid()
 
-        ratesRepository.findBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destinationSymbol)?.awaitFirstOrNull()
+        ratesRepository.findBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destSymbol)?.awaitFirstOrNull()
                 ?.let {
-                    throw OpexError.PairIsExist.exception()
+                    if (!ignoreIfExist!!)
+                        throw OpexError.PairIsExist.exception()
                 } ?: run {
-            forbiddenPairRepository.findBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destinationSymbol)?.awaitFirstOrNull()
+            forbiddenPairRepository.findBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destSymbol)?.awaitFirstOrNull()
         }?.let {
             throw OpexError.ForbiddenPair.exception()
         } ?: run {
@@ -57,8 +58,8 @@ class RateServiceImpl(
     override suspend fun deleteRate(rate: Rate): Rates {
 
         return Rates(ratesRepository
-                .findBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destinationSymbol)?.awaitFirstOrNull()?.let {
-                    ratesRepository.deleteBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destinationSymbol)?.awaitFirstOrNull().let {
+                .findBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destSymbol)?.awaitFirstOrNull()?.let {
+                    ratesRepository.deleteBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destSymbol)?.awaitFirstOrNull().let {
                         ratesRepository.findAll().map { it.toDto() }.collect(Collectors.toList()).awaitFirstOrNull()
                     }
                 } ?: throw OpexError.PairNotFound.exception())
@@ -67,8 +68,8 @@ class RateServiceImpl(
     override suspend fun updateRate(rate: Rate): Rates {
 
         return Rates(ratesRepository
-                .findBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destinationSymbol)?.awaitFirstOrNull()?.let { it ->
-                    ratesRepository.save(RateModel(it.id, rate.sourceSymbol, rate.destinationSymbol, rate.rate, LocalDateTime.now(), it.createDate))?.awaitFirstOrNull().let {
+                .findBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destSymbol)?.awaitFirstOrNull()?.let { it ->
+                    ratesRepository.save(RateModel(it.id, rate.sourceSymbol, rate.destSymbol, rate.rate, LocalDateTime.now(), it.createDate))?.awaitFirstOrNull().let {
                         ratesRepository.findAll().map { it.toDto() }.collect(Collectors.toList()).awaitFirstOrNull()
                     }
                 }
@@ -127,7 +128,7 @@ class RateServiceImpl(
         return RateModel(
                 null,
                 this.sourceSymbol,
-                this.destinationSymbol,
+                this.destSymbol,
                 this.rate,
                 LocalDateTime.now(),
                 LocalDateTime.now()
@@ -136,13 +137,12 @@ class RateServiceImpl(
     }
 
 
-
-    private  fun RateModel.toDto(): Rate {
+    private fun RateModel.toDto(): Rate {
         return Rate(
                 this.sourceSymbol,
                 this.destinationSymbol,
                 this.rate,
-                )
+        )
 
     }
 
@@ -158,13 +158,11 @@ class RateServiceImpl(
     }
 
 
-
-
-    private  fun ForbiddenPairModel.toDto(): ForbiddenPair {
+    private fun ForbiddenPairModel.toDto(): ForbiddenPair {
         return ForbiddenPair(
                 this.sourceSymbol,
                 this.destinationSymbol,
-                )
+        )
 
     }
 
@@ -177,7 +175,7 @@ class RateServiceImpl(
         currencyRepository.fetchCurrency(symbol = this.sourceSymbol)?.awaitFirstOrNull()?.let { it ->
             if (it.isActive == false)
                 throw OpexError.CurrencyIsDisable.exception()
-            currencyRepository.fetchCurrency(symbol = this.destinationSymbol)?.awaitFirstOrNull()?.let {
+            currencyRepository.fetchCurrency(symbol = this.destSymbol)?.awaitFirstOrNull()?.let {
                 if (it.isActive == false)
                     throw OpexError.CurrencyIsDisable.exception()
             } ?: throw OpexError.CurrencyNotFound.exception()
@@ -190,10 +188,6 @@ class RateServiceImpl(
             } ?: throw OpexError.CurrencyNotFound.exception()
         } ?: throw OpexError.CurrencyNotFound.exception()
     }
-
-
-
-
 
 
 }

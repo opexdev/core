@@ -1,11 +1,10 @@
 package co.nilin.opex.bcgateway.core.model
 
 import java.math.BigDecimal
-import java.util.*
 
 data class CryptoCurrencyCommand(
 
-        var currencyUUID: String,
+        var currencySymbol: String,
         var currencyImpUuid: String,
         var implementationSymbol: String?,
         var tokenName: String?,
@@ -20,7 +19,7 @@ data class CryptoCurrencyCommand(
 ) {
     fun updateTo(newData: CryptoCurrencyCommand): CryptoCurrencyCommand {
         return newData.apply {
-            this.currencyUUID = currencyUUID
+            this.currencySymbol = currencySymbol
             this.currencyImpUuid = currencyImpUuid
         }
     }

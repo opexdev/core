@@ -92,4 +92,6 @@ logging:
     org.apache.kafka: ERROR
     co.nilin: INFO
     reactor.netty.http.client: INFO
+    org.hibernate.SQL: DEBUG
+    logging.level.org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token

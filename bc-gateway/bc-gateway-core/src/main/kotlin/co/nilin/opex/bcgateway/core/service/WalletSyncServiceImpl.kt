@@ -1,12 +1,11 @@
 package co.nilin.opex.bcgateway.core.service
 
 import co.nilin.opex.bcgateway.core.api.WalletSyncService
+import co.nilin.opex.bcgateway.core.model.CryptoCurrencyCommand
 import co.nilin.opex.bcgateway.core.model.Deposit
+import co.nilin.opex.bcgateway.core.model.FetchImpls
 import co.nilin.opex.bcgateway.core.model.Transfer
-import co.nilin.opex.bcgateway.core.spi.AssignedAddressHandler
-import co.nilin.opex.bcgateway.core.spi.CryptoCurrencyHandler
-import co.nilin.opex.bcgateway.core.spi.DepositHandler
-import co.nilin.opex.bcgateway.core.spi.WalletProxy
+import co.nilin.opex.bcgateway.core.spi.*
 import co.nilin.opex.bcgateway.core.utils.LoggerDelegate
 import kotlinx.coroutines.coroutineScope
 import org.slf4j.Logger
@@ -18,7 +17,7 @@ import java.math.BigDecimal
 class WalletSyncServiceImpl(
         private val walletProxy: WalletProxy,
         private val assignedAddressHandler: AssignedAddressHandler,
-        private val currencyHandler: CryptoCurrencyHandler,
+        private val currencyHandler: CryptoCurrencyHandlerV2,
         private val depositHandler: DepositHandler
 ) : WalletSyncService {
 
@@ -26,15 +25,15 @@ class WalletSyncServiceImpl(
 
     @Transactional
     override suspend fun syncTransfers(transfers: List<Transfer>) = coroutineScope {
-        val groupedByChain = currencyHandler.fetchAllImplementations().groupBy { it.chain.name }
+        val groupedByChain = currencyHandler.fetchCurrencyImpls(FetchImpls())?.imps?.groupBy { it.chain }
         val deposits = transfers.mapNotNull {
             coroutineScope {
-                val currencyImpl = groupedByChain[it.chain]?.find { c -> c.tokenAddress == it.tokenAddress }
+                val currencyImpl = groupedByChain?.get(it.chain)?.find { c -> c.tokenAddress == it.tokenAddress }
                     ?: throw IllegalStateException("Currency implementation not found")
                 assignedAddressHandler.findUuid(it.receiver.address, it.receiver.memo)?.let { it to currencyImpl }
             }?.let { (uuid, currencyImpl) ->
                 sendDeposit(uuid, currencyImpl, it)
-                logger.info("Deposit synced for $uuid on ${currencyImpl.currency.symbol} - to ${it.receiver.address}")
+                logger.info("Deposit synced for $uuid on ${currencyImpl.currencySymbol} - to ${it.receiver.address}")
                 it
             }
         }.map {
@@ -52,9 +51,9 @@ class WalletSyncServiceImpl(
         depositHandler.saveAll(deposits)
     }
 
-    private suspend fun sendDeposit(uuid: String, currencyImpl: CurrencyImplementation, transfer: Transfer) {
-        val amount = transfer.amount.divide(BigDecimal.TEN.pow(currencyImpl.decimal))
-        val symbol = currencyImpl.currency.symbol
+    private suspend fun sendDeposit(uuid: String, currencyImpl: CryptoCurrencyCommand, transfer: Transfer) {
+        val amount = transfer.amount.divide(BigDecimal.TEN.pow(currencyImpl.decimal!!))
+        val symbol = currencyImpl.currencySymbol
         logger.info("Sending deposit to $uuid - $amount $symbol")
         walletProxy.transfer(uuid, symbol, amount, transfer.txHash)
     }

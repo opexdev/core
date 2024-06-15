@@ -1,6 +1,5 @@
 package co.nilin.opex.bcgateway.app.controller
 
-import co.nilin.opex.bcgateway.app.dto.AddCurrencyRequest
 import co.nilin.opex.bcgateway.core.model.CryptoCurrencyCommand
 import co.nilin.opex.bcgateway.core.model.CurrencyImps
 import co.nilin.opex.bcgateway.core.model.FetchImpls
@@ -11,18 +10,16 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/crypto-currency")
 class CryptoCurrencyController(val cryptoCurrencyHandler: CryptoCurrencyHandlerV2) {
 
-    @GetMapping("/{currencyUuid}/impls")
-    suspend fun fetchCurrencyImpls(@PathVariable("currencyUuid") currency: String): CurrencyImps? {
-        return cryptoCurrencyHandler.fetchCurrencyImpls(FetchImpls(currencyUuid = currency))
+    @GetMapping("/{currencySymbol}/impls")
+    suspend fun fetchCurrencyImpls(@PathVariable("currencySymbol") currency: String): CurrencyImps? {
+        return cryptoCurrencyHandler.fetchCurrencyImpls(FetchImpls(currencySymbol = currency))
     }
-
 
 
     @GetMapping("/impls")
@@ -30,41 +27,36 @@ class CryptoCurrencyController(val cryptoCurrencyHandler: CryptoCurrencyHandlerV
         return cryptoCurrencyHandler.fetchCurrencyImpls(FetchImpls())
     }
 
+    @GetMapping("/impls/{implUuid}")
+    suspend fun fetchSpecificImpl(@PathVariable("implUuid") implUuid: String): CurrencyImps? {
+        return cryptoCurrencyHandler.fetchCurrencyImpls(FetchImpls(implUuid = implUuid))
+    }
 
-//
-//    @PostMapping("/{currencyUuid}/imp/{impUuid}")
-//    suspend fun addCurrencyInfo(
-//        @PathVariable("currencyUuid") currencySymbol: String,
-//        @PathVariable("impUuid") impUuid:String,
-//        @RequestBody request: CryptoCurrencyCommand
-//    ): CryptoCurrencyCommand? {
-//       cryptoCurrencyHandler
-//    }
-//
-//    @PutMapping("/{currency}")
-//    suspend fun updateCurrencyInfo(
-//        @PathVariable("currency") currencySymbol: String,
-//        @RequestBody addCurrencyRequest: AddCurrencyRequest
-//    ):CurrencyImplementation? {
-//        addCurrencyRequest.currencySymbol = currencySymbol
-//        with(addCurrencyRequest) {
-//
-//           return cryptoCurrencyHandler.updateImpl(this.currencySymbol!!,
-//                this.implementationSymbol,
-//                this.currencyName,
-//                this.newChain,
-//                this.tokenName,
-//                this.tokenAddress,
-//                this.isToken!!,
-//                this.withdrawFee,
-//                this.minimumWithdraw,
-//                this.isWithdrawEnabled!!,
-//                this.decimal,
-//                this.chain
-//            )
-//        }
-//    }
-//
+    @PostMapping("/{currencySymbol}/imp/{impUuid}")
+    suspend fun addCurrencyInfo(
+        @PathVariable("currencySymbol") currencySymbol: String,
+        @PathVariable("impUuid") impUuid:String,
+        @RequestBody request: CryptoCurrencyCommand
+    ): CryptoCurrencyCommand? {
+      return cryptoCurrencyHandler.createImpl(request.apply {
+           this.currencySymbol=currencySymbol
+           this.currencyImpUuid=currencyImpUuid
+       })
+    }
+
+    @PutMapping("/{currencySymbol}/imp/{impUuid}")
+    suspend fun updateCurrencyInfo(
+            @PathVariable("currencySymbol") currencySymbol: String,
+            @PathVariable("impUuid") impUuid:String,
+            @RequestBody request: CryptoCurrencyCommand
+    ): CryptoCurrencyCommand? {
+        return cryptoCurrencyHandler.updateImpl(request.apply {
+            this.currencySymbol=currencySymbol
+            this.currencyImpUuid=currencyImpUuid
+        })
+    }
+
+
 //    @GetMapping("/chains")
 //    suspend fun getNetworks(@RequestParam(required = false) currency: String?): List<CurrencyImplementation> {
 //        return if (currency != null)

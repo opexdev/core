@@ -104,7 +104,7 @@ class TransactionManagerImplIT : KafkaEnabledTest() {
             } catch (_: Exception) {
 
             }
-            currencyService.createNewCurrency(CurrencyCommand(name =  cc, symbol =  cc, precision =  BigDecimal.ONE))
+            currencyService.createNewCurrency(CurrencyCommand(name =  cc, symbol =  cc, precision =  BigDecimal.ONE),true)
             val currency = currencyService.fetchCurrency(FetchCurrency(symbol = cc))
             val sourceOwner = walletOwnerManager.createWalletOwner(sourceUuid, "not set", "")
             walletManager.createWallet(sourceOwner, Amount(currency!!, amount.multiply(BigDecimal.valueOf(2))), currency, senderWalletType)

@@ -48,14 +48,16 @@ class AdvancedTransferControllerIT : KafkaEnabledTest() {
 
         }
 
+
+
         webClient.post().uri("/otc/rate").accept(MediaType.APPLICATION_JSON)
-            .bodyValue(SetCurrencyExchangeRateRequest("ETH", "Z", BigDecimal.valueOf(100)))
+            .bodyValue(SetCurrencyExchangeRateRequest("ETH", "Z", BigDecimal.valueOf(100),true))
             .exchange()
         webClient.post().uri("/otc/rate").accept(MediaType.APPLICATION_JSON)
-            .bodyValue(SetCurrencyExchangeRateRequest("BTC", "Z", BigDecimal.TEN))
+            .bodyValue(SetCurrencyExchangeRateRequest("BTC", "Z", BigDecimal.TEN,true))
             .exchange()
         webClient.post().uri("/otc/rate").accept(MediaType.APPLICATION_JSON)
-            .bodyValue(SetCurrencyExchangeRateRequest("Z", "USDT", BigDecimal.valueOf(2)))
+            .bodyValue(SetCurrencyExchangeRateRequest("Z", "USDT", BigDecimal.valueOf(2),true))
             .exchange()
         webClient.post().uri("/otc/transitive-symbols").accept(MediaType.APPLICATION_JSON)
             .bodyValue(Symbols(listOf("Z")))
@@ -66,6 +68,7 @@ class AdvancedTransferControllerIT : KafkaEnabledTest() {
 
     @Test
     fun whenCalculateDestinationAmount_thenDestinationAmountMatch() {
+
         val evaluate = webClient.get().uri("/v3/amount/10_ETH/USDT").accept(MediaType.APPLICATION_JSON)
             .exchange()
             .expectStatus().isOk
@@ -76,6 +79,7 @@ class AdvancedTransferControllerIT : KafkaEnabledTest() {
 
     @Test
     fun givenNotEnoughBalanceToSystem_whenReserve_thenException() {
+
         runBlocking {
             val sender = walletOwnerManager.createWalletOwner(UUID.randomUUID().toString(), "sender", "")
             val receiver = UUID.randomUUID().toString()

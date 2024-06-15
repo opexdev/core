@@ -12,7 +12,7 @@ import java.math.BigDecimal
 
 @Service
 class GraphService(private val rateService: RateService, private val currencyService: CurrencyServiceManager
-){
+) {
     private val logger = LoggerFactory.getLogger(GraphService::class.java)
 
 
@@ -22,7 +22,7 @@ class GraphService(private val rateService: RateService, private val currencySer
         }
 
         fun getDestSymbol(): String {
-            return rates.get(rates.lastIndex).destinationSymbol
+            return rates.get(rates.lastIndex).destSymbol
         }
 
         fun getRate(): BigDecimal {
@@ -37,12 +37,12 @@ class GraphService(private val rateService: RateService, private val currencySer
         val routesWithMax2StepV2: MutableList<Route> = mutableListOf()
         val adjencyMap: Map<String, MutableList<Rate>> = createAdjacencyMapV2()
         val systemCurrencies = currencyService.fetchCurrencies(FetchCurrency())?.currencies
+
         val vertice: List<String> = systemCurrencies?.filter {
             it.isTransitive == false && it.isActive == true
-        }
-            ?.map(CurrencyCommand::symbol)
-            ?: throw OpexError.NoRecordFound.exception()
+        }?.map(CurrencyCommand::symbol) ?: throw OpexError.NoRecordFound.exception()
         val transitiveSymbols: List<String> = systemCurrencies.filter { it.isTransitive == true }.map(CurrencyCommand::symbol)
+
         for (vertex in vertice) {
             if (source == null || vertex == source) {
                 val visited = mutableSetOf<String>()
@@ -60,8 +60,8 @@ class GraphService(private val rateService: RateService, private val currencySer
 
     suspend fun findRoute(source: String, dest: String): Rate? {
         return buildRoutes(source, dest)
-            .map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }
-            .firstOrNull()
+                .map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }
+                .firstOrNull()
     }
 
     private suspend fun findRoutesWithMax2EdgesV2(
@@ -73,19 +73,20 @@ class GraphService(private val rateService: RateService, private val currencySer
             transitiveSymbols: List<String>,
             routesWithMax2StepV2: MutableList<Route>,
             dest: String? = null,
-            availableCurrency:List<String>
+            availableCurrency: List<String>
     ) {
         if (currentLength == 3) {
             return
         }
         visited.add(currentVertex)
+        logger.info(visited.size.toString())
         if (currentLength >= 1) {
-            if ((!transitiveSymbols.contains(currentRoute[currentRoute.lastIndex].destinationSymbol)) &&
-                    availableCurrency.contains(currentRoute[currentRoute.lastIndex].destinationSymbol)) {
+            if ((!transitiveSymbols.contains(currentRoute[currentRoute.lastIndex].destSymbol)) &&
+                    availableCurrency.contains(currentRoute[currentRoute.lastIndex].destSymbol)) {
                 val existingRoute = routesWithMax2StepV2.find { route ->
                     route.getSourceSymbol() == currentRoute[0].sourceSymbol
                             &&
-                            route.getDestSymbol() == currentRoute[currentRoute.lastIndex].destinationSymbol
+                            route.getDestSymbol() == currentRoute[currentRoute.lastIndex].destSymbol
                 }
                 if (existingRoute != null) {
                     if (existingRoute.rates.size > currentRoute.size) {
@@ -103,10 +104,10 @@ class GraphService(private val rateService: RateService, private val currencySer
         }
 
         for (edge in adjacencyMap[currentVertex] ?: emptyList()) {
-            if (!visited.contains(edge.destinationSymbol)) {
+            if (!visited.contains(edge.destSymbol)) {
                 currentRoute.add(edge)
                 findRoutesWithMax2EdgesV2(
-                        edge.destinationSymbol,
+                        edge.destSymbol,
                         adjacencyMap,
                         visited,
                         currentLength + 1,

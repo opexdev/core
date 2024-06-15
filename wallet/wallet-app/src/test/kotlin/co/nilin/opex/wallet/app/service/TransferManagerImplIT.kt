@@ -304,6 +304,7 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                 currencyService.createNewCurrency(CurrencyCommand(name = cc, symbol = cc, precision = BigDecimal.ONE))
             }
 
+
 //            val currency = currencyService.fetchCurrency(FetchCurrency(symbol = cc))
 
             val sourceOwner = walletOwnerManager.createWalletOwner(sourceUuid, "not set", "")

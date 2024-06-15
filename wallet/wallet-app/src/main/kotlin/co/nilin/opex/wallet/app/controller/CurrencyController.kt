@@ -17,10 +17,12 @@ class CurrencyController(private val currencyService: CurrencyServiceV2) {
         return currencyService.createNewCurrency(request)
     }
 
-    @PutMapping("/currency")
-    suspend fun updateCurrency(@RequestBody request: CurrencyDto): CurrencyDto? {
-        return currencyService.updateCurrency(request)
+    @PutMapping("/currency/{currencyUuid}")
+    suspend fun updateCurrency(@PathVariable("currencyUuid") currencyUuid: String,
+                               @RequestBody request: CurrencyDto): CurrencyDto? {
+        return currencyService.updateCurrency(request.apply { uuid = currencyUuid })
     }
+
 
     @GetMapping("/currency/{currencyUuid}")
     suspend fun getCurrency(@PathVariable("currencyUuid") currencyUuid: String,

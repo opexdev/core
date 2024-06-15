@@ -48,7 +48,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     CurrencyNotFound(6003, null, HttpStatus.NOT_FOUND),
     InvalidCashOutUsage(6004, "Use withdraw services", HttpStatus.BAD_REQUEST),
     WithdrawNotFound(6005, "Withdraw not found", HttpStatus.NOT_FOUND),
-    NOT_EXCHANGEABLE_CURRENCIES(6006, "These two currencies can't be exchanged", HttpStatus.NOT_FOUND),
+    NOT_EXCHANGEABLE_CURRENCIES(6006, "These two currencies can't be exchanged", HttpStatus.INTERNAL_SERVER_ERROR),
     CurrencyIsExist(6007, null, HttpStatus.BAD_REQUEST),
     PairIsExist(6008, null, HttpStatus.BAD_REQUEST),
     ForbiddenPair(6009, null, HttpStatus.BAD_REQUEST),

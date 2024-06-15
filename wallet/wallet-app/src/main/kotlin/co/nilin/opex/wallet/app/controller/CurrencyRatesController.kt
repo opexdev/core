@@ -30,7 +30,7 @@ class CurrencyRatesController(
     )
     suspend fun createRate(@RequestBody request: SetCurrencyExchangeRateRequest) {
         request.validate()
-        rateService.addRate(Rate(request.sourceSymbol, request.destSymbol, request.rate))
+        rateService.addRate(Rate(request.sourceSymbol, request.destSymbol, request.rate),request.ignoreIfExist)
     }
 
     @PutMapping("/rate")

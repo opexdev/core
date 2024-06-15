@@ -29,7 +29,7 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
             if (!ignoreIfExist!!)
                 throw OpexError.CurrencyIsExist.exception()
             else
-                return it.toCommand()
+                return null
         } ?: run {
             return doPersist(request.toModel())?.toCommand()
         }
@@ -68,11 +68,13 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
     }
 
     private suspend fun loadCurrency(request: FetchCurrency): Mono<CurrencyModel>? {
+        if (request.uuid == null && request.symbol == null)
+            throw OpexError.BadRequest.exception()
         return currencyRepository.fetchCurrency(symbol = request.symbol, uuid = request.uuid)
     }
 
     private suspend fun loadCurrencies(request: FetchCurrency): Flux<CurrencyModel>? {
-        return currencyRepository.fetchSemiCurrencies(request.uuid, request.symbol, request.name)
+        return currencyRepository.findAll( )
     }
 
     private suspend fun doSave(request: CurrencyModel): CurrencyModel? {
@@ -81,7 +83,8 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
 
     private suspend fun doPersist(request: CurrencyModel): CurrencyModel? {
         with(request) {
-            return currencyRepository.insert(
+
+            currencyRepository.insert(
                     this.symbol,
                     this.uuid!!,
                     this.name,
@@ -89,7 +92,7 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
                     this.title,
                     this.alias,
                     this.icon,
-                    this.depositAllowed,
+                    this.isTransitive,
                     this.isActive,
                     this.sign,
                     this.description,
@@ -98,9 +101,11 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
                     this.depositAllowed,
                     this.withdrawFee,
                     this.externalUrl,
-                    this.depositAllowed
+                    this.isCryptoCurrency
             ).awaitFirstOrNull()
+
         }
+        return currencyRepository.fetchCurrency(uuid = request.uuid)?.awaitFirstOrNull()
     }
 
 }
