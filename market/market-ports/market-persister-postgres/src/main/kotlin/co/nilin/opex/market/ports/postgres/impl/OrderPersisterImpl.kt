@@ -9,7 +9,7 @@ import co.nilin.opex.market.ports.postgres.dao.OpenOrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderStatusRepository
 import co.nilin.opex.market.ports.postgres.model.OrderModel
-import co.nilin.opex.market.ports.postgres.util.CacheHelper
+import co.nilin.opex.market.ports.postgres.util.RedisCacheHelper
 import co.nilin.opex.market.ports.postgres.util.asOrderDTO
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingle
@@ -24,7 +24,7 @@ class OrderPersisterImpl(
     private val orderRepository: OrderRepository,
     private val orderStatusRepository: OrderStatusRepository,
     private val openOrderRepository: OpenOrderRepository,
-    private val cacheHelper: CacheHelper
+    private val redisCacheHelper: RedisCacheHelper
 ) : OrderPersister {
 
     private val logger = LoggerFactory.getLogger(OrderPersisterImpl::class.java)
@@ -74,7 +74,7 @@ class OrderPersisterImpl(
             logger.info("Order ${order.ouid} deleted from open orders")
         }
 
-        cacheHelper.put("lastOrder", orderModel.asOrderDTO(lastStatus))
+        redisCacheHelper.put("lastOrder", orderModel.asOrderDTO(lastStatus))
     }
 
     @Transactional

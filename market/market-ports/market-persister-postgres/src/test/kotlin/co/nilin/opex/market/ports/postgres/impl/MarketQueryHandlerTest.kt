@@ -6,14 +6,13 @@ import co.nilin.opex.market.ports.postgres.dao.OrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderStatusRepository
 import co.nilin.opex.market.ports.postgres.dao.TradeRepository
 import co.nilin.opex.market.ports.postgres.impl.sample.VALID
-import co.nilin.opex.market.ports.postgres.util.CacheHelper
+import co.nilin.opex.market.ports.postgres.util.RedisCacheHelper
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.springframework.data.redis.core.RedisTemplate
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
@@ -21,10 +20,9 @@ class MarketQueryHandlerTest {
     private val orderRepository = mockk<OrderRepository>()
     private val tradeRepository = mockk<TradeRepository>()
     private val orderStatusRepository = mockk<OrderStatusRepository>()
-    private val cacheHelper = mockk<CacheHelper>()
-    private val redisTemplate = mockk<RedisTemplate<String, Any>>()
+    private val redisCacheHelper = mockk<RedisCacheHelper>()
     private val marketQueryHandler =
-        MarketQueryHandlerImpl(orderRepository, tradeRepository, orderStatusRepository, cacheHelper, redisTemplate)
+        MarketQueryHandlerImpl(orderRepository, tradeRepository, orderStatusRepository, redisCacheHelper)
 
     @Test
     fun givenAggregatedOrderPrice_whenOpenASKOrders_thenReturnOrderBookResponseList(): Unit = runBlocking {

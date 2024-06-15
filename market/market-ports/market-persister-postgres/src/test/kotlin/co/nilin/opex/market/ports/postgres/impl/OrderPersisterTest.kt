@@ -4,7 +4,7 @@ import co.nilin.opex.market.ports.postgres.dao.OpenOrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderStatusRepository
 import co.nilin.opex.market.ports.postgres.impl.sample.VALID
-import co.nilin.opex.market.ports.postgres.util.CacheHelper
+import co.nilin.opex.market.ports.postgres.util.RedisCacheHelper
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
@@ -16,7 +16,7 @@ class OrderPersisterTest {
     private val orderRepository = mockk<OrderRepository>()
     private val orderStatusRepository = mockk<OrderStatusRepository>()
     private val openOrderRepository = mockk<OpenOrderRepository>()
-    private val cacheHelper = mockk<CacheHelper>()
+    private val cacheHelper = mockk<RedisCacheHelper>()
     private val orderPersister =
         OrderPersisterImpl(orderRepository, orderStatusRepository, openOrderRepository, cacheHelper)
 

@@ -8,23 +8,20 @@ import co.nilin.opex.market.core.spi.TradePersister
 import co.nilin.opex.market.ports.postgres.dao.CurrencyRateRepository
 import co.nilin.opex.market.ports.postgres.dao.TradeRepository
 import co.nilin.opex.market.ports.postgres.model.TradeModel
-import co.nilin.opex.market.ports.postgres.util.CacheHelper
+import co.nilin.opex.market.ports.postgres.util.RedisCacheHelper
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
-import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
-import kotlin.collections.ArrayList
 
 @Component
 class TradePersisterImpl(
     private val tradeRepository: TradeRepository,
     private val currencyRateRepository: CurrencyRateRepository,
-    private val cacheHelper: CacheHelper,
-    private val redisTemplate: RedisTemplate<String, Any>
+    private val redisCacheHelper: RedisCacheHelper,
 ) : TradePersister {
 
     private val logger = LoggerFactory.getLogger(TradePersisterImpl::class.java)
@@ -67,9 +64,9 @@ class TradePersisterImpl(
         logger.info("Rate between ${pair[0]} and ${pair[1]} updated")
 
         try {
-            if (tradeEntity == null || !redisTemplate.hasKey("recentTrades")) return
+            if (tradeEntity == null || !redisCacheHelper.hasKey("recentTrades")) return
             val isMakerBuyer = trade.makerDirection == OrderDirection.BID
-            redisTemplate.opsForList().leftPush(
+            redisCacheHelper.putListItem(
                 "recentTrades",
                 MarketTrade(
                     tradeEntity.symbol,
@@ -85,7 +82,8 @@ class TradePersisterImpl(
                     Date.from(tradeEntity.createDate.atZone(ZoneId.systemDefault()).toInstant()),
                     true,
                     isMakerBuyer
-                )
+                ),
+                false
             )
 
             logger.info("Recent trades cache updated")
