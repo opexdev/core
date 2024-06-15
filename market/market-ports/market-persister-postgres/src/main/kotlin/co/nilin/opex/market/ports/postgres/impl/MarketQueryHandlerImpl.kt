@@ -77,11 +77,11 @@ class MarketQueryHandlerImpl(
     // @Cacheable does not support suspended functions. Spring 6.1 required.
     // @Cacheable(cacheNames = ["marketCache"], key = "'lastOrder'")
     override suspend fun lastOrder(symbol: String): Order? {
-        return redisCacheHelper.getOrElse("lastOrder") {
-            val order = orderRepository.findLastOrderBySymbol(symbol).awaitFirstOrNull() ?: return@getOrElse null
+        return redisCacheHelper.get<Order>("lastOrder") ?: run {
+            val order = orderRepository.findLastOrderBySymbol(symbol).awaitFirstOrNull() ?: return@run null
             val status = orderStatusRepository.findMostRecentByOUID(order.ouid).awaitFirstOrNull()
             order.asOrderDTO(status)
-        }
+        }.also { redisCacheHelper.put("lastOrder", it) }
     }
 
     //TODO need better query

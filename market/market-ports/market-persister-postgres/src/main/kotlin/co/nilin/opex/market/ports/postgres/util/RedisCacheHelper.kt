@@ -11,7 +11,8 @@ class RedisCacheHelper(private val redisTemplate: RedisTemplate<String, Any>) {
     private val valueOps = redisTemplate.opsForValue()
     private val listOps = redisTemplate.opsForList()
 
-    fun put(key: String, value: Any, expireAt: DynamicInterval? = null) {
+    fun put(key: String, value: Any?, expireAt: DynamicInterval? = null) {
+        value ?: return
         valueOps.set(key, value)
         expireAt?.let { redisTemplate.expireAt(key, it.dateInFuture()) }
     }

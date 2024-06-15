@@ -1,5 +1,6 @@
 package co.nilin.opex.market.ports.postgres.impl
 
+import co.nilin.opex.common.utils.justTry
 import co.nilin.opex.market.core.event.RichOrder
 import co.nilin.opex.market.core.event.RichOrderUpdate
 import co.nilin.opex.market.core.inout.Order
@@ -74,7 +75,7 @@ class OrderPersisterImpl(
             logger.info("Order ${order.ouid} deleted from open orders")
         }
 
-        redisCacheHelper.put("lastOrder", orderModel.asOrderDTO(lastStatus))
+        justTry { redisCacheHelper.put("lastOrder", orderModel.asOrderDTO(lastStatus)) }
     }
 
     @Transactional

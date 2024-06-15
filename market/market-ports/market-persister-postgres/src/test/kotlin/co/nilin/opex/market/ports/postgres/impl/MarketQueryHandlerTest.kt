@@ -1,12 +1,13 @@
 package co.nilin.opex.market.ports.postgres.impl
 
-import co.nilin.opex.market.core.inout.OrderDirection
-import co.nilin.opex.market.core.inout.OrderStatus
+import co.nilin.opex.market.core.inout.*
 import co.nilin.opex.market.ports.postgres.dao.OrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderStatusRepository
 import co.nilin.opex.market.ports.postgres.dao.TradeRepository
 import co.nilin.opex.market.ports.postgres.impl.sample.VALID
+import co.nilin.opex.market.ports.postgres.model.LastPrice
 import co.nilin.opex.market.ports.postgres.util.RedisCacheHelper
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.flow
@@ -62,12 +63,14 @@ class MarketQueryHandlerTest {
 
     @Test
     fun givenOrder_whenLastOrder_thenReturnQueryOrderResponse(): Unit = runBlocking {
+        every { redisCacheHelper.get<Order>(any()) } returns null
         every {
             orderRepository.findLastOrderBySymbol(VALID.ETH_USDT)
         } returns Mono.just(VALID.MAKER_ORDER_MODEL)
         every {
             orderStatusRepository.findMostRecentByOUID(VALID.MAKER_ORDER_MODEL.ouid)
         } returns Mono.just(VALID.MAKER_ORDER_STATUS_MODEL)
+        every { redisCacheHelper.put(any(), any()) } returns Unit
 
         val queryOrderResponse = marketQueryHandler.lastOrder(VALID.ETH_USDT)
 
@@ -86,6 +89,13 @@ class MarketQueryHandlerTest {
         every {
             orderRepository.findByOuid(VALID.MAKER_ORDER_MODEL.ouid)
         } returns Mono.just(VALID.MAKER_ORDER_MODEL)
+        coEvery {
+            redisCacheHelper.getOrElse<List<LastPrice>>(
+                any(),
+                any(),
+                any()
+            )
+        } returns listOf(VALID.LAST_PRICE_MODEL)
 
         val priceTickerResponse = marketQueryHandler.lastPrice(VALID.ETH_USDT)
 
@@ -98,6 +108,7 @@ class MarketQueryHandlerTest {
 
     @Test
     fun givenOrderAndTrade_whenRecentTrades_thenMarketTradeResponseFlow(): Unit = runBlocking {
+        every { redisCacheHelper.getList<MarketTrade>(any()) } returns null
         every {
             tradeRepository.findBySymbolSortDescendingByCreateDate(VALID.ETH_USDT, 1)
         } returns flow {
@@ -109,6 +120,8 @@ class MarketQueryHandlerTest {
         every {
             orderRepository.findByOuid(VALID.TRADE_MODEL.takerOuid)
         } returns Mono.just(VALID.TAKER_ORDER_MODEL)
+        every { redisCacheHelper.putListItem(any(), any()) } returns Unit
+        every { redisCacheHelper.setExpiration(any(), any()) } returns Unit
 
         val marketTradeResponses = marketQueryHandler.recentTrades(VALID.ETH_USDT, 1)
 

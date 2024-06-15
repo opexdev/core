@@ -16,9 +16,9 @@ class OrderPersisterTest {
     private val orderRepository = mockk<OrderRepository>()
     private val orderStatusRepository = mockk<OrderStatusRepository>()
     private val openOrderRepository = mockk<OpenOrderRepository>()
-    private val cacheHelper = mockk<RedisCacheHelper>()
+    private val redisCacheHelper = mockk<RedisCacheHelper>()
     private val orderPersister =
-        OrderPersisterImpl(orderRepository, orderStatusRepository, openOrderRepository, cacheHelper)
+        OrderPersisterImpl(orderRepository, orderStatusRepository, openOrderRepository, redisCacheHelper)
 
     @Test
     fun givenOrderRepo_whenSaveRichOrder_thenSuccess(): Unit = runBlocking {
@@ -37,6 +37,7 @@ class OrderPersisterTest {
         every {
             openOrderRepository.delete(any<String>())
         } returns Mono.empty()
+        every { redisCacheHelper.put(any(), any()) } returns Unit
 
         assertThatNoException().isThrownBy { runBlocking { orderPersister.save(VALID.RICH_ORDER) } }
     }

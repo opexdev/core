@@ -109,7 +109,7 @@ object VALID {
         UPDATE_DATE
     )
 
-    val LAST_PRICE_MODEL = LastPrice("ETH", BigDecimal.valueOf(1000))
+    val LAST_PRICE_MODEL = LastPrice("ETH_USDT", BigDecimal.valueOf(100000))
 
     val AGGREGATED_ORDER_PRICE_MODEL = AggregatedOrderPriceModel(
         BigDecimal.valueOf(100000),
