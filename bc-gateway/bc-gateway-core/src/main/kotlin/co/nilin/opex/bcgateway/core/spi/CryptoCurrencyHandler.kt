@@ -56,7 +56,7 @@ interface CryptoCurrencyHandler {
         decimal: Int
     ): CryptoCurrencyCommand
 
-    suspend fun fetchAllImplementations(): List<CurrencyImps>
+    suspend fun fetchAllImplementations(): CurrencyImps
 
     suspend fun fetchCurrencyInfo(symbol: String): CryptoCurrencyCommand
 

@@ -2,6 +2,7 @@ package co.nilin.opex.bcgateway.app.controller
 
 import co.nilin.opex.bcgateway.core.api.AssignAddressService
 import co.nilin.opex.bcgateway.core.model.AssignedAddress
+import co.nilin.opex.bcgateway.core.model.AssignedAddressV2
 import co.nilin.opex.bcgateway.core.model.ReservedAddress
 import co.nilin.opex.bcgateway.core.spi.AddressTypeHandler
 import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
@@ -24,7 +25,7 @@ class AddressController(
         private val addressTypeHandler: AddressTypeHandler
 ) {
     data class AssignAddressRequest(val uuid: String, val currencyImplUuid: String)
-    data class AssignAddressResponse(val addresses: List<AssignedAddress>)
+    data class AssignAddressResponse(val addresses: List<AssignedAddressV2>)
 
     @PostMapping("/assign")
     suspend fun assignAddress(@RequestBody assignAddressRequest: AssignAddressRequest,

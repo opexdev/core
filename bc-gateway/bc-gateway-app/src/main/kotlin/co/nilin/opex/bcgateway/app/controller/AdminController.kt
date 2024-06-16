@@ -45,15 +45,15 @@ class AdminController(
 
     @GetMapping("/token")
     suspend fun getCurrencyImplementation(): List<TokenResponse> {
-        return currencyHandler.fetchAllImplementations()
+        return currencyHandler.fetchAllImplementations().imps
             .map {
                 TokenResponse(
-                    it.currency.symbol,
-                    it.chain.name,
-                    it.token,
+                    it.currencySymbol,
+                    it.chain!!,
+                    it.isToken!!,
                     it.tokenAddress,
-                    it.tokenName,
-                    it.withdrawEnabled,
+                    it.tz,
+                    it.withdrawAllowed,
                     it.withdrawFee,
                     it.withdrawMin,
                     it.decimal

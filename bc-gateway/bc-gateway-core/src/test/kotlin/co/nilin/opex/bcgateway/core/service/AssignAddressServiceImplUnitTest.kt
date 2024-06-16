@@ -22,7 +22,7 @@ class AssignAddressServiceImplUnitTest {
     private val assignAddressServiceImpl =
         AssignAddressServiceImplV2(currencyHandler, assignedAddressHandler, reservedAddressHandler)
 
-    private val currency = Currency("ETH", "Ethereum")
+    private val currency ="ETH"
     private val chain = "ETH_MAINNET"
     private val ethAddressType = AddressType(1, "ETH", "+*", ".*")
     private val ethMemoAddressType = AddressType(2, "ETH", "+*", "+*")
@@ -32,32 +32,36 @@ class AssignAddressServiceImplUnitTest {
 
     init {
         val eth = CryptoCurrencyCommand(
-            currency.symbol,
             currency,
-            ethChain,
-            false,
+            UUID.randomUUID().toString(),
+                currency,
             null,
             null,
             true,
-            BigDecimal.ONE,
-            BigDecimal.TEN,
-            18
-        )
-
-        val wrappedEth = CurrencyImplementation(
-            currency,
-            currency,
-            bscChain,
             false,
-            "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-            "WETH",
-            true,
             BigDecimal.ONE,
-            BigDecimal.ONE,
-            18
+                true,
+                true,
+            18,
+            ethChain.name
         )
 
-        coEvery { currencyHandler.fetchCurrencyInfo(currency.symbol) } returns CurrencyInfo(
+        val wrappedEth = CryptoCurrencyCommand(
+                currency,
+                UUID.randomUUID().toString(),
+                currency,
+                "WETH",
+                "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+                true,
+                false,
+                BigDecimal.ONE,
+                true,
+                true,
+                18,
+                ethChain.name
+        )
+
+        coEvery { currencyHandler.fetchCurrencyImpls(FetchImpls(symbol=currency.symbol)) } returns CurrencyInfo(
             currency,
             listOf(eth, wrappedEth)
         )

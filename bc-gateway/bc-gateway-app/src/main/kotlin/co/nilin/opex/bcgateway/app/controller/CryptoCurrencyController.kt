@@ -4,13 +4,8 @@ import co.nilin.opex.bcgateway.core.model.CryptoCurrencyCommand
 import co.nilin.opex.bcgateway.core.model.CurrencyImps
 import co.nilin.opex.bcgateway.core.model.FetchImpls
 import co.nilin.opex.bcgateway.core.spi.CryptoCurrencyHandlerV2
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import co.nilin.opex.utility.preferences.CurrencyImplementation
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/crypto-currency")
@@ -57,11 +52,11 @@ class CryptoCurrencyController(val cryptoCurrencyHandler: CryptoCurrencyHandlerV
     }
 
 
-//    @GetMapping("/chains")
-//    suspend fun getNetworks(@RequestParam(required = false) currency: String?): List<CurrencyImplementation> {
-//        return if (currency != null)
-//            currencyHandler.findImplementationsByCurrency(currency)
-//        else
-//            currencyHandler.fetchAllImplementations()
-//    }
+    @GetMapping("/chains")
+    suspend fun getNetworks(@RequestParam(required = false) currency: String?): List<CurrencyImplementation> {
+        return if (currency != null)
+            currencyHandler.findImplementationsByCurrency(currency)
+        else
+            currencyHandler.fetchAllImplementations()
+    }
 }

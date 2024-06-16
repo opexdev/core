@@ -12,8 +12,8 @@ data class CryptoCurrencyCommand(
         var isActive: Boolean? = true,
         var isToken: Boolean? = false,
         var withdrawFee: BigDecimal?,
-        var isWithdrawEnable: Boolean? = true,
-        var isDepositEnable: Boolean? = true,
+        var withdrawAllowed: Boolean? = true,
+        var depositAllowed: Boolean? = true,
         var decimal: Int?,
         var chain: String?
 ) {
