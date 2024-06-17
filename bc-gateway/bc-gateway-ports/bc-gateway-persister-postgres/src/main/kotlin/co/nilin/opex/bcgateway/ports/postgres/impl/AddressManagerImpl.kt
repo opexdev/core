@@ -3,7 +3,6 @@ package co.nilin.opex.bcgateway.ports.postgres.impl
 import co.nilin.opex.bcgateway.core.model.AddressStatus
 import co.nilin.opex.bcgateway.core.model.ReservedAddress
 import co.nilin.opex.bcgateway.core.spi.AddressManager
-import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime

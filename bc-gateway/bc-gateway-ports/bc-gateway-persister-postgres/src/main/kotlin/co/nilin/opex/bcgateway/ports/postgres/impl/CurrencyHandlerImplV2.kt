@@ -42,7 +42,7 @@ class CurrencyHandlerImplV2(
         }
     }
 
-    override suspend fun fetchCurrencyImpls(data: FetchImpls): CurrencyImps? {
+    override suspend fun fetchCurrencyImpls(data: FetchImpls?): CurrencyImps? {
         return CurrencyImps(loadImpls(data)?.toStream()
                 ?.map { it.toDto() }?.collect(Collectors.toList()))
     }
@@ -51,8 +51,8 @@ class CurrencyHandlerImplV2(
         return loadImpl(implUuid)?.awaitSingleOrNull()?.toDto()
 
     }
-    private suspend fun loadImpls(request: FetchImpls): Flux<CurrencyImplementationModel>? {
-        return currencyImplementationRepository.findImpls(request.currencySymbol, request.implUuid, request.chain, request.currencyImplementationName)
+    private suspend fun loadImpls(request: FetchImpls?): Flux<CurrencyImplementationModel>? {
+        return currencyImplementationRepository.findImpls(request?.currencySymbol, request?.implUuid, request?.chain, request?.currencyImplementationName)
                 ?: throw OpexError.CurrencyNotFound.exception()
 
     }

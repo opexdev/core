@@ -13,7 +13,7 @@ interface CryptoCurrencyHandlerV2 {
 
     suspend fun deleteImpl(implUuid:String)
 
-    suspend fun fetchCurrencyImpls(data:FetchImpls):CurrencyImps?
+    suspend fun fetchCurrencyImpls(data:FetchImpls?=null):CurrencyImps?
 
     suspend fun fetchImpl(implUuid:String):CryptoCurrencyCommand?
 

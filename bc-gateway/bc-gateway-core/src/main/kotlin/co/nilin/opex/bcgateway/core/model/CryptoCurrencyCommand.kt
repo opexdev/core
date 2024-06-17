@@ -6,7 +6,7 @@ data class CryptoCurrencyCommand(
 
         var currencySymbol: String,
         var impUuid: String?,
-        var implementationCurrencySymbol: String?,
+        var implementationCurrencySymbol: String,
         var isActive: Boolean? = true,
         var isToken: Boolean? = false,
         var tokenName: String?=null,

@@ -1,6 +1,7 @@
 package co.nilin.opex.bcgateway.ports.postgres.model
 
 
+import co.nilin.opex.bcgateway.core.model.Chain
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
@@ -17,10 +18,15 @@ class CurrencyImplementationModel(
         @Column("token_address") var tokenAddress: String?,
         @Column("token_name") var tokenName: String?,
         @Column("withdraw_allowed") var withdrawAllowed: Boolean,
+        @Column("deposit_allowed") var depositAllowed: Boolean,
         @Column("withdraw_fee") var withdrawFee: BigDecimal,
         @Column("withdraw_min") var withdrawMin: BigDecimal,
         @Column("decimal") var decimal: Int,
         @Column("is_active") var isActive: Boolean?=true,
+
+
+
+
 )
 
 

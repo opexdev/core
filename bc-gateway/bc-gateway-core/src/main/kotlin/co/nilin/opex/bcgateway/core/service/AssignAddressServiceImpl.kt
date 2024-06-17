@@ -3,7 +3,7 @@ package co.nilin.opex.bcgateway.core.service
 import co.nilin.opex.bcgateway.core.api.AssignAddressService
 import co.nilin.opex.bcgateway.core.model.*
 import co.nilin.opex.bcgateway.core.spi.AssignedAddressHandler
-import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
+import co.nilin.opex.bcgateway.core.spi.CryptoCurrencyHandlerV2
 import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
 import co.nilin.opex.bcgateway.core.utils.LoggerDelegate
 import co.nilin.opex.common.OpexError
@@ -15,7 +15,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 
 open class AssignAddressServiceImpl(
-        private val currencyHandler: CurrencyHandler,
+        private val currencyHandler: CryptoCurrencyHandlerV2,
         private val assignedAddressHandler: AssignedAddressHandler,
         private val reservedAddressHandler: ReservedAddressHandler
 ) : AssignAddressService {
@@ -26,21 +26,21 @@ open class AssignAddressServiceImpl(
     @Transactional
     override suspend fun assignAddress(user: String, currency: String, chain: String): List<AssignedAddress> {
         logger.info(ZoneId.systemDefault().toString())
-        val currencyInfo = currencyHandler.fetchCurrencyInfo(currency)
-        val chains = currencyInfo.implementations
-                .map { imp -> imp.chainDetail }
-                .filter { it?.name.equals(chain, true) }
+        val currencyInfo = currencyHandler.fetchCurrencyImpls(FetchImpls(currencySymbol = currency))?:throw OpexError.CurrencyNotFound.exception()
+        val chains = currencyInfo?.imps
+                ?.map { imp -> imp.chainDetail }
+                ?.filter { it?.name.equals(chain, true) }
         val addressTypes = chains
-                .flatMap { chain -> chain?.addressTypes!! }
-                .distinct()
+                ?.flatMap { chain -> chain?.addressTypes!! }
+                ?.distinct()
         val chainAddressTypeMap = HashMap<AddressType, MutableList<Chain>>()
-        chains.forEach { chain ->
+        chains?.forEach { chain ->
             chain?.addressTypes?.forEach { addressType ->
                 chainAddressTypeMap.putIfAbsent(addressType, mutableListOf())
                 chainAddressTypeMap.getValue(addressType).add(chain!!)
             }
         }
-        val userAssignedAddresses = (assignedAddressHandler.fetchAssignedAddresses(user, addressTypes)).toMutableList()
+        val userAssignedAddresses = (assignedAddressHandler.fetchAssignedAddresses(user, addressTypes!!)).toMutableList()
         val result = mutableSetOf<AssignedAddress>()
         addressTypes.forEach { addressType ->
             val assigned = userAssignedAddresses.firstOrNull { assignAddress -> assignAddress.type == addressType }

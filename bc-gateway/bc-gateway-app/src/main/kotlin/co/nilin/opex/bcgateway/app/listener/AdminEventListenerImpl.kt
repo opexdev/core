@@ -18,11 +18,12 @@ class AdminEventListenerImpl(private val adminService: AdminService) : AdminEven
     override fun id() = "AdminEventListener"
 
     override fun onEvent(event: AdminEvent, partition: Int, offset: Long, timestamp: Long): Unit = runBlocking {
+        //todo check with peyman
         logger.info("Incoming admin event $event")
         when (event) {
-            is AddCurrencyEvent -> adminService.addCurrency(event.name, event.symbol)
-            is EditCurrencyEvent -> adminService.editCurrency(event.name, event.symbol)
-            is DeleteCurrencyEvent -> adminService.deleteCurrency(event.name)
+//            is AddCurrencyEvent -> adminService.addCurrency(event.name, event.symbol)
+//            is EditCurrencyEvent -> adminService.editCurrency(event.name, event.symbol)
+//            is DeleteCurrencyEvent -> adminService.deleteCurrency(event.name)
             else -> {}
         }
     }

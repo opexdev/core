@@ -5,7 +5,7 @@ import co.nilin.opex.bcgateway.app.service.AdminService
 import co.nilin.opex.bcgateway.core.model.AddressType
 import co.nilin.opex.bcgateway.core.spi.AddressTypeHandler
 import co.nilin.opex.bcgateway.core.spi.ChainLoader
-import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
+import co.nilin.opex.bcgateway.ports.postgres.impl.CurrencyHandlerImplV2
 import co.nilin.opex.common.OpexError
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
@@ -13,10 +13,10 @@ import java.math.BigDecimal
 @RestController
 @RequestMapping("/admin")
 class AdminController(
-    private val service: AdminService,
-    private val chainLoader: ChainLoader,
-    private val currencyHandler: CurrencyHandler,
-    private val addressTypeHandler: AddressTypeHandler
+        private val service: AdminService,
+        private val chainLoader: ChainLoader,
+        private val currencyHandler: CurrencyHandlerImplV2,
+        private val addressTypeHandler: AddressTypeHandler
 ) {
 
     @GetMapping("/chain")
@@ -43,55 +43,62 @@ class AdminController(
         service.addAddressType(body.name, body.addressRegex, body.memoRegex)
     }
 
-    @GetMapping("/token")
-    suspend fun getCurrencyImplementation(): List<TokenResponse> {
-        return currencyHandler.fetchAllImplementations()
-            .map {
-                TokenResponse(
-                    it.currency,
-                    it.chain.name,
-                    it.token,
-                    it.tokenAddress,
-                    it.tokenName,
-                    it.withdrawEnabled,
-                    it.withdrawFee,
-                    it.withdrawMin,
-                    it.decimal
-                )
-            }
-    }
 
-    @PostMapping("/token")
-    suspend fun addCurrencyImplementation(@RequestBody body: TokenRequest): TokenResponse {
-        val ex = OpexError.InvalidRequestBody.exception()
-        with(body) {
-            if (currencySymbol.isNullOrEmpty() || chain.isNullOrEmpty()) throw ex
-            if (isToken && (tokenName.isNullOrEmpty() || tokenAddress.isNullOrEmpty())) throw ex
-            if (withdrawFee < BigDecimal.ZERO || minimumWithdraw < BigDecimal.ZERO || decimal < 0) throw ex
-        }
 
-        return with(service.addToken(body)) {
-            TokenResponse(
-                currency,
-                chain.name,
-                token,
-                tokenAddress,
-                tokenName,
-                withdrawEnabled,
-                withdrawFee,
-                withdrawMin,
-                decimal
-            )
-        }
-    }
+   // shifted to crypto currency class!
 
-    @PutMapping("/token/{symbol}_{chain}/withdraw")
-    suspend fun changeWithdrawStatus(
-        @PathVariable symbol: String,
-        @PathVariable chain: String,
-        @RequestParam("enabled") status: Boolean
-    ) {
-        service.changeTokenWithdrawStatus(symbol, chain, status)
-    }
+//    //todo filter tokens?????
+//    @GetMapping("/token")
+//    suspend fun getCurrencyImplementation(): List<TokenResponse>? {
+//        return currencyHandler.fetchCurrencyImpls()?.imps
+//                ?.map {
+//                    TokenResponse(
+//                            it.currencySymbol,
+//                            it.chain,
+//                            it.isToken!!,
+//                            it.tokenAddress,
+//                            it.tokenName,
+//                            it.withdrawAllowed!!,
+//                            it.withdrawFee!!,
+//                            it.withdrawMin!!,
+//                            it.decimal,
+//                            it.isActive!!
+//                    )
+//                }
+//    }
+
+//    @PostMapping("/token")
+//    suspend fun addCurrencyImplementation(@RequestBody body: TokenRequest): TokenResponse {
+//        val ex = OpexError.InvalidRequestBody.exception()
+//        with(body) {
+//            if (currencySymbol.isNullOrEmpty() || chain.isNullOrEmpty()) throw ex
+//            if (isToken && (tokenName.isNullOrEmpty() || tokenAddress.isNullOrEmpty())) throw ex
+//            if (withdrawFee < BigDecimal.ZERO || minimumWithdraw < BigDecimal.ZERO || decimal < 0) throw ex
+//        }
+//
+//        return with(service.addToken(body)) {
+//            TokenResponse(
+//                    currency,
+//                    chain,
+//                    token,
+//                    tokenAddress,
+//                    tokenName,
+//                    withdrawEnabled,
+//                    withdrawFee,
+//                    withdrawMin,
+//                    decimal,
+//                    isActive
+//            )
+//        }
+//    }
+
+//    @PutMapping("/token/{symbol}_{chain}/withdraw")
+//    suspend fun changeWithdrawStatus(
+//            @PathVariable symbol: String,
+//            @PathVariable chain: String,
+//            @RequestParam("enabled") status: Boolean
+//    ) {
+//        service.changeTokenWithdrawStatus(symbol, chain, status)
+//    }
 
 }

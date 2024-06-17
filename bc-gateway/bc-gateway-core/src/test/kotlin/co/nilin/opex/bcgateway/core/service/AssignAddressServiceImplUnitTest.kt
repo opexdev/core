@@ -23,6 +23,7 @@ class AssignAddressServiceImplUnitTest {
             AssignAddressServiceImpl(currencyHandler, assignedAddressHandler, reservedAddressHandler)
 
     //    private val currency = Currency("ETH", "Ethereum")
+    private val chain = "ETH_MAINNET"
     private val currency = "ETH"
     private val ethAddressType = AddressType(1, "ETH", "+*", ".*")
     private val ethMemoAddressType = AddressType(2, "ETH", "+*", "+*")

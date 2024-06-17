@@ -15,16 +15,17 @@ import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.DependsOn
 import org.springframework.stereotype.Component
+import java.util.UUID
 import javax.annotation.PostConstruct
 
 @Component
 @DependsOn("postgresConfig")
 class InitializeService(
-    private val addressTypeRepository: AddressTypeRepository,
-    private val chainRepository: ChainRepository,
-    private val chainAddressTypeRepository: ChainAddressTypeRepository,
+        private val addressTypeRepository: AddressTypeRepository,
+        private val chainRepository: ChainRepository,
+        private val chainAddressTypeRepository: ChainAddressTypeRepository,
 //    private val currencyRepository: CurrencyRepository,
-    private val currencyImplementationRepository: CurrencyImplementationRepository,
+        private val currencyImplementationRepository: CurrencyImplementationRepository,
 ) {
     @Autowired
     private lateinit var preferences: Preferences
@@ -61,17 +62,21 @@ class InitializeService(
 //        }
         val items = data.flatMap { it.implementations.map { impl -> it to impl } }.map { (currency, impl) ->
             CurrencyImplementationModel(
-                null,
-                currency.symbol,
-                impl.symbol.takeUnless { it.isEmpty() } ?: currency.symbol,
-                impl.chain,
-                impl.token,
-                impl.tokenAddress,
-                impl.tokenName,
-                impl.withdrawEnabled,
-                impl.withdrawFee,
-                impl.withdrawMin,
-                impl.decimal
+                    null,
+                    UUID.randomUUID().toString(),
+                    currency.symbol,
+                    impl.symbol.takeUnless { it.isEmpty() } ?: currency.symbol,
+                    impl.chain,
+                    impl.token,
+                    impl.tokenAddress,
+                    impl.tokenName,
+                    impl.withdrawEnabled,
+                    true!!,
+                    impl.withdrawFee,
+                    impl.withdrawMin,
+                    impl.decimal,
+                    true
+
             )
         }
         runCatching { currencyImplementationRepository.saveAll(items).collectList().awaitSingleOrNull() }
