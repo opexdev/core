@@ -57,17 +57,18 @@ CREATE TABLE IF NOT EXISTS chain_address_types
     UNIQUE (chain_name, addr_type_id)
 );
 
-CREATE TABLE IF NOT EXISTS currency
-(
-    symbol VARCHAR(72) PRIMARY KEY,
-    name   VARCHAR(72) NOT NULL
-);
+-- CREATE TABLE IF NOT EXISTS currency
+-- (
+--     symbol VARCHAR(72) PRIMARY KEY,
+--     name   VARCHAR(72) NOT NULL
+-- );
 
 CREATE TABLE IF NOT EXISTS currency_implementations
 (
     id                    SERIAL PRIMARY KEY,
-    currency_symbol       VARCHAR(72) NOT NULL REFERENCES currency (symbol),
+    currency_symbol       VARCHAR(72) NOT NULL REFERENCES,
     implementation_symbol VARCHAR(72) NOT NULL,
+    impl_uuid             VARCHAR(256) NOT NULL UNIQUE
     chain                 VARCHAR(72) NOT NULL REFERENCES chains (name),
     token                 BOOLEAN     NOT NULL,
     token_address         VARCHAR(72),
@@ -76,8 +77,17 @@ CREATE TABLE IF NOT EXISTS currency_implementations
     withdraw_fee          DECIMAL     NOT NULL,
     withdraw_min          DECIMAL     NOT NULL,
     decimal               INTEGER     NOT NULL,
+    is_active             BOOLEAN     NOT NULL,
     UNIQUE (currency_symbol, chain, implementation_symbol)
 );
+
+ALTER TABLE currency_implementations ADD COLUMN IF NOT EXISTS impl_uuid VARCHAR(256) NOT NULL UNIQUE;
+ALTER TABLE currency_implementations ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL;
+ALTER TABLE currency_implementations RENAME COLUMN token to is_token ;
+
+
+
+
 
 CREATE TABLE IF NOT EXISTS deposits
 (

@@ -3,7 +3,6 @@ package co.nilin.opex.bcgateway.ports.postgres.impl
 import co.nilin.opex.bcgateway.core.model.AddressStatus
 import co.nilin.opex.bcgateway.core.model.AddressType
 import co.nilin.opex.bcgateway.core.model.AssignedAddress
-import co.nilin.opex.bcgateway.core.model.AssignedAddressV2
 import co.nilin.opex.bcgateway.core.spi.AssignedAddressHandler
 import co.nilin.opex.bcgateway.core.spi.ChainLoader
 import co.nilin.opex.bcgateway.core.utils.LoggerDelegate
@@ -12,7 +11,6 @@ import co.nilin.opex.bcgateway.ports.postgres.dao.AssignedAddressChainRepository
 import co.nilin.opex.bcgateway.ports.postgres.dao.AssignedAddressRepository
 import co.nilin.opex.bcgateway.ports.postgres.model.AssignedAddressModel
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
@@ -47,15 +45,6 @@ class AssignedAddressHandlerImpl(
         }.filter { it.expTime?.let { it > LocalDateTime.now() } ?: true }.toList()
     }
 
-
-    override suspend fun fetchAssignedAddresses(user: String, addressType: Long): AssignedAddressV2? {
-        return assignedAddressRepository.findByUuidAndAddressTypeAndStatus(
-                user, addressType, AddressStatus.Assigned
-        ).map { model ->
-            model.toDto().apply { id = model.id }
-        }.filter { it.expTime?.let { it > LocalDateTime.now() } ?: true }.firstOrNull()
-    }
-
     override suspend fun persist(assignedAddress: AssignedAddress) {
 
         logger.info("going to save new address .............")
@@ -74,27 +63,6 @@ class AssignedAddressHandlerImpl(
                         assignedAddress.status
                 )
         ).awaitFirstOrNull()
-    }
-
-
-    override suspend fun persist(user:String,assignedAddress: AssignedAddressV2):AssignedAddressV2? {
-
-        logger.info("going to save new address .............")
-       return assignedAddressRepository.save(
-                AssignedAddressModel(
-                        assignedAddress.id ?: null,
-                        user,
-                        assignedAddress.address,
-                        assignedAddress.memo,
-                        assignedAddress.typeId,
-                        assignedAddress.id?.let { assignedAddress.expTime }
-                                ?: (lifeTime?.let { (LocalDateTime.now().plusSeconds(lifeTime!!)) }
-                                        ?: null),
-                        assignedAddress.id?.let { assignedAddress.assignedDate } ?: LocalDateTime.now(),
-                        null,
-                        assignedAddress.status
-                )
-        ).awaitFirstOrNull()?.toDto()
     }
 
 
@@ -146,20 +114,6 @@ class AssignedAddressHandlerImpl(
                 assignedAddressChainRepository.findByAssignedAddress(this.id!!).map { cm ->
                     chainLoader.fetchChainInfo(cm.chain)
                 }.toList().toMutableList(),
-                this.expTime,
-                this.assignedDate,
-                this.revokedDate,
-                this.status,
-                null
-        )
-    }
-
-
-    private suspend fun AssignedAddressModel.toDto(): AssignedAddressV2 {
-        return AssignedAddressV2(
-                this.addressTypeId,
-                this.address,
-                this.memo,
                 this.expTime,
                 this.assignedDate,
                 this.revokedDate,

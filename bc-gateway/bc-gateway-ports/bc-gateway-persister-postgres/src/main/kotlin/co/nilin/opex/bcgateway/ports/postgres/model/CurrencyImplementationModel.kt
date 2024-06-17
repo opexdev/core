@@ -8,15 +8,21 @@ import java.math.BigDecimal
 
 @Table("currency_implementations")
 class CurrencyImplementationModel(
-    @Id var id: Long?,
-    @Column("currency_symbol") val currencySymbol: String,
-    @Column("implementation_symbol") var implementationSymbol: String,
-    @Column("chain") var chain: String,
-    @Column("token") var token: Boolean,
-    @Column("token_address") var tokenAddress: String?,
-    @Column("token_name") var tokenName: String?,
-    @Column("withdraw_enabled") var withdrawEnabled: Boolean,
-    @Column("withdraw_fee") var withdrawFee: BigDecimal,
-    @Column("withdraw_min") var withdrawMin: BigDecimal,
-    @Column("decimal") var decimal: Int
+        @Id var id: Long?,
+        @Column("impl_uuid") val implUuid: String,
+        @Column("currency_symbol") val currencySymbol: String,
+        @Column("implementation_symbol") var implementationSymbol: String,
+        @Column("chain") var chain: String,
+        @Column("is_token") var isToken: Boolean,
+        @Column("token_address") var tokenAddress: String?,
+        @Column("token_name") var tokenName: String?,
+        @Column("withdraw_allowed") var withdrawAllowed: Boolean,
+        @Column("withdraw_fee") var withdrawFee: BigDecimal,
+        @Column("withdraw_min") var withdrawMin: BigDecimal,
+        @Column("decimal") var decimal: Int,
+        @Column("is_active") var isActive: Boolean?=true,
 )
+
+
+
+

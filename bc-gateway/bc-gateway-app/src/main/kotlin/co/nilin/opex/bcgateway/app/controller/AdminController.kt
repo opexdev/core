@@ -5,7 +5,7 @@ import co.nilin.opex.bcgateway.app.service.AdminService
 import co.nilin.opex.bcgateway.core.model.AddressType
 import co.nilin.opex.bcgateway.core.spi.AddressTypeHandler
 import co.nilin.opex.bcgateway.core.spi.ChainLoader
-import co.nilin.opex.bcgateway.core.spi.CryptoCurrencyHandler
+import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
 import co.nilin.opex.common.OpexError
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
@@ -13,10 +13,10 @@ import java.math.BigDecimal
 @RestController
 @RequestMapping("/admin")
 class AdminController(
-        private val service: AdminService,
-        private val chainLoader: ChainLoader,
-        private val currencyHandler: CryptoCurrencyHandler,
-        private val addressTypeHandler: AddressTypeHandler
+    private val service: AdminService,
+    private val chainLoader: ChainLoader,
+    private val currencyHandler: CurrencyHandler,
+    private val addressTypeHandler: AddressTypeHandler
 ) {
 
     @GetMapping("/chain")
@@ -45,15 +45,15 @@ class AdminController(
 
     @GetMapping("/token")
     suspend fun getCurrencyImplementation(): List<TokenResponse> {
-        return currencyHandler.fetchAllImplementations().imps
+        return currencyHandler.fetchAllImplementations()
             .map {
                 TokenResponse(
-                    it.currencySymbol,
-                    it.chain!!,
-                    it.isToken!!,
+                    it.currency,
+                    it.chain.name,
+                    it.token,
                     it.tokenAddress,
-                    it.tz,
-                    it.withdrawAllowed,
+                    it.tokenName,
+                    it.withdrawEnabled,
                     it.withdrawFee,
                     it.withdrawMin,
                     it.decimal
@@ -72,7 +72,7 @@ class AdminController(
 
         return with(service.addToken(body)) {
             TokenResponse(
-                currency.symbol,
+                currency,
                 chain.name,
                 token,
                 tokenAddress,

@@ -23,7 +23,7 @@ class InitializeService(
     private val addressTypeRepository: AddressTypeRepository,
     private val chainRepository: ChainRepository,
     private val chainAddressTypeRepository: ChainAddressTypeRepository,
-    private val currencyRepository: CurrencyRepository,
+//    private val currencyRepository: CurrencyRepository,
     private val currencyImplementationRepository: CurrencyImplementationRepository,
 ) {
     @Autowired
@@ -54,11 +54,11 @@ class InitializeService(
     }
 
     private suspend fun addCurrencies(data: List<Currency>) = coroutineScope {
-        coroutineScope {
-            data.forEach {
-                currencyRepository.insert(it.name, it.symbol).awaitSingleOrNull()
-            }
-        }
+//        coroutineScope {
+//            data.forEach {
+//                currencyRepository.insert(it.name, it.symbol).awaitSingleOrNull()
+//            }
+//        }
         val items = data.flatMap { it.implementations.map { impl -> it to impl } }.map { (currency, impl) ->
             CurrencyImplementationModel(
                 null,

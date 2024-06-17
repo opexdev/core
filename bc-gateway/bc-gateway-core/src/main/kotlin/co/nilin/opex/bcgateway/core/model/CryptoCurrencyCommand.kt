@@ -5,26 +5,29 @@ import java.math.BigDecimal
 data class CryptoCurrencyCommand(
 
         var currencySymbol: String,
-        var currencyImpUuid: String,
-        var implementationSymbol: String?,
-        var tokenName: String?,
-        var tokenAddress: String?,
+        var impUuid: String?,
+        var implementationCurrencySymbol: String?,
         var isActive: Boolean? = true,
         var isToken: Boolean? = false,
+        var tokenName: String?=null,
+        var tokenAddress: String?=null,
         var withdrawFee: BigDecimal?,
         var withdrawAllowed: Boolean? = true,
         var depositAllowed: Boolean? = true,
-        var decimal: Int?,
-        var chain: String?
+        val withdrawMin: BigDecimal?= BigDecimal.ZERO,
+        var decimal: Int,
+        var chain: String,
+        var chainDetail:Chain?=null
+
+
+
 ) {
     fun updateTo(newData: CryptoCurrencyCommand): CryptoCurrencyCommand {
         return newData.apply {
             this.currencySymbol = currencySymbol
-            this.currencyImpUuid = currencyImpUuid
+            this.impUuid = impUuid
         }
     }
-
-
 
 }
 

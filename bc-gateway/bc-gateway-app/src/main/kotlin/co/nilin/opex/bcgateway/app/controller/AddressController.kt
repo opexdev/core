@@ -2,11 +2,11 @@ package co.nilin.opex.bcgateway.app.controller
 
 import co.nilin.opex.bcgateway.core.api.AssignAddressService
 import co.nilin.opex.bcgateway.core.model.AssignedAddress
-import co.nilin.opex.bcgateway.core.model.AssignedAddressV2
 import co.nilin.opex.bcgateway.core.model.ReservedAddress
 import co.nilin.opex.bcgateway.core.spi.AddressTypeHandler
 import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.http.codec.multipart.FilePart
@@ -16,6 +16,10 @@ import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
 import java.io.File
 import java.nio.charset.StandardCharsets
+import java.time.ZoneId
+import java.util.Collections
+import java.util.stream.Collector
+import java.util.stream.Collectors
 
 @RestController
 @RequestMapping("/v1/address")
@@ -24,8 +28,8 @@ class AddressController(
         private val reservedAddressHandler: ReservedAddressHandler,
         private val addressTypeHandler: AddressTypeHandler
 ) {
-    data class AssignAddressRequest(val uuid: String, val currencyImplUuid: String)
-    data class AssignAddressResponse(val addresses: List<AssignedAddressV2>)
+    data class AssignAddressRequest(val uuid: String, val currency: String, val chain: String)
+    data class AssignAddressResponse(val addresses: List<AssignedAddress>)
 
     @PostMapping("/assign")
     suspend fun assignAddress(@RequestBody assignAddressRequest: AssignAddressRequest,
@@ -34,7 +38,8 @@ class AddressController(
             throw OpexError.Forbidden.exception()
         val assignedAddress = assignAddressService.assignAddress(
                 assignAddressRequest.uuid,
-                assignAddressRequest.currencyImplUuid
+                assignAddressRequest.currency,
+                assignAddressRequest.chain
         )
 
       return AssignAddressResponse(assignedAddress);

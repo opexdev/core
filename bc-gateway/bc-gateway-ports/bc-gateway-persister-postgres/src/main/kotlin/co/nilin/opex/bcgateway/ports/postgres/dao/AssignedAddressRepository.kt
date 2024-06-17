@@ -20,18 +20,6 @@ interface AssignedAddressRepository : ReactiveCrudRepository<AssignedAddressMode
         @Param("status") status:AddressStatus?=null
     ): Flow<AssignedAddressModel>
 
-
-    @Query("select * from assigned_addresses where uuid = :uuid and addr_type_id =:addressTypes and (:status is null or status =:status) ")
-    fun findByUuidAndAddressTypeAndStatus(
-            @Param("uuid") uuid: String,
-            @Param("addressTypes") type: Long,
-            @Param("status") status:AddressStatus?=null
-    ): Flow<AssignedAddressModel>
-
-
-
-
-
     @Query("select * from assigned_addresses where address = :address and (memo is null or memo = '' or memo = :memo)")
     fun findByAddressAndMemo(
         @Param("address") address: String,
