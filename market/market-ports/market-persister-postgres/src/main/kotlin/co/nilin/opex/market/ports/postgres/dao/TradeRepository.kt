@@ -4,6 +4,7 @@ import co.nilin.opex.market.core.inout.BestPrice
 import co.nilin.opex.market.core.inout.PriceStat
 import co.nilin.opex.market.core.inout.TradeVolumeStat
 import co.nilin.opex.market.ports.postgres.model.CandleInfoData
+import co.nilin.opex.market.ports.postgres.model.LastPrice
 import co.nilin.opex.market.ports.postgres.model.TradeModel
 import co.nilin.opex.market.ports.postgres.model.TradeTickerData
 import kotlinx.coroutines.flow.Flow
@@ -209,11 +210,11 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
     )
     fun bestAskAndBidPrice(symbol: String): Mono<BestPrice>
 
-    @Query("select * from trades where create_date in (select max(create_date) from trades group by symbol) and symbol = :symbol")
-    fun findBySymbolGroupBySymbol(@Param("symbol") symbol: String): Flux<TradeModel>
+    @Query("select symbol, matched_price from trades where create_date in (select max(create_date) from trades group by symbol) and symbol = :symbol")
+    fun findBySymbolGroupBySymbol(@Param("symbol") symbol: String): Flux<LastPrice>
 
-    @Query("select * from trades where create_date in (select max(create_date) from trades group by symbol)")
-    fun findAllGroupBySymbol(): Flux<TradeModel>
+    @Query("select symbol, matched_price from trades where create_date in (select max(create_date) from trades group by symbol)")
+    fun findAllGroupBySymbol(): Flux<LastPrice>
 
     @Query(
         """

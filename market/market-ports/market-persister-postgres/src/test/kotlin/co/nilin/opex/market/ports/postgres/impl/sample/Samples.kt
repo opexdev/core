@@ -4,6 +4,7 @@ import co.nilin.opex.market.core.event.RichOrder
 import co.nilin.opex.market.core.event.RichOrderUpdate
 import co.nilin.opex.market.core.event.RichTrade
 import co.nilin.opex.market.core.inout.*
+import co.nilin.opex.market.ports.postgres.model.LastPrice
 import co.nilin.opex.market.ports.postgres.model.OrderModel
 import co.nilin.opex.market.ports.postgres.model.OrderStatusModel
 import co.nilin.opex.market.ports.postgres.model.TradeModel
@@ -107,6 +108,8 @@ object VALID {
         PRINCIPAL.name,
         UPDATE_DATE
     )
+
+    val LAST_PRICE_MODEL = LastPrice("ETH_USDT", BigDecimal.valueOf(100000))
 
     val AGGREGATED_ORDER_PRICE_MODEL = AggregatedOrderPriceModel(
         BigDecimal.valueOf(100000),

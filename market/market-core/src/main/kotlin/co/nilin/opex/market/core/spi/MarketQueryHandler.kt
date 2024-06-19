@@ -1,13 +1,13 @@
 package co.nilin.opex.market.core.spi
 
+import co.nilin.opex.common.utils.Interval
 import co.nilin.opex.market.core.inout.*
-import java.time.LocalDateTime
 
 interface MarketQueryHandler {
 
-    suspend fun getTradeTickerData(startFrom: LocalDateTime): List<PriceChange>
+    suspend fun getTradeTickerData(interval: Interval): List<PriceChange>
 
-    suspend fun getTradeTickerDateBySymbol(symbol: String, startFrom: LocalDateTime): PriceChange?
+    suspend fun getTradeTickerDateBySymbol(symbol: String, interval: Interval): PriceChange?
 
     suspend fun openBidOrders(symbol: String, limit: Int): List<OrderBook>
 
@@ -29,18 +29,18 @@ interface MarketQueryHandler {
         limit: Int
     ): List<CandleData>
 
-    suspend fun numberOfActiveUsers(interval: LocalDateTime): Long
+    suspend fun numberOfActiveUsers(interval: Interval): Long
 
-    suspend fun numberOfTrades(interval: LocalDateTime, pair: String? = null): Long
+    suspend fun numberOfTrades(interval: Interval, pair: String? = null): Long
 
-    suspend fun numberOfOrders(interval: LocalDateTime, pair: String? = null): Long
+    suspend fun numberOfOrders(interval: Interval, pair: String? = null): Long
 
-    suspend fun mostIncreasePrice(interval: LocalDateTime, limit: Int): List<PriceStat>
+    suspend fun mostIncreasePrice(interval: Interval, limit: Int): List<PriceStat>
 
-    suspend fun mostDecreasePrice(interval: LocalDateTime, limit: Int): List<PriceStat>
+    suspend fun mostDecreasePrice(interval: Interval, limit: Int): List<PriceStat>
 
-    suspend fun mostVolume(interval: LocalDateTime): TradeVolumeStat?
+    suspend fun mostVolume(interval: Interval): TradeVolumeStat?
 
-    suspend fun mostTrades(interval: LocalDateTime): TradeVolumeStat?
+    suspend fun mostTrades(interval: Interval): TradeVolumeStat?
 
 }
