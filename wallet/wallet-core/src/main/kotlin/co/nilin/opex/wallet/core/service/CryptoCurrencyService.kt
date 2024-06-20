@@ -14,17 +14,17 @@ class CryptoCurrencyService(private val bcGatewayProxy: BcGatewayProxy,
     }
 
 
-    suspend fun updateCryptoImp(currencyImp: CryptoCurrencyCommand): CryptoImps? {
+    suspend fun updateCryptoImpl(currencyImp: CryptoCurrencyCommand): CryptoImps? {
         val token = authService.extractToken()
-        return bcGatewayProxy.updateImpOfCryptoCurrency(currencyImp, token)
+        return bcGatewayProxy.updateImplOfCryptoCurrency(currencyImp, token)
     }
 
-    suspend fun fetchCurrencyImps(currencyUuid:String): CryptoImps? {
+    suspend fun fetchImpls(currencySymbol:String?): CryptoImps? {
         val token = authService.extractToken()
-        return bcGatewayProxy.fetchImpsOfCryptoCurrency(currencyUuid, token)
+        return bcGatewayProxy.fetchImpls(currencySymbol, token)
     }
 
-    suspend fun fetchImp(currencyImplUuid:String): CryptoCurrencyCommand? {
+    suspend fun fetchImpl(currencyImplUuid:String): CryptoCurrencyCommand? {
         val token = authService.extractToken()
         return bcGatewayProxy.fetchImplDetail(currencyImplUuid, token)
     }

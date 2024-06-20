@@ -37,7 +37,7 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
 
 
     override suspend fun updateCurrency(request: CurrencyCommand): CurrencyCommand? {
-        return loadCurrency(FetchCurrency(uuid = request.uuid))
+        return loadCurrency(FetchCurrency(symbol = request.symbol))
                 ?.awaitFirstOrNull()?.let {
                     doSave(it.toCommand().updateTo(request).toModel())?.toCommand()
                 } ?: throw OpexError.CurrencyNotFound.exception()
@@ -45,7 +45,7 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
     }
 
     override suspend fun prepareCurrencyToBeACryptoCurrency(request: String): CurrencyCommand? {
-        return loadCurrency(FetchCurrency(uuid = request))?.awaitFirstOrNull()?.let {
+        return loadCurrency(FetchCurrency(symbol = request))?.awaitFirstOrNull()?.let {
             if (it.isCryptoCurrency == false)
                 return doSave(it.apply { isCryptoCurrency = true })?.toCommand()
             it.toCommand()
@@ -58,7 +58,7 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
         }
     }
 
-    override suspend fun fetchCurrencies(request: FetchCurrency): CurrenciesCommand? {
+    override suspend fun fetchCurrencies(request: FetchCurrency?): CurrenciesCommand? {
         return CurrenciesCommand(loadCurrencies(request)?.map { it.toCommand() }
                 ?.collect(Collectors.toList())?.awaitFirstOrNull())
     }
@@ -73,7 +73,7 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
         return currencyRepository.fetchCurrency(symbol = request.symbol, uuid = request.uuid)
     }
 
-    private suspend fun loadCurrencies(request: FetchCurrency): Flux<CurrencyModel>? {
+    private suspend fun loadCurrencies(request: FetchCurrency?): Flux<CurrencyModel>? {
         return currencyRepository.findAll( )
     }
 

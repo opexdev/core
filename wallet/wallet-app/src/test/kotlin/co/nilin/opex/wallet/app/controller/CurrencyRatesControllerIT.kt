@@ -45,7 +45,7 @@ class CurrencyRatesControllerIT : KafkaEnabledTest() {
     fun setup() {
         runBlocking {
             val currencies = listOf("E", "B", "U", "Z")
-            val systemCurrencies = currencyService.fetchCurrencies(FetchCurrency())?.currencies?.filter { c -> currencies.contains(c.name) }?.map { currency -> currency.name }
+            val systemCurrencies = currencyService.fetchCurrencies()?.currencies?.filter { c -> currencies.contains(c.name) }?.map { currency -> currency.name }
             val fpair = rateService.getForbiddenPairs()
             val rates = rateService.getRate()
             fpair.forbiddenPairs!!.forEach { p -> rateService.deleteForbiddenPair(p) }

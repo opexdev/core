@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 CREATE TABLE IF NOT EXISTS address_types
 (
     id            SERIAL PRIMARY KEY,
@@ -66,24 +68,27 @@ CREATE TABLE IF NOT EXISTS chain_address_types
 CREATE TABLE IF NOT EXISTS currency_implementations
 (
     id                    SERIAL PRIMARY KEY,
-    currency_symbol       VARCHAR(72) NOT NULL REFERENCES,
+    currency_symbol       VARCHAR(72) NOT NULL ,
     implementation_symbol VARCHAR(72) NOT NULL,
-    impl_uuid             VARCHAR(256) NOT NULL UNIQUE
+    impl_uuid             VARCHAR(256) NOT NULL UNIQUE DEFAULT  uuid_generate_v4(),
     chain                 VARCHAR(72) NOT NULL REFERENCES chains (name),
-    token                 BOOLEAN     NOT NULL,
+    is_token                 BOOLEAN     NOT NULL,
     token_address         VARCHAR(72),
     token_name            VARCHAR(72),
-    withdraw_enabled      BOOLEAN     NOT NULL,
+    withdraw_allowed      BOOLEAN     NOT NULL,
+    deposit_allowed      BOOLEAN     NOT NULL,
     withdraw_fee          DECIMAL     NOT NULL,
     withdraw_min          DECIMAL     NOT NULL,
     decimal               INTEGER     NOT NULL,
-    is_active             BOOLEAN     NOT NULL,
+    is_active             BOOLEAN     NOT NULL DEFAULT TRUE,
     UNIQUE (currency_symbol, chain, implementation_symbol)
 );
 
-ALTER TABLE currency_implementations ADD COLUMN IF NOT EXISTS impl_uuid VARCHAR(256) NOT NULL UNIQUE;
-ALTER TABLE currency_implementations ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL;
-ALTER TABLE currency_implementations RENAME COLUMN token to is_token ;
+ALTER TABLE currency_implementations ADD COLUMN IF NOT EXISTS impl_uuid VARCHAR(256) NOT NULL UNIQUE DEFAULT  uuid_generate_v4();
+ALTER TABLE currency_implementations ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL  DEFAULT TRUE;
+ALTER TABLE currency_implementations RENAME COLUMN withdraw_enabled to withdraw_allowed ;
+ALTER TABLE currency_implementations ADD COLUMN IF NOT EXISTS deposit_allowed BOOLEAN NOT NULL  DEFAULT TRUE;
+-- ALTER TABLE currency_implementations RENAME COLUMN token to is_token ;
 
 
 

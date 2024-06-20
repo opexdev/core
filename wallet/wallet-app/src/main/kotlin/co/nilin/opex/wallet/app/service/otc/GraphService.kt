@@ -36,7 +36,7 @@ class GraphService(private val rateService: RateService, private val currencySer
     suspend fun buildRoutes(source: String? = null, dest: String? = null): MutableList<Route> {
         val routesWithMax2StepV2: MutableList<Route> = mutableListOf()
         val adjencyMap: Map<String, MutableList<Rate>> = createAdjacencyMapV2()
-        val systemCurrencies = currencyService.fetchCurrencies(FetchCurrency())?.currencies
+        val systemCurrencies = currencyService.fetchCurrencies()?.currencies
 
         val vertice: List<String> = systemCurrencies?.filter {
             it.isTransitive == false && it.isActive == true

@@ -9,56 +9,52 @@ import java.util.UUID
 @RequestMapping("/crypto-currency")
 class CryptoCurrencyController(val cryptoCurrencyHandler: CryptoCurrencyHandlerV2) {
 
-
-    @PostMapping("/{currencySymbol}/imp")
+    @PostMapping("/{currencySymbol}/impl")
     suspend fun addNewCurrencyImpl(
             @PathVariable("currencySymbol") currencySymbol: String,
             @RequestBody request: CryptoCurrencyCommand
     ): CryptoCurrencyCommand? {
         return cryptoCurrencyHandler.createImpl(request.apply {
-            this.impUuid = UUID.randomUUID().toString()
+            this.implUuid = UUID.randomUUID().toString()
             this.currencySymbol = currencySymbol
         })
     }
 
 
-    @PutMapping("/{currencySymbol}/imp/{impUuid}")
+    @PutMapping("/{currencySymbol}/impl/{implUuid}")
     suspend fun updateCurrencyImpl(
             @PathVariable("currencySymbol") currencySymbol: String,
-            @PathVariable("impUuid") impUuid: String,
+            @PathVariable("implUuid") implUuid: String,
             @RequestBody request: CryptoCurrencyCommand
     ): CryptoCurrencyCommand? {
         return cryptoCurrencyHandler.updateImpl(request.apply {
             this.currencySymbol = currencySymbol
-            this.impUuid = impUuid
+            this.implUuid = implUuid
         })
     }
 
 
-    @DeleteMapping("/{currencySymbol}/imp/{impUuid}")
+    @DeleteMapping("/{currencySymbol}/imp/{implUuid}")
     suspend fun deleteCurrencyImpl(
             @PathVariable("currencySymbol") currencySymbol: String,
-            @PathVariable("impUuid") impUuid: String,
+            @PathVariable("implUuid") implUuid: String,
             @RequestBody request: CryptoCurrencyCommand
     ): CryptoCurrencyCommand? {
         return cryptoCurrencyHandler.updateImpl(request.apply {
             this.currencySymbol = currencySymbol
-            this.impUuid = impUuid
+            this.implUuid = implUuid
         })
     }
 
-    @GetMapping("/{currencySymbol}/impls")
-    suspend fun fetchCurrencyImpls(@PathVariable("currencySymbol") currency: String): CurrencyImps? {
-        return cryptoCurrencyHandler.fetchCurrencyImpls(FetchImpls(currencySymbol = currency))
-    }
+
 
 
     @GetMapping("/impls")
-    suspend fun fetchCurrenciesImpls(): CurrencyImps? {
-        return cryptoCurrencyHandler.fetchCurrencyImpls(FetchImpls())
+    suspend fun fetchCurrenciesImpls(@RequestParam("currency") currencySymbol:String?=null): CurrencyImps? {
+        return cryptoCurrencyHandler.fetchCurrencyImpls(FetchImpls(currencySymbol = currencySymbol))
     }
 
-    @GetMapping("/impls/{implUuid}")
+    @GetMapping("/impl/{implUuid}")
     suspend fun fetchSpecificImpl(@PathVariable("implUuid") implUuid: String): CurrencyImps? {
         return cryptoCurrencyHandler.fetchCurrencyImpls(FetchImpls(implUuid = implUuid))
     }

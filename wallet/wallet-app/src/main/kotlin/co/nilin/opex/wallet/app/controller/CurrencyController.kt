@@ -4,53 +4,59 @@ import co.nilin.opex.wallet.app.dto.CurrenciesDto
 import co.nilin.opex.wallet.app.dto.CurrencyDto
 import co.nilin.opex.wallet.app.service.CurrencyServiceV2
 import co.nilin.opex.wallet.core.inout.CryptoCurrencyCommand
-import co.nilin.opex.wallet.core.inout.CurrenciesCommand
-import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import org.springframework.web.bind.annotation.*
+import java.util.UUID
 
 @RestController
 @RequestMapping("/currency")
 class CurrencyController(private val currencyService: CurrencyServiceV2) {
 
-    @PostMapping("/currency")
+    @PostMapping("")
     suspend fun addCurrency(@RequestBody request: CurrencyDto): CurrencyDto? {
         return currencyService.createNewCurrency(request)
     }
 
-    @PutMapping("/currency/{currencyUuid}")
-    suspend fun updateCurrency(@PathVariable("currencyUuid") currencyUuid: String,
+    @PutMapping("/{currencySymbol}")
+    suspend fun updateCurrency(@PathVariable("currencySymbol") currencySymbol: String,
                                @RequestBody request: CurrencyDto): CurrencyDto? {
-        return currencyService.updateCurrency(request.apply { uuid = currencyUuid })
+        return currencyService.updateCurrency(request.apply { symbol = currencySymbol })
     }
 
 
-    @GetMapping("/currency/{currencyUuid}")
-    suspend fun getCurrency(@PathVariable("currencyUuid") currencyUuid: String,
-                            @RequestParam("includeImp") includeImp: Boolean? = false): CurrencyDto? {
+    @GetMapping("/{currencySymbol}")
+    suspend fun getCurrency(@PathVariable("currencySymbol") currencySymbol: String,
+                            @RequestParam("includeImpl") includeImpl: Boolean? = false): CurrencyDto? {
 
-        return currencyService.fetchCurrencyWithImps(currencyUuid, includeImp!!)
+        return currencyService.fetchCurrencyWithImpls(currencySymbol, includeImpl )
     }
 
-    @GetMapping("/currency")
-    suspend fun getCurrencies(@RequestParam("includeImp") includeImp: Boolean? = false): CurrenciesDto? {
-        return currencyService.fetchCurrenciesWithImps(includeImp!!)
+    @GetMapping("")
+    suspend fun getCurrencies(@RequestParam("includeImpl") includeImpl: Boolean? = false): CurrenciesDto? {
+        return currencyService.fetchCurrenciesWithImpls(includeImpl)
     }
 
-    @PostMapping("/currency/{currencyUuid}/impl")
-    suspend fun addImp2Currency(@PathVariable("currencyUuid") currencyUuid: String,
+
+
+
+
+
+
+    @PostMapping("/{currencySymbol}/impl")
+    suspend fun addImp2Currency(@PathVariable("currencySymbol") currencySymbol: String,
                                 @RequestBody request: CryptoCurrencyCommand): CurrencyDto? {
-        return currencyService.addImp2Currency(request.apply { this.currencyUUID = currencyUUID })
+        return currencyService.addImp2Currency(request.apply {
+            this.currencySymbol = currencySymbol
+        })
     }
 
-
-    @PutMapping("/currency/impl/{implUuid}")
+    @PutMapping("/impl/{implUuid}")
     suspend fun updateImpl(@PathVariable("implUuid") implUuid: String, @RequestBody request: CryptoCurrencyCommand): CurrencyDto? {
-        return currencyService.updateImp(request.apply { currencyImpUuid = implUuid })
+        return currencyService.updateImpl(request.apply { this.implUuid = implUuid })
     }
 
-    @GetMapping("/currency/impl/{implUuid}")
+    @GetMapping("/impl/{implUuid}")
     suspend fun getImpl(@PathVariable("implUuid") implUuid: String): CryptoCurrencyCommand? {
-        return currencyService.fetchCurrencyImp(implUuid)
+        return currencyService.fetchCurrencyImpl(implUuid)
     }
 
 

@@ -10,7 +10,7 @@ import reactor.core.publisher.Mono
 interface CurrencyServiceManager {
 
     suspend fun createNewCurrency(request: CurrencyCommand, ignoreIfExist:Boolean?=false ): CurrencyCommand?
-    suspend fun fetchCurrencies(request: FetchCurrency): CurrenciesCommand?
+    suspend fun fetchCurrencies(request: FetchCurrency?=null): CurrenciesCommand?
     suspend fun fetchCurrency(request: FetchCurrency): CurrencyCommand?
     suspend fun updateCurrency(request: CurrencyCommand): CurrencyCommand?
     suspend fun prepareCurrencyToBeACryptoCurrency(request: String): CurrencyCommand?

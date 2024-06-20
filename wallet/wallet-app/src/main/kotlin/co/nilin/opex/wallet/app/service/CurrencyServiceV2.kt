@@ -26,7 +26,7 @@ class CurrencyServiceV2(
         return currencyServiceManager.createNewCurrency(
                 request.apply {
                     uuid = UUID.randomUUID().toString()
-                    symbol = symbol.uppercase()
+                    symbol = symbol?.uppercase() ?: throw OpexError.BadRequest.exception()
                     isCryptoCurrency = false
                 }.toCommand()
         )?.toDto()
@@ -39,26 +39,27 @@ class CurrencyServiceV2(
 
     @Transactional
     suspend fun addImp2Currency(request: CryptoCurrencyCommand): CurrencyDto? {
-        return currencyServiceManager.prepareCurrencyToBeACryptoCurrency(request.currencyUUID)
+        return currencyServiceManager.prepareCurrencyToBeACryptoCurrency(request.currencySymbol
+                ?: throw OpexError.BadRequest.exception())
                 ?.apply {
                     impls =
                             cryptoCurrencyManager.toCryptoCurrency(
                                     request.apply {
-                                        currencyImpUuid = UUID.randomUUID().toString()
+                                        implUuid = UUID.randomUUID().toString()
                                     }
                             )?.imps
                 }?.toDto()
     }
 
 
-    suspend fun fetchCurrencyWithImps(currencyUUID: String, includeImpl: Boolean): CurrencyDto? {
-        return currencyServiceManager.fetchCurrency(FetchCurrency(uuid = currencyUUID))
+    suspend fun fetchCurrencyWithImpls(currencySymbol: String, includeImpl: Boolean?): CurrencyDto? {
+        return currencyServiceManager.fetchCurrency(FetchCurrency(symbol = currencySymbol))
                 ?.let {
-                    if (it.isCryptoCurrency == true && includeImpl)
+                    if (it.isCryptoCurrency == true && includeImpl==true)
                         it.apply {
                             impls =
-                                    cryptoCurrencyManager.fetchCurrencyImps(
-                                            currencyUUID
+                                    cryptoCurrencyManager.fetchImpls(
+                                            currencySymbol
                                     )?.imps
                         }.toDto()
                     else
@@ -67,19 +68,21 @@ class CurrencyServiceV2(
     }
 
 
-    suspend fun fetchCurrencyImp(currencyImplUUID: String): CryptoCurrencyCommand? {
-        return cryptoCurrencyManager.fetchImp(
-                currencyImplUUID) }
+    suspend fun fetchCurrencyImpl(currencyImplUUID: String): CryptoCurrencyCommand? {
+        return cryptoCurrencyManager.fetchImpl(currencyImplUUID)
+    }
 
 
-    suspend fun fetchCurrenciesWithImps(includeImpl: Boolean): CurrenciesDto? {
-        return CurrenciesDto(currencyServiceManager.fetchCurrencies(FetchCurrency())?.currencies?.stream()?.map {
-            if (it.isCryptoCurrency == true && includeImpl)
+    //todo
+    // fetch all impls in single request and then map the results together
+    suspend fun fetchCurrenciesWithImpls(includeImpl: Boolean?): CurrenciesDto? {
+        return CurrenciesDto(currencyServiceManager.fetchCurrencies()?.currencies?.stream()?.map {
+            if (it.isCryptoCurrency == true && includeImpl==true)
                 it.apply {
                     impls =
                             runBlocking {
-                                cryptoCurrencyManager.fetchCurrencyImps(
-                                        it.uuid!!
+                                cryptoCurrencyManager.fetchImpls(
+                                        it.symbol!!
                                 )?.imps
                             }
                 }.toDto()
@@ -89,13 +92,13 @@ class CurrencyServiceV2(
     }
 
 
-    suspend fun updateImp(request: CryptoCurrencyCommand): CurrencyDto? {
-        return currencyServiceManager.fetchCurrency(FetchCurrency(uuid = request.currencyUUID))
+    suspend fun updateImpl(request: CryptoCurrencyCommand): CurrencyDto? {
+        return currencyServiceManager.fetchCurrency(FetchCurrency(uuid = request.currencySymbol))
                 ?.let {
                     if (it.isCryptoCurrency == true)
                         it.apply {
                             impls =
-                                    cryptoCurrencyManager.updateCryptoImp(
+                                    cryptoCurrencyManager.updateCryptoImpl(
                                             request
                                     )?.imps
                         }.toDto()
@@ -105,8 +108,8 @@ class CurrencyServiceV2(
     }
 
 
-    private suspend fun fetchCurrencyImps(currencyUUID: String): CryptoImps? {
-        return cryptoCurrencyManager.fetchCurrencyImps(currencyUUID)
+    private suspend fun fetchCurrencyImps(currencySymbol: String): CryptoImps? {
+        return cryptoCurrencyManager.fetchImpls(currencySymbol)
     }
 
 }

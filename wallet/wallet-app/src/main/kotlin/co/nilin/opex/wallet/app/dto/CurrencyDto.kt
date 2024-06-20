@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.app.dto
 
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.inout.CryptoCurrencyCommand
 import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import co.nilin.opex.wallet.core.inout.DepositMethod
@@ -9,7 +10,7 @@ import java.math.BigDecimal
 import java.util.*
 
 data class CurrencyDto(
-        var symbol: String,
+        var symbol: String?=null,
         var uuid: String? = UUID.randomUUID().toString(),
         var name: String,
         var precision: BigDecimal,
@@ -21,8 +22,8 @@ data class CurrencyDto(
         var sign: String? = null,
         var description: String? = null,
         var shortDescription: String? = null,
-        var withdrawIsEnable: Boolean? = true,
-        var depositIsEnable: Boolean? = true,
+        var withdrawAllowed: Boolean? = true,
+        var depositAllowed: Boolean? = true,
         var withdrawFee: BigDecimal? = BigDecimal.ZERO,
         var depositMethods: List<DepositMethod>? = null,
         var withdrawMethods: List<WithdrawMethod>? = null,
@@ -30,8 +31,31 @@ data class CurrencyDto(
         var isCryptoCurrency: Boolean? = false,
         var impls: List<CryptoCurrencyCommand>? = null
 ) {
+
+    // Separated them just to support having "id" field in currency table.
+    //Now it is unnecessary
     fun toCommand(): CurrencyCommand {
-        return ModelMapper().map(this, CurrencyCommand::class.java)
+
+        return CurrencyCommand(symbol!!,
+                uuid,
+                name,
+                precision,
+                title,
+                alias,
+                icon,
+                isTransitive,
+                isActive,
+                sign,
+                description,
+                shortDescription,
+                withdrawAllowed,
+                depositAllowed,
+                withdrawFee,
+                depositMethods,
+                withdrawMethods,
+                externalUrl,
+                isCryptoCurrency,
+                impls)
     }
 }
 

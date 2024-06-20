@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import java.net.URI
 
+
 inline fun <reified T : Any> typeRef(): ParameterizedTypeReference<T> = object : ParameterizedTypeReference<T>() {}
 
 @Component
@@ -21,9 +22,9 @@ class BcGatewayProxyImpl(private val webClient: WebClient) : BcGatewayProxy {
 
     private val logger = LoggerFactory.getLogger(BcGatewayProxyImpl::class.java)
 
-    override suspend fun createNewCurrency(currencyImp: CryptoCurrencyCommand, internalToken: String?): CryptoImps? {
+    override suspend fun createNewCurrency(currencyImpl: CryptoCurrencyCommand, internalToken: String?): CryptoImps? {
         return webClient.post()
-                .uri(URI.create("$baseUrl/currency/${currencyImp.currencyUUID}"))
+                .uri(URI.create("$baseUrl/crypto-currency/${currencyImpl.currencySymbol}/impl"))
 
                 .headers { httpHeaders ->
                     run {
@@ -31,7 +32,7 @@ class BcGatewayProxyImpl(private val webClient: WebClient) : BcGatewayProxy {
                         internalToken?.let { httpHeaders.add("Authorization", "Bearer $it") }
                     }
                 }
-                .bodyValue(currencyImp)
+                .bodyValue(currencyImpl)
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToMono(typeRef<CryptoImps>())
@@ -39,10 +40,10 @@ class BcGatewayProxyImpl(private val webClient: WebClient) : BcGatewayProxy {
                 .awaitFirst()
     }
 
-    override suspend fun updateImpOfCryptoCurrency(currencyImp: CryptoCurrencyCommand,internalToken: String?): CryptoImps? {
+    override suspend fun updateImplOfCryptoCurrency(currencyImp: CryptoCurrencyCommand, internalToken: String?): CryptoImps? {
 
         return webClient.put()
-                .uri(URI.create("$baseUrl/currency/${currencyImp.currencyUUID}"))
+                .uri(URI.create("$baseUrl/crypto-currency/impl/${currencyImp.implUuid}"))
                 .headers { httpHeaders ->
                     run {
                         httpHeaders.add("Content-Type", "application/json");
@@ -57,9 +58,32 @@ class BcGatewayProxyImpl(private val webClient: WebClient) : BcGatewayProxy {
                 .awaitFirst()
     }
 
-    override suspend fun fetchImpsOfCryptoCurrency(currencyUuid: String,internalToken:String?): CryptoImps? {
-        return webClient.delete()
-                .uri(URI.create("$baseUrl/currency/${currencyUuid}"))
+    override suspend fun fetchImpls(currencySymbol: String?, internalToken: String?): CryptoImps? {
+
+        return webClient.get()
+                .uri(URI.create("$baseUrl/crypto-currency/impls"))
+                .headers { httpHeaders ->
+                    run {
+                        httpHeaders.add("Content-Type", "application/json");
+                        internalToken?.let { httpHeaders.add("Authorization", "Bearer $it") }
+                    }
+                }
+                .attributes {
+                    currencySymbol?.let {
+                        val attributeMap: MutableMap<String, String> = HashMap()
+                        attributeMap["currency"] = it
+                    }
+                }
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToMono(typeRef<CryptoImps>())
+                .log()
+                .awaitFirst()
+    }
+
+    override suspend fun fetchImplDetail(implUuid: String, internalToken: String?): CryptoCurrencyCommand? {
+        return webClient.get()
+                .uri(URI.create("$baseUrl/crypto-currency/impl/${implUuid}"))
                 .headers { httpHeaders ->
                     run {
                         httpHeaders.add("Content-Type", "application/json");
@@ -68,11 +92,8 @@ class BcGatewayProxyImpl(private val webClient: WebClient) : BcGatewayProxy {
                 }
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono(typeRef<CryptoImps>())
+                .bodyToMono(typeRef<CryptoCurrencyCommand>())
                 .log()
-                .awaitFirst()    }
-
-    override suspend fun fetchImplDetail(symbol: String, internalToken: String?): CryptoCurrencyCommand? {
-        TODO("Not yet implemented")
+                .awaitFirst()
     }
 }
