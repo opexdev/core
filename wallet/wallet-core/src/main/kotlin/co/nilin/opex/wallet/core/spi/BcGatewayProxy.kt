@@ -4,13 +4,14 @@ import co.nilin.opex.wallet.core.inout.CryptoCurrencyCommand
 import co.nilin.opex.wallet.core.inout.CryptoImps
 
 interface BcGatewayProxy {
-    suspend fun createNewCurrency(currencyImp: CryptoCurrencyCommand, internalToken: String?): CryptoImps?
+    suspend fun createImpl(currencyImp: CryptoCurrencyCommand, internalToken: String?): CryptoCurrencyCommand?
 
-    suspend fun updateImplOfCryptoCurrency(currencyImp: CryptoCurrencyCommand, internalToken: String?): CryptoImps?
+    suspend fun updateImpl(currencyImp: CryptoCurrencyCommand, internalToken: String?): CryptoCurrencyCommand?
 
-    suspend fun fetchImpls(symbol: String?, internalToken: String? ): CryptoImps?
+    suspend fun fetchImpls(symbol: String?, internalToken: String?): CryptoImps?
 
-    suspend fun fetchImplDetail(implUuid: String, internalToken: String? ): CryptoCurrencyCommand?
+    suspend fun fetchImplDetail(implUuid: String, currencySymbol: String, internalToken: String?): CryptoCurrencyCommand?
 
+    suspend fun deleteImpl(implUuid: String, currencySymbol: String, internalToken: String?)
 
 }

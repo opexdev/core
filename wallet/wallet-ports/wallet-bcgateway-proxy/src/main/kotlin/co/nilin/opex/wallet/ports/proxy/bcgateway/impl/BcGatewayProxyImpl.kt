@@ -4,11 +4,15 @@ import co.nilin.opex.wallet.core.inout.CryptoCurrencyCommand
 import co.nilin.opex.wallet.core.inout.CryptoImps
 import co.nilin.opex.wallet.core.spi.BcGatewayProxy
 import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
+import org.springframework.asm.TypeReference
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.awaitBodyOrNull
+import org.springframework.web.reactive.function.client.bodyToMono
 import java.net.URI
 
 
@@ -22,7 +26,7 @@ class BcGatewayProxyImpl(private val webClient: WebClient) : BcGatewayProxy {
 
     private val logger = LoggerFactory.getLogger(BcGatewayProxyImpl::class.java)
 
-    override suspend fun createNewCurrency(currencyImpl: CryptoCurrencyCommand, internalToken: String?): CryptoImps? {
+    override suspend fun createImpl(currencyImpl: CryptoCurrencyCommand, internalToken: String?): CryptoCurrencyCommand? {
         return webClient.post()
                 .uri(URI.create("$baseUrl/crypto-currency/${currencyImpl.currencySymbol}/impl"))
 
@@ -35,15 +39,14 @@ class BcGatewayProxyImpl(private val webClient: WebClient) : BcGatewayProxy {
                 .bodyValue(currencyImpl)
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono(typeRef<CryptoImps>())
+                .bodyToMono(typeRef<CryptoCurrencyCommand>())
                 .log()
                 .awaitFirst()
     }
 
-    override suspend fun updateImplOfCryptoCurrency(currencyImp: CryptoCurrencyCommand, internalToken: String?): CryptoImps? {
-
+    override suspend fun updateImpl(currencyImp: CryptoCurrencyCommand, internalToken: String?): CryptoCurrencyCommand? {
         return webClient.put()
-                .uri(URI.create("$baseUrl/crypto-currency/impl/${currencyImp.implUuid}"))
+                .uri(URI.create("$baseUrl/crypto-currency/${currencyImp.currencySymbol}/impl/${currencyImp.implUuid}"))
                 .headers { httpHeaders ->
                     run {
                         httpHeaders.add("Content-Type", "application/json");
@@ -53,37 +56,46 @@ class BcGatewayProxyImpl(private val webClient: WebClient) : BcGatewayProxy {
                 .bodyValue(currencyImp)
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono(typeRef<CryptoImps>())
+                .bodyToMono(typeRef<CryptoCurrencyCommand>())
                 .log()
                 .awaitFirst()
     }
 
     override suspend fun fetchImpls(currencySymbol: String?, internalToken: String?): CryptoImps? {
 
-        return webClient.get()
-                .uri(URI.create("$baseUrl/crypto-currency/impls"))
-                .headers { httpHeaders ->
-                    run {
-                        httpHeaders.add("Content-Type", "application/json");
-                        internalToken?.let { httpHeaders.add("Authorization", "Bearer $it") }
+        if (currencySymbol == null)
+            return webClient.get()
+                    .uri(URI.create("$baseUrl/crypto-currency/impls"))
+                    .headers { httpHeaders ->
+                        run {
+                            httpHeaders.add("Content-Type", "application/json");
+                            internalToken?.let { httpHeaders.add("Authorization", "Bearer $it") }
+                        }
                     }
-                }
-                .attributes {
-                    currencySymbol?.let {
-                        val attributeMap: MutableMap<String, String> = HashMap()
-                        attributeMap["currency"] = it
+                    .retrieve()
+                    .onStatus({ t -> t.isError }, { it.createException() })
+                    .bodyToMono(typeRef<CryptoImps>())
+                    .log()
+                    .awaitFirst()
+        else
+            return webClient.get()
+                    .uri(URI.create("$baseUrl/crypto-currency/${currencySymbol}/impls"))
+                    .headers { httpHeaders ->
+                        run {
+                            httpHeaders.add("Content-Type", "application/json");
+                            internalToken?.let { httpHeaders.add("Authorization", "Bearer $it") }
+                        }
                     }
-                }
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono(typeRef<CryptoImps>())
-                .log()
-                .awaitFirst()
+                    .retrieve()
+                    .onStatus({ t -> t.isError }, { it.createException() })
+                    .bodyToMono(typeRef<CryptoImps>())
+                    .log()
+                    .awaitFirst()
     }
 
-    override suspend fun fetchImplDetail(implUuid: String, internalToken: String?): CryptoCurrencyCommand? {
+    override suspend fun fetchImplDetail(implUuid: String, currencySymbol: String, internalToken: String?): CryptoCurrencyCommand? {
         return webClient.get()
-                .uri(URI.create("$baseUrl/crypto-currency/impl/${implUuid}"))
+                .uri(URI.create("$baseUrl/crypto-currency/${currencySymbol}/impl/${implUuid}"))
                 .headers { httpHeaders ->
                     run {
                         httpHeaders.add("Content-Type", "application/json");
@@ -95,5 +107,23 @@ class BcGatewayProxyImpl(private val webClient: WebClient) : BcGatewayProxy {
                 .bodyToMono(typeRef<CryptoCurrencyCommand>())
                 .log()
                 .awaitFirst()
+    }
+
+    override suspend fun deleteImpl(implUuid: String, currencySymbol: String, internalToken: String?) {
+        webClient.delete()
+                .uri(URI.create("$baseUrl/crypto-currency/${currencySymbol}/impl/${implUuid}"))
+                .headers { httpHeaders ->
+                    run {
+                        httpHeaders.add("Content-Type", "application/json");
+                        internalToken?.let { httpHeaders.add("Authorization", "Bearer $it") }
+                    }
+                }
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToMono(typeRef<Void>())
+                .log()
+                .awaitFirstOrNull()
+
+
     }
 }

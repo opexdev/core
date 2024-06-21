@@ -84,12 +84,12 @@ CREATE TABLE IF NOT EXISTS currency_implementations
     UNIQUE (currency_symbol, chain, implementation_symbol)
 );
 
+ALTER TABLE currency_implementations DROP CONSTRAINT  IF EXISTS currency_implementations_currency_symbol_fkey;
 ALTER TABLE currency_implementations ADD COLUMN IF NOT EXISTS impl_uuid VARCHAR(256) NOT NULL UNIQUE DEFAULT  uuid_generate_v4();
 ALTER TABLE currency_implementations ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL  DEFAULT TRUE;
 ALTER TABLE currency_implementations RENAME COLUMN withdraw_enabled to withdraw_allowed ;
 ALTER TABLE currency_implementations ADD COLUMN IF NOT EXISTS deposit_allowed BOOLEAN NOT NULL  DEFAULT TRUE;
--- ALTER TABLE currency_implementations RENAME COLUMN token to is_token ;
-
+ALTER TABLE currency_implementations RENAME COLUMN token to is_token ;
 
 
 

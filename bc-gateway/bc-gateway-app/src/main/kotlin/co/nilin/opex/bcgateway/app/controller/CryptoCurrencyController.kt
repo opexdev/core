@@ -21,9 +21,9 @@ class CryptoCurrencyController(val cryptoCurrencyHandler: CryptoCurrencyHandlerV
     }
 
 
-    @PutMapping("/{currencySymbol}/impl/{implUuid}")
+    @PutMapping("/{currency}/impl/{implUuid}")
     suspend fun updateCurrencyImpl(
-            @PathVariable("currencySymbol") currencySymbol: String,
+            @PathVariable("currency") currencySymbol: String,
             @PathVariable("implUuid") implUuid: String,
             @RequestBody request: CryptoCurrencyCommand
     ): CryptoCurrencyCommand? {
@@ -34,31 +34,30 @@ class CryptoCurrencyController(val cryptoCurrencyHandler: CryptoCurrencyHandlerV
     }
 
 
-    @DeleteMapping("/{currencySymbol}/imp/{implUuid}")
+    @DeleteMapping("/{currency}/impl/{implUuid}")
     suspend fun deleteCurrencyImpl(
-            @PathVariable("currencySymbol") currencySymbol: String,
+            @PathVariable("currency") currencySymbol: String,
             @PathVariable("implUuid") implUuid: String,
-            @RequestBody request: CryptoCurrencyCommand
-    ): CryptoCurrencyCommand? {
-        return cryptoCurrencyHandler.updateImpl(request.apply {
-            this.currencySymbol = currencySymbol
-            this.implUuid = implUuid
-        })
+    ):Void? {
+       return cryptoCurrencyHandler.deleteImpl(
+                implUuid, currencySymbol)
     }
-
-
-
 
     @GetMapping("/impls")
-    suspend fun fetchCurrenciesImpls(@RequestParam("currency") currencySymbol:String?=null): CurrencyImps? {
+    suspend fun fetchImpls(@RequestParam("currency") currencySymbol: String? = null): CurrencyImps? {
         return cryptoCurrencyHandler.fetchCurrencyImpls(FetchImpls(currencySymbol = currencySymbol))
     }
 
-    @GetMapping("/impl/{implUuid}")
-    suspend fun fetchSpecificImpl(@PathVariable("implUuid") implUuid: String): CurrencyImps? {
-        return cryptoCurrencyHandler.fetchCurrencyImpls(FetchImpls(implUuid = implUuid))
+    @GetMapping("/{currency}/impls")
+    suspend fun fetchCurrencyImpls(@PathVariable("currency") currencySymbol: String): CurrencyImps? {
+        return cryptoCurrencyHandler.fetchCurrencyImpls(FetchImpls(currencySymbol = currencySymbol))
     }
 
+    @GetMapping("/{currency}/impl/{implUuid}")
+    suspend fun fetchSpecificImpl(@PathVariable("implUuid") implUuid: String,
+                                  @PathVariable("currency") currencySymbol: String): CurrencyImps? {
+        return cryptoCurrencyHandler.fetchCurrencyImpls(FetchImpls(implUuid = implUuid, currencySymbol = currencySymbol))
+    }
 
     @GetMapping("/chains")
     suspend fun getNetworks(@RequestParam(required = false) currency: String?): CurrencyImps? {

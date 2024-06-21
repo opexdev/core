@@ -51,6 +51,8 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+    volumes:
+      - documents:/Documents
   vault:
     image: ghcr.io/opexdev/vault-opex:${TAG}
     volumes:
@@ -120,6 +122,7 @@ volumes:
   wallet-data:
   vault-data:
   bc-gateway-data:
+  documents:
 
 networks:
   default:

@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.DependsOn
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
+import java.util.UUID
 import javax.annotation.PostConstruct
 
 @Component
@@ -94,7 +95,7 @@ class InitializeService(
 
     private suspend fun addCurrencies(data: List<Currency>) = coroutineScope {
         data.forEach {
-            currencyRepository.save(CurrencyModel(name = it.name, symbol = it.symbol, precision = it.precision)).awaitSingleOrNull()
+             runCatching {  currencyRepository.insert(name = it.name, symbol = it.symbol, uuid = UUID.randomUUID().toString(), precision = it.precision).awaitSingleOrNull()}
         }
     }
 }

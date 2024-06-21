@@ -33,40 +33,47 @@ class CurrencyHandlerImplV2(
     }
 
     override suspend fun updateImpl(request: CryptoCurrencyCommand): CryptoCurrencyCommand? {
-        return loadImpls(FetchImpls(implUuid = request.implUuid))
-                ?.awaitFirstOrElse { throw OpexError.CurrencyNotFound.exception() }?.let {
+        return loadImpls(FetchImpls(implUuid = request.implUuid, currencySymbol = request.currencySymbol))
+                ?.awaitFirstOrElse { throw OpexError.ImplNotFound.exception() }?.let {
                     doSave(it.toDto().updateTo(request).toModel().apply { id = it.id })?.toDto()
                 }
 
     }
 
-    override suspend fun deleteImpl(implUuid: String) {
-        loadImpls(FetchImpls(implUuid = implUuid))
-                ?.awaitFirstOrElse { throw OpexError.CurrencyNotFound.exception() }?.let {
-                    currencyImplementationRepository.deleteByImplUuid(implUuid)
-                            ?.awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    override suspend fun deleteImpl(implUuid: String, currency: String):Void? {
+
+        loadImpls(FetchImpls(implUuid = implUuid, currencySymbol = currency))
+                ?.awaitFirstOrElse { throw OpexError.ImplNotFound.exception() }?.let {
+                    try {
+                      return  currencyImplementationRepository.deleteByImplUuid(implUuid)?.awaitFirstOrNull()
+                    } catch (e: Exception) {
+                        throw OpexError.BadRequest.exception()
+
+                    }
                 }
+         return null
     }
 
     override suspend fun fetchCurrencyImpls(data: FetchImpls?): CurrencyImps? {
+        logger.info("going to fetch impls of ${data?.currencySymbol}")
         return CurrencyImps(loadImpls(data)?.map { it.toDto() }
                 ?.collect(Collectors.toList())?.awaitFirstOrNull())
     }
 
-    override suspend fun fetchImpl(implUuid: String): CryptoCurrencyCommand? {
-        return loadImpl(implUuid)?.awaitSingleOrNull()?.toDto()
+    override suspend fun fetchImpl(implUuid: String, currency: String): CryptoCurrencyCommand? {
+        return loadImpls(FetchImpls(currencySymbol = currency, implUuid = implUuid))?.awaitFirstOrNull()?.toDto()
 
     }
 
     private suspend fun loadImpls(request: FetchImpls?): Flux<CurrencyImplementationModel>? {
         return currencyImplementationRepository.findImpls(request?.currencySymbol, request?.implUuid, request?.chain, request?.currencyImplementationName)
-                ?: throw OpexError.CurrencyNotFound.exception()
+                ?: throw OpexError.ImplNotFound.exception()
 
     }
 
     private suspend fun loadImpl(request: String): Mono<CurrencyImplementationModel>? {
         return currencyImplementationRepository.findByImplUuid(request)
-                ?: throw OpexError.CurrencyNotFound.exception()
+                ?: throw OpexError.ImplNotFound.exception()
 
     }
 

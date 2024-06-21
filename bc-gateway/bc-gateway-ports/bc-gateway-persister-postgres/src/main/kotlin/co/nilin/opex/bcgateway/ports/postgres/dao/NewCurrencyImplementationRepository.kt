@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono
 interface NewCurrencyImplementationRepository : ReactiveCrudRepository<CurrencyImplementationModel, Long> {
     fun findByImplUuid(uuid:String): Mono<CurrencyImplementationModel>?
 
-    @Query("select * from currency_implementations where (:impluuid is null or impl_uuid=:impluuid) and (:currencySymbol is null or currency_symbol=:currencySymbol ) and (:implementationSymbol =null or implementation_symbol=:implementationSymbol ) and (:chain =null or chain=:chain )  ")
+    @Query("select * from currency_implementations where (:impluuid is null or impl_uuid=:impluuid) and (:currencySymbol is null or currency_symbol=:currencySymbol ) and (:implementationSymbol is null or implementation_symbol=:implementationSymbol ) and (:chain is null or chain=:chain )  ")
     fun findImpls(currencySymbol:String?=null,implUuid:String?=null,chain:String?=null,implementationSymbol:String?=null): Flux<CurrencyImplementationModel>?
 
 
