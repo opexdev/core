@@ -30,16 +30,18 @@ private class CurrencyServiceTest {
         assertThat(c.precision).isEqualTo(VALID.CURRENCY.precision)
     }
 
-    @Test
-    fun givenNoCurrency_whenGetCurrency_thenThrowException(): Unit = runBlocking {
-        every { currencyRepository.fetchCurrency(symbol = VALID.CURRENCY.symbol) } returns Mono.empty()
-            assertThrows(OpexException::class.java) { runBlocking {  currencyService.fetchCurrency(FetchCurrency(symbol = VALID.CURRENCY.symbol) )}}
-
-    }
-
-    @Test
-    fun givenNoCurrency_whenGetCurrencyWithEmptySymbol_thenThrowException(): Unit = runBlocking {
-        every { currencyRepository.fetchCurrency(symbol = "") } returns Mono.empty()
-        assertThrows(OpexException::class.java) { runBlocking {  currencyService.fetchCurrency(FetchCurrency(symbol = "")) }}
-    }
+    //todo check
+    //These tests are disabled because fetchCurrency should not throw 404. it is a service provider for uppoer services and upper services should decide base on fetchCurrency result
+//    @Test
+//    fun givenNoCurrency_whenGetCurrency_thenThrowException(): Unit = runBlocking {
+//        every { currencyRepository.fetchCurrency(symbol = VALID.CURRENCY.symbol) } returns Mono.empty()
+//            assertThrows(OpexException::class.java) { runBlocking {  currencyService.fetchCurrency(FetchCurrency(symbol = VALID.CURRENCY.symbol) )}}
+//
+//    }
+//
+//    @Test
+//    fun givenNoCurrency_whenGetCurrencyWithEmptySymbol_thenThrowException(): Unit = runBlocking {
+//        every { currencyRepository.fetchCurrency(symbol = "") } returns Mono.empty()
+//        assertThrows(OpexException::class.java) { runBlocking {  currencyService.fetchCurrency(FetchCurrency(symbol = "")) }}
+//    }
 }
