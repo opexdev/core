@@ -57,6 +57,7 @@ class SecurityConfig(private val webClient: WebClient) {
                 .pathMatchers("/wallet-sync/**").hasRoleAndLevel("System")
                 .pathMatchers("/currency/chains").hasRoleAndLevel("user")
                 .pathMatchers("/currency/**").hasRoleAndLevel("System")
+                .pathMatchers("/crypto-currency/**").hasRoleAndLevel("System")
                 .anyExchange().authenticated()
                 .and()
                 .oauth2ResourceServer()
