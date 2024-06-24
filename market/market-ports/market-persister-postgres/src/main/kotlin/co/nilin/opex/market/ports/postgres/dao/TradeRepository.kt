@@ -364,4 +364,22 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
     """
     )
     fun findByMostTrades(since: LocalDateTime): Mono<TradeVolumeStat>
+
+
+    @Query("select t.trade_date,\n" +
+            "t.matched_quantity AS volume,\n" +
+            "t.matched_price AS price,\n" +
+            "CASE\n" +
+            "WHEN t.maker_uuid = :user THEN t.maker_commission\n" +
+            "WHEN t.taker_uuid = :user THEN t.taker_commission\n" +
+            "END AS fee,\n" +
+            "CASE\n" +
+            "WHEN t.maker_uuid = :user THEN o1.side\n" +
+            "WHEN t.taker_uuid = :user THEN o2.side\n" +
+            "END AS user_role\n" +
+            "FROM trades t\n" +
+            "INNER JOIN orders o1 ON t.maker_ouid = o1.ouid\n" +
+            "LEFT JOIN orders o2 ON t.taker_ouid = o2.ouid\n" +
+            "WHERE (t.maker_uuid = :user OR t.taker_uuid = :user);")
+    fun findTxOfTrades()
 }
