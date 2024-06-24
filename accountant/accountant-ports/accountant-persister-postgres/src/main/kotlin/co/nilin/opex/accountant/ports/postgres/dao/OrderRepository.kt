@@ -9,6 +9,7 @@ import reactor.core.publisher.Mono
 
 @Repository
 interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
+
     @Query("select * from orders where ouid = :ouid")
     fun findByOuid(@Param("ouid") ouid: String): Mono<OrderModel>
 }

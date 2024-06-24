@@ -45,6 +45,10 @@ CREATE TABLE IF NOT EXISTS fi_actions
     create_date          TIMESTAMP   NOT NULL,
     status               VARCHAR(20)
 );
+CREATE INDEX IF NOT EXISTS idx_fi_actions_symbol ON fi_actions(symbol);
+CREATE INDEX IF NOT EXISTS idx_fi_event_type ON fi_actions(event_type);
+CREATE INDEX IF NOT EXISTS idx_fi_actions_status ON fi_actions(status);
+CREATE INDEX IF NOT EXISTS idx_fi_actions_pointer ON fi_actions(pointer);
 
 CREATE TABLE IF NOT EXISTS fi_action_retry
 (
