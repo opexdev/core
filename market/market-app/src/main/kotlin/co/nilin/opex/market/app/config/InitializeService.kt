@@ -21,10 +21,10 @@ class InitializeService(private val rateRepository: CurrencyRateRepository) {
     @PostConstruct
     fun init() = runBlocking {
         preferences.currencies.forEach {
-            rateRepository.createOrUpdate(it.symbol, it.symbol, RateSource.MARKET, BigDecimal.ONE)
+            /*rateRepository.createOrUpdate(it.symbol, it.symbol, RateSource.MARKET, BigDecimal.ONE)
                 .awaitSingleOrNull()
             rateRepository.createOrUpdate(it.symbol, it.symbol, RateSource.EXTERNAL, BigDecimal.ONE)
-                .awaitSingleOrNull()
+                .awaitSingleOrNull()*/
         }
     }
 }

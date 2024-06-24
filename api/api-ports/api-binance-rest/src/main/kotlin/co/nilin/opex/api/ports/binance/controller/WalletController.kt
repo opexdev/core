@@ -3,11 +3,11 @@ package co.nilin.opex.api.ports.binance.controller
 import co.nilin.opex.api.core.inout.DepositDetails
 import co.nilin.opex.api.core.inout.TransactionHistoryResponse
 import co.nilin.opex.api.core.spi.*
-import co.nilin.opex.api.core.utils.Interval
 import co.nilin.opex.api.ports.binance.data.*
 import co.nilin.opex.api.ports.binance.util.jwtAuthentication
 import co.nilin.opex.api.ports.binance.util.tokenValue
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.common.utils.Interval
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.GetMapping

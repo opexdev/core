@@ -1,5 +1,6 @@
 package co.nilin.opex.market.app.service
 
+import co.nilin.opex.common.utils.Interval
 import co.nilin.opex.market.app.utils.asLocalDateTime
 import co.nilin.opex.market.core.spi.MarketQueryHandler
 import kotlinx.coroutines.runBlocking
@@ -14,10 +15,9 @@ class ReportingService(private val marketQueryHandler: MarketQueryHandler) {
 
     @Scheduled(initialDelay = 60000, fixedDelay = 1000 * 60 * 30)
     private fun reporting() {
-        runBlocking{
+        runBlocking {
             try {
-
-                val count = marketQueryHandler.numberOfOrders(LocalDateTime.now().minusMinutes(15), null)
+                val count = marketQueryHandler.numberOfOrders(Interval.FifteenMinutes, null)
                 logger.info("in the last 30 minutes, the number of orders : $count")
             } catch (e: Exception) {
                 logger.error("Could not report orders cont", e)

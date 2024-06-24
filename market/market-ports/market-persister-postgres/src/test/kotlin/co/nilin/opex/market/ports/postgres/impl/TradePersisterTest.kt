@@ -3,6 +3,7 @@ package co.nilin.opex.market.ports.postgres.impl
 import co.nilin.opex.market.ports.postgres.dao.CurrencyRateRepository
 import co.nilin.opex.market.ports.postgres.dao.TradeRepository
 import co.nilin.opex.market.ports.postgres.impl.sample.VALID
+import co.nilin.opex.market.ports.postgres.util.RedisCacheHelper
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
@@ -14,7 +15,8 @@ class TradePersisterTest {
 
     private val tradeRepository = mockk<TradeRepository>()
     private val currencyRateRepository = mockk<CurrencyRateRepository>()
-    private val tradePersister = TradePersisterImpl(tradeRepository, currencyRateRepository)
+    private val cacheHelper = mockk<RedisCacheHelper>()
+    private val tradePersister = TradePersisterImpl(tradeRepository, currencyRateRepository, cacheHelper)
 
     @Test
     fun givenTradeRepo_whenSaveRichTrade_thenSuccess(): Unit = runBlocking {

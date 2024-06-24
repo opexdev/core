@@ -8,7 +8,6 @@ x-postgres-db: &postgres-db
     - POSTGRES_READ_ONLY_PASSWORD=${DB_READ_ONLY_PASS:-hiopex}
   networks:
     - default
-    - opex
   deploy:
     restart_policy:
       condition: on-failure
@@ -25,7 +24,6 @@ services:
       - ALLOW_ANONYMOUS_LOGIN=yes
       - ZOOKEEPER_CLIENT_PORT=2181
     networks:
-      - opex
       - default
     deploy:
       restart_policy:
@@ -47,7 +45,6 @@ services:
     depends_on:
       - zookeeper
     networks:
-      - opex
       - default
     deploy:
       restart_policy:
@@ -69,7 +66,6 @@ services:
     depends_on:
       - zookeeper
     networks:
-      - opex
       - default
     deploy:
       restart_policy:
@@ -91,7 +87,6 @@ services:
     depends_on:
       - zookeeper
     networks:
-      - opex
       - default
     deploy:
       restart_policy:
@@ -106,7 +101,6 @@ services:
               properties:
                 bootstrap.servers: "kafka-1:29092,kafka-2:29092,kafka-3:29092"
     networks:
-      - opex
       - default
     depends_on:
       - kafka-1
@@ -142,7 +136,6 @@ services:
     environment:
       - CONSUL_BIND_INTERFACE=eth0
     networks:
-      - opex
       - default
     deploy:
       restart_policy:
@@ -156,7 +149,17 @@ services:
     environment:
       - REDIS_REPLICATION_MODE=master
     networks:
-      - opex
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
+  redis-cache:
+    image: redis/redis-stack:latest
+    volumes:
+      - redis-cache-data:/data
+    environment:
+      - REDIS_REPLICATION_MODE=master
+    networks:
       - default
     deploy:
       restart_policy:
@@ -204,7 +207,6 @@ services:
     configs:
       - preferences.yml
     networks:
-      - opex
       - default
     depends_on:
       - kafka-1
@@ -230,7 +232,6 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
     networks:
-      - opex
       - default
     depends_on:
       - kafka-1
@@ -254,7 +255,6 @@ services:
     configs:
       - preferences.yml
     networks:
-      - opex
       - default
     depends_on:
       - kafka-1
@@ -273,7 +273,6 @@ services:
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - CONSUL_HOST=consul
     networks:
-      - opex
       - default
     depends_on:
       - kafka-1
@@ -314,7 +313,6 @@ services:
       - vault
       - postgres-auth
     networks:
-      - opex
       - default
     labels:
       collect_logs: "true"
@@ -345,7 +343,6 @@ services:
       - vault
       - postgres-wallet
     networks:
-      - opex
       - default
     labels:
       collect_logs: "true"
@@ -371,8 +368,8 @@ services:
       - consul
       - vault
       - postgres-market
+      - redis-cache
     networks:
-      - opex
       - default
     labels:
       collect_logs: "true"
@@ -402,7 +399,6 @@ services:
       - vault
       - postgres-api
     networks:
-      - opex
       - default
     labels:
       collect_logs: "true"
@@ -433,7 +429,6 @@ services:
       - vault
       - postgres-bc-gateway
     networks:
-      - opex
       - default
     labels:
       collect_logs: "true"
@@ -449,6 +444,7 @@ volumes:
   vault-data:
   redis-data:
   redis.conf:
+  redis-cache-data:
   accountant-data:
   eventlog-data:
   auth-data:

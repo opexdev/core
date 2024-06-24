@@ -45,9 +45,36 @@ CREATE TABLE IF NOT EXISTS fi_actions
     create_date          TIMESTAMP   NOT NULL,
     status               VARCHAR(20)
 );
+CREATE INDEX IF NOT EXISTS idx_fi_actions_symbol ON fi_actions(symbol);
+CREATE INDEX IF NOT EXISTS idx_fi_event_type ON fi_actions(event_type);
+CREATE INDEX IF NOT EXISTS idx_fi_actions_status ON fi_actions(status);
+CREATE INDEX IF NOT EXISTS idx_fi_actions_pointer ON fi_actions(pointer);
 
-ALTER TABLE fi_actions ADD COLUMN IF NOT EXISTS detail_json TEXT;
-ALTER TABLE fi_actions ADD COLUMN IF NOT EXISTS category_name VARCHAR(36);
+CREATE TABLE IF NOT EXISTS fi_action_retry
+(
+    id            SERIAL PRIMARY KEY,
+    fa_id         INTEGER   NOT NULL UNIQUE REFERENCES fi_actions (id),
+    retries       INTEGER   NOT NULL DEFAULT 0,
+    next_run_time TIMESTAMP NOT NULL,
+    is_resolved   BOOLEAN   NOT NULL DEFAULT false,
+    has_given_up  BOOLEAN   NOT NULL DEFAULT false
+);
+
+CREATE TABLE IF NOT EXISTS fi_action_error
+(
+    id       SERIAL PRIMARY KEY,
+    fa_id    INTEGER   NOT NULL REFERENCES fi_actions (id),
+    error    TEXT      NOT NULL,
+    message  TEXT      NOT NULL,
+    body     TEXT,
+    retry_id INTEGER REFERENCES fi_action_retry (id),
+    date     TIMESTAMP NOT NULL DEFAULT CURRENT_DATE
+);
+
+ALTER TABLE fi_actions
+    ADD COLUMN IF NOT EXISTS detail_json TEXT;
+ALTER TABLE fi_actions
+    ADD COLUMN IF NOT EXISTS category_name VARCHAR(36);
 
 CREATE TABLE IF NOT EXISTS pair_config
 (

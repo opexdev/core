@@ -4,9 +4,9 @@ import co.nilin.opex.api.core.inout.AssignResponse
 import co.nilin.opex.api.core.inout.CurrencyImplementation
 import co.nilin.opex.api.core.inout.DepositDetails
 import co.nilin.opex.api.core.spi.BlockchainGatewayProxy
-import co.nilin.opex.api.core.utils.LoggerDelegate
 import co.nilin.opex.api.ports.proxy.data.AssignAddressRequest
 import co.nilin.opex.api.ports.proxy.data.DepositDetailsRequest
+import co.nilin.opex.common.utils.LoggerDelegate
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Value

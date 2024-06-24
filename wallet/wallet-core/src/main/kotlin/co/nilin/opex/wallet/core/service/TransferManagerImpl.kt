@@ -52,9 +52,9 @@ class TransferManagerImpl(
         val amountToTransfer = transferCommand.destAmount.amount
 
         if (!walletOwnerManager.isDepositAllowed(destWalletOwner, Amount(destWallet.currency, amountToTransfer)))
-            throw DepositLimitExceededException()
+            throw OpexError.DepositLimitExceeded.exception()
         if (!walletManager.isDepositAllowed(destWallet, amountToTransfer))
-            throw DepositLimitExceededException()
+            throw OpexError.DepositLimitExceeded.exception()
 
         walletManager.decreaseBalance(srcWallet, transferCommand.amount.amount)
         walletManager.increaseBalance(destWallet, amountToTransfer)

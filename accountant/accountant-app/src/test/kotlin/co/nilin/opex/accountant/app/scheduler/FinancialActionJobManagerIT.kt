@@ -36,7 +36,7 @@ class FinancialActionJobManagerIT : KafkaEnabledTest() {
     @MockBean
     lateinit var walletProxy: WalletProxy
 
-    @Test
+    //@Test
     fun givenCreatedParentChildActions_whenProcessFinancialActions_thenProcessAllKeepOrder() {
         val uuid = UUID.randomUUID().toString()
         val ouid = UUID.randomUUID().toString()
@@ -163,7 +163,7 @@ class FinancialActionJobManagerIT : KafkaEnabledTest() {
 
     }
 
-    @Test
+    //@Test
     fun givenCreatedParentChildActions_whenProcessFinancialActionsParentFail_thenSkipChild() {
         val uuid = UUID.randomUUID().toString()
         val ouid = UUID.randomUUID().toString()

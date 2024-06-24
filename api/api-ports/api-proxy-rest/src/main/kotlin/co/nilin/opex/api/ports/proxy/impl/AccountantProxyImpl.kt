@@ -3,7 +3,7 @@ package co.nilin.opex.api.ports.proxy.impl
 import co.nilin.opex.api.core.inout.PairFeeResponse
 import co.nilin.opex.api.core.inout.PairInfoResponse
 import co.nilin.opex.api.core.spi.AccountantProxy
-import co.nilin.opex.api.core.utils.LoggerDelegate
+import co.nilin.opex.common.utils.LoggerDelegate
 import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType

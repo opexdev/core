@@ -2,7 +2,8 @@ package co.nilin.opex.api.ports.proxy.impl
 
 import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.MarketDataProxy
-import co.nilin.opex.api.core.utils.LoggerDelegate
+import co.nilin.opex.common.utils.Interval
+import co.nilin.opex.common.utils.LoggerDelegate
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Value
@@ -22,10 +23,10 @@ class MarketDataProxyImpl(private val webClient: WebClient) : MarketDataProxy {
     @Value("\${app.market.url}")
     private lateinit var baseUrl: String
 
-    override suspend fun getTradeTickerData(startFrom: Long): List<PriceChange> {
+    override suspend fun getTradeTickerData(interval: Interval): List<PriceChange> {
         return webClient.get()
             .uri("$baseUrl/v1/market/ticker") {
-                it.queryParam("since", startFrom)
+                it.queryParam("interval", interval)
                 it.build()
             }.accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -36,10 +37,10 @@ class MarketDataProxyImpl(private val webClient: WebClient) : MarketDataProxy {
             .awaitFirstOrElse { emptyList() }
     }
 
-    override suspend fun getTradeTickerDataBySymbol(symbol: String, startFrom: Long): PriceChange {
+    override suspend fun getTradeTickerDataBySymbol(symbol: String, interval: Interval): PriceChange {
         return webClient.get()
             .uri("$baseUrl/v1/market/$symbol/ticker") {
-                it.queryParam("since", startFrom)
+                it.queryParam("interval", interval)
                 it.build()
             }.accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -47,7 +48,7 @@ class MarketDataProxyImpl(private val webClient: WebClient) : MarketDataProxy {
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<PriceChange>()
             .awaitSingleOrNull()
-            ?: PriceChange(symbol, openTime = Date().time, closeTime = startFrom)
+            ?: PriceChange(symbol, openTime = Date().time, closeTime = interval.getTime())
     }
 
     override suspend fun openBidOrders(symbol: String, limit: Int): List<OrderBook> {
@@ -184,10 +185,10 @@ class MarketDataProxyImpl(private val webClient: WebClient) : MarketDataProxy {
             .awaitFirstOrElse { emptyList() }
     }
 
-    override suspend fun countActiveUsers(since: Long): Long {
+    override suspend fun countActiveUsers(interval: Interval): Long {
         return webClient.get()
             .uri("$baseUrl/v1/market/active-users") {
-                it.queryParam("interval", since)
+                it.queryParam("interval", interval)
                 it.build()
             }.accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -198,10 +199,10 @@ class MarketDataProxyImpl(private val webClient: WebClient) : MarketDataProxy {
             ?.value ?: 0
     }
 
-    override suspend fun countTotalOrders(since: Long): Long {
+    override suspend fun countTotalOrders(interval: Interval): Long {
         return webClient.get()
             .uri("$baseUrl/v1/market/orders-count") {
-                it.queryParam("interval", since)
+                it.queryParam("interval", interval)
                 it.build()
             }.accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -212,10 +213,10 @@ class MarketDataProxyImpl(private val webClient: WebClient) : MarketDataProxy {
             ?.value ?: 0
     }
 
-    override suspend fun countTotalTrades(since: Long): Long {
+    override suspend fun countTotalTrades(interval: Interval): Long {
         return webClient.get()
             .uri("$baseUrl/v1/market/trades-count") {
-                it.queryParam("interval", since)
+                it.queryParam("interval", interval)
                 it.build()
             }.accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
