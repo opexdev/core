@@ -8,7 +8,7 @@ import java.math.BigDecimal
 
 
 fun CryptoCurrencyCommand.toModel(): CurrencyImplementationModel {
-    return CurrencyImplementationModel(null, implUuid!!, currencySymbol, implementationSymbol, chain, isToken!!, tokenAddress, tokenName, withdrawAllowed!!, depositAllowed!!, withdrawFee!!, withdrawMin!!, decimal, isActive
+    return CurrencyImplementationModel(null, implUuid!!, currencySymbol, implementationSymbol, chain, isToken, tokenAddress, tokenName, withdrawAllowed!!, depositAllowed!!, withdrawFee!!, withdrawMin, decimal, isActive
 
 
     )

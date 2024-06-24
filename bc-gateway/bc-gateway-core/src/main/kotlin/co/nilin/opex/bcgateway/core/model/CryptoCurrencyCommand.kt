@@ -7,21 +7,18 @@ data class CryptoCurrencyCommand(
 
         var currencySymbol: String,
         var implUuid: String?,
-        var implementationSymbol: String,
+        var implementationSymbol: String?=currencySymbol,
         var isActive: Boolean? = true,
         var isToken: Boolean? = false,
-        var tokenName: String?=null,
-        var tokenAddress: String?=null,
+        var tokenName: String? = null,
+        var tokenAddress: String? = null,
         var withdrawFee: BigDecimal?,
         var withdrawAllowed: Boolean? = true,
         var depositAllowed: Boolean? = true,
-        val withdrawMin: BigDecimal?= BigDecimal.ZERO,
+        val withdrawMin: BigDecimal? = BigDecimal.ZERO,
         var decimal: Int,
         var chain: String,
-        var chainDetail:Chain?=null
-
-
-
+        var chainDetail: Chain? = null
 
 
 ) {
@@ -33,7 +30,6 @@ data class CryptoCurrencyCommand(
     }
 
 }
-
 
 
 data class CurrencyImps(var imps: List<CryptoCurrencyCommand>?)
