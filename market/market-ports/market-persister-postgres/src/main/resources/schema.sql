@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS order_status
 CREATE TABLE IF NOT EXISTS open_orders
 (
     id                SERIAL PRIMARY KEY,
-    ouid              VARCHAR(72) NOT NULL UNIQUE ,
+    ouid              VARCHAR(72) NOT NULL UNIQUE,
     executed_quantity DECIMAL,
     status            INTEGER     NOT NULL
 );
@@ -64,6 +64,8 @@ CREATE TABLE IF NOT EXISTS trades
     taker_uuid             VARCHAR(72) NOT NULL,
     create_date            TIMESTAMP
 );
+CREATE INDEX IF NOT EXISTS idx_trades_symbol on trades (symbol);
+CREATE INDEX IF NOT EXISTS idx_trades_create_date on trades (create_date);
 
 CREATE TABLE IF NOT EXISTS currency_rate
 (
@@ -95,7 +97,7 @@ BEGIN
                      date_trunc('minute', start_ts),
                      end_ts,
                      round_interval
-                 ) n;
+             ) n;
 END;
 
 $$ LANGUAGE 'plpgsql';
