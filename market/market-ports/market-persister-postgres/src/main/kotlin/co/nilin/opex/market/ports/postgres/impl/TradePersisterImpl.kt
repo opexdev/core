@@ -64,10 +64,10 @@ class TradePersisterImpl(
         logger.info("Rate between ${pair[0]} and ${pair[1]} updated")
 
         try {
-            if (tradeEntity == null || !redisCacheHelper.hasKey("recentTrades")) return
+            if (tradeEntity == null || !redisCacheHelper.hasKey("recentTrades:${trade.pair.lowercase()}")) return
             val isMakerBuyer = trade.makerDirection == OrderDirection.BID
             redisCacheHelper.putListItem(
-                "recentTrades",
+                "recentTrades:${trade.pair.lowercase()}",
                 MarketTrade(
                     tradeEntity.symbol,
                     tradeEntity.baseAsset,

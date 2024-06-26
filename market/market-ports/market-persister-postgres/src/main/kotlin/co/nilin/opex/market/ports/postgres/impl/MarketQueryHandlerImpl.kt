@@ -86,7 +86,8 @@ class MarketQueryHandlerImpl(
 
     //TODO need better query
     override suspend fun recentTrades(symbol: String, limit: Int): List<MarketTrade> {
-        val recentTradesCache = redisCacheHelper.getList<MarketTrade>("recentTrades")
+        val cacheKey = "recentTrades:${symbol.lowercase()}"
+        val recentTradesCache = redisCacheHelper.getList<MarketTrade>(cacheKey)
         if (!recentTradesCache.isNullOrEmpty())
             return recentTradesCache.toList()
 
@@ -111,8 +112,8 @@ class MarketQueryHandlerImpl(
                     isMakerBuyer
                 )
             }.toList()
-            .onEach { redisCacheHelper.putListItem("recentTrades", it) }
-            .also { redisCacheHelper.setExpiration("recentTrades", 60.minutes()) }
+            .onEach { redisCacheHelper.putListItem(cacheKey, it) }
+            .also { redisCacheHelper.setExpiration(cacheKey, 60.minutes()) }
     }
 
     override suspend fun lastPrice(symbol: String?): List<PriceTicker> {
