@@ -2,6 +2,7 @@ package co.nilin.opex.market.core.spi
 
 import co.nilin.opex.common.utils.Interval
 import co.nilin.opex.market.core.inout.*
+import java.time.LocalDateTime
 
 interface MarketQueryHandler {
 
@@ -22,11 +23,11 @@ interface MarketQueryHandler {
     suspend fun getBestPriceForSymbols(symbols: List<String>): List<BestPrice>
 
     suspend fun getCandleInfo(
-        symbol: String,
-        interval: String,
-        startTime: Long?,
-        endTime: Long?,
-        limit: Int
+            symbol: String,
+            interval: String,
+            startTime: Long?,
+            endTime: Long?,
+            limit: Int
     ): List<CandleData>
 
     suspend fun numberOfActiveUsers(interval: Interval): Long
@@ -42,5 +43,6 @@ interface MarketQueryHandler {
     suspend fun mostVolume(interval: Interval): TradeVolumeStat?
 
     suspend fun mostTrades(interval: Interval): TradeVolumeStat?
+
 
 }

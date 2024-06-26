@@ -4,6 +4,7 @@ import co.nilin.opex.common.OpexError
 import co.nilin.opex.market.core.inout.*
 import co.nilin.opex.market.core.spi.UserQueryHandler
 import org.springframework.web.bind.annotation.*
+import java.time.LocalDateTime
 
 @RestController
 @RequestMapping("/v1/user")
@@ -21,9 +22,9 @@ class UserDataController(private val userQueryHandler: UserQueryHandler) {
 
     @GetMapping("/{uuid}/orders/{symbol}/open")
     suspend fun getUserOpenOrders(
-        @PathVariable uuid: String,
-        @PathVariable symbol: String,
-        @RequestParam limit: Int
+            @PathVariable uuid: String,
+            @PathVariable symbol: String,
+            @RequestParam limit: Int
     ): List<Order> {
         return userQueryHandler.openOrders(uuid, symbol, limit)
     }
@@ -36,6 +37,16 @@ class UserDataController(private val userQueryHandler: UserQueryHandler) {
     @PostMapping("/{uuid}/trades")
     suspend fun getUserTrades(@PathVariable uuid: String, @RequestBody request: TradeRequest): List<Trade> {
         return userQueryHandler.allTrades(uuid, request)
+    }
+
+    @GetMapping("/tx/{user}/history")
+    suspend fun getTxOfTrades(@PathVariable user: String,
+                              @RequestParam("startDate") startDate: LocalDateTime? = null,
+                              @RequestParam("endDate") endDate: LocalDateTime? = null,
+                              @RequestParam("ascendingByTime") ascendingSort: Boolean? = true,
+                              @RequestParam("size") size: Int? = 20,
+                              @RequestParam("offset") offset: Int? = 0): TxOfTrades? {
+        return userQueryHandler.txOfTrades(user, startDate, endDate, offset, size, ascendingSort?:true)
     }
 
 }

@@ -1,6 +1,7 @@
 package co.nilin.opex.market.core.spi
 
 import co.nilin.opex.market.core.inout.*
+import java.time.LocalDateTime
 
 interface UserQueryHandler {
 
@@ -13,4 +14,7 @@ interface UserQueryHandler {
     suspend fun allOrders(uuid: String, allOrderRequest: AllOrderRequest): List<Order>
 
     suspend fun allTrades(uuid: String, request: TradeRequest): List<Trade>
+
+    suspend fun txOfTrades(user: String, startDate: LocalDateTime?, endDate: LocalDateTime?, offset: Int?, size: Int?, ascendingByTime: Boolean): TxOfTrades?
+
 }
