@@ -28,7 +28,8 @@ class TransactionController(private val manager: TransactionManager) {
                 LocalDateTime.ofInstant(Instant.ofEpochMilli(request.endTime), ZoneId.systemDefault())
             },
             request.limit!!,
-            request.offset!!
+            request.offset!!,
+                request.ascendingByTime?:false
         )
     }
 

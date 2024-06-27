@@ -58,6 +58,6 @@ class WalletSyncServiceImpl(
         val amount = transfer.amount.divide(BigDecimal.TEN.pow(currencyImpl.decimal))
         val symbol = currencyImpl.currency.symbol
         logger.info("Sending deposit to $uuid - $amount $symbol")
-        walletProxy.transfer(uuid, symbol, amount, transfer.txHash)
+        walletProxy.transfer(uuid, symbol, amount, transfer.txHash,transfer.chain)
     }
 }

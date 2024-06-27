@@ -33,11 +33,11 @@ class WalletProxyImpl(private val webClient: WebClient,
 //    }
 
 
-    override suspend fun transfer(uuid: String, symbol: String, amount: BigDecimal, hash: String) {
+    override suspend fun transfer(uuid: String, symbol: String, amount: BigDecimal, hash: String, chain: String) {
 
         val token = extractBackgroundAuth.extractToken()
         webClient.post()
-                .uri(URI.create("$baseUrl/deposit/${amount}_${symbol}/${uuid}_main?transferRef=$hash"))
+                .uri(URI.create("$baseUrl/deposit/${amount}_${chain}_${symbol}/${uuid}_main?transferRef=$hash"))
                 .headers { httpHeaders ->
                     run {
                         httpHeaders.add("Content-Type", "application/json");

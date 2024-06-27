@@ -15,6 +15,6 @@ interface UserQueryHandler {
 
     suspend fun allTrades(uuid: String, request: TradeRequest): List<Trade>
 
-    suspend fun txOfTrades(user: String, startDate: LocalDateTime?, endDate: LocalDateTime?, offset: Int?, size: Int?, ascendingByTime: Boolean): TxOfTrades?
+    suspend fun txOfTrades(transactionRequest: TransactionRequest): TxOfTrades?
 
 }

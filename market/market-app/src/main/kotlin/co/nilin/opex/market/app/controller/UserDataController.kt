@@ -3,6 +3,8 @@ package co.nilin.opex.market.app.controller
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.market.core.inout.*
 import co.nilin.opex.market.core.spi.UserQueryHandler
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDateTime
 
@@ -41,12 +43,11 @@ class UserDataController(private val userQueryHandler: UserQueryHandler) {
 
     @GetMapping("/tx/{user}/history")
     suspend fun getTxOfTrades(@PathVariable user: String,
-                              @RequestParam("startDate") startDate: LocalDateTime? = null,
-                              @RequestParam("endDate") endDate: LocalDateTime? = null,
-                              @RequestParam("ascendingByTime") ascendingSort: Boolean? = true,
-                              @RequestParam("size") size: Int? = 20,
-                              @RequestParam("offset") offset: Int? = 0): TxOfTrades? {
-        return userQueryHandler.txOfTrades(user, startDate, endDate, offset, size, ascendingSort?:true)
+                              @RequestBody transactionRequest: TransactionRequest,
+                              @CurrentSecurityContext securityContext: SecurityContext): TxOfTrades? {
+        if (securityContext.authentication.name != user)
+            throw OpexError.Forbidden.exception()
+        return userQueryHandler.txOfTrades(transactionRequest.apply { owner = user })
     }
 
 }

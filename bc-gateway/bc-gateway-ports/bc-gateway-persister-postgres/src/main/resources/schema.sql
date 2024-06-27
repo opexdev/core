@@ -90,3 +90,6 @@ CREATE TABLE IF NOT EXISTS deposits
     depositor        VARCHAR(72)  NOT NULL,
     depositor_memo   VARCHAR(72)
 );
+
+
+

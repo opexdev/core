@@ -16,6 +16,7 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Component
+import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
@@ -100,13 +101,23 @@ class UserQueryHandlerImpl(
         }.toList()
     }
 
-    override suspend fun txOfTrades(user: String, startDate: LocalDateTime?, endDate: LocalDateTime?, offset: Int?, size: Int?, ascendingByTime: Boolean): TxOfTrades? {
+    override suspend fun txOfTrades(transactionRequest: TransactionRequest): TxOfTrades? {
 
-        if (ascendingByTime)
-            return TxOfTrades(tradeRepository.findTxOfTradesDesc(user, startDate, endDate, offset, size
+        if (transactionRequest.ascendingByTime == true)
+            return TxOfTrades(tradeRepository.findTxOfTradesAsc(transactionRequest.owner!!,
+                    transactionRequest.startTime?.let { LocalDateTime.ofInstant(Instant.ofEpochMilli(transactionRequest.startTime!!), ZoneId.systemDefault()) }
+                            ?: null,
+                    transactionRequest.endTime?.let { LocalDateTime.ofInstant(Instant.ofEpochMilli(transactionRequest.endTime!!), ZoneId.systemDefault()) }
+                            ?: null,
+                    transactionRequest.offset, transactionRequest.limit
             ).collectList()?.awaitFirstOrNull())
         else
-            return TxOfTrades(tradeRepository.findTxOfTradesAsc(user, startDate, endDate, offset, size
+            return TxOfTrades(tradeRepository.findTxOfTradesDesc(transactionRequest.owner!!,
+                    transactionRequest.startTime?.let { LocalDateTime.ofInstant(Instant.ofEpochMilli(transactionRequest.startTime!!), ZoneId.systemDefault()) }
+                            ?: null,
+                    transactionRequest.endTime?.let { LocalDateTime.ofInstant(Instant.ofEpochMilli(transactionRequest.endTime!!), ZoneId.systemDefault()) }
+                            ?: null,
+                    transactionRequest.offset, transactionRequest.limit
             ).collectList()?.awaitFirstOrNull())
     }
 }

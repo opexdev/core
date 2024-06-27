@@ -234,8 +234,10 @@ class WithdrawService(
             startTime: LocalDateTime?,
             endTime: LocalDateTime?,
             limit: Int,
-            offset: Int
+            offset: Int,
+            ascendingByTime:Boolean?=false
     ): List<Withdraw> {
-        return withdrawPersister.findWithdrawHistory(uuid, coin, startTime, endTime, limit, offset)
+        return withdrawPersister.findWithdrawHistory(uuid, coin, startTime, endTime, limit, offset,ascendingByTime)
     }
+
 }
