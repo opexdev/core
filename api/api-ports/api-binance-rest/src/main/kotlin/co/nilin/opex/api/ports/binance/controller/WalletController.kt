@@ -11,6 +11,7 @@ import co.nilin.opex.common.utils.Interval
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.math.BigDecimal
@@ -149,6 +150,50 @@ class WalletController(
         }
     }
 
+
+    @GetMapping("/v2/capital/withdraw/history")
+    suspend fun getWithdrawTransactionsV2(
+            @RequestBody withdrawRequest:WithDrawRequest,
+            @CurrentSecurityContext securityContext: SecurityContext
+    ): List<WithdrawResponse> {
+        val validLimit = withdrawRequest.limit ?: 1000
+        val response = walletProxy.getWithdrawTransactions(
+                securityContext.jwtAuthentication().name,
+                securityContext.jwtAuthentication().tokenValue(),
+                withdrawRequest.coin,
+                withdrawRequest.startTime ?: null,
+                withdrawRequest.endTime ?: null,
+                if (validLimit > 1000 || validLimit < 1) 1000 else validLimit,
+                withdrawRequest.offset ?: 0,
+                withdrawRequest.ascendingByTime
+        )
+        return response.map {
+            val status = when (it.status) {
+                "CREATED" -> 0
+                "DONE" -> 1
+                "REJECTED" -> 2
+                else -> -1
+            }
+
+            WithdrawResponse(
+                    it.destAddress ?: "0x0",
+                    it.amount,
+                    LocalDateTime.ofInstant(Instant.ofEpochMilli(it.createDate), ZoneId.systemDefault())
+                            .toString()
+                            .replace("T", " "),
+                    it.destSymbol ?: "",
+                    it.withdrawId?.toString() ?: "",
+                    "",
+                    it.destNetwork ?: "",
+                    1,
+                    status,
+                    it.appliedFee.toString(),
+                    3,
+                    it.destTransactionRef ?: it.withdrawId.toString(),
+                    if (status == 1 && it.acceptDate != null) it.acceptDate!! else it.createDate
+            )
+        }
+    }
 
     @GetMapping("/v1/asset/tradeFee")
     suspend fun getPairFees(

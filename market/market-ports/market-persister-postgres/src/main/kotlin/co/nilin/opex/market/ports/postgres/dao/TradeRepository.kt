@@ -35,6 +35,7 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
             and (:symbol is null or symbol = :symbol) 
             and (:startTime is null or trade_date >= :startTime) 
             and (:endTime is null or trade_date < :endTime)
+        order by trade_date DESC 
         limit :limit
         """
     )
