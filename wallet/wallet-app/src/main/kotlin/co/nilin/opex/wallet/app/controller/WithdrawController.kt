@@ -118,6 +118,8 @@ class WithdrawController(private val withdrawService: WithdrawService) {
                 request.offset!!,
                 request.ascendingByTime
         ).map {
+
+
             WithdrawHistoryResponse(
                     it.withdrawId,
                     it.ownerUuid,
