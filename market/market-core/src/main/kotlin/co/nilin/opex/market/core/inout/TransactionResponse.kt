@@ -2,9 +2,11 @@ package co.nilin.opex.market.core.inout
 
 import java.math.BigDecimal
 import java.time.LocalDateTime
+import java.util.Date
 
-data class Transaction(
-        var createDate: LocalDateTime,
+
+data class TransactionDto(
+        var createDate: Date,
         var volume: BigDecimal,
         val transactionPrice: BigDecimal,
         var matchedPrice: BigDecimal,
@@ -14,4 +16,4 @@ data class Transaction(
         var user: String?=null
 )
 
-data class TxOfTrades(var transactions:List<Transaction?>?)
+data class TransactionResponse(var transactions:List<TransactionDto?>?)

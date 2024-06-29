@@ -7,6 +7,7 @@ import co.nilin.opex.market.ports.postgres.dao.OrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderStatusRepository
 import co.nilin.opex.market.ports.postgres.dao.TradeRepository
 import co.nilin.opex.market.ports.postgres.util.asOrderDTO
+import co.nilin.opex.market.ports.postgres.util.toDto
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -101,23 +102,23 @@ class UserQueryHandlerImpl(
         }.toList()
     }
 
-    override suspend fun txOfTrades(transactionRequest: TransactionRequest): TxOfTrades? {
+    override suspend fun txOfTrades(transactionRequest: TransactionRequest): TransactionResponse? {
 
         if (transactionRequest.ascendingByTime == true)
-            return TxOfTrades(tradeRepository.findTxOfTradesAsc(transactionRequest.owner!!,
+            return TransactionResponse(tradeRepository.findTxOfTradesAsc(transactionRequest.owner!!,
                     transactionRequest.startTime?.let { LocalDateTime.ofInstant(Instant.ofEpochMilli(transactionRequest.startTime!!), ZoneId.systemDefault()) }
                             ?: null,
                     transactionRequest.endTime?.let { LocalDateTime.ofInstant(Instant.ofEpochMilli(transactionRequest.endTime!!), ZoneId.systemDefault()) }
                             ?: null,
                     transactionRequest.offset, transactionRequest.limit
-            ).collectList()?.awaitFirstOrNull())
+            ).map { it.toDto() }.collectList()?.awaitFirstOrNull())
         else
-            return TxOfTrades(tradeRepository.findTxOfTradesDesc(transactionRequest.owner!!,
+            return TransactionResponse(tradeRepository.findTxOfTradesDesc(transactionRequest.owner!!,
                     transactionRequest.startTime?.let { LocalDateTime.ofInstant(Instant.ofEpochMilli(transactionRequest.startTime!!), ZoneId.systemDefault()) }
                             ?: null,
                     transactionRequest.endTime?.let { LocalDateTime.ofInstant(Instant.ofEpochMilli(transactionRequest.endTime!!), ZoneId.systemDefault()) }
                             ?: null,
                     transactionRequest.offset, transactionRequest.limit
-            ).collectList()?.awaitFirstOrNull())
+            ).map { it.toDto() }.collectList()?.awaitFirstOrNull())
     }
 }

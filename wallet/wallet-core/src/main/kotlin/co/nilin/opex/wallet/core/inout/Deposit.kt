@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.core.inout
 
 import java.math.BigDecimal
 import java.time.LocalDateTime
+import java.util.*
 
 data class Deposit(
         var ownerUuid: String,
@@ -17,7 +18,7 @@ data class Deposit(
         var note: String?=null,
         var status: String?=null,
         var depositType:String?=null,
-        var createDate: LocalDateTime? = LocalDateTime.now(),
+        var createDate: Date?=Date(),
 )
 
 

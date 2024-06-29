@@ -34,7 +34,7 @@ class DepositController(private val depositPersister: DepositPersister,
     ): Deposits {
         if (securityContext.authentication.name != uuid)
             throw OpexError.Forbidden.exception()
-        return Deposits(depositPersister.findDepositHistory(
+        return depositPersister.findDepositHistory(
                 uuid,
                 request.coin,
                 request.startTime?.let {
@@ -47,13 +47,8 @@ class DepositController(private val depositPersister: DepositPersister,
                 request.limit!!,
                 request.offset!!,
                 request.ascendingByTime
-        ).deposits.map {
-            it.apply { it.createDate?.atZone(ZoneId.systemDefault())?.toInstant()?.toEpochMilli() }
-
-        })
+        )
     }
-
-
 
 
     @PostMapping("/manually/{amount}_{symbol}/{receiverUuid}")
