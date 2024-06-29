@@ -90,7 +90,6 @@ class TransferService(
     }
 
 
-
     @Transactional
     suspend fun deposit(
             symbol: String,
@@ -314,7 +313,7 @@ class TransferService(
 
 //        if (walletOwnerManager.findWalletOwner(receiverUuid)?.level !in arrayListOf<String>(preferences.admin.walletLevel,preferences.system.walletLevel))
 //            throw OpexException(OpexError.Error)
-        val tx= _transfer(
+        val tx = _transfer(
                 symbol,
                 "main",
                 senderUuid,
@@ -339,7 +338,7 @@ class TransferService(
                 status = "Done",
                 depositType = "System",
         ))
-        return  tx;
+        return tx;
     }
 
 
