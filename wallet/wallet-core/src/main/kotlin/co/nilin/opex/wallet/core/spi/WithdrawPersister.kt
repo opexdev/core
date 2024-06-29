@@ -48,6 +48,9 @@ interface WithdrawPersister {
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
         limit: Int,
-        offset: Int
+        offset: Int,
+        ascendingByTime: Boolean?
     ): List<Withdraw>
+
+
 }

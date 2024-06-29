@@ -96,7 +96,8 @@ class TransferController(private val transferService: TransferService) {
         transferService.batchTransfer(request)
     }
 
-    @PostMapping("/deposit/{amount}_{symbol}/{receiverUuid}_{receiverWalletType}")
+
+    @PostMapping("/deposit/{amount}_{chain}_{symbol}/{receiverUuid}_{receiverWalletType}")
     @ApiResponse(
             message = "OK",
             code = 200,
@@ -113,33 +114,10 @@ class TransferController(private val transferService: TransferService) {
             @PathVariable("receiverWalletType") receiverWalletType: String,
             @PathVariable("amount") amount: BigDecimal,
             @RequestParam("description") description: String?,
-            @RequestParam("transferRef") transferRef: String?
+            @RequestParam("transferRef") transferRef: String?,
+            @PathVariable("chain") chain: String?
     ): TransferResult {
-        return transferService.deposit(symbol, receiverUuid, receiverWalletType, amount, description, transferRef)
+        return transferService.deposit(symbol, receiverUuid, receiverWalletType, amount, description, transferRef, chain)
     }
 
-
-    @PostMapping("/manually/deposit/{amount}_{symbol}/{receiverUuid}")
-    @ApiResponse(
-            message = "OK",
-            code = 200,
-            examples = Example(
-                    ExampleProperty(
-                            value = "{ }",
-                            mediaType = "application/json"
-                    )
-            )
-    )
-    suspend fun depositManually(
-            @PathVariable("symbol") symbol: String,
-            @PathVariable("receiverUuid") receiverUuid: String,
-            @PathVariable("amount") amount: BigDecimal,
-            @RequestBody request: ManualTransferRequest,
-            @CurrentSecurityContext securityContext: SecurityContext
-    ): TransferResult {
-
-        return transferService.depositManually(symbol, receiverUuid,
-                securityContext.authentication.name
-                , amount, request)
-    }
 }

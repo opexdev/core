@@ -62,6 +62,7 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
             and (:symbol is null or symbol = :symbol)
             and (:startTime is null or update_date >= :startTime)
             and (:endTime is null or update_date < :endTime)
+        order by update_date DESC 
         limit :limit
         """
     )
