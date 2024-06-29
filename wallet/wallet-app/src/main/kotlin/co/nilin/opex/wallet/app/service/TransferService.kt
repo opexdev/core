@@ -298,7 +298,7 @@ class TransferService(
         //todo customize error message
         val senderLevel = walletOwnerManager.findWalletOwner(senderUuid)?.let { it.level }
                 ?: throw OpexException(OpexError.WalletOwnerNotFound)
-        val receiverLevel = walletOwnerManager.findWalletOwner(receiverUuid)?.let { it.level }
+        walletOwnerManager.findWalletOwner(receiverUuid)?.let { it.level }
                 ?: walletOwnerManager.createWalletOwner(
                         receiverUuid,
                         "not set",
@@ -308,8 +308,11 @@ class TransferService(
         if (senderLevel !in arrayListOf<String>(preferences.admin.walletLevel, preferences.system.walletLevel))
             throw OpexException(OpexError.Forbidden)
 
-        if (senderLevel == preferences.system.walletLevel && receiverLevel != preferences.admin.walletLevel)
-            throw OpexException(OpexError.Forbidden)
+        //todo need to fix conflict between otc and exchange
+
+//        if (senderLevel == preferences.system.walletLevel && receiverLevel != preferences.admin.walletLevel)
+//            throw OpexException(OpexError.Forbidden)
+
 
 //        if (walletOwnerManager.findWalletOwner(receiverUuid)?.level !in arrayListOf<String>(preferences.admin.walletLevel,preferences.system.walletLevel))
 //            throw OpexException(OpexError.Error)

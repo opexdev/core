@@ -32,7 +32,7 @@ class DepositController(private val depositPersister: DepositPersister,
             @RequestBody request: TransactionRequest,
             @CurrentSecurityContext securityContext: SecurityContext
     ): Deposits {
-        if (securityContext!=null && securityContext.authentication.name != uuid)
+        if (securityContext.authentication.name != uuid)
             throw OpexError.Forbidden.exception()
         return Deposits(depositPersister.findDepositHistory(
                 uuid,
