@@ -410,7 +410,7 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
             and (:startDate is null or trade_date >=:startDate) 
             and (:endDate is null or trade_date <=:endDate)            
             
-            order by trade_date DESC offset :offset limit :limit  """)
+            order by create_date DESC offset :offset limit :limit  """)
     fun findTxOfTradesDesc(user: String, startDate: LocalDateTime?, endDate: LocalDateTime?, offset: Int?, limit: Int?): Flux<Transaction>
 
 
