@@ -23,5 +23,4 @@ class WithdrawResponse(
     val statusReason: String?,
     val status: String,
     val createDate: LocalDateTime = LocalDateTime.now(),
-    val acceptDate: LocalDateTime? = null
-)
+    val acceptDate: LocalDateTime? = null)

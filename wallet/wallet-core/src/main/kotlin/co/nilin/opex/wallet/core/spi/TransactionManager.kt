@@ -15,7 +15,8 @@ interface TransactionManager {
             startTime: LocalDateTime?,
             endTime: LocalDateTime?,
             limit: Int,
-            offset: Int
+            offset: Int,
+            ascendingByTime: Boolean?=false
     ): List<TransactionHistory>
 
     suspend fun findWithdrawTransactions(
