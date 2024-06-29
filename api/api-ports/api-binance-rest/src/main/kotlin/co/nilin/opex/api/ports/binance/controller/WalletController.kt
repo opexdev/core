@@ -76,7 +76,7 @@ class WalletController(
                 securityContext.jwtAuthentication().tokenValue(),
                 coin,
                 startTime ?: null,
-                endTime ?: Date().time,
+                endTime ?: null,
                 if (validLimit > 1000 || validLimit < 1) 1000 else validLimit,
                 offset ?: 0,
                 ascendingByTime
@@ -154,7 +154,7 @@ class WalletController(
 
     @PostMapping("/v2/capital/withdraw/history")
     suspend fun getWithdrawTransactionsV2(
-            @RequestBody withdrawRequest:WithDrawRequest,
+            @RequestBody withdrawRequest: WithDrawRequest,
             @CurrentSecurityContext securityContext: SecurityContext
     ): List<WithdrawResponse> {
         val validLimit = withdrawRequest.limit ?: 1000
