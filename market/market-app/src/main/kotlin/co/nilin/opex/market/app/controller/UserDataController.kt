@@ -44,7 +44,7 @@ class UserDataController(private val userQueryHandler: UserQueryHandler) {
     @PostMapping("/tx/{user}/history")
     suspend fun getTxOfTrades(@PathVariable user: String,
                               @RequestBody transactionRequest: TransactionRequest,
-                              @CurrentSecurityContext securityContext: SecurityContext): TxOfTrades? {
+                              @CurrentSecurityContext securityContext: SecurityContext): TransactionResponse? {
         if (securityContext.authentication.name != user)
             throw OpexError.Forbidden.exception()
         return userQueryHandler.txOfTrades(transactionRequest.apply { owner = user })
