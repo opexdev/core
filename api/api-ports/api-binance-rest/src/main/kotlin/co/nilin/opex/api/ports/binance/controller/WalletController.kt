@@ -11,6 +11,7 @@ import co.nilin.opex.common.utils.Interval
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -151,7 +152,7 @@ class WalletController(
     }
 
 
-    @GetMapping("/v2/capital/withdraw/history")
+    @PostMapping("/v2/capital/withdraw/history")
     suspend fun getWithdrawTransactionsV2(
             @RequestBody withdrawRequest:WithDrawRequest,
             @CurrentSecurityContext securityContext: SecurityContext

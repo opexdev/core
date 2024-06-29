@@ -41,7 +41,7 @@ class UserDataController(private val userQueryHandler: UserQueryHandler) {
         return userQueryHandler.allTrades(uuid, request)
     }
 
-    @GetMapping("/tx/{user}/history")
+    @PostMapping("/tx/{user}/history")
     suspend fun getTxOfTrades(@PathVariable user: String,
                               @RequestBody transactionRequest: TransactionRequest,
                               @CurrentSecurityContext securityContext: SecurityContext): TxOfTrades? {
