@@ -45,7 +45,7 @@ class UserDataController(private val userQueryHandler: UserQueryHandler) {
     suspend fun getTxOfTrades(@PathVariable user: String,
                               @RequestBody transactionRequest: TransactionRequest,
                               @CurrentSecurityContext securityContext: SecurityContext): TxOfTrades? {
-        if (securityContext != null && securityContext.authentication.name != user)
+        if (securityContext.authentication.name != user)
             throw OpexError.Forbidden.exception()
         return userQueryHandler.txOfTrades(transactionRequest.apply { owner = user })
     }
