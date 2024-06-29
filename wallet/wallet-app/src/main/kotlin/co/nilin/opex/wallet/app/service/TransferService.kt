@@ -313,6 +313,7 @@ class TransferService(
 //        if (senderLevel == preferences.system.walletLevel && receiverLevel != preferences.admin.walletLevel)
 //            throw OpexException(OpexError.Forbidden)
 
+
 //        if (walletOwnerManager.findWalletOwner(receiverUuid)?.level !in arrayListOf<String>(preferences.admin.walletLevel,preferences.system.walletLevel))
 //            throw OpexException(OpexError.Error)
         val tx = _transfer(
