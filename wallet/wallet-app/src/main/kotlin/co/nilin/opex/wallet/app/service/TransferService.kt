@@ -314,6 +314,7 @@ class TransferService(
 //            throw OpexException(OpexError.Forbidden)
 
 
+
 //        if (walletOwnerManager.findWalletOwner(receiverUuid)?.level !in arrayListOf<String>(preferences.admin.walletLevel,preferences.system.walletLevel))
 //            throw OpexException(OpexError.Error)
 
