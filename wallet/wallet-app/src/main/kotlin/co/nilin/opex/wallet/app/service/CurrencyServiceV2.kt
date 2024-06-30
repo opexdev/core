@@ -25,17 +25,15 @@ class CurrencyServiceV2(
 ) {
 
     suspend fun createNewCurrency(request: CurrencyDto): CurrencyDto? {
-        val nc= currencyServiceManager.createNewCurrency(
+        val nc = currencyServiceManager.createNewCurrency(
                 request.apply {
                     uuid = UUID.randomUUID().toString()
                     symbol = symbol?.uppercase() ?: throw OpexError.BadRequest.exception()
                     isCryptoCurrency = false
                 }.toCommand()
         )?.toDto()
-
-        walletManager.createWallet()
-
-
+        walletManager.createWalletForSystem(request.symbol!!)
+        return nc
     }
 
     suspend fun updateCurrency(request: CurrencyDto): CurrencyDto? {

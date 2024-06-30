@@ -23,11 +23,16 @@ interface WalletManager {
     suspend fun findWalletByOwnerAndSymbol(owner: WalletOwner, symbol: String): List<Wallet>
 
     suspend fun createWallet(
-        owner: WalletOwner,
-        balance: Amount,
-        currency: CurrencyCommand,
-        type: String
+            owner: WalletOwner,
+            balance: Amount,
+            currency: CurrencyCommand,
+            type: String
     ): Wallet
+
+
+    suspend fun createWalletForSystem(
+            currency: String
+    )
 
     suspend fun findWalletById(walletId: Long): Wallet?
 
