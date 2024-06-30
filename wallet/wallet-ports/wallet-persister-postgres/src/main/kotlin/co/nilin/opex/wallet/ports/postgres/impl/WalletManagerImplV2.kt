@@ -192,13 +192,12 @@ class WalletManagerImplV2(
         val items =
                 listOf(
                         WalletModel(null, 1, "main", currency, minimumBalance!!),
-                        WalletModel(null, 1, "exchange", currency, BigDecimal.ZERO),
+//                        WalletModel(null, 1, "exchange", currency, BigDecimal.ZERO),
 //                WalletModel(null, adminWallet.id!!, "main", currency, minimumBalance!!),
 //                WalletModel(null, adminWallet.id!!, "exchange", currency, BigDecimal.ZERO)
                 )
-        runCatching {
             walletRepository.saveAll(items).collectList().awaitSingleOrNull()
-        }
+
     }
 
     override suspend fun findWalletsByOwner(owner: WalletOwner): List<Wallet> {
