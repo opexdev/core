@@ -13,6 +13,6 @@ data class CurrencyImplementation(
     val withdrawFee: BigDecimal,
     val withdrawMin: BigDecimal,
     val decimal: Int,
-    val chainDetail:Chain?=null,
+//    val chainDetail:Chain?=null,
 
     )

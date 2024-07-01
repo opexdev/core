@@ -18,7 +18,7 @@ data class CryptoCurrencyCommand(
         val withdrawMin: BigDecimal? = BigDecimal.ZERO,
         var decimal: Int,
         var chain: String,
-        var chainDetail: Chain? = null
+//        var chainDetail: Chain? = null
 
 
 ) {

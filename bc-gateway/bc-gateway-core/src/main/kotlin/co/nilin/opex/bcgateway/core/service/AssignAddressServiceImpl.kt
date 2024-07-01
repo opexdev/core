@@ -3,6 +3,7 @@ package co.nilin.opex.bcgateway.core.service
 import co.nilin.opex.bcgateway.core.api.AssignAddressService
 import co.nilin.opex.bcgateway.core.model.*
 import co.nilin.opex.bcgateway.core.spi.AssignedAddressHandler
+import co.nilin.opex.bcgateway.core.spi.ChainLoader
 import co.nilin.opex.bcgateway.core.spi.CryptoCurrencyHandlerV2
 import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
 import co.nilin.opex.bcgateway.core.utils.LoggerDelegate
@@ -17,7 +18,9 @@ import java.time.ZoneId
 open class AssignAddressServiceImpl(
         private val currencyHandler: CryptoCurrencyHandlerV2,
         private val assignedAddressHandler: AssignedAddressHandler,
-        private val reservedAddressHandler: ReservedAddressHandler
+        private val reservedAddressHandler: ReservedAddressHandler,
+        private val chainLoader: ChainLoader
+
 ) : AssignAddressService {
     @Value("\${app.address.life-time.value}")
     private var lifeTime: Long? = null
@@ -28,7 +31,7 @@ open class AssignAddressServiceImpl(
         logger.info(ZoneId.systemDefault().toString())
         val currencyInfo = currencyHandler.fetchCurrencyImpls(FetchImpls(currencySymbol = currency))?:throw OpexError.CurrencyNotFound.exception()
         val chains = currencyInfo?.imps
-                ?.map { imp -> imp.chainDetail }
+                ?.map { imp -> chainLoader.fetchChainInfo(imp.chain) }
                 ?.filter { it?.name.equals(chain, true) }
         val addressTypes = chains
                 ?.flatMap { chain -> chain?.addressTypes!! }

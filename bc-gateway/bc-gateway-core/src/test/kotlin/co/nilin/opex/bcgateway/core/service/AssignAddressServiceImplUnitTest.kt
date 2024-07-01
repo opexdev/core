@@ -2,6 +2,7 @@ package co.nilin.opex.bcgateway.core.service
 
 import co.nilin.opex.bcgateway.core.model.*
 import co.nilin.opex.bcgateway.core.spi.AssignedAddressHandler
+import co.nilin.opex.bcgateway.core.spi.ChainLoader
 import co.nilin.opex.bcgateway.core.spi.CryptoCurrencyHandlerV2
 //import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
 import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
@@ -18,9 +19,11 @@ class AssignAddressServiceImplUnitTest {
     private val currencyHandler = mockk<CryptoCurrencyHandlerV2>()
     private val assignedAddressHandler = mockk<AssignedAddressHandler>()
     private val reservedAddressHandler = mockk<ReservedAddressHandler>()
+    private val chainLoader = mockk<ChainLoader>()
+
 
     private val assignAddressServiceImpl =
-            AssignAddressServiceImpl(currencyHandler, assignedAddressHandler, reservedAddressHandler)
+            AssignAddressServiceImpl(currencyHandler, assignedAddressHandler, reservedAddressHandler,chainLoader)
 
     //    private val currency = Currency("ETH", "Ethereum")
     private val chain = "ETH_MAINNET"
@@ -46,7 +49,7 @@ class AssignAddressServiceImplUnitTest {
                 BigDecimal.ZERO,
                 18,
                 ethChain.name,
-                ethChain
+//                ethChain
         )
 
 
@@ -64,7 +67,7 @@ class AssignAddressServiceImplUnitTest {
                 BigDecimal.ZERO,
                 18,
                 bscChain.name,
-                bscChain
+//                bscChain
 
         )
 
