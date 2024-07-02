@@ -23,7 +23,7 @@ class AssignAddressServiceImplUnitTest {
 
 
     private val assignAddressServiceImpl =
-            AssignAddressServiceImpl(currencyHandler, assignedAddressHandler, reservedAddressHandler,chainLoader)
+            AssignAddressServiceImpl(currencyHandler, assignedAddressHandler, reservedAddressHandler, chainLoader)
 
     //    private val currency = Currency("ETH", "Ethereum")
     private val chain = "ETH_MAINNET"
@@ -74,6 +74,10 @@ class AssignAddressServiceImplUnitTest {
         coEvery { currencyHandler.fetchCurrencyImpls(FetchImpls(currencySymbol = currency)) } returns CurrencyImps(
                 listOf(eth, wrappedEth)
         )
+        coEvery { chainLoader.fetchChainInfo(chain = ethChain.name) } returns ethChain
+
+        coEvery { chainLoader.fetchChainInfo(chain = bscChain.name) } returns bscChain
+
 
         coEvery { assignedAddressHandler.persist(any()) } returns Unit
         coEvery { reservedAddressHandler.remove(any()) } returns Unit
