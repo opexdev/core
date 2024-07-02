@@ -34,6 +34,7 @@ class AssignedAddressHandlerImpl(
     private val logger: Logger by LoggerDelegate()
 
     override suspend fun fetchAssignedAddresses(user: String, addressTypes: List<AddressType>): List<AssignedAddress> {
+        addressLifeTime=7200
         if (addressTypes.isEmpty()) return emptyList()
         val addressTypeMap = addressTypeRepository.findAll().map { aam ->
             AddressType(aam.id!!, aam.type, aam.addressRegex, aam.memoRegex)

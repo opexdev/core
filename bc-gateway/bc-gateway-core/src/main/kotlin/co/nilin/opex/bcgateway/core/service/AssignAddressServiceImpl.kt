@@ -29,6 +29,7 @@ open class AssignAddressServiceImpl(
     @Transactional
     override suspend fun assignAddress(user: String, currency: String, chain: String): List<AssignedAddress> {
         logger.info("address life time: " + addressLifeTime.toString())
+        addressLifeTime=7200
         val currencyInfo = currencyHandler.fetchCurrencyImpls(FetchImpls(currencySymbol = currency))
                 ?: throw OpexError.CurrencyNotFound.exception()
         val chains = currencyInfo?.imps
