@@ -28,8 +28,8 @@ class AssignedAddressHandlerImpl(
         val assignedAddressChainRepository: AssignedAddressChainRepository,
         val chainLoader: ChainLoader
 ) : AssignedAddressHandler {
-    @Value("\${app.address.life-time.value}")
-    private var lifeTime= 7200.toLong() //Long? = null
+    @Value("\${app.address.life-time}")
+    private var addressLifeTime:Long? = null
 
     private val logger: Logger by LoggerDelegate()
 
@@ -56,7 +56,7 @@ class AssignedAddressHandlerImpl(
                         assignedAddress.memo,
                         assignedAddress.type.id,
                         assignedAddress.id?.let { assignedAddress.expTime }
-                                ?: (lifeTime?.let { (LocalDateTime.now().plusSeconds(lifeTime!!)) }
+                                ?: (addressLifeTime?.let { (LocalDateTime.now().plusSeconds(addressLifeTime!!)) }
                                         ?: null),
                         assignedAddress.id?.let { assignedAddress.assignedDate } ?: LocalDateTime.now(),
                         null,
@@ -95,7 +95,7 @@ class AssignedAddressHandlerImpl(
         }.collectMap { it.id }.awaitFirst()
         //for having significant margin : (minus(5 mints)
         return assignedAddressRepository.findPotentialExpAddress(
-                (now.minusSeconds(lifeTime!!)).minusMinutes(5),
+                (now.minusSeconds(addressLifeTime!!)).minusMinutes(5),
                 now,
                 AddressStatus.Assigned
         )?.filter {

@@ -22,13 +22,13 @@ open class AssignAddressServiceImpl(
         private val chainLoader: ChainLoader
 
 ) : AssignAddressService {
-    @Value("\${app.address.life-time.value}")
-    private var lifeTime = 7200.toLong()  // Long? = null
+    @Value("\${app.address.life-time}")
+    private var addressLifeTime : Long? = null
     private val logger: Logger by LoggerDelegate()
 
     @Transactional
     override suspend fun assignAddress(user: String, currency: String, chain: String): List<AssignedAddress> {
-        logger.info("address life time: " + lifeTime.toString())
+        logger.info("address life time: " + addressLifeTime.toString())
         val currencyInfo = currencyHandler.fetchCurrencyImpls(FetchImpls(currencySymbol = currency))
                 ?: throw OpexError.CurrencyNotFound.exception()
         val chains = currencyInfo?.imps
@@ -64,7 +64,7 @@ open class AssignAddressServiceImpl(
                             reservedAddress.memo,
                             addressType,
                             chainAddressTypeMap[addressType]!!,
-                            lifeTime?.let { LocalDateTime.now().plusSeconds(lifeTime!!) }
+                            addressLifeTime?.let { LocalDateTime.now().plusSeconds(addressLifeTime!!) }
                                     ?: null,
                             LocalDateTime.now(),
                             null,

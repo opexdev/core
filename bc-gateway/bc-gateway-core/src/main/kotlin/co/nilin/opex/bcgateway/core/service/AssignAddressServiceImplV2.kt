@@ -17,7 +17,7 @@
 //        private val reservedAddressHandler: ReservedAddressHandler,
 //        private val chainLoader: ChainLoader
 //) : AssignAddressService {
-//    @Value("\${app.address.life-time.value}")
+//    @Value("\${app.address.life-time}")
 //    private var lifeTime: Long? = null
 //    private val logger: Logger by LoggerDelegate()
 //

@@ -74,5 +74,4 @@ app:
   wallet:
     url: http://wallet:8080
   address:
-    life-time:
-      value: ${ADDRESS_EXP_TIME}  #    second
+    life-time: ${ADDRESS_EXP_TIME}  #    second
