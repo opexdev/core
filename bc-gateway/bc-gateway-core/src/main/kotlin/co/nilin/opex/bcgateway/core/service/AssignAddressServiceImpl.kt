@@ -28,8 +28,9 @@ open class AssignAddressServiceImpl(
 
     @Transactional
     override suspend fun assignAddress(user: String, currency: String, chain: String): List<AssignedAddress> {
-        logger.info(ZoneId.systemDefault().toString())
-        val currencyInfo = currencyHandler.fetchCurrencyImpls(FetchImpls(currencySymbol = currency))?:throw OpexError.CurrencyNotFound.exception()
+        logger.info("address life time: " + lifeTime.toString())
+        val currencyInfo = currencyHandler.fetchCurrencyImpls(FetchImpls(currencySymbol = currency))
+                ?: throw OpexError.CurrencyNotFound.exception()
         val chains = currencyInfo?.imps
                 ?.map { imp -> chainLoader.fetchChainInfo(imp.chain) }
                 ?.filter { it?.name.equals(chain, true) }
@@ -81,7 +82,7 @@ open class AssignAddressServiceImpl(
         }
         result.forEach { address ->
             assignedAddressHandler.persist(address)
-            address.apply { id=null }
+            address.apply { id = null }
         }
         return result.toMutableList()
     }
