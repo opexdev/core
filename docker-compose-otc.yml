@@ -91,7 +91,7 @@ services:
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
       - PREFERENCES=$PREFERENCES
-      - ADDRESS_EXP_TIME=${ADDRESS_EXP_TIME:-7200}
+      - ADDRESS_EXP_TIME=${ADDRESS_EXP_TIME}
       - SPRING_PROFILES_ACTIVE=otc
       - auth_url=${AUTH_URL}
       - auth_jwk_endpoint=${JWK_ENDPOINT}
