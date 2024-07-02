@@ -29,7 +29,7 @@ class AssignedAddressHandlerImpl(
         val chainLoader: ChainLoader
 ) : AssignedAddressHandler {
     @Value("\${app.address.life-time.value}")
-    private var lifeTime: Long? = null
+    private var lifeTime= 7200.toLong() //Long? = null
 
     private val logger: Logger by LoggerDelegate()
 

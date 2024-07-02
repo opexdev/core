@@ -93,6 +93,7 @@ class InitializeService(
     }
 
 
+
     private suspend fun addCurrencies(data: List<Currency>) = coroutineScope {
         data.forEach {
              runCatching {  currencyRepository.insert(name = it.name, symbol = it.symbol, uuid = UUID.randomUUID().toString(), precision = it.precision).awaitSingleOrNull()}

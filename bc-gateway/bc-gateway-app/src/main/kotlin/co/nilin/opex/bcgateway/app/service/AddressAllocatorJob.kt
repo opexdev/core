@@ -14,7 +14,7 @@ class AddressAllocatorJob(private val addressManager: AddressManager) {
     private val logger: Logger by LoggerDelegate()
 
     @Value("\${app.address.life-time.value}")
-    private var lifeTime: Long? = null
+    private var lifeTime = 7200.toLong() //: Long? = null
 
     @Scheduled(fixedDelayString = "\${app.address.life-time.value:0}000")
     fun revokeExpiredAddress() {
