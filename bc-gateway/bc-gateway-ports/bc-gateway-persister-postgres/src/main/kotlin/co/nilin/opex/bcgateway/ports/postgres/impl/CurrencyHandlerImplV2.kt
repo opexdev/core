@@ -40,18 +40,18 @@ class CurrencyHandlerImplV2(
 
     }
 
-    override suspend fun deleteImpl(implUuid: String, currency: String):Void? {
+    override suspend fun deleteImpl(implUuid: String, currency: String): Void? {
 
         loadImpls(FetchImpls(implUuid = implUuid, currencySymbol = currency))
                 ?.awaitFirstOrElse { throw OpexError.ImplNotFound.exception() }?.let {
                     try {
-                      return  currencyImplementationRepository.deleteByImplUuid(implUuid)?.awaitFirstOrNull()
+                        return currencyImplementationRepository.deleteByImplUuid(implUuid)?.awaitFirstOrNull()
                     } catch (e: Exception) {
                         throw OpexError.BadRequest.exception()
 
                     }
                 }
-         return null
+        return null
     }
 
     override suspend fun fetchCurrencyImpls(data: FetchImpls?): CurrencyImps? {

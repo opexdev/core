@@ -20,12 +20,12 @@ class AppConfig {
 
     @Bean
     fun assignAddressService(
-        currencyHandler: CurrencyHandlerImplV2,
-        assignedAddressHandler: AssignedAddressHandler,
-        reservedAddressHandler: ReservedAddressHandler,
-        chainLoader: ChainLoader
+            currencyHandler: CurrencyHandlerImplV2,
+            assignedAddressHandler: AssignedAddressHandler,
+            reservedAddressHandler: ReservedAddressHandler,
+            chainLoader: ChainLoader
     ): AssignAddressService {
-        return AssignAddressServiceImpl(currencyHandler, assignedAddressHandler, reservedAddressHandler,chainLoader)
+        return AssignAddressServiceImpl(currencyHandler, assignedAddressHandler, reservedAddressHandler, chainLoader)
     }
 
     @Bean
@@ -35,8 +35,8 @@ class AppConfig {
 
     @Autowired
     fun configureEventListeners(
-        adminKafkaEventListener: AdminEventKafkaListener,
-        adminEventListener: AdminEventListener,
+            adminKafkaEventListener: AdminEventKafkaListener,
+            adminEventListener: AdminEventListener,
     ) {
         adminKafkaEventListener.addEventListener(adminEventListener)
     }
