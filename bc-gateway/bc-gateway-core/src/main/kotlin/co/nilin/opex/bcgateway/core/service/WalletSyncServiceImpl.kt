@@ -31,11 +31,23 @@ class WalletSyncServiceImpl(
     @Transactional
     override suspend fun syncTransfers(transfers: List<Transfer>) = coroutineScope {
         val groupedByChain = currencyHandler.fetchCurrencyImpls()?.imps?.groupBy { it.chain }?: throw OpexError.CurrencyNotFound.exception()
+        logger.info("-----------------------")
+        for (key in groupedByChain.keys){
+            logger.info(key)
+            groupedByChain[key]?.forEach {
+                logger.info(it.implUuid)
+            }
+        }
         val deposits = transfers.mapNotNull {
             coroutineScope {
                 val currencyImpl = groupedByChain[it.chain]?.find { c -> c.tokenAddress == it.tokenAddress }
                     ?: throw IllegalStateException("Currency implementation not found")
-                assignedAddressHandler.findUuid(it.receiver.address, it.receiver.memo)?.let { it to currencyImpl }
+                logger.info("++++++++++")
+                logger.info(it.receiver.address, it.receiver.memo)
+                assignedAddressHandler.findUuid(it.receiver.address, it.receiver.memo)?.let {
+                    logger.info("----------------")
+                    logger.info(it)
+                    it to currencyImpl }
             }?.let { (uuid, currencyImpl) ->
                 sendDeposit(uuid, currencyImpl, it)
                 logger.info("Deposit synced for $uuid on ${currencyImpl.currencySymbol} - to ${it.receiver.address}")

@@ -55,7 +55,7 @@ class CurrencyHandlerImplV2(
     }
 
     override suspend fun fetchCurrencyImpls(data: FetchImpls?): CurrencyImps? {
-        logger.info("going to fetch impls of ${data?.currencySymbol}")
+        logger.info("going to fetch impls of ${data?.currencySymbol?:"all currencies"}")
         return CurrencyImps(loadImpls(data)?.map { it.toDto() }
                 ?.collect(Collectors.toList())?.awaitFirstOrNull())
     }
