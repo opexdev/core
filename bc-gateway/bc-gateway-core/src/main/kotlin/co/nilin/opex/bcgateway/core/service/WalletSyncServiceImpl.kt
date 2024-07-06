@@ -34,12 +34,7 @@ class WalletSyncServiceImpl(
                 ?: throw OpexError.CurrencyNotFound.exception()
         val deposits = transfers.mapNotNull {
             coroutineScope {
-                if (it.receiver.address.equals("0x974CaA59e49682CdA0AD2bbe82983419A2ECC400")) {
-                    logger.info("---------------------------------")
-                    logger.info(it.chain)
-                    logger.info(it.receiver.address, it.receiver.memo)
-                    logger.info(it.tokenAddress)
-                }
+
                 val currencyImpl = groupedByChain[it.chain]?.find { c -> c.tokenAddress == it.tokenAddress }
                         ?: throw IllegalStateException("Currency implementation not found")
 

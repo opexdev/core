@@ -94,21 +94,31 @@ class CurrencyServiceV2(
 
     //todo
     // fetch all impls in single request and then map the results together
+//    suspend fun fetchCurrenciesWithImpls(includeImpl: Boolean?): CurrenciesDto? {
+//        return CurrenciesDto(currencyServiceManager.fetchCurrencies()?.currencies?.stream()?.map {
+////            if (it.isCryptoCurrency == true && includeImpl == true)
+//            if (includeImpl == true)
+//                it.apply {
+//                    impls =
+//                            runBlocking {
+//                                cryptoCurrencyManager.fetchImpls(
+//                                        it.symbol!!
+//                                )?.imps
+//                            }
+//                }.toDto()
+//            else
+//                it.toDto()
+//        }?.collect(Collectors.toList()))
+//    }
+
+
     suspend fun fetchCurrenciesWithImpls(includeImpl: Boolean?): CurrenciesDto? {
-        return CurrenciesDto(currencyServiceManager.fetchCurrencies()?.currencies?.stream()?.map {
-//            if (it.isCryptoCurrency == true && includeImpl == true)
-            if (includeImpl == true)
-                it.apply {
-                    impls =
-                            runBlocking {
-                                cryptoCurrencyManager.fetchImpls(
-                                        it.symbol!!
-                                )?.imps
-                            }
-                }.toDto()
-            else
-                it.toDto()
-        }?.collect(Collectors.toList()))
+        var currencies = currencyServiceManager.fetchCurrencies()?.currencies?.stream()
+        val currenciesImpls = cryptoCurrencyManager.fetchImpls()
+        val groupedByImpl = currenciesImpls?.imps?.groupBy { it.currencySymbol }
+
+        return CurrenciesDto(currencies?.map { it.apply { impls = groupedByImpl?.get(it.symbol) }.toDto() }?.collect(Collectors.toList()))
+
     }
 
 
