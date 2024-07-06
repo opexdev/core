@@ -92,8 +92,7 @@ class CurrencyServiceV2(
     }
 
 
-    //todo
-    // fetch all impls in single request and then map the results together
+//     fetch all impls in single request and then map the results together
 //    suspend fun fetchCurrenciesWithImpls(includeImpl: Boolean?): CurrenciesDto? {
 //        return CurrenciesDto(currencyServiceManager.fetchCurrencies()?.currencies?.stream()?.map {
 ////            if (it.isCryptoCurrency == true && includeImpl == true)
@@ -113,11 +112,10 @@ class CurrencyServiceV2(
 
 
     suspend fun fetchCurrenciesWithImpls(includeImpl: Boolean?): CurrenciesDto? {
-        var currencies = currencyServiceManager.fetchCurrencies()?.currencies?.stream()
+        var currencies = currencyServiceManager.fetchCurrencies()?.currencies
         val currenciesImpls = cryptoCurrencyManager.fetchImpls()
         val groupedByImpl = currenciesImpls?.imps?.groupBy { it.currencySymbol }
-
-        return CurrenciesDto(currencies?.map { it.apply { impls = groupedByImpl?.get(it.symbol) }.toDto() }?.collect(Collectors.toList()))
+        return CurrenciesDto(currencies?.map { it.apply { impls = groupedByImpl?.get(it.symbol) }.toDto() }?.toList())
 
     }
 
