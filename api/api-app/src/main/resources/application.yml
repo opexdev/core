@@ -1,8 +1,5 @@
-server.port: 8080
-logging:
-  level:
-    co.nilin: INFO
-    reactor.netty.http.client: DEBUG
+server:
+  port: 8080
 spring:
   application:
     name: opex-api
@@ -57,6 +54,33 @@ management:
       enabled: true
     prometheus:
       enabled: true
+logbook:
+  secure-filter:
+    enabled: true
+  format:
+    style: http
+  filter:
+    enabled: true
+    form-request-mode: BODY
+  obfuscate:
+    headers:
+      - Authorization
+    parameters:
+      - password
+    json-body-fields:
+      - password
+    replacement: "***"
+  write:
+    max-body-size: 10_000 #kb
+  predicate:
+    exclude:
+      - path: /auth**
+      - path: /actuator/**
+      - path: /swagger**
+logging:
+  level:
+    co.nilin: INFO
+    org.zalando.logbook: TRACE
 app:
   accountant:
     url: lb://opex-accountant
@@ -75,4 +99,5 @@ app:
       secret: ${API_KEY_CLIENT_SECRET}
   binance:
     api-url: https://api1.binance.com
-swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
+swagger:
+  authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token

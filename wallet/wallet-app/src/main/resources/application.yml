@@ -1,4 +1,5 @@
-server.port: 8080
+server:
+  port: 8080
 management:
   endpoints:
     web:
@@ -56,6 +57,34 @@ spring:
         prefer-ip-address: true
   config:
     import: vault://secret/${spring.application.name}
+logbook:
+  secure-filter:
+    enabled: true
+  format:
+    style: http
+  filter:
+    enabled: true
+    form-request-mode: BODY
+  obfuscate:
+    headers:
+      - Authorization
+    parameters:
+      - password
+    json-body-fields:
+      - password
+    replacement: "***"
+  write:
+    max-body-size: 10_000 #kb
+  predicate:
+    exclude:
+      - path: /auth**
+      - path: /actuator/**
+      - path: /swagger**
+logging:
+  level:
+    root: INFO
+    org.apache.kafka: ERROR
+    co.nilin: INFO
 app:
   auth:
     url: lb://opex-auth
@@ -72,10 +101,5 @@ app:
     url: lb://opex-bc-gateway
   reserved-transfer:
     life-time: 15 #minutes
-logging:
-  level:
-    root: INFO
-    org.apache.kafka: ERROR
-    co.nilin: INFO
-    reactor.netty.http.client: INFO
-swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
+swagger:
+  authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token}
