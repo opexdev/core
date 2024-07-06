@@ -20,30 +20,32 @@ import java.math.BigDecimal
 
 @Service
 class WalletSyncServiceImpl(
-    private val walletProxy: WalletProxy,
-    private val assignedAddressHandler: AssignedAddressHandler,
-    private val currencyHandler: CryptoCurrencyHandlerV2,
-    private val depositHandler: DepositHandler
+        private val walletProxy: WalletProxy,
+        private val assignedAddressHandler: AssignedAddressHandler,
+        private val currencyHandler: CryptoCurrencyHandlerV2,
+        private val depositHandler: DepositHandler
 ) : WalletSyncService {
 
     private val logger: Logger by LoggerDelegate()
 
     @Transactional
     override suspend fun syncTransfers(transfers: List<Transfer>) = coroutineScope {
-        val groupedByChain = currencyHandler.fetchCurrencyImpls()?.imps?.groupBy { it.chain }?: throw OpexError.CurrencyNotFound.exception()
+        val groupedByChain = currencyHandler.fetchCurrencyImpls()?.imps?.groupBy { it.chain }
+                ?: throw OpexError.CurrencyNotFound.exception()
         val deposits = transfers.mapNotNull {
             coroutineScope {
-                if (it.receiver.address.equals("0x974CaA59e49682CdA0AD2bbe82983419A2ECC400"))
-                {
+                if (it.receiver.address.equals("0x974CaA59e49682CdA0AD2bbe82983419A2ECC400")) {
                     logger.info("---------------------------------")
                     logger.info(it.chain)
                     logger.info(it.receiver.address, it.receiver.memo)
+                    logger.info(it.tokenAddress)
                 }
-                val currencyImpl = groupedByChain[it.chain]?.find { c -> c.tokenAddress.equals(it.tokenAddress) }
-                    ?: throw IllegalStateException("Currency implementation not found")
+                val currencyImpl = groupedByChain[it.chain]?.find { c -> c.tokenAddress == it.tokenAddress }
+                        ?: throw IllegalStateException("Currency implementation not found")
 
                 assignedAddressHandler.findUuid(it.receiver.address, it.receiver.memo)?.let {
-                    it to currencyImpl }
+                    it to currencyImpl
+                }
             }?.let { (uuid, currencyImpl) ->
                 sendDeposit(uuid, currencyImpl, it)
                 logger.info("Deposit synced for $uuid on ${currencyImpl.currencySymbol} - to ${it.receiver.address}")
@@ -51,14 +53,14 @@ class WalletSyncServiceImpl(
             }
         }.map {
             Deposit(
-                null,
-                it.txHash,
-                it.receiver.address,
-                it.receiver.memo,
-                it.amount,
-                it.chain,
-                it.isTokenTransfer,
-                it.tokenAddress
+                    null,
+                    it.txHash,
+                    it.receiver.address,
+                    it.receiver.memo,
+                    it.amount,
+                    it.chain,
+                    it.isTokenTransfer,
+                    it.tokenAddress
             )
         }.toList()
         depositHandler.saveAll(deposits)
