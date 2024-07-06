@@ -1,4 +1,5 @@
-server.port: 8080
+server:
+  port: 8080
 spring:
   application:
     name: opex-bc-gateway
@@ -55,12 +56,34 @@ management:
       enabled: true
     prometheus:
       enabled: true
+logbook:
+  secure-filter:
+    enabled: true
+  format:
+    style: http
+  filter:
+    enabled: true
+    form-request-mode: BODY
+  obfuscate:
+    headers:
+      - Authorization
+    parameters:
+      - password
+    json-body-fields:
+      - password
+    replacement: "***"
+  write:
+    max-body-size: 1_000 #kb
+  predicate:
+    exclude:
+      - path: /auth**
+      - path: /actuator/**
+      - path: /swagger**
 logging:
   level:
     org.apache.kafka: ERROR
     co.nilin: INFO
-swagger:
-  authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
+    org.zalando.logbook: TRACE
 app:
   auth:
     url: lb://opex-auth
@@ -71,5 +94,7 @@ app:
     url: lb://opex-wallet
   address:
     life-time:
-      value: ${ADDRESS_EXP_TIME}  #    second
+      value: ${ADDRESS_EXP_TIME}  # second
+swagger:
+  authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token}
 

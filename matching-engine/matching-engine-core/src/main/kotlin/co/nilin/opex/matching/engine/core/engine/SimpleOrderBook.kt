@@ -86,6 +86,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                 }
                 queueOrder
             }
+
             MatchConstraint.IOC -> {
                 val order = SimpleOrder(
                     orderCounter.incrementAndGet(),
@@ -133,6 +134,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                 }
                 queueOrder
             }
+
             else -> {
                 if (!replayMode) {
                     EventDispatcher.emit(
@@ -271,6 +273,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                 EventDispatcher.emit(OrderBookPublishedEvent(persistent()))
                 queueOrder
             }
+
             MatchConstraint.IOC -> {
                 if (!replayMode) {
                     EventDispatcher.emit(
@@ -313,6 +316,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                 EventDispatcher.emit(OrderBookPublishedEvent(persistent()))
                 queueOrder
             }
+
             else -> {
                 if (!replayMode) {
                     EventDispatcher.emit(
@@ -577,24 +581,32 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
     }
 
     private fun logNewOrder(orderCommand: OrderCreateCommand) {
-        logger.info("****************** new order received *******************")
-        logger.info("** order id: ${orderCommand.ouid}")
-        logger.info("** price: ${orderCommand.price}")
-        logger.info("** quantity: ${orderCommand.quantity}")
-        logger.info("** direction: ${orderCommand.direction}")
-        logger.info("*********************************************************")
-        println()
+        logger.info(
+            """
+            ++++ NEW ${orderCommand.pair.leftSideName}-${orderCommand.pair.rightSideName}
+            - ouid: ${orderCommand.ouid}")
+            - price: ${orderCommand.price}")
+            - quantity: ${orderCommand.quantity}")
+            - direction: ${orderCommand.direction}")
+            ********************************************
+            
+        """.trimIndent()
+        )
     }
 
     private fun logCurrentState() {
-        logger.info("******************** ${pair.leftSideName}-${pair.rightSideName} ********************")
-        logger.info("** askOrders size: ${askOrders.entriesList().size}")
-        logger.info("** bidOrders size: ${bidOrders.entriesList().size}")
-        logger.info("** orders size: ${orders.size}")
-        logger.info("** bestAskOrder: ${bestAskOrder?.ouid}")
-        logger.info("** bestBidOrder: ${bestBidOrder?.ouid}")
-        logger.info("** lastOrder: ${lastOrder?.ouid}")
-        logger.info("*********************************************************")
-        println()
+        logger.info(
+            """
+            ==== STATE ${pair.leftSideName}-${pair.rightSideName}
+            - askOrders size: ${askOrders.entriesList().size}
+            - bidOrders size: ${bidOrders.entriesList().size}
+            - orders size: ${orders.size}
+            - bestAskOrder: ${bestAskOrder?.ouid}
+            - bestBidOrder: ${bestBidOrder?.ouid}
+            - lastOrder: ${lastOrder?.ouid}
+            ********************************************
+            
+        """.trimIndent()
+        )
     }
 }

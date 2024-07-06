@@ -1,8 +1,5 @@
-server.port: 8080
-logging:
-  level:
-    co.nilin: INFO
-    reactor.netty.http.client: DEBUG
+server:
+  port: 8080
 spring:
   application:
     name: opex-market
@@ -61,8 +58,34 @@ management:
       enabled: true
     prometheus:
       enabled: true
+logbook:
+  secure-filter:
+    enabled: true
+  format:
+    style: http
+  filter:
+    enabled: true
+    form-request-mode: BODY
+  obfuscate:
+    headers:
+      - Authorization
+    parameters:
+      - password
+    json-body-fields:
+      - password
+    replacement: "***"
+  write:
+    max-body-size: 10_000 #kb
+  predicate:
+    exclude:
+      - path: /auth**
+      - path: /actuator/**
+      - path: /swagger**
+logging:
+  level:
+    co.nilin: INFO
 app:
   auth:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
 swagger:
-  authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
+  authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token}
