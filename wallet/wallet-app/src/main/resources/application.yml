@@ -85,6 +85,7 @@ logging:
     root: INFO
     org.apache.kafka: ERROR
     co.nilin: INFO
+    org.zalando.logbook: TRACE
 app:
   auth:
     url: lb://opex-auth
