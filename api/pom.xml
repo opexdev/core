@@ -69,11 +69,6 @@
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.utility</groupId>
-                <artifactId>logging-handler</artifactId>
-                <version>${logging-handler.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>co.nilin.opex.utility</groupId>
                 <artifactId>interceptors</artifactId>
                 <version>${interceptor.version}</version>
             </dependency>
