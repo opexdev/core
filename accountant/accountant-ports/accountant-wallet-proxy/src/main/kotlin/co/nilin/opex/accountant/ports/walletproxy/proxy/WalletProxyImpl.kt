@@ -15,8 +15,9 @@ import java.math.BigDecimal
 
 @Component
 class WalletProxyImpl(
-    @Value("\${app.wallet.url}") val walletBaseUrl: String,
-    val webClient: WebClient
+    private val webClient: WebClient,
+    @Value("\${app.wallet.url}")
+    private val walletBaseUrl: String
 ) : WalletProxy {
 
     data class TransferBody(

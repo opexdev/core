@@ -17,7 +17,8 @@ class WebClientConfig {
     @Bean
     fun webClient(loadBalancerFactory: ReactiveLoadBalancer.Factory<ServiceInstance>, logbook: Logbook): WebClient {
         val client = HttpClient.create().doOnConnected { it.addHandlerLast(LogbookClientHandler(logbook)) }
-        return WebClient.builder().clientConnector(ReactorClientHttpConnector(client))
+        return WebClient.builder()
+            //.clientConnector(ReactorClientHttpConnector(client))
             .filter(ReactorLoadBalancerExchangeFilterFunction(loadBalancerFactory, emptyList()))
             .build()
     }

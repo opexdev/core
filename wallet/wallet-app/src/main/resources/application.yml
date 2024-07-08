@@ -80,6 +80,14 @@ logbook:
       - path: /auth**
       - path: /actuator/**
       - path: /swagger**
+    include:
+      - path: /admin/withdraw/**
+        methods:
+          - POST
+      - path: /v1/deposit/manually/**
+      - path: /v2/transfer/**
+      - path: /transfer/**
+      - path: /deposit/**
 logging:
   level:
     root: INFO

@@ -162,10 +162,14 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
     }
 
     override fun handleCancelCommand(orderCommand: OrderCancelCommand) {
-        logger.info("********************* order cancel **********************")
-        logger.info("** order id: ${orderCommand.ouid}")
-        logger.info("*********************************************************")
-        println()
+        logger.info(
+            """
+            ---- CANCEL ${orderCommand.pair.leftSideName}-${orderCommand.pair.rightSideName} ----
+            - order id: ${orderCommand.ouid}
+            ********************************************
+            
+        """.trimIndent()
+        )
 
         val simpleOrder = orders.entries.find { it.value.ouid == orderCommand.ouid }
         val order = simpleOrder?.value
@@ -583,11 +587,11 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
     private fun logNewOrder(orderCommand: OrderCreateCommand) {
         logger.info(
             """
-            ++++ NEW ${orderCommand.pair.leftSideName}-${orderCommand.pair.rightSideName}
-            - ouid: ${orderCommand.ouid}")
-            - price: ${orderCommand.price}")
-            - quantity: ${orderCommand.quantity}")
-            - direction: ${orderCommand.direction}")
+            ++++ NEW ${orderCommand.pair.leftSideName}-${orderCommand.pair.rightSideName} ++++
+            - ouid: ${orderCommand.ouid}
+            - price: ${orderCommand.price}
+            - quantity: ${orderCommand.quantity}
+            - direction: ${orderCommand.direction}
             ********************************************
             
         """.trimIndent()
@@ -597,7 +601,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
     private fun logCurrentState() {
         logger.info(
             """
-            ==== STATE ${pair.leftSideName}-${pair.rightSideName}
+            ==== STATE ${pair.leftSideName}-${pair.rightSideName} ====
             - askOrders size: ${askOrders.entriesList().size}
             - bidOrders size: ${bidOrders.entriesList().size}
             - orders size: ${orders.size}

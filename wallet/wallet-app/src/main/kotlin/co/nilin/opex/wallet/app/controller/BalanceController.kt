@@ -16,10 +16,10 @@ import java.security.Principal
 
 @RestController
 class BalanceController(
-    val walletManager: WalletManager, val walletOwnerManager: WalletOwnerManager, val currencyService: CurrencyService
+    private val walletManager: WalletManager,
+    private val walletOwnerManager: WalletOwnerManager,
+    private val currencyService: CurrencyService
 ) {
-
-    private val logger = LoggerFactory.getLogger(BalanceController::class.java)
 
     data class BalanceResponse(val balance: BigDecimal)
 
