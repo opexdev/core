@@ -94,7 +94,6 @@ class TransferController(private val transferService: TransferService) {
         transferService.batchTransfer(request)
     }
 
-
     @PostMapping("/deposit/{amount}_{chain}_{symbol}/{receiverUuid}_{receiverWalletType}")
     @ApiResponse(
         message = "OK",

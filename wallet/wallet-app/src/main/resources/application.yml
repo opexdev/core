@@ -84,10 +84,24 @@ logbook:
       - path: /admin/withdraw/**
         methods:
           - POST
+          - PUT
+      - path: /v3/amount**
+      - path: /v3/transfer**
       - path: /v1/deposit/manually/**
       - path: /v2/transfer/**
       - path: /transfer/**
       - path: /deposit/**
+      - path: /balanceOf**
+      - path: /inquiry/**
+      - path: /withdraw**
+        methods:
+          - POST
+          - PUT
+      - path: /otc**
+        methods:
+          - POST
+          - PUT
+          - DELETE
 logging:
   level:
     root: INFO

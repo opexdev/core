@@ -80,7 +80,16 @@ logbook:
       - path: /actuator/**
       - path: /swagger**
     include:
-      - path: /v1/address**
+      - path: /v1/address/assign**
+      - path: /admin/**
+        methods:
+          - POST
+          - PUT
+      - path: /currency/**
+        methods:
+          - POST
+          - PUT
+      - path: /wallet-sync**
 logging:
   level:
     org.apache.kafka: ERROR

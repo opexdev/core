@@ -79,7 +79,15 @@ logbook:
       - path: /swagger**
     include:
       - path: /v3/order
+        methods:
+          - POST
+          - PUT
       - path: /v1/capital/deposit/address
+      - path: /v1/api-key
+        methods:
+          - POST
+          - PUT
+          - DELETE
 logging:
   level:
     co.nilin: INFO
