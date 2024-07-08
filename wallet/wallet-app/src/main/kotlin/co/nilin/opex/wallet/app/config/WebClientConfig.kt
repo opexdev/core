@@ -25,7 +25,7 @@ class WebClientConfig {
     ): WebClient {
         val client = HttpClient.create().doOnConnected { it.addHandlerLast(LogbookClientHandler(logbook)) }
         return WebClient.builder()
-            .clientConnector(ReactorClientHttpConnector(client))
+            //.clientConnector(ReactorClientHttpConnector(client))
             .filter(ReactorLoadBalancerExchangeFilterFunction(loadBalancerFactory, emptyList()))
             .build()
     }
@@ -36,7 +36,7 @@ class WebClientConfig {
     fun webClient(logbook: Logbook): WebClient {
         val client = HttpClient.create().doOnConnected { it.addHandlerLast(LogbookClientHandler(logbook)) }
         return WebClient.builder()
-            .clientConnector(ReactorClientHttpConnector(client))
+            //.clientConnector(ReactorClientHttpConnector(client))
             .build()
     }
 

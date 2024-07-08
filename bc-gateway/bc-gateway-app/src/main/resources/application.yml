@@ -79,6 +79,8 @@ logbook:
       - path: /auth**
       - path: /actuator/**
       - path: /swagger**
+    include:
+      - path: /v1/address**
 logging:
   level:
     org.apache.kafka: ERROR

@@ -87,6 +87,7 @@ logbook:
       - path: /auth**
       - path: /actuator/**
       - path: /swagger**
+      - path: /config/**
 logging:
   level:
     co.nilin: INFO

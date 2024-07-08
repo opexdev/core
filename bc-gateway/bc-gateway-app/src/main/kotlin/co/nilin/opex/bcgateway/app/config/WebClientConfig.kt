@@ -21,7 +21,7 @@ class WebClientConfig {
     fun loadBalancedWebClient(loadBalancerFactory: ReactiveLoadBalancer.Factory<ServiceInstance>, logbook: Logbook): WebClient {
         val client = HttpClient.create().doOnConnected { it.addHandlerLast(LogbookClientHandler(logbook)) }
         return WebClient.builder()
-            .clientConnector(ReactorClientHttpConnector(client))
+            //.clientConnector(ReactorClientHttpConnector(client))
             .filter(ReactorLoadBalancerExchangeFilterFunction(loadBalancerFactory, emptyList()))
             .exchangeStrategies(
                 ExchangeStrategies.builder()
@@ -36,7 +36,7 @@ class WebClientConfig {
     fun webClient(logbook: Logbook): WebClient {
         val client = HttpClient.create().doOnConnected { it.addHandlerLast(LogbookClientHandler(logbook)) }
         return WebClient.builder()
-            .clientConnector(ReactorClientHttpConnector(client))
+            //.clientConnector(ReactorClientHttpConnector(client))
             .exchangeStrategies(
                 ExchangeStrategies.builder()
                     .codecs { it.defaultCodecs().maxInMemorySize(20 * 1024 * 1024) }
