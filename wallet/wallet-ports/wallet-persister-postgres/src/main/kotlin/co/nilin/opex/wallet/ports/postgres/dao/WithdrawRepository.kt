@@ -16,7 +16,7 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, String> {
     fun findByWallet(@Param("wallet") wallet: Long): Flow<WithdrawModel>
 
     @Query(
-        """
+            """
         select * from withdraws wth
         join wallet wm on wm.id = wth.wallet
         where wm.owner = :owner
@@ -25,7 +25,7 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, String> {
     fun findByOwner(@Param("owner") owner: Long): Flow<WithdrawModel>
 
     @Query(
-        """
+            """
         select * from withdraws wth  
         join wallet wm on wm.id = wth.wallet    
         join wallet_owner wo on wm.owner = wo.id   
@@ -39,17 +39,17 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, String> {
         """
     )
     fun findByCriteria(
-        @Param("owner") ownerUuid: String?,
-        @Param("withdraw_id") withdrawId: Long?,
-        @Param("currency") currency: String?,
-        @Param("dest_transaction_ref") destTxRef: String?,
-        @Param("dest_address") destAddress: String?,
-        @Param("no_status") noStatus: Boolean,
-        @Param("status") status: List<String>?
+            @Param("owner") ownerUuid: String?,
+            @Param("withdraw_id") withdrawId: Long?,
+            @Param("currency") currency: String?,
+            @Param("dest_transaction_ref") destTxRef: String?,
+            @Param("dest_address") destAddress: String?,
+            @Param("no_status") noStatus: Boolean,
+            @Param("status") status: List<String>?
     ): Flow<WithdrawModel>
 
     @Query(
-        """
+            """
         select * from withdraws wth  
         join wallet wm on wm.id = wth.wallet    
         join wallet_owner wo on wm.owner = wo.id   
@@ -64,19 +64,19 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, String> {
         """
     )
     fun findByCriteria(
-        @Param("owner") ownerUuid: String?,
-        @Param("withdraw_id") withdrawId: Long?,
-        @Param("currency") currency: String?,
-        @Param("dest_transaction_ref") destTxRef: String?,
-        @Param("dest_address") destAddress: String?,
-        @Param("no_status") noStatus: Boolean,
-        @Param("status") status: List<String>?,
-        offset: Int,
-        size: Int
+            @Param("owner") ownerUuid: String?,
+            @Param("withdraw_id") withdrawId: Long?,
+            @Param("currency") currency: String?,
+            @Param("dest_transaction_ref") destTxRef: String?,
+            @Param("dest_address") destAddress: String?,
+            @Param("no_status") noStatus: Boolean,
+            @Param("status") status: List<String>?,
+            offset: Int,
+            size: Int
     ): Flow<WithdrawModel>
 
     @Query(
-        """
+            """
         select count(*) from withdraws wth  
         join wallet wm on wm.id = wth.wallet    
         join wallet_owner wo on wm.owner = wo.id   
@@ -89,53 +89,78 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, String> {
         """
     )
     fun countByCriteria(
-        @Param("owner") ownerUuid: String?,
-        @Param("withdraw_id") withdrawId: Long?,
-        @Param("currency") currency: String?,
-        @Param("dest_transaction_ref") destTxRef: String?,
-        @Param("dest_address") destAddress: String?,
-        @Param("no_status") noStatus: Boolean,
-        @Param("status") status: List<String>?
+            @Param("owner") ownerUuid: String?,
+            @Param("withdraw_id") withdrawId: Long?,
+            @Param("currency") currency: String?,
+            @Param("dest_transaction_ref") destTxRef: String?,
+            @Param("dest_address") destAddress: String?,
+            @Param("no_status") noStatus: Boolean,
+            @Param("status") status: List<String>?
     ): Mono<Long>
 
     @Query("select * from withdraws where wallet = :wallet and transaction_id = :tx_id")
     fun findByWalletAndTransactionId(
-        @Param("wallet") wallet: Long,
-        @Param("tx_id") txId: String
+            @Param("wallet") wallet: Long,
+            @Param("tx_id") txId: String
     ): Mono<WithdrawModel?>
 
     @Query(
-        """
+            """
         select * from withdraws 
         where uuid = :uuid
-            and currency = :currency
+            and (:currency is null or currency = :currency)
             and (:startTime is null or create_date > :startTime )
             and (:endTime is null or create_date <= :endTime)
+        order by create_date ASC 
         limit :limit
+        offset :offset
         """
     )
-    fun findWithdrawHistory(
-        @Param("uuid") uuid: String,
-        @Param("currency") currency: String,
-        @Param("startTime") startTime: LocalDateTime?,
-        @Param("endTime") endTime: LocalDateTime?,
-        @Param("limit") limit: Int,
+    fun findWithdrawHistoryAsc(
+            @Param("uuid") uuid: String,
+            @Param("currency") currency: String?,
+            @Param("startTime") startTime: LocalDateTime?,
+            @Param("endTime") endTime: LocalDateTime?,
+            @Param("limit") limit: Int,
+            @Param("offset") offset: Int
     ): Flow<WithdrawModel>
 
+
     @Query(
-        """
+            """
         select * from withdraws 
         where uuid = :uuid
+            and (:currency is null or currency = :currency)
             and (:startTime is null or create_date > :startTime )
-            and (:endTime is null or  create_date <= :endTime)
+            and (:endTime is null or create_date <= :endTime)
+        order by create_date DESC 
         limit :limit
+        offset :offset
         """
     )
-    fun findWithdrawHistory(
-        @Param("uuid") uuid: String,
-        @Param("startTime") startTime: LocalDateTime?,
-        @Param("endTime") endTime: LocalDateTime?,
-        @Param("limit") limit: Int,
+    fun findWithdrawHistoryDesc(
+            @Param("uuid") uuid: String,
+            @Param("currency") currency: String?,
+            @Param("startTime") startTime: LocalDateTime?,
+            @Param("endTime") endTime: LocalDateTime?,
+            @Param("limit") limit: Int,
+            @Param("offset") offset: Int
     ): Flow<WithdrawModel>
+
+//    @Query(
+//        """
+//        select * from withdraws
+//        where uuid = :uuid
+//            and (:startTime is null or create_date > :startTime )
+//            and (:endTime is null or  create_date <= :endTime)
+//        limit :limit
+//        """
+//    )
+//    fun findWithdrawHistory(
+//        @Param("uuid") uuid: String,
+//        @Param("startTime") startTime: LocalDateTime?,
+//        @Param("endTime") endTime: LocalDateTime?,
+//        @Param("limit") limit: Int,
+//    ): Flow<WithdrawModel>
 
 }

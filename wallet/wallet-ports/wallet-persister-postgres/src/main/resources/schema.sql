@@ -1,6 +1,3 @@
-
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 CREATE TABLE IF NOT EXISTS currency
 (
     symbol            VARCHAR(25) PRIMARY KEY,
@@ -263,9 +260,6 @@ CREATE TABLE IF NOT EXISTS wallet
     UNIQUE (owner, wallet_type, currency)
 );
 
-
-
-
 ALTER TABLE wallet
     ADD COLUMN IF NOT EXISTS version INTEGER;
 
@@ -377,6 +371,20 @@ CREATE TABLE IF NOT EXISTS wallet_stat_exclusion
 );
 
 
-
-
-
+CREATE TABLE IF NOT EXISTS deposits (
+      id SERIAL PRIMARY KEY,
+      uuid VARCHAR(255) NOT NULL,
+      duid VARCHAR(255) NOT NULL,
+      currency VARCHAR(255) NOT NULL REFERENCES currency (symbol),
+      amount DECIMAL NOT NULL, -- Use a numeric type for decimal values
+      accepted_fee DECIMAL,
+      applied_fee DECIMAL,
+      source_symbol VARCHAR(255),
+      network VARCHAR(255),
+      source_address VARCHAR(255),
+      note TEXT,
+      transaction_ref VARCHAR(255),
+      status VARCHAR(255),
+      deposit_type VARCHAR(255),
+      create_date TIMESTAMP
+);

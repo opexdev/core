@@ -14,8 +14,8 @@ import java.math.BigDecimal
 @Component
 class AccountantProxyImpl(
     @Value("\${app.accountant.url}")
-    val accountantBaseUrl: String,
-    val webClient: WebClient
+    private val accountantBaseUrl: String,
+    private val webClient: WebClient
 ) : AccountantApiProxy {
 
     override suspend fun canCreateOrder(uuid: String, symbol: String, value: BigDecimal): Boolean {

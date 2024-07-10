@@ -1,8 +1,8 @@
 name:  Build, Test, and Deploy otc (DEV env) services for specific partner
 on:
-  push:
-    branches:
-      - dev
+#  push:
+#    branches:
+#      - dev
 
   workflow_dispatch:
     inputs:

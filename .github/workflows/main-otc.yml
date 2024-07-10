@@ -1,8 +1,8 @@
 name:  Build, Test, and Deploy otc (PRD env) services for specific partner
 on:
-  push:
-    branches:
-      - main
+#  push:
+#    branches:
+#      - main
 
   workflow_dispatch:
     inputs:

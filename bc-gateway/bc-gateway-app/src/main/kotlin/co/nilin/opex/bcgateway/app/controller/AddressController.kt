@@ -24,16 +24,18 @@ import java.util.stream.Collectors
 @RestController
 @RequestMapping("/v1/address")
 class AddressController(
-        private val assignAddressService: AssignAddressService,
-        private val reservedAddressHandler: ReservedAddressHandler,
-        private val addressTypeHandler: AddressTypeHandler
+    private val assignAddressService: AssignAddressService,
+    private val reservedAddressHandler: ReservedAddressHandler,
+    private val addressTypeHandler: AddressTypeHandler
 ) {
     data class AssignAddressRequest(val uuid: String, val currency: String, val chain: String)
     data class AssignAddressResponse(val addresses: List<AssignedAddress>)
 
     @PostMapping("/assign")
-    suspend fun assignAddress(@RequestBody assignAddressRequest: AssignAddressRequest,
-                              @CurrentSecurityContext securityContext: SecurityContext?): AssignAddressResponse {
+    suspend fun assignAddress(
+        @RequestBody assignAddressRequest: AssignAddressRequest,
+        @CurrentSecurityContext securityContext: SecurityContext?
+    ): AssignAddressResponse {
         if (!(securityContext == null || securityContext.authentication.name == assignAddressRequest.uuid))
             throw OpexError.Forbidden.exception()
         val assignedAddress = assignAddressService.assignAddress(
@@ -42,8 +44,8 @@ class AddressController(
                 assignAddressRequest.chain
         )
 
-      return AssignAddressResponse(assignedAddress);
-    //        stream().map { it ->
+        return AssignAddressResponse(assignedAddress);
+        //        stream().map { it ->
 //            it.apply {
 //                this.expTime = this.expTime?.atZone(ZoneId.systemDefault())?.withZoneSameInstant(ZoneId.of("Asia/Tehran"))?.toLocalDateTime()
 //                this.assignedDate = this.assignedDate?.atZone(ZoneId.systemDefault())?.withZoneSameInstant(ZoneId.of("Asia/Tehran"))?.toLocalDateTime()

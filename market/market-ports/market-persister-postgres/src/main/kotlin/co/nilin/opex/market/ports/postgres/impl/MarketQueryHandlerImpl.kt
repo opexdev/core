@@ -1,11 +1,15 @@
 package co.nilin.opex.market.ports.postgres.impl
 
+import co.nilin.opex.common.utils.Interval
+import co.nilin.opex.common.utils.hours
+import co.nilin.opex.common.utils.minutes
 import co.nilin.opex.market.core.inout.*
 import co.nilin.opex.market.core.spi.MarketQueryHandler
 import co.nilin.opex.market.ports.postgres.dao.OrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderStatusRepository
 import co.nilin.opex.market.ports.postgres.dao.TradeRepository
 import co.nilin.opex.market.ports.postgres.model.TradeTickerData
+import co.nilin.opex.market.ports.postgres.util.RedisCacheHelper
 import co.nilin.opex.market.ports.postgres.util.asOrderDTO
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.singleOrNull
@@ -15,33 +19,39 @@ import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.stereotype.Component
+import java.lang.StringBuilder
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.time.ZoneOffset
 import java.util.*
 
 @Component
 class MarketQueryHandlerImpl(
     private val orderRepository: OrderRepository,
     private val tradeRepository: TradeRepository,
-    private val orderStatusRepository: OrderStatusRepository
+    private val orderStatusRepository: OrderStatusRepository,
+    private val redisCacheHelper: RedisCacheHelper
 ) : MarketQueryHandler {
 
     //TODO merge order and status fetching in query
 
-    override suspend fun getTradeTickerData(startFrom: LocalDateTime): List<PriceChange> {
-        return tradeRepository.tradeTicker(startFrom)
-            .collectList()
-            .awaitFirstOrElse { emptyList() }
-            .map { it.asPriceChangeResponse(Date().time, startFrom.toInstant(ZoneOffset.UTC).toEpochMilli()) }
+    override suspend fun getTradeTickerData(interval: Interval): List<PriceChange> {
+        return redisCacheHelper.getOrElse("tradeTickerData:${interval.label}", 2.minutes()) {
+            tradeRepository.tradeTicker(interval.getLocalDateTime())
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
+                .map { it.asPriceChangeResponse(Date().time, interval.getTime()) }
+        }
     }
 
-    override suspend fun getTradeTickerDateBySymbol(symbol: String, startFrom: LocalDateTime): PriceChange? {
-        return tradeRepository.tradeTickerBySymbol(symbol, startFrom)
-            .awaitFirstOrNull()
-            ?.asPriceChangeResponse(Date().time, startFrom.toInstant(ZoneOffset.UTC).toEpochMilli())
+    override suspend fun getTradeTickerDateBySymbol(symbol: String, interval: Interval): PriceChange? {
+        val cacheId = "tradeTickerData:$symbol:${interval.label}"
+        return redisCacheHelper.getOrElse(cacheId, 2.minutes()) {
+            tradeRepository.tradeTickerBySymbol(symbol, interval.getLocalDateTime())
+                .awaitFirstOrNull()
+                ?.asPriceChangeResponse(Date().time, interval.getTime())
+        }
     }
 
     override suspend fun openBidOrders(symbol: String, limit: Int): List<OrderBook> {
@@ -66,13 +76,23 @@ class MarketQueryHandlerImpl(
             .map { OrderBook(it.price, it.quantity) }
     }
 
+    // @Cacheable does not support suspended functions. Spring 6.1 required.
+    // @Cacheable(cacheNames = ["marketCache"], key = "'lastOrder'")
     override suspend fun lastOrder(symbol: String): Order? {
-        val order = orderRepository.findLastOrderBySymbol(symbol).awaitFirstOrNull() ?: return null
-        val status = orderStatusRepository.findMostRecentByOUID(order.ouid).awaitFirstOrNull()
-        return order.asOrderDTO(status)
+        return redisCacheHelper.get<Order>("lastOrder") ?: run {
+            val order = orderRepository.findLastOrderBySymbol(symbol).awaitFirstOrNull() ?: return@run null
+            val status = orderStatusRepository.findMostRecentByOUID(order.ouid).awaitFirstOrNull()
+            order.asOrderDTO(status)
+        }.also { redisCacheHelper.put("lastOrder", it) }
     }
 
+    //TODO need better query
     override suspend fun recentTrades(symbol: String, limit: Int): List<MarketTrade> {
+        val cacheKey = "recentTrades:${symbol.lowercase()}"
+        val recentTradesCache = redisCacheHelper.getList<MarketTrade>(cacheKey)
+        if (!recentTradesCache.isNullOrEmpty())
+            return recentTradesCache.toList()
+
         return tradeRepository.findBySymbolSortDescendingByCreateDate(symbol, limit)
             .map {
                 val takerOrder = orderRepository.findByOuid(it.takerOuid).awaitFirst()
@@ -94,22 +114,27 @@ class MarketQueryHandlerImpl(
                     isMakerBuyer
                 )
             }.toList()
+            .onEach { redisCacheHelper.putListItem(cacheKey, it) }
+            .also { redisCacheHelper.setExpiration(cacheKey, 60.minutes()) }
     }
 
     override suspend fun lastPrice(symbol: String?): List<PriceTicker> {
-        val list = if (symbol.isNullOrEmpty())
-            tradeRepository.findAllGroupBySymbol()
-        else
-            tradeRepository.findBySymbolGroupBySymbol(symbol)
-        return list.collectList()
-            .awaitFirstOrElse { emptyList() }
-            .map { PriceTicker(it.symbol, it.matchedPrice.toString()) }
+        val list = redisCacheHelper.getOrElse("lastPrice", 1.minutes()) {
+            if (symbol.isNullOrEmpty())
+                tradeRepository.findAllGroupBySymbol().collectList().awaitFirstOrElse { emptyList() }
+            else
+                tradeRepository.findBySymbolGroupBySymbol(symbol).collectList().awaitFirstOrElse { emptyList() }
+        }
+        return list.map { PriceTicker(it.symbol, it.matchedPrice.toString()) }
     }
 
     override suspend fun getBestPriceForSymbols(symbols: List<String>): List<BestPrice> {
-        return tradeRepository.bestAskAndBidPrice(symbols)
-            .collectList()
-            .awaitFirstOrElse { emptyList() }
+        val id = symbols.joinToString { it }
+        return redisCacheHelper.getOrElse("bestPricesForSymbols:$id", 1.minutes()) {
+            tradeRepository.bestAskAndBidPrice(symbols)
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
+        }
     }
 
     override suspend fun getCandleInfo(
@@ -120,16 +145,14 @@ class MarketQueryHandlerImpl(
         limit: Int
     ): List<CandleData> {
         val st = if (startTime == null)
-            tradeRepository.findFirstByCreateDate().awaitFirstOrNull()?.createDate
-                ?: LocalDateTime.now()
+            tradeRepository.findFirstByCreateDate().awaitFirstOrNull()?.createDate ?: LocalDateTime.now()
         else
             with(Instant.ofEpochMilli(startTime)) {
                 LocalDateTime.ofInstant(this, ZoneId.systemDefault())
             }
 
         val et = if (endTime == null)
-            tradeRepository.findLastByCreateDate().awaitFirstOrNull()?.createDate
-                ?: LocalDateTime.now()
+            tradeRepository.findLastByCreateDate().awaitFirstOrNull()?.createDate ?: LocalDateTime.now()
         else
             with(Instant.ofEpochMilli(endTime)) {
                 LocalDateTime.ofInstant(this, ZoneId.systemDefault())
@@ -155,42 +178,65 @@ class MarketQueryHandlerImpl(
             }
     }
 
-    override suspend fun numberOfActiveUsers(interval: LocalDateTime): Long {
-        return orderRepository.countUsersWhoMadeOrder(interval).singleOrNull() ?: 0L
+    override suspend fun numberOfActiveUsers(interval: Interval): Long {
+        return redisCacheHelper.getOrElse("activeUsers:${interval.label}", 1.hours()) {
+            //TODO remove times(10)
+            orderRepository.countUsersWhoMadeOrder(interval.getLocalDateTime())
+                .singleOrNull()
+                ?.times(10)?.approximate() ?: 0L
+        }
     }
 
-    override suspend fun numberOfTrades(interval: LocalDateTime, pair: String?): Long {
+    override suspend fun numberOfTrades(interval: Interval, pair: String?): Long {
         return if (pair != null)
-            tradeRepository.countBySymbolNewerThan(interval, pair).singleOrNull() ?: 0
+            redisCacheHelper.getOrElse("tradeCount:$pair:${interval.label}", 1.hours()) {
+                tradeRepository.countBySymbolNewerThan(interval.getLocalDateTime(), pair).singleOrNull()?.approximate()
+                    ?: 0
+            }
         else
-            tradeRepository.countNewerThan(interval).singleOrNull() ?: 0
+            redisCacheHelper.getOrElse("tradeCount:${interval.label}", 1.hours()) {
+                tradeRepository.countNewerThan(interval.getLocalDateTime()).singleOrNull()?.approximate() ?: 0
+            }
     }
 
-    override suspend fun numberOfOrders(interval: LocalDateTime, pair: String?): Long {
+    override suspend fun numberOfOrders(interval: Interval, pair: String?): Long {
         return if (pair != null)
-            orderRepository.countBySymbolNewerThan(interval, pair).singleOrNull() ?: 0
+            redisCacheHelper.getOrElse("orderCount:$pair:${interval.label}", 1.hours()) {
+                orderRepository.countBySymbolNewerThan(interval.getLocalDateTime(), pair).singleOrNull()?.approximate()
+                    ?: 0
+            }
         else
-            orderRepository.countNewerThan(interval).singleOrNull() ?: 0
+            redisCacheHelper.getOrElse("orderCount:${interval.label}", 1.hours()) {
+                orderRepository.countNewerThan(interval.getLocalDateTime()).singleOrNull()?.approximate() ?: 0
+            }
     }
 
-    override suspend fun mostIncreasePrice(interval: LocalDateTime, limit: Int): List<PriceStat> {
-        return tradeRepository.findByMostIncreasedPrice(interval, limit)
-            .collectList()
-            .awaitFirstOrElse { emptyList() }
+    override suspend fun mostIncreasePrice(interval: Interval, limit: Int): List<PriceStat> {
+        return redisCacheHelper.getOrElse("priceIncrease:${interval.label}", 1.minutes()) {
+            tradeRepository.findByMostIncreasedPrice(interval.getLocalDateTime(), limit)
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
+        }.take(limit)
     }
 
-    override suspend fun mostDecreasePrice(interval: LocalDateTime, limit: Int): List<PriceStat> {
-        return tradeRepository.findByMostDecreasedPrice(interval, limit)
-            .collectList()
-            .awaitFirstOrElse { emptyList() }
+    override suspend fun mostDecreasePrice(interval: Interval, limit: Int): List<PriceStat> {
+        return redisCacheHelper.getOrElse("priceDecrease:${interval.label}", 1.minutes()) {
+            tradeRepository.findByMostDecreasedPrice(interval.getLocalDateTime(), limit)
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
+        }.take(limit)
     }
 
-    override suspend fun mostVolume(interval: LocalDateTime): TradeVolumeStat? {
-        return tradeRepository.findByMostVolume(interval).awaitSingleOrNull()
+    override suspend fun mostVolume(interval: Interval): TradeVolumeStat? {
+        return redisCacheHelper.getOrElse("mostVolume:${interval.label}", 1.minutes()) {
+            tradeRepository.findByMostVolume(interval.getLocalDateTime()).awaitSingleOrNull()
+        }
     }
 
-    override suspend fun mostTrades(interval: LocalDateTime): TradeVolumeStat? {
-        return tradeRepository.findByMostTrades(interval).awaitSingleOrNull()
+    override suspend fun mostTrades(interval: Interval): TradeVolumeStat? {
+        return redisCacheHelper.getOrElse("mostTrades:${interval.label}", 1.minutes()) {
+            tradeRepository.findByMostTrades(interval.getLocalDateTime()).awaitSingleOrNull()
+        }
     }
 
     private fun TradeTickerData.asPriceChangeResponse(openTime: Long, closeTime: Long) = PriceChange(
@@ -212,4 +258,16 @@ class MarketQueryHandlerImpl(
         lastId ?: -1,
         count ?: 0
     )
+
+    private fun Long.approximate(): Long {
+        if (this < 10)
+            return this
+
+        val str = toString()
+        val builder = StringBuilder(str.substring(0, 1))
+        repeat(str.length - 1) { builder.append("0") }
+        return builder.toString().toLong()
+    }
+
 }
+

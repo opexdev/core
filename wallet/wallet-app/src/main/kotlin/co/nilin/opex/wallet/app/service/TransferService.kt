@@ -7,10 +7,10 @@ import co.nilin.opex.wallet.app.dto.AdvanceReservedTransferData
 import co.nilin.opex.wallet.app.dto.ManualTransferRequest
 import co.nilin.opex.wallet.app.dto.ReservedTransferResponse
 import co.nilin.opex.wallet.app.dto.TransferRequest
+import co.nilin.opex.wallet.core.exc.NotEnoughBalanceException
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.Amount
-import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.model.otc.Rate
 import co.nilin.opex.wallet.core.model.otc.ReservedTransfer
 import co.nilin.opex.wallet.core.spi.*
@@ -30,7 +30,8 @@ class TransferService(
         private val walletManager: WalletManager,
         private val walletOwnerManager: WalletOwnerManager,
         private val currencyGraph: co.nilin.opex.wallet.app.service.otc.GraphService,
-        private val reservedTransferManager: ReservedTransferManager
+        private val reservedTransferManager: ReservedTransferManager,
+        private val depositPersister: DepositPersister
 ) {
     @Autowired
     private lateinit var preferences: Preferences
@@ -94,9 +95,11 @@ class TransferService(
             receiverWalletType: String,
             amount: BigDecimal,
             description: String?,
-            transferRef: String?
+            transferRef: String?,
+            chain: String?
     ): TransferResult {
-        return _transfer(
+
+        val tx = _transfer(
                 symbol,
                 "main",
                 walletOwnerManager.systemUuid,
@@ -109,7 +112,20 @@ class TransferService(
                 null,
                 symbol,
                 amount
+
         )
+        depositPersister.persist(Deposit(
+                receiverUuid,
+                UUID.randomUUID().toString(),
+                symbol,
+                amount,
+                note = description,
+                transactionRef = transferRef,
+                status = "Done",
+                depositType = "On-chain",
+                network = chain
+        ))
+        return tx
     }
 
     suspend fun calculateDestinationAmount(
@@ -278,25 +294,29 @@ class TransferService(
         logger.info("deposit manually: $senderUuid to $receiverUuid on $symbol at ${LocalDateTime.now()}")
         val systemUuid = "1"
         //todo customize error message
-
         val senderLevel = walletOwnerManager.findWalletOwner(senderUuid)?.let { it.level }
                 ?: throw OpexException(OpexError.WalletOwnerNotFound)
-        val receiverLevel = walletOwnerManager.findWalletOwner(receiverUuid)?.let { it.level }
+        walletOwnerManager.findWalletOwner(receiverUuid)?.let { it.level }
                 ?: walletOwnerManager.createWalletOwner(
                         receiverUuid,
                         "not set",
                         "1"
                 ).level
 
-        if (senderLevel !in arrayListOf<String>(preferences.admin.walletLevel, preferences.system.walletLevel))
-            throw OpexException(OpexError.Forbidden)
+//        if (senderLevel !in arrayListOf<String>(preferences.admin.walletLevel, preferences.system.walletLevel))
+//            throw OpexException(OpexError.Forbidden)
 
-        if (senderLevel == preferences.system.walletLevel && receiverLevel != preferences.admin.walletLevel)
-            throw OpexException(OpexError.Forbidden)
+        //todo need to fix conflict between otc and exchange
+
+//        if (senderLevel == preferences.system.walletLevel && receiverLevel != preferences.admin.walletLevel)
+//            throw OpexException(OpexError.Forbidden)
+
+
 
 //        if (walletOwnerManager.findWalletOwner(receiverUuid)?.level !in arrayListOf<String>(preferences.admin.walletLevel,preferences.system.walletLevel))
 //            throw OpexException(OpexError.Error)
-        return _transfer(
+
+        val tx = _transfer(
                 symbol,
                 "main",
                 senderUuid,
@@ -311,6 +331,17 @@ class TransferService(
                 amount
 
         )
+        depositPersister.persist(Deposit(
+                receiverUuid,
+                UUID.randomUUID().toString(),
+                symbol,
+                amount,
+                note = request.description,
+                transactionRef = request.ref,
+                status = "Done",
+                depositType = "System",
+        ))
+        return tx;
     }
 
 

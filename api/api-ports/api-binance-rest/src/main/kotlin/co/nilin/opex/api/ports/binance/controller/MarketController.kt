@@ -6,9 +6,9 @@ import co.nilin.opex.api.core.spi.AccountantProxy
 import co.nilin.opex.api.core.spi.BlockchainGatewayProxy
 import co.nilin.opex.api.core.spi.MarketDataProxy
 import co.nilin.opex.api.core.spi.SymbolMapper
-import co.nilin.opex.api.core.utils.Interval
 import co.nilin.opex.api.ports.binance.data.*
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.common.utils.Interval
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.springframework.web.bind.annotation.GetMapping
@@ -114,12 +114,12 @@ class MarketController(
         if (!validDurations.contains(duration))
             OpexError.InvalidPriceChangeDuration.exception()
 
-        val startDate = Interval.findByLabel(duration) ?: Interval.Week
+        val interval = Interval.findByLabel(duration) ?: Interval.Week
 
         val result = if (symbol.isNullOrEmpty())
-            marketDataProxy.getTradeTickerData(startDate.getDate().time).toMutableList()
+            marketDataProxy.getTradeTickerData(interval).toMutableList()
         else
-            arrayListOf(marketDataProxy.getTradeTickerDataBySymbol(localSymbol!!, startDate.getDate().time))
+            arrayListOf(marketDataProxy.getTradeTickerDataBySymbol(localSymbol!!, interval))
 
         symbolMapper.symbolToAliasMap().entries.forEach { map ->
             val price = result.find { it.symbol == map.key }

@@ -2,7 +2,6 @@ package co.nilin.opex.wallet.core.service
 
 import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.Amount
-import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.model.Withdraw
 import co.nilin.opex.wallet.core.spi.*
 import org.springframework.beans.factory.annotation.Value
@@ -194,7 +193,6 @@ class WithdrawService(
             offset: Int,
             size: Int
     ): PagingWithdrawResponse {
-
         val count =
                 withdrawPersister.countByCriteria(ownerUuid, withdrawId, currency, destTxRef, destAddress, noStatus, status)
         val list = withdrawPersister.findByCriteria(
@@ -237,10 +235,9 @@ class WithdrawService(
             startTime: LocalDateTime?,
             endTime: LocalDateTime?,
             limit: Int,
-            offset: Int
+            offset: Int,
+            ascendingByTime:Boolean?=false
     ): List<Withdraw> {
-        return withdrawPersister.findWithdrawHistory(uuid, coin, startTime, endTime, limit, offset)
+        return withdrawPersister.findWithdrawHistory(uuid, coin, startTime, endTime, limit, offset,ascendingByTime)
     }
-
-
 }

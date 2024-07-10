@@ -48,9 +48,9 @@ class TransactionManagerImpl(
             startTime: LocalDateTime?,
             endTime: LocalDateTime?,
             limit: Int,
-            offset: Int
+            offset: Int,
+            ascendingByTime: Boolean?
     ): List<TransactionHistory> {
-
         val transactions = if (coin != null)
             transactionRepository.findDepositTransactionsByUUIDAndCurrency(uuid, coin, startTime, endTime, limit)
         else
@@ -68,7 +68,10 @@ class TransactionManagerImpl(
                             it.ref,
                             it.date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
                             it.category,
-                            if (it.detail == null) emptyMap() else objectMapper.readValue(it.detail, Map::class.java) as Map<String, Any>?,
+                            if (it.detail == null) emptyMap() else objectMapper.readValue(
+                                    it.detail,
+                                    Map::class.java
+                            ) as Map<String, Any>?,
                     )
                 }
     }
@@ -98,7 +101,10 @@ class TransactionManagerImpl(
                             it.ref,
                             it.date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
                             it.category,
-                            if (it.detail == null) emptyMap() else objectMapper.readValue(it.detail, Map::class.java) as Map<String, Any>?,
+                            if (it.detail == null) emptyMap() else objectMapper.readValue(
+                                    it.detail,
+                                    Map::class.java
+                            ) as Map<String, Any>?,
                     )
                 }
     }
@@ -134,7 +140,10 @@ class TransactionManagerImpl(
                             it.ref,
                             it.date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
                             it.category,
-                            if (it.detail == null) emptyMap() else objectMapper.readValue(it.detail, Map::class.java) as Map<String, Any>?,
+                            if (it.detail == null) emptyMap() else objectMapper.readValue(
+                                    it.detail,
+                                    Map::class.java
+                            ) as Map<String, Any>?,
                             (it.senderUuid == uuid) && (it.senderUuid != it.receiverUuid)
                     )
                 }

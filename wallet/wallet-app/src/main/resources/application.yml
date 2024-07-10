@@ -56,6 +56,57 @@ spring:
         prefer-ip-address: true
   config:
     import: vault://secret/${spring.application.name}
+logbook:
+  secure-filter:
+    enabled: true
+  format:
+    style: http
+  filter:
+    enabled: true
+    form-request-mode: BODY
+  obfuscate:
+    headers:
+      - Authorization
+    parameters:
+      - password
+    json-body-fields:
+      - password
+    replacement: "***"
+  write:
+    max-body-size: 10_000 #kb
+  predicate:
+    exclude:
+      - path: /auth**
+      - path: /actuator/**
+      - path: /swagger**
+    include:
+      - path: /admin/withdraw/**
+        methods:
+          - POST
+          - PUT
+      - path: /v3/amount**
+      - path: /v3/transfer**
+      - path: /v1/deposit/manually/**
+      - path: /v2/transfer/**
+      - path: /transfer/**
+      - path: /deposit/**
+      - path: /balanceOf**
+      - path: /inquiry/**
+      - path: /withdraw**
+        methods:
+          - POST
+          - PUT
+      - path: /otc**
+        methods:
+          - POST
+          - PUT
+          - DELETE
+logging:
+  level:
+    root: INFO
+    org.apache.kafka: ERROR
+    co.nilin: INFO
+    org.zalando.logbook: TRACE
 app:
   auth:
     url: lb://opex-auth

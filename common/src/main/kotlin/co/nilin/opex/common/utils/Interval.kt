@@ -1,4 +1,4 @@
-package co.nilin.opex.api.core.utils
+package co.nilin.opex.common.utils
 
 import java.time.Instant
 import java.time.LocalDateTime
@@ -31,6 +31,8 @@ enum class Interval(val label: String, val unit: TimeUnit, val duration: Long) {
     private fun getOffsetTime() = unit.toMillis(duration)
 
     fun getDate() = Date(Date().time - getOffsetTime())
+
+    fun getTime() = Date().time - getOffsetTime()
 
     fun getLocalDateTime(): LocalDateTime = with(Instant.ofEpochMilli(getDate().time)) {
         LocalDateTime.ofInstant(this, ZoneId.systemDefault())

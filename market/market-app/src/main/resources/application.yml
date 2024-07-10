@@ -1,8 +1,5 @@
-server.port: 8080
-logging:
-  level:
-    co.nilin: INFO
-    reactor.netty.http.client: DEBUG
+server:
+  port: 8080
 spring:
   application:
     name: opex-market
@@ -18,6 +15,11 @@ spring:
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
     initialization-mode: always
+  cache:
+    type: redis
+  redis:
+    host: redis-cache
+    port: 6379
   cloud:
     bootstrap:
       enabled: true
@@ -48,7 +50,7 @@ management:
     web:
       base-path: /actuator
       exposure:
-        include: ["health", "prometheus", "metrics"]
+        include: [ "health", "prometheus", "metrics" ]
   endpoint:
     health:
       show-details: when_authorized
@@ -56,8 +58,36 @@ management:
       enabled: true
     prometheus:
       enabled: true
+logbook:
+  secure-filter:
+    enabled: true
+  format:
+    style: http
+  filter:
+    enabled: true
+    form-request-mode: BODY
+  obfuscate:
+    headers:
+      - Authorization
+    parameters:
+      - password
+    json-body-fields:
+      - password
+    replacement: "***"
+  write:
+    max-body-size: 10_000 #kb
+  predicate:
+    exclude:
+      - path: /auth**
+      - path: /actuator/**
+      - path: /swagger**
+    include:
+      - path: /v1/order/**
+logging:
+  level:
+    co.nilin: INFO
 app:
   auth:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
 swagger:
-  authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
+  authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token}

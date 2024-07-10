@@ -15,8 +15,9 @@ import java.math.BigDecimal
 
 @Component
 class WalletProxyImpl(
-    @Value("\${app.wallet.url}") val walletBaseUrl: String,
-    val webClient: WebClient
+    private val webClient: WebClient,
+    @Value("\${app.wallet.url}")
+    private val walletBaseUrl: String
 ) : WalletProxy {
 
     data class TransferBody(
@@ -63,7 +64,7 @@ class WalletProxyImpl(
 
     override suspend fun canFulfil(symbol: String, walletType: String, uuid: String, amount: BigDecimal): Boolean {
         return webClient.get()
-            .uri("$walletBaseUrl/$uuid/wallet_type/$walletType/can_withdraw/${amount}_$symbol")
+            .uri("$walletBaseUrl/inquiry/$uuid/wallet_type/$walletType/can_withdraw/${amount}_$symbol")
             .header("Content-Type", "application/json")
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
