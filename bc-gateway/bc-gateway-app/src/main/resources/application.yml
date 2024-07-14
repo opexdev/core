@@ -96,11 +96,13 @@ logging:
     co.nilin: INFO
     org.zalando.logbook: TRACE
 app:
+  omni-wallet:
+    url: ${auth_url}
   auth:
-    url: lb://opex-auth
-    cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
-    client-id: none
-    client-secret: none
+    url: ${auth_url}
+    cert-url: ${auth_jwk_endpoint}
+    client-id: ${client_id}
+    client-secret: ${client_secret}
   wallet:
     url: lb://opex-wallet
   address:

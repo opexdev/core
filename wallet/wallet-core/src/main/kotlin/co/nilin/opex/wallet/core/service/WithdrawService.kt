@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.core.service
 
 import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.model.Withdraw
 import co.nilin.opex.wallet.core.spi.*
 import org.springframework.beans.factory.annotation.Value
@@ -26,6 +27,7 @@ class WithdrawService(
 
     @Transactional
     suspend fun requestWithdraw(withdrawCommand: WithdrawCommand): WithdrawResult {
+
         val currency = currencyService.fetchCurrency(FetchCurrency(symbol = withdrawCommand.currency))
                 ?: throw IllegalArgumentException()
         val owner = walletOwnerManager.findWalletOwner(withdrawCommand.uuid) ?: throw IllegalArgumentException()

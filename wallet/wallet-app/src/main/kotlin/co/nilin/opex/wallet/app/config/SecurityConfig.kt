@@ -66,6 +66,7 @@ class SecurityConfig(private val webClient: WebClient) {
                 .pathMatchers("/withdraw/**").hasRoleAndLevel("user", "Trusted")
                 .pathMatchers(HttpMethod.GET, "/otc/**").permitAll()
                 .pathMatchers(HttpMethod.GET, "/currency/**").permitAll()
+                .pathMatchers("/stats/**").hasRoleAndLevel("Admin")
                 .anyExchange().authenticated()
                 .and()
                 .oauth2ResourceServer()

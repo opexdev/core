@@ -1,7 +1,8 @@
 package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.wallet.core.spi.CurrencyService
+import co.nilin.opex.wallet.core.model.FetchCurrency
+import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import io.swagger.annotations.ApiResponse
@@ -47,4 +48,7 @@ class BalanceController(
         }
         return BalanceResponse(BigDecimal.ZERO)
     }
+
+
+
 }

@@ -113,6 +113,10 @@
             <artifactId>bc-gateway-wallet-proxy</artifactId>
         </dependency>
         <dependency>
+            <groupId>co.nilin.opex.bcgateway.ports.omniwallet</groupId>
+            <artifactId>bc-gateway-omniwallet-proxy</artifactId>
+        </dependency>
+        <dependency>
             <groupId>co.nilin.opex.bcgateway.ports.authproxy</groupId>
             <artifactId>bc-gateway-auth-proxy</artifactId>
         </dependency>
