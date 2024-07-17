@@ -66,8 +66,8 @@ logging:
 swagger:
   authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
 app:
-  omni-wallet:
-    url: ${omni_url}
+#  omni-wallet:
+#    url: ${omni_url}
   auth:
     url: ${auth_url}
     cert-url: ${auth_jwk_endpoint}

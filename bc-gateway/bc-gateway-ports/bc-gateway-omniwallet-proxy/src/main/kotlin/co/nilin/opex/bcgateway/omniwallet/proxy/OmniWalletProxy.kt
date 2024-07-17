@@ -20,8 +20,8 @@ inline fun <reified T : Any> typeRef(): ParameterizedTypeReference<T> = object :
 class OmniWalletProxy(private val webClient: WebClient){
 
 
-    @Value("\${app.omni-wallet.url}")
-    private lateinit var baseUrl: String
+//    @Value("\${app.omni-wallet.url}")
+//    private lateinit var baseUrl: String
 
      suspend fun getAssetBalance( network: String): ChainBalanceResponse {
          return  ChainBalanceResponse(listOf( AddressBalanceWithUsd("2345", BigDecimal(15),BigDecimal(65))))
