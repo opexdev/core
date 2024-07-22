@@ -6,6 +6,8 @@ import co.nilin.opex.wallet.core.spi.WalletDataManager
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 
@@ -15,76 +17,81 @@ class AdminController(private val withdrawService: WithdrawService, private val 
 
     @GetMapping("/withdraw")
     @ApiResponse(
-        message = "OK",
-        code = 200,
-        examples = Example(
-            ExampleProperty(
-                value = "{ }",
-                mediaType = "application/json"
+            message = "OK",
+            code = 200,
+            examples = Example(
+                    ExampleProperty(
+                            value = "{ }",
+                            mediaType = "application/json"
+                    )
             )
-        )
     )
     suspend fun searchWithdraws(
-        @RequestParam("uuid", required = false) uuid: String?,
-        @RequestParam("withdraw_id", required = false) withdrawId: String?,
-        @RequestParam("currency", required = false) currency: String?,
-        @RequestParam("dest_transaction_ref", required = false) destTxRef: String?,
-        @RequestParam("dest_address", required = false) destAddress: String?,
-        @RequestParam("status", required = false) status: List<String>?,
-        @RequestParam offset: Int,
-        @RequestParam size: Int
+            @RequestParam("uuid", required = false) uuid: String?,
+            @RequestParam("withdraw_id", required = false) withdrawId: String?,
+            @RequestParam("currency", required = false) currency: String?,
+            @RequestParam("dest_transaction_ref", required = false) destTxRef: String?,
+            @RequestParam("dest_address", required = false) destAddress: String?,
+            @RequestParam("status", required = false) status: List<String>?,
+            @RequestParam offset: Int,
+            @RequestParam size: Int
     ): PagingWithdrawResponse {
         return withdrawService
-            .findByCriteria(
-                uuid,
-                withdrawId,
-                currency,
-                destTxRef,
-                destAddress,
-                status?.isEmpty() ?: true,
-                status ?: listOf(""),
-                offset,
-                size
-            )
+                .findByCriteria(
+                        uuid,
+                        withdrawId,
+                        currency,
+                        destTxRef,
+                        destAddress,
+                        status?.isEmpty() ?: true,
+                        status ?: listOf(""),
+                        offset,
+                        size
+                )
     }
 
     @PostMapping("/withdraw/{id}/reject")
     @ApiResponse(
-        message = "OK",
-        code = 200,
-        examples = Example(
-            ExampleProperty(
-                value = "{ }",
-                mediaType = "application/json"
+            message = "OK",
+            code = 200,
+            examples = Example(
+                    ExampleProperty(
+                            value = "{ }",
+                            mediaType = "application/json"
+                    )
             )
-        )
     )
     suspend fun rejectWithdraw(
-        @PathVariable("id") withdrawId: String,
-        @RequestParam("statusReason") statusReason: String,
-        @RequestParam("destNote", required = false) destNote: String?
+            @PathVariable("id") withdrawId: String,
+            @RequestParam("statusReason") statusReason: String,
+            @RequestParam("destNote", required = false) destNote: String?,
+            @CurrentSecurityContext securityContext: SecurityContext?
+
     ): WithdrawResult {
-        return withdrawService.rejectWithdraw(WithdrawRejectCommand(withdrawId, statusReason, destNote))
+        return withdrawService.rejectWithdraw(WithdrawRejectCommand(withdrawId, statusReason, destNote,securityContext?.authentication?.name))
     }
 
     @PostMapping("/withdraw/{id}/accept")
     @ApiResponse(
-        message = "OK",
-        code = 200,
-        examples = Example(
-            ExampleProperty(
-                value = "{ }",
-                mediaType = "application/json"
+            message = "OK",
+            code = 200,
+            examples = Example(
+                    ExampleProperty(
+                            value = "{ }",
+                            mediaType = "application/json"
+                    )
             )
-        )
     )
     suspend fun acceptWithdraw(
-        @PathVariable("id") withdrawId: String,
-        @RequestParam("destTransactionRef", required = false) destTransactionRef: String?,
-        @RequestParam("destNote", required = false) destNote: String?,
-        @RequestParam("fee", required = false) fee: BigDecimal = BigDecimal.ZERO,
+            @PathVariable("id") withdrawId: String,
+            @RequestParam("destTransactionRef", required = false) destTransactionRef: String?,
+            @RequestParam("destNote", required = false) destNote: String?,
+            @RequestParam("fee", required = false) fee: BigDecimal = BigDecimal.ZERO,
+            @CurrentSecurityContext securityContext: SecurityContext?
+
     ): WithdrawResult {
-        return withdrawService.acceptWithdraw(WithdrawAcceptCommand(withdrawId, destTransactionRef, destNote, fee))
+
+        return withdrawService.acceptWithdraw(WithdrawAcceptCommand(withdrawId, destTransactionRef, destNote, fee, securityContext?.authentication?.name))
     }
 
 }

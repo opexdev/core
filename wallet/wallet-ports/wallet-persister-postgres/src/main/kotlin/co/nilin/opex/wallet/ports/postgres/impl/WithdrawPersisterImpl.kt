@@ -113,7 +113,8 @@ class WithdrawPersisterImpl(
                         withdraw.statusReason,
                         withdraw.status,
                         withdraw.createDate,
-                        withdraw.acceptDate
+                        withdraw.acceptDate,
+                        withdraw.applicator
                 )
         ).awaitFirst()
 
@@ -168,7 +169,8 @@ class WithdrawPersisterImpl(
                 statusReason,
                 status,
                 createDate,
-                acceptDate
+                acceptDate,
+                applicator
         )
     }
 

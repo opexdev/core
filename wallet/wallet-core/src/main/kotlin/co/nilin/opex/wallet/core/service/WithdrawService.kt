@@ -126,7 +126,8 @@ class WithdrawService(
                         null,
                         "DONE",
                         withdraw.createDate,
-                        LocalDateTime.now()
+                        LocalDateTime.now(),
+                        acceptCommand.applicator
                 )
         )
 
@@ -178,7 +179,8 @@ class WithdrawService(
                         rejectCommand.statusReason,
                         "REJECTED",
                         withdraw.createDate,
-                        null
+                        LocalDateTime.now(),
+                        rejectCommand.applicator
                 )
         )
         return WithdrawResult(withdraw.withdrawId!!, updateWithdraw.status)
