@@ -15,66 +15,65 @@ import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
-import java.security.Principal
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 
 @RestController
 @RequestMapping("/v1/deposit")
-class DepositController(private val depositPersister: DepositPersister,
-                        private val transferService: TransferService) {
-
+class DepositController(
+    private val depositPersister: DepositPersister,
+    private val transferService: TransferService
+) {
 
     @PostMapping("/{uuid}/history")
     suspend fun getDepositTransactionsForUser(
-            @PathVariable("uuid") uuid: String,
-            @RequestBody request: TransactionRequest,
-            @CurrentSecurityContext securityContext: SecurityContext
+        @PathVariable("uuid") uuid: String,
+        @RequestBody request: TransactionRequest,
+        @CurrentSecurityContext securityContext: SecurityContext
     ): Deposits {
         if (securityContext.authentication.name != uuid)
             throw OpexError.Forbidden.exception()
+
         return depositPersister.findDepositHistory(
-                uuid,
-                request.coin,
-                request.startTime?.let {
-                    LocalDateTime.ofInstant(Instant.ofEpochMilli(request.startTime), ZoneId.systemDefault())
-                }
-                        ?: null,
-                request.endTime?.let {
-                    LocalDateTime.ofInstant(Instant.ofEpochMilli(request.endTime), ZoneId.systemDefault())
-                } ?: null,
-                request.limit!!,
-                request.offset!!,
-                request.ascendingByTime
+            uuid,
+            request.coin,
+            request.startTime?.let {
+                LocalDateTime.ofInstant(Instant.ofEpochMilli(request.startTime), ZoneId.systemDefault())
+            },
+            request.endTime?.let {
+                LocalDateTime.ofInstant(Instant.ofEpochMilli(request.endTime), ZoneId.systemDefault())
+            },
+            request.limit!!,
+            request.offset!!,
+            request.ascendingByTime
         )
     }
 
 
     @PostMapping("/manually/{amount}_{symbol}/{receiverUuid}")
     @ApiResponse(
-            message = "OK",
-            code = 200,
-            examples = Example(
-                    ExampleProperty(
-                            value = "{ }",
-                            mediaType = "application/json"
-                    )
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = "{ }",
+                mediaType = "application/json"
             )
+        )
     )
     suspend fun depositManually(
-            @PathVariable("symbol") symbol: String,
-            @PathVariable("receiverUuid") receiverUuid: String,
-            @PathVariable("amount") amount: BigDecimal,
-            @RequestBody request: ManualTransferRequest,
-            @CurrentSecurityContext securityContext: SecurityContext
+        @PathVariable("symbol") symbol: String,
+        @PathVariable("receiverUuid") receiverUuid: String,
+        @PathVariable("amount") amount: BigDecimal,
+        @RequestBody request: ManualTransferRequest,
+        @CurrentSecurityContext securityContext: SecurityContext
     ): TransferResult {
-
-        return transferService.depositManually(symbol, receiverUuid,
-                securityContext.authentication.name, amount, request)
+        return transferService.depositManually(
+            symbol, receiverUuid,
+            securityContext.authentication.name, amount, request
+        )
     }
-
-
 }
 
 

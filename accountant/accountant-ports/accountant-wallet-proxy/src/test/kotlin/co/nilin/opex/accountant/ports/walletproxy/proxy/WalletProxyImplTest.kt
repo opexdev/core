@@ -20,7 +20,8 @@ class WalletProxyImplTest {
 
     lateinit var mockServer: MockServerClient
     val walletProxyImpl = WalletProxyImpl(
-        "http://localhost:8089", WebClient.builder().build()
+        WebClient.builder().build(),
+        "http://localhost:8089"
     )
     val objectMapper = ObjectMapper()
 
@@ -51,7 +52,16 @@ class WalletProxyImplTest {
         mockServer.`when`(
             request().withMethod("POST")
                 .withPath("/v2/transfer/${amount}_$symbol/from/${senderUuid}_$senderWalletType/to/${receiverUuid}_$receiverWalletType")
-                .withBody(objectMapper.writeValueAsString(WalletProxyImpl.TransferBody(description, transferRef, transferCategory, additionalData)))
+                .withBody(
+                    objectMapper.writeValueAsString(
+                        WalletProxyImpl.TransferBody(
+                            description,
+                            transferRef,
+                            transferCategory,
+                            additionalData
+                        )
+                    )
+                )
         ).respond(
             response()
                 .withStatusCode(200)
@@ -59,13 +69,32 @@ class WalletProxyImplTest {
                 .withBody(
                     objectMapper.writeValueAsString(
                         TransferResult(
-                            System.currentTimeMillis(), senderUuid, senderWalletType, amountObject, amountObject, amountObject, receiverUuid, receiverWalletType, amountObject
+                            System.currentTimeMillis(),
+                            senderUuid,
+                            senderWalletType,
+                            amountObject,
+                            amountObject,
+                            amountObject,
+                            receiverUuid,
+                            receiverWalletType,
+                            amountObject
                         )
                     )
                 )
         )
         runBlocking {
-            walletProxyImpl.transfer(symbol, senderWalletType, senderUuid, receiverWalletType, receiverUuid, amount, description, transferRef, transferCategory, additionalData)
+            walletProxyImpl.transfer(
+                symbol,
+                senderWalletType,
+                senderUuid,
+                receiverWalletType,
+                receiverUuid,
+                amount,
+                description,
+                transferRef,
+                transferCategory,
+                additionalData
+            )
         }
     }
 

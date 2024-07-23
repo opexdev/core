@@ -22,7 +22,6 @@ class CurrencyController(val currencyHandler: CurrencyHandler) {
         return currencyHandler.fetchCurrencyInfo(currency)
     }
 
-
     @PostMapping("/{currency}")
     suspend fun addCurrencyInfo(
         @PathVariable("currency") currencySymbol: String,
@@ -30,19 +29,19 @@ class CurrencyController(val currencyHandler: CurrencyHandler) {
     ): CurrencyImplementation? {
         addCurrencyRequest.currencySymbol = currencySymbol
         with(addCurrencyRequest) {
-
-       return  currencyHandler.addCurrencyImplementationV2(this.currencySymbol!!,
-             this.implementationSymbol,
-             this.currencyName,
-             this.chain,
-             this.tokenName,
-             this.tokenAddress,
-             this.isToken!!,
-             this.withdrawFee,
-             this.minimumWithdraw,
-             this.isWithdrawEnabled!!,
-             this.decimal
-             )
+            return currencyHandler.addCurrencyImplementationV2(
+                this.currencySymbol,
+                implementationSymbol,
+                currencyName,
+                chain,
+                tokenName,
+                tokenAddress,
+                isToken!!,
+                withdrawFee,
+                minimumWithdraw,
+                isWithdrawEnabled!!,
+                decimal
+            )
         }
     }
 
@@ -50,22 +49,22 @@ class CurrencyController(val currencyHandler: CurrencyHandler) {
     suspend fun updateCurrencyInfo(
         @PathVariable("currency") currencySymbol: String,
         @RequestBody addCurrencyRequest: AddCurrencyRequest
-    ):CurrencyImplementation? {
+    ): CurrencyImplementation? {
         addCurrencyRequest.currencySymbol = currencySymbol
         with(addCurrencyRequest) {
-
-           return currencyHandler.updateCurrencyImplementation(this.currencySymbol!!,
-                this.implementationSymbol,
-                this.currencyName,
-                this.newChain,
-                this.tokenName,
-                this.tokenAddress,
-                this.isToken!!,
-                this.withdrawFee,
-                this.minimumWithdraw,
-                this.isWithdrawEnabled!!,
-                this.decimal,
-                this.chain
+            return currencyHandler.updateCurrencyImplementation(
+                this.currencySymbol,
+                implementationSymbol,
+                currencyName,
+                newChain,
+                tokenName,
+                tokenAddress,
+                isToken!!,
+                withdrawFee,
+                minimumWithdraw,
+                isWithdrawEnabled!!,
+                decimal,
+                chain
             )
         }
     }

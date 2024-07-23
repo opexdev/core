@@ -20,8 +20,7 @@ import java.math.BigDecimal
 @RestController
 class AccountantController(
     val walletProxy: WalletProxy,
-    val financialActionLoader: FinancialActionLoader,
-    val pairConfigLoader: PairConfigLoader
+    val financialActionLoader: FinancialActionLoader
 ) {
 
     private val logger = LoggerFactory.getLogger(AccountantController::class.java)
@@ -43,42 +42,5 @@ class AccountantController(
             BooleanResponse(false)
     }
 
-    @GetMapping("/config/{pair}/fee/{direction}-{userLevel}")
-    suspend fun fetchPairFeeConfig(
-        @PathVariable("pair") pair: String,
-        @PathVariable("direction") direction: OrderDirection,
-        @PathVariable("userLevel") level: String
-    ): PairFeeConfig {
-        return pairConfigLoader.load(pair, direction, level)
-    }
 
-    @GetMapping("/config/{pair}/{direction}")
-    suspend fun fetchPairConfig(
-        @PathVariable("pair") pair: String,
-        @PathVariable("direction") direction: OrderDirection
-    ): PairConfig {
-        return pairConfigLoader.load(pair, direction)
-    }
-
-    @GetMapping("/config/all")
-    suspend fun fetchPairConfigs(): List<PairConfig> {
-        return pairConfigLoader.loadPairConfigs()
-    }
-
-    @GetMapping("/config/fee")
-    suspend fun getFeeConfigs(): List<PairFeeResponse> {
-        return pairConfigLoader.loadPairFeeConfigs()
-            .map { PairFeeResponse(it.pairConfig.pair, it.direction, it.userLevel, it.makerFee, it.takerFee) }
-    }
-
-    @GetMapping("/config/fee/{pair}")
-    suspend fun getFeeConfig(
-        @PathVariable pair: String,
-        @RequestParam(required = false) direction: OrderDirection?,
-        @RequestParam(required = false) userLevel: String?
-    ): PairFeeResponse {
-        val fee = pairConfigLoader.loadPairFeeConfigs(pair, direction ?: OrderDirection.BID, userLevel ?: "*")
-            ?: throw OpexError.PairFeeNotFound.exception()
-        return PairFeeResponse(fee.pairConfig.pair, fee.direction, fee.userLevel, fee.makerFee, fee.takerFee)
-    }
 }

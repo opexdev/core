@@ -6,7 +6,6 @@ import co.nilin.opex.market.core.spi.UserQueryHandler
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
-import java.time.LocalDateTime
 
 @RestController
 @RequestMapping("/v1/user")
@@ -42,9 +41,11 @@ class UserDataController(private val userQueryHandler: UserQueryHandler) {
     }
 
     @PostMapping("/tx/{user}/history")
-    suspend fun getTxOfTrades(@PathVariable user: String,
-                              @RequestBody transactionRequest: TransactionRequest,
-                              @CurrentSecurityContext securityContext: SecurityContext): TransactionResponse? {
+    suspend fun getTxOfTrades(
+        @PathVariable user: String,
+        @RequestBody transactionRequest: TransactionRequest,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): TransactionResponse? {
         if (securityContext.authentication.name != user)
             throw OpexError.Forbidden.exception()
         return userQueryHandler.txOfTrades(transactionRequest.apply { owner = user })

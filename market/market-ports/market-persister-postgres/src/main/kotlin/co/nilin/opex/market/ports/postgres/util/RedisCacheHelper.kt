@@ -71,8 +71,10 @@ class RedisCacheHelper(private val redisTemplate: RedisTemplate<String, Any>) {
             cacheValue
         else {
             val value = action()
-            put(key, value!!)
-            expireAt?.let { setExpiration(key, it) }
+            if (value != null) {
+                put(key, value)
+                expireAt?.let { setExpiration(key, it) }
+            }
             return value
         }
     }

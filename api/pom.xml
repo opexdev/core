@@ -33,6 +33,11 @@
             <groupId>co.nilin.opex</groupId>
             <artifactId>common</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.zalando</groupId>
+            <artifactId>logbook-spring-boot-webflux-autoconfigure</artifactId>
+            <version>3.9.0</version>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>
@@ -61,11 +66,6 @@
                 <groupId>co.nilin.opex.utility</groupId>
                 <artifactId>error-handler</artifactId>
                 <version>${error-hanlder.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>co.nilin.opex.utility</groupId>
-                <artifactId>logging-handler</artifactId>
-                <version>${logging-handler.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.utility</groupId>

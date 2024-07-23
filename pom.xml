@@ -17,7 +17,6 @@
         <spring.version>2.7.6</spring.version>
         <spring-cloud.version>2021.0.5</spring-cloud.version>
         <error-hanlder.version>1.0.0</error-hanlder.version>
-        <logging-handler.version>1.0.0</logging-handler.version>
         <preferences.version>1.0.0</preferences.version>
         <interceptor.version>1.0.0</interceptor.version>
         <skip.unit.tests>true</skip.unit.tests>

@@ -1,4 +1,5 @@
-server.port: 8080
+server:
+  port: 8080
 spring:
   main:
     allow-bean-definition-overriding: false
