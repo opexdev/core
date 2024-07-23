@@ -331,8 +331,11 @@ CREATE TABLE IF NOT EXISTS withdraws
     status_reason        TEXT,
     status               VARCHAR(20),
     create_date          TIMESTAMP   NOT NULL,
-    accept_date          TIMESTAMP
+    accept_date          TIMESTAMP,
+    applicator           VARCHAR(80)
     );
+
+ALTER TABLE withdraws ADD COLUMN IF NOT EXISTS applicator VARCHAR(80);
 
 CREATE TABLE IF NOT EXISTS rate
 (

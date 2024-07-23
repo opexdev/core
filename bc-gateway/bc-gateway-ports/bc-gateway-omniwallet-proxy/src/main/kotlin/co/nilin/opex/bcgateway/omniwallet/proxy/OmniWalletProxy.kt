@@ -40,5 +40,16 @@ class OmniWalletProxy(private val webClient: WebClient){
 
      suspend fun getTokenBalance(tokenAddress: String,network: String): OmniBalance {
         return OmniBalance("ETH", "ethereum", BigDecimal.TEN)
+//                 return ChainBalanceResponse(data=webClient.get()
+//                .uri(URI.create("${baseUrl}/{chainId}"))
+//                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+//                .retrieve()
+//                .onStatus({ t -> t.isError }, {
+//                    it.createException() })
+//                .bodyToMono(typeRef<List<AddressBalanceWithUsd>>())
+//                .log()
+//                .awaitFirst())
+
+
     }
 }
