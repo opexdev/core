@@ -15,7 +15,6 @@ import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
-import java.security.Principal
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId

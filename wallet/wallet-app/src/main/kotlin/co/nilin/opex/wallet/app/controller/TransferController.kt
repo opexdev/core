@@ -94,6 +94,7 @@ class TransferController(private val transferService: TransferService) {
         transferService.batchTransfer(request)
     }
 
+
     @PostMapping("/deposit/{amount}_{chain}_{symbol}/{receiverUuid}_{receiverWalletType}")
     @ApiResponse(
         message = "OK",
@@ -106,23 +107,15 @@ class TransferController(private val transferService: TransferService) {
         )
     )
     suspend fun deposit(
-        @PathVariable("symbol") symbol: String,
-        @PathVariable("receiverUuid") receiverUuid: String,
-        @PathVariable("receiverWalletType") receiverWalletType: String,
-        @PathVariable("amount") amount: BigDecimal,
-        @RequestParam("description") description: String?,
-        @RequestParam("transferRef") transferRef: String?,
-        @PathVariable("chain") chain: String?
+            @PathVariable("symbol") symbol: String,
+            @PathVariable("receiverUuid") receiverUuid: String,
+            @PathVariable("receiverWalletType") receiverWalletType: String,
+            @PathVariable("amount") amount: BigDecimal,
+            @RequestParam("description") description: String?,
+            @RequestParam("transferRef") transferRef: String?,
+            @PathVariable("chain") chain: String?
     ): TransferResult {
-        return transferService.deposit(
-            symbol,
-            receiverUuid,
-            receiverWalletType,
-            amount,
-            description,
-            transferRef,
-            chain
-        )
+        return transferService.deposit(symbol, receiverUuid, receiverWalletType, amount, description, transferRef, chain)
     }
 
 }
