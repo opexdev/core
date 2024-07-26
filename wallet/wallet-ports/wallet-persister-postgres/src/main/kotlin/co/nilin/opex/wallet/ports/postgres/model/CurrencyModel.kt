@@ -34,5 +34,7 @@ data class CurrencyModel(
         @Column("external_url")
         var externalUrl: String? = null,
         @Column("is_crypto_currency")
-        var isCryptoCurrency: Boolean? = false
+        var isCryptoCurrency: Boolean? = false,
+        @Column("withdraw_min")
+        var withdrawMin: BigDecimal?=BigDecimal.ZERO,
 )

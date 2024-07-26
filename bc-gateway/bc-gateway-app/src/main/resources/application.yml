@@ -96,8 +96,8 @@ logging:
     co.nilin: INFO
     org.zalando.logbook: TRACE
 app:
-#  omni-wallet:
-#    url: ${auth_url}
+  omni-wallet:
+    url: localhost:8080   #todo -> env
   auth:
     url: ${auth_url}
     cert-url: ${auth_jwk_endpoint}

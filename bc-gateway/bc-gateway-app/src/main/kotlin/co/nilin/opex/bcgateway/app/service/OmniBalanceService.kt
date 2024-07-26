@@ -20,10 +20,10 @@ class OmniBalanceService(private val cryptoCurrencyHandlerV2: CryptoCurrencyHand
 
         val totalBalance: BigDecimal = currencyImpls?.map {
             when (it.isToken) {
-                true -> it.tokenAddress?.let { ta -> omniWalletManager.getTokenBalance(ta!!, it.chain).balance }
+                true -> it.tokenAddress?.let { ta -> omniWalletManager.getTokenBalance(it).balance }
                         ?: BigDecimal.ZERO
 
-                false -> omniWalletManager.getAssetBalance(it.currencySymbol,it.chain).balance ?: BigDecimal.ZERO
+                false -> omniWalletManager.getAssetBalance(it).balance ?: BigDecimal.ZERO
                 else -> BigDecimal.ZERO
             }
         }.reduce { a, b -> a + b }
@@ -40,10 +40,10 @@ class OmniBalanceService(private val cryptoCurrencyHandlerV2: CryptoCurrencyHand
         for (currency in implsGroupedByCurrency.keys) {
             val balance = implsGroupedByCurrency[currency]?.map {
                 when (it.isToken) {
-                    true -> it.tokenAddress?.let { ta -> omniWalletManager.getTokenBalance(ta!!, it.chain).balance }
+                    true -> it.tokenAddress?.let { ta -> omniWalletManager.getTokenBalance(it).balance }
                             ?: BigDecimal.ZERO
 
-                    false -> omniWalletManager.getAssetBalance(it.currencySymbol,it.chain).balance ?: BigDecimal.ZERO
+                    false -> omniWalletManager.getAssetBalance(it).balance ?: BigDecimal.ZERO
                     else -> BigDecimal.ZERO
                 }
             }?.reduce { a, b -> a + b }

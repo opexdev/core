@@ -19,23 +19,23 @@ data class CurrencyCommand(
         var shortDescription: String? = null,
         var withdrawAllowed: Boolean? = true,
         var depositAllowed: Boolean? = true,
-        var withdrawFee: BigDecimal?= BigDecimal.ZERO,
-        var depositMethods: List<DepositMethod>?=null,
-        var withdrawMethods: List<WithdrawMethod>?=null,
+        var withdrawFee: BigDecimal? = BigDecimal.ZERO,
+        var depositMethods: List<DepositMethod>? = null,
+        var withdrawMethods: List<WithdrawMethod>? = null,
         var externalUrl: String? = null,
         var isCryptoCurrency: Boolean? = false,
-        var impls: List<CryptoCurrencyCommand>?=null,
+        var impls: List<CryptoCurrencyCommand>? = null,
+        var withdrawMin: BigDecimal? = BigDecimal.ZERO,
 
 
         ) {
     fun updateTo(newData: CurrencyCommand): CurrencyCommand {
 
-            return newData.apply {
-                this.uuid = uuid
-                this.symbol = symbol
-            }
+        return newData.apply {
+            this.uuid = uuid
+            this.symbol = symbol
         }
-
+    }
 
 
 }

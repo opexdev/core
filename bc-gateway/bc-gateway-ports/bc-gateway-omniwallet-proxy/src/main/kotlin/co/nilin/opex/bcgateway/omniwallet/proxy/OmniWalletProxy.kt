@@ -15,41 +15,46 @@ import java.math.BigDecimal
 import java.net.URI
 
 inline fun <reified T : Any> typeRef(): ParameterizedTypeReference<T> = object : ParameterizedTypeReference<T>() {}
+data class TotalAssetByChainWithUsd( val balance: BigDecimal,val chain: String?=null, val symbol: String?=null, val balanceUsd: BigDecimal?=null)
 
-@Component
-class OmniWalletProxy(private val webClient: WebClient){
+    @Component
+    class OmniWalletProxy(private val webClient: WebClient) {
 
 
-//    @Value("\${app.omni-wallet.url}")
-//    private lateinit var baseUrl: String
+        @Value("\${app.omni-wallet.url}")
+        private lateinit var baseUrl: String
 
-     suspend fun getAssetBalance( network: String): ChainBalanceResponse {
-         return  ChainBalanceResponse(listOf( AddressBalanceWithUsd("2345", BigDecimal(15),BigDecimal(65))))
+        suspend fun getAssetBalance(network: String): TotalAssetByChainWithUsd {
+//        return ChainBalanceResponse(listOf(AddressBalanceWithUsd("2345", BigDecimal(15), BigDecimal(65))))
 
-//        return ChainBalanceResponse(data=webClient.get()
-////                .uri(URI.create("${baseUrl}/{chainId}"))
-////                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-////                .retrieve()
-////                .onStatus({ t -> t.isError }, {
-////                    it.createException() })
-////                .bodyToMono(typeRef<List<AddressBalanceWithUsd>>())
-////                .log()
-////                .awaitFirst())
+            return webClient.get()
+                    .uri(URI.create("${baseUrl}/chain/${network}/total"))
+                    .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                    .retrieve()
+                    .onStatus({ t -> t.isError }, {
+                        it.createException()
+                    })
+                    .bodyToMono(typeRef<TotalAssetByChainWithUsd>())
+                    .log()
+                    .doOnError { TotalAssetByChainWithUsd(balance = BigDecimal.ZERO) }
+                    .awaitFirst()
 
         }
 
-     suspend fun getTokenBalance(tokenAddress: String,network: String): OmniBalance {
-        return OmniBalance("ETH", "ethereum", BigDecimal.TEN)
-//                 return ChainBalanceResponse(data=webClient.get()
-//                .uri(URI.create("${baseUrl}/{chainId}"))
-//                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-//                .retrieve()
-//                .onStatus({ t -> t.isError }, {
-//                    it.createException() })
-//                .bodyToMono(typeRef<List<AddressBalanceWithUsd>>())
-//                .log()
-//                .awaitFirst())
+        suspend fun getTokenBalance(tokenAddress: String, network: String): List<AddressBalanceWithUsd> {
+//        return OmniBalance("ETH", "ethereum", BigDecimal.TEN)
+            return webClient.get()
+                    .uri(URI.create("${baseUrl}/token/address/${tokenAddress}"))
+                    .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                    .retrieve()
+                    .onStatus({ t -> t.isError }, {
+                        it.createException()
+                    })
+                    .bodyToMono(typeRef<List<AddressBalanceWithUsd>>())
+                    .doOnError { listOf(AddressBalanceWithUsd(tokenAddress, BigDecimal.ZERO, BigDecimal.ZERO)) }
+                    .log()
+                    .awaitFirst()
 
 
+        }
     }
-}

@@ -213,9 +213,10 @@ CREATE TABLE IF NOT EXISTS currency
     uuid              VARCHAR(256) NOT NULL DEFAULT  uuid_generate_v4(),
     withdraw_allowed     BOOLEAN DEFAULT TRUE,
     deposit_allowed     BOOLEAN DEFAULT TRUE,
-    withdraw_fee           NUMERIC,
+    withdraw_fee           DECIMAL,
     external_url           VARCHAR(255),
-    is_crypto_currency     BOOLEAN DEFAULT FALSE
+    is_crypto_currency     BOOLEAN DEFAULT FALSE,
+    withdraw_min           DECIMAL
     );
 
 ALTER TABLE currency ADD COLUMN IF NOT EXISTS title VARCHAR(25);
@@ -238,6 +239,7 @@ ALTER TABLE currency  ADD COLUMN IF NOT EXISTS deposit_allowed      BOOLEAN DEFA
 ALTER TABLE currency  ADD COLUMN IF NOT EXISTS withdraw_fee   NUMERIC;
 ALTER TABLE currency  ADD COLUMN IF NOT EXISTS external_url    VARCHAR(255);
 ALTER TABLE currency  ADD COLUMN IF NOT EXISTS is_crypto_currency     BOOLEAN DEFAULT FALSE;
+ALTER TABLE currency  ADD COLUMN IF NOT EXISTS withdraw_min   DECIMAL;
 
 
 

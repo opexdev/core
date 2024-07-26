@@ -10,7 +10,7 @@ import java.math.BigDecimal
 import java.util.*
 
 data class CurrencyDto(
-        var symbol: String?=null,
+        var symbol: String? = null,
         var uuid: String? = UUID.randomUUID().toString(),
         var name: String,
         var precision: BigDecimal,
@@ -29,8 +29,10 @@ data class CurrencyDto(
         var withdrawMethods: List<WithdrawMethod>? = null,
         var externalUrl: String? = null,
         var isCryptoCurrency: Boolean? = false,
-        var impls: List<CryptoCurrencyCommand>? = null
-) {
+        var impls: List<CryptoCurrencyCommand>? = null,
+        var withdrawMin: BigDecimal? = BigDecimal.ZERO,
+
+        ) {
 
     // Separated them just to support having "id" field in currency table.
     //Now it is unnecessary
@@ -55,7 +57,8 @@ data class CurrencyDto(
                 withdrawMethods,
                 externalUrl,
                 isCryptoCurrency,
-                impls)
+                impls,
+                withdrawMin)
     }
 }
 
