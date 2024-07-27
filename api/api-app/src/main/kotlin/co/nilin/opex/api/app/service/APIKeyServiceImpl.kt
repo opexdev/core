@@ -72,7 +72,7 @@ class APIKeyServiceImpl(
     }
 
     override suspend fun getAPIKey(key: String, secret: String): APIKey? = coroutineScope {
-        val apiKey = getFromCache(key)?.also { logger.info("Got apiKey from cache") }
+        val apiKey = getFromCache(key)
             ?: apiKeyRepository.findByKey(key).awaitSingleOrNull()?.apply { putCache(this) }
 
         with(apiKey) {
@@ -128,7 +128,6 @@ class APIKeyServiceImpl(
         if (apiKey.isExpired || !apiKey.isEnabled)
             return
 
-        logger.info("Checking up api key...")
         try {
             val now = LocalDateTime.now()
             if (apiKey.expirationTime?.isBefore(now) == true) {
@@ -187,7 +186,6 @@ class APIKeyServiceImpl(
     private fun putCache(apiKey: APIKeyModel) {
         getCache()?.apply {
             putIfAbsent(apiKey.key, apiKey)
-            logger.info("Added to cache")
         }
     }
 
@@ -195,7 +193,6 @@ class APIKeyServiceImpl(
         getCache()?.apply {
             evict(apiKey.key)
             put(apiKey.key, apiKey)
-            logger.info("Cache updated")
         }
     }
 
