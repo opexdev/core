@@ -38,7 +38,8 @@ data class CurrencyDto(
     //Now it is unnecessary
     fun toCommand(): CurrencyCommand {
 
-        return CurrencyCommand(symbol!!,
+        return CurrencyCommand(
+                symbol!!,
                 uuid,
                 name,
                 precision,

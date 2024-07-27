@@ -31,8 +31,8 @@ fun CurrencyCommand.toModel(): CurrencyModel {
             depositAllowed,
             withdrawFee,
             externalUrl,
-            isCryptoCurrency
-
+            isCryptoCurrency,
+            withdrawMin
     )
 }
 
@@ -58,6 +58,7 @@ fun CurrencyModel.toCommand(): CurrencyCommand {
             externalUrl,
             isCryptoCurrency,
             null,
+            withdrawMin
     )
 }
 
