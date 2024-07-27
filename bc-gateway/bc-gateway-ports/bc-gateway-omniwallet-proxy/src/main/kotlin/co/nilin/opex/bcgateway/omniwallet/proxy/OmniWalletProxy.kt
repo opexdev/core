@@ -5,6 +5,8 @@ import co.nilin.opex.bcgateway.core.spi.OmniWalletManager
 import co.nilin.opex.bcgateway.omniwallet.model.AddressBalanceWithUsd
 import co.nilin.opex.bcgateway.omniwallet.model.ChainBalanceResponse
 import kotlinx.coroutines.reactive.awaitFirst
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpHeaders
@@ -26,6 +28,8 @@ class OmniWalletProxy(private val webClient: WebClient) {
     @Value("\${app.omni-wallet.url}")
     private lateinit var baseUrl: String
 
+    private val logger: Logger = LoggerFactory.getLogger(OmniWalletProxy::class.java)
+
     suspend fun getAssetBalance(network: String): TotalAssetByChainWithUsd? {
 //        return TotalAssetByChainWithUsd(BigDecimal(15),network,"", BigDecimal(65))
 //
@@ -35,18 +39,12 @@ class OmniWalletProxy(private val webClient: WebClient) {
                     it.queryParam("excludeZero", false)
                     it.build()
                 }
-
                 .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .retrieve()
-//                .onStatus({ t -> t.isError }, {()->
-//                    Mono.just(AddressBalanceWithUsd())
-//                })
-
                 .bodyToMono(typeRef<TotalAssetByChainWithUsd?>())
                 .onErrorReturn(TotalAssetByChainWithUsd(balance = BigDecimal.ZERO))
-
                 .log()
-//                .doOnError { TotalAssetByChainWithUsd(balance = BigDecimal.ZERO) }
+                .doOnError { e-> logger.info("An error happened during get balance of chain $network :  ${e.message}") }
                 .awaitFirst()
 
     }
@@ -61,9 +59,8 @@ class OmniWalletProxy(private val webClient: WebClient) {
                 }
                 .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .retrieve()
-//                .onStatus({ t -> t.isError }, { resp -> Mono.empty() })
                 .bodyToMono(typeRef<List<AddressBalanceWithUsd>?>())
-//                .doOnError { listOf(AddressBalanceWithUsd(tokenAddress, BigDecimal.ZERO, BigDecimal.ZERO)) }
+                .doOnError { e-> logger.info("An error happened during get balance of token $tokenAddress :  ${e.message}") }
                 .onErrorReturn(listOf(AddressBalanceWithUsd(tokenAddress, BigDecimal.ZERO, BigDecimal.ZERO)))
                 .log()
                 .awaitFirst()
