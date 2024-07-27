@@ -28,7 +28,8 @@ fun CurrencyCommand.toDto(): CurrencyDto {
             withdrawMethods,
             externalUrl,
             isCryptoCurrency,
-            impls)
+            impls,
+            withdrawMin)
 }
 
 
