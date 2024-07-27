@@ -14,10 +14,10 @@ class OmniWalletManagerImpl(private val omniWalletProxy: OmniWalletProxy) : Omni
     override suspend fun getTokenBalance(cryptoCurrencyCommand: CryptoCurrencyCommand): OmniBalance {
         return OmniBalance(currency = cryptoCurrencyCommand.currencySymbol,
                 network = cryptoCurrencyCommand.chain,
-                balance = omniWalletProxy.getTokenBalance(cryptoCurrencyCommand.tokenAddress!!, cryptoCurrencyCommand.chain).stream().map(AddressBalanceWithUsd::balance).reduce { a, b -> a + b }?.orElse(BigDecimal.ZERO))
+                balance = omniWalletProxy.getTokenBalance(cryptoCurrencyCommand.tokenAddress!!, cryptoCurrencyCommand.chain)?.stream()?.map(AddressBalanceWithUsd::balance)?.reduce { a, b -> a + b }?.orElse(BigDecimal.ZERO))
     }
 
     override suspend fun getAssetBalance(cryptoCurrencyCommand: CryptoCurrencyCommand): OmniBalance {
-        return OmniBalance(cryptoCurrencyCommand.currencySymbol, cryptoCurrencyCommand.chain, omniWalletProxy.getAssetBalance(cryptoCurrencyCommand.chain).balance)
+        return OmniBalance(cryptoCurrencyCommand.currencySymbol, cryptoCurrencyCommand.chain, omniWalletProxy.getAssetBalance(cryptoCurrencyCommand.chain)?.balance?: BigDecimal.ZERO)
     }
 }

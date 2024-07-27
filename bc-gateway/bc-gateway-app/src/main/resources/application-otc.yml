@@ -67,7 +67,7 @@ swagger:
   authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
 app:
   omni-wallet:
-    url: http://127.0.0.1:8081 #todo ->env
+    url: http://host.docker.internal:8081 #todo ->env
   auth:
     url: ${auth_url}
     cert-url: ${auth_jwk_endpoint}
