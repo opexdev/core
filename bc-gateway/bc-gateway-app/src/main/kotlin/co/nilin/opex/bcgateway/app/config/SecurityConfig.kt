@@ -58,7 +58,7 @@ class SecurityConfig(private val webClient: WebClient) {
                 .pathMatchers("/currency/chains").hasRoleAndLevel("user")
                 .pathMatchers("/currency/**").hasRoleAndLevel("System")
                 .pathMatchers("/crypto-currency/**").hasRoleAndLevel("System")
-                .pathMatchers("/omni-balance/bc/**").permitAll()//.hasRoleAndLevel("Admin")
+                .pathMatchers("/omni-balance/bc/**").hasRoleAndLevel("Admin")
                 .anyExchange().authenticated()
                 .and()
                 .oauth2ResourceServer()
