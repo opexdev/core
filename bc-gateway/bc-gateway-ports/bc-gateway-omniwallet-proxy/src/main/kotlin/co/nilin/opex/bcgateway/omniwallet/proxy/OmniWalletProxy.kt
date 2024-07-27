@@ -25,35 +25,35 @@ data class TotalAssetByChainWithUsd( val balance: BigDecimal,val chain: String?=
         private lateinit var baseUrl: String
 
         suspend fun getAssetBalance(network: String): TotalAssetByChainWithUsd {
-        return TotalAssetByChainWithUsd(BigDecimal(15),network,"", BigDecimal(65))
+//        return TotalAssetByChainWithUsd(BigDecimal(15),network,"", BigDecimal(65))
 //
-//            return webClient.get()
-//                    .uri(URI.create("${baseUrl}/chain/${network}/total"))
-//                    .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-//                    .retrieve()
-//                    .onStatus({ t -> t.isError }, {
-//                        it.createException()
-//                    })
-//                    .bodyToMono(typeRef<TotalAssetByChainWithUsd>())
-//                    .log()
-//                    .doOnError { TotalAssetByChainWithUsd(balance = BigDecimal.ZERO) }
-//                    .awaitFirst()
+            return webClient.get()
+                    .uri(URI.create("${baseUrl}/chain/${network}/total"))
+                    .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                    .retrieve()
+                    .onStatus({ t -> t.isError }, {
+                        it.createException()
+                    })
+                    .bodyToMono(typeRef<TotalAssetByChainWithUsd>())
+                    .log()
+                    .doOnError { TotalAssetByChainWithUsd(balance = BigDecimal.ZERO) }
+                    .awaitFirst()
 
         }
 
         suspend fun getTokenBalance(tokenAddress: String, network: String): List<AddressBalanceWithUsd> {
-        return listOf( AddressBalanceWithUsd("", BigDecimal.TEN, BigDecimal.TEN))
-//            return webClient.get()
-//                    .uri(URI.create("${baseUrl}/token/address/${tokenAddress}"))
-//                    .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-//                    .retrieve()
-//                    .onStatus({ t -> t.isError }, {
-//                        it.createException()
-//                    })
-//                    .bodyToMono(typeRef<List<AddressBalanceWithUsd>>())
-//                    .doOnError { listOf(AddressBalanceWithUsd(tokenAddress, BigDecimal.ZERO, BigDecimal.ZERO)) }
-//                    .log()
-//                    .awaitFirst()
+//        return listOf( AddressBalanceWithUsd("", BigDecimal.TEN, BigDecimal.TEN))
+            return webClient.get()
+                    .uri(URI.create("${baseUrl}/token/address/${tokenAddress}"))
+                    .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                    .retrieve()
+                    .onStatus({ t -> t.isError }, {
+                        it.createException()
+                    })
+                    .bodyToMono(typeRef<List<AddressBalanceWithUsd>>())
+                    .doOnError { listOf(AddressBalanceWithUsd(tokenAddress, BigDecimal.ZERO, BigDecimal.ZERO)) }
+                    .log()
+                    .awaitFirst()
 
 
         }
