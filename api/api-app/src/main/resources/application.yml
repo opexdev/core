@@ -62,6 +62,9 @@ logbook:
   filter:
     enabled: true
     form-request-mode: BODY
+  attribute-extractors:
+    - type: JwtFirstMatchingClaimExtractor
+      claim-names: [ "sub", "subject" ]
   obfuscate:
     headers:
       - Authorization

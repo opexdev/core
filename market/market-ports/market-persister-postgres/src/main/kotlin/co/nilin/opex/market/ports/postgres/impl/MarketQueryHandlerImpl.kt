@@ -268,6 +268,4 @@ class MarketQueryHandlerImpl(
         repeat(str.length - 1) { builder.append("0") }
         return builder.toString().toLong()
     }
-
 }
-

@@ -6,7 +6,6 @@ import co.nilin.opex.market.core.spi.UserQueryHandler
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
-import java.time.LocalDateTime
 
 @RestController
 @RequestMapping("/v1/user")
@@ -24,9 +23,9 @@ class UserDataController(private val userQueryHandler: UserQueryHandler) {
 
     @GetMapping("/{uuid}/orders/{symbol}/open")
     suspend fun getUserOpenOrders(
-        @PathVariable uuid: String,
-        @PathVariable symbol: String,
-        @RequestParam limit: Int
+            @PathVariable uuid: String,
+            @PathVariable symbol: String,
+            @RequestParam limit: Int
     ): List<Order> {
         return userQueryHandler.openOrders(uuid, symbol, limit)
     }
