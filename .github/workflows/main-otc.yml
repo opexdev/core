@@ -144,7 +144,6 @@ jobs:
           
           sshpass -p $SERVER_PASSWORD ssh  -o StrictHostKeyChecking=no  "$SSH_USER"@"$SSH_HOST" -p "$SSH_PORT"  " \
           cd "$SSH_DIR"; \
-#          git pull origin main || true; \
           curl https://raw.githubusercontent.com/opexdev/partners/main/"$ENV_PATH"  -L -o .env -H 'Authorization:token $token' ; \
           echo '$SERVER_PASSWORD' | sudo -S docker-compose -f docker-compose-otc.yml pull; \
           echo '$SERVER_PASSWORD' | sudo -S docker network create --driver bridge otc-network || true; \
