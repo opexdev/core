@@ -44,9 +44,9 @@ class OmniWalletProxy(private val webClient: WebClient) {
                 .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .retrieve()
                 .bodyToMono(typeRef<TotalAssetByChainWithUsd?>())
+                .doOnError { e -> logger.info("An error happened during get balance of chain $network :  ${e.message}") }
                 .onErrorReturn(TotalAssetByChainWithUsd(balance = BigDecimal.ZERO))
                 .log()
-                .doOnError { e -> logger.info("An error happened during get balance of chain $network :  ${e.message}") }
                 .awaitFirst()
     }
 
