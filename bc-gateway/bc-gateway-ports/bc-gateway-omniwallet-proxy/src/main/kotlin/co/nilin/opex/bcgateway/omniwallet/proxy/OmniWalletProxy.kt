@@ -33,6 +33,8 @@ class OmniWalletProxy(private val webClient: WebClient) {
     suspend fun getAssetBalance(network: String): TotalAssetByChainWithUsd? {
 //        return TotalAssetByChainWithUsd(BigDecimal(15),network,"", BigDecimal(65))
 //
+        logger.info("----&&&&&&&&&&&----")
+
         return webClient.get()
                 .uri("${baseUrl}/v1/balance/chain/${network}/total")
                 {
@@ -44,10 +46,8 @@ class OmniWalletProxy(private val webClient: WebClient) {
                 .bodyToMono(typeRef<TotalAssetByChainWithUsd?>())
                 .onErrorReturn(TotalAssetByChainWithUsd(balance = BigDecimal.ZERO))
                 .log()
-                .doOnSuccess { logger.info("Have got the balance of chain $network  ")}
-                .doOnError { e-> logger.info("An error happened during get balance of chain $network :  ${e.message}") }
+                .doOnError { e -> logger.info("An error happened during get balance of chain $network :  ${e.message}") }
                 .awaitFirst()
-
     }
 
     suspend fun getTokenBalance(tokenAddress: String, network: String): List<AddressBalanceWithUsd>? {
@@ -62,12 +62,10 @@ class OmniWalletProxy(private val webClient: WebClient) {
                 .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .retrieve()
                 .bodyToMono(typeRef<List<AddressBalanceWithUsd>?>())
-                .doOnError { e-> logger.info("An error happened during get balance of token $tokenAddress :  ${e.message}") }
-                .doOnSuccess { logger.info("Have got the balance of token $tokenAddress  ")}
+                .doOnError { e -> logger.info("An error happened during get balance of token $tokenAddress :  ${e.message}") }
                 .onErrorReturn(listOf(AddressBalanceWithUsd(tokenAddress, BigDecimal.ZERO, BigDecimal.ZERO)))
                 .log()
                 .awaitFirst()
-
 
     }
 }
