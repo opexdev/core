@@ -97,7 +97,7 @@ services:
       - auth_jwk_endpoint=${JWK_ENDPOINT}
       - omni_url=${OMNI_URL}
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - "host.docker.internal:127.0.0.1"
     configs:
       - preferences.yml
     depends_on:
