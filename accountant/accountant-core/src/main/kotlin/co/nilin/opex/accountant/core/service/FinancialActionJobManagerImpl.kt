@@ -37,8 +37,7 @@ class FinancialActionJobManagerImpl(
                         it.amount,
                         it.eventType + it.pointer,
                         it.id.toString(),
-                        it.category.toString(),
-                        it.detail
+                        it.category.toString()
                     )
                     financialActionPersister.updateStatusNewTx(it, FinancialActionStatus.PROCESSED)
 
@@ -70,8 +69,7 @@ class FinancialActionJobManagerImpl(
                         it.amount,
                         it.eventType + it.pointer,
                         it.id.toString(),
-                        it.category.toString(),
-                        it.detail
+                        it.category.toString()
                     )
                     with(financialActionPersister) {
                         updateStatusNewTx(it, FinancialActionStatus.PROCESSED)

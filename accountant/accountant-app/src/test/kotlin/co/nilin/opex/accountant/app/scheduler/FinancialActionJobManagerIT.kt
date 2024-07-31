@@ -226,12 +226,9 @@ class FinancialActionJobManagerIT : KafkaEnabledTest() {
                     parent1.amount,
                     parent1.eventType + parent1.pointer,
                     parent1Saved.id.toString(),
-                    parent1.category.toString(),
-                    parent1.detail
+                    parent1.category.toString()
                 )
-            ).thenAnswer {
-                throw Exception("transfer failed")
-            }
+            ).thenAnswer { throw Exception("transfer failed") }
             financialActionJobManager.processFinancialActions(0, 100)
 
             assertEquals(1, financialActionLoader.countUnprocessed(uuid, symbol, child1.eventType))
@@ -245,7 +242,15 @@ class FinancialActionJobManagerIT : KafkaEnabledTest() {
 
     private suspend fun verifyTransfer(orderVerifier: InOrder, fi: FinancialAction) {
         orderVerifier.verify(walletProxy).transfer(
-            eq(fi.symbol), eq(fi.senderWalletType), eq(fi.sender), eq(fi.receiverWalletType), eq(fi.receiver), eq(fi.amount), eq(fi.eventType + fi.pointer), any(), eq(fi.category.toString()), eq(fi.detail),
+            eq(fi.symbol),
+            eq(fi.senderWalletType),
+            eq(fi.sender),
+            eq(fi.receiverWalletType),
+            eq(fi.receiver),
+            eq(fi.amount),
+            eq(fi.eventType + fi.pointer),
+            any(),
+            eq(fi.category.toString()),
         )
     }
 }

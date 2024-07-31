@@ -10,6 +10,5 @@ data class TransferCommand(
     val description: String?,
     val transferRef: String?,
     val transferCategory: String,
-    val additionalData: Map<String, Any>?,
     val destAmount: Amount = amount
 )

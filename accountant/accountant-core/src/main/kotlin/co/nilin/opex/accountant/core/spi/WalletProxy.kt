@@ -1,6 +1,5 @@
 package co.nilin.opex.accountant.core.spi
 
-import co.nilin.opex.accountant.core.inout.TransferRequest
 import java.math.BigDecimal
 
 interface WalletProxy {
@@ -14,11 +13,8 @@ interface WalletProxy {
         amount: BigDecimal,
         description: String?,
         transferRef: String?,
-        transferCategory: String,
-        additionalData: Map<String, Any>?
+        transferCategory: String
     )
-
-    suspend fun batchTransfer(transfers: List<TransferRequest>)
 
     suspend fun canFulfil(symbol: String, walletType: String, uuid: String, amount: BigDecimal): Boolean
 }

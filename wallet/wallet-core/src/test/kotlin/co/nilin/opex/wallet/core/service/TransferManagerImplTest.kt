@@ -24,10 +24,10 @@ private class TransferManagerImplTest {
 
     private fun stubWalletListener() {
         coEvery {
-            walletListener.onWithdraw(any(), any(), eq(VALID.TRANSFER_COMMAND.amount), any(), any())
+            walletListener.onWithdraw(any(), any(), eq(VALID.TRANSFER_COMMAND.amount), any())
         } returns Unit
         coEvery {
-            walletListener.onDeposit(any(), any(), eq(VALID.TRANSFER_COMMAND.amount), any(), any(), any())
+            walletListener.onDeposit(any(), any(), eq(VALID.TRANSFER_COMMAND.amount), any(), any())
         } returns Unit
     }
 
@@ -44,8 +44,8 @@ private class TransferManagerImplTest {
                 amount = VALID.SOURCE_WALLET.balance.amount - VALID.TRANSFER_COMMAND.amount.amount
             )
         )
-        coEvery { walletListener.onWithdraw(any(), any(), any(), any(), any()) } returns Unit
-        coEvery { walletListener.onDeposit(any(), any(), any(), any(), any(), any()) } returns Unit
+        coEvery { walletListener.onWithdraw(any(), any(), any(), any()) } returns Unit
+        coEvery { walletListener.onDeposit(any(), any(), any(), any(), any()) } returns Unit
         coEvery { transactionManager.save(any()) } returns "1"
 
         val result = transferManager.transfer(VALID.TRANSFER_COMMAND).transferResult

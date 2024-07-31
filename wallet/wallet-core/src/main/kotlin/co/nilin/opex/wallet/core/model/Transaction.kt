@@ -11,6 +11,5 @@ data class Transaction(
     val description: String?,
     val transferRef: String?,
     val transferCategory: String,
-    val additionalData: Map<String, Any>?,
     val transactionDate: LocalDateTime
 )

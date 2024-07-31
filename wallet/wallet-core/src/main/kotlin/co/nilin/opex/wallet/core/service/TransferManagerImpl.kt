@@ -24,6 +24,7 @@ class TransferManagerImpl(
     private val walletOwnerManager: WalletOwnerManager,
     private val transactionManager: TransactionManager
 ) : TransferManager {
+
     private val logger = LoggerFactory.getLogger(TransferManagerImpl::class.java)
 
     @Transactional
@@ -67,20 +68,13 @@ class TransferManagerImpl(
                 transferCommand.description,
                 transferCommand.transferRef,
                 transferCommand.transferCategory,
-                transferCommand.additionalData,
                 LocalDateTime.now()
             )
         )
+
         //get the result and add to return result type
-        walletListener.onDeposit(
-            destWallet,
-            srcWallet,
-            transferCommand.amount,
-            amountToTransfer,
-            tx,
-            transferCommand.additionalData
-        )
-        walletListener.onWithdraw(srcWallet, destWallet, transferCommand.amount, tx, transferCommand.additionalData)
+        walletListener.onDeposit(destWallet, srcWallet, transferCommand.amount, amountToTransfer, tx)
+        walletListener.onWithdraw(srcWallet, destWallet, transferCommand.amount, tx)
         //post transfer hook(dispatch post transfer event)
 
         //notify balance change

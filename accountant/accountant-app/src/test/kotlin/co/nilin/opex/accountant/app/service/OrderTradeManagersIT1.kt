@@ -141,14 +141,12 @@ class OrderTradeManagersIT1 : KafkaEnabledTest() {
 
         val bidOrderSubmitFi = financialActions.stream().filter { fi ->
             fi.category == FinancialActionCategory.ORDER_CREATE
-                    && fi.detail["ouid"] == bidOrderDB.ouid
         }.findAny().orElse(null)
         Assertions.assertNotNull(bidOrderSubmitFi)
         assertTotalAmount(financialActions, bidOrderDB, bidOrderSubmitFi)
 
         val bidOrderFinalizeFi = financialActions.stream().filter { fi ->
             fi.category == FinancialActionCategory.ORDER_FINALIZED
-                    && fi.detail["ouid"] == bidOrderDB.ouid
                     && fi.sender == bidOrderDB.uuid
         }.findAny().orElse(null)
         Assertions.assertNotNull(bidOrderFinalizeFi)
@@ -157,13 +155,11 @@ class OrderTradeManagersIT1 : KafkaEnabledTest() {
 
         val askOrderSubmitFi = financialActions.stream().filter { fi ->
             fi.category == FinancialActionCategory.ORDER_CREATE
-                    && fi.detail["ouid"] == askOrderDB.ouid
         }.findAny().orElse(null)
         Assertions.assertNotNull(askOrderSubmitFi)
 
         val askOrderFinalizeFi = financialActions.stream().filter { fi ->
             fi.category == FinancialActionCategory.ORDER_FINALIZED
-                    && fi.detail["ouid"] == askOrderDB.ouid
         }.findAny().orElse(null)
         Assertions.assertNull(askOrderFinalizeFi)
 
@@ -173,9 +169,7 @@ class OrderTradeManagersIT1 : KafkaEnabledTest() {
 
     private fun assertTotalAmount(financialActions: List<FinancialAction>, askOrderDB: Order, askOrderSubmitFi: FinancialAction) {
         val askFiSide1 = financialActions.filter { fi ->
-            fi.detail["ouid"] == askOrderDB.ouid
-                    && fi.symbol == askOrderSubmitFi.symbol
-                    && fi.sender == askOrderDB.uuid
+             fi.symbol == askOrderSubmitFi.symbol && fi.sender == askOrderDB.uuid
         }
         val askTotalFiAmountSide1 = askFiSide1.sumOf { fi ->
             if (fi.senderWalletType.equals("main"))

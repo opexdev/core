@@ -86,8 +86,7 @@ open class TradeManagerImpl(
             trade.makerUuid,
             "main",
             LocalDateTime.now(),
-            FinancialActionCategory.TRADE,
-            createMap(trade, takerOrder)
+            FinancialActionCategory.TRADE
         )
         logger.info("Trade event takerTransferAction ${takerTransferAction.uuid}")
         financialActions.add(takerTransferAction)
@@ -124,8 +123,7 @@ open class TradeManagerImpl(
             trade.takerUuid,
             "main",
             LocalDateTime.now(),
-            FinancialActionCategory.TRADE,
-            createMap(trade, makerOrder)
+            FinancialActionCategory.TRADE
         )
         logger.info("Trade event makerTransferAction ${makerTransferAction.uuid}")
         financialActions.add(makerTransferAction)
@@ -207,8 +205,7 @@ open class TradeManagerImpl(
         order.uuid,
         "main",
         LocalDateTime.now(),
-        FinancialActionCategory.ORDER_FINALIZED,
-        createMap(trade, order)
+        FinancialActionCategory.ORDER_FINALIZED
     )
 
     private suspend fun publishTakerRichOrderUpdate(takerOrder: Order, trade: TradeEvent) {

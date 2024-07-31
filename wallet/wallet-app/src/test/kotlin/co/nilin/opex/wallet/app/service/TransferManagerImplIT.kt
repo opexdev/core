@@ -19,6 +19,7 @@ import java.util.*
 
 
 class TransferManagerImplIT : KafkaEnabledTest() {
+
     @Autowired
     lateinit var transferManager: TransferManager
 
@@ -63,7 +64,7 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                             sourceWallet!!,
                             receiverWallet!!,
                             Amount(sourceWallet.currency, amount),
-                            "Amount1 ${System.currentTimeMillis()}", "Ref1 ${System.currentTimeMillis()}", "NORMAL", emptyMap()
+                            "Amount1 ${System.currentTimeMillis()}", "Ref1 ${System.currentTimeMillis()}", "NORMAL"
                         )
                     )
                 }
@@ -73,7 +74,7 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                             sourceWallet!!,
                             receiverWallet!!,
                             Amount(sourceWallet.currency, amount),
-                            "Amount2 ${System.currentTimeMillis()}", "Ref2 ${System.currentTimeMillis()}", "NORMAL", emptyMap()
+                            "Amount2 ${System.currentTimeMillis()}", "Ref2 ${System.currentTimeMillis()}", "NORMAL"
                         )
                     )
                 }
@@ -113,7 +114,7 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                         sourceWallet1!!,
                         receiverWallet!!,
                         Amount(sourceWallet1.currency, amount),
-                        "Amount1 ${System.currentTimeMillis()}", "Ref1 ${System.currentTimeMillis()}", "NORMAL", emptyMap()
+                        "Amount1 ${System.currentTimeMillis()}", "Ref1 ${System.currentTimeMillis()}", "NORMAL"
                     )
                 )
             }
@@ -124,7 +125,7 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                         sourceWallet2!!,
                         receiverWallet!!,
                         Amount(sourceWallet2.currency, amount),
-                        "Amount2 ${System.currentTimeMillis()}", "Ref2 ${System.currentTimeMillis()}", "NORMAL", emptyMap()
+                        "Amount2 ${System.currentTimeMillis()}", "Ref2 ${System.currentTimeMillis()}", "NORMAL"
                     )
                 )
             }
@@ -158,7 +159,7 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                         sourceWallet!!,
                         receiverWallet!!,
                         Amount(sourceWallet.currency, amount),
-                        "Amount1 ${System.currentTimeMillis()}", "Ref1 ${System.currentTimeMillis()}", "NORMAL", emptyMap()
+                        "Amount1 ${System.currentTimeMillis()}", "Ref1 ${System.currentTimeMillis()}", "NORMAL"
                     )
                 )
             }.await()
@@ -171,7 +172,7 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                         sourceWallet!!,
                         receiverWallet!!,
                         Amount(sourceWallet.currency, amount),
-                        "Amount2 ${System.currentTimeMillis()}", "Ref2 ${System.currentTimeMillis()}", "NORMAL", emptyMap()
+                        "Amount2 ${System.currentTimeMillis()}", "Ref2 ${System.currentTimeMillis()}", "NORMAL",
                     )
                 )
             }.await()
@@ -199,8 +200,7 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                     receiverWallet!!,
                     Amount(sourceWallet.currency, amount),
                     "Amount1 ${System.currentTimeMillis()}", "Ref1 ${System.currentTimeMillis()}",
-                    "NORMAL",
-                    additionalData
+                    "NORMAL"
                 )
             )
 
@@ -217,14 +217,11 @@ class TransferManagerImplIT : KafkaEnabledTest() {
             val thdMatch = thd.find { th -> th.id.toString().equals(result.tx) }
             assertNotNull(thdMatch)
 
-            assertEquals(additionalData, thwMatch!!.additionalData)
-
             val th = transactionManager.findTransactions(
                 owner.uuid, currency.symbol, "NORMAL", LocalDateTime.now().minusHours(1), LocalDateTime.now(), true, 100, 0
             )
 
             val thMatch = th.find { i -> i.id.toString().equals(result.tx) }
-            assertEquals(additionalData, thMatch!!.additionalData)
         }
     }
 
@@ -249,8 +246,7 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                     receiverWallet!!,
                     Amount(sourceWallet.currency, amount),
                     "Amount1 ${System.currentTimeMillis()}", "Ref1 ${System.currentTimeMillis()}",
-                    "NORMAL",
-                    emptyMap()
+                    "NORMAL"
                 )
             )
 

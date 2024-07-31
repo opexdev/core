@@ -31,7 +31,6 @@ class WalletManagerImpl(
 
     private val logger = LoggerFactory.getLogger(WalletManagerImpl::class.java)
 
-
     override suspend fun isDepositAllowed(wallet: Wallet, amount: BigDecimal): Boolean {
         var limit = walletLimitsRepository.findByOwnerAndCurrencyAndWalletAndAction(
             wallet.owner.id!!, wallet.currency.symbol, wallet.id!!, "deposit"
@@ -162,7 +161,7 @@ class WalletManagerImpl(
             walletModel.id!!,
             walletOwner,
             Amount(existingCurrency!!.toPlainObject(), walletModel.balance),
-            existingCurrency!!.toPlainObject(),
+            existingCurrency.toPlainObject(),
             walletModel.type,
             walletModel.version
         )
@@ -241,7 +240,8 @@ class WalletManagerImpl(
         val walletModel = walletRepository
             .save(WalletModel(null, owner.id!!, type, currency.symbol, balance.amount))
             .awaitFirst()
-        val wallet = Wallet(
+
+        return Wallet(
             walletModel.id!!,
             owner,
             Amount(currency, walletModel.balance),
@@ -249,16 +249,10 @@ class WalletManagerImpl(
             walletModel.type,
             walletModel.version
         )
-        return wallet
-
     }
 
-    override suspend fun findWalletById(
-        walletId: Long
-    ): Wallet? {
-        val walletModel = walletRepository.findById(walletId).awaitFirstOrNull()
-        if (walletModel == null)
-            return null
+    override suspend fun findWalletById(walletId: Long): Wallet? {
+        val walletModel = walletRepository.findById(walletId).awaitFirstOrNull() ?: return null
         val existingCurrency = currencyRepository.findById(walletModel.currency).awaitFirst()
         return Wallet(
             walletModel.id!!,

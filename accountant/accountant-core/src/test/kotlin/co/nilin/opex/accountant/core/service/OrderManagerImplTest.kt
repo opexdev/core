@@ -104,8 +104,7 @@ internal class OrderManagerImplTest {
             submitOrderEvent.uuid,
             "exchange",
             Valid.currentTime,
-            FinancialActionCategory.ORDER_CREATE,
-            emptyMap()
+            FinancialActionCategory.ORDER_CREATE
         )
 
         with(expectedFinancialAction) {
@@ -164,8 +163,7 @@ internal class OrderManagerImplTest {
             submitOrderEvent.uuid,
             "exchange",
             Valid.currentTime,
-            FinancialActionCategory.ORDER_CREATE,
-            emptyMap()
+            FinancialActionCategory.ORDER_CREATE
         )
         with(expectedFinancialAction) {
             assertThat(eventType).isEqualTo(financialActions[0].eventType)
@@ -177,7 +175,6 @@ internal class OrderManagerImplTest {
             assertThat(receiverWalletType).isEqualTo(financialActions[0].receiverWalletType)
         }
         assertThat(financialActions[0].category).isEqualTo(FinancialActionCategory.ORDER_CREATE)
-        assertThat(financialActions[0].detail).containsKeys("userLevel", "direction", "matchConstraint", "orderType", "eventDate")
 
     }
 
@@ -280,7 +277,6 @@ internal class OrderManagerImplTest {
         assertThat(fa.amount).isEqualTo(Valid.order.remainedTransferAmount)
         assertThat(fa.symbol).isEqualTo(orderEvent.pair.rightSideName)
         assertThat(fa.category).isEqualTo(FinancialActionCategory.ORDER_CANCEL)
-        assertThat(fa.detail).containsKeys("userLevel", "direction", "matchConstraint", "orderType", "eventDate")
 
         assertThat(Valid.order.status).isEqualTo(OrderStatus.REJECTED.code)
 
@@ -328,7 +324,6 @@ internal class OrderManagerImplTest {
         assertThat(fa.amount).isEqualTo(Valid.order.remainedTransferAmount)
         assertThat(fa.symbol).isEqualTo(orderEvent.pair.rightSideName)
         assertThat(fa.category).isEqualTo(FinancialActionCategory.ORDER_CANCEL)
-        assertThat(fa.detail).containsKeys("userLevel", "direction", "matchConstraint", "orderType", "eventDate")
         assertThat(Valid.order.status).isEqualTo(OrderStatus.CANCELED.code)
 
         coVerify(exactly = 1) { richOrderPublisher.publish(any()) }

@@ -54,7 +54,7 @@ class TransferControllerIT : KafkaEnabledTest() {
             walletManager.createWallet(sender, Amount(srcCurrency, BigDecimal.valueOf(100)), srcCurrency, "main")
 
             val transfer = webClient.post().uri("/v2/transfer/1_ETH/from/${sender.uuid}_main/to/${receiver}_exchange").accept(MediaType.APPLICATION_JSON)
-                .bodyValue(TransferController.TransferBody("desc", "ref", "NORMAL", mapOf(Pair("key", "value"))))
+                .bodyValue(TransferController.TransferBody("desc", "ref", "NORMAL"))
                 .exchange()
                 .expectStatus().isOk
                 .expectBody(TransferResult::class.java)
@@ -74,7 +74,6 @@ class TransferControllerIT : KafkaEnabledTest() {
             Assertions.assertEquals(1, txList!!.size)
             with(txList[0]) {
                 Assertions.assertEquals("NORMAL", this.category)
-                Assertions.assertEquals(mapOf(Pair("key", "value")), this.additionalData)
                 Assertions.assertEquals("ETH", this.currency)
                 Assertions.assertEquals("main", this.srcWallet)
                 Assertions.assertEquals("exchange", this.destWallet)

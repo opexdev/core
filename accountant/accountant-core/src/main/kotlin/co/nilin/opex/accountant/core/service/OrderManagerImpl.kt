@@ -101,8 +101,7 @@ open class OrderManagerImpl(
             submitOrderEvent.uuid,
             "exchange",
             LocalDateTime.now(),
-            FinancialActionCategory.ORDER_CREATE,
-            createMap(submitOrderEvent, order)
+            FinancialActionCategory.ORDER_CREATE
         )
 
         return financialActionPersister.persist(listOf(financialAction))
@@ -161,8 +160,7 @@ open class OrderManagerImpl(
             rejectOrderEvent.uuid,
             "main",
             LocalDateTime.now(),
-            FinancialActionCategory.ORDER_CANCEL,
-            createMap(rejectOrderEvent, order)
+            FinancialActionCategory.ORDER_CANCEL
         )
         //update order status
         order.status = OrderStatus.REJECTED.code
@@ -210,8 +208,7 @@ open class OrderManagerImpl(
             cancelOrderEvent.uuid,
             "main",
             LocalDateTime.now(),
-            FinancialActionCategory.ORDER_CANCEL,
-            createMap(cancelOrderEvent, order)
+            FinancialActionCategory.ORDER_CANCEL
         )
         //update order status
         order.status = OrderStatus.CANCELED.code

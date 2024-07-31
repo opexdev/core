@@ -33,8 +33,7 @@ object VALID {
         SOURCE_WALLET_OWNER,
         Amount(CURRENCY, BigDecimal.valueOf(1.5)),
         CURRENCY,
-        WALLET_TYPE_MAIN
-        , 0
+        WALLET_TYPE_MAIN, 0
     )
 
     val DEST_WALLET_OWNER = SOURCE_WALLET_OWNER.copy(2, "e1950578-ef22-44e4-89f5-0b78feb03e2a")
@@ -47,7 +46,6 @@ object VALID {
         Amount(CURRENCY, BigDecimal.valueOf(0.5)),
         null,
         null,
-        "NORMAL",
-        emptyMap()
+        "NORMAL"
     )
 }

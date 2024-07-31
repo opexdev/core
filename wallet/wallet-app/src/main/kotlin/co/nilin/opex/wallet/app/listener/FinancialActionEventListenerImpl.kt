@@ -38,8 +38,7 @@ class FinancialActionEventListenerImpl(
                     event.amount,
                     event.description,
                     event.transferRef,
-                    event.transferCategory,
-                    event.additionalData
+                    event.transferCategory
                 )
             } catch (e: OpexException) {
                 responseEvent.apply {

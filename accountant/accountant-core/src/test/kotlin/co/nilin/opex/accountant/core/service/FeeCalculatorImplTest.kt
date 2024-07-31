@@ -17,9 +17,7 @@ internal class FeeCalculatorImplTest {
         val actions =
             feeCalculator.createFeeActions(Valid.tradeEvent, Valid.makerOrder, Valid.takerOrder, null, null)
         assertThat(actions.makerFeeAction).isNotNull
-        assertThat(actions.makerFeeAction.detail["ouid"]).isEqualTo(Valid.makerOrder.ouid)
         assertThat(actions.takerFeeAction).isNotNull
-        assertThat(actions.takerFeeAction.detail["ouid"]).isEqualTo(Valid.takerOrder.ouid)
     }
 
     @Test
@@ -33,7 +31,6 @@ internal class FeeCalculatorImplTest {
             assertThat(pointer).isEqualTo("order_2")
             assertThat(receiver).isEqualTo(receiverAddress)
             assertThat(receiverWalletType).isEqualTo("exchange")
-            assertThat(detail["ouid"]).isEqualTo(Valid.makerOrder.ouid)
         }
 
         with(actions.takerFeeAction) {
@@ -43,7 +40,6 @@ internal class FeeCalculatorImplTest {
             assertThat(pointer).isEqualTo("order_1")
             assertThat(receiver).isEqualTo(receiverAddress)
             assertThat(receiverWalletType).isEqualTo("exchange")
-            assertThat(detail["ouid"]).isEqualTo(Valid.takerOrder.ouid)
         }
     }
 
@@ -60,8 +56,7 @@ internal class FeeCalculatorImplTest {
             "system",
             "main",
             Valid.currentTime,
-            FinancialActionCategory.TRADE,
-            emptyMap()
+            FinancialActionCategory.TRADE
         )
 
         val actions = feeCalculator.createFeeActions(

@@ -27,8 +27,7 @@ class FAPersisterImplTest {
     private val faPersister = FinancialActionPersisterImpl(
         financialActionRepository,
         faRetryRepository,
-        faErrorRepository,
-        JsonMapperTestImpl()
+        faErrorRepository
     )
 
     @Test

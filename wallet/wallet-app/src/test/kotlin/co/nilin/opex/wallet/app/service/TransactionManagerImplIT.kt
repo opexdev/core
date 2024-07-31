@@ -15,6 +15,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 class TransactionManagerImplIT : KafkaEnabledTest() {
+
     @Autowired
     lateinit var transferManager: TransferManager
 
@@ -57,21 +58,29 @@ class TransactionManagerImplIT : KafkaEnabledTest() {
             val count = 5
             for (i in 1..count) {
                 val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(sender, senderWalletType, currency)
-                val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(receiver, receiverWalletType, currency)
+                val receiverWallet =
+                    walletManager.findWalletByOwnerAndCurrencyAndType(receiver, receiverWalletType, currency)
+
                 transferManager.transfer(
                     TransferCommand(
                         sourceWallet!!,
                         receiverWallet!!,
                         Amount(sourceWallet.currency, amount.divide(BigDecimal.valueOf(count * 1L))),
                         "Amount1 ${System.currentTimeMillis()}", "Ref1 ${System.currentTimeMillis()}",
-                        "NORMAL",
-                        mapOf(Pair("key", "val"))
+                        "NORMAL"
                     )
                 )
             }
 
             val thSender = transactionManager.findTransactions(
-                sender.uuid, currency.symbol, "NORMAL", LocalDateTime.now().minusHours(1), LocalDateTime.now(), true, 3, 3
+                sender.uuid,
+                currency.symbol,
+                "NORMAL",
+                LocalDateTime.now().minusHours(1),
+                LocalDateTime.now(),
+                true,
+                3,
+                3
             )
 
             assertEquals(2, thSender.size)
@@ -80,7 +89,14 @@ class TransactionManagerImplIT : KafkaEnabledTest() {
             assertTrue(thSender.all { th -> th.srcWallet == senderWalletType })
 
             val thReceiver = transactionManager.findTransactions(
-                receiver.uuid, currency.symbol, "NORMAL", LocalDateTime.now().minusHours(1), LocalDateTime.now(), false, 3, 1
+                receiver.uuid,
+                currency.symbol,
+                "NORMAL",
+                LocalDateTime.now().minusHours(1),
+                LocalDateTime.now(),
+                false,
+                3,
+                1
             )
 
             assertEquals(3, thReceiver.size)
@@ -100,22 +116,24 @@ class TransactionManagerImplIT : KafkaEnabledTest() {
             try {
                 currencyService.deleteCurrency(cc)
             } catch (_: Exception) {
-
             }
+
             currencyService.addCurrency(cc, cc, BigDecimal.ONE)
             val currency = currencyService.getCurrency(cc)
             val sourceOwner = walletOwnerManager.createWalletOwner(sourceUuid, "not set", "")
-            walletManager.createWallet(sourceOwner, Amount(currency!!, amount.multiply(BigDecimal.valueOf(2))), currency, senderWalletType)
+            walletManager.createWallet(
+                sourceOwner,
+                Amount(currency!!, amount.multiply(BigDecimal.valueOf(2))),
+                currency,
+                senderWalletType
+            )
             walletManager.createWallet(
                 sourceOwner,
                 Amount(currency, BigDecimal.ZERO),
                 currency,
                 receiverWalletType
             )
-
         }
     }
-
-
 }
 

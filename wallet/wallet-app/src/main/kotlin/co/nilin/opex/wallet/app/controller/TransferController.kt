@@ -1,6 +1,5 @@
 package co.nilin.opex.wallet.app.controller
 
-import co.nilin.opex.wallet.app.dto.TransferRequest
 import co.nilin.opex.wallet.app.service.TransferService
 import co.nilin.opex.wallet.core.inout.TransferResult
 import io.swagger.annotations.ApiResponse
@@ -15,8 +14,7 @@ class TransferController(private val transferService: TransferService) {
     data class TransferBody(
         val description: String?,
         val transferRef: String?,
-        val transferCategory: String,
-        val additionalData: Map<String, Any>?
+        val transferCategory: String
     )
 
     @PostMapping("/v2/transfer/{amount}_{symbol}/from/{senderUuid}_{senderWalletType}/to/{receiverUuid}_{receiverWalletType}")
@@ -49,7 +47,6 @@ class TransferController(private val transferService: TransferService) {
             transferBody.description,
             transferBody.transferRef,
             transferBody.transferCategory,
-            transferBody.additionalData
         )
     }
 
@@ -84,16 +81,9 @@ class TransferController(private val transferService: TransferService) {
             amount,
             description,
             transferRef,
-            transferBody.transferCategory,
-            transferBody.additionalData
+            transferBody.transferCategory
         )
     }
-
-    @PostMapping("/transfer/batch")
-    suspend fun batchTransfer(@RequestBody request: List<TransferRequest>) {
-        transferService.batchTransfer(request)
-    }
-
 
     @PostMapping("/deposit/{amount}_{chain}_{symbol}/{receiverUuid}_{receiverWalletType}")
     @ApiResponse(
@@ -107,15 +97,23 @@ class TransferController(private val transferService: TransferService) {
         )
     )
     suspend fun deposit(
-            @PathVariable("symbol") symbol: String,
-            @PathVariable("receiverUuid") receiverUuid: String,
-            @PathVariable("receiverWalletType") receiverWalletType: String,
-            @PathVariable("amount") amount: BigDecimal,
-            @RequestParam("description") description: String?,
-            @RequestParam("transferRef") transferRef: String?,
-            @PathVariable("chain") chain: String?
+        @PathVariable("symbol") symbol: String,
+        @PathVariable("receiverUuid") receiverUuid: String,
+        @PathVariable("receiverWalletType") receiverWalletType: String,
+        @PathVariable("amount") amount: BigDecimal,
+        @RequestParam("description") description: String?,
+        @RequestParam("transferRef") transferRef: String?,
+        @PathVariable("chain") chain: String?
     ): TransferResult {
-        return transferService.deposit(symbol, receiverUuid, receiverWalletType, amount, description, transferRef, chain)
+        return transferService.deposit(
+            symbol,
+            receiverUuid,
+            receiverWalletType,
+            amount,
+            description,
+            transferRef,
+            chain
+        )
     }
 
 }

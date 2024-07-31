@@ -59,8 +59,7 @@ class FeeCalculatorImpl(
             platformAddress,
             "exchange",
             LocalDateTime.now(),
-            FinancialActionCategory.FEE,
-            createMap(trade, makerOrder)
+            FinancialActionCategory.FEE
         )
         logger.info("Trade event makerFeeAction: uuid=${makerFeeAction.uuid}")
 
@@ -76,8 +75,7 @@ class FeeCalculatorImpl(
             platformAddress,
             "exchange",
             LocalDateTime.now(),
-            FinancialActionCategory.FEE,
-            createMap(trade, takerOrder)
+            FinancialActionCategory.FEE
         )
         logger.info("Trade event takerFeeAction: uuid=${takerFeeAction.uuid}")
 

@@ -23,8 +23,7 @@ class WalletProxyImpl(
     data class TransferBody(
         val description: String?,
         val transferRef: String?,
-        val transferCategory: String,
-        val additionalData: Map<String, Any>?
+        val transferCategory: String
     )
 
     override suspend fun transfer(
@@ -36,30 +35,17 @@ class WalletProxyImpl(
         amount: BigDecimal,
         description: String?,
         transferRef: String?,
-        transferCategory: String,
-        additionalData: Map<String, Any>?
+        transferCategory: String
     ) {
         webClient.post()
             .uri("$walletBaseUrl/v2/transfer/${amount}_$symbol/from/${senderUuid}_$senderWalletType/to/${receiverUuid}_$receiverWalletType")
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(TransferBody(description, transferRef, transferCategory, additionalData))
+            .bodyValue(TransferBody(description, transferRef, transferCategory))
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<TransferResult>()
             .log()
             .awaitFirst()
-    }
-
-    override suspend fun batchTransfer(transfers: List<TransferRequest>) {
-        webClient.post()
-            .uri("$walletBaseUrl/transfer/batch")
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(transfers)
-            .retrieve()
-            .onStatus({ t -> t.isError }, { it.createException() })
-            .bodyToMono<TransferResult>()
-            .log()
-            .awaitFirstOrNull()
     }
 
     override suspend fun canFulfil(symbol: String, walletType: String, uuid: String, amount: BigDecimal): Boolean {

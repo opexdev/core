@@ -22,7 +22,6 @@ data class FinancialActionModel(
     val receiver: String,
     @Column("receiver_wallet_type") val receiverWalletType: String,
     @Column("category_name") val category: FinancialActionCategory,
-    @Column("detail_json") val detail: String?,
     val agent: String,
     val ip: String,
     @Column("create_date") val createDate: LocalDateTime,

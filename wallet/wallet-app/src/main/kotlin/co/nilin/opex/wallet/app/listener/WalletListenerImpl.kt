@@ -9,13 +9,13 @@ import java.math.BigDecimal
 
 @Component
 class WalletListenerImpl(val withdrawRepository: WithdrawRepository) : WalletListener {
+
     override suspend fun onDeposit(
         me: Wallet,
         sourceWallet: Wallet,
         amount: Amount,
         finalAmount: BigDecimal,
-        transaction: String,
-        additionalData: Map<String, Any>?
+        transaction: String
     ) {
 
     }
@@ -24,8 +24,7 @@ class WalletListenerImpl(val withdrawRepository: WithdrawRepository) : WalletLis
         me: Wallet,
         destWallet: Wallet,
         amount: Amount,
-        transaction: String,
-        additionalData: Map<String, Any>?
+        transaction: String
     ) {
 
     }

@@ -27,8 +27,7 @@ object Valid {
         "system",
         "main",
         currentTime,
-        FinancialActionCategory.ORDER_CREATE,
-        emptyMap()
+        FinancialActionCategory.ORDER_CREATE
     )
 
     val faHighRetry = FinancialAction(
@@ -43,7 +42,6 @@ object Valid {
         "main",
         currentTime,
         FinancialActionCategory.ORDER_CREATE,
-        emptyMap(),
         id = 15
     )
 

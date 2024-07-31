@@ -16,6 +16,5 @@ data class TransactionModel(
     val description: String?,
     @Column("transfer_ref") val transferRef: String?,
     @Column("transfer_category") val transferCategory: String? = "NO_CATEGORY",
-    @Column("transfer_detail_json") val transferDetailJson: String?,
     @Column("transaction_date") val txDate: LocalDateTime
 )

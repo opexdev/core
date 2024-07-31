@@ -20,6 +20,7 @@ import java.time.ZoneId
 
 @AutoConfigureWebTestClient
 class TransactionControllerIT : KafkaEnabledTest() {
+
     @Autowired
     private lateinit var webClient: WebTestClient
 
@@ -31,12 +32,19 @@ class TransactionControllerIT : KafkaEnabledTest() {
         val uuid = "uuid"
         val t = System.currentTimeMillis()
         val history = TransactionWithDetailHistory(
-            1L, "sw", "dw", "su", "du", "c", BigDecimal.ONE, "desc", "ref", System.currentTimeMillis(), "cat", mapOf(Pair("key1", "val1"))
+            1L, "sw", "dw", "su", "du", "c", BigDecimal.ONE, "desc", "ref", System.currentTimeMillis(), "cat"
         )
         runBlocking {
             Mockito.`when`(
                 manager.findTransactions(
-                    uuid, "c", null, LocalDateTime.ofInstant(Instant.ofEpochMilli(t), ZoneId.systemDefault()), LocalDateTime.ofInstant(Instant.ofEpochMilli(t), ZoneId.systemDefault()), true, 1, 1
+                    uuid,
+                    "c",
+                    null,
+                    LocalDateTime.ofInstant(Instant.ofEpochMilli(t), ZoneId.systemDefault()),
+                    LocalDateTime.ofInstant(Instant.ofEpochMilli(t), ZoneId.systemDefault()),
+                    true,
+                    1,
+                    1
                 )
             ).thenReturn(listOf(history))
             webClient.post().uri("/transaction/$uuid").accept(MediaType.APPLICATION_JSON)

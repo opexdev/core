@@ -126,7 +126,6 @@ object Valid {
         "main",
         currentTime,
         FinancialActionCategory.TRADE,
-        emptyMap(),
         id = 1,
         uuid = "uuid"
     )
@@ -144,7 +143,6 @@ object Valid {
         "system",
         "main",
         FinancialActionCategory.TRADE,
-        "{}",
         "",
         "",
         currentTime,
