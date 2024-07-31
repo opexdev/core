@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.ports.kafka.listener.model
 
+import co.nilin.opex.wallet.core.model.TransferCategory
 import co.nilin.opex.wallet.core.model.WalletType
 import java.math.BigDecimal
 import java.time.LocalDateTime
@@ -15,7 +16,7 @@ class FinancialActionEvent {
     lateinit var receiverWalletType: WalletType
     lateinit var createDate: LocalDateTime
     var transferRef: String? = null
-    lateinit var transferCategory: String
+    lateinit var transferCategory: TransferCategory
     var additionalData: Map<String, Any>? = null
     lateinit var description: String
 
@@ -34,7 +35,7 @@ class FinancialActionEvent {
         createDate: LocalDateTime,
         transferRef: String,
         description: String,
-        transferCategory: String,
+        transferCategory: TransferCategory,
         additionalData: Map<String, Any>?
     ) {
         this.uuid = uuid

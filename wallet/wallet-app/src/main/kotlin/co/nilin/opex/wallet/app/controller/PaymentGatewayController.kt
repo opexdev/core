@@ -6,6 +6,7 @@ import co.nilin.opex.wallet.app.dto.PaymentDepositRequest
 import co.nilin.opex.wallet.app.dto.PaymentDepositResponse
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.model.TransferCategory
 import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.spi.CurrencyService
 import co.nilin.opex.wallet.core.spi.TransferManager
@@ -61,7 +62,7 @@ class PaymentGatewayController(
                 Amount(sourceWallet.currency, convertedAmount.toBigDecimal()),
                 request.description,
                 request.reference,
-                "DEPOSIT"
+                TransferCategory.DEPOSIT
             )
         )
 

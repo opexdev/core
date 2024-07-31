@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.ports.postgres.dao
 
+import co.nilin.opex.wallet.core.model.TransferCategory
 import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.ports.postgres.dto.DepositWithdrawTransaction
 import co.nilin.opex.wallet.ports.postgres.dto.TransactionStat
@@ -214,7 +215,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
     fun findTransactionsAsc(
         uuid: String,
         currency: String?,
-        category: String?,
+        category: TransferCategory?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
         limit: Int,
@@ -257,7 +258,7 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
     fun findTransactionsDesc(
         uuid: String,
         currency: String?,
-        category: String?,
+        category: TransferCategory?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
         limit: Int,

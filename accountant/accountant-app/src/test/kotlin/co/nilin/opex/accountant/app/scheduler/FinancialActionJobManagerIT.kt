@@ -57,9 +57,7 @@ class FinancialActionJobManagerIT : KafkaEnabledTest() {
         )
 
         runBlocking {
-            financialActionPersister.persist(
-                listOf(parent1)
-            )
+            financialActionPersister.persist(listOf(parent1))
             val parent1Saved = financialActionLoader.findLast(uuid, ouid)!!
             val child1 = FinancialAction(
                 parent1Saved,

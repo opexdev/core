@@ -3,6 +3,7 @@ package co.nilin.opex.wallet.app.service
 import co.nilin.opex.wallet.app.KafkaEnabledTest
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.model.TransferCategory
 import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.spi.*
 import kotlinx.coroutines.runBlocking
@@ -66,7 +67,7 @@ class TransactionManagerImplIT : KafkaEnabledTest() {
                         receiverWallet!!,
                         Amount(sourceWallet.currency, amount.divide(BigDecimal.valueOf(count * 1L))),
                         "Amount1 ${System.currentTimeMillis()}", "Ref1 ${System.currentTimeMillis()}",
-                        "NORMAL"
+                        TransferCategory.NORMAL
                     )
                 )
             }
@@ -74,7 +75,7 @@ class TransactionManagerImplIT : KafkaEnabledTest() {
             val thSender = transactionManager.findTransactions(
                 sender.uuid,
                 currency.symbol,
-                "NORMAL",
+                TransferCategory.NORMAL,
                 LocalDateTime.now().minusHours(1),
                 LocalDateTime.now(),
                 true,
@@ -90,7 +91,7 @@ class TransactionManagerImplIT : KafkaEnabledTest() {
             val thReceiver = transactionManager.findTransactions(
                 receiver.uuid,
                 currency.symbol,
-                "NORMAL",
+                TransferCategory.NORMAL,
                 LocalDateTime.now().minusHours(1),
                 LocalDateTime.now(),
                 false,

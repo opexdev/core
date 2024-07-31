@@ -88,7 +88,7 @@ CREATE TABLE IF NOT EXISTS transaction
 );
 
 ALTER TABLE transaction
-    ADD COLUMN IF NOT EXISTS transfer_detail_json TEXT;
+    DROP COLUMN transfer_detail_json;
 ALTER TABLE transaction
     ADD COLUMN IF NOT EXISTS transfer_category VARCHAR(36);
 

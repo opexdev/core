@@ -15,7 +15,7 @@ class TransactionController(private val manager: TransactionManager) {
 
     @PostMapping("/deposit/{uuid}")
     suspend fun getDepositTransactionsForUser(
-        @PathVariable("uuid") uuid: String,
+        @PathVariable uuid: String,
         @RequestBody request: TransactionRequest
     ): List<TransactionHistory> {
         return manager.findDepositTransactions(
@@ -35,7 +35,7 @@ class TransactionController(private val manager: TransactionManager) {
 
     @PostMapping("/{uuid}")
     suspend fun getTransactionsForUser(
-        @PathVariable("uuid") uuid: String,
+        @PathVariable uuid: String,
         @RequestBody request: TransactionRequest
     ): List<TransactionWithDetailHistory> {
         return manager.findTransactions(

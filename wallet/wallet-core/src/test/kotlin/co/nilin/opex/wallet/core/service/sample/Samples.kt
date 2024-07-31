@@ -39,6 +39,6 @@ object VALID {
         Amount(CURRENCY, BigDecimal.valueOf(0.5)),
         null,
         null,
-        "NORMAL"
+        TransferCategory.NORMAL
     )
 }

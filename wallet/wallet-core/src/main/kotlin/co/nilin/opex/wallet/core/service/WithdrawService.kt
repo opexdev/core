@@ -1,19 +1,13 @@
 package co.nilin.opex.wallet.core.service
 
 import co.nilin.opex.wallet.core.inout.*
-import co.nilin.opex.wallet.core.model.Amount
-import co.nilin.opex.wallet.core.model.WalletType
-import co.nilin.opex.wallet.core.model.Withdraw
-import co.nilin.opex.wallet.core.model.WithdrawStatus
+import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.spi.*
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.time.LocalDateTime
-
-
-enum class WithDrawAction { WITHDRAW_REQUEST, WITHDRAW_ACCEPT, WITHDRAW_REJECT }
 
 @Service
 class WithdrawService(
@@ -42,7 +36,7 @@ class WithdrawService(
                 Amount(currency, withdrawCommand.amount),
                 withdrawCommand.description,
                 withdrawCommand.transferRef,
-                WithDrawAction.WITHDRAW_REQUEST.name
+                TransferCategory.WITHDRAW_REQUEST
             )
         )
 
@@ -102,7 +96,7 @@ class WithdrawService(
                 Amount(sourceWallet.currency, withdraw.amount),
                 null,
                 null,
-                WithDrawAction.WITHDRAW_ACCEPT.name
+                TransferCategory.WITHDRAW_ACCEPT
             )
         )
 
@@ -162,7 +156,7 @@ class WithdrawService(
                 Amount(sourceWallet.currency, withdraw.amount),
                 rejectCommand.statusReason,
                 null,
-                WithDrawAction.WITHDRAW_REJECT.name
+                TransferCategory.WITHDRAW_REJECT
             )
         )
 

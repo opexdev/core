@@ -2,28 +2,24 @@ package co.nilin.opex.wallet.app.service
 
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.utility.error.data.OpexException
-import co.nilin.opex.utility.preferences.Preferences
 import co.nilin.opex.wallet.app.dto.AdvanceReservedTransferData
 import co.nilin.opex.wallet.app.dto.ManualTransferRequest
 import co.nilin.opex.wallet.app.dto.ReservedTransferResponse
-import co.nilin.opex.wallet.app.dto.TransferRequest
-import co.nilin.opex.wallet.core.exc.NotEnoughBalanceException
 import co.nilin.opex.wallet.core.inout.Deposit
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.model.TransferCategory
 import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.model.otc.Rate
 import co.nilin.opex.wallet.core.model.otc.ReservedTransfer
 import co.nilin.opex.wallet.core.spi.*
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.*
-
 
 @Service
 class TransferService(
@@ -50,7 +46,7 @@ class TransferService(
         amount: BigDecimal,
         description: String?,
         transferRef: String?,
-        transferCategory: String? = "NO_CATEGORY"
+        transferCategory: TransferCategory = TransferCategory.NONE
     ): TransferResult {
         return _transfer(
             symbol,
@@ -84,7 +80,7 @@ class TransferService(
             amount,
             description,
             transferRef,
-            "DEPOSIT",
+            TransferCategory.DEPOSIT,
             symbol,
             amount
 
@@ -182,7 +178,7 @@ class TransferService(
         transferRef: String?,
         issuer: String? = null,
         //todo need to review
-        transferCategory: String? = "PURCHASE_FINALIZED"
+        transferCategory: TransferCategory = TransferCategory.PURCHASE_FINALIZED
     ): TransferResult {
         val reservations = reservedTransferManager.fetchValidReserve(reserveNumber)
             ?: throw OpexError.InvalidReserveNumber.exception()
@@ -289,14 +285,10 @@ class TransferService(
         logger.info("deposit manually: $senderUuid to $receiverUuid on $symbol at ${LocalDateTime.now()}")
         val systemUuid = "1"
         //todo customize error message
-        val senderLevel = walletOwnerManager.findWalletOwner(senderUuid)?.let { it.level }
+        val senderLevel = walletOwnerManager.findWalletOwner(senderUuid)?.level
             ?: throw OpexException(OpexError.WalletOwnerNotFound)
-        walletOwnerManager.findWalletOwner(receiverUuid)?.let { it.level }
-            ?: walletOwnerManager.createWalletOwner(
-                receiverUuid,
-                "not set",
-                "1"
-            ).level
+        walletOwnerManager.findWalletOwner(receiverUuid)?.level
+            ?: walletOwnerManager.createWalletOwner(receiverUuid, "not set", "1").level
 
 //        if (senderLevel !in arrayListOf<String>(preferences.admin.walletLevel, preferences.system.walletLevel))
 //            throw OpexException(OpexError.Forbidden)
@@ -319,7 +311,7 @@ class TransferService(
             amount,
             request.description,
             request.ref,
-            "DEPOSIT_MANUALLY",
+            TransferCategory.DEPOSIT_MANUALLY,
             symbol,
             amount
 
@@ -336,11 +328,11 @@ class TransferService(
                 depositType = "System",
             )
         )
-        return tx;
+        return tx
     }
 
 
-    suspend fun _transfer(
+    private suspend fun _transfer(
         symbol: String,
         senderWalletType: WalletType,
         senderUuid: String,
@@ -349,7 +341,7 @@ class TransferService(
         amount: BigDecimal,
         description: String?,
         transferRef: String?,
-        transferCategory: String? = "NO_CATEGORY",
+        transferCategory: TransferCategory = TransferCategory.NONE,
         destSymbol: String = symbol,
         destAmount: BigDecimal = amount
     ): TransferResult {
@@ -388,7 +380,9 @@ class TransferService(
                 sourceWallet,
                 receiverWallet,
                 Amount(sourceWallet.currency, amount),
-                description, transferRef, transferCategory!!,
+                description,
+                transferRef,
+                transferCategory,
                 Amount(receiverWallet.currency, destAmount)
             )
         ).transferResult

@@ -3,6 +3,7 @@ package co.nilin.opex.wallet.ports.postgres.impl
 import co.nilin.opex.wallet.core.model.Transaction
 import co.nilin.opex.wallet.core.model.TransactionHistory
 import co.nilin.opex.wallet.core.model.TransactionWithDetailHistory
+import co.nilin.opex.wallet.core.model.TransferCategory
 import co.nilin.opex.wallet.core.spi.TransactionManager
 import co.nilin.opex.wallet.ports.postgres.dao.TransactionRepository
 import co.nilin.opex.wallet.ports.postgres.model.TransactionModel
@@ -100,7 +101,7 @@ class TransactionManagerImpl(
     override suspend fun findTransactions(
         uuid: String,
         coin: String?,
-        category: String?,
+        category: TransferCategory?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
         asc: Boolean,

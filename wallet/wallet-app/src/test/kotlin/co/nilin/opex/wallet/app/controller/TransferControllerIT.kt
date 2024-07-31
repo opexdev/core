@@ -5,6 +5,7 @@ import co.nilin.opex.wallet.app.dto.TransactionRequest
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.TransactionWithDetailHistory
+import co.nilin.opex.wallet.core.model.TransferCategory
 import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.spi.CurrencyService
 import co.nilin.opex.wallet.core.spi.WalletManager
@@ -54,7 +55,7 @@ class TransferControllerIT : KafkaEnabledTest() {
             walletManager.createWallet(sender, Amount(srcCurrency, BigDecimal.valueOf(100)), srcCurrency, WalletType.MAIN)
 
             val transfer = webClient.post().uri("/v2/transfer/1_ETH/from/${sender.uuid}_main/to/${receiver}_exchange").accept(MediaType.APPLICATION_JSON)
-                .bodyValue(TransferController.TransferBody("desc", "ref", "NORMAL"))
+                .bodyValue(TransferController.TransferBody("desc", "ref", TransferCategory.NORMAL))
                 .exchange()
                 .expectStatus().isOk
                 .expectBody(TransferResult::class.java)
@@ -73,7 +74,7 @@ class TransferControllerIT : KafkaEnabledTest() {
                 .returnResult().responseBody
             Assertions.assertEquals(1, txList!!.size)
             with(txList[0]) {
-                Assertions.assertEquals("NORMAL", this.category)
+                Assertions.assertEquals(TransferCategory.NORMAL, this.category)
                 Assertions.assertEquals("ETH", this.currency)
                 Assertions.assertEquals(WalletType.MAIN, this.srcWalletType)
                 Assertions.assertEquals(WalletType.EXCHANGE, this.destWalletType)
