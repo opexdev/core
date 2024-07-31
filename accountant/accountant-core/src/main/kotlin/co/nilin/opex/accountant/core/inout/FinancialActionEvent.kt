@@ -1,5 +1,6 @@
 package co.nilin.opex.accountant.core.inout
 
+import co.nilin.opex.accountant.core.model.WalletType
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
@@ -8,9 +9,9 @@ data class FinancialActionEvent(
     val symbol: String,
     val amount: BigDecimal,
     val sender: String,
-    val senderWalletType: String,
+    val senderWalletType: WalletType,
     val receiver: String,
-    val receiverWalletType: String,
+    val receiverWalletType: WalletType,
     val createDate: LocalDateTime,
     val transferRef: String?,
     val description: String

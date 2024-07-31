@@ -1,10 +1,7 @@
 package co.nilin.opex.accountant.core.service
 
 import co.nilin.opex.accountant.core.api.FeeCalculator
-import co.nilin.opex.accountant.core.model.FeeFinancialActions
-import co.nilin.opex.accountant.core.model.FinancialAction
-import co.nilin.opex.accountant.core.model.FinancialActionCategory
-import co.nilin.opex.accountant.core.model.Order
+import co.nilin.opex.accountant.core.model.*
 import co.nilin.opex.accountant.core.spi.JsonMapper
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
 import org.slf4j.LoggerFactory
@@ -55,9 +52,9 @@ class FeeCalculatorImpl(
             if (takerOrder.isAsk()) trade.pair.leftSideName else trade.pair.rightSideName,
             takerMatchedAmount.multiply(makerOrder.makerFee),
             trade.makerUuid,
-            "main",
+            WalletType.MAIN,
             platformAddress,
-            "exchange",
+            WalletType.EXCHANGE,
             LocalDateTime.now(),
             FinancialActionCategory.FEE
         )
@@ -71,9 +68,9 @@ class FeeCalculatorImpl(
             if (makerOrder.isAsk()) trade.pair.leftSideName else trade.pair.rightSideName,
             makerMatchedAmount.multiply(takerOrder.takerFee),
             trade.takerUuid,
-            "main",
+            WalletType.MAIN,
             platformAddress,
-            "exchange",
+            WalletType.EXCHANGE,
             LocalDateTime.now(),
             FinancialActionCategory.FEE
         )

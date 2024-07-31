@@ -3,6 +3,7 @@ package co.nilin.opex.wallet.app.service
 import co.nilin.opex.wallet.app.KafkaEnabledTest
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.spi.*
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -31,8 +32,6 @@ class TransactionManagerImplIT : KafkaEnabledTest() {
     @Autowired
     lateinit var transactionManager: TransactionManager
 
-    val senderWalletType = "main"
-    val receiverWalletType = "exchange"
     val cc = "CC"
     val amount = BigDecimal.valueOf(10)
     var sourceUuid: String? = null
@@ -57,9 +56,9 @@ class TransactionManagerImplIT : KafkaEnabledTest() {
 
             val count = 5
             for (i in 1..count) {
-                val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(sender, senderWalletType, currency)
+                val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(sender, WalletType.MAIN, currency)
                 val receiverWallet =
-                    walletManager.findWalletByOwnerAndCurrencyAndType(receiver, receiverWalletType, currency)
+                    walletManager.findWalletByOwnerAndCurrencyAndType(receiver, WalletType.EXCHANGE, currency)
 
                 transferManager.transfer(
                     TransferCommand(
@@ -86,7 +85,7 @@ class TransactionManagerImplIT : KafkaEnabledTest() {
             assertEquals(2, thSender.size)
             assertTrue(thSender.first().date.compareTo(thSender.last().date) < 0)
             assertTrue(thSender.all { th -> th.senderUuid == sender.uuid })
-            assertTrue(thSender.all { th -> th.srcWallet == senderWalletType })
+            assertTrue(thSender.all { th -> th.srcWalletType == WalletType.MAIN })
 
             val thReceiver = transactionManager.findTransactions(
                 receiver.uuid,
@@ -102,7 +101,7 @@ class TransactionManagerImplIT : KafkaEnabledTest() {
             assertEquals(3, thReceiver.size)
             assertTrue(thReceiver.first().date.compareTo(thReceiver.last().date) > 0)
             assertTrue(thReceiver.all { th -> th.receiverUuid == receiver.uuid })
-            assertTrue(thReceiver.all { th -> th.destWallet == receiverWalletType })
+            assertTrue(thReceiver.all { th -> th.destWalletType == WalletType.EXCHANGE })
 
             val thReceiverAll = transactionManager.findTransactions(
                 receiver.uuid, null, null, LocalDateTime.now().minusHours(1), LocalDateTime.now(), true, 100, 0
@@ -125,13 +124,13 @@ class TransactionManagerImplIT : KafkaEnabledTest() {
                 sourceOwner,
                 Amount(currency!!, amount.multiply(BigDecimal.valueOf(2))),
                 currency,
-                senderWalletType
+                WalletType.MAIN
             )
             walletManager.createWallet(
                 sourceOwner,
                 Amount(currency, BigDecimal.ZERO),
                 currency,
-                receiverWalletType
+                WalletType.EXCHANGE
             )
         }
     }

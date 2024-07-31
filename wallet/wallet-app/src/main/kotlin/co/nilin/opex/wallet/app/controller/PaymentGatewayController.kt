@@ -6,6 +6,7 @@ import co.nilin.opex.wallet.app.dto.PaymentDepositRequest
 import co.nilin.opex.wallet.app.dto.PaymentDepositResponse
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.spi.CurrencyService
 import co.nilin.opex.wallet.core.spi.TransferManager
 import co.nilin.opex.wallet.core.spi.WalletManager
@@ -19,15 +20,15 @@ import java.math.BigDecimal
 @RestController
 @RequestMapping("/payment")
 class PaymentGatewayController(
-    val transferManager: TransferManager,
-    val currencyService: CurrencyService,
-    val walletManager: WalletManager,
-    val walletOwnerManager: WalletOwnerManager
+    private val transferManager: TransferManager,
+    private val currencyService: CurrencyService,
+    private val walletManager: WalletManager,
+    private val walletOwnerManager: WalletOwnerManager
 ) {
 
     @PostMapping("/internal/deposit")
     suspend fun paymentDeposit(@RequestBody request: PaymentDepositRequest): PaymentDepositResponse {
-        val receiverWalletType = "main"
+        val receiverWalletType = WalletType.MAIN
         val convertedAmount = when (request.currency) {
             PaymentCurrency.RIALS -> (request.amount / BigDecimal.valueOf(10)).toLong()
             PaymentCurrency.TOMAN -> request.amount.toLong()
@@ -36,8 +37,8 @@ class PaymentGatewayController(
         val currency = currencyService.getCurrency("IRT") ?: throw OpexError.CurrencyNotFound.exception()
         val sourceOwner = walletOwnerManager.findWalletOwner(walletOwnerManager.systemUuid)
             ?: throw OpexError.WalletOwnerNotFound.exception()
-        val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner, "main", currency)
-            ?: walletManager.createWallet(sourceOwner, Amount(currency, BigDecimal.ZERO), currency, "main")
+        val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner, WalletType.MAIN, currency)
+            ?: walletManager.createWallet(sourceOwner, Amount(currency, BigDecimal.ZERO), currency, WalletType.MAIN)
 
         val receiverOwner = walletOwnerManager.findWalletOwner(request.userId)
             ?: walletOwnerManager.createWalletOwner(request.userId, "not set", "")

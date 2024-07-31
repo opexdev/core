@@ -7,6 +7,7 @@ import co.nilin.opex.accountant.core.inout.OrderStatus
 import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.FinancialActionCategory
 import co.nilin.opex.accountant.core.model.Order
+import co.nilin.opex.accountant.core.model.WalletType
 import co.nilin.opex.accountant.core.spi.FinancialActionLoader
 import co.nilin.opex.accountant.core.spi.OrderPersister
 import co.nilin.opex.matching.engine.core.eventh.events.SubmitOrderEvent
@@ -40,13 +41,33 @@ class OrderTradeManagersIT1 : KafkaEnabledTest() {
         runBlocking {
             val pair = Pair("TBTC", "TUSDT")
             val bidOrderEvent = SubmitOrderEvent(
-                UUID.randomUUID().toString(), UUID.randomUUID().toString(), 1L, pair, 1100, 1000000, 1000000, OrderDirection.BID, MatchConstraint.GTC, OrderType.LIMIT_ORDER, ""
+                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString(),
+                1L,
+                pair,
+                1100,
+                1000000,
+                1000000,
+                OrderDirection.BID,
+                MatchConstraint.GTC,
+                OrderType.LIMIT_ORDER,
+                ""
             )
             orderManager.handleRequestOrder(bidOrderEvent)
 
 
             val askOrderEvent = SubmitOrderEvent(
-                UUID.randomUUID().toString(), UUID.randomUUID().toString(), 2L, pair, 1000, 1000000, 1000000, OrderDirection.ASK, MatchConstraint.GTC, OrderType.LIMIT_ORDER, ""
+                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString(),
+                2L,
+                pair,
+                1000,
+                1000000,
+                1000000,
+                OrderDirection.ASK,
+                MatchConstraint.GTC,
+                OrderType.LIMIT_ORDER,
+                ""
             )
             orderManager.handleRequestOrder(askOrderEvent)
 
@@ -82,13 +103,33 @@ class OrderTradeManagersIT1 : KafkaEnabledTest() {
         runBlocking {
             val pair = Pair("TBTC", "TUSDT")
             val bidOrderEvent = SubmitOrderEvent(
-                UUID.randomUUID().toString(), UUID.randomUUID().toString(), 1L, pair, 1100, 1000000, 1000000, OrderDirection.BID, MatchConstraint.GTC, OrderType.LIMIT_ORDER, ""
+                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString(),
+                1L,
+                pair,
+                1100,
+                1000000,
+                1000000,
+                OrderDirection.BID,
+                MatchConstraint.GTC,
+                OrderType.LIMIT_ORDER,
+                ""
             )
             orderManager.handleRequestOrder(bidOrderEvent)
 
 
             val askOrderEvent = SubmitOrderEvent(
-                UUID.randomUUID().toString(), UUID.randomUUID().toString(), 2L, pair, 1000, 1000000, 1000000, OrderDirection.ASK, MatchConstraint.GTC, OrderType.LIMIT_ORDER, ""
+                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString(),
+                2L,
+                pair,
+                1000,
+                1000000,
+                1000000,
+                OrderDirection.ASK,
+                MatchConstraint.GTC,
+                OrderType.LIMIT_ORDER,
+                ""
             )
             orderManager.handleRequestOrder(askOrderEvent)
 
@@ -167,12 +208,16 @@ class OrderTradeManagersIT1 : KafkaEnabledTest() {
         assertTotalAmount(financialActions, askOrderDB, askOrderSubmitFi)
     }
 
-    private fun assertTotalAmount(financialActions: List<FinancialAction>, askOrderDB: Order, askOrderSubmitFi: FinancialAction) {
+    private fun assertTotalAmount(
+        financialActions: List<FinancialAction>,
+        askOrderDB: Order,
+        askOrderSubmitFi: FinancialAction
+    ) {
         val askFiSide1 = financialActions.filter { fi ->
-             fi.symbol == askOrderSubmitFi.symbol && fi.sender == askOrderDB.uuid
+            fi.symbol == askOrderSubmitFi.symbol && fi.sender == askOrderDB.uuid
         }
         val askTotalFiAmountSide1 = askFiSide1.sumOf { fi ->
-            if (fi.senderWalletType.equals("main"))
+            if (fi.senderWalletType == WalletType.MAIN)
                 fi.amount
             else
                 -fi.amount

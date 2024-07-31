@@ -4,6 +4,7 @@ import co.nilin.opex.wallet.app.KafkaEnabledTest
 import co.nilin.opex.wallet.core.exc.ConcurrentBalanceChangException
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.spi.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -35,8 +36,6 @@ class TransferManagerImplIT : KafkaEnabledTest() {
     @Autowired
     lateinit var transactionManager: TransactionManager
 
-    val senderWalletType = "main"
-    val receiverWalletType = "exchange"
     val cc = "CC"
     val amount = BigDecimal.valueOf(10)
     var sourceUuid: String? = null
@@ -55,8 +54,9 @@ class TransferManagerImplIT : KafkaEnabledTest() {
             runBlocking {
                 val currency = currencyService.getCurrency(cc)!!
                 val owner = walletOwnerManager.findWalletOwner(sourceUuid!!)
-                val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner!!, senderWalletType, currency)
-                val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, receiverWalletType, currency)
+                val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner!!, WalletType.MAIN, currency)
+                val receiverWallet =
+                    walletManager.findWalletByOwnerAndCurrencyAndType(owner, WalletType.EXCHANGE, currency)
 
                 launch {
                     transferManager.transfer(
@@ -88,8 +88,8 @@ class TransferManagerImplIT : KafkaEnabledTest() {
         runBlocking {
             val currency = currencyService.getCurrency(cc)!!
             val owner = walletOwnerManager.findWalletOwner(sourceUuid!!)
-            val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner!!, senderWalletType, currency)
-            val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, receiverWalletType, currency)
+            val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner!!, WalletType.MAIN, currency)
+            val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, WalletType.EXCHANGE, currency)
 
             assertEquals(amount, sourceWallet!!.balance.amount)
             assertEquals(amount, receiverWallet!!.balance.amount)
@@ -101,14 +101,15 @@ class TransferManagerImplIT : KafkaEnabledTest() {
         runBlocking {
             val currency = currencyService.getCurrency(cc)!!
             val owner = walletOwnerManager.findWalletOwner(sourceUuid!!)
-            val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner!!, receiverWalletType, currency)
+            val receiverWallet =
+                walletManager.findWalletByOwnerAndCurrencyAndType(owner!!, WalletType.EXCHANGE, currency)
 
             val source2Uuid = UUID.randomUUID().toString()
             setupWallets(source2Uuid)
             val sourceOwner2 = walletOwnerManager.findWalletOwner(source2Uuid)
 
             val t1 = async {
-                val sourceWallet1 = walletManager.findWalletByOwnerAndCurrencyAndType(owner, senderWalletType, currency)
+                val sourceWallet1 = walletManager.findWalletByOwnerAndCurrencyAndType(owner, WalletType.MAIN, currency)
                 transferManager.transfer(
                     TransferCommand(
                         sourceWallet1!!,
@@ -119,7 +120,8 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                 )
             }
             val t2 = async {
-                val sourceWallet2 = walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner2!!, senderWalletType, currency)
+                val sourceWallet2 =
+                    walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner2!!, WalletType.MAIN, currency)
                 transferManager.transfer(
                     TransferCommand(
                         sourceWallet2!!,
@@ -132,9 +134,12 @@ class TransferManagerImplIT : KafkaEnabledTest() {
             t1.await()
             t2.await()
 
-            val sourceWallet1Refresh = walletManager.findWalletByOwnerAndCurrencyAndType(owner, senderWalletType, currency)
-            val sourceWallet2Refresh = walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner2!!, senderWalletType, currency)
-            val receiverWalletRefresh = walletManager.findWalletByOwnerAndCurrencyAndType(owner, receiverWalletType, currency)
+            val sourceWallet1Refresh =
+                walletManager.findWalletByOwnerAndCurrencyAndType(owner, WalletType.MAIN, currency)
+            val sourceWallet2Refresh =
+                walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner2!!, WalletType.MAIN, currency)
+            val receiverWalletRefresh =
+                walletManager.findWalletByOwnerAndCurrencyAndType(owner, WalletType.EXCHANGE, currency)
 
             assertEquals(amount, sourceWallet1Refresh!!.balance.amount)
             assertEquals(amount, sourceWallet2Refresh!!.balance.amount)
@@ -151,8 +156,9 @@ class TransferManagerImplIT : KafkaEnabledTest() {
             val owner = walletOwnerManager.findWalletOwner(sourceUuid!!)
 
             async {
-                val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner!!, senderWalletType, currency)
-                val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, receiverWalletType, currency)
+                val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner!!, WalletType.MAIN, currency)
+                val receiverWallet =
+                    walletManager.findWalletByOwnerAndCurrencyAndType(owner, WalletType.EXCHANGE, currency)
 
                 transferManager.transfer(
                     TransferCommand(
@@ -164,8 +170,9 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                 )
             }.await()
             async {
-                val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner!!, senderWalletType, currency)
-                val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, receiverWalletType, currency)
+                val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner!!, WalletType.MAIN, currency)
+                val receiverWallet =
+                    walletManager.findWalletByOwnerAndCurrencyAndType(owner, WalletType.EXCHANGE, currency)
 
                 transferManager.transfer(
                     TransferCommand(
@@ -176,8 +183,8 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                     )
                 )
             }.await()
-            val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner!!, senderWalletType, currency)
-            val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, receiverWalletType, currency)
+            val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner!!, WalletType.MAIN, currency)
+            val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, WalletType.EXCHANGE, currency)
 
             assertEquals(BigDecimal.ZERO, sourceWallet!!.balance.amount)
             assertEquals(amount.plus(amount), receiverWallet!!.balance.amount)
@@ -190,8 +197,8 @@ class TransferManagerImplIT : KafkaEnabledTest() {
             val currency = currencyService.getCurrency(cc)!!
             val owner = walletOwnerManager.findWalletOwner(sourceUuid!!)
 
-            val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner!!, senderWalletType, currency)
-            val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, receiverWalletType, currency)
+            val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner!!, WalletType.MAIN, currency)
+            val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, WalletType.EXCHANGE, currency)
 
             val additionalData = mapOf(Pair("key1", "value"), Pair("key2", "value"))
             val result = transferManager.transfer(
@@ -218,7 +225,14 @@ class TransferManagerImplIT : KafkaEnabledTest() {
             assertNotNull(thdMatch)
 
             val th = transactionManager.findTransactions(
-                owner.uuid, currency.symbol, "NORMAL", LocalDateTime.now().minusHours(1), LocalDateTime.now(), true, 100, 0
+                owner.uuid,
+                currency.symbol,
+                "NORMAL",
+                LocalDateTime.now().minusHours(1),
+                LocalDateTime.now(),
+                true,
+                100,
+                0
             )
 
             val thMatch = th.find { i -> i.id.toString().equals(result.tx) }
@@ -237,8 +251,9 @@ class TransferManagerImplIT : KafkaEnabledTest() {
             val receiver = walletOwnerManager.findWalletOwner(destUuid!!)
 
 
-            val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(sender!!, senderWalletType, currency)
-            val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(receiver!!, receiverWalletType, currency)
+            val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(sender!!, WalletType.MAIN, currency)
+            val receiverWallet =
+                walletManager.findWalletByOwnerAndCurrencyAndType(receiver!!, WalletType.EXCHANGE, currency)
 
             val result = transferManager.transfer(
                 TransferCommand(
@@ -267,7 +282,14 @@ class TransferManagerImplIT : KafkaEnabledTest() {
             assertEquals("NORMAL", thdMatch!!.category)
 
             val thSender = transactionManager.findTransactions(
-                sender.uuid, currency.symbol, "NORMAL", LocalDateTime.now().minusHours(1), LocalDateTime.now(), true, 100, 0
+                sender.uuid,
+                currency.symbol,
+                "NORMAL",
+                LocalDateTime.now().minusHours(1),
+                LocalDateTime.now(),
+                true,
+                100,
+                0
             )
             val thSenderMatch = thSender.find { i -> i.id.toString().equals(result.tx) }
             assertEquals(sender.uuid, thSenderMatch!!.senderUuid)
@@ -275,7 +297,14 @@ class TransferManagerImplIT : KafkaEnabledTest() {
 
 
             val thReceiver = transactionManager.findTransactions(
-                receiver.uuid, currency.symbol, "NORMAL", LocalDateTime.now().minusHours(1), LocalDateTime.now(), true, 100, 0
+                receiver.uuid,
+                currency.symbol,
+                "NORMAL",
+                LocalDateTime.now().minusHours(1),
+                LocalDateTime.now(),
+                true,
+                100,
+                0
             )
             val thReceiverMatch = thReceiver.find { i -> i.id.toString().equals(result.tx) }
             assertEquals(receiver.uuid, thReceiverMatch!!.receiverUuid)
@@ -295,12 +324,17 @@ class TransferManagerImplIT : KafkaEnabledTest() {
             val currency = currencyService.getCurrency(cc)
 
             val sourceOwner = walletOwnerManager.createWalletOwner(sourceUuid, "not set", "")
-            walletManager.createWallet(sourceOwner, Amount(currency!!, amount.multiply(BigDecimal.valueOf(2))), currency, senderWalletType)
+            walletManager.createWallet(
+                sourceOwner,
+                Amount(currency!!, amount.multiply(BigDecimal.valueOf(2))),
+                currency,
+                WalletType.MAIN
+            )
             walletManager.createWallet(
                 sourceOwner,
                 Amount(currency, BigDecimal.ZERO),
                 currency,
-                receiverWalletType
+                WalletType.EXCHANGE
             )
 
         }

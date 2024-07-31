@@ -1,20 +1,12 @@
 package co.nilin.opex.wallet.core.service.sample
 
 import co.nilin.opex.wallet.core.inout.TransferCommand
-import co.nilin.opex.wallet.core.model.Amount
-import co.nilin.opex.wallet.core.model.Currency
-import co.nilin.opex.wallet.core.model.Wallet
-import co.nilin.opex.wallet.core.model.WalletOwner
+import co.nilin.opex.wallet.core.model.*
 import java.math.BigDecimal
 
 object VALID {
+
     private const val USER_LEVEL_REGISTERED = "registered"
-
-    const val ACTION_WITHDRAW = "withdraw"
-
-    const val ACTION_DEPOSIT = "deposit"
-
-    private const val WALLET_TYPE_MAIN = "main"
 
     val CURRENCY = Currency("ETH", "Ethereum", BigDecimal.valueOf(0.0001))
 
@@ -33,7 +25,8 @@ object VALID {
         SOURCE_WALLET_OWNER,
         Amount(CURRENCY, BigDecimal.valueOf(1.5)),
         CURRENCY,
-        WALLET_TYPE_MAIN, 0
+        WalletType.MAIN,
+        0
     )
 
     val DEST_WALLET_OWNER = SOURCE_WALLET_OWNER.copy(2, "e1950578-ef22-44e4-89f5-0b78feb03e2a")

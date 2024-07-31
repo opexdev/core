@@ -4,6 +4,7 @@ import co.nilin.opex.accountant.core.inout.OrderStatus
 import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.FinancialActionCategory
 import co.nilin.opex.accountant.core.model.Order
+import co.nilin.opex.accountant.core.model.WalletType
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
 import co.nilin.opex.matching.engine.core.model.MatchConstraint
 import co.nilin.opex.matching.engine.core.model.OrderDirection
@@ -23,9 +24,9 @@ object Valid {
         "BTC_USDT",
         10000.0.toBigDecimal(),
         "user_parent",
-        "main",
+        WalletType.MAIN,
         "system",
-        "main",
+        WalletType.MAIN,
         currentTime,
         FinancialActionCategory.ORDER_CREATE
     )
@@ -37,9 +38,9 @@ object Valid {
         "BTC_USDT",
         10000.0.toBigDecimal(),
         "user_parent",
-        "main",
+        WalletType.MAIN,
         "system",
-        "main",
+        WalletType.MAIN,
         currentTime,
         FinancialActionCategory.ORDER_CREATE,
         id = 15

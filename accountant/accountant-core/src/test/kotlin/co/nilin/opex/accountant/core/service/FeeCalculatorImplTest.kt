@@ -2,6 +2,7 @@ package co.nilin.opex.accountant.core.service
 
 import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.FinancialActionCategory
+import co.nilin.opex.accountant.core.model.WalletType
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
@@ -30,7 +31,7 @@ internal class FeeCalculatorImplTest {
             assertThat(sender).isEqualTo("user_1")
             assertThat(pointer).isEqualTo("order_2")
             assertThat(receiver).isEqualTo(receiverAddress)
-            assertThat(receiverWalletType).isEqualTo("exchange")
+            assertThat(receiverWalletType).isEqualTo(WalletType.EXCHANGE)
         }
 
         with(actions.takerFeeAction) {
@@ -39,7 +40,7 @@ internal class FeeCalculatorImplTest {
             assertThat(sender).isEqualTo("user_2")
             assertThat(pointer).isEqualTo("order_1")
             assertThat(receiver).isEqualTo(receiverAddress)
-            assertThat(receiverWalletType).isEqualTo("exchange")
+            assertThat(receiverWalletType).isEqualTo(WalletType.EXCHANGE)
         }
     }
 
@@ -52,9 +53,9 @@ internal class FeeCalculatorImplTest {
             "BTC_USDT",
             10000.0.toBigDecimal(),
             "user_parent",
-            "main",
+            WalletType.MAIN,
             "system",
-            "main",
+            WalletType.MAIN,
             Valid.currentTime,
             FinancialActionCategory.TRADE
         )

@@ -5,10 +5,7 @@ import co.nilin.opex.accountant.core.api.TradeManager
 import co.nilin.opex.accountant.core.inout.OrderStatus
 import co.nilin.opex.accountant.core.inout.RichOrderUpdate
 import co.nilin.opex.accountant.core.inout.RichTrade
-import co.nilin.opex.accountant.core.model.FinancialAction
-import co.nilin.opex.accountant.core.model.FinancialActionCategory
-import co.nilin.opex.accountant.core.model.FinancialActionStatus
-import co.nilin.opex.accountant.core.model.Order
+import co.nilin.opex.accountant.core.model.*
 import co.nilin.opex.accountant.core.spi.*
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
 import org.slf4j.LoggerFactory
@@ -82,9 +79,9 @@ open class TradeManagerImpl(
             if (takerOrder.isAsk()) trade.pair.leftSideName else trade.pair.rightSideName,
             takerMatchedAmount,
             trade.takerUuid,
-            "exchange",
+            WalletType.EXCHANGE,
             trade.makerUuid,
-            "main",
+            WalletType.MAIN,
             LocalDateTime.now(),
             FinancialActionCategory.TRADE
         )
@@ -119,9 +116,9 @@ open class TradeManagerImpl(
             if (makerOrder.isAsk()) trade.pair.leftSideName else trade.pair.rightSideName,
             makerMatchedAmount,
             trade.makerUuid,
-            "exchange",
+            WalletType.EXCHANGE,
             trade.takerUuid,
-            "main",
+            WalletType.MAIN,
             LocalDateTime.now(),
             FinancialActionCategory.TRADE
         )
@@ -201,9 +198,9 @@ open class TradeManagerImpl(
         if (order.isAsk()) trade.pair.leftSideName else trade.pair.rightSideName,
         order.remainedTransferAmount,
         order.uuid,
-        "exchange",
+        WalletType.EXCHANGE,
         order.uuid,
-        "main",
+        WalletType.MAIN,
         LocalDateTime.now(),
         FinancialActionCategory.ORDER_FINALIZED
     )

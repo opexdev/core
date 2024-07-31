@@ -3,7 +3,6 @@ package co.nilin.opex.accountant.ports.postgres.impl
 import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.FinancialActionStatus
 import co.nilin.opex.accountant.core.spi.FinancialActionLoader
-import co.nilin.opex.accountant.core.spi.JsonMapper
 import co.nilin.opex.accountant.ports.postgres.dao.FinancialActionErrorRepository
 import co.nilin.opex.accountant.ports.postgres.dao.FinancialActionRepository
 import co.nilin.opex.accountant.ports.postgres.dao.FinancialActionRetryRepository
@@ -70,7 +69,7 @@ class FinancialActionLoaderImpl(
                 fim.receiver,
                 fim.receiverWalletType,
                 fim.createDate,
-                fim.category,
+                fim.categoryName,
                 fim.status,
                 fim.uuid,
                 fim.id
@@ -93,7 +92,7 @@ class FinancialActionLoaderImpl(
                     it.receiver,
                     it.receiverWalletType,
                     it.createDate,
-                    it.category,
+                    it.categoryName,
                     it.status,
                     it.uuid,
                     it.id

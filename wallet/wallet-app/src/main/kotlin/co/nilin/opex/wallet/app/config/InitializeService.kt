@@ -3,6 +3,8 @@ package co.nilin.opex.wallet.app.config
 import co.nilin.opex.utility.preferences.Currency
 import co.nilin.opex.utility.preferences.Preferences
 import co.nilin.opex.utility.preferences.UserLimit
+import co.nilin.opex.wallet.core.model.WalletLimitAction
+import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletLimitsRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletOwnerRepository
@@ -52,9 +54,9 @@ class InitializeService(
                             null,
                             it.level,
                             it.owner,
-                            it.action,
+                            WalletLimitAction.valueOf(it.action),
                             null,
-                            it.walletType,
+                            WalletType.valueOf(it.walletType),
                             null,
                             it.dailyTotal,
                             it.dailyCount,
@@ -86,11 +88,10 @@ class InitializeService(
 
         val items = p.currencies.flatMap { currency ->
             listOf(
-                WalletModel(null, 1, "main", currency.symbol, currency.mainBalance),
-                WalletModel(null, 1, "exchange", currency.symbol, BigDecimal.ZERO),
-                WalletModel(null, adminWallet?.id!!, "main", currency.symbol, currency.mainBalance),
-                WalletModel(null, adminWallet.id!!, "exchange", currency.symbol, BigDecimal.ZERO)
-
+                WalletModel(null, 1, WalletType.MAIN, currency.symbol, currency.mainBalance),
+                WalletModel(null, 1, WalletType.EXCHANGE, currency.symbol, BigDecimal.ZERO),
+                WalletModel(null, adminWallet?.id!!, WalletType.MAIN, currency.symbol, currency.mainBalance),
+                WalletModel(null, adminWallet.id!!, WalletType.EXCHANGE, currency.symbol, BigDecimal.ZERO)
             )
         }
         runCatching { walletRepository.saveAll(items).collectList().awaitSingleOrNull() }

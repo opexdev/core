@@ -4,8 +4,8 @@ import java.math.BigDecimal
 
 data class TransactionWithDetailHistory(
     val id: Long,
-    val srcWallet: String,
-    val destWallet: String,
+    val srcWalletType: WalletType,
+    val destWalletType: WalletType,
     val senderUuid: String,
     val receiverUuid: String,
     val currency: String,

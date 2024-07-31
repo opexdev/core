@@ -118,8 +118,8 @@ class TransactionManagerImpl(
             .map {
                 TransactionWithDetailHistory(
                     it.id,
-                    it.srcWallet,
-                    it.destWallet,
+                    it.srcWalletType,
+                    it.destWalletType,
                     it.senderUuid,
                     it.receiverUuid,
                     it.currency,

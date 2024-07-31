@@ -1,5 +1,7 @@
 package co.nilin.opex.wallet.ports.postgres.model
 
+import co.nilin.opex.wallet.core.model.WalletLimitAction
+import co.nilin.opex.wallet.core.model.WalletType
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
@@ -10,9 +12,9 @@ data class WalletLimitsModel(
     @Id var id: Long?,
     val level: String?,
     val owner: Long?,
-    val action: String?, //withdraw or deposit
+    val action: WalletLimitAction?, //withdraw or deposit
     val currency: String?,
-    val walletType: String,
+    val walletType: WalletType,
     val walletId: Long?,
     val dailyTotal: BigDecimal?,
     val dailyCount: Int?,

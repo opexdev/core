@@ -1,11 +1,10 @@
 package co.nilin.opex.accountant.ports.walletproxy.proxy
 
-import co.nilin.opex.accountant.core.inout.TransferRequest
+import co.nilin.opex.accountant.core.model.WalletType
 import co.nilin.opex.accountant.core.spi.WalletProxy
 import co.nilin.opex.accountant.ports.walletproxy.data.BooleanResponse
 import co.nilin.opex.accountant.ports.walletproxy.data.TransferResult
 import kotlinx.coroutines.reactive.awaitFirst
-import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
@@ -28,9 +27,9 @@ class WalletProxyImpl(
 
     override suspend fun transfer(
         symbol: String,
-        senderWalletType: String,
+        senderWalletType: WalletType,
         senderUuid: String,
-        receiverWalletType: String,
+        receiverWalletType: WalletType,
         receiverUuid: String,
         amount: BigDecimal,
         description: String?,
@@ -48,7 +47,7 @@ class WalletProxyImpl(
             .awaitFirst()
     }
 
-    override suspend fun canFulfil(symbol: String, walletType: String, uuid: String, amount: BigDecimal): Boolean {
+    override suspend fun canFulfil(symbol: String, walletType: WalletType, uuid: String, amount: BigDecimal): Boolean {
         return webClient.get()
             .uri("$walletBaseUrl/inquiry/$uuid/wallet_type/$walletType/can_withdraw/${amount}_$symbol")
             .header("Content-Type", "application/json")

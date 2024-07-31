@@ -5,6 +5,7 @@ import co.nilin.opex.wallet.app.dto.TransactionRequest
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.TransactionWithDetailHistory
+import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.spi.CurrencyService
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
@@ -21,10 +22,10 @@ import java.util.*
 
 @AutoConfigureWebTestClient
 class TransferControllerIT : KafkaEnabledTest() {
+    
     @Autowired
     private lateinit var webClient: WebTestClient
-
-
+    
     @Autowired
     private lateinit var currencyService: CurrencyService
 
@@ -43,7 +44,6 @@ class TransferControllerIT : KafkaEnabledTest() {
         }
     }
 
-
     @Test
     fun givenCategory_whenTransfer_thenCategoryMatches() {
         runBlocking {
@@ -51,7 +51,7 @@ class TransferControllerIT : KafkaEnabledTest() {
             val sender = walletOwnerManager.createWalletOwner(UUID.randomUUID().toString(), "sender", "")
             val receiver = sender.uuid
             val srcCurrency = currencyService.getCurrency("ETH")!!
-            walletManager.createWallet(sender, Amount(srcCurrency, BigDecimal.valueOf(100)), srcCurrency, "main")
+            walletManager.createWallet(sender, Amount(srcCurrency, BigDecimal.valueOf(100)), srcCurrency, WalletType.MAIN)
 
             val transfer = webClient.post().uri("/v2/transfer/1_ETH/from/${sender.uuid}_main/to/${receiver}_exchange").accept(MediaType.APPLICATION_JSON)
                 .bodyValue(TransferController.TransferBody("desc", "ref", "NORMAL"))
@@ -62,7 +62,7 @@ class TransferControllerIT : KafkaEnabledTest() {
             Assertions.assertEquals(BigDecimal.ONE, transfer.amount.amount)
             Assertions.assertEquals("ETH", transfer.amount.currency.symbol)
             val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(
-                walletOwnerManager.findWalletOwner(receiver)!!, "exchange", srcCurrency
+                walletOwnerManager.findWalletOwner(receiver)!!, WalletType.MAIN, srcCurrency
             )
             Assertions.assertEquals(BigDecimal.ONE, receiverWallet!!.balance.amount)
             val txList = webClient.post().uri("/transaction/$receiver").accept(MediaType.APPLICATION_JSON)
@@ -75,8 +75,8 @@ class TransferControllerIT : KafkaEnabledTest() {
             with(txList[0]) {
                 Assertions.assertEquals("NORMAL", this.category)
                 Assertions.assertEquals("ETH", this.currency)
-                Assertions.assertEquals("main", this.srcWallet)
-                Assertions.assertEquals("exchange", this.destWallet)
+                Assertions.assertEquals(WalletType.MAIN, this.srcWalletType)
+                Assertions.assertEquals(WalletType.EXCHANGE, this.destWalletType)
                 Assertions.assertEquals(sender.uuid, this.senderUuid)
                 Assertions.assertEquals(receiverUuid, this.receiverUuid)
             }

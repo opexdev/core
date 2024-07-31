@@ -5,6 +5,7 @@ import co.nilin.opex.accountant.core.api.FinancialActionJobManager
 import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.FinancialActionCategory
 import co.nilin.opex.accountant.core.model.FinancialActionStatus
+import co.nilin.opex.accountant.core.model.WalletType
 import co.nilin.opex.accountant.core.spi.FinancialActionLoader
 import co.nilin.opex.accountant.core.spi.FinancialActionPersister
 import co.nilin.opex.accountant.core.spi.WalletProxy
@@ -48,9 +49,9 @@ class FinancialActionJobManagerIT : KafkaEnabledTest() {
             symbol,
             BigDecimal.TEN,
             uuid,
-            "main",
+            WalletType.MAIN,
             uuid,
-            "exchange",
+            WalletType.EXCHANGE,
             LocalDateTime.now(),
             FinancialActionCategory.ORDER_CREATE
         )
@@ -67,9 +68,9 @@ class FinancialActionJobManagerIT : KafkaEnabledTest() {
                 symbol,
                 BigDecimal.TEN,
                 uuid,
-                "exchange",
+                WalletType.EXCHANGE,
                 uuid,
-                "main",
+                WalletType.MAIN,
                 LocalDateTime.now(),
                 FinancialActionCategory.TRADE
             )
@@ -80,9 +81,9 @@ class FinancialActionJobManagerIT : KafkaEnabledTest() {
                 symbol,
                 BigDecimal.ONE,
                 uuid,
-                "main",
+                WalletType.MAIN,
                 uuid,
-                "exchange",
+                WalletType.EXCHANGE,
                 LocalDateTime.now(),
                 FinancialActionCategory.FEE
             )
@@ -112,9 +113,9 @@ class FinancialActionJobManagerIT : KafkaEnabledTest() {
             symbol,
             BigDecimal.TEN,
             uuid,
-            "main",
+            WalletType.MAIN,
             uuid,
-            "exchange",
+            WalletType.EXCHANGE,
             LocalDateTime.now(),
             FinancialActionCategory.ORDER_CREATE
         )
@@ -133,9 +134,9 @@ class FinancialActionJobManagerIT : KafkaEnabledTest() {
                 symbol,
                 BigDecimal.TEN,
                 uuid,
-                "exchange",
+                WalletType.EXCHANGE,
                 uuid,
-                "main",
+                WalletType.MAIN,
                 LocalDateTime.now(),
                 FinancialActionCategory.TRADE
             )
@@ -146,9 +147,9 @@ class FinancialActionJobManagerIT : KafkaEnabledTest() {
                 symbol,
                 BigDecimal.ONE,
                 uuid,
-                "main",
+                WalletType.MAIN,
                 uuid,
-                "exchange",
+                WalletType.EXCHANGE,
                 LocalDateTime.now(),
                 FinancialActionCategory.ORDER_CREATE
             )
@@ -175,9 +176,9 @@ class FinancialActionJobManagerIT : KafkaEnabledTest() {
             symbol,
             BigDecimal.TEN,
             uuid,
-            "main",
+            WalletType.MAIN,
             uuid,
-            "exchange",
+            WalletType.EXCHANGE,
             LocalDateTime.now(),
             FinancialActionCategory.ORDER_CREATE
         )
@@ -194,9 +195,9 @@ class FinancialActionJobManagerIT : KafkaEnabledTest() {
                 symbol,
                 BigDecimal.TEN,
                 uuid,
-                "exchange",
+                WalletType.EXCHANGE,
                 uuid,
-                "main",
+                WalletType.MAIN,
                 LocalDateTime.now(),
                 FinancialActionCategory.TRADE
             )
@@ -207,9 +208,9 @@ class FinancialActionJobManagerIT : KafkaEnabledTest() {
                 symbol,
                 BigDecimal.ONE,
                 uuid,
-                "main",
+                WalletType.MAIN,
                 uuid,
-                "exchange",
+                WalletType.EXCHANGE,
                 LocalDateTime.now(),
                 FinancialActionCategory.ORDER_CREATE
             )

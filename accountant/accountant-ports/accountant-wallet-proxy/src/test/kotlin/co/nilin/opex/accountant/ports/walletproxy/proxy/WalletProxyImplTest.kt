@@ -1,5 +1,6 @@
 package co.nilin.opex.accountant.ports.walletproxy.proxy
 
+import co.nilin.opex.accountant.core.model.WalletType
 import co.nilin.opex.accountant.ports.walletproxy.data.Amount
 import co.nilin.opex.accountant.ports.walletproxy.data.Currency
 import co.nilin.opex.accountant.ports.walletproxy.data.TransferResult
@@ -38,9 +39,9 @@ class WalletProxyImplTest {
     @Test
     fun givenAdditionalData_whenTransfer_ok() {
         val symbol = "ETHBTC"
-        val senderWalletType = "main"
+        val senderWalletType = WalletType.MAIN
         val senderUuid = "1"
-        val receiverWalletType = "exchange"
+        val receiverWalletType = WalletType.EXCHANGE
         val receiverUuid = "2"
         val amount = BigDecimal.ONE
         val description = "desc"
