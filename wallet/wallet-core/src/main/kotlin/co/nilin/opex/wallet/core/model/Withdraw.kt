@@ -20,7 +20,7 @@ data class Withdraw(
     var destNote: String?,
     var destTransactionRef: String?,
     val statusReason: String?,
-    val status: String,
+    val status: WithdrawStatus,
     val createDate: LocalDateTime = LocalDateTime.now(),
     val acceptDate: LocalDateTime? = null
 )

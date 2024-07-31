@@ -10,17 +10,17 @@ import java.util.*
 
 @Table("reserved_transfer")
 data class ReservedTransferModel(
-        @Id @Column("id") var id: Long?,
-        @Column("reserve_number") var reserveNumber: String,
-        @Column("source_symbol") var sourceSymbol: String,
-        @Column("dest_symbol") var destSymbol: String,
-        @Column("sender_wallet_type") var senderWalletType: String,
-        @Column("sender_uuid") var senderUuid: String,
-        @Column("receiver_wallet_type") var receiverWalletType: String,
-        @Column("receiver_uuid") var receiverUuid: String,
-        @Column("source_amount") var sourceAmount: BigDecimal,
-        @Column("reserved_dest_amount") var reservedDestAmount: BigDecimal,
-        @Column("reserve_date") var reserveDate: LocalDateTime? = LocalDateTime.now(),
-        @Column("exp_date") var expDate: LocalDateTime? = null,
-        var status: ReservedStatus?=null
+    @Id var id: Long?,
+    var reserveNumber: String,
+    var sourceSymbol: String,
+    var destSymbol: String,
+    var senderWalletType: String,
+    var senderUuid: String,
+    var receiverWalletType: String,
+    var receiverUuid: String,
+    var sourceAmount: BigDecimal,
+    var reservedDestAmount: BigDecimal,
+    var reserveDate: LocalDateTime? = LocalDateTime.now(),
+    var expDate: LocalDateTime? = null,
+    var status: ReservedStatus? = null
 )

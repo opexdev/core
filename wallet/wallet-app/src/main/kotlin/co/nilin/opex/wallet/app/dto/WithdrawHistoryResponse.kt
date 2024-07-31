@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.app.dto
 
+import co.nilin.opex.wallet.core.model.WithdrawStatus
 import java.math.BigDecimal
 
 data class WithdrawHistoryResponse(
@@ -16,7 +17,7 @@ data class WithdrawHistoryResponse(
     var destNote: String?,
     var destTransactionRef: String?,
     val statusReason: String?,
-    val status: String,
+    val status: WithdrawStatus,
     val createDate: Long,
     val acceptDate: Long?
 )

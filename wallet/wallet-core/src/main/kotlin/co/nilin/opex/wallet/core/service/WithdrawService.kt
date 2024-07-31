@@ -3,6 +3,7 @@ package co.nilin.opex.wallet.core.service
 import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.Withdraw
+import co.nilin.opex.wallet.core.model.WithdrawStatus
 import co.nilin.opex.wallet.core.spi.*
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -66,7 +67,7 @@ class WithdrawService(
                 withdrawCommand.destNote,
                 null,
                 null,
-                "CREATED"
+                WithdrawStatus.CREATED
             )
         )
         return WithdrawResult(withdraw.withdrawId!!, withdraw.status)
@@ -77,7 +78,7 @@ class WithdrawService(
         val system = walletOwnerManager.findWalletOwner(systemUuid) ?: throw IllegalArgumentException()
         val withdraw = withdrawPersister.findById(acceptCommand.withdrawId)
             ?: throw RuntimeException("No matching withdraw request")
-        if (withdraw.status != "CREATED") {
+        if (withdraw.status != WithdrawStatus.CREATED) {
             throw RuntimeException("This withdraw request processed before")
         }
         if (withdraw.acceptedFee < acceptCommand.appliedFee) {
@@ -121,7 +122,7 @@ class WithdrawService(
                 withdraw.destNote ?: ("" + "-----------" + (acceptCommand.destNote ?: "")),
                 acceptCommand.destTransactionRef!!,
                 null,
-                "DONE",
+                WithdrawStatus.DONE,
                 withdraw.createDate,
                 LocalDateTime.now()
             )
@@ -135,7 +136,7 @@ class WithdrawService(
     suspend fun rejectWithdraw(rejectCommand: WithdrawRejectCommand): WithdrawResult {
         val withdraw = withdrawPersister.findById(rejectCommand.withdrawId)
             ?: throw RuntimeException("No matching withdraw request")
-        if (withdraw.status != "CREATED") {
+        if (withdraw.status != WithdrawStatus.CREATED) {
             throw RuntimeException("This withdraw request processed before")
         }
         val sourceWallet = walletManager.findWalletById(withdraw.wallet) ?: throw RuntimeException("Wallet not found")
@@ -175,7 +176,7 @@ class WithdrawService(
                 withdraw.destNote ?: ("" + "-----------" + (rejectCommand.destNote ?: "")),
                 null,
                 rejectCommand.statusReason,
-                "REJECTED",
+                WithdrawStatus.REJECTED,
                 withdraw.createDate,
                 null
             )
@@ -190,7 +191,7 @@ class WithdrawService(
         destTxRef: String?,
         destAddress: String?,
         noStatus: Boolean,
-        status: List<String>?,
+        status: List<WithdrawStatus>?,
         offset: Int,
         size: Int
     ): PagingWithdrawResponse {
@@ -217,7 +218,7 @@ class WithdrawService(
         destTxRef: String? = null,
         destAddress: String? = null,
         noStatus: Boolean = true,
-        status: List<String>? = null,
+        status: List<WithdrawStatus>? = null,
     ): List<WithdrawResponse> {
         return withdrawPersister.findByCriteria(
             ownerUuid,
