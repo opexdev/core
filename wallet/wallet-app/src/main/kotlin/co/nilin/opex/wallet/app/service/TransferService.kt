@@ -13,6 +13,7 @@ import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.FetchCurrency
+import co.nilin.opex.wallet.core.model.Withdraw
 import co.nilin.opex.wallet.core.model.otc.Rate
 import co.nilin.opex.wallet.core.model.otc.ReservedTransfer
 import co.nilin.opex.wallet.core.spi.*
@@ -33,7 +34,8 @@ class TransferService(
         private val walletOwnerManager: WalletOwnerManager,
         private val currencyGraph: co.nilin.opex.wallet.app.service.otc.GraphService,
         private val reservedTransferManager: ReservedTransferManager,
-        private val depositPersister: DepositPersister
+        private val depositPersister: DepositPersister,
+        private val withdrawPersister: WithdrawPersister
 ) {
     @Autowired
     private lateinit var preferences: Preferences
@@ -314,7 +316,6 @@ class TransferService(
 //            throw OpexException(OpexError.Forbidden)
 
 
-
 //        if (walletOwnerManager.findWalletOwner(receiverUuid)?.level !in arrayListOf<String>(preferences.admin.walletLevel,preferences.system.walletLevel))
 //            throw OpexException(OpexError.Error)
 
@@ -347,6 +348,69 @@ class TransferService(
     }
 
 
+    @Transactional
+    suspend fun withdrawManually(
+            symbol: String,
+            receiverUuid: String,
+            sourceUuid: String,
+            amount: BigDecimal,
+            request: ManualTransferRequest
+    ): TransferResult {
+        logger.info("withdraw manually: $sourceUuid to $receiverUuid on $symbol at ${LocalDateTime.now()}")
+        val systemUuid = "1"
+        //todo customize error message
+        val sourceWallet = walletOwnerManager.findWalletOwner(sourceUuid)
+                ?: throw OpexException(OpexError.WalletOwnerNotFound)
+        walletOwnerManager.findWalletOwner(receiverUuid)?.let { it.level }
+                ?: walletOwnerManager.createWalletOwner(
+                        receiverUuid,
+                        "admin", "admin"
+                ).level
+
+
+        val tx = _transfer(
+                symbol,
+                "main",
+                sourceUuid,
+                "main",
+                receiverUuid,
+                amount,
+                request.description,
+                request.ref,
+                "DEPOSIT_MANUALLY",
+                null,
+                symbol,
+                amount
+
+        )
+
+        withdrawPersister.persist(Withdraw(null,
+                sourceUuid,
+                symbol,
+                sourceWallet.id!!,
+                amount,
+                //it should be replaced with tx.id
+                request.ref!!,
+                null,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                amount,
+                symbol,
+                receiverUuid,
+                "system",
+                request.description,
+                request.ref,
+                null,
+                "system",
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+                receiverUuid
+
+        ))
+        return tx;
+    }
+
+
     suspend fun _transfer(
             symbol: String,
             senderWalletType: String,
@@ -364,7 +428,8 @@ class TransferService(
     ): TransferResult {
         if (senderWalletType == "cashout" || receiverWalletType == "cashout")
             throw OpexError.InvalidCashOutUsage.exception()
-        val sourceCurrency = currencyService.fetchCurrency(FetchCurrency(symbol=destSymbol))?: throw OpexError.CurrencyNotFound.exception()
+        val sourceCurrency = currencyService.fetchCurrency(FetchCurrency(symbol = destSymbol))
+                ?: throw OpexError.CurrencyNotFound.exception()
         val sourceOwner = walletOwnerManager.findWalletOwner(senderUuid)
                 ?: throw OpexError.WalletOwnerNotFound.exception()
         val sourceWallet =
@@ -376,7 +441,7 @@ class TransferService(
                 "not set",
                 "1"
         )
-        val receiverCurrency = currencyService.fetchCurrency(FetchCurrency(symbol=destSymbol))
+        val receiverCurrency = currencyService.fetchCurrency(FetchCurrency(symbol = destSymbol))
                 ?: throw OpexError.CurrencyNotFound.exception()
         val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(
                 receiverOwner, receiverWalletType, receiverCurrency
