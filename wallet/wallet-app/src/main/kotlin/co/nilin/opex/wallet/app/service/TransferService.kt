@@ -13,6 +13,7 @@ import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.FetchCurrency
+import co.nilin.opex.wallet.core.model.Wallet
 import co.nilin.opex.wallet.core.model.Withdraw
 import co.nilin.opex.wallet.core.model.otc.Rate
 import co.nilin.opex.wallet.core.model.otc.ReservedTransfer
@@ -359,7 +360,7 @@ class TransferService(
         logger.info("withdraw manually: $sourceUuid to $receiverUuid on $symbol at ${LocalDateTime.now()}")
         val systemUuid = "1"
         //todo customize error message
-        val sourceWallet = walletOwnerManager.findWalletOwner(sourceUuid)
+        val sourceWalletOwner = walletOwnerManager.findWalletOwner(sourceUuid)
                 ?: throw OpexException(OpexError.WalletOwnerNotFound)
         walletOwnerManager.findWalletOwner(receiverUuid)?.let { it.level }
                 ?: walletOwnerManager.createWalletOwner(
@@ -377,7 +378,7 @@ class TransferService(
                 amount,
                 request.description,
                 request.ref,
-                "DEPOSIT_MANUALLY",
+                "WITHDRAW_MANUALLY",
                 null,
                 symbol,
                 amount
@@ -387,7 +388,7 @@ class TransferService(
         withdrawPersister.persist(Withdraw(null,
                 sourceUuid,
                 symbol,
-                sourceWallet.id!!,
+                tx.sourceWalletId!!,
                 amount,
                 //it should be replaced with tx.id
                 request.ref!!,

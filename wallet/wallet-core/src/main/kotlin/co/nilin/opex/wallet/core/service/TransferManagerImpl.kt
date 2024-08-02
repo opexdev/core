@@ -19,10 +19,10 @@ import java.util.*
 
 @Component
 class TransferManagerImpl(
-    private val walletManager: WalletManager,
-    private val walletListener: WalletListener,
-    private val walletOwnerManager: WalletOwnerManager,
-    private val transactionManager: TransactionManager
+        private val walletManager: WalletManager,
+        private val walletListener: WalletListener,
+        private val walletOwnerManager: WalletOwnerManager,
+        private val transactionManager: TransactionManager
 ) : TransferManager {
     private val logger = LoggerFactory.getLogger(TransferManagerImpl::class.java)
 
@@ -59,43 +59,45 @@ class TransferManagerImpl(
         walletManager.decreaseBalance(srcWallet, transferCommand.amount.amount)
         walletManager.increaseBalance(destWallet, amountToTransfer)
         val tx = transactionManager.save(
-            Transaction(
-                srcWallet,
-                destWallet,
-                transferCommand.amount.amount,
-                amountToTransfer,
-                transferCommand.description,
-                transferCommand.transferRef,
-                transferCommand.transferCategory,
-                transferCommand.additionalData,
-                LocalDateTime.now()
-            )
+                Transaction(
+                        srcWallet,
+                        destWallet,
+                        transferCommand.amount.amount,
+                        amountToTransfer,
+                        transferCommand.description,
+                        transferCommand.transferRef,
+                        transferCommand.transferCategory,
+                        transferCommand.additionalData,
+                        LocalDateTime.now()
+                )
         )
         //get the result and add to return result type
         walletListener.onDeposit(
-            destWallet,
-            srcWallet,
-            transferCommand.amount,
-            amountToTransfer,
-            tx,
-            transferCommand.additionalData
+                destWallet,
+                srcWallet,
+                transferCommand.amount,
+                amountToTransfer,
+                tx,
+                transferCommand.additionalData
         )
         walletListener.onWithdraw(srcWallet, destWallet, transferCommand.amount, tx, transferCommand.additionalData)
         //post transfer hook(dispatch post transfer event)
 
         //notify balance change
         return TransferResultDetailed(
-            TransferResult(
-                Date().time,
-                srcWalletOwner.uuid,
-                srcWallet.type,
-                srcWalletBalance,
-                walletManager.findWalletById(srcWallet.id!!)!!.balance,
-                transferCommand.amount,
-                destWalletOwner.uuid,
-                destWallet.type,
-                Amount(destWallet.currency, amountToTransfer)
-            ), tx
+                TransferResult(
+                        Date().time,
+                        srcWalletOwner.uuid,
+                        srcWallet.type,
+                        srcWalletBalance,
+                        walletManager.findWalletById(srcWallet.id!!)!!.balance,
+                        transferCommand.amount,
+                        destWalletOwner.uuid,
+                        destWallet.type,
+                        Amount(destWallet.currency, amountToTransfer),
+                        srcWallet.id,
+                        destWallet.id
+                ), tx
         )
     }
 }
