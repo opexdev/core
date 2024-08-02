@@ -96,7 +96,7 @@ class AdminController(private val withdrawService: WithdrawService, private val 
         return withdrawService.acceptWithdraw(WithdrawAcceptCommand(withdrawId, destTransactionRef, destNote, fee, securityContext?.authentication?.name))
     }
 
-    @PostMapping("/manually/{amount}_{symbol}/{sourceUuid}")
+    @PostMapping("/withdraw/manually/{amount}_{symbol}/{sourceUuid}")
     @ApiResponse(
             message = "OK",
             code = 200,
