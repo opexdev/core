@@ -5,6 +5,7 @@ import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.app.dto.AdvanceReservedTransferData
 import co.nilin.opex.wallet.app.dto.ManualTransferRequest
 import co.nilin.opex.wallet.app.dto.ReservedTransferResponse
+import co.nilin.opex.wallet.app.service.otc.GraphService
 import co.nilin.opex.wallet.core.inout.Deposit
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
@@ -27,7 +28,7 @@ class TransferService(
     private val currencyService: CurrencyService,
     private val walletManager: WalletManager,
     private val walletOwnerManager: WalletOwnerManager,
-    private val currencyGraph: co.nilin.opex.wallet.app.service.otc.GraphService,
+    private val currencyGraph: GraphService,
     private val reservedTransferManager: ReservedTransferManager,
     private val depositPersister: DepositPersister
 ) {
@@ -46,7 +47,7 @@ class TransferService(
         amount: BigDecimal,
         description: String?,
         transferRef: String?,
-        transferCategory: TransferCategory = TransferCategory.NONE
+        transferCategory: TransferCategory = TransferCategory.NO_CATEGORY
     ): TransferResult {
         return _transfer(
             symbol,
@@ -341,7 +342,7 @@ class TransferService(
         amount: BigDecimal,
         description: String?,
         transferRef: String?,
-        transferCategory: TransferCategory = TransferCategory.NONE,
+        transferCategory: TransferCategory = TransferCategory.NO_CATEGORY,
         destSymbol: String = symbol,
         destAmount: BigDecimal = amount
     ): TransferResult {

@@ -2,7 +2,6 @@ package co.nilin.opex.wallet.ports.postgres.model
 
 import co.nilin.opex.wallet.core.model.TransferCategory
 import org.springframework.data.annotation.Id
-import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
 import java.time.LocalDateTime
@@ -16,6 +15,6 @@ data class TransactionModel(
     val destAmount: BigDecimal,
     val description: String?,
     val transferRef: String?,
-    val transferCategory: TransferCategory = TransferCategory.NONE,
-    val transactionDate: LocalDateTime
+    val transferCategory: TransferCategory = TransferCategory.NO_CATEGORY,
+    val transactionDate: LocalDateTime = LocalDateTime.now()
 )

@@ -16,10 +16,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 
 @Service
-class TransactionManagerImpl(
-    private val transactionRepository: TransactionRepository,
-    private val objectMapper: ObjectMapper
-) : TransactionManager {
+class TransactionManagerImpl(private val transactionRepository: TransactionRepository) : TransactionManager {
 
     private val logger = LoggerFactory.getLogger(TransactionManagerImpl::class.java)
 
@@ -33,8 +30,7 @@ class TransactionManagerImpl(
                 transaction.destAmount,
                 transaction.description,
                 transaction.transferRef,
-                transaction.transferCategory,
-                LocalDateTime.now()
+                transaction.transferCategory
             )
         ).awaitSingle().id.toString()
     }

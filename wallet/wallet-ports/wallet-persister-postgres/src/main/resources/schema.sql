@@ -84,18 +84,18 @@ CREATE TABLE IF NOT EXISTS transaction
     dest_amount       DECIMAL     NOT NULL,
     description       TEXT,
     transfer_ref      TEXT NOT NULL UNIQUE,
-    transfer_category VARCHAR(36) NOT NULL DEFAULT 'NONE',
+    transfer_category VARCHAR(36) NOT NULL DEFAULT 'NO_CATEGORY',
     transaction_date  TIMESTAMP   NOT NULL DEFAULT CURRENT_DATE
 );
 
 ALTER TABLE transaction
     DROP COLUMN transfer_detail_json;
 ALTER TABLE transaction
-    ADD COLUMN IF NOT EXISTS transfer_category VARCHAR(36) NOT NULL DEFAULT 'NONE';
+    ADD COLUMN IF NOT EXISTS transfer_category VARCHAR(36) NOT NULL DEFAULT 'NO_CATEGORY';
 ALTER TABLE transaction
     ALTER COLUMN transfer_category SET NOT NULL;
 ALTER TABLE transaction
-    ALTER COLUMN transfer_category SET DEFAULT 'NONE';
+    ALTER COLUMN transfer_category SET DEFAULT 'NO_CATEGORY';
 ALTER TABLE transaction
     ALTER COLUMN transfer_ref SET NOT NULL;
 

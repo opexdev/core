@@ -2,7 +2,7 @@ package co.nilin.opex.wallet.core.model
 
 enum class TransferCategory {
 
-    NONE,
+    NO_CATEGORY,
     DEPOSIT,
     DEPOSIT_MANUALLY,
     WITHDRAW_REQUEST,
