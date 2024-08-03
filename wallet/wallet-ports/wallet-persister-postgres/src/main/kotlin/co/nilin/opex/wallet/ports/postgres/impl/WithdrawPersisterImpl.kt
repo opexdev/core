@@ -88,7 +88,7 @@ class WithdrawPersisterImpl(
                         noStatus,
                         status
                 )
-                .map { it.asWithdrawResponse() }
+                ?.map { it.asWithdrawResponse() }
                 .toList()
     }
 
@@ -145,7 +145,7 @@ class WithdrawPersisterImpl(
 
 
     private suspend fun WithdrawModel.asWithdrawResponse(): WithdrawResponse {
-        val reqTx = transactionRepository.findById(requestTransaction.toLong()).awaitFirst()
+        val reqTx = transactionRepository.findById(requestTransaction.toLong()).awaitFirstOrNull()
         val finalTx = if (finalizedTransaction == null)
             null
         else
@@ -153,9 +153,9 @@ class WithdrawPersisterImpl(
         return WithdrawResponse(
                 id!!,
                 ownerUuid,
-                Date.from(reqTx.txDate.atZone(ZoneId.systemDefault()).toInstant()),
+                Date.from(reqTx?.txDate?.atZone(ZoneId.systemDefault())?.toInstant())?:Date.from(createDate.atZone(ZoneId.systemDefault())?.toInstant()),
                 if (finalTx == null) null else Date.from(finalTx.txDate.atZone(ZoneId.systemDefault()).toInstant()),
-                reqTx.id.toString(),
+                reqTx?.id?.toString()?:"",
                 finalTx?.id.toString(),
                 acceptedFee,
                 appliedFee,

@@ -51,7 +51,6 @@ class OmniWalletProxy(private val webClient: WebClient) {
     }
 
     suspend fun getTokenBalance(tokenAddress: String, network: String): List<AddressBalanceWithUsd>? {
-        logger.info("----+++++++++----")
 //        return listOf( AddressBalanceWithUsd("", BigDecimal.TEN, BigDecimal.TEN))
         return webClient.get()
                 .uri("${baseUrl}/v1/balance/token/address/${tokenAddress}")
