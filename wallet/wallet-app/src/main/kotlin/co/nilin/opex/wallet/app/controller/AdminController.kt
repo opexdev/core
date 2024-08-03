@@ -1,5 +1,7 @@
 package co.nilin.opex.wallet.app.controller
 
+import co.nilin.opex.wallet.app.dto.ManualTransferRequest
+import co.nilin.opex.wallet.app.service.TransferService
 import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.service.WithdrawService
 import co.nilin.opex.wallet.core.spi.WalletDataManager
@@ -13,7 +15,7 @@ import java.math.BigDecimal
 
 @RestController
 @RequestMapping("/admin")
-class AdminController(private val withdrawService: WithdrawService, private val walletDataManager: WalletDataManager) {
+class AdminController(private val withdrawService: WithdrawService, private val walletDataManager: WalletDataManager, private val transferService: TransferService) {
 
     @GetMapping("/withdraw")
     @ApiResponse(
@@ -93,5 +95,30 @@ class AdminController(private val withdrawService: WithdrawService, private val 
 
         return withdrawService.acceptWithdraw(WithdrawAcceptCommand(withdrawId, destTransactionRef, destNote, fee, securityContext?.authentication?.name))
     }
+
+    @PostMapping("/withdraw/manually/{amount}_{symbol}/{sourceUuid}")
+    @ApiResponse(
+            message = "OK",
+            code = 200,
+            examples = Example(
+                    ExampleProperty(
+                            value = "{ }",
+                            mediaType = "application/json"
+                    )
+            )
+    )
+    suspend fun depositManually(
+            @PathVariable("symbol") symbol: String,
+            @PathVariable("sourceUuid") sourceUuid: String,
+            @PathVariable("amount") amount: BigDecimal,
+            @RequestBody request: ManualTransferRequest,
+            @CurrentSecurityContext securityContext: SecurityContext
+    ): TransferResult {
+        return transferService.withdrawManually(
+                symbol, securityContext.authentication.name, sourceUuid,
+                amount, request
+        )
+    }
+
 
 }
