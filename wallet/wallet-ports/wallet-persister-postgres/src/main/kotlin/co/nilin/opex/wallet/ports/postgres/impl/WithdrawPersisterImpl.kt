@@ -153,9 +153,10 @@ class WithdrawPersisterImpl(
         return WithdrawResponse(
                 id!!,
                 ownerUuid,
-                Date.from(reqTx?.txDate?.atZone(ZoneId.systemDefault())?.toInstant())?:Date.from(createDate.atZone(ZoneId.systemDefault())?.toInstant()),
+                reqTx?.txDate?.let { Date.from(reqTx.txDate.atZone(ZoneId.systemDefault())?.toInstant()) }
+                        ?: Date.from(createDate.atZone(ZoneId.systemDefault())?.toInstant()),
                 if (finalTx == null) null else Date.from(finalTx.txDate.atZone(ZoneId.systemDefault()).toInstant()),
-                reqTx?.id?.toString()?:"",
+                reqTx?.id?.toString() ?: "",
                 finalTx?.id.toString(),
                 acceptedFee,
                 appliedFee,
