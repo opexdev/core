@@ -157,6 +157,10 @@ class TransferService(
                 .map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }
                 .firstOrNull() ?: throw OpexError.NOT_EXCHANGEABLE_CURRENCIES.exception()
         val finalAmount = sourceAmount.multiply(rate.rate)
+
+        if (sourceAmount == BigDecimal.ZERO || finalAmount == BigDecimal.ZERO)
+            throw OpexError.InvalidAmount.exception()
+
         checkIfSystemHasEnoughBalance(destSymbol, receiverWalletType, finalAmount)
         val reserveNumber = UUID.randomUUID().toString()
         val resp = reservedTransferManager.reserve(
