@@ -25,6 +25,8 @@ class FinancialAction(
     val id: Long? = null
 ) {
 
+    fun isProcessed() = status == FinancialActionStatus.PROCESSED
+
     override fun equals(other: Any?): Boolean {
         if (other == null || other !is FinancialAction) return false
         return if (id != null && other.id != null)
