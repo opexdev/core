@@ -31,22 +31,38 @@ class WithdrawPersisterImpl(
             noStatus: Boolean,
             status: List<String>?,
             offset: Int,
-            size: Int
+            size: Int, ascendingByTime: Boolean
     ): List<WithdrawResponse> {
-        return withdrawRepository
-                .findByCriteria(
-                        ownerUuid,
-                        withdrawId?.toLong(),
-                        currency,
-                        destTxRef,
-                        destAddress,
-                        noStatus,
-                        status,
-                        offset,
-                        size
-                )
-                .map { it.asWithdrawResponse() }
-                .toList()
+        if (ascendingByTime)
+            return withdrawRepository
+                    .findByCriteriaAsc(
+                            ownerUuid,
+                            withdrawId?.toLong(),
+                            currency,
+                            destTxRef,
+                            destAddress,
+                            noStatus,
+                            status,
+                            offset,
+                            size
+                    )
+                    .map { it.asWithdrawResponse() }
+                    .toList()
+        else
+            return withdrawRepository
+                    .findByCriteriaDesc(
+                            ownerUuid,
+                            withdrawId?.toLong(),
+                            currency,
+                            destTxRef,
+                            destAddress,
+                            noStatus,
+                            status,
+                            offset,
+                            size
+                    )
+                    .map { it.asWithdrawResponse() }
+                    .toList()
     }
 
     override suspend fun countByCriteria(

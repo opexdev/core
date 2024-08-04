@@ -21,7 +21,6 @@ class OmniBalanceService(private val cryptoCurrencyHandlerV2: CryptoCurrencyHand
     suspend fun fetchSystemBalance(currency: String): OmniBalanceForCurrency {
         val currencyImpls = cryptoCurrencyHandlerV2.fetchCurrencyImpls(FetchImpls(currencySymbol = currency))?.imps
                 ?: throw OpexError.CurrencyNotFound.exception()
-        logger.info("==========777777777777777============")
         val totalBalance: BigDecimal = currencyImpls?.map {
             when (it.isToken) {
                 true -> it.tokenAddress?.let { ta -> omniWalletManager.getTokenBalance(it).balance }
@@ -35,7 +34,6 @@ class OmniBalanceService(private val cryptoCurrencyHandlerV2: CryptoCurrencyHand
     }
 
     suspend fun fetchSystemBalance(): List<OmniBalanceForCurrency>? {
-        logger.info("==========666666666666============")
         val currencyImpls = cryptoCurrencyHandlerV2.fetchCurrencyImpls(FetchImpls())?.imps
                 ?: throw OpexError.CurrencyNotFound.exception()
         val implsGroupedByCurrency = currencyImpls.groupBy { it.currencySymbol }

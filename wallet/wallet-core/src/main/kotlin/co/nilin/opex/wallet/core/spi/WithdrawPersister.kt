@@ -7,35 +7,36 @@ import java.time.LocalDateTime
 interface WithdrawPersister {
 
     suspend fun findByCriteria(
-        ownerUuid: String?,
-        withdrawId: String?,
-        currency: String?,
-        destTxRef: String?,
-        destAddress: String?,
-        noStatus: Boolean,
-        status: List<String>?
+            ownerUuid: String?,
+            withdrawId: String?,
+            currency: String?,
+            destTxRef: String?,
+            destAddress: String?,
+            noStatus: Boolean,
+            status: List<String>?
     ): List<WithdrawResponse>
 
     suspend fun countByCriteria(
-        ownerUuid: String?,
-        withdrawId: String?,
-        currency: String?,
-        destTxRef: String?,
-        destAddress: String?,
-        noStatus: Boolean,
-        status: List<String>?
+            ownerUuid: String?,
+            withdrawId: String?,
+            currency: String?,
+            destTxRef: String?,
+            destAddress: String?,
+            noStatus: Boolean,
+            status: List<String>?
     ): Long
 
     suspend fun findByCriteria(
-        ownerUuid: String?,
-        withdrawId: String?,
-        currency: String?,
-        destTxRef: String?,
-        destAddress: String?,
-        noStatus: Boolean,
-        status: List<String>?,
-        offset: Int,
-        size: Int
+            ownerUuid: String?,
+            withdrawId: String?,
+            currency: String?,
+            destTxRef: String?,
+            destAddress: String?,
+            noStatus: Boolean,
+            status: List<String>?,
+            offset: Int,
+            size: Int,
+            ascendingByTime: Boolean
     ): List<WithdrawResponse>
 
     suspend fun persist(withdraw: Withdraw): Withdraw
@@ -43,13 +44,13 @@ interface WithdrawPersister {
     suspend fun findById(withdrawId: String): Withdraw?
 
     suspend fun findWithdrawHistory(
-        uuid: String,
-        coin: String?,
-        startTime: LocalDateTime?,
-        endTime: LocalDateTime?,
-        limit: Int,
-        offset: Int,
-        ascendingByTime: Boolean?
+            uuid: String,
+            coin: String?,
+            startTime: LocalDateTime?,
+            endTime: LocalDateTime?,
+            limit: Int,
+            offset: Int,
+            ascendingByTime: Boolean?
     ): List<Withdraw>
 
 

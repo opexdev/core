@@ -398,11 +398,11 @@ class TransferService(
                 amount,
                 symbol,
                 receiverUuid,
-                "system",
+                null,
                 request.description,
                 request.ref,
                 null,
-                "system",
+                "SYSTEM",
                 LocalDateTime.now(),
                 LocalDateTime.now(),
                 receiverUuid

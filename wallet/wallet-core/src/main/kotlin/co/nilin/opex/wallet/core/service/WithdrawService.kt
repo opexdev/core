@@ -1,5 +1,7 @@
 package co.nilin.opex.wallet.core.service
 
+import co.nilin.opex.common.OpexError
+import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.FetchCurrency
@@ -29,11 +31,12 @@ class WithdrawService(
     suspend fun requestWithdraw(withdrawCommand: WithdrawCommand): WithdrawResult {
 
         val currency = currencyService.fetchCurrency(FetchCurrency(symbol = withdrawCommand.currency))
-                ?: throw IllegalArgumentException()
-        val owner = walletOwnerManager.findWalletOwner(withdrawCommand.uuid) ?: throw IllegalArgumentException()
+                ?: throw OpexError.CurrencyNotFound.exception()
+        val owner = walletOwnerManager.findWalletOwner(withdrawCommand.uuid)
+                ?: throw OpexError.WalletOwnerNotFound.exception()
         val sourceWallet =
                 walletManager.findWalletByOwnerAndCurrencyAndType(owner, "main", currency)
-                        ?: throw IllegalArgumentException()
+                        ?: throw OpexError.WalletNotFound.exception()
         val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(
                 owner, "cashout", currency
         ) ?: walletManager.createWallet(
@@ -79,7 +82,7 @@ class WithdrawService(
 
     @Transactional
     suspend fun acceptWithdraw(acceptCommand: WithdrawAcceptCommand): WithdrawResult {
-        val system = walletOwnerManager.findWalletOwner(systemUuid) ?: throw IllegalArgumentException()
+        val system = walletOwnerManager.findWalletOwner(systemUuid) ?: throw OpexError.WalletOwnerNotFound.exception()
         val withdraw = withdrawPersister.findById(acceptCommand.withdrawId)
                 ?: throw RuntimeException("No matching withdraw request")
         if (withdraw.status != "CREATED") {
@@ -88,7 +91,7 @@ class WithdrawService(
         if (withdraw.acceptedFee < acceptCommand.appliedFee) {
             throw RuntimeException("Applied Fee ${acceptCommand.appliedFee} is bigger than accepted Fee ${withdraw.acceptedFee}")
         }
-        val sourceWallet = walletManager.findWalletById(withdraw.wallet) ?: throw RuntimeException("Wallet not found")
+        val sourceWallet = walletManager.findWalletById(withdraw.wallet) ?: throw OpexError.WalletNotFound.exception()
         val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(
                 system, "main", sourceWallet.currency
         ) ?: walletManager.createWallet(
@@ -121,7 +124,7 @@ class WithdrawService(
                         withdraw.destSymbol,
                         withdraw.destAddress,
                         withdraw.destNetwork,
-                        withdraw.destNote ?: ("" + "-----------" + (acceptCommand.destNote ?: "")),
+                        withdraw.destNote ?: acceptCommand.destNote ?: "",
                         acceptCommand.destTransactionRef!!,
                         null,
                         "DONE",
@@ -138,11 +141,11 @@ class WithdrawService(
     @Transactional
     suspend fun rejectWithdraw(rejectCommand: WithdrawRejectCommand): WithdrawResult {
         val withdraw = withdrawPersister.findById(rejectCommand.withdrawId)
-                ?: throw RuntimeException("No matching withdraw request")
+                ?: throw OpexError.WithdrawNotFound.exception()
         if (withdraw.status != "CREATED") {
-            throw RuntimeException("This withdraw request processed before")
+            throw OpexError.InvalidWithdrawStatus.exception()
         }
-        val sourceWallet = walletManager.findWalletById(withdraw.wallet) ?: throw RuntimeException("Wallet not found")
+        val sourceWallet = walletManager.findWalletById(withdraw.wallet) ?: throw OpexError.WalletNotFound.exception()
         val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(
                 sourceWallet.owner, "main", sourceWallet.currency
         ) ?: walletManager.createWallet(
@@ -195,7 +198,8 @@ class WithdrawService(
             noStatus: Boolean,
             status: List<String>?,
             offset: Int,
-            size: Int
+            size: Int,
+            ascendingByTime: Boolean
     ): PagingWithdrawResponse {
         val count =
                 withdrawPersister.countByCriteria(ownerUuid, withdrawId, currency, destTxRef, destAddress, noStatus, status)
@@ -208,7 +212,8 @@ class WithdrawService(
                 noStatus,
                 status,
                 offset,
-                size
+                size,
+                ascendingByTime
         )
         return PagingWithdrawResponse(count, list)
     }
@@ -240,8 +245,8 @@ class WithdrawService(
             endTime: LocalDateTime?,
             limit: Int,
             offset: Int,
-            ascendingByTime:Boolean?=false
+            ascendingByTime: Boolean? = false
     ): List<Withdraw> {
-        return withdrawPersister.findWithdrawHistory(uuid, coin, startTime, endTime, limit, offset,ascendingByTime)
+        return withdrawPersister.findWithdrawHistory(uuid, coin, startTime, endTime, limit, offset, ascendingByTime)
     }
 }

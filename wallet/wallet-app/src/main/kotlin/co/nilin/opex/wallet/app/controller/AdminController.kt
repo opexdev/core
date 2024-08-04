@@ -36,7 +36,8 @@ class AdminController(private val withdrawService: WithdrawService, private val 
             @RequestParam("dest_address", required = false) destAddress: String?,
             @RequestParam("status", required = false) status: List<String>?,
             @RequestParam offset: Int,
-            @RequestParam size: Int
+            @RequestParam size: Int,
+            @RequestParam("ascending_by_time", required = false) ascendingByTime: Boolean?
     ): PagingWithdrawResponse {
         return withdrawService
                 .findByCriteria(
@@ -48,7 +49,8 @@ class AdminController(private val withdrawService: WithdrawService, private val 
                         status?.isEmpty() ?: true,
                         status ?: listOf(""),
                         offset,
-                        size
+                        size,
+                        ascendingByTime?:true
                 )
     }
 
@@ -70,7 +72,7 @@ class AdminController(private val withdrawService: WithdrawService, private val 
             @CurrentSecurityContext securityContext: SecurityContext?
 
     ): WithdrawResult {
-        return withdrawService.rejectWithdraw(WithdrawRejectCommand(withdrawId, statusReason, destNote,securityContext?.authentication?.name))
+        return withdrawService.rejectWithdraw(WithdrawRejectCommand(withdrawId, statusReason, destNote, securityContext?.authentication?.name))
     }
 
     @PostMapping("/withdraw/{id}/accept")
