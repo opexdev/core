@@ -2,10 +2,7 @@ package co.nilin.opex.wallet.core.service
 
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.service.sample.VALID
-import co.nilin.opex.wallet.core.spi.TransactionManager
-import co.nilin.opex.wallet.core.spi.WalletListener
-import co.nilin.opex.wallet.core.spi.WalletManager
-import co.nilin.opex.wallet.core.spi.WalletOwnerManager
+import co.nilin.opex.wallet.core.spi.*
 import io.mockk.MockKException
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -19,8 +16,9 @@ private class TransferManagerImplTest {
     private val walletManager: WalletManager = mockk()
     private val walletListener: WalletListener = mockk()
     private val transactionManager: TransactionManager = mockk()
+    private val userTxManager: UserTransactionManager = mockk()
     private val transferManager: TransferManagerImpl =
-        TransferManagerImpl(walletManager, walletListener, walletOwnerManager, transactionManager)
+        TransferManagerImpl(walletManager, walletListener, walletOwnerManager, transactionManager, userTxManager)
 
     private fun stubWalletListener() {
         coEvery {

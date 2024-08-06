@@ -167,6 +167,12 @@ class WalletManagerImpl(
         )
     }
 
+    override suspend fun findWallet(ownerId: Long, currency: String, walletType: WalletType): BriefWallet? {
+        val wallet = walletRepository.findByOwnerAndTypeAndCurrency(ownerId, walletType, currency)
+            .awaitSingleOrNull() ?: return null
+        return BriefWallet(wallet.id, wallet.owner, wallet.balance, wallet.currency, wallet.type)
+    }
+
     override suspend fun findWalletsByOwnerAndType(owner: WalletOwner, walletType: WalletType): List<Wallet> {
         val ownerModel = walletOwnerRepository.findById(owner.id!!).awaitFirst()
         return walletRepository.findByOwnerAndType(owner.id!!, walletType)

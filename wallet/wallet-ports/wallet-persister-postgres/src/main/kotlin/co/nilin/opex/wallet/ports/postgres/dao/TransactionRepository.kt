@@ -177,7 +177,6 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
         limit: Int
     ): Flux<DepositWithdrawTransaction>
 
-    //TODO WTF is this
     @Query(
         """
         select distinct t.id, sw.wallet_type as src_wallet_type, dw.wallet_type as dest_wallet_type, swo.uuid as sender_uuid, dwo.uuid as receiver_uuid, sw.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date

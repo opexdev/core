@@ -17,8 +17,6 @@ CREATE TABLE IF NOT EXISTS currency
     sign              VARCHAR(25),
     description       TEXT,
     short_description TEXT
-
-
 );
 
 ALTER TABLE currency
@@ -83,13 +81,11 @@ CREATE TABLE IF NOT EXISTS transaction
     source_amount     DECIMAL     NOT NULL,
     dest_amount       DECIMAL     NOT NULL,
     description       TEXT,
-    transfer_ref      TEXT NOT NULL UNIQUE,
+    transfer_ref      TEXT        NOT NULL UNIQUE,
     transfer_category VARCHAR(36) NOT NULL DEFAULT 'NO_CATEGORY',
     transaction_date  TIMESTAMP   NOT NULL DEFAULT CURRENT_DATE
 );
 
-ALTER TABLE transaction
-    DROP COLUMN transfer_detail_json;
 ALTER TABLE transaction
     ADD COLUMN IF NOT EXISTS transfer_category VARCHAR(36) NOT NULL DEFAULT 'NO_CATEGORY';
 ALTER TABLE transaction
@@ -98,6 +94,20 @@ ALTER TABLE transaction
     ALTER COLUMN transfer_category SET DEFAULT 'NO_CATEGORY';
 ALTER TABLE transaction
     ALTER COLUMN transfer_ref SET NOT NULL;
+
+CREATE TABLE IF NOT EXISTS user_transaction
+(
+    id             SERIAL PRIMARY KEY,
+    uuid           VARCHAR(36)  NOT NULL,
+    owner_id       INTEGER      NOT NULL REFERENCES wallet_owner (id),
+    tx_id          INTEGER      NOT NULL REFERENCES transaction (id),
+    currency       VARCHAR(25)  NOT NULL REFERENCES currency (symbol),
+    balance_change DECIMAL      NOT NULL,
+    balance_before DECIMAL      NOT NULL,
+    category       VARCHAR(128) NOT NULL,
+    description    TEXT,
+    date           TIMESTAMP    NOT NULL DEFAULT CURRENT_DATE
+);
 
 CREATE TABLE IF NOT EXISTS wallet_limits
 (

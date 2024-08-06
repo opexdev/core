@@ -15,6 +15,8 @@ interface WalletManager {
 
     suspend fun findWalletByOwnerAndCurrencyAndType(owner: WalletOwner, walletType: WalletType, currency: Currency): Wallet?
 
+    suspend fun findWallet(ownerId: Long, currency: String, walletType: WalletType): BriefWallet?
+
     suspend fun findWalletsByOwnerAndType(owner: WalletOwner, walletType: WalletType): List<Wallet>
 
     suspend fun findWalletsByOwner(owner: WalletOwner): List<Wallet>
