@@ -20,6 +20,7 @@ class UserTransactionManagerImpl(private val repository: UserTransactionReposito
                 ownerId,
                 txId,
                 currency,
+                balance,
                 balanceChange,
                 balanceBefore,
                 category,
@@ -39,7 +40,7 @@ class UserTransactionManagerImpl(private val repository: UserTransactionReposito
         limit: Int,
         offset: Int
     ): List<UserTransactionHistory> {
-        val transactions=if(asc)
+        val transactions = if (asc)
             repository.findUserTransactionHistoryAsc(userId, currency, category, startTime, endTime, limit, offset)
         else
             repository.findUserTransactionHistoryDesc(userId, currency, category, startTime, endTime, limit, offset)

@@ -98,10 +98,11 @@ ALTER TABLE transaction
 CREATE TABLE IF NOT EXISTS user_transaction
 (
     id             SERIAL PRIMARY KEY,
-    uuid           VARCHAR(36)  NOT NULL,
+    uuid           VARCHAR(36)  NOT NULL UNIQUE,
     owner_id       INTEGER      NOT NULL REFERENCES wallet_owner (id),
     tx_id          INTEGER      NOT NULL REFERENCES transaction (id),
     currency       VARCHAR(25)  NOT NULL REFERENCES currency (symbol),
+    balance        DECIMAL      NOT NULL,
     balance_change DECIMAL      NOT NULL,
     balance_before DECIMAL      NOT NULL,
     category       VARCHAR(128) NOT NULL,

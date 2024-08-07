@@ -7,6 +7,7 @@ data class UserTransactionHistory(
     val id: String,
     val userId: String,
     val currency: String,
+    val balance: BigDecimal,
     val balanceChange: BigDecimal,
     val balanceBefore: BigDecimal,
     val category: UserTransactionCategory,

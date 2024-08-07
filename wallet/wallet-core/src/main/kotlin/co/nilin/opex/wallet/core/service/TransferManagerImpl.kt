@@ -97,22 +97,23 @@ class TransferManagerImpl(
 
     private suspend fun createUserTX(command: TransferCommand, txId: Long) {
         val currency = command.amount.currency.symbol
-        val amount = command.amount.amount.toDouble()
+        val amount = command.amount.amount
 
         when (command.transferCategory) {
             TransferCategory.TRADE -> {
                 val loserOwner = command.sourceWallet.owner.id
                 val loserMainWallet = walletManager.findWallet(loserOwner!!, currency, WalletType.MAIN) ?: return
-                val loserBalance = loserMainWallet.balance.toDouble()
+                val loserBalance = loserMainWallet.balance
 
                 val gainerOwner = command.destWallet.owner.id!!
                 val gainerMainWallet = command.destWallet
-                val gainerBalance = gainerMainWallet.balance.amount.toDouble()
+                val gainerBalance = gainerMainWallet.balance.amount
 
                 val loserTx = UserTransaction(
                     loserOwner,
                     txId,
                     currency,
+                    loserBalance,
                     -amount,
                     loserBalance + amount,
                     UserTransactionCategory.TRADE
@@ -123,6 +124,7 @@ class TransferManagerImpl(
                     gainerOwner,
                     txId,
                     currency,
+                    gainerBalance,
                     amount,
                     gainerBalance - amount,
                     UserTransactionCategory.TRADE,
@@ -135,23 +137,51 @@ class TransferManagerImpl(
                     command.sourceWallet.owner.id!!,
                     txId,
                     command.amount.currency.symbol,
+                    command.sourceWallet.balance.amount,
                     -amount,
-                    command.sourceWallet.balance.amount.toDouble() + amount,
+                    command.sourceWallet.balance.amount + amount,
                     UserTransactionCategory.FEE
                 )
                 userTransactionManager.save(tx)
             }
 
-            TransferCategory.DEPOSIT, TransferCategory.DEPOSIT_MANUALLY -> {
+            TransferCategory.DEPOSIT -> {
                 val tx = UserTransaction(
                     command.destWallet.owner.id!!,
                     txId,
                     currency,
+                    command.destWallet.balance.amount,
                     amount,
-                    command.destWallet.balance.amount.toDouble() - amount,
+                    command.destWallet.balance.amount - amount,
                     UserTransactionCategory.DEPOSIT
                 )
                 userTransactionManager.save(tx)
+            }
+
+            TransferCategory.DEPOSIT_MANUALLY -> {
+                // TX for user
+                val tx = UserTransaction(
+                    command.destWallet.owner.id!!,
+                    txId,
+                    currency,
+                    command.destWallet.balance.amount,
+                    amount,
+                    command.destWallet.balance.amount - amount,
+                    UserTransactionCategory.DEPOSIT
+                )
+                userTransactionManager.save(tx)
+
+                // TX for admin
+                val adminTx = UserTransaction(
+                    command.sourceWallet.owner.id!!,
+                    txId,
+                    currency,
+                    command.sourceWallet.balance.amount,
+                    -amount,
+                    command.sourceWallet.balance.amount + amount,
+                    UserTransactionCategory.DEPOSIT
+                )
+                userTransactionManager.save(adminTx)
             }
 
             TransferCategory.WITHDRAW_ACCEPT -> {
@@ -161,8 +191,9 @@ class TransferManagerImpl(
                     userOwnerId,
                     txId,
                     currency,
+                    userWallet.balance,
                     -amount,
-                    userWallet.balance.toDouble() + amount,
+                    userWallet.balance + amount,
                     UserTransactionCategory.WITHDRAW
                 )
                 userTransactionManager.save(tx)

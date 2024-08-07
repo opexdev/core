@@ -3,6 +3,7 @@ package co.nilin.opex.wallet.ports.postgres.model
 import co.nilin.opex.wallet.core.model.UserTransactionCategory
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
+import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -11,8 +12,9 @@ data class UserTransactionModel(
     val ownerId: Long,
     val txId: Long,
     val currency: String,
-    val balanceChange: Double,
-    val balanceBefore: Double,
+    val balance: BigDecimal,
+    val balanceChange: BigDecimal,
+    val balanceBefore: BigDecimal,
     val category: UserTransactionCategory,
     val description: String? = null,
     val uuid: String = UUID.randomUUID().toString(),

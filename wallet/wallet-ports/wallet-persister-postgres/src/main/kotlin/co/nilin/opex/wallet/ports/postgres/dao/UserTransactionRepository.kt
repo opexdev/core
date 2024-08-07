@@ -14,7 +14,7 @@ interface UserTransactionRepository : ReactiveCrudRepository<UserTransactionMode
 
     @Query(
         """
-        select ut.uuid as id, o.uuid as userId, currency, balance_change, balance_before, category, description, date 
+        select ut.uuid as id, o.uuid as user_id, currency, balance_change, balance_before, category, description, date 
         from user_transaction ut
         join wallet_owner o on o.id = ut.owner_id
         where o.uuid = :userId
@@ -39,7 +39,7 @@ interface UserTransactionRepository : ReactiveCrudRepository<UserTransactionMode
 
     @Query(
         """
-        select ut.uuid as id, o.uuid as userId, currency, balance_change, balance_before, category, description, date
+        select ut.uuid as id, o.uuid as user_id, currency, balance_change, balance_before, category, description, date
         from user_transaction ut
         join wallet_owner o on o.id = ut.owner_id
         where o.uuid = :userId
