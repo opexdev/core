@@ -8,7 +8,7 @@ import java.time.LocalDateTime
 
 interface TransactionManager {
 
-    suspend fun save(transaction: Transaction): String
+    suspend fun save(transaction: Transaction): Long
 
     suspend fun findDepositTransactions(
         uuid: String,

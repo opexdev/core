@@ -18,9 +18,7 @@ import java.time.ZoneId
 @Service
 class TransactionManagerImpl(private val transactionRepository: TransactionRepository) : TransactionManager {
 
-    private val logger = LoggerFactory.getLogger(TransactionManagerImpl::class.java)
-
-    override suspend fun save(transaction: Transaction): String {
+    override suspend fun save(transaction: Transaction): Long {
         return transactionRepository.save(
             TransactionModel(
                 null,
@@ -32,7 +30,7 @@ class TransactionManagerImpl(private val transactionRepository: TransactionRepos
                 transaction.transferRef,
                 transaction.transferCategory
             )
-        ).awaitSingle().id.toString()
+        ).awaitSingle().id!!
     }
 
     override suspend fun findDepositTransactions(

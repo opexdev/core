@@ -25,8 +25,6 @@ class TransferManagerImpl(
     private val userTransactionManager: UserTransactionManager,
 ) : TransferManager {
 
-    private val logger = LoggerFactory.getLogger(TransferManagerImpl::class.java)
-
     @Transactional
     override suspend fun transfer(transferCommand: TransferCommand): TransferResultDetailed {
         //pre transfer hook (dispatch pre transfer event)
@@ -72,11 +70,11 @@ class TransferManagerImpl(
             )
         )
         //TODO make tx long by default
-        createUserTX(transferCommand, tx.toLong())
+        createUserTX(transferCommand, tx)
 
         //get the result and add to return result type
-        walletListener.onDeposit(destWallet, srcWallet, transferCommand.amount, amountToTransfer, tx)
-        walletListener.onWithdraw(srcWallet, destWallet, transferCommand.amount, tx)
+        walletListener.onDeposit(destWallet, srcWallet, transferCommand.amount, amountToTransfer, tx.toString())
+        walletListener.onWithdraw(srcWallet, destWallet, transferCommand.amount, tx.toString())
         //post transfer hook(dispatch post transfer event)
 
         //notify balance change
@@ -91,7 +89,7 @@ class TransferManagerImpl(
                 destWalletOwner.uuid,
                 destWallet.type,
                 Amount(destWallet.currency, amountToTransfer)
-            ), tx
+            ), tx.toString()
         )
     }
 
@@ -115,7 +113,6 @@ class TransferManagerImpl(
                     currency,
                     loserBalance,
                     -amount,
-                    loserBalance + amount,
                     UserTransactionCategory.TRADE
                 )
                 userTransactionManager.save(loserTx)
@@ -124,9 +121,8 @@ class TransferManagerImpl(
                     gainerOwner,
                     txId,
                     currency,
-                    gainerBalance,
+                    gainerBalance + amount,
                     amount,
-                    gainerBalance - amount,
                     UserTransactionCategory.TRADE,
                 )
                 userTransactionManager.save(gainerTx)
@@ -137,9 +133,8 @@ class TransferManagerImpl(
                     command.sourceWallet.owner.id!!,
                     txId,
                     command.amount.currency.symbol,
-                    command.sourceWallet.balance.amount,
+                    command.sourceWallet.balance.amount - amount,
                     -amount,
-                    command.sourceWallet.balance.amount + amount,
                     UserTransactionCategory.FEE
                 )
                 userTransactionManager.save(tx)
@@ -150,9 +145,8 @@ class TransferManagerImpl(
                     command.destWallet.owner.id!!,
                     txId,
                     currency,
-                    command.destWallet.balance.amount,
+                    command.destWallet.balance.amount + amount,
                     amount,
-                    command.destWallet.balance.amount - amount,
                     UserTransactionCategory.DEPOSIT
                 )
                 userTransactionManager.save(tx)
@@ -164,10 +158,10 @@ class TransferManagerImpl(
                     command.destWallet.owner.id!!,
                     txId,
                     currency,
-                    command.destWallet.balance.amount,
+                    command.destWallet.balance.amount + amount,
                     amount,
-                    command.destWallet.balance.amount - amount,
-                    UserTransactionCategory.DEPOSIT
+                    UserTransactionCategory.DEPOSIT,
+                    command.description
                 )
                 userTransactionManager.save(tx)
 
@@ -176,10 +170,9 @@ class TransferManagerImpl(
                     command.sourceWallet.owner.id!!,
                     txId,
                     currency,
-                    command.sourceWallet.balance.amount,
+                    command.sourceWallet.balance.amount - amount,
                     -amount,
-                    command.sourceWallet.balance.amount + amount,
-                    UserTransactionCategory.DEPOSIT
+                    UserTransactionCategory.DEPOSIT_TO
                 )
                 userTransactionManager.save(adminTx)
             }
@@ -193,7 +186,6 @@ class TransferManagerImpl(
                     currency,
                     userWallet.balance,
                     -amount,
-                    userWallet.balance + amount,
                     UserTransactionCategory.WITHDRAW
                 )
                 userTransactionManager.save(tx)

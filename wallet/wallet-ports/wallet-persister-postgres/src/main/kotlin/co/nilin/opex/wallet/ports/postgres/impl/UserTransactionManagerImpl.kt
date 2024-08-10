@@ -22,7 +22,6 @@ class UserTransactionManagerImpl(private val repository: UserTransactionReposito
                 currency,
                 balance,
                 balanceChange,
-                balanceBefore,
                 category,
                 description
             )

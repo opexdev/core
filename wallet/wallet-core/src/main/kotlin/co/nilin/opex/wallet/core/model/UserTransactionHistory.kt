@@ -9,7 +9,6 @@ data class UserTransactionHistory(
     val currency: String,
     val balance: BigDecimal,
     val balanceChange: BigDecimal,
-    val balanceBefore: BigDecimal,
     val category: UserTransactionCategory,
     val description: String?,
     val date: LocalDateTime

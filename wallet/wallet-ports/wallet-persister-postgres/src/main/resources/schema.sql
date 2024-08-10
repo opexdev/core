@@ -104,11 +104,12 @@ CREATE TABLE IF NOT EXISTS user_transaction
     currency       VARCHAR(25)  NOT NULL REFERENCES currency (symbol),
     balance        DECIMAL      NOT NULL,
     balance_change DECIMAL      NOT NULL,
-    balance_before DECIMAL      NOT NULL,
     category       VARCHAR(128) NOT NULL,
     description    TEXT,
     date           TIMESTAMP    NOT NULL DEFAULT CURRENT_DATE
 );
+CREATE INDEX IF NOT EXISTS idx_user_transaction_currency ON user_transaction(currency);
+CREATE INDEX IF NOT EXISTS idx_user_transaction_category ON user_transaction(category);
 
 CREATE TABLE IF NOT EXISTS wallet_limits
 (

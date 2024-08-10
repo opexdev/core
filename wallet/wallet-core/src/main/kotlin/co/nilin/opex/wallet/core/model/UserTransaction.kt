@@ -10,7 +10,6 @@ data class UserTransaction(
     val currency: String,
     val balance: BigDecimal,
     val balanceChange: BigDecimal,
-    val balanceBefore: BigDecimal,
     val category: UserTransactionCategory,
     val description: String? = null,
     val uuid: String = UUID.randomUUID().toString(),

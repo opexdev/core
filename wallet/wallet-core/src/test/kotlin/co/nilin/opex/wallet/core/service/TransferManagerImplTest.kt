@@ -44,7 +44,7 @@ private class TransferManagerImplTest {
         )
         coEvery { walletListener.onWithdraw(any(), any(), any(), any()) } returns Unit
         coEvery { walletListener.onDeposit(any(), any(), any(), any(), any()) } returns Unit
-        coEvery { transactionManager.save(any()) } returns "1"
+        coEvery { transactionManager.save(any()) } returns 1
 
         val result = transferManager.transfer(VALID.TRANSFER_COMMAND).transferResult
 
@@ -75,7 +75,7 @@ private class TransferManagerImplTest {
         coEvery { walletManager.decreaseBalance(any(), eq(VALID.TRANSFER_COMMAND.amount.amount)) } returns Unit
         coEvery { walletManager.increaseBalance(any(), eq(VALID.TRANSFER_COMMAND.amount.amount)) } returns Unit
         coEvery { walletManager.findWalletById(VALID.SOURCE_WALLET.id!!) } returns VALID.SOURCE_WALLET
-        coEvery { transactionManager.save(any()) } returns "1"
+        coEvery { transactionManager.save(any()) } returns 1
 
         assertThatThrownBy {
             runBlocking {
@@ -94,7 +94,7 @@ private class TransferManagerImplTest {
         coEvery { walletManager.increaseBalance(any(), eq(VALID.TRANSFER_COMMAND.amount.amount)) } returns Unit
         coEvery { walletManager.findWalletById(1L) } returns VALID.SOURCE_WALLET
         stubWalletListener()
-        coEvery { transactionManager.save(any()) } returns "1"
+        coEvery { transactionManager.save(any()) } returns 1
 
         assertThatThrownBy {
             runBlocking {
@@ -113,7 +113,7 @@ private class TransferManagerImplTest {
         coEvery { walletManager.increaseBalance(any(), eq(VALID.TRANSFER_COMMAND.amount.amount)) } returns Unit
         coEvery { walletManager.findWalletById(VALID.SOURCE_WALLET.id!!) } returns VALID.SOURCE_WALLET
         stubWalletListener()
-        coEvery { transactionManager.save(any()) } returns "1"
+        coEvery { transactionManager.save(any()) } returns 1
 
         assertThatThrownBy {
             runBlocking {
@@ -132,7 +132,7 @@ private class TransferManagerImplTest {
         coEvery { walletManager.increaseBalance(any(), eq(VALID.TRANSFER_COMMAND.amount.amount)) } returns Unit
         coEvery { walletManager.findWalletById(1L) } returns VALID.SOURCE_WALLET
         stubWalletListener()
-        coEvery { transactionManager.save(any()) } returns "1"
+        coEvery { transactionManager.save(any()) } returns 1
 
         assertThatThrownBy {
             runBlocking {
@@ -161,7 +161,7 @@ private class TransferManagerImplTest {
         } throws IllegalStateException()
         coEvery { walletManager.findWalletById(VALID.SOURCE_WALLET.id!!) } returns null
         stubWalletListener()
-        coEvery { transactionManager.save(any()) } returns "1"
+        coEvery { transactionManager.save(any()) } returns 1
 
         assertThatThrownBy {
             runBlocking {
