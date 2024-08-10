@@ -1,13 +1,15 @@
 package co.nilin.opex.bcgateway.app.controller
 
+import co.nilin.opex.bcgateway.app.dto.ChainResponse
 import co.nilin.opex.bcgateway.core.model.*
+import co.nilin.opex.bcgateway.core.spi.ChainLoader
 import co.nilin.opex.bcgateway.core.spi.CryptoCurrencyHandlerV2
 import org.springframework.web.bind.annotation.*
 import java.util.UUID
 
 @RestController
 @RequestMapping("/crypto-currency")
-class CryptoCurrencyController(val cryptoCurrencyHandler: CryptoCurrencyHandlerV2) {
+class CryptoCurrencyController(val cryptoCurrencyHandler: CryptoCurrencyHandlerV2, private val chainLoader: ChainLoader) {
 
     @PostMapping("/{currencySymbol}/impl")
     suspend fun addNewCurrencyImpl(
@@ -59,10 +61,9 @@ class CryptoCurrencyController(val cryptoCurrencyHandler: CryptoCurrencyHandlerV
         return cryptoCurrencyHandler.fetchCurrencyImpls(FetchImpls(implUuid = implUuid, currencySymbol = currencySymbol))
     }
 
-    @GetMapping("/chains")
-    suspend fun getNetworks(@RequestParam(required = false) currency: String?): CurrencyImps? {
-        return cryptoCurrencyHandler.fetchCurrencyImpls(FetchImpls(currencySymbol = currency))
+    @GetMapping("/chain")
+    suspend fun getChains(): List<ChainResponse> {
+        return chainLoader.fetchAllChains().map { c -> ChainResponse(c.name, c.addressTypes.map { it.type }) }
     }
-
 
 }
