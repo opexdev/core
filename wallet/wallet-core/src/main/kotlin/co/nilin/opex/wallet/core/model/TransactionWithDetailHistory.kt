@@ -13,6 +13,6 @@ data class TransactionWithDetailHistory(
     val description: String?,
     val ref: String?,
     val date: Long,
-    val category: String,
+    val category: TransferCategory,
     val withdraw: Boolean? = null
 )

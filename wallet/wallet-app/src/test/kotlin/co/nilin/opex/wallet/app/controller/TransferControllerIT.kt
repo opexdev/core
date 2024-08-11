@@ -54,7 +54,8 @@ class TransferControllerIT : KafkaEnabledTest() {
             val srcCurrency = currencyService.getCurrency("ETH")!!
             walletManager.createWallet(sender, Amount(srcCurrency, BigDecimal.valueOf(100)), srcCurrency, WalletType.MAIN)
 
-            val transfer = webClient.post().uri("/v2/transfer/1_ETH/from/${sender.uuid}_main/to/${receiver}_exchange").accept(MediaType.APPLICATION_JSON)
+            val transfer = webClient.post().uri("/v2/transfer/1_ETH/from/${sender.uuid}_MAIN/to/${receiver}_EXCHANGE")
+                .accept(MediaType.APPLICATION_JSON)
                 .bodyValue(TransferController.TransferBody("desc", "ref", TransferCategory.NORMAL))
                 .exchange()
                 .expectStatus().isOk

@@ -274,11 +274,11 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                 receiver.uuid, currency.symbol, LocalDateTime.now().minusHours(1), LocalDateTime.now(), 100, 0
             )
 
-            val thwMatch = thw.find { th -> th.id.toString().equals(result.tx) }
+            val thwMatch = thw.find { th -> th.id.toString() == result.tx }
             assertNotNull(thwMatch)
             assertEquals(TransferCategory.NORMAL, thwMatch!!.category)
 
-            val thdMatch = thd.find { th -> th.id.toString().equals(result.tx) }
+            val thdMatch = thd.find { th -> th.id.toString() == result.tx }
             assertNotNull(thdMatch)
             assertEquals(TransferCategory.NORMAL, thdMatch!!.category)
 

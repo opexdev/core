@@ -32,7 +32,7 @@ object VALID {
         1,
         USER_LEVEL_REGISTERED,
         WALLET_OWNER.id,
-        WalletLimitAction.DEPOSIT,
+        WalletLimitAction.WITHDRAW,
         CURRENCY.symbol,
         WalletType.MAIN,
         WALLET.id,
