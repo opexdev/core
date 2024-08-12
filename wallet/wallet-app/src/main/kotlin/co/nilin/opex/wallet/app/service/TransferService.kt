@@ -312,8 +312,8 @@ class TransferService(
                         "1"
                 ).level
 
-//        if (senderLevel !in arrayListOf<String>(preferences.admin.walletLevel, preferences.system.walletLevel))
-//            throw OpexException(OpexError.Forbidden)
+        if (senderLevel !in arrayListOf<String>(preferences.admin.walletLevel, preferences.system.walletLevel))
+            throw OpexException(OpexError.Forbidden)
 
         //todo need to fix conflict between otc and exchange
 
