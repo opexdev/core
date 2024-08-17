@@ -3,6 +3,7 @@ package co.nilin.opex.wallet.app.controller
 import co.nilin.opex.wallet.app.KafkaEnabledTest
 import co.nilin.opex.wallet.app.dto.TransactionRequest
 import co.nilin.opex.wallet.core.model.TransactionWithDetailHistory
+import co.nilin.opex.wallet.core.model.TransferCategory
 import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.spi.TransactionManager
 import kotlinx.coroutines.runBlocking
@@ -33,7 +34,17 @@ class TransactionControllerIT : KafkaEnabledTest() {
         val uuid = "uuid"
         val t = System.currentTimeMillis()
         val history = TransactionWithDetailHistory(
-            1L, WalletType.MAIN, WalletType.MAIN, "su", "du", "c", BigDecimal.ONE, "desc", "ref", System.currentTimeMillis(), "cat"
+            1L,
+            WalletType.MAIN,
+            WalletType.MAIN,
+            "su",
+            "du",
+            "c",
+            BigDecimal.ONE,
+            "desc",
+            "ref",
+            System.currentTimeMillis(),
+            TransferCategory.NORMAL
         )
         runBlocking {
             Mockito.`when`(
