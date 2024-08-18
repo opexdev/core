@@ -89,10 +89,6 @@ CREATE TABLE IF NOT EXISTS transaction
 ALTER TABLE transaction
     ADD COLUMN IF NOT EXISTS transfer_category VARCHAR(36) NOT NULL DEFAULT 'NO_CATEGORY';
 ALTER TABLE transaction
-    ALTER COLUMN transfer_category SET NOT NULL;
-ALTER TABLE transaction
-    ALTER COLUMN transfer_category SET DEFAULT 'NO_CATEGORY';
-ALTER TABLE transaction
     ALTER COLUMN transfer_ref SET NOT NULL;
 
 CREATE TABLE IF NOT EXISTS user_transaction
@@ -108,7 +104,6 @@ CREATE TABLE IF NOT EXISTS user_transaction
     description    TEXT,
     date           TIMESTAMP    NOT NULL DEFAULT CURRENT_DATE
 );
-CREATE INDEX IF NOT EXISTS idx_user_transaction_currency ON user_transaction(currency);
 CREATE INDEX IF NOT EXISTS idx_user_transaction_category ON user_transaction(category);
 
 CREATE TABLE IF NOT EXISTS wallet_limits
