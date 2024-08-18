@@ -17,8 +17,6 @@ CREATE TABLE IF NOT EXISTS currency
     sign              VARCHAR(25),
     description       TEXT,
     short_description TEXT
-
-
 );
 
 ALTER TABLE currency
@@ -77,20 +75,36 @@ ALTER TABLE wallet
 
 CREATE TABLE IF NOT EXISTS transaction
 (
-    id               SERIAL PRIMARY KEY,
-    source_wallet    INTEGER   NOT NULL REFERENCES wallet (id),
-    dest_wallet      INTEGER   NOT NULL REFERENCES wallet (id),
-    source_amount    DECIMAL   NOT NULL,
-    dest_amount      DECIMAL   NOT NULL,
-    description      TEXT,
-    transfer_ref     TEXT UNIQUE,
-    transaction_date TIMESTAMP NOT NULL DEFAULT CURRENT_DATE
+    id                SERIAL PRIMARY KEY,
+    source_wallet     INTEGER     NOT NULL REFERENCES wallet (id),
+    dest_wallet       INTEGER     NOT NULL REFERENCES wallet (id),
+    source_amount     DECIMAL     NOT NULL,
+    dest_amount       DECIMAL     NOT NULL,
+    description       TEXT,
+    transfer_ref      TEXT        NOT NULL UNIQUE,
+    transfer_category VARCHAR(36) NOT NULL DEFAULT 'NO_CATEGORY',
+    transaction_date  TIMESTAMP   NOT NULL DEFAULT CURRENT_DATE
 );
 
 ALTER TABLE transaction
-    ADD COLUMN IF NOT EXISTS transfer_detail_json TEXT;
+    ADD COLUMN IF NOT EXISTS transfer_category VARCHAR(36) NOT NULL DEFAULT 'NO_CATEGORY';
 ALTER TABLE transaction
-    ADD COLUMN IF NOT EXISTS transfer_category VARCHAR(36);
+    ALTER COLUMN transfer_ref SET NOT NULL;
+
+CREATE TABLE IF NOT EXISTS user_transaction
+(
+    id             SERIAL PRIMARY KEY,
+    uuid           VARCHAR(36)  NOT NULL UNIQUE,
+    owner_id       INTEGER      NOT NULL REFERENCES wallet_owner (id),
+    tx_id          INTEGER      NOT NULL REFERENCES transaction (id),
+    currency       VARCHAR(25)  NOT NULL REFERENCES currency (symbol),
+    balance        DECIMAL      NOT NULL,
+    balance_change DECIMAL      NOT NULL,
+    category       VARCHAR(128) NOT NULL,
+    description    TEXT,
+    date           TIMESTAMP    NOT NULL DEFAULT CURRENT_DATE
+);
+CREATE INDEX IF NOT EXISTS idx_user_transaction_category ON user_transaction(category);
 
 CREATE TABLE IF NOT EXISTS wallet_limits
 (
@@ -180,20 +194,21 @@ CREATE TABLE IF NOT EXISTS wallet_stat_exclusion
 );
 
 
-CREATE TABLE IF NOT EXISTS deposits (
-      id SERIAL PRIMARY KEY,
-      uuid VARCHAR(255) NOT NULL,
-      duid VARCHAR(255) NOT NULL,
-      currency VARCHAR(255) NOT NULL REFERENCES currency (symbol),
-      amount DECIMAL NOT NULL, -- Use a numeric type for decimal values
-      accepted_fee DECIMAL,
-      applied_fee DECIMAL,
-      source_symbol VARCHAR(255),
-      network VARCHAR(255),
-      source_address VARCHAR(255),
-      note TEXT,
-      transaction_ref VARCHAR(255),
-      status VARCHAR(255),
-      deposit_type VARCHAR(255),
-      create_date TIMESTAMP
+CREATE TABLE IF NOT EXISTS deposits
+(
+    id              SERIAL PRIMARY KEY,
+    uuid            VARCHAR(255) NOT NULL,
+    duid            VARCHAR(255) NOT NULL,
+    currency        VARCHAR(255) NOT NULL REFERENCES currency (symbol),
+    amount          DECIMAL      NOT NULL, -- Use a numeric type for decimal values
+    accepted_fee    DECIMAL,
+    applied_fee     DECIMAL,
+    source_symbol   VARCHAR(255),
+    network         VARCHAR(255),
+    source_address  VARCHAR(255),
+    note            TEXT,
+    transaction_ref VARCHAR(255),
+    status          VARCHAR(255),
+    deposit_type    VARCHAR(255),
+    create_date     TIMESTAMP
 );

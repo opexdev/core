@@ -15,16 +15,17 @@ class FinancialAction(
     val symbol: String,
     val amount: BigDecimal,
     val sender: String,
-    val senderWalletType: String,
+    val senderWalletType: WalletType,
     val receiver: String,
-    val receiverWalletType: String,
+    val receiverWalletType: WalletType,
     val createDate: LocalDateTime,
     val category: FinancialActionCategory,
-    val detail: Map<String, Any> = emptyMap(),
     val status: FinancialActionStatus = FinancialActionStatus.CREATED,
     val uuid: String = UUID.randomUUID().toString(),
     val id: Long? = null
 ) {
+
+    fun isProcessed() = status == FinancialActionStatus.PROCESSED
 
     override fun equals(other: Any?): Boolean {
         if (other == null || other !is FinancialAction) return false
@@ -35,7 +36,7 @@ class FinancialAction(
     }
 
     override fun toString(): String {
-        return "FinancialAction(parent=$parent, eventType='$eventType', pointer='$pointer', symbol='$symbol', amount=$amount, sender='$sender', senderWalletType='$senderWalletType', receiver='$receiver', receiverWalletType='$receiverWalletType', createDate=$createDate, category=$category, detail=$detail, status=$status, uuid='$uuid', id=$id)"
+        return "FinancialAction(parent=$parent, eventType='$eventType', pointer='$pointer', symbol='$symbol', amount=$amount, sender='$sender', senderWalletType='$senderWalletType', receiver='$receiver', receiverWalletType='$receiverWalletType', createDate=$createDate, category=$category, status=$status, uuid='$uuid', id=$id)"
     }
 
     override fun hashCode(): Int {

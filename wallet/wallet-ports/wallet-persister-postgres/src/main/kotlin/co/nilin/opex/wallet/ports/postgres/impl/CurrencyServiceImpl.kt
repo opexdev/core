@@ -28,12 +28,9 @@ class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : Currency
     private val logger = LoggerFactory.getLogger(CurrencyServiceImpl::class.java)
 
     override suspend fun getCurrency(symbol: String): Currency? {
-
-        return currencyRepository.findBySymbol(symbol)?.awaitFirstOrNull()?.let { it.toDto() }
+        return currencyRepository.findBySymbol(symbol)?.awaitFirstOrNull()?.toDto()
             ?: throw OpexError.CurrencyNotFound.exception()
-
     }
-
 
     override suspend fun addCurrency(name: String, symbol: String, precision: BigDecimal) {
         try {
@@ -48,42 +45,37 @@ class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : Currency
             throw OpexError.CurrencyIsExist.exception()
         } ?: run {
             try {
-
                 val cm = request.toModel()
                 return currencyRepository.insert(
-                        cm.name,
-                        cm.symbol.uppercase(),
-                        cm.precision,
-                        cm.title,
-                        cm.alias,
-                        cm.maxDeposit,
-                        cm.minDeposit,
-                        cm.minWithdraw,
-                        cm.maxWithdraw,
-                        cm.icon,
-                        cm.createDate,
-                        cm.lastUpdateDate,
-                        cm.isTransitive,
-                        cm.isActive,
-                        cm.sign,
-                        cm.description,
-                        cm.shortDescription
-                )?.awaitSingleOrNull().run {
-                    walletManagerImpl.addSystemAndAdminWalletForNewCurrency(request.symbol)?.let { cm }
-
-                }?.toDto()
+                    cm.name,
+                    cm.symbol.uppercase(),
+                    cm.precision,
+                    cm.title,
+                    cm.alias,
+                    cm.maxDeposit,
+                    cm.minDeposit,
+                    cm.minWithdraw,
+                    cm.maxWithdraw,
+                    cm.icon,
+                    cm.createDate,
+                    cm.lastUpdateDate,
+                    cm.isTransitive,
+                    cm.isActive,
+                    cm.sign,
+                    cm.description,
+                    cm.shortDescription
+                )?.awaitSingleOrNull()
+                    .run { walletManagerImpl.addSystemAndAdminWalletForNewCurrency(request.symbol)
+                    .let { cm } }
+                    .toDto()
             } catch (e: Exception) {
                 logger.error("Could not insert new currency ${request.symbol}", e)
                 throw OpexError.Error.exception()
             }
         }
-
     }
 
-
-
     override suspend fun updateCurrency(request: Currency): Currency? {
-
         currencyRepository.findBySymbol(request.symbol)?.awaitSingleOrNull()?.let {
             if (it.isTransitive == true && request.isActive == false)
                 throw OpexError.CurrencyIsTransitiveAndDisablingIsImpossible.exception()
@@ -99,10 +91,7 @@ class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : Currency
                 throw OpexError.Error.exception()
             }
         } ?: throw OpexError.CurrencyNotFound.exception()
-
-
     }
-
 
     private fun Currency.toModel(): CurrencyModel {
         return with(this) {
@@ -153,7 +142,7 @@ class CurrencyServiceImpl(val currencyRepository: CurrencyRepository) : Currency
 
     override suspend fun getCurrencies(): Currencies {
         return Currencies(
-                currencyRepository.findAll()?.map { it.toDto() }.collect(Collectors.toList()).awaitFirstOrNull()
+                currencyRepository.findAll().map { it.toDto() }.collect(Collectors.toList()).awaitFirstOrNull()
         )
     }
 }

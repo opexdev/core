@@ -4,10 +4,8 @@ import co.nilin.opex.utility.error.controller.ExceptionController
 import co.nilin.opex.wallet.app.KafkaEnabledTest
 import co.nilin.opex.wallet.app.dto.*
 import co.nilin.opex.wallet.core.inout.TransferResult
-import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.model.Currency
-import co.nilin.opex.wallet.core.model.Wallet
-import co.nilin.opex.wallet.core.model.WalletOwner
 import co.nilin.opex.wallet.core.model.otc.Symbols
 import co.nilin.opex.wallet.core.spi.CurrencyService
 import co.nilin.opex.wallet.core.spi.WalletManager
@@ -82,12 +80,12 @@ class AdvancedTransferControllerIT : KafkaEnabledTest() {
             val system = walletOwnerManager.findWalletOwner(walletOwnerManager.systemUuid)!!
             val srcCurrency = currencyService.getCurrency("ETH")!!
             val destCurrency = currencyService.getCurrency("USDT")!!
-            createWalletWithCurrencyAndBalance(sender, "main", srcCurrency, BigDecimal.valueOf(1))
+            createWalletWithCurrencyAndBalance(sender, WalletType.MAIN, srcCurrency, BigDecimal.valueOf(1))
             //not enough balance
-            createWalletWithCurrencyAndBalance(system, "main", destCurrency, BigDecimal.valueOf(1))
+            createWalletWithCurrencyAndBalance(system, WalletType.MAIN, destCurrency, BigDecimal.valueOf(1))
 
             webClient.post().uri("/v3/transfer/reserve").accept(MediaType.APPLICATION_JSON)
-                .bodyValue(TransferReserveRequest(BigDecimal.ONE, "ETH", "USDT", sender.uuid, "main", receiver, "main"))
+                .bodyValue(TransferReserveRequest(BigDecimal.ONE, "ETH", "USDT", sender.uuid, WalletType.MAIN, receiver, WalletType.MAIN))
                 .exchange()
                 .expectStatus().is5xxServerError
                 .expectBody(ExceptionController.WebClientErrorResponse::class.java)
@@ -103,11 +101,11 @@ class AdvancedTransferControllerIT : KafkaEnabledTest() {
             val system = walletOwnerManager.findWalletOwner(walletOwnerManager.systemUuid)!!
             val srcCurrency = currencyService.getCurrency("ETH")!!
             val destCurrency = currencyService.getCurrency("USDT")!!
-            val senderInitWallet = createWalletWithCurrencyAndBalance(sender, "main", srcCurrency, BigDecimal.valueOf(1))
-            val systemDestCurrencyInitWallet = createWalletWithCurrencyAndBalance(system, "main", destCurrency, BigDecimal.valueOf(200))
-            val systemSrcCurrencyInitWallet = createWalletWithCurrencyAndBalance(system, "main", srcCurrency, BigDecimal.valueOf(0))
+            val senderInitWallet = createWalletWithCurrencyAndBalance(sender, WalletType.MAIN, srcCurrency, BigDecimal.valueOf(1))
+            val systemDestCurrencyInitWallet = createWalletWithCurrencyAndBalance(system, WalletType.MAIN, destCurrency, BigDecimal.valueOf(200))
+            val systemSrcCurrencyInitWallet = createWalletWithCurrencyAndBalance(system, WalletType.MAIN, srcCurrency, BigDecimal.valueOf(0))
             val reserve = webClient.post().uri("/v3/transfer/reserve").accept(MediaType.APPLICATION_JSON)
-                .bodyValue(TransferReserveRequest(BigDecimal.ONE, "ETH", "USDT", sender.uuid, "main", receiver, "main"))
+                .bodyValue(TransferReserveRequest(BigDecimal.ONE, "ETH", "USDT", sender.uuid, WalletType.MAIN, receiver, WalletType.MAIN))
                 .exchange()
                 .expectStatus().isOk
                 .expectBody(ReservedTransferResponse::class.java)
@@ -123,12 +121,12 @@ class AdvancedTransferControllerIT : KafkaEnabledTest() {
             Assertions.assertEquals("ETH", transfer.amount.currency.symbol)
 
 
-            val senderWallet = walletManager.findWalletByOwnerAndCurrencyAndType(sender, "main", srcCurrency)!!
+            val senderWallet = walletManager.findWalletByOwnerAndCurrencyAndType(sender, WalletType.MAIN, srcCurrency)!!
 
-            val systemWalletSrcCurrency = walletManager.findWalletByOwnerAndCurrencyAndType(system, "main", srcCurrency)!!
-            val systemWalletDestCurrency = walletManager.findWalletByOwnerAndCurrencyAndType(system, "main", destCurrency)!!
+            val systemWalletSrcCurrency = walletManager.findWalletByOwnerAndCurrencyAndType(system, WalletType.MAIN, srcCurrency)!!
+            val systemWalletDestCurrency = walletManager.findWalletByOwnerAndCurrencyAndType(system, WalletType.MAIN, destCurrency)!!
 
-            val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(walletOwnerManager.findWalletOwner(receiver)!!, "main", destCurrency)!!
+            val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(walletOwnerManager.findWalletOwner(receiver)!!, WalletType.MAIN, destCurrency)!!
 
             Assertions.assertEquals(senderInitWallet.balance.amount - transfer.amount.amount, senderWallet.balance.amount)
             Assertions.assertEquals(systemSrcCurrencyInitWallet.balance.amount + transfer.amount.amount, systemWalletSrcCurrency.balance.amount)
@@ -138,7 +136,7 @@ class AdvancedTransferControllerIT : KafkaEnabledTest() {
         }
     }
 
-    private suspend fun createWalletWithCurrencyAndBalance(system: WalletOwner, walletType: String, destCurrency: Currency, balance: BigDecimal): Wallet {
+    private suspend fun createWalletWithCurrencyAndBalance(system: WalletOwner, walletType: WalletType, destCurrency: Currency, balance: BigDecimal): Wallet {
         val wallet = walletManager.findWalletByOwnerAndCurrencyAndType(system, walletType, destCurrency)
         return if (wallet != null) {
             val amount = balance - wallet.balance.amount

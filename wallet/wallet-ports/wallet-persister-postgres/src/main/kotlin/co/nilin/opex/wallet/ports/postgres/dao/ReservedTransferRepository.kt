@@ -7,5 +7,6 @@ import reactor.core.publisher.Mono
 
 @Repository
 interface ReservedTransferRepository : ReactiveCrudRepository<ReservedTransferModel, Long> {
+
     fun findByReserveNumber(reservedNumber:String): Mono<ReservedTransferModel>?
 }

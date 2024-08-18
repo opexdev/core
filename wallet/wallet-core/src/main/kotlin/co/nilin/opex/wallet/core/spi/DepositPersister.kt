@@ -8,10 +8,7 @@ import java.time.LocalDateTime
 
 interface DepositPersister {
 
-
-
     suspend fun persist(deposit: Deposit): Deposit
-
 
     suspend fun findDepositHistory(
         uuid: String,
@@ -22,6 +19,4 @@ interface DepositPersister {
         offset: Int,
         ascendingByTime: Boolean?
     ): Deposits
-
-
 }

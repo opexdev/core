@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.core.spi
 
 import co.nilin.opex.wallet.core.inout.WithdrawResponse
 import co.nilin.opex.wallet.core.model.Withdraw
+import co.nilin.opex.wallet.core.model.WithdrawStatus
 import java.time.LocalDateTime
 
 interface WithdrawPersister {
@@ -13,7 +14,7 @@ interface WithdrawPersister {
         destTxRef: String?,
         destAddress: String?,
         noStatus: Boolean,
-        status: List<String>?
+        status: List<WithdrawStatus>?
     ): List<WithdrawResponse>
 
     suspend fun countByCriteria(
@@ -23,7 +24,7 @@ interface WithdrawPersister {
         destTxRef: String?,
         destAddress: String?,
         noStatus: Boolean,
-        status: List<String>?
+        status: List<WithdrawStatus>?
     ): Long
 
     suspend fun findByCriteria(
@@ -33,7 +34,7 @@ interface WithdrawPersister {
         destTxRef: String?,
         destAddress: String?,
         noStatus: Boolean,
-        status: List<String>?,
+        status: List<WithdrawStatus>?,
         offset: Int,
         size: Int
     ): List<WithdrawResponse>

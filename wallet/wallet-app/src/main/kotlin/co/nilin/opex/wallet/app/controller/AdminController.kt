@@ -1,8 +1,8 @@
 package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.wallet.core.inout.*
+import co.nilin.opex.wallet.core.model.WithdrawStatus
 import co.nilin.opex.wallet.core.service.WithdrawService
-import co.nilin.opex.wallet.core.spi.WalletDataManager
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
@@ -11,7 +11,7 @@ import java.math.BigDecimal
 
 @RestController
 @RequestMapping("/admin")
-class AdminController(private val withdrawService: WithdrawService, private val walletDataManager: WalletDataManager) {
+class AdminController(private val withdrawService: WithdrawService) {
 
     @GetMapping("/withdraw")
     @ApiResponse(
@@ -25,12 +25,12 @@ class AdminController(private val withdrawService: WithdrawService, private val 
         )
     )
     suspend fun searchWithdraws(
-        @RequestParam("uuid", required = false) uuid: String?,
+        @RequestParam(required = false) uuid: String?,
         @RequestParam("withdraw_id", required = false) withdrawId: String?,
-        @RequestParam("currency", required = false) currency: String?,
+        @RequestParam(required = false) currency: String?,
         @RequestParam("dest_transaction_ref", required = false) destTxRef: String?,
         @RequestParam("dest_address", required = false) destAddress: String?,
-        @RequestParam("status", required = false) status: List<String>?,
+        @RequestParam(required = false) status: List<WithdrawStatus>?,
         @RequestParam offset: Int,
         @RequestParam size: Int
     ): PagingWithdrawResponse {
@@ -42,7 +42,7 @@ class AdminController(private val withdrawService: WithdrawService, private val 
                 destTxRef,
                 destAddress,
                 status?.isEmpty() ?: true,
-                status ?: listOf(""),
+                status,
                 offset,
                 size
             )
@@ -61,8 +61,8 @@ class AdminController(private val withdrawService: WithdrawService, private val 
     )
     suspend fun rejectWithdraw(
         @PathVariable("id") withdrawId: String,
-        @RequestParam("statusReason") statusReason: String,
-        @RequestParam("destNote", required = false) destNote: String?
+        @RequestParam statusReason: String,
+        @RequestParam(required = false) destNote: String?
     ): WithdrawResult {
         return withdrawService.rejectWithdraw(WithdrawRejectCommand(withdrawId, statusReason, destNote))
     }
@@ -80,9 +80,9 @@ class AdminController(private val withdrawService: WithdrawService, private val 
     )
     suspend fun acceptWithdraw(
         @PathVariable("id") withdrawId: String,
-        @RequestParam("destTransactionRef", required = false) destTransactionRef: String?,
-        @RequestParam("destNote", required = false) destNote: String?,
-        @RequestParam("fee", required = false) fee: BigDecimal = BigDecimal.ZERO,
+        @RequestParam(required = false) destTransactionRef: String?,
+        @RequestParam(required = false) destNote: String?,
+        @RequestParam(required = false) fee: BigDecimal = BigDecimal.ZERO,
     ): WithdrawResult {
         return withdrawService.acceptWithdraw(WithdrawAcceptCommand(withdrawId, destTransactionRef, destNote, fee))
     }

@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.core.inout
 
 import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.model.TransferCategory
 import co.nilin.opex.wallet.core.model.Wallet
 
 data class TransferCommand(
@@ -9,7 +10,6 @@ data class TransferCommand(
     val amount: Amount,
     val description: String?,
     val transferRef: String?,
-    val transferCategory: String,
-    val additionalData: Map<String, Any>?,
+    val transferCategory: TransferCategory,
     val destAmount: Amount = amount
 )
