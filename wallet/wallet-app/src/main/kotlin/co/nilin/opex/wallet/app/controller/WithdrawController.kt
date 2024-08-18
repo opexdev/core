@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.wallet.app.dto.RequestWithdrawBody
 import co.nilin.opex.wallet.app.dto.TransactionRequest
 import co.nilin.opex.wallet.app.dto.WithdrawHistoryResponse
 import co.nilin.opex.wallet.core.inout.WithdrawCommand
@@ -19,7 +20,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 
 @RestController
-@RequestMapping("/withdraw")
+@RequestMapping("/v2/withdraw")
 class WithdrawController(private val withdrawService: WithdrawService) {
 
     @GetMapping("/{withdrawId}")
@@ -43,10 +44,10 @@ class WithdrawController(private val withdrawService: WithdrawService) {
     )
     suspend fun getMyWithdraws(
         principal: Principal,
-        @RequestParam("withdraw_id", required = false) withdrawId: String?,
+        @RequestParam(required = false) withdrawId: String?,
         @RequestParam(required = false) currency: String?,
-        @RequestParam("dest_transaction_ref", required = false) destTxRef: String?,
-        @RequestParam("dest_address", required = false) destAddress: String?,
+        @RequestParam(required = false) destTxRef: String?,
+        @RequestParam(required = false) destAddress: String?,
         @RequestParam(required = false) status: List<WithdrawStatus>?
     ): List<WithdrawResponse> {
         return withdrawService
@@ -61,7 +62,7 @@ class WithdrawController(private val withdrawService: WithdrawService) {
             )
     }
 
-    @PostMapping("/{amount}_{currency}")
+    @PostMapping
     @ApiResponse(
         message = "OK",
         code = 200,
@@ -72,37 +73,28 @@ class WithdrawController(private val withdrawService: WithdrawService) {
             )
         )
     )
-    suspend fun requestWithdraw(
-        principal: Principal,
-        @PathVariable currency: String,
-        @PathVariable amount: BigDecimal,
-        @RequestParam(required = false) description: String?,
-        @RequestParam(required = false) transferRef: String?,
-        @RequestParam fee: BigDecimal,
-        @RequestParam destSymbol: String,
-        @RequestParam destAddress: String,
-        @RequestParam destNetwork: String?,
-        @RequestParam(required = false) destNote: String?,
-    ): WithdrawResult {
+    suspend fun requestWithdraw(principal: Principal, @RequestBody request: RequestWithdrawBody): WithdrawResult {
         return withdrawService.requestWithdraw(
-            WithdrawCommand(
-                principal.name,
-                currency,
-                amount,
-                description,
-                transferRef,
-                destSymbol,
-                destAddress,
-                destNetwork,
-                destNote,
-                fee
-            )
+            with(request) {
+                WithdrawCommand(
+                    principal.name,
+                    currency,
+                    amount,
+                    description,
+                    "", //TODO ************************************************************************
+                    destSymbol,
+                    destAddress,
+                    destNetwork,
+                    destNote,
+                    BigDecimal.ZERO //TODO ************************************************************************
+                )
+            }
         )
     }
 
     @PostMapping("/history/{uuid}")
     suspend fun getWithdrawTransactionsForUser(
-        @PathVariable("uuid") uuid: String,
+        @PathVariable uuid: String,
         @RequestBody request: TransactionRequest
     ): List<WithdrawHistoryResponse> {
         return withdrawService.findWithdrawHistory(
@@ -138,9 +130,4 @@ class WithdrawController(private val withdrawService: WithdrawService) {
             )
         }
     }
-
-
 }
-
-
-
