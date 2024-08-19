@@ -1,16 +1,13 @@
 package co.nilin.opex.wallet.ports.postgres.util
 
-import co.nilin.opex.wallet.core.inout.CryptoCurrencyCommand
 import co.nilin.opex.wallet.core.inout.CurrencyCommand
-import co.nilin.opex.wallet.core.inout.DepositMethod
-import co.nilin.opex.wallet.core.inout.WithdrawMethod
+import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
 import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
-import java.math.BigDecimal
 import java.util.*
 import co.nilin.opex.wallet.core.inout.Deposit
 import co.nilin.opex.wallet.ports.postgres.model.DepositModel
+import java.math.BigDecimal
 import java.time.ZoneId
-import java.util.*
 
 
 fun CurrencyCommand.toModel(): CurrencyModel {
@@ -29,10 +26,8 @@ fun CurrencyCommand.toModel(): CurrencyModel {
             shortDescription,
             withdrawAllowed,
             depositAllowed,
-            withdrawFee,
             externalUrl,
-            isCryptoCurrency,
-            withdrawMin
+            isCryptoCurrency
     )
 }
 
@@ -52,13 +47,9 @@ fun CurrencyModel.toCommand(): CurrencyCommand {
             shortDescription,
             withdrawAllowed,
             depositAllowed,
-            withdrawFee,
-            null,
-            null,
             externalUrl,
             isCryptoCurrency,
-            null,
-            withdrawMin
+            null
     )
 }
 

@@ -4,8 +4,10 @@ import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.CurrenciesDto
 import co.nilin.opex.wallet.app.dto.CurrencyDto
 import co.nilin.opex.wallet.app.utils.toDto
-import co.nilin.opex.wallet.core.inout.CryptoCurrencyCommand
-import co.nilin.opex.wallet.core.inout.CryptoImps
+import co.nilin.opex.wallet.core.inout.OnChainGatewayCommand
+import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
+import co.nilin.opex.wallet.core.inout.CurrencyGateways
+import co.nilin.opex.wallet.core.inout.GatewayType
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.service.CryptoCurrencyService
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
@@ -44,28 +46,49 @@ class CurrencyServiceV2(
 
 
     @Transactional
-    suspend fun addImp2Currency(request: CryptoCurrencyCommand): CryptoCurrencyCommand? {
-        currencyServiceManager.prepareCurrencyToBeACryptoCurrency(request.currencySymbol
-                ?: throw OpexError.BadRequest.exception())
+    suspend fun addGateway2Currency(request: CurrencyGatewayCommand): CurrencyGatewayCommand? {
 
-        return cryptoCurrencyManager.createImpl(
-                request.apply {
-                    implUuid = UUID.randomUUID().toString()
-                }
-        )
+
+        currencyServiceManager.fetchCurrency(FetchCurrency(symbol = request.currencySymbol))
+                ?: throw OpexError.CurrencyNotFound.exception()
+
+        when (request.type) {
+
+            GatewayType.OnChain -> {
+                currencyServiceManager.prepareCurrencyToBeACryptoCurrency(request.currencySymbol!!)
+                        ?: throw OpexError.BadRequest.exception()
+
+                return cryptoCurrencyManager.createGateway(
+                        request.apply {
+                            gatewayUuid = UUID.randomUUID().toString()
+                        }
+                )
+            }
+
+            GatewayType.OffChain -> {
+
+return  null
+            }
+
+            GatewayType.Manually -> {
+return null
+
+            }
+
+        }
+
     }
 
-
-    suspend fun fetchCurrencyWithImpls(currencySymbol: String, includeImpl: Boolean?): CurrencyDto? {
+    suspend fun fetchCurrencyWithGateways(currencySymbol: String, includeGateway: Boolean?): CurrencyDto? {
         return currencyServiceManager.fetchCurrency(FetchCurrency(symbol = currencySymbol))
                 ?.let {
-//                    if (it.isCryptoCurrency == true && includeImpl == true)
-                    if (includeImpl == true)
+//                    if (it.isCryptoCurrency == true && includeGateway == true)
+                    if (includeGateway == true)
                         it.apply {
-                            impls =
-                                    cryptoCurrencyManager.fetchImpls(
+                            gateways =
+                                    cryptoCurrencyManager.fetchGateways(
                                             currencySymbol
-                                    )?.imps
+                                    )?.gateways
                         }.toDto()
                     else
                         it.toDto()
@@ -73,36 +96,36 @@ class CurrencyServiceV2(
     }
 
 
-    suspend fun fetchCurrencyImpl(currencyImplUUID: String, currencySymbol: String): CryptoCurrencyCommand? {
+    suspend fun fetchCurrencyGateway(currencyGatewayUUID: String, currencySymbol: String): CurrencyGatewayCommand? {
         currencyServiceManager.fetchCurrency(FetchCurrency(symbol = currencySymbol))
                 ?: throw OpexError.CurrencyNotFound.exception()
-        return cryptoCurrencyManager.fetchImpl(currencyImplUUID, currencySymbol)
+        return cryptoCurrencyManager.fetchGateway(currencyGatewayUUID, currencySymbol)
     }
 
-    suspend fun deleteImpl(currencyImplUUID: String, currencySymbol: String) {
+    suspend fun deleteGateway(currencyGatewayUUID: String, currencySymbol: String) {
         currencyServiceManager.fetchCurrency(FetchCurrency(symbol = currencySymbol))
                 ?: throw OpexError.CurrencyNotFound.exception()
-        cryptoCurrencyManager.deleteImpl(currencyImplUUID, currencySymbol)
+        cryptoCurrencyManager.deleteGateway(currencyGatewayUUID, currencySymbol)
 
 
     }
 
-    suspend fun fetchImpls(): CryptoImps? {
-        return cryptoCurrencyManager.fetchImpls();
+    suspend fun fetchGateways(): CurrencyGateways? {
+        return cryptoCurrencyManager.fetchGateways();
     }
 
-//todo
-//     fetch all impls in single request and then map the results together
-    suspend fun fetchCurrenciesWithImpls(includeImpl: Boolean?): CurrenciesDto? {
+    //todo
+//     fetch all gateways in single request and then map the results together
+    suspend fun fetchCurrenciesWithGateways(includeGateway: Boolean?): CurrenciesDto? {
         return CurrenciesDto(currencyServiceManager.fetchCurrencies()?.currencies?.stream()?.map {
-//            if (it.isCryptoCurrency == true && includeImpl == true)
-            if (includeImpl == true)
+//            if (it.isCryptoCurrency == true && includeGateway == true)
+            if (includeGateway == true)
                 it.apply {
-                    impls =
+                    gateways =
                             runBlocking {
-                                cryptoCurrencyManager.fetchImpls(
+                                cryptoCurrencyManager.fetchGateways(
                                         it.symbol!!
-                                )?.imps
+                                )?.gateways
                             }
                 }.toDto()
             else
@@ -111,31 +134,31 @@ class CurrencyServiceV2(
     }
 
 
-//    suspend fun fetchCurrenciesWithImpls(includeImpl: Boolean?): CurrenciesDto? {
+//    suspend fun fetchCurrenciesWithGateways(includeGateway: Boolean?): CurrenciesDto? {
 //        var currencies = currencyServiceManager.fetchCurrencies()?.currencies
-//        val currenciesImpls = cryptoCurrencyManager.fetchImpls()
-//        val groupedByImpl = currenciesImpls?.imps?.groupBy { it.currencySymbol }
-//        return CurrenciesDto(currencies?.map { it.apply { impls = groupedByImpl?.get(it.symbol) }.toDto() }?.toList())
+//        val currenciesGateways = cryptoCurrencyManager.fetchGateways()
+//        val groupedByGateway = currenciesGateways?.imps?.groupBy { it.currencySymbol }
+//        return CurrenciesDto(currencies?.map { it.apply { gateways = groupedByGateway?.get(it.symbol) }.toDto() }?.toList())
 //
 //    }
 
 
-    suspend fun updateImpl(request: CryptoCurrencyCommand): CryptoCurrencyCommand? {
+    suspend fun updateGateway(request: CurrencyGatewayCommand): CurrencyGatewayCommand? {
         currencyServiceManager.fetchCurrency(FetchCurrency(symbol = request.currencySymbol))
                 ?.let {
 //                    if (it.isCryptoCurrency == true)
-                    return cryptoCurrencyManager.updateCryptoImpl(
+                    return cryptoCurrencyManager.updateCryptoGateway(
                             request
                     )
 
 //                    else
-//                        throw OpexError.ImplNotFound.exception()
+//                        throw OpexError.GatewayNotFound.exception()
                 } ?: throw OpexError.CurrencyNotFound.exception()
     }
 
 
-    private suspend fun fetchCurrencyImps(currencySymbol: String): CryptoImps? {
-        return cryptoCurrencyManager.fetchImpls(currencySymbol)
+    private suspend fun fetchCurrencyImps(currencySymbol: String): CurrencyGateways? {
+        return cryptoCurrencyManager.fetchGateways(currencySymbol)
     }
 
 }

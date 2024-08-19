@@ -1,11 +1,8 @@
 package co.nilin.opex.wallet.app.dto
 
-import co.nilin.opex.common.OpexError
-import co.nilin.opex.wallet.core.inout.CryptoCurrencyCommand
+import co.nilin.opex.wallet.core.inout.OnChainGatewayCommand
 import co.nilin.opex.wallet.core.inout.CurrencyCommand
-import co.nilin.opex.wallet.core.inout.DepositMethod
-import co.nilin.opex.wallet.core.inout.WithdrawMethod
-import org.modelmapper.ModelMapper
+import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
 import java.math.BigDecimal
 import java.util.*
 
@@ -24,13 +21,9 @@ data class CurrencyDto(
         var shortDescription: String? = null,
         var withdrawAllowed: Boolean? = true,
         var depositAllowed: Boolean? = true,
-        var withdrawFee: BigDecimal? = BigDecimal.ZERO,
-        var depositMethods: List<DepositMethod>? = null,
-        var withdrawMethods: List<WithdrawMethod>? = null,
         var externalUrl: String? = null,
         var isCryptoCurrency: Boolean? = false,
-        var impls: List<CryptoCurrencyCommand>? = null,
-        var withdrawMin: BigDecimal? = BigDecimal.ZERO,
+        var gateways: List<CurrencyGatewayCommand>? = null,
 
         ) {
 
@@ -53,13 +46,10 @@ data class CurrencyDto(
                 shortDescription,
                 withdrawAllowed,
                 depositAllowed,
-                withdrawFee,
-                depositMethods,
-                withdrawMethods,
                 externalUrl,
                 isCryptoCurrency,
-                impls,
-                withdrawMin)
+                gateways,
+                )
     }
 }
 

@@ -99,7 +99,6 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
                     this.shortDescription,
                     this.withdrawAllowed,
                     this.depositAllowed,
-                    this.withdrawFee,
                     this.externalUrl,
                     this.isCryptoCurrency
             ).awaitFirstOrNull()

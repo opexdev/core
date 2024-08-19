@@ -1,17 +1,18 @@
 package co.nilin.opex.wallet.core.spi
 
-import co.nilin.opex.wallet.core.inout.CryptoCurrencyCommand
-import co.nilin.opex.wallet.core.inout.CryptoImps
+import co.nilin.opex.wallet.core.inout.OnChainGatewayCommand
+import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
+import co.nilin.opex.wallet.core.inout.CurrencyGateways
 
 interface BcGatewayProxy {
-    suspend fun createImpl(currencyImp: CryptoCurrencyCommand, internalToken: String?): CryptoCurrencyCommand?
+    suspend fun createGateway(currencyImp: CurrencyGatewayCommand, internalToken: String?): CurrencyGatewayCommand?
 
-    suspend fun updateImpl(currencyImp: CryptoCurrencyCommand, internalToken: String?): CryptoCurrencyCommand?
+    suspend fun updateGateway(currencyImp: CurrencyGatewayCommand, internalToken: String?): CurrencyGatewayCommand?
 
-    suspend fun fetchImpls(symbol: String?, internalToken: String?): CryptoImps?
+    suspend fun fetchGateways(symbol: String?, internalToken: String?): CurrencyGateways?
 
-    suspend fun fetchImplDetail(implUuid: String, currencySymbol: String, internalToken: String?): CryptoCurrencyCommand?
+    suspend fun fetchGatewayDetail(implUuid: String, currencySymbol: String, internalToken: String?): CurrencyGatewayCommand?
 
-    suspend fun deleteImpl(implUuid: String, currencySymbol: String, internalToken: String?)
+    suspend fun deleteGateway(implUuid: String, currencySymbol: String, internalToken: String?)
 
 }

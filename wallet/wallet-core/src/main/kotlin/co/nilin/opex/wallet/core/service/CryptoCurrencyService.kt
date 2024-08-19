@@ -1,7 +1,8 @@
 package co.nilin.opex.wallet.core.service
 
-import co.nilin.opex.wallet.core.inout.CryptoCurrencyCommand
-import co.nilin.opex.wallet.core.inout.CryptoImps
+import co.nilin.opex.wallet.core.inout.OnChainGatewayCommand
+import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
+import co.nilin.opex.wallet.core.inout.CurrencyGateways
 import co.nilin.opex.wallet.core.spi.BcGatewayProxy
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -11,32 +12,32 @@ class CryptoCurrencyService(private val bcGatewayProxy: BcGatewayProxy,
                             private val authService: AuthService) {
     private val logger = LoggerFactory.getLogger(CryptoCurrencyService::class.java)
 
-    suspend fun createImpl(currencyImp: CryptoCurrencyCommand): CryptoCurrencyCommand? {
+    suspend fun createGateway(currencyImp: CurrencyGatewayCommand): CurrencyGatewayCommand? {
         val token = authService.extractToken()
-        return bcGatewayProxy.createImpl(currencyImp, token)
+        return bcGatewayProxy.createGateway(currencyImp, token)
     }
 
 
-    suspend fun updateCryptoImpl(currencyImp: CryptoCurrencyCommand): CryptoCurrencyCommand? {
+    suspend fun updateCryptoGateway(currencyImp: CurrencyGatewayCommand): CurrencyGatewayCommand? {
         val token = authService.extractToken()
-        return bcGatewayProxy.updateImpl(currencyImp, token)
+        return bcGatewayProxy.updateGateway(currencyImp, token)
 
     }
 
-    suspend fun fetchImpls(currencySymbol:String?=null): CryptoImps? {
+    suspend fun fetchGateways(currencySymbol:String?=null): CurrencyGateways? {
         val token = authService.extractToken()
-        return bcGatewayProxy.fetchImpls(currencySymbol, token)
+        return bcGatewayProxy.fetchGateways(currencySymbol, token)
     }
 
-    suspend fun fetchImpl(currencyImplUuid:String,currencySymbol: String): CryptoCurrencyCommand? {
+    suspend fun fetchGateway(currencyGatewayUuid:String,currencySymbol: String): CurrencyGatewayCommand? {
         val token = authService.extractToken()
-        return bcGatewayProxy.fetchImplDetail(currencyImplUuid,currencySymbol, token)
+        return bcGatewayProxy.fetchGatewayDetail(currencyGatewayUuid,currencySymbol, token)
     }
 
 
-    suspend fun deleteImpl(currencyImplUuid:String, currencySymbol: String) {
+    suspend fun deleteGateway(currencyGatewayUuid:String, currencySymbol: String) {
         val token = authService.extractToken()
-        return bcGatewayProxy.deleteImpl(currencyImplUuid,currencySymbol, token)
+        return bcGatewayProxy.deleteGateway(currencyGatewayUuid,currencySymbol, token)
     }
 }
 

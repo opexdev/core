@@ -19,13 +19,9 @@ data class CurrencyCommand(
         var shortDescription: String? = null,
         var withdrawAllowed: Boolean? = true,
         var depositAllowed: Boolean? = true,
-        var withdrawFee: BigDecimal? = BigDecimal.ZERO,
-        var depositMethods: List<DepositMethod>? = null,
-        var withdrawMethods: List<WithdrawMethod>? = null,
         var externalUrl: String? = null,
         var isCryptoCurrency: Boolean? = false,
-        var impls: List<CryptoCurrencyCommand>? = null,
-        var withdrawMin: BigDecimal? = BigDecimal.ZERO,
+        var gateways: List<CurrencyGatewayCommand>? = null,
 
 
         ) {

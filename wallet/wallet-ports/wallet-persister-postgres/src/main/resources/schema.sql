@@ -8,10 +8,6 @@ CREATE TABLE IF NOT EXISTS currency
     precision         DECIMAL NOT NULL,
     title             VARCHAR(25),
     alias             VARCHAR(25),
-    max_deposit       DECIMAL,
-    min_deposit       DECIMAL,
-    min_Withdraw      DECIMAL,
-    max_withdraw      DECIMAL,
     icon              TEXT,
     last_update_date  TIMESTAMP,
     create_date       TIMESTAMP,
@@ -23,17 +19,12 @@ CREATE TABLE IF NOT EXISTS currency
     uuid              VARCHAR(256) NOT NULL DEFAULT  uuid_generate_v4(),
     withdraw_allowed     BOOLEAN DEFAULT TRUE,
     deposit_allowed     BOOLEAN DEFAULT TRUE,
-    withdraw_fee           NUMERIC,
     external_url           VARCHAR(255),
     is_crypto_currency     BOOLEAN DEFAULT FALSE
 );
 
 ALTER TABLE currency ADD COLUMN IF NOT EXISTS title VARCHAR(25);
 ALTER TABLE currency ADD COLUMN IF NOT EXISTS alias VARCHAR(25);
-ALTER TABLE currency ADD COLUMN IF NOT EXISTS max_deposit DECIMAL;
-ALTER TABLE currency ADD COLUMN IF NOT EXISTS min_deposit DECIMAL;
-ALTER TABLE currency ADD COLUMN IF NOT EXISTS min_Withdraw DECIMAL;
-ALTER TABLE currency  ADD COLUMN IF NOT EXISTS max_withdraw DECIMAL;
 ALTER TABLE currency  ADD COLUMN IF NOT EXISTS icon TEXT;
 ALTER TABLE currency  ADD COLUMN IF NOT EXISTS last_update_date TIMESTAMP;
 ALTER TABLE currency ADD COLUMN IF NOT EXISTS create_date TIMESTAMP;
@@ -45,7 +36,6 @@ ALTER TABLE currency  ADD COLUMN IF NOT EXISTS description TEXT;
 ALTER TABLE currency ADD COLUMN IF NOT EXISTS short_description TEXT;
 ALTER TABLE currency   ADD COLUMN IF NOT EXISTS withdraw_allowed    BOOLEAN DEFAULT TRUE;
 ALTER TABLE currency  ADD COLUMN IF NOT EXISTS deposit_allowed      BOOLEAN DEFAULT TRUE;
-ALTER TABLE currency  ADD COLUMN IF NOT EXISTS withdraw_fee   NUMERIC;
 ALTER TABLE currency  ADD COLUMN IF NOT EXISTS external_url    VARCHAR(255);
 ALTER TABLE currency  ADD COLUMN IF NOT EXISTS is_crypto_currency     BOOLEAN DEFAULT FALSE;
 
