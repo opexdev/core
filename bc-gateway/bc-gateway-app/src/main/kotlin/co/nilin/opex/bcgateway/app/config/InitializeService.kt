@@ -15,6 +15,7 @@ import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.DependsOn
 import org.springframework.stereotype.Component
+import java.math.BigDecimal
 import java.util.UUID
 import javax.annotation.PostConstruct
 
@@ -74,6 +75,9 @@ class InitializeService(
                     true!!,
                     impl.withdrawFee,
                     impl.withdrawMin,
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO,
                     impl.decimal,
                     true
 

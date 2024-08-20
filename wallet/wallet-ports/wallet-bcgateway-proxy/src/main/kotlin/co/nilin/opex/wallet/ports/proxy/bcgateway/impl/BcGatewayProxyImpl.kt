@@ -3,7 +3,7 @@ package co.nilin.opex.wallet.ports.proxy.bcgateway.impl
 import co.nilin.opex.wallet.core.inout.OnChainGatewayCommand
 import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
 import co.nilin.opex.wallet.core.inout.CurrencyGateways
-import co.nilin.opex.wallet.core.spi.BcGatewayProxy
+import co.nilin.opex.wallet.core.spi.GatewayPersister
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
@@ -16,13 +16,13 @@ import java.net.URI
 
 inline fun <reified T : Any> typeRef(): ParameterizedTypeReference<T> = object : ParameterizedTypeReference<T>() {}
 
-@Component
-class BcGatewayProxyGateway(private val webClient: WebClient) : BcGatewayProxy {
+@Component("onChainGateway")
+class OnChainGatewayProxyGateway(private val webClient: WebClient) : GatewayPersister {
 
     @Value("\${app.bc-gateway.url}")
     private lateinit var baseUrl: String
 
-    private val logger = LoggerFactory.getLogger(BcGatewayProxyGateway::class.java)
+    private val logger = LoggerFactory.getLogger(OnChainGatewayProxyGateway::class.java)
 
     override suspend fun createGateway(currencyGateway: CurrencyGatewayCommand, internalToken: String?): CurrencyGatewayCommand? {
         return webClient.post()

@@ -1,16 +1,15 @@
 package co.nilin.opex.bcgateway.ports.postgres.model
 
 
-import co.nilin.opex.bcgateway.core.model.Chain
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
 
-@Table("currency_implementations")
+@Table("currency_on_chain_gateway")
 class CurrencyImplementationModel(
         @Id var id: Long?,
-        @Column("impl_uuid") val implUuid: String,
+        @Column("gateway_uuid") val gatewayUuid: String,
         @Column("currency_symbol") val currencySymbol: String,
         @Column("implementation_symbol") var implementationSymbol: String?=currencySymbol,
         @Column("chain") var chain: String,
@@ -21,7 +20,9 @@ class CurrencyImplementationModel(
         @Column("deposit_allowed") var depositAllowed: Boolean,
         @Column("withdraw_fee") var withdrawFee: BigDecimal,
         @Column("withdraw_min") var withdrawMin: BigDecimal?= BigDecimal.ZERO,
-        @Column("decimal") var decimal: Int,
+        @Column("withdraw_max") var withdrawMax: BigDecimal?= BigDecimal.ZERO,
+        @Column("deposit_min") var depositMin: BigDecimal?= BigDecimal.ZERO,
+        @Column("deposit_max") var depositMax: BigDecimal?= BigDecimal.ZERO, @Column("decimal") var decimal: Int,
         @Column("is_active") var isActive: Boolean?=true,
 
 

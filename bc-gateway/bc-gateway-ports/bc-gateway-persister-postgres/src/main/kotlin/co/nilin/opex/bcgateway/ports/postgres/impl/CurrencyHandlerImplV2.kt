@@ -25,24 +25,24 @@ class CurrencyHandlerImplV2(
 ) : CryptoCurrencyHandlerV2 {
 
     private val logger = LoggerFactory.getLogger(CryptoCurrencyHandler::class.java)
-    override suspend fun createImpl(request: CryptoCurrencyCommand): CryptoCurrencyCommand? {
+
+    override suspend fun createOnChainGateway(request: CryptoCurrencyCommand): CryptoCurrencyCommand? {
         chainRepository.findByName(request.chain)
                 ?.awaitFirstOrElse { throw OpexError.ChainNotFound.exception() }
         currencyImplementationRepository.findImpls(currencySymbol = request.currencySymbol, chain = request.chain, implementationSymbol = request.implementationSymbol)?.awaitFirstOrNull()?.let { throw OpexError.CurrencyIsExist.exception() }
         return doSave(request.toModel())?.toDto();
     }
 
-    override suspend fun updateImpl(request: CryptoCurrencyCommand): CryptoCurrencyCommand? {
-        return loadImpls(FetchImpls(implUuid = request.implUuid, currencySymbol = request.currencySymbol))
+    override suspend fun updateOnChainGateway(request: CryptoCurrencyCommand): CryptoCurrencyCommand? {
+        return loadImpls(FetchGateways(gatewayUuid = request.gatewayUuid, currencySymbol = request.currencySymbol))
                 ?.awaitFirstOrElse { throw OpexError.ImplNotFound.exception() }?.let {
                     doSave(it.toDto().updateTo(request).toModel().apply { id = it.id })?.toDto()
                 }
-
     }
 
-    override suspend fun deleteImpl(implUuid: String, currency: String): Void? {
+    override suspend fun deleteOnChainGateway(implUuid: String, currency: String): Void? {
 
-        loadImpls(FetchImpls(implUuid = implUuid, currencySymbol = currency))
+        loadImpls(FetchGateways(gatewayUuid = implUuid, currencySymbol = currency))
                 ?.awaitFirstOrElse { throw OpexError.ImplNotFound.exception() }?.let {
                     try {
                         return currencyImplementationRepository.deleteByImplUuid(implUuid)?.awaitFirstOrNull()
@@ -54,31 +54,27 @@ class CurrencyHandlerImplV2(
         return null
     }
 
-    override suspend fun fetchCurrencyImpls(data: FetchImpls?): CurrencyImps? {
-        logger.info("going to fetch impls of ${data?.currencySymbol?:"all currencies"}")
+    override suspend fun fetchCurrencyOnChainGateways(data: FetchGateways?): CurrencyImps? {
+        logger.info("going to fetch impls of ${data?.currencySymbol ?: "all currencies"}")
         return CurrencyImps(loadImpls(data)?.map { it.toDto() }
                 ?.collect(Collectors.toList())?.awaitFirstOrNull())
     }
 
-    override suspend fun fetchImpl(implUuid: String, currency: String): CryptoCurrencyCommand? {
-        return loadImpls(FetchImpls(currencySymbol = currency, implUuid = implUuid))?.awaitFirstOrNull()?.toDto()
-
+    override suspend fun fetchOnChainGateway(implUuid: String, currency: String): CryptoCurrencyCommand? {
+        return loadImpls(FetchGateways(currencySymbol = currency, gatewayUuid = implUuid))?.awaitFirstOrNull()?.toDto()
     }
 
-    private suspend fun loadImpls(request: FetchImpls?): Flux<CurrencyImplementationModel>? {
-        return currencyImplementationRepository.findImpls(request?.currencySymbol, request?.implUuid, request?.chain, request?.currencyImplementationName)
+    private suspend fun loadImpls(request: FetchGateways?): Flux<CurrencyImplementationModel>? {
+        return currencyImplementationRepository.findImpls(request?.currencySymbol, request?.gatewayUuid, request?.chain, request?.currencyImplementationName)
                 ?: throw OpexError.ImplNotFound.exception()
-
     }
 
     private suspend fun loadImpl(request: String): Mono<CurrencyImplementationModel>? {
         return currencyImplementationRepository.findByImplUuid(request)
                 ?: throw OpexError.ImplNotFound.exception()
-
     }
 
     private suspend fun doSave(request: CurrencyImplementationModel): CurrencyImplementationModel? {
         return currencyImplementationRepository.save(request).awaitSingleOrNull()
     }
-
 }

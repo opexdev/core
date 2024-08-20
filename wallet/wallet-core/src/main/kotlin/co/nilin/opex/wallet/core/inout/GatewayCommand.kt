@@ -25,11 +25,11 @@ abstract class CurrencyGatewayCommand(
         var withdrawFee: BigDecimal? = BigDecimal.ZERO,
         var withdrawAllowed: Boolean? = true,
         var depositAllowed: Boolean? = true,
-        var depositMin: Boolean? = true,
-        var depositMax: Boolean? = true,
-        var withdrawMin: Boolean? = true,
-        var withdrawMax: Boolean? = true,
-        )
+        var depositMin: BigDecimal? = BigDecimal.ZERO,
+        var depositMax: BigDecimal? = BigDecimal.ZERO,
+        var withdrawMin: BigDecimal? = BigDecimal.ZERO,
+        var withdrawMax: BigDecimal? = BigDecimal.ZERO,
+)
 
 data class OffChainGatewayCommand(var transferMethod: TransferMethod) : CurrencyGatewayCommand(GatewayType.OffChain)
 data class ManualGatewayCommand(var allowedFor: String) : CurrencyGatewayCommand(GatewayType.Manually)
@@ -40,4 +40,5 @@ data class OnChainGatewayCommand(
         var isToken: Boolean? = false,
         var decimal: Int,
         var chain: String) : CurrencyGatewayCommand(GatewayType.OnChain)
+
 data class CurrencyGateways(var gateways: List<CurrencyGatewayCommand>?)

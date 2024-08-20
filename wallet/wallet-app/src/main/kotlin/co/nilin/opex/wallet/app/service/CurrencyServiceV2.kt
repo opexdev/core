@@ -4,12 +4,11 @@ import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.CurrenciesDto
 import co.nilin.opex.wallet.app.dto.CurrencyDto
 import co.nilin.opex.wallet.app.utils.toDto
-import co.nilin.opex.wallet.core.inout.OnChainGatewayCommand
 import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
 import co.nilin.opex.wallet.core.inout.CurrencyGateways
 import co.nilin.opex.wallet.core.inout.GatewayType
 import co.nilin.opex.wallet.core.model.*
-import co.nilin.opex.wallet.core.service.CryptoCurrencyService
+import co.nilin.opex.wallet.core.service.GatewayService
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.core.spi.WalletManager
 import kotlinx.coroutines.runBlocking
@@ -22,7 +21,7 @@ import java.util.stream.Collectors
 @Service
 class CurrencyServiceV2(
         @Qualifier("newVersion") private val currencyServiceManager: CurrencyServiceManager,
-        private val cryptoCurrencyManager: CryptoCurrencyService,
+        private val gatewayService: GatewayService,
         private val walletManager: WalletManager
 ) {
 
@@ -52,30 +51,11 @@ class CurrencyServiceV2(
         currencyServiceManager.fetchCurrency(FetchCurrency(symbol = request.currencySymbol))
                 ?: throw OpexError.CurrencyNotFound.exception()
 
-        when (request.type) {
-
-            GatewayType.OnChain -> {
-                currencyServiceManager.prepareCurrencyToBeACryptoCurrency(request.currencySymbol!!)
-                        ?: throw OpexError.BadRequest.exception()
-
-                return cryptoCurrencyManager.createGateway(
-                        request.apply {
-                            gatewayUuid = UUID.randomUUID().toString()
-                        }
-                )
-            }
-
-            GatewayType.OffChain -> {
-
-return  null
-            }
-
-            GatewayType.Manually -> {
-return null
-
-            }
-
+        if (request.type == GatewayType.OnChain) {
+            currencyServiceManager.prepareCurrencyToBeACryptoCurrency(request.currencySymbol!!)
+                    ?: throw OpexError.BadRequest.exception()
         }
+        return gatewayService.createGateway(request);
 
     }
 
@@ -86,7 +66,7 @@ return null
                     if (includeGateway == true)
                         it.apply {
                             gateways =
-                                    cryptoCurrencyManager.fetchGateways(
+                                    gatewayService.fetchGateways(
                                             currencySymbol
                                     )?.gateways
                         }.toDto()
@@ -99,19 +79,19 @@ return null
     suspend fun fetchCurrencyGateway(currencyGatewayUUID: String, currencySymbol: String): CurrencyGatewayCommand? {
         currencyServiceManager.fetchCurrency(FetchCurrency(symbol = currencySymbol))
                 ?: throw OpexError.CurrencyNotFound.exception()
-        return cryptoCurrencyManager.fetchGateway(currencyGatewayUUID, currencySymbol)
+        return gatewayService.fetchGateway(currencyGatewayUUID, currencySymbol)
     }
 
     suspend fun deleteGateway(currencyGatewayUUID: String, currencySymbol: String) {
         currencyServiceManager.fetchCurrency(FetchCurrency(symbol = currencySymbol))
                 ?: throw OpexError.CurrencyNotFound.exception()
-        cryptoCurrencyManager.deleteGateway(currencyGatewayUUID, currencySymbol)
+        gatewayService.deleteGateway(currencyGatewayUUID, currencySymbol)
 
 
     }
 
     suspend fun fetchGateways(): CurrencyGateways? {
-        return cryptoCurrencyManager.fetchGateways();
+        return gatewayService.fetchGateways();
     }
 
     //todo
@@ -123,7 +103,7 @@ return null
                 it.apply {
                     gateways =
                             runBlocking {
-                                cryptoCurrencyManager.fetchGateways(
+                                gatewayService.fetchGateways(
                                         it.symbol!!
                                 )?.gateways
                             }
@@ -147,7 +127,7 @@ return null
         currencyServiceManager.fetchCurrency(FetchCurrency(symbol = request.currencySymbol))
                 ?.let {
 //                    if (it.isCryptoCurrency == true)
-                    return cryptoCurrencyManager.updateCryptoGateway(
+                    return gatewayService.updateCryptoGateway(
                             request
                     )
 
@@ -158,7 +138,7 @@ return null
 
 
     private suspend fun fetchCurrencyImps(currencySymbol: String): CurrencyGateways? {
-        return cryptoCurrencyManager.fetchGateways(currencySymbol)
+        return gatewayService.fetchGateways(currencySymbol)
     }
 
 }

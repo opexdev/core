@@ -1,11 +1,10 @@
 package co.nilin.opex.wallet.ports.postgres.util
 
-import co.nilin.opex.wallet.core.inout.CurrencyCommand
-import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
+import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
 import java.util.*
-import co.nilin.opex.wallet.core.inout.Deposit
 import co.nilin.opex.wallet.ports.postgres.model.DepositModel
+import co.nilin.opex.wallet.ports.postgres.model.OffChainGatewayModel
 import java.math.BigDecimal
 import java.time.ZoneId
 
@@ -88,6 +87,39 @@ fun DepositModel.toDto(): Deposit {
             transactionRef,
             status,
             depositType,
-             Date.from(createDate?.atZone(ZoneId.systemDefault())?.toInstant())
+            Date.from(createDate?.atZone(ZoneId.systemDefault())?.toInstant())
     )
+}
+
+
+fun OffChainGatewayModel.toDto(): CurrencyGatewayCommand {
+    var offChainGatewayModel = OffChainGatewayCommand(TransferMethod.valueOf(transferMethod))
+    return offChainGatewayModel.apply {
+        type = GatewayType.OffChain
+        currencySymbol = currencySymbol
+        gatewayUuid = gatewayUuid
+        isActive = isActive
+        withdrawFee = withdrawFee
+        withdrawAllowed = withdrawAllowed
+        depositAllowed = depositAllowed
+        depositMin = depositMin
+        depositMax = depositMax
+        withdrawMin = withdrawMin
+        withdrawMax = withdrawMax
+
+    }
+}
+
+fun OffChainGatewayCommand.toModel(): OffChainGatewayModel {
+    return OffChainGatewayModel(null, gatewayUuid!!,
+   currencySymbol!!,
+   withdrawAllowed,
+   depositAllowed,
+   withdrawFee,
+   withdrawMin,
+   withdrawMax,
+   depositMin,
+   depositMax,
+   transferMethod.name,
+   isActive)
 }

@@ -71,7 +71,7 @@ class AssignAddressServiceImplUnitTest {
 
         )
 
-        coEvery { currencyHandler.fetchCurrencyImpls(FetchImpls(currencySymbol = currency)) } returns CurrencyImps(
+        coEvery { currencyHandler.fetchCurrencyOnChainGateways(FetchGateways(currencySymbol = currency)) } returns CurrencyImps(
                 listOf(eth, wrappedEth)
         )
         coEvery { chainLoader.fetchChainInfo(chain = ethChain.name) } returns ethChain
