@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.RequestWithdrawBody
+import co.nilin.opex.wallet.app.dto.SearchWithdrawRequest
 import co.nilin.opex.wallet.app.dto.TransactionRequest
 import co.nilin.opex.wallet.app.dto.WithdrawHistoryResponse
 import co.nilin.opex.wallet.core.inout.WithdrawCommand
@@ -20,59 +21,27 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 
 @RestController
-@RequestMapping("/v2/withdraw")
+@RequestMapping("/withdraw")
 class WithdrawController(private val withdrawService: WithdrawService) {
 
     @GetMapping("/{withdrawId}")
-    suspend fun findWithdraw(@PathVariable withdrawId: String): WithdrawResponse {
-        return with(withdrawService.findByCriteria(withdrawId = withdrawId)) {
-            if (isEmpty()) throw OpexError.WithdrawNotFound.exception()
-            get(0)
-        }
+    suspend fun findWithdraw(@PathVariable withdrawId: Long): WithdrawResponse {
+        return withdrawService.findWithdraw(withdrawId) ?: throw OpexError.WithdrawNotFound.exception()
     }
 
     @GetMapping
-    @ApiResponse(
-        message = "OK",
-        code = 200,
-        examples = Example(
-            ExampleProperty(
-                value = "{ }",
-                mediaType = "application/json"
-            )
+    suspend fun myWithdraws(principal: Principal, @RequestBody body: SearchWithdrawRequest): List<WithdrawResponse> {
+        return withdrawService.findByCriteria(
+            principal.name,
+            body.currency,
+            body.destTxRef,
+            body.destAddress,
+            body.status?.isEmpty() ?: true,
+            body.status
         )
-    )
-    suspend fun getMyWithdraws(
-        principal: Principal,
-        @RequestParam(required = false) withdrawId: String?,
-        @RequestParam(required = false) currency: String?,
-        @RequestParam(required = false) destTxRef: String?,
-        @RequestParam(required = false) destAddress: String?,
-        @RequestParam(required = false) status: List<WithdrawStatus>?
-    ): List<WithdrawResponse> {
-        return withdrawService
-            .findByCriteria(
-                principal.name,
-                withdrawId,
-                currency,
-                destTxRef,
-                destAddress,
-                status?.isEmpty() ?: true,
-                status
-            )
     }
 
     @PostMapping
-    @ApiResponse(
-        message = "OK",
-        code = 200,
-        examples = Example(
-            ExampleProperty(
-                value = "{ }",
-                mediaType = "application/json"
-            )
-        )
-    )
     suspend fun requestWithdraw(principal: Principal, @RequestBody request: RequestWithdrawBody): WithdrawResult {
         return withdrawService.requestWithdraw(
             with(request) {
@@ -81,12 +50,11 @@ class WithdrawController(private val withdrawService: WithdrawService) {
                     currency,
                     amount,
                     description,
-                    "", //TODO ************************************************************************
                     destSymbol,
                     destAddress,
                     destNetwork,
                     destNote,
-                    BigDecimal.ZERO //TODO ************************************************************************
+                    fee
                 )
             }
         )
@@ -115,7 +83,6 @@ class WithdrawController(private val withdrawService: WithdrawService) {
                 it.ownerUuid,
                 it.amount,
                 it.currency,
-                it.acceptedFee,
                 it.appliedFee,
                 it.destAmount,
                 it.destSymbol,

@@ -11,7 +11,6 @@ data class Withdraw(
     val amount: BigDecimal,
     val requestTransaction: String,
     val finalizedTransaction: String?,
-    val acceptedFee: BigDecimal,
     val appliedFee: BigDecimal?,
     val destAmount: BigDecimal?,
     val destSymbol: String?,

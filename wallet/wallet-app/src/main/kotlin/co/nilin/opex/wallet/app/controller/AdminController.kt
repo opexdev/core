@@ -11,6 +11,7 @@ import java.math.BigDecimal
 
 @RestController
 @RequestMapping("/admin")
+@Deprecated("v2 will be used")
 class AdminController(private val withdrawService: WithdrawService) {
 
     @GetMapping("/withdraw")
@@ -34,18 +35,16 @@ class AdminController(private val withdrawService: WithdrawService) {
         @RequestParam offset: Int,
         @RequestParam size: Int
     ): PagingWithdrawResponse {
-        return withdrawService
-            .findByCriteria(
-                uuid,
-                withdrawId,
-                currency,
-                destTxRef,
-                destAddress,
-                status?.isEmpty() ?: true,
-                status,
-                offset,
-                size
-            )
+        return withdrawService.findByCriteria(
+            uuid,
+            currency,
+            destTxRef,
+            destAddress,
+            status?.isEmpty() ?: true,
+            status,
+            offset,
+            size
+        )
     }
 
     @PostMapping("/withdraw/{id}/reject")
@@ -64,7 +63,7 @@ class AdminController(private val withdrawService: WithdrawService) {
         @RequestParam statusReason: String,
         @RequestParam(required = false) destNote: String?
     ): WithdrawResult {
-        return withdrawService.rejectWithdraw(WithdrawRejectCommand(withdrawId, statusReason, destNote))
+        return withdrawService.rejectWithdraw(WithdrawRejectCommand(withdrawId.toLong(), statusReason, destNote))
     }
 
     @PostMapping("/withdraw/{id}/accept")
@@ -80,11 +79,18 @@ class AdminController(private val withdrawService: WithdrawService) {
     )
     suspend fun acceptWithdraw(
         @PathVariable("id") withdrawId: String,
-        @RequestParam(required = false) destTransactionRef: String?,
+        @RequestParam(required = false) destTransactionRef: String,
         @RequestParam(required = false) destNote: String?,
         @RequestParam(required = false) fee: BigDecimal = BigDecimal.ZERO,
     ): WithdrawResult {
-        return withdrawService.acceptWithdraw(WithdrawAcceptCommand(withdrawId, destTransactionRef, destNote, fee))
+        return withdrawService.acceptWithdraw(
+            WithdrawAcceptCommand(
+                withdrawId.toLong(),
+                BigDecimal.ZERO,
+                destTransactionRef,
+                destNote
+            )
+        )
     }
 
 }

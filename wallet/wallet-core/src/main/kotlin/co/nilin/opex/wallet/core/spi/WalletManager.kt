@@ -25,6 +25,8 @@ interface WalletManager {
 
     suspend fun createWallet(owner: WalletOwner, balance: Amount, currency: Currency, type: WalletType): Wallet
 
+    suspend fun createCashoutWallet(owner: WalletOwner, currency: Currency): Wallet
+
     suspend fun findWalletById(walletId: Long): Wallet?
 
     suspend fun findAllWalletsBriefNotZero(ownerId: Long): List<BriefWallet>

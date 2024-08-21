@@ -104,7 +104,7 @@ CREATE TABLE IF NOT EXISTS user_transaction
     description    TEXT,
     date           TIMESTAMP    NOT NULL DEFAULT CURRENT_DATE
 );
-CREATE INDEX IF NOT EXISTS idx_user_transaction_category ON user_transaction(category);
+CREATE INDEX IF NOT EXISTS idx_user_transaction_category ON user_transaction (category);
 
 CREATE TABLE IF NOT EXISTS wallet_limits
 (
@@ -136,7 +136,6 @@ CREATE TABLE IF NOT EXISTS withdraws
     currency             VARCHAR(20) NOT NULL REFERENCES currency (symbol),
     wallet               INTEGER     NOT NULL REFERENCES wallet (id),
     amount               DECIMAL     NOT NULL,
-    accepted_fee         DECIMAL     NOT NULL,
     applied_fee          DECIMAL,
     dest_amount          DECIMAL,
     dest_symbol          VARCHAR(20),

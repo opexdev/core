@@ -20,14 +20,12 @@ import java.time.ZoneId
 
 @RestController
 @RequestMapping("/withdraw")
+@Deprecated("v2 will be used")
 class LegacyWithdrawController(private val withdrawService: WithdrawService) {
 
     @GetMapping("/{withdrawId}")
     suspend fun findWithdraw(@PathVariable withdrawId: String): WithdrawResponse {
-        return with(withdrawService.findByCriteria(withdrawId = withdrawId)) {
-            if (isEmpty()) throw OpexError.WithdrawNotFound.exception()
-            get(0)
-        }
+        return withdrawService.findWithdraw(withdrawId.toLong()) ?: throw OpexError.WithdrawNotFound.exception()
     }
 
     @GetMapping
@@ -49,16 +47,14 @@ class LegacyWithdrawController(private val withdrawService: WithdrawService) {
         @RequestParam("dest_address", required = false) destAddress: String?,
         @RequestParam(required = false) status: List<WithdrawStatus>?
     ): List<WithdrawResponse> {
-        return withdrawService
-            .findByCriteria(
-                principal.name,
-                withdrawId,
-                currency,
-                destTxRef,
-                destAddress,
-                status?.isEmpty() ?: true,
-                status
-            )
+        return withdrawService.findByCriteria(
+            principal.name,
+            currency,
+            destTxRef,
+            destAddress,
+            status?.isEmpty() ?: true,
+            status
+        )
     }
 
     @PostMapping("/{amount}_{currency}")
@@ -90,7 +86,6 @@ class LegacyWithdrawController(private val withdrawService: WithdrawService) {
                 currency,
                 amount,
                 description,
-                transferRef,
                 destSymbol,
                 destAddress,
                 destNetwork,
@@ -123,7 +118,6 @@ class LegacyWithdrawController(private val withdrawService: WithdrawService) {
                 it.ownerUuid,
                 it.amount,
                 it.currency,
-                it.acceptedFee,
                 it.appliedFee,
                 it.destAmount,
                 it.destSymbol,
@@ -138,8 +132,6 @@ class LegacyWithdrawController(private val withdrawService: WithdrawService) {
             )
         }
     }
-
-
 }
 
 
