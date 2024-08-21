@@ -388,3 +388,37 @@ CREATE TABLE IF NOT EXISTS deposits (
       deposit_type VARCHAR(255),
       create_date TIMESTAMP
 );
+
+
+CREATE TABLE IF NOT EXISTS currency_off_chain_gateway
+(
+    id                    SERIAL PRIMARY KEY,
+    currency_symbol       VARCHAR(72) NOT NULL ,
+    gateway_uuid             VARCHAR(256) NOT NULL UNIQUE DEFAULT  uuid_generate_v4(),
+    withdraw_allowed      BOOLEAN     NOT NULL,
+    deposit_allowed      BOOLEAN     NOT NULL,
+    withdraw_fee          DECIMAL     NOT NULL,
+    withdraw_min          DECIMAL     NOT NULL,
+    withdraw_max          DECIMAL     NOT NULL,
+    deposit_min          DECIMAL     NOT NULL,
+    deposit_max          DECIMAL     NOT NULL,
+    is_active             BOOLEAN     NOT NULL DEFAULT TRUE,
+    transfer_method      VARCHAR(256) NOT NULL
+    );
+
+
+CREATE TABLE IF NOT EXISTS currency_manual_gateway
+(
+    id                    SERIAL PRIMARY KEY,
+    currency_symbol       VARCHAR(72) NOT NULL ,
+    gateway_uuid             VARCHAR(256) NOT NULL UNIQUE DEFAULT  uuid_generate_v4(),
+    withdraw_allowed      BOOLEAN     NOT NULL,
+    deposit_allowed      BOOLEAN     NOT NULL,
+    withdraw_fee          DECIMAL     NOT NULL,
+    withdraw_min          DECIMAL     NOT NULL,
+    withdraw_max          DECIMAL     NOT NULL,
+    deposit_min          DECIMAL     NOT NULL,
+    deposit_max          DECIMAL     NOT NULL,
+    is_active             BOOLEAN     NOT NULL DEFAULT TRUE,
+    allowed_for      VARCHAR(256) NOT NULL
+    );

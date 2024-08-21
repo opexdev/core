@@ -7,6 +7,7 @@ import co.nilin.opex.wallet.app.utils.toDto
 import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
 import co.nilin.opex.wallet.core.inout.CurrencyGateways
 import co.nilin.opex.wallet.core.inout.GatewayType
+import co.nilin.opex.wallet.core.inout.OnChainGatewayCommand
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.service.GatewayService
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
@@ -46,12 +47,10 @@ class CurrencyServiceV2(
 
     @Transactional
     suspend fun addGateway2Currency(request: CurrencyGatewayCommand): CurrencyGatewayCommand? {
-
-
         currencyServiceManager.fetchCurrency(FetchCurrency(symbol = request.currencySymbol))
                 ?: throw OpexError.CurrencyNotFound.exception()
 
-        if (request.type == GatewayType.OnChain) {
+        if (request is OnChainGatewayCommand) {
             currencyServiceManager.prepareCurrencyToBeACryptoCurrency(request.currencySymbol!!)
                     ?: throw OpexError.BadRequest.exception()
         }

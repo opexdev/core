@@ -1,8 +1,7 @@
 package co.nilin.opex.wallet.core.service
 
-import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
-import co.nilin.opex.wallet.core.inout.CurrencyGateways
-import co.nilin.opex.wallet.core.inout.GatewayType
+import co.nilin.opex.common.OpexError
+import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.spi.GatewayPersister
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
@@ -16,35 +15,44 @@ class GatewayService(@Qualifier("onChainGateway") private val onChainGateway: Ga
                      private val authService: AuthService) {
     private val logger = LoggerFactory.getLogger(GatewayService::class.java)
     suspend fun createGateway(currencyGateway: CurrencyGatewayCommand): CurrencyGatewayCommand? {
-        when (currencyGateway.type) {
-            GatewayType.OnChain -> {
-                currencyGateway.apply { gatewayUuid = "onc_$gatewayUuid" }
+        when (currencyGateway) {
+            is OnChainGatewayCommand -> {
+                currencyGateway.apply { gatewayUuid = "ong_$gatewayUuid" }
                 val token = authService.extractToken()
                 return onChainGateway.createGateway(currencyGateway, token)
             }
-            GatewayType.OffChain -> {
-                currencyGateway.apply { gatewayUuid = "ofc_$gatewayUuid" }
+
+            is OffChainGatewayCommand -> {
+                currencyGateway.apply { gatewayUuid = "ofg_$gatewayUuid" }
                 return offChainGateway.createGateway(currencyGateway)
             }
-            GatewayType.Manually -> {
-                currencyGateway.apply { gatewayUuid = "mac_$gatewayUuid" }
+
+            is ManualGatewayCommand -> {
+                currencyGateway.apply { gatewayUuid = "mag_$gatewayUuid" }
                 return manualGateway.createGateway(currencyGateway)
             }
+
+            else -> throw OpexError.BadRequest.exception()
         }
     }
 
     suspend fun updateCryptoGateway(currencyGateway: CurrencyGatewayCommand): CurrencyGatewayCommand? {
-        when (currencyGateway.type) {
-            GatewayType.OnChain -> {
+        when (currencyGateway) {
+            is OnChainGatewayCommand -> {
                 val token = authService.extractToken()
                 return onChainGateway.updateGateway(currencyGateway, token)
             }
-            GatewayType.OffChain -> {
+
+            is OffChainGatewayCommand -> {
                 return offChainGateway.updateGateway(currencyGateway)
             }
-            GatewayType.Manually -> {
+
+            is ManualGatewayCommand -> {
                 return manualGateway.updateGateway(currencyGateway)
             }
+
+            else -> throw OpexError.BadRequest.exception()
+
         }
     }
 

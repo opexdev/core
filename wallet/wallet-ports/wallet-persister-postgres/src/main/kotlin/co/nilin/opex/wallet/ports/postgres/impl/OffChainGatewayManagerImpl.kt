@@ -45,7 +45,7 @@ class OffChainGatewayManagerImpl(private val offChainGatewayRepository: OffChain
         return offChainGatewayRepository.findByGatewayUuid(gatewayUuid)?.awaitFirstOrNull()
     }
 
-    private suspend fun _fetchGateways(fetchGateways: FetchGateways): OffChainGatewayModel? {
-        return offChainGatewayRepository.findByGatewayUuid(gatewayUuid)?.awaitFirstOrNull()
+    private suspend fun _fetchGateways(fetchGateways: FetchGateways): List<OffChainGatewayModel>? {
+        return offChainGatewayRepository.findGateways(fetchGateways.currencySymbol,fetchGateways.gatewayUuid)?.collectList()?.awaitFirstOrNull()
     }
 }

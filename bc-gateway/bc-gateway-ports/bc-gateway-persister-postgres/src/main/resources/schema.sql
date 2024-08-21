@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS currency_implementations
     id                    SERIAL PRIMARY KEY,
     currency_symbol       VARCHAR(72) NOT NULL ,
     implementation_symbol VARCHAR(72) NOT NULL,
-    impl_uuid             VARCHAR(256) NOT NULL UNIQUE DEFAULT  uuid_generate_v4(),
+    gateway_uuid             VARCHAR(256) NOT NULL UNIQUE DEFAULT  uuid_generate_v4(),
     chain                 VARCHAR(72) NOT NULL REFERENCES chains (name),
     is_token                 BOOLEAN     NOT NULL,
     token_address         VARCHAR(72),
@@ -79,6 +79,9 @@ CREATE TABLE IF NOT EXISTS currency_implementations
     deposit_allowed      BOOLEAN     NOT NULL,
     withdraw_fee          DECIMAL     NOT NULL,
     withdraw_min          DECIMAL     NOT NULL,
+    withdraw_max          DECIMAL     NOT NULL,
+    deposit_min          DECIMAL     NOT NULL,
+    deposit_max          DECIMAL     NOT NULL,
     decimal               INTEGER     NOT NULL,
     is_active             BOOLEAN     NOT NULL DEFAULT TRUE,
     UNIQUE (currency_symbol, chain, implementation_symbol)
@@ -90,6 +93,10 @@ ALTER TABLE currency_implementations ADD COLUMN IF NOT EXISTS is_active BOOLEAN 
 ALTER TABLE currency_implementations RENAME COLUMN withdraw_enabled to withdraw_allowed ;
 ALTER TABLE currency_implementations ADD COLUMN IF NOT EXISTS deposit_allowed BOOLEAN NOT NULL  DEFAULT TRUE;
 ALTER TABLE currency_implementations RENAME COLUMN token to is_token ;
+ALTER TABLE currency_implementations RENAME COLUMN impl_uuid to gateway_uuid ;
+ALTER TABLE currency_implementations ADD COLUMN IF NOT EXISTS withdraw_max DECIMAL NOT NULL;
+ALTER TABLE currency_implementations ADD COLUMN IF NOT EXISTS deposit_max DECIMAL NOT NULL;
+ALTER TABLE currency_implementations ADD COLUMN IF NOT EXISTS deposit_min DECIMAL NOT NULL;
 
 
 

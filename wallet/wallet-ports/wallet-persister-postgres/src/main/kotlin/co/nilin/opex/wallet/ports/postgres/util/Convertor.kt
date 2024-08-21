@@ -4,6 +4,7 @@ import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
 import java.util.*
 import co.nilin.opex.wallet.ports.postgres.model.DepositModel
+import co.nilin.opex.wallet.ports.postgres.model.ManualGatewayModel
 import co.nilin.opex.wallet.ports.postgres.model.OffChainGatewayModel
 import java.math.BigDecimal
 import java.time.ZoneId
@@ -93,33 +94,39 @@ fun DepositModel.toDto(): Deposit {
 
 
 fun OffChainGatewayModel.toDto(): CurrencyGatewayCommand {
-    var offChainGatewayModel = OffChainGatewayCommand(TransferMethod.valueOf(transferMethod))
-    return offChainGatewayModel.apply {
-        type = GatewayType.OffChain
-        currencySymbol = currencySymbol
-        gatewayUuid = gatewayUuid
-        isActive = isActive
-        withdrawFee = withdrawFee
-        withdrawAllowed = withdrawAllowed
-        depositAllowed = depositAllowed
-        depositMin = depositMin
-        depositMax = depositMax
-        withdrawMin = withdrawMin
-        withdrawMax = withdrawMax
+    return OffChainGatewayCommand(TransferMethod.valueOf(transferMethod), currencySymbol, gatewayUuid, isActive, withdrawFee, withdrawAllowed, depositAllowed, depositMin, depositMax, withdrawMin, withdrawMax)
 
-    }
 }
 
 fun OffChainGatewayCommand.toModel(): OffChainGatewayModel {
     return OffChainGatewayModel(null, gatewayUuid!!,
-   currencySymbol!!,
-   withdrawAllowed,
-   depositAllowed,
-   withdrawFee,
-   withdrawMin,
-   withdrawMax,
-   depositMin,
-   depositMax,
-   transferMethod.name,
-   isActive)
+            currencySymbol!!,
+            withdrawAllowed,
+            depositAllowed,
+            withdrawFee,
+            withdrawMin,
+            withdrawMax,
+            depositMin,
+            depositMax,
+            transferMethod.name,
+            isActive)
+}
+
+fun ManualGatewayModel.toDto(): ManualGatewayCommand {
+    return ManualGatewayCommand(allowedFor, currencySymbol, gatewayUuid, isActive, withdrawFee, withdrawAllowed, depositAllowed, depositMin, depositMax, withdrawMin, withdrawMax)
+}
+
+fun ManualGatewayCommand.toModel(): ManualGatewayModel {
+    return ManualGatewayModel(null,
+            gatewayUuid!!,
+            currencySymbol!!,
+            allowedFor,
+            withdrawAllowed,
+            depositAllowed,
+            withdrawFee,
+            withdrawMin,
+            withdrawMax,
+            depositMin,
+            depositMax,
+            isActive)
 }
