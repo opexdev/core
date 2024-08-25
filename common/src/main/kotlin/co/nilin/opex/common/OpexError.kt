@@ -71,6 +71,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     InvalidWithdrawStatus(6023, "Withdraw status is invalid", HttpStatus.NOT_FOUND),
 
     GatewayNotFount(6024, null, HttpStatus.NOT_FOUND),
+    GatewayIsExist(6025, null, HttpStatus.NOT_FOUND),
 
 
 

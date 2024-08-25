@@ -5,17 +5,19 @@ import co.nilin.opex.wallet.app.dto.CurrenciesDto
 import co.nilin.opex.wallet.app.dto.CurrencyDto
 import co.nilin.opex.wallet.app.utils.toDto
 import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
-import co.nilin.opex.wallet.core.inout.CurrencyGateways
 import co.nilin.opex.wallet.core.inout.GatewayType
 import co.nilin.opex.wallet.core.inout.OnChainGatewayCommand
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.service.GatewayService
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.core.spi.WalletManager
+import co.nilin.opex.wallet.ports.proxy.bcgateway.impl.OnChainGatewayProxyGateway
 import kotlinx.coroutines.runBlocking
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.ArrayList
 import java.util.UUID
 import java.util.stream.Collectors
 
@@ -25,6 +27,7 @@ class CurrencyServiceV2(
         private val gatewayService: GatewayService,
         private val walletManager: WalletManager
 ) {
+    private val logger = LoggerFactory.getLogger(CurrencyServiceManager::class.java)
 
     suspend fun createNewCurrency(request: CurrencyDto): CurrencyDto? {
         val nc = currencyServiceManager.createNewCurrency(
@@ -58,19 +61,13 @@ class CurrencyServiceV2(
 
     }
 
-    suspend fun fetchCurrencyWithGateways(currencySymbol: String, includeGateway: Boolean?): CurrencyDto? {
+    suspend fun fetchCurrencyWithGateways(currencySymbol: String, includeGateways: List<GatewayType>? = null): CurrencyDto? {
         return currencyServiceManager.fetchCurrency(FetchCurrency(symbol = currencySymbol))
                 ?.let {
 //                    if (it.isCryptoCurrency == true && includeGateway == true)
-                    if (includeGateway == true)
-                        it.apply {
-                            gateways =
-                                    gatewayService.fetchGateways(
-                                            currencySymbol
-                                    )?.gateways
-                        }.toDto()
-                    else
-                        it.toDto()
+                    var gateways = gatewayService.fetchGateways(currencySymbol, includeGateways)
+                    return it.apply { it.gateways = gateways }.toDto()
+
                 } ?: throw OpexError.CurrencyNotFound.exception()
     }
 
@@ -89,55 +86,31 @@ class CurrencyServiceV2(
 
     }
 
-    suspend fun fetchGateways(): CurrencyGateways? {
-        return gatewayService.fetchGateways();
+    suspend fun fetchGateways(includes: List<GatewayType>): List<CurrencyGatewayCommand>? {
+        return gatewayService.fetchGateways(null, includes)
     }
 
-    //todo
-//     fetch all gateways in single request and then map the results together
-    suspend fun fetchCurrenciesWithGateways(includeGateway: Boolean?): CurrenciesDto? {
-        return CurrenciesDto(currencyServiceManager.fetchCurrencies()?.currencies?.stream()?.map {
-//            if (it.isCryptoCurrency == true && includeGateway == true)
-            if (includeGateway == true)
-                it.apply {
-                    gateways =
-                            runBlocking {
-                                gatewayService.fetchGateways(
-                                        it.symbol!!
-                                )?.gateways
-                            }
-                }.toDto()
-            else
-                it.toDto()
+
+    suspend fun fetchCurrenciesWithGateways(includeGateways: List<GatewayType>?): CurrenciesDto? {
+        var currencies = currencyServiceManager.fetchCurrencies()?.currencies
+        var gateways = gatewayService.fetchGateways(includeGateways = includeGateways)?.toList()
+        var groupedByGateways = gateways?.groupBy { it.currencySymbol }
+        return CurrenciesDto(currencies?.stream()?.map {
+            it.apply { it.gateways = groupedByGateways?.get(it.symbol) }
+            it.toDto()
         }?.collect(Collectors.toList()))
     }
 
 
-//    suspend fun fetchCurrenciesWithGateways(includeGateway: Boolean?): CurrenciesDto? {
-//        var currencies = currencyServiceManager.fetchCurrencies()?.currencies
-//        val currenciesGateways = cryptoCurrencyManager.fetchGateways()
-//        val groupedByGateway = currenciesGateways?.imps?.groupBy { it.currencySymbol }
-//        return CurrenciesDto(currencies?.map { it.apply { gateways = groupedByGateway?.get(it.symbol) }.toDto() }?.toList())
-//
-//    }
 
 
     suspend fun updateGateway(request: CurrencyGatewayCommand): CurrencyGatewayCommand? {
         currencyServiceManager.fetchCurrency(FetchCurrency(symbol = request.currencySymbol))
                 ?.let {
 //                    if (it.isCryptoCurrency == true)
-                    return gatewayService.updateCryptoGateway(
-                            request
-                    )
-
-//                    else
-//                        throw OpexError.GatewayNotFound.exception()
+                    return gatewayService.updateCryptoGateway(request);
                 } ?: throw OpexError.CurrencyNotFound.exception()
     }
 
-
-    private suspend fun fetchCurrencyImps(currencySymbol: String): CurrencyGateways? {
-        return gatewayService.fetchGateways(currencySymbol)
-    }
 
 }

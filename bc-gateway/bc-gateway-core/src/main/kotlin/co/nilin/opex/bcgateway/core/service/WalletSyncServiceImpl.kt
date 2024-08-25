@@ -28,7 +28,7 @@ class WalletSyncServiceImpl(
 
     @Transactional
     override suspend fun syncTransfers(transfers: List<Transfer>) = coroutineScope {
-        val groupedByChain = currencyHandler.fetchCurrencyOnChainGateways()?.imps?.groupBy { it.chain }
+        val groupedByChain = currencyHandler.fetchCurrencyOnChainGateways()?.groupBy { it.chain }
                 ?: throw OpexError.CurrencyNotFound.exception()
         val deposits = transfers.mapNotNull {
             coroutineScope {

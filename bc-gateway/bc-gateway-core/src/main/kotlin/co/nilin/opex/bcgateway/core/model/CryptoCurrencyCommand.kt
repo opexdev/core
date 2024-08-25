@@ -3,7 +3,6 @@ package co.nilin.opex.bcgateway.core.model
 import java.math.BigDecimal
 
 data class CryptoCurrencyCommand(
-
         var currencySymbol: String,
         var gatewayUuid: String?,
         var implementationSymbol: String? = currencySymbol,
@@ -20,6 +19,8 @@ data class CryptoCurrencyCommand(
         var depositMax: BigDecimal? = BigDecimal.ZERO,
         var decimal: Int,
         var chain: String,
+        var type: String= "OnChain"
+
 //        var chainDetail: Chain? = null
 
 
@@ -34,4 +35,3 @@ data class CryptoCurrencyCommand(
 }
 
 
-data class CurrencyImps(var imps: List<CryptoCurrencyCommand>?)

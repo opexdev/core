@@ -11,7 +11,7 @@ import java.util.UUID
 @RequestMapping("/crypto-currency")
 class CryptoCurrencyController(val cryptoCurrencyHandler: CryptoCurrencyHandlerV2, private val chainLoader: ChainLoader) {
 
-    @PostMapping("/{currencySymbol}/impl")
+    @PostMapping("/{currencySymbol}/gateway")
     suspend fun addNewCurrencyGateway(
             @PathVariable("currencySymbol") currencySymbol: String,
             @RequestBody request: CryptoCurrencyCommand
@@ -45,18 +45,18 @@ class CryptoCurrencyController(val cryptoCurrencyHandler: CryptoCurrencyHandlerV
     }
 
     @GetMapping("/gateways")
-    suspend fun fetchGateways(@RequestParam("currency") currencySymbol: String? = null): CurrencyImps? {
+    suspend fun fetchGateways(@RequestParam("currency") currencySymbol: String? = null): List<CryptoCurrencyCommand>? {
         return cryptoCurrencyHandler.fetchCurrencyOnChainGateways(FetchGateways(currencySymbol = currencySymbol))
     }
 
     @GetMapping("/{currency}/gateways")
-    suspend fun fetchCurrencyGateways(@PathVariable("currency") currencySymbol: String): CurrencyImps? {
+    suspend fun fetchCurrencyGateways(@PathVariable("currency") currencySymbol: String): List<CryptoCurrencyCommand>?? {
         return cryptoCurrencyHandler.fetchCurrencyOnChainGateways(FetchGateways(currencySymbol = currencySymbol))
     }
 
     @GetMapping("/{currency}/gateway/{gatewayUuid}")
     suspend fun fetchSpecificGateway(@PathVariable("gatewayUuid") gatewayUuid: String,
-                                  @PathVariable("currency") currencySymbol: String): CurrencyImps? {
+                                  @PathVariable("currency") currencySymbol: String): List<CryptoCurrencyCommand>? {
         return cryptoCurrencyHandler.fetchCurrencyOnChainGateways(FetchGateways(gatewayUuid = gatewayUuid, currencySymbol = currencySymbol))
     }
 

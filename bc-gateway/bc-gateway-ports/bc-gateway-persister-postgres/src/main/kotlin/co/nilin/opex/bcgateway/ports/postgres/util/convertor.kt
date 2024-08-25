@@ -1,11 +1,11 @@
 package co.nilin.opex.bcgateway.ports.postgres.util
 
 import co.nilin.opex.bcgateway.core.model.CryptoCurrencyCommand
-import co.nilin.opex.bcgateway.ports.postgres.model.CurrencyImplementationModel
+import co.nilin.opex.bcgateway.ports.postgres.model.CurrencyOnChainGatewayModel
 
 
-fun CryptoCurrencyCommand.toModel(): CurrencyImplementationModel {
-    return CurrencyImplementationModel(null, gatewayUuid!!,
+fun CryptoCurrencyCommand.toModel(): CurrencyOnChainGatewayModel {
+    return CurrencyOnChainGatewayModel(null, gatewayUuid!!,
             currencySymbol,
             implementationSymbol,
             chain,
@@ -24,7 +24,7 @@ fun CryptoCurrencyCommand.toModel(): CurrencyImplementationModel {
     )
 }
 
-fun CurrencyImplementationModel.toDto(): CryptoCurrencyCommand {
+fun CurrencyOnChainGatewayModel.toDto(): CryptoCurrencyCommand {
 
     return CryptoCurrencyCommand(currencySymbol,
             gatewayUuid!!,

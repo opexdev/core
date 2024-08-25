@@ -1,7 +1,6 @@
 package co.nilin.opex.bcgateway.core.spi
 
 import co.nilin.opex.bcgateway.core.model.CryptoCurrencyCommand
-import co.nilin.opex.bcgateway.core.model.CurrencyImps
 import java.math.BigDecimal
 
 interface CryptoCurrencyHandler {
@@ -56,7 +55,7 @@ interface CryptoCurrencyHandler {
         decimal: Int
     ): CryptoCurrencyCommand
 
-    suspend fun fetchAllImplementations(): CurrencyImps
+//    suspend fun fetchAllImplementations(): CurrencyImps
 
     suspend fun fetchCurrencyInfo(symbol: String): CryptoCurrencyCommand
 

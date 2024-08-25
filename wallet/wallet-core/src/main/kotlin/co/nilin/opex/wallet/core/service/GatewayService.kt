@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.util.*
+import kotlin.collections.ArrayList
 
 @Service
 class GatewayService(@Qualifier("onChainGateway") private val onChainGateway: GatewayPersister,
@@ -56,12 +57,25 @@ class GatewayService(@Qualifier("onChainGateway") private val onChainGateway: Ga
         }
     }
 
-    suspend fun fetchGateways(currencySymbol: String? = null): CurrencyGateways? {
-        val token = authService.extractToken()
-        return onChainGateway.fetchGateways(currencySymbol, token)
+    suspend fun fetchGateways(currencySymbol: String? = null, includeGateways: List<GatewayType>? = null): List<CurrencyGatewayCommand>? {
+        includeGateways?.map { logger.info(it.name) }
+        var gateways = ArrayList<CurrencyGatewayCommand>()
+        if (includeGateways != null) {
+            if (GatewayType.Manually in includeGateways)
+                manualGateway.fetchGateways(currencySymbol)?.toList()?.let { it1 -> gateways.addAll(it1) }
 
+            if (GatewayType.OffChain in includeGateways)
+                offChainGateway.fetchGateways(currencySymbol)?.toList()?.let { it1 -> gateways.addAll(it1) }
 
+            if (GatewayType.OnChain in includeGateways) {
+                val token = authService.extractToken()
+                onChainGateway.fetchGateways(currencySymbol, token)?.toList()?.let { it1 -> gateways.addAll(it1) }
+            }
+
+        }
+        return gateways
     }
+
 
     suspend fun fetchGateway(currencyGatewayUuid: String, currencySymbol: String): CurrencyGatewayCommand? {
 
@@ -71,22 +85,22 @@ class GatewayService(@Qualifier("onChainGateway") private val onChainGateway: Ga
 
 
     suspend fun deleteGateway(currencyGatewayUuid: String, currencySymbol: String) {
-//        when (currencyGateway.type) {
-//            GatewayType.OnChain -> {
-//                val token = authService.extractToken()
-//                return onChainGateway.deleteGateway(currencyGatewayUuid, currencySymbol, token)
-//            }
-//
-//            GatewayType.OffChain -> {
-//
-//                return null
-//            }
-//
-//            GatewayType.Manually -> {
-//                return null
-//
-//            }
-//        }
+        if (currencyGatewayUuid.startsWith("ong")) {
+
+            val token = authService.extractToken()
+            return onChainGateway.deleteGateway(currencyGatewayUuid, currencySymbol, token)
+        }
+
+        if (currencyGatewayUuid.startsWith("ofg")) {
+            offChainGateway.deleteGateway(currencyGatewayUuid,
+                    currencySymbol)
+        }
+
+        if (currencyGatewayUuid.startsWith("mag")) {
+            manualGateway.deleteGateway(currencyGatewayUuid,
+                    currencySymbol)
+        }
+
 
     }
 }

@@ -13,7 +13,11 @@ import reactor.core.publisher.Mono
 interface ManualGatewayRepository : ReactiveCrudRepository<ManualGatewayModel, Long> {
 
     fun findByGatewayUuid(uuid: String): Mono<ManualGatewayModel>?
+    fun findByGatewayUuidAndCurrencySymbol(uuid: String,currencySymbol: String): Mono<ManualGatewayModel>?
 
     @Query("select * from currency_manual_gateway where (:gatewayUuid is null or gateway_uuid=:gatewayUuid) and (:currencySymbol is null or currency_symbol=:currencySymbol )  ")
     fun findGateways(currencySymbol: String? = null, gatewayUuid: String? = null): Flux<ManualGatewayModel>?
+
+    fun deleteByGatewayUuid(uuid: String):Mono<Void>
+
 }

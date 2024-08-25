@@ -5,7 +5,7 @@ import co.nilin.opex.wallet.app.dto.CurrencyDto
 import co.nilin.opex.wallet.app.service.CurrencyServiceV2
 import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
 import co.nilin.opex.wallet.core.inout.OnChainGatewayCommand
-import co.nilin.opex.wallet.core.inout.CurrencyGateways
+import co.nilin.opex.wallet.core.inout.GatewayType
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -25,15 +25,34 @@ class CurrencyController(private val currencyService: CurrencyServiceV2) {
 
 
     @GetMapping("/{currencySymbol}")
-    suspend fun getCurrency(@PathVariable("currencySymbol") currencySymbol: String,
-                            @RequestParam("includeGateways") includeGateway: Boolean? = false): CurrencyDto? {
+    suspend fun getCurrency(
+            @PathVariable("currencySymbol") currencySymbol: String,
+            @RequestParam includeManualGateways: Boolean? = false,
+            @RequestParam includeOffChainGateways: Boolean? = false,
+            @RequestParam includeOnChainGateways: Boolean? = false,
+    ): CurrencyDto? {
 
-        return currencyService.fetchCurrencyWithGateways(currencySymbol, includeGateway)
+        val includeGateways = mutableListOf<GatewayType>().apply {
+            if (includeManualGateways == true) add(GatewayType.Manually)
+            if (includeOffChainGateways == true) add(GatewayType.OffChain)
+            if (includeOnChainGateways == true) add(GatewayType.OnChain)
+        }
+        return currencyService.fetchCurrencyWithGateways(currencySymbol, includeGateways)
     }
 
     @GetMapping("")
-    suspend fun getCurrencies(@RequestParam("includeGateways") includeGateway: Boolean? = false): CurrenciesDto? {
-        return currencyService.fetchCurrenciesWithGateways(includeGateway)
+    suspend fun getCurrencies(
+            @RequestParam includeManualGateways: Boolean? = false,
+            @RequestParam includeOffChainGateways: Boolean? = false,
+            @RequestParam includeOnChainGateways: Boolean? = false,
+    ): CurrenciesDto? {
+        val includeGateways = mutableListOf<GatewayType>().apply {
+
+            if (includeManualGateways == true) add(GatewayType.Manually)
+            if (includeOffChainGateways == true) add(GatewayType.OffChain)
+            if (includeOnChainGateways == true) add(GatewayType.OnChain)
+        }
+        return currencyService.fetchCurrenciesWithGateways(includeGateways)
     }
 
 
@@ -69,8 +88,17 @@ class CurrencyController(private val currencyService: CurrencyServiceV2) {
 
 
     @GetMapping("/gateways")
-    suspend fun getGateways(): CurrencyGateways? {
-        return currencyService.fetchGateways()
+    suspend fun getGateways(
+            @RequestParam includeManualGateways: Boolean? = false,
+            @RequestParam includeOffChainGateways: Boolean? = false,
+            @RequestParam includeOnChainGateways: Boolean? = false,
+    ): List<CurrencyGatewayCommand>? {
+        val includeGateways = mutableListOf<GatewayType>().apply {
+            if (includeManualGateways == true) add(GatewayType.Manually)
+            if (includeOffChainGateways == true) add(GatewayType.OffChain)
+            if (includeOnChainGateways == true) add(GatewayType.OnChain)
+        }
+        return currencyService.fetchGateways(includeGateways)
     }
 
 }

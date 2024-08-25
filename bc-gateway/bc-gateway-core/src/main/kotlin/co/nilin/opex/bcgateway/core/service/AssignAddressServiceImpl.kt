@@ -30,7 +30,7 @@ open class AssignAddressServiceImpl(
         addressLifeTime=7200
         val currencyInfo = currencyHandler.fetchCurrencyOnChainGateways(FetchGateways(currencySymbol = currency))
                 ?: throw OpexError.CurrencyNotFound.exception()
-        val chains = currencyInfo?.imps
+        val chains = currencyInfo
                 ?.map { imp -> chainLoader.fetchChainInfo(imp.chain) }
                 ?.filter { it?.name.equals(chain, true) }
         val addressTypes = chains

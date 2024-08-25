@@ -18,7 +18,7 @@ class OmniBalanceService(private val cryptoCurrencyHandlerV2: CryptoCurrencyHand
     private val logger = LoggerFactory.getLogger(OmniBalanceService::class.java)
 
     suspend fun fetchSystemBalance(currency: String): OmniBalanceForCurrency {
-        val currencyImpls = cryptoCurrencyHandlerV2.fetchCurrencyOnChainGateways(FetchGateways(currencySymbol = currency))?.imps
+        val currencyImpls = cryptoCurrencyHandlerV2.fetchCurrencyOnChainGateways(FetchGateways(currencySymbol = currency))
                 ?: throw OpexError.CurrencyNotFound.exception()
         val totalBalance: BigDecimal = currencyImpls?.map {
             when (it.isToken) {
@@ -33,9 +33,9 @@ class OmniBalanceService(private val cryptoCurrencyHandlerV2: CryptoCurrencyHand
     }
 
     suspend fun fetchSystemBalance(): List<OmniBalanceForCurrency>? {
-        val currencyImpls = cryptoCurrencyHandlerV2.fetchCurrencyOnChainGateways(FetchGateways())?.imps
+        val currencyImpls = cryptoCurrencyHandlerV2.fetchCurrencyOnChainGateways(FetchGateways())
                 ?: throw OpexError.CurrencyNotFound.exception()
-        val implsGroupedByCurrency = currencyImpls.groupBy { it.currencySymbol }
+        val implsGroupedByCurrency = currencyImpls?.groupBy { it.currencySymbol }
         val result = ArrayList<OmniBalanceForCurrency>()
         for (currency in implsGroupedByCurrency.keys) {
             val balance = implsGroupedByCurrency[currency]?.map {

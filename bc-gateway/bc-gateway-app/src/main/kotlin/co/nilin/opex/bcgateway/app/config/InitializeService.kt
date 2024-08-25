@@ -3,7 +3,7 @@ package co.nilin.opex.bcgateway.app.config
 import co.nilin.opex.bcgateway.ports.postgres.dao.*
 import co.nilin.opex.bcgateway.ports.postgres.model.AddressTypeModel
 import co.nilin.opex.bcgateway.ports.postgres.model.ChainAddressTypeModel
-import co.nilin.opex.bcgateway.ports.postgres.model.CurrencyImplementationModel
+import co.nilin.opex.bcgateway.ports.postgres.model.CurrencyOnChainGatewayModel
 import co.nilin.opex.utility.preferences.AddressType
 import co.nilin.opex.utility.preferences.Chain
 import co.nilin.opex.utility.preferences.Currency
@@ -62,7 +62,7 @@ class InitializeService(
 //            }
 //        }
         val items = data.flatMap { it.implementations.map { impl -> it to impl } }.map { (currency, impl) ->
-            CurrencyImplementationModel(
+            CurrencyOnChainGatewayModel(
                     null,
                     UUID.randomUUID().toString(),
                     currency.symbol,

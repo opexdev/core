@@ -30,38 +30,9 @@ open abstract class CurrencyGatewayCommand(
         open var withdrawMax: BigDecimal? = BigDecimal.ZERO,
 )
 
-data class OffChainGatewayCommand(var transferMethod: TransferMethod,
-                                  override var currencySymbol: String?=null,
-                                  override var gatewayUuid: String? = UUID.randomUUID().toString(),
-                                  override var isActive: Boolean? = true,
-                                  override var withdrawFee: BigDecimal? = BigDecimal.ZERO,
-                                  override var withdrawAllowed: Boolean? = true,
-                                  override var depositAllowed: Boolean? = true,
-                                  override var depositMin: BigDecimal? = BigDecimal.ZERO,
-                                  override var depositMax: BigDecimal? = BigDecimal.ZERO,
-                                  override var withdrawMin: BigDecimal? = BigDecimal.ZERO,
-                                  override var withdrawMax: BigDecimal? = BigDecimal.ZERO) : CurrencyGatewayCommand(currencySymbol, gatewayUuid, isActive, withdrawFee, withdrawAllowed, depositAllowed, depositMin, depositMax, withdrawMin, withdrawMax)
-
-data class ManualGatewayCommand(var allowedFor: String,
-                                override var currencySymbol: String?=null,
-                                override var gatewayUuid: String? = UUID.randomUUID().toString(),
-                                override var isActive: Boolean? = true,
-                                override var withdrawFee: BigDecimal? = BigDecimal.ZERO,
-                                override var withdrawAllowed: Boolean? = true,
-                                override var depositAllowed: Boolean? = true,
-                                override var depositMin: BigDecimal? = BigDecimal.ZERO,
-                                override var depositMax: BigDecimal? = BigDecimal.ZERO,
-                                override var withdrawMin: BigDecimal? = BigDecimal.ZERO,
-                                override var withdrawMax: BigDecimal? = BigDecimal.ZERO) : CurrencyGatewayCommand(currencySymbol, gatewayUuid, isActive, withdrawFee, withdrawAllowed, depositAllowed, depositMin, depositMax, withdrawMin, withdrawMax)
-
-data class OnChainGatewayCommand(
-        var implementationSymbol: String? = null,
-        var tokenName: String? = null,
-        var tokenAddress: String? = null,
-        var isToken: Boolean? = false,
-        var decimal: Int,
-        var chain: String,
-        override var currencySymbol: String?=null,
+data class OffChainGatewayCommand(
+        var transferMethod: TransferMethod,
+        override var currencySymbol: String? = null,
         override var gatewayUuid: String? = UUID.randomUUID().toString(),
         override var isActive: Boolean? = true,
         override var withdrawFee: BigDecimal? = BigDecimal.ZERO,
@@ -70,7 +41,42 @@ data class OnChainGatewayCommand(
         override var depositMin: BigDecimal? = BigDecimal.ZERO,
         override var depositMax: BigDecimal? = BigDecimal.ZERO,
         override var withdrawMin: BigDecimal? = BigDecimal.ZERO,
-        override var withdrawMax: BigDecimal? = BigDecimal.ZERO) : CurrencyGatewayCommand(currencySymbol, gatewayUuid, isActive, withdrawFee, withdrawAllowed, depositAllowed, depositMin, depositMax, withdrawMin, withdrawMax)
+        override var withdrawMax: BigDecimal? = BigDecimal.ZERO,
+) : CurrencyGatewayCommand(currencySymbol, gatewayUuid, isActive, withdrawFee, withdrawAllowed, depositAllowed, depositMin, depositMax, withdrawMin, withdrawMax)
+
+data class ManualGatewayCommand(
+
+        var allowedFor: String,
+        override var currencySymbol: String? = null,
+        override var gatewayUuid: String? = UUID.randomUUID().toString(),
+        override var isActive: Boolean? = true,
+        override var withdrawFee: BigDecimal? = BigDecimal.ZERO,
+        override var withdrawAllowed: Boolean? = true,
+        override var depositAllowed: Boolean? = true,
+        override var depositMin: BigDecimal? = BigDecimal.ZERO,
+        override var depositMax: BigDecimal? = BigDecimal.ZERO,
+        override var withdrawMin: BigDecimal? = BigDecimal.ZERO,
+        override var withdrawMax: BigDecimal? = BigDecimal.ZERO,
+) : CurrencyGatewayCommand(currencySymbol, gatewayUuid, isActive, withdrawFee, withdrawAllowed, depositAllowed, depositMin, depositMax, withdrawMin, withdrawMax)
+
+data class OnChainGatewayCommand(
+
+        var implementationSymbol: String? = null,
+        var tokenName: String? = null,
+        var tokenAddress: String? = null,
+        var isToken: Boolean? = false,
+        var decimal: Int,
+        var chain: String,
+        override var currencySymbol: String? = null,
+        override var gatewayUuid: String? = UUID.randomUUID().toString(),
+        override var isActive: Boolean? = true,
+        override var withdrawFee: BigDecimal? = BigDecimal.ZERO,
+        override var withdrawAllowed: Boolean? = true,
+        override var depositAllowed: Boolean? = true,
+        override var depositMin: BigDecimal? = BigDecimal.ZERO,
+        override var depositMax: BigDecimal? = BigDecimal.ZERO,
+        override var withdrawMin: BigDecimal? = BigDecimal.ZERO,
+        override var withdrawMax: BigDecimal? = BigDecimal.ZERO,
+) : CurrencyGatewayCommand(currencySymbol, gatewayUuid, isActive, withdrawFee, withdrawAllowed, depositAllowed, depositMin, depositMax, withdrawMin, withdrawMax)
 
 
-data class CurrencyGateways(var gateways: List<CurrencyGatewayCommand>?)
