@@ -38,7 +38,7 @@ interface CurrencyRepositoryV2 : ReactiveCrudRepository<CurrencyModel, String> {
     fun fetchSemiCurrencies( symbol: String? = null, name: String? = null): Flux<CurrencyModel>?
 
 
-    @Query("insert into currency(symbol,uuid,name,precision,title,alias,icon,is_transitive,is_active,sign,description,short_description,withdraw_allowed,deposit_allowed,withdraw_fee,external_url,is_crypto_currency) values(:symbol,:uuid,:name,:precision,:title,:alias,:icon,:isTransitive,:isActive,:sign,:description,:shortDescription,:withdrawAllowed,:depositAllowed,:externalUrl,:isCryptoCurrency)  ")
+    @Query("insert into currency(symbol,uuid,name,precision,title,alias,icon,is_transitive,is_active,sign,description,short_description,withdraw_allowed,deposit_allowed,external_url,is_crypto_currency) values(:symbol,:uuid,:name,:precision,:title,:alias,:icon,:isTransitive,:isActive,:sign,:description,:shortDescription,:withdrawAllowed,:depositAllowed,:externalUrl,:isCryptoCurrency)  ")
     fun insert(symbol: String,
                uuid: String,
                name: String,
