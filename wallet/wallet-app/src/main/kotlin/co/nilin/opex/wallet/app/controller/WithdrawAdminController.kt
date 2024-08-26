@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 
 @RestController
-@RequestMapping("/v2/admin/withdraw/")
+@RequestMapping("/admin/withdraw/")
 class WithdrawAdminController(private val withdrawService: WithdrawService) {
 
     @GetMapping("/{id}")

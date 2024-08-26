@@ -8,13 +8,8 @@ import co.nilin.opex.wallet.app.dto.WithdrawHistoryResponse
 import co.nilin.opex.wallet.core.inout.WithdrawCommand
 import co.nilin.opex.wallet.core.inout.WithdrawResponse
 import co.nilin.opex.wallet.core.inout.WithdrawResult
-import co.nilin.opex.wallet.core.model.WithdrawStatus
 import co.nilin.opex.wallet.core.service.WithdrawService
-import io.swagger.annotations.ApiResponse
-import io.swagger.annotations.Example
-import io.swagger.annotations.ExampleProperty
 import org.springframework.web.bind.annotation.*
-import java.math.BigDecimal
 import java.security.Principal
 import java.time.Instant
 import java.time.LocalDateTime

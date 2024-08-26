@@ -134,7 +134,6 @@ class WithdrawPersisterImpl(
         return withdraws.map { it.asWithdraw() }.toList()
     }
 
-
     private suspend fun WithdrawModel.asWithdrawResponse(): WithdrawResponse {
         val reqTx = transactionRepository.findById(requestTransaction.toLong()).awaitFirst()
         val finalTx = if (finalizedTransaction == null)
