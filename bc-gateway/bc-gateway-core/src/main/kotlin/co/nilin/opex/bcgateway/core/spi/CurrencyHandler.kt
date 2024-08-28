@@ -11,7 +11,7 @@ interface CurrencyHandler {
     suspend fun addCurrencyImplementationV2(
         currencySymbol: String,
         implementationSymbol: String,
-        currencyName:String,
+        currencyName: String,
         chain: String,
         tokenName: String?,
         tokenAddress: String?,
@@ -26,8 +26,8 @@ interface CurrencyHandler {
     suspend fun updateCurrencyImplementation(
         currencySymbol: String,
         implementationSymbol: String,
-        currencyName:String,
-        newChain: String?=null,
+        currencyName: String,
+        newChain: String? = null,
         tokenName: String?,
         tokenAddress: String?,
         isToken: Boolean,
@@ -35,7 +35,7 @@ interface CurrencyHandler {
         minimumWithdraw: BigDecimal,
         isWithdrawEnabled: Boolean,
         decimal: Int,
-        chain:String
+        chain: String
     ): CurrencyImplementation?
 
 
@@ -67,5 +67,7 @@ interface CurrencyHandler {
     suspend fun findImplementationsByCurrency(currency: String): List<CurrencyImplementation>
 
     suspend fun changeWithdrawStatus(symbol: String, chain: String, status: Boolean)
+
+    suspend fun getFeeForCurrency(symbol: String, network: String): BigDecimal
 
 }

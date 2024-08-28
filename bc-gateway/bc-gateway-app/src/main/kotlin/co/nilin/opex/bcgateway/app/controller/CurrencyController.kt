@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.math.BigDecimal
 
 @RestController
 @RequestMapping("/currency")
@@ -75,5 +76,10 @@ class CurrencyController(val currencyHandler: CurrencyHandler) {
             currencyHandler.findImplementationsByCurrency(currency)
         else
             currencyHandler.fetchAllImplementations()
+    }
+
+    @GetMapping("/{currency}/network/{network}/fee")
+    suspend fun getFeeForCurrency(@PathVariable currency: String, @PathVariable network: String): BigDecimal {
+        return currencyHandler.getFeeForCurrency(currency, network)
     }
 }

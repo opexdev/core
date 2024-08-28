@@ -55,6 +55,11 @@ class WithdrawController(private val withdrawService: WithdrawService) {
         )
     }
 
+    @DeleteMapping("/{withdrawId}")
+    suspend fun cancelWithdraw(principal: Principal, @PathVariable withdrawId: Long) {
+        withdrawService.cancelWithdraw(principal.name, withdrawId)
+    }
+
     @PostMapping("/history/{uuid}")
     suspend fun getWithdrawTransactionsForUser(
         @PathVariable uuid: String,

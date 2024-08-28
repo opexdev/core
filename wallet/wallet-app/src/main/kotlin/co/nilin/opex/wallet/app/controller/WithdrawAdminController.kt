@@ -41,10 +41,9 @@ class WithdrawAdminController(private val withdrawService: WithdrawService) {
     @PostMapping("/{withdrawId}/reject")
     suspend fun rejectWithdraw(
         @PathVariable withdrawId: Long,
-        @RequestParam statusReason: String,
-        @RequestParam(required = false) destNote: String?
+        @RequestParam statusReason: String
     ): WithdrawResult {
-        return withdrawService.rejectWithdraw(WithdrawRejectCommand(withdrawId, statusReason, destNote))
+        return withdrawService.rejectWithdraw(WithdrawRejectCommand(withdrawId, statusReason))
     }
 
     @PostMapping("/{withdrawId}/accept")

@@ -17,6 +17,7 @@ class WithdrawService(
     private val walletOwnerManager: WalletOwnerManager,
     private val currencyService: CurrencyService,
     private val transferManager: TransferManager,
+    private val bcGatewayProxy: BcGatewayProxy,
     @Value("\${app.system.uuid}") private val systemUuid: String
 ) {
 
@@ -31,7 +32,8 @@ class WithdrawService(
         val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, WalletType.CASHOUT, currency)
             ?: walletManager.createCashoutWallet(owner, currency)
 
-        if (withdrawCommand.amount + withdrawCommand.fee > sourceWallet.balance.amount)
+        val withdrawFee = bcGatewayProxy.getWithdrawFee(withdrawCommand.destSymbol, withdrawCommand.destNetwork)
+        if (withdrawCommand.amount >= sourceWallet.balance.amount + withdrawFee)
             throw OpexError.WithdrawAmountExceedsWalletBalance.exception()
 
         val transferResultDetailed = transferManager.transfer(
@@ -67,6 +69,35 @@ class WithdrawService(
         )
 
         return WithdrawResult(withdraw.withdrawId!!, withdraw.status)
+    }
+
+    @Transactional
+    suspend fun cancelWithdraw(uuid: String, withdrawId: Long) {
+        val withdraw = withdrawPersister.findById(withdrawId) ?: throw OpexError.WithdrawNotFound.exception()
+        if (withdraw.ownerUuid != uuid) throw OpexError.Forbidden.exception()
+
+        val currency = currencyService.getCurrency(withdraw.currency) ?: throw OpexError.CurrencyNotFound.exception()
+        val owner = walletOwnerManager.findWalletOwner(uuid) ?: throw OpexError.WalletOwnerNotFound.exception()
+        val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, WalletType.CASHOUT, currency)
+            ?: throw OpexError.WalletNotFound.exception()
+        val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, WalletType.MAIN, currency)
+            ?: throw OpexError.WalletNotFound.exception()
+
+        if (withdraw.canBeCanceled()) {
+            withdraw.status = WithdrawStatus.CANCELED
+            withdrawPersister.persist(withdraw)
+        }
+
+        transferManager.transfer(
+            TransferCommand(
+                sourceWallet,
+                receiverWallet,
+                Amount(currency, withdraw.amount),
+                null,
+                "wallet:withdraw:${withdraw.withdrawId}:${WithdrawStatus.CANCELED}:${LocalDateTime.now()}",
+                TransferCategory.WITHDRAW_CANCEL
+            )
+        )
     }
 
     @Transactional
@@ -113,8 +144,7 @@ class WithdrawService(
                 withdraw.destSymbol,
                 withdraw.destAddress,
                 withdraw.destNetwork,
-                //TODO why ----- ?
-                withdraw.destNote ?: ("" + "-----------" + (acceptCommand.destNote ?: "")),
+                withdraw.destNote ?: acceptCommand.destNote,
                 acceptCommand.destTransactionRef,
                 null,
                 WithdrawStatus.DONE,
@@ -171,8 +201,7 @@ class WithdrawService(
                 withdraw.destSymbol,
                 withdraw.destAddress,
                 withdraw.destNetwork,
-                //TODO why ----- ?
-                withdraw.destNote ?: ("" + "-----------" + (rejectCommand.destNote ?: "")),
+                withdraw.destNote,
                 null,
                 rejectCommand.statusReason,
                 WithdrawStatus.REJECTED,
