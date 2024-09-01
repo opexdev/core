@@ -8,7 +8,6 @@ data class WithdrawHistoryResponse(
     val uuid: String,
     val amount: BigDecimal,
     val currency: String,
-    val acceptedFee: BigDecimal,
     val appliedFee: BigDecimal?,
     val destAmount: BigDecimal?,
     val destSymbol: String?,

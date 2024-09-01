@@ -196,10 +196,10 @@ class WalletManagerImpl(
             ?: throw OpexError.Error.exception()
 
         val items = listOf(
-            WalletModel(null, 1, WalletType.MAIN, symbol, minimumBalance!!),
-            WalletModel(null, 1, WalletType.EXCHANGE, symbol, BigDecimal.ZERO),
-            WalletModel(null, adminWallet.id!!, WalletType.MAIN, symbol, minimumBalance!!),
-            WalletModel(null, adminWallet.id!!, WalletType.EXCHANGE, symbol, BigDecimal.ZERO)
+            WalletModel(1, WalletType.MAIN, symbol, minimumBalance!!),
+            WalletModel(1, WalletType.EXCHANGE, symbol, BigDecimal.ZERO),
+            WalletModel(adminWallet.id!!, WalletType.MAIN, symbol, minimumBalance!!),
+            WalletModel(adminWallet.id!!, WalletType.EXCHANGE, symbol, BigDecimal.ZERO)
         )
         walletRepository.saveAll(items).collectList().awaitSingleOrNull()
     }
@@ -246,18 +246,15 @@ class WalletManagerImpl(
         currency: Currency,
         type: WalletType
     ): Wallet {
-        val walletModel = walletRepository
-            .save(WalletModel(null, owner.id!!, type, currency.symbol, balance.amount))
+        return walletRepository.save(WalletModel(owner.id!!, type, currency.symbol, balance.amount))
             .awaitFirst()
+            .toPlainObject(owner, currency)
+    }
 
-        return Wallet(
-            walletModel.id!!,
-            owner,
-            Amount(currency, walletModel.balance),
-            currency,
-            walletModel.type,
-            walletModel.version
-        )
+    override suspend fun createCashoutWallet(owner: WalletOwner, currency: Currency): Wallet {
+        return walletRepository.save(WalletModel(owner.id!!, WalletType.CASHOUT, currency.symbol, BigDecimal.ZERO))
+            .awaitFirst()
+            .toPlainObject(owner, currency)
     }
 
     override suspend fun findWalletById(walletId: Long): Wallet? {

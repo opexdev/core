@@ -9,12 +9,13 @@ import java.math.BigDecimal
 
 @Table("wallet")
 data class WalletModel(
-    @Id val id: Long?,
     val owner: Long,
     @Column("wallet_type")
     val type: WalletType,
     val currency: String,
     val balance: BigDecimal,
+    @Id
+    val id: Long? = null,
     @Version
     var version: Long? = null
 )

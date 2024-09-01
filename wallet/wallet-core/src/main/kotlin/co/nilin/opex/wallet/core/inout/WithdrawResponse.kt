@@ -12,7 +12,6 @@ class WithdrawResponse(
     val finalizedDate: Date?,
     val requestTransaction: String,
     val finalizedTransaction: String?,
-    val acceptedFee: BigDecimal,
     val appliedFee: BigDecimal?,
     val amount: BigDecimal?,
     val destAmount: BigDecimal?,
@@ -24,4 +23,5 @@ class WithdrawResponse(
     val statusReason: String?,
     val status: WithdrawStatus,
     val createDate: LocalDateTime = LocalDateTime.now(),
-    val acceptDate: LocalDateTime? = null)
+    val acceptDate: LocalDateTime? = null
+)

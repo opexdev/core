@@ -3,6 +3,7 @@ package co.nilin.opex.bcgateway.app.controller
 import co.nilin.opex.bcgateway.app.dto.AddCurrencyRequest
 import co.nilin.opex.bcgateway.core.model.CurrencyImplementation
 import co.nilin.opex.bcgateway.core.model.CurrencyInfo
+import co.nilin.opex.bcgateway.core.model.WithdrawData
 import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.math.BigDecimal
 
 @RestController
 @RequestMapping("/currency")
@@ -75,5 +77,10 @@ class CurrencyController(val currencyHandler: CurrencyHandler) {
             currencyHandler.findImplementationsByCurrency(currency)
         else
             currencyHandler.fetchAllImplementations()
+    }
+
+    @GetMapping("/{currency}/network/{network}/withdrawData")
+    suspend fun getFeeForCurrency(@PathVariable currency: String, @PathVariable network: String): WithdrawData {
+        return currencyHandler.getWithdrawData(currency, network)
     }
 }

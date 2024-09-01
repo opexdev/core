@@ -23,78 +23,8 @@ class WithdrawPersisterImpl(
     private val transactionRepository: TransactionRepository
 ) : WithdrawPersister {
 
-    override suspend fun findByCriteria(
-        ownerUuid: String?,
-        withdrawId: String?,
-        currency: String?,
-        destTxRef: String?,
-        destAddress: String?,
-        noStatus: Boolean,
-        status: List<WithdrawStatus>?,
-        offset: Int,
-        size: Int
-    ): List<WithdrawResponse> {
-        return withdrawRepository
-            .findByCriteria(
-                ownerUuid,
-                withdrawId?.toLong(),
-                currency,
-                destTxRef,
-                destAddress,
-                noStatus,
-                status,
-                offset,
-                size
-            )
-            .map { it.asWithdrawResponse() }
-            .toList()
-    }
-
-    override suspend fun countByCriteria(
-        ownerUuid: String?,
-        withdrawId: String?,
-        currency: String?,
-        destTxRef: String?,
-        destAddress: String?,
-        noStatus: Boolean,
-        status: List<WithdrawStatus>?
-    ): Long {
-        return withdrawRepository.countByCriteria(
-            ownerUuid,
-            withdrawId?.toLong(),
-            currency,
-            destTxRef,
-            destAddress,
-            noStatus,
-            status
-        ).awaitFirstOrElse { 0 }
-    }
-
-    override suspend fun findByCriteria(
-        ownerUuid: String?,
-        withdrawId: String?,
-        currency: String?,
-        destTxRef: String?,
-        destAddress: String?,
-        noStatus: Boolean,
-        status: List<WithdrawStatus>?
-    ): List<WithdrawResponse> {
-        return withdrawRepository
-            .findByCriteria(
-                ownerUuid,
-                withdrawId?.toLong(),
-                currency,
-                destTxRef,
-                destAddress,
-                noStatus,
-                status
-            )
-            .map { it.asWithdrawResponse() }
-            .toList()
-    }
-
     override suspend fun persist(withdraw: Withdraw): Withdraw {
-        val wm = withdrawRepository.save(
+        return withdrawRepository.save(
             WithdrawModel(
                 withdraw.withdrawId,
                 withdraw.ownerUuid,
@@ -103,7 +33,6 @@ class WithdrawPersisterImpl(
                 withdraw.amount,
                 withdraw.requestTransaction,
                 withdraw.finalizedTransaction,
-                withdraw.acceptedFee,
                 withdraw.appliedFee,
                 withdraw.destAmount,
                 withdraw.destSymbol,
@@ -116,15 +45,97 @@ class WithdrawPersisterImpl(
                 withdraw.createDate,
                 withdraw.acceptDate
             )
-        ).awaitFirst()
-
-        return wm.asWithdraw()
+        ).awaitFirst().asWithdraw()
     }
 
-    override suspend fun findById(withdrawId: String): Withdraw? {
+    override suspend fun findById(withdrawId: Long): Withdraw? {
         return withdrawRepository.findById(withdrawId)
             .map { it.asWithdraw() }
             .awaitFirstOrNull()
+    }
+
+    override suspend fun findWithdrawResponseById(withdrawId: Long): WithdrawResponse? {
+        return withdrawRepository.findById(withdrawId)
+            .awaitFirstOrNull()
+            ?.asWithdrawResponse()
+    }
+
+    override suspend fun findByCriteria(
+        ownerUuid: String?,
+        currency: String?,
+        destTxRef: String?,
+        destAddress: String?,
+        status: List<WithdrawStatus>,
+        offset: Int,
+        size: Int
+    ): List<WithdrawResponse> {
+        return if (status.isEmpty())
+            withdrawRepository.findByCriteria(
+                ownerUuid,
+                currency,
+                destTxRef,
+                destAddress,
+                offset,
+                size
+            ).map { it.asWithdrawResponse() }.toList()
+        else
+            withdrawRepository.findByCriteria(
+                ownerUuid,
+                currency,
+                destTxRef,
+                destAddress,
+                status,
+                offset,
+                size
+            ).map { it.asWithdrawResponse() }.toList()
+    }
+
+    override suspend fun findByCriteria(
+        ownerUuid: String?,
+        currency: String?,
+        destTxRef: String?,
+        destAddress: String?,
+        status: List<WithdrawStatus>
+    ): List<WithdrawResponse> {
+        return if (status.isEmpty())
+            withdrawRepository.findByCriteria(
+                ownerUuid,
+                currency,
+                destTxRef,
+                destAddress,
+            ).map { it.asWithdrawResponse() }.toList()
+        else
+            withdrawRepository.findByCriteria(
+                ownerUuid,
+                currency,
+                destTxRef,
+                destAddress,
+                status
+            ).map { it.asWithdrawResponse() }.toList()
+    }
+
+    override suspend fun countByCriteria(
+        ownerUuid: String?,
+        currency: String?,
+        destTxRef: String?,
+        destAddress: String?,
+        status: List<WithdrawStatus>
+    ): Long {
+        return if (status.isEmpty())
+            withdrawRepository.countByCriteria(
+                ownerUuid,
+                currency,
+                destTxRef,
+                destAddress,
+            ).awaitFirstOrElse { 0 }
+        else
+            withdrawRepository.countByCriteria(
+                ownerUuid,
+                currency,
+                destTxRef,
+                destAddress,
+                status
+            ).awaitFirstOrElse { 0 }
     }
 
     override suspend fun findWithdrawHistory(
@@ -143,7 +154,6 @@ class WithdrawPersisterImpl(
         return withdraws.map { it.asWithdraw() }.toList()
     }
 
-
     private suspend fun WithdrawModel.asWithdrawResponse(): WithdrawResponse {
         val reqTx = transactionRepository.findById(requestTransaction.toLong()).awaitFirst()
         val finalTx = if (finalizedTransaction == null)
@@ -155,10 +165,10 @@ class WithdrawPersisterImpl(
             id!!,
             ownerUuid,
             Date.from(reqTx.transactionDate.atZone(ZoneId.systemDefault()).toInstant()),
-            if (finalTx == null) null else Date.from(finalTx.transactionDate.atZone(ZoneId.systemDefault()).toInstant()),
+            if (finalTx == null) null
+            else Date.from(finalTx.transactionDate.atZone(ZoneId.systemDefault()).toInstant()),
             reqTx.id.toString(),
             finalTx?.id.toString(),
-            acceptedFee,
             appliedFee,
             amount,
             destAmount,
@@ -183,7 +193,6 @@ class WithdrawPersisterImpl(
             amount,
             requestTransaction,
             finalizedTransaction,
-            acceptedFee,
             appliedFee,
             destAmount,
             destSymbol,

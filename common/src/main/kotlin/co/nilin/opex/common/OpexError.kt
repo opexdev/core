@@ -17,6 +17,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     InvalidRequestParam(1020, "Parameter '%s' is either missing or invalid", HttpStatus.BAD_REQUEST),
     InvalidRequestBody(1021, "Request body is invalid", HttpStatus.BAD_REQUEST),
     NoRecordFound(1022, "No record found for this service", HttpStatus.NOT_FOUND),
+    ServiceDeprecated(1023, "Service deprecated", HttpStatus.SERVICE_UNAVAILABLE),
 
     // code 2000: accountant
     InvalidPair(2001, "%s is not available", HttpStatus.BAD_REQUEST),
@@ -66,6 +67,10 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     InvalidAmount(6021, "Invalid amount", HttpStatus.BAD_REQUEST),
     WithdrawAlreadyProcessed(6022, "This withdraw request processed before", HttpStatus.BAD_REQUEST),
     InvalidAppliedFee(6023, "Applied fee is bigger than accepted fee", HttpStatus.BAD_REQUEST),
+    WithdrawAmountExceedsWalletBalance(6024, "Withdraw amount exceeds wallet balance", HttpStatus.BAD_REQUEST),
+    WithdrawAmountLessThanMinimum(6025, "Withdraw amount is less than minimum", HttpStatus.BAD_REQUEST),
+    WithdrawCannotBeCanceled(6026, "Withdraw cannot be canceled", HttpStatus.BAD_REQUEST),
+    WithdrawCannotBeRejected(6027, "Withdraw cannot be rejected", HttpStatus.BAD_REQUEST),
 
     // code 7000: api
     OrderNotFound(7001, "No order found", HttpStatus.NOT_FOUND),

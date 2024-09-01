@@ -7,41 +7,37 @@ import java.time.LocalDateTime
 
 interface WithdrawPersister {
 
+    suspend fun persist(withdraw: Withdraw): Withdraw
+
+    suspend fun findById(withdrawId: Long): Withdraw?
+
+    suspend fun findWithdrawResponseById(withdrawId: Long): WithdrawResponse?
+
     suspend fun findByCriteria(
         ownerUuid: String?,
-        withdrawId: String?,
         currency: String?,
         destTxRef: String?,
         destAddress: String?,
-        noStatus: Boolean,
-        status: List<WithdrawStatus>?
+        status: List<WithdrawStatus>
     ): List<WithdrawResponse>
 
-    suspend fun countByCriteria(
-        ownerUuid: String?,
-        withdrawId: String?,
-        currency: String?,
-        destTxRef: String?,
-        destAddress: String?,
-        noStatus: Boolean,
-        status: List<WithdrawStatus>?
-    ): Long
-
     suspend fun findByCriteria(
         ownerUuid: String?,
-        withdrawId: String?,
         currency: String?,
         destTxRef: String?,
         destAddress: String?,
-        noStatus: Boolean,
-        status: List<WithdrawStatus>?,
+        status: List<WithdrawStatus>,
         offset: Int,
         size: Int
     ): List<WithdrawResponse>
 
-    suspend fun persist(withdraw: Withdraw): Withdraw
-
-    suspend fun findById(withdrawId: String): Withdraw?
+    suspend fun countByCriteria(
+        ownerUuid: String?,
+        currency: String?,
+        destTxRef: String?,
+        destAddress: String?,
+        status: List<WithdrawStatus>
+    ): Long
 
     suspend fun findWithdrawHistory(
         uuid: String,
@@ -52,6 +48,4 @@ interface WithdrawPersister {
         offset: Int,
         ascendingByTime: Boolean?
     ): List<Withdraw>
-
-
 }

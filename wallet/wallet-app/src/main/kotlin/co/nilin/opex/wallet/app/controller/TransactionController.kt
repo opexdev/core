@@ -3,7 +3,12 @@ package co.nilin.opex.wallet.app.controller
 import co.nilin.opex.wallet.app.dto.UserTransactionRequest
 import co.nilin.opex.wallet.core.model.UserTransactionHistory
 import co.nilin.opex.wallet.core.spi.UserTransactionManager
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
+import java.security.Principal
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -12,14 +17,14 @@ import java.time.ZoneId
 @RequestMapping("/v2/transaction")
 class TransactionController(private val manager: UserTransactionManager) {
 
-    @PostMapping("/{uuid}")
+    @GetMapping
     suspend fun getUserTransactions(
-        @PathVariable uuid: String,
+        principal: Principal,
         @RequestBody request: UserTransactionRequest
     ): List<UserTransactionHistory> {
         return with(request) {
             manager.getTransactionHistoryForUser(
-                uuid,
+                principal.name,
                 currency,
                 category,
                 startTime?.let { LocalDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneId.systemDefault()) },

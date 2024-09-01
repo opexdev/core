@@ -2,6 +2,7 @@ package co.nilin.opex.bcgateway.core.spi
 
 import co.nilin.opex.bcgateway.core.model.CurrencyImplementation
 import co.nilin.opex.bcgateway.core.model.CurrencyInfo
+import co.nilin.opex.bcgateway.core.model.WithdrawData
 import java.math.BigDecimal
 
 interface CurrencyHandler {
@@ -11,7 +12,7 @@ interface CurrencyHandler {
     suspend fun addCurrencyImplementationV2(
         currencySymbol: String,
         implementationSymbol: String,
-        currencyName:String,
+        currencyName: String,
         chain: String,
         tokenName: String?,
         tokenAddress: String?,
@@ -26,8 +27,8 @@ interface CurrencyHandler {
     suspend fun updateCurrencyImplementation(
         currencySymbol: String,
         implementationSymbol: String,
-        currencyName:String,
-        newChain: String?=null,
+        currencyName: String,
+        newChain: String? = null,
         tokenName: String?,
         tokenAddress: String?,
         isToken: Boolean,
@@ -35,7 +36,7 @@ interface CurrencyHandler {
         minimumWithdraw: BigDecimal,
         isWithdrawEnabled: Boolean,
         decimal: Int,
-        chain:String
+        chain: String
     ): CurrencyImplementation?
 
 
@@ -67,5 +68,7 @@ interface CurrencyHandler {
     suspend fun findImplementationsByCurrency(currency: String): List<CurrencyImplementation>
 
     suspend fun changeWithdrawStatus(symbol: String, chain: String, status: Boolean)
+
+    suspend fun getWithdrawData(symbol: String, network: String): WithdrawData
 
 }
