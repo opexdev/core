@@ -11,7 +11,7 @@ data class Withdraw(
     val amount: BigDecimal,
     val requestTransaction: String,
     val finalizedTransaction: String?,
-    val appliedFee: BigDecimal?,
+    val appliedFee: BigDecimal,
     val destAmount: BigDecimal?,
     val destSymbol: String?,
     val destAddress: String?,
@@ -24,7 +24,19 @@ data class Withdraw(
     val acceptDate: LocalDateTime? = null
 ) {
 
+    fun canBeProcessed(): Boolean {
+        return status == WithdrawStatus.CREATED
+    }
+
+    fun canBeAccepted(): Boolean {
+        return status == WithdrawStatus.CREATED || status == WithdrawStatus.PROCESSING
+    }
+
     fun canBeCanceled(): Boolean {
         return status == WithdrawStatus.CREATED
+    }
+
+    fun canBeRejected(): Boolean {
+        return status == WithdrawStatus.CREATED || status == WithdrawStatus.PROCESSING
     }
 }

@@ -216,9 +216,9 @@ class CurrencyHandlerImpl(
         }
     }
 
-    override suspend fun getFeeForCurrency(symbol: String, network: String): BigDecimal {
-        return currencyImplementationRepository.findWithdrawFeeBySymbolAndChain(symbol, network).awaitSingleOrNull()
-            ?: throw OpexError.CurrencyNotFound.exception()
+    override suspend fun getWithdrawData(symbol: String, network: String): WithdrawData {
+        return currencyImplementationRepository.findWithdrawDataBySymbolAndChain(symbol, network)
+            .awaitSingleOrNull() ?: throw OpexError.CurrencyNotFound.exception()
     }
 
     private suspend fun projectCurrencyImplementation(

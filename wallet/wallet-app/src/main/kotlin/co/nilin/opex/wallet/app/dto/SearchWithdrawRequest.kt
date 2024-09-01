@@ -6,5 +6,5 @@ data class SearchWithdrawRequest(
     val currency: String?,
     val destTxRef: String?,
     val destAddress: String?,
-    val status: List<WithdrawStatus>?
+    val status: List<WithdrawStatus> = emptyList()
 )

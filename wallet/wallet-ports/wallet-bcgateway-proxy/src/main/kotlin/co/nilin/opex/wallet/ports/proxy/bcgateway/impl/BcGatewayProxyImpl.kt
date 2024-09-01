@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.ports.proxy.bcgateway.impl
 
+import co.nilin.opex.wallet.core.inout.WithdrawData
 import co.nilin.opex.wallet.core.model.PropagateCurrencyChanges
 import co.nilin.opex.wallet.core.model.otc.CurrencyImplementationResponse
 import co.nilin.opex.wallet.core.model.otc.FetchCurrencyInfo
@@ -90,12 +91,12 @@ class BcGatewayProxyImpl(
             .awaitFirst()
     }
 
-    override suspend fun getWithdrawFee(symbol: String, network: String): BigDecimal {
+    override suspend fun getWithdrawData(symbol: String, network: String): WithdrawData {
         return webClient.get()
-            .uri("$baseUrl/$symbol/network/$network/fee")
+            .uri("$baseUrl/currency/$symbol/network/$network/withdrawData")
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
-            .bodyToMono<BigDecimal>()
+            .bodyToMono<WithdrawData>()
             .awaitFirst()
     }
 }

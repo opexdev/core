@@ -31,27 +31,18 @@ class WithdrawAdminController(private val withdrawService: WithdrawService) {
             body.currency,
             body.destTxRef,
             body.destAddress,
-            body.status?.isEmpty() ?: true,
             body.status,
             offset,
             size
         )
     }
 
-    @PostMapping("/{withdrawId}/reject")
-    suspend fun rejectWithdraw(
-        @PathVariable withdrawId: Long,
-        @RequestParam statusReason: String
-    ): WithdrawResult {
-        return withdrawService.rejectWithdraw(WithdrawRejectCommand(withdrawId, statusReason))
-    }
-
     @PostMapping("/{withdrawId}/accept")
     suspend fun acceptWithdraw(
         @PathVariable withdrawId: Long,
-        @RequestParam destAmount: BigDecimal,
         @RequestParam destTransactionRef: String,
-        @RequestParam(required = false) destNote: String?
+        @RequestParam(required = false) destNote: String?,
+        @RequestParam(required = false) destAmount: BigDecimal?
     ): WithdrawResult {
         return withdrawService.acceptWithdraw(
             WithdrawAcceptCommand(
@@ -61,5 +52,18 @@ class WithdrawAdminController(private val withdrawService: WithdrawService) {
                 destNote
             )
         )
+    }
+
+    @PostMapping("/{withdrawId}/process")
+    suspend fun processWithdraw(@PathVariable withdrawId: Long): WithdrawResult {
+        return withdrawService.processWithdraw(withdrawId)
+    }
+
+    @PostMapping("/{withdrawId}/reject")
+    suspend fun rejectWithdraw(
+        @PathVariable withdrawId: Long,
+        @RequestParam reason: String
+    ): WithdrawResult {
+        return withdrawService.rejectWithdraw(WithdrawRejectCommand(withdrawId, reason))
     }
 }

@@ -33,7 +33,6 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         where ( :owner is null or wo.uuid = :owner)
             and (:destTxRef is null or wth.dest_transaction_ref = :destTxRef) 
             and (:destAddress is null or wth.dest_address = :destAddress) 
-            and (:noStatus IS TRUE or wth.status in (:status)) 
             and (:currency is null or wm.currency in (:currency)) 
         order by wth.id
         """
@@ -43,7 +42,26 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         currency: String?,
         destTxRef: String?,
         destAddress: String?,
-        noStatus: Boolean,
+    ): Flow<WithdrawModel>
+
+    @Query(
+        """
+        select * from withdraws wth  
+        join wallet wm on wm.id = wth.wallet    
+        join wallet_owner wo on wm.owner = wo.id   
+        where ( :owner is null or wo.uuid = :owner)
+            and (:destTxRef is null or wth.dest_transaction_ref = :destTxRef) 
+            and (:destAddress is null or wth.dest_address = :destAddress) 
+            and (:currency is null or wm.currency in (:currency)) 
+            and wth.status in (:status)
+        order by wth.id
+        """
+    )
+    fun findByCriteria(
+        owner: String?,
+        currency: String?,
+        destTxRef: String?,
+        destAddress: String?,
         status: List<WithdrawStatus>?
     ): Flow<WithdrawModel>
 
@@ -55,8 +73,7 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         where ( :owner is null or wo.uuid = :owner)  
             and (:destTxRef is null or wth.dest_transaction_ref = :destTxRef) 
             and (:destAddress is null or wth.dest_address = :destAddress) 
-            and (:noStatus IS TRUE or wth.status in (:status)) 
-            and (:currency is null or wm.currency in (:currency)) 
+            and (:currency is null or wm.currency in (:currency))
         order by wth.id
         offset :offset limit :size
         """
@@ -66,8 +83,30 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         currency: String?,
         destTxRef: String?,
         destAddress: String?,
-        noStatus: Boolean,
-        status: List<WithdrawStatus>?,
+        offset: Int,
+        size: Int
+    ): Flow<WithdrawModel>
+
+    @Query(
+        """
+        select * from withdraws wth  
+        join wallet wm on wm.id = wth.wallet    
+        join wallet_owner wo on wm.owner = wo.id   
+        where ( :owner is null or wo.uuid = :owner)  
+            and (:destTxRef is null or wth.dest_transaction_ref = :destTxRef) 
+            and (:destAddress is null or wth.dest_address = :destAddress) 
+            and (:currency is null or wm.currency in (:currency)) 
+            and wth.status in (:status)
+        order by wth.id
+        offset :offset limit :size
+        """
+    )
+    fun findByCriteria(
+        owner: String?,
+        currency: String?,
+        destTxRef: String?,
+        destAddress: String?,
+        status: List<WithdrawStatus>,
         offset: Int,
         size: Int
     ): Flow<WithdrawModel>
@@ -80,8 +119,7 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         where ( :owner is null or wo.uuid = :owner)
             and (:destTxRef is null or wth.dest_transaction_ref = :destTxRef) 
             and (:destAddress is null or wth.dest_address = :destAddress) 
-            and (:noStatus IS TRUE or wth.status in (:status)) 
-            and (:currency is null or wm.currency in (:currency)) 
+            and (:currency is null or wm.currency in (:currency))
         """
     )
     fun countByCriteria(
@@ -89,8 +127,26 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         currency: String?,
         destTxRef: String?,
         destAddress: String?,
-        noStatus: Boolean,
-        status: List<WithdrawStatus>?
+    ): Mono<Long>
+
+    @Query(
+        """
+        select count(*) from withdraws wth  
+        join wallet wm on wm.id = wth.wallet    
+        join wallet_owner wo on wm.owner = wo.id   
+        where ( :owner is null or wo.uuid = :owner)
+            and (:destTxRef is null or wth.dest_transaction_ref = :destTxRef) 
+            and (:destAddress is null or wth.dest_address = :destAddress) 
+            and (:currency is null or wm.currency in (:currency)) 
+            and wth.status in (:status)
+        """
+    )
+    fun countByCriteria(
+        owner: String?,
+        currency: String?,
+        destTxRef: String?,
+        destAddress: String?,
+        status: List<WithdrawStatus>
     ): Mono<Long>
 
     @Query("select * from withdraws where wallet = :wallet and transaction_id = :txId")

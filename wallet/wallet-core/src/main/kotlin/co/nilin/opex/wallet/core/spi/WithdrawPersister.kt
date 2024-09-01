@@ -18,8 +18,7 @@ interface WithdrawPersister {
         currency: String?,
         destTxRef: String?,
         destAddress: String?,
-        noStatus: Boolean,
-        status: List<WithdrawStatus>?
+        status: List<WithdrawStatus>
     ): List<WithdrawResponse>
 
     suspend fun findByCriteria(
@@ -27,8 +26,7 @@ interface WithdrawPersister {
         currency: String?,
         destTxRef: String?,
         destAddress: String?,
-        noStatus: Boolean,
-        status: List<WithdrawStatus>?,
+        status: List<WithdrawStatus>,
         offset: Int,
         size: Int
     ): List<WithdrawResponse>
@@ -38,8 +36,7 @@ interface WithdrawPersister {
         currency: String?,
         destTxRef: String?,
         destAddress: String?,
-        noStatus: Boolean,
-        status: List<WithdrawStatus>?
+        status: List<WithdrawStatus>
     ): Long
 
     suspend fun findWithdrawHistory(
@@ -51,5 +48,4 @@ interface WithdrawPersister {
         offset: Int,
         ascendingByTime: Boolean?
     ): List<Withdraw>
-
 }

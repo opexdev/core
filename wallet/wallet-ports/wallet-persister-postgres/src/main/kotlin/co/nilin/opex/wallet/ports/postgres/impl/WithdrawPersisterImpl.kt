@@ -65,21 +65,29 @@ class WithdrawPersisterImpl(
         currency: String?,
         destTxRef: String?,
         destAddress: String?,
-        noStatus: Boolean,
-        status: List<WithdrawStatus>?,
+        status: List<WithdrawStatus>,
         offset: Int,
         size: Int
     ): List<WithdrawResponse> {
-        return withdrawRepository.findByCriteria(
-            ownerUuid,
-            currency,
-            destTxRef,
-            destAddress,
-            noStatus,
-            status,
-            offset,
-            size
-        ).map { it.asWithdrawResponse() }.toList()
+        return if (status.isEmpty())
+            withdrawRepository.findByCriteria(
+                ownerUuid,
+                currency,
+                destTxRef,
+                destAddress,
+                offset,
+                size
+            ).map { it.asWithdrawResponse() }.toList()
+        else
+            withdrawRepository.findByCriteria(
+                ownerUuid,
+                currency,
+                destTxRef,
+                destAddress,
+                status,
+                offset,
+                size
+            ).map { it.asWithdrawResponse() }.toList()
     }
 
     override suspend fun findByCriteria(
@@ -87,17 +95,23 @@ class WithdrawPersisterImpl(
         currency: String?,
         destTxRef: String?,
         destAddress: String?,
-        noStatus: Boolean,
-        status: List<WithdrawStatus>?
+        status: List<WithdrawStatus>
     ): List<WithdrawResponse> {
-        return withdrawRepository.findByCriteria(
-            ownerUuid,
-            currency,
-            destTxRef,
-            destAddress,
-            noStatus,
-            status
-        ).map { it.asWithdrawResponse() }.toList()
+        return if (status.isEmpty())
+            withdrawRepository.findByCriteria(
+                ownerUuid,
+                currency,
+                destTxRef,
+                destAddress,
+            ).map { it.asWithdrawResponse() }.toList()
+        else
+            withdrawRepository.findByCriteria(
+                ownerUuid,
+                currency,
+                destTxRef,
+                destAddress,
+                status
+            ).map { it.asWithdrawResponse() }.toList()
     }
 
     override suspend fun countByCriteria(
@@ -105,17 +119,23 @@ class WithdrawPersisterImpl(
         currency: String?,
         destTxRef: String?,
         destAddress: String?,
-        noStatus: Boolean,
-        status: List<WithdrawStatus>?
+        status: List<WithdrawStatus>
     ): Long {
-        return withdrawRepository.countByCriteria(
-            ownerUuid,
-            currency,
-            destTxRef,
-            destAddress,
-            noStatus,
-            status
-        ).awaitFirstOrElse { 0 }
+        return if (status.isEmpty())
+            withdrawRepository.countByCriteria(
+                ownerUuid,
+                currency,
+                destTxRef,
+                destAddress,
+            ).awaitFirstOrElse { 0 }
+        else
+            withdrawRepository.countByCriteria(
+                ownerUuid,
+                currency,
+                destTxRef,
+                destAddress,
+                status
+            ).awaitFirstOrElse { 0 }
     }
 
     override suspend fun findWithdrawHistory(

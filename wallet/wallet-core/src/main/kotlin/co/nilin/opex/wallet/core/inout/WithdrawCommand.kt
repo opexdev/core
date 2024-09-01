@@ -10,6 +10,5 @@ class WithdrawCommand(
     val destSymbol: String,
     val destAddress: String,
     val destNetwork: String,
-    val destNote: String?,
-    val fee: BigDecimal
+    val destNote: String?
 )

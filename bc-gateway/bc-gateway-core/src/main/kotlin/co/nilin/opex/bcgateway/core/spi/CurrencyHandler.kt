@@ -2,6 +2,7 @@ package co.nilin.opex.bcgateway.core.spi
 
 import co.nilin.opex.bcgateway.core.model.CurrencyImplementation
 import co.nilin.opex.bcgateway.core.model.CurrencyInfo
+import co.nilin.opex.bcgateway.core.model.WithdrawData
 import java.math.BigDecimal
 
 interface CurrencyHandler {
@@ -68,6 +69,6 @@ interface CurrencyHandler {
 
     suspend fun changeWithdrawStatus(symbol: String, chain: String, status: Boolean)
 
-    suspend fun getFeeForCurrency(symbol: String, network: String): BigDecimal
+    suspend fun getWithdrawData(symbol: String, network: String): WithdrawData
 
 }

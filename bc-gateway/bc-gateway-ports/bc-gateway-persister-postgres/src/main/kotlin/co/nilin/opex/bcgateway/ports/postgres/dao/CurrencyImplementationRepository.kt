@@ -1,5 +1,6 @@
 package co.nilin.opex.bcgateway.ports.postgres.dao
 
+import co.nilin.opex.bcgateway.core.model.WithdrawData
 import co.nilin.opex.bcgateway.ports.postgres.model.CurrencyImplementationModel
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.r2dbc.repository.Query
@@ -19,6 +20,10 @@ interface CurrencyImplementationRepository : ReactiveCrudRepository<CurrencyImpl
 
     fun findByChainAndTokenAddress(chain: String, tokenAddress: String?): Mono<CurrencyImplementationModel>
 
-    @Query("select withdraw_fee from currency_implementations where implementation_symbol = :symbol and chain = :chain")
-    fun findWithdrawFeeBySymbolAndChain(symbol: String, chain: String): Mono<BigDecimal>
+    @Query("""
+        select withdraw_enabled as is_enabled, withdraw_fee as fee, withdraw_min as minimum 
+        from currency_implementations 
+        where implementation_symbol = :symbol and chain = :chain
+    """)
+    fun findWithdrawDataBySymbolAndChain(symbol: String, chain: String): Mono<WithdrawData>
 }

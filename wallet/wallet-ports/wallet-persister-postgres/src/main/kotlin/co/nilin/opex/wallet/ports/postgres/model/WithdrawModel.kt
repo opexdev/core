@@ -18,7 +18,7 @@ data class WithdrawModel(
     val requestTransaction: String,
     @Column("final_transaction_id")
     val finalizedTransaction: String?,
-    val appliedFee: BigDecimal?,
+    val appliedFee: BigDecimal,
     val destAmount: BigDecimal?,
     val destSymbol: String?,
     val destNetwork: String?,

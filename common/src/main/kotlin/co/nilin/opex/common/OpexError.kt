@@ -68,6 +68,9 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     WithdrawAlreadyProcessed(6022, "This withdraw request processed before", HttpStatus.BAD_REQUEST),
     InvalidAppliedFee(6023, "Applied fee is bigger than accepted fee", HttpStatus.BAD_REQUEST),
     WithdrawAmountExceedsWalletBalance(6024, "Withdraw amount exceeds wallet balance", HttpStatus.BAD_REQUEST),
+    WithdrawAmountLessThanMinimum(6025, "Withdraw amount is less than minimum", HttpStatus.BAD_REQUEST),
+    WithdrawCannotBeCanceled(6026, "Withdraw cannot be canceled", HttpStatus.BAD_REQUEST),
+    WithdrawCannotBeRejected(6027, "Withdraw cannot be rejected", HttpStatus.BAD_REQUEST),
 
     // code 7000: api
     OrderNotFound(7001, "No order found", HttpStatus.NOT_FOUND),
