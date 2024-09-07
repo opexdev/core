@@ -17,7 +17,7 @@ import java.time.ZoneId
 @RequestMapping("/v2/transaction")
 class TransactionController(private val manager: UserTransactionManager) {
 
-    @GetMapping
+    @PostMapping
     suspend fun getUserTransactions(
         principal: Principal,
         @RequestBody request: UserTransactionRequest
