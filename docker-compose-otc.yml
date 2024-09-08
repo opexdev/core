@@ -35,14 +35,14 @@ services:
       - SPRING_PROFILES_ACTIVE=otc
       - auth_url=${AUTH_URL}
       - auth_jwk_endpoint=${JWK_ENDPOINT}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     configs:
       - preferences.yml
     depends_on:
       - postgres-wallet
       - vault
       - bc-gateway
-    extra_hosts:
-      - "host.docker.internal:127.0.0.1"
     networks:
       - default
       - otc-network
@@ -99,7 +99,7 @@ services:
       - auth_jwk_endpoint=${JWK_ENDPOINT}
       - omni_url=${OMNI_URL}
     extra_hosts:
-      - "host.docker.internal:127.0.0.1"
+      - "host.docker.internal:host-gateway"
     configs:
       - preferences.yml
     depends_on:
