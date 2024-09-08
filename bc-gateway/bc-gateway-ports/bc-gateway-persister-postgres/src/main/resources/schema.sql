@@ -96,7 +96,7 @@ ALTER TABLE currency_on_chain_gateway ADD COLUMN IF NOT EXISTS deposit_max DECIM
 ALTER TABLE currency_on_chain_gateway ADD COLUMN IF NOT EXISTS deposit_min DECIMAL ;
 -- ALTER TABLE currency_on_chain_gateway RENAME COLUMN withdraw_enabled to withdraw_allowed ;
 -- ALTER TABLE currency_on_chain_gateway RENAME COLUMN token to is_token ;
--- ALTER TABLE currency_on_chain_gateway RENAME COLUMN impl_uuid to gateway_uuid ;
+ALTER TABLE currency_on_chain_gateway RENAME COLUMN impl_uuid to gateway_uuid ;
 
 
 
