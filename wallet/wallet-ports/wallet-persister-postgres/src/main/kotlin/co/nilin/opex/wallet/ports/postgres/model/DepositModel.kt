@@ -1,5 +1,7 @@
 package co.nilin.opex.wallet.ports.postgres.model
 
+import co.nilin.opex.wallet.core.model.DepositStatus
+import co.nilin.opex.wallet.core.model.DepositType
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
@@ -22,7 +24,7 @@ data class DepositModel(
     val sourceAddress: String?,
     var note: String?,
     var transactionRef: String?,
-    var status: String?,
-    var depositType: String?,
-    val createDate: LocalDateTime? = LocalDateTime.now()
+    var status: DepositStatus,
+    var depositType: DepositType,
+    val createDate: LocalDateTime = LocalDateTime.now()
 )

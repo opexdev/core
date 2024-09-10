@@ -20,7 +20,7 @@ class WithdrawAdminController(private val withdrawService: WithdrawService) {
         return withdrawService.findWithdraw(id) ?: throw OpexError.WithdrawNotFound.exception()
     }
 
-    @GetMapping
+    @PostMapping
     suspend fun search(
         @RequestParam offset: Int,
         @RequestParam size: Int,

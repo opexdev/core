@@ -9,9 +9,7 @@ import co.nilin.opex.wallet.app.service.otc.GraphService
 import co.nilin.opex.wallet.core.inout.Deposit
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
-import co.nilin.opex.wallet.core.model.Amount
-import co.nilin.opex.wallet.core.model.TransferCategory
-import co.nilin.opex.wallet.core.model.WalletType
+import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.model.otc.Rate
 import co.nilin.opex.wallet.core.model.otc.ReservedTransfer
 import co.nilin.opex.wallet.core.spi.*
@@ -95,8 +93,8 @@ class TransferService(
                 amount,
                 note = description,
                 transactionRef = transferRef,
-                status = "Done",
-                depositType = "On-chain",
+                status = DepositStatus.DONE,
+                depositType = DepositType.ON_CHAIN,
                 network = chain
             )
         )
@@ -325,8 +323,8 @@ class TransferService(
                 amount,
                 note = request.description,
                 transactionRef = request.ref,
-                status = "Done",
-                depositType = "System",
+                status = DepositStatus.DONE,
+                depositType = DepositType.SYSTEM,
             )
         )
         return tx
