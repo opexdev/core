@@ -10,6 +10,7 @@ import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 @Service
 class GraphService(private val rateService: RateService, private val currencyService: CurrencyServiceManager
@@ -143,7 +144,7 @@ class GraphService(private val rateService: RateService, private val currencySer
     }
 
     suspend fun fetchPrice(unit: String): List<CurrencyPrice>? {
-        var sellPricesGroupedByCurrency = buildRoutes(unit, null).map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), BigDecimal(1).divide(route.getRate())) }.groupBy { p -> p.destSymbol }
+        var sellPricesGroupedByCurrency = buildRoutes(unit, null).map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), BigDecimal(1).divide(route.getRate(),10,RoundingMode.HALF_UP)) }.groupBy { p -> p.destSymbol }
         var buyPricesGroupedByCurrency = buildRoutes(null, unit).map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }.groupBy { p -> p.sourceSymbol }
 
         return currencyService.fetchCurrencies()?.currencies?.map { it ->
