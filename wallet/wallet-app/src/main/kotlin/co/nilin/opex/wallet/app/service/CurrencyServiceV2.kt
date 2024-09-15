@@ -24,7 +24,6 @@ import java.util.stream.Collectors
 @Service
 class CurrencyServiceV2(
         @Qualifier("newVersion") private val currencyServiceManager: CurrencyServiceManager,
-        private val gatewayService: GatewayService,
         private val walletManager: WalletManager
 ) {
     private val logger = LoggerFactory.getLogger(CurrencyServiceManager::class.java)
@@ -102,6 +101,13 @@ class CurrencyServiceV2(
     }
 
 
+//    suspend fun fetchCurrenciesWithImpls(includeImpl: Boolean?): CurrenciesDto? {
+//        var currencies = currencyServiceManager.fetchCurrencies()?.currencies
+//        val currenciesImpls = cryptoCurrencyManager.fetchImpls()
+//        val groupedByImpl = currenciesImpls?.imps?.groupBy { it.currencySymbol }
+//        return CurrenciesDto(currencies?.map { it.apply { impls = groupedByImpl?.get(it.symbol) }.toDto() }?.toList())
+//
+//    }
 
 
     suspend fun updateGateway(request: CurrencyGatewayCommand): CurrencyGatewayCommand? {
