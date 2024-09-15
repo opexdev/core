@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.app.service.otc
 
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.inout.CurrencyCommand
+import co.nilin.opex.wallet.core.inout.CurrencyPrice
 import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.model.otc.*
 import co.nilin.opex.wallet.core.service.otc.RateService
@@ -141,7 +142,16 @@ class GraphService(private val rateService: RateService, private val currencySer
         return adjacencyMap
     }
 
+    suspend fun fetchPrice(unit: String): List<CurrencyPrice>? {
+        var sellPricesGroupedByCurrency = buildRoutes(unit, null).map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), BigDecimal(1).divide(route.getRate())) }.groupBy { p -> p.destSymbol }
+        var buyPricesGroupedByCurrency = buildRoutes(null, unit).map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }.groupBy { p -> p.sourceSymbol }
 
+        return currencyService.fetchCurrencies()?.currencies?.map { it ->
+            CurrencyPrice(it.symbol, buyPricesGroupedByCurrency[it.symbol]?.firstOrNull()?.rate, sellPricesGroupedByCurrency[it.symbol]?.firstOrNull()?.rate)
+        }
+
+
+    }
     //todo
     //========================save these lines up to redesign tests===============================
 
