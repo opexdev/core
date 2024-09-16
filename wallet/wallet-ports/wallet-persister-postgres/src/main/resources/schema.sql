@@ -35,7 +35,6 @@ ALTER TABLE currency  ADD COLUMN IF NOT EXISTS external_url    VARCHAR(255);
 ALTER TABLE currency  ADD COLUMN IF NOT EXISTS is_crypto_currency BOOLEAN DEFAULT FALSE;
 -- ALTER TABLE currency DROP COLUMN withdraw_allowed;
 -- ALTER TABLE currency DROP COLUMN deposit_allowed;
-
 -- ALTER TABLE currency DROP COLUMN withdraw_fee;
 
 
