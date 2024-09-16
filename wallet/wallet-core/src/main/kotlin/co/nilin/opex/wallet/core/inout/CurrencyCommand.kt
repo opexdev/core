@@ -17,8 +17,8 @@ data class CurrencyCommand(
         var sign: String? = null,
         var description: String? = null,
         var shortDescription: String? = null,
-        var withdrawAllowed: Boolean? = true,
-        var depositAllowed: Boolean? = true,
+        var withdrawAllowed: Boolean? = false,
+        var depositAllowed: Boolean? = false,
         var externalUrl: String? = null,
         var isCryptoCurrency: Boolean? = false,
         var gateways: List<CurrencyGatewayCommand>? = null,
@@ -26,7 +26,6 @@ data class CurrencyCommand(
 
         ) {
     fun updateTo(newData: CurrencyCommand): CurrencyCommand {
-
         return newData.apply {
             this.uuid = uuid
             this.symbol = symbol

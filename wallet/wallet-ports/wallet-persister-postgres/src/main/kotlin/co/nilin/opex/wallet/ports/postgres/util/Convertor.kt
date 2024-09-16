@@ -24,8 +24,6 @@ fun CurrencyCommand.toModel(): CurrencyModel {
             sign,
             description,
             shortDescription,
-            withdrawAllowed,
-            depositAllowed,
             externalUrl,
             isCryptoCurrency
     )
@@ -45,8 +43,8 @@ fun CurrencyModel.toCommand(): CurrencyCommand {
             sign,
             description,
             shortDescription,
-            withdrawAllowed,
-            depositAllowed,
+            false,
+            false,
             externalUrl,
             isCryptoCurrency,
             null

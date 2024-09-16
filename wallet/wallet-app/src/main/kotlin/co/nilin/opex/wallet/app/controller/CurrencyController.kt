@@ -58,7 +58,7 @@ class CurrencyController(private val currencyService: CurrencyServiceV2) {
 
 
     @PostMapping("/{currencySymbol}/gateway")
-    suspend fun addImp2Currency(@PathVariable("currencySymbol") currencySymbol: String,
+    suspend fun addGateway2Currency(@PathVariable("currencySymbol") currencySymbol: String,
                                 @RequestBody request: CurrencyGatewayCommand): CurrencyGatewayCommand? {
         return currencyService.addGateway2Currency(request.apply {
             this.currencySymbol = currencySymbol

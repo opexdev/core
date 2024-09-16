@@ -25,10 +25,6 @@ data class CurrencyModel(
         var description: String? = null,
         @Column("short_description")
         var shortDescription: String? = null,
-        @Column("withdraw_allowed")
-        var withdrawAllowed: Boolean? = true,
-        @Column("deposit_allowed")
-        var depositAllowed: Boolean? = true,
         @Column("external_url")
         var externalUrl: String? = null,
         @Column("is_crypto_currency")

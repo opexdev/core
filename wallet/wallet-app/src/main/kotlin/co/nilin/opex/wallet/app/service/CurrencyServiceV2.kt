@@ -25,7 +25,7 @@ import java.util.stream.Collectors
 class CurrencyServiceV2(
         @Qualifier("newVersion") private val currencyServiceManager: CurrencyServiceManager,
         private val walletManager: WalletManager,
-        private  val gatewayService: GatewayService
+        private val gatewayService: GatewayService
 ) {
     private val logger = LoggerFactory.getLogger(CurrencyServiceManager::class.java)
 
@@ -63,14 +63,17 @@ class CurrencyServiceV2(
 
     suspend fun fetchCurrencyWithGateways(currencySymbol: String, includeGateways: List<GatewayType>? = null): CurrencyDto? {
         return currencyServiceManager.fetchCurrency(FetchCurrency(symbol = currencySymbol))
-                ?.let {
+                ?.let { it ->
 //                    if (it.isCryptoCurrency == true && includeGateway == true)
                     var gateways = gatewayService.fetchGateways(currencySymbol, includeGateways)
-                    return it.apply { it.gateways = gateways }.toDto()
+                    return it.apply {
+                        it.depositAllowed = gateways?.stream()?.filter { it.isActive == true }?.map(CurrencyGatewayCommand::depositAllowed)?.reduce { t, u -> t ?: false || u ?: false }?.orElseGet { false }
+                        it.withdrawAllowed = gateways?.stream()?.filter { it.isActive == true }?.map(CurrencyGatewayCommand::withdrawAllowed)?.reduce { t, u -> t ?: false || u ?: false }?.orElseGet { false }
+                        it.gateways = gateways
+                    }.toDto()
 
                 } ?: throw OpexError.CurrencyNotFound.exception()
     }
-
 
     suspend fun fetchCurrencyGateway(currencyGatewayUUID: String, currencySymbol: String): CurrencyGatewayCommand? {
         currencyServiceManager.fetchCurrency(FetchCurrency(symbol = currencySymbol))
@@ -96,13 +99,14 @@ class CurrencyServiceV2(
         var gateways = gatewayService.fetchGateways(includeGateways = includeGateways)?.toList()
         var groupedByGateways = gateways?.groupBy { it.currencySymbol }
         return CurrenciesDto(currencies?.stream()?.map {
-            it.apply { it.gateways = groupedByGateways?.get(it.symbol) }
+            it.apply {
+                it.gateways = groupedByGateways?.get(it.symbol)
+                it.depositAllowed = groupedByGateways?.get(it.symbol)?.stream()?.filter { g -> g.isActive == true }?.map(CurrencyGatewayCommand::depositAllowed)?.reduce { t, u -> t ?: false || u ?: false }?.orElseGet { false }
+                it.withdrawAllowed = groupedByGateways?.get(it.symbol)?.stream()?.filter { g -> g.isActive == true }?.map(CurrencyGatewayCommand::withdrawAllowed)?.reduce { t, u -> t ?: false || u ?: false }?.orElseGet { false }
+            }
             it.toDto()
         }?.collect(Collectors.toList()))
     }
-
-
-
 
 
     suspend fun updateGateway(request: CurrencyGatewayCommand): CurrencyGatewayCommand? {

@@ -109,7 +109,7 @@ class AdminController(private val withdrawService: WithdrawService, private val 
                     )
             )
     )
-    suspend fun depositManually(
+    suspend fun withdrawManually(
             @PathVariable("symbol") symbol: String,
             @PathVariable("sourceUuid") sourceUuid: String,
             @PathVariable("amount") amount: BigDecimal,
@@ -122,5 +122,28 @@ class AdminController(private val withdrawService: WithdrawService, private val 
         )
     }
 
+    @PostMapping("/deposit/manually/{amount}_{symbol}/{receiverUuid}")
+    @ApiResponse(
+            message = "OK",
+            code = 200,
+            examples = Example(
+                    ExampleProperty(
+                            value = "{ }",
+                            mediaType = "application/json"
+                    )
+            )
+    )
+    suspend fun depositManually(
+            @PathVariable("symbol") symbol: String,
+            @PathVariable("receiverUuid") receiverUuid: String,
+            @PathVariable("amount") amount: BigDecimal,
+            @RequestBody request: ManualTransferRequest,
+            @CurrentSecurityContext securityContext: SecurityContext
+    ): TransferResult {
+        return transferService.depositManually(
+                symbol, receiverUuid,
+                securityContext.authentication.name, amount, request
+        )
+    }
 
 }
