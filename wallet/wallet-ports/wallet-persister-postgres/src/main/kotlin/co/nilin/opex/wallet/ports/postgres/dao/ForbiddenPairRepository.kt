@@ -1,7 +1,6 @@
 package co.nilin.opex.wallet.ports.postgres.dao
 
 import co.nilin.opex.wallet.ports.postgres.model.ForbiddenPairModel
-import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
@@ -16,7 +15,7 @@ interface ForbiddenPairRepository :ReactiveCrudRepository<ForbiddenPairModel,Lon
 
     fun findBySourceSymbolAndDestinationSymbol(sourceSymbol:String, destinationSymbol:String): Mono<ForbiddenPairModel>?
 
-    fun deleteBySourceSymbolAndDestinationSymbol(sourceSymbol:String, destinationSymbol:String): Mono<Void>?
+    fun deleteBySourceSymbolAndDestinationSymbol(sourceSymbol: String, destinationSymbol: String): Mono<Void>?
 
 
 }

@@ -23,8 +23,7 @@ import java.time.LocalDateTime
 class FinancialActionPersisterImpl(
     private val repository: FinancialActionRepository,
     private val faRetryRepository: FinancialActionRetryRepository,
-    private val faErrorRepository: FinancialActionErrorRepository,
-    private val jsonMapper: JsonMapper
+    private val faErrorRepository: FinancialActionErrorRepository
 ) : FinancialActionPersister {
 
     @Value("\${app.fi-action.retry.count}")
@@ -51,7 +50,6 @@ class FinancialActionPersisterImpl(
                 it.receiver,
                 it.receiverWalletType,
                 it.category,
-                jsonMapper.serialize(it.detail),
                 "",
                 "",
                 it.createDate
@@ -76,7 +74,6 @@ class FinancialActionPersisterImpl(
                     receiver,
                     receiverWalletType,
                     category,
-                    jsonMapper.serialize(detail),
                     "",
                     "",
                     createDate,

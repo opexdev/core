@@ -2,7 +2,7 @@ package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.wallet.core.inout.WalletData
 import co.nilin.opex.wallet.core.inout.WalletTotal
-import co.nilin.opex.wallet.core.inout.WalletType
+import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.spi.WalletDataManager
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping

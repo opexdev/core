@@ -2,7 +2,7 @@ package co.nilin.opex.wallet.ports.postgres.dao
 
 import co.nilin.opex.wallet.core.inout.WalletData
 import co.nilin.opex.wallet.core.inout.WalletTotal
-import co.nilin.opex.wallet.core.inout.WalletType
+import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.ports.postgres.model.WalletModel
 import org.springframework.data.r2dbc.repository.Modifying
 import org.springframework.data.r2dbc.repository.Query
@@ -17,20 +17,13 @@ import java.math.BigDecimal
 interface WalletRepository : ReactiveCrudRepository<WalletModel, Long> {
 
     @Query("select * from wallet where owner = :owner and wallet_type = :type and currency = :currency ")
-    fun findByOwnerAndTypeAndCurrency(
-        @Param("owner") owner: Long,
-        @Param("type") type: String,
-        @Param("currency") currency: String
-    ): Mono<WalletModel?>
+    fun findByOwnerAndTypeAndCurrency(owner: Long, type: WalletType, currency: String): Mono<WalletModel?>
 
     @Query("select * from wallet where owner = :owner and wallet_type = :type")
-    fun findByOwnerAndType(
-        @Param("owner") owner: Long,
-        @Param("type") type: String,
-    ): Flux<WalletModel>
+    fun findByOwnerAndType(owner: Long, type: WalletType): Flux<WalletModel>
 
     @Query("select * from wallet where owner = :owner")
-    fun findByOwner(@Param("owner") owner: Long): Flux<WalletModel>
+    fun findByOwner(owner: Long): Flux<WalletModel>
 
     @Query("select * from wallet where owner = :owner and currency = :currency")
     fun findByOwnerAndCurrency(owner: Long, currency: String): Flux<WalletModel>
@@ -58,7 +51,7 @@ interface WalletRepository : ReactiveCrudRepository<WalletModel, Long> {
     )
     fun findWalletDataByCriteria(
         uuid: String?,
-        walletType: String?,
+        walletType: WalletType?,
         currency: String?,
         limit: Int,
         offset: Int
@@ -78,7 +71,7 @@ interface WalletRepository : ReactiveCrudRepository<WalletModel, Long> {
     )
     fun findWalletDataByCriteriaExcludeSystem(
         uuid: String?,
-        walletType: String?,
+        walletType: WalletType?,
         currency: String?,
         limit: Int,
         offset: Int
@@ -88,7 +81,7 @@ interface WalletRepository : ReactiveCrudRepository<WalletModel, Long> {
         """
         select w.currency, sum(balance) as balance from wallet w
         join wallet_owner wo on w.owner = wo.id
-        where wo.uuid = '1' and wallet_type in ('main', 'exchange')
+        where wo.uuid = '1' and wallet_type in ('MAIN', 'EXCHANGE')
         group by w.currency
     """
     )
@@ -98,7 +91,7 @@ interface WalletRepository : ReactiveCrudRepository<WalletModel, Long> {
         """
         select currency, sum(balance) as balance from wallet w
         join wallet_owner wo on w.owner = wo.id
-        where wallet_type in ('main', 'exchange')
+        where wallet_type in ('MAIN', 'EXCHANGE')
             and wo.uuid != '1'
             and w.id not in (select wallet_id from wallet_stat_exclusion) 
         group by currency

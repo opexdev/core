@@ -1,21 +1,21 @@
 package co.nilin.opex.wallet.core.inout
 
 import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.model.WalletType
 
 data class TransferResult(
-        val date: Long,
-        val sourceUuid: String,
-        val sourceWalletType: String,
-        val sourceBalanceBeforeAction: Amount,
-        val sourceBalanceAfterAction: Amount,
-        val amount: Amount,
-        val destUuid: String,
-        val destWalletType: String,
-        val receivedAmount: Amount,
-        val sourceWalletId: Long? = null,
-        val destinationWalletId: Long? = null)
+    val date: Long,
+    val sourceUuid: String,
+    val sourceWalletType: WalletType,
+    val sourceBalanceBeforeAction: Amount,
+    val sourceBalanceAfterAction: Amount,
+    val amount: Amount,
+    val destUuid: String,
+    val destWalletType: WalletType,
+    val receivedAmount: Amount
+)
 
 data class TransferResultDetailed(
-        val transferResult: TransferResult,
-        val tx: String
+    val transferResult: TransferResult,
+    val tx: String
 )

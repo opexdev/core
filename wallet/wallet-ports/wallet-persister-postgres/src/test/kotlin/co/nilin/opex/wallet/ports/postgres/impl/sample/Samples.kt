@@ -6,7 +6,6 @@ import co.nilin.opex.wallet.core.model.Wallet
 import co.nilin.opex.wallet.core.model.WalletOwner
 import co.nilin.opex.wallet.ports.postgres.model.WalletLimitsModel
 import java.math.BigDecimal
-import java.util.Currency
 
 object VALID {
     const val USER_LEVEL_REGISTERED = "registered"
@@ -17,7 +16,7 @@ object VALID {
 
     const val WALLET_TYPE_MAIN = "main"
 
-    val CURRENCY = CurrencyCommand("ETH", null,"Ethereum", BigDecimal.valueOf(0.0001))
+    val CURRENCY = Currency("ETH", "Ethereum", BigDecimal.valueOf(0.0001))
 
     val WALLET_OWNER = WalletOwner(
         1L,
@@ -34,7 +33,7 @@ object VALID {
         WALLET_OWNER,
         Amount(CURRENCY, BigDecimal.valueOf(1.5)),
         CURRENCY,
-        WALLET_TYPE_MAIN,
+        WalletType.MAIN,
         0
     )
 
@@ -43,7 +42,7 @@ object VALID {
         USER_LEVEL_REGISTERED,
         WALLET_OWNER.id,
         ACTION_WITHDRAW,
-        CURRENCY.symbol!!,
+        CURRENCY.symbol,
         WALLET_TYPE_MAIN,
         WALLET.id,
         BigDecimal.valueOf(10),
@@ -52,14 +51,14 @@ object VALID {
         30
     )
 
-    val WALLET_LIMITS_MODEL_DEPOSIT = WALLET_LIMITS_MODEL_WITHDRAW.copy(action = ACTION_DEPOSIT)
+    val WALLET_LIMITS_MODEL_DEPOSIT = WALLET_LIMITS_MODEL_WITHDRAW.copy(action = WalletLimitAction.DEPOSIT)
 
     val USER_LIMITS_MODEL_WITHDRAW = WalletLimitsModel(
         1,
         USER_LEVEL_REGISTERED,
         WALLET_OWNER.id,
         ACTION_WITHDRAW,
-        CURRENCY.symbol!!,
+        CURRENCY.symbol,
         WALLET_TYPE_MAIN,
         WALLET.id,
         BigDecimal.valueOf(10),
@@ -68,5 +67,5 @@ object VALID {
         30
     )
 
-    val USER_LIMITS_MODEL_DEPOSIT = USER_LIMITS_MODEL_WITHDRAW.copy(action = ACTION_DEPOSIT)
+    val USER_LIMITS_MODEL_DEPOSIT = USER_LIMITS_MODEL_WITHDRAW.copy(action = WalletLimitAction.DEPOSIT)
 }

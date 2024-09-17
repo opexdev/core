@@ -3,6 +3,7 @@ package co.nilin.opex.wallet.core.service.sample
 import co.nilin.opex.wallet.core.inout.CurrenciesCommand
 import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import co.nilin.opex.wallet.core.inout.TransferCommand
+import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.Wallet
 import co.nilin.opex.wallet.core.model.WalletOwner
@@ -17,7 +18,7 @@ object VALID {
 
     private const val WALLET_TYPE_MAIN = "main"
 
-    val CURRENCY = CurrencyCommand("ETH", null,"Ethereum", BigDecimal.valueOf(0.0001))
+    val CURRENCY = Currency("ETH", "Ethereum", BigDecimal.valueOf(0.0001))
 
     val SOURCE_WALLET_OWNER = WalletOwner(
         1L,
@@ -34,8 +35,8 @@ object VALID {
         SOURCE_WALLET_OWNER,
         Amount(CURRENCY, BigDecimal.valueOf(1.5)),
         CURRENCY,
-        WALLET_TYPE_MAIN
-        , 0
+        WalletType.MAIN,
+        0
     )
 
     val DEST_WALLET_OWNER = SOURCE_WALLET_OWNER.copy(2, "e1950578-ef22-44e4-89f5-0b78feb03e2a")
@@ -48,7 +49,6 @@ object VALID {
         Amount(CURRENCY, BigDecimal.valueOf(0.5)),
         null,
         null,
-        "NORMAL",
-        emptyMap()
+        TransferCategory.NORMAL
     )
 }

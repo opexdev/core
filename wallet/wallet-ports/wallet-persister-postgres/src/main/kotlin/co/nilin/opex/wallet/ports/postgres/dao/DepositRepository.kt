@@ -14,7 +14,7 @@ import java.time.LocalDateTime
 interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
 
     @Query(
-            """
+        """
         select * from deposits 
         where uuid = :uuid
             and (:currency is null or currency = :currency)
@@ -26,17 +26,16 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
         """
     )
     fun findDepositHistoryAsc(
-            @Param("uuid") uuid: String,
-            @Param("currency") currency: String?,
-            @Param("startTime") startTime: LocalDateTime?,
-            @Param("endTime") endTime: LocalDateTime?,
-            @Param("limit") limit: Int,
-            @Param("offset") offset: Int
+        uuid: String,
+        currency: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        limit: Int,
+        offset: Int
     ): Flow<DepositModel>
 
-
     @Query(
-            """
+        """
         select * from deposits 
         where uuid = :uuid
             and (:currency is null or currency = :currency)
@@ -48,11 +47,11 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
         """
     )
     fun findDepositHistoryDesc(
-            @Param("uuid") uuid: String,
-            @Param("currency") currency: String?,
-            @Param("startTime") startTime: LocalDateTime?,
-            @Param("endTime") endTime: LocalDateTime?,
-            @Param("limit") limit: Int,
-            @Param("offset") offset: Int
+        uuid: String,
+        currency: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        limit: Int,
+        offset: Int
     ): Flow<DepositModel>
 }

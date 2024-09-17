@@ -1,10 +1,7 @@
 package co.nilin.opex.accountant.core.service
 
 import co.nilin.opex.accountant.core.inout.OrderStatus
-import co.nilin.opex.accountant.core.model.FinancialAction
-import co.nilin.opex.accountant.core.model.FinancialActionCategory
-import co.nilin.opex.accountant.core.model.PairConfig
-import co.nilin.opex.accountant.core.model.PairFeeConfig
+import co.nilin.opex.accountant.core.model.*
 import co.nilin.opex.accountant.core.spi.*
 import co.nilin.opex.matching.engine.core.eventh.events.CancelOrderEvent
 import co.nilin.opex.matching.engine.core.eventh.events.CreateOrderEvent
@@ -100,12 +97,11 @@ internal class OrderManagerImplTest {
             pair.leftSideName,
             pairConfig.leftSideFraction.multiply(submitOrderEvent.quantity.toBigDecimal()),
             submitOrderEvent.uuid,
-            "main",
+            WalletType.MAIN,
             submitOrderEvent.uuid,
-            "exchange",
+            WalletType.EXCHANGE,
             Valid.currentTime,
-            FinancialActionCategory.ORDER_CREATE,
-            emptyMap()
+            FinancialActionCategory.ORDER_CREATE
         )
 
         with(expectedFinancialAction) {
@@ -160,12 +156,11 @@ internal class OrderManagerImplTest {
                 .multiply(pairConfig.rightSideFraction)
                 .multiply(submitOrderEvent.price.toBigDecimal()),
             submitOrderEvent.uuid,
-            "main",
+            WalletType.MAIN,
             submitOrderEvent.uuid,
-            "exchange",
+            WalletType.EXCHANGE,
             Valid.currentTime,
-            FinancialActionCategory.ORDER_CREATE,
-            emptyMap()
+            FinancialActionCategory.ORDER_CREATE
         )
         with(expectedFinancialAction) {
             assertThat(eventType).isEqualTo(financialActions[0].eventType)
@@ -177,7 +172,6 @@ internal class OrderManagerImplTest {
             assertThat(receiverWalletType).isEqualTo(financialActions[0].receiverWalletType)
         }
         assertThat(financialActions[0].category).isEqualTo(FinancialActionCategory.ORDER_CREATE)
-        assertThat(financialActions[0].detail).containsKeys("userLevel", "direction", "matchConstraint", "orderType", "eventDate")
 
     }
 
@@ -280,7 +274,6 @@ internal class OrderManagerImplTest {
         assertThat(fa.amount).isEqualTo(Valid.order.remainedTransferAmount)
         assertThat(fa.symbol).isEqualTo(orderEvent.pair.rightSideName)
         assertThat(fa.category).isEqualTo(FinancialActionCategory.ORDER_CANCEL)
-        assertThat(fa.detail).containsKeys("userLevel", "direction", "matchConstraint", "orderType", "eventDate")
 
         assertThat(Valid.order.status).isEqualTo(OrderStatus.REJECTED.code)
 
@@ -328,7 +321,6 @@ internal class OrderManagerImplTest {
         assertThat(fa.amount).isEqualTo(Valid.order.remainedTransferAmount)
         assertThat(fa.symbol).isEqualTo(orderEvent.pair.rightSideName)
         assertThat(fa.category).isEqualTo(FinancialActionCategory.ORDER_CANCEL)
-        assertThat(fa.detail).containsKeys("userLevel", "direction", "matchConstraint", "orderType", "eventDate")
         assertThat(Valid.order.status).isEqualTo(OrderStatus.CANCELED.code)
 
         coVerify(exactly = 1) { richOrderPublisher.publish(any()) }

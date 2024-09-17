@@ -26,22 +26,23 @@ class SecurityConfig(private val webClient: WebClient) {
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
 
         http.csrf().disable()
-                .authorizeExchange()
-                .pathMatchers("/balanceOf/**").hasAuthority("SCOPE_trust")
-                .pathMatchers("/owner/**").hasAuthority("SCOPE_trust")
-                .pathMatchers("/withdraw").hasAuthority("SCOPE_trust")
-                .pathMatchers("/v1/deposit/manually/**").hasRole("SCOPE_trust", "admin_finance")
-                .pathMatchers("/v1/deposit/**").hasAuthority("SCOPE_trust")
-                .pathMatchers("/withdraw/**").hasAuthority("SCOPE_trust")
-                .pathMatchers("/transaction/**").hasAuthority("SCOPE_trust")
-                .pathMatchers("/admin/**").hasRole("SCOPE_trust", "admin_finance")
-                .pathMatchers("/stats/**").hasRole("SCOPE_trust", "admin_finance")
-                .pathMatchers("/payment/internal/**").permitAll()
-                .pathMatchers("/**").permitAll()
-                .anyExchange().authenticated()
-                .and()
-                .oauth2ResourceServer()
-                .jwt()
+            .authorizeExchange()
+            .pathMatchers("/balanceOf/**").hasAuthority("SCOPE_trust")
+            .pathMatchers("/owner/**").hasAuthority("SCOPE_trust")
+            .pathMatchers("/withdraw").hasAuthority("SCOPE_trust")
+            .pathMatchers("/v1/deposit/manually/**").hasRole("SCOPE_trust", "admin_finance")
+            .pathMatchers("/v1/deposit/**").hasAuthority("SCOPE_trust")
+            .pathMatchers("/withdraw/**").hasAuthority("SCOPE_trust")
+            .pathMatchers("/transaction/**").hasAuthority("SCOPE_trust")
+            .pathMatchers("/v2/transaction/**").hasAuthority("SCOPE_trust")
+            .pathMatchers("/admin/**").hasRole("SCOPE_trust", "admin_finance")
+            .pathMatchers("/stats/**").hasRole("SCOPE_trust", "admin_finance")
+            .pathMatchers("/payment/internal/**").permitAll()
+            .pathMatchers("/**").permitAll()
+            .anyExchange().authenticated()
+            .and()
+            .oauth2ResourceServer()
+            .jwt()
         return http.build()
     }
 
@@ -83,8 +84,4 @@ class SecurityConfig(private val webClient: WebClient) {
                 .webClient(webClient)
                 .build()
     }
-
-
-
-
 }

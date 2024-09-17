@@ -4,6 +4,9 @@ import co.nilin.opex.utility.preferences.Currency
 import co.nilin.opex.utility.preferences.Preferences
 import co.nilin.opex.utility.preferences.UserLimit
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepositoryV2
+import co.nilin.opex.wallet.core.model.WalletLimitAction
+import co.nilin.opex.wallet.core.model.WalletType
+import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletLimitsRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletOwnerRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletRepository
@@ -18,6 +21,7 @@ import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.DependsOn
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
 import java.util.UUID
@@ -49,19 +53,19 @@ class InitializeService(
             if (!walletLimitsRepository.existsById(i + 1L).awaitSingle()) {
                 runCatching {
                     walletLimitsRepository.save(
-                            WalletLimitsModel(
-                                    null,
-                                    it.level,
-                                    it.owner,
-                                    it.action,
-                                    null,
-                                    it.walletType,
-                                    null,
-                                    it.dailyTotal,
-                                    it.dailyCount,
-                                    it.monthlyTotal,
-                                    it.monthlyCount
-                            )
+                        WalletLimitsModel(
+                            null,
+                            it.level,
+                            it.owner,
+                            WalletLimitAction.valueOf(it.action),
+                            null,
+                            WalletType.valueOf(it.walletType),
+                            null,
+                            it.dailyTotal,
+                            it.dailyCount,
+                            it.monthlyTotal,
+                            it.monthlyCount
+                        )
                     ).awaitSingleOrNull()
                 }
             }
@@ -71,27 +75,30 @@ class InitializeService(
     private suspend fun addSystemAndAdminWallet(p: Preferences) = coroutineScope {
         if (!walletOwnerRepository.existsById(1).awaitSingle()) {
             walletOwnerRepository.save(WalletOwnerModel(null, systemUuid, p.system.walletTitle, p.system.walletLevel))
-                    .awaitSingleOrNull()
+                .awaitSingleOrNull()
         }
 
         val adminWallet: WalletOwnerModel? =
-                walletOwnerRepository.findByUuid(adminUuid).awaitSingleOrNull()
-                        ?: walletOwnerRepository.save(WalletOwnerModel(null, adminUuid, p.admin.walletTitle, p.admin.walletLevel))
-                                .awaitSingleOrNull()
-
+            walletOwnerRepository.findByUuid(adminUuid).awaitSingleOrNull()
+                ?: walletOwnerRepository.save(
+                    WalletOwnerModel(
+                        null,
+                        adminUuid,
+                        p.admin.walletTitle,
+                        p.admin.walletLevel
+                    )
+                ).awaitSingleOrNull()
 
         val items = p.currencies.flatMap { currency ->
             listOf(
-                    WalletModel(null, 1, "main", currency.symbol, currency.mainBalance),
-                    WalletModel(null, 1, "exchange", currency.symbol, BigDecimal.ZERO),
-                    WalletModel(null, adminWallet?.id!!, "main", currency.symbol, currency.mainBalance),
-                    WalletModel(null, adminWallet?.id!!, "exchange", currency.symbol, BigDecimal.ZERO)
-
+                WalletModel(1, WalletType.MAIN, currency.symbol, currency.mainBalance),
+                WalletModel(1, WalletType.EXCHANGE, currency.symbol, BigDecimal.ZERO),
+                WalletModel(adminWallet?.id!!, WalletType.MAIN, currency.symbol, currency.mainBalance),
+                WalletModel(adminWallet.id!!, WalletType.EXCHANGE, currency.symbol, BigDecimal.ZERO)
             )
         }
         runCatching { walletRepository.saveAll(items).collectList().awaitSingleOrNull() }
     }
-
 
 
     private suspend fun addCurrencies(data: List<Currency>) = coroutineScope {

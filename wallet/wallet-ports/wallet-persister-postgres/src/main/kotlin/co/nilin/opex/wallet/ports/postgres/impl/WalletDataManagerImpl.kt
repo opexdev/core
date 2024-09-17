@@ -13,16 +13,15 @@ import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.stereotype.Component
 
 @Component
-class WalletDataManagerImpl(private val walletRepository: WalletRepository,
-                            private val currencyRepositoryV2: CurrencyRepositoryV2) : WalletDataManager {
+class WalletDataManagerImpl(private val walletRepository: WalletRepository) : WalletDataManager {
 
     override suspend fun findWalletDataByCriteria(
-            uuid: String?,
-            walletType: WalletType?,
-            currency: String?,
-            excludeSystem: Boolean,
-            limit: Int,
-            offset: Int
+        uuid: String?,
+        walletType: WalletType?,
+        currency: String?,
+        excludeSystem: Boolean,
+        limit: Int,
+        offset: Int
     ): List<WalletData> {
         val currency = currencyRepositoryV2.fetchCurrency(symbol = currency)?.awaitFirstOrNull()
         return (if (!excludeSystem) walletRepository.findWalletDataByCriteria(

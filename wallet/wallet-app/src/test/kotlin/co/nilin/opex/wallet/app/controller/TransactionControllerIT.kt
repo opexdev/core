@@ -3,6 +3,8 @@ package co.nilin.opex.wallet.app.controller
 import co.nilin.opex.wallet.app.KafkaEnabledTest
 import co.nilin.opex.wallet.app.dto.TransactionRequest
 import co.nilin.opex.wallet.core.model.TransactionWithDetailHistory
+import co.nilin.opex.wallet.core.model.TransferCategory
+import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.spi.TransactionManager
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
@@ -20,6 +22,7 @@ import java.time.ZoneId
 
 @AutoConfigureWebTestClient
 class TransactionControllerIT : KafkaEnabledTest() {
+
     @Autowired
     private lateinit var webClient: WebTestClient
 
@@ -31,12 +34,29 @@ class TransactionControllerIT : KafkaEnabledTest() {
         val uuid = "uuid"
         val t = System.currentTimeMillis()
         val history = TransactionWithDetailHistory(
-            1L, "sw", "dw", "su", "du", "c", BigDecimal.ONE, "desc", "ref", System.currentTimeMillis(), "cat", mapOf(Pair("key1", "val1"))
+            1L,
+            WalletType.MAIN,
+            WalletType.MAIN,
+            "su",
+            "du",
+            "c",
+            BigDecimal.ONE,
+            "desc",
+            "ref",
+            System.currentTimeMillis(),
+            TransferCategory.NORMAL
         )
         runBlocking {
             Mockito.`when`(
                 manager.findTransactions(
-                    uuid, "c", null, LocalDateTime.ofInstant(Instant.ofEpochMilli(t), ZoneId.systemDefault()), LocalDateTime.ofInstant(Instant.ofEpochMilli(t), ZoneId.systemDefault()), true, 1, 1
+                    uuid,
+                    "c",
+                    null,
+                    LocalDateTime.ofInstant(Instant.ofEpochMilli(t), ZoneId.systemDefault()),
+                    LocalDateTime.ofInstant(Instant.ofEpochMilli(t), ZoneId.systemDefault()),
+                    true,
+                    1,
+                    1
                 )
             ).thenReturn(listOf(history))
             webClient.post().uri("/transaction/$uuid").accept(MediaType.APPLICATION_JSON)

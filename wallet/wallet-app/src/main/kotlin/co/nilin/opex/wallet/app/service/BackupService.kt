@@ -68,24 +68,28 @@ class BackupService(
     }
 
     private fun upload(file: File, fileName: String, folderId: String) {
-        val authFile = File("/drive-key.json")
-        val credentials = GoogleCredentials.fromStream(authFile.inputStream()).createScoped(DriveScopes.DRIVE)
-        val requestInitializer = HttpCredentialsAdapter(credentials)
+        try {
+            val authFile = File("/drive-key.json")
+            val credentials = GoogleCredentials.fromStream(authFile.inputStream()).createScoped(DriveScopes.DRIVE)
+            val requestInitializer = HttpCredentialsAdapter(credentials)
 
-        val service = Drive.Builder(NetHttpTransport(), GsonFactory.getDefaultInstance(), requestInitializer)
-            .setApplicationName("Wallet backup")
-            .build()
+            val service = Drive.Builder(NetHttpTransport(), GsonFactory.getDefaultInstance(), requestInitializer)
+                .setApplicationName("Wallet backup")
+                .build()
 
-        val metadata = GoogleFile().apply {
-            name = fileName
-            parents = listOf(folderId)
+            val metadata = GoogleFile().apply {
+                name = fileName
+                parents = listOf(folderId)
+            }
+            val content = FileContent("text/*", file)
+
+            val uploaded = service.files().create(metadata, content)
+                .setFields("id,name")
+                .execute()
+            println("File uploaded: ${uploaded.id}--${uploaded.name}")
+        } catch (e: Exception) {
+            logger.error("Wallet backup is enabled but could not upload to Google Drive")
         }
-        val content = FileContent("text/*", file)
-
-        val uploaded = service.files().create(metadata, content)
-            .setFields("id,name")
-            .execute()
-        println("File uploaded: ${uploaded.id}--${uploaded.name}")
     }
 
 }

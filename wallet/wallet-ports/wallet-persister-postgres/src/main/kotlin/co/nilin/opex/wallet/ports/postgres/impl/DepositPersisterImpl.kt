@@ -19,35 +19,26 @@ import java.time.ZoneId
 import java.util.*
 
 @Service
-class DepositPersisterImpl(
-        private val depositRepository: DepositRepository,
-) : DepositPersister {
-
+class DepositPersisterImpl(private val depositRepository: DepositRepository) : DepositPersister {
 
     override suspend fun persist(deposit: Deposit): Deposit {
-        val dm = depositRepository.save(
-                deposit.toModel()
-        ).awaitFirst()
-
+        val dm = depositRepository.save(deposit.toModel()).awaitFirst()
         return dm.toDto()
     }
 
-
     override suspend fun findDepositHistory(
-            uuid: String,
-            coin: String?,
-            startTime: LocalDateTime?,
-            endTime: LocalDateTime?,
-            limit: Int,
-            offset: Int,
-            ascendingByTime: Boolean?
-    ): Deposits {
+        uuid: String,
+        currency: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        limit: Int,
+        offset: Int,
+        ascendingByTime: Boolean?
+    ): List<Deposit> {
         val deposits = if (ascendingByTime == true)
-            depositRepository.findDepositHistoryAsc(uuid, coin, startTime, endTime, limit, offset)
+            depositRepository.findDepositHistoryAsc(uuid, currency, startTime, endTime, limit, offset)
         else
-            depositRepository.findDepositHistoryDesc(uuid, coin, startTime, endTime, limit, offset)
-        return Deposits(deposits.map { it.toDto() }.toList())
+            depositRepository.findDepositHistoryDesc(uuid, currency, startTime, endTime, limit, offset)
+        return deposits.map { it.toDto() }.toList()
     }
-
-
 }

@@ -22,8 +22,9 @@ import java.math.BigDecimal
 @RestController
 @RequestMapping("/inquiry")
 class InquiryController(
-        val walletManager: WalletManager, val walletOwnerManager: WalletOwnerManager, val currencyService: CurrencyServiceManager
-
+    private val walletManager: WalletManager,
+    private val walletOwnerManager: WalletOwnerManager,
+    private val currencyService: CurrencyService
 ) {
     private val logger = LoggerFactory.getLogger(InquiryController::class.java)
 
@@ -41,10 +42,10 @@ class InquiryController(
         )
     )
     suspend fun canFulfill(
-        @PathVariable("uuid") uuid: String,
-        @PathVariable("currency") currency: String,
-        @PathVariable("wallet_type") walletType: String,
-        @PathVariable("amount") amount: BigDecimal,
+        @PathVariable uuid: String,
+        @PathVariable currency: String,
+        @PathVariable("wallet_type") walletType: WalletType,
+        @PathVariable amount: BigDecimal,
         @CurrentSecurityContext securityContext: SecurityContext?
 
     ): BooleanResponse {

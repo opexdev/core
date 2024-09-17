@@ -35,9 +35,9 @@ class AdvancedTransferController {
         )
     )
     suspend fun calculateDestinationAmount(
-        @PathVariable("symbol") symbol: String,
-        @PathVariable("amount") amount: BigDecimal,
-        @PathVariable("destSymbol") destSymbol: String,
+        @PathVariable symbol: String,
+        @PathVariable amount: BigDecimal,
+        @PathVariable destSymbol: String,
     ): TransferPreEvaluateResponse {
         return TransferPreEvaluateResponse(transferService.calculateDestinationAmount(symbol, amount, destSymbol))
     }
@@ -63,6 +63,7 @@ class AdvancedTransferController {
                 throw OpexError.Forbidden.exception()
             request.senderUuid = it.authentication.name
         }
+
         return transferService.reserveTransfer(
             request.sourceAmount,
             request.sourceSymbol,
@@ -72,7 +73,6 @@ class AdvancedTransferController {
             request.receiverUuid,
             request.receiverWalletType
         )
-
     }
 
     @PostMapping("/v3/transfer/{reserveUuid}")
@@ -87,9 +87,9 @@ class AdvancedTransferController {
         )
     )
     suspend fun finalizeTransfer(
-        @PathVariable("reserveUuid") reserveUuid: String,
-        @RequestParam("description") description: String?,
-        @RequestParam("transferRef") transferRef: String?,
+        @PathVariable reserveUuid: String,
+        @RequestParam description: String?,
+        @RequestParam transferRef: String?,
         @CurrentSecurityContext securityContext: SecurityContext?
     ): TransferResult {
         return transferService.advanceTransfer(

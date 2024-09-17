@@ -5,6 +5,7 @@ import co.nilin.opex.accountant.core.api.FinancialActionJobManager
 import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.FinancialActionCategory
 import co.nilin.opex.accountant.core.model.FinancialActionStatus
+import co.nilin.opex.accountant.core.model.WalletType
 import co.nilin.opex.accountant.core.spi.FinancialActionLoader
 import co.nilin.opex.accountant.core.spi.FinancialActionPersister
 import co.nilin.opex.accountant.core.spi.WalletProxy
@@ -48,17 +49,15 @@ class FinancialActionJobManagerIT : KafkaEnabledTest() {
             symbol,
             BigDecimal.TEN,
             uuid,
-            "main",
+            WalletType.MAIN,
             uuid,
-            "exchange",
+            WalletType.EXCHANGE,
             LocalDateTime.now(),
             FinancialActionCategory.ORDER_CREATE
         )
 
         runBlocking {
-            financialActionPersister.persist(
-                listOf(parent1)
-            )
+            financialActionPersister.persist(listOf(parent1))
             val parent1Saved = financialActionLoader.findLast(uuid, ouid)!!
             val child1 = FinancialAction(
                 parent1Saved,
@@ -67,9 +66,9 @@ class FinancialActionJobManagerIT : KafkaEnabledTest() {
                 symbol,
                 BigDecimal.TEN,
                 uuid,
-                "exchange",
+                WalletType.EXCHANGE,
                 uuid,
-                "main",
+                WalletType.MAIN,
                 LocalDateTime.now(),
                 FinancialActionCategory.TRADE
             )
@@ -80,9 +79,9 @@ class FinancialActionJobManagerIT : KafkaEnabledTest() {
                 symbol,
                 BigDecimal.ONE,
                 uuid,
-                "main",
+                WalletType.MAIN,
                 uuid,
-                "exchange",
+                WalletType.EXCHANGE,
                 LocalDateTime.now(),
                 FinancialActionCategory.FEE
             )
@@ -112,9 +111,9 @@ class FinancialActionJobManagerIT : KafkaEnabledTest() {
             symbol,
             BigDecimal.TEN,
             uuid,
-            "main",
+            WalletType.MAIN,
             uuid,
-            "exchange",
+            WalletType.EXCHANGE,
             LocalDateTime.now(),
             FinancialActionCategory.ORDER_CREATE
         )
@@ -133,9 +132,9 @@ class FinancialActionJobManagerIT : KafkaEnabledTest() {
                 symbol,
                 BigDecimal.TEN,
                 uuid,
-                "exchange",
+                WalletType.EXCHANGE,
                 uuid,
-                "main",
+                WalletType.MAIN,
                 LocalDateTime.now(),
                 FinancialActionCategory.TRADE
             )
@@ -146,9 +145,9 @@ class FinancialActionJobManagerIT : KafkaEnabledTest() {
                 symbol,
                 BigDecimal.ONE,
                 uuid,
-                "main",
+                WalletType.MAIN,
                 uuid,
-                "exchange",
+                WalletType.EXCHANGE,
                 LocalDateTime.now(),
                 FinancialActionCategory.ORDER_CREATE
             )
@@ -175,9 +174,9 @@ class FinancialActionJobManagerIT : KafkaEnabledTest() {
             symbol,
             BigDecimal.TEN,
             uuid,
-            "main",
+            WalletType.MAIN,
             uuid,
-            "exchange",
+            WalletType.EXCHANGE,
             LocalDateTime.now(),
             FinancialActionCategory.ORDER_CREATE
         )
@@ -194,9 +193,9 @@ class FinancialActionJobManagerIT : KafkaEnabledTest() {
                 symbol,
                 BigDecimal.TEN,
                 uuid,
-                "exchange",
+                WalletType.EXCHANGE,
                 uuid,
-                "main",
+                WalletType.MAIN,
                 LocalDateTime.now(),
                 FinancialActionCategory.TRADE
             )
@@ -207,9 +206,9 @@ class FinancialActionJobManagerIT : KafkaEnabledTest() {
                 symbol,
                 BigDecimal.ONE,
                 uuid,
-                "main",
+                WalletType.MAIN,
                 uuid,
-                "exchange",
+                WalletType.EXCHANGE,
                 LocalDateTime.now(),
                 FinancialActionCategory.ORDER_CREATE
             )
@@ -226,12 +225,9 @@ class FinancialActionJobManagerIT : KafkaEnabledTest() {
                     parent1.amount,
                     parent1.eventType + parent1.pointer,
                     parent1Saved.id.toString(),
-                    parent1.category.toString(),
-                    parent1.detail
+                    parent1.category.toString()
                 )
-            ).thenAnswer {
-                throw Exception("transfer failed")
-            }
+            ).thenAnswer { throw Exception("transfer failed") }
             financialActionJobManager.processFinancialActions(0, 100)
 
             assertEquals(1, financialActionLoader.countUnprocessed(uuid, symbol, child1.eventType))
@@ -245,7 +241,15 @@ class FinancialActionJobManagerIT : KafkaEnabledTest() {
 
     private suspend fun verifyTransfer(orderVerifier: InOrder, fi: FinancialAction) {
         orderVerifier.verify(walletProxy).transfer(
-            eq(fi.symbol), eq(fi.senderWalletType), eq(fi.sender), eq(fi.receiverWalletType), eq(fi.receiver), eq(fi.amount), eq(fi.eventType + fi.pointer), any(), eq(fi.category.toString()), eq(fi.detail),
+            eq(fi.symbol),
+            eq(fi.senderWalletType),
+            eq(fi.sender),
+            eq(fi.receiverWalletType),
+            eq(fi.receiver),
+            eq(fi.amount),
+            eq(fi.eventType + fi.pointer),
+            any(),
+            eq(fi.category.toString()),
         )
     }
 }

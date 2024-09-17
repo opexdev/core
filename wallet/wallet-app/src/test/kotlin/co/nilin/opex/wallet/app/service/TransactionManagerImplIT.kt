@@ -5,6 +5,8 @@ import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.FetchCurrency
+import co.nilin.opex.wallet.core.model.TransferCategory
+import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.spi.*
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -32,8 +34,6 @@ class TransactionManagerImplIT : KafkaEnabledTest() {
     @Autowired
     lateinit var transactionManager: TransactionManager
 
-    val senderWalletType = "main"
-    val receiverWalletType = "exchange"
     val cc = "CC"
     val amount = BigDecimal.valueOf(10)
     var sourceUuid: String? = null
@@ -58,37 +58,52 @@ class TransactionManagerImplIT : KafkaEnabledTest() {
 
             val count = 5
             for (i in 1..count) {
-                val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(sender, senderWalletType, currency)
-                val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(receiver, receiverWalletType, currency)
+                val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(sender, WalletType.MAIN, currency)
+                val receiverWallet =
+                    walletManager.findWalletByOwnerAndCurrencyAndType(receiver, WalletType.EXCHANGE, currency)
+
                 transferManager.transfer(
                     TransferCommand(
                         sourceWallet!!,
                         receiverWallet!!,
                         Amount(sourceWallet.currency, amount.divide(BigDecimal.valueOf(count * 1L))),
                         "Amount1 ${System.currentTimeMillis()}", "Ref1 ${System.currentTimeMillis()}",
-                        "NORMAL",
-                        mapOf(Pair("key", "val"))
+                        TransferCategory.NORMAL
                     )
                 )
             }
 
             val thSender = transactionManager.findTransactions(
-                sender.uuid, currency.symbol, "NORMAL", LocalDateTime.now().minusHours(1), LocalDateTime.now(), true, 3, 3
+                sender.uuid,
+                currency.symbol,
+                TransferCategory.NORMAL,
+                LocalDateTime.now().minusHours(1),
+                LocalDateTime.now(),
+                true,
+                3,
+                3
             )
 
             assertEquals(2, thSender.size)
             assertTrue(thSender.first().date.compareTo(thSender.last().date) < 0)
             assertTrue(thSender.all { th -> th.senderUuid == sender.uuid })
-            assertTrue(thSender.all { th -> th.srcWallet == senderWalletType })
+            assertTrue(thSender.all { th -> th.srcWalletType == WalletType.MAIN })
 
             val thReceiver = transactionManager.findTransactions(
-                receiver.uuid, currency.symbol, "NORMAL", LocalDateTime.now().minusHours(1), LocalDateTime.now(), false, 3, 1
+                receiver.uuid,
+                currency.symbol,
+                TransferCategory.NORMAL,
+                LocalDateTime.now().minusHours(1),
+                LocalDateTime.now(),
+                false,
+                3,
+                1
             )
 
             assertEquals(3, thReceiver.size)
             assertTrue(thReceiver.first().date.compareTo(thReceiver.last().date) > 0)
             assertTrue(thReceiver.all { th -> th.receiverUuid == receiver.uuid })
-            assertTrue(thReceiver.all { th -> th.destWallet == receiverWalletType })
+            assertTrue(thReceiver.all { th -> th.destWalletType == WalletType.EXCHANGE })
 
             val thReceiverAll = transactionManager.findTransactions(
                 receiver.uuid, null, null, LocalDateTime.now().minusHours(1), LocalDateTime.now(), true, 100, 0
@@ -100,19 +115,24 @@ class TransactionManagerImplIT : KafkaEnabledTest() {
     fun setupWallets(sourceUuid: String) {
         runBlocking {
             try {
-                currencyService.deleteCurrency(FetchCurrency(symbol = cc))
+                currencyService.deleteCurrency(cc)
             } catch (_: Exception) {
 
             }
             currencyService.createNewCurrency(CurrencyCommand(name =  cc, symbol =  cc, precision =  BigDecimal.ONE),true)
             val currency = currencyService.fetchCurrency(FetchCurrency(symbol = cc))
             val sourceOwner = walletOwnerManager.createWalletOwner(sourceUuid, "not set", "")
-            walletManager.createWallet(sourceOwner, Amount(currency!!, amount.multiply(BigDecimal.valueOf(2))), currency, senderWalletType)
+            walletManager.createWallet(
+                sourceOwner,
+                Amount(currency!!, amount.multiply(BigDecimal.valueOf(2))),
+                currency,
+                WalletType.MAIN
+            )
             walletManager.createWallet(
                 sourceOwner,
                 Amount(currency, BigDecimal.ZERO),
                 currency,
-                receiverWalletType
+                WalletType.EXCHANGE
             )
 
         }

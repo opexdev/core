@@ -50,6 +50,9 @@ CREATE INDEX IF NOT EXISTS idx_fi_event_type ON fi_actions(event_type);
 CREATE INDEX IF NOT EXISTS idx_fi_actions_status ON fi_actions(status);
 CREATE INDEX IF NOT EXISTS idx_fi_actions_pointer ON fi_actions(pointer);
 
+ALTER TABLE fi_actions
+    ADD COLUMN IF NOT EXISTS category_name VARCHAR(36);
+
 CREATE TABLE IF NOT EXISTS fi_action_retry
 (
     id            SERIAL PRIMARY KEY,
@@ -70,11 +73,6 @@ CREATE TABLE IF NOT EXISTS fi_action_error
     retry_id INTEGER REFERENCES fi_action_retry (id),
     date     TIMESTAMP NOT NULL DEFAULT CURRENT_DATE
 );
-
-ALTER TABLE fi_actions
-    ADD COLUMN IF NOT EXISTS detail_json TEXT;
-ALTER TABLE fi_actions
-    ADD COLUMN IF NOT EXISTS category_name VARCHAR(36);
 
 CREATE TABLE IF NOT EXISTS pair_config
 (
