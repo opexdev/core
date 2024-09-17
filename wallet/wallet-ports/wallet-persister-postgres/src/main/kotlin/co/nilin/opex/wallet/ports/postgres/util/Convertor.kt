@@ -8,7 +8,7 @@ import java.util.*
 
 fun Deposit.toModel(): DepositModel {
     return DepositModel(
-        null,
+        id,
         ownerUuid,
         depositUuid,
         currency,
@@ -22,7 +22,7 @@ fun Deposit.toModel(): DepositModel {
         transactionRef,
         status,
         depositType,
-        createDate?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalDateTime()
+        createDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()
     )
 }
 
@@ -41,6 +41,7 @@ fun DepositModel.toDto(): Deposit {
         transactionRef,
         status,
         depositType,
-        Date.from(createDate?.atZone(ZoneId.systemDefault())?.toInstant())
+        Date.from(createDate.atZone(ZoneId.systemDefault())?.toInstant()),
+        id
     )
 }

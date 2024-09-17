@@ -4,7 +4,6 @@ import co.nilin.opex.wallet.core.inout.WithdrawResponse
 import co.nilin.opex.wallet.core.model.Withdraw
 import co.nilin.opex.wallet.core.model.WithdrawStatus
 import co.nilin.opex.wallet.core.spi.WithdrawPersister
-import co.nilin.opex.wallet.ports.postgres.dao.TransactionRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WithdrawRepository
 import co.nilin.opex.wallet.ports.postgres.model.WithdrawModel
 import kotlinx.coroutines.flow.map
@@ -14,14 +13,9 @@ import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
-import java.time.ZoneId
-import java.util.*
 
 @Service
-class WithdrawPersisterImpl(
-    private val withdrawRepository: WithdrawRepository,
-    private val transactionRepository: TransactionRepository
-) : WithdrawPersister {
+class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) : WithdrawPersister {
 
     override suspend fun persist(withdraw: Withdraw): Withdraw {
         return withdrawRepository.save(
@@ -140,37 +134,27 @@ class WithdrawPersisterImpl(
 
     override suspend fun findWithdrawHistory(
         uuid: String,
-        coin: String?,
+        currency: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
         limit: Int,
         offset: Int,
         ascendingByTime: Boolean?
-    ): List<Withdraw> {
+    ): List<WithdrawResponse> {
         val withdraws = if (ascendingByTime == true)
-            withdrawRepository.findWithdrawHistoryAsc(uuid, coin, startTime, endTime, limit, offset)
+            withdrawRepository.findWithdrawHistoryAsc(uuid, currency, startTime, endTime, limit, offset)
         else
-            withdrawRepository.findWithdrawHistoryDesc(uuid, coin, startTime, endTime, limit, offset)
-        return withdraws.map { it.asWithdraw() }.toList()
+            withdrawRepository.findWithdrawHistoryDesc(uuid, currency, startTime, endTime, limit, offset)
+        return withdraws.map { it.asWithdrawResponse() }.toList()
     }
 
     private suspend fun WithdrawModel.asWithdrawResponse(): WithdrawResponse {
-        val reqTx = transactionRepository.findById(requestTransaction.toLong()).awaitFirst()
-        val finalTx = if (finalizedTransaction == null)
-            null
-        else
-            transactionRepository.findById(finalizedTransaction.toLong()).awaitFirstOrNull()
-
         return WithdrawResponse(
             id!!,
             ownerUuid,
-            Date.from(reqTx.transactionDate.atZone(ZoneId.systemDefault()).toInstant()),
-            if (finalTx == null) null
-            else Date.from(finalTx.transactionDate.atZone(ZoneId.systemDefault()).toInstant()),
-            reqTx.id.toString(),
-            finalTx?.id.toString(),
-            appliedFee,
             amount,
+            currency,
+            appliedFee,
             destAmount,
             destSymbol,
             destAddress,

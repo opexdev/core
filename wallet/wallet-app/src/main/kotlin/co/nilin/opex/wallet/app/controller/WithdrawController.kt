@@ -3,12 +3,13 @@ package co.nilin.opex.wallet.app.controller
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.RequestWithdrawBody
 import co.nilin.opex.wallet.app.dto.SearchWithdrawRequest
-import co.nilin.opex.wallet.app.dto.TransactionRequest
-import co.nilin.opex.wallet.app.dto.WithdrawHistoryResponse
+import co.nilin.opex.wallet.app.dto.WithdrawHistoryRequest
 import co.nilin.opex.wallet.core.inout.WithdrawCommand
 import co.nilin.opex.wallet.core.inout.WithdrawResponse
-import co.nilin.opex.wallet.core.inout.WithdrawResult
+import co.nilin.opex.wallet.core.inout.WithdrawActionResult
 import co.nilin.opex.wallet.core.service.WithdrawService
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 import java.security.Principal
 import java.time.Instant
@@ -36,7 +37,7 @@ class WithdrawController(private val withdrawService: WithdrawService) {
     }
 
     @PostMapping
-    suspend fun requestWithdraw(principal: Principal, @RequestBody request: RequestWithdrawBody): WithdrawResult {
+    suspend fun requestWithdraw(principal: Principal, @RequestBody request: RequestWithdrawBody): WithdrawActionResult {
         return withdrawService.requestWithdraw(
             with(request) {
                 WithdrawCommand(
@@ -58,14 +59,14 @@ class WithdrawController(private val withdrawService: WithdrawService) {
         withdrawService.cancelWithdraw(principal.name, withdrawId)
     }
 
-    @PostMapping("/history/{uuid}")
+    @PostMapping("/history")
     suspend fun getWithdrawTransactionsForUser(
-        @PathVariable uuid: String,
-        @RequestBody request: TransactionRequest
-    ): List<WithdrawHistoryResponse> {
+        @CurrentSecurityContext securityContext: SecurityContext,
+        @RequestBody request: WithdrawHistoryRequest,
+    ): List<WithdrawResponse> {
         return withdrawService.findWithdrawHistory(
-            uuid,
-            request.coin,
+            securityContext.authentication.name,
+            request.currency,
             request.startTime?.let {
                 LocalDateTime.ofInstant(Instant.ofEpochMilli(request.startTime), ZoneId.systemDefault())
             },
@@ -75,24 +76,6 @@ class WithdrawController(private val withdrawService: WithdrawService) {
             request.limit!!,
             request.offset!!,
             request.ascendingByTime
-        ).map {
-            WithdrawHistoryResponse(
-                it.withdrawId,
-                it.ownerUuid,
-                it.amount,
-                it.currency,
-                it.appliedFee,
-                it.destAmount,
-                it.destSymbol,
-                it.destAddress,
-                it.destNetwork,
-                it.destNote,
-                it.destTransactionRef,
-                it.statusReason,
-                it.status,
-                it.createDate.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
-                it.acceptDate?.atZone(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
-            )
-        }
+        )
     }
 }

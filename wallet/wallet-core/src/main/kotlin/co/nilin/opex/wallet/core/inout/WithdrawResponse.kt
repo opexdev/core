@@ -7,13 +7,10 @@ import java.util.*
 
 class WithdrawResponse(
     val withdrawId: Long,
-    val ownerUuid: String,
-    val requestDate: Date,
-    val finalizedDate: Date?,
-    val requestTransaction: String,
-    val finalizedTransaction: String?,
-    val appliedFee: BigDecimal?,
-    val amount: BigDecimal?,
+    val uuid: String,
+    val amount: BigDecimal,
+    val currency: String,
+    val appliedFee: BigDecimal,
     val destAmount: BigDecimal?,
     val destSymbol: String?,
     val destAddress: String?,
@@ -22,6 +19,6 @@ class WithdrawResponse(
     var destTransactionRef: String?,
     val statusReason: String?,
     val status: WithdrawStatus,
-    val createDate: LocalDateTime = LocalDateTime.now(),
-    val acceptDate: LocalDateTime? = null
+    val createDate: LocalDateTime,
+    val acceptDate: LocalDateTime?
 )

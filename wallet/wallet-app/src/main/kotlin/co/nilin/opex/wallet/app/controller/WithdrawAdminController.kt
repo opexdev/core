@@ -3,11 +3,7 @@ package co.nilin.opex.wallet.app.controller
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.AdminSearchWithdrawRequest
 import co.nilin.opex.wallet.core.inout.*
-import co.nilin.opex.wallet.core.model.Withdraw
 import co.nilin.opex.wallet.core.service.WithdrawService
-import io.swagger.annotations.ApiResponse
-import io.swagger.annotations.Example
-import io.swagger.annotations.ExampleProperty
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 
@@ -20,12 +16,12 @@ class WithdrawAdminController(private val withdrawService: WithdrawService) {
         return withdrawService.findWithdraw(id) ?: throw OpexError.WithdrawNotFound.exception()
     }
 
-    @GetMapping
+    @PostMapping("/search")
     suspend fun search(
         @RequestParam offset: Int,
         @RequestParam size: Int,
         @RequestBody body: AdminSearchWithdrawRequest
-    ): PagingWithdrawResponse {
+    ): List<WithdrawResponse> {
         return withdrawService.findByCriteria(
             body.uuid,
             body.currency,
@@ -43,7 +39,7 @@ class WithdrawAdminController(private val withdrawService: WithdrawService) {
         @RequestParam destTransactionRef: String,
         @RequestParam(required = false) destNote: String?,
         @RequestParam(required = false) destAmount: BigDecimal?
-    ): WithdrawResult {
+    ): WithdrawActionResult {
         return withdrawService.acceptWithdraw(
             WithdrawAcceptCommand(
                 withdrawId,
@@ -55,7 +51,7 @@ class WithdrawAdminController(private val withdrawService: WithdrawService) {
     }
 
     @PostMapping("/{withdrawId}/process")
-    suspend fun processWithdraw(@PathVariable withdrawId: Long): WithdrawResult {
+    suspend fun processWithdraw(@PathVariable withdrawId: Long): WithdrawActionResult {
         return withdrawService.processWithdraw(withdrawId)
     }
 
@@ -63,7 +59,7 @@ class WithdrawAdminController(private val withdrawService: WithdrawService) {
     suspend fun rejectWithdraw(
         @PathVariable withdrawId: Long,
         @RequestParam reason: String
-    ): WithdrawResult {
+    ): WithdrawActionResult {
         return withdrawService.rejectWithdraw(WithdrawRejectCommand(withdrawId, reason))
     }
 }
