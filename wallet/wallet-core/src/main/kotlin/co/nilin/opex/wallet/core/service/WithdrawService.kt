@@ -22,7 +22,7 @@ class WithdrawService(
 ) {
 
     @Transactional
-    suspend fun requestWithdraw(withdrawCommand: WithdrawCommand): WithdrawResult {
+    suspend fun requestWithdraw(withdrawCommand: WithdrawCommand): WithdrawActionResult {
         val currency = currencyService.getCurrency(withdrawCommand.currency)
             ?: throw OpexError.CurrencyNotFound.exception()
         val owner = walletOwnerManager.findWalletOwner(withdrawCommand.uuid)
@@ -77,11 +77,11 @@ class WithdrawService(
             )
         )
 
-        return WithdrawResult(withdraw.withdrawId!!, withdraw.status)
+        return WithdrawActionResult(withdraw.withdrawId!!, withdraw.status)
     }
 
     @Transactional
-    suspend fun acceptWithdraw(acceptCommand: WithdrawAcceptCommand): WithdrawResult {
+    suspend fun acceptWithdraw(acceptCommand: WithdrawAcceptCommand): WithdrawActionResult {
         val system = walletOwnerManager.findWalletOwner(systemUuid) ?: throw OpexError.WalletOwnerNotFound.exception()
         val withdraw = withdrawPersister.findById(acceptCommand.withdrawId)
             ?: throw OpexError.WithdrawNotFound.exception()
@@ -133,10 +133,10 @@ class WithdrawService(
             )
         )
 
-        return WithdrawResult(updateWithdraw.withdrawId!!, updateWithdraw.status)
+        return WithdrawActionResult(updateWithdraw.withdrawId!!, updateWithdraw.status)
     }
 
-    suspend fun processWithdraw(withdrawId: Long): WithdrawResult {
+    suspend fun processWithdraw(withdrawId: Long): WithdrawActionResult {
         val withdraw = withdrawPersister.findById(withdrawId) ?: throw OpexError.WithdrawNotFound.exception()
 
         if (!withdraw.canBeProcessed())
@@ -145,13 +145,14 @@ class WithdrawService(
         withdraw.status = WithdrawStatus.PROCESSING
         withdrawPersister.persist(withdraw)
 
-        return WithdrawResult(withdraw.withdrawId!!, WithdrawStatus.PROCESSING)
+        return WithdrawActionResult(withdraw.withdrawId!!, WithdrawStatus.PROCESSING)
     }
 
     @Transactional
     suspend fun cancelWithdraw(uuid: String, withdrawId: Long) {
         val withdraw = withdrawPersister.findById(withdrawId) ?: throw OpexError.WithdrawNotFound.exception()
         if (withdraw.ownerUuid != uuid) throw OpexError.Forbidden.exception()
+        if (!withdraw.canBeCanceled()) throw OpexError.WithdrawCannotBeCanceled.exception()
 
         val currency = currencyService.getCurrency(withdraw.currency) ?: throw OpexError.CurrencyNotFound.exception()
         val owner = walletOwnerManager.findWalletOwner(uuid) ?: throw OpexError.WalletOwnerNotFound.exception()
@@ -159,9 +160,6 @@ class WithdrawService(
             ?: throw OpexError.WalletNotFound.exception()
         val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, WalletType.MAIN, currency)
             ?: throw OpexError.WalletNotFound.exception()
-
-        if (!withdraw.canBeCanceled())
-            throw OpexError.WithdrawCannotBeCanceled.exception()
 
         withdraw.status = WithdrawStatus.CANCELED
         withdrawPersister.persist(withdraw)
@@ -179,7 +177,7 @@ class WithdrawService(
     }
 
     @Transactional
-    suspend fun rejectWithdraw(rejectCommand: WithdrawRejectCommand): WithdrawResult {
+    suspend fun rejectWithdraw(rejectCommand: WithdrawRejectCommand): WithdrawActionResult {
         val withdraw = withdrawPersister.findById(rejectCommand.withdrawId)
             ?: throw OpexError.WithdrawNotFound.exception()
 
@@ -231,7 +229,7 @@ class WithdrawService(
                 null
             )
         )
-        return WithdrawResult(withdraw.withdrawId!!, updateWithdraw.status)
+        return WithdrawActionResult(withdraw.withdrawId!!, updateWithdraw.status)
     }
 
     suspend fun findWithdraw(id: Long): WithdrawResponse? {
@@ -246,9 +244,8 @@ class WithdrawService(
         status: List<WithdrawStatus>,
         offset: Int,
         size: Int
-    ): PagingWithdrawResponse {
-        val count = withdrawPersister.countByCriteria(ownerUuid, currency, destTxRef, destAddress, status)
-        val list = withdrawPersister.findByCriteria(
+    ): List<WithdrawResponse> {
+        return withdrawPersister.findByCriteria(
             ownerUuid,
             currency,
             destTxRef,
@@ -257,7 +254,6 @@ class WithdrawService(
             offset,
             size
         )
-        return PagingWithdrawResponse(count, list)
     }
 
     suspend fun findByCriteria(
@@ -278,14 +274,14 @@ class WithdrawService(
 
     suspend fun findWithdrawHistory(
         uuid: String,
-        coin: String?,
+        currency: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
         limit: Int,
         offset: Int,
         ascendingByTime: Boolean? = false
-    ): List<Withdraw> {
-        return withdrawPersister.findWithdrawHistory(uuid, coin, startTime, endTime, limit, offset, ascendingByTime)
+    ): List<WithdrawResponse> {
+        return withdrawPersister.findWithdrawHistory(uuid, currency, startTime, endTime, limit, offset, ascendingByTime)
     }
 
 }

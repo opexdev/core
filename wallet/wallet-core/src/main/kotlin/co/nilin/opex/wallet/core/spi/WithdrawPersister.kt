@@ -41,11 +41,11 @@ interface WithdrawPersister {
 
     suspend fun findWithdrawHistory(
         uuid: String,
-        coin: String?,
+        currency: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
         limit: Int,
         offset: Int,
         ascendingByTime: Boolean?
-    ): List<Withdraw>
+    ): List<WithdrawResponse>
 }
