@@ -5,6 +5,7 @@ import co.nilin.opex.wallet.app.dto.CurrencyExchangeRatesResponse
 import co.nilin.opex.wallet.app.dto.CurrencyPair
 import co.nilin.opex.wallet.app.dto.SetCurrencyExchangeRateRequest
 import co.nilin.opex.wallet.app.service.otc.GraphService
+import co.nilin.opex.wallet.core.inout.CurrencyPrice
 
 import co.nilin.opex.wallet.core.model.otc.*
 
@@ -174,6 +175,11 @@ class CurrencyRatesController(
         return CurrencyExchangeRatesResponse(
             graphService.buildRoutes(sourceSymbol, destSymbol).map { CurrencyExchangeRate(it.getSourceSymbol(), it.getDestSymbol(), it.getRate()) }
         )
+    }
+
+    @GetMapping("/currency/price")
+    suspend fun getPrice(@RequestParam("unit") unit: String): List<CurrencyPrice>? {
+        return graphService.fetchPrice(unit)
     }
 
 }

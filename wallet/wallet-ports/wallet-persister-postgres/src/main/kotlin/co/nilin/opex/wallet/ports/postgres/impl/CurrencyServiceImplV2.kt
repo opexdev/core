@@ -3,6 +3,7 @@ package co.nilin.opex.wallet.ports.postgres.impl
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.inout.CurrenciesCommand
 import co.nilin.opex.wallet.core.inout.CurrencyCommand
+import co.nilin.opex.wallet.core.inout.CurrencyPrice
 //import co.nilin.opex.wallet.core.model.Currencies
 //import co.nilin.opex.wallet.core.model.Currency
 //import co.nilin.opex.wallet.core.model.CurrencyImp
@@ -107,5 +108,7 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
         }
         return currencyRepository.fetchCurrency(uuid = request.uuid)?.awaitFirstOrNull()
     }
+
+
 
 }
