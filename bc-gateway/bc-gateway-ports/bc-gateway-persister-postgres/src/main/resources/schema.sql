@@ -87,9 +87,23 @@ CREATE TABLE IF NOT EXISTS currency_implementations
 ALTER TABLE currency_implementations DROP CONSTRAINT  IF EXISTS currency_implementations_currency_symbol_fkey;
 ALTER TABLE currency_implementations ADD COLUMN IF NOT EXISTS impl_uuid VARCHAR(256) NOT NULL UNIQUE DEFAULT  uuid_generate_v4();
 ALTER TABLE currency_implementations ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL  DEFAULT TRUE;
-ALTER TABLE currency_implementations RENAME COLUMN withdraw_enabled to withdraw_allowed ;
+DO
+$$
+    BEGIN
+      ALTER TABLE currency_implementations RENAME COLUMN withdraw_enabled to withdraw_allowed ;
+      EXCEPTION
+            WHEN undefined_column THEN RAISE NOTICE 'column withdraw_enabled does not exist';
+    END;
+$$;
 ALTER TABLE currency_implementations ADD COLUMN IF NOT EXISTS deposit_allowed BOOLEAN NOT NULL  DEFAULT TRUE;
-ALTER TABLE currency_implementations RENAME COLUMN token to is_token ;
+DO
+$$
+    BEGIN
+      ALTER TABLE currency_implementations RENAME COLUMN token to is_token ;
+      EXCEPTION
+            WHEN undefined_column THEN RAISE NOTICE 'column token does not exist';
+    END;
+$$;
 
 
 
