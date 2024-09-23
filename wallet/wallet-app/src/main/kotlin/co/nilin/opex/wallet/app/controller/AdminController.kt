@@ -87,4 +87,92 @@ class AdminController(private val withdrawService: WithdrawService, private val 
         return withdrawService.acceptWithdraw(WithdrawAcceptCommand(withdrawId, destTransactionRef, destNote, fee))
     }
 
+
+    @PostMapping("/withdraw/manually/{amount}_{symbol}/{sourceUuid}")
+    @ApiResponse(
+            message = "OK",
+            code = 200,
+            examples = Example(
+                    ExampleProperty(
+                            value = "{ }",
+                            mediaType = "application/json"
+                    )
+            )
+    )
+    suspend fun withdrawManually(
+            @PathVariable("symbol") symbol: String,
+            @PathVariable("sourceUuid") sourceUuid: String,
+            @PathVariable("amount") amount: BigDecimal,
+            @RequestBody request: ManualTransferRequest,
+            @CurrentSecurityContext securityContext: SecurityContext
+    ): TransferResult {
+        return transferService.withdrawManually(
+                symbol, securityContext.authentication.name, sourceUuid,
+                amount, request
+        )
+    }
+
+    @PostMapping("/deposit/manually/{amount}_{symbol}/{receiverUuid}")
+    @ApiResponse(
+            message = "OK",
+            code = 200,
+            examples = Example(
+                    ExampleProperty(
+                            value = "{ }",
+                            mediaType = "application/json"
+                    )
+            )
+    )
+    suspend fun depositManually(
+            @PathVariable("symbol") symbol: String,
+            @PathVariable("receiverUuid") receiverUuid: String,
+            @PathVariable("amount") amount: BigDecimal,
+            @RequestBody request: ManualTransferRequest,
+            @CurrentSecurityContext securityContext: SecurityContext
+    ): TransferResult {
+        return transferService.depositManually(
+                symbol, receiverUuid,
+                securityContext.authentication.name, amount, request
+        )
+    }
+
+
+
+    @GetMapping("/swap")
+    @ApiResponse(
+            message = "OK",
+            code = 200,
+            examples = Example(
+                    ExampleProperty(
+                            value = "{ }",
+                            mediaType = "application/json"
+                    )
+            )
+    )
+    suspend fun swapsHistory(
+            @RequestParam("uuid", required = false) uuid: String?,
+            @RequestParam("withdraw_id", required = false) withdrawId: String?,
+            @RequestParam("currency", required = false) currency: String?,
+            @RequestParam("dest_transaction_ref", required = false) destTxRef: String?,
+            @RequestParam("dest_address", required = false) destAddress: String?,
+            @RequestParam("status", required = false) status: List<String>?,
+            @RequestParam offset: Int,
+            @RequestParam size: Int,
+            @RequestParam("ascending_by_time", required = false) ascendingByTime: Boolean?
+    ): PagingWithdrawResponse {
+        return withdrawService
+                .findByCriteria(
+                        uuid,
+                        withdrawId,
+                        currency,
+                        destTxRef,
+                        destAddress,
+                        status?.isEmpty() ?: true,
+                        status ?: listOf(""),
+                        offset,
+                        size,
+                        ascendingByTime?:true
+                )
+    }
+
 }
