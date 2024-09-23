@@ -20,7 +20,8 @@ fun CurrencyCommand.toDto(): CurrencyDto {
             depositAllowed ?: false,
             externalUrl,
             isCryptoCurrency,
-            gateways)
+            gateways,
+            availableGatewayType)
 }
 
 

@@ -22,6 +22,7 @@ data class CurrencyCommand(
         var externalUrl: String? = null,
         var isCryptoCurrency: Boolean? = false,
         var gateways: List<CurrencyGatewayCommand>? = null,
+        var availableGatewayType:String?=null,
 
 
         ) {
