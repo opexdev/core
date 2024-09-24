@@ -17,9 +17,7 @@ CREATE TABLE IF NOT EXISTS currency
     description       TEXT,
     short_description TEXT,
     uuid              VARCHAR(256) NOT NULL DEFAULT  uuid_generate_v4(),
-    external_url           VARCHAR(255),
-    is_crypto_currency     BOOLEAN DEFAULT FALSE
-);
+    external_url           VARCHAR(255));
 ALTER TABLE currency ADD COLUMN IF NOT EXISTS title VARCHAR(25);
 ALTER TABLE currency ADD COLUMN IF NOT EXISTS alias VARCHAR(25);
 ALTER TABLE currency  ADD COLUMN IF NOT EXISTS icon TEXT;
@@ -32,7 +30,7 @@ ALTER TABLE currency ADD COLUMN IF NOT EXISTS uuid VARCHAR(256) NOT NULL DEFAULT
 ALTER TABLE currency  ADD COLUMN IF NOT EXISTS description TEXT;
 ALTER TABLE currency ADD COLUMN IF NOT EXISTS short_description TEXT;
 ALTER TABLE currency  ADD COLUMN IF NOT EXISTS external_url    VARCHAR(255);
-ALTER TABLE currency  ADD COLUMN IF NOT EXISTS is_crypto_currency BOOLEAN DEFAULT FALSE;
+-- ALTER TABLE currency  ADD COLUMN IF NOT EXISTS is_crypto_currency BOOLEAN DEFAULT FALSE;
 -- ALTER TABLE currency DROP COLUMN withdraw_allowed;
 -- ALTER TABLE currency DROP COLUMN deposit_allowed;
 -- ALTER TABLE currency DROP COLUMN withdraw_fee;

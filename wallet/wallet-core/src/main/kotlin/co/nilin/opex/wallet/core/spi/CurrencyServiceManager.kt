@@ -14,7 +14,7 @@ interface CurrencyServiceManager {
     suspend fun fetchCurrencies(request: FetchCurrency? = null): CurrenciesCommand?
     suspend fun fetchCurrency(request: FetchCurrency): CurrencyCommand?
     suspend fun updateCurrency(request: CurrencyCommand): CurrencyCommand?
-    suspend fun prepareCurrencyToBeACryptoCurrency(request: String): CurrencyCommand?
+//    suspend fun prepareCurrencyToBeACryptoCurrency(request: String): CurrencyCommand?
     suspend fun deleteCurrency(request: FetchCurrency): Void?
 
 }

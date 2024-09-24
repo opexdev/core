@@ -45,13 +45,13 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
 
     }
 
-    override suspend fun prepareCurrencyToBeACryptoCurrency(request: String): CurrencyCommand? {
-        return loadCurrency(FetchCurrency(symbol = request))?.awaitFirstOrNull()?.let {
-            if (it.isCryptoCurrency == false)
-                return doSave(it.apply { isCryptoCurrency = true })?.toCommand()
-            it.toCommand()
-        } ?: throw OpexError.CurrencyNotFound.exception()
-    }
+//    override suspend fun prepareCurrencyToBeACryptoCurrency(request: String): CurrencyCommand? {
+//        return loadCurrency(FetchCurrency(symbol = request))?.awaitFirstOrNull()?.let {
+//            if (it.isCryptoCurrency == false)
+//                return doSave(it.apply { isCryptoCurrency = true })?.toCommand()
+//            it.toCommand()
+//        } ?: throw OpexError.CurrencyNotFound.exception()
+//    }
 
     override suspend fun deleteCurrency(request: FetchCurrency): Void? {
         return loadCurrency(request)?.awaitFirstOrNull()?.let {
@@ -99,7 +99,6 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
                     this.description,
                     this.shortDescription,
                     this.externalUrl,
-                    this.isCryptoCurrency
             ).awaitFirstOrNull()
 
         }

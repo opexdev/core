@@ -32,7 +32,6 @@ class CurrencyServiceV2(
                 request.apply {
                     uuid = UUID.randomUUID().toString()
                     symbol = symbol?.uppercase() ?: throw OpexError.BadRequest.exception()
-                    isCryptoCurrency = false
                 }.toCommand()
         )?.toDto()
         walletManager.createWalletForSystem(request.symbol!!)
@@ -51,10 +50,10 @@ class CurrencyServiceV2(
         currencyServiceManager.fetchCurrency(FetchCurrency(symbol = request.currencySymbol))
                 ?: throw OpexError.CurrencyNotFound.exception()
 
-        if (request is OnChainGatewayCommand) {
-            currencyServiceManager.prepareCurrencyToBeACryptoCurrency(request.currencySymbol!!)
-                    ?: throw OpexError.BadRequest.exception()
-        }
+//        if (request is OnChainGatewayCommand) {
+//            currencyServiceManager.prepareCurrencyToBeACryptoCurrency(request.currencySymbol!!)
+//                    ?: throw OpexError.BadRequest.exception()
+//        }
         return gatewayService.createGateway(request);
 
     }

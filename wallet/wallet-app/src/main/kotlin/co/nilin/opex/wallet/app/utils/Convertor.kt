@@ -19,7 +19,6 @@ fun CurrencyCommand.toDto(): CurrencyDto {
             withdrawAllowed ?: false,
             depositAllowed ?: false,
             externalUrl,
-            isCryptoCurrency,
             gateways,
             availableGatewayType)
 }

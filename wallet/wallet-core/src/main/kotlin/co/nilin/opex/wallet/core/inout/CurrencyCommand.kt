@@ -20,7 +20,6 @@ data class CurrencyCommand(
         var withdrawAllowed: Boolean? = false,
         var depositAllowed: Boolean? = false,
         var externalUrl: String? = null,
-        var isCryptoCurrency: Boolean? = false,
         var gateways: List<CurrencyGatewayCommand>? = null,
         var availableGatewayType:String?=null,
 
