@@ -69,7 +69,7 @@ class CurrencyServiceV2(
                         it.withdrawAllowed = gateways?.stream()?.filter { it.isActive == true }?.map(CurrencyGatewayCommand::withdrawAllowed)?.reduce { t, u -> t ?: false || u ?: false }?.orElseGet { false }
                         it.gateways = gateways
                         //It is a stupid field for resolving front-end developers need
-                        gateways?.forEach{gateway ->
+                        gateways?.forEach { gateway ->
                             run {
                                 if (gateway is OnChainGatewayCommand) {
                                     it.availableGatewayType = GatewayType.OnChain.name;
@@ -112,15 +112,14 @@ class CurrencyServiceV2(
                 it.gateways = groupedByGateways?.get(it.symbol)
                 it.depositAllowed = groupedByGateways?.get(it.symbol)?.stream()?.filter { g -> g.isActive == true }?.map(CurrencyGatewayCommand::depositAllowed)?.reduce { t, u -> t ?: false || u ?: false }?.orElseGet { false }
                 it.withdrawAllowed = groupedByGateways?.get(it.symbol)?.stream()?.filter { g -> g.isActive == true }?.map(CurrencyGatewayCommand::withdrawAllowed)?.reduce { t, u -> t ?: false || u ?: false }?.orElseGet { false }
-                gateways?.forEach{gateway ->
-                    run {
-                        if (gateway is OnChainGatewayCommand) {
-                            it.availableGatewayType = GatewayType.OnChain.name;
-                        } else if (gateway is OffChainGatewayCommand) {
-                            it.availableGatewayType = GatewayType.OffChain.name;
+                gateways?.forEach { gateway ->
+                        when (gateway) {
+                            is OnChainGatewayCommand -> it.availableGatewayType = GatewayType.OnChain.name;
+                            is OffChainGatewayCommand -> it.availableGatewayType = GatewayType.OffChain.name;
                         }
-                    }
+
                 }
+
             }
             it.toDto()
         }?.collect(Collectors.toList()))
