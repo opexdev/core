@@ -8,20 +8,15 @@ import java.time.LocalDateTime
 
 interface DepositPersister {
 
-
-
     suspend fun persist(deposit: Deposit): Deposit
-
 
     suspend fun findDepositHistory(
         uuid: String,
-        coin: String?,
+        currency: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
         limit: Int,
         offset: Int,
         ascendingByTime: Boolean?
-    ): Deposits
-
-
+    ): List<Deposit>
 }

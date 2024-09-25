@@ -82,14 +82,14 @@ class CurrencyHandlerImpl(
         decimal: Int,
         oldChain: String
     ): CurrencyImplementation? {
-        currencyRepository.findBySymbol(currencySymbol).awaitFirstOrNull()?.let {cm->
+        currencyRepository.findBySymbol(currencySymbol).awaitFirstOrNull()?.let { cm ->
             currencyRepository.save(CurrencyModel(currencySymbol, currencyName)).awaitSingleOrNull()
             return currencyImplementationRepository.findByCurrencySymbolAndChain(currencySymbol, oldChain)
                 ?.awaitSingleOrNull()
                 ?.let {
                     it.apply {
                         this.implementationSymbol = implementationSymbol
-                        this.chain = newChain?:oldChain
+                        this.chain = newChain ?: oldChain
                         this.decimal = decimal
                         this.token = isToken
                         this.tokenAddress = tokenAddress
@@ -98,7 +98,8 @@ class CurrencyHandlerImpl(
                         this.withdrawFee = withdrawFee
                         this.withdrawMin = minimumWithdraw
                     }
-                    currencyImplementationRepository.save(it).awaitSingleOrNull()?.let {icm-> projectCurrencyImplementation(icm, cm) }
+                    currencyImplementationRepository.save(it).awaitSingleOrNull()
+                        ?.let { icm -> projectCurrencyImplementation(icm, cm) }
                 }
 
         } ?: throw OpexError.CurrencyNotFound.exception()
@@ -213,6 +214,11 @@ class CurrencyHandlerImpl(
             withdrawEnabled = status
             currencyImplementationRepository.save(impl).awaitFirstOrNull()
         }
+    }
+
+    override suspend fun getWithdrawData(symbol: String, network: String): WithdrawData {
+        return currencyImplementationRepository.findWithdrawDataBySymbolAndChain(symbol, network)
+            .awaitSingleOrNull() ?: throw OpexError.CurrencyNotFound.exception()
     }
 
     private suspend fun projectCurrencyImplementation(

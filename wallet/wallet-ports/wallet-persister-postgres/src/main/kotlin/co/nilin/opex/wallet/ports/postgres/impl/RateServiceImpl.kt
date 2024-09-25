@@ -21,8 +21,8 @@ class RateServiceImpl(
     private val forbiddenPairRepository: ForbiddenPairRepository,
     private val currencyRepository: CurrencyRepository
 ) : RateService {
-    private val logger = LoggerFactory.getLogger(RateServiceImpl::class.java)
 
+    private val logger = LoggerFactory.getLogger(RateServiceImpl::class.java)
 
     override suspend fun addRate(rate: Rate) {
         rate.isValid()
@@ -36,14 +36,11 @@ class RateServiceImpl(
         } ?: run {
             ratesRepository.save(rate.toModel()).awaitFirstOrNull()
         }
-
     }
-
 
     override suspend fun getRate(): Rates {
         return Rates(ratesRepository.findAll().map { it.toDto() }.collect(Collectors.toList()).awaitFirstOrNull())
     }
-
 
     override suspend fun getRate(sourceSymbol: String, destinationSymbol: String): Rate? {
         return ratesRepository.findBySourceSymbolAndDestinationSymbol(sourceSymbol, destinationSymbol)
@@ -61,10 +58,11 @@ class RateServiceImpl(
     }
 
     override suspend fun updateRate(rate: Rate): Rates {
-
         return Rates(ratesRepository
             .findBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destSymbol)?.awaitFirstOrNull()?.let { it ->
-                ratesRepository.save(RateModel(it.id, rate.sourceSymbol, rate.destSymbol, rate.rate, LocalDateTime.now(), it.createDate))?.awaitFirstOrNull().let {
+                ratesRepository.save(RateModel(it.id, rate.sourceSymbol, rate.destSymbol, rate.rate, LocalDateTime.now(), it.createDate))
+                    .awaitFirstOrNull()
+                    .let {
                     ratesRepository.findAll().map { it.toDto() }.collect(Collectors.toList()).awaitFirstOrNull()
                 }
             }
@@ -93,14 +91,12 @@ class RateServiceImpl(
     }
 
     override suspend fun addTransitiveSymbols(symbols: Symbols) {
-
         symbols.symbols?.forEach {
             currencyRepository.findBySymbol(it)?.awaitFirstOrNull()?.let {
                 if (it.isActive == true)
                     currencyRepository.save(it.apply { isTransitive = true }).awaitFirstOrNull()
             }
         }
-
     }
 
     override suspend fun deleteTransitiveSymbols(symbols: Symbols): Symbols {
@@ -116,48 +112,33 @@ class RateServiceImpl(
         return Symbols(currencyRepository.findByIsTransitive(true)?.map(CurrencyModel::symbol)?.collect(Collectors.toList())?.awaitFirstOrNull())
     }
 
-
     private fun Rate.toModel(): RateModel {
         return RateModel(
             null,
-            this.sourceSymbol,
-            this.destSymbol,
-            this.rate,
+            sourceSymbol,
+            destSymbol,
+            rate,
             LocalDateTime.now(),
             LocalDateTime.now()
         )
-
     }
 
     private fun RateModel.toDto(): Rate {
-        return Rate(
-
-            this.sourceSymbol,
-            this.destinationSymbol,
-            this.rate,
-
-            )
-
+        return Rate(sourceSymbol, destinationSymbol, rate)
     }
 
     private fun ForbiddenPair.toModel(): ForbiddenPairModel {
         return ForbiddenPairModel(
             null,
-            this.sourceSymbol,
-            this.destSymbol,
+            sourceSymbol,
+            destSymbol,
             LocalDateTime.now(),
             LocalDateTime.now()
         )
-
     }
 
     private fun ForbiddenPairModel.toDto(): ForbiddenPair {
-        return ForbiddenPair(
-            this.sourceSymbol,
-            this.destinationSymbol,
-
-            )
-
+        return ForbiddenPair(sourceSymbol, destinationSymbol)
     }
 
     private suspend fun Rate.isValid() {

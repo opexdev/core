@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.ports.postgres.dto
 
+import co.nilin.opex.wallet.core.model.TransferCategory
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
@@ -11,6 +12,5 @@ data class DepositWithdrawTransaction(
     val description: String?,
     val ref: String?,
     val date: LocalDateTime,
-    val category: String,
-    val detail: String?
+    val category: TransferCategory
 )

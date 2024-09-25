@@ -110,7 +110,6 @@ internal class TradeManagerImplTest {
 
         assertThat(tradeFinancialActions.size).isEqualTo(4)
         assertThat(tradeFinancialActions[0].category).isEqualTo(FinancialActionCategory.TRADE)
-        assertThat(tradeFinancialActions[0].detail).containsKeys("userLevel", "direction", "matchConstraint", "orderType", "eventDate", "tradeId", "makerOrderId", "takerOrderId")
         assertThat(tradeFinancialActions[1].category).isEqualTo(FinancialActionCategory.TRADE)
         assertThat(tradeFinancialActions[2].category).isEqualTo(FinancialActionCategory.FEE)
         assertThat(tradeFinancialActions[3].category).isEqualTo(FinancialActionCategory.FEE)
@@ -214,7 +213,6 @@ internal class TradeManagerImplTest {
 
         assertThat(tradeFinancialActions.size).isEqualTo(4)
         assertThat(tradeFinancialActions[0].category).isEqualTo(FinancialActionCategory.TRADE)
-        assertThat(tradeFinancialActions[0].detail).containsKeys("userLevel", "direction", "matchConstraint", "orderType", "eventDate", "tradeId", "makerOrderId", "takerOrderId")
         assertThat(tradeFinancialActions[1].category).isEqualTo(FinancialActionCategory.TRADE)
         assertThat(tradeFinancialActions[2].category).isEqualTo(FinancialActionCategory.FEE)
         assertThat(tradeFinancialActions[3].category).isEqualTo(FinancialActionCategory.FEE)
@@ -269,7 +267,6 @@ internal class TradeManagerImplTest {
 
         assertThat(tradeFinancialActions.size).isEqualTo(5)
         assertThat(tradeFinancialActions[0].category).isEqualTo(FinancialActionCategory.TRADE)
-        assertThat(tradeFinancialActions[0].detail).containsKeys("userLevel", "direction", "matchConstraint", "orderType", "eventDate", "tradeId", "makerOrderId", "takerOrderId")
         assertThat(tradeFinancialActions[1].category).isEqualTo(FinancialActionCategory.ORDER_FINALIZED)
         assertThat(tradeFinancialActions[2].category).isEqualTo(FinancialActionCategory.TRADE)
         assertThat(tradeFinancialActions[3].category).isEqualTo(FinancialActionCategory.FEE)

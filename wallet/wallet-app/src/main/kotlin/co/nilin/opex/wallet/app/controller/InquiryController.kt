@@ -3,6 +3,7 @@ package co.nilin.opex.wallet.app.controller
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.spi.CurrencyService
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
@@ -41,17 +42,17 @@ class InquiryController(
         )
     )
     suspend fun canFulfill(
-        @PathVariable("uuid") uuid: String,
-        @PathVariable("currency") currency: String,
-        @PathVariable("wallet_type") walletType: String,
-        @PathVariable("amount") amount: BigDecimal,
+        @PathVariable uuid: String,
+        @PathVariable currency: String,
+        @PathVariable("wallet_type") walletType: WalletType,
+        @PathVariable amount: BigDecimal,
         @CurrentSecurityContext securityContext: SecurityContext?
-
     ): BooleanResponse {
         securityContext?.let {
             if (uuid != securityContext.authentication.name)
                 throw OpexError.Forbidden.exception()
         }
+
         logger.info("canFullFill: {} {} {} {}", uuid, currency, walletType, amount)
         val owner = walletOwnerManager.findWalletOwner(uuid)
         if (owner != null) {

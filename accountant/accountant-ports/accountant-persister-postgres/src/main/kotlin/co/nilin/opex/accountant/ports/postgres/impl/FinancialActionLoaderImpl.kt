@@ -3,7 +3,6 @@ package co.nilin.opex.accountant.ports.postgres.impl
 import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.FinancialActionStatus
 import co.nilin.opex.accountant.core.spi.FinancialActionLoader
-import co.nilin.opex.accountant.core.spi.JsonMapper
 import co.nilin.opex.accountant.ports.postgres.dao.FinancialActionErrorRepository
 import co.nilin.opex.accountant.ports.postgres.dao.FinancialActionRepository
 import co.nilin.opex.accountant.ports.postgres.dao.FinancialActionRetryRepository
@@ -22,8 +21,7 @@ import java.time.LocalDateTime
 class FinancialActionLoaderImpl(
     private val financialActionRepository: FinancialActionRepository,
     private val faRetryRepository: FinancialActionRetryRepository,
-    private val faErrorRepository: FinancialActionErrorRepository,
-    private val jsonMapper: JsonMapper
+    private val faErrorRepository: FinancialActionErrorRepository
 ) : FinancialActionLoader {
 
     override suspend fun loadUnprocessed(offset: Long, size: Long): List<FinancialAction> {
@@ -71,13 +69,7 @@ class FinancialActionLoaderImpl(
                 fim.receiver,
                 fim.receiverWalletType,
                 fim.createDate,
-                fim.category,
-                if (fim.detail != null) jsonMapper.toMap(
-                    jsonMapper.deserialize(
-                        fim.detail,
-                        Map::class.java
-                    )
-                ) else emptyMap(),
+                fim.categoryName,
                 fim.status,
                 fim.uuid,
                 fim.id
@@ -100,13 +92,7 @@ class FinancialActionLoaderImpl(
                     it.receiver,
                     it.receiverWalletType,
                     it.createDate,
-                    it.category,
-                    if (it.detail != null) jsonMapper.toMap(
-                        jsonMapper.deserialize(
-                            it.detail,
-                            Map::class.java
-                        )
-                    ) else emptyMap(),
+                    it.categoryName,
                     it.status,
                     it.uuid,
                     it.id

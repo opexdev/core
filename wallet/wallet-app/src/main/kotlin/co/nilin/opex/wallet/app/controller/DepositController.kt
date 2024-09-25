@@ -1,12 +1,11 @@
 package co.nilin.opex.wallet.app.controller
 
-import co.nilin.opex.common.OpexError
+import co.nilin.opex.wallet.app.dto.DepositHistoryRequest
+import co.nilin.opex.wallet.app.dto.DepositResponse
 import co.nilin.opex.wallet.app.dto.ManualTransferRequest
-import co.nilin.opex.wallet.app.dto.TransactionRequest
-import co.nilin.opex.wallet.app.dto.WithdrawHistoryResponse
 import co.nilin.opex.wallet.app.service.TransferService
-import co.nilin.opex.wallet.core.inout.*
-import co.nilin.opex.wallet.core.service.WithdrawService
+import co.nilin.opex.wallet.core.inout.Deposit
+import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.spi.DepositPersister
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
@@ -26,28 +25,37 @@ class DepositController(
     private val transferService: TransferService
 ) {
 
-    @PostMapping("/{uuid}/history")
+    @PostMapping("/history")
     suspend fun getDepositTransactionsForUser(
-        @PathVariable("uuid") uuid: String,
-        @RequestBody request: TransactionRequest,
+        @RequestBody request: DepositHistoryRequest,
         @CurrentSecurityContext securityContext: SecurityContext
-    ): Deposits {
-        if (securityContext.authentication.name != uuid)
-            throw OpexError.Forbidden.exception()
-
+    ): List<DepositResponse> {
         return depositPersister.findDepositHistory(
-            uuid,
-            request.coin,
+            securityContext.authentication.name,
+            request.currency,
             request.startTime?.let {
                 LocalDateTime.ofInstant(Instant.ofEpochMilli(request.startTime), ZoneId.systemDefault())
             },
             request.endTime?.let {
                 LocalDateTime.ofInstant(Instant.ofEpochMilli(request.endTime), ZoneId.systemDefault())
             },
-            request.limit!!,
-            request.offset!!,
+            request.limit,
+            request.offset,
             request.ascendingByTime
-        )
+        ).map {
+            DepositResponse(
+                it.id!!,
+                it.ownerUuid,
+                it.currency,
+                it.amount,
+                it.network,
+                it.note,
+                it.transactionRef,
+                it.status,
+                it.depositType,
+                it.createDate
+            )
+        }
     }
 
 
@@ -70,8 +78,11 @@ class DepositController(
         @CurrentSecurityContext securityContext: SecurityContext
     ): TransferResult {
         return transferService.depositManually(
-            symbol, receiverUuid,
-            securityContext.authentication.name, amount, request
+            symbol,
+            receiverUuid,
+            securityContext.authentication.name,
+            amount,
+            request
         )
     }
 }

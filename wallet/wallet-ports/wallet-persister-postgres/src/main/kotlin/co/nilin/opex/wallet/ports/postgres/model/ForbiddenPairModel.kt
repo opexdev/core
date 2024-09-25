@@ -6,11 +6,11 @@ import org.springframework.data.relational.core.mapping.Table
 import java.time.LocalDateTime
 
 @Table("forbidden_pair")
-data class ForbiddenPairModel (
-        @Id
-    var id: Long?,
-        @Column("source_symbol") var sourceSymbol: String,
-        @Column("dest_symbol") var destinationSymbol: String,
-        @Column("last_update_date") var lastUpdateDate: LocalDateTime = LocalDateTime.now(),
-        @Column("create_date") var createDate: LocalDateTime
+data class ForbiddenPairModel(
+    @Id var id: Long?,
+    var sourceSymbol: String,
+    @Column("dest_symbol")
+    var destinationSymbol: String,
+    var lastUpdateDate: LocalDateTime = LocalDateTime.now(),
+    var createDate: LocalDateTime
 )

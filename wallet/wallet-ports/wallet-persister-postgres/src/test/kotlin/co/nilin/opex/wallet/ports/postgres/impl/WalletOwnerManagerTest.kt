@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.model.WalletLimitAction
 import co.nilin.opex.wallet.ports.postgres.dao.TransactionRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletConfigRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletLimitsRepository
@@ -19,7 +20,9 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
 
+@Suppress("ReactiveStreamsUnusedPublisher")
 private class WalletOwnerManagerTest {
+
     private val walletLimitsRepository: WalletLimitsRepository = mockk()
     private val transactionRepository: TransactionRepository = mockk()
     private val walletOwnerRepository: WalletOwnerRepository = mockk()
@@ -28,7 +31,7 @@ private class WalletOwnerManagerTest {
         walletLimitsRepository, transactionRepository, walletConfigRepository, walletOwnerRepository
     )
 
-    private fun stubNoUserLimit(action: String) {
+    private fun stubNoUserLimit(action: WalletLimitAction) {
         every { walletLimitsRepository.findByOwnerAndAction(VALID.WALLET_OWNER.id!!, action) } returns flow { }
         every {
             walletLimitsRepository.findByLevelAndAction(
@@ -40,7 +43,7 @@ private class WalletOwnerManagerTest {
 
     @Test
     fun givenOwnerWithNoLimit_whenIsWithdrawAllowed_thenReturnTrue(): Unit = runBlocking {
-        stubNoUserLimit(VALID.ACTION_WITHDRAW)
+        stubNoUserLimit(WalletLimitAction.WITHDRAW)
         every { walletConfigRepository.findAll() } returns Flux.just(
             WalletConfigModel("default", VALID.CURRENCY.symbol)
         )
@@ -64,7 +67,7 @@ private class WalletOwnerManagerTest {
 
     @Test
     fun givenNoLimit_whenIsWithdrawAllowedByCrossedAmount_thenReturnFalse(): Unit = runBlocking {
-        stubNoUserLimit(VALID.ACTION_WITHDRAW)
+        stubNoUserLimit(WalletLimitAction.WITHDRAW)
         every { walletConfigRepository.findAll() } returns Flux.just(
             WalletConfigModel("default", VALID.CURRENCY.symbol)
         )
@@ -90,10 +93,15 @@ private class WalletOwnerManagerTest {
 
     @Test
     fun givenOwnerWithLimit_whenIsWithdrawAllowedWithCrossedAmount_thenReturnFalse(): Unit = runBlocking {
-        every { walletLimitsRepository.findByOwnerAndAction(VALID.WALLET_OWNER.id!!, "withdraw") } returns flow {
+        every {
+            walletLimitsRepository.findByOwnerAndAction(
+                VALID.WALLET_OWNER.id!!,
+                WalletLimitAction.WITHDRAW
+            )
+        } returns flow {
             emit(VALID.USER_LIMITS_MODEL_WITHDRAW)
         }
-        every { walletLimitsRepository.findByLevelAndAction(eq("1"), eq("withdraw")) } returns flow { }
+        every { walletLimitsRepository.findByLevelAndAction(eq("1"), eq(WalletLimitAction.WITHDRAW)) } returns flow { }
         every { walletConfigRepository.findAll() } returns Flux.just(
             WalletConfigModel("default", VALID.CURRENCY.symbol)
         )
@@ -121,13 +129,13 @@ private class WalletOwnerManagerTest {
         every {
             walletLimitsRepository.findByOwnerAndAction(
                 VALID.WALLET_OWNER.id!!,
-                VALID.ACTION_WITHDRAW
+                WalletLimitAction.WITHDRAW
             )
         } returns flow { }
         every {
             walletLimitsRepository.findByLevelAndAction(
                 eq(VALID.USER_LEVEL_REGISTERED),
-                eq(VALID.ACTION_WITHDRAW)
+                eq(WalletLimitAction.WITHDRAW)
             )
         } returns flow {
             emit(VALID.USER_LIMITS_MODEL_WITHDRAW)
@@ -156,7 +164,7 @@ private class WalletOwnerManagerTest {
 
     @Test
     fun givenOwnerWithNoLimit_whenIsDepositAllowed_thenReturnTrue(): Unit = runBlocking {
-        stubNoUserLimit(VALID.ACTION_DEPOSIT)
+        stubNoUserLimit(WalletLimitAction.DEPOSIT)
         every { walletConfigRepository.findAll() } returns Flux.just(
             WalletConfigModel("default", VALID.CURRENCY.symbol)
         )
@@ -180,7 +188,7 @@ private class WalletOwnerManagerTest {
 
     @Test
     fun givenNoUserLimit_whenIsDepositAllowed_thenReturnTrue(): Unit = runBlocking {
-        stubNoUserLimit(VALID.ACTION_DEPOSIT)
+        stubNoUserLimit(WalletLimitAction.DEPOSIT)
         every { walletConfigRepository.findAll() } returns Flux.just(
             WalletConfigModel("default", VALID.CURRENCY.symbol)
         )
@@ -209,7 +217,7 @@ private class WalletOwnerManagerTest {
         every {
             walletLimitsRepository.findByOwnerAndAction(
                 VALID.WALLET_OWNER.id!!,
-                VALID.ACTION_DEPOSIT
+                WalletLimitAction.DEPOSIT
             )
         } returns flow {
             emit(VALID.USER_LIMITS_MODEL_DEPOSIT)
@@ -217,7 +225,7 @@ private class WalletOwnerManagerTest {
         every {
             walletLimitsRepository.findByLevelAndAction(
                 eq(VALID.USER_LEVEL_REGISTERED),
-                eq(VALID.ACTION_DEPOSIT)
+                eq(WalletLimitAction.DEPOSIT)
             )
         } returns flow { }
         every { walletConfigRepository.findAll() } returns Flux.just(
@@ -247,13 +255,13 @@ private class WalletOwnerManagerTest {
         every {
             walletLimitsRepository.findByOwnerAndAction(
                 VALID.WALLET_OWNER.id!!,
-                VALID.ACTION_DEPOSIT
+                WalletLimitAction.DEPOSIT
             )
         } returns flow { }
         every {
             walletLimitsRepository.findByLevelAndAction(
                 eq(VALID.USER_LEVEL_REGISTERED),
-                eq(VALID.ACTION_DEPOSIT)
+                eq(WalletLimitAction.DEPOSIT)
             )
         } returns flow {
             emit(VALID.USER_LIMITS_MODEL_DEPOSIT)
