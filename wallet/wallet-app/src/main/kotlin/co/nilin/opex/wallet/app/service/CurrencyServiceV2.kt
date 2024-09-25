@@ -69,13 +69,19 @@ class CurrencyServiceV2(
                         it.gateways = gateways
                         //It is a stupid field for resolving front-end developers need
                         gateways?.forEach { gateway ->
-                            run {
-                                if (gateway is OnChainGatewayCommand) {
-                                    it.availableGatewayType = GatewayType.OnChain.name;
-                                } else if (gateway is OffChainGatewayCommand) {
+                            when (gateway) {
+                                is OnChainGatewayCommand -> {
+                                    it.availableGatewayType = GatewayType.OnChain.name
+                                    logger.info(gateway.chain)
+                                    logger.info(gateway.implementationSymbol)
+
+                                };
+                                is OffChainGatewayCommand -> {
                                     it.availableGatewayType = GatewayType.OffChain.name;
+                                    logger.info(gateway.transferMethod.name)
                                 }
                             }
+
                         }
 
                     }.toDto()
@@ -112,10 +118,18 @@ class CurrencyServiceV2(
                 it.depositAllowed = groupedByGateways?.get(it.symbol)?.stream()?.filter { g -> g.isActive == true }?.map(CurrencyGatewayCommand::depositAllowed)?.reduce { t, u -> t ?: false || u ?: false }?.orElseGet { false }
                 it.withdrawAllowed = groupedByGateways?.get(it.symbol)?.stream()?.filter { g -> g.isActive == true }?.map(CurrencyGatewayCommand::withdrawAllowed)?.reduce { t, u -> t ?: false || u ?: false }?.orElseGet { false }
                 gateways?.forEach { gateway ->
-                        when (gateway) {
-                            is OnChainGatewayCommand -> it.availableGatewayType = GatewayType.OnChain.name;
-                            is OffChainGatewayCommand -> it.availableGatewayType = GatewayType.OffChain.name;
+                    when (gateway) {
+                        is OnChainGatewayCommand -> {
+                            it.availableGatewayType = GatewayType.OnChain.name;
+                            logger.info(gateway.chain)
+                            logger.info(gateway.implementationSymbol)
                         }
+
+                        is OffChainGatewayCommand -> {
+                            it.availableGatewayType = GatewayType.OffChain.name;
+                            logger.info(gateway.transferMethod.name)
+                        }
+                    }
 
                 }
 
