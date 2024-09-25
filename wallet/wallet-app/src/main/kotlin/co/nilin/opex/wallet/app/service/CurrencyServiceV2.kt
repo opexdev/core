@@ -119,6 +119,8 @@ class CurrencyServiceV2(
                 it.gateways = groupedByGateways?.get(it.symbol)
                 it.depositAllowed = groupedByGateways?.get(it.symbol)?.stream()?.filter { g -> g.isActive == true }?.map(CurrencyGatewayCommand::depositAllowed)?.reduce { t, u -> t ?: false || u ?: false }?.orElseGet { false }
                 it.withdrawAllowed = groupedByGateways?.get(it.symbol)?.stream()?.filter { g -> g.isActive == true }?.map(CurrencyGatewayCommand::withdrawAllowed)?.reduce { t, u -> t ?: false || u ?: false }?.orElseGet { false }
+                logger.info("-------------------")
+                logger.info(it.symbol)
                 gateways?.forEach { gateway ->
                     when (gateway) {
                         is OnChainGatewayCommand -> {
