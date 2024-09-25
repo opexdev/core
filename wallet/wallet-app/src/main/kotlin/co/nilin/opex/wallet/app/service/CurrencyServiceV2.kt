@@ -68,6 +68,8 @@ class CurrencyServiceV2(
                         it.withdrawAllowed = gateways?.stream()?.filter { it.isActive == true }?.map(CurrencyGatewayCommand::withdrawAllowed)?.reduce { t, u -> t ?: false || u ?: false }?.orElseGet { false }
                         it.gateways = gateways
                         //It is a stupid field for resolving front-end developers need
+                        logger.info("-------------------")
+                        logger.info(it.symbol)
                         gateways?.forEach { gateway ->
                             when (gateway) {
                                 is OnChainGatewayCommand -> {
