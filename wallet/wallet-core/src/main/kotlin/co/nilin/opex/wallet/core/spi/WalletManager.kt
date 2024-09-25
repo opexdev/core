@@ -28,7 +28,7 @@ interface WalletManager {
             owner: WalletOwner,
             balance: Amount,
             currency: CurrencyCommand,
-            type: String
+            type: WalletType
     ): Wallet
 
 

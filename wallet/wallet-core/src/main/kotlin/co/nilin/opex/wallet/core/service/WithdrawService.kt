@@ -1,8 +1,8 @@
 package co.nilin.opex.wallet.core.service
 
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.inout.*
-import co.nilin.opex.wallet.core.model.Amount
-import co.nilin.opex.wallet.core.model.Withdraw
+import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.spi.*
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -18,27 +18,27 @@ class WithdrawService(
     private val withdrawPersister: WithdrawPersister,
     private val walletManager: WalletManager,
     private val walletOwnerManager: WalletOwnerManager,
-    private val currencyService: CurrencyService,
+    private val currencyService: CurrencyServiceManager,
     private val transferManager: TransferManager,
-    private val bcGatewayProxy: BcGatewayProxy,
     @Value("\${app.system.uuid}") private val systemUuid: String
 ) {
 
 
     @Transactional
-    suspend fun requestWithdraw(withdrawCommand: WithdrawCommand): WithdrawResult {
+    suspend fun requestWithdraw(withdrawCommand: WithdrawCommand): WithdrawRes {
         val currency = currencyService.fetchCurrency(FetchCurrency(symbol = withdrawCommand.currency))
-                ?: throw OpexError.CurrencyNotFound.exception()        val owner = walletOwnerManager.findWalletOwner(withdrawCommand.uuid) ?: throw IllegalArgumentException()
+                ?: throw OpexError.CurrencyNotFound.exception()
+        val owner = walletOwnerManager.findWalletOwner(withdrawCommand.uuid) ?: throw IllegalArgumentException()
         val sourceWallet =
-                walletManager.findWalletByOwnerAndCurrencyAndType(owner, "main", currency)
+                walletManager.findWalletByOwnerAndCurrencyAndType(owner, WalletType.MAIN, currency)
                         ?: throw IllegalArgumentException()
         val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(
-                owner, "cashout", currency
+                owner, WalletType.CASHOUT, currency
         ) ?: walletManager.createWallet(
                 owner,
                 Amount(currency, BigDecimal.ZERO),
                 currency,
-                "cashout"
+                WalletType.CASHOUT
         )
         val transferResultDetailed = transferManager.transfer(
             TransferCommand(
@@ -148,7 +148,7 @@ class WithdrawService(
         if (withdraw.ownerUuid != uuid) throw OpexError.Forbidden.exception()
         if (!withdraw.canBeCanceled()) throw OpexError.WithdrawCannotBeCanceled.exception()
 
-        val currency = currencyService.getCurrency(withdraw.currency) ?: throw OpexError.CurrencyNotFound.exception()
+        val currency = currencyService.fetchCurrency(FetchCurrency(symbol = withdraw.currency)) ?: throw OpexError.CurrencyNotFound.exception()
         val owner = walletOwnerManager.findWalletOwner(uuid) ?: throw OpexError.WalletOwnerNotFound.exception()
         val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, WalletType.CASHOUT, currency)
             ?: throw OpexError.WalletNotFound.exception()
