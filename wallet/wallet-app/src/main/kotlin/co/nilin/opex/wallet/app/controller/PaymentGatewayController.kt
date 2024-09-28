@@ -10,7 +10,6 @@ import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.core.model.TransferCategory
 import co.nilin.opex.wallet.core.model.WalletType
-import co.nilin.opex.wallet.core.spi.CurrencyService
 import co.nilin.opex.wallet.core.spi.TransferManager
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager

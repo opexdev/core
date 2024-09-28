@@ -6,6 +6,7 @@ import co.nilin.opex.utility.preferences.Preferences
 import co.nilin.opex.wallet.app.dto.AdvanceReservedTransferData
 import co.nilin.opex.wallet.app.dto.ManualTransferRequest
 import co.nilin.opex.wallet.app.dto.ReservedTransferResponse
+import co.nilin.opex.wallet.app.dto.TransferRequest
 import co.nilin.opex.wallet.app.service.otc.GraphService
 import co.nilin.opex.wallet.core.inout.Deposit
 import co.nilin.opex.wallet.core.inout.GatewayType
@@ -16,6 +17,7 @@ import co.nilin.opex.wallet.core.model.otc.Rate
 import co.nilin.opex.wallet.core.model.otc.ReservedTransfer
 import co.nilin.opex.wallet.core.spi.*
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
@@ -36,6 +38,7 @@ class TransferService(
         private val currencyService: CurrencyServiceV2
 
 ) {
+
     @Autowired
     private lateinit var preferences: Preferences
 
@@ -70,7 +73,7 @@ class TransferService(
 
     @Transactional
     suspend fun batchTransfer(request: List<TransferRequest>) {
-        request.filter { it.receiverWalletType != "cashout" && it.senderWalletType != "cashout" }
+        request.filter { it.receiverWalletType != WalletType.CASHOUT && it.senderWalletType != WalletType.CASHOUT }
                 .forEach {
                     _transfer(
                             it.symbol,
@@ -164,17 +167,17 @@ class TransferService(
         checkIfSystemHasEnoughBalance(destSymbol, receiverWalletType, finalAmount)
         val reserveNumber = UUID.randomUUID().toString()
         val resp = reservedTransferManager.reserve(
-                ReservedTransfer(
-                        reserveNumber = reserveNumber,
-                        destinationSymbol = destSymbol,
-                        sourceSymbol = sourceSymbol,
-                        sourceAmount = sourceAmount,
-                        senderUuid = senderUuid,
-                        receiverUuid = receiverUuid,
-                        senderWalletType = senderWalletType,
-                        receiverWalletType = receiverWalletType,
-                        reservedDestAmount = finalAmount
-                )
+            ReservedTransfer(
+                reserveNumber = reserveNumber,
+                destSymbol = destSymbol,
+                sourceSymbol = sourceSymbol,
+                sourceAmount = sourceAmount,
+                senderUuid = senderUuid,
+                receiverUuid = receiverUuid,
+                senderWalletType = senderWalletType,
+                receiverWalletType = receiverWalletType,
+                reservedDestAmount = finalAmount
+            )
         )
 //        reserved.put(
 //                reserveNumber, AdvanceReservedTransferData(
@@ -395,14 +398,14 @@ class TransferService(
 
         val tx = _transfer(
                 symbol,
-                "main",
+                WalletType.MAIN,
                 sourceUuid,
-                "main",
+                WalletType.MAIN,
                 receiverUuid,
                 amount,
                 request.description,
                 request.ref,
-                "WITHDRAW_MANUALLY",
+                TransferCategory.WITHDRAW_MANUALLY,
                 null,
                 symbol,
                 amount

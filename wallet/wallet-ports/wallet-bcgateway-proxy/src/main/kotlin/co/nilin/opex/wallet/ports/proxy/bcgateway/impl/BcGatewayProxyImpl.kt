@@ -2,13 +2,9 @@ package co.nilin.opex.wallet.ports.proxy.bcgateway.impl
 
 import co.nilin.opex.wallet.core.inout.OnChainGatewayCommand
 import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
-
-import co.nilin.opex.wallet.core.spi.GatewayPersister
 import co.nilin.opex.wallet.core.inout.WithdrawData
-import co.nilin.opex.wallet.core.model.PropagateCurrencyChanges
-import co.nilin.opex.wallet.core.model.otc.CurrencyImplementationResponse
-import co.nilin.opex.wallet.core.model.otc.FetchCurrencyInfo
-import co.nilin.opex.wallet.core.spi.BcGatewayProxy
+
+import co.nilin.opex.wallet.core.spi.BcGatewayPersister
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
@@ -18,14 +14,10 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import java.net.URI
 
-import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.web.reactive.function.client.bodyToMono
-import java.math.BigDecimal
-
 inline fun <reified T : Any> typeRef(): ParameterizedTypeReference<T> = object : ParameterizedTypeReference<T>() {}
 
 @Component("onChainGateway")
-class OnChainGatewayProxyGateway(private val webClient: WebClient) : GatewayPersister {
+class OnChainGatewayProxyGateway(private val webClient: WebClient) : BcGatewayPersister {
 
     @Value("\${app.bc-gateway.url}")
     private lateinit var baseUrl: String
@@ -131,5 +123,9 @@ class OnChainGatewayProxyGateway(private val webClient: WebClient) : GatewayPers
                 .awaitFirstOrNull()
 
 
+    }
+
+    override suspend fun getWithdrawData(symbol: String, network: String): WithdrawData {
+        TODO("Not yet implemented")
     }
 }

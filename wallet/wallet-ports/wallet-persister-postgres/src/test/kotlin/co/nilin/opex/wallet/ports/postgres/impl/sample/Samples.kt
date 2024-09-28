@@ -1,11 +1,10 @@
 package co.nilin.opex.wallet.ports.postgres.impl.sample
 
 import co.nilin.opex.wallet.core.inout.CurrencyCommand
-import co.nilin.opex.wallet.core.model.Amount
-import co.nilin.opex.wallet.core.model.Wallet
-import co.nilin.opex.wallet.core.model.WalletOwner
+import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.ports.postgres.model.WalletLimitsModel
 import java.math.BigDecimal
+import java.util.UUID
 
 object VALID {
     const val USER_LEVEL_REGISTERED = "registered"
@@ -16,7 +15,7 @@ object VALID {
 
     const val WALLET_TYPE_MAIN = "main"
 
-    val CURRENCY = Currency("ETH", "Ethereum", BigDecimal.valueOf(0.0001))
+    val CURRENCY = CurrencyCommand("ETH", UUID.randomUUID().toString(),"Ethereum", BigDecimal.valueOf(0.0001))
 
     val WALLET_OWNER = WalletOwner(
         1L,
@@ -41,9 +40,9 @@ object VALID {
         1,
         USER_LEVEL_REGISTERED,
         WALLET_OWNER.id,
-        ACTION_WITHDRAW,
+        WalletLimitAction.WITHDRAW,
         CURRENCY.symbol,
-        WALLET_TYPE_MAIN,
+        WalletType.MAIN,
         WALLET.id,
         BigDecimal.valueOf(10),
         1,
@@ -57,9 +56,9 @@ object VALID {
         1,
         USER_LEVEL_REGISTERED,
         WALLET_OWNER.id,
-        ACTION_WITHDRAW,
+        WalletLimitAction.WITHDRAW,
         CURRENCY.symbol,
-        WALLET_TYPE_MAIN,
+        WalletType.MAIN,
         WALLET.id,
         BigDecimal.valueOf(10),
         1,

@@ -2,14 +2,21 @@ package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.AdminSearchWithdrawRequest
+import co.nilin.opex.wallet.app.dto.ManualTransferRequest
+import co.nilin.opex.wallet.app.service.TransferService
 import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.service.WithdrawService
+import io.swagger.annotations.ApiResponse
+import io.swagger.annotations.Example
+import io.swagger.annotations.ExampleProperty
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 
 @RestController
 @RequestMapping("/admin/withdraw/")
-class WithdrawAdminController(private val withdrawService: WithdrawService) {
+class WithdrawAdminController(private val withdrawService: WithdrawService, private val transferService: TransferService) {
 
     @GetMapping("/{id}")
     suspend fun getWithdraw(@PathVariable id: Long): WithdrawResponse {
@@ -61,5 +68,28 @@ class WithdrawAdminController(private val withdrawService: WithdrawService) {
         @RequestParam reason: String
     ): WithdrawActionResult {
         return withdrawService.rejectWithdraw(WithdrawRejectCommand(withdrawId, reason))
+    }
+    @PostMapping("/withdraw/manually/{amount}_{symbol}/{sourceUuid}")
+    @ApiResponse(
+            message = "OK",
+            code = 200,
+            examples = Example(
+                    ExampleProperty(
+                            value = "{ }",
+                            mediaType = "application/json"
+                    )
+            )
+    )
+    suspend fun withdrawManually(
+            @PathVariable("symbol") symbol: String,
+            @PathVariable("sourceUuid") sourceUuid: String,
+            @PathVariable("amount") amount: BigDecimal,
+            @RequestBody request: ManualTransferRequest,
+            @CurrentSecurityContext securityContext: SecurityContext
+    ): TransferResult {
+        return transferService.withdrawManually(
+                symbol, securityContext.authentication.name, sourceUuid,
+                amount, request
+        )
     }
 }

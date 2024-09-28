@@ -1,9 +1,7 @@
 package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.wallet.app.dto.ManualTransferRequest
-import co.nilin.opex.wallet.app.dto.TransactionRequest
-import co.nilin.opex.wallet.app.dto.WithdrawHistoryResponse
+import co.nilin.opex.wallet.app.dto.*
 import co.nilin.opex.wallet.app.service.TransferService
 import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.service.WithdrawService
@@ -28,8 +26,8 @@ class DepositController(
 
     @PostMapping("/history")
     suspend fun getDepositTransactionsForUser(
-        @RequestBody request: DepositHistoryRequest,
-        @CurrentSecurityContext securityContext: SecurityContext
+            @RequestBody request: DepositHistoryRequest,
+            @CurrentSecurityContext securityContext: SecurityContext
     ): List<DepositResponse> {
         return depositPersister.findDepositHistory(
             securityContext.authentication.name,

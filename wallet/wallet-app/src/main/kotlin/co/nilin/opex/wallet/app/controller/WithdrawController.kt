@@ -11,6 +11,8 @@ import co.nilin.opex.wallet.core.service.WithdrawService
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 import java.security.Principal
@@ -52,8 +54,10 @@ class WithdrawController(private val withdrawService: WithdrawService) {
                     destNetwork,
                     destNote
                 )
+            }
         )
     }
+
 
     @PostMapping("/{withdrawId}/cancel")
     suspend fun cancelWithdraw(principal: Principal, @PathVariable withdrawId: Long) {
@@ -62,8 +66,8 @@ class WithdrawController(private val withdrawService: WithdrawService) {
 
     @PostMapping("/history")
     suspend fun getWithdrawTransactionsForUser(
-        @CurrentSecurityContext securityContext: SecurityContext,
-        @RequestBody request: WithdrawHistoryRequest,
+            @CurrentSecurityContext securityContext: SecurityContext,
+            @RequestBody request: WithdrawHistoryRequest,
     ): List<WithdrawResponse> {
         return withdrawService.findWithdrawHistory(
             securityContext.authentication.name,
@@ -79,5 +83,4 @@ class WithdrawController(private val withdrawService: WithdrawService) {
             request.ascendingByTime
         )
     }
-}
 }

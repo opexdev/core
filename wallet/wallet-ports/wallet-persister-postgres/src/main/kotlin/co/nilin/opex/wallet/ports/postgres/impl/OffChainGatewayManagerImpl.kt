@@ -3,8 +3,9 @@ package co.nilin.opex.wallet.ports.postgres.impl
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
 import co.nilin.opex.wallet.core.inout.OffChainGatewayCommand
+import co.nilin.opex.wallet.core.inout.WithdrawData
 import co.nilin.opex.wallet.core.model.FetchGateways
-import co.nilin.opex.wallet.core.spi.GatewayPersister
+import co.nilin.opex.wallet.core.spi.BcGatewayPersister
 import co.nilin.opex.wallet.ports.postgres.dao.OffChainGatewayRepository
 import co.nilin.opex.wallet.ports.postgres.model.OffChainGatewayModel
 import co.nilin.opex.wallet.ports.postgres.util.toDto
@@ -13,7 +14,7 @@ import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.stereotype.Service
 
 @Service("offChainGateway")
-class OffChainGatewayManagerImpl(private val offChainGatewayRepository: OffChainGatewayRepository) : GatewayPersister {
+class OffChainGatewayManagerImpl(private val offChainGatewayRepository: OffChainGatewayRepository) : BcGatewayPersister {
     override suspend fun createGateway(currencyGateway: CurrencyGatewayCommand, internalToken: String?): CurrencyGatewayCommand? {
         return _save((currencyGateway as OffChainGatewayCommand).toModel())?.toDto()
     }
@@ -37,6 +38,10 @@ class OffChainGatewayManagerImpl(private val offChainGatewayRepository: OffChain
         } ?: OpexError.GatewayNotFount.exception()
 
 
+    }
+
+    override suspend fun getWithdrawData(symbol: String, network: String): WithdrawData {
+        TODO("Not yet implemented")
     }
 
 

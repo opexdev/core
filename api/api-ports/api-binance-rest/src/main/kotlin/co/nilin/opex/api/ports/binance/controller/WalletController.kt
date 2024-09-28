@@ -8,6 +8,7 @@ import co.nilin.opex.api.ports.binance.util.jwtAuthentication
 import co.nilin.opex.api.ports.binance.util.tokenValue
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.utils.Interval
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.GetMapping
@@ -27,7 +28,7 @@ class WalletController(
     private val symbolMapper: SymbolMapper,
     private val marketDataProxy: MarketDataProxy,
     private val accountantProxy: AccountantProxy,
-    private val bcGatewayProxy: BlockchainGatewayProxy,
+    @Qualifier("")private val  bcGatewayProxy: BlockchainGatewayProxy,
 ) {
 
     @GetMapping("/v1/capital/deposit/address")

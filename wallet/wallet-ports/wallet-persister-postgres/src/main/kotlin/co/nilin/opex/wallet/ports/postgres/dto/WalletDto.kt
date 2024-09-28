@@ -2,7 +2,6 @@ package co.nilin.opex.wallet.ports.postgres.dto
 
 import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import co.nilin.opex.wallet.core.model.Amount
-import co.nilin.opex.wallet.core.model.Currency
 import co.nilin.opex.wallet.core.model.Wallet
 import co.nilin.opex.wallet.core.model.WalletOwner
 import co.nilin.opex.wallet.ports.postgres.model.WalletModel

@@ -24,7 +24,7 @@ class RateServiceImpl(
     private val logger = LoggerFactory.getLogger(RateServiceImpl::class.java)
 
 
-    override suspend fun addRate(rate: Rate) {
+    override suspend fun addRate(rate: Rate,ignoreIfExist:Boolean?) {
         rate.isValid()
         ratesRepository.findBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destSymbol)?.awaitFirstOrNull()
                 ?.let {
@@ -74,7 +74,7 @@ class RateServiceImpl(
 
     override suspend fun addForbiddenPair(forbiddenPair: ForbiddenPair) {
         forbiddenPair.isValid()
-        forbiddenPairRepository.findBySourceSymbolAndDestinationSymbol(forbiddenPair.sourceSymbol, forbiddenPair.destSymbol)?.awaitFirstOrNull()?.let {
+        forbiddenPairRepository.findBySourceSymbolAndDestinationSymbol(forbiddenPair.sourceSymbol, forbiddenPair.destinationSymbol)?.awaitFirstOrNull()?.let {
             throw OpexError.PairIsExist.exception()
         } ?: forbiddenPairRepository.save(forbiddenPair.toModel()).awaitFirstOrNull()
     }

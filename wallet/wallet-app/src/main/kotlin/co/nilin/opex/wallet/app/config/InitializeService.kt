@@ -6,7 +6,6 @@ import co.nilin.opex.utility.preferences.UserLimit
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepositoryV2
 import co.nilin.opex.wallet.core.model.WalletLimitAction
 import co.nilin.opex.wallet.core.model.WalletType
-import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletLimitsRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletOwnerRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletRepository

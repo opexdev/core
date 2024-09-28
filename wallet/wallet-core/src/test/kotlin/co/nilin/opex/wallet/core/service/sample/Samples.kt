@@ -8,6 +8,7 @@ import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.Wallet
 import co.nilin.opex.wallet.core.model.WalletOwner
 import java.math.BigDecimal
+import java.util.UUID
 
 object VALID {
     private const val USER_LEVEL_REGISTERED = "registered"
@@ -18,7 +19,7 @@ object VALID {
 
     private const val WALLET_TYPE_MAIN = "main"
 
-    val CURRENCY = Currency("ETH", "Ethereum", BigDecimal.valueOf(0.0001))
+    val CURRENCY = CurrencyCommand("ETH", UUID.randomUUID().toString(),"Ethereum", BigDecimal.valueOf(0.0001))
 
     val SOURCE_WALLET_OWNER = WalletOwner(
         1L,

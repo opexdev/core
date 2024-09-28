@@ -227,7 +227,6 @@ class TransferManagerImplIT : KafkaEnabledTest() {
             val thdMatch = thd.find { th -> th.id.toString().equals(result.tx) }
             assertNotNull(thdMatch)
 
-            assertEquals(additionalData, thwMatch!!.additionalData)
 
             val th = transactionManager.findTransactions(
                 owner.uuid,
@@ -241,7 +240,6 @@ class TransferManagerImplIT : KafkaEnabledTest() {
             )
 
             val thMatch = th.find { i -> i.id.toString().equals(result.tx) }
-            assertEquals(additionalData, thMatch!!.additionalData)
         }
     }
 
@@ -267,8 +265,7 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                     receiverWallet!!,
                     Amount(sourceWallet.currency, amount),
                     "Amount1 ${System.currentTimeMillis()}", "Ref1 ${System.currentTimeMillis()}",
-                    "NORMAL",
-                    emptyMap()
+                    TransferCategory.NORMAL
                 )
             )
 
