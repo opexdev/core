@@ -1,10 +1,9 @@
 package co.nilin.opex.bcgateway.ports.postgres.impl
 
 import co.nilin.opex.bcgateway.core.model.*
-import co.nilin.opex.bcgateway.core.spi.CryptoCurrencyHandler
 import co.nilin.opex.bcgateway.core.spi.CryptoCurrencyHandlerV2
 import co.nilin.opex.bcgateway.ports.postgres.dao.ChainRepository
-import co.nilin.opex.bcgateway.ports.postgres.dao.NewCurrencyImplementationRepository
+import co.nilin.opex.bcgateway.ports.postgres.dao.CurrencyImplementationRepository
 import co.nilin.opex.bcgateway.ports.postgres.model.CurrencyOnChainGatewayModel
 import co.nilin.opex.bcgateway.ports.postgres.util.toDto
 import co.nilin.opex.bcgateway.ports.postgres.util.toModel
@@ -21,10 +20,10 @@ import java.util.stream.Collectors
 @Component
 class CurrencyHandlerImplV2(
         private val chainRepository: ChainRepository,
-        private val currencyImplementationRepository: NewCurrencyImplementationRepository
+        private val currencyImplementationRepository: CurrencyImplementationRepository
 ) : CryptoCurrencyHandlerV2 {
 
-    private val logger = LoggerFactory.getLogger(CryptoCurrencyHandler::class.java)
+    private val logger = LoggerFactory.getLogger(CurrencyHandlerImplV2::class.java)
 
     override suspend fun createOnChainGateway(request: CryptoCurrencyCommand): CryptoCurrencyCommand? {
         chainRepository.findByName(request.chain)
@@ -78,5 +77,19 @@ class CurrencyHandlerImplV2(
 
     private suspend fun doSave(request: CurrencyOnChainGatewayModel): CurrencyOnChainGatewayModel? {
         return currencyImplementationRepository.save(request).awaitSingleOrNull()
+    }
+    override suspend fun changeWithdrawStatus(symbol: String, chain: String, status: Boolean) {
+        val onChainGateway = currencyImplementationRepository.findByCurrencySymbolAndChain(symbol, chain).awaitSingleOrNull()
+            ?: throw OpexError.TokenNotFound.exception()
+
+        onChainGateway.apply {
+            withdrawAllowed = status
+            currencyImplementationRepository.save(onChainGateway).awaitFirstOrNull()
+        }
+    }
+
+    override suspend fun getWithdrawData(symbol: String, network: String): WithdrawData {
+        return currencyImplementationRepository.findWithdrawDataBySymbolAndChain(symbol, network)
+            .awaitSingleOrNull() ?: throw OpexError.CurrencyNotFound.exception()
     }
 }

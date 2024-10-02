@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.bodyToMono
 import java.net.URI
 
 inline fun <reified T : Any> typeRef(): ParameterizedTypeReference<T> = object : ParameterizedTypeReference<T>() {}
@@ -126,6 +127,11 @@ class OnChainGatewayProxyGateway(private val webClient: WebClient) : BcGatewayPe
     }
 
     override suspend fun getWithdrawData(symbol: String, network: String): WithdrawData {
-        TODO("Not yet implemented")
+        return webClient.get()
+            .uri("$baseUrl/crypto-currency/$symbol/network/$network/withdrawData")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<WithdrawData>()
+            .awaitFirst()
     }
 }

@@ -65,4 +65,10 @@ class CryptoCurrencyController(val cryptoCurrencyHandler: CryptoCurrencyHandlerV
         return chainLoader.fetchAllChains().map { c -> ChainResponse(c.name, c.addressTypes.map { it.type }) }
     }
 
+
+    @GetMapping("/{currency}/network/{network}/withdrawData")
+    suspend fun getFeeForCurrency(@PathVariable currency: String, @PathVariable network: String): WithdrawData {
+        return cryptoCurrencyHandler.getWithdrawData(currency, network)
+    }
+
 }

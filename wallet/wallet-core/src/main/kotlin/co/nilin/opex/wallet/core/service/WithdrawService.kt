@@ -21,7 +21,7 @@ class WithdrawService(
         private val walletOwnerManager: WalletOwnerManager,
         private val currencyService: CurrencyServiceManager,
         private val transferManager: TransferManager,
-        @Qualifier("OnChainGatewayProxyGateway") private val bcGatewayProxy: BcGatewayPersister,
+        @Qualifier("onChainGateway") private val bcGatewayProxy: BcGatewayPersister,
         @Value("\${app.system.uuid}") private val systemUuid: String
 ) {
 
@@ -293,5 +293,8 @@ class WithdrawService(
     ): List<WithdrawResponse> {
         return withdrawPersister.findWithdrawHistory(uuid, currency, startTime, endTime, limit, offset, ascendingByTime)
     }
+
+
+
 
 }

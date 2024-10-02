@@ -14,6 +14,7 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.DependsOn
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
 import java.util.UUID
@@ -32,6 +33,7 @@ class InitializeService(
     private lateinit var preferences: Preferences
 
     @PostConstruct
+    @Profile("!otc")
     fun init() = runBlocking {
         addAddressTypes(preferences.addressTypes)
         addChains(preferences.chains)

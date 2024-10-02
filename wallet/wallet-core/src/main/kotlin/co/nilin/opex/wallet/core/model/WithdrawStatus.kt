@@ -6,5 +6,6 @@ enum class WithdrawStatus {
     PROCESSING,
     CANCELED,
     REJECTED,
-    DONE
+    DONE,
+    SYSTEM
 }

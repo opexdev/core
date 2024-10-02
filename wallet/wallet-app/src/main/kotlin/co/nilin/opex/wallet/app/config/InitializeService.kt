@@ -41,12 +41,12 @@ class InitializeService(
     private lateinit var preferences: Preferences
 
     @PostConstruct
+    @Profile("!otc")
     fun init() = runBlocking {
         addCurrencies(preferences.currencies)
         addSystemAndAdminWallet(preferences)
         addUserLimits(preferences.userLimits)
     }
-
     private suspend fun addUserLimits(data: List<UserLimit>) = coroutineScope {
         data.forEachIndexed { i, it ->
             if (!walletLimitsRepository.existsById(i + 1L).awaitSingle()) {
@@ -70,7 +70,6 @@ class InitializeService(
             }
         }
     }
-
     private suspend fun addSystemAndAdminWallet(p: Preferences) = coroutineScope {
         if (!walletOwnerRepository.existsById(1).awaitSingle()) {
             walletOwnerRepository.save(WalletOwnerModel(null, systemUuid, p.system.walletTitle, p.system.walletLevel))

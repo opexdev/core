@@ -89,7 +89,9 @@ class TransferManagerImpl(
                 transferCommand.amount,
                 destWalletOwner.uuid,
                 destWallet.type,
-                Amount(destWallet.currency, amountToTransfer)
+                Amount(destWallet.currency, amountToTransfer),
+                srcWallet.id,
+                destWallet.id,
             ), tx.toString()
         )
     }
