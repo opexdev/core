@@ -76,7 +76,7 @@ logbook:
       - password
     replacement: "***"
   write:
-    max-body-size: 1_000 #kb
+    max-body-size: 10_000 #kb
   predicate:
     exclude:
       - path: /auth**
