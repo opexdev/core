@@ -21,6 +21,7 @@ object VALID {
         isDepositAllowed = true
     )
 
+
     val WALLET = Wallet(
         1L,
         WALLET_OWNER,

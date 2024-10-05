@@ -9,6 +9,7 @@ import co.nilin.opex.wallet.ports.postgres.util.toModel
 import io.mockk.MockKException
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -320,6 +321,10 @@ private class WalletManagerTest {
         every {
             currencyRepository.fetchCurrency(symbol = VALID.CURRENCY.symbol)
         } returns Mono.just(VALID.CURRENCY.toModel())
+
+        println(walletRepository.findByOwnerAndTypeAndCurrency(VALID.WALLET_OWNER.id!!,
+            WalletType.MAIN,
+            VALID.CURRENCY.symbol!!)?.awaitFirst()?.id)
 
         val wallet = walletManagerImpl.findWalletByOwnerAndCurrencyAndType(
             VALID.WALLET_OWNER,
