@@ -14,7 +14,11 @@ interface WalletManager {
 
     suspend fun decreaseBalance(wallet: Wallet, amount: BigDecimal)
 
-    suspend fun findWalletByOwnerAndCurrencyAndType(owner: WalletOwner, walletType: WalletType, currency: CurrencyCommand): Wallet?
+    suspend fun findWalletByOwnerAndCurrencyAndType(
+        owner: WalletOwner,
+        walletType: WalletType,
+        currency: CurrencyCommand
+    ): Wallet?
 
     suspend fun findWallet(ownerId: Long, currency: String, walletType: WalletType): BriefWallet?
 
@@ -25,15 +29,15 @@ interface WalletManager {
     suspend fun findWalletByOwnerAndSymbol(owner: WalletOwner, symbol: String): List<Wallet>
 
     suspend fun createWallet(
-            owner: WalletOwner,
-            balance: Amount,
-            currency: CurrencyCommand,
-            type: WalletType
+        owner: WalletOwner,
+        balance: Amount,
+        currency: CurrencyCommand,
+        type: WalletType
     ): Wallet
 
 
     suspend fun createWalletForSystem(
-            currency: String
+        currency: String
     )
 
     suspend fun findWalletById(walletId: Long): Wallet?

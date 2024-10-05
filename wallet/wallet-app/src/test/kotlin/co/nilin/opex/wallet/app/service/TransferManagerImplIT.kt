@@ -67,7 +67,9 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                             sourceWallet!!,
                             receiverWallet!!,
                             Amount(sourceWallet.currency, amount),
-                            "Amount1 ${System.currentTimeMillis()}", "Ref1 ${System.currentTimeMillis()}", TransferCategory.NORMAL
+                            "Amount1 ${System.currentTimeMillis()}",
+                            "Ref1 ${System.currentTimeMillis()}",
+                            TransferCategory.NORMAL
                         )
                     )
                 }
@@ -77,7 +79,9 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                             sourceWallet!!,
                             receiverWallet!!,
                             Amount(sourceWallet.currency, amount),
-                            "Amount2 ${System.currentTimeMillis()}", "Ref2 ${System.currentTimeMillis()}", TransferCategory.NORMAL
+                            "Amount2 ${System.currentTimeMillis()}",
+                            "Ref2 ${System.currentTimeMillis()}",
+                            TransferCategory.NORMAL
                         )
                     )
                 }
@@ -118,7 +122,9 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                         sourceWallet1!!,
                         receiverWallet!!,
                         Amount(sourceWallet1.currency, amount),
-                        "Amount1 ${System.currentTimeMillis()}", "Ref1 ${System.currentTimeMillis()}", TransferCategory.NORMAL
+                        "Amount1 ${System.currentTimeMillis()}",
+                        "Ref1 ${System.currentTimeMillis()}",
+                        TransferCategory.NORMAL
                     )
                 )
             }
@@ -130,7 +136,9 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                         sourceWallet2!!,
                         receiverWallet!!,
                         Amount(sourceWallet2.currency, amount),
-                        "Amount2 ${System.currentTimeMillis()}", "Ref2 ${System.currentTimeMillis()}", TransferCategory.NORMAL
+                        "Amount2 ${System.currentTimeMillis()}",
+                        "Ref2 ${System.currentTimeMillis()}",
+                        TransferCategory.NORMAL
                     )
                 )
             }
@@ -168,8 +176,11 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                         sourceWallet!!,
                         receiverWallet!!,
                         Amount(sourceWallet.currency, amount),
-                        "Amount1 ${System.currentTimeMillis()}", "Ref1 ${System.currentTimeMillis()}", TransferCategory.NORMAL
+                        "Amount1 ${System.currentTimeMillis()}",
+                        "Ref1 ${System.currentTimeMillis()}",
+                        TransferCategory.NORMAL
                     )
+
                 )
             }.await()
             async {
@@ -182,7 +193,9 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                         sourceWallet!!,
                         receiverWallet!!,
                         Amount(sourceWallet.currency, amount),
-                        "Amount2 ${System.currentTimeMillis()}", "Ref2 ${System.currentTimeMillis()}", TransferCategory.NORMAL,
+                        "Amount2 ${System.currentTimeMillis()}",
+                        "Ref2 ${System.currentTimeMillis()}",
+                        TransferCategory.NORMAL,
                     )
                 )
             }.await()
@@ -215,11 +228,11 @@ class TransferManagerImplIT : KafkaEnabledTest() {
             )
 
             val thw = transactionManager.findWithdrawTransactions(
-                    owner.uuid, currency.symbol, LocalDateTime.now().minusHours(1), LocalDateTime.now(), 100, 0
+                owner.uuid, currency.symbol, LocalDateTime.now().minusHours(1), LocalDateTime.now(), 100, 0
             )
 
             val thd = transactionManager.findDepositTransactions(
-                    owner.uuid, currency.symbol, LocalDateTime.now().minusHours(1), LocalDateTime.now(), 100, 0
+                owner.uuid, currency.symbol, LocalDateTime.now().minusHours(1), LocalDateTime.now(), 100, 0
             )
             val thwMatch = thw.find { th -> th.id.toString().equals(result.tx) }
             assertNotNull(thwMatch)

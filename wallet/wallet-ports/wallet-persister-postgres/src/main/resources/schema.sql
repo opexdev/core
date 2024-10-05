@@ -1,3 +1,6 @@
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 CREATE TABLE IF NOT EXISTS currency
 (
     symbol            VARCHAR(25) PRIMARY KEY,

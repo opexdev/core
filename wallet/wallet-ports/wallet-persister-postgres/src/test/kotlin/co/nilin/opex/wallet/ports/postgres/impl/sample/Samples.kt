@@ -9,12 +9,6 @@ import java.util.UUID
 object VALID {
     const val USER_LEVEL_REGISTERED = "registered"
 
-    const val ACTION_WITHDRAW = "withdraw"
-
-    const val ACTION_DEPOSIT = "deposit"
-
-    const val WALLET_TYPE_MAIN = "main"
-
     val CURRENCY = CurrencyCommand("ETH", UUID.randomUUID().toString(),"Ethereum", BigDecimal.valueOf(0.0001))
 
     val WALLET_OWNER = WalletOwner(
