@@ -244,7 +244,7 @@ class WalletManagerImplV2(
         type: WalletType
     ): Wallet {
         val walletModel = walletRepository
-            .save(WalletModel(owner.id!!, type, currency.symbol, BigDecimal.ZERO))
+            .save(WalletModel(owner.id!!, type, currency.symbol, balance?.amount))
             .awaitFirst()
         return Wallet(
             walletModel.id!!,
@@ -256,7 +256,11 @@ class WalletManagerImplV2(
         )
 
     }
-
+    override suspend fun createCashoutWallet(owner: WalletOwner, currency: CurrencyCommand): Wallet {
+        return walletRepository.save(WalletModel(owner.id!!, WalletType.CASHOUT, currency.symbol, BigDecimal.ZERO))
+            .awaitFirst()
+            .toPlainObject(owner, currency)
+    }
 
     override suspend fun findWalletById(
         walletId: Long
