@@ -191,7 +191,7 @@ class WalletManagerImplV2(
     override suspend fun createWalletForSystem(currency: String) {
         val items =
             listOf(
-                WalletModel(1, WalletType.CASHOUT, currency, minimumBalance!!),
+                WalletModel(1, WalletType.MAIN, currency, minimumBalance!!),
             )
         walletRepository.saveAll(items).collectList().awaitSingleOrNull()
 
