@@ -351,7 +351,12 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                 currency,
                 WalletType.MAIN
             )
-
+            walletManager.createWallet(
+                sourceOwner,
+                Amount(currency, BigDecimal.ZERO),
+                currency,
+                WalletType.EXCHANGE
+            )
 
         }
     }
