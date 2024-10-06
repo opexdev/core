@@ -17,7 +17,7 @@ interface UserTransactionRepository : ReactiveCrudRepository<UserTransactionMode
         select ut.uuid as id, o.uuid as user_id, currency, balance, balance_change, category, description, date 
         from user_transaction ut
         join wallet_owner o on o.id = ut.owner_id
-        where o.uuid = :userId
+        where (:userId is null or o.uuid = :userId)
             and (:currency is null or currency = :currency)
             and (:category is null or category = :category)
             and (:startTime is null or date > :startTime)
@@ -28,7 +28,7 @@ interface UserTransactionRepository : ReactiveCrudRepository<UserTransactionMode
     """
     )
     fun findUserTransactionHistoryAsc(
-        userId: String,
+        userId: String?,
         currency: String?,
         category: UserTransactionCategory?,
         startTime: LocalDateTime?,
@@ -42,7 +42,7 @@ interface UserTransactionRepository : ReactiveCrudRepository<UserTransactionMode
         select ut.uuid as id, o.uuid as user_id, currency, balance, balance_change, category, description, date
         from user_transaction ut
         join wallet_owner o on o.id = ut.owner_id
-        where o.uuid = :userId
+        where (:userId is null or o.uuid = :userId)
             and (:currency is null or currency = :currency)
             and (:category is null or category = :category)
             and (:startTime is null or date > :startTime)
@@ -53,7 +53,7 @@ interface UserTransactionRepository : ReactiveCrudRepository<UserTransactionMode
     """
     )
     fun findUserTransactionHistoryDesc(
-        userId: String,
+        userId: String?,
         currency: String?,
         category: UserTransactionCategory?,
         startTime: LocalDateTime?,

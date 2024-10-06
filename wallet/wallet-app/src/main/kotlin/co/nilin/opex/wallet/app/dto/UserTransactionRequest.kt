@@ -3,6 +3,7 @@ package co.nilin.opex.wallet.app.dto
 import co.nilin.opex.wallet.core.model.UserTransactionCategory
 
 data class UserTransactionRequest(
+    val userId:String?=null,
     val currency: String?,
     val category: UserTransactionCategory?,
     val startTime: Long? = null,
