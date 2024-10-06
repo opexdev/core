@@ -144,8 +144,8 @@ class GraphService(private val rateService: RateService, private val currencySer
     }
 
     suspend fun fetchPrice(unit: String): List<CurrencyPrice>? {
-        var sellPricesGroupedByCurrency = buildRoutes(unit, null).map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), BigDecimal(1).divide(route.getRate(),10,RoundingMode.HALF_UP)) }.groupBy { p -> p.destSymbol }
-        var buyPricesGroupedByCurrency = buildRoutes(null, unit).map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }.groupBy { p -> p.sourceSymbol }
+        var buyPricesGroupedByCurrency = buildRoutes(unit, null).map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), BigDecimal(1).divide(route.getRate(),10,RoundingMode.HALF_UP)) }.groupBy { p -> p.destSymbol }
+        var sellPricesGroupedByCurrency = buildRoutes(null, unit).map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }.groupBy { p -> p.sourceSymbol }
 
         return currencyService.fetchCurrencies()?.currencies?.map { it ->
             CurrencyPrice(it.symbol, buyPricesGroupedByCurrency[it.symbol]?.firstOrNull()?.rate, sellPricesGroupedByCurrency[it.symbol]?.firstOrNull()?.rate)

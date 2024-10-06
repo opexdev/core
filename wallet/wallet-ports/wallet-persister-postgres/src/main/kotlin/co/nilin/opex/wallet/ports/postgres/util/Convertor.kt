@@ -25,7 +25,6 @@ fun CurrencyCommand.toModel(): CurrencyModel {
             description,
             shortDescription,
             externalUrl,
-            isCryptoCurrency
     )
 }
 
@@ -46,8 +45,8 @@ fun CurrencyModel.toCommand(): CurrencyCommand {
             false,
             false,
             externalUrl,
-            isCryptoCurrency,
-            null
+            null,
+            null,
     )
 }
 

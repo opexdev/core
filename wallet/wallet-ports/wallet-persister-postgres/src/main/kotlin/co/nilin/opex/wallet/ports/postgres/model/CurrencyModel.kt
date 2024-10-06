@@ -26,8 +26,5 @@ data class CurrencyModel(
         @Column("short_description")
         var shortDescription: String? = null,
         @Column("external_url")
-        var externalUrl: String? = null,
-        @Column("is_crypto_currency")
-        var isCryptoCurrency: Boolean? = false,
-
+        var externalUrl: String? = null
 )

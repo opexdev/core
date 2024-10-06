@@ -4,9 +4,7 @@ import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.CurrenciesDto
 import co.nilin.opex.wallet.app.dto.CurrencyDto
 import co.nilin.opex.wallet.app.utils.toDto
-import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
-import co.nilin.opex.wallet.core.inout.GatewayType
-import co.nilin.opex.wallet.core.inout.OnChainGatewayCommand
+import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.service.GatewayService
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
@@ -34,7 +32,6 @@ class CurrencyServiceV2(
                 request.apply {
                     uuid = UUID.randomUUID().toString()
                     symbol = symbol?.uppercase() ?: throw OpexError.BadRequest.exception()
-                    isCryptoCurrency = false
                 }.toCommand()
         )?.toDto()
         walletManager.createWalletForSystem(request.symbol!!)
@@ -53,10 +50,10 @@ class CurrencyServiceV2(
         currencyServiceManager.fetchCurrency(FetchCurrency(symbol = request.currencySymbol))
                 ?: throw OpexError.CurrencyNotFound.exception()
 
-        if (request is OnChainGatewayCommand) {
-            currencyServiceManager.prepareCurrencyToBeACryptoCurrency(request.currencySymbol!!)
-                    ?: throw OpexError.BadRequest.exception()
-        }
+//        if (request is OnChainGatewayCommand) {
+//            currencyServiceManager.prepareCurrencyToBeACryptoCurrency(request.currencySymbol!!)
+//                    ?: throw OpexError.BadRequest.exception()
+//        }
         return gatewayService.createGateway(request);
 
     }
@@ -70,6 +67,19 @@ class CurrencyServiceV2(
                         it.depositAllowed = gateways?.stream()?.filter { it.isActive == true }?.map(CurrencyGatewayCommand::depositAllowed)?.reduce { t, u -> t ?: false || u ?: false }?.orElseGet { false }
                         it.withdrawAllowed = gateways?.stream()?.filter { it.isActive == true }?.map(CurrencyGatewayCommand::withdrawAllowed)?.reduce { t, u -> t ?: false || u ?: false }?.orElseGet { false }
                         it.gateways = gateways
+                        //It is a stupid field for resolving front-end developers need
+                        it.gateways?.forEach { gateway ->
+                            when (gateway) {
+                                is OnChainGatewayCommand -> {
+                                    it.availableGatewayType = GatewayType.OnChain.name
+                                };
+                                is OffChainGatewayCommand -> {
+                                    it.availableGatewayType = GatewayType.OffChain.name;
+                                }
+                            }
+
+                        }
+
                     }.toDto()
 
                 } ?: throw OpexError.CurrencyNotFound.exception()
@@ -103,6 +113,19 @@ class CurrencyServiceV2(
                 it.gateways = groupedByGateways?.get(it.symbol)
                 it.depositAllowed = groupedByGateways?.get(it.symbol)?.stream()?.filter { g -> g.isActive == true }?.map(CurrencyGatewayCommand::depositAllowed)?.reduce { t, u -> t ?: false || u ?: false }?.orElseGet { false }
                 it.withdrawAllowed = groupedByGateways?.get(it.symbol)?.stream()?.filter { g -> g.isActive == true }?.map(CurrencyGatewayCommand::withdrawAllowed)?.reduce { t, u -> t ?: false || u ?: false }?.orElseGet { false }
+                it.gateways?.forEach { gateway ->
+                    when (gateway) {
+                        is OnChainGatewayCommand -> {
+                            it.availableGatewayType = GatewayType.OnChain.name;
+                        }
+
+                        is OffChainGatewayCommand -> {
+                            it.availableGatewayType = GatewayType.OffChain.name;
+                        }
+                    }
+
+                }
+
             }
             it.toDto()
         }?.collect(Collectors.toList()))
