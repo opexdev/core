@@ -7,5 +7,6 @@ enum class UserTransactionCategory {
     DEPOSIT_TO, // for admin using DEPOSIT_MANUALLY
     WITHDRAW,
     FEE,
+    SWAP,
     SYSTEM
 }

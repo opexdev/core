@@ -193,6 +193,29 @@ class TransferManagerImpl(
                 userTransactionManager.save(tx)
             }
 
+            TransferCategory.PURCHASE_FINALIZED -> {
+                val srcTx = UserTransaction(
+                    command.sourceWallet.owner.id!!,
+                    txId,
+                    currency,
+                    command.destWallet.balance.amount + amount,
+                    -amount,
+                    UserTransactionCategory.SWAP,
+                    command.description
+                )
+                userTransactionManager.save(srcTx)
+
+                val dstTx = UserTransaction(
+                    command.destWallet.owner.id!!,
+                    txId,
+                    currency,
+                    command.sourceWallet.balance.amount - amount,
+                    amount,
+                    UserTransactionCategory.SWAP
+                )
+                userTransactionManager.save(dstTx)
+            }
+
             else -> {
                 // No tx needed for other types
             }
