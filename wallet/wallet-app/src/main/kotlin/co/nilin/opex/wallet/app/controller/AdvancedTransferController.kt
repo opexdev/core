@@ -8,6 +8,7 @@ import co.nilin.opex.wallet.app.dto.TransferReserveRequest
 import co.nilin.opex.wallet.app.dto.TransferReserveResponse
 import co.nilin.opex.wallet.app.service.TransferService
 import co.nilin.opex.wallet.core.inout.TransferResult
+import co.nilin.opex.wallet.core.model.WalletType
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
@@ -69,9 +70,9 @@ class AdvancedTransferController {
             request.sourceSymbol,
             request.destSymbol,
             request.senderUuid!!,
-            request.senderWalletType,
+            WalletType.MAIN,
             request.receiverUuid,
-            request.receiverWalletType
+            WalletType.MAIN
         )
     }
 
