@@ -17,9 +17,6 @@ import java.math.BigDecimal
 class DepositAdminController(private val transferService: TransferService) {
 
 
-
-
-
     @PostMapping("/deposit/manually/{amount}_{symbol}/{receiverUuid}")
     @ApiResponse(
             message = "OK",
@@ -43,7 +40,6 @@ class DepositAdminController(private val transferService: TransferService) {
                 securityContext.authentication.name, amount, request
         )
     }
-
 
 
 //    @GetMapping("/swap")
