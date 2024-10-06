@@ -96,9 +96,7 @@ class AdvancedTransferControllerIT : KafkaEnabledTest() {
                         "ETH",
                         "USDT",
                         sender.uuid,
-                        WalletType.MAIN,
                         receiver,
-                        WalletType.MAIN
                     )
                 )
                 .exchange()
@@ -129,9 +127,7 @@ class AdvancedTransferControllerIT : KafkaEnabledTest() {
                         "ETH",
                         "USDT",
                         sender.uuid,
-                        WalletType.MAIN,
                         receiver,
-                        WalletType.MAIN
                     )
                 )
                 .exchange()
