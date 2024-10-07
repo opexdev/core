@@ -394,7 +394,8 @@ class TransferService(
                 request.description,
                 request.ref,
                 null,
-                WithdrawStatus.SYSTEM
+                WithdrawStatus.SYSTEM,
+                receiverUuid
             )
         )
         return tx;

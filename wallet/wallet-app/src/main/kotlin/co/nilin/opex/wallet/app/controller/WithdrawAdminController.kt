@@ -16,7 +16,10 @@ import java.math.BigDecimal
 
 @RestController
 @RequestMapping("/admin/withdraw")
-class WithdrawAdminController(private val withdrawService: WithdrawService, private val transferService: TransferService) {
+class WithdrawAdminController(
+    private val withdrawService: WithdrawService,
+    private val transferService: TransferService
+) {
 
     @GetMapping("/{id}")
     suspend fun getWithdraw(@PathVariable id: Long): WithdrawResponse {
@@ -45,14 +48,16 @@ class WithdrawAdminController(private val withdrawService: WithdrawService, priv
         @PathVariable withdrawId: Long,
         @RequestParam destTransactionRef: String,
         @RequestParam(required = false) destNote: String?,
-        @RequestParam(required = false) destAmount: BigDecimal?
+        @RequestParam(required = false) destAmount: BigDecimal?,
+        @CurrentSecurityContext securityContext: SecurityContext
     ): WithdrawActionResult {
         return withdrawService.acceptWithdraw(
             WithdrawAcceptCommand(
                 withdrawId,
                 destAmount,
                 destTransactionRef,
-                destNote
+                destNote,
+                securityContext.authentication.name
             )
         )
     }
@@ -65,31 +70,41 @@ class WithdrawAdminController(private val withdrawService: WithdrawService, priv
     @PostMapping("/{withdrawId}/reject")
     suspend fun rejectWithdraw(
         @PathVariable withdrawId: Long,
-        @RequestParam reason: String
+        @RequestParam reason: String,
+        @CurrentSecurityContext securityContext: SecurityContext
     ): WithdrawActionResult {
-        return withdrawService.rejectWithdraw(WithdrawRejectCommand(withdrawId, reason))
+        return withdrawService.rejectWithdraw(
+            WithdrawRejectCommand(
+                withdrawId,
+                reason,
+                securityContext.authentication.name
+            )
+        )
     }
+
     @PostMapping("/manually/{amount}_{symbol}/{sourceUuid}")
     @ApiResponse(
-            message = "OK",
-            code = 200,
-            examples = Example(
-                    ExampleProperty(
-                            value = "{ }",
-                            mediaType = "application/json"
-                    )
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = "{ }",
+                mediaType = "application/json"
             )
+        )
     )
     suspend fun withdrawManually(
-            @PathVariable("symbol") symbol: String,
-            @PathVariable("sourceUuid") sourceUuid: String,
-            @PathVariable("amount") amount: BigDecimal,
-            @RequestBody request: ManualTransferRequest,
-            @CurrentSecurityContext securityContext: SecurityContext
+        @PathVariable("symbol") symbol: String,
+        @PathVariable("sourceUuid") sourceUuid: String,
+        @PathVariable("amount") amount: BigDecimal,
+        @RequestBody request: ManualTransferRequest,
+        @CurrentSecurityContext securityContext: SecurityContext
     ): TransferResult {
         return transferService.withdrawManually(
-                symbol, securityContext.authentication.name, sourceUuid,
-                amount, request
+            symbol,
+            securityContext.authentication.name,
+            sourceUuid,
+            amount, request
         )
     }
 }

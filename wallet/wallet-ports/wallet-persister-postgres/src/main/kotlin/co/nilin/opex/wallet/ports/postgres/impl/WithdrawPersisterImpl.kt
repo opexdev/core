@@ -36,8 +36,9 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
                 withdraw.destTransactionRef,
                 withdraw.statusReason,
                 withdraw.status,
+                withdraw.applicator,
                 withdraw.createDate,
-                withdraw.acceptDate
+                withdraw.lastUpdateDate
             )
         ).awaitFirst().asWithdraw()
     }
@@ -164,8 +165,9 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
             destTransactionRef,
             statusReason,
             status,
+            applicator,
             createDate,
-            acceptDate
+            lastUpdateDate
         )
     }
 
@@ -187,8 +189,9 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
             destTransactionRef,
             statusReason,
             status,
+            applicator,
             createDate,
-            acceptDate
+            lastUpdateDate
         )
     }
 }
