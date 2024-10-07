@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 
 @RestController
-@RequestMapping("/admin/withdraw/")
+@RequestMapping("/admin/withdraw")
 class WithdrawAdminController(private val withdrawService: WithdrawService, private val transferService: TransferService) {
 
     @GetMapping("/{id}")
@@ -69,7 +69,7 @@ class WithdrawAdminController(private val withdrawService: WithdrawService, priv
     ): WithdrawActionResult {
         return withdrawService.rejectWithdraw(WithdrawRejectCommand(withdrawId, reason))
     }
-    @PostMapping("/withdraw/manually/{amount}_{symbol}/{sourceUuid}")
+    @PostMapping("/manually/{amount}_{symbol}/{sourceUuid}")
     @ApiResponse(
             message = "OK",
             code = 200,

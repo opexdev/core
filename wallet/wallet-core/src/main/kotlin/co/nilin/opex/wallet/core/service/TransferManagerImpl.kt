@@ -179,6 +179,31 @@ class TransferManagerImpl(
                 userTransactionManager.save(adminTx)
             }
 
+            TransferCategory.WITHDRAW_MANUALLY -> {
+                // TX for user
+                val tx = UserTransaction(
+                    command.sourceWallet.owner.id!!,
+                    txId,
+                    currency,
+                    command.sourceWallet.balance.amount - amount,
+                    -amount,
+                    UserTransactionCategory.WITHDRAW,
+                    command.description
+                )
+                userTransactionManager.save(tx)
+
+                // TX for admin
+                val adminTx = UserTransaction(
+                    command.destWallet.owner.id!!,
+                    txId,
+                    currency,
+                    command.destWallet.balance.amount + amount,
+                    amount,
+                    UserTransactionCategory.WITHDRAW_FROM
+                )
+                userTransactionManager.save(adminTx)
+            }
+
             TransferCategory.WITHDRAW_ACCEPT -> {
                 val userOwnerId = command.sourceWallet.owner.id!!
                 val userWallet = walletManager.findWallet(userOwnerId, currency, WalletType.MAIN) ?: return
