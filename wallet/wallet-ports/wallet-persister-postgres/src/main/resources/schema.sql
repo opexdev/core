@@ -137,8 +137,7 @@ CREATE TABLE IF NOT EXISTS withdraws
     status               VARCHAR(20),
     create_date          TIMESTAMP   NOT NULL,
     last_update_date          TIMESTAMP,
-    applicator            VARCHAR(80),
-
+    applicator            VARCHAR(80)
 );
 
 CREATE TABLE IF NOT EXISTS rate
