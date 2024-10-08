@@ -2,7 +2,7 @@ package co.nilin.opex.wallet.core.service
 
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.inout.*
-import co.nilin.opex.wallet.core.spi.BcGatewayPersister
+import co.nilin.opex.wallet.core.spi.GatewayPersister
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
@@ -10,9 +10,9 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 @Service
-class GatewayService(@Qualifier("onChainGateway") private val onChainGateway: BcGatewayPersister,
-                     @Qualifier("offChainGateway") private val offChainGateway: BcGatewayPersister,
-                     @Qualifier("manualGateway") private val manualGateway: BcGatewayPersister,
+class GatewayService(@Qualifier("onChainGateway") private val onChainGateway: GatewayPersister,
+                     @Qualifier("offChainGateway") private val offChainGateway: GatewayPersister,
+                     @Qualifier("manualGateway") private val manualGateway: GatewayPersister,
                      private val authService: AuthService) {
     private val logger = LoggerFactory.getLogger(GatewayService::class.java)
     suspend fun createGateway(currencyGateway: CurrencyGatewayCommand): CurrencyGatewayCommand? {
@@ -78,7 +78,6 @@ class GatewayService(@Qualifier("onChainGateway") private val onChainGateway: Bc
 
 
     suspend fun fetchGateway(currencyGatewayUuid: String, currencySymbol: String): CurrencyGatewayCommand? {
-
         val token = authService.extractToken()
         return onChainGateway.fetchGatewayDetail(currencyGatewayUuid, currencySymbol, token)
     }
@@ -86,7 +85,6 @@ class GatewayService(@Qualifier("onChainGateway") private val onChainGateway: Bc
 
     suspend fun deleteGateway(currencyGatewayUuid: String, currencySymbol: String) {
         if (currencyGatewayUuid.startsWith("ong")) {
-
             val token = authService.extractToken()
             return onChainGateway.deleteGateway(currencyGatewayUuid, currencySymbol, token)
         }

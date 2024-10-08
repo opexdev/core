@@ -23,5 +23,6 @@ data class ReservedTransferModel(
     var reservedDestAmount: BigDecimal,
     var reserveDate: LocalDateTime? = LocalDateTime.now(),
     var expDate: LocalDateTime? = null,
-    var status: ReservedStatus? = null
+    var status: ReservedStatus? = null,
+    var rate: BigDecimal?=null
 )

@@ -4,7 +4,7 @@ import co.nilin.opex.wallet.core.inout.OnChainGatewayCommand
 import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
 import co.nilin.opex.wallet.core.inout.WithdrawData
 
-import co.nilin.opex.wallet.core.spi.BcGatewayPersister
+import co.nilin.opex.wallet.core.spi.GatewayPersister
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
@@ -18,7 +18,7 @@ import java.net.URI
 inline fun <reified T : Any> typeRef(): ParameterizedTypeReference<T> = object : ParameterizedTypeReference<T>() {}
 
 @Component("onChainGateway")
-class OnChainGatewayProxyGateway(private val webClient: WebClient) : BcGatewayPersister {
+class OnChainGatewayProxyGateway(private val webClient: WebClient) : GatewayPersister {
 
     @Value("\${app.bc-gateway.url}")
     private lateinit var baseUrl: String
@@ -125,13 +125,15 @@ class OnChainGatewayProxyGateway(private val webClient: WebClient) : BcGatewayPe
 
 
     }
-
+    //After applying gateway concept in opex, we can remove this function and
+    // use fetchGateway function instead of this service
+    /// TODO:  temporary
     override suspend fun getWithdrawData(symbol: String, network: String): WithdrawData {
         return webClient.get()
-            .uri("$baseUrl/crypto-currency/$symbol/network/$network/withdrawData")
-            .retrieve()
-            .onStatus({ t -> t.isError }, { it.createException() })
-            .bodyToMono<WithdrawData>()
-            .awaitFirst()
+                .uri("$baseUrl/crypto-currency/$symbol/network/$network/withdrawData")
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToMono<WithdrawData>()
+                .awaitFirst()
     }
 }

@@ -5,5 +5,6 @@ import java.math.BigDecimal
 data class WithdrawData(
     val isEnabled: Boolean,
     val fee: BigDecimal,
-    val minimum: BigDecimal
+    val minimum: BigDecimal,
+    val maximum: BigDecimal? = null
 )

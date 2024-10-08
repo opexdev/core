@@ -155,7 +155,8 @@ class TransferService(
                 receiverUuid = receiverUuid,
                 senderWalletType = senderWalletType,
                 receiverWalletType = receiverWalletType,
-                reservedDestAmount = finalAmount
+                reservedDestAmount = finalAmount,
+                rate = rate.rate
             )
         )
 
@@ -173,6 +174,8 @@ class TransferService(
             )
         }
     }
+
+
 
 
     @Transactional

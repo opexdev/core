@@ -5,7 +5,7 @@ import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
 import co.nilin.opex.wallet.core.inout.ManualGatewayCommand
 import co.nilin.opex.wallet.core.inout.WithdrawData
 import co.nilin.opex.wallet.core.model.FetchGateways
-import co.nilin.opex.wallet.core.spi.BcGatewayPersister
+import co.nilin.opex.wallet.core.spi.GatewayPersister
 import co.nilin.opex.wallet.ports.postgres.dao.ManualGatewayRepository
 import co.nilin.opex.wallet.ports.postgres.model.ManualGatewayModel
 import co.nilin.opex.wallet.ports.postgres.util.toDto
@@ -14,7 +14,7 @@ import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.stereotype.Service
 
 @Service("manualGateway")
-class ManualGatewayManagerImpl(private val manualGatewayRepository: ManualGatewayRepository) : BcGatewayPersister {
+class ManualGatewayManagerImpl(private val manualGatewayRepository: ManualGatewayRepository) : GatewayPersister {
     override suspend fun createGateway(currencyGateway: CurrencyGatewayCommand, internalToken: String?): CurrencyGatewayCommand? {
         return _save((currencyGateway as ManualGatewayCommand).toModel())?.toDto()
     }

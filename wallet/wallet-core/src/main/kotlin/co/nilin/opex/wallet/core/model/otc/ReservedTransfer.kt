@@ -18,7 +18,8 @@ data class ReservedTransfer(
     var reservedDestAmount: BigDecimal,
     var reserveDate: LocalDateTime? = LocalDateTime.now(),
     var expDate: LocalDateTime? = null,
-    var status: ReservedStatus? = null
+    var status: ReservedStatus? = null,
+    val rate: BigDecimal?=null,
 )
 
 

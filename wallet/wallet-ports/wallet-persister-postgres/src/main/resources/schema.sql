@@ -173,7 +173,8 @@ CREATE TABLE IF NOT EXISTS reserved_transfer
     reserved_dest_amount DECIMAL      NOT NULL,
     reserve_date         TIMESTAMP,
     exp_date             TIMESTAMP,
-    status               VARCHAR(25)
+    status               VARCHAR(25),
+    rate                 DECIMAL
 );
 
 CREATE TABLE IF NOT EXISTS wallet_stat_exclusion

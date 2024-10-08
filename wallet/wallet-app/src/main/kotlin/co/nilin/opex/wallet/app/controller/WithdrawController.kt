@@ -52,7 +52,8 @@ class WithdrawController(private val withdrawService: WithdrawService) {
                     destSymbol,
                     destAddress,
                     destNetwork,
-                    destNote
+                    destNote,
+                    gatewayUuid
                 )
             }
         )

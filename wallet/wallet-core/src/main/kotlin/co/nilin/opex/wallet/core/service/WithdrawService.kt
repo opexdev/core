@@ -6,6 +6,7 @@ import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.spi.*
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
@@ -21,7 +22,11 @@ class WithdrawService(
     private val walletOwnerManager: WalletOwnerManager,
     private val currencyService: CurrencyServiceManager,
     private val transferManager: TransferManager,
-    @Qualifier("onChainGateway") private val bcGatewayProxy: BcGatewayPersister,
+    private val authService: AuthService,
+    private val environment: Environment,
+    private val gatewayService: GatewayService,
+    @Qualifier("onChainGateway") private val bcGatewayProxy: GatewayPersister,
+
     @Value("\${app.system.uuid}") private val systemUuid: String
 ) {
 
@@ -42,7 +47,8 @@ class WithdrawService(
             currency,
             WalletType.CASHOUT
         )
-        val withdrawData = bcGatewayProxy.getWithdrawData(withdrawCommand.destSymbol, withdrawCommand.destNetwork)
+        val withdrawData: WithdrawData =
+            _fetchWithdrawDate(withdrawCommand) ?: throw OpexError.GatewayNotFount.exception()
         if (!withdrawData.isEnabled)
             throw OpexError.WithdrawNotAllowed.exception()
 
@@ -54,6 +60,10 @@ class WithdrawService(
 
         if (withdrawCommand.amount < withdrawData.minimum)
             throw OpexError.WithdrawAmountLessThanMinimum.exception()
+
+        if (withdrawCommand.amount > withdrawData.maximum)
+            throw OpexError.WithdrawAmountMoreThanMinimum.exception()
+
 
         val transferResultDetailed = transferManager.transfer(
             TransferCommand(
@@ -89,6 +99,43 @@ class WithdrawService(
         )
 
         return WithdrawActionResult(withdraw.withdrawId!!, withdraw.status)
+    }
+
+
+    suspend fun _fetchWithdrawDate(withdrawCommand: WithdrawCommand): WithdrawData? {
+        return withdrawCommand.gatewayUuid?.let { uuid ->
+            gatewayService.fetchGateway(uuid, withdrawCommand.currency)?.let {
+                when (it) {
+                    is OnChainGatewayCommand -> {
+                        withdrawCommand.destNetwork = it.chain
+                        withdrawCommand.destSymbol = it.implementationSymbol!!
+                        WithdrawData(
+                            it.isActive ?: true && it.withdrawAllowed ?: true,
+                            it.withdrawFee ?: BigDecimal.ZERO,
+                            it.withdrawMin ?: BigDecimal.ZERO,
+                            it.withdrawMax
+                        )
+                    }
+
+                    is OffChainGatewayCommand -> {
+                        withdrawCommand.destNetwork = it.transferMethod.name
+                        WithdrawData(
+                            it.isActive ?: true && it.withdrawAllowed ?: true,
+                            it.withdrawFee ?: BigDecimal.ZERO,
+                            it.withdrawMin ?: BigDecimal.ZERO,
+                            it.withdrawMax
+                        )
+                    }
+
+                    else -> {
+                        throw OpexError.GatewayNotFount.exception()
+                    }
+                }
+            }
+
+            //After applying gateway concept in ope, we can remove this line and
+            // use gatewayUUid instead of combination of symbol and network
+        } ?: bcGatewayProxy.getWithdrawData(withdrawCommand.destSymbol!!, withdrawCommand.destNetwork!!)
     }
 
     @Transactional

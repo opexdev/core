@@ -1,7 +1,10 @@
 package co.nilin.opex.wallet.app.controller
 
+import co.nilin.opex.wallet.app.dto.ReservedTransferResponse
 import co.nilin.opex.wallet.app.dto.UserTransactionRequest
 import co.nilin.opex.wallet.core.model.UserTransactionHistory
+import co.nilin.opex.wallet.core.model.otc.ReservedTransfer
+import co.nilin.opex.wallet.core.spi.ReservedTransferManager
 import co.nilin.opex.wallet.core.spi.UserTransactionManager
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -14,7 +17,11 @@ import java.time.ZoneId
 
 @RestController
 @RequestMapping("/v2/transaction")
-class TransactionController(private val manager: UserTransactionManager) {
+class TransactionController(
+    private val manager: UserTransactionManager,
+    private val reservedTransferManager: ReservedTransferManager
+
+) {
 
     @PostMapping
     suspend fun getUserTransactions(
@@ -35,4 +42,22 @@ class TransactionController(private val manager: UserTransactionManager) {
         }
     }
 
+    @PostMapping("/swap")
+    suspend fun getSwapTransactions(
+        principal: Principal,
+        @RequestBody request: UserTransactionRequest
+    ): List<ReservedTransfer>? {
+        return with(request) {
+            reservedTransferManager.findReserves(
+                principal.name,
+                currency,
+                startTime?.let { LocalDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneId.systemDefault()) },
+                endTime?.let { LocalDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneId.systemDefault()) },
+                limit ?: 10,
+                offset ?: 0,
+                ascendingByTime,
+                status
+                )
+        }
+    }
 }

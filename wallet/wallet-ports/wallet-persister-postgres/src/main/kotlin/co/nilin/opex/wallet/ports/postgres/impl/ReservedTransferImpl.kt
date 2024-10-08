@@ -15,15 +15,15 @@ import java.time.LocalDateTime
 import java.util.*
 
 @Component
-class ReservedTransferImpl(private val reservedTransferRepository: ReservedTransferRepository)
-    : ReservedTransferManager {
+class ReservedTransferImpl(private val reservedTransferRepository: ReservedTransferRepository) :
+        ReservedTransferManager {
     @Value("\${app.reserved-transfer.life-time}")
     private var reservedTransferLifeTime: Long? = null
     override suspend fun fetchValidReserve(reserveNumber: String): ReservedTransfer? {
         return reservedTransferRepository.findByReserveNumber(reserveNumber)?.awaitSingleOrNull()
-            ?.takeIf {
-                it.expDate?.let { it > LocalDateTime.now() } ?: true && it.status == ReservedStatus.Created
-            }?.toDto()
+                ?.takeIf {
+                    it.expDate?.let { it > LocalDateTime.now() } ?: true && it.status == ReservedStatus.Created
+                }?.toDto()
     }
 
     override suspend fun commitReserve(reserveNumber: String) {
@@ -32,7 +32,7 @@ class ReservedTransferImpl(private val reservedTransferRepository: ReservedTrans
         }
     }
 
-    override suspend fun reserve(request: ReservedTransfer):ReservedTransfer {
+    override suspend fun reserve(request: ReservedTransfer): ReservedTransfer {
         request.apply {
             reserveDate = LocalDateTime.now()
             status = ReservedStatus.Created
@@ -42,21 +42,36 @@ class ReservedTransferImpl(private val reservedTransferRepository: ReservedTrans
         return request
     }
 
+    override suspend fun findReserves(
+            uuid: String,
+            coin: String?,
+            startTime: LocalDateTime?,
+            endTime: LocalDateTime?,
+            limit: Int,
+            offset: Int,
+            ascendingByTime: Boolean?,
+            status: ReservedStatus?
+    ): List<ReservedTransfer>? {
+        return null;//reservedTransferRepository.findByReservedTransfer(uuid, coin, startTime, endTime, limit, ascendingByTime)
+    }
+
+
     fun ReservedTransferModel.toDto(): ReservedTransfer {
         return ReservedTransfer(
-            id,
-            reserveNumber,
-            sourceSymbol,
-            destSymbol,
-            senderWalletType,
-            senderUuid,
-            receiverWalletType,
-            receiverUuid,
-            sourceAmount,
-            reservedDestAmount,
-            reserveDate,
-            expDate,
-            status
+                id,
+                reserveNumber,
+                sourceSymbol,
+                destSymbol,
+                senderWalletType,
+                senderUuid,
+                receiverWalletType,
+                receiverUuid,
+                sourceAmount,
+                reservedDestAmount,
+                reserveDate,
+                expDate,
+                status,
+                rate
         )
     }
 
@@ -74,7 +89,8 @@ class ReservedTransferImpl(private val reservedTransferRepository: ReservedTrans
                 this.reservedDestAmount,
                 this.reserveDate,
                 this.expDate,
-                this.status
+                this.status,
+                this.rate
         )
     }
 
