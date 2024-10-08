@@ -56,8 +56,8 @@ class CryptoCurrencyController(val cryptoCurrencyHandler: CryptoCurrencyHandlerV
 
     @GetMapping("/{currency}/gateway/{gatewayUuid}")
     suspend fun fetchSpecificGateway(@PathVariable("gatewayUuid") gatewayUuid: String,
-                                  @PathVariable("currency") currencySymbol: String): List<CryptoCurrencyCommand>? {
-        return cryptoCurrencyHandler.fetchCurrencyOnChainGateways(FetchGateways(gatewayUuid = gatewayUuid, currencySymbol = currencySymbol))
+                                  @PathVariable("currency") currencySymbol: String): CryptoCurrencyCommand? {
+        return cryptoCurrencyHandler.fetchOnChainGateway(gatewayUuid,currencySymbol)
     }
 
     @GetMapping("/chain")

@@ -10,10 +10,12 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 @Service
-class GatewayService(@Qualifier("onChainGateway") private val onChainGateway: GatewayPersister,
-                     @Qualifier("offChainGateway") private val offChainGateway: GatewayPersister,
-                     @Qualifier("manualGateway") private val manualGateway: GatewayPersister,
-                     private val authService: AuthService) {
+class GatewayService(
+    @Qualifier("onChainGateway") private val onChainGateway: GatewayPersister,
+    @Qualifier("offChainGateway") private val offChainGateway: GatewayPersister,
+    @Qualifier("manualGateway") private val manualGateway: GatewayPersister,
+    private val authService: AuthService
+) {
     private val logger = LoggerFactory.getLogger(GatewayService::class.java)
     suspend fun createGateway(currencyGateway: CurrencyGatewayCommand): CurrencyGatewayCommand? {
         when (currencyGateway) {
@@ -57,7 +59,10 @@ class GatewayService(@Qualifier("onChainGateway") private val onChainGateway: Ga
         }
     }
 
-    suspend fun fetchGateways(currencySymbol: String? = null, includeGateways: List<GatewayType>? = null): List<CurrencyGatewayCommand>? {
+    suspend fun fetchGateways(
+        currencySymbol: String? = null,
+        includeGateways: List<GatewayType>? = null
+    ): List<CurrencyGatewayCommand>? {
         includeGateways?.map { logger.info(it.name) }
         var gateways = ArrayList<CurrencyGatewayCommand>()
         if (includeGateways != null) {
@@ -78,25 +83,37 @@ class GatewayService(@Qualifier("onChainGateway") private val onChainGateway: Ga
 
 
     suspend fun fetchGateway(currencyGatewayUuid: String, currencySymbol: String): CurrencyGatewayCommand? {
-        val token = authService.extractToken()
-        return onChainGateway.fetchGatewayDetail(currencyGatewayUuid, currencySymbol, token)
+
+
+        if (currencyGatewayUuid.startsWith("ofg")) {
+            return offChainGateway.fetchGatewayDetail(currencyGatewayUuid, currencySymbol)
+        } else if (currencyGatewayUuid.startsWith("mag")) {
+            return manualGateway.fetchGatewayDetail(currencyGatewayUuid, currencySymbol)
+
+        } else {
+            val token = authService.extractToken()
+            return onChainGateway.fetchGatewayDetail(currencyGatewayUuid, currencySymbol, token)
+
+        }
     }
 
 
     suspend fun deleteGateway(currencyGatewayUuid: String, currencySymbol: String) {
-        if (currencyGatewayUuid.startsWith("ong")) {
-            val token = authService.extractToken()
-            return onChainGateway.deleteGateway(currencyGatewayUuid, currencySymbol, token)
-        }
+
 
         if (currencyGatewayUuid.startsWith("ofg")) {
-            offChainGateway.deleteGateway(currencyGatewayUuid,
-                    currencySymbol)
-        }
-
-        if (currencyGatewayUuid.startsWith("mag")) {
-            manualGateway.deleteGateway(currencyGatewayUuid,
-                    currencySymbol)
+            offChainGateway.deleteGateway(
+                currencyGatewayUuid,
+                currencySymbol
+            )
+        } else if (currencyGatewayUuid.startsWith("mag")) {
+            manualGateway.deleteGateway(
+                currencyGatewayUuid,
+                currencySymbol
+            )
+        } else {
+            val token = authService.extractToken()
+            return onChainGateway.deleteGateway(currencyGatewayUuid, currencySymbol, token)
         }
 
 

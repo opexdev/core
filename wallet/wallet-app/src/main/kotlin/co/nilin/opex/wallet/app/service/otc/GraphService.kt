@@ -81,7 +81,6 @@ class GraphService(private val rateService: RateService, private val currencySer
             return
         }
         visited.add(currentVertex)
-        logger.info(visited.size.toString())
         if (currentLength >= 1) {
             if ((!transitiveSymbols.contains(currentRoute[currentRoute.lastIndex].destSymbol)) &&
                     availableCurrency.contains(currentRoute[currentRoute.lastIndex].destSymbol)) {
