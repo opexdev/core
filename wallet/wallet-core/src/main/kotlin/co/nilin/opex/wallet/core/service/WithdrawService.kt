@@ -35,8 +35,7 @@ class WithdrawService(
     @Transactional
     suspend fun requestWithdraw(withdrawCommand: WithdrawCommand): WithdrawActionResult {
 
-        val withdrawData: WithdrawData =
-            _fetchWithdrawDate(withdrawCommand) ?: throw OpexError.GatewayNotFount.exception()
+
         val currency = currencyService.fetchCurrency(FetchCurrency(symbol = withdrawCommand.currency))
             ?: throw OpexError.CurrencyNotFound.exception()
         val owner = walletOwnerManager.findWalletOwner(withdrawCommand.uuid) ?: throw IllegalArgumentException()
@@ -51,7 +50,8 @@ class WithdrawService(
             currency,
             WalletType.CASHOUT
         )
-
+        val withdrawData: WithdrawData =
+            _fetchWithdrawDate(withdrawCommand) ?: throw OpexError.GatewayNotFount.exception()
         if (!withdrawData.isEnabled)
             throw OpexError.WithdrawNotAllowed.exception()
 
