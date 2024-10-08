@@ -60,8 +60,8 @@ class CurrencyHandlerImplV2(
                 ?.collect(Collectors.toList())?.awaitFirstOrNull()
     }
 
-    override suspend fun fetchOnChainGateway(gatewayUuid: String, currency: String): CryptoCurrencyCommand? {
-        return loadImpls(FetchGateways(currencySymbol = currency, gatewayUuid = gatewayUuid))?.awaitFirstOrNull()?.toDto()
+    override suspend fun fetchOnChainGateway(gatewayUuid: String, symbol: String): CryptoCurrencyCommand? {
+        return loadImpl(gatewayUuid, symbol)?.awaitFirstOrNull()?.toDto()
     }
 
     private suspend fun loadImpls(request: FetchGateways?): Flux<CurrencyOnChainGatewayModel>? {
@@ -70,8 +70,8 @@ class CurrencyHandlerImplV2(
                 ?: throw OpexError.ImplNotFound.exception()
     }
 
-    private suspend fun loadImpl(request: String): Mono<CurrencyOnChainGatewayModel>? {
-        return currencyImplementationRepository.findByGatewayUuid(request)
+    private suspend fun loadImpl(gateway: String, symbol: String): Mono<CurrencyOnChainGatewayModel>? {
+        return currencyImplementationRepository.findByGatewayUuidAndCurrencySymbol(gateway,symbol)
                 ?: throw OpexError.ImplNotFound.exception()
     }
 

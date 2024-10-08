@@ -4,6 +4,7 @@ import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.spi.*
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.env.Environment
@@ -26,13 +27,16 @@ class WithdrawService(
     private val environment: Environment,
     private val gatewayService: GatewayService,
     @Qualifier("onChainGateway") private val bcGatewayProxy: GatewayPersister,
-
     @Value("\${app.system.uuid}") private val systemUuid: String
 ) {
+    private val logger = LoggerFactory.getLogger(WithdrawService::class.java)
 
 
     @Transactional
     suspend fun requestWithdraw(withdrawCommand: WithdrawCommand): WithdrawActionResult {
+
+        val withdrawData: WithdrawData =
+            _fetchWithdrawDate(withdrawCommand) ?: throw OpexError.GatewayNotFount.exception()
         val currency = currencyService.fetchCurrency(FetchCurrency(symbol = withdrawCommand.currency))
             ?: throw OpexError.CurrencyNotFound.exception()
         val owner = walletOwnerManager.findWalletOwner(withdrawCommand.uuid) ?: throw IllegalArgumentException()
@@ -47,8 +51,7 @@ class WithdrawService(
             currency,
             WalletType.CASHOUT
         )
-        val withdrawData: WithdrawData =
-            _fetchWithdrawDate(withdrawCommand) ?: throw OpexError.GatewayNotFount.exception()
+
         if (!withdrawData.isEnabled)
             throw OpexError.WithdrawNotAllowed.exception()
 
@@ -103,8 +106,11 @@ class WithdrawService(
 
 
     suspend fun _fetchWithdrawDate(withdrawCommand: WithdrawCommand): WithdrawData? {
+
         return withdrawCommand.gatewayUuid?.let { uuid ->
+
             gatewayService.fetchGateway(uuid, withdrawCommand.currency)?.let {
+
                 when (it) {
                     is OnChainGatewayCommand -> {
                         withdrawCommand.destNetwork = it.chain
@@ -131,7 +137,7 @@ class WithdrawService(
                         throw OpexError.GatewayNotFount.exception()
                     }
                 }
-            }
+            } ?: throw OpexError.GatewayNotFount.exception()
 
             //After applying gateway concept in ope, we can remove this line and
             // use gatewayUUid instead of combination of symbol and network
