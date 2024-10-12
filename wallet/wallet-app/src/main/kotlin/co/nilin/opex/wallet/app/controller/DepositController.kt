@@ -2,8 +2,10 @@ package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.*
+import co.nilin.opex.wallet.app.service.DepositService
 import co.nilin.opex.wallet.app.service.TransferService
 import co.nilin.opex.wallet.core.inout.*
+import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.service.WithdrawService
 import co.nilin.opex.wallet.core.spi.DepositPersister
 import io.swagger.annotations.ApiResponse
@@ -20,8 +22,7 @@ import java.time.ZoneId
 @RestController
 @RequestMapping("/v1/deposit")
 class DepositController(
-    private val depositPersister: DepositPersister,
-    private val transferService: TransferService
+    private val depositService: DepositService,
 ) {
 
     @PostMapping("/history")
@@ -29,7 +30,7 @@ class DepositController(
             @RequestBody request: DepositHistoryRequest,
             @CurrentSecurityContext securityContext: SecurityContext
     ): List<DepositResponse> {
-        return depositPersister.findDepositHistory(
+        return depositService.findDepositHistory(
             securityContext.authentication.name,
             request.currency,
             request.startTime?.let {
@@ -56,7 +57,36 @@ class DepositController(
             )
         }
     }
-
+    @PostMapping("/deposit/{amount}_{chain}_{symbol}/{receiverUuid}_{receiverWalletType}")
+    @ApiResponse(
+            message = "OK",
+            code = 200,
+            examples = Example(
+                    ExampleProperty(
+                            value = "{ }",
+                            mediaType = "application/json"
+                    )
+            )
+    )
+    suspend fun deposit(
+            @PathVariable symbol: String,
+            @PathVariable receiverUuid: String,
+            @PathVariable receiverWalletType: WalletType,
+            @PathVariable amount: BigDecimal,
+            @RequestParam description: String?,
+            @RequestParam transferRef: String?,
+            @PathVariable chain: String?
+    ): TransferResult {
+        return depositService.deposit(
+                symbol,
+                receiverUuid,
+                receiverWalletType,
+                amount,
+                description,
+                transferRef,
+                chain
+        )
+    }
 
 
 }

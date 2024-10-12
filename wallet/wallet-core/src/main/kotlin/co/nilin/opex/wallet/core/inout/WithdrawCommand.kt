@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.core.inout
 
+import co.nilin.opex.wallet.core.model.WithdrawType
 import java.math.BigDecimal
 
 class WithdrawCommand(
@@ -11,5 +12,6 @@ class WithdrawCommand(
         val destAddress: String,
         var destNetwork: String?,
         val destNote: String?,
-        val gatewayUuid: String?
+        val gatewayUuid: String?,
+        var withdrawType: WithdrawType?
 )

@@ -29,16 +29,16 @@ class WithdrawController(private val withdrawService: WithdrawService) {
         return withdrawService.findWithdraw(withdrawId) ?: throw OpexError.WithdrawNotFound.exception()
     }
 
-    @PostMapping("/search")
-    suspend fun myWithdraws(principal: Principal, @RequestBody body: SearchWithdrawRequest): List<WithdrawResponse> {
-        return withdrawService.findByCriteria(
-            principal.name,
-            body.currency,
-            body.destTxRef,
-            body.destAddress,
-            body.status
-        )
-    }
+//    @PostMapping("/search")
+//    suspend fun myWithdraws(principal: Principal, @RequestBody body: SearchWithdrawRequest): List<WithdrawResponse> {
+//        return withdrawService.findByCriteria(
+//            principal.name,
+//            body.currency,
+//            body.destTxRef,
+//            body.destAddress,
+//            body.status
+//        )
+//    }
 
     @PostMapping
     suspend fun requestWithdraw(principal: Principal, @RequestBody request: RequestWithdrawBody): WithdrawActionResult {
@@ -53,7 +53,8 @@ class WithdrawController(private val withdrawService: WithdrawService) {
                     destAddress,
                     destNetwork,
                     destNote,
-                    gatewayUuid
+                    gatewayUuid,
+                    null
                 )
             }
         )

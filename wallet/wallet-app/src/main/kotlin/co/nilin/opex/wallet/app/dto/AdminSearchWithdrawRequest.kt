@@ -8,4 +8,7 @@ data class AdminSearchWithdrawRequest(
     val destTxRef: String?,
     val destAddress: String?,
     val status: List<WithdrawStatus> = emptyList(),
+    val startTime: Long? = null,
+    val endTime: Long? = null,
+    val ascendingByTime: Boolean = false
 )

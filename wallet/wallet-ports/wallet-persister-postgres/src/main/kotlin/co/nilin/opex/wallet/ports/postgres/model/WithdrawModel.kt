@@ -1,6 +1,8 @@
 package co.nilin.opex.wallet.ports.postgres.model
 
+import co.nilin.opex.wallet.core.model.DepositType
 import co.nilin.opex.wallet.core.model.WithdrawStatus
+import co.nilin.opex.wallet.core.model.WithdrawType
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
@@ -28,6 +30,7 @@ data class WithdrawModel(
     var statusReason: String?,
     var status: WithdrawStatus,
     var applicator: String?,
+    var withdrawType: WithdrawType,
     val createDate: LocalDateTime = LocalDateTime.now(),
-    val lastUpdateDate: LocalDateTime? = null
-)
+    val lastUpdateDate: LocalDateTime? = null,
+    )

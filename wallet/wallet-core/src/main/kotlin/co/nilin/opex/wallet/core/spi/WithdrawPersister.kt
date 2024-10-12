@@ -13,13 +13,13 @@ interface WithdrawPersister {
 
     suspend fun findWithdrawResponseById(withdrawId: Long): WithdrawResponse?
 
-    suspend fun findByCriteria(
-        ownerUuid: String?,
-        currency: String?,
-        destTxRef: String?,
-        destAddress: String?,
-        status: List<WithdrawStatus>
-    ): List<WithdrawResponse>
+//    suspend fun findByCriteria(
+//        ownerUuid: String?,
+//        currency: String?,
+//        destTxRef: String?,
+//        destAddress: String?,
+//        status: List<WithdrawStatus>
+//    ): List<WithdrawResponse>
 
     suspend fun findByCriteria(
         ownerUuid: String?,
@@ -27,6 +27,9 @@ interface WithdrawPersister {
         destTxRef: String?,
         destAddress: String?,
         status: List<WithdrawStatus>,
+        startTime:LocalDateTime?,
+        endTime:LocalDateTime?,
+        ascendingByTime: Boolean?,
         offset: Int,
         size: Int
     ): List<WithdrawResponse>

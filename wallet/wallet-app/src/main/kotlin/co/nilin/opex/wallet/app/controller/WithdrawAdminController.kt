@@ -13,6 +13,9 @@ import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 @RestController
 @RequestMapping("/admin/withdraw")
@@ -20,6 +23,12 @@ class WithdrawAdminController(
     private val withdrawService: WithdrawService,
     private val transferService: TransferService
 ) {
+    data class WithdrawRejectRequest(val reason: String)
+    data class WithdrawAcceptRequest(
+        val destTransactionRef: String,
+        val destNote: String?,
+        val destAmount: BigDecimal?
+    )
 
     @GetMapping("/{id}")
     suspend fun getWithdraw(@PathVariable id: Long): WithdrawResponse {
@@ -38,6 +47,13 @@ class WithdrawAdminController(
             body.destTxRef,
             body.destAddress,
             body.status,
+            body.startTime?.let {
+                LocalDateTime.ofInstant(Instant.ofEpochMilli(body.startTime), ZoneId.systemDefault())
+            },
+            body.endTime?.let {
+                LocalDateTime.ofInstant(Instant.ofEpochMilli(body.endTime), ZoneId.systemDefault())
+            },
+            body.ascendingByTime,
             offset,
             size
         )
@@ -46,17 +62,15 @@ class WithdrawAdminController(
     @PostMapping("/{withdrawId}/accept")
     suspend fun acceptWithdraw(
         @PathVariable withdrawId: Long,
-        @RequestParam destTransactionRef: String,
-        @RequestParam(required = false) destNote: String?,
-        @RequestParam(required = false) destAmount: BigDecimal?,
+        @RequestBody request: WithdrawAcceptRequest,
         @CurrentSecurityContext securityContext: SecurityContext
     ): WithdrawActionResult {
         return withdrawService.acceptWithdraw(
             WithdrawAcceptCommand(
                 withdrawId,
-                destAmount,
-                destTransactionRef,
-                destNote,
+                request.destAmount,
+                request.destTransactionRef,
+                request.destNote,
                 securityContext.authentication.name
             )
         )
@@ -70,13 +84,13 @@ class WithdrawAdminController(
     @PostMapping("/{withdrawId}/reject")
     suspend fun rejectWithdraw(
         @PathVariable withdrawId: Long,
-        @RequestParam reason: String,
+        @RequestBody request: WithdrawRejectRequest,
         @CurrentSecurityContext securityContext: SecurityContext
     ): WithdrawActionResult {
         return withdrawService.rejectWithdraw(
             WithdrawRejectCommand(
                 withdrawId,
-                reason,
+                request.reason,
                 securityContext.authentication.name
             )
         )

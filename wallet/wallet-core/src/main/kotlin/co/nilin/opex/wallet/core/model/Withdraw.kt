@@ -21,6 +21,7 @@ data class Withdraw(
     val statusReason: String?,
     var status: WithdrawStatus,
     var applicator: String?,
+    var withdrawType: WithdrawType,
     val createDate: LocalDateTime = LocalDateTime.now(),
     val lastUpdateDate: LocalDateTime? = null
 ) {

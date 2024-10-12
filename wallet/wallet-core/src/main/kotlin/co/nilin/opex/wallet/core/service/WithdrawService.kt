@@ -3,6 +3,7 @@ package co.nilin.opex.wallet.core.service
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.*
+import co.nilin.opex.wallet.core.model.WithdrawType
 import co.nilin.opex.wallet.core.spi.*
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
@@ -98,6 +99,7 @@ class WithdrawService(
                 null,
                 WithdrawStatus.CREATED,
                 null,
+                withdrawCommand.withdrawType!!
             )
         )
 
@@ -115,6 +117,7 @@ class WithdrawService(
                     is OnChainGatewayCommand -> {
                         withdrawCommand.destNetwork = it.chain
                         withdrawCommand.destSymbol = it.implementationSymbol!!
+                        withdrawCommand.withdrawType = WithdrawType.ON_CHAIN
                         WithdrawData(
                             it.isActive ?: true && it.withdrawAllowed ?: true,
                             it.withdrawFee ?: BigDecimal.ZERO,
@@ -125,6 +128,7 @@ class WithdrawService(
 
                     is OffChainGatewayCommand -> {
                         withdrawCommand.destNetwork = it.transferMethod.name
+                        withdrawCommand.withdrawType = WithdrawType.OFF_CHAIN
                         WithdrawData(
                             it.isActive ?: true && it.withdrawAllowed ?: true,
                             it.withdrawFee ?: BigDecimal.ZERO,
@@ -193,8 +197,9 @@ class WithdrawService(
                 null,
                 WithdrawStatus.DONE,
                 withdraw.applicator,
+                withdraw.withdrawType,
                 withdraw.createDate,
-                LocalDateTime.now()
+                LocalDateTime.now(),
             )
         )
 
@@ -291,8 +296,9 @@ class WithdrawService(
                 rejectCommand.statusReason,
                 WithdrawStatus.REJECTED,
                 withdraw.applicator,
+                withdraw.withdrawType,
                 withdraw.createDate,
-                LocalDateTime.now()
+                LocalDateTime.now(),
             )
         )
         return WithdrawActionResult(withdraw.withdrawId!!, updateWithdraw.status)
@@ -308,6 +314,9 @@ class WithdrawService(
         destTxRef: String?,
         destAddress: String?,
         status: List<WithdrawStatus>,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        ascendingByTime: Boolean,
         offset: Int,
         size: Int
     ): List<WithdrawResponse> {
@@ -317,26 +326,29 @@ class WithdrawService(
             destTxRef,
             destAddress,
             status,
+            startTime,
+            endTime,
+            ascendingByTime,
             offset,
             size
         )
     }
 
-    suspend fun findByCriteria(
-        ownerUuid: String?,
-        currency: String?,
-        destTxRef: String?,
-        destAddress: String?,
-        status: List<WithdrawStatus>,
-    ): List<WithdrawResponse> {
-        return withdrawPersister.findByCriteria(
-            ownerUuid,
-            currency,
-            destTxRef,
-            destAddress,
-            status
-        )
-    }
+//    suspend fun findByCriteria(
+//        ownerUuid: String?,
+//        currency: String?,
+//        destTxRef: String?,
+//        destAddress: String?,
+//        status: List<WithdrawStatus>,
+//    ): List<WithdrawResponse> {
+//        return withdrawPersister.findByCriteria(
+//            ownerUuid,
+//            currency,
+//            destTxRef,
+//            destAddress,
+//            status
+//        )
+//    }
 
     suspend fun findWithdrawHistory(
         uuid: String,
