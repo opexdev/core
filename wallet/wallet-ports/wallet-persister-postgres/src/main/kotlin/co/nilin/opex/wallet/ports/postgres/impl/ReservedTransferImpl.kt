@@ -7,6 +7,8 @@ import co.nilin.opex.wallet.core.spi.ReservedTransferManager
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepositoryV2
 import co.nilin.opex.wallet.ports.postgres.dao.ReservedTransferRepository
 import co.nilin.opex.wallet.ports.postgres.model.ReservedTransferModel
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Value
@@ -16,14 +18,14 @@ import java.util.*
 
 @Component
 class ReservedTransferImpl(private val reservedTransferRepository: ReservedTransferRepository) :
-        ReservedTransferManager {
+    ReservedTransferManager {
     @Value("\${app.reserved-transfer.life-time}")
     private var reservedTransferLifeTime: Long? = null
     override suspend fun fetchValidReserve(reserveNumber: String): ReservedTransfer? {
         return reservedTransferRepository.findByReserveNumber(reserveNumber)?.awaitSingleOrNull()
-                ?.takeIf {
-                    it.expDate?.let { it > LocalDateTime.now() } ?: true && it.status == ReservedStatus.Created
-                }?.toDto()
+            ?.takeIf {
+                it.expDate?.let { it > LocalDateTime.now() } ?: true && it.status == ReservedStatus.Created
+            }?.toDto()
     }
 
     override suspend fun commitReserve(reserveNumber: String) {
@@ -42,55 +44,63 @@ class ReservedTransferImpl(private val reservedTransferRepository: ReservedTrans
         return request
     }
 
-    override suspend fun findReserves(
-            uuid: String,
-            coin: String?,
-            startTime: LocalDateTime?,
-            endTime: LocalDateTime?,
-            limit: Int,
-            offset: Int,
-            ascendingByTime: Boolean?,
-            status: ReservedStatus?
+    override suspend fun findByCriteria(
+        owner: String?,
+        symbol: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        limit: Int,
+        offset: Int,
+        ascendingByTime: Boolean?,
+        status: ReservedStatus?
     ): List<ReservedTransfer>? {
-        return null;//reservedTransferRepository.findByReservedTransfer(uuid, coin, startTime, endTime, limit, ascendingByTime)
+        return reservedTransferRepository.findByCriteria(
+            owner,
+            symbol,
+            startTime,
+            endTime,
+            ascendingByTime,
+            limit,
+            offset,
+            status
+        )?.toList()?.map { it.toDto() }
     }
-
 
     fun ReservedTransferModel.toDto(): ReservedTransfer {
         return ReservedTransfer(
-                id,
-                reserveNumber,
-                sourceSymbol,
-                destSymbol,
-                senderWalletType,
-                senderUuid,
-                receiverWalletType,
-                receiverUuid,
-                sourceAmount,
-                reservedDestAmount,
-                reserveDate,
-                expDate,
-                status,
-                rate
+            id,
+            reserveNumber,
+            sourceSymbol,
+            destSymbol,
+            senderWalletType,
+            senderUuid,
+            receiverWalletType,
+            receiverUuid,
+            sourceAmount,
+            reservedDestAmount,
+            reserveDate,
+            expDate,
+            status,
+            rate
         )
     }
 
     fun ReservedTransfer.toModel(): ReservedTransferModel {
         return ReservedTransferModel(
-                null,
-                this.reserveNumber,
-                this.sourceSymbol,
-                this.destSymbol,
-                this.senderWalletType,
-                this.senderUuid,
-                this.receiverWalletType,
-                this.receiverUuid,
-                this.sourceAmount,
-                this.reservedDestAmount,
-                this.reserveDate,
-                this.expDate,
-                this.status,
-                this.rate
+            null,
+            this.reserveNumber,
+            this.sourceSymbol,
+            this.destSymbol,
+            this.senderWalletType,
+            this.senderUuid,
+            this.receiverWalletType,
+            this.receiverUuid,
+            this.sourceAmount,
+            this.reservedDestAmount,
+            this.reserveDate,
+            this.expDate,
+            this.status,
+            this.rate
         )
     }
 

@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.app.controller
 
-import co.nilin.opex.wallet.app.dto.AdminSearchWithdrawRequest
+import co.nilin.opex.wallet.app.dto.AdminSearchDepositRequest
+import co.nilin.opex.wallet.core.inout.DepositResponse
 import co.nilin.opex.wallet.app.dto.ManualTransferRequest
 import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.app.service.DepositService
@@ -49,24 +50,23 @@ class DepositAdminController(private val depositService: DepositService) {
     suspend fun search(
         @RequestParam offset: Int,
         @RequestParam size: Int,
-        @RequestBody body: AdminSearchWithdrawRequest
-    ): List<WithdrawResponse> {
-        return depositService.findByCriteria(
+        @RequestBody body: AdminSearchDepositRequest
+    ): List<DepositResponse> {
+        return depositService.searchDeposit(
             body.uuid,
             body.currency,
-            body.destTxRef,
-            body.destAddress,
-            body.status,
+            body.sourceAddress,
+            body.transferRef,
             body.startTime?.let {
                 LocalDateTime.ofInstant(Instant.ofEpochMilli(body.startTime), ZoneId.systemDefault())
             },
             body.endTime?.let {
                 LocalDateTime.ofInstant(Instant.ofEpochMilli(body.endTime), ZoneId.systemDefault())
             },
-            body.ascendingByTime,
             offset,
-            size
-        )
+            size,
+            body.ascendingByTime,
+            )
     }
 
 }

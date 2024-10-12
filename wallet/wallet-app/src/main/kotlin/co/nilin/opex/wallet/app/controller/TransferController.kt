@@ -89,35 +89,6 @@ class TransferController(private val transferService: TransferService,
         )
     }
 
-    @PostMapping("/deposit/{amount}_{chain}_{symbol}/{receiverUuid}_{receiverWalletType}")
-    @ApiResponse(
-        message = "OK",
-        code = 200,
-        examples = Example(
-            ExampleProperty(
-                value = "{ }",
-                mediaType = "application/json"
-            )
-        )
-    )
-    suspend fun deposit(
-        @PathVariable symbol: String,
-        @PathVariable receiverUuid: String,
-        @PathVariable receiverWalletType: WalletType,
-        @PathVariable amount: BigDecimal,
-        @RequestParam description: String?,
-        @RequestParam transferRef: String?,
-        @PathVariable chain: String?
-    ): TransferResult {
-        return depositService.deposit(
-            symbol,
-            receiverUuid,
-            receiverWalletType,
-            amount,
-            description,
-            transferRef,
-            chain
-        )
-    }
+
 
 }

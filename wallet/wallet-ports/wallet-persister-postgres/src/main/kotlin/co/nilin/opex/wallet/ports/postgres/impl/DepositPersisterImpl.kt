@@ -1,9 +1,11 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.wallet.core.inout.Deposit
+import co.nilin.opex.wallet.core.inout.DepositResponse
 import co.nilin.opex.wallet.core.inout.Deposits
 import co.nilin.opex.wallet.core.inout.WithdrawResponse
 import co.nilin.opex.wallet.core.model.Withdraw
+import co.nilin.opex.wallet.core.model.WithdrawStatus
 import co.nilin.opex.wallet.core.spi.DepositPersister
 import co.nilin.opex.wallet.core.spi.WithdrawPersister
 import co.nilin.opex.wallet.ports.postgres.dao.DepositRepository
@@ -31,14 +33,31 @@ class DepositPersisterImpl(private val depositRepository: DepositRepository) : D
         currency: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
-        limit: Int,
-        offset: Int,
+        limit: Int?,
+        offset: Int?,
         ascendingByTime: Boolean?
     ): List<Deposit> {
-        val deposits = if (ascendingByTime == true)
-            depositRepository.findDepositHistoryAsc(uuid, currency, startTime, endTime, limit, offset)
-        else
-            depositRepository.findDepositHistoryDesc(uuid, currency, startTime, endTime, limit, offset)
+        val deposits =
+            depositRepository.findDepositHistory(uuid, currency, startTime, endTime, limit, offset, ascendingByTime)
         return deposits.map { it.toDto() }.toList()
     }
+
+    override suspend fun findByCriteria(
+        ownerUuid: String?,
+        symbol: String?,
+        sourceAddress: String?,
+        transactionRef: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        offset: Int?,
+        size: Int?,
+        ascendingByTime: Boolean?
+    ): List<Deposit> {
+        val deposits =
+            depositRepository.findByCriteria(ownerUuid, symbol,sourceAddress,transactionRef, startTime, endTime,ascendingByTime, offset, size)
+        return deposits.map { it.toDto() }.toList()    }
+
+
+
+
 }

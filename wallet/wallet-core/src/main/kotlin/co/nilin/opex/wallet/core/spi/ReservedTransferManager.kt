@@ -12,8 +12,8 @@ interface ReservedTransferManager {
 
     suspend fun reserve(request: ReservedTransfer): ReservedTransfer
 
-    suspend fun findReserves(
-        uuid: String,
+    suspend fun findByCriteria(
+        owner: String?,
         coin: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,

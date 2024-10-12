@@ -42,22 +42,5 @@ class TransactionController(
         }
     }
 
-    @PostMapping("/swap")
-    suspend fun getSwapTransactions(
-        principal: Principal,
-        @RequestBody request: UserTransactionRequest
-    ): List<ReservedTransfer>? {
-        return with(request) {
-            reservedTransferManager.findReserves(
-                principal.name,
-                currency,
-                startTime?.let { LocalDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneId.systemDefault()) },
-                endTime?.let { LocalDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneId.systemDefault()) },
-                limit ?: 10,
-                offset ?: 0,
-                ascendingByTime,
-                status
-                )
-        }
-    }
+
 }

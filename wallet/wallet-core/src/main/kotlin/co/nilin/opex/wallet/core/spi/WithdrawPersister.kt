@@ -27,8 +27,8 @@ interface WithdrawPersister {
         destTxRef: String?,
         destAddress: String?,
         status: List<WithdrawStatus>,
-        startTime:LocalDateTime?,
-        endTime:LocalDateTime?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
         ascendingByTime: Boolean?,
         offset: Int,
         size: Int
