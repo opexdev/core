@@ -64,7 +64,7 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
             and wth.status in (:status)
             and (:startTime is null or create_date > :startTime )
             and (:endTime is null or create_date <= :endTime)
-        order  order by create_date (CASE WHEN :ascendingByTime = true THEN ASC ELSE DESC END)
+        order  by create_date (CASE WHEN :ascendingByTime = true THEN ASC ELSE DESC END)
         offset :offset limit :size;
         """
     )

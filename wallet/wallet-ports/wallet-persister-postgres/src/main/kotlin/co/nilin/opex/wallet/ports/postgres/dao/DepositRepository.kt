@@ -49,7 +49,7 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
             and (:transactionRef is null or transaction_ref in (:transactionRef)) 
             and (:startTime is null or create_date > :startTime )
             and (:endTime is null or create_date <= :endTime)
-        order  order by create_date (CASE WHEN :ascendingByTime = true THEN ASC ELSE DESC END)
+        order  by create_date (CASE WHEN :ascendingByTime = true THEN ASC ELSE DESC END)
         offset :offset limit :size;
         """
     )
