@@ -36,7 +36,8 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
             and (:currency is null or wm.currency in (:currency)) 
             and (:startTime is null or create_date > :startTime )
             and (:endTime is null or create_date <= :endTime)
-        order by create_date (CASE WHEN :ascendingByTime = true THEN ASC ELSE DESC END)
+        order by  CASE WHEN :ascendingByTime=true THEN create_date END ASC,
+                  CASE WHEN :ascendingByTime=false THEN create_date END DESC
         offset :offset limit :size;
         """
     )
@@ -64,7 +65,8 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
             and wth.status in (:status)
             and (:startTime is null or create_date > :startTime )
             and (:endTime is null or create_date <= :endTime)
-        order  by create_date (CASE WHEN :ascendingByTime = true THEN ASC ELSE DESC END)
+        order by  CASE WHEN :ascendingByTime=true THEN create_date END ASC,
+                  CASE WHEN :ascendingByTime=false THEN create_date END DESC
         offset :offset limit :size;
         """
     )
@@ -176,7 +178,7 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
             and (:startTime is null or create_date > :startTime )
             and (:endTime is null or create_date <= :endTime)
         order by  CASE WHEN :ascendingByTime=true THEN create_date END ASC,
-                  CASE WHEN :ascendingByTime=false THEN create_date END DESC;
+                  CASE WHEN :ascendingByTime=false THEN create_date END DESC
         limit :limit
         offset :offset
         """
