@@ -44,9 +44,9 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
         """
         select * from deposits 
         where ( :owner is null or uuid = :owner)
-            and (:sourceAddress is null or wth.source_address = :sourceAddress) 
-            and (:currency is null or currency in (:currency)) 
-            and (:transactionRef is null or transaction_ref in (:transactionRef)) 
+            and (:sourceAddress is null or source_address = :sourceAddress) 
+            and (:currency is null or currency =:currency) 
+            and (:transactionRef is null or transaction_ref =:transactionRef)
             and (:startTime is null or create_date > :startTime )
             and (:endTime is null or create_date <= :endTime)
         order  by create_date (CASE WHEN :ascendingByTime = true THEN ASC ELSE DESC END)
