@@ -49,7 +49,7 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         endTime: LocalDateTime?,
         ascendingByTime: Boolean?=false,
         offset: Int?=0,
-        limit: Int?=10000
+        size: Int?=10000
     ): Flow<WithdrawModel>
 
     @Query(
@@ -78,7 +78,7 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         endTime: LocalDateTime?,
         ascendingByTime: Boolean?=false,
         offset: Int?=0,
-        limit: Int?=10000
+        size: Int?=10000
     ): Flow<WithdrawModel>
 
     @Query(
