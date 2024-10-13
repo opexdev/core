@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS currency
     short_description TEXT,
     uuid              VARCHAR(256) NOT NULL DEFAULT  uuid_generate_v4(),
     external_url           VARCHAR(255));
+
 ALTER TABLE currency ADD COLUMN IF NOT EXISTS title VARCHAR(25);
 ALTER TABLE currency ADD COLUMN IF NOT EXISTS alias VARCHAR(25);
 ALTER TABLE currency  ADD COLUMN IF NOT EXISTS icon TEXT;
@@ -138,8 +139,7 @@ CREATE TABLE IF NOT EXISTS withdraws
     create_date          TIMESTAMP   NOT NULL,
     last_update_date          TIMESTAMP,
     applicator            VARCHAR(80),
-    withdraw_type    VARCHAR(255),
-
+    withdraw_type    VARCHAR(255)
     );
 
 CREATE TABLE IF NOT EXISTS rate
@@ -218,7 +218,7 @@ CREATE TABLE IF NOT EXISTS currency_off_chain_gateway
     withdraw_max          DECIMAL     NOT NULL,
     deposit_min          DECIMAL     NOT NULL,
     deposit_max          DECIMAL     NOT NULL,
-    is_active             BOOLEAN     NOT NULL DEFAULT TRUE,
+    is_active            BOOLEAN     NOT NULL DEFAULT TRUE,
     transfer_method      VARCHAR(256) NOT NULL
     );
 
