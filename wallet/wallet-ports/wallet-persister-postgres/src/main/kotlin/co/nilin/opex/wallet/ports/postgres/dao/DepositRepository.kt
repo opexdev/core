@@ -52,7 +52,7 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
             and (:endTime is null or create_date <= :endTime)
         order by  CASE WHEN :ascendingByTime=true THEN create_date END ASC,
                   CASE WHEN :ascendingByTime=false THEN create_date END DESC
-        offset :offset limit :size;
+        offset :offset limit :limit;
         """
     )
     fun findByCriteria(

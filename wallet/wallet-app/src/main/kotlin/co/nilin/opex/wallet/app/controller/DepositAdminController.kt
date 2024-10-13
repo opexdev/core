@@ -46,7 +46,7 @@ class DepositAdminController(private val depositService: DepositService) {
         )
     }
 
-    @PostMapping("/search")
+    @PostMapping("/deposit/search")
     suspend fun search(
         @RequestParam offset: Int,
         @RequestParam size: Int,
