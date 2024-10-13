@@ -56,7 +56,7 @@ class DepositAdminController(private val depositService: DepositService) {
             body.uuid,
             body.currency,
             body.sourceAddress,
-            body.transferRef,
+            body.transactionRef,
             body.startTime?.let {
                 LocalDateTime.ofInstant(Instant.ofEpochMilli(body.startTime), ZoneId.systemDefault())
             },

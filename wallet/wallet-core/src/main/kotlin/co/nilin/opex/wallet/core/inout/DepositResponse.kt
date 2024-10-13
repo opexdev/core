@@ -14,6 +14,7 @@ data class DepositResponse(
     val network: String?,
     val note: String?,
     val transactionRef: String?,
+    val sourceAddress:String?,
     val status: DepositStatus,
     val type: DepositType,
     val createDate: Date?

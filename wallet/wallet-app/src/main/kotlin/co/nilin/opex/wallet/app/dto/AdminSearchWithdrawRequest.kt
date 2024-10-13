@@ -17,7 +17,7 @@ data class AdminSearchDepositRequest(
         val uuid: String?,
         val currency: String?,
         val sourceAddress: String?,
-        val transferRef: String?,
+        val transactionRef: String?,
         val startTime: Long? = null,
         val endTime: Long? = null,
         val ascendingByTime: Boolean = false
