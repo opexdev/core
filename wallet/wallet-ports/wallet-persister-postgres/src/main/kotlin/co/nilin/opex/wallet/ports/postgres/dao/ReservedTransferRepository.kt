@@ -27,8 +27,8 @@ interface ReservedTransferRepository : ReactiveCrudRepository<ReservedTransferMo
         where ( :owner is null or sender_uuid=:owner)
             and (:sourceSymbol is null or source_symbol =:sourceSymbol)
             and (:destSymbol is null or dest_symbol =:destSymbol)
-            and (:startTime is null or create_date > :startTime )
-            and (:endTime is null or create_date <= :endTime)
+            and (:startTime is null or reserve_date > :startTime )
+            and (:endTime is null or reserve_date <= :endTime)
             and (:status is null or status=:status)
         order by  CASE WHEN :ascendingByTime=true THEN reserve_date END ASC,
                   CASE WHEN :ascendingByTime=false THEN reserve_date END DESC
