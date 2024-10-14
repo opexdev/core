@@ -30,8 +30,8 @@ interface ReservedTransferRepository : ReactiveCrudRepository<ReservedTransferMo
             and (:startTime is null or create_date > :startTime )
             and (:endTime is null or create_date <= :endTime)
             and (:status is null or status=:status)
-        order by  CASE WHEN :ascendingByTime=true THEN create_date END ASC,
-                  CASE WHEN :ascendingByTime=false THEN create_date END DESC
+        order by  CASE WHEN :ascendingByTime=true THEN reserve_date END ASC,
+                  CASE WHEN :ascendingByTime=false THEN reserve_date END DESC
         offset :offset limit :limit;
         """
     )
