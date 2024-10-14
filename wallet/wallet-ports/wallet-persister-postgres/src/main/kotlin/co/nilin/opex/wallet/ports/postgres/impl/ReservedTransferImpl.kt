@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.wallet.core.inout.SwapResponse
 import co.nilin.opex.wallet.core.model.otc.ReservedStatus
 import co.nilin.opex.wallet.core.model.otc.ReservedTransfer
 import co.nilin.opex.wallet.core.spi.ReservedTransferManager
@@ -54,7 +55,7 @@ class ReservedTransferImpl(private val reservedTransferRepository: ReservedTrans
         offset: Int,
         ascendingByTime: Boolean?,
         status: ReservedStatus?
-    ): List<ReservedTransfer>? {
+    ): List<SwapResponse>? {
         return reservedTransferRepository.findByCriteria(
             owner,
             sourceSymbol,
@@ -65,7 +66,22 @@ class ReservedTransferImpl(private val reservedTransferRepository: ReservedTrans
             limit,
             offset,
             status
-        )?.toList()?.map { it.toDto() }
+        )?.toList()?.map { it.asResponse() }
+    }
+
+    fun ReservedTransferModel.asResponse(): SwapResponse {
+        return SwapResponse(
+            reserveNumber,
+            sourceSymbol,
+            destSymbol,
+            senderUuid,
+            sourceAmount,
+            reservedDestAmount,
+            reserveDate,
+            expDate,
+            status,
+            rate
+        )
     }
 
     fun ReservedTransferModel.toDto(): ReservedTransfer {

@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.core.spi
 
+import co.nilin.opex.wallet.core.inout.SwapResponse
 import co.nilin.opex.wallet.core.model.otc.ReservedStatus
 import co.nilin.opex.wallet.core.model.otc.ReservedTransfer
 import java.time.LocalDateTime
@@ -22,7 +23,7 @@ interface ReservedTransferManager {
         offset: Int,
         ascendingByTime: Boolean? = false,
         status: ReservedStatus?
-    ): List<ReservedTransfer>?
+    ): List<SwapResponse>?
 
 
 }

@@ -4,6 +4,7 @@ import co.nilin.opex.common.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.app.dto.*
 import co.nilin.opex.wallet.app.service.TransferService
+import co.nilin.opex.wallet.core.inout.SwapResponse
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.model.otc.ReservedTransfer
@@ -42,7 +43,7 @@ class AdvancedTransferAdminController {
         @CurrentSecurityContext securityContext: SecurityContext,
         @RequestBody request: UserTransactionRequest
 
-    ): List<ReservedTransfer>? {
+    ): List<SwapResponse>? {
         return with(request) {
             reservedTransferManager.findByCriteria(
                 userId,
