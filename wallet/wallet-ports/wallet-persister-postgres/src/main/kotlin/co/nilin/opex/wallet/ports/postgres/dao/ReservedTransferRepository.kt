@@ -26,7 +26,7 @@ interface ReservedTransferRepository : ReactiveCrudRepository<ReservedTransferMo
         select * from deposits 
         where ( :owner is null or uuid = :owner)
             and (:sourceSymbol is null or source_symbol =:sourceSymbol)
-            and (:destSymbol is null or dest_Symbol =:destSymbol)
+            and (:destSymbol is null or dest_symbol =:destSymbol)
             and (:startTime is null or create_date > :startTime )
             and (:endTime is null or create_date <= :endTime)
             and (:status is null or status=:status)
