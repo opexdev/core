@@ -24,7 +24,7 @@ interface ReservedTransferRepository : ReactiveCrudRepository<ReservedTransferMo
     @Query(
         """
         select * from reserved_transfer 
-        where ( :owner is null or uuid = :owner)
+        where ( :owner is null or sender_uuid=:owner)
             and (:sourceSymbol is null or source_symbol =:sourceSymbol)
             and (:destSymbol is null or dest_symbol =:destSymbol)
             and (:startTime is null or create_date > :startTime )
