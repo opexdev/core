@@ -46,7 +46,8 @@ class AdvancedTransferAdminController {
         return with(request) {
             reservedTransferManager.findByCriteria(
                 userId,
-                currency,
+                sourceSymbol,
+                destSymbol,
                 startTime?.let {
                     LocalDateTime.ofInstant(
                         Instant.ofEpochMilli(it),

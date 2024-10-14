@@ -46,7 +46,8 @@ class ReservedTransferImpl(private val reservedTransferRepository: ReservedTrans
 
     override suspend fun findByCriteria(
         owner: String?,
-        symbol: String?,
+        sourceSymbol: String?,
+        destSymbol: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
         limit: Int,
@@ -56,7 +57,8 @@ class ReservedTransferImpl(private val reservedTransferRepository: ReservedTrans
     ): List<ReservedTransfer>? {
         return reservedTransferRepository.findByCriteria(
             owner,
-            symbol,
+            sourceSymbol,
+            destSymbol,
             startTime,
             endTime,
             ascendingByTime,

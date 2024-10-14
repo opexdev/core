@@ -14,7 +14,8 @@ interface ReservedTransferManager {
 
     suspend fun findByCriteria(
         owner: String?,
-        coin: String?,
+        sourceSymbol: String?,
+        destSymbol: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
         limit: Int,

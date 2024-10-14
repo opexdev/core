@@ -126,7 +126,8 @@ class AdvancedTransferController {
         return with(request) {
             reservedTransferManager.findByCriteria(
                 securityContext.authentication.name,
-                currency,
+                sourceSymbol,
+                destSymbol,
                 startTime?.let {
                     LocalDateTime.ofInstant(
                         Instant.ofEpochMilli(it),
