@@ -30,8 +30,9 @@ interface ReservedTransferRepository : ReactiveCrudRepository<ReservedTransferMo
             and (:startTime is null or create_date > :startTime )
             and (:endTime is null or create_date <= :endTime)
             ans (:status is null or status=:status)
-        order  order by create_date (CASE WHEN :ascendingByTime = true THEN ASC ELSE DESC END)
-        offset :offset limit :size;
+        order by  CASE WHEN :ascendingByTime=true THEN create_date END ASC,
+                  CASE WHEN :ascendingByTime=false THEN create_date END DESC
+        offset :offset limit :limit;
         """
     )
     fun findByCriteria(
