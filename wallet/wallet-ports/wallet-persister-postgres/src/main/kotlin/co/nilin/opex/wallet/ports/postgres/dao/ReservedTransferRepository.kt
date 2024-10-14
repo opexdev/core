@@ -23,7 +23,7 @@ interface ReservedTransferRepository : ReactiveCrudRepository<ReservedTransferMo
 
     @Query(
         """
-        select * from deposits 
+        select * from reserved_transfer 
         where ( :owner is null or uuid = :owner)
             and (:sourceSymbol is null or source_symbol =:sourceSymbol)
             and (:destSymbol is null or dest_symbol =:destSymbol)
