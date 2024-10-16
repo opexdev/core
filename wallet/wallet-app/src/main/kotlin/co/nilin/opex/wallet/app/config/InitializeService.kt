@@ -27,6 +27,7 @@ import java.util.UUID
 import javax.annotation.PostConstruct
 
 @Component
+@Profile("!otc")
 @DependsOn("postgresConfig")
 class InitializeService(
         @Value("\${app.system.uuid}") val systemUuid: String,
@@ -41,7 +42,6 @@ class InitializeService(
     private lateinit var preferences: Preferences
 
     @PostConstruct
-    @Profile("!otc")
     fun init() = runBlocking {
         addCurrencies(preferences.currencies)
         addSystemAndAdminWallet(preferences)
