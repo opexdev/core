@@ -27,6 +27,7 @@ fun CurrencyCommand.toModel(): CurrencyModel {
         description,
         shortDescription,
         externalUrl,
+        order
     )
 }
 
@@ -49,6 +50,7 @@ fun CurrencyModel.toCommand(): CurrencyCommand {
         externalUrl,
         null,
         null,
+        order
     )
 }
 
@@ -69,7 +71,7 @@ fun Deposit.toModel(): DepositModel {
         transactionRef,
         status,
         depositType,
-        createDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()
+        createDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(),
     )
 }
 

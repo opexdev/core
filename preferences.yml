@@ -298,7 +298,7 @@ markets:
 userLimits:
   - owner: 1
     action: withdraw
-    walletType: main
+    walletType: MAIN
     withdrawFee: 0.0001
     dailyTotal: 1000
     dailyCount: 100

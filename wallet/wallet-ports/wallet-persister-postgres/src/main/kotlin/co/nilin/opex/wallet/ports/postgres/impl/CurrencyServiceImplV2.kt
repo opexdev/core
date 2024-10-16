@@ -39,9 +39,9 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
 
     override suspend fun updateCurrency(request: CurrencyCommand): CurrencyCommand? {
         return loadCurrency(FetchCurrency(symbol = request.symbol))
-                ?.awaitFirstOrNull()?.let {
-                    doSave(it.toCommand().updateTo(request).toModel())?.toCommand()
-                } ?: throw OpexError.CurrencyNotFound.exception()
+            ?.awaitFirstOrNull()?.let {
+                doSave(it.toCommand().updateTo(request).toModel())?.toCommand()
+            } ?: throw OpexError.CurrencyNotFound.exception()
 
     }
 
@@ -61,7 +61,7 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
 
     override suspend fun fetchCurrencies(request: FetchCurrency?): CurrenciesCommand? {
         return CurrenciesCommand(loadCurrencies(request)?.map { it.toCommand() }
-                ?.collect(Collectors.toList())?.awaitFirstOrNull())
+            ?.collect(Collectors.toList())?.awaitFirstOrNull())
     }
 
     override suspend fun fetchCurrency(request: FetchCurrency): CurrencyCommand? {
@@ -75,7 +75,7 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
     }
 
     private suspend fun loadCurrencies(request: FetchCurrency?): Flux<CurrencyModel>? {
-        return currencyRepository.findAll( )
+        return currencyRepository.findAll()
     }
 
     private suspend fun doSave(request: CurrencyModel): CurrencyModel? {
@@ -86,25 +86,25 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
         with(request) {
 
             currencyRepository.insert(
-                    this.symbol,
-                    this.uuid!!,
-                    this.name,
-                    this.precision,
-                    this.title,
-                    this.alias,
-                    this.icon,
-                    this.isTransitive,
-                    this.isActive,
-                    this.sign,
-                    this.description,
-                    this.shortDescription,
-                    this.externalUrl,
+                this.symbol,
+                this.uuid!!,
+                this.name,
+                this.precision,
+                this.title,
+                this.alias,
+                this.icon,
+                this.isTransitive,
+                this.isActive,
+                this.sign,
+                this.description,
+                this.shortDescription,
+                this.externalUrl,
+                this.order
             ).awaitFirstOrNull()
 
         }
         return currencyRepository.fetchCurrency(uuid = request.uuid)?.awaitFirstOrNull()
     }
-
 
 
 }

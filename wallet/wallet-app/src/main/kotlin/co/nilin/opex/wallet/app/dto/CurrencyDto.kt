@@ -23,7 +23,9 @@ data class CurrencyDto(
         var depositAllowed: Boolean? = false,
         var externalUrl: String? = null,
         var gateways: List<CurrencyGatewayCommand>? = null,
-        var availableGatewayType:String?=null
+        var availableGatewayType:String?=null,
+        var order:Int?=null,
+        var systemBalance:BigDecimal?=null
 
         ) {
 
@@ -48,8 +50,8 @@ data class CurrencyDto(
                 depositAllowed,
                 externalUrl,
                 gateways,
-                availableGatewayType
-                )
+                availableGatewayType,
+                order)
     }
 }
 

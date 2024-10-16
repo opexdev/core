@@ -188,10 +188,10 @@ class WalletManagerImplV2(
             }
     }
 
-    override suspend fun createWalletForSystem(currency: String) {
+    override suspend fun createWalletForSystem(currency: String, systemBalance: BigDecimal?) {
         val items =
             listOf(
-                WalletModel(1, WalletType.MAIN, currency, minimumBalance!!),
+                WalletModel(1, WalletType.MAIN, currency, systemBalance ?: minimumBalance!!),
             )
         walletRepository.saveAll(items).collectList().awaitSingleOrNull()
 
@@ -256,6 +256,7 @@ class WalletManagerImplV2(
         )
 
     }
+
     override suspend fun createCashoutWallet(owner: WalletOwner, currency: CurrencyCommand): Wallet {
         return walletRepository.save(WalletModel(owner.id!!, WalletType.CASHOUT, currency.symbol, BigDecimal.ZERO))
             .awaitFirst()

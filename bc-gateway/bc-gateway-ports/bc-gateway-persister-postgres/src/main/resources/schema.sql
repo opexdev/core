@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS chain_address_types
 --     name   VARCHAR(72) NOT NULL
 -- );
 
-CREATE TABLE IF NOT EXISTS currency_implementations
+CREATE TABLE IF NOT EXISTS currency_on_chain_gateway
 (
     id                    SERIAL PRIMARY KEY,
     currency_symbol       VARCHAR(72) NOT NULL ,

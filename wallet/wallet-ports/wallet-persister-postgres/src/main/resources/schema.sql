@@ -17,7 +17,8 @@ CREATE TABLE IF NOT EXISTS currency
     description       TEXT,
     short_description TEXT,
     uuid              VARCHAR(256) NOT NULL DEFAULT  uuid_generate_v4(),
-    external_url           VARCHAR(255));
+    external_url           VARCHAR(255),
+    display_order             INTEGER);
 
 ALTER TABLE currency ADD COLUMN IF NOT EXISTS title VARCHAR(25);
 ALTER TABLE currency ADD COLUMN IF NOT EXISTS alias VARCHAR(25);

@@ -34,7 +34,7 @@ class CurrencyServiceV2(
                     symbol = symbol?.uppercase() ?: throw OpexError.BadRequest.exception()
                 }.toCommand()
         )?.toDto()
-        walletManager.createWalletForSystem(request.symbol!!)
+        walletManager.createWalletForSystem(request.symbol!!,request.systemBalance)
         return nc
     }
 
