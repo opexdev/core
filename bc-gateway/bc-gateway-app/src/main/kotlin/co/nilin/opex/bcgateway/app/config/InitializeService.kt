@@ -22,6 +22,7 @@ import javax.annotation.PostConstruct
 
 @Component
 @DependsOn("postgresConfig")
+@Profile("!otc")
 class InitializeService(
         private val addressTypeRepository: AddressTypeRepository,
         private val chainRepository: ChainRepository,
@@ -33,7 +34,6 @@ class InitializeService(
     private lateinit var preferences: Preferences
 
     @PostConstruct
-    @Profile("!otc")
     fun init() = runBlocking {
         addAddressTypes(preferences.addressTypes)
         addChains(preferences.chains)
