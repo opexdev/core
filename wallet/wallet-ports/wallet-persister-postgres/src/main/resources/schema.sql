@@ -20,22 +20,6 @@ CREATE TABLE IF NOT EXISTS currency
     external_url           VARCHAR(255),
     display_order             INTEGER);
 
-ALTER TABLE currency ADD COLUMN IF NOT EXISTS title VARCHAR(25);
-ALTER TABLE currency ADD COLUMN IF NOT EXISTS alias VARCHAR(25);
-ALTER TABLE currency  ADD COLUMN IF NOT EXISTS icon TEXT;
-ALTER TABLE currency  ADD COLUMN IF NOT EXISTS last_update_date TIMESTAMP;
-ALTER TABLE currency ADD COLUMN IF NOT EXISTS create_date TIMESTAMP;
-ALTER TABLE currency  ADD COLUMN IF NOT EXISTS is_transitive BOOLEAN NOT NULL DEFAULT FALSE;
-ALTER TABLE currency ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE;
-ALTER TABLE currency  ADD COLUMN IF NOT EXISTS sign VARCHAR(25);
-ALTER TABLE currency ADD COLUMN IF NOT EXISTS uuid VARCHAR(256) NOT NULL DEFAULT  uuid_generate_v4();
-ALTER TABLE currency  ADD COLUMN IF NOT EXISTS description TEXT;
-ALTER TABLE currency ADD COLUMN IF NOT EXISTS short_description TEXT;
-ALTER TABLE currency  ADD COLUMN IF NOT EXISTS external_url    VARCHAR(255);
--- ALTER TABLE currency  ADD COLUMN IF NOT EXISTS is_crypto_currency BOOLEAN DEFAULT FALSE;
--- ALTER TABLE currency DROP COLUMN withdraw_allowed;
--- ALTER TABLE currency DROP COLUMN deposit_allowed;
--- ALTER TABLE currency DROP COLUMN withdraw_fee;
 
 
 
@@ -61,8 +45,7 @@ CREATE TABLE IF NOT EXISTS wallet
     UNIQUE (owner, wallet_type, currency)
 );
 
-ALTER TABLE wallet
-    ADD COLUMN IF NOT EXISTS version INTEGER;
+
 
 CREATE TABLE IF NOT EXISTS transaction
 (
@@ -77,10 +60,7 @@ CREATE TABLE IF NOT EXISTS transaction
     transaction_date  TIMESTAMP   NOT NULL DEFAULT CURRENT_DATE
 );
 
-ALTER TABLE transaction
-    ADD COLUMN IF NOT EXISTS transfer_category VARCHAR(36) NOT NULL DEFAULT 'NO_CATEGORY';
-ALTER TABLE transaction
-    ALTER COLUMN transfer_ref SET NOT NULL;
+
 
 CREATE TABLE IF NOT EXISTS user_transaction
 (

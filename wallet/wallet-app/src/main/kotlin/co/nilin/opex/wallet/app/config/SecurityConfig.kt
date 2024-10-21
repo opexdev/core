@@ -69,7 +69,7 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers(HttpMethod.GET, "/currency/**").permitAll()
             .pathMatchers("/stats/**").hasRoleAndLevel("Admin")
             .pathMatchers("/actuator/**").permitAll()
-            .pathMatchers("/doc/**").hasRoleAndLevel("Admin")
+            .pathMatchers("/storage/**").hasRoleAndLevel("Admin")
             .anyExchange().authenticated()
             .and()
             .oauth2ResourceServer()
