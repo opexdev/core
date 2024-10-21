@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS wallet
     wallet_type VARCHAR(10) NOT NULL,
     currency    VARCHAR(25) NOT NULL REFERENCES currency (symbol),
     balance     DECIMAL     NOT NULL,
+    version     INTEGER,
     UNIQUE (owner, wallet_type, currency)
 );
 

@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS assigned_addresses
 
 
 
+
 CREATE TABLE IF NOT EXISTS reserved_addresses
 (
     id           SERIAL PRIMARY KEY,
