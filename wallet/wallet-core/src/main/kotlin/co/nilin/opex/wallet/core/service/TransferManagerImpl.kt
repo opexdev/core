@@ -223,7 +223,7 @@ class TransferManagerImpl(
                     command.sourceWallet.owner.id!!,
                     txId,
                     currency,
-                    command.sourceWallet.balance.amount + amount,
+                    command.sourceWallet.balance.amount - amount,
                     -amount,
                     UserTransactionCategory.SWAP,
                     command.description
@@ -234,7 +234,7 @@ class TransferManagerImpl(
                     command.destWallet.owner.id!!,
                     txId,
                     currency,
-                    command.destWallet.balance.amount - amount,
+                    command.destWallet.balance.amount + amount,
                     amount,
                     UserTransactionCategory.SWAP
                 )
