@@ -306,8 +306,9 @@ class TransferService(
                 null,
                 WithdrawStatus.DONE,
                 receiverUuid,
-                WithdrawType.MANUALLY
-            )
+                WithdrawType.MANUALLY,
+                request.attachment,
+                )
         )
         return tx;
     }

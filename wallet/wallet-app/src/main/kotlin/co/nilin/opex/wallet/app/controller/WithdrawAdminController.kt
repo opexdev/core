@@ -23,11 +23,12 @@ class WithdrawAdminController(
     private val withdrawService: WithdrawService,
     private val transferService: TransferService
 ) {
-    data class WithdrawRejectRequest(val reason: String)
+    data class WithdrawRejectRequest(val reason: String, val attachment: String?)
     data class WithdrawAcceptRequest(
         val destTransactionRef: String,
         val destNote: String?,
-        val destAmount: BigDecimal?
+        val destAmount: BigDecimal?,
+        val attachment:String?
     )
 
     @GetMapping("/{id}")
@@ -71,6 +72,7 @@ class WithdrawAdminController(
                 request.destAmount,
                 request.destTransactionRef,
                 request.destNote,
+                request.attachment,
                 securityContext.authentication.name
             )
         )
@@ -91,6 +93,7 @@ class WithdrawAdminController(
             WithdrawRejectCommand(
                 withdrawId,
                 request.reason,
+                request.attachment,
                 securityContext.authentication.name
             )
         )

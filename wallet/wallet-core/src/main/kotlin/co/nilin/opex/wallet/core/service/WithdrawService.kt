@@ -99,7 +99,8 @@ class WithdrawService(
                 null,
                 WithdrawStatus.CREATED,
                 null,
-                withdrawCommand.withdrawType!!
+                withdrawCommand.withdrawType!!,
+                null
             )
         )
 
@@ -198,6 +199,7 @@ class WithdrawService(
                 WithdrawStatus.DONE,
                 withdraw.applicator,
                 withdraw.withdrawType,
+                acceptCommand.attachment,
                 withdraw.createDate,
                 LocalDateTime.now(),
             )
@@ -297,6 +299,7 @@ class WithdrawService(
                 WithdrawStatus.REJECTED,
                 withdraw.applicator,
                 withdraw.withdrawType,
+                withdraw.attachment,
                 withdraw.createDate,
                 LocalDateTime.now(),
             )

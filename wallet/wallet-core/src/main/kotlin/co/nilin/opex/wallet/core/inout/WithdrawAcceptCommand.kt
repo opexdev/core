@@ -7,5 +7,6 @@ class WithdrawAcceptCommand(
     val destAmount: BigDecimal?,
     val destTransactionRef: String,
     val destNote: String?,
-    var applicator: String
+    var attachment:String?,
+    var applicator: String,
 )

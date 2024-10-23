@@ -38,6 +38,7 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
                 withdraw.status,
                 withdraw.applicator,
                 withdraw.withdrawType,
+                withdraw.attachment,
                 withdraw.createDate,
                 withdraw.lastUpdateDate,
             )
@@ -186,6 +187,7 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
             status,
             applicator,
             withdrawType,
+            attachment,
             createDate,
             lastUpdateDate
         )
@@ -211,6 +213,7 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
             status,
             applicator,
             withdrawType,
+            attachment,
             createDate,
             lastUpdateDate
         )

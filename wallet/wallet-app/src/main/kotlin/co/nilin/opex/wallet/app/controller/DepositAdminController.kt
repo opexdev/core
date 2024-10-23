@@ -24,25 +24,25 @@ class DepositAdminController(private val depositService: DepositService) {
 
     @PostMapping("/deposit/manually/{amount}_{symbol}/{receiverUuid}")
     @ApiResponse(
-            message = "OK",
-            code = 200,
-            examples = Example(
-                    ExampleProperty(
-                            value = "{ }",
-                            mediaType = "application/json"
-                    )
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = "{ }",
+                mediaType = "application/json"
             )
+        )
     )
     suspend fun depositManually(
-            @PathVariable("symbol") symbol: String,
-            @PathVariable("receiverUuid") receiverUuid: String,
-            @PathVariable("amount") amount: BigDecimal,
-            @RequestBody request: ManualTransferRequest,
-            @CurrentSecurityContext securityContext: SecurityContext
+        @PathVariable("symbol") symbol: String,
+        @PathVariable("receiverUuid") receiverUuid: String,
+        @PathVariable("amount") amount: BigDecimal,
+        @RequestBody request: ManualTransferRequest,
+        @CurrentSecurityContext securityContext: SecurityContext
     ): TransferResult {
         return depositService.depositManually(
-                symbol, receiverUuid,
-                securityContext.authentication.name, amount, request
+            symbol, receiverUuid,
+            securityContext.authentication.name, amount, request
         )
     }
 
@@ -66,7 +66,7 @@ class DepositAdminController(private val depositService: DepositService) {
             offset,
             size,
             body.ascendingByTime,
-            )
+        )
     }
 
 }

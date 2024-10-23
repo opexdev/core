@@ -34,8 +34,10 @@ class WalletSyncServiceImpl(
             coroutineScope {
 
                 val currencyImpl = groupedByChain[it.chain]?.find { c -> c.tokenAddress == it.tokenAddress }
-                        ?: throw IllegalStateException("Currency implementation not found")
-
+                    ?: run {
+                        logger.info("Currency implementation not found")
+                        return@coroutineScope null
+                    }
                 assignedAddressHandler.findUuid(it.receiver.address, it.receiver.memo)?.let {
                     it to currencyImpl
                 }

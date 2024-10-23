@@ -22,6 +22,7 @@ class WithdrawResponse(
     val status: WithdrawStatus,
     var applicator: String?,
     var withdrawType: WithdrawType,
+    var attachment:String?,
     val createDate: LocalDateTime,
     val lastUpdateDate: LocalDateTime?
 )

@@ -17,5 +17,6 @@ data class DepositResponse(
     val sourceAddress:String?,
     val status: DepositStatus,
     val type: DepositType,
+    val attachment:String?,
     val createDate: Date?
 )
