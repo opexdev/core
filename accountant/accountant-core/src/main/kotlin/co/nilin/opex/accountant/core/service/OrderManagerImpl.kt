@@ -4,10 +4,7 @@ import co.nilin.opex.accountant.core.api.OrderManager
 import co.nilin.opex.accountant.core.inout.OrderStatus
 import co.nilin.opex.accountant.core.inout.RichOrder
 import co.nilin.opex.accountant.core.inout.RichOrderUpdate
-import co.nilin.opex.accountant.core.model.FinancialAction
-import co.nilin.opex.accountant.core.model.FinancialActionCategory
-import co.nilin.opex.accountant.core.model.FinancialActionStatus
-import co.nilin.opex.accountant.core.model.Order
+import co.nilin.opex.accountant.core.model.*
 import co.nilin.opex.accountant.core.spi.*
 import co.nilin.opex.matching.engine.core.eventh.events.*
 import co.nilin.opex.matching.engine.core.inout.RequestedOperation
@@ -97,12 +94,11 @@ open class OrderManagerImpl(
             symbol,
             amount,
             submitOrderEvent.uuid,
-            "main",
+            WalletType.MAIN,
             submitOrderEvent.uuid,
-            "exchange",
+            WalletType.EXCHANGE,
             LocalDateTime.now(),
-            FinancialActionCategory.ORDER_CREATE,
-            createMap(submitOrderEvent, order)
+            FinancialActionCategory.ORDER_CREATE
         )
 
         return financialActionPersister.persist(listOf(financialAction))
@@ -157,12 +153,11 @@ open class OrderManagerImpl(
             symbol,
             order.remainedTransferAmount,
             rejectOrderEvent.uuid,
-            "exchange",
+            WalletType.EXCHANGE,
             rejectOrderEvent.uuid,
-            "main",
+            WalletType.MAIN,
             LocalDateTime.now(),
-            FinancialActionCategory.ORDER_CANCEL,
-            createMap(rejectOrderEvent, order)
+            FinancialActionCategory.ORDER_CANCEL
         )
         //update order status
         order.status = OrderStatus.REJECTED.code
@@ -206,12 +201,11 @@ open class OrderManagerImpl(
             symbol,
             order.remainedTransferAmount,
             cancelOrderEvent.uuid,
-            "exchange",
+            WalletType.EXCHANGE,
             cancelOrderEvent.uuid,
-            "main",
+            WalletType.MAIN,
             LocalDateTime.now(),
-            FinancialActionCategory.ORDER_CANCEL,
-            createMap(cancelOrderEvent, order)
+            FinancialActionCategory.ORDER_CANCEL
         )
         //update order status
         order.status = OrderStatus.CANCELED.code

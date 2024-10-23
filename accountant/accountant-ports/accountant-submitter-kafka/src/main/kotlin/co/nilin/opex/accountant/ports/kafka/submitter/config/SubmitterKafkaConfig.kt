@@ -3,7 +3,6 @@ package co.nilin.opex.accountant.ports.kafka.submitter.config
 import co.nilin.opex.accountant.core.inout.FinancialActionEvent
 import co.nilin.opex.accountant.core.inout.RichOrderEvent
 import co.nilin.opex.accountant.core.inout.RichTrade
-import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringSerializer

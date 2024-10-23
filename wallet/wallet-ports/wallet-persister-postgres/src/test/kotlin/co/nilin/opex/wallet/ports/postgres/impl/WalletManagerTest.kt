@@ -1,5 +1,7 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
+import co.nilin.opex.wallet.core.model.WalletLimitAction
+import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.ports.postgres.dao.*
 import co.nilin.opex.wallet.ports.postgres.dto.toModel
 import co.nilin.opex.wallet.ports.postgres.impl.sample.VALID
@@ -7,6 +9,7 @@ import co.nilin.opex.wallet.ports.postgres.util.toModel
 import io.mockk.MockKException
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -14,6 +17,7 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
 
+@Suppress("ReactiveStreamsUnusedPublisher")
 private class WalletManagerTest {
     private val walletLimitsRepository: WalletLimitsRepository = mockk()
     private val walletRepository: WalletRepository = mockk()
@@ -43,7 +47,7 @@ private class WalletManagerTest {
         walletLimitsRepository, transactionRepository, walletRepository, walletOwnerRepository, currencyRepository
     )
 
-    private fun stubNoWalletLimit(action: String) = runBlocking {
+    private fun stubNoWalletLimit(action: WalletLimitAction) = runBlocking {
         every {
             walletLimitsRepository.findByOwnerAndCurrencyAndWalletAndAction(
                 VALID.WALLET_OWNER.id!!,
@@ -57,7 +61,7 @@ private class WalletManagerTest {
                 VALID.WALLET_OWNER.id!!,
                 VALID.CURRENCY.symbol!!,
                 action,
-                VALID.WALLET_TYPE_MAIN
+                WalletType.MAIN
             )
         } returns Mono.empty()
         every {
@@ -65,12 +69,12 @@ private class WalletManagerTest {
                 VALID.USER_LEVEL_REGISTERED,
                 VALID.CURRENCY.symbol!!,
                 action,
-                VALID.WALLET_TYPE_MAIN
+                WalletType.MAIN
             )
         } returns Mono.empty()
     }
 
-    private fun stubAllWalletLimit(action: String) = runBlocking {
+    private fun stubAllWalletLimit(action: WalletLimitAction) = runBlocking {
         every {
             walletLimitsRepository.findByOwnerAndCurrencyAndWalletAndAction(
                 VALID.WALLET_OWNER.id!!,
@@ -84,7 +88,7 @@ private class WalletManagerTest {
                 VALID.WALLET_OWNER.id!!,
                 VALID.CURRENCY.symbol!!,
                 action,
-                VALID.WALLET_TYPE_MAIN
+                WalletType.MAIN
             )
         } returns Mono.just(VALID.WALLET_LIMITS_MODEL_WITHDRAW.copy(action = action))
         every {
@@ -92,14 +96,14 @@ private class WalletManagerTest {
                 VALID.USER_LEVEL_REGISTERED,
                 VALID.CURRENCY.symbol!!,
                 action,
-                VALID.WALLET_TYPE_MAIN
+                WalletType.MAIN
             )
         } returns Mono.just(VALID.WALLET_LIMITS_MODEL_WITHDRAW.copy(action = action))
     }
 
     @Test
     fun givenWalletWithNoLimit_whenIsWithdrawAllowed_thenReturnTrue(): Unit = runBlocking {
-        stubNoWalletLimit(VALID.ACTION_WITHDRAW)
+        stubNoWalletLimit(WalletLimitAction.WITHDRAW)
 
         val isAllowed = walletManagerImpl.isWithdrawAllowed(VALID.WALLET, BigDecimal.valueOf(0.5))
 
@@ -129,7 +133,7 @@ private class WalletManagerTest {
                 VALID.WALLET_OWNER.id!!,
                 VALID.CURRENCY.symbol!!,
                 VALID.WALLET.id!!,
-                VALID.ACTION_WITHDRAW
+                WalletLimitAction.WITHDRAW
             )
         } returns Mono.empty()
         every {
@@ -144,8 +148,8 @@ private class WalletManagerTest {
             walletLimitsRepository.findByLevelAndCurrencyAndActionAndWalletType(
                 VALID.USER_LEVEL_REGISTERED,
                 VALID.CURRENCY.symbol,
-                VALID.ACTION_WITHDRAW,
-                VALID.WALLET_TYPE_MAIN
+                WalletLimitAction.WITHDRAW,
+                WalletType.MAIN
             )
         } returns Mono.empty()
 
@@ -168,16 +172,16 @@ private class WalletManagerTest {
             walletLimitsRepository.findByOwnerAndCurrencyAndActionAndWalletType(
                 VALID.WALLET_OWNER.id!!,
                 VALID.CURRENCY.symbol!!,
-                VALID.ACTION_WITHDRAW,
-                VALID.WALLET_TYPE_MAIN
+                WalletLimitAction.WITHDRAW,
+                WalletType.MAIN
             )
         } returns Mono.empty()
         every {
             walletLimitsRepository.findByLevelAndCurrencyAndActionAndWalletType(
                 VALID.USER_LEVEL_REGISTERED,
                 VALID.CURRENCY.symbol!!,
-                VALID.ACTION_WITHDRAW,
-                VALID.WALLET_TYPE_MAIN
+                WalletLimitAction.WITHDRAW,
+                WalletType.MAIN
             )
         } returns Mono.empty()
 
@@ -193,15 +197,15 @@ private class WalletManagerTest {
                 VALID.WALLET_OWNER.id!!,
                 VALID.CURRENCY.symbol!!,
                 VALID.WALLET.id!!,
-                VALID.ACTION_WITHDRAW
+                WalletLimitAction.WITHDRAW
             )
         } returns Mono.empty()
         every {
             walletLimitsRepository.findByOwnerAndCurrencyAndActionAndWalletType(
                 VALID.WALLET_OWNER.id!!,
                 VALID.CURRENCY.symbol!!,
-                VALID.ACTION_WITHDRAW,
-                VALID.WALLET_TYPE_MAIN
+                    WalletLimitAction.WITHDRAW,
+                    WalletType.MAIN
             )
         } returns Mono.empty()
         every {
@@ -220,7 +224,7 @@ private class WalletManagerTest {
 
     @Test
     fun givenAllLimits_whenIsWithdrawAllowedWithValidAmount_thenReturnTrue(): Unit = runBlocking {
-        stubAllWalletLimit(VALID.ACTION_WITHDRAW)
+        stubAllWalletLimit(WalletLimitAction.WITHDRAW)
 
         val isAllowed = walletManagerImpl.isWithdrawAllowed(VALID.WALLET, BigDecimal.valueOf(1))
 
@@ -229,7 +233,7 @@ private class WalletManagerTest {
 
     @Test
     fun givenAllLimits_whenIsWithdrawAllowedWithInvalidAmount_thenReturnFalse(): Unit = runBlocking {
-        stubAllWalletLimit(VALID.ACTION_WITHDRAW)
+        stubAllWalletLimit(WalletLimitAction.WITHDRAW)
 
         val isAllowed = walletManagerImpl.isWithdrawAllowed(VALID.WALLET, BigDecimal.valueOf(30))
 
@@ -238,7 +242,7 @@ private class WalletManagerTest {
 
     @Test
     fun givenEmptyWalletWithNoLimit_whenIsWithdrawAllowed_thenReturnFalse(): Unit = runBlocking {
-        stubNoWalletLimit(VALID.ACTION_WITHDRAW)
+        stubNoWalletLimit(WalletLimitAction.WITHDRAW)
 
         val isAllowed = walletManagerImpl.isWithdrawAllowed(VALID.WALLET, BigDecimal.valueOf(5))
 
@@ -247,7 +251,7 @@ private class WalletManagerTest {
 
     @Test
     fun givenWalletWithNoLimit_whenIsDepositAllowed_thenReturnTrue(): Unit = runBlocking {
-        stubNoWalletLimit(VALID.ACTION_DEPOSIT)
+        stubNoWalletLimit(WalletLimitAction.DEPOSIT)
 
         val isAllowed = walletManagerImpl.isDepositAllowed(VALID.WALLET, BigDecimal.valueOf(0.5))
 
@@ -265,7 +269,7 @@ private class WalletManagerTest {
 
     @Test
     fun givenAllLimits_whenIsDepositAllowedWithValidAmount_thenReturnTrue(): Unit = runBlocking {
-        stubAllWalletLimit(VALID.ACTION_DEPOSIT)
+        stubAllWalletLimit(WalletLimitAction.DEPOSIT)
 
         val isAllowed = walletManagerImpl.isDepositAllowed(VALID.WALLET, BigDecimal.valueOf(1))
 
@@ -277,25 +281,25 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByOwnerAndCurrencyAndWalletAndAction(
                 VALID.WALLET_OWNER.id!!,
-                VALID.CURRENCY.symbol!!,
+                VALID.CURRENCY.symbol,
                 VALID.WALLET.id!!,
-                VALID.ACTION_DEPOSIT
+                WalletLimitAction.DEPOSIT
             )
         } returns Mono.just(VALID.WALLET_LIMITS_MODEL_DEPOSIT)
         every {
             walletLimitsRepository.findByOwnerAndCurrencyAndActionAndWalletType(
                 VALID.WALLET_OWNER.id!!,
                 VALID.CURRENCY.symbol!!,
-                VALID.ACTION_DEPOSIT,
-                VALID.WALLET_TYPE_MAIN
+                WalletLimitAction.DEPOSIT,
+                WalletType.MAIN
             )
         } returns Mono.empty()
         every {
             walletLimitsRepository.findByLevelAndCurrencyAndActionAndWalletType(
                 VALID.USER_LEVEL_REGISTERED,
                 VALID.CURRENCY.symbol!!,
-                VALID.ACTION_DEPOSIT,
-                VALID.WALLET_TYPE_MAIN
+                WalletLimitAction.DEPOSIT,
+                WalletType.MAIN
             )
         } returns Mono.empty()
 
@@ -310,7 +314,7 @@ private class WalletManagerTest {
         every {
             walletRepository.findByOwnerAndTypeAndCurrency(
                 VALID.WALLET_OWNER.id!!,
-                VALID.WALLET_TYPE_MAIN,
+                WalletType.MAIN,
                 VALID.CURRENCY.symbol!!
             )
         } returns Mono.just(VALID.WALLET.toModel())
@@ -318,16 +322,20 @@ private class WalletManagerTest {
             currencyRepository.fetchCurrency(symbol = VALID.CURRENCY.symbol)
         } returns Mono.just(VALID.CURRENCY.toModel())
 
+        println(walletRepository.findByOwnerAndTypeAndCurrency(VALID.WALLET_OWNER.id!!,
+            WalletType.MAIN,
+            VALID.CURRENCY.symbol!!)?.awaitFirst()?.id)
+
         val wallet = walletManagerImpl.findWalletByOwnerAndCurrencyAndType(
             VALID.WALLET_OWNER,
-            VALID.WALLET_TYPE_MAIN,
+            WalletType.MAIN,
             VALID.CURRENCY
         )
 
         assertThat(wallet).isNotNull
         assertThat(wallet!!.owner.id).isEqualTo(VALID.WALLET_OWNER.id)
         assertThat(wallet.currency.symbol).isEqualTo(VALID.CURRENCY.symbol)
-        assertThat(wallet.type).isEqualTo(VALID.WALLET_TYPE_MAIN)
+        assertThat(wallet.type).isEqualTo(WalletType.MAIN)
     }
 
     @Test
@@ -346,7 +354,7 @@ private class WalletManagerTest {
         assertThat(wallet).isNotNull
         assertThat(wallet.owner.id).isEqualTo(VALID.WALLET_OWNER.id)
         assertThat(wallet.currency.symbol).isEqualTo(VALID.CURRENCY.symbol)
-        assertThat(wallet.type).isEqualTo(VALID.WALLET_TYPE_MAIN)
+        assertThat(wallet.type).isEqualTo(WalletType.MAIN)
     }
 
     @Test

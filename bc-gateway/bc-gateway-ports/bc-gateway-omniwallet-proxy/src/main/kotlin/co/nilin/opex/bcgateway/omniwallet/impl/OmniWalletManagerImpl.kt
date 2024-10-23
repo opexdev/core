@@ -15,14 +15,12 @@ class OmniWalletManagerImpl(private val omniWalletProxy: OmniWalletProxy) : Omni
     private val logger = LoggerFactory.getLogger(omniWalletProxy::class.java)
 
     override suspend fun getTokenBalance(cryptoCurrencyCommand: CryptoCurrencyCommand): OmniBalance {
-        logger.info("==========999999999999========")
         return OmniBalance(currency = cryptoCurrencyCommand.currencySymbol,
                 network = cryptoCurrencyCommand.chain,
                 balance = omniWalletProxy.getTokenBalance(cryptoCurrencyCommand.tokenAddress!!, cryptoCurrencyCommand.chain)?.stream()?.map(AddressBalanceWithUsd::balance)?.reduce { a, b -> a + b }?.orElse(BigDecimal.ZERO))
     }
 
     override suspend fun getAssetBalance(cryptoCurrencyCommand: CryptoCurrencyCommand): OmniBalance {
-        logger.info("==========88888888888888888========")
         return OmniBalance(cryptoCurrencyCommand.currencySymbol, cryptoCurrencyCommand.chain, omniWalletProxy.getAssetBalance(cryptoCurrencyCommand.chain)?.balance?: BigDecimal.ZERO)
     }
 }

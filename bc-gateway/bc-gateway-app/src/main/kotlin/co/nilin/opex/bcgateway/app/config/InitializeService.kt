@@ -3,7 +3,7 @@ package co.nilin.opex.bcgateway.app.config
 import co.nilin.opex.bcgateway.ports.postgres.dao.*
 import co.nilin.opex.bcgateway.ports.postgres.model.AddressTypeModel
 import co.nilin.opex.bcgateway.ports.postgres.model.ChainAddressTypeModel
-import co.nilin.opex.bcgateway.ports.postgres.model.CurrencyImplementationModel
+import co.nilin.opex.bcgateway.ports.postgres.model.CurrencyOnChainGatewayModel
 import co.nilin.opex.utility.preferences.AddressType
 import co.nilin.opex.utility.preferences.Chain
 import co.nilin.opex.utility.preferences.Currency
@@ -14,12 +14,15 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.DependsOn
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
+import java.math.BigDecimal
 import java.util.UUID
 import javax.annotation.PostConstruct
 
 @Component
 @DependsOn("postgresConfig")
+@Profile("!otc")
 class InitializeService(
         private val addressTypeRepository: AddressTypeRepository,
         private val chainRepository: ChainRepository,
@@ -61,7 +64,7 @@ class InitializeService(
 //            }
 //        }
         val items = data.flatMap { it.implementations.map { impl -> it to impl } }.map { (currency, impl) ->
-            CurrencyImplementationModel(
+            CurrencyOnChainGatewayModel(
                     null,
                     UUID.randomUUID().toString(),
                     currency.symbol,
@@ -74,6 +77,9 @@ class InitializeService(
                     true!!,
                     impl.withdrawFee,
                     impl.withdrawMin,
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO,
                     impl.decimal,
                     true
 

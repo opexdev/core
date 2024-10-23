@@ -1,13 +1,9 @@
 package co.nilin.opex.wallet.app.controller
 
-import co.nilin.opex.common.OpexError
-import co.nilin.opex.wallet.app.dto.ManualTransferRequest
-import co.nilin.opex.wallet.app.dto.TransactionRequest
-import co.nilin.opex.wallet.app.dto.WithdrawHistoryResponse
-import co.nilin.opex.wallet.app.service.TransferService
+import co.nilin.opex.wallet.app.dto.*
+import co.nilin.opex.wallet.app.service.DepositService
 import co.nilin.opex.wallet.core.inout.*
-import co.nilin.opex.wallet.core.service.WithdrawService
-import co.nilin.opex.wallet.core.spi.DepositPersister
+import co.nilin.opex.wallet.core.model.WalletType
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
@@ -20,38 +16,32 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 
 @RestController
-@RequestMapping("/v1/deposit")
+@RequestMapping
 class DepositController(
-    private val depositPersister: DepositPersister,
-    private val transferService: TransferService
+    private val depositService: DepositService,
 ) {
 
-    @PostMapping("/{uuid}/history")
+    @PostMapping("/v1/deposit/history")
     suspend fun getDepositTransactionsForUser(
-        @PathVariable("uuid") uuid: String,
-        @RequestBody request: TransactionRequest,
+        @RequestBody request: DepositHistoryRequest,
         @CurrentSecurityContext securityContext: SecurityContext
-    ): Deposits {
-        if (securityContext.authentication.name != uuid)
-            throw OpexError.Forbidden.exception()
-
-        return depositPersister.findDepositHistory(
-            uuid,
-            request.coin,
+    ): List<DepositResponse> {
+        return depositService.findDepositHistory(
+            securityContext.authentication.name,
+            request.currency,
             request.startTime?.let {
                 LocalDateTime.ofInstant(Instant.ofEpochMilli(request.startTime), ZoneId.systemDefault())
             },
             request.endTime?.let {
                 LocalDateTime.ofInstant(Instant.ofEpochMilli(request.endTime), ZoneId.systemDefault())
             },
-            request.limit!!,
-            request.offset!!,
+            request.limit,
+            request.offset,
             request.ascendingByTime
         )
     }
 
-
-    @PostMapping("/manually/{amount}_{symbol}/{receiverUuid}")
+    @PostMapping("/deposit/{amount}_{chain}_{symbol}/{receiverUuid}_{receiverWalletType}")
     @ApiResponse(
         message = "OK",
         code = 200,
@@ -62,18 +52,27 @@ class DepositController(
             )
         )
     )
-    suspend fun depositManually(
-        @PathVariable("symbol") symbol: String,
-        @PathVariable("receiverUuid") receiverUuid: String,
-        @PathVariable("amount") amount: BigDecimal,
-        @RequestBody request: ManualTransferRequest,
-        @CurrentSecurityContext securityContext: SecurityContext
+    suspend fun deposit(
+        @PathVariable symbol: String,
+        @PathVariable receiverUuid: String,
+        @PathVariable receiverWalletType: WalletType,
+        @PathVariable amount: BigDecimal,
+        @RequestParam description: String?,
+        @RequestParam transferRef: String?,
+        @PathVariable chain: String?
     ): TransferResult {
-        return transferService.depositManually(
-            symbol, receiverUuid,
-            securityContext.authentication.name, amount, request
+        return depositService.deposit(
+            symbol,
+            receiverUuid,
+            receiverWalletType,
+            amount,
+            description,
+            transferRef,
+            chain
         )
     }
+
+
 }
 
 

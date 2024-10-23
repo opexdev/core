@@ -8,6 +8,8 @@ import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
+import co.nilin.opex.wallet.core.model.TransferCategory
+import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.spi.TransferManager
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
@@ -28,7 +30,7 @@ class PaymentGatewayController(
 
     @PostMapping("/internal/deposit")
     suspend fun paymentDeposit(@RequestBody request: PaymentDepositRequest): PaymentDepositResponse {
-        val receiverWalletType = "main"
+        val receiverWalletType = WalletType.MAIN
         val convertedAmount = when (request.currency) {
             PaymentCurrency.RIALS -> (request.amount / BigDecimal.valueOf(10)).toLong()
             PaymentCurrency.TOMAN -> request.amount.toLong()
@@ -37,8 +39,8 @@ class PaymentGatewayController(
         val currency = currencyService.fetchCurrency(FetchCurrency(symbol = "IRT")) ?: throw OpexError.CurrencyNotFound.exception()
         val sourceOwner = walletOwnerManager.findWalletOwner(walletOwnerManager.systemUuid)
             ?: throw OpexError.WalletOwnerNotFound.exception()
-        val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner, "main", currency)
-            ?: walletManager.createWallet(sourceOwner, Amount(currency, BigDecimal.ZERO), currency, "main")
+        val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner, WalletType.MAIN, currency)
+            ?: walletManager.createWallet(sourceOwner, Amount(currency, BigDecimal.ZERO), currency, WalletType.MAIN)
 
         val receiverOwner = walletOwnerManager.findWalletOwner(request.userId)
             ?: walletOwnerManager.createWalletOwner(request.userId, "not set", "")
@@ -61,8 +63,7 @@ class PaymentGatewayController(
                 Amount(sourceWallet.currency, convertedAmount.toBigDecimal()),
                 request.description,
                 request.reference,
-                "DEPOSIT",
-                emptyMap()
+                TransferCategory.DEPOSIT
             )
         )
 

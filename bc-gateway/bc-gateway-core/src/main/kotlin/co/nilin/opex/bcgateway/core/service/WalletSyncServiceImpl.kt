@@ -2,7 +2,6 @@ package co.nilin.opex.bcgateway.core.service
 
 import co.nilin.opex.bcgateway.core.api.WalletSyncService
 import co.nilin.opex.bcgateway.core.model.CryptoCurrencyCommand
-import co.nilin.opex.bcgateway.core.model.CurrencyImplementation
 import co.nilin.opex.bcgateway.core.model.Deposit
 import co.nilin.opex.bcgateway.core.model.Transfer
 import co.nilin.opex.bcgateway.core.spi.AssignedAddressHandler
@@ -11,7 +10,6 @@ import co.nilin.opex.bcgateway.core.spi.DepositHandler
 import co.nilin.opex.bcgateway.core.spi.WalletProxy
 import co.nilin.opex.bcgateway.core.utils.LoggerDelegate
 import co.nilin.opex.common.OpexError
-import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.slf4j.Logger
 import org.springframework.stereotype.Service
@@ -30,14 +28,16 @@ class WalletSyncServiceImpl(
 
     @Transactional
     override suspend fun syncTransfers(transfers: List<Transfer>) = coroutineScope {
-        val groupedByChain = currencyHandler.fetchCurrencyImpls()?.imps?.groupBy { it.chain }
+        val groupedByChain = currencyHandler.fetchCurrencyOnChainGateways()?.groupBy { it.chain }
                 ?: throw OpexError.CurrencyNotFound.exception()
         val deposits = transfers.mapNotNull {
             coroutineScope {
 
                 val currencyImpl = groupedByChain[it.chain]?.find { c -> c.tokenAddress == it.tokenAddress }
-                        ?: throw IllegalStateException("Currency implementation not found")
-
+                    ?: run {
+                        logger.info("Currency implementation not found")
+                        return@coroutineScope null
+                    }
                 assignedAddressHandler.findUuid(it.receiver.address, it.receiver.memo)?.let {
                     it to currencyImpl
                 }

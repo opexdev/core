@@ -28,17 +28,17 @@ interface CurrencyRepositoryV2 : ReactiveCrudRepository<CurrencyModel, String> {
 //
     fun findByIsTransitive(isTransitive: Boolean): Flux<CurrencyModel>?
 
-    @Query("select * from currency where (:symbol is null or symbol=:symbol ) and (:uuid is null or uuid=:uuid )  ")
+    @Query("select * from currency where (:symbol is null or symbol=:symbol ) and (:uuid is null or uuid=:uuid ) order by display_order ")
     fun fetchCurrency(uuid: String? = null, symbol: String? = null): Mono<CurrencyModel>?
 
 
     fun findBySymbol(symbol: String? = null): Mono<CurrencyModel>?
 
-    @Query("select * from currency where  (:symbol is null  or symbol like '%' || :symbol || '%' ) and (:name is null  or name like '%' || :name || '%' )  ")
+    @Query("select * from currency where  (:symbol is null  or symbol like '%' || :symbol || '%' ) and (:name is null  or name like '%' || :name || '%' ) order by display_order")
     fun fetchSemiCurrencies( symbol: String? = null, name: String? = null): Flux<CurrencyModel>?
 
 
-    @Query("insert into currency(symbol,uuid,name,precision,title,alias,icon,is_transitive,is_active,sign,description,short_description,withdraw_allowed,deposit_allowed,withdraw_fee,external_url,is_crypto_currency) values(:symbol,:uuid,:name,:precision,:title,:alias,:icon,:isTransitive,:isActive,:sign,:description,:shortDescription,:withdrawAllowed,:depositAllowed,:withdrawFee,:externalUrl,:isCryptoCurrency)  ")
+    @Query("insert into currency(symbol,uuid,name,precision,title,alias,icon,is_transitive,is_active,sign,description,short_description,external_url,display_order) values(:symbol,:uuid,:name,:precision,:title,:alias,:icon,:isTransitive,:isActive,:sign,:description,:shortDescription,:externalUrl,:order)  ")
     fun insert(symbol: String,
                uuid: String,
                name: String,
@@ -51,10 +51,7 @@ interface CurrencyRepositoryV2 : ReactiveCrudRepository<CurrencyModel, String> {
                sign: String? = null,
                description: String? = null,
                shortDescription: String? = null,
-               withdrawAllowed: Boolean? = true,
-               depositAllowed: Boolean? = true,
-               withdrawFee: BigDecimal? = BigDecimal.ZERO,
                externalUrl: String? = null,
-               isCryptoCurrency: Boolean? = false): Mono<Void>
+               order:Int?=null): Mono<Void>
 
 }

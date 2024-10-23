@@ -1,23 +1,15 @@
 package co.nilin.opex.wallet.ports.postgres.impl.sample
 
 import co.nilin.opex.wallet.core.inout.CurrencyCommand
-import co.nilin.opex.wallet.core.model.Amount
-import co.nilin.opex.wallet.core.model.Wallet
-import co.nilin.opex.wallet.core.model.WalletOwner
+import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.ports.postgres.model.WalletLimitsModel
 import java.math.BigDecimal
-import java.util.Currency
+import java.util.UUID
 
 object VALID {
     const val USER_LEVEL_REGISTERED = "registered"
 
-    const val ACTION_WITHDRAW = "withdraw"
-
-    const val ACTION_DEPOSIT = "deposit"
-
-    const val WALLET_TYPE_MAIN = "main"
-
-    val CURRENCY = CurrencyCommand("ETH", null,"Ethereum", BigDecimal.valueOf(0.0001))
+    val CURRENCY = CurrencyCommand("ETH", UUID.randomUUID().toString(),"Ethereum", BigDecimal.valueOf(0.0001))
 
     val WALLET_OWNER = WalletOwner(
         1L,
@@ -29,12 +21,13 @@ object VALID {
         isDepositAllowed = true
     )
 
+
     val WALLET = Wallet(
         1L,
         WALLET_OWNER,
         Amount(CURRENCY, BigDecimal.valueOf(1.5)),
         CURRENCY,
-        WALLET_TYPE_MAIN,
+        WalletType.MAIN,
         0
     )
 
@@ -42,9 +35,9 @@ object VALID {
         1,
         USER_LEVEL_REGISTERED,
         WALLET_OWNER.id,
-        ACTION_WITHDRAW,
-        CURRENCY.symbol!!,
-        WALLET_TYPE_MAIN,
+        WalletLimitAction.WITHDRAW,
+        CURRENCY.symbol,
+        WalletType.MAIN,
         WALLET.id,
         BigDecimal.valueOf(10),
         1,
@@ -52,15 +45,15 @@ object VALID {
         30
     )
 
-    val WALLET_LIMITS_MODEL_DEPOSIT = WALLET_LIMITS_MODEL_WITHDRAW.copy(action = ACTION_DEPOSIT)
+    val WALLET_LIMITS_MODEL_DEPOSIT = WALLET_LIMITS_MODEL_WITHDRAW.copy(action = WalletLimitAction.DEPOSIT)
 
     val USER_LIMITS_MODEL_WITHDRAW = WalletLimitsModel(
         1,
         USER_LEVEL_REGISTERED,
         WALLET_OWNER.id,
-        ACTION_WITHDRAW,
-        CURRENCY.symbol!!,
-        WALLET_TYPE_MAIN,
+        WalletLimitAction.WITHDRAW,
+        CURRENCY.symbol,
+        WalletType.MAIN,
         WALLET.id,
         BigDecimal.valueOf(10),
         1,
@@ -68,5 +61,5 @@ object VALID {
         30
     )
 
-    val USER_LIMITS_MODEL_DEPOSIT = USER_LIMITS_MODEL_WITHDRAW.copy(action = ACTION_DEPOSIT)
+    val USER_LIMITS_MODEL_DEPOSIT = USER_LIMITS_MODEL_WITHDRAW.copy(action = WalletLimitAction.DEPOSIT)
 }

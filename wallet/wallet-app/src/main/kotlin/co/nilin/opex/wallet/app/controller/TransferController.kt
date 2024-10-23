@@ -1,8 +1,10 @@
 package co.nilin.opex.wallet.app.controller
 
-import co.nilin.opex.wallet.app.dto.TransferRequest
+import co.nilin.opex.wallet.app.service.DepositService
 import co.nilin.opex.wallet.app.service.TransferService
 import co.nilin.opex.wallet.core.inout.TransferResult
+import co.nilin.opex.wallet.core.model.TransferCategory
+import co.nilin.opex.wallet.core.model.WalletType
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
@@ -10,13 +12,13 @@ import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 
 @RestController
-class TransferController(private val transferService: TransferService) {
+class TransferController(private val transferService: TransferService,
+        private val depositService: DepositService) {
 
     data class TransferBody(
         val description: String?,
         val transferRef: String?,
-        val transferCategory: String,
-        val additionalData: Map<String, Any>?
+        val transferCategory: TransferCategory
     )
 
     @PostMapping("/v2/transfer/{amount}_{symbol}/from/{senderUuid}_{senderWalletType}/to/{receiverUuid}_{receiverWalletType}")
@@ -31,12 +33,12 @@ class TransferController(private val transferService: TransferService) {
         )
     )
     suspend fun transfer(
-        @PathVariable("symbol") symbol: String,
-        @PathVariable("senderWalletType") senderWalletType: String,
-        @PathVariable("senderUuid") senderUuid: String,
-        @PathVariable("receiverWalletType") receiverWalletType: String,
-        @PathVariable("receiverUuid") receiverUuid: String,
-        @PathVariable("amount") amount: BigDecimal,
+        @PathVariable symbol: String,
+        @PathVariable senderWalletType: WalletType,
+        @PathVariable senderUuid: String,
+        @PathVariable receiverWalletType: WalletType,
+        @PathVariable receiverUuid: String,
+        @PathVariable amount: BigDecimal,
         @RequestBody transferBody: TransferBody
     ): TransferResult {
         return transferService.transfer(
@@ -49,7 +51,6 @@ class TransferController(private val transferService: TransferService) {
             transferBody.description,
             transferBody.transferRef,
             transferBody.transferCategory,
-            transferBody.additionalData
         )
     }
 
@@ -65,14 +66,14 @@ class TransferController(private val transferService: TransferService) {
         )
     )
     suspend fun transfer(
-        @PathVariable("symbol") symbol: String,
-        @PathVariable("senderWalletType") senderWalletType: String,
-        @PathVariable("senderUuid") senderUuid: String,
-        @PathVariable("receiverWalletType") receiverWalletType: String,
-        @PathVariable("receiverUuid") receiverUuid: String,
-        @PathVariable("amount") amount: BigDecimal,
-        @RequestParam("description") description: String?,
-        @RequestParam("transferRef") transferRef: String?,
+        @PathVariable symbol: String,
+        @PathVariable senderWalletType: WalletType,
+        @PathVariable senderUuid: String,
+        @PathVariable receiverWalletType: WalletType,
+        @PathVariable receiverUuid: String,
+        @PathVariable amount: BigDecimal,
+        @RequestParam description: String?,
+        @RequestParam transferRef: String?,
         @RequestBody transferBody: TransferBody
     ): TransferResult {
         return transferService.transfer(
@@ -84,38 +85,10 @@ class TransferController(private val transferService: TransferService) {
             amount,
             description,
             transferRef,
-            transferBody.transferCategory,
-            transferBody.additionalData
+            transferBody.transferCategory
         )
     }
 
-    @PostMapping("/transfer/batch")
-    suspend fun batchTransfer(@RequestBody request: List<TransferRequest>) {
-        transferService.batchTransfer(request)
-    }
 
-
-    @PostMapping("/deposit/{amount}_{chain}_{symbol}/{receiverUuid}_{receiverWalletType}")
-    @ApiResponse(
-        message = "OK",
-        code = 200,
-        examples = Example(
-            ExampleProperty(
-                value = "{ }",
-                mediaType = "application/json"
-            )
-        )
-    )
-    suspend fun deposit(
-            @PathVariable("symbol") symbol: String,
-            @PathVariable("receiverUuid") receiverUuid: String,
-            @PathVariable("receiverWalletType") receiverWalletType: String,
-            @PathVariable("amount") amount: BigDecimal,
-            @RequestParam("description") description: String?,
-            @RequestParam("transferRef") transferRef: String?,
-            @PathVariable("chain") chain: String?
-    ): TransferResult {
-        return transferService.deposit(symbol, receiverUuid, receiverWalletType, amount, description, transferRef, chain)
-    }
 
 }

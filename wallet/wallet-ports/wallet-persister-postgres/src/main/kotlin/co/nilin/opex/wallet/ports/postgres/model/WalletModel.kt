@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.ports.postgres.model
 
+import co.nilin.opex.wallet.core.model.WalletType
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Version
 import org.springframework.data.relational.core.mapping.Column
@@ -8,11 +9,13 @@ import java.math.BigDecimal
 
 @Table("wallet")
 data class WalletModel(
-    @Id @Column("id") val id: Long?,
-    @Column("owner") val owner: Long,
-    @Column("wallet_type") val type: String,
-    @Column("currency") val currency: String,
-    @Column("balance") val balance: BigDecimal,
+    val owner: Long,
+    @Column("wallet_type")
+    val type: WalletType,
+    val currency: String,
+    val balance: BigDecimal,
+    @Id
+    val id: Long? = null,
     @Version
     var version: Long? = null
 )

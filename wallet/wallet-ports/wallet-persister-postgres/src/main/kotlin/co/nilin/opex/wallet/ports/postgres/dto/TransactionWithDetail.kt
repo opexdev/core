@@ -1,12 +1,14 @@
 package co.nilin.opex.wallet.ports.postgres.dto
 
+import co.nilin.opex.wallet.core.model.TransferCategory
+import co.nilin.opex.wallet.core.model.WalletType
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
 data class TransactionWithDetail(
     val id: Long,
-    val srcWallet: String,
-    val destWallet: String,
+    val srcWalletType: WalletType,
+    val destWalletType: WalletType,
     val senderUuid: String,
     val receiverUuid: String,
     val currency: String,
@@ -14,6 +16,5 @@ data class TransactionWithDetail(
     val description: String?,
     val ref: String?,
     val date: LocalDateTime,
-    val category: String,
-    val detail: String?,
+    val category: TransferCategory,
 )

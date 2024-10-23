@@ -22,11 +22,6 @@ CREATE TABLE IF NOT EXISTS assigned_addresses
     UNIQUE (address, memo, exp_time)
 );
 
-ALTER TABLE assigned_addresses ADD COLUMN IF NOT EXISTS assigned_date TIMESTAMP;
-ALTER TABLE assigned_addresses ADD COLUMN IF NOT EXISTS revoked_date TIMESTAMP;
-ALTER TABLE assigned_addresses ADD COLUMN IF NOT EXISTS exp_time TIMESTAMP;
-ALTER TABLE assigned_addresses ADD COLUMN IF NOT EXISTS status VARCHAR(25);
-
 
 
 
@@ -65,12 +60,12 @@ CREATE TABLE IF NOT EXISTS chain_address_types
 --     name   VARCHAR(72) NOT NULL
 -- );
 
-CREATE TABLE IF NOT EXISTS currency_implementations
+CREATE TABLE IF NOT EXISTS currency_on_chain_gateway
 (
     id                    SERIAL PRIMARY KEY,
     currency_symbol       VARCHAR(72) NOT NULL ,
     implementation_symbol VARCHAR(72) NOT NULL,
-    impl_uuid             VARCHAR(256) NOT NULL UNIQUE DEFAULT  uuid_generate_v4(),
+    gateway_uuid             VARCHAR(256) NOT NULL UNIQUE DEFAULT  uuid_generate_v4(),
     chain                 VARCHAR(72) NOT NULL REFERENCES chains (name),
     is_token                 BOOLEAN     NOT NULL,
     token_address         VARCHAR(72),
@@ -79,18 +74,13 @@ CREATE TABLE IF NOT EXISTS currency_implementations
     deposit_allowed      BOOLEAN     NOT NULL,
     withdraw_fee          DECIMAL     NOT NULL,
     withdraw_min          DECIMAL     NOT NULL,
+    withdraw_max          DECIMAL     NOT NULL,
+    deposit_min          DECIMAL     NOT NULL,
+    deposit_max          DECIMAL     NOT NULL,
     decimal               INTEGER     NOT NULL,
     is_active             BOOLEAN     NOT NULL DEFAULT TRUE,
     UNIQUE (currency_symbol, chain, implementation_symbol)
 );
-
-ALTER TABLE currency_implementations DROP CONSTRAINT  IF EXISTS currency_implementations_currency_symbol_fkey;
-ALTER TABLE currency_implementations ADD COLUMN IF NOT EXISTS impl_uuid VARCHAR(256) NOT NULL UNIQUE DEFAULT  uuid_generate_v4();
-ALTER TABLE currency_implementations ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL  DEFAULT TRUE;
-ALTER TABLE currency_implementations RENAME COLUMN withdraw_enabled to withdraw_allowed ;
-ALTER TABLE currency_implementations ADD COLUMN IF NOT EXISTS deposit_allowed BOOLEAN NOT NULL  DEFAULT TRUE;
-ALTER TABLE currency_implementations RENAME COLUMN token to is_token ;
-
 
 
 

@@ -47,6 +47,9 @@ class AssignAddressServiceImplUnitTest {
                 true,
                 true,
                 BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
                 18,
                 ethChain.name,
 //                ethChain
@@ -65,15 +68,18 @@ class AssignAddressServiceImplUnitTest {
                 true,
                 true,
                 BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
                 18,
                 bscChain.name,
 //                bscChain
 
         )
 
-        coEvery { currencyHandler.fetchCurrencyImpls(FetchImpls(currencySymbol = currency)) } returns CurrencyImps(
+        coEvery { currencyHandler.fetchCurrencyOnChainGateways(FetchGateways(currencySymbol = currency)) } returns
                 listOf(eth, wrappedEth)
-        )
+
         coEvery { chainLoader.fetchChainInfo(chain = ethChain.name) } returns ethChain
 
         coEvery { chainLoader.fetchChainInfo(chain = bscChain.name) } returns bscChain

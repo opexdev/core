@@ -1,22 +1,47 @@
 package co.nilin.opex.bcgateway.ports.postgres.util
 
-import co.nilin.opex.bcgateway.core.model.Chain
 import co.nilin.opex.bcgateway.core.model.CryptoCurrencyCommand
-import co.nilin.opex.bcgateway.ports.postgres.model.CurrencyImplementationModel
-import org.modelmapper.ModelMapper
-import java.math.BigDecimal
+import co.nilin.opex.bcgateway.ports.postgres.model.CurrencyOnChainGatewayModel
 
 
-fun CryptoCurrencyCommand.toModel(): CurrencyImplementationModel {
-    return CurrencyImplementationModel(null, implUuid!!, currencySymbol, implementationSymbol, chain, isToken, tokenAddress, tokenName, withdrawAllowed!!, depositAllowed!!, withdrawFee!!, withdrawMin, decimal, isActive
-
-
+fun CryptoCurrencyCommand.toModel(): CurrencyOnChainGatewayModel {
+    return CurrencyOnChainGatewayModel(null, gatewayUuid!!,
+            currencySymbol,
+            implementationSymbol,
+            chain,
+            isToken,
+            tokenAddress,
+            tokenName,
+            withdrawAllowed!!,
+            depositAllowed!!,
+            withdrawFee!!,
+            withdrawMin,
+            withdrawMax,
+            depositMin,
+            depositMax,
+            decimal,
+            isActive
     )
 }
 
-fun CurrencyImplementationModel.toDto(): CryptoCurrencyCommand {
+fun CurrencyOnChainGatewayModel.toDto(): CryptoCurrencyCommand {
 
-    return CryptoCurrencyCommand(currencySymbol, implUuid!!, implementationSymbol, isActive, isToken, tokenName, tokenAddress, withdrawFee, withdrawAllowed, depositAllowed, withdrawMin, decimal, chain)
+    return CryptoCurrencyCommand(currencySymbol,
+            gatewayUuid!!,
+            implementationSymbol,
+            isActive,
+            isToken,
+            tokenName,
+            tokenAddress,
+            withdrawFee,
+            withdrawAllowed,
+            depositAllowed,
+            withdrawMin,
+            withdrawMax,
+            depositMin,
+            depositMax,
+            decimal,
+            chain)
 
 }
 

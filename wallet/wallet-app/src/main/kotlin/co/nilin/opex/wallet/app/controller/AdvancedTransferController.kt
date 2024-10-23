@@ -2,12 +2,13 @@ package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.utility.error.data.OpexException
-import co.nilin.opex.wallet.app.dto.ReservedTransferResponse
-import co.nilin.opex.wallet.app.dto.TransferPreEvaluateResponse
-import co.nilin.opex.wallet.app.dto.TransferReserveRequest
-import co.nilin.opex.wallet.app.dto.TransferReserveResponse
+import co.nilin.opex.wallet.app.dto.*
 import co.nilin.opex.wallet.app.service.TransferService
+import co.nilin.opex.wallet.core.inout.SwapResponse
 import co.nilin.opex.wallet.core.inout.TransferResult
+import co.nilin.opex.wallet.core.model.WalletType
+import co.nilin.opex.wallet.core.model.otc.ReservedTransfer
+import co.nilin.opex.wallet.core.spi.ReservedTransferManager
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
@@ -16,12 +17,19 @@ import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
+import java.security.Principal
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 @RestController
 class AdvancedTransferController {
 
     @Autowired
     lateinit var transferService: TransferService
+
+    @Autowired
+    lateinit var reservedTransferManager: ReservedTransferManager
 
     @GetMapping("/v3/amount/{amount}_{symbol}/{destSymbol}")
     @ApiResponse(
@@ -35,9 +43,9 @@ class AdvancedTransferController {
         )
     )
     suspend fun calculateDestinationAmount(
-        @PathVariable("symbol") symbol: String,
-        @PathVariable("amount") amount: BigDecimal,
-        @PathVariable("destSymbol") destSymbol: String,
+        @PathVariable symbol: String,
+        @PathVariable amount: BigDecimal,
+        @PathVariable destSymbol: String,
     ): TransferPreEvaluateResponse {
         return TransferPreEvaluateResponse(transferService.calculateDestinationAmount(symbol, amount, destSymbol))
     }
@@ -63,16 +71,16 @@ class AdvancedTransferController {
                 throw OpexError.Forbidden.exception()
             request.senderUuid = it.authentication.name
         }
+
         return transferService.reserveTransfer(
             request.sourceAmount,
             request.sourceSymbol,
             request.destSymbol,
             request.senderUuid!!,
-            request.senderWalletType,
+            WalletType.MAIN,
             request.receiverUuid,
-            request.receiverWalletType
+            WalletType.MAIN
         )
-
     }
 
     @PostMapping("/v3/transfer/{reserveUuid}")
@@ -87,9 +95,9 @@ class AdvancedTransferController {
         )
     )
     suspend fun finalizeTransfer(
-        @PathVariable("reserveUuid") reserveUuid: String,
-        @RequestParam("description") description: String?,
-        @RequestParam("transferRef") transferRef: String?,
+        @PathVariable reserveUuid: String,
+        @RequestParam description: String?,
+        @RequestParam transferRef: String?,
         @CurrentSecurityContext securityContext: SecurityContext?
     ): TransferResult {
         return transferService.advanceTransfer(
@@ -99,4 +107,46 @@ class AdvancedTransferController {
             securityContext?.authentication?.name
         )
     }
+
+    @PostMapping("/v1/swap/history")
+    @ApiResponse(
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = "{}",
+                mediaType = "application/json"
+            )
+        )
+    )
+    suspend fun getSwapHistory(
+        @CurrentSecurityContext securityContext: SecurityContext,
+        @RequestBody request: UserTransactionRequest
+
+    ): List<SwapResponse>? {
+        return with(request) {
+            reservedTransferManager.findByCriteria(
+                securityContext.authentication.name,
+                sourceSymbol,
+                destSymbol,
+                startTime?.let {
+                    LocalDateTime.ofInstant(
+                        Instant.ofEpochMilli(it),
+                        ZoneId.systemDefault()
+                    )
+                },
+                endTime?.let {
+                    LocalDateTime.ofInstant(
+                        Instant.ofEpochMilli(it),
+                        ZoneId.systemDefault()
+                    )
+                },
+                limit ?: 10,
+                offset ?: 0,
+                ascendingByTime,
+                status
+            )
+        }
+    }
+
 }

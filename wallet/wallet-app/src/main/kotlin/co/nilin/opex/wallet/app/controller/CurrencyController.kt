@@ -3,9 +3,9 @@ package co.nilin.opex.wallet.app.controller
 import co.nilin.opex.wallet.app.dto.CurrenciesDto
 import co.nilin.opex.wallet.app.dto.CurrencyDto
 import co.nilin.opex.wallet.app.service.CurrencyServiceV2
-import co.nilin.opex.wallet.core.inout.CryptoCurrencyCommand
-import co.nilin.opex.wallet.core.inout.CryptoImps
-import co.nilin.opex.wallet.core.inout.CurrencyPrice
+import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
+import co.nilin.opex.wallet.core.inout.OnChainGatewayCommand
+import co.nilin.opex.wallet.core.inout.GatewayType
 import org.springframework.web.bind.annotation.*
 import java.util.UUID
 
@@ -26,55 +26,80 @@ class CurrencyController(private val currencyService: CurrencyServiceV2) {
 
 
     @GetMapping("/{currencySymbol}")
-    suspend fun getCurrency(@PathVariable("currencySymbol") currencySymbol: String,
-                            @RequestParam("includeImpls") includeImpl: Boolean? = false): CurrencyDto? {
+    suspend fun getCurrency(
+            @PathVariable("currencySymbol") currencySymbol: String,
+            @RequestParam includeManualGateways: Boolean? = false,
+            @RequestParam includeOffChainGateways: Boolean? = false,
+            @RequestParam includeOnChainGateways: Boolean? = false,
+    ): CurrencyDto? {
 
-        return currencyService.fetchCurrencyWithImpls(currencySymbol, includeImpl)
+        val includeGateways = mutableListOf<GatewayType>().apply {
+            if (includeManualGateways == true) add(GatewayType.Manually)
+            if (includeOffChainGateways == true) add(GatewayType.OffChain)
+            if (includeOnChainGateways == true) add(GatewayType.OnChain)
+        }
+        return currencyService.fetchCurrencyWithGateways(currencySymbol, includeGateways)
     }
 
     @GetMapping("")
-    suspend fun getCurrencies(@RequestParam("includeImpls") includeImpl: Boolean? = false): CurrenciesDto? {
-        return currencyService.fetchCurrenciesWithImpls(includeImpl)
+    suspend fun getCurrencies(
+            @RequestParam includeManualGateways: Boolean? = false,
+            @RequestParam includeOffChainGateways: Boolean? = false,
+            @RequestParam includeOnChainGateways: Boolean? = false,
+    ): CurrenciesDto? {
+        val includeGateways = mutableListOf<GatewayType>().apply {
+
+            if (includeManualGateways == true) add(GatewayType.Manually)
+            if (includeOffChainGateways == true) add(GatewayType.OffChain)
+            if (includeOnChainGateways == true) add(GatewayType.OnChain)
+        }
+        return currencyService.fetchCurrenciesWithGateways(includeGateways)
     }
 
 
-    @PostMapping("/{currencySymbol}/impl")
-    suspend fun addImp2Currency(@PathVariable("currencySymbol") currencySymbol: String,
-                                @RequestBody request: CryptoCurrencyCommand): CryptoCurrencyCommand? {
-        return currencyService.addImp2Currency(request.apply {
+    @PostMapping("/{currencySymbol}/gateway")
+    suspend fun addGateway2Currency(@PathVariable("currencySymbol") currencySymbol: String,
+                                @RequestBody request: CurrencyGatewayCommand): CurrencyGatewayCommand? {
+        return currencyService.addGateway2Currency(request.apply {
             this.currencySymbol = currencySymbol
         })
     }
 
-    @PutMapping("{currencySymbol}/impl/{implUuid}")
-    suspend fun updateImpl(@PathVariable("implUuid") implUuid: String,
-                           @PathVariable("currencySymbol") currencySymbol: String,
-                           @RequestBody request: CryptoCurrencyCommand): CryptoCurrencyCommand? {
-        return currencyService.updateImpl(request.apply {
+    @PutMapping("{currencySymbol}/gateway/{gatewayUuid}")
+    suspend fun updateGateway(@PathVariable("gatewayUuid") gatewayUuid: String,
+                              @PathVariable("currencySymbol") currencySymbol: String,
+                              @RequestBody request: CurrencyGatewayCommand): CurrencyGatewayCommand? {
+        return currencyService.updateGateway(request.apply {
             this.currencySymbol = currencySymbol
-            this.implUuid = implUuid
+            this.gatewayUuid = gatewayUuid
         })
     }
 
-    @GetMapping("{currencySymbol}/impl/{implUuid}")
-    suspend fun getImpl(@PathVariable("implUuid") implUuid: String,
-                        @PathVariable("currencySymbol") currencySymbol: String): CryptoCurrencyCommand? {
-        return currencyService.fetchCurrencyImpl(implUuid, currencySymbol)
+    @GetMapping("{currencySymbol}/gateway/{gatewayUuid}")
+    suspend fun getGateway(@PathVariable("gatewayUuid") gatewayUuid: String,
+                           @PathVariable("currencySymbol") currencySymbol: String): CurrencyGatewayCommand? {
+        return currencyService.fetchCurrencyGateway(gatewayUuid, currencySymbol)
     }
 
-    @DeleteMapping("{currencySymbol}/impl/{implUuid}")
-    suspend fun deleteImpl(@PathVariable("implUuid") implUuid: String,
-                           @PathVariable("currencySymbol") currencySymbol: String) {
-        currencyService.deleteImpl(implUuid, currencySymbol)
-    }
-
-
-    @GetMapping("/impls")
-    suspend fun getImpls(): CryptoImps? {
-        return currencyService.fetchImpls()
+    @DeleteMapping("{currencySymbol}/gateway/{gatewayUuid}")
+    suspend fun deleteGateway(@PathVariable("gatewayUuid") gatewayUuid: String,
+                              @PathVariable("currencySymbol") currencySymbol: String) {
+        currencyService.deleteGateway(gatewayUuid, currencySymbol)
     }
 
 
-
+    @GetMapping("/gateways")
+    suspend fun getGateways(
+            @RequestParam includeManualGateways: Boolean? = false,
+            @RequestParam includeOffChainGateways: Boolean? = false,
+            @RequestParam includeOnChainGateways: Boolean? = false,
+    ): List<CurrencyGatewayCommand>? {
+        val includeGateways = mutableListOf<GatewayType>().apply {
+            if (includeManualGateways == true) add(GatewayType.Manually)
+            if (includeOffChainGateways == true) add(GatewayType.OffChain)
+            if (includeOnChainGateways == true) add(GatewayType.OnChain)
+        }
+        return currencyService.fetchGateways(includeGateways)
+    }
 
 }

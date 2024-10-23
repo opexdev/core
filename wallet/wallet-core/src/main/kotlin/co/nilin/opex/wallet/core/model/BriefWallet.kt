@@ -7,5 +7,5 @@ data class BriefWallet(
     val ownerId: Long,
     val balance: BigDecimal,
     val currency: String,
-    val type: String
+    val type: WalletType
 )

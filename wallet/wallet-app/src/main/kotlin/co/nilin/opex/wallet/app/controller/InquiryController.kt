@@ -2,8 +2,10 @@ package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.utility.error.data.OpexException
+import co.nilin.opex.wallet.app.service.CurrencyServiceV2
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.FetchCurrency
+import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
@@ -11,6 +13,7 @@ import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.GetMapping
@@ -22,8 +25,9 @@ import java.math.BigDecimal
 @RestController
 @RequestMapping("/inquiry")
 class InquiryController(
-        val walletManager: WalletManager, val walletOwnerManager: WalletOwnerManager, val currencyService: CurrencyServiceManager
-
+    private val walletManager: WalletManager,
+    private val walletOwnerManager: WalletOwnerManager,
+    @Qualifier("newVersion")  private val currencyService: CurrencyServiceManager
 ) {
     private val logger = LoggerFactory.getLogger(InquiryController::class.java)
 
@@ -41,11 +45,11 @@ class InquiryController(
         )
     )
     suspend fun canFulfill(
-        @PathVariable("uuid") uuid: String,
-        @PathVariable("currency") currency: String,
-        @PathVariable("wallet_type") walletType: String,
-        @PathVariable("amount") amount: BigDecimal,
-        @CurrentSecurityContext securityContext: SecurityContext?
+            @PathVariable uuid: String,
+            @PathVariable currency: String,
+            @PathVariable("wallet_type") walletType: WalletType,
+            @PathVariable amount: BigDecimal,
+            @CurrentSecurityContext securityContext: SecurityContext?
 
     ): BooleanResponse {
         securityContext?.let {

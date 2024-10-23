@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.app.dto
 
+import co.nilin.opex.wallet.core.model.WalletType
 import java.math.BigDecimal
 
 data class TransferReserveRequest(
@@ -7,7 +8,5 @@ data class TransferReserveRequest(
     val sourceSymbol: String,
     val destSymbol: String,
     var senderUuid: String?,
-    val senderWalletType: String,
     val receiverUuid: String,
-    val receiverWalletType: String
 )

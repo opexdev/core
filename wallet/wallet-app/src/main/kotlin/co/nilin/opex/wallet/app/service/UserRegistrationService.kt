@@ -4,6 +4,7 @@ import co.nilin.opex.common.OpexError
 import co.nilin.opex.utility.preferences.Preferences
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.FetchCurrency
+import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
@@ -27,8 +28,9 @@ class UserRegistrationService(
             walletOwnerManager.createWalletOwner(event.uuid, "${event.email}-${event.firstName} ${event.lastName}", "1")
 
         preferences.currencies.forEach {
-            val currency = currencyService.fetchCurrency(FetchCurrency(symbol=it.symbol))?: throw OpexError.CurrencyNotFound.exception()
-            walletManager.createWallet(owner, Amount(currency, it.gift), currency, "main")
+            val currency = currencyService.fetchCurrency(FetchCurrency(symbol = it.symbol))
+                ?: throw OpexError.CurrencyNotFound.exception()
+            walletManager.createWallet(owner, Amount(currency, it.gift), currency, WalletType.MAIN)
         }
     }
 }

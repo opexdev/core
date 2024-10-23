@@ -3,6 +3,7 @@ package co.nilin.opex.wallet.app.controller
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
+import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import io.swagger.annotations.ApiResponse
@@ -37,8 +38,8 @@ class BalanceController(
     )
     suspend fun getBalance(
         principal: Principal,
-        @PathVariable("currency") currency: String,
-        @PathVariable("wallet_type") walletType: String
+        @PathVariable currency: String,
+        @PathVariable("wallet_type") walletType: WalletType
     ): BalanceResponse {
         val owner = walletOwnerManager.findWalletOwner(principal.name)
         if (owner != null) {
@@ -48,7 +49,4 @@ class BalanceController(
         }
         return BalanceResponse(BigDecimal.ZERO)
     }
-
-
-
 }

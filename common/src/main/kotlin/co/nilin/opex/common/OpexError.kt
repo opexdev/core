@@ -17,6 +17,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     InvalidRequestParam(1020, "Parameter '%s' is either missing or invalid", HttpStatus.BAD_REQUEST),
     InvalidRequestBody(1021, "Request body is invalid", HttpStatus.BAD_REQUEST),
     NoRecordFound(1022, "No record found for this service", HttpStatus.NOT_FOUND),
+    ServiceDeprecated(1023, "Service deprecated", HttpStatus.SERVICE_UNAVAILABLE),
 
     // code 2000: accountant
     InvalidPair(2001, "%s is not available", HttpStatus.BAD_REQUEST),
@@ -47,8 +48,8 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     WalletNotFound(6002, null, HttpStatus.NOT_FOUND),
     CurrencyNotFound(6003, null, HttpStatus.NOT_FOUND),
     InvalidCashOutUsage(6004, "Use withdraw services", HttpStatus.BAD_REQUEST),
-    WithdrawNotFound(6005, "Withdraw not found", HttpStatus.NOT_FOUND),
-    NOT_EXCHANGEABLE_CURRENCIES(6006, "These two currencies can't be exchanged", HttpStatus.INTERNAL_SERVER_ERROR),
+    WithdrawNotFound(6005, "No matching withdraw request", HttpStatus.NOT_FOUND),
+    NOT_EXCHANGEABLE_CURRENCIES(6006, "These two currencies can't be exchanged", HttpStatus.NOT_FOUND),
     CurrencyIsExist(6007, null, HttpStatus.BAD_REQUEST),
     PairIsExist(6008, null, HttpStatus.BAD_REQUEST),
     ForbiddenPair(6009, null, HttpStatus.BAD_REQUEST),
@@ -62,13 +63,23 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     CurrentSystemAssetsAreNotEnough(6017, null, HttpStatus.INTERNAL_SERVER_ERROR),
     NotEnoughBalance(6018, null, HttpStatus.BAD_REQUEST),
     WithdrawNotAllowed(6019, null, HttpStatus.BAD_REQUEST),
-
-
     DepositLimitExceeded(6020, "Deposit limit exceeded", HttpStatus.BAD_REQUEST),
     InvalidAmount(6021, "Invalid amount", HttpStatus.BAD_REQUEST),
+    WithdrawAlreadyProcessed(6022, "This withdraw request processed before", HttpStatus.BAD_REQUEST),
+    InvalidAppliedFee(6023, "Applied fee is bigger than accepted fee", HttpStatus.BAD_REQUEST),
+    WithdrawAmountExceedsWalletBalance(6024, "Withdraw amount exceeds wallet balance", HttpStatus.BAD_REQUEST),
+    WithdrawAmountLessThanMinimum(6025, "Withdraw amount is less than minimum", HttpStatus.BAD_REQUEST),
+
+    WithdrawCannotBeCanceled(6026, "Withdraw cannot be canceled", HttpStatus.BAD_REQUEST),
+    WithdrawCannotBeRejected(6027, "Withdraw cannot be rejected", HttpStatus.BAD_REQUEST),
+
+    WithdrawAmountMoreThanMinimum(6028, "Withdraw amount is more than minimum", HttpStatus.BAD_REQUEST),
 
     ImplNotFound(6022, null, HttpStatus.NOT_FOUND),
     InvalidWithdrawStatus(6023, "Withdraw status is invalid", HttpStatus.NOT_FOUND),
+
+    GatewayNotFount(6024, null, HttpStatus.NOT_FOUND),
+    GatewayIsExist(6025, null, HttpStatus.NOT_FOUND),
 
 
 

@@ -2,7 +2,7 @@ package co.nilin.opex.wallet.core.spi
 
 import co.nilin.opex.wallet.core.inout.WalletData
 import co.nilin.opex.wallet.core.inout.WalletTotal
-import co.nilin.opex.wallet.core.inout.WalletType
+import co.nilin.opex.wallet.core.model.WalletType
 
 interface WalletDataManager {
 

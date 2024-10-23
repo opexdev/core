@@ -1,12 +1,7 @@
 package co.nilin.opex.wallet.app.utils
 
 import co.nilin.opex.wallet.app.dto.CurrencyDto
-import co.nilin.opex.wallet.core.inout.CryptoCurrencyCommand
 import co.nilin.opex.wallet.core.inout.CurrencyCommand
-import co.nilin.opex.wallet.core.inout.DepositMethod
-import co.nilin.opex.wallet.core.inout.WithdrawMethod
-import java.math.BigDecimal
-import java.util.*
 
 fun CurrencyCommand.toDto(): CurrencyDto {
     return CurrencyDto(symbol,
@@ -21,15 +16,11 @@ fun CurrencyCommand.toDto(): CurrencyDto {
             sign,
             description,
             shortDescription,
-            withdrawAllowed,
-            depositAllowed,
-            withdrawFee,
-            depositMethods,
-            withdrawMethods,
+            withdrawAllowed ?: false,
+            depositAllowed ?: false,
             externalUrl,
-            isCryptoCurrency,
-            impls,
-            withdrawMin)
+            gateways,
+            availableGatewayType)
 }
 
 

@@ -1,13 +1,11 @@
 package co.nilin.opex.bcgateway.core.model
 
 import java.math.BigDecimal
-import java.util.*
 
 data class CryptoCurrencyCommand(
-
         var currencySymbol: String,
-        var implUuid: String?,
-        var implementationSymbol: String?=currencySymbol,
+        var gatewayUuid: String?,
+        var implementationSymbol: String? = currencySymbol,
         var isActive: Boolean? = true,
         var isToken: Boolean? = false,
         var tokenName: String? = null,
@@ -16,8 +14,13 @@ data class CryptoCurrencyCommand(
         var withdrawAllowed: Boolean? = true,
         var depositAllowed: Boolean? = true,
         val withdrawMin: BigDecimal? = BigDecimal.ZERO,
+        var withdrawMax: BigDecimal? = BigDecimal.ZERO,
+        var depositMin: BigDecimal? = BigDecimal.ZERO,
+        var depositMax: BigDecimal? = BigDecimal.ZERO,
         var decimal: Int,
         var chain: String,
+        var type: String= "OnChain"
+
 //        var chainDetail: Chain? = null
 
 
@@ -25,11 +28,10 @@ data class CryptoCurrencyCommand(
     fun updateTo(newData: CryptoCurrencyCommand): CryptoCurrencyCommand {
         return newData.apply {
             this.currencySymbol = currencySymbol
-            this.implUuid = implUuid
+            this.gatewayUuid = gatewayUuid
         }
     }
 
 }
 
 
-data class CurrencyImps(var imps: List<CryptoCurrencyCommand>?)

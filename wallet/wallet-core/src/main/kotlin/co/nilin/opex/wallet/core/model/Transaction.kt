@@ -10,7 +10,6 @@ data class Transaction(
     val destAmount: BigDecimal,
     val description: String?,
     val transferRef: String?,
-    val transferCategory: String,
-    val additionalData: Map<String, Any>?,
+    val transferCategory: TransferCategory,
     val transactionDate: LocalDateTime
 )

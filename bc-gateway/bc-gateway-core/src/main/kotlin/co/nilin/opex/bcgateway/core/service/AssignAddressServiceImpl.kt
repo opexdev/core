@@ -8,12 +8,10 @@ import co.nilin.opex.bcgateway.core.spi.CryptoCurrencyHandlerV2
 import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
 import co.nilin.opex.bcgateway.core.utils.LoggerDelegate
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.utility.error.data.OpexException
 import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
-import java.time.ZoneId
 
 open class AssignAddressServiceImpl(
         private val currencyHandler: CryptoCurrencyHandlerV2,
@@ -30,9 +28,9 @@ open class AssignAddressServiceImpl(
     override suspend fun assignAddress(user: String, currency: String, chain: String): List<AssignedAddress> {
         logger.info("address life time: " + addressLifeTime.toString())
         addressLifeTime=7200
-        val currencyInfo = currencyHandler.fetchCurrencyImpls(FetchImpls(currencySymbol = currency))
+        val currencyInfo = currencyHandler.fetchCurrencyOnChainGateways(FetchGateways(currencySymbol = currency))
                 ?: throw OpexError.CurrencyNotFound.exception()
-        val chains = currencyInfo?.imps
+        val chains = currencyInfo
                 ?.map { imp -> chainLoader.fetchChainInfo(imp.chain) }
                 ?.filter { it?.name.equals(chain, true) }
         val addressTypes = chains

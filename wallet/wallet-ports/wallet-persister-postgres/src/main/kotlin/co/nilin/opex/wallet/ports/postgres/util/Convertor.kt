@@ -1,102 +1,164 @@
 package co.nilin.opex.wallet.ports.postgres.util
 
-import co.nilin.opex.wallet.core.inout.CryptoCurrencyCommand
-import co.nilin.opex.wallet.core.inout.CurrencyCommand
-import co.nilin.opex.wallet.core.inout.DepositMethod
-import co.nilin.opex.wallet.core.inout.WithdrawMethod
+import co.nilin.opex.wallet.core.inout.*
+import co.nilin.opex.wallet.core.model.DepositStatus
+import co.nilin.opex.wallet.core.model.DepositType
 import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
-import java.math.BigDecimal
 import java.util.*
-import co.nilin.opex.wallet.core.inout.Deposit
 import co.nilin.opex.wallet.ports.postgres.model.DepositModel
+import co.nilin.opex.wallet.ports.postgres.model.ManualGatewayModel
+import co.nilin.opex.wallet.ports.postgres.model.OffChainGatewayModel
+import java.math.BigDecimal
 import java.time.ZoneId
-import java.util.*
 
 
 fun CurrencyCommand.toModel(): CurrencyModel {
     return CurrencyModel(
-            symbol,
-            uuid,
-            name,
-            precision,
-            title,
-            alias,
-            icon,
-            isTransitive,
-            isActive,
-            sign,
-            description,
-            shortDescription,
-            withdrawAllowed,
-            depositAllowed,
-            withdrawFee,
-            externalUrl,
-            isCryptoCurrency,
-            withdrawMin
+        symbol,
+        uuid,
+        name,
+        precision,
+        title,
+        alias,
+        icon,
+        isTransitive,
+        isActive,
+        sign,
+        description,
+        shortDescription,
+        externalUrl,
+        order
     )
 }
 
 fun CurrencyModel.toCommand(): CurrencyCommand {
     return CurrencyCommand(
-            symbol,
-            uuid,
-            name,
-            precision,
-            title,
-            alias,
-            icon,
-            isTransitive,
-            isActive,
-            sign,
-            description,
-            shortDescription,
-            withdrawAllowed,
-            depositAllowed,
-            withdrawFee,
-            null,
-            null,
-            externalUrl,
-            isCryptoCurrency,
-            null,
-            withdrawMin
+        symbol,
+        uuid,
+        name,
+        precision,
+        title,
+        alias,
+        icon,
+        isTransitive,
+        isActive,
+        sign,
+        description,
+        shortDescription,
+        false,
+        false,
+        externalUrl,
+        null,
+        null,
+        order
     )
 }
 
 
 fun Deposit.toModel(): DepositModel {
-    return DepositModel(null,
-            ownerUuid,
-            depositUuid,
-            currency,
-            amount,
-            acceptedFee,
-            appliedFee,
-            sourceSymbol,
-            network,
-            sourceAddress,
-            note,
-            transactionRef,
-            status,
-            depositType,
-            createDate?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalDateTime())
+    return DepositModel(
+        id,
+        ownerUuid,
+        depositUuid,
+        currency,
+        amount,
+        acceptedFee,
+        appliedFee,
+        sourceSymbol,
+        network,
+        sourceAddress,
+        note,
+        transactionRef,
+        status,
+        depositType,
+        createDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(),
+    )
 }
 
 
 fun DepositModel.toDto(): Deposit {
     return Deposit(
-            ownerUuid,
-            depositUuid,
-            currency,
-            amount,
-            acceptedFee,
-            appliedFee,
-            sourceSymbol,
-            network,
-            sourceAddress,
-            note,
-            transactionRef,
-            status,
-            depositType,
-             Date.from(createDate?.atZone(ZoneId.systemDefault())?.toInstant())
+        ownerUuid,
+        depositUuid,
+        currency,
+        amount,
+        acceptedFee,
+        appliedFee,
+        sourceSymbol,
+        network,
+        sourceAddress,
+        transactionRef,
+        note,
+        status,
+        depositType,
+        Date.from(createDate.atZone(ZoneId.systemDefault())?.toInstant()),
+        id
+    )
+}
+
+
+fun OffChainGatewayModel.toDto(): CurrencyGatewayCommand {
+    return OffChainGatewayCommand(
+        TransferMethod.valueOf(transferMethod),
+        currencySymbol,
+        gatewayUuid,
+        isActive,
+        withdrawFee,
+        withdrawAllowed,
+        depositAllowed,
+        depositMin,
+        depositMax,
+        withdrawMin,
+        withdrawMax
+    )
+
+}
+
+fun OffChainGatewayCommand.toModel(): OffChainGatewayModel {
+    return OffChainGatewayModel(
+        null, gatewayUuid!!,
+        currencySymbol!!,
+        withdrawAllowed,
+        depositAllowed,
+        withdrawFee,
+        withdrawMin,
+        withdrawMax,
+        depositMin,
+        depositMax,
+        transferMethod.name,
+        isActive
+    )
+}
+
+fun ManualGatewayModel.toDto(): ManualGatewayCommand {
+    return ManualGatewayCommand(
+        allowedFor,
+        currencySymbol,
+        gatewayUuid,
+        isActive,
+        withdrawFee,
+        withdrawAllowed,
+        depositAllowed,
+        depositMin,
+        depositMax,
+        withdrawMin,
+        withdrawMax
+    )
+}
+
+fun ManualGatewayCommand.toModel(): ManualGatewayModel {
+    return ManualGatewayModel(
+        null,
+        gatewayUuid!!,
+        currencySymbol!!,
+        allowedFor,
+        withdrawAllowed,
+        depositAllowed,
+        withdrawFee,
+        withdrawMin,
+        withdrawMax,
+        depositMin,
+        depositMax,
+        isActive
     )
 }

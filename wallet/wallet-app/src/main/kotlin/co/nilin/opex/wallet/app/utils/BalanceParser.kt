@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.app.utils
 
 import co.nilin.opex.wallet.app.dto.WalletData
 import co.nilin.opex.wallet.core.model.Wallet
+import co.nilin.opex.wallet.core.model.WalletType
 import java.math.BigDecimal
 
 object BalanceParser {
@@ -12,9 +13,9 @@ object BalanceParser {
         for (w in list) {
             result.addOrGet(w.currency.symbol).apply {
                 when (w.type) {
-                    "main" -> balance = w.balance.amount
-                    "exchange" -> locked = w.balance.amount
-                    "cashout" -> withdraw = w.balance.amount
+                    WalletType.MAIN -> balance = w.balance.amount
+                    WalletType.EXCHANGE -> locked = w.balance.amount
+                    WalletType.CASHOUT -> withdraw = w.balance.amount
                 }
             }
         }
@@ -31,9 +32,9 @@ object BalanceParser {
                 throw IllegalStateException("Found multiple currencies while parsing for single")
 
             when (w.type) {
-                "main" -> result.balance = w.balance.amount
-                "exchange" -> result.locked = w.balance.amount
-                "cashout" -> result.withdraw = w.balance.amount
+                WalletType.MAIN -> result.balance = w.balance.amount
+                WalletType.EXCHANGE -> result.locked = w.balance.amount
+                WalletType.CASHOUT -> result.withdraw = w.balance.amount
             }
         }
         return result

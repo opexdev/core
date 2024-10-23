@@ -41,11 +41,6 @@ class WalletKafkaConfig(private val environment: Environment) {
 
     @Bean("consumerConfigs")
     fun consumerConfigs(): Map<String, Any?> {
-        logger.info("=======================")
-        this.environment.activeProfiles.toList().forEach {
-            (logger.info(it));
-            logger.info("------------")
-        }
         return mapOf(
                 ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
                 ConsumerConfig.GROUP_ID_CONFIG to groupId,

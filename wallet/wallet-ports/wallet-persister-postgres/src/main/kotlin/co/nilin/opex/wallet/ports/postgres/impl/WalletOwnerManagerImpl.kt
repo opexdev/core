@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.model.WalletLimitAction
 import co.nilin.opex.wallet.core.model.WalletOwner
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import co.nilin.opex.wallet.ports.postgres.dao.*
@@ -32,13 +33,13 @@ class WalletOwnerManagerImpl(
 
     override suspend fun isDepositAllowed(owner: WalletOwner, amount: Amount): Boolean {
         require(amount.amount >= BigDecimal.ZERO)
-        var evaluate = limitsRepository.findByOwnerAndAction(owner.id!!, "deposit")
+        var evaluate = limitsRepository.findByOwnerAndAction(owner.id!!, WalletLimitAction.DEPOSIT)
             .map { limit -> evaluateLimit(amount.amount, limit, owner, true) }
             .onEmpty { emit(true) }
             .reduce { a, b -> a && b }
 
         if (evaluate) {
-            evaluate = limitsRepository.findByLevelAndAction(owner.level, "deposit")
+            evaluate = limitsRepository.findByLevelAndAction(owner.level, WalletLimitAction.DEPOSIT)
                 .map { limit -> evaluateLimit(amount.amount, limit, owner, true) }
                 .onEmpty { emit(true) }
                 .reduce { a, b -> a && b }
@@ -50,13 +51,13 @@ class WalletOwnerManagerImpl(
 
     override suspend fun isWithdrawAllowed(owner: WalletOwner, amount: Amount): Boolean {
         require(amount.amount >= BigDecimal.ZERO)
-        var evaluate = limitsRepository.findByOwnerAndAction(owner.id!!, "withdraw")
+        var evaluate = limitsRepository.findByOwnerAndAction(owner.id!!, WalletLimitAction.WITHDRAW)
             .map { limit -> evaluateLimit(amount.amount, limit, owner, false) }
             .onEmpty { emit(true) }
             .reduce { a, b -> a && b }
 
         if (evaluate) {
-            evaluate = limitsRepository.findByLevelAndAction(owner.level, "withdraw")
+            evaluate = limitsRepository.findByLevelAndAction(owner.level, WalletLimitAction.WITHDRAW)
                 .map { limit -> evaluateLimit(amount.amount, limit, owner, false) }
                 .onEmpty { emit(true) }
                 .reduce { a, b -> a && b }

@@ -11,59 +11,64 @@ import java.util.UUID
 @RequestMapping("/crypto-currency")
 class CryptoCurrencyController(val cryptoCurrencyHandler: CryptoCurrencyHandlerV2, private val chainLoader: ChainLoader) {
 
-    @PostMapping("/{currencySymbol}/impl")
-    suspend fun addNewCurrencyImpl(
+    @PostMapping("/{currencySymbol}/gateway")
+    suspend fun addNewCurrencyGateway(
             @PathVariable("currencySymbol") currencySymbol: String,
             @RequestBody request: CryptoCurrencyCommand
     ): CryptoCurrencyCommand? {
-        return cryptoCurrencyHandler.createImpl(request.apply {
-            this.implUuid = UUID.randomUUID().toString()
+        return cryptoCurrencyHandler.createOnChainGateway(request.apply {
             this.currencySymbol = currencySymbol
         })
     }
 
 
-    @PutMapping("/{currency}/impl/{implUuid}")
-    suspend fun updateCurrencyImpl(
+    @PutMapping("/{currency}/gateway/{gatewayUuid}")
+    suspend fun updateCurrencyGateway(
             @PathVariable("currency") currencySymbol: String,
-            @PathVariable("implUuid") implUuid: String,
+            @PathVariable("gatewayUuid") gatewayUuid: String,
             @RequestBody request: CryptoCurrencyCommand
     ): CryptoCurrencyCommand? {
-        return cryptoCurrencyHandler.updateImpl(request.apply {
+        return cryptoCurrencyHandler.updateOnChainGateway(request.apply {
             this.currencySymbol = currencySymbol
-            this.implUuid = implUuid
+            this.gatewayUuid = gatewayUuid
         })
     }
 
 
-    @DeleteMapping("/{currency}/impl/{implUuid}")
-    suspend fun deleteCurrencyImpl(
+    @DeleteMapping("/{currency}/gateway/{gatewayUuid}")
+    suspend fun deleteCurrencyGateway(
             @PathVariable("currency") currencySymbol: String,
-            @PathVariable("implUuid") implUuid: String,
+            @PathVariable("gatewayUuid") gatewayUuid: String,
     ):Void? {
-       return cryptoCurrencyHandler.deleteImpl(
-                implUuid, currencySymbol)
+       return cryptoCurrencyHandler.deleteOnChainGateway(
+                gatewayUuid, currencySymbol)
     }
 
-    @GetMapping("/impls")
-    suspend fun fetchImpls(@RequestParam("currency") currencySymbol: String? = null): CurrencyImps? {
-        return cryptoCurrencyHandler.fetchCurrencyImpls(FetchImpls(currencySymbol = currencySymbol))
+    @GetMapping("/gateways")
+    suspend fun fetchGateways(@RequestParam("currency") currencySymbol: String? = null): List<CryptoCurrencyCommand>? {
+        return cryptoCurrencyHandler.fetchCurrencyOnChainGateways(FetchGateways(currencySymbol = currencySymbol))
     }
 
-    @GetMapping("/{currency}/impls")
-    suspend fun fetchCurrencyImpls(@PathVariable("currency") currencySymbol: String): CurrencyImps? {
-        return cryptoCurrencyHandler.fetchCurrencyImpls(FetchImpls(currencySymbol = currencySymbol))
+    @GetMapping("/{currency}/gateways")
+    suspend fun fetchCurrencyGateways(@PathVariable("currency") currencySymbol: String): List<CryptoCurrencyCommand>?? {
+        return cryptoCurrencyHandler.fetchCurrencyOnChainGateways(FetchGateways(currencySymbol = currencySymbol))
     }
 
-    @GetMapping("/{currency}/impl/{implUuid}")
-    suspend fun fetchSpecificImpl(@PathVariable("implUuid") implUuid: String,
-                                  @PathVariable("currency") currencySymbol: String): CurrencyImps? {
-        return cryptoCurrencyHandler.fetchCurrencyImpls(FetchImpls(implUuid = implUuid, currencySymbol = currencySymbol))
+    @GetMapping("/{currency}/gateway/{gatewayUuid}")
+    suspend fun fetchSpecificGateway(@PathVariable("gatewayUuid") gatewayUuid: String,
+                                  @PathVariable("currency") currencySymbol: String): CryptoCurrencyCommand? {
+        return cryptoCurrencyHandler.fetchOnChainGateway(gatewayUuid,currencySymbol)
     }
 
     @GetMapping("/chain")
     suspend fun getChains(): List<ChainResponse> {
         return chainLoader.fetchAllChains().map { c -> ChainResponse(c.name, c.addressTypes.map { it.type }) }
+    }
+
+
+    @GetMapping("/{currency}/network/{network}/withdrawData")
+    suspend fun getFeeForCurrency(@PathVariable currency: String, @PathVariable network: String): WithdrawData {
+        return cryptoCurrencyHandler.getWithdrawData(currency, network)
     }
 
 }

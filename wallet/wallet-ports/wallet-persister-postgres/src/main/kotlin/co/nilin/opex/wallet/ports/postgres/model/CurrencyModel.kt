@@ -25,16 +25,8 @@ data class CurrencyModel(
         var description: String? = null,
         @Column("short_description")
         var shortDescription: String? = null,
-        @Column("withdraw_allowed")
-        var withdrawAllowed: Boolean? = true,
-        @Column("deposit_allowed")
-        var depositAllowed: Boolean? = true,
-        @Column("withdraw_fee")
-        var withdrawFee: BigDecimal?=BigDecimal.ZERO,
         @Column("external_url")
         var externalUrl: String? = null,
-        @Column("is_crypto_currency")
-        var isCryptoCurrency: Boolean? = false,
-        @Column("withdraw_min")
-        var withdrawMin: BigDecimal?=BigDecimal.ZERO,
+        @Column("display_order")
+        var order:Int?=null
 )
