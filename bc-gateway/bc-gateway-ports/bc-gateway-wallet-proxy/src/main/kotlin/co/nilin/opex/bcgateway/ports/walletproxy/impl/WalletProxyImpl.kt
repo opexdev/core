@@ -45,7 +45,7 @@ class WalletProxyImpl(
 
         val token = extractBackgroundAuth.extractToken()
         webClient.post()
-            .uri(URI.create("$baseUrl/deposit/${amount}_${chain}_${symbol}/${uuid}_MAIN?transferRef=$hash?gatewayUuid=$gatewayUuid"))
+            .uri(URI.create("$baseUrl/deposit/${amount}_${chain}_${symbol}/${uuid}_MAIN?transferRef=$hash&gatewayUuid=$gatewayUuid"))
             .headers { httpHeaders ->
                 run {
                     httpHeaders.add("Content-Type", "application/json");

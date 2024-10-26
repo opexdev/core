@@ -70,10 +70,11 @@ class DepositService(
         depositType: DepositType,
         gatewayUuid: String?
     ): TransferResult? {
+        logger.info("A ${depositType.name} deposit tx on $symbol-$chain was received for $receiverUuid .......")
         var status = DepositStatus.DONE
         val gatewayData = _fetchDepositData(gatewayUuid, symbol, depositType)
         if (!(gatewayData.isEnabled && amount < gatewayData.minimum && amount > gatewayData.maximum)) {
-            logger.info("An invalid deposit command was received :$symbol-$chain-$receiverUuid-$amount")
+            logger.info("An invalid deposit command :$symbol-$chain-$receiverUuid-$amount")
             status = DepositStatus.INVALID
 
         }
@@ -93,6 +94,7 @@ class DepositService(
             )
         )
         if (status == DepositStatus.DONE) {
+            logger.info("Going to charge wallet on a ${depositType.name} deposit event :$symbol-$chain-$receiverUuid-$amount")
             return transferService.transfer(
                 symbol,
                 WalletType.MAIN,
