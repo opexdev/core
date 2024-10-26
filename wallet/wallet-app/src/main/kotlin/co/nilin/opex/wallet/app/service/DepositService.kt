@@ -73,7 +73,7 @@ class DepositService(
         logger.info("A ${depositType.name} deposit tx on $symbol-$chain was received for $receiverUuid .......")
         var status = DepositStatus.DONE
         val gatewayData = _fetchDepositData(gatewayUuid, symbol, depositType)
-        if (!(gatewayData.isEnabled && amount < gatewayData.minimum && amount > gatewayData.maximum)) {
+        if (!(gatewayData.isEnabled && amount > gatewayData.minimum && amount < gatewayData.maximum)) {
             logger.info("An invalid deposit command :$symbol-$chain-$receiverUuid-$amount")
             status = DepositStatus.INVALID
 
