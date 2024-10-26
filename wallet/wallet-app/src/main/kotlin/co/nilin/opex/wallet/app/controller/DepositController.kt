@@ -60,7 +60,7 @@ class DepositController(
         @PathVariable amount: BigDecimal,
         @RequestParam description: String?,
         @RequestParam transferRef: String?,
-        @RequestParam gatewayUUuid: String?,
+        @RequestParam gatewayUuid: String?,
         @PathVariable chain: String?
     ): TransferResult? {
         return depositService.deposit(
@@ -72,7 +72,7 @@ class DepositController(
             transferRef,
             chain,
             depositType = DepositType.ON_CHAIN,
-            gatewayUuid = gatewayUUuid
+            gatewayUuid = gatewayUuid
         )
     }
 
