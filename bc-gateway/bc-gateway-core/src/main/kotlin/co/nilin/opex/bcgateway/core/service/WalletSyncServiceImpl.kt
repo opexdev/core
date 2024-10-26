@@ -18,10 +18,10 @@ import java.math.BigDecimal
 
 @Service
 class WalletSyncServiceImpl(
-        private val walletProxy: WalletProxy,
-        private val assignedAddressHandler: AssignedAddressHandler,
-        private val currencyHandler: CryptoCurrencyHandlerV2,
-        private val depositHandler: DepositHandler
+    private val walletProxy: WalletProxy,
+    private val assignedAddressHandler: AssignedAddressHandler,
+    private val currencyHandler: CryptoCurrencyHandlerV2,
+    private val depositHandler: DepositHandler
 ) : WalletSyncService {
 
     private val logger: Logger by LoggerDelegate()
@@ -29,7 +29,7 @@ class WalletSyncServiceImpl(
     @Transactional
     override suspend fun syncTransfers(transfers: List<Transfer>) = coroutineScope {
         val groupedByChain = currencyHandler.fetchCurrencyOnChainGateways()?.groupBy { it.chain }
-                ?: throw OpexError.CurrencyNotFound.exception()
+            ?: throw OpexError.CurrencyNotFound.exception()
         val deposits = transfers.mapNotNull {
             coroutineScope {
 
@@ -48,14 +48,14 @@ class WalletSyncServiceImpl(
             }
         }.map {
             Deposit(
-                    null,
-                    it.txHash,
-                    it.receiver.address,
-                    it.receiver.memo,
-                    it.amount,
-                    it.chain,
-                    it.isTokenTransfer,
-                    it.tokenAddress
+                null,
+                it.txHash,
+                it.receiver.address,
+                it.receiver.memo,
+                it.amount,
+                it.chain,
+                it.isTokenTransfer,
+                it.tokenAddress
             )
         }.toList()
         depositHandler.saveAll(deposits)
@@ -65,6 +65,6 @@ class WalletSyncServiceImpl(
         val amount = transfer.amount.divide(BigDecimal.TEN.pow(currencyImpl.decimal))
         val symbol = currencyImpl.currencySymbol
         logger.info("Sending deposit to $uuid - $amount $symbol")
-        walletProxy.transfer(uuid, symbol, amount, transfer.txHash,transfer.chain)
+        walletProxy.transfer(uuid, symbol, amount, transfer.txHash, transfer.chain, currencyImpl.gatewayUuid)
     }
 }

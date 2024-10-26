@@ -3,7 +3,7 @@ package co.nilin.opex.wallet.ports.postgres.impl
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
 import co.nilin.opex.wallet.core.inout.ManualGatewayCommand
-import co.nilin.opex.wallet.core.inout.WithdrawData
+import co.nilin.opex.wallet.core.inout.GatewayData
 import co.nilin.opex.wallet.core.model.FetchGateways
 import co.nilin.opex.wallet.core.spi.GatewayPersister
 import co.nilin.opex.wallet.ports.postgres.dao.ManualGatewayRepository
@@ -42,7 +42,7 @@ class ManualGatewayManagerImpl(private val manualGatewayRepository: ManualGatewa
     }
 
 
-    override suspend fun getWithdrawData(symbol: String, network: String): WithdrawData {
+    override suspend fun getWithdrawData(symbol: String, network: String): GatewayData {
         TODO("Not yet implemented")
     }
 

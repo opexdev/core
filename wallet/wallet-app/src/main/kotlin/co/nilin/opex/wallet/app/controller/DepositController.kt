@@ -3,6 +3,7 @@ package co.nilin.opex.wallet.app.controller
 import co.nilin.opex.wallet.app.dto.*
 import co.nilin.opex.wallet.app.service.DepositService
 import co.nilin.opex.wallet.core.inout.*
+import co.nilin.opex.wallet.core.model.DepositType
 import co.nilin.opex.wallet.core.model.WalletType
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
@@ -59,8 +60,9 @@ class DepositController(
         @PathVariable amount: BigDecimal,
         @RequestParam description: String?,
         @RequestParam transferRef: String?,
+        @RequestParam gatewayUUuid: String?,
         @PathVariable chain: String?
-    ): TransferResult {
+    ): TransferResult? {
         return depositService.deposit(
             symbol,
             receiverUuid,
@@ -68,7 +70,9 @@ class DepositController(
             amount,
             description,
             transferRef,
-            chain
+            chain,
+            depositType = DepositType.ON_CHAIN,
+            gatewayUuid = gatewayUUuid
         )
     }
 

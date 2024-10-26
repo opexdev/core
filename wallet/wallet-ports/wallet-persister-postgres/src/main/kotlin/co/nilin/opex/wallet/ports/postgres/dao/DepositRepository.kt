@@ -24,6 +24,7 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
             and (:currency is null or currency = :currency)
             and (:startTime is null or create_date > :startTime )
             and (:endTime is null or create_date <= :endTime)
+            and status="DONE"
         order by  CASE WHEN :ascendingByTime=true THEN create_date END ASC,
                   CASE WHEN :ascendingByTime=false THEN create_date END DESC
         limit :limit

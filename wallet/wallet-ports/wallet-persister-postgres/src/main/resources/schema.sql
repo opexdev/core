@@ -119,10 +119,13 @@ CREATE TABLE IF NOT EXISTS withdraws
     status_reason        TEXT,
     status               VARCHAR(20),
     create_date          TIMESTAMP   NOT NULL,
-    last_update_date          TIMESTAMP,
-    applicator            VARCHAR(80),
-    withdraw_type    VARCHAR(255)
+    last_update_date     TIMESTAMP,
+    applicator           VARCHAR(80),
+    withdraw_type        VARCHAR(255),
+    attachment           VARCHAR(255)
     );
+
+ALTER TABLE withdraws add COLUMN  IF NOT EXISTS  attachment VARCHAR(255);
 
 CREATE TABLE IF NOT EXISTS rate
 (
@@ -184,8 +187,11 @@ CREATE TABLE IF NOT EXISTS deposits
     transaction_ref VARCHAR(255),
     status          VARCHAR(255),
     deposit_type    VARCHAR(255),
-    create_date     TIMESTAMP
+    create_date     TIMESTAMP,
+    attachment VARCHAR(255)
 );
+ALTER TABLE deposits add COLUMN  IF NOT EXISTS  attachment VARCHAR(255);
+
 
 
 CREATE TABLE IF NOT EXISTS currency_off_chain_gateway

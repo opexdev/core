@@ -81,6 +81,8 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     GatewayNotFount(6024, null, HttpStatus.NOT_FOUND),
     GatewayIsExist(6025, null, HttpStatus.NOT_FOUND),
 
+    WalletChargeIsImpossible(6026, "Charging the wallet is impossible", HttpStatus.BAD_REQUEST),
+
 
 
     // code 7000: api

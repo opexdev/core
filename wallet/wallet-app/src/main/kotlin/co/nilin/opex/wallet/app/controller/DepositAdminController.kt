@@ -39,7 +39,7 @@ class DepositAdminController(private val depositService: DepositService) {
         @PathVariable("amount") amount: BigDecimal,
         @RequestBody request: ManualTransferRequest,
         @CurrentSecurityContext securityContext: SecurityContext
-    ): TransferResult {
+    ): TransferResult? {
         return depositService.depositManually(
             symbol, receiverUuid,
             securityContext.authentication.name, amount, request
