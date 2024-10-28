@@ -14,10 +14,12 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.*
+import kotlin.concurrent.thread
 
 @Service
 class DepositService(
@@ -96,7 +98,8 @@ class DepositService(
             logger.info("An invalid deposit command : $symbol-$chain-$receiverUuid-$amount")
             depositCommand.status = DepositStatus.INVALID
         }
-
+        logger.info("main thread name:")
+        logger.info(Thread.currentThread().name)
         saveDepositInNewTransaction(depositCommand)
 
         if (depositCommand.status == DepositStatus.DONE) {
@@ -116,10 +119,11 @@ class DepositService(
 
     }
 
-    private suspend fun saveDepositInNewTransaction(deposit: Deposit) {
-        withContext(Dispatchers.IO) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    suspend fun saveDepositInNewTransaction(deposit: Deposit) {
+        logger.info("new thread name:")
+        logger.info(Thread.currentThread().name)
             depositPersister.persist(deposit)  // Saves outside the main transaction context
-        }
     }
 
     fun isValidDeposit(depositCommand: Deposit, gatewayData: GatewayData): Boolean {
