@@ -9,7 +9,9 @@ import co.nilin.opex.wallet.core.model.DepositType
 import co.nilin.opex.wallet.core.model.TransferCategory
 import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.spi.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -94,11 +96,8 @@ class DepositService(
             logger.info("An invalid deposit command : $symbol-$chain-$receiverUuid-$amount")
             depositCommand.status = DepositStatus.INVALID
         }
-        coroutineScope {
-            depositPersister.persist(
-                depositCommand
-            )
-        }
+
+        saveDepositInNewTransaction(depositCommand)
 
         if (depositCommand.status == DepositStatus.DONE) {
             logger.info("Going to charge wallet on a ${depositType.name} deposit event :$symbol-$chain-$receiverUuid-$amount")
@@ -114,8 +113,14 @@ class DepositService(
                 TransferCategory.DEPOSIT,
             )
         } else throw OpexError.InvalidDeposit.exception()
+
     }
 
+    private suspend fun saveDepositInNewTransaction(deposit: Deposit) {
+        withContext(Dispatchers.IO) {
+            depositPersister.persist(deposit)  // Saves outside the main transaction context
+        }
+    }
 
     fun isValidDeposit(depositCommand: Deposit, gatewayData: GatewayData): Boolean {
         return gatewayData.isEnabled && depositCommand.amount > gatewayData.minimum && depositCommand.amount < gatewayData.maximum
@@ -129,7 +134,7 @@ class DepositService(
     ): GatewayData {
 
         gatewayUuid?.let {
-            currencyService.fetchCurrencyGateway(gatewayUuid!!, symbol)?.let {
+            currencyService.fetchCurrencyGateway(gatewayUuid, symbol)?.let {
                 when (it) {
                     is OnChainGatewayCommand -> {
                         depositCommand.depositType = DepositType.ON_CHAIN
@@ -163,9 +168,9 @@ class DepositService(
                 }
 
 
-            }?: throw OpexError.GatewayNotFount.exception()
+            } ?: throw OpexError.GatewayNotFount.exception()
 
-        }?: return GatewayData(true, BigDecimal.ZERO, BigDecimal.ZERO, null)
+        } ?: return GatewayData(true, BigDecimal.ZERO, BigDecimal.ZERO, null)
     }
 
     suspend fun findDepositHistory(
