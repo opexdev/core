@@ -1,14 +1,11 @@
 package co.nilin.opex.wallet.ports.postgres.util
 
 import co.nilin.opex.wallet.core.inout.*
-import co.nilin.opex.wallet.core.model.DepositStatus
-import co.nilin.opex.wallet.core.model.DepositType
 import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
 import java.util.*
 import co.nilin.opex.wallet.ports.postgres.model.DepositModel
 import co.nilin.opex.wallet.ports.postgres.model.ManualGatewayModel
 import co.nilin.opex.wallet.ports.postgres.model.OffChainGatewayModel
-import java.math.BigDecimal
 import java.time.ZoneId
 
 

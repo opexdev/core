@@ -3,7 +3,7 @@ package co.nilin.opex.wallet.app.controller
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.AdminSearchWithdrawRequest
 import co.nilin.opex.wallet.app.dto.ManualTransferRequest
-import co.nilin.opex.wallet.app.service.TransferService
+import co.nilin.opex.wallet.app.service.ManualWithdrawService
 import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.service.WithdrawService
 import io.swagger.annotations.ApiResponse
@@ -21,7 +21,7 @@ import java.time.ZoneId
 @RequestMapping("/admin/withdraw")
 class WithdrawAdminController(
     private val withdrawService: WithdrawService,
-    private val transferService: TransferService
+    private val manualWithdrawService: ManualWithdrawService
 ) {
     data class WithdrawRejectRequest(val reason: String, val attachment: String?)
     data class WithdrawAcceptRequest(
@@ -117,7 +117,7 @@ class WithdrawAdminController(
         @RequestBody request: ManualTransferRequest,
         @CurrentSecurityContext securityContext: SecurityContext
     ): TransferResult {
-        return transferService.withdrawManually(
+        return manualWithdrawService.withdrawManually(
             symbol,
             securityContext.authentication.name,
             sourceUuid,

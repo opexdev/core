@@ -15,13 +15,23 @@ import org.springframework.stereotype.Service
 
 @Service("manualGateway")
 class ManualGatewayManagerImpl(private val manualGatewayRepository: ManualGatewayRepository) : GatewayPersister {
-    override suspend fun createGateway(currencyGateway: CurrencyGatewayCommand, internalToken: String?): CurrencyGatewayCommand? {
-        return _save((currencyGateway as ManualGatewayCommand).toModel())?.toDto()
+    override suspend fun createGateway(
+        currencyGateway: CurrencyGatewayCommand,
+        internalToken: String?
+    ): CurrencyGatewayCommand? {
+        var input = currencyGateway as ManualGatewayCommand
+        manualGatewayRepository.findByCurrencySymbolAndAllowedFor(input.currencySymbol!!, input.allowedFor)
+            ?.awaitFirstOrNull()
+            ?.let { throw OpexError.GatewayIsExist.exception() }
+        return _save((input).toModel())?.toDto()
     }
 
-    override suspend fun updateGateway(currencyGateway: CurrencyGatewayCommand, internalToken: String?): CurrencyGatewayCommand? {
+    override suspend fun updateGateway(
+        currencyGateway: CurrencyGatewayCommand,
+        internalToken: String?
+    ): CurrencyGatewayCommand? {
         val oldGateway = _fetchGateway(currencyGateway.currencySymbol!!, currencyGateway.gatewayUuid!!)
-                ?: throw OpexError.GatewayNotFount.exception()
+            ?: throw OpexError.GatewayNotFount.exception()
         return _save((currencyGateway as ManualGatewayCommand).toModel().apply { id = oldGateway.id })?.toDto()
     }
 
@@ -30,7 +40,11 @@ class ManualGatewayManagerImpl(private val manualGatewayRepository: ManualGatewa
     }
 
 
-    override suspend fun fetchGatewayDetail(gatewayUuid: String, currencySymbol: String, internalToken: String?): CurrencyGatewayCommand? {
+    override suspend fun fetchGatewayDetail(
+        gatewayUuid: String,
+        currencySymbol: String,
+        internalToken: String?
+    ): CurrencyGatewayCommand? {
         return _fetchGateway(currencySymbol, gatewayUuid)?.toDto()
     }
 
@@ -52,10 +66,12 @@ class ManualGatewayManagerImpl(private val manualGatewayRepository: ManualGatewa
 
 
     private suspend fun _fetchGateway(currencySymbol: String, gatewayUuid: String): ManualGatewayModel? {
-        return manualGatewayRepository.findByGatewayUuidAndCurrencySymbol(gatewayUuid, currencySymbol)?.awaitFirstOrNull()
+        return manualGatewayRepository.findByGatewayUuidAndCurrencySymbol(gatewayUuid, currencySymbol)
+            ?.awaitFirstOrNull()
     }
 
     private suspend fun _fetchGateways(fetchGateways: FetchGateways): List<ManualGatewayModel>? {
-        return manualGatewayRepository.findGateways(fetchGateways.currencySymbol, fetchGateways.gatewayUuid)?.collectList()?.awaitFirstOrNull()
+        return manualGatewayRepository.findGateways(fetchGateways.currencySymbol, fetchGateways.gatewayUuid)
+            ?.collectList()?.awaitFirstOrNull()
     }
 }

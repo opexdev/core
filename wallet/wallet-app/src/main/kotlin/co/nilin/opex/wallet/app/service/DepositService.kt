@@ -52,7 +52,7 @@ class DepositService(
             request.ref,
             null,
             request.attachment,
-            DepositType.MANUALLY, null
+            DepositType.MANUALLY, request.gatewayUuid
         )
     }
 
@@ -71,29 +71,36 @@ class DepositService(
         gatewayUuid: String?
     ): TransferResult? {
         logger.info("A ${depositType.name} deposit tx on $symbol-$chain was received for $receiverUuid .......")
-        var status = DepositStatus.DONE
-        val gatewayData = _fetchDepositData(gatewayUuid, symbol, depositType)
-        if (!(gatewayData.isEnabled && amount > gatewayData.minimum && amount < gatewayData.maximum)) {
-            logger.info("An invalid deposit command :$symbol-$chain-$receiverUuid-$amount")
-            status = DepositStatus.INVALID
 
+        var depositCommand = Deposit(
+            receiverUuid,
+            UUID.randomUUID().toString(),
+            symbol,
+            amount,
+            note = description,
+            transactionRef = transferRef,
+            status = DepositStatus.DONE,
+            depositType = depositType,
+            network = chain,
+            attachment = attachment
+        )
+
+        val gatewayData = fetchDepositData(gatewayUuid, symbol, depositType, depositCommand)
+
+        if (depositCommand.depositType != depositType)
+            throw OpexError.GatewayNotFount.exception()
+
+        if (!isValidDeposit(depositCommand, gatewayData)) {
+            logger.info("An invalid deposit command : $symbol-$chain-$receiverUuid-$amount")
+            depositCommand.status = DepositStatus.INVALID
+        }
+        coroutineScope {
+            depositPersister.persist(
+                depositCommand
+            )
         }
 
-        depositPersister.persist(
-            Deposit(
-                receiverUuid,
-                UUID.randomUUID().toString(),
-                symbol,
-                amount,
-                note = description,
-                transactionRef = transferRef,
-                status = status,
-                depositType = depositType,
-                network = chain,
-                attachment = attachment
-            )
-        )
-        if (status == DepositStatus.DONE) {
+        if (depositCommand.status == DepositStatus.DONE) {
             logger.info("Going to charge wallet on a ${depositType.name} deposit event :$symbol-$chain-$receiverUuid-$amount")
             return transferService.transfer(
                 symbol,
@@ -106,34 +113,60 @@ class DepositService(
                 transferRef,
                 TransferCategory.DEPOSIT,
             )
-        }
-        return null
+        } else throw OpexError.InvalidDeposit.exception()
     }
 
 
-    suspend fun _fetchDepositData(
+    fun isValidDeposit(depositCommand: Deposit, gatewayData: GatewayData): Boolean {
+        return gatewayData.isEnabled && depositCommand.amount > gatewayData.minimum && depositCommand.amount < gatewayData.maximum
+    }
+
+    suspend fun fetchDepositData(
         gatewayUuid: String?,
         symbol: String,
         depositType: DepositType,
+        depositCommand: Deposit
     ): GatewayData {
 
-        when (depositType) {
-            DepositType.ON_CHAIN -> {
-                currencyService.fetchCurrencyGateway(gatewayUuid!!, symbol)?.let {
-                    return GatewayData(
-                        it.isActive ?: true && it.depositAllowed ?: true,
-                        BigDecimal.ZERO,
-                        it.depositMin ?: BigDecimal.ZERO,
-                        it.depositMax
-                    )
-                } ?: throw OpexError.GatewayNotFount.exception()
-            }
-            else -> return GatewayData(true, BigDecimal.ZERO, BigDecimal.ZERO, null)
+        gatewayUuid?.let {
+            currencyService.fetchCurrencyGateway(gatewayUuid!!, symbol)?.let {
+                when (it) {
+                    is OnChainGatewayCommand -> {
+                        depositCommand.depositType = DepositType.ON_CHAIN
+                        depositCommand.currency = it.currencySymbol!!
+                        depositCommand.network = it.chain
+                        return GatewayData(
+                            it.isActive ?: true && it.depositAllowed ?: true,
+                            BigDecimal.ZERO,
+                            it.depositMin ?: BigDecimal.ZERO,
+                            it.depositMax
+                        )
+                    }
 
-        }
+                    is ManualGatewayCommand -> {
+                        depositCommand.depositType = DepositType.MANUALLY
+                        depositCommand.currency = it.currencySymbol!!
+                        depositCommand.network = null
+                        return GatewayData(
+                            it.isActive ?: true && it.depositAllowed ?: true,
+                            BigDecimal.ZERO,
+                            it.depositMin ?: BigDecimal.ZERO,
+                            it.depositMax
+                        )
+                    }
 
+                    else -> {
+                        throw OpexError.GatewayNotFount.exception()
+                    }
+
+
+                }
+
+
+            }?: throw OpexError.GatewayNotFount.exception()
+
+        }?: return GatewayData(true, BigDecimal.ZERO, BigDecimal.ZERO, null)
     }
-
 
     suspend fun findDepositHistory(
         uuid: String,

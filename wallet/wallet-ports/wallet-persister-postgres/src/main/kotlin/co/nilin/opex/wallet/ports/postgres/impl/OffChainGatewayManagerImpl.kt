@@ -15,12 +15,23 @@ import org.springframework.stereotype.Service
 
 @Service("offChainGateway")
 class OffChainGatewayManagerImpl(private val offChainGatewayRepository: OffChainGatewayRepository) : GatewayPersister {
-    override suspend fun createGateway(currencyGateway: CurrencyGatewayCommand, internalToken: String?): CurrencyGatewayCommand? {
-        return _save((currencyGateway as OffChainGatewayCommand).toModel())?.toDto()
+    override suspend fun createGateway(
+        currencyGateway: CurrencyGatewayCommand,
+        internalToken: String?
+    ): CurrencyGatewayCommand? {
+        val input = currencyGateway as OffChainGatewayCommand
+        offChainGatewayRepository.findByCurrencySymbolAndAndTransferMethod(input.currencySymbol!!, input.transferMethod)
+            ?.awaitFirstOrNull()
+            ?.let { throw OpexError.GatewayIsExist.exception() }
+        return _save(input.toModel())?.toDto()
     }
 
-    override suspend fun updateGateway(currencyGateway: CurrencyGatewayCommand, internalToken: String?): CurrencyGatewayCommand? {
-        val oldGateway = _fetchGateway(currencyGateway.currencySymbol!!,currencyGateway.gatewayUuid!!) ?: throw OpexError.GatewayNotFount.exception()
+    override suspend fun updateGateway(
+        currencyGateway: CurrencyGatewayCommand,
+        internalToken: String?
+    ): CurrencyGatewayCommand? {
+        val oldGateway = _fetchGateway(currencyGateway.currencySymbol!!, currencyGateway.gatewayUuid!!)
+            ?: throw OpexError.GatewayNotFount.exception()
         return _save((currencyGateway as OffChainGatewayCommand).toModel().apply { id = oldGateway.id })?.toDto()
     }
 
@@ -28,7 +39,11 @@ class OffChainGatewayManagerImpl(private val offChainGatewayRepository: OffChain
         return _fetchGateways(FetchGateways(currencySymbol = symbol))?.map { it.toDto() }
     }
 
-    override suspend fun fetchGatewayDetail(gatewayUuid: String, currencySymbol: String, internalToken: String?): CurrencyGatewayCommand? {
+    override suspend fun fetchGatewayDetail(
+        gatewayUuid: String,
+        currencySymbol: String,
+        internalToken: String?
+    ): CurrencyGatewayCommand? {
         return _fetchGateway(currencySymbol, gatewayUuid)?.toDto()
     }
 
@@ -45,15 +60,14 @@ class OffChainGatewayManagerImpl(private val offChainGatewayRepository: OffChain
     }
 
 
-
     private suspend fun _save(currencyGateway: OffChainGatewayModel): OffChainGatewayModel? {
         return offChainGatewayRepository.save(currencyGateway)?.awaitFirstOrNull()
     }
 
 
-
     private suspend fun _fetchGateway(currencySymbol: String, gatewayUuid: String): OffChainGatewayModel? {
-        return offChainGatewayRepository.findByGatewayUuidAndCurrencySymbol(gatewayUuid, currencySymbol)?.awaitFirstOrNull()
+        return offChainGatewayRepository.findByGatewayUuidAndCurrencySymbol(gatewayUuid, currencySymbol)
+            ?.awaitFirstOrNull()
     }
 
     private suspend fun _fetchGateways(fetchGateways: FetchGateways): List<OffChainGatewayModel>? {

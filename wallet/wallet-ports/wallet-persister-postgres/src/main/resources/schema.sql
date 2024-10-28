@@ -207,7 +207,9 @@ CREATE TABLE IF NOT EXISTS currency_off_chain_gateway
     deposit_min          DECIMAL     NOT NULL,
     deposit_max          DECIMAL     NOT NULL,
     is_active            BOOLEAN     NOT NULL DEFAULT TRUE,
-    transfer_method      VARCHAR(256) NOT NULL
+    transfer_method      VARCHAR(256) NOT NULL,
+    UNIQUE (currency_symbol, transfer_method)
+
     );
 
 
@@ -224,5 +226,7 @@ CREATE TABLE IF NOT EXISTS currency_manual_gateway
     deposit_min          DECIMAL     NOT NULL,
     deposit_max          DECIMAL     NOT NULL,
     is_active             BOOLEAN     NOT NULL DEFAULT TRUE,
-    allowed_for      VARCHAR(256) NOT NULL
+    allowed_for      VARCHAR(256) NOT NULL,
+    UNIQUE (currency_symbol, allowed_for)
+
     );
