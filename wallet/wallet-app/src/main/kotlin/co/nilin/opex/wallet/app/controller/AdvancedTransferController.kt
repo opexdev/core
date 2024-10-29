@@ -105,7 +105,7 @@ class AdvancedTransferController {
             description,
             transferRef,
             securityContext?.authentication?.name
-        )
+        ).transferResult
     }
 
     @PostMapping("/v1/swap/history")

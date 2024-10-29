@@ -64,16 +64,17 @@ class ManualWithdrawService(
                 TransferCategory.WITHDRAW_MANUALLY,
         )
         //todo need to review
+
         withdrawPersister.persist(
                 Withdraw(
                         null,
                         sourceUuid,
                         symbol,
-                        tx.destWallet!!,
+                        tx.transferResult.destWallet!!,
                         amount,
                         //it should be replaced with tx.id
-                        request.ref!!,
-                        null,
+                        tx.tx,
+                        tx.tx,
                         BigDecimal.ZERO,
                         BigDecimal.ZERO,
                         symbol,
@@ -88,7 +89,7 @@ class ManualWithdrawService(
                         request.attachment,
                 )
         )
-        return tx;
+        return tx.transferResult;
     }
 
 

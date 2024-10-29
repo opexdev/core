@@ -51,7 +51,7 @@ class TransferService(
         description: String?,
         transferRef: String?,
         transferCategory: TransferCategory = TransferCategory.NO_CATEGORY
-    ): TransferResult {
+    ): TransferResultDetailed {
         return _transfer(
             symbol,
             senderWalletType,
@@ -135,7 +135,7 @@ class TransferService(
         issuer: String? = null,
         //todo need to review
         transferCategory: TransferCategory = TransferCategory.PURCHASE_FINALIZED
-    ): TransferResult {
+    ): TransferResultDetailed {
         val reservations = reservedTransferManager.fetchValidReserve(reserveNumber)
             ?: throw OpexError.InvalidReserveNumber.exception()
         if (!(issuer == null || reservations.senderUuid == issuer))
@@ -154,7 +154,7 @@ class TransferService(
             transferCategory,
             reservations.sourceSymbol,
             reservations.sourceAmount
-        )
+        ).transferResult
 
         val receiverTransfer = _transfer(
             reservations.destSymbol,
@@ -168,10 +168,10 @@ class TransferService(
             transferCategory,
             reservations.destSymbol,
             reservations.reservedDestAmount
-        )
+        ).transferResult
 
         reservedTransferManager.commitReserve(reserveNumber)
-        return TransferResult(
+        return TransferResultDetailed(transferResult = TransferResult(
             senderTransfer.date,
             senderTransfer.sourceUuid,
             senderTransfer.sourceWalletType,
@@ -181,7 +181,7 @@ class TransferService(
             receiverTransfer.destUuid,
             receiverTransfer.destWalletType,
             receiverTransfer.receivedAmount
-        )
+        ),"")
     }
 
 
@@ -197,7 +197,7 @@ class TransferService(
         transferCategory: TransferCategory = TransferCategory.NO_CATEGORY,
         destSymbol: String = symbol,
         destAmount: BigDecimal = amount
-    ): TransferResult {
+    ): TransferResultDetailed {
         if (senderWalletType == WalletType.CASHOUT || receiverWalletType == WalletType.CASHOUT)
             throw OpexError.InvalidCashOutUsage.exception()
         val sourceCurrency = currencyManager.fetchCurrency(FetchCurrency(symbol = destSymbol))
@@ -240,7 +240,7 @@ class TransferService(
                 transferCategory,
                 Amount(receiverWallet.currency, destAmount)
             )
-        ).transferResult
+        )
     }
 
 

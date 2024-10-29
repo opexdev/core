@@ -71,6 +71,7 @@ class DepositController(
             description,
             transferRef,
             chain,
+            null,
             depositType = DepositType.ON_CHAIN,
             gatewayUuid = gatewayUuid
         )
