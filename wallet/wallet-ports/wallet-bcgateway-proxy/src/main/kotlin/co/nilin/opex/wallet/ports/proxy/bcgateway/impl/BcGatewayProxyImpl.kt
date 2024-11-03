@@ -2,7 +2,7 @@ package co.nilin.opex.wallet.ports.proxy.bcgateway.impl
 
 import co.nilin.opex.wallet.core.inout.OnChainGatewayCommand
 import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
-import co.nilin.opex.wallet.core.inout.WithdrawData
+import co.nilin.opex.wallet.core.inout.GatewayData
 
 import co.nilin.opex.wallet.core.spi.GatewayPersister
 import kotlinx.coroutines.reactive.awaitFirst
@@ -128,12 +128,12 @@ class OnChainGatewayProxyGateway(private val webClient: WebClient) : GatewayPers
     //After applying gateway concept in opex, we can remove this function and
     // use fetchGateway function instead of this service
     /// TODO:  temporary
-    override suspend fun getWithdrawData(symbol: String, network: String): WithdrawData {
+    override suspend fun getWithdrawData(symbol: String, network: String): GatewayData {
         return webClient.get()
                 .uri("$baseUrl/crypto-currency/$symbol/network/$network/withdrawData")
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono<WithdrawData>()
+                .bodyToMono<GatewayData>()
                 .awaitFirst()
     }
 }

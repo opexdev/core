@@ -15,7 +15,6 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 
-enum class WithDrawAction { WITHDRAW_REQUEST, WITHDRAW_ACCEPT, WITHDRAW_REJECT }
 
 @Service
 class WithdrawService(
@@ -51,8 +50,8 @@ class WithdrawService(
             currency,
             WalletType.CASHOUT
         )
-        val withdrawData: WithdrawData =
-            _fetchWithdrawDate(withdrawCommand) ?: throw OpexError.GatewayNotFount.exception()
+        val withdrawData: GatewayData =
+            fetchWithdrawData(withdrawCommand) ?: throw OpexError.GatewayNotFount.exception()
         if (!withdrawData.isEnabled)
             throw OpexError.WithdrawNotAllowed.exception()
 
@@ -108,7 +107,7 @@ class WithdrawService(
     }
 
 
-    suspend fun _fetchWithdrawDate(withdrawCommand: WithdrawCommand): WithdrawData? {
+    private suspend fun fetchWithdrawData(withdrawCommand: WithdrawCommand): GatewayData? {
 
         return withdrawCommand.gatewayUuid?.let { uuid ->
 
@@ -116,10 +115,11 @@ class WithdrawService(
 
                 when (it) {
                     is OnChainGatewayCommand -> {
+                        withdrawCommand.currency=it.currencySymbol!!
                         withdrawCommand.destNetwork = it.chain
                         withdrawCommand.destSymbol = it.implementationSymbol!!
                         withdrawCommand.withdrawType = WithdrawType.ON_CHAIN
-                        WithdrawData(
+                        GatewayData(
                             it.isActive ?: true && it.withdrawAllowed ?: true,
                             it.withdrawFee ?: BigDecimal.ZERO,
                             it.withdrawMin ?: BigDecimal.ZERO,
@@ -128,9 +128,10 @@ class WithdrawService(
                     }
 
                     is OffChainGatewayCommand -> {
+                        withdrawCommand.currency=it.currencySymbol!!
                         withdrawCommand.destNetwork = it.transferMethod.name
                         withdrawCommand.withdrawType = WithdrawType.OFF_CHAIN
-                        WithdrawData(
+                        GatewayData(
                             it.isActive ?: true && it.withdrawAllowed ?: true,
                             it.withdrawFee ?: BigDecimal.ZERO,
                             it.withdrawMin ?: BigDecimal.ZERO,

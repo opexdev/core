@@ -89,11 +89,12 @@ class GatewayService(
             return offChainGateway.fetchGatewayDetail(currencyGatewayUuid, currencySymbol)
         } else if (currencyGatewayUuid.startsWith("mag")) {
             return manualGateway.fetchGatewayDetail(currencyGatewayUuid, currencySymbol)
-        } else {
+        } else if (currencyGatewayUuid.startsWith("ong")){
             val token = authService.extractToken()
             return onChainGateway.fetchGatewayDetail(currencyGatewayUuid, currencySymbol, token)
 
-        }
+        }else
+            throw OpexError.GatewayNotFount.exception()
     }
 
 

@@ -34,7 +34,7 @@ interface CurrencyRepositoryV2 : ReactiveCrudRepository<CurrencyModel, String> {
 
     fun findBySymbol(symbol: String? = null): Mono<CurrencyModel>?
 
-    @Query("select * from currency where  (:symbol is null  or symbol like '%' || :symbol || '%' ) and (:name is null  or name like '%' || :name || '%' ) order by display_order")
+    @Query("select * from currency where  (:symbol is null  or symbol=:symbol) and (:name is null or name =:name  ) order by display_order")
     fun fetchSemiCurrencies( symbol: String? = null, name: String? = null): Flux<CurrencyModel>?
 
 

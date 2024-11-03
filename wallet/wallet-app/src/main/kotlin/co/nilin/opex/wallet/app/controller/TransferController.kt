@@ -51,7 +51,7 @@ class TransferController(private val transferService: TransferService,
             transferBody.description,
             transferBody.transferRef,
             transferBody.transferCategory,
-        )
+        ).transferResult
     }
 
     @PostMapping("/transfer/{amount}_{symbol}/from/{senderUuid}_{senderWalletType}/to/{receiverUuid}_{receiverWalletType}")
@@ -86,7 +86,7 @@ class TransferController(private val transferService: TransferService,
             description,
             transferRef,
             transferBody.transferCategory
-        )
+        ).transferResult
     }
 
 

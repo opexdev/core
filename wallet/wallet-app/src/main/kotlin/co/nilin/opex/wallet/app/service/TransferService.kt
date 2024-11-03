@@ -7,11 +7,9 @@ import co.nilin.opex.wallet.app.dto.AdvanceReservedTransferData
 import co.nilin.opex.wallet.app.dto.ManualTransferRequest
 import co.nilin.opex.wallet.app.dto.ReservedTransferResponse
 import co.nilin.opex.wallet.app.service.otc.GraphService
-import co.nilin.opex.wallet.core.inout.Deposit
-import co.nilin.opex.wallet.core.inout.GatewayType
-import co.nilin.opex.wallet.core.inout.TransferCommand
-import co.nilin.opex.wallet.core.inout.TransferResult
+import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.*
+import co.nilin.opex.wallet.core.model.WithdrawType
 import co.nilin.opex.wallet.core.model.otc.Rate
 import co.nilin.opex.wallet.core.model.otc.ReservedTransfer
 import co.nilin.opex.wallet.core.spi.*
@@ -32,8 +30,6 @@ class TransferService(
     private val walletOwnerManager: WalletOwnerManager,
     private val currencyGraph: GraphService,
     private val reservedTransferManager: ReservedTransferManager,
-    private val depositPersister: DepositPersister,
-    private val withdrawPersister: WithdrawPersister,
     private val currencyService: CurrencyServiceV2
 
 ) {
@@ -55,7 +51,7 @@ class TransferService(
         description: String?,
         transferRef: String?,
         transferCategory: TransferCategory = TransferCategory.NO_CATEGORY
-    ): TransferResult {
+    ): TransferResultDetailed {
         return _transfer(
             symbol,
             senderWalletType,
@@ -68,8 +64,6 @@ class TransferService(
             transferCategory
         )
     }
-
-
 
 
     suspend fun calculateDestinationAmount(
@@ -133,8 +127,6 @@ class TransferService(
     }
 
 
-
-
     @Transactional
     suspend fun advanceTransfer(
         reserveNumber: String,
@@ -143,7 +135,7 @@ class TransferService(
         issuer: String? = null,
         //todo need to review
         transferCategory: TransferCategory = TransferCategory.PURCHASE_FINALIZED
-    ): TransferResult {
+    ): TransferResultDetailed {
         val reservations = reservedTransferManager.fetchValidReserve(reserveNumber)
             ?: throw OpexError.InvalidReserveNumber.exception()
         if (!(issuer == null || reservations.senderUuid == issuer))
@@ -162,7 +154,7 @@ class TransferService(
             transferCategory,
             reservations.sourceSymbol,
             reservations.sourceAmount
-        )
+        ).transferResult
 
         val receiverTransfer = _transfer(
             reservations.destSymbol,
@@ -176,10 +168,10 @@ class TransferService(
             transferCategory,
             reservations.destSymbol,
             reservations.reservedDestAmount
-        )
+        ).transferResult
 
         reservedTransferManager.commitReserve(reserveNumber)
-        return TransferResult(
+        return TransferResultDetailed(transferResult = TransferResult(
             senderTransfer.date,
             senderTransfer.sourceUuid,
             senderTransfer.sourceWalletType,
@@ -189,11 +181,8 @@ class TransferService(
             receiverTransfer.destUuid,
             receiverTransfer.destWalletType,
             receiverTransfer.receivedAmount
-        )
+        ),"")
     }
-
-
-
 
 
     private suspend fun _transfer(
@@ -208,7 +197,7 @@ class TransferService(
         transferCategory: TransferCategory = TransferCategory.NO_CATEGORY,
         destSymbol: String = symbol,
         destAmount: BigDecimal = amount
-    ): TransferResult {
+    ): TransferResultDetailed {
         if (senderWalletType == WalletType.CASHOUT || receiverWalletType == WalletType.CASHOUT)
             throw OpexError.InvalidCashOutUsage.exception()
         val sourceCurrency = currencyManager.fetchCurrency(FetchCurrency(symbol = destSymbol))
@@ -219,6 +208,7 @@ class TransferService(
             walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner, senderWalletType, sourceCurrency)
                 ?: throw OpexError.WalletNotFound.exception()
 
+//todo what should we do for admin receiver
         val receiverOwner = walletOwnerManager.findWalletOwner(receiverUuid) ?: walletOwnerManager.createWalletOwner(
             receiverUuid,
             "not set",
@@ -250,68 +240,10 @@ class TransferService(
                 transferCategory,
                 Amount(receiverWallet.currency, destAmount)
             )
-        ).transferResult
+        )
     }
 
-    @Transactional
-    suspend fun withdrawManually(
-        symbol: String,
-        receiverUuid: String,
-        sourceUuid: String,
-        amount: BigDecimal,
-        request: ManualTransferRequest
-    ): TransferResult {
-        logger.info("withdraw manually: $sourceUuid to $receiverUuid on $symbol at ${LocalDateTime.now()}")
 
-        if (!isManualDepositAllowed(symbol))
-            throw OpexError.GatewayNotFount.exception()
-
-        walletOwnerManager.findWalletOwner(receiverUuid)
-            ?: walletOwnerManager.createWalletOwner(
-                receiverUuid,
-                "admin", "admin"
-            )
-
-        val tx = _transfer(
-            symbol,
-            WalletType.MAIN,
-            sourceUuid,
-            WalletType.MAIN,
-            receiverUuid,
-            amount,
-            request.description,
-            request.ref,
-            TransferCategory.WITHDRAW_MANUALLY,
-            symbol,
-            amount
-        )
-        //todo need to review
-        withdrawPersister.persist(
-            Withdraw(
-                null,
-                sourceUuid,
-                symbol,
-                tx.destWallet!!,
-                amount,
-                //it should be replaced with tx.id
-                request.ref!!,
-                null,
-                BigDecimal.ZERO,
-                BigDecimal.ZERO,
-                symbol,
-                receiverUuid,
-                null,
-                request.description,
-                request.ref,
-                null,
-                WithdrawStatus.DONE,
-                receiverUuid,
-                WithdrawType.MANUALLY,
-                request.attachment,
-                )
-        )
-        return tx;
-    }
 
     private suspend fun checkIfSystemHasEnoughBalance(
         destSymbol: String,
@@ -330,10 +262,10 @@ class TransferService(
         }
     }
 
-    internal suspend fun isManualDepositAllowed(symbol: String): Boolean {
-        return currencyService.fetchCurrencyWithGateways(symbol, listOf(GatewayType.Manually))?.depositAllowed ?: false
+    internal suspend fun isManualDepositAllowed(symbol: String, gatewayUuid: String): Boolean {
+        var gateway = currencyService.fetchCurrencyGateway(gatewayUuid, symbol)
+        return gateway is ManualGatewayCommand && gateway.depositAllowed == true && gateway.isActive == true
     }
-
 
 
 }

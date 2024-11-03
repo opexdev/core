@@ -75,7 +75,7 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
     }
 
     private suspend fun loadCurrencies(request: FetchCurrency?): Flux<CurrencyModel>? {
-        return currencyRepository.findAll()
+        return currencyRepository.fetchSemiCurrencies(request?.symbol,request?.name)
     }
 
     private suspend fun doSave(request: CurrencyModel): CurrencyModel? {

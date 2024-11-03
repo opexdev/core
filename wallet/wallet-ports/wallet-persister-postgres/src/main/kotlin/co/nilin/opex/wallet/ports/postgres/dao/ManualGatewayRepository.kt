@@ -20,4 +20,6 @@ interface ManualGatewayRepository : ReactiveCrudRepository<ManualGatewayModel, L
 
     fun deleteByGatewayUuid(uuid: String):Mono<Void>
 
+    fun findByCurrencySymbolAndAllowedFor(currencySymbol: String,allowedFor:String):Mono<ManualGatewayModel>?
+
 }

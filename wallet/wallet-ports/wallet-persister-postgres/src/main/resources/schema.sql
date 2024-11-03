@@ -119,10 +119,13 @@ CREATE TABLE IF NOT EXISTS withdraws
     status_reason        TEXT,
     status               VARCHAR(20),
     create_date          TIMESTAMP   NOT NULL,
-    last_update_date          TIMESTAMP,
-    applicator            VARCHAR(80),
-    withdraw_type    VARCHAR(255)
+    last_update_date     TIMESTAMP,
+    applicator           VARCHAR(80),
+    withdraw_type        VARCHAR(255),
+    attachment           VARCHAR(255)
     );
+
+ALTER TABLE withdraws add COLUMN  IF NOT EXISTS  attachment VARCHAR(255);
 
 CREATE TABLE IF NOT EXISTS rate
 (
@@ -184,8 +187,11 @@ CREATE TABLE IF NOT EXISTS deposits
     transaction_ref VARCHAR(255),
     status          VARCHAR(255),
     deposit_type    VARCHAR(255),
-    create_date     TIMESTAMP
+    create_date     TIMESTAMP,
+    attachment VARCHAR(255)
 );
+ALTER TABLE deposits add COLUMN  IF NOT EXISTS  attachment VARCHAR(255);
+
 
 
 CREATE TABLE IF NOT EXISTS currency_off_chain_gateway
@@ -201,7 +207,9 @@ CREATE TABLE IF NOT EXISTS currency_off_chain_gateway
     deposit_min          DECIMAL     NOT NULL,
     deposit_max          DECIMAL     NOT NULL,
     is_active            BOOLEAN     NOT NULL DEFAULT TRUE,
-    transfer_method      VARCHAR(256) NOT NULL
+    transfer_method      VARCHAR(256) NOT NULL,
+    UNIQUE (currency_symbol, transfer_method)
+
     );
 
 
@@ -218,5 +226,25 @@ CREATE TABLE IF NOT EXISTS currency_manual_gateway
     deposit_min          DECIMAL     NOT NULL,
     deposit_max          DECIMAL     NOT NULL,
     is_active             BOOLEAN     NOT NULL DEFAULT TRUE,
-    allowed_for      VARCHAR(256) NOT NULL
+    allowed_for      VARCHAR(256) NOT NULL,
+    UNIQUE (currency_symbol, allowed_for)
+
+    );
+
+CREATE TABLE IF NOT EXISTS bank_data (
+   id               SERIAL PRIMARY KEY,
+   uuid             VARCHAR(256) NOT NULL,
+   owner            VARCHAR(255) NOT NULL,
+   identifier       VARCHAR(255) NOT NULL,
+   active           BOOLEAN DEFAULT TRUE,
+   type             VARCHAR(255) NOT NULL,
+   bank_swift_code  VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS gateway_bank_data (
+   id SERIAL             PRIMARY KEY,
+   bank_data_id BIGINT   NOT NULL REFERENCES bank_data(id) ON DELETE CASCADE,
+   gateway_id BIGINT     NOT NULL REFERENCES currency_off_chain_gateway(id) ON DELETE CASCADE,
+   UNIQUE (bank_data_id, gateway_id)
+
     );

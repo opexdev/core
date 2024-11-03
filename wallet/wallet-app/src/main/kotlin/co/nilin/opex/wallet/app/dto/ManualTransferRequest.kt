@@ -5,5 +5,6 @@ import java.util.UUID
 data class ManualTransferRequest(
         var ref: String,
         var description: String? = null,
-        var attachment:String?
+        var attachment:String?,
+        var gatewayUuid:String
         )

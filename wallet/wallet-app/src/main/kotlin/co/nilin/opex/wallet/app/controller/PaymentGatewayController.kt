@@ -56,7 +56,7 @@ class PaymentGatewayController(
             receiverWalletType
         )
 
-        val command = transferManager.transfer(
+         transferManager.transfer(
             TransferCommand(
                 sourceWallet,
                 receiverWallet,
