@@ -1,11 +1,8 @@
 package co.nilin.opex.wallet.ports.postgres.util
 
 import co.nilin.opex.wallet.core.inout.*
-import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
+import co.nilin.opex.wallet.ports.postgres.model.*
 import java.util.*
-import co.nilin.opex.wallet.ports.postgres.model.DepositModel
-import co.nilin.opex.wallet.ports.postgres.model.ManualGatewayModel
-import co.nilin.opex.wallet.ports.postgres.model.OffChainGatewayModel
 import java.time.ZoneId
 
 
@@ -159,5 +156,23 @@ fun ManualGatewayCommand.toModel(): ManualGatewayModel {
         depositMin,
         depositMax,
         isActive
+    )
+}
+
+
+fun BankDataCommand.toModel(): BankDataModel {
+    return BankDataModel(
+        null,
+        uuid,
+        owner,
+        identifier, active, type, bankSwiftCode
+    )
+}
+
+fun BankDataModel.toDto(): BankDataCommand {
+    return BankDataCommand(
+        uuid!!,
+        owner,
+        identifier, active, type, bankSwiftCode
     )
 }
