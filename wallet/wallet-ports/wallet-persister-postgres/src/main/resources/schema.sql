@@ -230,3 +230,21 @@ CREATE TABLE IF NOT EXISTS currency_manual_gateway
     UNIQUE (currency_symbol, allowed_for)
 
     );
+
+CREATE TABLE IF NOT EXISTS bank_data (
+   id               SERIAL PRIMARY KEY,
+   uuid             VARCHAR(256) NOT NULL,
+   owner            VARCHAR(255) NOT NULL,
+   identifier       VARCHAR(255) NOT NULL,
+   active           BOOLEAN DEFAULT TRUE,
+   type             VARCHAR(255) NOT NULL,
+   bank_swift_code  VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS gateway_bank_data (
+   id SERIAL             PRIMARY KEY,
+   bank_data_id BIGINT   NOT NULL REFERENCES bank_data(id) ON DELETE CASCADE,
+   gateway_id BIGINT     NOT NULL REFERENCES currency_off_chain_gateway(id) ON DELETE CASCADE,
+   UNIQUE (bank_data_id, gateway_id)
+
+    );

@@ -82,6 +82,8 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     GatewayIsExist(6025, null, HttpStatus.NOT_FOUND),
 
     InvalidDeposit(6026, "Invalid deposit", HttpStatus.BAD_REQUEST),
+    BankDataIsExist(6027, "This identifier is exist", HttpStatus.BAD_REQUEST),
+    BankDataNotFound(6027, "Object not found", HttpStatus.BAD_REQUEST),
 
 
 
