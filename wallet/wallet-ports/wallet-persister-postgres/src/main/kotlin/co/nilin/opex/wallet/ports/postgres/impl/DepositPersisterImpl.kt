@@ -56,7 +56,11 @@ class DepositPersisterImpl(private val depositRepository: DepositRepository) : D
             ascendingByTime: Boolean?
     ): List<Deposit> {
         val deposits =
-                depositRepository.findByCriteria(ownerUuid, symbol, sourceAddress, transactionRef, startTime, endTime, status, ascendingByTime, offset, size)
+                status?.let {
+                    depositRepository.findByCriteria(ownerUuid, symbol, sourceAddress, transactionRef, startTime, endTime, status, ascendingByTime, offset, size)
+                }
+                        ?: depositRepository.findByCriteria(ownerUuid, symbol, sourceAddress, transactionRef, startTime, endTime, ascendingByTime, offset, size)
+
         return deposits.map { it.toDto() }.toList()
     }
 
