@@ -13,19 +13,7 @@ import java.util.*
 @Repository
 interface CurrencyRepositoryV2 : ReactiveCrudRepository<CurrencyModel, String> {
 
-    //    @Query("select * from currency where symbol = :symbol")
-//    fun findBySymbol(symbol: String): Mono<CurrencyModel>?
-//
-//    @Query("insert into currency values (:symbol, :name, :precision) on conflict do nothing")
-//    fun insert(name: String, symbol: String, precision: BigDecimal): Mono<CurrencyModel>
-//
-//    @Query("delete from currency where name = :name")
-//    fun deleteByName(name: String): Mono<Void>
-//
-//
-//    fun deleteBySymbol(symbol: String): Mono<Void>
-//
-//
+
     fun findByIsTransitive(isTransitive: Boolean): Flux<CurrencyModel>?
 
     @Query("select * from currency where (:symbol is null or symbol=:symbol ) and (:uuid is null or uuid=:uuid ) order by display_order ")

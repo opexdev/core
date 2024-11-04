@@ -71,6 +71,7 @@ class DepositAdminController(
                 body.endTime?.let {
                     LocalDateTime.ofInstant(Instant.ofEpochMilli(body.endTime), ZoneId.systemDefault())
                 },
+                body.status,
                 offset,
                 size,
                 body.ascendingByTime,

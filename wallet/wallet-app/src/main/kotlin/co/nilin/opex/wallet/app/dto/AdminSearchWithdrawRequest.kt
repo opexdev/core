@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.app.dto
 
+import co.nilin.opex.wallet.core.model.DepositStatus
 import co.nilin.opex.wallet.core.model.WithdrawStatus
 
 data class AdminSearchWithdrawRequest(
@@ -20,5 +21,6 @@ data class AdminSearchDepositRequest(
         val transactionRef: String?,
         val startTime: Long? = null,
         val endTime: Long? = null,
+        val status: List<DepositStatus>?= null,
         val ascendingByTime: Boolean = false
 )

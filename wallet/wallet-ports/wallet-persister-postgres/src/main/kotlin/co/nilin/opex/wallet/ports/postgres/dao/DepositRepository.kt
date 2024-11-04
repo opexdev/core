@@ -24,7 +24,7 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
             and (:currency is null or currency = :currency)
             and (:startTime is null or create_date > :startTime )
             and (:endTime is null or create_date <= :endTime)
-            and status=:status
+            and status in (:status)
         order by  CASE WHEN :ascendingByTime=true THEN create_date END ASC,
                   CASE WHEN :ascendingByTime=false THEN create_date END DESC
         limit :limit
@@ -39,7 +39,7 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
         limit: Int?=0,
         offset: Int?=10000,
         ascendingByTime: Boolean?=false,
-        status:DepositStatus?=DepositStatus.DONE
+        status:List<DepositStatus>?= listOf<DepositStatus>(DepositStatus.DONE,DepositStatus.INVALID)
     ): Flow<DepositModel>
 
 
@@ -52,6 +52,7 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
             and (:transactionRef is null or transaction_ref =:transactionRef)
             and (:startTime is null or create_date > :startTime )
             and (:endTime is null or create_date <= :endTime)
+            and (:status is null or status in (:status)) 
         order by  CASE WHEN :ascendingByTime=true THEN create_date END ASC,
                   CASE WHEN :ascendingByTime=false THEN create_date END DESC
         offset :offset limit :limit;
@@ -64,6 +65,7 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
         transactionRef: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
+        status:List<DepositStatus>?,
         ascendingByTime: Boolean?=false,
         offset: Int?=0,
         limit: Int?=10000
