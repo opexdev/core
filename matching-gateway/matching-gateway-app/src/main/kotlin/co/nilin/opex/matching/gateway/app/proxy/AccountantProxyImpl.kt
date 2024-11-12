@@ -25,7 +25,6 @@ class AccountantProxyImpl(
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<BooleanResponse>()
-            .log()
             .awaitFirst()
             .result
     }
@@ -37,7 +36,6 @@ class AccountantProxyImpl(
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<PairConfig>()
-            .log()
             .awaitFirst()
     }
 }

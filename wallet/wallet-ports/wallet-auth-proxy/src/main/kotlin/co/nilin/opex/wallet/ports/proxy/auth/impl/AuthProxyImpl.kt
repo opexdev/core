@@ -31,7 +31,6 @@ class AuthProxyImp( private val webClient: WebClient) : AuthProxy {
                 .onStatus({ t -> t.isError }, {
                     it.createException() })
                 .bodyToMono(typeRef<LoginResponse>())
-                .log()
                 .awaitFirst()
     }
 
