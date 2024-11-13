@@ -28,7 +28,6 @@ class WalletProxyImpl(private val webClient: WebClient,
 //                .retrieve()
 //                .onStatus({ t -> t.isError }, { it.createException() })
 //                .bodyToMono(typeRef<TransferResult>())
-//                .log()
 //                .awaitFirst()
 //    }
 
@@ -47,7 +46,6 @@ class WalletProxyImpl(private val webClient: WebClient,
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToMono(typeRef<TransferResult>())
-                .log()
                 .awaitFirst()
     }
 }

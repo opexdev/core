@@ -29,10 +29,8 @@ class AuthProxyImpl(private val webClient: WebClient) : AuthProxy {
                 .body(BodyInserters.fromFormData("mobile", loginRequest.clientId)
                         .with("password", loginRequest.clientSecret))
                 .retrieve()
-                .onStatus({ t -> t.isError }, {
-                    it.createException() })
+                .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToMono(typeRef<LoginResponse>())
-                .log()
                 .awaitFirst()
     }
 
