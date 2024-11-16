@@ -28,7 +28,7 @@ class BankDataManagerImpl(private val bankDataRepository: BankDataRepository) : 
     override suspend fun delete(uuid: String) {
         _loadBankData(uuid)?.let {
             bankDataRepository.deleteById(it.id!!)?.awaitSingleOrNull()
-        } ?: throw OpexError.BankDataIsExist.exception()
+        } ?: throw OpexError.BankDataNotFound.exception()
     }
 
     override suspend fun fetchBankData(): List<BankDataCommand>? {
