@@ -24,6 +24,7 @@ class TransferManagerImpl(
     private val transactionManager: TransactionManager,
     private val userTransactionManager: UserTransactionManager,
 ) : TransferManager {
+    private val logger = LoggerFactory.getLogger(TransferManagerImpl::class.java)
 
     @Transactional
     override suspend fun transfer(transferCommand: TransferCommand): TransferResultDetailed {
@@ -66,6 +67,7 @@ class TransferManagerImpl(
                 transferCommand.description,
                 transferCommand.transferRef,
                 transferCommand.transferCategory,
+                transferCommand.additionalData,
                 LocalDateTime.now()
             )
         )

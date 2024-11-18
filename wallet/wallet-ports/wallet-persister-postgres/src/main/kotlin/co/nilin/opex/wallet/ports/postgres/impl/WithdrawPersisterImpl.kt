@@ -4,6 +4,7 @@ import co.nilin.opex.wallet.core.inout.WithdrawResponse
 import co.nilin.opex.wallet.core.model.Withdraw
 import co.nilin.opex.wallet.core.model.WithdrawStatus
 import co.nilin.opex.wallet.core.spi.WithdrawPersister
+import co.nilin.opex.wallet.ports.postgres.dao.TransactionRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WithdrawRepository
 import co.nilin.opex.wallet.ports.postgres.model.WithdrawModel
 import kotlinx.coroutines.flow.map
@@ -172,24 +173,25 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
 
     private suspend fun WithdrawModel.asWithdrawResponse(): WithdrawResponse {
         return WithdrawResponse(
-            id!!,
-            ownerUuid,
-            amount,
-            currency,
-            appliedFee,
-            destAmount,
-            destSymbol,
-            destAddress,
-            destNetwork,
-            destNotes,
-            destTransactionRef,
-            statusReason,
-            status,
-            applicator,
-            withdrawType,
-            attachment,
-            createDate,
-            lastUpdateDate
+                id!!,
+                ownerUuid,
+                Date.from(reqTx.txDate.atZone(ZoneId.systemDefault()).toInstant()),
+                if (finalTx == null) null else Date.from(finalTx.txDate.atZone(ZoneId.systemDefault()).toInstant()),
+                reqTx.id.toString(),
+                finalTx?.id.toString(),
+                acceptedFee,
+                appliedFee,
+                amount,
+                destAmount,
+                destSymbol,
+                destAddress,
+                destNetwork,
+                destNote,
+                destTransactionRef,
+                statusReason,
+                status,
+                createDate,
+                acceptDate
         )
     }
 

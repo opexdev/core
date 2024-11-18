@@ -56,6 +56,7 @@ class InquiryController(
             if (uuid != securityContext.authentication.name)
                 throw OpexError.Forbidden.exception()
         }
+
         logger.info("canFullFill: {} {} {} {}", uuid, currency, walletType, amount)
         val owner = walletOwnerManager.findWalletOwner(uuid)
         if (owner != null) {

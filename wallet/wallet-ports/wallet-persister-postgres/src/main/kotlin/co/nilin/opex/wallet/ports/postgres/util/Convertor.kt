@@ -70,7 +70,6 @@ fun Deposit.toModel(): DepositModel {
     )
 }
 
-
 fun DepositModel.toDto(): Deposit {
     return Deposit(
         ownerUuid,

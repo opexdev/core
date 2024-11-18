@@ -72,17 +72,44 @@ class WithdrawController(private val withdrawService: WithdrawService) {
             @RequestBody request: WithdrawHistoryRequest,
     ): List<WithdrawResponse> {
         return withdrawService.findWithdrawHistory(
-            securityContext.authentication.name,
-            request.currency,
-            request.startTime?.let {
-                LocalDateTime.ofInstant(Instant.ofEpochMilli(request.startTime), ZoneId.systemDefault())
-            },
-            request.endTime?.let {
-                LocalDateTime.ofInstant(Instant.ofEpochMilli(request.endTime), ZoneId.systemDefault())
-            },
-            request.limit!!,
-            request.offset!!,
-            request.ascendingByTime
-        )
+                uuid,
+                request.coin,
+                request.startTime?.let {
+                    LocalDateTime.ofInstant(Instant.ofEpochMilli(request.startTime), ZoneId.systemDefault())
+                }
+                        ?: null,
+                request.endTime?.let {
+                    LocalDateTime.ofInstant(Instant.ofEpochMilli(request.endTime), ZoneId.systemDefault())
+                } ?: null,
+                request.limit!!,
+                request.offset!!,
+                request.ascendingByTime
+        ).map {
+
+
+            WithdrawHistoryResponse(
+                    it.withdrawId,
+                    it.ownerUuid,
+                    it.amount,
+                    it.currency,
+                    it.acceptedFee,
+                    it.appliedFee,
+                    it.destAmount,
+                    it.destSymbol,
+                    it.destAddress,
+                    it.destNetwork,
+                    it.destNote,
+                    it.destTransactionRef,
+                    it.statusReason,
+                    it.status,
+                    it.createDate.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+                    it.acceptDate?.atZone(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
+            )
+        }
     }
+
+
 }
+
+
+

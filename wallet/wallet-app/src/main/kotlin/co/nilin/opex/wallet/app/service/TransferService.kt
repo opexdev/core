@@ -6,10 +6,12 @@ import co.nilin.opex.utility.preferences.Preferences
 import co.nilin.opex.wallet.app.dto.AdvanceReservedTransferData
 import co.nilin.opex.wallet.app.dto.ManualTransferRequest
 import co.nilin.opex.wallet.app.dto.ReservedTransferResponse
-import co.nilin.opex.wallet.app.service.otc.GraphService
-import co.nilin.opex.wallet.core.inout.*
-import co.nilin.opex.wallet.core.model.*
-import co.nilin.opex.wallet.core.model.WithdrawType
+import co.nilin.opex.wallet.app.dto.TransferRequest
+import co.nilin.opex.wallet.core.exc.NotEnoughBalanceException
+import co.nilin.opex.wallet.core.inout.Deposit
+import co.nilin.opex.wallet.core.inout.TransferCommand
+import co.nilin.opex.wallet.core.inout.TransferResult
+import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.otc.Rate
 import co.nilin.opex.wallet.core.model.otc.ReservedTransfer
 import co.nilin.opex.wallet.core.spi.*
@@ -171,17 +173,19 @@ class TransferService(
         ).transferResult
 
         reservedTransferManager.commitReserve(reserveNumber)
-        return TransferResultDetailed(transferResult = TransferResult(
-            senderTransfer.date,
-            senderTransfer.sourceUuid,
-            senderTransfer.sourceWalletType,
-            senderTransfer.sourceBalanceBeforeAction,
-            senderTransfer.sourceBalanceAfterAction,
-            senderTransfer.amount,
-            receiverTransfer.destUuid,
-            receiverTransfer.destWalletType,
-            receiverTransfer.receivedAmount
-        ),"")
+        return TransferResultDetailed(
+            transferResult = TransferResult(
+                senderTransfer.date,
+                senderTransfer.sourceUuid,
+                senderTransfer.sourceWalletType,
+                senderTransfer.sourceBalanceBeforeAction,
+                senderTransfer.sourceBalanceAfterAction,
+                senderTransfer.amount,
+                receiverTransfer.destUuid,
+                receiverTransfer.destWalletType,
+                receiverTransfer.receivedAmount
+            ), ""
+        )
     }
 
 

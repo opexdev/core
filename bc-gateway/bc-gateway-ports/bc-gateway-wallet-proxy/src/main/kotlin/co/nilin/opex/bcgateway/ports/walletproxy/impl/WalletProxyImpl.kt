@@ -21,17 +21,6 @@ class WalletProxyImpl(
     @Value("\${app.wallet.url}")
     private lateinit var baseUrl: String
 
-//    override suspend fun transfer(uuid: String, symbol: String, amount: BigDecimal, hash: String) {
-//        webClient.post()
-//                .uri(URI.create("$baseUrl/deposit/${amount}_${symbol}/${uuid}_main?transferRef=$hash"))
-//                .header("Content-Type", "application/json")
-//                .header("Authorization", "Bearer ${extractBackgroundAuth.extractToken()}")
-//                .retrieve()
-//                .onStatus({ t -> t.isError }, { it.createException() })
-//                .bodyToMono(typeRef<TransferResult>())
-//                .log()
-//                .awaitFirst()
-//    }
 
 
     override suspend fun transfer(
@@ -55,7 +44,6 @@ class WalletProxyImpl(
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono(typeRef<TransferResult>())
-            .log()
             .awaitFirst()
     }
 }

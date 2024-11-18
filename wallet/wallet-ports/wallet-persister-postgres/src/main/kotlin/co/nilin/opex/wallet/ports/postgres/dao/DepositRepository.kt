@@ -70,8 +70,4 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
         offset: Int?=0,
         limit: Int?=10000
     ): Flow<DepositModel>
-
-
-
 }
-

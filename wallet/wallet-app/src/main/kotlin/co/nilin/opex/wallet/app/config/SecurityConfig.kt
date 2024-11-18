@@ -24,7 +24,6 @@ class SecurityConfig(private val webClient: WebClient) {
     @Bean
     @Profile("!otc")
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
-
         http.csrf().disable()
                 .authorizeExchange()
                 .pathMatchers("/balanceOf/**").hasAuthority("SCOPE_trust")
@@ -34,7 +33,6 @@ class SecurityConfig(private val webClient: WebClient) {
                 .pathMatchers("/v1/deposit/**").hasAuthority("SCOPE_trust")
                 .pathMatchers("/withdraw/**").hasAuthority("SCOPE_trust")
                 .pathMatchers("/transaction/**").hasAuthority("SCOPE_trust")
-                .pathMatchers("/v2/transaction/**").hasAuthority("SCOPE_trust")
                 .pathMatchers("/admin/**").hasRole("SCOPE_trust", "admin_finance")
                 .pathMatchers("/stats/**").hasRole("SCOPE_trust", "admin_finance")
                 .pathMatchers("/payment/internal/**").permitAll()
@@ -85,7 +83,11 @@ class SecurityConfig(private val webClient: WebClient) {
     @Throws(Exception::class)
     fun reactiveJwtDecoder(): ReactiveJwtDecoder? {
         return NimbusReactiveJwtDecoder.withJwkSetUri(jwkUrl)
-                .webClient(webClient)
-                .build()
+            .webClient(webClient)
+            .build()
     }
+
+
+
+
 }

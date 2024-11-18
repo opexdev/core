@@ -43,7 +43,6 @@ class WalletProxyImpl(
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<TransferResult>()
-            .log()
             .awaitFirst()
     }
 
@@ -54,7 +53,6 @@ class WalletProxyImpl(
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<BooleanResponse>()
-            .log()
             .awaitFirst()
             .result
     }

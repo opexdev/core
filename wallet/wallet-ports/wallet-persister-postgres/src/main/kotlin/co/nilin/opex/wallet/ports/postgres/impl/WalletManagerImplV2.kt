@@ -194,7 +194,6 @@ class WalletManagerImplV2(
                 WalletModel(1, WalletType.MAIN, currency, systemBalance ?: minimumBalance!!),
             )
         walletRepository.saveAll(items).collectList().awaitSingleOrNull()
-
     }
 
     override suspend fun findWalletsByOwner(owner: WalletOwner): List<Wallet> {

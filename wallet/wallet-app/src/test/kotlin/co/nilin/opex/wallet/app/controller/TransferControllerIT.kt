@@ -35,7 +35,6 @@ class TransferControllerIT : KafkaEnabledTest() {
 
     @Autowired
     private lateinit var walletOwnerManager: WalletOwnerManager
-    private val logger = LoggerFactory.getLogger(TransferControllerIT::class.java)
 
     @BeforeEach
     fun setup() {

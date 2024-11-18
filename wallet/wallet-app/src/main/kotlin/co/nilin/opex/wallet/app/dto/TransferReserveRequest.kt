@@ -9,4 +9,5 @@ data class TransferReserveRequest(
     val destSymbol: String,
     var senderUuid: String?,
     val receiverUuid: String,
+    val receiverWalletType: String
 )

@@ -1,10 +1,13 @@
 package co.nilin.opex.wallet.app.controller
 
-import co.nilin.opex.wallet.app.dto.*
-import co.nilin.opex.wallet.app.service.DepositService
+import co.nilin.opex.common.OpexError
+import co.nilin.opex.wallet.app.dto.ManualTransferRequest
+import co.nilin.opex.wallet.app.dto.TransactionRequest
+import co.nilin.opex.wallet.app.dto.WithdrawHistoryResponse
+import co.nilin.opex.wallet.app.service.TransferService
 import co.nilin.opex.wallet.core.inout.*
-import co.nilin.opex.wallet.core.model.DepositType
-import co.nilin.opex.wallet.core.model.WalletType
+import co.nilin.opex.wallet.core.service.WithdrawService
+import co.nilin.opex.wallet.core.spi.DepositPersister
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
@@ -76,8 +79,6 @@ class DepositController(
             gatewayUuid = gatewayUuid
         )
     }
-
-
 }
 
 

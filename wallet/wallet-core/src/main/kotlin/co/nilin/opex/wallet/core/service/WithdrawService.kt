@@ -21,8 +21,9 @@ class WithdrawService(
     private val withdrawPersister: WithdrawPersister,
     private val walletManager: WalletManager,
     private val walletOwnerManager: WalletOwnerManager,
-    private val currencyService: CurrencyServiceManager,
+    private val currencyService: CurrencyService,
     private val transferManager: TransferManager,
+    private val bcGatewayProxy: BcGatewayProxy,
     private val authService: AuthService,
     private val environment: Environment,
     private val gatewayService: GatewayService,
@@ -78,7 +79,6 @@ class WithdrawService(
                 TransferCategory.WITHDRAW_REQUEST
             )
         )
-
         val withdraw = withdrawPersister.persist(
             Withdraw(
                 null,
@@ -269,7 +269,6 @@ class WithdrawService(
             sourceWallet.currency,
             WalletType.MAIN
         )
-
         val transferResultDetailed = transferManager.transfer(
             TransferCommand(
                 sourceWallet,
@@ -365,6 +364,5 @@ class WithdrawService(
     ): List<WithdrawResponse> {
         return withdrawPersister.findWithdrawHistory(uuid, currency, startTime, endTime, limit, offset, ascendingByTime)
     }
-
 
 }

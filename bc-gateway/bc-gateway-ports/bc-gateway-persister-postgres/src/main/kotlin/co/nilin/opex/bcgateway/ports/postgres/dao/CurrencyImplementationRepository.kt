@@ -26,7 +26,4 @@ interface CurrencyImplementationRepository : ReactiveCrudRepository<CurrencyOnCh
 
     fun findByCurrencySymbolAndChain(symbol: String, chain: String):Mono<CurrencyOnChainGatewayModel>
 
-
     fun findByGatewayUuidAndCurrencySymbol(gatewayUuid: String?,symbol: String?):Mono<CurrencyOnChainGatewayModel>?
-
-}

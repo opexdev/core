@@ -1,10 +1,8 @@
 package co.nilin.opex.wallet.app.controller
 
-import co.nilin.opex.wallet.app.service.DepositService
+import co.nilin.opex.wallet.app.dto.TransferRequest
 import co.nilin.opex.wallet.app.service.TransferService
 import co.nilin.opex.wallet.core.inout.TransferResult
-import co.nilin.opex.wallet.core.model.TransferCategory
-import co.nilin.opex.wallet.core.model.WalletType
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty

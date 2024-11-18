@@ -8,7 +8,6 @@ import co.nilin.opex.api.ports.binance.util.jwtAuthentication
 import co.nilin.opex.api.ports.binance.util.tokenValue
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.utils.Interval
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.GetMapping
