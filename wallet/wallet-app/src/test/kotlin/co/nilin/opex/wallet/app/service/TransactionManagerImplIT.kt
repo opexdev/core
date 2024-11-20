@@ -48,7 +48,7 @@ class TransactionManagerImplIT : KafkaEnabledTest() {
     @Test
     fun givenMultipleTransfer_whenFindTransactions_thenOrderedAndPaginated() {
         runBlocking {
-            val currency = currencyService.fetchCurrency(FetchCurrency( symbol = cc))!!
+            val currency = currencyService.fetchCurrency(FetchCurrency(symbol = cc))!!
 
             destUuid = UUID.randomUUID().toString()
             setupWallets(destUuid!!)
@@ -119,7 +119,7 @@ class TransactionManagerImplIT : KafkaEnabledTest() {
             } catch (_: Exception) {
 
             }
-            currencyService.createNewCurrency(CurrencyCommand(name =  cc, symbol =  cc, precision =  BigDecimal.ONE),true)
+            currencyService.createNewCurrency(CurrencyCommand(name = cc, symbol = cc, precision = BigDecimal.ONE), true)
             val currency = currencyService.fetchCurrency(FetchCurrency(symbol = cc))
             val sourceOwner = walletOwnerManager.createWalletOwner(sourceUuid, "not set", "")
             walletManager.createWallet(

@@ -24,7 +24,7 @@ class BinanceGlobalMarketProxy(
         // Binance encoding requires to change some of the Java's encoding model
         // https://binance-docs.github.io/apidocs/spot/en/#symbol-price-ticker
         val param = symbols.map { s -> "\"$s\"" }.toString().replace(" ", "")
-        val uri= UriComponentsBuilder.fromUriString("$baseUrl/api/v3/ticker/price")
+        val uri = UriComponentsBuilder.fromUriString("$baseUrl/api/v3/ticker/price")
             .queryParam("symbols", URLEncoder.encode(param, Charsets.UTF_8).replace("%2C", ","))
             .build(true)
             .toUri()

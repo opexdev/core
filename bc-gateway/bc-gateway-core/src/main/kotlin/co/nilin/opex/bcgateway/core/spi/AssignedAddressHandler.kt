@@ -2,7 +2,6 @@ package co.nilin.opex.bcgateway.core.spi
 
 import co.nilin.opex.bcgateway.core.model.AddressType
 import co.nilin.opex.bcgateway.core.model.AssignedAddress
-import java.time.LocalDateTime
 
 interface AssignedAddressHandler {
     suspend fun fetchAssignedAddresses(user: String, addressTypes: List<AddressType>): List<AssignedAddress>

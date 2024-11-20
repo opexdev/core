@@ -19,9 +19,9 @@ data class Deposit(
     var note: String? = null,
     var status: DepositStatus,
     var depositType: DepositType,
-    var attachment:String?,
+    var attachment: String?,
     var createDate: Date = Date(),
-    val id:Long? = null,
+    val id: Long? = null,
 )
 
 data class Deposits(var deposits: List<Deposit>)

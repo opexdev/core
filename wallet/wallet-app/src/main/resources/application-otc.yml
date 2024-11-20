@@ -21,10 +21,10 @@ spring:
   main:
     allow-bean-definition-overriding: false
     allow-circular-references: true
-#  kafka:
-#    bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
-#    consumer:
-#      group-id: wallet
+  #  kafka:
+  #    bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
+  #    consumer:
+  #      group-id: wallet
   r2dbc:
     url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
     username: ${dbusername:opex}
@@ -51,21 +51,21 @@ spring:
     consul:
       enabled: false
 
-#      config:
-#        enabled: false
+    #      config:
+    #        enabled: false
 
-#      config:
-#        enabled: false
+    #      config:
+    #        enabled: false
     #    consul:
 
 
-#      host: ${CONSUL_HOST:localhost}
-#      port: 8500
-#      discovery:
-#        #healthCheckPath: ${management.context-path}/health
-#        instance-id: ${spring.application.name}:${server.port}
-#        healthCheckInterval: 20s
-#        prefer-ip-address: true
+  #      host: ${CONSUL_HOST:localhost}
+  #      port: 8500
+  #      discovery:
+  #        #healthCheckPath: ${management.context-path}/health
+  #        instance-id: ${spring.application.name}:${server.port}
+  #        healthCheckInterval: 20s
+  #        prefer-ip-address: true
 
   config:
     import: vault://secret/${spring.application.name}
@@ -74,7 +74,7 @@ app:
     url: ${auth_url}
     cert-url: ${auth_jwk_endpoint}
     client-id: ${client_id}
-    client-secret:  ${client_secret}
+    client-secret: ${client_secret}
   system:
     uuid: 1
   backup:

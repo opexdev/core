@@ -5,7 +5,7 @@ spring:
   main:
     allow-circular-references: true
   kafka:
-    bootstrap-servers:  ${KAFKA_IP_PORT:localhost:9092}
+    bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
     consumer:
       group-id: eventlog
   r2dbc:
@@ -34,7 +34,7 @@ management:
     web:
       base-path: /actuator
       exposure:
-        include: ["health", "prometheus", "metrics"]
+        include: [ "health", "prometheus", "metrics" ]
   endpoint:
     health:
       show-details: when_authorized

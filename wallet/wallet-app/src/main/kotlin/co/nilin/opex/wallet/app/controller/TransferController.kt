@@ -1,6 +1,5 @@
 package co.nilin.opex.wallet.app.controller
 
-import co.nilin.opex.wallet.app.dto.TransferRequest
 import co.nilin.opex.wallet.app.service.DepositService
 import co.nilin.opex.wallet.app.service.TransferService
 import co.nilin.opex.wallet.core.inout.TransferResult
@@ -13,8 +12,9 @@ import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 
 @RestController
-class TransferController(private val transferService: TransferService,
-        private val depositService: DepositService
+class TransferController(
+    private val transferService: TransferService,
+    private val depositService: DepositService
 ) {
 
     data class TransferBody(
@@ -90,7 +90,6 @@ class TransferController(private val transferService: TransferService,
             transferBody.transferCategory
         ).transferResult
     }
-
 
 
 }

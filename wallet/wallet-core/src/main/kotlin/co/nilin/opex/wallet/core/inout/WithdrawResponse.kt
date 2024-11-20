@@ -4,7 +4,6 @@ import co.nilin.opex.wallet.core.model.WithdrawStatus
 import co.nilin.opex.wallet.core.model.WithdrawType
 import java.math.BigDecimal
 import java.time.LocalDateTime
-import java.util.*
 
 class WithdrawResponse(
     val withdrawId: Long,
@@ -22,7 +21,7 @@ class WithdrawResponse(
     val status: WithdrawStatus,
     var applicator: String?,
     var withdrawType: WithdrawType,
-    var attachment:String?,
+    var attachment: String?,
     val createDate: LocalDateTime,
     val lastUpdateDate: LocalDateTime?
 )

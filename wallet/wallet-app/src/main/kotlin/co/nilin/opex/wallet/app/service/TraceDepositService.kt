@@ -8,8 +8,9 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-class TraceDepositService (private val depositPersister: DepositPersister,){
+class TraceDepositService(private val depositPersister: DepositPersister) {
     private val logger = LoggerFactory.getLogger(TraceDepositService::class.java)
+
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     suspend fun saveDepositInNewTransaction(deposit: Deposit) {
         logger.info("Going to save a deposit command .....")

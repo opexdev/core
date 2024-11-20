@@ -1,9 +1,7 @@
 package co.nilin.opex.wallet.app.controller
 
-import co.nilin.opex.wallet.app.dto.ReservedTransferResponse
 import co.nilin.opex.wallet.app.dto.UserTransactionRequest
 import co.nilin.opex.wallet.core.model.UserTransactionHistory
-import co.nilin.opex.wallet.core.model.otc.ReservedTransfer
 import co.nilin.opex.wallet.core.spi.ReservedTransferManager
 import co.nilin.opex.wallet.core.spi.UserTransactionManager
 import org.springframework.web.bind.annotation.PostMapping

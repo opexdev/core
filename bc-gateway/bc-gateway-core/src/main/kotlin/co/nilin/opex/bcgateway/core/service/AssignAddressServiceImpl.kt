@@ -14,28 +14,28 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 open class AssignAddressServiceImpl(
-        private val currencyHandler: CryptoCurrencyHandlerV2,
-        private val assignedAddressHandler: AssignedAddressHandler,
-        private val reservedAddressHandler: ReservedAddressHandler,
-        private val chainLoader: ChainLoader
+    private val currencyHandler: CryptoCurrencyHandlerV2,
+    private val assignedAddressHandler: AssignedAddressHandler,
+    private val reservedAddressHandler: ReservedAddressHandler,
+    private val chainLoader: ChainLoader
 
 ) : AssignAddressService {
     @Value("\${app.address.life-time}")
-    private var addressLifeTime : Long? = null
+    private var addressLifeTime: Long? = null
     private val logger: Logger by LoggerDelegate()
 
     @Transactional
     override suspend fun assignAddress(user: String, currency: String, chain: String): List<AssignedAddress> {
         logger.info("address life time: " + addressLifeTime.toString())
-        addressLifeTime=7200
+        addressLifeTime = 7200
         val currencyInfo = currencyHandler.fetchCurrencyOnChainGateways(FetchGateways(currencySymbol = currency))
-                ?: throw OpexError.CurrencyNotFound.exception()
+            ?: throw OpexError.CurrencyNotFound.exception()
         val chains = currencyInfo
-                ?.map { imp -> chainLoader.fetchChainInfo(imp.chain) }
-                ?.filter { it?.name.equals(chain, true) }
+            ?.map { imp -> chainLoader.fetchChainInfo(imp.chain) }
+            ?.filter { it?.name.equals(chain, true) }
         val addressTypes = chains
-                ?.flatMap { chain -> chain?.addressTypes!! }
-                ?.distinct()
+            ?.flatMap { chain -> chain?.addressTypes!! }
+            ?.distinct()
         val chainAddressTypeMap = HashMap<AddressType, MutableList<Chain>>()
         chains?.forEach { chain ->
             chain?.addressTypes?.forEach { addressType ->
@@ -43,7 +43,8 @@ open class AssignAddressServiceImpl(
                 chainAddressTypeMap.getValue(addressType).add(chain!!)
             }
         }
-        val userAssignedAddresses = (assignedAddressHandler.fetchAssignedAddresses(user, addressTypes!!)).toMutableList()
+        val userAssignedAddresses =
+            (assignedAddressHandler.fetchAssignedAddresses(user, addressTypes!!)).toMutableList()
         val result = mutableSetOf<AssignedAddress>()
         addressTypes.forEach { addressType ->
             val assigned = userAssignedAddresses.firstOrNull { assignAddress -> assignAddress.type == addressType }
@@ -58,17 +59,17 @@ open class AssignAddressServiceImpl(
                 val reservedAddress = reservedAddressHandler.peekReservedAddress(addressType)
                 if (reservedAddress != null) {
                     val newAssigned = AssignedAddress(
-                            user,
-                            reservedAddress.address,
-                            reservedAddress.memo,
-                            addressType,
-                            chainAddressTypeMap[addressType]!!,
-                            addressLifeTime?.let { LocalDateTime.now().plusSeconds(addressLifeTime!!) }
-                                    ?: null,
-                            LocalDateTime.now(),
-                            null,
-                            AddressStatus.Assigned,
-                            null
+                        user,
+                        reservedAddress.address,
+                        reservedAddress.memo,
+                        addressType,
+                        chainAddressTypeMap[addressType]!!,
+                        addressLifeTime?.let { LocalDateTime.now().plusSeconds(addressLifeTime!!) }
+                            ?: null,
+                        LocalDateTime.now(),
+                        null,
+                        AddressStatus.Assigned,
+                        null
                     )
                     reservedAddressHandler.remove(reservedAddress)
                     result.add(newAssigned)

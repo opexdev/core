@@ -1,7 +1,6 @@
 package co.nilin.opex.market.core.spi
 
 import co.nilin.opex.market.core.inout.*
-import java.time.LocalDateTime
 
 interface UserQueryHandler {
 

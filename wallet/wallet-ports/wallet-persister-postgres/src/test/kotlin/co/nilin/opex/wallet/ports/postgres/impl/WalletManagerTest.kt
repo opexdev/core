@@ -13,7 +13,6 @@ import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
 
@@ -204,8 +203,8 @@ private class WalletManagerTest {
             walletLimitsRepository.findByOwnerAndCurrencyAndActionAndWalletType(
                 VALID.WALLET_OWNER.id!!,
                 VALID.CURRENCY.symbol!!,
-                    WalletLimitAction.WITHDRAW,
-                    WalletType.MAIN
+                WalletLimitAction.WITHDRAW,
+                WalletType.MAIN
             )
         } returns Mono.empty()
         every {
@@ -322,9 +321,13 @@ private class WalletManagerTest {
             currencyRepository.fetchCurrency(symbol = VALID.CURRENCY.symbol)
         } returns Mono.just(VALID.CURRENCY.toModel())
 
-        println(walletRepository.findByOwnerAndTypeAndCurrency(VALID.WALLET_OWNER.id!!,
-            WalletType.MAIN,
-            VALID.CURRENCY.symbol!!)?.awaitFirst()?.id)
+        println(
+            walletRepository.findByOwnerAndTypeAndCurrency(
+                VALID.WALLET_OWNER.id!!,
+                WalletType.MAIN,
+                VALID.CURRENCY.symbol!!
+            )?.awaitFirst()?.id
+        )
 
         val wallet = walletManagerImpl.findWalletByOwnerAndCurrencyAndType(
             VALID.WALLET_OWNER,

@@ -13,6 +13,4 @@ interface BlockchainGatewayProxy {
     suspend fun getCurrencyImplementations(currency: String? = null): List<CurrencyImplementation>
 
 
-
-
 }

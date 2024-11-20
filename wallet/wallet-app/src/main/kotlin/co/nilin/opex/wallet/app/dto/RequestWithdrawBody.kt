@@ -10,5 +10,5 @@ data class RequestWithdrawBody(
     val destNetwork: String?,
     val destNote: String?,
     val description: String?,
-    val gatewayUuid:String?
+    val gatewayUuid: String?
 )

@@ -1,6 +1,5 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
-import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepositoryV2
 import co.nilin.opex.wallet.ports.postgres.impl.sample.VALID
@@ -9,9 +8,7 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 private class CurrencyServiceTest {
@@ -22,7 +19,7 @@ private class CurrencyServiceTest {
     fun givenCurrency_whenGetCurrency_thenReturnCurrency(): Unit = runBlocking {
         every { currencyRepository.fetchCurrency(symbol = VALID.CURRENCY.symbol) } returns Mono.just(VALID.CURRENCY.toModel())
 
-        val c = currencyService.fetchCurrency(FetchCurrency(symbol =  VALID.CURRENCY.symbol))
+        val c = currencyService.fetchCurrency(FetchCurrency(symbol = VALID.CURRENCY.symbol))
 
         assertThat(c).isNotNull
         assertThat(c!!.symbol).isEqualTo(VALID.CURRENCY.symbol)

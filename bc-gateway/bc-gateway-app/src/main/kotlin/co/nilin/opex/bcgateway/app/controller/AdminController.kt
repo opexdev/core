@@ -8,15 +8,14 @@ import co.nilin.opex.bcgateway.core.spi.ChainLoader
 import co.nilin.opex.bcgateway.ports.postgres.impl.CurrencyHandlerImplV2
 import co.nilin.opex.common.OpexError
 import org.springframework.web.bind.annotation.*
-import java.math.BigDecimal
 
 @RestController
 @RequestMapping("/admin")
 class AdminController(
-        private val service: AdminService,
-        private val chainLoader: ChainLoader,
-        private val currencyHandler: CurrencyHandlerImplV2,
-        private val addressTypeHandler: AddressTypeHandler
+    private val service: AdminService,
+    private val chainLoader: ChainLoader,
+    private val currencyHandler: CurrencyHandlerImplV2,
+    private val addressTypeHandler: AddressTypeHandler
 ) {
 
     @GetMapping("/chain")
@@ -44,8 +43,7 @@ class AdminController(
     }
 
 
-
-   // shifted to crypto currency class!
+    // shifted to crypto currency class!
 
 //    //todo filter tokens?????
 //    @GetMapping("/token")

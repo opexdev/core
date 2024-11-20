@@ -3,7 +3,6 @@ package co.nilin.opex.wallet.ports.postgres.model
 import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.model.otc.ReservedStatus
 import org.springframework.data.annotation.Id
-import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
 import java.time.LocalDateTime
@@ -24,5 +23,5 @@ data class ReservedTransferModel(
     var reserveDate: LocalDateTime? = LocalDateTime.now(),
     var expDate: LocalDateTime? = null,
     var status: ReservedStatus? = null,
-    var rate: BigDecimal?=null
+    var rate: BigDecimal? = null
 )

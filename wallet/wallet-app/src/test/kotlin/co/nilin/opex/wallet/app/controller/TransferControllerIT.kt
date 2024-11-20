@@ -6,14 +6,12 @@ import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
-
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
 import org.springframework.http.MediaType
@@ -53,26 +51,32 @@ class TransferControllerIT : KafkaEnabledTest() {
             val sender = walletOwnerManager.createWalletOwner(UUID.randomUUID().toString(), "sender", "")
             val receiver = sender.uuid
             val srcCurrency = currencyService.fetchCurrency(FetchCurrency(symbol = "ETH"))!!
-            walletManager.createWallet(sender, Amount(srcCurrency, BigDecimal.valueOf(100)), srcCurrency, WalletType.MAIN)
+            walletManager.createWallet(
+                sender,
+                Amount(srcCurrency, BigDecimal.valueOf(100)),
+                srcCurrency,
+                WalletType.MAIN
+            )
 
-            val transfer = webClient.post().uri("/v2/transfer/1_ETH/from/${sender.uuid}_MAIN/to/${receiver}_EXCHANGE").accept(MediaType.APPLICATION_JSON)
-                    .bodyValue(TransferController.TransferBody("desc", "ref", TransferCategory.NORMAL))
-                    .exchange()
-                    .expectStatus().isOk
-                    .expectBody(TransferResult::class.java)
-                    .returnResult().responseBody!!
+            val transfer = webClient.post().uri("/v2/transfer/1_ETH/from/${sender.uuid}_MAIN/to/${receiver}_EXCHANGE")
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(TransferController.TransferBody("desc", "ref", TransferCategory.NORMAL))
+                .exchange()
+                .expectStatus().isOk
+                .expectBody(TransferResult::class.java)
+                .returnResult().responseBody!!
             Assertions.assertEquals(BigDecimal.ONE, transfer.amount.amount)
             Assertions.assertEquals("ETH", transfer.amount.currency.symbol)
             val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(
-                    walletOwnerManager.findWalletOwner(receiver)!!, WalletType.EXCHANGE, srcCurrency
+                walletOwnerManager.findWalletOwner(receiver)!!, WalletType.EXCHANGE, srcCurrency
             )
             Assertions.assertEquals(BigDecimal.ONE, receiverWallet!!.balance.amount)
             val txList = webClient.post().uri("/transaction/$receiver").accept(MediaType.APPLICATION_JSON)
-                    .bodyValue(TransactionRequest("ETH", null, t, System.currentTimeMillis(), 1, 0, true))
-                    .exchange()
-                    .expectStatus().isOk
-                    .expectBodyList(TransactionWithDetailHistory::class.java)
-                    .returnResult().responseBody
+                .bodyValue(TransactionRequest("ETH", null, t, System.currentTimeMillis(), 1, 0, true))
+                .exchange()
+                .expectStatus().isOk
+                .expectBodyList(TransactionWithDetailHistory::class.java)
+                .returnResult().responseBody
             Assertions.assertEquals(1, txList!!.size)
             with(txList[0]) {
                 Assertions.assertEquals(TransferCategory.NORMAL, this.category)

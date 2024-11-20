@@ -3,8 +3,8 @@ package co.nilin.opex.wallet.app.service.otc
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import co.nilin.opex.wallet.core.inout.CurrencyPrice
-import co.nilin.opex.wallet.core.model.FetchCurrency
-import co.nilin.opex.wallet.core.model.otc.*
+import co.nilin.opex.wallet.core.model.otc.ForbiddenPair
+import co.nilin.opex.wallet.core.model.otc.Rate
 import co.nilin.opex.wallet.core.service.otc.RateService
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import org.slf4j.LoggerFactory
@@ -13,7 +13,8 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 @Service
-class GraphService(private val rateService: RateService, private val currencyService: CurrencyServiceManager
+class GraphService(
+    private val rateService: RateService, private val currencyService: CurrencyServiceManager
 ) {
     private val logger = LoggerFactory.getLogger(GraphService::class.java)
 
@@ -43,13 +44,16 @@ class GraphService(private val rateService: RateService, private val currencySer
         val vertice: List<String> = systemCurrencies?.filter {
             it.isTransitive == false && it.isActive == true
         }?.map(CurrencyCommand::symbol) ?: throw OpexError.NoRecordFound.exception()
-        val transitiveSymbols: List<String> = systemCurrencies.filter { it.isTransitive == true }.map(CurrencyCommand::symbol)
+        val transitiveSymbols: List<String> =
+            systemCurrencies.filter { it.isTransitive == true }.map(CurrencyCommand::symbol)
 
         for (vertex in vertice) {
             if (source == null || vertex == source) {
                 val visited = mutableSetOf<String>()
-                findRoutesWithMax2EdgesV2(vertex, adjencyMap, visited, 0,
-                        mutableListOf(), transitiveSymbols, routesWithMax2StepV2, dest, vertice)
+                findRoutesWithMax2EdgesV2(
+                    vertex, adjencyMap, visited, 0,
+                    mutableListOf(), transitiveSymbols, routesWithMax2StepV2, dest, vertice
+                )
             }
         }
         return routesWithMax2StepV2
@@ -62,20 +66,20 @@ class GraphService(private val rateService: RateService, private val currencySer
 
     suspend fun findRoute(source: String, dest: String): Rate? {
         return buildRoutes(source, dest)
-                .map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }
-                .firstOrNull()
+            .map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }
+            .firstOrNull()
     }
 
     private suspend fun findRoutesWithMax2EdgesV2(
-            currentVertex: String,
-            adjacencyMap: Map<String, MutableList<Rate>>,
-            visited: MutableSet<String>,
-            currentLength: Int,
-            currentRoute: MutableList<Rate>,
-            transitiveSymbols: List<String>,
-            routesWithMax2StepV2: MutableList<Route>,
-            dest: String? = null,
-            availableCurrency: List<String>
+        currentVertex: String,
+        adjacencyMap: Map<String, MutableList<Rate>>,
+        visited: MutableSet<String>,
+        currentLength: Int,
+        currentRoute: MutableList<Rate>,
+        transitiveSymbols: List<String>,
+        routesWithMax2StepV2: MutableList<Route>,
+        dest: String? = null,
+        availableCurrency: List<String>
     ) {
         if (currentLength == 3) {
             return
@@ -83,7 +87,8 @@ class GraphService(private val rateService: RateService, private val currencySer
         visited.add(currentVertex)
         if (currentLength >= 1) {
             if ((!transitiveSymbols.contains(currentRoute[currentRoute.lastIndex].destSymbol)) &&
-                    availableCurrency.contains(currentRoute[currentRoute.lastIndex].destSymbol)) {
+                availableCurrency.contains(currentRoute[currentRoute.lastIndex].destSymbol)
+            ) {
                 val existingRoute = routesWithMax2StepV2.find { route ->
                     route.getSourceSymbol() == currentRoute[0].sourceSymbol
                             &&
@@ -94,7 +99,7 @@ class GraphService(private val rateService: RateService, private val currencySer
                         routesWithMax2StepV2.remove(existingRoute)
                         addCurrentRouteV2(routesWithMax2StepV2, currentRoute, dest)
                     } else if (existingRoute.rates.size == currentRoute.size
-                            && existingRoute.rates != currentRoute
+                        && existingRoute.rates != currentRoute
                     ) {
                         throw Exception("Only one route should be available between two symbols")
                     }
@@ -108,15 +113,15 @@ class GraphService(private val rateService: RateService, private val currencySer
             if (!visited.contains(edge.destSymbol)) {
                 currentRoute.add(edge)
                 findRoutesWithMax2EdgesV2(
-                        edge.destSymbol,
-                        adjacencyMap,
-                        visited,
-                        currentLength + 1,
-                        currentRoute,
-                        transitiveSymbols,
-                        routesWithMax2StepV2,
-                        dest,
-                        availableCurrency
+                    edge.destSymbol,
+                    adjacencyMap,
+                    visited,
+                    currentLength + 1,
+                    currentRoute,
+                    transitiveSymbols,
+                    routesWithMax2StepV2,
+                    dest,
+                    availableCurrency
 
                 )
                 currentRoute.removeAt(currentRoute.size - 1)
@@ -125,11 +130,21 @@ class GraphService(private val rateService: RateService, private val currencySer
         visited.remove(currentVertex)
     }
 
-    private suspend fun addCurrentRouteV2(routesWithMax2Step: MutableList<Route>, currentRoute: MutableList<Rate>, dest: String? = null) {
+    private suspend fun addCurrentRouteV2(
+        routesWithMax2Step: MutableList<Route>,
+        currentRoute: MutableList<Rate>,
+        dest: String? = null
+    ) {
 
         val route = Route(currentRoute.toList());
-        if ((rateService.getForbiddenPairs().forbiddenPairs?.contains(ForbiddenPair(route.getSourceSymbol(), route.getDestSymbol())) == false)
-                && (dest == null || route.getDestSymbol() == dest))
+        if ((rateService.getForbiddenPairs().forbiddenPairs?.contains(
+                ForbiddenPair(
+                    route.getSourceSymbol(),
+                    route.getDestSymbol()
+                )
+            ) == false)
+            && (dest == null || route.getDestSymbol() == dest)
+        )
             routesWithMax2Step.add(route)
 
     }
@@ -143,11 +158,27 @@ class GraphService(private val rateService: RateService, private val currencySer
     }
 
     suspend fun fetchPrice(unit: String): List<CurrencyPrice>? {
-        var buyPricesGroupedByCurrency = buildRoutes(unit, null).map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), BigDecimal(1).divide(route.getRate(),10,RoundingMode.HALF_UP)) }.groupBy { p -> p.destSymbol }
-        var sellPricesGroupedByCurrency = buildRoutes(null, unit).map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }.groupBy { p -> p.sourceSymbol }
+        var buyPricesGroupedByCurrency = buildRoutes(unit, null).map { route ->
+            Rate(
+                route.getSourceSymbol(),
+                route.getDestSymbol(),
+                BigDecimal(1).divide(route.getRate(), 10, RoundingMode.HALF_UP)
+            )
+        }.groupBy { p -> p.destSymbol }
+        var sellPricesGroupedByCurrency = buildRoutes(null, unit).map { route ->
+            Rate(
+                route.getSourceSymbol(),
+                route.getDestSymbol(),
+                route.getRate()
+            )
+        }.groupBy { p -> p.sourceSymbol }
 
         return currencyService.fetchCurrencies()?.currencies?.map { it ->
-            CurrencyPrice(it.symbol, buyPricesGroupedByCurrency[it.symbol]?.firstOrNull()?.rate, sellPricesGroupedByCurrency[it.symbol]?.firstOrNull()?.rate)
+            CurrencyPrice(
+                it.symbol,
+                buyPricesGroupedByCurrency[it.symbol]?.firstOrNull()?.rate,
+                sellPricesGroupedByCurrency[it.symbol]?.firstOrNull()?.rate
+            )
         }
 
 

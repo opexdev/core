@@ -21,6 +21,7 @@ class ErrorConfig {
         messageSource.setDefaultEncoding("UTF-8")
         return messageSource
     }
+
     @Bean
     @ConditionalOnMissingBean
     fun translator(): ErrorTranslator {

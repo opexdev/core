@@ -1,24 +1,17 @@
 package co.nilin.opex.wallet.ports.postgres.dao
 
-import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.model.otc.ReservedStatus
-import co.nilin.opex.wallet.ports.postgres.model.DepositModel
 import co.nilin.opex.wallet.ports.postgres.model.ReservedTransferModel
 import kotlinx.coroutines.flow.Flow
-import org.springframework.data.annotation.Id
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Repository
 interface ReservedTransferRepository : ReactiveCrudRepository<ReservedTransferModel, Long> {
     fun findByReserveNumber(reservedNumber: String): Mono<ReservedTransferModel>?
-
-
 
 
     @Query(

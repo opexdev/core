@@ -3,7 +3,6 @@ package co.nilin.opex.wallet.core.model.otc
 import co.nilin.opex.wallet.core.model.WalletType
 import java.math.BigDecimal
 import java.time.LocalDateTime
-import java.util.*
 
 
 data class ReservedTransfer(
@@ -20,7 +19,7 @@ data class ReservedTransfer(
     var reserveDate: LocalDateTime? = LocalDateTime.now(),
     var expDate: LocalDateTime? = null,
     var status: ReservedStatus? = null,
-    val rate: BigDecimal?=null,
+    val rate: BigDecimal? = null,
 )
 
 

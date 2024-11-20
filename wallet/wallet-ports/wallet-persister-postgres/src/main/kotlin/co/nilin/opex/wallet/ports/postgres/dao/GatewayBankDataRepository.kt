@@ -9,10 +9,10 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @Repository
-interface GatewayBankDataRepository  : ReactiveCrudRepository<GatewayBankDataModel, Long> {
+interface GatewayBankDataRepository : ReactiveCrudRepository<GatewayBankDataModel, Long> {
 
-    fun deleteByBankDataIdAndGatewayId(bankDataId:Long,gatewayId:Long): Mono<Void>
+    fun deleteByBankDataIdAndGatewayId(bankDataId: Long, gatewayId: Long): Mono<Void>
 
     @Query("select b.* from gateway_bank_data gb join bank_data b on gb.bank_data_id=b.id where gb.gateway_id=:gatewayId ")
-    fun findByGatewayId(gatewayId:Long):Flux<BankDataModel>?
+    fun findByGatewayId(gatewayId: Long): Flux<BankDataModel>?
 }

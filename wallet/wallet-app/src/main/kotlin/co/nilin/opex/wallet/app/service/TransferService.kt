@@ -1,15 +1,12 @@
 package co.nilin.opex.wallet.app.service
 
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.utility.error.data.OpexException
-import co.nilin.opex.utility.preferences.Preferences
-import co.nilin.opex.wallet.app.dto.AdvanceReservedTransferData
-import co.nilin.opex.wallet.app.dto.ManualTransferRequest
 import co.nilin.opex.wallet.app.dto.ReservedTransferResponse
-import co.nilin.opex.wallet.app.dto.TransferRequest
 import co.nilin.opex.wallet.app.service.otc.GraphService
-import co.nilin.opex.wallet.core.exc.NotEnoughBalanceException
-import co.nilin.opex.wallet.core.inout.*
+import co.nilin.opex.wallet.core.inout.ManualGatewayCommand
+import co.nilin.opex.wallet.core.inout.TransferCommand
+import co.nilin.opex.wallet.core.inout.TransferResult
+import co.nilin.opex.wallet.core.inout.TransferResultDetailed
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.model.TransferCategory
@@ -18,11 +15,9 @@ import co.nilin.opex.wallet.core.model.otc.Rate
 import co.nilin.opex.wallet.core.model.otc.ReservedTransfer
 import co.nilin.opex.wallet.core.spi.*
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
-import java.time.LocalDateTime
 import java.util.*
 
 
@@ -246,7 +241,6 @@ class TransferService(
             )
         )
     }
-
 
 
     private suspend fun checkIfSystemHasEnoughBalance(

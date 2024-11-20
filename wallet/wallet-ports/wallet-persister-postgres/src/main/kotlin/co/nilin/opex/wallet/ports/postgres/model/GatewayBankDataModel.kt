@@ -5,9 +5,9 @@ import org.springframework.data.relational.core.mapping.Table
 import java.util.*
 
 @Table("gateway_bank_data")
-data class GatewayBankDataModel (
+data class GatewayBankDataModel(
     @Id
-    var id: Long?=null,
+    var id: Long? = null,
     var bankDataId: Long,
     var gatewayId: Long,
 )

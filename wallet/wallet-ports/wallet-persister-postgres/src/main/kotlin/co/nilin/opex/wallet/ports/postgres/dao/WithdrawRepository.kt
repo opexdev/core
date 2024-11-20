@@ -4,7 +4,6 @@ import co.nilin.opex.wallet.core.model.WithdrawStatus
 import co.nilin.opex.wallet.ports.postgres.model.WithdrawModel
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.r2dbc.repository.Query
-import org.springframework.data.repository.query.Param
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Mono
@@ -48,9 +47,9 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         destAddress: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
-        ascendingByTime: Boolean?=false,
-        offset: Int?=0,
-        size: Int?=10000
+        ascendingByTime: Boolean? = false,
+        offset: Int? = 0,
+        size: Int? = 10000
     ): Flow<WithdrawModel>
 
     @Query(
@@ -78,9 +77,9 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         status: List<WithdrawStatus>?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
-        ascendingByTime: Boolean?=false,
-        offset: Int?=0,
-        size: Int?=10000
+        ascendingByTime: Boolean? = false,
+        offset: Int? = 0,
+        size: Int? = 10000
     ): Flow<WithdrawModel>
 
     @Query(
@@ -101,8 +100,8 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         currency: String?,
         destTxRef: String?,
         destAddress: String?,
-        offset: Int?=0,
-        size: Int?=10000
+        offset: Int? = 0,
+        size: Int? = 10000
     ): Flow<WithdrawModel>
 
     @Query(
@@ -125,8 +124,8 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         destTxRef: String?,
         destAddress: String?,
         status: List<WithdrawStatus>,
-        offset: Int?=0,
-        size: Int?=10000
+        offset: Int? = 0,
+        size: Int? = 10000
     ): Flow<WithdrawModel>
 
     @Query(
@@ -189,8 +188,8 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
         ascendingByTime: Boolean,
-        limit: Int?=0,
-        offset: Int?=10000
+        limit: Int? = 0,
+        offset: Int? = 10000
     ): Flow<WithdrawModel>
 
 //    @Query(

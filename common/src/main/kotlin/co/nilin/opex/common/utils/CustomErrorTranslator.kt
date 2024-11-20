@@ -4,7 +4,6 @@ import co.nilin.opex.utility.error.data.DefaultExceptionResponse
 import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.utility.error.spi.ErrorTranslator
 import co.nilin.opex.utility.error.spi.ExceptionResponse
-import org.slf4j.Logger
 import org.springframework.context.MessageSource
 import java.util.*
 

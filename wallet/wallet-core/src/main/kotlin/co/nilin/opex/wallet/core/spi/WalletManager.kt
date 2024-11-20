@@ -32,11 +32,11 @@ interface WalletManager {
 
 
     suspend fun createWalletForSystem(
-            currency: String,
-            systemBalance:BigDecimal?
+        currency: String,
+        systemBalance: BigDecimal?
     )
 
-     suspend fun createCashoutWallet(owner: WalletOwner, currency: CurrencyCommand): Wallet
+    suspend fun createCashoutWallet(owner: WalletOwner, currency: CurrencyCommand): Wallet
     suspend fun findWalletById(walletId: Long): Wallet?
 
     suspend fun findAllWalletsBriefNotZero(ownerId: Long): List<BriefWallet>

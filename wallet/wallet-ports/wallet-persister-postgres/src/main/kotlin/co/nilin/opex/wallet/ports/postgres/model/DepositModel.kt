@@ -25,7 +25,7 @@ data class DepositModel(
     var note: String?,
     var transactionRef: String?,
     var status: DepositStatus,
-    val attachment:String?,
+    val attachment: String?,
     var depositType: DepositType,
     val createDate: LocalDateTime = LocalDateTime.now(),
 )

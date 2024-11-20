@@ -6,6 +6,6 @@ interface UserLevelLoader {
 
     suspend fun load(uuid: String): String
 
-    suspend fun update(uuid: String,userLevel:KycLevel)
+    suspend fun update(uuid: String, userLevel: KycLevel)
 
 }

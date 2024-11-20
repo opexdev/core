@@ -2,19 +2,14 @@ package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.RequestWithdrawBody
-import co.nilin.opex.wallet.app.dto.SearchWithdrawRequest
 import co.nilin.opex.wallet.app.dto.WithdrawHistoryRequest
+import co.nilin.opex.wallet.core.inout.WithdrawActionResult
 import co.nilin.opex.wallet.core.inout.WithdrawCommand
 import co.nilin.opex.wallet.core.inout.WithdrawResponse
-import co.nilin.opex.wallet.core.inout.WithdrawActionResult
 import co.nilin.opex.wallet.core.service.WithdrawService
-import io.swagger.annotations.ApiResponse
-import io.swagger.annotations.Example
-import io.swagger.annotations.ExampleProperty
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
-import java.math.BigDecimal
 import java.security.Principal
 import java.time.Instant
 import java.time.LocalDateTime

@@ -7,9 +7,9 @@ import co.nilin.opex.wallet.app.dto.PaymentDepositResponse
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.FetchCurrency
-import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.core.model.TransferCategory
 import co.nilin.opex.wallet.core.model.WalletType
+import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.core.spi.TransferManager
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
@@ -22,10 +22,10 @@ import java.math.BigDecimal
 @RestController
 @RequestMapping("/payment")
 class PaymentGatewayController(
-        val transferManager: TransferManager,
-        val currencyService: CurrencyServiceManager,
-        val walletManager: WalletManager,
-        val walletOwnerManager: WalletOwnerManager
+    val transferManager: TransferManager,
+    val currencyService: CurrencyServiceManager,
+    val walletManager: WalletManager,
+    val walletOwnerManager: WalletOwnerManager
 ) {
 
     @PostMapping("/internal/deposit")
@@ -36,7 +36,8 @@ class PaymentGatewayController(
             PaymentCurrency.TOMAN -> request.amount.toLong()
         }
 
-        val currency = currencyService.fetchCurrency(FetchCurrency(symbol = "IRT")) ?: throw OpexError.CurrencyNotFound.exception()
+        val currency =
+            currencyService.fetchCurrency(FetchCurrency(symbol = "IRT")) ?: throw OpexError.CurrencyNotFound.exception()
         val sourceOwner = walletOwnerManager.findWalletOwner(walletOwnerManager.systemUuid)
             ?: throw OpexError.WalletOwnerNotFound.exception()
         val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner, WalletType.MAIN, currency)
@@ -56,7 +57,7 @@ class PaymentGatewayController(
             receiverWalletType
         )
 
-         transferManager.transfer(
+        transferManager.transfer(
             TransferCommand(
                 sourceWallet,
                 receiverWallet,

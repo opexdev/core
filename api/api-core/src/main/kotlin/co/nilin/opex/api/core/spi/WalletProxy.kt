@@ -14,25 +14,25 @@ interface WalletProxy {
     suspend fun getOwnerLimits(uuid: String?, token: String?): OwnerLimitsResponse
 
     suspend fun getDepositTransactions(
-            uuid: String,
-            token: String?,
-            coin: String?,
-            startTime: Long?,
-            endTime: Long?,
-            limit: Int,
-            offset: Int,
-            ascendingByTime: Boolean?
+        uuid: String,
+        token: String?,
+        coin: String?,
+        startTime: Long?,
+        endTime: Long?,
+        limit: Int,
+        offset: Int,
+        ascendingByTime: Boolean?
     ): List<TransactionHistoryResponse>
 
     suspend fun getWithdrawTransactions(
-            uuid: String,
-            token: String?,
-            coin: String?,
-            startTime: Long?,
-            endTime: Long?,
-            limit: Int,
-            offset: Int,
-            ascendingByTime: Boolean?
+        uuid: String,
+        token: String?,
+        coin: String?,
+        startTime: Long?,
+        endTime: Long?,
+        limit: Int,
+        offset: Int,
+        ascendingByTime: Boolean?
     ): List<WithdrawHistoryResponse>
 
 

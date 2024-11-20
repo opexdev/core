@@ -1,9 +1,8 @@
 package co.nilin.opex.wallet.ports.proxy.bcgateway.impl
 
-import co.nilin.opex.wallet.core.inout.OnChainGatewayCommand
 import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
 import co.nilin.opex.wallet.core.inout.GatewayData
-
+import co.nilin.opex.wallet.core.inout.OnChainGatewayCommand
 import co.nilin.opex.wallet.core.spi.GatewayPersister
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
 import java.net.URI
-import org.springframework.security.core.context.SecurityContextHolder
 
 inline fun <reified T : Any> typeRef(): ParameterizedTypeReference<T> = object : ParameterizedTypeReference<T>() {}
 
@@ -26,76 +24,52 @@ class OnChainGatewayProxyGateway(private val webClient: WebClient) : GatewayPers
 
     private val logger = LoggerFactory.getLogger(OnChainGatewayProxyGateway::class.java)
 
-    override suspend fun createGateway(currencyGateway: CurrencyGatewayCommand, internalToken: String?): CurrencyGatewayCommand? {
+    override suspend fun createGateway(
+        currencyGateway: CurrencyGatewayCommand,
+        internalToken: String?
+    ): CurrencyGatewayCommand? {
         return webClient.post()
-                .uri(URI.create("$baseUrl/crypto-currency/${currencyGateway.currencySymbol}/gateway"))
+            .uri(URI.create("$baseUrl/crypto-currency/${currencyGateway.currencySymbol}/gateway"))
 
-                .headers { httpHeaders ->
-                    run {
-                        httpHeaders.add("Content-Type", "application/json");
-                        internalToken?.let { httpHeaders.add("Authorization", "Bearer $it") }
-                    }
+            .headers { httpHeaders ->
+                run {
+                    httpHeaders.add("Content-Type", "application/json");
+                    internalToken?.let { httpHeaders.add("Authorization", "Bearer $it") }
                 }
-                .bodyValue(currencyGateway)
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono(typeRef<OnChainGatewayCommand>())
-                .log()
-                .awaitFirst()
+            }
+            .bodyValue(currencyGateway)
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono(typeRef<OnChainGatewayCommand>())
+            .log()
+            .awaitFirst()
     }
 
-    override suspend fun updateGateway(currencyImp: CurrencyGatewayCommand, internalToken: String?): CurrencyGatewayCommand? {
+    override suspend fun updateGateway(
+        currencyImp: CurrencyGatewayCommand,
+        internalToken: String?
+    ): CurrencyGatewayCommand? {
         return webClient.put()
-                .uri(URI.create("$baseUrl/crypto-currency/${currencyImp.currencySymbol}/gateway/${currencyImp.gatewayUuid}"))
-                .headers { httpHeaders ->
-                    run {
-                        httpHeaders.add("Content-Type", "application/json");
-                        internalToken?.let { httpHeaders.add("Authorization", "Bearer $it") }
-                    }
+            .uri(URI.create("$baseUrl/crypto-currency/${currencyImp.currencySymbol}/gateway/${currencyImp.gatewayUuid}"))
+            .headers { httpHeaders ->
+                run {
+                    httpHeaders.add("Content-Type", "application/json");
+                    internalToken?.let { httpHeaders.add("Authorization", "Bearer $it") }
                 }
-                .bodyValue(currencyImp)
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono(typeRef<OnChainGatewayCommand>())
-                .log()
-                .awaitFirst()
+            }
+            .bodyValue(currencyImp)
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono(typeRef<OnChainGatewayCommand>())
+            .log()
+            .awaitFirst()
     }
 
     override suspend fun fetchGateways(currencySymbol: String?, internalToken: String?): List<CurrencyGatewayCommand>? {
 
         if (currencySymbol == null)
             return webClient.get()
-                    .uri(URI.create("$baseUrl/crypto-currency/gateways"))
-                    .headers { httpHeaders ->
-                        run {
-                            httpHeaders.add("Content-Type", "application/json");
-                            internalToken?.let { httpHeaders.add("Authorization", "Bearer $it") }
-                        }
-                    }
-                    .retrieve()
-                    .onStatus({ t -> t.isError }, { it.createException() })
-                    .bodyToMono(typeRef<List<OnChainGatewayCommand>>())
-                    .log()
-                    .awaitFirst()
-        else
-            return webClient.get()
-                    .uri(URI.create("$baseUrl/crypto-currency/${currencySymbol}/gateways"))
-                    .headers { httpHeaders ->
-                        run {
-                            httpHeaders.add("Content-Type", "application/json");
-                            internalToken?.let { httpHeaders.add("Authorization", "Bearer $it") }
-                        }
-                    }
-                    .retrieve()
-                    .onStatus({ t -> t.isError }, { it.createException() })
-                    .bodyToMono(typeRef<List<OnChainGatewayCommand>>())
-                    .log()
-                    .awaitFirst()
-    }
-
-    override suspend fun fetchGatewayDetail(implUuid: String, currencySymbol: String, internalToken: String?): OnChainGatewayCommand? {
-        return webClient.get()
-                .uri(URI.create("$baseUrl/crypto-currency/${currencySymbol}/gateway/${implUuid}"))
+                .uri(URI.create("$baseUrl/crypto-currency/gateways"))
                 .headers { httpHeaders ->
                     run {
                         httpHeaders.add("Content-Type", "application/json");
@@ -104,37 +78,72 @@ class OnChainGatewayProxyGateway(private val webClient: WebClient) : GatewayPers
                 }
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono(typeRef<OnChainGatewayCommand>())
+                .bodyToMono(typeRef<List<OnChainGatewayCommand>>())
+                .log()
+                .awaitFirst()
+        else
+            return webClient.get()
+                .uri(URI.create("$baseUrl/crypto-currency/${currencySymbol}/gateways"))
+                .headers { httpHeaders ->
+                    run {
+                        httpHeaders.add("Content-Type", "application/json");
+                        internalToken?.let { httpHeaders.add("Authorization", "Bearer $it") }
+                    }
+                }
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToMono(typeRef<List<OnChainGatewayCommand>>())
                 .log()
                 .awaitFirst()
     }
 
+    override suspend fun fetchGatewayDetail(
+        implUuid: String,
+        currencySymbol: String,
+        internalToken: String?
+    ): OnChainGatewayCommand? {
+        return webClient.get()
+            .uri(URI.create("$baseUrl/crypto-currency/${currencySymbol}/gateway/${implUuid}"))
+            .headers { httpHeaders ->
+                run {
+                    httpHeaders.add("Content-Type", "application/json");
+                    internalToken?.let { httpHeaders.add("Authorization", "Bearer $it") }
+                }
+            }
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono(typeRef<OnChainGatewayCommand>())
+            .log()
+            .awaitFirst()
+    }
+
     override suspend fun deleteGateway(implUuid: String, currencySymbol: String, internalToken: String?) {
         webClient.delete()
-                .uri(URI.create("$baseUrl/crypto-currency/${currencySymbol}/gateway/${implUuid}"))
-                .headers { httpHeaders ->
-                    run {
-                        httpHeaders.add("Content-Type", "application/json");
-                        internalToken?.let { httpHeaders.add("Authorization", "Bearer $it") }
-                    }
+            .uri(URI.create("$baseUrl/crypto-currency/${currencySymbol}/gateway/${implUuid}"))
+            .headers { httpHeaders ->
+                run {
+                    httpHeaders.add("Content-Type", "application/json");
+                    internalToken?.let { httpHeaders.add("Authorization", "Bearer $it") }
                 }
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono(typeRef<Void>())
-                .log()
-                .awaitFirstOrNull()
+            }
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono(typeRef<Void>())
+            .log()
+            .awaitFirstOrNull()
 
 
     }
+
     //After applying gateway concept in opex, we can remove this function and
     // use fetchGateway function instead of this service
     /// TODO:  temporary
     override suspend fun getWithdrawData(symbol: String, network: String): GatewayData {
         return webClient.get()
-                .uri("$baseUrl/crypto-currency/$symbol/network/$network/withdrawData")
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono<GatewayData>()
-                .awaitFirst()
+            .uri("$baseUrl/crypto-currency/$symbol/network/$network/withdrawData")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<GatewayData>()
+            .awaitFirst()
     }
 }

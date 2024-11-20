@@ -2,8 +2,8 @@ package co.nilin.opex.wallet.ports.postgres.util
 
 import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.ports.postgres.model.*
-import java.util.*
 import java.time.ZoneId
+import java.util.*
 
 
 fun CurrencyCommand.toModel(): CurrencyModel {

@@ -17,18 +17,18 @@ import org.springframework.context.annotation.DependsOn
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
-import java.util.UUID
+import java.util.*
 import javax.annotation.PostConstruct
 
 @Component
 @DependsOn("postgresConfig")
 @Profile("!otc")
 class InitializeService(
-        private val addressTypeRepository: AddressTypeRepository,
-        private val chainRepository: ChainRepository,
-        private val chainAddressTypeRepository: ChainAddressTypeRepository,
+    private val addressTypeRepository: AddressTypeRepository,
+    private val chainRepository: ChainRepository,
+    private val chainAddressTypeRepository: ChainAddressTypeRepository,
 //    private val currencyRepository: CurrencyRepository,
-        private val currencyImplementationRepository: CurrencyImplementationRepository,
+    private val currencyImplementationRepository: CurrencyImplementationRepository,
 ) {
     @Autowired
     private lateinit var preferences: Preferences
@@ -65,23 +65,23 @@ class InitializeService(
 //        }
         val items = data.flatMap { it.implementations.map { impl -> it to impl } }.map { (currency, impl) ->
             CurrencyOnChainGatewayModel(
-                    null,
-                    UUID.randomUUID().toString(),
-                    currency.symbol,
-                    impl.symbol.takeUnless { it.isEmpty() } ?: currency.symbol,
-                    impl.chain,
-                    impl.token,
-                    impl.tokenAddress,
-                    impl.tokenName,
-                    impl.withdrawEnabled,
-                    true!!,
-                    impl.withdrawFee,
-                    impl.withdrawMin,
-                    BigDecimal.ZERO,
-                    BigDecimal.ZERO,
-                    BigDecimal.ZERO,
-                    impl.decimal,
-                    true
+                null,
+                UUID.randomUUID().toString(),
+                currency.symbol,
+                impl.symbol.takeUnless { it.isEmpty() } ?: currency.symbol,
+                impl.chain,
+                impl.token,
+                impl.tokenAddress,
+                impl.tokenName,
+                impl.withdrawEnabled,
+                true!!,
+                impl.withdrawFee,
+                impl.withdrawMin,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                impl.decimal,
+                true
 
             )
         }

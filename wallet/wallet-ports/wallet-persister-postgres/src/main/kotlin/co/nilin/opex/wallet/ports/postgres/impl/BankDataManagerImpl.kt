@@ -9,14 +9,13 @@ import co.nilin.opex.wallet.ports.postgres.util.toDto
 import co.nilin.opex.wallet.ports.postgres.util.toModel
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.stereotype.Component
-import java.util.Collections
 
 @Component
 class BankDataManagerImpl(private val bankDataRepository: BankDataRepository) : BankDataManager {
-    override suspend fun save(bankDataCommand: BankDataCommand):BankDataCommand? {
+    override suspend fun save(bankDataCommand: BankDataCommand): BankDataCommand? {
         bankDataRepository.findByIdentifier(bankDataCommand.identifier)?.awaitSingleOrNull()
             ?.let { throw OpexError.BankDataIsExist.exception() }
-       return _save(bankDataCommand.toModel())?.toDto()
+        return _save(bankDataCommand.toModel())?.toDto()
     }
 
     override suspend fun update(bankDataCommand: BankDataCommand): BankDataCommand? {
@@ -40,7 +39,6 @@ class BankDataManagerImpl(private val bankDataRepository: BankDataRepository) : 
             it.toDto()
         } ?: throw OpexError.BankDataIsExist.exception()
     }
-
 
 
     private suspend fun _save(bankDataModel: BankDataModel): BankDataModel? {

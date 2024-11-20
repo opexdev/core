@@ -28,7 +28,7 @@ class WithdrawAdminController(
         val destTransactionRef: String,
         val destNote: String?,
         val destAmount: BigDecimal?,
-        val attachment:String?
+        val attachment: String?
     )
 
     @GetMapping("/{id}")

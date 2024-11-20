@@ -12,12 +12,16 @@ import reactor.core.publisher.Mono
 interface OffChainGatewayRepository : ReactiveCrudRepository<OffChainGatewayModel, Long> {
     fun findByGatewayUuid(uuid: String): Mono<OffChainGatewayModel>?
 
-    fun findByGatewayUuidAndCurrencySymbol(uuid: String, symbol:String): Mono<OffChainGatewayModel>?
+    fun findByGatewayUuidAndCurrencySymbol(uuid: String, symbol: String): Mono<OffChainGatewayModel>?
 
-    fun deleteByGatewayUuid(uuid: String):Mono<Void>
+    fun deleteByGatewayUuid(uuid: String): Mono<Void>
+
     @Query("select * from currency_off_chain_gateway where (:gatewayUuid is null or gateway_uuid=:gatewayUuid) and (:currencySymbol is null or currency_symbol=:currencySymbol )  ")
     fun findGateways(currencySymbol: String? = null, gatewayUuid: String? = null): Flux<OffChainGatewayModel>?
 
-    fun findByCurrencySymbolAndAndTransferMethod(currencySymbol: String,transferMethod: TransferMethod):Mono<OffChainGatewayModel>?
+    fun findByCurrencySymbolAndAndTransferMethod(
+        currencySymbol: String,
+        transferMethod: TransferMethod
+    ): Mono<OffChainGatewayModel>?
 
 }

@@ -15,4 +15,4 @@ data class CurrencyImplementation(
     val decimal: Int,
 //    val chainDetail:Chain?=null,
 
-    )
+)

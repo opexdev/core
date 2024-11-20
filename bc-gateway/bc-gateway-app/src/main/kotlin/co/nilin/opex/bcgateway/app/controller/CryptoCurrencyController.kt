@@ -5,16 +5,18 @@ import co.nilin.opex.bcgateway.core.model.*
 import co.nilin.opex.bcgateway.core.spi.ChainLoader
 import co.nilin.opex.bcgateway.core.spi.CryptoCurrencyHandlerV2
 import org.springframework.web.bind.annotation.*
-import java.util.UUID
 
 @RestController
 @RequestMapping("/crypto-currency")
-class CryptoCurrencyController(val cryptoCurrencyHandler: CryptoCurrencyHandlerV2, private val chainLoader: ChainLoader) {
+class CryptoCurrencyController(
+    val cryptoCurrencyHandler: CryptoCurrencyHandlerV2,
+    private val chainLoader: ChainLoader
+) {
 
     @PostMapping("/{currencySymbol}/gateway")
     suspend fun addNewCurrencyGateway(
-            @PathVariable("currencySymbol") currencySymbol: String,
-            @RequestBody request: CryptoCurrencyCommand
+        @PathVariable("currencySymbol") currencySymbol: String,
+        @RequestBody request: CryptoCurrencyCommand
     ): CryptoCurrencyCommand? {
         return cryptoCurrencyHandler.createOnChainGateway(request.apply {
             this.currencySymbol = currencySymbol
@@ -24,9 +26,9 @@ class CryptoCurrencyController(val cryptoCurrencyHandler: CryptoCurrencyHandlerV
 
     @PutMapping("/{currency}/gateway/{gatewayUuid}")
     suspend fun updateCurrencyGateway(
-            @PathVariable("currency") currencySymbol: String,
-            @PathVariable("gatewayUuid") gatewayUuid: String,
-            @RequestBody request: CryptoCurrencyCommand
+        @PathVariable("currency") currencySymbol: String,
+        @PathVariable("gatewayUuid") gatewayUuid: String,
+        @RequestBody request: CryptoCurrencyCommand
     ): CryptoCurrencyCommand? {
         return cryptoCurrencyHandler.updateOnChainGateway(request.apply {
             this.currencySymbol = currencySymbol
@@ -37,11 +39,12 @@ class CryptoCurrencyController(val cryptoCurrencyHandler: CryptoCurrencyHandlerV
 
     @DeleteMapping("/{currency}/gateway/{gatewayUuid}")
     suspend fun deleteCurrencyGateway(
-            @PathVariable("currency") currencySymbol: String,
-            @PathVariable("gatewayUuid") gatewayUuid: String,
-    ):Void? {
-       return cryptoCurrencyHandler.deleteOnChainGateway(
-                gatewayUuid, currencySymbol)
+        @PathVariable("currency") currencySymbol: String,
+        @PathVariable("gatewayUuid") gatewayUuid: String,
+    ): Void? {
+        return cryptoCurrencyHandler.deleteOnChainGateway(
+            gatewayUuid, currencySymbol
+        )
     }
 
     @GetMapping("/gateways")
@@ -55,9 +58,11 @@ class CryptoCurrencyController(val cryptoCurrencyHandler: CryptoCurrencyHandlerV
     }
 
     @GetMapping("/{currency}/gateway/{gatewayUuid}")
-    suspend fun fetchSpecificGateway(@PathVariable("gatewayUuid") gatewayUuid: String,
-                                  @PathVariable("currency") currencySymbol: String): CryptoCurrencyCommand? {
-        return cryptoCurrencyHandler.fetchOnChainGateway(gatewayUuid,currencySymbol)
+    suspend fun fetchSpecificGateway(
+        @PathVariable("gatewayUuid") gatewayUuid: String,
+        @PathVariable("currency") currencySymbol: String
+    ): CryptoCurrencyCommand? {
+        return cryptoCurrencyHandler.fetchOnChainGateway(gatewayUuid, currencySymbol)
     }
 
     @GetMapping("/chain")

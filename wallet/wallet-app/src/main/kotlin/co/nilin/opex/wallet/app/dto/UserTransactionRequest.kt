@@ -6,8 +6,8 @@ import co.nilin.opex.wallet.core.model.otc.ReservedStatus
 data class UserTransactionRequest(
     val userId: String? = null,
     val currency: String?,
-    val sourceSymbol:String?,
-    val destSymbol:String?,
+    val sourceSymbol: String?,
+    val destSymbol: String?,
     val category: UserTransactionCategory?,
     val startTime: Long? = null,
     val endTime: Long? = null,

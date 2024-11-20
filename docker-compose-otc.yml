@@ -37,8 +37,8 @@ services:
       - auth_jwk_endpoint=${JWK_ENDPOINT}
     extra_hosts:
       - "host.docker.internal:host-gateway"
-#    configs:
-#      - preferences.yml
+    #    configs:
+    #      - preferences.yml
     depends_on:
       - postgres-wallet
       - vault
@@ -100,8 +100,8 @@ services:
       - omni_url=${OMNI_URL}
     extra_hosts:
       - "host.docker.internal:host-gateway"
-#    configs:
-#      - preferences.yml
+    #    configs:
+    #      - preferences.yml
     depends_on:
       - vault
       - postgres-bc-gateway

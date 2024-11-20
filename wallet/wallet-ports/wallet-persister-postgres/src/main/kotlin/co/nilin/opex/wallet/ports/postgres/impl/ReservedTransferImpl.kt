@@ -1,16 +1,12 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
-import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.inout.SwapResponse
 import co.nilin.opex.wallet.core.model.otc.ReservedStatus
 import co.nilin.opex.wallet.core.model.otc.ReservedTransfer
 import co.nilin.opex.wallet.core.spi.ReservedTransferManager
-import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepositoryV2
 import co.nilin.opex.wallet.ports.postgres.dao.ReservedTransferRepository
 import co.nilin.opex.wallet.ports.postgres.model.ReservedTransferModel
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component

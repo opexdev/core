@@ -2,8 +2,8 @@ package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
-import co.nilin.opex.wallet.core.inout.OffChainGatewayCommand
 import co.nilin.opex.wallet.core.inout.GatewayData
+import co.nilin.opex.wallet.core.inout.OffChainGatewayCommand
 import co.nilin.opex.wallet.core.model.FetchGateways
 import co.nilin.opex.wallet.core.spi.GatewayPersister
 import co.nilin.opex.wallet.ports.postgres.dao.OffChainGatewayRepository

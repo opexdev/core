@@ -4,7 +4,6 @@ import co.nilin.opex.bcgateway.core.model.CryptoCurrencyCommand
 import co.nilin.opex.bcgateway.core.model.OmniBalance
 import co.nilin.opex.bcgateway.core.spi.OmniWalletManager
 import co.nilin.opex.bcgateway.omniwallet.model.AddressBalanceWithUsd
-import co.nilin.opex.bcgateway.omniwallet.model.ChainBalanceResponse
 import co.nilin.opex.bcgateway.omniwallet.proxy.OmniWalletProxy
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -16,11 +15,17 @@ class OmniWalletManagerImpl(private val omniWalletProxy: OmniWalletProxy) : Omni
 
     override suspend fun getTokenBalance(cryptoCurrencyCommand: CryptoCurrencyCommand): OmniBalance {
         return OmniBalance(currency = cryptoCurrencyCommand.currencySymbol,
-                network = cryptoCurrencyCommand.chain,
-                balance = omniWalletProxy.getTokenBalance(cryptoCurrencyCommand.tokenAddress!!, cryptoCurrencyCommand.chain)?.stream()?.map(AddressBalanceWithUsd::balance)?.reduce { a, b -> a + b }?.orElse(BigDecimal.ZERO))
+            network = cryptoCurrencyCommand.chain,
+            balance = omniWalletProxy.getTokenBalance(cryptoCurrencyCommand.tokenAddress!!, cryptoCurrencyCommand.chain)
+                ?.stream()?.map(AddressBalanceWithUsd::balance)?.reduce { a, b -> a + b }?.orElse(BigDecimal.ZERO)
+        )
     }
 
     override suspend fun getAssetBalance(cryptoCurrencyCommand: CryptoCurrencyCommand): OmniBalance {
-        return OmniBalance(cryptoCurrencyCommand.currencySymbol, cryptoCurrencyCommand.chain, omniWalletProxy.getAssetBalance(cryptoCurrencyCommand.chain)?.balance?: BigDecimal.ZERO)
+        return OmniBalance(
+            cryptoCurrencyCommand.currencySymbol,
+            cryptoCurrencyCommand.chain,
+            omniWalletProxy.getAssetBalance(cryptoCurrencyCommand.chain)?.balance ?: BigDecimal.ZERO
+        )
     }
 }

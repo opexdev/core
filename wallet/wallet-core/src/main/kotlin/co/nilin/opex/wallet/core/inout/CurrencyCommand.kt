@@ -2,7 +2,7 @@ package co.nilin.opex.wallet.core.inout
 
 
 import java.math.BigDecimal
-import java.util.UUID
+import java.util.*
 
 data class CurrencyCommand(
     var symbol: String,

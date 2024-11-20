@@ -3,8 +3,7 @@ package co.nilin.opex.wallet.core.inout
 import co.nilin.opex.wallet.core.model.DepositStatus
 import co.nilin.opex.wallet.core.model.DepositType
 import java.math.BigDecimal
-import java.time.LocalDateTime
-import java.util.Date
+import java.util.*
 
 data class DepositResponse(
     val id: Long,
@@ -14,9 +13,9 @@ data class DepositResponse(
     val network: String?,
     val note: String?,
     val transactionRef: String?,
-    val sourceAddress:String?,
+    val sourceAddress: String?,
     val status: DepositStatus,
     val type: DepositType,
-    val attachment:String?,
+    val attachment: String?,
     val createDate: Date?
 )

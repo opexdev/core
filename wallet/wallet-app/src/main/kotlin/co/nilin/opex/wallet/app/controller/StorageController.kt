@@ -1,6 +1,5 @@
 package co.nilin.opex.wallet.app.controller
 
-import co.nilin.opex.wallet.app.dto.DocumentResponse
 import co.nilin.opex.wallet.app.service.DocumentService
 import kotlinx.coroutines.reactive.awaitFirst
 import org.springframework.http.ResponseEntity

@@ -1,10 +1,6 @@
 package co.nilin.opex.wallet.core.service
 
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.wallet.core.exc.CurrencyNotMatchedException
-import co.nilin.opex.wallet.core.exc.DepositLimitExceededException
-import co.nilin.opex.wallet.core.exc.NotEnoughBalanceException
-import co.nilin.opex.wallet.core.exc.WithdrawLimitExceededException
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.inout.TransferResultDetailed

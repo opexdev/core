@@ -1,17 +1,11 @@
 package co.nilin.opex.wallet.ports.postgres.dao
 
 import co.nilin.opex.wallet.core.model.DepositStatus
-import co.nilin.opex.wallet.core.model.DepositType
-import co.nilin.opex.wallet.core.model.WithdrawStatus
 import co.nilin.opex.wallet.ports.postgres.model.DepositModel
-import co.nilin.opex.wallet.ports.postgres.model.WithdrawModel
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.r2dbc.repository.Query
-import org.springframework.data.repository.query.Param
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
-import reactor.core.publisher.Mono
-import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Repository
@@ -36,10 +30,10 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
         currency: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
-        limit: Int?=0,
-        offset: Int?=10000,
-        ascendingByTime: Boolean?=false,
-        status:List<DepositStatus>?= listOf<DepositStatus>(DepositStatus.DONE,DepositStatus.INVALID)
+        limit: Int? = 0,
+        offset: Int? = 10000,
+        ascendingByTime: Boolean? = false,
+        status: List<DepositStatus>? = listOf<DepositStatus>(DepositStatus.DONE, DepositStatus.INVALID)
     ): Flow<DepositModel>
 
 
@@ -65,9 +59,9 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
         transactionRef: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
-        status:List<DepositStatus>?,
-        ascendingByTime: Boolean?=false,
-        offset: Int?=0,
-        limit: Int?=10000
+        status: List<DepositStatus>?,
+        ascendingByTime: Boolean? = false,
+        offset: Int? = 0,
+        limit: Int? = 10000
     ): Flow<DepositModel>
 }

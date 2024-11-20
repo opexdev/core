@@ -1,12 +1,11 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
-import co.nilin.opex.common.OpexError
-import co.nilin.opex.wallet.core.inout.CurrenciesCommand
-import co.nilin.opex.wallet.core.inout.CurrencyCommand
-import co.nilin.opex.wallet.core.inout.CurrencyPrice
 //import co.nilin.opex.wallet.core.model.Currencies
 //import co.nilin.opex.wallet.core.model.Currency
 //import co.nilin.opex.wallet.core.model.CurrencyImp
+import co.nilin.opex.common.OpexError
+import co.nilin.opex.wallet.core.inout.CurrenciesCommand
+import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepositoryV2
@@ -75,7 +74,7 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
     }
 
     private suspend fun loadCurrencies(request: FetchCurrency?): Flux<CurrencyModel>? {
-        return currencyRepository.fetchSemiCurrencies(request?.symbol,request?.name)
+        return currencyRepository.fetchSemiCurrencies(request?.symbol, request?.name)
     }
 
     private suspend fun doSave(request: CurrencyModel): CurrencyModel? {

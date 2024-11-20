@@ -15,12 +15,12 @@ data class AdminSearchWithdrawRequest(
 )
 
 data class AdminSearchDepositRequest(
-        val uuid: String?,
-        val currency: String?,
-        val sourceAddress: String?,
-        val transactionRef: String?,
-        val startTime: Long? = null,
-        val endTime: Long? = null,
-        val status: List<DepositStatus>?= null,
-        val ascendingByTime: Boolean = false
+    val uuid: String?,
+    val currency: String?,
+    val sourceAddress: String?,
+    val transactionRef: String?,
+    val startTime: Long? = null,
+    val endTime: Long? = null,
+    val status: List<DepositStatus>? = null,
+    val ascendingByTime: Boolean = false
 )

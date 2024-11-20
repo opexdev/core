@@ -22,7 +22,6 @@ class WalletProxyImpl(
     private lateinit var baseUrl: String
 
 
-
     override suspend fun transfer(
         uuid: String,
         symbol: String,

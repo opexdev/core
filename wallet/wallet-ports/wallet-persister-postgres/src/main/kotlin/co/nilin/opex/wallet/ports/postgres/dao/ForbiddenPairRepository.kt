@@ -7,11 +7,14 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @Repository
-interface ForbiddenPairRepository :ReactiveCrudRepository<ForbiddenPairModel,Long>{
+interface ForbiddenPairRepository : ReactiveCrudRepository<ForbiddenPairModel, Long> {
 
-    fun findAllBy():Flux<ForbiddenPairModel>?
+    fun findAllBy(): Flux<ForbiddenPairModel>?
 
-    fun findBySourceSymbolAndDestinationSymbol(sourceSymbol:String, destinationSymbol:String): Mono<ForbiddenPairModel>?
+    fun findBySourceSymbolAndDestinationSymbol(
+        sourceSymbol: String,
+        destinationSymbol: String
+    ): Mono<ForbiddenPairModel>?
 
     fun deleteBySourceSymbolAndDestinationSymbol(sourceSymbol: String, destinationSymbol: String): Mono<Void>?
 

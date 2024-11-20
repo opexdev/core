@@ -14,6 +14,7 @@ class OmniBCWalletController(private val omniBalanceService: OmniBalanceService)
     suspend fun getOmniBalance(): List<OmniBalanceService.OmniBalanceForCurrency>? {
         return omniBalanceService.fetchSystemBalance()
     }
+
     @GetMapping("/{currency}")
     suspend fun getOmniBalanceOfCurrency(@PathVariable currency: String): OmniBalanceService.OmniBalanceForCurrency {
         return omniBalanceService.fetchSystemBalance(currency)

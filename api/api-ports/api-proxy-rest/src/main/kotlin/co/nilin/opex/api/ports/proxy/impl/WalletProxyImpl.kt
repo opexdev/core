@@ -30,84 +30,84 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
     override suspend fun getWallets(uuid: String?, token: String?): List<Wallet> {
         logger.info("fetching wallets for $uuid")
         return webClient.get()
-                .uri("$baseUrl/v1/owner/$uuid/wallets")
-                .accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<Wallet>()
-                .collectList()
-                .awaitSingle()
+            .uri("$baseUrl/v1/owner/$uuid/wallets")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToFlux<Wallet>()
+            .collectList()
+            .awaitSingle()
     }
 
     override suspend fun getWallet(uuid: String?, token: String?, symbol: String): Wallet {
         logger.info("fetching wallets for $uuid")
         return webClient.get()
-                .uri("$baseUrl/v1/owner/$uuid/wallets/$symbol")
-                .accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono<Wallet>()
-                .awaitSingle()
+            .uri("$baseUrl/v1/owner/$uuid/wallets/$symbol")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<Wallet>()
+            .awaitSingle()
     }
 
     override suspend fun getOwnerLimits(uuid: String?, token: String?): OwnerLimitsResponse {
         logger.info("fetching owner limits for $uuid")
         return webClient.get()
-                .uri("$baseUrl/v1/owner/$uuid/limits")
-                .accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono<OwnerLimitsResponse>()
-                .awaitSingle()
+            .uri("$baseUrl/v1/owner/$uuid/limits")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<OwnerLimitsResponse>()
+            .awaitSingle()
     }
 
     override suspend fun getDepositTransactions(
-            uuid: String,
-            token: String?,
-            coin: String?,
-            startTime: Long?,
-            endTime: Long?,
-            limit: Int,
-            offset: Int,
-            ascendingByTime: Boolean?
+        uuid: String,
+        token: String?,
+        coin: String?,
+        startTime: Long?,
+        endTime: Long?,
+        limit: Int,
+        offset: Int,
+        ascendingByTime: Boolean?
     ): List<TransactionHistoryResponse> {
         logger.info("fetching deposit transaction history for $uuid")
         return webClient.post()
-                .uri("$baseUrl/transaction/deposit/$uuid")
-                .accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-                .body(Mono.just(TransactionRequest(coin, startTime, endTime, limit, offset, ascendingByTime)))
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<TransactionHistoryResponse>()
-                .collectList()
-                .awaitFirstOrElse { emptyList() }
+            .uri("$baseUrl/transaction/deposit/$uuid")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(TransactionRequest(coin, startTime, endTime, limit, offset, ascendingByTime)))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToFlux<TransactionHistoryResponse>()
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
     }
 
     override suspend fun getWithdrawTransactions(
-            uuid: String,
-            token: String?,
-            coin: String?,
-            startTime: Long?,
-            endTime: Long?,
-            limit: Int,
-            offset: Int,
-            ascendingByTime: Boolean?
+        uuid: String,
+        token: String?,
+        coin: String?,
+        startTime: Long?,
+        endTime: Long?,
+        limit: Int,
+        offset: Int,
+        ascendingByTime: Boolean?
     ): List<WithdrawHistoryResponse> {
         logger.info("fetching withdraw transaction history for $uuid")
         return webClient.post()
-                .uri("$baseUrl/withdraw/history/$uuid")
-                .accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-                .body(Mono.just(TransactionRequest(coin, startTime, endTime, limit, offset, ascendingByTime)))
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<WithdrawHistoryResponse>()
-                .collectList()
-                .awaitFirstOrElse { emptyList() }
+            .uri("$baseUrl/withdraw/history/$uuid")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(TransactionRequest(coin, startTime, endTime, limit, offset, ascendingByTime)))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToFlux<WithdrawHistoryResponse>()
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
     }
 
 

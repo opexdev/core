@@ -30,7 +30,7 @@ data class WithdrawModel(
     var status: WithdrawStatus,
     var applicator: String?,
     var withdrawType: WithdrawType,
-    var attachment:String?,
+    var attachment: String?,
     val createDate: LocalDateTime = LocalDateTime.now(),
     val lastUpdateDate: LocalDateTime? = null,
-    )
+)

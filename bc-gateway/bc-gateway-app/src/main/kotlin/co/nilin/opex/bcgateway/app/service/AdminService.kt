@@ -1,9 +1,6 @@
 package co.nilin.opex.bcgateway.app.service
 
 import co.nilin.opex.bcgateway.app.dto.AddChainRequest
-import co.nilin.opex.bcgateway.app.dto.TokenRequest
-import co.nilin.opex.bcgateway.core.model.CryptoCurrencyCommand
-import co.nilin.opex.bcgateway.core.model.CurrencyImplementation
 import co.nilin.opex.bcgateway.core.spi.AddressTypeHandler
 import co.nilin.opex.bcgateway.core.spi.ChainLoader
 import co.nilin.opex.bcgateway.core.spi.CryptoCurrencyHandlerV2
@@ -12,9 +9,9 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 class AdminService(
-        private val chainLoader: ChainLoader,
-        private val currencyHandler: CryptoCurrencyHandlerV2,
-        private val addressTypeHandler: AddressTypeHandler
+    private val chainLoader: ChainLoader,
+    private val currencyHandler: CryptoCurrencyHandlerV2,
+    private val addressTypeHandler: AddressTypeHandler
 ) {
 
 //    suspend fun addCurrency(name: String, symbol: String) {

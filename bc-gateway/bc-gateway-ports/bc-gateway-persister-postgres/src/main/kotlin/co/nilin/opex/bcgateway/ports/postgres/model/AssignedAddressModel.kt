@@ -8,16 +8,16 @@ import java.time.LocalDateTime
 
 @Table("assigned_addresses")
 data class AssignedAddressModel(
-        @Id val id: Long?,
-        val uuid: String,
-        val address: String,
-        val memo: String?,
-        @Column("addr_type_id") val addressTypeId: Long,
-        @Column("exp_time") val expTime: LocalDateTime?=null,
-        @Column("assigned_Date") val assignedDate: LocalDateTime?=null,
-        @Column("revoked_Date") val revokedDate: LocalDateTime?=null,
-        val status: AddressStatus?=null,
+    @Id val id: Long?,
+    val uuid: String,
+    val address: String,
+    val memo: String?,
+    @Column("addr_type_id") val addressTypeId: Long,
+    @Column("exp_time") val expTime: LocalDateTime? = null,
+    @Column("assigned_Date") val assignedDate: LocalDateTime? = null,
+    @Column("revoked_Date") val revokedDate: LocalDateTime? = null,
+    val status: AddressStatus? = null,
 
 
-)
+    )
 

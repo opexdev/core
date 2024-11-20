@@ -8,8 +8,10 @@ import org.springframework.stereotype.Component
 
 
 @Component
-class AuthService(private val authProxy: AuthProxy,
-                  private val environment: Environment) {
+class AuthService(
+    private val authProxy: AuthProxy,
+    private val environment: Environment
+) {
 
     @Value("\${app.auth.client-id}")
     private lateinit var clientId: String

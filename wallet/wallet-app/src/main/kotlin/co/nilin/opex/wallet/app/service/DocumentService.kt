@@ -1,8 +1,6 @@
 package co.nilin.opex.wallet.app.service
 
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.wallet.app.dto.DocumentResponse
-import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -32,7 +30,7 @@ class DocumentService() {
         val path = Paths.get("").resolve("$rootDir/$file").toString()
         if (!Files.exists(Paths.get(path)))
             throw OpexError.NotFound.exception()
-        var file=ResourceUtils.getFile(path).inputStream()
+        var file = ResourceUtils.getFile(path).inputStream()
         val mimeType = URLConnection.getFileNameMap().getContentTypeFor(path)
         return ResponseEntity.ok().contentType(MediaType.parseMediaType(mimeType)).body(file.readBytes())
 

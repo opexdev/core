@@ -19,7 +19,13 @@ class AdminEventListenerImpl(private val currencyService: CurrencyServiceManager
     override fun onEvent(event: AdminEvent, partition: Int, offset: Long, timestamp: Long): Unit = runBlocking {
         logger.info("Incoming admin event $event")
         when (event) {
-            is AddCurrencyEvent -> currencyService.createNewCurrency(CurrencyCommand(name =event.name, symbol =  event.symbol, precision =  event.precision))
+            is AddCurrencyEvent -> currencyService.createNewCurrency(
+                CurrencyCommand(
+                    name = event.name,
+                    symbol = event.symbol,
+                    precision = event.precision
+                )
+            )
 //                             //todo
 //            is EditCurrencyEvent -> currencyService.editCurrency(event.name, event.symbol, event.precision)
 //            is DeleteCurrencyEvent -> currencyService.deleteCurrency(event.name)

@@ -1,13 +1,11 @@
 package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.app.dto.*
 import co.nilin.opex.wallet.app.service.TransferService
 import co.nilin.opex.wallet.core.inout.SwapResponse
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.WalletType
-import co.nilin.opex.wallet.core.model.otc.ReservedTransfer
 import co.nilin.opex.wallet.core.spi.ReservedTransferManager
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
@@ -17,7 +15,6 @@ import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
-import java.security.Principal
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId

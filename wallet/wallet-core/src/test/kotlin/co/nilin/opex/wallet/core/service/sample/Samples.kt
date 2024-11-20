@@ -1,19 +1,15 @@
 package co.nilin.opex.wallet.core.service.sample
 
-import co.nilin.opex.wallet.core.inout.CurrenciesCommand
 import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.model.*
-import co.nilin.opex.wallet.core.model.Amount
-import co.nilin.opex.wallet.core.model.Wallet
-import co.nilin.opex.wallet.core.model.WalletOwner
 import java.math.BigDecimal
-import java.util.UUID
+import java.util.*
 
 object VALID {
     private const val USER_LEVEL_REGISTERED = "registered"
 
-    val CURRENCY = CurrencyCommand("ETH", UUID.randomUUID().toString(),"Ethereum", BigDecimal.valueOf(0.0001))
+    val CURRENCY = CurrencyCommand("ETH", UUID.randomUUID().toString(), "Ethereum", BigDecimal.valueOf(0.0001))
 
     val SOURCE_WALLET_OWNER = WalletOwner(
         1L,

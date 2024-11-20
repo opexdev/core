@@ -6,6 +6,7 @@ import co.nilin.opex.wallet.core.model.WalletOwner
 interface WalletOwnerManager {
     val systemUuid: String
         get() = "1"
+
     suspend fun isDepositAllowed(owner: WalletOwner, amount: Amount): Boolean
     suspend fun isWithdrawAllowed(owner: WalletOwner, amount: Amount): Boolean
     suspend fun findWalletOwner(uuid: String): WalletOwner?

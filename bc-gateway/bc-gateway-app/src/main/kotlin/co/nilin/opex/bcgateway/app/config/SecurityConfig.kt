@@ -1,9 +1,7 @@
 package co.nilin.opex.bcgateway.app.config
 
 import co.nilin.opex.bcgateway.app.utils.hasRole
-import co.nilin.opex.bcgateway.app.utils.hasRole
 import co.nilin.opex.bcgateway.app.utils.hasRoleAndLevel
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Profile
@@ -25,21 +23,21 @@ class SecurityConfig(private val webClient: WebClient) {
     @Profile("!otc")
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
         http.csrf().disable()
-                .authorizeExchange()
-                .pathMatchers("/actuator/**").permitAll()
-                .pathMatchers("/swagger-ui/**").permitAll()
-                .pathMatchers("/swagger-resources/**").permitAll()
-                .pathMatchers("/wallet-sync/**").permitAll()
-                .pathMatchers("/currency/**").permitAll()
-                .pathMatchers("/filter/**").hasAuthority("SCOPE_trust")
-                .pathMatchers("/admin/**").hasRole("SCOPE_trust", "admin_system")
-                .pathMatchers("/v1/address/**").permitAll()
-                .pathMatchers("/deposit/**").permitAll()
-                .pathMatchers("/addresses/**").hasRole("SCOPE_trust", "admin_system")
-                .anyExchange().authenticated()
-                .and()
-                .oauth2ResourceServer()
-                .jwt()
+            .authorizeExchange()
+            .pathMatchers("/actuator/**").permitAll()
+            .pathMatchers("/swagger-ui/**").permitAll()
+            .pathMatchers("/swagger-resources/**").permitAll()
+            .pathMatchers("/wallet-sync/**").permitAll()
+            .pathMatchers("/currency/**").permitAll()
+            .pathMatchers("/filter/**").hasAuthority("SCOPE_trust")
+            .pathMatchers("/admin/**").hasRole("SCOPE_trust", "admin_system")
+            .pathMatchers("/v1/address/**").permitAll()
+            .pathMatchers("/deposit/**").permitAll()
+            .pathMatchers("/addresses/**").hasRole("SCOPE_trust", "admin_system")
+            .anyExchange().authenticated()
+            .and()
+            .oauth2ResourceServer()
+            .jwt()
         return http.build()
     }
 
@@ -48,22 +46,22 @@ class SecurityConfig(private val webClient: WebClient) {
     @Profile("otc")
     fun otcSpringSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
         http.csrf().disable()
-                .authorizeExchange()
-                .pathMatchers("/actuator/**").permitAll()
-                .pathMatchers("/swagger-ui/**").permitAll()
-                .pathMatchers(HttpMethod.PUT,"/v1/address").hasRoleAndLevel("Admin")
-                .pathMatchers("/swagger-resources/**").permitAll()
-                .pathMatchers("/admin/**").hasRoleAndLevel("Admin")
-                .pathMatchers("/wallet-sync/**").hasRoleAndLevel("System")
-                .pathMatchers("/crypto-currency/chain").hasRoleAndLevel("user")
-                .pathMatchers("/currency/**").hasRoleAndLevel("System")
-                .pathMatchers("/crypto-currency/**").hasRoleAndLevel("System")
-                .pathMatchers("/omni-balance/bc/**").hasRoleAndLevel("Admin")
-                .pathMatchers("/actuator/**").permitAll()
-                .anyExchange().authenticated()
-                .and()
-                .oauth2ResourceServer()
-                .jwt()
+            .authorizeExchange()
+            .pathMatchers("/actuator/**").permitAll()
+            .pathMatchers("/swagger-ui/**").permitAll()
+            .pathMatchers(HttpMethod.PUT, "/v1/address").hasRoleAndLevel("Admin")
+            .pathMatchers("/swagger-resources/**").permitAll()
+            .pathMatchers("/admin/**").hasRoleAndLevel("Admin")
+            .pathMatchers("/wallet-sync/**").hasRoleAndLevel("System")
+            .pathMatchers("/crypto-currency/chain").hasRoleAndLevel("user")
+            .pathMatchers("/currency/**").hasRoleAndLevel("System")
+            .pathMatchers("/crypto-currency/**").hasRoleAndLevel("System")
+            .pathMatchers("/omni-balance/bc/**").hasRoleAndLevel("Admin")
+            .pathMatchers("/actuator/**").permitAll()
+            .anyExchange().authenticated()
+            .and()
+            .oauth2ResourceServer()
+            .jwt()
         return http.build()
     }
 
@@ -71,8 +69,8 @@ class SecurityConfig(private val webClient: WebClient) {
     @Throws(Exception::class)
     fun reactiveJwtDecoder(): ReactiveJwtDecoder? {
         return NimbusReactiveJwtDecoder.withJwkSetUri(jwkUrl)
-                .webClient(webClient)
-                .build()
+            .webClient(webClient)
+            .build()
     }
 
 

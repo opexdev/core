@@ -1,6 +1,5 @@
 package co.nilin.opex.wallet.core.inout
 
-import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.model.otc.ReservedStatus
 import java.math.BigDecimal
 import java.time.LocalDateTime

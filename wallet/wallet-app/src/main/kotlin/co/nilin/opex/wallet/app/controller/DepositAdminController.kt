@@ -1,15 +1,13 @@
 package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.wallet.app.dto.AdminSearchDepositRequest
-import co.nilin.opex.wallet.core.inout.DepositResponse
 import co.nilin.opex.wallet.app.dto.ManualTransferRequest
-import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.app.service.DepositService
+import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.spi.BankDataManager
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
-import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
@@ -17,71 +15,69 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.util.UUID
+import java.util.*
 
 @RestController
 @RequestMapping("/admin/deposit")
 
 class DepositAdminController(
-        private val depositService: DepositService,
-        private val bankDataManager: BankDataManager
+    private val depositService: DepositService,
+    private val bankDataManager: BankDataManager
 ) {
-
-
 
 
     @PostMapping("/manually/{amount}_{symbol}/{receiverUuid}")
     @ApiResponse(
-            message = "OK",
-            code = 200,
-            examples = Example(
-                    ExampleProperty(
-                            value = "{ }",
-                            mediaType = "application/json"
-                    )
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = "{ }",
+                mediaType = "application/json"
             )
+        )
     )
     suspend fun depositManually(
-            @PathVariable("symbol") symbol: String,
-            @PathVariable("receiverUuid") receiverUuid: String,
-            @PathVariable("amount") amount: BigDecimal,
-            @RequestBody request: ManualTransferRequest,
-            @CurrentSecurityContext securityContext: SecurityContext
+        @PathVariable("symbol") symbol: String,
+        @PathVariable("receiverUuid") receiverUuid: String,
+        @PathVariable("amount") amount: BigDecimal,
+        @RequestBody request: ManualTransferRequest,
+        @CurrentSecurityContext securityContext: SecurityContext
     ): TransferResult? {
         return depositService.depositManually(
-                symbol, receiverUuid,
-                securityContext.authentication.name, amount, request
+            symbol, receiverUuid,
+            securityContext.authentication.name, amount, request
         )
     }
 
     @PostMapping("/search")
     suspend fun search(
-            @RequestParam offset: Int,
-            @RequestParam size: Int,
-            @RequestBody body: AdminSearchDepositRequest
+        @RequestParam offset: Int,
+        @RequestParam size: Int,
+        @RequestBody body: AdminSearchDepositRequest
     ): List<DepositResponse> {
         return depositService.searchDeposit(
-                body.uuid,
-                body.currency,
-                body.sourceAddress,
-                body.transactionRef,
-                body.startTime?.let {
-                    LocalDateTime.ofInstant(Instant.ofEpochMilli(body.startTime), ZoneId.systemDefault())
-                },
-                body.endTime?.let {
-                    LocalDateTime.ofInstant(Instant.ofEpochMilli(body.endTime), ZoneId.systemDefault())
-                },
-                body.status,
-                offset,
-                size,
-                body.ascendingByTime,
+            body.uuid,
+            body.currency,
+            body.sourceAddress,
+            body.transactionRef,
+            body.startTime?.let {
+                LocalDateTime.ofInstant(Instant.ofEpochMilli(body.startTime), ZoneId.systemDefault())
+            },
+            body.endTime?.let {
+                LocalDateTime.ofInstant(Instant.ofEpochMilli(body.endTime), ZoneId.systemDefault())
+            },
+            body.status,
+            offset,
+            size,
+            body.ascendingByTime,
         )
     }
 
 
     @PostMapping("/bank-data")
     suspend fun registerAdminBankData(
-            @RequestBody body: BankDataCommand
+        @RequestBody body: BankDataCommand
     ): BankDataCommand? {
         return bankDataManager.save(body.apply { uuid = UUID.randomUUID().toString() })
     }
@@ -89,8 +85,8 @@ class DepositAdminController(
 
     @PutMapping("/bank-data/{uuid}")
     suspend fun updateBankData(
-            @PathVariable("uuid") bankDataUuid: String,
-            @RequestBody body: BankDataCommand
+        @PathVariable("uuid") bankDataUuid: String,
+        @RequestBody body: BankDataCommand
     ): BankDataCommand? {
         return bankDataManager.update(body.apply { uuid = bankDataUuid })
     }
@@ -100,7 +96,7 @@ class DepositAdminController(
     suspend fun deleteBankData(
         @PathVariable("uuid") bankDataUuid: String,
     ) {
-         bankDataManager.delete(bankDataUuid)
+        bankDataManager.delete(bankDataUuid)
     }
 
     @GetMapping("/bank-data")
@@ -108,13 +104,13 @@ class DepositAdminController(
     ): List<BankDataCommand>? {
         return bankDataManager.fetchBankData()
     }
+
     @GetMapping("/bank-data/{uuid}")
     suspend fun getBankData(
         @PathVariable("uuid") bankDataUuid: String,
     ) {
         bankDataManager.fetchBankData(bankDataUuid)
     }
-
 
 
 }

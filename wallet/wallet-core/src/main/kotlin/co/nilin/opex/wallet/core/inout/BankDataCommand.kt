@@ -1,7 +1,5 @@
 package co.nilin.opex.wallet.core.inout
 
-import java.util.*
-
 data class BankDataCommand(
     var uuid: String?,
     var owner: String,

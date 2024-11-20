@@ -45,7 +45,9 @@ class CurrencyRatesControllerIT : KafkaEnabledTest() {
     fun setup() {
         runBlocking {
             val currencies = listOf("E", "B", "U", "Z")
-            val systemCurrencies = currencyService.fetchCurrencies()?.currencies?.filter { c -> currencies.contains(c.name) }?.map { currency -> currency.name }
+            val systemCurrencies =
+                currencyService.fetchCurrencies()?.currencies?.filter { c -> currencies.contains(c.name) }
+                    ?.map { currency -> currency.name }
             val fpair = rateService.getForbiddenPairs()
             val rates = rateService.getRate()
             fpair.forbiddenPairs!!.forEach { p -> rateService.deleteForbiddenPair(p) }
@@ -54,7 +56,8 @@ class CurrencyRatesControllerIT : KafkaEnabledTest() {
             val wallets = walletRepository.findAll().collectList().block()
             //todo
 //            wallets?.map {w->currencyService.fetchCurrencies(FetchCurrency(id=w.currency))?.currencies?.first()?.name }?.filter { w -> currencies.contains(w) }?.forEach { w -> walletRepository.delete(w).block() }
-            systemCurrencies?.filter { c -> true }?.forEach { c -> currencyService.deleteCurrency(FetchCurrency(symbol = c)) }
+            systemCurrencies?.filter { c -> true }
+                ?.forEach { c -> currencyService.deleteCurrency(FetchCurrency(symbol = c)) }
             currencies.forEach { c -> addCurrency(c, BigDecimal.TEN) }
         }
     }
@@ -72,17 +75,27 @@ class CurrencyRatesControllerIT : KafkaEnabledTest() {
     fun whenSetCurrencyExchangeRateIsOK_thenRetrieveRoute() {
         runBlocking {
             webClient.post().uri("/otc/rate").accept(MediaType.APPLICATION_JSON)
-                    .bodyValue(SetCurrencyExchangeRateRequest("E", "U", BigDecimal.TEN))
-                    .exchange()
-                    .expectStatus().isOk
+                .bodyValue(SetCurrencyExchangeRateRequest("E", "U", BigDecimal.TEN))
+                .exchange()
+                .expectStatus().isOk
 
             val routes = webClient.get().uri("/otc/route").accept(MediaType.APPLICATION_JSON)
-                    .exchange()
-                    .expectStatus().isOk
-                    .expectBody(CurrencyExchangeRatesResponse::class.java)
-                    .returnResult()
-                    .responseBody!!
-            Assertions.assertEquals(CurrencyExchangeRatesResponse(listOf(CurrencyExchangeRate("E", "U", BigDecimal.TEN))), routes)
+                .exchange()
+                .expectStatus().isOk
+                .expectBody(CurrencyExchangeRatesResponse::class.java)
+                .returnResult()
+                .responseBody!!
+            Assertions.assertEquals(
+                CurrencyExchangeRatesResponse(
+                    listOf(
+                        CurrencyExchangeRate(
+                            "E",
+                            "U",
+                            BigDecimal.TEN
+                        )
+                    )
+                ), routes
+            )
         }
     }
 
@@ -90,35 +103,35 @@ class CurrencyRatesControllerIT : KafkaEnabledTest() {
     fun whenSetCurrencyExchangeRateIsOK_thenRetrieveRates() {
         runBlocking {
             webClient.post().uri("/otc/rate").accept(MediaType.APPLICATION_JSON)
-                    .bodyValue(SetCurrencyExchangeRateRequest("E", "U", BigDecimal.TEN))
-                    .exchange()
-                    .expectStatus().isOk
+                .bodyValue(SetCurrencyExchangeRateRequest("E", "U", BigDecimal.TEN))
+                .exchange()
+                .expectStatus().isOk
 
             webClient.post().uri("/otc/rate").accept(MediaType.APPLICATION_JSON)
-                    .bodyValue(SetCurrencyExchangeRateRequest("B", "U", BigDecimal.TEN))
-                    .exchange()
-                    .expectStatus().isOk
+                .bodyValue(SetCurrencyExchangeRateRequest("B", "U", BigDecimal.TEN))
+                .exchange()
+                .expectStatus().isOk
 
             val allRates = webClient.get().uri("/otc/rate").accept(MediaType.APPLICATION_JSON)
-                    .exchange()
-                    .expectStatus().isOk
-                    .expectBody(CurrencyExchangeRatesResponse::class.java)
-                    .returnResult()
-                    .responseBody!!
+                .exchange()
+                .expectStatus().isOk
+                .expectBody(CurrencyExchangeRatesResponse::class.java)
+                .returnResult()
+                .responseBody!!
             Assertions.assertEquals(
-                    CurrencyExchangeRatesResponse(
-                            listOf(
-                                    CurrencyExchangeRate("E", "U", BigDecimal.TEN), CurrencyExchangeRate("B", "U", BigDecimal.TEN)
-                            )
-                    ), allRates
+                CurrencyExchangeRatesResponse(
+                    listOf(
+                        CurrencyExchangeRate("E", "U", BigDecimal.TEN), CurrencyExchangeRate("B", "U", BigDecimal.TEN)
+                    )
+                ), allRates
             )
 
             val rate = webClient.get().uri("/otc/rate/E/U").accept(MediaType.APPLICATION_JSON)
-                    .exchange()
-                    .expectStatus().isOk
-                    .expectBody(Rate::class.java)
-                    .returnResult()
-                    .responseBody!!
+                .exchange()
+                .expectStatus().isOk
+                .expectBody(Rate::class.java)
+                .returnResult()
+                .responseBody!!
             Assertions.assertEquals(Rate("E", "U", BigDecimal.TEN), rate)
         }
     }
@@ -127,20 +140,20 @@ class CurrencyRatesControllerIT : KafkaEnabledTest() {
     fun givenRateExist_whenRemoveCurrencyExchangeRate_thenRouteRemoved() {
         runBlocking {
             webClient.post().uri("/otc/rate").accept(MediaType.APPLICATION_JSON)
-                    .bodyValue(SetCurrencyExchangeRateRequest("E", "U", BigDecimal.TEN))
-                    .exchange()
-                    .expectStatus().isOk
+                .bodyValue(SetCurrencyExchangeRateRequest("E", "U", BigDecimal.TEN))
+                .exchange()
+                .expectStatus().isOk
 
             webClient.delete().uri("/otc/rate/E/U").accept(MediaType.APPLICATION_JSON)
-                    .exchange()
-                    .expectStatus().isOk
+                .exchange()
+                .expectStatus().isOk
 
             val routes = webClient.get().uri("/otc/route").accept(MediaType.APPLICATION_JSON)
-                    .exchange()
-                    .expectStatus().isOk
-                    .expectBody(CurrencyExchangeRatesResponse::class.java)
-                    .returnResult()
-                    .responseBody!!
+                .exchange()
+                .expectStatus().isOk
+                .expectBody(CurrencyExchangeRatesResponse::class.java)
+                .returnResult()
+                .responseBody!!
             Assertions.assertTrue(routes.rates.isEmpty())
         }
     }
@@ -149,16 +162,16 @@ class CurrencyRatesControllerIT : KafkaEnabledTest() {
     fun whenSetForbiddenPairs_thenStored() {
         runBlocking {
             webClient.post().uri("/otc/forbidden-pairs").accept(MediaType.APPLICATION_JSON)
-                    .bodyValue(CurrencyPair("E", "U"))
-                    .exchange()
-                    .expectStatus().isOk
+                .bodyValue(CurrencyPair("E", "U"))
+                .exchange()
+                .expectStatus().isOk
 
             val forbiddenPairs = webClient.get().uri("/otc/forbidden-pairs").accept(MediaType.APPLICATION_JSON)
-                    .exchange()
-                    .expectStatus().isOk
-                    .expectBody(ForbiddenPairs::class.java)
-                    .returnResult()
-                    .responseBody!!
+                .exchange()
+                .expectStatus().isOk
+                .expectBody(ForbiddenPairs::class.java)
+                .returnResult()
+                .responseBody!!
             Assertions.assertEquals(ForbiddenPair("E", "U"), forbiddenPairs.forbiddenPairs?.get(0))
         }
     }
@@ -168,20 +181,20 @@ class CurrencyRatesControllerIT : KafkaEnabledTest() {
     fun givenForbiddenPair_whenRemoveForbiddenPairs_thenRemoved() {
         runBlocking {
             webClient.post().uri("/otc/forbidden-pairs").accept(MediaType.APPLICATION_JSON)
-                    .bodyValue(CurrencyPair("E", "U"))
-                    .exchange()
-                    .expectStatus().isOk
+                .bodyValue(CurrencyPair("E", "U"))
+                .exchange()
+                .expectStatus().isOk
 
             webClient.delete().uri("/otc/forbidden-pairs/E/U").accept(MediaType.APPLICATION_JSON)
-                    .exchange()
-                    .expectStatus().isOk
+                .exchange()
+                .expectStatus().isOk
 
             val forbiddenPairs = webClient.get().uri("/otc/forbidden-pairs").accept(MediaType.APPLICATION_JSON)
-                    .exchange()
-                    .expectStatus().isOk
-                    .expectBody(ForbiddenPairs::class.java)
-                    .returnResult()
-                    .responseBody!!
+                .exchange()
+                .expectStatus().isOk
+                .expectBody(ForbiddenPairs::class.java)
+                .returnResult()
+                .responseBody!!
             Assertions.assertTrue(forbiddenPairs.forbiddenPairs!!.isEmpty())
         }
     }
@@ -190,18 +203,18 @@ class CurrencyRatesControllerIT : KafkaEnabledTest() {
     fun whenSetTransitiveSymbols_thenStored() {
         runBlocking {
             webClient.post().uri("/otc/transitive-symbols").accept(MediaType.APPLICATION_JSON)
-                    .bodyValue(Symbols(listOf("E", "U")))
-                    .exchange()
-                    .expectStatus().isOk
+                .bodyValue(Symbols(listOf("E", "U")))
+                .exchange()
+                .expectStatus().isOk
 
             webClient.get().uri("/otc/transitive-symbols").accept(MediaType.APPLICATION_JSON)
-                    .exchange()
-                    .expectStatus().isOk
-                    .expectBody()
-                    .jsonPath("symbols[0]")
-                    .isEqualTo("E")
-                    .jsonPath("symbols[1]")
-                    .isEqualTo("U")
+                .exchange()
+                .expectStatus().isOk
+                .expectBody()
+                .jsonPath("symbols[0]")
+                .isEqualTo("E")
+                .jsonPath("symbols[1]")
+                .isEqualTo("U")
         }
     }
 
@@ -209,21 +222,21 @@ class CurrencyRatesControllerIT : KafkaEnabledTest() {
     fun givenTransitiveSymbols_whenRemoveTransitiveSymbol_thenRemoved() {
         runBlocking {
             webClient.post().uri("/otc/transitive-symbols").accept(MediaType.APPLICATION_JSON)
-                    .bodyValue(
-                            Symbols(listOf("E", "U"))
-                    )
-                    .exchange()
-                    .expectStatus().isOk
+                .bodyValue(
+                    Symbols(listOf("E", "U"))
+                )
+                .exchange()
+                .expectStatus().isOk
 
             webClient.delete().uri("/otc/transitive-symbols/E").accept(MediaType.APPLICATION_JSON)
-                    .exchange()
-                    .expectStatus().isOk
+                .exchange()
+                .expectStatus().isOk
 
             webClient.get().uri("/otc/transitive-symbols").accept(MediaType.APPLICATION_JSON)
-                    .exchange()
-                    .expectStatus().isOk
-                    .expectBody()
-                    .jsonPath("symbols[0]").isEqualTo("U")
+                .exchange()
+                .expectStatus().isOk
+                .expectBody()
+                .jsonPath("symbols[0]").isEqualTo("U")
         }
     }
 

@@ -1,6 +1,5 @@
 package co.nilin.opex.wallet.app.dto
 
-import co.nilin.opex.wallet.core.model.WalletType
 import java.math.BigDecimal
 
 data class TransferReserveRequest(

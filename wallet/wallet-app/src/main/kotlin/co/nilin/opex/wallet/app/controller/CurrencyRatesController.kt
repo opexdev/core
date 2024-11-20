@@ -31,7 +31,7 @@ class CurrencyRatesController(
     )
     suspend fun createRate(@RequestBody request: SetCurrencyExchangeRateRequest) {
         request.validate()
-        rateService.addRate(Rate(request.sourceSymbol, request.destSymbol, request.rate),request.ignoreIfExist)
+        rateService.addRate(Rate(request.sourceSymbol, request.destSymbol, request.rate), request.ignoreIfExist)
     }
 
     @PutMapping("/rate")
@@ -104,7 +104,10 @@ class CurrencyRatesController(
         message = "OK",
         code = 200,
     )
-    suspend fun deleteForbiddenPair(@PathVariable sourceSymbol: String, @PathVariable destSymbol: String): ForbiddenPairs {
+    suspend fun deleteForbiddenPair(
+        @PathVariable sourceSymbol: String,
+        @PathVariable destSymbol: String
+    ): ForbiddenPairs {
         return rateService.deleteForbiddenPair(ForbiddenPair(sourceSymbol, destSymbol))
     }
 
@@ -173,7 +176,8 @@ class CurrencyRatesController(
         @RequestParam("destSymbol") destSymbol: String? = null
     ): CurrencyExchangeRatesResponse {
         return CurrencyExchangeRatesResponse(
-            graphService.buildRoutes(sourceSymbol, destSymbol).map { CurrencyExchangeRate(it.getSourceSymbol(), it.getDestSymbol(), it.getRate()) }
+            graphService.buildRoutes(sourceSymbol, destSymbol)
+                .map { CurrencyExchangeRate(it.getSourceSymbol(), it.getDestSymbol(), it.getRate()) }
         )
     }
 

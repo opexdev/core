@@ -81,7 +81,6 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     BankDataNotFound(6035, "Object not found", HttpStatus.BAD_REQUEST),
 
 
-
     // code 7000: api
     OrderNotFound(7001, "No order found", HttpStatus.NOT_FOUND),
     SymbolNotFound(7002, "No symbol found", HttpStatus.NOT_FOUND),

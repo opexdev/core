@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.util.*
-import kotlin.collections.ArrayList
 
 @Service
 class GatewayService(
@@ -89,11 +88,11 @@ class GatewayService(
             return offChainGateway.fetchGatewayDetail(currencyGatewayUuid, currencySymbol)
         } else if (currencyGatewayUuid.startsWith("mag")) {
             return manualGateway.fetchGatewayDetail(currencyGatewayUuid, currencySymbol)
-        } else if (currencyGatewayUuid.startsWith("ong")){
+        } else if (currencyGatewayUuid.startsWith("ong")) {
             val token = authService.extractToken()
             return onChainGateway.fetchGatewayDetail(currencyGatewayUuid, currencySymbol, token)
 
-        }else
+        } else
             throw OpexError.GatewayNotFount.exception()
     }
 

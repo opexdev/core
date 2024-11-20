@@ -51,7 +51,7 @@ class ExtendedEventListenerProvider(private val session: KeycloakSession) : Even
             val realm = model.getRealm(event.realmId)
             val user = session.users().getUserById(event.userId, realm)
             if (user != null && user.email != null && user.isEmailVerified) {
-                logger.info("USER HAS VERIFIED EMAIL : ${event.userId}" )
+                logger.info("USER HAS VERIFIED EMAIL : ${event.userId}")
 
                 // Example of adding an attribute when this event happens
                 user.setSingleAttribute("attribute-key", "attribute-value")

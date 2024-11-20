@@ -6,8 +6,8 @@ import co.nilin.opex.wallet.core.service.otc.RateService
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepositoryV2
 import co.nilin.opex.wallet.ports.postgres.dao.ForbiddenPairRepository
 import co.nilin.opex.wallet.ports.postgres.dao.RatesRepository
-import co.nilin.opex.wallet.ports.postgres.model.ForbiddenPairModel
 import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
+import co.nilin.opex.wallet.ports.postgres.model.ForbiddenPairModel
 import co.nilin.opex.wallet.ports.postgres.model.RateModel
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
@@ -17,22 +17,23 @@ import java.util.stream.Collectors
 
 @Component
 class RateServiceImpl(
-        private val ratesRepository: RatesRepository,
-        private val forbiddenPairRepository: ForbiddenPairRepository,
-        private val currencyRepository: CurrencyRepositoryV2
+    private val ratesRepository: RatesRepository,
+    private val forbiddenPairRepository: ForbiddenPairRepository,
+    private val currencyRepository: CurrencyRepositoryV2
 ) : RateService {
 
     private val logger = LoggerFactory.getLogger(RateServiceImpl::class.java)
 
 
-    override suspend fun addRate(rate: Rate,ignoreIfExist:Boolean?) {
+    override suspend fun addRate(rate: Rate, ignoreIfExist: Boolean?) {
         rate.isValid()
         ratesRepository.findBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destSymbol)?.awaitFirstOrNull()
-                ?.let {
-                    if (!ignoreIfExist!!)
-                        throw OpexError.PairIsExist.exception()
-                } ?: run {
-            forbiddenPairRepository.findBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destSymbol)?.awaitFirstOrNull()
+            ?.let {
+                if (!ignoreIfExist!!)
+                    throw OpexError.PairIsExist.exception()
+            } ?: run {
+            forbiddenPairRepository.findBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destSymbol)
+                ?.awaitFirstOrNull()
         }?.let {
             throw OpexError.ForbiddenPair.exception()
         } ?: run {
@@ -52,17 +53,27 @@ class RateServiceImpl(
 
     override suspend fun deleteRate(rate: Rate): Rates {
         return Rates(ratesRepository
-                .findBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destSymbol)?.awaitFirstOrNull()?.let {
-                    ratesRepository.deleteBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destSymbol)?.awaitFirstOrNull().let {
-                        ratesRepository.findAll().map { it.toDto() }.collect(Collectors.toList()).awaitFirstOrNull()
-                    }
-                } ?: throw OpexError.PairNotFound.exception())
+            .findBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destSymbol)?.awaitFirstOrNull()?.let {
+                ratesRepository.deleteBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destSymbol)
+                    ?.awaitFirstOrNull().let {
+                    ratesRepository.findAll().map { it.toDto() }.collect(Collectors.toList()).awaitFirstOrNull()
+                }
+            } ?: throw OpexError.PairNotFound.exception())
     }
 
     override suspend fun updateRate(rate: Rate): Rates {
         return Rates(ratesRepository
             .findBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destSymbol)?.awaitFirstOrNull()?.let { it ->
-                ratesRepository.save(RateModel(it.id, rate.sourceSymbol, rate.destSymbol, rate.rate, LocalDateTime.now(), it.createDate))?.awaitFirstOrNull().let {
+                ratesRepository.save(
+                    RateModel(
+                        it.id,
+                        rate.sourceSymbol,
+                        rate.destSymbol,
+                        rate.rate,
+                        LocalDateTime.now(),
+                        it.createDate
+                    )
+                )?.awaitFirstOrNull().let {
                     ratesRepository.findAll().map { it.toDto() }.collect(Collectors.toList()).awaitFirstOrNull()
                 }
             }
@@ -71,23 +82,33 @@ class RateServiceImpl(
 
     override suspend fun addForbiddenPair(forbiddenPair: ForbiddenPair) {
         forbiddenPair.isValid()
-        forbiddenPairRepository.findBySourceSymbolAndDestinationSymbol(forbiddenPair.sourceSymbol, forbiddenPair.destinationSymbol)?.awaitFirstOrNull()?.let {
+        forbiddenPairRepository.findBySourceSymbolAndDestinationSymbol(
+            forbiddenPair.sourceSymbol,
+            forbiddenPair.destinationSymbol
+        )?.awaitFirstOrNull()?.let {
             throw OpexError.PairIsExist.exception()
         } ?: forbiddenPairRepository.save(forbiddenPair.toModel()).awaitFirstOrNull()
     }
 
     override suspend fun deleteForbiddenPair(forbiddenPair: ForbiddenPair): ForbiddenPairs {
         return ForbiddenPairs(forbiddenPairRepository
-                .findBySourceSymbolAndDestinationSymbol(forbiddenPair.sourceSymbol, forbiddenPair.destinationSymbol)?.awaitFirstOrNull()?.let {
-                    forbiddenPairRepository.deleteBySourceSymbolAndDestinationSymbol(forbiddenPair.sourceSymbol, forbiddenPair.destinationSymbol)?.awaitFirstOrNull().let {
-                        forbiddenPairRepository.findAllBy()?.map { it.toDto() }?.collect(Collectors.toList())?.awaitFirstOrNull()
-                    }
-                } ?: throw OpexError.PairNotFound.exception())
+            .findBySourceSymbolAndDestinationSymbol(forbiddenPair.sourceSymbol, forbiddenPair.destinationSymbol)
+            ?.awaitFirstOrNull()?.let {
+                forbiddenPairRepository.deleteBySourceSymbolAndDestinationSymbol(
+                    forbiddenPair.sourceSymbol,
+                    forbiddenPair.destinationSymbol
+                )?.awaitFirstOrNull().let {
+                    forbiddenPairRepository.findAllBy()?.map { it.toDto() }?.collect(Collectors.toList())
+                        ?.awaitFirstOrNull()
+                }
+            } ?: throw OpexError.PairNotFound.exception())
     }
 
 
     override suspend fun getForbiddenPairs(): ForbiddenPairs {
-        return ForbiddenPairs(forbiddenPairRepository.findAllBy()?.map { it.toDto() }?.collect(Collectors.toList())?.awaitFirstOrNull())
+        return ForbiddenPairs(
+            forbiddenPairRepository.findAllBy()?.map { it.toDto() }?.collect(Collectors.toList())?.awaitFirstOrNull()
+        )
     }
 
     override suspend fun addTransitiveSymbols(symbols: Symbols) {
@@ -105,30 +126,36 @@ class RateServiceImpl(
                 currencyRepository.save(it.apply { isTransitive = false }).awaitFirstOrNull()
             }
         }
-        return Symbols(currencyRepository.findByIsTransitive(true)?.map(CurrencyModel::symbol)?.collect(Collectors.toList())?.awaitFirstOrNull())
+        return Symbols(
+            currencyRepository.findByIsTransitive(true)?.map(CurrencyModel::symbol)?.collect(Collectors.toList())
+                ?.awaitFirstOrNull()
+        )
     }
 
     override suspend fun getTransitiveSymbols(): Symbols {
-        return Symbols(currencyRepository.findByIsTransitive(true)?.map(CurrencyModel::symbol)?.collect(Collectors.toList())?.awaitFirstOrNull())
+        return Symbols(
+            currencyRepository.findByIsTransitive(true)?.map(CurrencyModel::symbol)?.collect(Collectors.toList())
+                ?.awaitFirstOrNull()
+        )
     }
 
     private fun Rate.toModel(): RateModel {
         return RateModel(
-                null,
-                this.sourceSymbol,
-                this.destSymbol,
-                this.rate,
-                LocalDateTime.now(),
-                LocalDateTime.now()
+            null,
+            this.sourceSymbol,
+            this.destSymbol,
+            this.rate,
+            LocalDateTime.now(),
+            LocalDateTime.now()
         )
 
     }
 
     private fun RateModel.toDto(): Rate {
         return Rate(
-                this.sourceSymbol,
-                this.destinationSymbol,
-                this.rate,
+            this.sourceSymbol,
+            this.destinationSymbol,
+            this.rate,
         )
 
     }

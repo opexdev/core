@@ -1,8 +1,6 @@
 package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.utility.error.data.OpexException
-import co.nilin.opex.wallet.app.service.CurrencyServiceV2
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.model.WalletType
@@ -27,7 +25,7 @@ import java.math.BigDecimal
 class InquiryController(
     private val walletManager: WalletManager,
     private val walletOwnerManager: WalletOwnerManager,
-    @Qualifier("newVersion")  private val currencyService: CurrencyServiceManager
+    @Qualifier("newVersion") private val currencyService: CurrencyServiceManager
 ) {
     private val logger = LoggerFactory.getLogger(InquiryController::class.java)
 
@@ -45,11 +43,11 @@ class InquiryController(
         )
     )
     suspend fun canFulfill(
-            @PathVariable uuid: String,
-            @PathVariable currency: String,
-            @PathVariable("wallet_type") walletType: WalletType,
-            @PathVariable amount: BigDecimal,
-            @CurrentSecurityContext securityContext: SecurityContext?
+        @PathVariable uuid: String,
+        @PathVariable currency: String,
+        @PathVariable("wallet_type") walletType: WalletType,
+        @PathVariable amount: BigDecimal,
+        @CurrentSecurityContext securityContext: SecurityContext?
 
     ): BooleanResponse {
         securityContext?.let {
@@ -60,7 +58,8 @@ class InquiryController(
         logger.info("canFullFill: {} {} {} {}", uuid, currency, walletType, amount)
         val owner = walletOwnerManager.findWalletOwner(uuid)
         if (owner != null) {
-            val c = currencyService.fetchCurrency(FetchCurrency(symbol =  currency)) ?: throw OpexError.CurrencyNotFound.exception()
+            val c = currencyService.fetchCurrency(FetchCurrency(symbol = currency))
+                ?: throw OpexError.CurrencyNotFound.exception()
             val wallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, walletType, c)
             if (wallet != null) {
                 return BooleanResponse(
