@@ -96,7 +96,7 @@ class AdvancedTransferControllerIT : KafkaEnabledTest() {
                         "ETH",
                         "USDT",
                         sender.uuid,
-                        receiver,
+                        receiver
                     )
                 )
                 .exchange()

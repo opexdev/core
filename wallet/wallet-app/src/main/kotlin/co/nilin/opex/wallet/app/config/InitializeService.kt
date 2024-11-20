@@ -30,13 +30,13 @@ import javax.annotation.PostConstruct
 @Profile("!otc")
 @DependsOn("postgresConfig")
 class InitializeService(
-        @Value("\${app.system.uuid}") val systemUuid: String,
-        @Value("b58dc8b2-9c0f-11ee-8c90-0242ac120002") val adminUuid: String,
+    @Value("\${app.system.uuid}") val systemUuid: String,
+    @Value("b58dc8b2-9c0f-11ee-8c90-0242ac120002") val adminUuid: String,
 
-        private val currencyRepository: CurrencyRepositoryV2,
-        private val walletOwnerRepository: WalletOwnerRepository,
-        private val walletRepository: WalletRepository,
-        private val walletLimitsRepository: WalletLimitsRepository
+    private val currencyRepository: CurrencyRepositoryV2,
+    private val walletOwnerRepository: WalletOwnerRepository,
+    private val walletRepository: WalletRepository,
+    private val walletLimitsRepository: WalletLimitsRepository
 ) {
     @Autowired
     private lateinit var preferences: Preferences
@@ -47,6 +47,7 @@ class InitializeService(
         addSystemAndAdminWallet(preferences)
         addUserLimits(preferences.userLimits)
     }
+
     private suspend fun addUserLimits(data: List<UserLimit>) = coroutineScope {
         data.forEachIndexed { i, it ->
             if (!walletLimitsRepository.existsById(i + 1L).awaitSingle()) {
@@ -70,6 +71,7 @@ class InitializeService(
             }
         }
     }
+
     private suspend fun addSystemAndAdminWallet(p: Preferences) = coroutineScope {
         if (!walletOwnerRepository.existsById(1).awaitSingle()) {
             walletOwnerRepository.save(WalletOwnerModel(null, systemUuid, p.system.walletTitle, p.system.walletLevel))
@@ -101,7 +103,7 @@ class InitializeService(
 
     private suspend fun addCurrencies(data: List<Currency>) = coroutineScope {
         data.forEach {
-            currencyRepository.insert(it.name, it.symbol, it.precision).awaitSingleOrNull()
+            currencyRepository.insert(it.name, it.symbol, it.name, it.precision).awaitSingleOrNull()
         }
     }
 }

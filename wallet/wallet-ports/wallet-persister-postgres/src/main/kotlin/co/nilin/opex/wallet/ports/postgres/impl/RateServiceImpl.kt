@@ -137,7 +137,7 @@ class RateServiceImpl(
         return ForbiddenPairModel(
             null,
             sourceSymbol,
-            destSymbol,
+            destinationSymbol,
             LocalDateTime.now(),
             LocalDateTime.now()
         )

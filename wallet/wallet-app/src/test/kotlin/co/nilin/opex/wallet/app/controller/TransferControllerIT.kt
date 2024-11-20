@@ -53,7 +53,6 @@ class TransferControllerIT : KafkaEnabledTest() {
             val sender = walletOwnerManager.createWalletOwner(UUID.randomUUID().toString(), "sender", "")
             val receiver = sender.uuid
             val srcCurrency = currencyService.fetchCurrency(FetchCurrency(symbol = "ETH"))!!
-            logger.info(srcCurrency.symbol)
             walletManager.createWallet(sender, Amount(srcCurrency, BigDecimal.valueOf(100)), srcCurrency, WalletType.MAIN)
 
             val transfer = webClient.post().uri("/v2/transfer/1_ETH/from/${sender.uuid}_MAIN/to/${receiver}_EXCHANGE").accept(MediaType.APPLICATION_JSON)

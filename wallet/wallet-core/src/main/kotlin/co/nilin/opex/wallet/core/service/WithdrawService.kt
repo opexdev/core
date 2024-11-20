@@ -15,15 +15,13 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 
-
 @Service
 class WithdrawService(
     private val withdrawPersister: WithdrawPersister,
     private val walletManager: WalletManager,
     private val walletOwnerManager: WalletOwnerManager,
-    private val currencyService: CurrencyService,
+    private val currencyService: CurrencyServiceManager,
     private val transferManager: TransferManager,
-    private val bcGatewayProxy: BcGatewayProxy,
     private val authService: AuthService,
     private val environment: Environment,
     private val gatewayService: GatewayService,
@@ -39,7 +37,8 @@ class WithdrawService(
 
         val currency = currencyService.fetchCurrency(FetchCurrency(symbol = withdrawCommand.currency))
             ?: throw OpexError.CurrencyNotFound.exception()
-        val owner = walletOwnerManager.findWalletOwner(withdrawCommand.uuid) ?: throw OpexError.WalletOwnerNotFound.exception()
+        val owner =
+            walletOwnerManager.findWalletOwner(withdrawCommand.uuid) ?: throw OpexError.WalletOwnerNotFound.exception()
         val sourceWallet =
             walletManager.findWalletByOwnerAndCurrencyAndType(owner, WalletType.MAIN, currency)
                 ?: throw OpexError.WalletNotFound.exception()
@@ -115,7 +114,7 @@ class WithdrawService(
 
                 when (it) {
                     is OnChainGatewayCommand -> {
-                        withdrawCommand.currency=it.currencySymbol!!
+                        withdrawCommand.currency = it.currencySymbol!!
                         withdrawCommand.destNetwork = it.chain
                         withdrawCommand.destSymbol = it.implementationSymbol!!
                         withdrawCommand.withdrawType = WithdrawType.ON_CHAIN
@@ -128,7 +127,7 @@ class WithdrawService(
                     }
 
                     is OffChainGatewayCommand -> {
-                        withdrawCommand.currency=it.currencySymbol!!
+                        withdrawCommand.currency = it.currencySymbol!!
                         withdrawCommand.destNetwork = it.transferMethod.name
                         withdrawCommand.withdrawType = WithdrawType.OFF_CHAIN
                         GatewayData(

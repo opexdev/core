@@ -27,7 +27,7 @@ class WalletController(
     private val symbolMapper: SymbolMapper,
     private val marketDataProxy: MarketDataProxy,
     private val accountantProxy: AccountantProxy,
-    @Qualifier("") private val bcGatewayProxy: BlockchainGatewayProxy,
+    private val bcGatewayProxy: BlockchainGatewayProxy,
 ) {
 
     @GetMapping("/v1/capital/deposit/address")

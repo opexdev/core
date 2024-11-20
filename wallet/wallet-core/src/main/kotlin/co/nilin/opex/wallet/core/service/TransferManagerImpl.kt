@@ -67,7 +67,6 @@ class TransferManagerImpl(
                 transferCommand.description,
                 transferCommand.transferRef,
                 transferCommand.transferCategory,
-                transferCommand.additionalData,
                 LocalDateTime.now()
             )
         )

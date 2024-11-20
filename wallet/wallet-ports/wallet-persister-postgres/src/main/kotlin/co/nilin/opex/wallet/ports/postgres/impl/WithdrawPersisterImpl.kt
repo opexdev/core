@@ -3,6 +3,7 @@ package co.nilin.opex.wallet.ports.postgres.impl
 import co.nilin.opex.wallet.core.inout.WithdrawResponse
 import co.nilin.opex.wallet.core.model.Withdraw
 import co.nilin.opex.wallet.core.model.WithdrawStatus
+import co.nilin.opex.wallet.core.model.WithdrawType
 import co.nilin.opex.wallet.core.spi.WithdrawPersister
 import co.nilin.opex.wallet.ports.postgres.dao.TransactionRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WithdrawRepository
@@ -13,7 +14,9 @@ import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.stereotype.Service
+import java.math.BigDecimal
 import java.time.LocalDateTime
+import java.util.*
 
 @Service
 class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) : WithdrawPersister {
@@ -173,25 +176,24 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
 
     private suspend fun WithdrawModel.asWithdrawResponse(): WithdrawResponse {
         return WithdrawResponse(
-                id!!,
-                ownerUuid,
-                Date.from(reqTx.txDate.atZone(ZoneId.systemDefault()).toInstant()),
-                if (finalTx == null) null else Date.from(finalTx.txDate.atZone(ZoneId.systemDefault()).toInstant()),
-                reqTx.id.toString(),
-                finalTx?.id.toString(),
-                acceptedFee,
-                appliedFee,
-                amount,
-                destAmount,
-                destSymbol,
-                destAddress,
-                destNetwork,
-                destNote,
-                destTransactionRef,
-                statusReason,
-                status,
-                createDate,
-                acceptDate
+            id!!,
+            ownerUuid,
+            amount,
+            currency,
+            appliedFee,
+            destAmount,
+            destSymbol,
+            destAddress,
+            destNetwork,
+            destNotes,
+            destTransactionRef,
+            statusReason,
+            status,
+            applicator,
+            withdrawType,
+            attachment,
+            createDate,
+            lastUpdateDate
         )
     }
 

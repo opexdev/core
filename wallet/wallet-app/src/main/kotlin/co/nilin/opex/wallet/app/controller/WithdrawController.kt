@@ -68,42 +68,42 @@ class WithdrawController(private val withdrawService: WithdrawService) {
 
     @PostMapping("/history")
     suspend fun getWithdrawTransactionsForUser(
-            @CurrentSecurityContext securityContext: SecurityContext,
-            @RequestBody request: WithdrawHistoryRequest,
+        @CurrentSecurityContext securityContext: SecurityContext,
+        @RequestBody request: WithdrawHistoryRequest,
     ): List<WithdrawResponse> {
         return withdrawService.findWithdrawHistory(
-                uuid,
-                request.coin,
-                request.startTime?.let {
-                    LocalDateTime.ofInstant(Instant.ofEpochMilli(request.startTime), ZoneId.systemDefault())
-                }
-                        ?: null,
-                request.endTime?.let {
-                    LocalDateTime.ofInstant(Instant.ofEpochMilli(request.endTime), ZoneId.systemDefault())
-                } ?: null,
-                request.limit!!,
-                request.offset!!,
-                request.ascendingByTime
+            securityContext.authentication.name,
+            request.currency,
+            request.startTime?.let {
+                LocalDateTime.ofInstant(Instant.ofEpochMilli(request.startTime), ZoneId.systemDefault())
+            }
+                ?: null,
+            request.endTime?.let {
+                LocalDateTime.ofInstant(Instant.ofEpochMilli(request.endTime), ZoneId.systemDefault())
+            } ?: null,
+            request.limit!!,
+            request.offset!!,
+            request.ascendingByTime
         ).map {
-
-
-            WithdrawHistoryResponse(
-                    it.withdrawId,
-                    it.ownerUuid,
-                    it.amount,
-                    it.currency,
-                    it.acceptedFee,
-                    it.appliedFee,
-                    it.destAmount,
-                    it.destSymbol,
-                    it.destAddress,
-                    it.destNetwork,
-                    it.destNote,
-                    it.destTransactionRef,
-                    it.statusReason,
-                    it.status,
-                    it.createDate.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
-                    it.acceptDate?.atZone(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
+            WithdrawResponse(
+                it.withdrawId,
+                it.uuid,
+                it.amount,
+                it.currency,
+                it.appliedFee,
+                it.destAmount,
+                it.destSymbol,
+                it.destAddress,
+                it.destNetwork,
+                it.destNote,
+                it.destTransactionRef,
+                it.statusReason,
+                it.status,
+                it.applicator,
+                it.withdrawType,
+                it.attachment,
+                it.createDate,
+                it.lastUpdateDate,
             )
         }
     }

@@ -7,11 +7,13 @@ import co.nilin.opex.wallet.app.dto.AdvanceReservedTransferData
 import co.nilin.opex.wallet.app.dto.ManualTransferRequest
 import co.nilin.opex.wallet.app.dto.ReservedTransferResponse
 import co.nilin.opex.wallet.app.dto.TransferRequest
+import co.nilin.opex.wallet.app.service.otc.GraphService
 import co.nilin.opex.wallet.core.exc.NotEnoughBalanceException
-import co.nilin.opex.wallet.core.inout.Deposit
-import co.nilin.opex.wallet.core.inout.TransferCommand
-import co.nilin.opex.wallet.core.inout.TransferResult
+import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.model.FetchCurrency
+import co.nilin.opex.wallet.core.model.TransferCategory
+import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.model.otc.Rate
 import co.nilin.opex.wallet.core.model.otc.ReservedTransfer
 import co.nilin.opex.wallet.core.spi.*
@@ -36,8 +38,6 @@ class TransferService(
 
 ) {
 
-    @Autowired
-    private lateinit var preferences: Preferences
 
     private val logger = LoggerFactory.getLogger(TransferService::class.java)
 
