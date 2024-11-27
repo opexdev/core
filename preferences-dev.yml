@@ -182,6 +182,57 @@ currencies:
         withdrawMin: 0.01
         decimal: 18
     gift: 2000
+  - symbol: SOL
+    name: Solana
+    precision: 0.00001
+    mainBalance: 100000
+    dailyTotal: 10000
+    dailyCount: 1000
+    monthlyTotal: 300000
+    monthlyCount: 30000
+    implementations:
+      - chain: test-bsc
+        token: true
+        tokenAddress: 0x570A5D26f7765Ecb712C0924E4De545B89fD43dF
+        tokenName: Wrapped Solana
+        withdrawFee: 0.0001
+        withdrawMin: 0.001
+        decimal: 18
+    gift: 100
+  - symbol: DOGE
+    name: Dogecoin
+    precision: 0.001
+    mainBalance: 10000000
+    dailyTotal: 1000000
+    dailyCount: 100000
+    monthlyTotal: 30000000
+    monthlyCount: 3000000
+    implementations:
+      - chain: test-bsc
+        token: true
+        tokenAddress: 0xbA2aE424d960c26247Dd6c32edC70B295c744C43
+        tokenName: Binance-Peg Dogecoin
+        withdrawFee: 2
+        withdrawMin: 10
+        decimal: 8
+    gift: 100
+  - symbol: TON
+    name: Toncoin
+    precision: 0.0001
+    mainBalance: 1000000
+    dailyTotal: 100000
+    dailyCount: 10000
+    monthlyTotal: 3000000
+    monthlyCount: 300000
+    implementations:
+      - chain: test-ethereum
+        token: true
+        tokenAddress: 0x582d872a1b094fc48f5de31d3b73f2d9be47def1
+        tokenName: Wrapped Ton Coin
+        withdrawFee: 0.3
+        withdrawMin: 1
+        decimal: 9
+    gift: 100
 markets:
   - leftSide: BTC
     rightSide: USDT
@@ -286,6 +337,48 @@ markets:
     aliases:
       - key: binance
         alias: BNBBUSD
+    feeConfigs:
+      - direction: ASK
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+      - direction: BID
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+  - leftSide: SOL
+    rightSide: USDT
+    aliases:
+      - key: binance
+        alias: SOLUSDT
+    feeConfigs:
+      - direction: ASK
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+      - direction: BID
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+  - leftSide: DOGE
+    rightSide: USDT
+    aliases:
+      - key: binance
+        alias: DOGEUSDT
+    feeConfigs:
+      - direction: ASK
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+      - direction: BID
+        userLevel: "*"
+        makerFee: 0.01
+        takerFee: 0.01
+  - leftSide: TON
+    rightSide: USDT
+    aliases:
+      - key: binance
+        alias: TONUSDT
     feeConfigs:
       - direction: ASK
         userLevel: "*"

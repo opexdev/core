@@ -24,3 +24,5 @@ management:
       enabled: true
     prometheus:
       enabled: true
+app:
+  symbols: ${SYMBOLS}
