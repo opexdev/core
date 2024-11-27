@@ -24,6 +24,9 @@ services:
   matching-engine:
     image: ghcr.io/opexdev/matching-engine:$TAG
     build: matching-engine/matching-engine-app
+  matching-engine-duo:
+    image: ghcr.io/opexdev/matching-engine:$TAG
+    build: matching-engine/matching-engine-app
   matching-gateway:
     image: ghcr.io/opexdev/matching-gateway:$TAG
     build: matching-gateway/matching-gateway-app

@@ -10,6 +10,10 @@ services:
     build: matching-engine/matching-engine-app
     volumes:
       - "./preferences-dev.yml:/preferences.yml"
+  matching-engine-duo:
+    build: matching-engine/matching-engine-app
+    volumes:
+      - "./preferences-dev.yml:/preferences.yml"
   matching-gateway:
     build: matching-gateway/matching-gateway-app
   auth:
