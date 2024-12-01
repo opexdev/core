@@ -31,13 +31,13 @@ class PaymentGatewayController(
     @PostMapping("/internal/deposit")
     suspend fun paymentDeposit(@RequestBody request: PaymentDepositRequest): PaymentDepositResponse {
         val receiverWalletType = WalletType.MAIN
-        val convertedAmount = when (request.currency) {
-            PaymentCurrency.RIALS -> (request.amount / BigDecimal.valueOf(10)).toLong()
-            PaymentCurrency.TOMAN -> request.amount.toLong()
-        }
+//        val convertedAmount = when (request.currency) {
+//            PaymentCurrency.RIALS -> (request.amount / BigDecimal.valueOf(10)).toLong()
+//            PaymentCurrency.TOMAN -> request.amount.toLong()
+//        }
 
         val currency =
-            currencyService.fetchCurrency(FetchCurrency(symbol = "IRT")) ?: throw OpexError.CurrencyNotFound.exception()
+            currencyService.fetchCurrency(FetchCurrency(symbol = request.currency.name)) ?: throw OpexError.CurrencyNotFound.exception()
         val sourceOwner = walletOwnerManager.findWalletOwner(walletOwnerManager.systemUuid)
             ?: throw OpexError.WalletOwnerNotFound.exception()
         val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner, WalletType.MAIN, currency)
@@ -61,7 +61,7 @@ class PaymentGatewayController(
             TransferCommand(
                 sourceWallet,
                 receiverWallet,
-                Amount(sourceWallet.currency, convertedAmount.toBigDecimal()),
+                Amount(sourceWallet.currency, request.amount),
                 request.description,
                 request.reference,
                 TransferCategory.DEPOSIT
