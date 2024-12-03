@@ -621,3 +621,11 @@ CREATE TABLE IF NOT EXISTS gateway_bank_data
 )
 
     );
+
+UPDATE currency_off_chain_gateway
+SET transfer_method =
+        CASE
+            WHEN transfer_method = 'Card2card' THEN 'CARD'
+            WHEN transfer_method = 'Sheba' THEN 'SHEBA'
+            END
+WHERE transfer_method IN ('Card2card', 'Sheba');

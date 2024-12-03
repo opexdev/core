@@ -25,7 +25,7 @@ import java.math.BigDecimal
 import javax.annotation.PostConstruct
 
 @Component
-@Profile("!otc")
+//@Profile("!otc")
 @DependsOn("postgresConfig")
 class InitializeService(
     @Value("\${app.system.uuid}") val systemUuid: String,
@@ -41,9 +41,9 @@ class InitializeService(
 
     @PostConstruct
     fun init() = runBlocking {
-        addCurrencies(preferences.currencies)
+//        addCurrencies(preferences.currencies)
         addSystemAndAdminWallet(preferences)
-        addUserLimits(preferences.userLimits)
+//        addUserLimits(preferences.userLimits)
     }
 
     private suspend fun addUserLimits(data: List<UserLimit>) = coroutineScope {
