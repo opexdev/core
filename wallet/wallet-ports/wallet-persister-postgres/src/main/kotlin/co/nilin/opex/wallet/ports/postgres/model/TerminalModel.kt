@@ -5,8 +5,8 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 import java.util.*
 
-@Table("bank_data")
-data class BankDataModel(
+@Table("terminal")
+data class TerminalModel(
     @Id
     var id: Long?,
     var uuid: String? = UUID.randomUUID().toString(),
@@ -14,5 +14,6 @@ data class BankDataModel(
     var identifier: String,
     var active: Boolean? = true,
     var type: TransferMethod,
-    var bankSwiftCode: String,
+    var metaData: String,
+    var description : String?
 )

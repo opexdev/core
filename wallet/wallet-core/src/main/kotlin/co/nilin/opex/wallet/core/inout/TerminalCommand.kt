@@ -1,10 +1,11 @@
 package co.nilin.opex.wallet.core.inout
 
-data class BankDataCommand(
+data class TerminalCommand(
     var uuid: String?,
     var owner: String,
     var identifier: String,
     var active: Boolean? = true,
     var type: TransferMethod,
-    var bankSwiftCode: String
+    var metaData: String,
+    var description : String?
 )

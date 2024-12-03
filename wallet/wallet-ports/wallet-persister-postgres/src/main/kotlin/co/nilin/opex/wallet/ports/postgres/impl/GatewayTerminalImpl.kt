@@ -1,33 +1,33 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.wallet.core.inout.BankDataCommand
-import co.nilin.opex.wallet.core.spi.GatewayBankDataManager
-import co.nilin.opex.wallet.ports.postgres.dao.BankDataRepository
-import co.nilin.opex.wallet.ports.postgres.dao.GatewayBankDataRepository
+import co.nilin.opex.wallet.core.inout.TerminalCommand
+import co.nilin.opex.wallet.core.spi.GatewayTerminalManager
+import co.nilin.opex.wallet.ports.postgres.dao.TerminalRepository
+import co.nilin.opex.wallet.ports.postgres.dao.GatewayTerminalRepository
 import co.nilin.opex.wallet.ports.postgres.dao.OffChainGatewayRepository
-import co.nilin.opex.wallet.ports.postgres.model.GatewayBankDataModel
+import co.nilin.opex.wallet.ports.postgres.model.GatewayTerminalModel
 import co.nilin.opex.wallet.ports.postgres.util.toDto
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
-class GatewayBankDataImpl(
+class GatewayTerminalImpl(
     private val gatewayRepository: OffChainGatewayRepository,
-    private val gatewayBankDataRepository: GatewayBankDataRepository,
-    private val bankDataRepository: BankDataRepository
-) : GatewayBankDataManager {
-    private val logger = LoggerFactory.getLogger(GatewayBankDataImpl::class.java)
+    private val gatewayTerminalRepository: GatewayTerminalRepository,
+    private val terminalRepository: TerminalRepository
+) : GatewayTerminalManager {
+    private val logger = LoggerFactory.getLogger(GatewayTerminalImpl::class.java)
 
-    override suspend fun assignBankDataToGateway(gatewayUuid: String, bankData: List<String>) {
+    override suspend fun assignTerminalToGateway(gatewayUuid: String, terminal: List<String>) {
         gatewayRepository.findByGatewayUuid(gatewayUuid)?.awaitSingleOrNull()?.let { gateway ->
-            bankData.forEach { it ->
-                bankDataRepository.findByUuid(
+            terminal.forEach { it ->
+                terminalRepository.findByUuid(
                     it
                 )?.awaitSingleOrNull()?.let {
                     runCatching {
-                        gatewayBankDataRepository.save(GatewayBankDataModel(null, it.id!!, gateway.id!!))
+                        gatewayTerminalRepository.save(GatewayTerminalModel(null, it.id!!, gateway.id!!))
                             ?.awaitSingleOrNull()
                     }
 
@@ -37,21 +37,21 @@ class GatewayBankDataImpl(
         } ?: throw OpexError.GatewayNotFount.exception()
     }
 
-    override suspend fun getAssignedBankDataToGateway(gatewayUuid: String): List<BankDataCommand>? {
+    override suspend fun getAssignedTerminalToGateway(gatewayUuid: String): List<TerminalCommand>? {
         return gatewayRepository.findByGatewayUuid(gatewayUuid)?.awaitSingleOrNull()?.let { gateway ->
-            gatewayBankDataRepository.findByGatewayId(gateway.id!!)?.map { it.toDto() }?.collectList()
+            gatewayTerminalRepository.findByGatewayId(gateway.id!!)?.map { it.toDto() }?.collectList()
                 ?.awaitSingleOrNull()
         } ?: throw OpexError.GatewayNotFount.exception()
     }
 
-    override suspend fun revokeBankDataToGateway(gatewayUuid: String, bankData: List<String>) {
+    override suspend fun revokeTerminalToGateway(gatewayUuid: String, terminal: List<String>) {
         gatewayRepository.findByGatewayUuid(gatewayUuid)?.awaitSingleOrNull()?.let { gateway ->
-            bankData.forEach { it ->
-                bankDataRepository.findByUuid(
+            terminal.forEach { it ->
+                terminalRepository.findByUuid(
                     it
                 )?.awaitSingleOrNull()?.let {
                     runCatching {
-                        gatewayBankDataRepository.deleteByBankDataIdAndGatewayId(it.id!!, gateway.id!!)
+                        gatewayTerminalRepository.deleteByTerminalIdAndGatewayId(it.id!!, gateway.id!!)
                             ?.awaitSingleOrNull()
                     }
 

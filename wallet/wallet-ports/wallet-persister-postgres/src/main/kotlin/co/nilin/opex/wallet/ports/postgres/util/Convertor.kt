@@ -159,19 +159,19 @@ fun ManualGatewayCommand.toModel(): ManualGatewayModel {
 }
 
 
-fun BankDataCommand.toModel(): BankDataModel {
-    return BankDataModel(
+fun TerminalCommand.toModel(): TerminalModel {
+    return TerminalModel(
         null,
         uuid,
         owner,
-        identifier, active, type, bankSwiftCode
+        identifier, active, type, metaData, description
     )
 }
 
-fun BankDataModel.toDto(): BankDataCommand {
-    return BankDataCommand(
+fun TerminalModel.toDto(): TerminalCommand {
+    return TerminalCommand(
         uuid!!,
         owner,
-        identifier, active, type, bankSwiftCode
+        identifier, active, type, metaData, description
     )
 }

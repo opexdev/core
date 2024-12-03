@@ -19,7 +19,6 @@ import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.DependsOn
-import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
@@ -34,7 +33,7 @@ class InitializeService(
     private val currencyRepository: CurrencyRepositoryV2,
     private val walletOwnerRepository: WalletOwnerRepository,
     private val walletRepository: WalletRepository,
-    private val walletLimitsRepository: WalletLimitsRepository ,
+    private val walletLimitsRepository: WalletLimitsRepository,
     private val environment: Environment
 ) {
     @Autowired

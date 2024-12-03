@@ -622,6 +622,9 @@ CREATE TABLE IF NOT EXISTS gateway_bank_data
 
     );
 
+---------------------------------------------------------------------------
+------------------------ Withdraw from otc to opex ------------------------
+---------------------------------------------------------------------------
 UPDATE currency_off_chain_gateway
 SET transfer_method =
         CASE
@@ -629,3 +632,38 @@ SET transfer_method =
             WHEN transfer_method = 'Sheba' THEN 'SHEBA'
             END
 WHERE transfer_method IN ('Card2card', 'Sheba');
+
+UPDATE bank_data
+SET type =
+        CASE
+            WHEN type = 'Card2card' THEN 'CARD'
+            WHEN type = 'Sheba' THEN 'SHEBA'
+            END
+WHERE type IN ('Card2card', 'Sheba');
+
+-- Rename tables
+ALTER TABLE bank_data RENAME TO terminal;
+ALTER TABLE gateway_bank_data RENAME TO gateway_terminal;
+
+-- Rename sequences
+ALTER SEQUENCE bank_data_id_seq RENAME TO terminal_id_seq;
+ALTER SEQUENCE gateway_bank_data_id_seq RENAME TO gateway_terminal_id_seq;
+
+-- Rename columns
+ALTER TABLE terminal RENAME COLUMN bank_swift_code TO meta_data;
+ALTER TABLE gateway_terminal RENAME COLUMN bank_data_id TO terminal_id;
+
+-- Add new column
+ALTER TABLE terminal ADD COLUMN description VARCHAR(255);
+
+-- Rename primary key constraints
+ALTER TABLE terminal RENAME CONSTRAINT bank_data_pkey TO terminal_pkey;
+ALTER TABLE gateway_terminal RENAME CONSTRAINT gateway_bank_data_pkey TO gateway_terminal_pkey;
+
+-- Rename unique and foreign key constraints
+ALTER TABLE gateway_terminal RENAME CONSTRAINT gateway_bank_data_bank_data_id_gateway_id_key TO gateway_terminal_terminal_id_gateway_id_key;
+ALTER TABLE gateway_terminal RENAME CONSTRAINT gateway_bank_data_bank_data_id_fkey TO gateway_terminal_terminal_id_fkey;
+ALTER TABLE gateway_terminal RENAME CONSTRAINT gateway_bank_data_gateway_id_fkey TO gateway_terminal_gateway_id_fkey;
+---------------------------------------------------------------------------
+---------------------------------- END ------------------------------------
+---------------------------------------------------------------------------

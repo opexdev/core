@@ -1,5 +1,5 @@
 package co.nilin.opex.wallet.core.inout
 
 enum class TransferMethod {
-    CARD, SHEBA, IPG, OPEX
+    CARD, SHEBA, IPG, EXCHANGE
 }
