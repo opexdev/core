@@ -20,12 +20,12 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.DependsOn
 import org.springframework.context.annotation.Profile
+import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
 import javax.annotation.PostConstruct
 
 @Component
-//@Profile("!otc")
 @DependsOn("postgresConfig")
 class InitializeService(
     @Value("\${app.system.uuid}") val systemUuid: String,
@@ -34,17 +34,22 @@ class InitializeService(
     private val currencyRepository: CurrencyRepositoryV2,
     private val walletOwnerRepository: WalletOwnerRepository,
     private val walletRepository: WalletRepository,
-    private val walletLimitsRepository: WalletLimitsRepository
+    private val walletLimitsRepository: WalletLimitsRepository ,
+    private val environment: Environment
 ) {
     @Autowired
     private lateinit var preferences: Preferences
 
+
     @PostConstruct
     fun init() = runBlocking {
-//        addCurrencies(preferences.currencies)
+        if (!environment.activeProfiles.contains("otc")) {
+            addCurrencies(preferences.currencies)
+            addUserLimits(preferences.userLimits)
+        }
         addSystemAndAdminWallet(preferences)
-//        addUserLimits(preferences.userLimits)
     }
+
 
     private suspend fun addUserLimits(data: List<UserLimit>) = coroutineScope {
         data.forEachIndexed { i, it ->
