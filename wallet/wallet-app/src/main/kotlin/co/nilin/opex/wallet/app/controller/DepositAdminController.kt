@@ -76,7 +76,7 @@ class DepositAdminController(
 
 
     @PostMapping("/terminal")
-    suspend fun registerAdminTerminal(
+    suspend fun registerTerminal(
         @RequestBody body: TerminalCommand
     ): TerminalCommand? {
         return terminalManager.save(body.apply { uuid = UUID.randomUUID().toString() })

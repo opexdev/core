@@ -121,7 +121,7 @@ class CurrencyController(
         @PathVariable("gatewayUuid") gatewayUuid: String,
         @RequestBody terminal: List<String>
     ) {
-        return gatewayTerminalManager.assignTerminalToGateway(gatewayUuid, terminal)
+        return gatewayTerminalManager.assignTerminalsToGateway(gatewayUuid, terminal)
     }
 
 
@@ -137,7 +137,7 @@ class CurrencyController(
         @PathVariable("gatewayUuid") gatewayUuid: String,
         @RequestBody terminal: List<String>
     ) {
-        return gatewayTerminalManager.revokeTerminalToGateway(gatewayUuid, terminal)
+        return gatewayTerminalManager.revokeTerminalsToGateway(gatewayUuid, terminal)
     }
 
 }

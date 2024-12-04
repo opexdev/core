@@ -642,28 +642,75 @@ SET type =
 WHERE type IN ('Card2card', 'Sheba');
 
 -- Rename tables
-ALTER TABLE bank_data RENAME TO terminal;
-ALTER TABLE gateway_bank_data RENAME TO gateway_terminal;
+DO $$
+    BEGIN
+        IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'bank_data') THEN
+            ALTER TABLE bank_data RENAME TO terminal;
+        END IF;
+
+        IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'gateway_bank_data') THEN
+            ALTER TABLE gateway_bank_data RENAME TO gateway_terminal;
+        END IF;
+    END $$;
 
 -- Rename sequences
-ALTER SEQUENCE bank_data_id_seq RENAME TO terminal_id_seq;
-ALTER SEQUENCE gateway_bank_data_id_seq RENAME TO gateway_terminal_id_seq;
+DO $$
+    BEGIN
+        IF EXISTS (SELECT 1 FROM pg_sequences WHERE sequencename = 'bank_data_id_seq') THEN
+            ALTER SEQUENCE bank_data_id_seq RENAME TO terminal_id_seq;
+        END IF;
+
+        IF EXISTS (SELECT 1 FROM pg_sequences WHERE sequencename = 'gateway_bank_data_id_seq') THEN
+            ALTER SEQUENCE gateway_bank_data_id_seq RENAME TO gateway_terminal_id_seq;
+        END IF;
+    END $$;
+
 
 -- Rename columns
-ALTER TABLE terminal RENAME COLUMN bank_swift_code TO meta_data;
-ALTER TABLE gateway_terminal RENAME COLUMN bank_data_id TO terminal_id;
+DO $$
+    BEGIN
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'terminal' AND column_name = 'bank_swift_code') THEN
+            ALTER TABLE terminal RENAME COLUMN bank_swift_code TO meta_data;
+        END IF;
+
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'gateway_terminal' AND column_name = 'bank_data_id') THEN
+            ALTER TABLE gateway_terminal RENAME COLUMN bank_data_id TO terminal_id;
+        END IF;
+    END $$;
+
 
 -- Add new column
-ALTER TABLE terminal ADD COLUMN description VARCHAR(255);
+DO $$
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'terminal' AND column_name = 'description') THEN
+            ALTER TABLE terminal ADD COLUMN description VARCHAR(255);
+        END IF;
+    END $$;
+
 
 -- Rename primary key constraints
-ALTER TABLE terminal RENAME CONSTRAINT bank_data_pkey TO terminal_pkey;
-ALTER TABLE gateway_terminal RENAME CONSTRAINT gateway_bank_data_pkey TO gateway_terminal_pkey;
+DO $$
+    BEGIN
+        IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'bank_data_pkey') THEN
+            ALTER TABLE terminal RENAME CONSTRAINT bank_data_pkey TO terminal_pkey;
+        END IF;
 
--- Rename unique and foreign key constraints
-ALTER TABLE gateway_terminal RENAME CONSTRAINT gateway_bank_data_bank_data_id_gateway_id_key TO gateway_terminal_terminal_id_gateway_id_key;
-ALTER TABLE gateway_terminal RENAME CONSTRAINT gateway_bank_data_bank_data_id_fkey TO gateway_terminal_terminal_id_fkey;
-ALTER TABLE gateway_terminal RENAME CONSTRAINT gateway_bank_data_gateway_id_fkey TO gateway_terminal_gateway_id_fkey;
+        IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'gateway_bank_data_pkey') THEN
+            ALTER TABLE gateway_terminal RENAME CONSTRAINT gateway_bank_data_pkey TO gateway_terminal_pkey;
+        END IF;
+
+        IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'gateway_bank_data_bank_data_id_gateway_id_key') THEN
+            ALTER TABLE gateway_terminal RENAME CONSTRAINT gateway_bank_data_bank_data_id_gateway_id_key TO gateway_terminal_terminal_id_gateway_id_key;
+        END IF;
+
+        IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'gateway_bank_data_bank_data_id_fkey') THEN
+            ALTER TABLE gateway_terminal RENAME CONSTRAINT gateway_bank_data_bank_data_id_fkey TO gateway_terminal_terminal_id_fkey;
+        END IF;
+
+        IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'gateway_bank_data_gateway_id_fkey') THEN
+            ALTER TABLE gateway_terminal RENAME CONSTRAINT gateway_bank_data_gateway_id_fkey TO gateway_terminal_gateway_id_fkey;
+        END IF;
+    END $$;
 ---------------------------------------------------------------------------
 ---------------------------------- END ------------------------------------
 ---------------------------------------------------------------------------
