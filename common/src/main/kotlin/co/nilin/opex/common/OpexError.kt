@@ -77,8 +77,8 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     GatewayNotFount(6031, null, HttpStatus.NOT_FOUND),
     GatewayIsExist(6032, null, HttpStatus.NOT_FOUND),
     InvalidDeposit(6033, "Invalid deposit", HttpStatus.BAD_REQUEST),
-    BankDataIsExist(6034, "This identifier is exist", HttpStatus.BAD_REQUEST),
-    BankDataNotFound(6035, "Object not found", HttpStatus.BAD_REQUEST),
+    TerminalIsExist(6034, "This identifier is exist", HttpStatus.BAD_REQUEST),
+    TerminalNotFound(6035, "Object not found", HttpStatus.BAD_REQUEST),
 
 
     // code 7000: api

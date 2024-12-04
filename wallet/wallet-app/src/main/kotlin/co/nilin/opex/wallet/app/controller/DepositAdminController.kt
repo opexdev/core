@@ -4,7 +4,7 @@ import co.nilin.opex.wallet.app.dto.AdminSearchDepositRequest
 import co.nilin.opex.wallet.app.dto.ManualTransferRequest
 import co.nilin.opex.wallet.app.service.DepositService
 import co.nilin.opex.wallet.core.inout.*
-import co.nilin.opex.wallet.core.spi.BankDataManager
+import co.nilin.opex.wallet.core.spi.TerminalManager
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
@@ -22,7 +22,7 @@ import java.util.*
 
 class DepositAdminController(
     private val depositService: DepositService,
-    private val bankDataManager: BankDataManager
+    private val terminalManager: TerminalManager
 ) {
 
 
@@ -75,41 +75,41 @@ class DepositAdminController(
     }
 
 
-    @PostMapping("/bank-data")
-    suspend fun registerAdminBankData(
-        @RequestBody body: BankDataCommand
-    ): BankDataCommand? {
-        return bankDataManager.save(body.apply { uuid = UUID.randomUUID().toString() })
+    @PostMapping("/terminal")
+    suspend fun registerTerminal(
+        @RequestBody body: TerminalCommand
+    ): TerminalCommand? {
+        return terminalManager.save(body.apply { uuid = UUID.randomUUID().toString() })
     }
 
 
-    @PutMapping("/bank-data/{uuid}")
-    suspend fun updateBankData(
-        @PathVariable("uuid") bankDataUuid: String,
-        @RequestBody body: BankDataCommand
-    ): BankDataCommand? {
-        return bankDataManager.update(body.apply { uuid = bankDataUuid })
+    @PutMapping("/terminal/{uuid}")
+    suspend fun updateTerminal(
+        @PathVariable("uuid") terminalUuid: String,
+        @RequestBody body: TerminalCommand
+    ): TerminalCommand? {
+        return terminalManager.update(body.apply { uuid = terminalUuid })
     }
 
 
-    @DeleteMapping("/bank-data/{uuid}")
-    suspend fun deleteBankData(
-        @PathVariable("uuid") bankDataUuid: String,
+    @DeleteMapping("/terminal/{uuid}")
+    suspend fun deleteTerminal(
+        @PathVariable("uuid") terminalUuid: String,
     ) {
-        bankDataManager.delete(bankDataUuid)
+        terminalManager.delete(terminalUuid)
     }
 
-    @GetMapping("/bank-data")
-    suspend fun getBankData(
-    ): List<BankDataCommand>? {
-        return bankDataManager.fetchBankData()
+    @GetMapping("/terminal")
+    suspend fun getTerminal(
+    ): List<TerminalCommand>? {
+        return terminalManager.fetchTerminal()
     }
 
-    @GetMapping("/bank-data/{uuid}")
-    suspend fun getBankData(
-        @PathVariable("uuid") bankDataUuid: String,
+    @GetMapping("/terminal/{uuid}")
+    suspend fun getTerminal(
+        @PathVariable("uuid") terminalUuid: String,
     ) {
-        bankDataManager.fetchBankData(bankDataUuid)
+        terminalManager.fetchTerminal(terminalUuid)
     }
 
 

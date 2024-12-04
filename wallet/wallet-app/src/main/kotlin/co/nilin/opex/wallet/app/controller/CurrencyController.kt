@@ -3,17 +3,17 @@ package co.nilin.opex.wallet.app.controller
 import co.nilin.opex.wallet.app.dto.CurrenciesDto
 import co.nilin.opex.wallet.app.dto.CurrencyDto
 import co.nilin.opex.wallet.app.service.CurrencyServiceV2
-import co.nilin.opex.wallet.core.inout.BankDataCommand
+import co.nilin.opex.wallet.core.inout.TerminalCommand
 import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
 import co.nilin.opex.wallet.core.inout.GatewayType
-import co.nilin.opex.wallet.core.spi.GatewayBankDataManager
+import co.nilin.opex.wallet.core.spi.GatewayTerminalManager
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/currency")
 class CurrencyController(
     private val currencyService: CurrencyServiceV2,
-    private val gatewayBankDataManager: GatewayBankDataManager
+    private val gatewayTerminalManager: GatewayTerminalManager
 ) {
 
     @PostMapping("")
@@ -116,28 +116,28 @@ class CurrencyController(
     }
 
 
-    @PostMapping("/gateway/{gatewayUuid}/bank-data")
-    suspend fun assignBankDataToGateway(
+    @PostMapping("/gateway/{gatewayUuid}/terminal")
+    suspend fun assignTerminalToGateway(
         @PathVariable("gatewayUuid") gatewayUuid: String,
-        @RequestBody bankData: List<String>
+        @RequestBody terminal: List<String>
     ) {
-        return gatewayBankDataManager.assignBankDataToGateway(gatewayUuid, bankData)
+        return gatewayTerminalManager.assignTerminalsToGateway(gatewayUuid, terminal)
     }
 
 
-    @GetMapping("/gateway/{gatewayUuid}/bank-data")
-    suspend fun getGatewayBankData(
+    @GetMapping("/gateway/{gatewayUuid}/terminal")
+    suspend fun getGatewayTerminal(
         @PathVariable("gatewayUuid") gatewayUuid: String
-    ): List<BankDataCommand>? {
-        return gatewayBankDataManager.getAssignedBankDataToGateway(gatewayUuid)
+    ): List<TerminalCommand>? {
+        return gatewayTerminalManager.getAssignedTerminalToGateway(gatewayUuid)
     }
 
-    @DeleteMapping("/gateway/{gatewayUuid}/bank-data")
-    suspend fun revokeBankDataFromGateway(
+    @DeleteMapping("/gateway/{gatewayUuid}/terminal")
+    suspend fun revokeTerminalFromGateway(
         @PathVariable("gatewayUuid") gatewayUuid: String,
-        @RequestBody bankData: List<String>
+        @RequestBody terminal: List<String>
     ) {
-        return gatewayBankDataManager.revokeBankDataToGateway(gatewayUuid, bankData)
+        return gatewayTerminalManager.revokeTerminalsToGateway(gatewayUuid, terminal)
     }
 
 }

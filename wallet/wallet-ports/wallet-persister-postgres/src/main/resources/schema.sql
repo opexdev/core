@@ -621,3 +621,95 @@ CREATE TABLE IF NOT EXISTS gateway_bank_data
 )
 
     );
+
+---------------------------------------------------------------------------
+------------------------ Withdraw from otc to opex ------------------------
+---------------------------------------------------------------------------
+UPDATE currency_off_chain_gateway
+SET transfer_method =
+        CASE
+            WHEN transfer_method = 'Card2card' THEN 'CARD'
+            WHEN transfer_method = 'Sheba' THEN 'SHEBA'
+            END
+WHERE transfer_method IN ('Card2card', 'Sheba');
+
+UPDATE bank_data
+SET type =
+        CASE
+            WHEN type = 'Card2card' THEN 'CARD'
+            WHEN type = 'Sheba' THEN 'SHEBA'
+            END
+WHERE type IN ('Card2card', 'Sheba');
+
+-- Rename tables
+DO $$
+    BEGIN
+        IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'bank_data') THEN
+            ALTER TABLE bank_data RENAME TO terminal;
+        END IF;
+
+        IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'gateway_bank_data') THEN
+            ALTER TABLE gateway_bank_data RENAME TO gateway_terminal;
+        END IF;
+    END $$;
+
+-- Rename sequences
+DO $$
+    BEGIN
+        IF EXISTS (SELECT 1 FROM pg_class WHERE relkind = 'S' AND relname = 'bank_data_id_seq') THEN
+            ALTER SEQUENCE bank_data_id_seq RENAME TO terminal_id_seq;
+        END IF;
+
+        IF EXISTS (SELECT 1 FROM pg_class WHERE relkind = 'S' AND relname = 'gateway_bank_data_id_seq') THEN
+            ALTER SEQUENCE gateway_bank_data_id_seq RENAME TO gateway_terminal_id_seq;
+        END IF;
+    END $$;
+
+-- Rename columns
+DO $$
+    BEGIN
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'terminal' AND column_name = 'bank_swift_code') THEN
+            ALTER TABLE terminal RENAME COLUMN bank_swift_code TO meta_data;
+        END IF;
+
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'gateway_terminal' AND column_name = 'bank_data_id') THEN
+            ALTER TABLE gateway_terminal RENAME COLUMN bank_data_id TO terminal_id;
+        END IF;
+    END $$;
+
+
+-- Add new column
+DO $$
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'terminal' AND column_name = 'description') THEN
+            ALTER TABLE terminal ADD COLUMN description VARCHAR(255);
+        END IF;
+    END $$;
+
+
+-- Rename primary key constraints
+DO $$
+    BEGIN
+        IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'bank_data_pkey') THEN
+            ALTER TABLE terminal RENAME CONSTRAINT bank_data_pkey TO terminal_pkey;
+        END IF;
+
+        IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'gateway_bank_data_pkey') THEN
+            ALTER TABLE gateway_terminal RENAME CONSTRAINT gateway_bank_data_pkey TO gateway_terminal_pkey;
+        END IF;
+
+        IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'gateway_bank_data_bank_data_id_gateway_id_key') THEN
+            ALTER TABLE gateway_terminal RENAME CONSTRAINT gateway_bank_data_bank_data_id_gateway_id_key TO gateway_terminal_terminal_id_gateway_id_key;
+        END IF;
+
+        IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'gateway_bank_data_bank_data_id_fkey') THEN
+            ALTER TABLE gateway_terminal RENAME CONSTRAINT gateway_bank_data_bank_data_id_fkey TO gateway_terminal_terminal_id_fkey;
+        END IF;
+
+        IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'gateway_bank_data_gateway_id_fkey') THEN
+            ALTER TABLE gateway_terminal RENAME CONSTRAINT gateway_bank_data_gateway_id_fkey TO gateway_terminal_gateway_id_fkey;
+        END IF;
+    END $$;
+---------------------------------------------------------------------------
+---------------------------------- END ------------------------------------
+---------------------------------------------------------------------------
