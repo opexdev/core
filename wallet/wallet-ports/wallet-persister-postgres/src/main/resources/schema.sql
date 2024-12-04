@@ -191,7 +191,6 @@ CREATE TABLE IF NOT EXISTS deposits
 );
 ALTER TABLE deposits
     add COLUMN IF NOT EXISTS attachment VARCHAR(255);
-ALTER TABLE deposits ADD CONSTRAINT unique_transaction_ref UNIQUE (transaction_ref);
 
 
 
@@ -232,7 +231,7 @@ CREATE TABLE IF NOT EXISTS currency_manual_gateway
 
 );
 
-CREATE TABLE IF NOT EXISTS bank_data
+CREATE TABLE IF NOT EXISTS terminal
 (
     id              SERIAL PRIMARY KEY,
     uuid            VARCHAR(256) NOT NULL,
@@ -243,12 +242,12 @@ CREATE TABLE IF NOT EXISTS bank_data
     bank_swift_code VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS gateway_bank_data
+CREATE TABLE IF NOT EXISTS gateway_terminal
 (
     id           SERIAL PRIMARY KEY,
-    bank_data_id BIGINT NOT NULL REFERENCES bank_data (id) ON DELETE CASCADE,
+    terminal_id BIGINT NOT NULL REFERENCES terminal (id) ON DELETE CASCADE,
     gateway_id   BIGINT NOT NULL REFERENCES currency_off_chain_gateway (id) ON DELETE CASCADE,
-    UNIQUE (bank_data_id, gateway_id)
+    UNIQUE (terminal_id, gateway_id)
 
 );
 
@@ -261,9 +260,6 @@ SET transfer_method = CASE
                           WHEN transfer_method = 'Sheba' THEN 'SHEBA' END
 WHERE transfer_method IN ('Card2card', 'Sheba');
 
-UPDATE bank_data
-SET type = CASE WHEN type = 'Card2card' THEN 'CARD' WHEN type = 'Sheba' THEN 'SHEBA' END
-WHERE type IN ('Card2card', 'Sheba');
 
 
 UPDATE withdraws
@@ -274,15 +270,20 @@ WHERE dest_network IN ('Card2card', 'Sheba');
 DO
 $$
     BEGIN
-        IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'bank_data') THEN ALTER TABLE bank_data
-            RENAME TO terminal;
+        IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'bank_data')  AND  Not EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'terminal') THEN
+            EXECUTE 'ALTER TABLE bank_data RENAME TO terminal' ;
         END IF;
 
-        IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'gateway_bank_data') THEN ALTER TABLE gateway_bank_data
-            RENAME TO gateway_terminal;
+        IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'gateway_bank_data')  AND  Not EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'gateway_bank_data') THEN
+            EXECUTE 'ALTER TABLE gateway_bank_data RENAME TO gateway_terminal' ;
         END IF;
     END
 $$;
+
+UPDATE terminal
+SET type = CASE WHEN type = 'Card2card' THEN 'CARD' WHEN type = 'Sheba' THEN 'SHEBA' END
+WHERE type IN ('Card2card', 'Sheba');
+
 
 -- Rename sequences
 DO
@@ -334,7 +335,7 @@ $$
 $$;
 
 
--- Rename primary key constraints
+-- Rename/add  constraints
 DO
 $$
     BEGIN
@@ -362,6 +363,12 @@ $$
                    FROM pg_constraint
                    WHERE conname = 'gateway_bank_data_gateway_id_fkey') THEN ALTER TABLE gateway_terminal
             RENAME CONSTRAINT gateway_bank_data_gateway_id_fkey TO gateway_terminal_gateway_id_fkey;
+        END IF;
+
+        IF Not EXISTS (SELECT 1
+                   FROM pg_constraint
+                   WHERE conname = 'unique_transaction_ref') THEN ALTER TABLE deposits
+            ADD CONSTRAINT unique_transaction_ref UNIQUE (transaction_ref);
         END IF;
     END
 $$;
