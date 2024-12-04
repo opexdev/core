@@ -38,7 +38,8 @@ class WithdrawService(
         val currency = currencyService.fetchCurrency(FetchCurrency(symbol = withdrawCommand.currency))
             ?: throw OpexError.CurrencyNotFound.exception()
         val owner =
-            walletOwnerManager.findWalletOwner(withdrawCommand.uuid) ?: throw OpexError.WalletOwnerNotFound.exception()
+            walletOwnerManager.findWalletOwner(withdrawCommand.uuid)
+                ?: throw OpexError.WalletOwnerNotFound.exception()
         val sourceWallet =
             walletManager.findWalletByOwnerAndCurrencyAndType(owner, WalletType.MAIN, currency)
                 ?: throw OpexError.WalletNotFound.exception()
