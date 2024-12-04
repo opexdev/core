@@ -2,7 +2,6 @@ package co.nilin.opex.matching.gateway.ports.kafka.submitter.config
 
 import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.inout.OrderRequestEvent
-import co.nilin.opex.matching.gateway.ports.kafka.submitter.inout.OrderSubmitRequestEvent
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.beans.factory.annotation.Qualifier

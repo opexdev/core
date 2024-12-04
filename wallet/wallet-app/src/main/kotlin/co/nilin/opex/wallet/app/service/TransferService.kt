@@ -1,15 +1,16 @@
 package co.nilin.opex.wallet.app.service
 
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.utility.error.data.OpexException
-import co.nilin.opex.wallet.app.dto.AdvanceReservedTransferData
-import co.nilin.opex.wallet.app.dto.ManualTransferRequest
 import co.nilin.opex.wallet.app.dto.ReservedTransferResponse
 import co.nilin.opex.wallet.app.service.otc.GraphService
-import co.nilin.opex.wallet.core.inout.Deposit
+import co.nilin.opex.wallet.core.inout.ManualGatewayCommand
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
-import co.nilin.opex.wallet.core.model.*
+import co.nilin.opex.wallet.core.inout.TransferResultDetailed
+import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.model.FetchCurrency
+import co.nilin.opex.wallet.core.model.TransferCategory
+import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.model.otc.Rate
 import co.nilin.opex.wallet.core.model.otc.ReservedTransfer
 import co.nilin.opex.wallet.core.spi.*
@@ -17,23 +18,24 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
-import java.time.LocalDateTime
 import java.util.*
+
 
 @Service
 class TransferService(
     private val transferManager: TransferManager,
-    private val currencyService: CurrencyService,
+    private val currencyManager: CurrencyServiceManager,
     private val walletManager: WalletManager,
     private val walletOwnerManager: WalletOwnerManager,
     private val currencyGraph: GraphService,
     private val reservedTransferManager: ReservedTransferManager,
-    private val depositPersister: DepositPersister
+    private val currencyService: CurrencyServiceV2
+
 ) {
+
 
     private val logger = LoggerFactory.getLogger(TransferService::class.java)
 
-    val reserved: MutableMap<String, AdvanceReservedTransferData> = mutableMapOf()
 
     @Transactional
     suspend fun transfer(
@@ -46,7 +48,7 @@ class TransferService(
         description: String?,
         transferRef: String?,
         transferCategory: TransferCategory = TransferCategory.NO_CATEGORY
-    ): TransferResult {
+    ): TransferResultDetailed {
         return _transfer(
             symbol,
             senderWalletType,
@@ -60,47 +62,6 @@ class TransferService(
         )
     }
 
-    @Transactional
-    suspend fun deposit(
-        symbol: String,
-        receiverUuid: String,
-        receiverWalletType: WalletType,
-        amount: BigDecimal,
-        description: String?,
-        transferRef: String?,
-        chain: String?
-    ): TransferResult {
-        val tx = _transfer(
-            symbol,
-            WalletType.MAIN,
-            walletOwnerManager.systemUuid,
-            receiverWalletType,
-            receiverUuid,
-            amount,
-            description,
-            transferRef,
-            TransferCategory.DEPOSIT,
-            symbol,
-            amount
-
-        )
-
-        depositPersister.persist(
-            Deposit(
-                receiverUuid,
-                UUID.randomUUID().toString(),
-                symbol,
-                amount,
-                note = description,
-                transactionRef = transferRef,
-                status = DepositStatus.DONE,
-                depositType = DepositType.ON_CHAIN,
-                network = chain
-            )
-        )
-
-        return tx
-    }
 
     suspend fun calculateDestinationAmount(
         symbol: String,
@@ -126,6 +87,10 @@ class TransferService(
             .map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }
             .firstOrNull() ?: throw OpexError.NOT_EXCHANGEABLE_CURRENCIES.exception()
         val finalAmount = sourceAmount.multiply(rate.rate)
+
+        if (sourceAmount == BigDecimal.ZERO || finalAmount == BigDecimal.ZERO)
+            throw OpexError.InvalidAmount.exception()
+
         checkIfSystemHasEnoughBalance(destSymbol, receiverWalletType, finalAmount)
         val reserveNumber = UUID.randomUUID().toString()
         val resp = reservedTransferManager.reserve(
@@ -138,22 +103,11 @@ class TransferService(
                 receiverUuid = receiverUuid,
                 senderWalletType = senderWalletType,
                 receiverWalletType = receiverWalletType,
-                reservedDestAmount = finalAmount
+                reservedDestAmount = finalAmount,
+                rate = rate.rate
             )
         )
-//        reserved.put(
-//                reserveNumber, AdvanceReservedTransferData(
-//                sourceSymbol,
-//                destSymbol,
-//                senderWalletType,
-//                senderUuid,
-//                receiverWalletType,
-//                receiverUuid,
-//                sourceAmount,
-//                finalAmount,
-//                Date()
-//        )
-//        )
+
         return with(resp) {
             ReservedTransferResponse(
                 reserveNumber,
@@ -178,17 +132,12 @@ class TransferService(
         issuer: String? = null,
         //todo need to review
         transferCategory: TransferCategory = TransferCategory.PURCHASE_FINALIZED
-    ): TransferResult {
+    ): TransferResultDetailed {
         val reservations = reservedTransferManager.fetchValidReserve(reserveNumber)
             ?: throw OpexError.InvalidReserveNumber.exception()
         if (!(issuer == null || reservations.senderUuid == issuer))
             throw OpexError.Forbidden.exception()
-//        val reservations = reserved.get(reserveNumber) ?: throw Exception()
-//        val calendar = Calendar.getInstance()
-//        calendar.time = reservations.reserveTime
-//        calendar.add(Calendar.MINUTE, -5)
-//        if (reservations.reserveTime.before(calendar.time))
-//            throw Exception("Expired Reservation")
+
 
         val senderTransfer = _transfer(
             reservations.sourceSymbol,
@@ -202,7 +151,7 @@ class TransferService(
             transferCategory,
             reservations.sourceSymbol,
             reservations.sourceAmount
-        )
+        ).transferResult
 
         val receiverTransfer = _transfer(
             reservations.destSymbol,
@@ -216,118 +165,22 @@ class TransferService(
             transferCategory,
             reservations.destSymbol,
             reservations.reservedDestAmount
-        )
+        ).transferResult
 
         reservedTransferManager.commitReserve(reserveNumber)
-        return TransferResult(
-            senderTransfer.date,
-            senderTransfer.sourceUuid,
-            senderTransfer.sourceWalletType,
-            senderTransfer.sourceBalanceBeforeAction,
-            senderTransfer.sourceBalanceAfterAction,
-            senderTransfer.amount,
-            receiverTransfer.destUuid,
-            receiverTransfer.destWalletType,
-            receiverTransfer.receivedAmount
+        return TransferResultDetailed(
+            transferResult = TransferResult(
+                senderTransfer.date,
+                senderTransfer.sourceUuid,
+                senderTransfer.sourceWalletType,
+                senderTransfer.sourceBalanceBeforeAction,
+                senderTransfer.sourceBalanceAfterAction,
+                senderTransfer.amount,
+                receiverTransfer.destUuid,
+                receiverTransfer.destWalletType,
+                receiverTransfer.receivedAmount
+            ), ""
         )
-    }
-
-//    @Transactional
-//    suspend fun depositManually(
-//            symbol: String,
-//            receiverUuid: String,
-//            senderUuid: String,
-//            amount: BigDecimal,
-//            request: ManualTransferRequest
-//    ): TransferResult {
-//        logger.info("deposit manually: $senderUuid to $receiverUuid on $symbol at ${LocalDateTime.now()}")
-//        val systemUuid = "1"
-//        //todo customize error message
-//        val senderLevel = walletOwnerManager.findWalletOwner(senderUuid)?.let { it.level }
-//                ?: throw OpexError.WalletOwnerNotFound.exception()
-//        val receiverLevel = walletOwnerManager.findWalletOwner(receiverUuid)?.let { it.level }
-//
-//        if (senderLevel !in arrayListOf<String>(preferences.admin.walletLevel, preferences.system.walletLevel))
-//            throw OpexError.Forbidden.exception()
-//
-//        if (senderLevel == preferences.system.walletLevel && receiverLevel != preferences.admin.walletLevel)
-//            throw OpexError.Forbidden.exception()
-//
-////        if (walletOwnerManager.findWalletOwner(receiverUuid)?.level !in arrayListOf<String>(preferences.admin.walletLevel,preferences.system.walletLevel))
-////            throw OpexError.Forbidden.exception()
-//
-//        return _transfer(
-//                symbol,
-//                "main",
-//                senderUuid,
-//                "main",
-//                receiverUuid,
-//                amount,
-//                request.description,
-//                request.ref,
-//                "DEPOSIT_MANUALLY",
-//                null,
-//                symbol,
-//                amount
-//
-//        )
-//    }
-
-    @Transactional
-    suspend fun depositManually(
-        symbol: String,
-        receiverUuid: String,
-        senderUuid: String,
-        amount: BigDecimal,
-        request: ManualTransferRequest
-    ): TransferResult {
-        logger.info("deposit manually: $senderUuid to $receiverUuid on $symbol at ${LocalDateTime.now()}")
-        val systemUuid = "1"
-        //todo customize error message
-        val senderLevel = walletOwnerManager.findWalletOwner(senderUuid)?.level
-            ?: throw OpexException(OpexError.WalletOwnerNotFound)
-        walletOwnerManager.findWalletOwner(receiverUuid)?.level
-            ?: walletOwnerManager.createWalletOwner(receiverUuid, "not set", "1").level
-
-//        if (senderLevel !in arrayListOf<String>(preferences.admin.walletLevel, preferences.system.walletLevel))
-//            throw OpexException(OpexError.Forbidden)
-
-        //todo need to fix conflict between otc and exchange
-
-//        if (senderLevel == preferences.system.walletLevel && receiverLevel != preferences.admin.walletLevel)
-//            throw OpexException(OpexError.Forbidden)
-
-
-//        if (walletOwnerManager.findWalletOwner(receiverUuid)?.level !in arrayListOf<String>(preferences.admin.walletLevel,preferences.system.walletLevel))
-//            throw OpexException(OpexError.Error)
-
-        val tx = _transfer(
-            symbol,
-            WalletType.MAIN,
-            senderUuid,
-            WalletType.MAIN,
-            receiverUuid,
-            amount,
-            request.description,
-            request.ref,
-            TransferCategory.DEPOSIT_MANUALLY,
-            symbol,
-            amount
-
-        )
-        depositPersister.persist(
-            Deposit(
-                receiverUuid,
-                UUID.randomUUID().toString(),
-                symbol,
-                amount,
-                note = request.description,
-                transactionRef = request.ref,
-                status = DepositStatus.DONE,
-                depositType = DepositType.SYSTEM,
-            )
-        )
-        return tx
     }
 
 
@@ -343,22 +196,24 @@ class TransferService(
         transferCategory: TransferCategory = TransferCategory.NO_CATEGORY,
         destSymbol: String = symbol,
         destAmount: BigDecimal = amount
-    ): TransferResult {
+    ): TransferResultDetailed {
         if (senderWalletType == WalletType.CASHOUT || receiverWalletType == WalletType.CASHOUT)
             throw OpexError.InvalidCashOutUsage.exception()
-        val sourceCurrency = currencyService.getCurrency(symbol) ?: throw OpexError.CurrencyNotFound.exception()
+        val sourceCurrency = currencyManager.fetchCurrency(FetchCurrency(symbol = destSymbol))
+            ?: throw OpexError.CurrencyNotFound.exception()
         val sourceOwner = walletOwnerManager.findWalletOwner(senderUuid)
             ?: throw OpexError.WalletOwnerNotFound.exception()
         val sourceWallet =
             walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner, senderWalletType, sourceCurrency)
                 ?: throw OpexError.WalletNotFound.exception()
 
+//todo what should we do for admin receiver
         val receiverOwner = walletOwnerManager.findWalletOwner(receiverUuid) ?: walletOwnerManager.createWalletOwner(
             receiverUuid,
             "not set",
             "1"
         )
-        val receiverCurrency = currencyService.getCurrency(destSymbol)
+        val receiverCurrency = currencyManager.fetchCurrency(FetchCurrency(symbol = destSymbol))
             ?: throw OpexError.CurrencyNotFound.exception()
         val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(
             receiverOwner, receiverWalletType, receiverCurrency
@@ -384,15 +239,16 @@ class TransferService(
                 transferCategory,
                 Amount(receiverWallet.currency, destAmount)
             )
-        ).transferResult
+        )
     }
+
 
     private suspend fun checkIfSystemHasEnoughBalance(
         destSymbol: String,
         receiverWalletType: WalletType,
         finalAmount: BigDecimal?
     ) {
-        val destCurrency = currencyService.getCurrency(destSymbol)!!
+        val destCurrency = currencyManager.fetchCurrency(FetchCurrency(symbol = destSymbol))!!
         val system = walletOwnerManager.findWalletOwner(walletOwnerManager.systemUuid)
             ?: throw OpexError.WalletOwnerNotFound.exception()
 
@@ -403,5 +259,11 @@ class TransferService(
             throw OpexError.CurrentSystemAssetsAreNotEnough.exception()
         }
     }
+
+    internal suspend fun isManualDepositAllowed(symbol: String, gatewayUuid: String): Boolean {
+        var gateway = currencyService.fetchCurrencyGateway(gatewayUuid, symbol)
+        return gateway is ManualGatewayCommand && gateway.depositAllowed == true && gateway.isActive == true
+    }
+
 
 }

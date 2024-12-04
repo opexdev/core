@@ -2,7 +2,6 @@ package co.nilin.opex.wallet.app.config
 
 import co.nilin.opex.wallet.app.utils.hasRole
 import co.nilin.opex.wallet.app.utils.hasRoleAndLevel
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Profile
@@ -33,7 +32,6 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/v1/deposit/**").hasAuthority("SCOPE_trust")
             .pathMatchers("/withdraw/**").hasAuthority("SCOPE_trust")
             .pathMatchers("/transaction/**").hasAuthority("SCOPE_trust")
-            .pathMatchers("/v2/transaction/**").hasAuthority("SCOPE_trust")
             .pathMatchers("/admin/**").hasRole("SCOPE_trust", "admin_finance")
             .pathMatchers("/stats/**").hasRole("SCOPE_trust", "admin_finance")
             .pathMatchers("/payment/internal/**").permitAll()
@@ -45,6 +43,7 @@ class SecurityConfig(private val webClient: WebClient) {
         return http.build()
     }
 
+
     @Bean
     @Profile("otc")
     fun decSpringSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
@@ -53,21 +52,31 @@ class SecurityConfig(private val webClient: WebClient) {
 
         http.csrf().disable()
             .authorizeExchange()
-            //.pathMatchers("/transaction/**").hasAuthority("SCOPE_trust")
+//                .pathMatchers("/transaction/**").hasAuthority("SCOPE_trust")
             .pathMatchers("/admin/**").hasRoleAndLevel("Admin")
             .pathMatchers(HttpMethod.PUT, "/otc/**").hasRoleAndLevel("Admin")
             .pathMatchers(HttpMethod.POST, "/otc/**").hasRoleAndLevel("Admin")
+            .pathMatchers(HttpMethod.DELETE, "/otc/**").hasRoleAndLevel("Admin")
+            .pathMatchers(HttpMethod.PUT, "/currency/**").hasRoleAndLevel("Admin")
+            .pathMatchers(HttpMethod.POST, "/currency/**").hasRoleAndLevel("Admin")
+            .pathMatchers(HttpMethod.DELETE, "/currency/**").hasRoleAndLevel("Admin")
             .pathMatchers("/manually/**").hasRoleAndLevel("Admin")
             .pathMatchers("/deposit/**").hasRoleAndLevel("System")
+            .pathMatchers("/withdraw/history/**").authenticated()
             .pathMatchers("/withdraw").hasRoleAndLevel("user", "Trusted")
             .pathMatchers("/withdraw/**").hasRoleAndLevel("user", "Trusted")
             .pathMatchers(HttpMethod.GET, "/otc/**").permitAll()
+            .pathMatchers(HttpMethod.GET, "/currency/**").permitAll()
+            .pathMatchers("/stats/**").hasRoleAndLevel("Admin")
+            .pathMatchers("/actuator/**").permitAll()
+            .pathMatchers("/storage/**").hasRoleAndLevel("Admin")
             .anyExchange().authenticated()
             .and()
             .oauth2ResourceServer()
             .jwt()
         return http.build()
     }
+
 
     @Bean
     @Throws(Exception::class)
@@ -76,4 +85,6 @@ class SecurityConfig(private val webClient: WebClient) {
             .webClient(webClient)
             .build()
     }
+
+
 }

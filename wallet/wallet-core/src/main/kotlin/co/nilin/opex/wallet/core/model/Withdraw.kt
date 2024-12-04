@@ -20,8 +20,11 @@ data class Withdraw(
     var destTransactionRef: String?,
     val statusReason: String?,
     var status: WithdrawStatus,
+    var applicator: String?,
+    var withdrawType: WithdrawType,
+    var attachment: String?,
     val createDate: LocalDateTime = LocalDateTime.now(),
-    val acceptDate: LocalDateTime? = null
+    val lastUpdateDate: LocalDateTime? = null
 ) {
 
     fun canBeProcessed(): Boolean {

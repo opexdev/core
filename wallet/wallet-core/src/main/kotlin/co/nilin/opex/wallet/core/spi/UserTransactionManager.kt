@@ -9,8 +9,8 @@ interface UserTransactionManager {
 
     suspend fun save(tx: UserTransaction)
 
-    suspend fun getTransactionHistoryForUser(
-        userId: String,
+    suspend fun getTransactionHistory(
+        userId: String?,
         currency: String?,
         category: UserTransactionCategory?,
         startTime: LocalDateTime?,

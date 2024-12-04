@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>core</artifactId>
@@ -20,6 +20,7 @@
         <module>bc-gateway-ports/bc-gateway-persister-postgres</module>
         <module>bc-gateway-ports/bc-gateway-wallet-proxy</module>
         <module>bc-gateway-ports/bc-gateway-auth-proxy</module>
+        <module>bc-gateway-ports/bc-gateway-omniwallet-proxy</module>
         <module>bc-gateway-ports/bc-gateway-eventlistener-kafka</module>
     </modules>
 
@@ -54,6 +55,11 @@
             <dependency>
                 <groupId>co.nilin.opex.bcgateway.ports.authproxy</groupId>
                 <artifactId>bc-gateway-auth-proxy</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.bcgateway.ports.omniwallet</groupId>
+                <artifactId>bc-gateway-omniwallet-proxy</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

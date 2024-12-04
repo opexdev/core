@@ -1,10 +1,6 @@
 package co.nilin.opex.wallet.core.service
 
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.wallet.core.exc.CurrencyNotMatchedException
-import co.nilin.opex.wallet.core.exc.DepositLimitExceededException
-import co.nilin.opex.wallet.core.exc.NotEnoughBalanceException
-import co.nilin.opex.wallet.core.exc.WithdrawLimitExceededException
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.inout.TransferResultDetailed
@@ -24,6 +20,7 @@ class TransferManagerImpl(
     private val transactionManager: TransactionManager,
     private val userTransactionManager: UserTransactionManager,
 ) : TransferManager {
+    private val logger = LoggerFactory.getLogger(TransferManagerImpl::class.java)
 
     @Transactional
     override suspend fun transfer(transferCommand: TransferCommand): TransferResultDetailed {
@@ -88,7 +85,9 @@ class TransferManagerImpl(
                 transferCommand.amount,
                 destWalletOwner.uuid,
                 destWallet.type,
-                Amount(destWallet.currency, amountToTransfer)
+                Amount(destWallet.currency, amountToTransfer),
+                srcWallet.id,
+                destWallet.id,
             ), tx.toString()
         )
     }
@@ -177,6 +176,31 @@ class TransferManagerImpl(
                 userTransactionManager.save(adminTx)
             }
 
+            TransferCategory.WITHDRAW_MANUALLY -> {
+                // TX for user
+                val tx = UserTransaction(
+                    command.sourceWallet.owner.id!!,
+                    txId,
+                    currency,
+                    command.sourceWallet.balance.amount - amount,
+                    -amount,
+                    UserTransactionCategory.WITHDRAW,
+                    command.description
+                )
+                userTransactionManager.save(tx)
+
+                // TX for admin
+                val adminTx = UserTransaction(
+                    command.destWallet.owner.id!!,
+                    txId,
+                    currency,
+                    command.destWallet.balance.amount + amount,
+                    amount,
+                    UserTransactionCategory.WITHDRAW_FROM
+                )
+                userTransactionManager.save(adminTx)
+            }
+
             TransferCategory.WITHDRAW_ACCEPT -> {
                 val userOwnerId = command.sourceWallet.owner.id!!
                 val userWallet = walletManager.findWallet(userOwnerId, currency, WalletType.MAIN) ?: return
@@ -189,6 +213,29 @@ class TransferManagerImpl(
                     UserTransactionCategory.WITHDRAW
                 )
                 userTransactionManager.save(tx)
+            }
+
+            TransferCategory.PURCHASE_FINALIZED -> {
+                val srcTx = UserTransaction(
+                    command.sourceWallet.owner.id!!,
+                    txId,
+                    currency,
+                    command.sourceWallet.balance.amount - amount,
+                    -amount,
+                    UserTransactionCategory.SWAP,
+                    command.description
+                )
+                userTransactionManager.save(srcTx)
+
+                val dstTx = UserTransaction(
+                    command.destWallet.owner.id!!,
+                    txId,
+                    currency,
+                    command.destWallet.balance.amount + amount,
+                    amount,
+                    UserTransactionCategory.SWAP
+                )
+                userTransactionManager.save(dstTx)
             }
 
             else -> {

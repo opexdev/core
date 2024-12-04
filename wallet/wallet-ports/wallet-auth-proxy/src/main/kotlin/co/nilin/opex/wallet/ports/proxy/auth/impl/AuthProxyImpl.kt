@@ -16,22 +16,25 @@ import java.net.URI
 inline fun <reified T : Any> typeRef(): ParameterizedTypeReference<T> = object : ParameterizedTypeReference<T>() {}
 
 @Component
-class AuthProxyImp( private val webClient: WebClient) : AuthProxy {
+class AuthProxyImp(private val webClient: WebClient) : AuthProxy {
 
     @Value("\${app.auth.url}")
     private lateinit var baseUrl: String
 
     override suspend fun getToken(loginRequest: LoginRequest): LoginResponse {
         return webClient.post()
-                .uri(URI.create("${baseUrl}/api/v1/login"))
-                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-                .body(BodyInserters.fromFormData("mobile", loginRequest.clientId)
-                        .with("password", loginRequest.clientSecret))
-                .retrieve()
-                .onStatus({ t -> t.isError }, {
-                    it.createException() })
-                .bodyToMono(typeRef<LoginResponse>())
-                .awaitFirst()
+            .uri(URI.create("${baseUrl}/api/v1/login"))
+            .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+            .body(
+                BodyInserters.fromFormData("mobile", loginRequest.clientId)
+                    .with("password", loginRequest.clientSecret)
+            )
+            .retrieve()
+            .onStatus({ t -> t.isError }, {
+                it.createException()
+            })
+            .bodyToMono(typeRef<LoginResponse>())
+            .awaitFirst()
     }
 
 

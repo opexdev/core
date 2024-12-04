@@ -24,14 +24,16 @@ class AuthProxyImpl(private val webClient: WebClient) : AuthProxy {
 
     override suspend fun getToken(loginRequest: LoginRequest): LoginResponse {
         return webClient.post()
-                .uri(URI.create("${baseUrl}/api/v1/login"))
-                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-                .body(BodyInserters.fromFormData("mobile", loginRequest.clientId)
-                        .with("password", loginRequest.clientSecret))
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono(typeRef<LoginResponse>())
-                .awaitFirst()
+            .uri(URI.create("${baseUrl}/api/v1/login"))
+            .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+            .body(
+                BodyInserters.fromFormData("mobile", loginRequest.clientId)
+                    .with("password", loginRequest.clientSecret)
+            )
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono(typeRef<LoginResponse>())
+            .awaitFirst()
     }
 
 }

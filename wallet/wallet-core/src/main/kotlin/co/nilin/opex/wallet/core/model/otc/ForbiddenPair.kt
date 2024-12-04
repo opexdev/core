@@ -1,9 +1,9 @@
 package co.nilin.opex.wallet.core.model.otc
 
-data class ForbiddenPair (
-        val sourceSymbol: String, val destSymbol: String
+data class ForbiddenPair(
+    val sourceSymbol: String, val destinationSymbol: String
 )
 
-data class ForbiddenPairs (
-       var forbiddenPairs:List<ForbiddenPair>?
+data class ForbiddenPairs(
+    var forbiddenPairs: List<ForbiddenPair>?
 )

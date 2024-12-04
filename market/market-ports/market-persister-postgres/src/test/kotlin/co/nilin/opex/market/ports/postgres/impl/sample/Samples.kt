@@ -8,7 +8,6 @@ import co.nilin.opex.market.ports.postgres.model.LastPrice
 import co.nilin.opex.market.ports.postgres.model.OrderModel
 import co.nilin.opex.market.ports.postgres.model.OrderStatusModel
 import co.nilin.opex.market.ports.postgres.model.TradeModel
-import co.nilin.opex.market.ports.postgres.util.isWorking
 import java.math.BigDecimal
 import java.security.Principal
 import java.time.LocalDateTime

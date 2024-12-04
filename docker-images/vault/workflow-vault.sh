@@ -62,6 +62,7 @@ init_secrets() {
   vault write auth/app-id/map/app-id/opex-referral value=backend-policy display_name=opex-referral
   vault write auth/app-id/map/app-id/opex-profile value=backend-policy display_name=opex-profile
   vault write auth/app-id/map/app-id/opex-kyc value=backend-policy display_name=opex-kyc
+  vault write auth/app-id/map/app-id/opex-kyc value=backend-policy display_name=opex-kyc
 
 
   ## Enable user-id

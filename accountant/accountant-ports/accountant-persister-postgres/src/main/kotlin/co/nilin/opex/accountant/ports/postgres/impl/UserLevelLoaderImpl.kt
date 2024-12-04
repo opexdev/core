@@ -9,8 +9,10 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.stereotype.Component
 
 @Component
-class UserLevelLoaderImpl(private val userLevelMapperRepository: UserLevelMapperRepository,
-      private val  userLevelRepository: UserLevelRepository) : UserLevelLoader {
+class UserLevelLoaderImpl(
+    private val userLevelMapperRepository: UserLevelMapperRepository,
+    private val userLevelRepository: UserLevelRepository
+) : UserLevelLoader {
 
     override suspend fun load(uuid: String): String {
         val mapper = userLevelMapperRepository.findByUuid(uuid).awaitSingleOrNull()
@@ -21,14 +23,23 @@ class UserLevelLoaderImpl(private val userLevelMapperRepository: UserLevelMapper
 
         userLevelRepository.findByLevel(userLevel.name).awaitSingleOrNull()?.let {
             userLevelMapperRepository.findByUuid(uuid).awaitSingleOrNull()
-                    ?.let { userLevelMapperRepository.save(UserLevelMapperModel(it.id, it.uuid, userLevel.name)).awaitSingleOrNull() }
-                    ?: run { userLevelMapperRepository.save(UserLevelMapperModel(null, uuid, userLevel.name)).awaitSingleOrNull() }
-        }?:
-        run {
-           userLevelRepository.insert(userLevel.name) .awaitSingleOrNull()
+                ?.let {
+                    userLevelMapperRepository.save(UserLevelMapperModel(it.id, it.uuid, userLevel.name))
+                        .awaitSingleOrNull()
+                }
+                ?: run {
+                    userLevelMapperRepository.save(UserLevelMapperModel(null, uuid, userLevel.name)).awaitSingleOrNull()
+                }
+        } ?: run {
+            userLevelRepository.insert(userLevel.name).awaitSingleOrNull()
             userLevelMapperRepository.findByUuid(uuid).awaitSingleOrNull()
-                    ?.let { userLevelMapperRepository.save(UserLevelMapperModel(it.id, it.uuid, userLevel.name)).awaitSingleOrNull() }
-                    ?: run { userLevelMapperRepository.save(UserLevelMapperModel(null, uuid, userLevel.name)).awaitSingleOrNull() }
+                ?.let {
+                    userLevelMapperRepository.save(UserLevelMapperModel(it.id, it.uuid, userLevel.name))
+                        .awaitSingleOrNull()
+                }
+                ?: run {
+                    userLevelMapperRepository.save(UserLevelMapperModel(null, uuid, userLevel.name)).awaitSingleOrNull()
+                }
 
         }
     }

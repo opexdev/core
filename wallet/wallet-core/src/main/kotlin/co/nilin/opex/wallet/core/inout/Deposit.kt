@@ -3,7 +3,6 @@ package co.nilin.opex.wallet.core.inout
 import co.nilin.opex.wallet.core.model.DepositStatus
 import co.nilin.opex.wallet.core.model.DepositType
 import java.math.BigDecimal
-import java.time.LocalDateTime
 import java.util.*
 
 data class Deposit(
@@ -20,8 +19,9 @@ data class Deposit(
     var note: String? = null,
     var status: DepositStatus,
     var depositType: DepositType,
+    var attachment: String?,
     var createDate: Date = Date(),
-    val id:Long? = null,
+    val id: Long? = null,
 )
 
 data class Deposits(var deposits: List<Deposit>)

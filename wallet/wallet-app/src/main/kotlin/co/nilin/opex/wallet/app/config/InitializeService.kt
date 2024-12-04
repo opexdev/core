@@ -5,7 +5,7 @@ import co.nilin.opex.utility.preferences.Preferences
 import co.nilin.opex.utility.preferences.UserLimit
 import co.nilin.opex.wallet.core.model.WalletLimitAction
 import co.nilin.opex.wallet.core.model.WalletType
-import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepository
+import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepositoryV2
 import co.nilin.opex.wallet.ports.postgres.dao.WalletLimitsRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletOwnerRepository
 import co.nilin.opex.wallet.ports.postgres.dao.WalletRepository
@@ -19,7 +19,7 @@ import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.DependsOn
-import org.springframework.context.annotation.Profile
+import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
 import javax.annotation.PostConstruct
@@ -29,21 +29,26 @@ import javax.annotation.PostConstruct
 class InitializeService(
     @Value("\${app.system.uuid}") val systemUuid: String,
     @Value("b58dc8b2-9c0f-11ee-8c90-0242ac120002") val adminUuid: String,
-    private val currencyRepository: CurrencyRepository,
+
+    private val currencyRepository: CurrencyRepositoryV2,
     private val walletOwnerRepository: WalletOwnerRepository,
     private val walletRepository: WalletRepository,
-    private val walletLimitsRepository: WalletLimitsRepository
+    private val walletLimitsRepository: WalletLimitsRepository,
+    private val environment: Environment
 ) {
-
     @Autowired
     private lateinit var preferences: Preferences
 
+
     @PostConstruct
     fun init() = runBlocking {
-        addCurrencies(preferences.currencies)
+        if (!environment.activeProfiles.contains("otc")) {
+            addCurrencies(preferences.currencies)
+            addUserLimits(preferences.userLimits)
+        }
         addSystemAndAdminWallet(preferences)
-        addUserLimits(preferences.userLimits)
     }
+
 
     private suspend fun addUserLimits(data: List<UserLimit>) = coroutineScope {
         data.forEachIndexed { i, it ->
@@ -100,7 +105,7 @@ class InitializeService(
 
     private suspend fun addCurrencies(data: List<Currency>) = coroutineScope {
         data.forEach {
-            currencyRepository.insert(it.name, it.symbol, it.precision).awaitSingleOrNull()
+            currencyRepository.insert(it.name, it.symbol, it.name, it.precision).awaitSingleOrNull()
         }
     }
 }
