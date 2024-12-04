@@ -656,15 +656,14 @@ DO $$
 -- Rename sequences
 DO $$
     BEGIN
-        IF EXISTS (SELECT 1 FROM pg_sequences WHERE sequencename = 'bank_data_id_seq') THEN
+        IF EXISTS (SELECT 1 FROM pg_class WHERE relkind = 'S' AND relname = 'bank_data_id_seq') THEN
             ALTER SEQUENCE bank_data_id_seq RENAME TO terminal_id_seq;
         END IF;
 
-        IF EXISTS (SELECT 1 FROM pg_sequences WHERE sequencename = 'gateway_bank_data_id_seq') THEN
+        IF EXISTS (SELECT 1 FROM pg_class WHERE relkind = 'S' AND relname = 'gateway_bank_data_id_seq') THEN
             ALTER SEQUENCE gateway_bank_data_id_seq RENAME TO gateway_terminal_id_seq;
         END IF;
     END $$;
-
 
 -- Rename columns
 DO $$
