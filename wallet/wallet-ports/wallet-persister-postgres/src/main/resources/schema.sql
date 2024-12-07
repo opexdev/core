@@ -336,9 +336,9 @@ $$;
 
 --
 -- Rename/add  constraints
-DO
-$$
-    BEGIN
+-- DO
+-- $$
+--     BEGIN
 --         IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'bank_data_pkey') THEN ALTER TABLE terminal
 --             RENAME CONSTRAINT bank_data_pkey TO terminal_pkey;
 --         END IF;
@@ -365,13 +365,13 @@ $$
 --             RENAME CONSTRAINT gateway_bank_data_gateway_id_fkey TO gateway_terminal_gateway_id_fkey;
 --         END IF;
 
-        IF Not EXISTS (SELECT 1
-                   FROM pg_constraint
-                   WHERE conname = 'unique_transaction_ref') THEN ALTER TABLE deposits
-            ADD CONSTRAINT unique_transaction_ref UNIQUE (transaction_ref);
-        END IF;
-    END
-$$;
+--         IF Not EXISTS (SELECT 1
+--                    FROM pg_constraint
+--                    WHERE conname = 'unique_transaction_ref') THEN ALTER TABLE deposits
+--             ADD CONSTRAINT unique_transaction_ref UNIQUE (transaction_ref);
+--         END IF;
+--     END
+-- $$;
 -- ---------------------------------------------------------------------------
 -- ---------------------------------- END ------------------------------------
 -- ---------------------------------------------------------------------------
