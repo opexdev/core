@@ -25,7 +25,7 @@ interface DepositPersister {
         transactionRef: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
-        status: List<DepositStatus>,
+        status: List<DepositStatus>?,
         offset: Int?,
         size: Int?,
         ascendingByTime: Boolean?,

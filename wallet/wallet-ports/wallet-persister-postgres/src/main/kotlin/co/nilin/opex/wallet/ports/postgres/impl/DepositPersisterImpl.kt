@@ -41,12 +41,12 @@ class DepositPersisterImpl(private val depositRepository: DepositRepository) : D
             transactionRef: String?,
             startTime: LocalDateTime?,
             endTime: LocalDateTime?,
-            status: List<DepositStatus>,
+            status: List<DepositStatus>?,
             offset: Int?,
             size: Int?,
             ascendingByTime: Boolean?
     ): List<Deposit> {
-        return if (status.isEmpty())
+        return if (status?.isEmpty()==true)
             depositRepository.findByCriteria(
                     ownerUuid,
                     symbol,
@@ -65,7 +65,7 @@ class DepositPersisterImpl(private val depositRepository: DepositRepository) : D
                     transactionRef,
                     startTime,
                     endTime,
-                    status,
+                    status!!,
                     ascendingByTime,
                     offset,
                     size
