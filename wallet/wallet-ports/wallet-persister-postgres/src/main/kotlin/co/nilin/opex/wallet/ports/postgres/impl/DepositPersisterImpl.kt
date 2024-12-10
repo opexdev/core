@@ -65,7 +65,7 @@ class DepositPersisterImpl(private val depositRepository: DepositRepository) : D
                     transactionRef,
                     startTime,
                     endTime,
-                    status!!,
+                    status,
                     ascendingByTime,
                     offset,
                     size
