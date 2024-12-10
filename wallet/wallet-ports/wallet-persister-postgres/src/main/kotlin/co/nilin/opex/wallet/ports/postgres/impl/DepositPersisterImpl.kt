@@ -46,7 +46,7 @@ class DepositPersisterImpl(private val depositRepository: DepositRepository) : D
             size: Int?,
             ascendingByTime: Boolean?
     ): List<Deposit> {
-        return if (status?.isEmpty()==true)
+        return if (status.isNullOrEmpty())
             depositRepository.findByCriteria(
                     ownerUuid,
                     symbol,
@@ -59,17 +59,17 @@ class DepositPersisterImpl(private val depositRepository: DepositRepository) : D
                     size
             ).map { it.toDto() }.toList()
         else depositRepository.findByCriteria(
-                    ownerUuid,
-                    symbol,
-                    sourceAddress,
-                    transactionRef,
-                    startTime,
-                    endTime,
-                    status,
-                    ascendingByTime,
-                    offset,
-                    size
-            ).map { it.toDto() }.toList()
+                ownerUuid,
+                symbol,
+                sourceAddress,
+                transactionRef,
+                startTime,
+                endTime,
+                status,
+                ascendingByTime,
+                offset,
+                size
+        ).map { it.toDto() }.toList()
     }
 
 
