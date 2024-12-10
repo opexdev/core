@@ -21,6 +21,6 @@ data class AdminSearchDepositRequest(
     val transactionRef: String?,
     val startTime: Long? = null,
     val endTime: Long? = null,
-    val status: List<DepositStatus>? = null,
+    val status: List<DepositStatus> = emptyList(),
     val ascendingByTime: Boolean = false
 )

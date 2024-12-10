@@ -46,7 +46,6 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
             and (:transactionRef is null or transaction_ref =:transactionRef)
             and (:startTime is null or create_date > :startTime )
             and (:endTime is null or create_date <= :endTime)
-            and  (:status is null or status in (:status))
         order by  CASE WHEN :ascendingByTime=true THEN create_date END ASC,
                   CASE WHEN :ascendingByTime=false THEN create_date END DESC
         offset :offset limit :limit;
@@ -59,9 +58,37 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
         transactionRef: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
-        status: List<DepositStatus>?,
         ascendingByTime: Boolean? = false,
         offset: Int? = 0,
         limit: Int? = 10000
+    ): Flow<DepositModel>
+
+
+    @Query(
+            """
+        select * from deposits 
+        where ( :owner is null or uuid = :owner)
+            and (:sourceAddress is null or source_address = :sourceAddress) 
+            and (:currency is null or currency =:currency) 
+            and (:transactionRef is null or transaction_ref =:transactionRef)
+            and (:startTime is null or create_date > :startTime )
+            and (:endTime is null or create_date <= :endTime)
+            and  ( status in (:status))
+        order by  CASE WHEN :ascendingByTime=true THEN create_date END ASC,
+                  CASE WHEN :ascendingByTime=false THEN create_date END DESC
+        offset :offset limit :limit;
+        """
+    )
+    fun findByCriteria(
+            owner: String?,
+            currency: String?,
+            sourceAddress: String?,
+            transactionRef: String?,
+            startTime: LocalDateTime?,
+            endTime: LocalDateTime?,
+            status: List<DepositStatus>,
+            ascendingByTime: Boolean? = false,
+            offset: Int? = 0,
+            limit: Int? = 10000
     ): Flow<DepositModel>
 }

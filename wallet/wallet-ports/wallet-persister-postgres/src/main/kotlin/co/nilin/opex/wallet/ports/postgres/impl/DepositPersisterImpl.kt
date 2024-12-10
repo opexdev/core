@@ -21,45 +21,55 @@ class DepositPersisterImpl(private val depositRepository: DepositRepository) : D
     }
 
     override suspend fun findDepositHistory(
-        uuid: String,
-        currency: String?,
-        startTime: LocalDateTime?,
-        endTime: LocalDateTime?,
-        limit: Int?,
-        offset: Int?,
-        ascendingByTime: Boolean?
+            uuid: String,
+            currency: String?,
+            startTime: LocalDateTime?,
+            endTime: LocalDateTime?,
+            limit: Int?,
+            offset: Int?,
+            ascendingByTime: Boolean?
     ): List<Deposit> {
         val deposits =
-            depositRepository.findDepositHistory(uuid, currency, startTime, endTime, limit, offset, ascendingByTime)
+                depositRepository.findDepositHistory(uuid, currency, startTime, endTime, limit, offset, ascendingByTime)
         return deposits.map { it.toDto() }.toList()
     }
 
     override suspend fun findByCriteria(
-        ownerUuid: String?,
-        symbol: String?,
-        sourceAddress: String?,
-        transactionRef: String?,
-        startTime: LocalDateTime?,
-        endTime: LocalDateTime?,
-        status: List<DepositStatus>?,
-        offset: Int?,
-        size: Int?,
-        ascendingByTime: Boolean?
+            ownerUuid: String?,
+            symbol: String?,
+            sourceAddress: String?,
+            transactionRef: String?,
+            startTime: LocalDateTime?,
+            endTime: LocalDateTime?,
+            status: List<DepositStatus>,
+            offset: Int?,
+            size: Int?,
+            ascendingByTime: Boolean?
     ): List<Deposit> {
-        val deposits = depositRepository.findByCriteria(
-            ownerUuid,
-            symbol,
-            sourceAddress,
-            transactionRef,
-            startTime,
-            endTime,
-            status,
-            ascendingByTime,
-            offset,
-            size
-        )
-
-        return deposits.map { it.toDto() }.toList()
+        return if (status.isEmpty())
+            depositRepository.findByCriteria(
+                    ownerUuid,
+                    symbol,
+                    sourceAddress,
+                    transactionRef,
+                    startTime,
+                    endTime,
+                    ascendingByTime,
+                    offset,
+                    size
+            ).map { it.toDto() }.toList()
+        else depositRepository.findByCriteria(
+                    ownerUuid,
+                    symbol,
+                    sourceAddress,
+                    transactionRef,
+                    startTime,
+                    endTime,
+                    status,
+                    ascendingByTime,
+                    offset,
+                    size
+            ).map { it.toDto() }.toList()
     }
 
 
