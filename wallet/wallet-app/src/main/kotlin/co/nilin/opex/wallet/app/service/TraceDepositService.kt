@@ -13,7 +13,7 @@ class TraceDepositService(private val depositPersister: DepositPersister) {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     suspend fun saveDepositInNewTransaction(deposit: Deposit) {
-        logger.info("Going to save a deposit command .....")
-        depositPersister.persist(deposit)  // Saves outside the main transaction context
+        logger.info("Going to save a deposit command ...")
+        depositPersister.persist(deposit)  // Saves outside  the main transaction context
     }
 }

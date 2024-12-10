@@ -23,11 +23,11 @@ import java.util.*
 @RestController
 @RequestMapping("/payment")
 class PaymentGatewayController(
-        val transferManager: TransferManager,
-        val currencyService: CurrencyServiceManager,
-        val walletManager: WalletManager,
-        val walletOwnerManager: WalletOwnerManager,
-        val traceDepositService: TraceDepositService
+    val transferManager: TransferManager,
+    val currencyService: CurrencyServiceManager,
+    val walletManager: WalletManager,
+    val walletOwnerManager: WalletOwnerManager,
+    val traceDepositService: TraceDepositService
 
 ) {
 
@@ -42,51 +42,51 @@ class PaymentGatewayController(
 //        }
 
         val currency =
-                currencyService.fetchCurrency(FetchCurrency(symbol = request.currency.name))
-                        ?: throw OpexError.CurrencyNotFound.exception()
+            currencyService.fetchCurrency(FetchCurrency(symbol = request.currency.name))
+                ?: throw OpexError.CurrencyNotFound.exception()
         val sourceOwner = walletOwnerManager.findWalletOwner(walletOwnerManager.systemUuid)
-                ?: throw OpexError.WalletOwnerNotFound.exception()
+            ?: throw OpexError.WalletOwnerNotFound.exception()
         val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(sourceOwner, WalletType.MAIN, currency)
-                ?: walletManager.createWallet(sourceOwner, Amount(currency, BigDecimal.ZERO), currency, WalletType.MAIN)
+            ?: walletManager.createWallet(sourceOwner, Amount(currency, BigDecimal.ZERO), currency, WalletType.MAIN)
 
         val receiverOwner = walletOwnerManager.findWalletOwner(request.userId)
-                ?: walletOwnerManager.createWalletOwner(request.userId, "not set", "")
+            ?: walletOwnerManager.createWalletOwner(request.userId, "not set", "")
 
         val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(
-                receiverOwner,
-                receiverWalletType,
-                currency
+            receiverOwner,
+            receiverWalletType,
+            currency
         ) ?: walletManager.createWallet(
-                receiverOwner,
-                Amount(currency, BigDecimal.ZERO),
-                currency,
-                receiverWalletType
+            receiverOwner,
+            Amount(currency, BigDecimal.ZERO),
+            currency,
+            receiverWalletType
         )
 
-        var depositCommand = Deposit(
-                receiverOwner.uuid,
-                UUID.randomUUID().toString(),
-                currency.symbol,
-                request.amount,
-                note = request.description,
-                transactionRef = request.reference,
-                status = DepositStatus.DONE,
-                depositType = DepositType.OFF_CHAIN,
-                network = TransferMethod.IPG.name,
-                attachment = null
-        )
-        traceDepositService.saveDepositInNewTransaction(depositCommand)
 
         transferManager.transfer(
-                TransferCommand(
-                        sourceWallet,
-                        receiverWallet,
-                        Amount(sourceWallet.currency, request.amount),
-                        request.description,
-                        request.reference,
-                        TransferCategory.DEPOSIT
-                )
+            TransferCommand(
+                sourceWallet,
+                receiverWallet,
+                Amount(sourceWallet.currency, request.amount),
+                request.description,
+                request.reference,
+                TransferCategory.DEPOSIT
+            )
         )
+        var depositCommand = Deposit(
+            receiverOwner.uuid,
+            UUID.randomUUID().toString(),
+            currency.symbol,
+            request.amount,
+            note = request.description,
+            transactionRef = request.reference,
+            status = DepositStatus.DONE,
+            depositType = DepositType.OFF_CHAIN,
+            network = TransferMethod.IPG.name,
+            attachment = null
+        )
+        traceDepositService.saveDepositInNewTransaction(depositCommand)
 
         return PaymentDepositResponse(true)
     }
