@@ -16,6 +16,8 @@ enum class TransferCategory {
     ORDER_FINALIZED,
     TRADE,
     FEE,
-
+    REFERRAL_COMMISSION,
+    REFERRAL_KYC_REWARD,
+    KYC_ACCEPTED_REWARD,
     NORMAL //TODO TEST?
 }

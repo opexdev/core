@@ -7,5 +7,8 @@ enum class UserTransactionCategory {
     DEPOSIT_TO, // for admin using DEPOSIT_MANUALLY
     WITHDRAW,
     FEE,
+    REFERRAL_COMMISSION,
+    REFERRAL_KYC_REWARD,
+    KYC_ACCEPTED_REWARD,
     SYSTEM
 }
