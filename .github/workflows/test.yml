@@ -1,4 +1,4 @@
-name: Push images on dev branch update
+name: Push images for test env
 
 on:
 #  push:
