@@ -102,10 +102,10 @@ app:
   omni-wallet:
     url: localhost:8080   #todo -> env
   auth:
-    url: ${auth_url}
-    cert-url: ${auth_jwk_endpoint}
-    client-id: ${client_id}
-    client-secret: ${client_secret}
+    url: lb://opex-auth
+    cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
+    client-id: none
+    client-secret: none
   wallet:
     url: lb://opex-wallet
   address:
