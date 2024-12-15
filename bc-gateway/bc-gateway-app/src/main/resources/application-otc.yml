@@ -66,6 +66,8 @@ logging:
 swagger:
   authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
 app:
+  omni-wallet:
+    url: http://app:8080 #todo ->env
   auth:
     url: ${auth_url}
     cert-url: ${auth_jwk_endpoint}
@@ -74,5 +76,4 @@ app:
   wallet:
     url: http://wallet:8080
   address:
-    life-time:
-      value: ${ADDRESS_EXP_TIME}  #    second
+    life-time: ${ADDRESS_EXP_TIME}  #    second

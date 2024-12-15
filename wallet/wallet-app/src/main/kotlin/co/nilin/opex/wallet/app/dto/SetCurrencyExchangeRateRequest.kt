@@ -6,7 +6,8 @@ import java.math.BigDecimal
 class SetCurrencyExchangeRateRequest(
     val sourceSymbol: String,
     val destSymbol: String,
-    val rate: BigDecimal
+    val rate: BigDecimal,
+    var ignoreIfExist: Boolean? = false
 
 ) {
 

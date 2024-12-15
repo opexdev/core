@@ -3,36 +3,56 @@ package co.nilin.opex.wallet.core.service
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.*
+import co.nilin.opex.wallet.core.model.WithdrawType
 import co.nilin.opex.wallet.core.spi.*
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.time.LocalDateTime
+
 
 @Service
 class WithdrawService(
     private val withdrawPersister: WithdrawPersister,
     private val walletManager: WalletManager,
     private val walletOwnerManager: WalletOwnerManager,
-    private val currencyService: CurrencyService,
+    private val currencyService: CurrencyServiceManager,
     private val transferManager: TransferManager,
-    private val bcGatewayProxy: BcGatewayProxy,
+    private val authService: AuthService,
+    private val environment: Environment,
+    private val gatewayService: GatewayService,
+    @Qualifier("onChainGateway") private val bcGatewayProxy: GatewayPersister,
     @Value("\${app.system.uuid}") private val systemUuid: String
 ) {
+    private val logger = LoggerFactory.getLogger(WithdrawService::class.java)
+
 
     @Transactional
     suspend fun requestWithdraw(withdrawCommand: WithdrawCommand): WithdrawActionResult {
-        val currency = currencyService.getCurrency(withdrawCommand.currency)
-            ?: throw OpexError.CurrencyNotFound.exception()
-        val owner = walletOwnerManager.findWalletOwner(withdrawCommand.uuid)
-            ?: throw OpexError.WalletOwnerNotFound.exception()
-        val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, WalletType.MAIN, currency)
-            ?: throw OpexError.WalletNotFound.exception()
-        val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, WalletType.CASHOUT, currency)
-            ?: walletManager.createCashoutWallet(owner, currency)
 
-        val withdrawData = bcGatewayProxy.getWithdrawData(withdrawCommand.destSymbol, withdrawCommand.destNetwork)
+
+        val currency = currencyService.fetchCurrency(FetchCurrency(symbol = withdrawCommand.currency))
+            ?: throw OpexError.CurrencyNotFound.exception()
+        val owner =
+            walletOwnerManager.findWalletOwner(withdrawCommand.uuid)
+                ?: throw OpexError.WalletOwnerNotFound.exception()
+        val sourceWallet =
+            walletManager.findWalletByOwnerAndCurrencyAndType(owner, WalletType.MAIN, currency)
+                ?: throw OpexError.WalletNotFound.exception()
+        val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(
+            owner, WalletType.CASHOUT, currency
+        ) ?: walletManager.createWallet(
+            owner,
+            Amount(currency, BigDecimal.ZERO),
+            currency,
+            WalletType.CASHOUT
+        )
+        val withdrawData: GatewayData =
+            fetchWithdrawData(withdrawCommand) ?: throw OpexError.GatewayNotFount.exception()
         if (!withdrawData.isEnabled)
             throw OpexError.WithdrawNotAllowed.exception()
 
@@ -45,6 +65,10 @@ class WithdrawService(
         if (withdrawCommand.amount < withdrawData.minimum)
             throw OpexError.WithdrawAmountLessThanMinimum.exception()
 
+        if (withdrawCommand.amount > withdrawData.maximum)
+            throw OpexError.WithdrawAmountMoreThanMinimum.exception()
+
+
         val transferResultDetailed = transferManager.transfer(
             TransferCommand(
                 sourceWallet,
@@ -55,7 +79,6 @@ class WithdrawService(
                 TransferCategory.WITHDRAW_REQUEST
             )
         )
-
         val withdraw = withdrawPersister.persist(
             Withdraw(
                 null,
@@ -73,11 +96,58 @@ class WithdrawService(
                 withdrawCommand.destNote,
                 null,
                 null,
-                WithdrawStatus.CREATED
+                WithdrawStatus.CREATED,
+                null,
+                withdrawCommand.withdrawType!!,
+                null
             )
         )
 
         return WithdrawActionResult(withdraw.withdrawId!!, withdraw.status)
+    }
+
+
+    private suspend fun fetchWithdrawData(withdrawCommand: WithdrawCommand): GatewayData? {
+
+        return withdrawCommand.gatewayUuid?.let { uuid ->
+
+            gatewayService.fetchGateway(uuid, withdrawCommand.currency)?.let {
+
+                when (it) {
+                    is OnChainGatewayCommand -> {
+                        withdrawCommand.currency = it.currencySymbol!!
+                        withdrawCommand.destNetwork = it.chain
+                        withdrawCommand.destSymbol = it.implementationSymbol!!
+                        withdrawCommand.withdrawType = WithdrawType.ON_CHAIN
+                        GatewayData(
+                            it.isActive ?: true && it.withdrawAllowed ?: true,
+                            it.withdrawFee ?: BigDecimal.ZERO,
+                            it.withdrawMin ?: BigDecimal.ZERO,
+                            it.withdrawMax
+                        )
+                    }
+
+                    is OffChainGatewayCommand -> {
+                        withdrawCommand.currency = it.currencySymbol!!
+                        withdrawCommand.destNetwork = it.transferMethod.name
+                        withdrawCommand.withdrawType = WithdrawType.OFF_CHAIN
+                        GatewayData(
+                            it.isActive ?: true && it.withdrawAllowed ?: true,
+                            it.withdrawFee ?: BigDecimal.ZERO,
+                            it.withdrawMin ?: BigDecimal.ZERO,
+                            it.withdrawMax
+                        )
+                    }
+
+                    else -> {
+                        throw OpexError.GatewayNotFount.exception()
+                    }
+                }
+            } ?: throw OpexError.GatewayNotFount.exception()
+
+            //After applying gateway concept in ope, we can remove this line and
+            // use gatewayUUid instead of combination of symbol and network
+        } ?: bcGatewayProxy.getWithdrawData(withdrawCommand.destSymbol!!, withdrawCommand.destNetwork!!)
     }
 
     @Transactional
@@ -128,8 +198,11 @@ class WithdrawService(
                 acceptCommand.destTransactionRef,
                 null,
                 WithdrawStatus.DONE,
+                withdraw.applicator,
+                withdraw.withdrawType,
+                acceptCommand.attachment,
                 withdraw.createDate,
-                LocalDateTime.now()
+                LocalDateTime.now(),
             )
         )
 
@@ -154,7 +227,8 @@ class WithdrawService(
         if (withdraw.ownerUuid != uuid) throw OpexError.Forbidden.exception()
         if (!withdraw.canBeCanceled()) throw OpexError.WithdrawCannotBeCanceled.exception()
 
-        val currency = currencyService.getCurrency(withdraw.currency) ?: throw OpexError.CurrencyNotFound.exception()
+        val currency = currencyService.fetchCurrency(FetchCurrency(symbol = withdraw.currency))
+            ?: throw OpexError.CurrencyNotFound.exception()
         val owner = walletOwnerManager.findWalletOwner(uuid) ?: throw OpexError.WalletOwnerNotFound.exception()
         val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, WalletType.CASHOUT, currency)
             ?: throw OpexError.WalletNotFound.exception()
@@ -195,7 +269,6 @@ class WithdrawService(
             sourceWallet.currency,
             WalletType.MAIN
         )
-
         val transferResultDetailed = transferManager.transfer(
             TransferCommand(
                 sourceWallet,
@@ -206,7 +279,6 @@ class WithdrawService(
                 TransferCategory.WITHDRAW_REJECT
             )
         )
-
         val updateWithdraw = withdrawPersister.persist(
             Withdraw(
                 withdraw.withdrawId,
@@ -225,8 +297,11 @@ class WithdrawService(
                 null,
                 rejectCommand.statusReason,
                 WithdrawStatus.REJECTED,
+                withdraw.applicator,
+                withdraw.withdrawType,
+                withdraw.attachment,
                 withdraw.createDate,
-                null
+                LocalDateTime.now(),
             )
         )
         return WithdrawActionResult(withdraw.withdrawId!!, updateWithdraw.status)
@@ -242,6 +317,9 @@ class WithdrawService(
         destTxRef: String?,
         destAddress: String?,
         status: List<WithdrawStatus>,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        ascendingByTime: Boolean,
         offset: Int,
         size: Int
     ): List<WithdrawResponse> {
@@ -251,26 +329,29 @@ class WithdrawService(
             destTxRef,
             destAddress,
             status,
+            startTime,
+            endTime,
+            ascendingByTime,
             offset,
             size
         )
     }
 
-    suspend fun findByCriteria(
-        ownerUuid: String?,
-        currency: String?,
-        destTxRef: String?,
-        destAddress: String?,
-        status: List<WithdrawStatus>,
-    ): List<WithdrawResponse> {
-        return withdrawPersister.findByCriteria(
-            ownerUuid,
-            currency,
-            destTxRef,
-            destAddress,
-            status
-        )
-    }
+//    suspend fun findByCriteria(
+//        ownerUuid: String?,
+//        currency: String?,
+//        destTxRef: String?,
+//        destAddress: String?,
+//        status: List<WithdrawStatus>,
+//    ): List<WithdrawResponse> {
+//        return withdrawPersister.findByCriteria(
+//            ownerUuid,
+//            currency,
+//            destTxRef,
+//            destAddress,
+//            status
+//        )
+//    }
 
     suspend fun findWithdrawHistory(
         uuid: String,

@@ -35,8 +35,10 @@ services:
       - SPRING_PROFILES_ACTIVE=otc
       - auth_url=${AUTH_URL}
       - auth_jwk_endpoint=${JWK_ENDPOINT}
-    configs:
-      - preferences.yml
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    #    configs:
+    #      - preferences.yml
     depends_on:
       - postgres-wallet
       - vault
@@ -51,6 +53,8 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+    volumes:
+      - documents:/Documents
   vault:
     image: ghcr.io/opexdev/vault-opex:${TAG}
     volumes:
@@ -89,14 +93,15 @@ services:
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
       - PREFERENCES=$PREFERENCES
-      - ADDRESS_EXP_TIME=120
+      - ADDRESS_EXP_TIME=7200
       - SPRING_PROFILES_ACTIVE=otc
       - auth_url=${AUTH_URL}
       - auth_jwk_endpoint=${JWK_ENDPOINT}
-    dns:
-      - "8.8.8.8"
-    configs:
-      - preferences.yml
+      - omni_url=${OMNI_URL}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    #    configs:
+    #      - preferences.yml
     depends_on:
       - vault
       - postgres-bc-gateway
@@ -120,6 +125,7 @@ volumes:
   wallet-data:
   vault-data:
   bc-gateway-data:
+  documents:
 
 networks:
   default:

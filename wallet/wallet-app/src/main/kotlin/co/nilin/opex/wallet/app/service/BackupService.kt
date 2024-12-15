@@ -5,9 +5,9 @@ import co.nilin.opex.wallet.core.model.WalletOwner
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.google.api.client.http.FileContent
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
-import com.google.api.client.http.FileContent
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import com.google.auth.http.HttpCredentialsAdapter
@@ -17,13 +17,13 @@ import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
-import com.google.api.services.drive.model.File as GoogleFile
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.io.File
 import java.nio.file.Files
 import java.time.LocalDateTime
 import java.util.concurrent.Executors
+import com.google.api.services.drive.model.File as GoogleFile
 
 @Service
 @Profile("!test")

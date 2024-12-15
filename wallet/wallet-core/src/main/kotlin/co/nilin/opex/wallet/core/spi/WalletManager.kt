@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.core.spi
 
+import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import co.nilin.opex.wallet.core.model.*
 import java.math.BigDecimal
 
@@ -13,7 +14,11 @@ interface WalletManager {
 
     suspend fun decreaseBalance(wallet: Wallet, amount: BigDecimal)
 
-    suspend fun findWalletByOwnerAndCurrencyAndType(owner: WalletOwner, walletType: WalletType, currency: Currency): Wallet?
+    suspend fun findWalletByOwnerAndCurrencyAndType(
+        owner: WalletOwner,
+        walletType: WalletType,
+        currency: CurrencyCommand
+    ): Wallet?
 
     suspend fun findWallet(ownerId: Long, currency: String, walletType: WalletType): BriefWallet?
 
@@ -23,10 +28,15 @@ interface WalletManager {
 
     suspend fun findWalletByOwnerAndSymbol(owner: WalletOwner, symbol: String): List<Wallet>
 
-    suspend fun createWallet(owner: WalletOwner, balance: Amount, currency: Currency, type: WalletType): Wallet
+    suspend fun createWallet(owner: WalletOwner, balance: Amount, currency: CurrencyCommand, type: WalletType): Wallet
 
-    suspend fun createCashoutWallet(owner: WalletOwner, currency: Currency): Wallet
 
+    suspend fun createWalletForSystem(
+        currency: String,
+        systemBalance: BigDecimal?
+    )
+
+    suspend fun createCashoutWallet(owner: WalletOwner, currency: CurrencyCommand): Wallet
     suspend fun findWalletById(walletId: Long): Wallet?
 
     suspend fun findAllWalletsBriefNotZero(ownerId: Long): List<BriefWallet>

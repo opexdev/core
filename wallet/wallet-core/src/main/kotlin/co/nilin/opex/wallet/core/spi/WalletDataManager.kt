@@ -17,5 +17,5 @@ interface WalletDataManager {
 
     suspend fun findSystemWalletsTotal(): List<WalletTotal>
 
-    suspend fun findUserWalletsTotal(): List<WalletTotal>
+    suspend fun findUserWalletsTotal(): List<WalletTotal>?
 }

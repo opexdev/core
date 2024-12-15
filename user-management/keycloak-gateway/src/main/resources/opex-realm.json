@@ -2848,7 +2848,6 @@
     "address",
     "phone",
     "microprofile-jwt"
-
   ],
   "browserSecurityHeaders": {
     "contentSecurityPolicyReportOnly": "",

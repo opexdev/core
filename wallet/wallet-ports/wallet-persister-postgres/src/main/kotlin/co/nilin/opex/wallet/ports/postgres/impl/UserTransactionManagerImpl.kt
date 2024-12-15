@@ -29,8 +29,8 @@ class UserTransactionManagerImpl(private val repository: UserTransactionReposito
         repository.save(txModel).awaitSingleOrNull()
     }
 
-    override suspend fun getTransactionHistoryForUser(
-        userId: String,
+    override suspend fun getTransactionHistory(
+        userId: String?,
         currency: String?,
         category: UserTransactionCategory?,
         startTime: LocalDateTime?,

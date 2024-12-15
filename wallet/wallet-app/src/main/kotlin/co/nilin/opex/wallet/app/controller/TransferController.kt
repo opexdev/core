@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.app.controller
 
+import co.nilin.opex.wallet.app.service.DepositService
 import co.nilin.opex.wallet.app.service.TransferService
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.TransferCategory
@@ -11,7 +12,10 @@ import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 
 @RestController
-class TransferController(private val transferService: TransferService) {
+class TransferController(
+    private val transferService: TransferService,
+    private val depositService: DepositService
+) {
 
     data class TransferBody(
         val description: String?,
@@ -49,7 +53,7 @@ class TransferController(private val transferService: TransferService) {
             transferBody.description,
             transferBody.transferRef,
             transferBody.transferCategory,
-        )
+        ).transferResult
     }
 
     @PostMapping("/transfer/{amount}_{symbol}/from/{senderUuid}_{senderWalletType}/to/{receiverUuid}_{receiverWalletType}")
@@ -84,38 +88,8 @@ class TransferController(private val transferService: TransferService) {
             description,
             transferRef,
             transferBody.transferCategory
-        )
+        ).transferResult
     }
 
-    @PostMapping("/deposit/{amount}_{chain}_{symbol}/{receiverUuid}_{receiverWalletType}")
-    @ApiResponse(
-        message = "OK",
-        code = 200,
-        examples = Example(
-            ExampleProperty(
-                value = "{ }",
-                mediaType = "application/json"
-            )
-        )
-    )
-    suspend fun deposit(
-        @PathVariable symbol: String,
-        @PathVariable receiverUuid: String,
-        @PathVariable receiverWalletType: WalletType,
-        @PathVariable amount: BigDecimal,
-        @RequestParam description: String?,
-        @RequestParam transferRef: String?,
-        @PathVariable chain: String?
-    ): TransferResult {
-        return transferService.deposit(
-            symbol,
-            receiverUuid,
-            receiverWalletType,
-            amount,
-            description,
-            transferRef,
-            chain
-        )
-    }
 
 }

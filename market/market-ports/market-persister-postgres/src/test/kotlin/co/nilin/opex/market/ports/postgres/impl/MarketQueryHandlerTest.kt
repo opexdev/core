@@ -1,6 +1,9 @@
 package co.nilin.opex.market.ports.postgres.impl
 
-import co.nilin.opex.market.core.inout.*
+import co.nilin.opex.market.core.inout.MarketTrade
+import co.nilin.opex.market.core.inout.Order
+import co.nilin.opex.market.core.inout.OrderDirection
+import co.nilin.opex.market.core.inout.OrderStatus
 import co.nilin.opex.market.ports.postgres.dao.OrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderStatusRepository
 import co.nilin.opex.market.ports.postgres.dao.TradeRepository

@@ -5,12 +5,10 @@ import co.nilin.opex.wallet.app.dto.CurrencyExchangeRatesResponse
 import co.nilin.opex.wallet.app.dto.CurrencyPair
 import co.nilin.opex.wallet.app.dto.SetCurrencyExchangeRateRequest
 import co.nilin.opex.wallet.app.service.otc.GraphService
-import co.nilin.opex.wallet.core.model.Currencies
-import co.nilin.opex.wallet.core.model.Currency
-import co.nilin.opex.wallet.core.model.CurrencyImp
+import co.nilin.opex.wallet.core.inout.CurrencyPrice
+
 import co.nilin.opex.wallet.core.model.otc.*
-import co.nilin.opex.wallet.app.service.otc.OTCCurrencyService
-import co.nilin.opex.wallet.core.service.otc.RateService
+
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
@@ -20,30 +18,11 @@ import java.math.BigDecimal
 @RestController
 @RequestMapping("/otc")
 class CurrencyRatesController(
-    private val rateService: RateService,
-    private val OTCCurrencyService: OTCCurrencyService,
+    private val rateService: co.nilin.opex.wallet.core.service.otc.RateService,
+
     private val graphService: GraphService
 ) {
 
-    @PostMapping("/currency")
-    suspend fun addCurrency(@RequestBody request: CurrencyImp): Currency? {
-        return OTCCurrencyService.addCurrency(request)
-    }
-
-    @PutMapping("/currency")
-    suspend fun updateCurrency(@RequestBody request: CurrencyImp): Currency? {
-        return OTCCurrencyService.updateCurrency(request)
-    }
-
-    @GetMapping("/currency/{symbol}")
-    suspend fun getCurrency(@PathVariable("symbol") symbol: String): Currency? {
-        return OTCCurrencyService.fetchCurrency(symbol)
-    }
-
-    @GetMapping("/currency")
-    suspend fun getCurrencies(): Currencies? {
-        return OTCCurrencyService.fetchCurrencies()
-    }
 
     @PostMapping("/rate")
     @ApiResponse(
@@ -52,7 +31,7 @@ class CurrencyRatesController(
     )
     suspend fun createRate(@RequestBody request: SetCurrencyExchangeRateRequest) {
         request.validate()
-        rateService.addRate(Rate(request.sourceSymbol, request.destSymbol, request.rate))
+        rateService.addRate(Rate(request.sourceSymbol, request.destSymbol, request.rate), request.ignoreIfExist)
     }
 
     @PutMapping("/rate")
@@ -125,7 +104,10 @@ class CurrencyRatesController(
         message = "OK",
         code = 200,
     )
-    suspend fun deleteForbiddenPair(@PathVariable sourceSymbol: String, @PathVariable destSymbol: String): ForbiddenPairs {
+    suspend fun deleteForbiddenPair(
+        @PathVariable sourceSymbol: String,
+        @PathVariable destSymbol: String
+    ): ForbiddenPairs {
         return rateService.deleteForbiddenPair(ForbiddenPair(sourceSymbol, destSymbol))
     }
 
@@ -194,8 +176,14 @@ class CurrencyRatesController(
         @RequestParam("destSymbol") destSymbol: String? = null
     ): CurrencyExchangeRatesResponse {
         return CurrencyExchangeRatesResponse(
-            graphService.buildRoutes(sourceSymbol, destSymbol).map { CurrencyExchangeRate(it.getSourceSymbol(), it.getDestSymbol(), it.getRate()) }
+            graphService.buildRoutes(sourceSymbol, destSymbol)
+                .map { CurrencyExchangeRate(it.getSourceSymbol(), it.getDestSymbol(), it.getRate()) }
         )
+    }
+
+    @GetMapping("/currency/price")
+    suspend fun getPrice(@RequestParam("unit") unit: String): List<CurrencyPrice>? {
+        return graphService.fetchPrice(unit)
     }
 
 }

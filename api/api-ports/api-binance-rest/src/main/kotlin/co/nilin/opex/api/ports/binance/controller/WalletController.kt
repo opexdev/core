@@ -7,14 +7,9 @@ import co.nilin.opex.api.ports.binance.data.*
 import co.nilin.opex.api.ports.binance.util.jwtAuthentication
 import co.nilin.opex.api.ports.binance.util.tokenValue
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.common.utils.Interval
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDateTime

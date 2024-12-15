@@ -5,9 +5,11 @@ import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.ports.postgres.dao.*
 import co.nilin.opex.wallet.ports.postgres.dto.toModel
 import co.nilin.opex.wallet.ports.postgres.impl.sample.VALID
+import co.nilin.opex.wallet.ports.postgres.util.toModel
 import io.mockk.MockKException
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -19,7 +21,7 @@ private class WalletManagerTest {
     private val walletLimitsRepository: WalletLimitsRepository = mockk()
     private val walletRepository: WalletRepository = mockk()
     private val walletOwnerRepository: WalletOwnerRepository = mockk()
-    private val currencyRepository: CurrencyRepository = mockk()
+    private val currencyRepository: CurrencyRepositoryV2 = mockk()
 
     private var transactionRepository: TransactionRepository = mockk {
         every {
@@ -40,7 +42,7 @@ private class WalletManagerTest {
         } returns Mono.empty()
     }
 
-    private val walletManagerImpl: WalletManagerImpl = WalletManagerImpl(
+    private val walletManagerImpl: WalletManagerImplV2 = WalletManagerImplV2(
         walletLimitsRepository, transactionRepository, walletRepository, walletOwnerRepository, currencyRepository
     )
 
@@ -48,7 +50,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByOwnerAndCurrencyAndWalletAndAction(
                 VALID.WALLET_OWNER.id!!,
-                VALID.CURRENCY.symbol,
+                VALID.CURRENCY.symbol!!,
                 VALID.WALLET.id!!,
                 action
             )
@@ -56,7 +58,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByOwnerAndCurrencyAndActionAndWalletType(
                 VALID.WALLET_OWNER.id!!,
-                VALID.CURRENCY.symbol,
+                VALID.CURRENCY.symbol!!,
                 action,
                 WalletType.MAIN
             )
@@ -64,7 +66,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByLevelAndCurrencyAndActionAndWalletType(
                 VALID.USER_LEVEL_REGISTERED,
-                VALID.CURRENCY.symbol,
+                VALID.CURRENCY.symbol!!,
                 action,
                 WalletType.MAIN
             )
@@ -75,7 +77,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByOwnerAndCurrencyAndWalletAndAction(
                 VALID.WALLET_OWNER.id!!,
-                VALID.CURRENCY.symbol,
+                VALID.CURRENCY.symbol!!,
                 VALID.WALLET.id!!,
                 action
             )
@@ -83,7 +85,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByOwnerAndCurrencyAndActionAndWalletType(
                 VALID.WALLET_OWNER.id!!,
-                VALID.CURRENCY.symbol,
+                VALID.CURRENCY.symbol!!,
                 action,
                 WalletType.MAIN
             )
@@ -91,7 +93,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByLevelAndCurrencyAndActionAndWalletType(
                 VALID.USER_LEVEL_REGISTERED,
-                VALID.CURRENCY.symbol,
+                VALID.CURRENCY.symbol!!,
                 action,
                 WalletType.MAIN
             )
@@ -128,7 +130,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByOwnerAndCurrencyAndWalletAndAction(
                 VALID.WALLET_OWNER.id!!,
-                VALID.CURRENCY.symbol,
+                VALID.CURRENCY.symbol!!,
                 VALID.WALLET.id!!,
                 WalletLimitAction.WITHDRAW
             )
@@ -168,7 +170,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByOwnerAndCurrencyAndActionAndWalletType(
                 VALID.WALLET_OWNER.id!!,
-                VALID.CURRENCY.symbol,
+                VALID.CURRENCY.symbol!!,
                 WalletLimitAction.WITHDRAW,
                 WalletType.MAIN
             )
@@ -176,7 +178,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByLevelAndCurrencyAndActionAndWalletType(
                 VALID.USER_LEVEL_REGISTERED,
-                VALID.CURRENCY.symbol,
+                VALID.CURRENCY.symbol!!,
                 WalletLimitAction.WITHDRAW,
                 WalletType.MAIN
             )
@@ -192,7 +194,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByOwnerAndCurrencyAndWalletAndAction(
                 VALID.WALLET_OWNER.id!!,
-                VALID.CURRENCY.symbol,
+                VALID.CURRENCY.symbol!!,
                 VALID.WALLET.id!!,
                 WalletLimitAction.WITHDRAW
             )
@@ -200,7 +202,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByOwnerAndCurrencyAndActionAndWalletType(
                 VALID.WALLET_OWNER.id!!,
-                VALID.CURRENCY.symbol,
+                VALID.CURRENCY.symbol!!,
                 WalletLimitAction.WITHDRAW,
                 WalletType.MAIN
             )
@@ -286,7 +288,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByOwnerAndCurrencyAndActionAndWalletType(
                 VALID.WALLET_OWNER.id!!,
-                VALID.CURRENCY.symbol,
+                VALID.CURRENCY.symbol!!,
                 WalletLimitAction.DEPOSIT,
                 WalletType.MAIN
             )
@@ -294,7 +296,7 @@ private class WalletManagerTest {
         every {
             walletLimitsRepository.findByLevelAndCurrencyAndActionAndWalletType(
                 VALID.USER_LEVEL_REGISTERED,
-                VALID.CURRENCY.symbol,
+                VALID.CURRENCY.symbol!!,
                 WalletLimitAction.DEPOSIT,
                 WalletType.MAIN
             )
@@ -312,12 +314,20 @@ private class WalletManagerTest {
             walletRepository.findByOwnerAndTypeAndCurrency(
                 VALID.WALLET_OWNER.id!!,
                 WalletType.MAIN,
-                VALID.CURRENCY.symbol
+                VALID.CURRENCY.symbol!!
             )
         } returns Mono.just(VALID.WALLET.toModel())
         every {
-            currencyRepository.findBySymbol(VALID.CURRENCY.symbol)
+            currencyRepository.fetchCurrency(symbol = VALID.CURRENCY.symbol)
         } returns Mono.just(VALID.CURRENCY.toModel())
+
+        println(
+            walletRepository.findByOwnerAndTypeAndCurrency(
+                VALID.WALLET_OWNER.id!!,
+                WalletType.MAIN,
+                VALID.CURRENCY.symbol!!
+            )?.awaitFirst()?.id
+        )
 
         val wallet = walletManagerImpl.findWalletByOwnerAndCurrencyAndType(
             VALID.WALLET_OWNER,
@@ -453,7 +463,7 @@ private class WalletManagerTest {
             walletOwnerRepository.findById(VALID.WALLET_OWNER.id!!)
         } returns Mono.just(VALID.WALLET_OWNER.toModel())
         every {
-            currencyRepository.findById(VALID.CURRENCY.symbol)
+            currencyRepository.fetchCurrency(symbol = VALID.CURRENCY.symbol)
         } returns Mono.just(VALID.CURRENCY.toModel())
 
         val wallet = walletManagerImpl.findWalletById(VALID.WALLET.id!!)

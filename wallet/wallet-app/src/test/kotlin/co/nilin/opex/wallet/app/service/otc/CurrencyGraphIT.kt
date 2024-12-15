@@ -3,11 +3,13 @@ package co.nilin.opex.wallet.app.service.otc
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.app.KafkaEnabledTest
+import co.nilin.opex.wallet.core.inout.CurrencyCommand
+import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.model.otc.ForbiddenPair
 import co.nilin.opex.wallet.core.model.otc.Rate
 import co.nilin.opex.wallet.core.model.otc.Symbols
 import co.nilin.opex.wallet.core.service.otc.RateService
-import co.nilin.opex.wallet.core.spi.CurrencyService
+import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.ports.postgres.dao.WalletRepository
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
@@ -26,7 +28,7 @@ class CurrencyGraphIT : KafkaEnabledTest() {
     lateinit var rateService: RateService
 
     @Autowired
-    lateinit var currencyService: CurrencyService
+    lateinit var currencyService: CurrencyServiceManager
 
     @Autowired
     lateinit var walletRepository: WalletRepository
@@ -36,15 +38,18 @@ class CurrencyGraphIT : KafkaEnabledTest() {
         runBlocking {
             val currencies = listOf("A", "B", "C", "D", "Z")
             val systemCurrencies = currencyService
-                .getCurrencies().currencies?.filter { c -> currencies.contains(c.name) }?.map { currency -> currency.name }
+                .fetchCurrencies()?.currencies?.filter { c -> currencies.contains(c.symbol) }
+                ?.map { currency -> currency.symbol }
             val fpair = rateService.getForbiddenPairs()
             val rates = rateService.getRate()
             fpair.forbiddenPairs!!.forEach { p -> rateService.deleteForbiddenPair(p) }
             rates.rates!!.forEach { r -> rateService.deleteRate(r) }
             //TODO: after moving the wallet creation to otcservice we can remove these two lines
             val wallets = walletRepository.findAll().collectList().block()
-            wallets?.filter { w -> currencies.contains(w.currency) }?.forEach { w -> walletRepository.delete(w).block() }
-            systemCurrencies?.filter { c -> true }?.forEach { c -> currencyService.deleteCurrency(c) }
+            wallets?.filter { w -> currencies.contains(w.currency.toString()) }
+                ?.forEach { w -> walletRepository.delete(w).block() }
+            systemCurrencies?.filter { c -> true }
+                ?.forEach { c -> currencyService.deleteCurrency(FetchCurrency(symbol = c)) }
             currencies.forEach { c -> addCurrency(c) }
         }
     }
@@ -177,6 +182,6 @@ class CurrencyGraphIT : KafkaEnabledTest() {
     }
 
     private suspend fun addCurrency(c: String) {
-        currencyService.addCurrency(c, c, BigDecimal.ONE)
+        currencyService.createNewCurrency(CurrencyCommand(symbol = c, name = c, precision = BigDecimal.ONE))
     }
 }

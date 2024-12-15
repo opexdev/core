@@ -6,10 +6,11 @@ import co.nilin.opex.bcgateway.core.api.InfoService
 import co.nilin.opex.bcgateway.core.service.AssignAddressServiceImpl
 import co.nilin.opex.bcgateway.core.service.InfoServiceImpl
 import co.nilin.opex.bcgateway.core.spi.AssignedAddressHandler
-import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
+import co.nilin.opex.bcgateway.core.spi.ChainLoader
 import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
 import co.nilin.opex.bcgateway.ports.kafka.listener.consumer.AdminEventKafkaListener
 import co.nilin.opex.bcgateway.ports.kafka.listener.spi.AdminEventListener
+import co.nilin.opex.bcgateway.ports.postgres.impl.CurrencyHandlerImplV2
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -20,16 +21,18 @@ import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.X509EncodedKeySpec
 import java.util.*
 
+
 @Configuration
 class AppConfig(private val resourceLoader: ResourceLoader) {
 
     @Bean
     fun assignAddressService(
-        currencyHandler: CurrencyHandler,
+        currencyHandler: CurrencyHandlerImplV2,
         assignedAddressHandler: AssignedAddressHandler,
-        reservedAddressHandler: ReservedAddressHandler
+        reservedAddressHandler: ReservedAddressHandler,
+        chainLoader: ChainLoader
     ): AssignAddressService {
-        return AssignAddressServiceImpl(currencyHandler, assignedAddressHandler, reservedAddressHandler)
+        return AssignAddressServiceImpl(currencyHandler, assignedAddressHandler, reservedAddressHandler, chainLoader)
     }
 
     @Bean

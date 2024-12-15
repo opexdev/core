@@ -31,7 +31,7 @@ class WalletStatController(private val walletDataManager: WalletDataManager) {
     }
 
     @GetMapping("/wallets/user/total")
-    suspend fun userWalletTotal(): List<WalletTotal> {
+    suspend fun userWalletTotal(): List<WalletTotal>? {
         return walletDataManager.findUserWalletsTotal()
     }
 }

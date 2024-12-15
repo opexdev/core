@@ -1,9 +1,7 @@
 package co.nilin.opex.bcgateway.app.config
 
 import co.nilin.opex.bcgateway.app.utils.hasRole
-import co.nilin.opex.bcgateway.app.utils.hasRole
 import co.nilin.opex.bcgateway.app.utils.hasRoleAndLevel
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Profile
@@ -56,8 +54,11 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/swagger-resources/**").permitAll()
             .pathMatchers("/admin/**").hasRoleAndLevel("Admin")
             .pathMatchers("/wallet-sync/**").hasRoleAndLevel("System")
-            .pathMatchers("/currency/chains").hasRoleAndLevel("user")
+            .pathMatchers("/crypto-currency/chain").hasRoleAndLevel("user")
             .pathMatchers("/currency/**").hasRoleAndLevel("System")
+            .pathMatchers("/crypto-currency/**").hasRoleAndLevel("System")
+            .pathMatchers("/omni-balance/bc/**").hasRoleAndLevel("Admin")
+            .pathMatchers("/actuator/**").permitAll()
             .anyExchange().authenticated()
             .and()
             .oauth2ResourceServer()
