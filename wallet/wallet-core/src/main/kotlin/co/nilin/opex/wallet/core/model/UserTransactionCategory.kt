@@ -9,6 +9,7 @@ enum class UserTransactionCategory {
     FEE,
     REFERRAL_COMMISSION,
     REFERRAL_KYC_REWARD,
+    REFERENT_COMMISSION,
     KYC_ACCEPTED_REWARD,
     SYSTEM
 }
