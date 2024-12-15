@@ -1,5 +1,7 @@
 package co.nilin.opex.bcgateway.app.controller
 
+import co.nilin.opex.bcgateway.core.model.FetchGateways
+import co.nilin.opex.bcgateway.ports.postgres.impl.CurrencyHandlerImplV2
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -28,7 +30,11 @@ data class WebhookBody(
 
 @RestController
 @RequestMapping("/scanner")
-class ScannerController(private val publicKey: PublicKey, private val mapper: ObjectMapper) {
+class ScannerController(
+    private val publicKey: PublicKey,
+    private val mapper: ObjectMapper,
+    private val currencyHandler: CurrencyHandlerImplV2
+) {
 
     private val logger = LoggerFactory.getLogger(ScannerController::class.java)
 
@@ -37,7 +43,7 @@ class ScannerController(private val publicKey: PublicKey, private val mapper: Ob
         verifySignature(sign, body)
 
         logger.info("Webhook received for address ${body.address}, amount ${body.amount}")
-        //TODO do stuff after merge
+        val gateways = currencyHandler.fetchCurrencyOnChainGateways(FetchGateways(chain = body.chain))
     }
 
     private fun verifySignature(sign: String, request: WebhookBody) {
