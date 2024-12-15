@@ -109,8 +109,7 @@ app:
   wallet:
     url: lb://opex-wallet
   address:
-    life-time:
-      value: 167234670
+    life-time: 167234670
 swagger:
   authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token}
 
