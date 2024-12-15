@@ -17,7 +17,6 @@ import java.net.URI
 inline fun <reified T : Any> typeRef(): ParameterizedTypeReference<T> = object : ParameterizedTypeReference<T>() {}
 
 @Component
-@Profile("otc")
 class AuthProxyImpl(private val webClient: WebClient) : AuthProxy {
 
 
