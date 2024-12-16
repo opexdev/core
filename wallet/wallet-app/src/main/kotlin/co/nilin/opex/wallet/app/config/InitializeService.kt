@@ -42,10 +42,10 @@ class InitializeService(
 
     @PostConstruct
     fun init() = runBlocking {
-        if (!environment.activeProfiles.contains("otc")) {
-            addCurrencies(preferences.currencies)
-            addUserLimits(preferences.userLimits)
-        }
+//        if (!environment.activeProfiles.contains("otc")) {
+//            addCurrencies(preferences.currencies)
+//            addUserLimits(preferences.userLimits)
+//        }
         addSystemAndAdminWallet(preferences)
     }
 
@@ -91,21 +91,23 @@ class InitializeService(
                     )
                 ).awaitSingleOrNull()
 
-        val items = p.currencies.flatMap { currency ->
-            listOf(
-                WalletModel(1, WalletType.MAIN, currency.symbol, currency.mainBalance),
-                WalletModel(1, WalletType.EXCHANGE, currency.symbol, BigDecimal.ZERO),
-                WalletModel(adminWallet?.id!!, WalletType.MAIN, currency.symbol, currency.mainBalance),
-                WalletModel(adminWallet.id!!, WalletType.EXCHANGE, currency.symbol, BigDecimal.ZERO)
-            )
-        }
-        runCatching { walletRepository.saveAll(items).collectList().awaitSingleOrNull() }
+//        val items = p.currencies.flatMap { currency ->
+//            listOf(
+//                WalletModel(1, WalletType.MAIN, currency.symbol, currency.mainBalance),
+//                WalletModel(1, WalletType.EXCHANGE, currency.symbol, BigDecimal.ZERO),
+//                WalletModel(adminWallet?.id!!, WalletType.MAIN, currency.symbol, currency.mainBalance),
+//                WalletModel(adminWallet.id!!, WalletType.EXCHANGE, currency.symbol, BigDecimal.ZERO)
+//            )
+//        }
+//        runCatching { walletRepository.saveAll(items).collectList().awaitSingleOrNull() }
     }
 
 
-    private suspend fun addCurrencies(data: List<Currency>) = coroutineScope {
-        data.forEach {
-            currencyRepository.insert(it.name, it.symbol, it.name, it.precision).awaitSingleOrNull()
-        }
-    }
+//    private suspend fun addCurrencies(data: List<Currency>) = coroutineScope {
+//        data.forEach {
+//            runCatching {
+//                currencyRepository.insert(it.name, it.symbol, it.name, it.precision).awaitSingleOrNull()
+//            }
+//        }
+//    }
 }
