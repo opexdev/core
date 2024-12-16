@@ -23,9 +23,9 @@ import java.math.BigDecimal
 @RestController
 @RequestMapping("/inquiry")
 class InquiryController(
-        private val walletManager: WalletManager,
-        private val walletOwnerManager: WalletOwnerManager,
-        @Qualifier("newVersion") private val currencyService: CurrencyServiceManager
+    private val walletManager: WalletManager,
+    private val walletOwnerManager: WalletOwnerManager,
+    @Qualifier("newVersion") private val currencyService: CurrencyServiceManager
 ) {
     private val logger = LoggerFactory.getLogger(InquiryController::class.java)
 
@@ -33,34 +33,38 @@ class InquiryController(
 
     @GetMapping("{uuid}/wallet_type/{wallet_type}/can_withdraw/{amount}_{currency}")
     @ApiResponse(
-            message = "OK",
-            code = 200,
-            examples = Example(
-                    ExampleProperty(
-                            value = "{ }",
-                            mediaType = "application/json"
-                    )
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = "{ }",
+                mediaType = "application/json"
             )
+        )
     )
     suspend fun canFulfill(
-            @PathVariable uuid: String,
-            @PathVariable currency: String,
-            @PathVariable("wallet_type") walletType: WalletType,
-            @PathVariable amount: BigDecimal,
-            @CurrentSecurityContext securityContext: SecurityContext?
+        @PathVariable uuid: String,
+        @PathVariable currency: String,
+        @PathVariable("wallet_type") walletType: WalletType,
+        @PathVariable amount: BigDecimal,
+        @CurrentSecurityContext securityContext: SecurityContext?
 
     ): BooleanResponse {
+        securityContext?.let {
+            if (uuid != securityContext.authentication.name)
+                throw OpexError.Forbidden.exception()
+        }
 
         logger.info("canFullFill: {} {} {} {}", uuid, currency, walletType, amount)
         val owner = walletOwnerManager.findWalletOwner(uuid)
         if (owner != null) {
             val c = currencyService.fetchCurrency(FetchCurrency(symbol = currency))
-                    ?: throw OpexError.CurrencyNotFound.exception()
+                ?: throw OpexError.CurrencyNotFound.exception()
             val wallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, walletType, c)
             if (wallet != null) {
                 return BooleanResponse(
-                        walletManager.isWithdrawAllowed(wallet, amount)
-                                && walletOwnerManager.isWithdrawAllowed(owner, Amount(wallet.currency, amount))
+                    walletManager.isWithdrawAllowed(wallet, amount)
+                            && walletOwnerManager.isWithdrawAllowed(owner, Amount(wallet.currency, amount))
                 )
             }
         }
