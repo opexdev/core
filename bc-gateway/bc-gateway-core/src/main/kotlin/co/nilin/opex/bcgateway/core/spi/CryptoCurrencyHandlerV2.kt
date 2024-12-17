@@ -6,7 +6,6 @@ import co.nilin.opex.bcgateway.core.model.WithdrawData
 
 interface CryptoCurrencyHandlerV2 {
 
-
     suspend fun createOnChainGateway(request: CryptoCurrencyCommand): CryptoCurrencyCommand?
 
     suspend fun updateOnChainGateway(request: CryptoCurrencyCommand): CryptoCurrencyCommand?
@@ -21,5 +20,10 @@ interface CryptoCurrencyHandlerV2 {
 
     suspend fun getWithdrawData(symbol: String, network: String): WithdrawData
 
+    suspend fun fetchGatewayWithoutSymbol(
+        chain: String,
+        isToken: Boolean,
+        tokenAddress: String?
+    ): CryptoCurrencyCommand?
 
 }

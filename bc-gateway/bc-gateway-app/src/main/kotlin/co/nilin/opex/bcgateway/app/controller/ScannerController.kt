@@ -1,7 +1,8 @@
 package co.nilin.opex.bcgateway.app.controller
 
-import co.nilin.opex.bcgateway.core.model.FetchGateways
-import co.nilin.opex.bcgateway.ports.postgres.impl.CurrencyHandlerImplV2
+import co.nilin.opex.bcgateway.core.api.WalletSyncService
+import co.nilin.opex.bcgateway.core.model.Transfer
+import co.nilin.opex.bcgateway.core.model.Wallet
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -18,6 +19,7 @@ import java.security.Signature
 import java.util.*
 
 data class WebhookBody(
+    val txId: String,
     val address: String,
     val chain: String,
     val amount: BigDecimal,
@@ -33,7 +35,7 @@ data class WebhookBody(
 class ScannerController(
     private val publicKey: PublicKey,
     private val mapper: ObjectMapper,
-    private val currencyHandler: CurrencyHandlerImplV2
+    private val service: WalletSyncService
 ) {
 
     private val logger = LoggerFactory.getLogger(ScannerController::class.java)
@@ -41,9 +43,8 @@ class ScannerController(
     @PostMapping("/webhook")
     suspend fun webhook(@RequestHeader("X-Signature") sign: String, @RequestBody body: WebhookBody) {
         verifySignature(sign, body)
-
         logger.info("Webhook received for address ${body.address}, amount ${body.amount}")
-        val gateways = currencyHandler.fetchCurrencyOnChainGateways(FetchGateways(chain = body.chain))
+        service.sendTransfer(with(body) { Transfer(txId, Wallet(address, memo), isToken, amount, chain, tokenAddress) })
     }
 
     private fun verifySignature(sign: String, request: WebhookBody) {
@@ -51,7 +52,7 @@ class ScannerController(
             logger.info("Verifying signature for address ${request.address}")
             val reqStr = mapper.writeValueAsString(request)
             val decodedSign = Base64.getDecoder().decode(sign)
-            val verifier = Signature.getInstance("SHA256withECDSA").apply {
+            val verifier = Signature.getInstance("SHA256withRSA").apply {
                 initVerify(publicKey)
                 update(reqStr.toByteArray())
             }

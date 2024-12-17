@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class DepositHandlerImpl(private val depositRepository: DepositRepository) : DepositHandler {
+
     override suspend fun findDepositsByHash(hash: List<String>): List<Deposit> {
         return depositRepository.findAllByHash(hash).map {
             Deposit(
@@ -27,5 +28,19 @@ class DepositHandlerImpl(private val depositRepository: DepositRepository) : Dep
         }).collectList().awaitSingle()
     }
 
+    override suspend fun save(deposit: Deposit) {
+        depositRepository.save(
+            DepositModel(
+                null,
+                deposit.hash,
+                deposit.depositor,
+                deposit.depositorMemo,
+                deposit.amount,
+                deposit.chain,
+                deposit.token,
+                deposit.tokenAddress
+            )
+        ).awaitSingle()
+    }
 
 }

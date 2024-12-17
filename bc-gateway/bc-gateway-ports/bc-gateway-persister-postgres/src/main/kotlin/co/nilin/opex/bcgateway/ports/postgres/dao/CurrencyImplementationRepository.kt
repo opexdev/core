@@ -10,6 +10,7 @@ import reactor.core.publisher.Mono
 
 @Repository
 interface CurrencyImplementationRepository : ReactiveCrudRepository<CurrencyOnChainGatewayModel, Long> {
+
     fun findByGatewayUuid(uuid: String): Mono<CurrencyOnChainGatewayModel>?
 
     @Query("select * from currency_on_chain_gateway where (:gatewayUuid is null or gateway_uuid=:gatewayUuid) and (:currencySymbol is null or currency_symbol=:currencySymbol ) and (:implementationSymbol is null or implementation_symbol=:implementationSymbol ) and (:chain is null or chain=:chain )  ")
@@ -35,4 +36,10 @@ interface CurrencyImplementationRepository : ReactiveCrudRepository<CurrencyOnCh
     fun findByCurrencySymbolAndChain(symbol: String, chain: String): Mono<CurrencyOnChainGatewayModel>
 
     fun findByGatewayUuidAndCurrencySymbol(gatewayUuid: String?, symbol: String?): Mono<CurrencyOnChainGatewayModel>?
+
+    @Query("select * from currency_on_chain_gateway where chain = :chain and is_token is false")
+    fun findMainAssetGateway(chain: String): Mono<CurrencyOnChainGatewayModel>
+
+    @Query("select * from currency_on_chain_gateway where chain = :chain and is_token is true and token_address = :tokenAddress")
+    fun findTokenGateway(chain: String, tokenAddress: String): Mono<CurrencyOnChainGatewayModel>
 }
