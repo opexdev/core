@@ -27,6 +27,31 @@ class WalletSyncServiceImpl(
     private val logger: Logger by LoggerDelegate()
 
     @Transactional
+    override suspend fun sendTransfer(transfer: Transfer) {
+        val uuid = assignedAddressHandler.findUuid(transfer.receiver.address, transfer.receiver.memo) ?: return
+        val currencyGateway =
+            currencyHandler.fetchGatewayWithoutSymbol(transfer.chain, transfer.isTokenTransfer, transfer.tokenAddress)
+                ?: throw OpexError.CurrencyNotFound.exception()
+
+        depositHandler.save(
+            with(transfer) {
+                Deposit(
+                    null,
+                    txHash,
+                    receiver.address,
+                    receiver.memo,
+                    amount,
+                    chain,
+                    isTokenTransfer,
+                    tokenAddress
+                )
+            }
+        )
+
+        sendDeposit(uuid, currencyGateway, transfer)
+    }
+
+    @Transactional
     override suspend fun syncTransfers(transfers: List<Transfer>) = coroutineScope {
         val groupedByChain = currencyHandler.fetchCurrencyOnChainGateways()?.groupBy { it.chain }
             ?: throw OpexError.CurrencyNotFound.exception()

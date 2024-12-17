@@ -14,10 +14,16 @@ import co.nilin.opex.bcgateway.ports.postgres.impl.CurrencyHandlerImplV2
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.io.ResourceLoader
+import java.security.KeyFactory
+import java.security.PublicKey
+import java.security.spec.PKCS8EncodedKeySpec
+import java.security.spec.X509EncodedKeySpec
+import java.util.*
 
 
 @Configuration
-class AppConfig {
+class AppConfig(private val resourceLoader: ResourceLoader) {
 
     @Bean
     fun assignAddressService(
@@ -40,6 +46,21 @@ class AppConfig {
         adminEventListener: AdminEventListener,
     ) {
         adminKafkaEventListener.addEventListener(adminEventListener)
+    }
+
+    @Bean("webhookPublicKey")
+    fun webhookPublicKey(): PublicKey {
+        val publicKeyString = resourceLoader.getResource("classpath:scanner-public.pem").inputStream
+            .readAllBytes()
+            .toString(Charsets.UTF_8)
+            .replace("-----BEGIN PUBLIC KEY-----", "")
+            .replace("-----END PUBLIC KEY-----", "")
+            .replace("\n", "")
+
+        val keyBytes = Base64.getDecoder().decode(publicKeyString)
+        val keySpec = X509EncodedKeySpec(keyBytes)
+        val keyFactory = KeyFactory.getInstance("RSA")
+        return keyFactory.generatePublic(keySpec)
     }
 
 }

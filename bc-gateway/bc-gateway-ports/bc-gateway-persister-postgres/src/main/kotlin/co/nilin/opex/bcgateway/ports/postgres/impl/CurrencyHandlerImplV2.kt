@@ -105,4 +105,17 @@ class CurrencyHandlerImplV2(
         return currencyImplementationRepository.findWithdrawDataBySymbolAndChain(symbol, network)
             .awaitSingleOrNull() ?: throw OpexError.CurrencyNotFound.exception()
     }
+
+    override suspend fun fetchGatewayWithoutSymbol(
+        chain: String,
+        isToken: Boolean,
+        tokenAddress: String?
+    ): CryptoCurrencyCommand? {
+        chainRepository.findByName(chain).awaitFirstOrElse { throw OpexError.ChainNotFound.exception() }
+
+        return if (isToken)
+            currencyImplementationRepository.findTokenGateway(chain, tokenAddress!!).awaitSingleOrNull()?.toDto()
+        else
+            currencyImplementationRepository.findMainAssetGateway(chain).awaitSingleOrNull()?.toDto()
+    }
 }
