@@ -5,6 +5,7 @@ import co.nilin.opex.bcgateway.core.model.otc.LoginResponse
 import co.nilin.opex.bcgateway.core.spi.AuthProxy
 import kotlinx.coroutines.reactive.awaitFirst
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Profile
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType

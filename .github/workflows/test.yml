@@ -1,0 +1,48 @@
+name: Push images for test env
+
+on:
+#  push:
+#    branches:
+#      - dev
+  workflow_dispatch:
+#    inputs:
+#      partner_name:
+#        type: string
+#        description: 'The name of the partner (provided during workflow execution)'
+#        required: true
+#        default: default
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        java: [ 17 ]
+    name: Build OPEX and run tests with java ${{ matrix.java }}
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v2
+      - name: Setup Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-package: jdk
+          java-version: ${{ matrix.java }}
+      #          cache: maven
+      - name: Build
+        run: mvn -B -T 1C clean install
+      - name: Run Tests
+        run: mvn -B -T 1C -Dskip.unit.tests=false surefire:test
+      - name: Build Docker images
+        env:
+          TAG: test
+        run: docker compose -f docker-compose.build.yml build
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push images to GitHub Container Registry
+        env:
+          TAG: test
+        run: docker compose -f docker-compose.build.yml push

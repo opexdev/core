@@ -33,8 +33,8 @@ services:
       - DRIVE_FOLDER_ID=$DRIVE_FOLDER_ID
       - BACKUP_ENABLED=$WALLET_BACKUP_ENABLED
       - SPRING_PROFILES_ACTIVE=otc
-      - auth_url=${AUTH_URL}
-      - auth_jwk_endpoint=${JWK_ENDPOINT}
+      - AUTH_URL=${AUTH_URL}
+      - AUTH_JWK_ENDPOINT=${JWK_ENDPOINT}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     #    configs:
@@ -95,9 +95,9 @@ services:
       - PREFERENCES=$PREFERENCES
       - ADDRESS_EXP_TIME=7200
       - SPRING_PROFILES_ACTIVE=otc
-      - auth_url=${AUTH_URL}
-      - auth_jwk_endpoint=${JWK_ENDPOINT}
-      - omni_url=${OMNI_URL}
+      - AUTH_URL=${AUTH_URL}
+      - AUTH_JWK_ENDPOINT=${JWK_ENDPOINT}
+      - OMNI_URL=${OMNI_URL}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     #    configs:

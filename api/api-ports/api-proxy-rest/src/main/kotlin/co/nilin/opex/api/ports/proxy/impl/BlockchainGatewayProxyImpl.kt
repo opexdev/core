@@ -53,17 +53,17 @@ class BlockchainGatewayProxyImpl(private val client: WebClient) : BlockchainGate
             .awaitFirstOrElse { emptyList() }
     }
 
-    override suspend fun getCurrencyImplementations(currency: String?): List<CurrencyImplementation> {
-        logger.info("calling bc-gateway chain details")
-        return client.get()
-            .uri("$baseUrl/currency/chains") {
-                it.queryParam("currency", currency)
-                it.build()
-            }.accept(MediaType.APPLICATION_JSON)
-            .retrieve()
-            .onStatus({ t -> t.isError }, { it.createException() })
-            .bodyToFlux<CurrencyImplementation>()
-            .collectList()
-            .awaitFirstOrElse { emptyList() }
-    }
+//    override suspend fun getCurrencyImplementations(currency: String?): List<CurrencyImplementation> {
+//        logger.info("calling bc-gateway chain details")
+//        return client.get()
+//            .uri("$baseUrl/currency/chains") {
+//                it.queryParam("currency", currency)
+//                it.build()
+//            }.accept(MediaType.APPLICATION_JSON)
+//            .retrieve()
+//            .onStatus({ t -> t.isError }, { it.createException() })
+//            .bodyToFlux<CurrencyImplementation>()
+//            .collectList()
+//            .awaitFirstOrElse { emptyList() }
+//    }
 }
