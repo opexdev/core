@@ -30,6 +30,7 @@ microservice project work as a vanilla core for running cryptocurrency exchanges
 ## Contents
 
 - [Build and Run](#build-and-run)
+- [Environment Variables](#environment-variables)
 - [Live Demo](#live-demo)
 - [Architecture Overview](#overview)
 - [How to Contribute](#how-to-contribute)
@@ -41,9 +42,45 @@ You need to have [Maven](https://maven.apache.org) and [Docker](https://www.dock
 
 1. Clone the repository `git clone https://github.com/opexdev/core.git`
 1. Run `cd core`
+1. You will need to add the following environment variables to your .env file : [Environment Variables](#environment-variables)
 1. Run `mvn clean install` command.
 1. Run `docker compose -f .\docker-compose.yml -f .\docker-compose.override.yml -f .\docker-compose.build.yml -f .\docker-compose.local.yml up -d --build`.
 1. Run `docker ps` to see if every service is running.
+
+
+## <a name="environment-variables"></a>Environment Variables
+
+`APP_NAME=Opex-local`
+
+`APP_BASE_URL=localhost:8080`
+
+`PANEL_PASS=admin`
+
+`BACKEND_USER=admin`
+
+`SMTP_PASS=x`
+
+`OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET=x`
+
+`API_KEY_CLIENT_SECRET=eba2bb1a-c4a2-47a1-ade9-90dcf6667689`
+
+`KEYCLOAK_FRONTEND_URL=http://localhost:8083/auth`
+
+`KEYCLOAK_ADMIN_URL=http://localhost:8083/auth`
+
+`KEYCLOAK_VERIFY_REDIRECT_URL=http://localhost:8080/verify`
+
+`KEYCLOAK_FORGOT_REDIRECT_URL=http://localhost:8080/forgot`
+
+`PREFERENCES=preferences.yml`
+
+`WHITELIST_REGISTER_ENABLED=true`
+
+`WHITELIST_LOGIN_ENABLED=true`
+
+`WALLET_BACKUP_ENABLED=false`
+
+`TAG=debug`
 
 ## <a name="live-demo"></a>Live Demo
 
