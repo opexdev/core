@@ -58,11 +58,12 @@ You need to have [Maven](https://maven.apache.org) and [Docker](https://www.dock
 
 `BACKEND_USER=admin`
 
-`SMTP_PASS=x`
+`SMTP_PASS=x` -> An SMTP password is a password used to access an email account's 
 
-`OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET=x`
+`OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET=x` -> Ignore this
 
-`API_KEY_CLIENT_SECRET=eba2bb1a-c4a2-47a1-ade9-90dcf6667689`
+`API_KEY_CLIENT_SECRET=eba2bb1a-c4a2-47a1-ade9-90dcf6667689` 
+-> Go to http://localhost:8083/auth/admin/master/console/#/realms/opex/clients, then click on web-app, and in the Credentials section, click on Regenerate Secret. Copy the generated secret and paste it into this section. (Please do this after starting the project, then rebuild and run the process again.)
 
 `KEYCLOAK_FRONTEND_URL=http://localhost:8083/auth`
 
@@ -72,7 +73,7 @@ You need to have [Maven](https://maven.apache.org) and [Docker](https://www.dock
 
 `KEYCLOAK_FORGOT_REDIRECT_URL=http://localhost:8080/forgot`
 
-`PREFERENCES=preferences.yml`
+`PREFERENCES=preferences.yml` -> For the initialization
 
 `WHITELIST_REGISTER_ENABLED=true`
 
