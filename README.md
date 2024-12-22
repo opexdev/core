@@ -1,6 +1,6 @@
 <p align="center">
     <br />
-    <img width="256px" src="https://demo.opex.dev/static/media/opexLogoPlus.2858c980.svg" alt="Opex" title="Opex">
+    <img width="256px" src="https://opex.dev/assets/img/opex/opexLogoPlus.svg" alt="Opex" title="Opex">
     <br />
 </p>
 
@@ -42,7 +42,7 @@ You need to have [Maven](https://maven.apache.org) and [Docker](https://www.dock
 1. Clone the repository `git clone https://github.com/opexdev/core.git`
 1. Run `cd core`
 1. Run `mvn clean install` command.
-1. Run `docker-compose up --build`.
+1. Run `docker compose -f .\docker-compose.yml -f .\docker-compose.override.yml -f .\docker-compose.build.yml -f .\docker-compose.local.yml up -d --build`.
 1. Run `docker ps` to see if every service is running.
 
 ## <a name="live-demo"></a>Live Demo
