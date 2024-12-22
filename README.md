@@ -62,12 +62,12 @@ You need to have [Maven](https://maven.apache.org) and [Docker](https://www.dock
 
 `OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET=x` -> Ignore this
 
-`API_KEY_CLIENT_SECRET=eba2bb1a-c4a2-47a1-ade9-90dcf6667689` ->
-    (Please do this after starting the project, then rebuild and run the process again.)
-    1. Go to http://localhost:8083/auth/admin/master/console/#/realms/opex/clients
-    2. Click on web-app
-    3. In the Credentials section, click on Regenerate Secret
-    4. Copy the generated secret and paste it into this section
+`API_KEY_CLIENT_SECRET=x` -> (Please do this after starting the project, then rebuild and run the process again.)
+
+1. Go to http://localhost:8083/auth/admin/master/console/#/realms/opex/clients
+2. Click on web-app
+3. In the Credentials section, click on Regenerate Secret
+4. Copy the generated secret and paste it into this section
 
    
 `KEYCLOAK_FRONTEND_URL=http://localhost:8083/auth`
