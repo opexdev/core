@@ -81,21 +81,14 @@ WHITELIST_LOGIN_ENABLED=true
 WALLET_BACKUP_ENABLED=false
 
 TAG=debug
-‍‍‍
------------- Description ------------
-SMTP_PASS : An SMTP password is a password used to access an email account's
-
-OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET : Ignore this
-
-API_KEY_CLIENT_SECRET :
-        (Please do this after starting the project, then rebuild and run the process again.)
-            1. Go to http://localhost:8083/auth/admin/master/console/#/realms/opex/clients
-            2. Click on web-app
-            3. In the Credentials section, click on Regenerate Secret
-            4. Copy the generated secret and paste it into this section
-
-PREFERENCES : For the initialization
 ```
+| Variable | Description |
+| :-------- | :------------------------- |
+| SMTP_PASS | An SMTP password is a password used to access an email account's |
+| OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET | Ignore this |
+| API_KEY_CLIENT_SECRET |(Please do this after starting the project, then rebuild and run the process again.) </br>1. Go to http://localhost:8083/auth/admin/master/console/#/realms/opex/clients </br>2. Click on web-app </br>3. In the Credentials section, click on Regenerate Secret </br>4. Copy the generated secret and paste it into this section |
+| PREFERENCES | For the initialization |
+
 ## <a name="live-demo"></a>Live Demo
 
 Deployed at [app.opex.dev](https://app.opex.dev).
