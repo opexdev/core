@@ -5,6 +5,7 @@ import co.nilin.opex.market.core.spi.OrderPersister
 import co.nilin.opex.market.core.spi.TradePersister
 import co.nilin.opex.market.ports.kafka.listener.consumer.OrderKafkaListener
 import co.nilin.opex.market.ports.kafka.listener.consumer.TradeKafkaListener
+import io.micrometer.core.instrument.MeterRegistry
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -13,8 +14,8 @@ import org.springframework.context.annotation.Configuration
 class AppConfig {
 
     @Bean
-    fun marketListener(richOrderPersister: OrderPersister, richTradePersister: TradePersister): MarketListenerImpl {
-        return MarketListenerImpl(richOrderPersister, richTradePersister)
+    fun marketListener(richOrderPersister: OrderPersister, richTradePersister: TradePersister , meterRegistry: MeterRegistry): MarketListenerImpl {
+        return MarketListenerImpl(richOrderPersister, richTradePersister , meterRegistry)
     }
 
     @Autowired
