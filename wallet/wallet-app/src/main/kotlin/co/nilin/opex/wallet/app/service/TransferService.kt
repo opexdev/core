@@ -13,6 +13,7 @@ import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.model.otc.Rate
 import co.nilin.opex.wallet.core.model.otc.ReservedTransfer
 import co.nilin.opex.wallet.core.spi.*
+import io.micrometer.core.instrument.MeterRegistry
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -28,6 +29,7 @@ class TransferService(
     private val walletOwnerManager: WalletOwnerManager,
     private val currencyGraph: GraphService,
     private val reservedTransferManager: ReservedTransferManager,
+    private val meterRegistry: MeterRegistry,
     private val depositPersister: DepositPersister
 ) {
 
@@ -98,6 +100,7 @@ class TransferService(
                 network = chain
             )
         )
+        meterRegistry.counter("deposit_event").increment()
 
         return tx
     }

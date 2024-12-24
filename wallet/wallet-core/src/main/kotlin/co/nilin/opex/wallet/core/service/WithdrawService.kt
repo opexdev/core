@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.time.LocalDateTime
+import io.micrometer.core.instrument.MeterRegistry
 
 @Service
 class WithdrawService(
@@ -17,6 +18,7 @@ class WithdrawService(
     private val walletOwnerManager: WalletOwnerManager,
     private val currencyService: CurrencyService,
     private val transferManager: TransferManager,
+    private val meterRegistry: MeterRegistry,
     private val bcGatewayProxy: BcGatewayProxy,
     @Value("\${app.system.uuid}") private val systemUuid: String
 ) {
@@ -76,7 +78,7 @@ class WithdrawService(
                 WithdrawStatus.CREATED
             )
         )
-
+        meterRegistry.counter("withdraw_request_event").increment()
         return WithdrawActionResult(withdraw.withdrawId!!, withdraw.status)
     }
 

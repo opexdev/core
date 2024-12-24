@@ -9,11 +9,13 @@ import co.nilin.opex.market.core.spi.OrderPersister
 import co.nilin.opex.market.core.spi.TradePersister
 import co.nilin.opex.market.ports.kafka.listener.spi.RichOrderListener
 import co.nilin.opex.market.ports.kafka.listener.spi.RichTradeListener
+import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.coroutines.runBlocking
 
 class MarketListenerImpl(
     private val richOrderPersister: OrderPersister,
-    private val richTradePersister: TradePersister
+    private val richTradePersister: TradePersister,
+    private val meterRegistry: MeterRegistry
 ) : RichTradeListener, RichOrderListener {
 
     override fun id(): String {
@@ -30,9 +32,13 @@ class MarketListenerImpl(
     override fun onOrder(order: RichOrderEvent, partition: Int, offset: Long, timestamp: Long) {
         runBlocking(AppDispatchers.kafkaExecutor) {
             when (order) {
-                is RichOrder -> richOrderPersister.save(order)
+                is RichOrder -> {
+                    richOrderPersister.save(order)
+                    meterRegistry.counter("order_event").increment()
+                }
                 is RichOrderUpdate -> richOrderPersister.update(order)
             }
         }
+
     }
 }
