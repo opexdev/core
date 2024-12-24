@@ -11,12 +11,14 @@ import co.nilin.opex.market.ports.kafka.listener.spi.RichOrderListener
 import co.nilin.opex.market.ports.kafka.listener.spi.RichTradeListener
 import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.coroutines.runBlocking
+import org.slf4j.LoggerFactory
 
 class MarketListenerImpl(
     private val richOrderPersister: OrderPersister,
     private val richTradePersister: TradePersister,
     private val meterRegistry: MeterRegistry
 ) : RichTradeListener, RichOrderListener {
+    private val logger = LoggerFactory.getLogger(MarketListenerImpl::class.java)
 
     override fun id(): String {
         return "AppListener"
@@ -34,8 +36,13 @@ class MarketListenerImpl(
             when (order) {
                 is RichOrder -> {
                     richOrderPersister.save(order)
-                    meterRegistry.counter("order_event").increment()
+                    try {
+                        meterRegistry.counter("order_event").increment()
+                    } catch (e: Exception) {
+                        logger.warn("error in incrementing order_event counter")
+                    }
                 }
+
                 is RichOrderUpdate -> richOrderPersister.update(order)
             }
         }

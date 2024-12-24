@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import io.micrometer.core.instrument.MeterRegistry
+import org.slf4j.LoggerFactory
 
 @Service
 class WithdrawService(
@@ -22,6 +23,7 @@ class WithdrawService(
     private val bcGatewayProxy: BcGatewayProxy,
     @Value("\${app.system.uuid}") private val systemUuid: String
 ) {
+    private val logger = LoggerFactory.getLogger(WithdrawService::class.java)
 
     @Transactional
     suspend fun requestWithdraw(withdrawCommand: WithdrawCommand): WithdrawActionResult {
@@ -78,7 +80,11 @@ class WithdrawService(
                 WithdrawStatus.CREATED
             )
         )
+        try {
         meterRegistry.counter("withdraw_request_event").increment()
+        }catch (e: Exception){
+            logger.warn("error in incrementing withdraw_request_event counter")
+        }
         return WithdrawActionResult(withdraw.withdrawId!!, withdraw.status)
     }
 

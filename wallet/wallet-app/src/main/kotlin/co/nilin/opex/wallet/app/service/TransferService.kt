@@ -100,7 +100,11 @@ class TransferService(
                 network = chain
             )
         )
+        try {
         meterRegistry.counter("deposit_event").increment()
+        }catch (e: Exception){
+            logger.warn("error in incrementing deposit_event counter")
+        }
 
         return tx
     }
