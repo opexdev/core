@@ -14,36 +14,24 @@ x-postgres-db: &postgres-db
 
 version: '3.8'
 services:
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.1.1
-    hostname: zookeeper
-    volumes:
-      - zookeeper-data:/var/lib/zookeeper/data
-      - zookeeper-log:/var/lib/zookeeper/log
-    environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
-      - ZOOKEEPER_CLIENT_PORT=2181
-    networks:
-      - default
-    deploy:
-      restart_policy:
-        condition: on-failure
   kafka-1:
     image: ghcr.io/opexdev/kafka
     hostname: kafka-1
     volumes:
       - kafka-1:/var/lib/kafka/data
     environment:
-      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
-      - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
-      - KAFKA_LISTENERS=CLIENT://kafka-1:29092,EXTERNAL://kafka-1:9092
-      - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-1:29092,EXTERNAL://kafka-1:9092
+      - KAFKA_PROCESS_ROLES=broker,controller
+      - KAFKA_BROKER_ID=1
+      - CLUSTER_ID=KAkhdltCHtOpXtELgTxS0K3KxofUjK
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      - KAFKA_LISTENERS=CLIENT://kafka-1:9092,CONTROLLER://kafka-1:9093
+      - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-1:9092
       - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+      - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_OPTS=-javaagent:/opt/prometheus/jmx-exporter.jar=1234:/opt/prometheus/kafka-jmx-exporter.yml
-    depends_on:
-      - zookeeper
     networks:
       - default
     deploy:
@@ -55,16 +43,18 @@ services:
     volumes:
       - kafka-2:/var/lib/kafka/data
     environment:
-      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
-      - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
-      - KAFKA_LISTENERS=CLIENT://kafka-2:29092,EXTERNAL://kafka-2:9092
-      - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-2:29092,EXTERNAL://kafka-2:9092
+      - KAFKA_PROCESS_ROLES=broker,controller
+      - KAFKA_BROKER_ID=2
+      - CLUSTER_ID=KAkhdltCHtOpXtELgTxS0K3KxofUjK
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      - KAFKA_LISTENERS=CLIENT://kafka-2:9092,CONTROLLER://kafka-2:9093
+      - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-2:9092
       - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+      - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_OPTS=-javaagent:/opt/prometheus/jmx-exporter.jar=1234:/opt/prometheus/kafka-jmx-exporter.yml
-    depends_on:
-      - zookeeper
     networks:
       - default
     deploy:
@@ -76,16 +66,18 @@ services:
     volumes:
       - kafka-3:/var/lib/kafka/data
     environment:
-      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
-      - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
-      - KAFKA_LISTENERS=CLIENT://kafka-3:29092,EXTERNAL://kafka-3:9092
-      - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-3:29092,EXTERNAL://kafka-3:9092
+      - KAFKA_PROCESS_ROLES=broker,controller
+      - KAFKA_BROKER_ID=3
+      - CLUSTER_ID=KAkhdltCHtOpXtELgTxS0K3KxofUjK
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      - KAFKA_LISTENERS=CLIENT://kafka-3:9092,CONTROLLER://kafka-3:9093
+      - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-3:9092
       - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+      - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_OPTS=-javaagent:/opt/prometheus/jmx-exporter.jar=1234:/opt/prometheus/kafka-jmx-exporter.yml
-    depends_on:
-      - zookeeper
     networks:
       - default
     deploy:
@@ -99,7 +91,7 @@ services:
           connections:
             docker-kafka-server:
               properties:
-                bootstrap.servers: "kafka-1:29092,kafka-2:29092,kafka-3:29092"
+                bootstrap.servers: "kafka-1:9092,kafka-2:9092,kafka-3:9092"
     networks:
       - default
     depends_on:
@@ -210,7 +202,7 @@ services:
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - SPRING_PROFILES_ACTIVE=scheduled
-      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - KAFKA_IP_PORT=kafka-1:9092,kafka-2:9092,kafka-3:9092
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-accountant
       - BACKEND_USER=${BACKEND_USER}
@@ -239,7 +231,7 @@ services:
     image: ghcr.io/opexdev/eventlog
     environment:
       - JAVA_OPTS=-Xmx256m
-      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - KAFKA_IP_PORT=kafka-1:9092,kafka-2:9092,kafka-3:9092
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-eventlog
       - BACKEND_USER=${BACKEND_USER}
@@ -262,7 +254,7 @@ services:
     image: ghcr.io/opexdev/matching-engine
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - KAFKA_IP_PORT=kafka-1:9092,kafka-2:9092,kafka-3:9092
       - REDIS_HOST=redis
       - SYMBOLS=BTC_USDT,ETH_USDT,BTC_IRT,ETH_IRT,USDT_IRT,ETH_BUSD,BTC_BUSD,BNB_BUSD
       - PREFERENCES=$PREFERENCES
@@ -284,7 +276,7 @@ services:
     image: ghcr.io/opexdev/matching-engine
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - KAFKA_IP_PORT=kafka-1:9092,kafka-2:9092,kafka-3:9092
       - REDIS_HOST=redis-duo
       - SYMBOLS=SOL_USDT,DOGE_USDT,TON_USDT
       - PREFERENCES=$PREFERENCES
@@ -306,7 +298,7 @@ services:
     image: ghcr.io/opexdev/matching-gateway
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - KAFKA_IP_PORT=kafka-1:9092,kafka-2:9092,kafka-3:9092
       - CONSUL_HOST=consul
     networks:
       - default
@@ -326,7 +318,7 @@ services:
     image: ghcr.io/opexdev/auth
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - KAFKA_IP_PORT=kafka-1:9092,kafka-2:9092,kafka-3:9092
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-auth
       - BACKEND_USER=$BACKEND_USER
@@ -359,7 +351,7 @@ services:
     image: ghcr.io/opexdev/wallet
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - KAFKA_IP_PORT=kafka-1:9092,kafka-2:9092,kafka-3:9092
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-wallet
       - BACKEND_USER=${BACKEND_USER}
@@ -389,7 +381,7 @@ services:
     image: ghcr.io/opexdev/market
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - KAFKA_IP_PORT=kafka-1:9092,kafka-2:9092,kafka-3:9092
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-market
       - BACKEND_USER=${BACKEND_USER}
@@ -446,7 +438,7 @@ services:
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - CONSUL_HOST=consul
-      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - KAFKA_IP_PORT=kafka-1:9092,kafka-2:9092,kafka-3:9092
       - DB_IP_PORT=postgres-bc-gateway
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
@@ -472,8 +464,6 @@ services:
       restart_policy:
         condition: on-failure
 volumes:
-  zookeeper-data:
-  zookeeper-log:
   kafka-1:
   kafka-2:
   kafka-3:

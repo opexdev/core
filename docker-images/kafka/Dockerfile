@@ -1,4 +1,4 @@
-FROM confluentinc/cp-kafka:7.1.1
+FROM confluentinc/cp-kafka:7.8.0
 USER root
 RUN mkdir /opt/prometheus
 RUN chmod +rx /opt/prometheus
