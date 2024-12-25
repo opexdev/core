@@ -133,26 +133,26 @@ services:
       restart_policy:
         condition: on-failure
   redis:
-    image: redis:7-alpine
-    command: redis-server --appendonly yes
+    image: redis/redis-stack:7.2.0-v13
     volumes:
       - redis-data:/data
       - redis.conf:/usr/local/etc/redis/redis.conf
     environment:
       - REDIS_REPLICATION_MODE=master
+      - REDIS_ARGS= --appendonly yes
     networks:
       - default
     deploy:
       restart_policy:
         condition: on-failure
   redis-duo:
-    image: redis:7-alpine
-    command: redis-server --appendonly yes
+    image: redis/redis-stack:7.2.0-v13
     volumes:
       - redis-duo-data:/data
       - redis-duo.conf:/usr/local/etc/redis/redis.conf
     environment:
       - REDIS_REPLICATION_MODE=master
+      - REDIS_ARGS= --appendonly yes
     networks:
       - default
     deploy:
