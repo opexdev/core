@@ -35,9 +35,7 @@ class TransferService(
 
 ) {
 
-
     private val logger = LoggerFactory.getLogger(TransferService::class.java)
-
 
     @Transactional
     suspend fun transfer(
@@ -63,7 +61,6 @@ class TransferService(
             transferCategory
         )
     }
-
 
     suspend fun calculateDestinationAmount(
         symbol: String,
@@ -125,7 +122,6 @@ class TransferService(
         }
     }
 
-
     @Transactional
     suspend fun advanceTransfer(
         reserveNumber: String,
@@ -139,7 +135,6 @@ class TransferService(
             ?: throw OpexError.InvalidReserveNumber.exception()
         if (!(issuer == null || reservations.senderUuid == issuer))
             throw OpexError.Forbidden.exception()
-
 
         val senderTransfer = _transfer(
             reservations.sourceSymbol,
@@ -184,7 +179,6 @@ class TransferService(
             ), ""
         )
     }
-
 
     private suspend fun _transfer(
         symbol: String,
