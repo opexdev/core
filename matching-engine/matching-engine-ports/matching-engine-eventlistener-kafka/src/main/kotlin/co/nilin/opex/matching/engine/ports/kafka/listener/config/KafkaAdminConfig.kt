@@ -1,5 +1,6 @@
-package co.nilin.opex.matching.engine.ports.kafka.submitter.config
+package co.nilin.opex.matching.engine.ports.kafka.listener.config
 
+import org.apache.kafka.clients.admin.AdminClient
 import org.apache.kafka.clients.admin.AdminClientConfig
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -13,9 +14,9 @@ class KafkaAdminConfig(
 ) {
 
     @Bean
-    fun admin(): KafkaAdmin? {
+    fun adminClient(): AdminClient {
         val configs = hashMapOf<String, Any>(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers)
-        return KafkaAdmin(configs)
+        val admin = KafkaAdmin(configs)
+        return AdminClient.create(admin.configurationProperties)
     }
-
 }

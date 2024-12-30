@@ -133,7 +133,7 @@ services:
       restart_policy:
         condition: on-failure
   redis:
-    image: redis/redis-stack:7.2.0-v13
+    image: redis:7.4.1
     volumes:
       - redis-data:/data
       - redis.conf:/usr/local/etc/redis/redis.conf
@@ -146,7 +146,7 @@ services:
       restart_policy:
         condition: on-failure
   redis-duo:
-    image: redis/redis-stack:7.2.0-v13
+    image: redis:7.4.1
     volumes:
       - redis-duo-data:/data
       - redis-duo.conf:/usr/local/etc/redis/redis.conf
