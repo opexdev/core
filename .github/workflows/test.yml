@@ -1,9 +1,9 @@
 name: Push images for test env
 
 on:
-#  push:
-#    branches:
-#      - dev
+  #  push:
+  #    branches:
+  #      - dev
   workflow_dispatch:
 #    inputs:
 #      partner_name:

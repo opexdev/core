@@ -21,7 +21,6 @@ target/
 
 ### Other files ###
 .env
-docker-compose.local.yml
 docker-compose-otc.local.yml
 
 docker-compose.legacy.yml
