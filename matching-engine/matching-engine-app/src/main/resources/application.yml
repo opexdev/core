@@ -1,6 +1,8 @@
 server:
   port: 8080
 spring:
+  application:
+    name: matching-engine
   main:
     allow-bean-definition-overriding: false
     allow-circular-references: true
@@ -11,15 +13,25 @@ spring:
   redis:
     host: ${REDIS_HOST:localhost}
     port: 6379
+  cloud:
+    bootstrap:
+      enabled: true
+    consul:
+      host: ${CONSUL_HOST:localhost}
+      port: 8500
+      discovery:
+        instance-id: ${spring.application.name}-${ENGINE_ID}
+        healthCheckInterval: 20s
+        prefer-ip-address: true
 management:
   endpoints:
     web:
       base-path: /actuator
       exposure:
-        include: ["health", "prometheus", "metrics"]
+        include: [ "health", "prometheus", "metrics" ]
   endpoint:
     health:
-      show-details: when_authorized
+      show-details: always
       show-components: always
     metrics:
       enabled: true
@@ -27,3 +39,4 @@ management:
       enabled: true
 app:
   symbols: ${SYMBOLS}
+  engine-id: ${ENGINE_ID}

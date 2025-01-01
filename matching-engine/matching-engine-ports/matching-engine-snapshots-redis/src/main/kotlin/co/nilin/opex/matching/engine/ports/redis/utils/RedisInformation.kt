@@ -5,11 +5,11 @@ import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory
 import org.springframework.stereotype.Component
 
 @Component
-class RedisHealthIndicator(private val factory: ReactiveRedisConnectionFactory) {
+class RedisInformation(private val factory: ReactiveRedisConnectionFactory) {
 
-    private val logger = LoggerFactory.getLogger(RedisHealthIndicator::class.java)
+    private val logger = LoggerFactory.getLogger(RedisInformation::class.java)
 
-    fun isHealthy(): Boolean {
+    fun isConnected(): Boolean {
         return try {
             val connection = factory.reactiveConnection
             val pong = connection.ping().block()

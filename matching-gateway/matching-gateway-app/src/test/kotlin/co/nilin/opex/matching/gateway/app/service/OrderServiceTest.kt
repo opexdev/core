@@ -4,6 +4,7 @@ import co.nilin.opex.matching.engine.core.model.OrderDirection
 import co.nilin.opex.matching.gateway.app.service.sample.VALID
 import co.nilin.opex.matching.gateway.app.spi.AccountantApiProxy
 import co.nilin.opex.matching.gateway.app.spi.PairConfigLoader
+import co.nilin.opex.matching.gateway.app.utils.MatchingEngineHealthCheck
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.inout.OrderSubmitResult
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.EventSubmitter
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.KafkaHealthIndicator
@@ -21,11 +22,14 @@ private class OrderServiceTest {
     private val eventSubmitter: OrderRequestEventSubmitter = mockk()
     private val pairConfigLoader: PairConfigLoader = mockk()
     private val kafkaHealthIndicator: KafkaHealthIndicator = mockk()
+    private val healthCheck = mockk<MatchingEngineHealthCheck>()
+
     private val orderService: OrderService = OrderService(
         accountantApiProxy,
         orderRequestEventSubmitter,
         pairConfigLoader,
-        kafkaHealthIndicator
+        kafkaHealthIndicator,
+        healthCheck
     )
 
     private fun stubASK() {
@@ -48,6 +52,8 @@ private class OrderServiceTest {
         coEvery {
             kafkaHealthIndicator.isHealthy
         } returns true
+        coEvery { healthCheck.isAnyEnginesUnhealthy } returns false
+        coEvery { healthCheck.isAnyEnginesBehind } returns false
     }
 
     private fun stubBID() {
