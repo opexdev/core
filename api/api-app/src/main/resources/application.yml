@@ -46,7 +46,7 @@ management:
     web:
       base-path: /actuator
       exposure:
-        include: [ "health", "prometheus", "metrics" ]
+        include: [ "health", "prometheus", "metrics", "loggers" ]
   endpoint:
     health:
       show-details: when_authorized
@@ -93,8 +93,11 @@ logbook:
           - DELETE
 logging:
   level:
-    co.nilin: INFO
+    co.nilin: debug
     org.zalando.logbook: TRACE
+    root: debug
+    web: debug
+    sql: debug
 app:
   accountant:
     url: lb://opex-accountant
