@@ -221,7 +221,7 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
 
     @Query(
             """
-        WITH intervals AS (SELECT * FROM interval_generator((:startTime), (:endTime), :interval ::INTERVAL)), 
+        WITH intervals AS (SELECT * FROM interval_generator((TO_TIMESTAMP(:startTime)) ::TIMESTAMP WITHOUT TIME ZONE, (:endTime), :interval ::INTERVAL)), 
         first_trade AS (
             SELECT DISTINCT ON (f.start_time) f.start_time, f.end_time, t.matched_price AS open_price FROM intervals f 
             LEFT JOIN trades t ON t.create_date >= f.start_time AND t.create_date < f.end_time AND t.symbol = :symbol
