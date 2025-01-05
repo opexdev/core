@@ -93,11 +93,8 @@ logbook:
           - DELETE
 logging:
   level:
-    co.nilin: debug
+    co.nilin: INFO
     org.zalando.logbook: TRACE
-    root: debug
-    web: debug
-    sql: debug
 app:
   accountant:
     url: lb://opex-accountant
