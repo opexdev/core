@@ -6,10 +6,6 @@ spring:
   main:
     allow-bean-definition-overriding: true
     allow-circular-references: true
-  kafka:
-    bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
-    consumer:
-      group-id: api
   r2dbc:
     url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
     username: ${dbusername:opex}

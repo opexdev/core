@@ -208,7 +208,7 @@ services:
   accountant:
     image: ghcr.io/opexdev/accountant
     environment:
-      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - JAVA_OPTS=-Xmx512m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - SPRING_PROFILES_ACTIVE=scheduled
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - CONSUL_HOST=consul
@@ -234,7 +234,6 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-
   eventlog:
     image: ghcr.io/opexdev/eventlog
     environment:
@@ -358,7 +357,7 @@ services:
   wallet:
     image: ghcr.io/opexdev/wallet
     environment:
-      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - JAVA_OPTS=-Xmx512m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-wallet
@@ -388,7 +387,7 @@ services:
   market:
     image: ghcr.io/opexdev/market
     environment:
-      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - JAVA_OPTS=-Xmx512m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-market
@@ -415,7 +414,7 @@ services:
   api:
     image: ghcr.io/opexdev/api
     environment:
-      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - JAVA_OPTS=-Xmx512m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-api
       - BACKEND_USER=${BACKEND_USER}
