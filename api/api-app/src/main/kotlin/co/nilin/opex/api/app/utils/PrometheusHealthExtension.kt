@@ -8,7 +8,7 @@ import org.springframework.boot.actuate.health.SystemHealth
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 
-@Component
+//@Component
 class PrometheusHealthExtension(
     private val registry: MeterRegistry,
     private val endpoint: HealthEndpoint
@@ -42,7 +42,7 @@ class PrometheusHealthExtension(
             .register(registry)
     }
 
-    @Scheduled(initialDelay = 1000, fixedDelay = 5000)
+    //@Scheduled(initialDelay = 1000, fixedDelay = 5000)
     fun updateHealth() {
         try {
             val health = endpoint.health() as SystemHealth

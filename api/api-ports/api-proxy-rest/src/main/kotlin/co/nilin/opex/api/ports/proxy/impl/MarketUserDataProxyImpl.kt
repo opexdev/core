@@ -3,12 +3,14 @@ package co.nilin.opex.api.ports.proxy.impl
 import co.nilin.opex.api.core.inout.Order
 import co.nilin.opex.api.core.inout.Trade
 import co.nilin.opex.api.core.spi.MarketUserDataProxy
+import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
 import co.nilin.opex.api.ports.proxy.data.AllOrderRequest
 import co.nilin.opex.api.ports.proxy.data.QueryOrderRequest
 import co.nilin.opex.api.ports.proxy.data.TradeRequest
 import co.nilin.opex.common.utils.LoggerDelegate
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -35,29 +37,33 @@ class MarketUserDataProxyImpl(private val webClient: WebClient) : MarketUserData
         orderId: Long?,
         origClientOrderId: String?
     ): Order? {
-        return webClient.post()
-            .uri("$baseUrl/v1/user/${principal.name}/order/query")
-            .accept(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .body(Mono.just(QueryOrderRequest(symbol, orderId, origClientOrderId)))
-            .retrieve()
-            .onStatus({ t -> t.isError }, { it.createException() })
-            .bodyToMono<Order>()
-            .awaitSingleOrNull()
+        return withContext(ProxyDispatchers.market) {
+            webClient.post()
+                .uri("$baseUrl/v1/user/${principal.name}/order/query")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .body(Mono.just(QueryOrderRequest(symbol, orderId, origClientOrderId)))
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToMono<Order>()
+                .awaitSingleOrNull()
+        }
     }
 
     override suspend fun openOrders(principal: Principal, symbol: String?, limit: Int?): List<Order> {
-        return webClient.get()
-            .uri("$baseUrl/v1/user/${principal.name}/orders/$symbol/open") {
-                it.queryParam("limit", limit ?: 100)
-                it.build()
-            }.accept(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .retrieve()
-            .onStatus({ t -> t.isError }, { it.createException() })
-            .bodyToFlux<Order>()
-            .collectList()
-            .awaitFirstOrElse { emptyList() }
+        return withContext(ProxyDispatchers.market) {
+            webClient.get()
+                .uri("$baseUrl/v1/user/${principal.name}/orders/$symbol/open") {
+                    it.queryParam("limit", limit ?: 100)
+                    it.build()
+                }.accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<Order>()
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
+        }
     }
 
     override suspend fun allOrders(
@@ -67,16 +73,18 @@ class MarketUserDataProxyImpl(private val webClient: WebClient) : MarketUserData
         endTime: Date?,
         limit: Int?
     ): List<Order> {
-        return webClient.post()
-            .uri("$baseUrl/v1/user/${principal.name}/orders")
-            .accept(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .body(Mono.just(AllOrderRequest(symbol, startTime, endTime, limit ?: 500)))
-            .retrieve()
-            .onStatus({ t -> t.isError }, { it.createException() })
-            .bodyToFlux<Order>()
-            .collectList()
-            .awaitFirstOrElse { emptyList() }
+        return withContext(ProxyDispatchers.market) {
+            webClient.post()
+                .uri("$baseUrl/v1/user/${principal.name}/orders")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .body(Mono.just(AllOrderRequest(symbol, startTime, endTime, limit ?: 500)))
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<Order>()
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
+        }
     }
 
     override suspend fun allTrades(
@@ -87,16 +95,18 @@ class MarketUserDataProxyImpl(private val webClient: WebClient) : MarketUserData
         endTime: Date?,
         limit: Int?
     ): List<Trade> {
-        return webClient.post()
-            .uri("$baseUrl/v1/user/${principal.name}/trades")
-            .accept(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .body(Mono.just(TradeRequest(symbol, fromTrade, startTime, endTime, limit ?: 500)))
-            .retrieve()
-            .onStatus({ t -> t.isError }, { it.createException() })
-            .bodyToFlux<Trade>()
-            .collectList()
-            .awaitFirstOrElse { emptyList() }
+        return withContext(ProxyDispatchers.market) {
+            webClient.post()
+                .uri("$baseUrl/v1/user/${principal.name}/trades")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .body(Mono.just(TradeRequest(symbol, fromTrade, startTime, endTime, limit ?: 500)))
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<Trade>()
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
+        }
     }
 
 }
