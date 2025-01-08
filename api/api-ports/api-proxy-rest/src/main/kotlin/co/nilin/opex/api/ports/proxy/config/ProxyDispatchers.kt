@@ -3,7 +3,7 @@ package co.nilin.opex.api.ports.proxy.config
 import kotlinx.coroutines.reactor.asCoroutineDispatcher
 import reactor.core.scheduler.Schedulers
 
-object ProxySchedulers {
+object ProxyDispatchers {
 
     val general = Schedulers.newBoundedElastic(10, 20, "general").asCoroutineDispatcher()
     val market = Schedulers.newBoundedElastic(30, 60, "market").asCoroutineDispatcher()
