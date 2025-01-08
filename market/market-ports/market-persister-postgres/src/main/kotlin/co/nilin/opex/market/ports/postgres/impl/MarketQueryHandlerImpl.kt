@@ -19,7 +19,6 @@ import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.stereotype.Component
-import java.lang.StringBuilder
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDateTime
@@ -237,6 +236,32 @@ class MarketQueryHandlerImpl(
         return redisCacheHelper.getOrElse("mostTrades:${interval.label}", 1.minutes()) {
             tradeRepository.findByMostTrades(interval.getLocalDateTime()).awaitSingleOrNull()
         }
+    }
+
+    override suspend fun getWeeklyPriceData(
+        symbol: String,
+    ): List<PriceTime> {
+        val cacheKey = "weeklyPriceData:${symbol.lowercase()}"
+        val weeklyDataCache = redisCacheHelper.getList<PriceTime>(cacheKey)
+        if (!weeklyDataCache.isNullOrEmpty())
+            return weeklyDataCache.toList()
+
+        return tradeRepository.getPriceTimeData(symbol, "1h", LocalDateTime.now().minusWeeks(1), LocalDateTime.now())
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+            .let { priceTimes ->
+                var lastNonNullPrice: BigDecimal? = null
+                val firstNonNullPrice = priceTimes.firstOrNull { it.closePrice != null }?.closePrice ?: BigDecimal.ZERO
+                priceTimes.map { item ->
+                    val price = item.closePrice ?: lastNonNullPrice ?: firstNonNullPrice
+                    lastNonNullPrice = price
+                    PriceTime(
+                        item.closeTime,
+                        price
+                    )
+                }.onEach { redisCacheHelper.putListItem(cacheKey, it) }
+                    .also { redisCacheHelper.setExpiration(cacheKey, 1.hours()) }
+            }
     }
 
     private fun TradeTickerData.asPriceChangeResponse(openTime: Long, closeTime: Long) = PriceChange(

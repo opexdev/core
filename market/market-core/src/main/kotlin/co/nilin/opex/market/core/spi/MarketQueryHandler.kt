@@ -2,7 +2,6 @@ package co.nilin.opex.market.core.spi
 
 import co.nilin.opex.common.utils.Interval
 import co.nilin.opex.market.core.inout.*
-import java.time.LocalDateTime
 
 interface MarketQueryHandler {
 
@@ -44,5 +43,8 @@ interface MarketQueryHandler {
 
     suspend fun mostTrades(interval: Interval): TradeVolumeStat?
 
+    suspend fun getWeeklyPriceData(
+        symbol: String
+    ): List<PriceTime>
 
 }
