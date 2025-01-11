@@ -22,11 +22,11 @@ interface MarketQueryHandler {
     suspend fun getBestPriceForSymbols(symbols: List<String>): List<BestPrice>
 
     suspend fun getCandleInfo(
-            symbol: String,
-            interval: String,
-            startTime: Long?,
-            endTime: Long?,
-            limit: Int
+        symbol: String,
+        interval: String,
+        startTime: Long?,
+        endTime: Long?,
+        limit: Int
     ): List<CandleData>
 
     suspend fun numberOfActiveUsers(interval: Interval): Long
@@ -47,4 +47,11 @@ interface MarketQueryHandler {
         symbol: String
     ): List<PriceTime>
 
+    suspend fun getMonthlyPriceData(
+        symbol: String
+    ): List<PriceTime>
+
+    suspend fun getDailyPriceData(
+        symbol: String
+    ): List<PriceTime>
 }

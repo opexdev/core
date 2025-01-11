@@ -6,12 +6,11 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer
 import org.jfree.data.xy.XYSeries
 import org.jfree.data.xy.XYSeriesCollection
 import org.jfree.graphics2d.svg.SVGGraphics2D
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
+import java.awt.Rectangle
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
-fun createLineChart(prices: List<BigDecimal>, times: List<LocalDateTime>): ByteArrayInputStream {
+fun createLineChart(prices: List<BigDecimal>, times: List<LocalDateTime>): String {
     val series = XYSeries("Price").apply {
         prices.zip(times).forEach { (price, time) ->
             add(time.atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli(), price.toDouble())
@@ -34,16 +33,12 @@ fun createLineChart(prices: List<BigDecimal>, times: List<LocalDateTime>): ByteA
     val renderer = XYLineAndShapeRenderer(true, false)
     // Set chart color
     renderer.setSeriesPaint(
-        0, when {
-            prices.first() > prices.last() -> java.awt.Color.RED
-            prices.first() < prices.last() -> java.awt.Color.GREEN
-            else -> java.awt.Color.WHITE
-        }
+        0, java.awt.Color.BLACK
     )
     // Set axis ranges to keep the chart logical
     plot.rangeAxis.range = org.jfree.data.Range(
-        prices.minOrNull()?.toDouble()?.times(0.8) ?: 0.0,
-        prices.maxOrNull()?.toDouble()?.times(1.2) ?: 0.0
+        prices.minOrNull()?.toDouble()?.times(0.9) ?: 0.0,
+        prices.maxOrNull()?.toDouble()?.times(1.1) ?: 0.0
     )
     // Remove gridlines, axis, and background
     plot.renderer = renderer
@@ -55,14 +50,13 @@ fun createLineChart(prices: List<BigDecimal>, times: List<LocalDateTime>): ByteA
     plot.isOutlineVisible = false
     chart.backgroundPaint = null
 
-    return chartToSvgInputStream(chart, 100, 35)
+    return chartToSvgString(chart, 100, 35)
 }
 
-fun chartToSvgInputStream(chart: JFreeChart, width: Int, height: Int): ByteArrayInputStream {
+fun chartToSvgString(chart: JFreeChart, width: Int, height: Int): String {
     val svg = SVGGraphics2D(width, height)
-    chart.draw(svg, java.awt.Rectangle(width, height))
-
-    val outputStream = ByteArrayOutputStream()
-    outputStream.write(svg.svgDocument.toByteArray())
-    return ByteArrayInputStream(outputStream.toByteArray())
+    chart.draw(svg, Rectangle(width, height))
+    val svgString = svg.svgElement
+    svg.dispose()
+    return svgString
 }

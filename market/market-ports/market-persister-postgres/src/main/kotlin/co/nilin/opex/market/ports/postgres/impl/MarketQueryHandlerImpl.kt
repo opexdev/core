@@ -237,16 +237,45 @@ class MarketQueryHandlerImpl(
             tradeRepository.findByMostTrades(interval.getLocalDateTime()).awaitSingleOrNull()
         }
     }
+    override suspend fun getWeeklyPriceData(symbol: String): List<PriceTime> {
+        return getPriceDataWithCache(
+            symbol = symbol,
+            cacheKeyPrefix = "weeklyPriceData",
+            interval = "4h",
+            fromDate = LocalDateTime.now().minusDays(7)
+        )
+    }
 
-    override suspend fun getWeeklyPriceData(
+    override suspend fun getMonthlyPriceData(symbol: String): List<PriceTime> {
+        return getPriceDataWithCache(
+            symbol = symbol,
+            cacheKeyPrefix = "monthlyPriceData",
+            interval = "24h",
+            fromDate = LocalDateTime.now().minusDays(30)
+        )
+    }
+
+    override suspend fun getDailyPriceData(symbol: String): List<PriceTime> {
+        return getPriceDataWithCache(
+            symbol = symbol,
+            cacheKeyPrefix = "dailyPriceData",
+            interval = "1h",
+            fromDate = LocalDateTime.now().minusDays(1)
+        )
+    }
+   private suspend fun getPriceDataWithCache(
         symbol: String,
+        cacheKeyPrefix: String,
+        interval: String,
+        fromDate: LocalDateTime
     ): List<PriceTime> {
-        val cacheKey = "weeklyPriceData:${symbol.lowercase()}"
-        val weeklyDataCache = redisCacheHelper.getList<PriceTime>(cacheKey)
-        if (!weeklyDataCache.isNullOrEmpty())
-            return weeklyDataCache.toList()
+        val cacheKey = "${cacheKeyPrefix}:${symbol.lowercase()}"
+        val cachedData = redisCacheHelper.getList<PriceTime>(cacheKey)
+        if (!cachedData.isNullOrEmpty()) {
+            return cachedData.toList()
+        }
 
-        return tradeRepository.getPriceTimeData(symbol, "1h", LocalDateTime.now().minusWeeks(1), LocalDateTime.now())
+        return tradeRepository.getPriceTimeData(symbol, interval, fromDate, LocalDateTime.now())
             .collectList()
             .awaitFirstOrElse { emptyList() }
             .let { priceTimes ->
@@ -259,7 +288,8 @@ class MarketQueryHandlerImpl(
                         item.closeTime,
                         price
                     )
-                }.onEach { redisCacheHelper.putListItem(cacheKey, it) }
+                }
+                    .onEach { redisCacheHelper.putListItem(cacheKey, it) }
                     .also { redisCacheHelper.setExpiration(cacheKey, 1.hours()) }
             }
     }
