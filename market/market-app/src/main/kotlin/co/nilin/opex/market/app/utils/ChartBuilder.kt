@@ -37,8 +37,8 @@ fun createLineChart(prices: List<BigDecimal>, times: List<LocalDateTime>): Strin
     )
     // Set axis ranges to keep the chart logical
     plot.rangeAxis.range = org.jfree.data.Range(
-        prices.minOrNull()?.toDouble()?.times(0.9) ?: 0.0,
-        prices.maxOrNull()?.toDouble()?.times(1.1) ?: 0.0
+        prices.minOrNull()?.toDouble()?.times(0.99) ?: 0.0,
+        prices.maxOrNull()?.toDouble() ?: 0.0
     )
     // Remove gridlines, axis, and background
     plot.renderer = renderer
