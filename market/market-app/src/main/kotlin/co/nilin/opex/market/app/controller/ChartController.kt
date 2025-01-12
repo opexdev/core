@@ -1,10 +1,10 @@
 package co.nilin.opex.market.app.controller
 
+import co.nilin.opex.market.app.data.SparkLineDataResponse
 import co.nilin.opex.market.core.inout.CandleData
 import co.nilin.opex.market.core.inout.PriceTime
 import co.nilin.opex.market.core.spi.MarketQueryHandler
 import createLineChart
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 
@@ -38,24 +38,17 @@ class ChartController(private val marketQueryHandler: MarketQueryHandler) {
     @GetMapping("/spark-line")
     suspend fun getSparkLineForSymbols(
         @RequestBody request: SparkLineRequest
-    ): ResponseEntity<List<Map<String, Any>>> {
-        val results = request.symbols.mapNotNull { symbol ->
+    ): List<SparkLineDataResponse> {
+        return request.symbols.mapNotNull { symbol ->
             val priceData: List<PriceTime> = when (request.period) {
                 Period.WEEKLY -> marketQueryHandler.getWeeklyPriceData(symbol)
                 Period.MONTHLY -> marketQueryHandler.getMonthlyPriceData(symbol)
                 Period.DAILY -> marketQueryHandler.getDailyPriceData(symbol)
             }
-            if (priceData.all { it.closePrice == BigDecimal.ZERO }) {
-                return@mapNotNull null
-            }
+            if (priceData.all { it.closePrice == BigDecimal.ZERO }) return@mapNotNull null
             val isTrendUp = priceData.last().closePrice >= priceData.first().closePrice
             val svgData = createLineChart(priceData.map { it.closePrice }, priceData.map { it.closeTime })
-            mapOf(
-                "symbol" to symbol,
-                "isTrendUp" to isTrendUp,
-                "svgData" to svgData
-            )
+            SparkLineDataResponse(symbol, isTrendUp, svgData)
         }
-        return ResponseEntity.ok(results)
     }
 }
