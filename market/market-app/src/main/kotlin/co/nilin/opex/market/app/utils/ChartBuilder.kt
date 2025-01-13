@@ -9,6 +9,7 @@ import org.jfree.graphics2d.svg.SVGGraphics2D
 import java.awt.Rectangle
 import java.math.BigDecimal
 import java.time.LocalDateTime
+import java.util.Base64
 
 fun createLineChart(prices: List<BigDecimal>, times: List<LocalDateTime>): String {
     val series = XYSeries("Price").apply {
@@ -32,9 +33,7 @@ fun createLineChart(prices: List<BigDecimal>, times: List<LocalDateTime>): Strin
     val plot: XYPlot = chart.xyPlot
     val renderer = XYLineAndShapeRenderer(true, false)
     // Set chart color
-    renderer.setSeriesPaint(
-        0, java.awt.Color.BLACK
-    )
+    renderer.setSeriesPaint(0, java.awt.Color.WHITE)
     // Set axis ranges to keep the chart logical
     plot.rangeAxis.range = org.jfree.data.Range(
         prices.minOrNull()?.toDouble()?.times(0.99) ?: 0.0,
@@ -58,5 +57,6 @@ fun chartToSvgString(chart: JFreeChart, width: Int, height: Int): String {
     chart.draw(svg, Rectangle(width, height))
     val svgString = svg.svgElement
     svg.dispose()
-    return svgString
+    val base64SvgString = Base64.getEncoder().encodeToString(svgString.toByteArray(Charsets.UTF_8))
+    return base64SvgString
 }
