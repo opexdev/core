@@ -166,9 +166,9 @@ class MarketController(
                     symbolsMap[it.pair] ?: it.pair,
                     "TRADING",
                     it.leftSideWalletSymbol.uppercase(),
-                    it.leftSideFraction.scale() - it.leftSideFraction.precision() + 1,
+                    it.leftSideFraction.scale(),
                     it.rightSideWalletSymbol.uppercase(),
-                    it.rightSideFraction.scale()- it.rightSideFraction.precision() + 1
+                    it.rightSideFraction.scale()
                 )
             }
         }

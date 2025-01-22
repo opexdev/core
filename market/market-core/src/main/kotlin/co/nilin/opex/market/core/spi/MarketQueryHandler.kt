@@ -43,5 +43,9 @@ interface MarketQueryHandler {
 
     suspend fun mostTrades(interval: Interval): TradeVolumeStat?
 
+    suspend fun getWeeklyPriceData(symbol: String): List<PriceTime>
 
+    suspend fun getMonthlyPriceData(symbol: String): List<PriceTime>
+
+    suspend fun getDailyPriceData(symbol: String): List<PriceTime>
 }

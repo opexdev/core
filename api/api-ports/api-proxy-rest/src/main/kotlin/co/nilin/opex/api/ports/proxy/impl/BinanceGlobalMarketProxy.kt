@@ -2,7 +2,9 @@ package co.nilin.opex.api.ports.proxy.impl
 
 import co.nilin.opex.api.core.inout.GlobalPrice
 import co.nilin.opex.api.core.spi.GlobalMarketProxy
+import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
 import kotlinx.coroutines.reactive.awaitFirstOrElse
+import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -29,14 +31,16 @@ class BinanceGlobalMarketProxy(
             .build(true)
             .toUri()
 
-        return webClient.get()
-            .uri(uri)
-            .accept(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .retrieve()
-            .onStatus({ t -> t.isError }, { it.createException() })
-            .bodyToFlux<GlobalPrice>()
-            .collectList()
-            .awaitFirstOrElse { emptyList() }
+        return withContext(ProxyDispatchers.general) {
+            webClient.get()
+                .uri(uri)
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<GlobalPrice>()
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
+        }
     }
 }

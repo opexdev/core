@@ -4,10 +4,7 @@ import co.nilin.opex.market.core.inout.BestPrice
 import co.nilin.opex.market.core.inout.PriceStat
 import co.nilin.opex.market.core.inout.TradeVolumeStat
 import co.nilin.opex.market.core.inout.Transaction
-import co.nilin.opex.market.ports.postgres.model.CandleInfoData
-import co.nilin.opex.market.ports.postgres.model.LastPrice
-import co.nilin.opex.market.ports.postgres.model.TradeModel
-import co.nilin.opex.market.ports.postgres.model.TradeTickerData
+import co.nilin.opex.market.ports.postgres.model.*
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.query.Param
@@ -220,7 +217,7 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
 
     @Query(
         """
-        WITH intervals AS (SELECT * FROM interval_generator((:startTime), (:endTime), :interval ::INTERVAL)), 
+        WITH intervals AS (SELECT * FROM interval_generator((TO_TIMESTAMP(:startTime)) ::TIMESTAMP WITHOUT TIME ZONE, (:endTime), :interval ::INTERVAL)), 
         first_trade AS (
             SELECT DISTINCT ON (f.start_time) f.start_time, f.end_time, t.matched_price AS open_price FROM intervals f 
             LEFT JOIN trades t ON t.create_date >= f.start_time AND t.create_date < f.end_time AND t.symbol = :symbol
@@ -477,5 +474,34 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         limit: Int?
     ): Flux<Transaction>
 
-
+    @Query(
+        """
+         WITH intervals AS (SELECT * FROM interval_generator((:startTime), (:endTime), :interval ::INTERVAL)),
+        last_trade AS (
+            SELECT DISTINCT ON (f.start_time) f.start_time,  f.end_time,  t.matched_price AS close_price FROM intervals f
+            LEFT JOIN trades t ON t.create_date >= f.start_time AND t.create_date < f.end_time AND t.symbol = :symbol
+            ORDER BY f.start_time, t.create_date DESC
+        )
+        SELECT
+            i.end_time AS close_time,
+            lt.close_price AS close_price
+        FROM intervals i
+        LEFT JOIN trades t
+        ON t.create_date >= i.start_time AND t.create_date < i.end_time AND t.symbol = :symbol
+        LEFT JOIN last_trade lt
+        ON i.start_time = lt.start_time
+        GROUP BY i.start_time, i.end_time, lt.close_price
+        ORDER BY i.start_time;
+        """
+    )
+    suspend fun getPriceTimeData(
+        @Param("symbol")
+        symbol: String,
+        @Param("interval")
+        interval: String,
+        @Param("startTime")
+        startTime: LocalDateTime,
+        @Param("endTime")
+        endTime: LocalDateTime,
+    ): Flux<PriceTimeData>
 }

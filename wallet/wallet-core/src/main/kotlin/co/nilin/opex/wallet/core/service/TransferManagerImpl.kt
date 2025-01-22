@@ -6,7 +6,6 @@ import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.inout.TransferResultDetailed
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.spi.*
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -20,6 +19,7 @@ class TransferManagerImpl(
     private val transactionManager: TransactionManager,
     private val userTransactionManager: UserTransactionManager,
 ) : TransferManager {
+
     private val logger = LoggerFactory.getLogger(TransferManagerImpl::class.java)
 
     @Transactional
@@ -236,6 +236,126 @@ class TransferManagerImpl(
                     UserTransactionCategory.SWAP
                 )
                 userTransactionManager.save(dstTx)
+            }
+
+            TransferCategory.KYC_ACCEPTED_REWARD -> {
+                val loserOwner = command.sourceWallet.owner.id!!
+                val loserMainWallet = command.sourceWallet
+                val loserBalance = loserMainWallet.balance.amount
+
+                val gainerOwner = command.destWallet.owner.id!!
+                val gainerMainWallet = command.destWallet
+                val gainerBalance = gainerMainWallet.balance.amount
+
+                val loserTx = UserTransaction(
+                    loserOwner,
+                    txId,
+                    currency,
+                    loserBalance - amount,
+                    -amount,
+                    UserTransactionCategory.KYC_ACCEPTED_REWARD
+                )
+                userTransactionManager.save(loserTx)
+
+                val gainerTx = UserTransaction(
+                    gainerOwner,
+                    txId,
+                    currency,
+                    gainerBalance + amount,
+                    amount,
+                    UserTransactionCategory.KYC_ACCEPTED_REWARD,
+                )
+                userTransactionManager.save(gainerTx)
+            }
+
+            TransferCategory.REFERRAL_COMMISSION -> {
+                val loserOwner = command.sourceWallet.owner.id!!
+                val loserMainWallet = command.sourceWallet
+                val loserBalance = loserMainWallet.balance.amount
+
+                val gainerOwner = command.destWallet.owner.id!!
+                val gainerMainWallet = command.destWallet
+                val gainerBalance = gainerMainWallet.balance.amount
+
+                val loserTx = UserTransaction(
+                    loserOwner,
+                    txId,
+                    currency,
+                    loserBalance - amount,
+                    -amount,
+                    UserTransactionCategory.REFERRAL_COMMISSION
+                )
+                userTransactionManager.save(loserTx)
+
+                val gainerTx = UserTransaction(
+                    gainerOwner,
+                    txId,
+                    currency,
+                    gainerBalance + amount,
+                    amount,
+                    UserTransactionCategory.REFERRAL_COMMISSION,
+                )
+                userTransactionManager.save(gainerTx)
+            }
+
+            TransferCategory.REFERENT_COMMISSION -> {
+                val loserOwner = command.sourceWallet.owner.id!!
+                val loserMainWallet = command.sourceWallet
+                val loserBalance = loserMainWallet.balance.amount
+
+                val gainerOwner = command.destWallet.owner.id!!
+                val gainerMainWallet = command.destWallet
+                val gainerBalance = gainerMainWallet.balance.amount
+
+                val loserTx = UserTransaction(
+                    loserOwner,
+                    txId,
+                    currency,
+                    loserBalance - amount,
+                    -amount,
+                    UserTransactionCategory.REFERENT_COMMISSION
+                )
+                userTransactionManager.save(loserTx)
+
+                val gainerTx = UserTransaction(
+                    gainerOwner,
+                    txId,
+                    currency,
+                    gainerBalance + amount,
+                    amount,
+                    UserTransactionCategory.REFERENT_COMMISSION,
+                )
+                userTransactionManager.save(gainerTx)
+            }
+
+            TransferCategory.REFERRAL_KYC_REWARD -> {
+                val loserOwner = command.sourceWallet.owner.id!!
+                val loserMainWallet = command.sourceWallet
+                val loserBalance = loserMainWallet.balance.amount
+
+                val gainerOwner = command.destWallet.owner.id!!
+                val gainerMainWallet = command.destWallet
+                val gainerBalance = gainerMainWallet.balance.amount
+
+                val loserTx = UserTransaction(
+                    loserOwner,
+                    txId,
+                    currency,
+                    loserBalance - amount,
+                    -amount,
+                    UserTransactionCategory.REFERRAL_KYC_REWARD
+                )
+                userTransactionManager.save(loserTx)
+
+                val gainerTx = UserTransaction(
+                    gainerOwner,
+                    txId,
+                    currency,
+                    gainerBalance + amount,
+                    amount,
+                    UserTransactionCategory.REFERRAL_KYC_REWARD,
+                )
+                userTransactionManager.save(gainerTx)
             }
 
             else -> {

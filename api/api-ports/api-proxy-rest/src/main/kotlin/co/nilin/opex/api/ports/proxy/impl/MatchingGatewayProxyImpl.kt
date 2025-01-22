@@ -5,10 +5,12 @@ import co.nilin.opex.api.core.inout.MatchingOrderType
 import co.nilin.opex.api.core.inout.OrderDirection
 import co.nilin.opex.api.core.inout.OrderSubmitResult
 import co.nilin.opex.api.core.spi.MatchingGatewayProxy
+import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
 import co.nilin.opex.api.ports.proxy.data.CancelOrderRequest
 import co.nilin.opex.api.ports.proxy.data.CreateOrderRequest
 import co.nilin.opex.common.utils.LoggerDelegate
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
@@ -40,16 +42,18 @@ class MatchingGatewayProxyImpl(private val client: WebClient) : MatchingGatewayP
     ): OrderSubmitResult? {
         logger.info("calling matching-gateway order create")
         val body = CreateOrderRequest(uuid, pair, price, quantity, direction, matchConstraint, orderType, userLevel)
-        return client.post()
-            .uri(URI.create("$baseUrl/order"))
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer $token")
-            .body(Mono.just(body))
-            .retrieve()
-            .onStatus({ t -> t.isError }, { it.createException() })
-            .bodyToMono<OrderSubmitResult>()
-            .awaitSingleOrNull()
+        return withContext(ProxyDispatchers.general) {
+            client.post()
+                .uri(URI.create("$baseUrl/order"))
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer $token")
+                .body(Mono.just(body))
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToMono<OrderSubmitResult>()
+                .awaitSingleOrNull()
+        }
 
     }
 
@@ -61,15 +65,17 @@ class MatchingGatewayProxyImpl(private val client: WebClient) : MatchingGatewayP
         token: String?
     ): OrderSubmitResult? {
         logger.info("calling matching-gateway order cancel")
-        return client.post()
-            .uri(URI.create("$baseUrl/order/cancel"))
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer $token")
-            .body(Mono.just(CancelOrderRequest(ouid, uuid, orderId, symbol)))
-            .retrieve()
-            .onStatus({ t -> t.isError }, { it.createException() })
-            .bodyToMono<OrderSubmitResult>()
-            .awaitSingleOrNull()
+        return withContext(ProxyDispatchers.general) {
+            client.post()
+                .uri(URI.create("$baseUrl/order/cancel"))
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer $token")
+                .body(Mono.just(CancelOrderRequest(ouid, uuid, orderId, symbol)))
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToMono<OrderSubmitResult>()
+                .awaitSingleOrNull()
+        }
     }
 }
