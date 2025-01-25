@@ -48,7 +48,7 @@ management:
     web:
       base-path: /actuator
       exposure:
-        include: ["health", "prometheus", "metrics"]
+        include: [ "health", "prometheus", "metrics" ]
   endpoint:
     health:
       show-details: when_authorized
@@ -99,6 +99,8 @@ logging:
     co.nilin: INFO
     org.zalando.logbook: TRACE
 app:
+  omni-wallet:
+    url: localhost:8080   #todo -> env
   auth:
     url: lb://opex-auth
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
@@ -107,8 +109,7 @@ app:
   wallet:
     url: lb://opex-wallet
   address:
-    life-time:
-      value: ${ADDRESS_EXP_TIME}  # second
+    life-time: 167234670
 swagger:
   authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token}
 

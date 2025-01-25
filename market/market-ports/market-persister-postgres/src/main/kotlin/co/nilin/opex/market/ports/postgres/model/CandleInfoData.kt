@@ -1,6 +1,5 @@
 package co.nilin.opex.market.ports.postgres.model
 
-import org.springframework.data.relational.core.mapping.Column
 import java.math.BigDecimal
 import java.time.LocalDateTime
 

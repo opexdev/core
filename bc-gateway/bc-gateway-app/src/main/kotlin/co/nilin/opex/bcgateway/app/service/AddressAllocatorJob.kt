@@ -7,18 +7,17 @@ import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.Scheduled
-import java.util.concurrent.TimeUnit
 
 @Configuration
 class AddressAllocatorJob(private val addressManager: AddressManager) {
     private val logger: Logger by LoggerDelegate()
 
-    @Value("\${app.address.life-time.value}")
-    private var lifeTime: Long? = null
+    @Value("\${app.address.life-time}")
+    private var addressLifeTime: Long? = null
 
-    @Scheduled(fixedDelayString = "\${app.address.life-time.value:0}000")
+    @Scheduled(fixedDelayString = "60000")
     fun revokeExpiredAddress() {
-        if (lifeTime != null) {
+        if (addressLifeTime != null) {
             logger.info("going to lookup assigned address .....")
             runBlocking { addressManager.revokeExpiredAddress() }
         }

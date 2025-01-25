@@ -2,14 +2,34 @@ package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.AdminSearchWithdrawRequest
+import co.nilin.opex.wallet.app.dto.ManualTransferRequest
+import co.nilin.opex.wallet.app.service.ManualWithdrawService
 import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.service.WithdrawService
+import io.swagger.annotations.ApiResponse
+import io.swagger.annotations.Example
+import io.swagger.annotations.ExampleProperty
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 @RestController
-@RequestMapping("/admin/withdraw/")
-class WithdrawAdminController(private val withdrawService: WithdrawService) {
+@RequestMapping("/admin/withdraw")
+class WithdrawAdminController(
+    private val withdrawService: WithdrawService,
+    private val manualWithdrawService: ManualWithdrawService
+) {
+    data class WithdrawRejectRequest(val reason: String, val attachment: String?)
+    data class WithdrawAcceptRequest(
+        val destTransactionRef: String,
+        val destNote: String?,
+        val destAmount: BigDecimal?,
+        val attachment: String?
+    )
 
     @GetMapping("/{id}")
     suspend fun getWithdraw(@PathVariable id: Long): WithdrawResponse {
@@ -28,6 +48,13 @@ class WithdrawAdminController(private val withdrawService: WithdrawService) {
             body.destTxRef,
             body.destAddress,
             body.status,
+            body.startTime?.let {
+                LocalDateTime.ofInstant(Instant.ofEpochMilli(body.startTime), ZoneId.systemDefault())
+            },
+            body.endTime?.let {
+                LocalDateTime.ofInstant(Instant.ofEpochMilli(body.endTime), ZoneId.systemDefault())
+            },
+            body.ascendingByTime,
             offset,
             size
         )
@@ -36,16 +63,17 @@ class WithdrawAdminController(private val withdrawService: WithdrawService) {
     @PostMapping("/{withdrawId}/accept")
     suspend fun acceptWithdraw(
         @PathVariable withdrawId: Long,
-        @RequestParam destTransactionRef: String,
-        @RequestParam(required = false) destNote: String?,
-        @RequestParam(required = false) destAmount: BigDecimal?
+        @RequestBody request: WithdrawAcceptRequest,
+        @CurrentSecurityContext securityContext: SecurityContext
     ): WithdrawActionResult {
         return withdrawService.acceptWithdraw(
             WithdrawAcceptCommand(
                 withdrawId,
-                destAmount,
-                destTransactionRef,
-                destNote
+                request.destAmount,
+                request.destTransactionRef,
+                request.destNote,
+                request.attachment,
+                securityContext.authentication.name
             )
         )
     }
@@ -58,8 +86,42 @@ class WithdrawAdminController(private val withdrawService: WithdrawService) {
     @PostMapping("/{withdrawId}/reject")
     suspend fun rejectWithdraw(
         @PathVariable withdrawId: Long,
-        @RequestParam reason: String
+        @RequestBody request: WithdrawRejectRequest,
+        @CurrentSecurityContext securityContext: SecurityContext
     ): WithdrawActionResult {
-        return withdrawService.rejectWithdraw(WithdrawRejectCommand(withdrawId, reason))
+        return withdrawService.rejectWithdraw(
+            WithdrawRejectCommand(
+                withdrawId,
+                request.reason,
+                request.attachment,
+                securityContext.authentication.name
+            )
+        )
+    }
+
+    @PostMapping("/manually/{amount}_{symbol}/{sourceUuid}")
+    @ApiResponse(
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = "{ }",
+                mediaType = "application/json"
+            )
+        )
+    )
+    suspend fun withdrawManually(
+        @PathVariable("symbol") symbol: String,
+        @PathVariable("sourceUuid") sourceUuid: String,
+        @PathVariable("amount") amount: BigDecimal,
+        @RequestBody request: ManualTransferRequest,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): TransferResult {
+        return manualWithdrawService.withdrawManually(
+            symbol,
+            securityContext.authentication.name,
+            sourceUuid,
+            amount, request
+        )
     }
 }

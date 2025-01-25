@@ -4,11 +4,8 @@ package co.nilin.opex.bcgateway.ports.walletproxy.impl
 import co.nilin.opex.bcgateway.core.model.otc.LoginRequest
 import co.nilin.opex.bcgateway.core.spi.AuthProxy
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
-
 import org.springframework.stereotype.Component
-
 
 
 @Component
@@ -27,7 +24,6 @@ class ExtractBackgroundAuth(private val authProxy: AuthProxy, private val enviro
     }
 
 }
-
 
 
 //save for config Reactive Security context instead of using api

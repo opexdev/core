@@ -2,12 +2,8 @@ package co.nilin.opex.auth.gateway.config
 
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters
-import org.keycloak.admin.client.Keycloak
-import org.keycloak.admin.client.resource.RealmResource
 import org.keycloak.connections.jpa.updater.liquibase.ThreadLocalSessionContext
 import org.keycloak.models.KeycloakSession
-import org.keycloak.services.DefaultKeycloakSessionFactory
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.boot.web.servlet.ServletRegistrationBean
 import org.springframework.context.annotation.Bean
@@ -54,12 +50,11 @@ class EmbeddedKeycloakConfig {
         filter.addUrlPatterns(keycloakServerProperties.contextPath + "/*")
         return filter
     }
+
     @Bean
     fun keycloakSession(): KeycloakSession? {
-     return  ThreadLocalSessionContext.getCurrentSession();
+        return ThreadLocalSessionContext.getCurrentSession();
     }
-
-
 
 
     @Throws(NamingException::class)

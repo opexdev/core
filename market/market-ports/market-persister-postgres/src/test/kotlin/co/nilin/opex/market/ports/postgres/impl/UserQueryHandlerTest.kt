@@ -7,8 +7,6 @@ import co.nilin.opex.market.ports.postgres.dao.TradeRepository
 import co.nilin.opex.market.ports.postgres.impl.sample.VALID
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.flow.count
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat

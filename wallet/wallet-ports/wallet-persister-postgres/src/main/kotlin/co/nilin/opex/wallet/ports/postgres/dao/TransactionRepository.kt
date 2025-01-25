@@ -221,7 +221,8 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
         offset: Int,
     ): Flux<TransactionWithDetail>
 
-    @Query("""
+    @Query(
+        """
         select distinct t.id, sw.wallet_type as src_wallet_type, dw.wallet_type as dest_wallet_type, swo.uuid as sender_uuid, dwo.uuid as receiver_uuid, sw.currency, t.dest_amount as amount, t.description, t.transfer_ref as ref, t.transaction_date as date
         , t.transfer_category as category
         from transaction as t

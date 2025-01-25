@@ -1,5 +1,4 @@
-server:
-  port: 8080
+server.port: 8080
 management:
   endpoints:
     web:
@@ -105,12 +104,7 @@ logbook:
           - POST
           - PUT
           - DELETE
-logging:
-  level:
-    root: INFO
-    org.apache.kafka: ERROR
-    co.nilin: INFO
-    org.zalando.logbook: TRACE
+
 app:
   auth:
     url: lb://opex-auth
@@ -127,5 +121,14 @@ app:
     url: lb://opex-bc-gateway
   reserved-transfer:
     life-time: 15 #minutes
-swagger:
-  authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token}
+logging:
+  level:
+    root: INFO
+    org.apache.kafka: ERROR
+    co.nilin: INFO
+    reactor.netty.http.client: INFO
+    org.zalando.logbook: TRACE
+    org.hibernate.SQL: DEBUG
+    logging.level.org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
+

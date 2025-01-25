@@ -2,12 +2,10 @@ package co.nilin.opex.bcgateway.app.controller
 
 import co.nilin.opex.bcgateway.core.api.AssignAddressService
 import co.nilin.opex.bcgateway.core.model.AssignedAddress
-import co.nilin.opex.bcgateway.core.model.Currency
 import co.nilin.opex.bcgateway.core.model.ReservedAddress
 import co.nilin.opex.bcgateway.core.spi.AddressTypeHandler
 import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.http.codec.multipart.FilePart
@@ -17,10 +15,6 @@ import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
 import java.io.File
 import java.nio.charset.StandardCharsets
-import java.time.ZoneId
-import java.util.Collections
-import java.util.stream.Collector
-import java.util.stream.Collectors
 
 @RestController
 @RequestMapping("/v1/address")
@@ -41,7 +35,7 @@ class AddressController(
             throw OpexError.Forbidden.exception()
         val assignedAddress = assignAddressService.assignAddress(
             assignAddressRequest.uuid,
-            Currency(assignAddressRequest.currency, assignAddressRequest.currency),
+            assignAddressRequest.currency,
             assignAddressRequest.chain
         )
 

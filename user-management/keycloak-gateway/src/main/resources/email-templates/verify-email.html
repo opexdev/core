@@ -1,16 +1,17 @@
 <!doctype html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta content="width=device-width" name="viewport">
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <title>Email Verification</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&amp;display=swap" rel="stylesheet">
     <style>
-        body{
+        body {
             line-height: 20px;
         }
+
         @media only screen and (max-width: 620px) {
             table[class=body] h1 {
                 font-size: 28px !important;
@@ -87,6 +88,7 @@
             .btn-primary table td:hover {
                 background-color: #18a979 !important;
             }
+
             .btn-primary a:hover {
                 background-color: #18a979 !important;
                 border-color: #18a979 !important;
@@ -96,23 +98,25 @@
 </head>
 <body class
       style="background-color: #383a59; font-family: Roboto, sans-serif; -webkit-font-smoothing: antialiased; font-size: 16px; line-height: 1.4; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;">
-        <input type="hidden" id="name" value="">
-        <input type="hidden" id="baseUrl" value="">
-      <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body"
-       style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; min-width: 100%; background-color: #383a59; width: 100%;"
-       width="100%" bgcolor="#eaebed">
+<input id="name" type="hidden" value="">
+<input id="baseUrl" type="hidden" value="">
+<table bgcolor="#eaebed" border="0" cellpadding="0" cellspacing="0" class="body"
+       role="presentation"
+       style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; min-width: 100%; background-color: #383a59; width: 100%;" width="100%">
     <tr>
         <td class="container"
             style="font-family: Roboto, sans-serif; font-size: 16px; vertical-align: top; display: block; max-width: 580px; padding: 10px; width: 580px; Margin: 0 auto;"
-            width="580" valign="top">
+            valign="top" width="580">
             <div class="header" style="padding: 0;">
-                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
-                       style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; min-width: 100%; width: 100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; min-width: 100%; width: 100%;"
+                       width="100%">
                     <tr>
-                        <td class="align-center" width="100%"
+                        <td align="center" class="align-center"
                             style="font-family: Roboto, sans-serif; font-size: 16px; vertical-align: top; text-align: center;"
-                            valign="top" align="center">
-                            <a href="" style="color: #9a9ea6; font-size: 18px; text-align: center; text-decoration: none" id="site"></a>
+                            valign="top" width="100%">
+                            <a href=""
+                               id="site"
+                               style="color: #9a9ea6; font-size: 18px; text-align: center; text-decoration: none"></a>
                         </td>
                     </tr>
                 </table>
@@ -122,8 +126,9 @@
 
                 <!-- START CENTERED WHITE CONTAINER -->
                 <span class="preheader"
-                      style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;" class="name-holder"></span>
-                <table role="presentation" class="main"
+                      class="name-holder"
+                      style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;"></span>
+                <table class="main" role="presentation"
                        style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; min-width: 100%; background: #22232a; border-radius: 8px; width: 100%;"
                        width="100%">
 
@@ -132,16 +137,18 @@
                         <td class="wrapper"
                             style="font-family: Roboto, sans-serif; font-size: 16px; vertical-align: top; box-sizing: border-box; padding: 20px;background-color: #282a36;color: #ecececc7"
                             valign="top">
-                            <table role="presentation" border="0" cellpadding="0" cellspacing="0"
+                            <table border="0" cellpadding="0" cellspacing="0" role="presentation"
                                    style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; min-width: 100%; width: 100%;"
                                    width="100%">
                                 <tr>
                                     <td style="font-family: Roboto, sans-serif; font-size: 16px; vertical-align: top;"
                                         valign="top">
-                                        <p style="font-family: Roboto, sans-serif; font-size: 16px; font-weight: normal; margin: 20px 0 30px;" id="content">
-                                            Confirm your email address. Please click on the link below to verify and link this email address to your account.</p>
-                                        <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-                                               class="btn btn-primary"
+                                        <p id="content"
+                                           style="font-family: Roboto, sans-serif; font-size: 16px; font-weight: normal; margin: 20px 0 30px;">
+                                            Confirm your email address. Please click on the link below to verify and
+                                            link this email address to your account.</p>
+                                        <table border="0" cellpadding="0" cellspacing="0" class="btn btn-primary"
+                                               role="presentation"
                                                style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; min-width: 100%; box-sizing: border-box; width: 100%;"
                                                width="100%">
                                             <tbody>
@@ -149,14 +156,16 @@
                                                 <td align="center"
                                                     style="font-family: Roboto, sans-serif; font-size: 14px; vertical-align: top; padding-bottom: 15px;"
                                                     valign="top">
-                                                    <table role="presentation" border="0" cellpadding="0"
-                                                           cellspacing="0"
+                                                    <table border="0" cellpadding="0" cellspacing="0"
+                                                           role="presentation"
                                                            style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; min-width: auto; width: auto;">
                                                         <tbody>
                                                         <tr>
-                                                            <td style="font-family: Roboto, sans-serif; font-size: 16px; vertical-align: top; border-radius: 5px; text-align: center; background-color: #50fa7ba1;"
-                                                                valign="top" align="center" bgcolor="#ec0867">
-                                                                <a id="action-button" href="/LinkToSite" target="_blank" style="border-radius: 8px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 16px; margin: 0; padding: 12px 25px; text-decoration: none; text-transform: capitalize; background-color: #18a979; border-color: #18a979; color: #ecececc7;">Verify Email</a></td>
+                                                            <td align="center"
+                                                                bgcolor="#ec0867" style="font-family: Roboto, sans-serif; font-size: 16px; vertical-align: top; border-radius: 5px; text-align: center; background-color: #50fa7ba1;" valign="top">
+                                                                <a href="/LinkToSite" id="action-button" style="border-radius: 8px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 16px; margin: 0; padding: 12px 25px; text-decoration: none; text-transform: capitalize; background-color: #18a979; border-color: #18a979; color: #ecececc7;"
+                                                                   target="_blank">Verify
+                                                                    Email</a></td>
                                                         </tr>
                                                         </tbody>
                                                     </table>
@@ -165,7 +174,8 @@
                                             </tbody>
                                         </table>
                                         <p style="font-family: Roboto, sans-serif; font-size: 14px; font-weight: normal; margin: 20px 0 15px;">
-                                            If you did not sign up for <span class="name-holder"></span>, there is nothing to worry about, just disregard this email.</p>
+                                            If you did not sign up for <span class="name-holder"></span>, there is
+                                            nothing to worry about, just disregard this email.</p>
                                         <p style="font-family: Roboto, sans-serif; font-size: 16px; font-weight: normal; margin: 0 0 20px;">
                                             Thanks!</p>
                                     </td>
@@ -178,16 +188,18 @@
 
                 <!-- START FOOTER -->
                 <div class="footer" style="clear: both; Margin-top: 10px; text-align: center; width: 100%;">
-                    <table role="presentation" border="0" cellpadding="0" cellspacing="0"
+                    <table border="0" cellpadding="0" cellspacing="0" role="presentation"
                            style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; min-width: 100%; width: 100%;"
                            width="100%">
                         <tr>
                         </tr>
                         <tr>
-                            <td class="content-block powered-by"
-                                style="font-family: Roboto, sans-serif; vertical-align: top; padding-bottom: 10px; padding-top: 10px; color: #9a9ea6; font-size: 12px; text-align: center;"
-                                valign="top" align="center">
-                                Powered by <a href="" style="color: #9a9ea6; font-size: 12px; text-align: center; text-decoration: none;" id="link"></a>.
+                            <td align="center"
+                                class="content-block powered-by"
+                                style="font-family: Roboto, sans-serif; vertical-align: top; padding-bottom: 10px; padding-top: 10px; color: #9a9ea6; font-size: 12px; text-align: center;" valign="top">
+                                Powered by <a href=""
+                                              id="link"
+                                              style="color: #9a9ea6; font-size: 12px; text-align: center; text-decoration: none;"></a>.
                             </td>
                         </tr>
                     </table>

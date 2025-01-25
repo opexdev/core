@@ -6,7 +6,6 @@ import org.springframework.cloud.client.loadbalancer.reactive.ReactorLoadBalance
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
-import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.web.reactive.function.client.ExchangeStrategies
 import org.springframework.web.reactive.function.client.WebClient
 import org.zalando.logbook.Logbook
@@ -18,7 +17,10 @@ class WebClientConfig {
 
     @Bean
     @Profile("!otc")
-    fun loadBalancedWebClient(loadBalancerFactory: ReactiveLoadBalancer.Factory<ServiceInstance>, logbook: Logbook): WebClient {
+    fun loadBalancedWebClient(
+        loadBalancerFactory: ReactiveLoadBalancer.Factory<ServiceInstance>,
+        logbook: Logbook
+    ): WebClient {
         val client = HttpClient.create().doOnConnected { it.addHandlerLast(LogbookClientHandler(logbook)) }
         return WebClient.builder()
             //.clientConnector(ReactorClientHttpConnector(client))

@@ -176,28 +176,28 @@ class MarketController(
     }
 
     // Custom service
-    @GetMapping("/v3/currencyInfo")
-    suspend fun getNetworks(@RequestParam(required = false) currency: String?): List<CurrencyNetworkResponse> {
-        return blockchainGatewayProxy.getCurrencyImplementations(currency)
-            .groupBy { it.currency }
-            .toList()
-            .map { pair ->
-                CurrencyNetworkResponse(
-                    pair.first.symbol,
-                    pair.first.name,
-                    pair.second.map {
-                        CurrencyNetwork(
-                            it.chain.name,
-                            it.implCurrency.symbol,
-                            it.withdrawMin,
-                            it.withdrawFee,
-                            it.token,
-                            it.tokenAddress
-                        )
-                    }
-                )
-            }
-    }
+//    @GetMapping("/v3/currencyInfo")
+//    suspend fun getNetworks(@RequestParam(required = false) currency: String?): List<CurrencyNetworkResponse> {
+//        return blockchainGatewayProxy.getCurrencyImplementations(currency)
+//            .groupBy { it.currency }
+//            .toList()
+//            .map { pair ->
+//                CurrencyNetworkResponse(
+//                    pair.first.symbol,
+//                    pair.first.name,
+//                    pair.second.map {
+//                        CurrencyNetwork(
+//                            it.chain.name,
+//                            it.implCurrency.symbol,
+//                            it.withdrawMin,
+//                            it.withdrawFee,
+//                            it.token,
+//                            it.tokenAddress
+//                        )
+//                    }
+//                )
+//            }
+//    }
 
     // Custom service
     @GetMapping("/v3/currencyInfo/quotes")

@@ -12,7 +12,15 @@ class DLTKafkaListener : MessageListener<String?, String> {
 
     override fun onMessage(data: ConsumerRecord<String?, String>) {
 
-        listeners.forEach { it.onEvent(data.value(), data.partition(), data.offset(), data.timestamp(), data.headers()) }
+        listeners.forEach {
+            it.onEvent(
+                data.value(),
+                data.partition(),
+                data.offset(),
+                data.timestamp(),
+                data.headers()
+            )
+        }
     }
 
     fun addEventListener(tl: DLTListener) {
