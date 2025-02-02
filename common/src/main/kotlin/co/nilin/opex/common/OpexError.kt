@@ -79,6 +79,8 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     InvalidDeposit(6033, "Invalid deposit", HttpStatus.BAD_REQUEST),
     TerminalIsExist(6034, "This identifier is exist", HttpStatus.BAD_REQUEST),
     TerminalNotFound(6035, "Object not found", HttpStatus.BAD_REQUEST),
+    VoucherNotFound(6036, "Voucher not found", HttpStatus.NOT_FOUND),
+    InvalidVoucher(6037, "Invalid Voucher", HttpStatus.BAD_REQUEST),
 
 
     // code 7000: api

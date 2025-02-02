@@ -375,3 +375,18 @@ $$;
 -- ---------------------------------------------------------------------------
 -- ---------------------------------- END ------------------------------------
 -- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS voucher
+(
+    id           SERIAL PRIMARY KEY,
+    private_code VARCHAR(255) NOT NULL UNIQUE,
+    public_code  VARCHAR(255) NOT NULL UNIQUE,
+    amount       DECIMAL      NOT NULL,
+    currency     VARCHAR(25)  NOT NULL, --REFERENCES currency (symbol)
+    status       VARCHAR(20)  NOT NULL,
+    expire_date  TIMESTAMP NOT NULL,
+    create_date  TIMESTAMP NOT NULL,
+    use_date     TIMESTAMP,
+    user_id      VARCHAR(36) ,
+    description  TEXT
+);

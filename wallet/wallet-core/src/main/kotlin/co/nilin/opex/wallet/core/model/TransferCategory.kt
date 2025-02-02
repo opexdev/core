@@ -20,5 +20,6 @@ enum class TransferCategory {
     REFERRAL_KYC_REWARD,
     REFERENT_COMMISSION,
     KYC_ACCEPTED_REWARD,
+    VOUCHER,
     NORMAL //TODO TEST?
 }
