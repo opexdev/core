@@ -18,6 +18,6 @@ data class VoucherModel(
     @Column("expire_date") val expireDate: LocalDateTime,
     @Column("create_date") val createDate: LocalDateTime = LocalDateTime.now(),
     @Column("use_date") var useDate: LocalDateTime? = null,
-    @Column("user_id") var userId: String? = null,
-    val description: String? = null
+    @Column("uuid") var uuid: String? = null,
+    @Column("voucher_group") val voucherGroup: Long? = null
 )

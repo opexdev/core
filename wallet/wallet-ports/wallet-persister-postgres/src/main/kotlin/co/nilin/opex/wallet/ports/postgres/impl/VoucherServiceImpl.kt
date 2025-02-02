@@ -1,10 +1,14 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.wallet.core.inout.VoucherData
 import co.nilin.opex.wallet.core.model.Voucher
+import co.nilin.opex.wallet.core.model.VoucherGroup
 import co.nilin.opex.wallet.core.model.VoucherStatus
 import co.nilin.opex.wallet.core.spi.VoucherManager
+import co.nilin.opex.wallet.ports.postgres.dao.VoucherGroupRepository
 import co.nilin.opex.wallet.ports.postgres.dao.VoucherRepository
+import co.nilin.opex.wallet.ports.postgres.model.VoucherGroupModel
 import co.nilin.opex.wallet.ports.postgres.model.VoucherModel
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
@@ -14,13 +18,14 @@ import java.time.LocalDateTime
 
 @Component
 class VoucherServiceImpl(
-    private val voucherRepository: VoucherRepository
+    private val voucherRepository: VoucherRepository,
+    private val voucherGroupRepository: VoucherGroupRepository
 ) : VoucherManager {
 
     private val logger = LoggerFactory.getLogger(VoucherServiceImpl::class.java)
 
-    override suspend fun findByPublicCode(code: String): Voucher? {
-        return voucherRepository.findByPublicCode(code).awaitFirstOrNull()?.asVoucher()
+    override suspend fun findByPublicCode(code: String): VoucherData? {
+        return voucherRepository.findByPublicCode(code).awaitFirstOrNull()?.asVoucherData()
             ?: throw OpexError.VoucherNotFound.exception()
     }
 
@@ -29,17 +34,17 @@ class VoucherServiceImpl(
             ?: throw OpexError.VoucherNotFound.exception()
     }
 
-    override suspend fun updateVoucherAsUsed(voucher: Voucher, userId: String): Voucher {
+    override suspend fun updateVoucherAsUsed(voucher: Voucher, uuid: String): Voucher {
         voucher.apply {
             status = VoucherStatus.USED
-            this.userId = userId
+            this.uuid = uuid
             useDate = LocalDateTime.now()
         }
         voucherRepository.save(voucher.asVoucherModel()).awaitFirst()
         return voucher
     }
 
-    private fun VoucherModel.asVoucher(): Voucher {
+    private suspend fun VoucherModel.asVoucher(): Voucher {
         return Voucher(
             id,
             privateCode,
@@ -50,9 +55,26 @@ class VoucherServiceImpl(
             expireDate,
             createDate,
             useDate,
-            userId,
-            description
+            uuid,
+            voucherGroup = voucherGroup?.let {
+                voucherGroupRepository.findById(it).awaitFirstOrNull()?.asVoucherGroup()
+            }
         )
+    }
+
+    private suspend fun VoucherModel.asVoucherData(): VoucherData {
+        return VoucherData(
+            publicCode,
+            amount,
+            currency,
+            status,
+            expireDate,
+            createDate,
+            useDate,
+            uuid,
+            voucherGroup = voucherGroup?.let {
+                voucherGroupRepository.findById(it).awaitFirstOrNull()?.asVoucherGroup()
+            })
     }
 
     private fun Voucher.asVoucherModel(): VoucherModel {
@@ -66,7 +88,15 @@ class VoucherServiceImpl(
             expireDate,
             createDate,
             useDate,
-            userId,
+            uuid,
+            voucherGroup = voucherGroup?.id
+        )
+    }
+
+    private fun VoucherGroupModel.asVoucherGroup(): VoucherGroup {
+        return VoucherGroup(
+            id,
+            issuer,
             description
         )
     }

@@ -1,11 +1,11 @@
-package co.nilin.opex.wallet.core.model
+package co.nilin.opex.wallet.core.inout
 
+import co.nilin.opex.wallet.core.model.VoucherGroup
+import co.nilin.opex.wallet.core.model.VoucherStatus
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
-data class Voucher(
-    val id : Long? = null ,
-    val privateCode: String,
+data class VoucherData(
     val publicCode: String,
     val amount: BigDecimal,
     val currency: String,
@@ -14,5 +14,5 @@ data class Voucher(
     val createDate: LocalDateTime = LocalDateTime.now(),
     var useDate: LocalDateTime? = null,
     var uuid: String? = null,
-    val voucherGroup: VoucherGroup?
+    var voucherGroup: VoucherGroup?,
 )

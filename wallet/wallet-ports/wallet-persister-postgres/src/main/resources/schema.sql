@@ -183,7 +183,7 @@ CREATE TABLE IF NOT EXISTS deposits
     network         VARCHAR(255),
     source_address  VARCHAR(255),
     note            TEXT,
-    transaction_ref VARCHAR(255) UNIQUE ,
+    transaction_ref VARCHAR(255) UNIQUE,
     status          VARCHAR(255),
     deposit_type    VARCHAR(255),
     create_date     TIMESTAMP,
@@ -244,9 +244,9 @@ CREATE TABLE IF NOT EXISTS terminal
 
 CREATE TABLE IF NOT EXISTS gateway_terminal
 (
-    id           SERIAL PRIMARY KEY,
+    id          SERIAL PRIMARY KEY,
     terminal_id BIGINT NOT NULL REFERENCES terminal (id) ON DELETE CASCADE,
-    gateway_id   BIGINT NOT NULL REFERENCES currency_off_chain_gateway (id) ON DELETE CASCADE,
+    gateway_id  BIGINT NOT NULL REFERENCES currency_off_chain_gateway (id) ON DELETE CASCADE,
     UNIQUE (terminal_id, gateway_id)
 
 );
@@ -270,11 +270,13 @@ WHERE dest_network IN ('Card2card', 'Sheba');
 DO
 $$
     BEGIN
-        IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'bank_data')  AND  Not EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'terminal') THEN
+        IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'bank_data') AND
+           Not EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'terminal') THEN
             EXECUTE 'ALTER TABLE bank_data RENAME TO terminal' ;
         END IF;
 
-        IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'gateway_bank_data')  AND  Not EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'gateway_bank_data') THEN
+        IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'gateway_bank_data') AND
+           Not EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'gateway_bank_data') THEN
             EXECUTE 'ALTER TABLE gateway_bank_data RENAME TO gateway_terminal' ;
         END IF;
     END
@@ -382,11 +384,18 @@ CREATE TABLE IF NOT EXISTS voucher
     private_code VARCHAR(255) NOT NULL UNIQUE,
     public_code  VARCHAR(255) NOT NULL UNIQUE,
     amount       DECIMAL      NOT NULL,
-    currency     VARCHAR(25)  NOT NULL, --REFERENCES currency (symbol)
+    currency     VARCHAR(25)  NOT NULL REFERENCES currency (symbol),
     status       VARCHAR(20)  NOT NULL,
-    expire_date  TIMESTAMP NOT NULL,
-    create_date  TIMESTAMP NOT NULL,
+    expire_date  TIMESTAMP    NOT NULL,
+    create_date  TIMESTAMP    NOT NULL,
     use_date     TIMESTAMP,
-    user_id      VARCHAR(36) ,
-    description  TEXT
+    uuid         VARCHAR(36),
+    voucher_group     INTEGER REFERENCES voucher_group (id)
+);
+
+CREATE TABLE IF NOT EXISTS voucher_group
+(
+    id          SERIAL PRIMARY KEY,
+    issuer      VARCHAR(255) NOT NULL,
+    description TEXT
 );

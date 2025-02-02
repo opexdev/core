@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.app.service
 
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.inout.Deposit
+import co.nilin.opex.wallet.core.inout.VoucherData
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.spi.DepositPersister
 import co.nilin.opex.wallet.core.spi.VoucherManager
@@ -21,17 +22,17 @@ class VoucherService(
     private val logger = LoggerFactory.getLogger(VoucherService::class.java)
 
     @Transactional
-    suspend fun submitVoucher(userId: String, code: String) {
-        logger.info("Submitting voucher for user: $userId with code: $code")
+    suspend fun submitVoucher(uuid: String, code: String) {
+        logger.info("Submitting voucher for user: $uuid with code: $code")
         val voucher = findAndValidateVoucher(code)
-        voucherManager.updateVoucherAsUsed(voucher, userId)
+        voucherManager.updateVoucherAsUsed(voucher, uuid)
         val transferRef = UUID.randomUUID().toString()
-        executeTransfer(voucher, userId, transferRef)
-        persistDeposit(voucher, userId, transferRef)
-        logger.info("Voucher submitted successfully for user: $userId with transfer reference: $transferRef")
+        executeTransfer(voucher, uuid, transferRef)
+        persistDeposit(voucher, uuid, transferRef)
+        logger.info("Voucher submitted successfully for user: $uuid with transfer reference: $transferRef")
     }
 
-    suspend fun getVoucher(publicCode: String): Voucher {
+    suspend fun getVoucher(publicCode: String): VoucherData {
         return voucherManager.findByPublicCode(publicCode) ?: throw OpexError.VoucherNotFound.exception()
     }
 
@@ -65,7 +66,7 @@ class VoucherService(
             receiverWalletType = WalletType.MAIN,
             receiverUuid = userId,
             amount = voucher.amount,
-            description = voucher.description,
+            description = voucher.voucherGroup?.description,
             transferRef = transferRef,
             transferCategory = TransferCategory.VOUCHER
         )
