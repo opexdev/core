@@ -26,7 +26,7 @@ class VoucherService(
         logger.info("Submitting voucher for user: $uuid with code: $code")
         val voucher = findAndValidateVoucher(code)
         voucherManager.updateVoucherAsUsed(voucher, uuid)
-        val transferRef = UUID.randomUUID().toString()
+        val transferRef = "wallet:voucher:" + UUID.randomUUID().toString()
         executeTransfer(voucher, uuid, transferRef)
         persistDeposit(voucher, uuid, transferRef)
         logger.info("Voucher submitted successfully for user: $uuid with transfer reference: $transferRef")

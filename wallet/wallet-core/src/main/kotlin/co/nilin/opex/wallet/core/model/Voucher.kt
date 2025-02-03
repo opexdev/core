@@ -4,7 +4,7 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 data class Voucher(
-    val id : Long? = null ,
+    val id: Long? = null,
     val privateCode: String,
     val publicCode: String,
     val amount: BigDecimal,

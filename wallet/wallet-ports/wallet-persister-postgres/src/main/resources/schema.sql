@@ -377,6 +377,12 @@ $$;
 -- ---------------------------------------------------------------------------
 -- ---------------------------------- END ------------------------------------
 -- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS voucher_group
+(
+    id          SERIAL PRIMARY KEY,
+    issuer      VARCHAR(255) NOT NULL,
+    description TEXT
+);
 
 CREATE TABLE IF NOT EXISTS voucher
 (
@@ -393,9 +399,3 @@ CREATE TABLE IF NOT EXISTS voucher
     voucher_group     INTEGER REFERENCES voucher_group (id)
 );
 
-CREATE TABLE IF NOT EXISTS voucher_group
-(
-    id          SERIAL PRIMARY KEY,
-    issuer      VARCHAR(255) NOT NULL,
-    description TEXT
-);
