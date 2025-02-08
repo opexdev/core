@@ -358,6 +358,35 @@ class TransferManagerImpl(
                 )
                 userTransactionManager.save(gainerTx)
             }
+            TransferCategory.VOUCHER -> {
+                val loserOwner = command.sourceWallet.owner.id!!
+                val loserMainWallet = command.sourceWallet
+                val loserBalance = loserMainWallet.balance.amount
+
+                val gainerOwner = command.destWallet.owner.id!!
+                val gainerMainWallet = command.destWallet
+                val gainerBalance = gainerMainWallet.balance.amount
+
+                val loserTx = UserTransaction(
+                    loserOwner,
+                    txId,
+                    currency,
+                    loserBalance - amount,
+                    -amount,
+                    UserTransactionCategory.VOUCHER
+                )
+                userTransactionManager.save(loserTx)
+
+                val gainerTx = UserTransaction(
+                    gainerOwner,
+                    txId,
+                    currency,
+                    gainerBalance + amount,
+                    amount,
+                    UserTransactionCategory.VOUCHER,
+                )
+                userTransactionManager.save(gainerTx)
+            }
 
             else -> {
                 // No tx needed for other types

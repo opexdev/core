@@ -46,6 +46,7 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/payment/internal/**").permitAll()
             .pathMatchers("/inquiry/**").permitAll()
             .pathMatchers("/v2/transfer/**").permitAll()
+            .pathMatchers("/voucher/**").hasAuthority("SCOPE_trust")
             .anyExchange().authenticated()
             .and()
             .oauth2ResourceServer()
