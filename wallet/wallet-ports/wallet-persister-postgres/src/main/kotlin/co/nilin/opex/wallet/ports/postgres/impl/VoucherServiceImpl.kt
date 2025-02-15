@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.inout.VoucherData
+import co.nilin.opex.wallet.core.inout.VoucherGroupData
 import co.nilin.opex.wallet.core.model.Voucher
 import co.nilin.opex.wallet.core.model.VoucherGroup
 import co.nilin.opex.wallet.core.model.VoucherStatus
@@ -10,6 +11,8 @@ import co.nilin.opex.wallet.ports.postgres.dao.VoucherGroupRepository
 import co.nilin.opex.wallet.ports.postgres.dao.VoucherRepository
 import co.nilin.opex.wallet.ports.postgres.model.VoucherGroupModel
 import co.nilin.opex.wallet.ports.postgres.model.VoucherModel
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
@@ -44,6 +47,14 @@ class VoucherServiceImpl(
         return voucher
     }
 
+    override suspend fun findAll(
+        status: VoucherStatus?,
+        limit: Int?,
+        offset: Int?
+    ): List<VoucherData> {
+        return voucherRepository.findAll(status, limit, offset).map { it.asVoucherData() }.toList()
+    }
+
     private suspend fun VoucherModel.asVoucher(): Voucher {
         return Voucher(
             id,
@@ -73,7 +84,7 @@ class VoucherServiceImpl(
             useDate,
             uuid,
             voucherGroup = voucherGroup?.let {
-                voucherGroupRepository.findById(it).awaitFirstOrNull()?.asVoucherGroup()
+                voucherGroupRepository.findById(it).awaitFirstOrNull()?.asVoucherGroupData()
             })
     }
 
@@ -96,6 +107,13 @@ class VoucherServiceImpl(
     private fun VoucherGroupModel.asVoucherGroup(): VoucherGroup {
         return VoucherGroup(
             id,
+            issuer,
+            description
+        )
+    }
+
+    private fun VoucherGroupModel.asVoucherGroupData(): VoucherGroupData {
+        return VoucherGroupData(
             issuer,
             description
         )
