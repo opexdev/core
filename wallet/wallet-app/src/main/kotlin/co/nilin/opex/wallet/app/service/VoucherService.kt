@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.app.service
 
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.inout.Deposit
+import co.nilin.opex.wallet.core.inout.SubmitVoucherResponse
 import co.nilin.opex.wallet.core.inout.VoucherData
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.spi.DepositPersister
@@ -22,7 +23,7 @@ class VoucherService(
     private val logger = LoggerFactory.getLogger(VoucherService::class.java)
 
     @Transactional
-    suspend fun submitVoucher(uuid: String, code: String) {
+    suspend fun submitVoucher(uuid: String, code: String): SubmitVoucherResponse {
         logger.info("Submitting voucher for user: $uuid with code: $code")
         val voucher = findAndValidateVoucher(code)
         voucherManager.updateVoucherAsUsed(voucher, uuid)
@@ -30,10 +31,20 @@ class VoucherService(
         executeTransfer(voucher, uuid, transferRef)
         persistDeposit(voucher, uuid, transferRef)
         logger.info("Voucher submitted successfully for user: $uuid with transfer reference: $transferRef")
+        return SubmitVoucherResponse(
+            voucher.amount,
+            voucher.currency,
+            voucher.voucherGroup?.issuer,
+            voucher.voucherGroup?.description
+        )
     }
 
     suspend fun getVoucher(publicCode: String): VoucherData {
         return voucherManager.findByPublicCode(publicCode) ?: throw OpexError.VoucherNotFound.exception()
+    }
+
+    suspend fun getVouchers(status: VoucherStatus?, limit: Int?, offset: Int?): List<VoucherData> {
+        return voucherManager.findAll(status, limit, offset)
     }
 
     private fun hashWithSHA256(input: String): String {
