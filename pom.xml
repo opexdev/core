@@ -114,6 +114,9 @@
                         <goals>
                             <goal>compile</goal>
                         </goals>
+                        <configuration>
+                            <jvmTarget>${java.version}</jvmTarget>
+                        </configuration>
                     </execution>
                     <execution>
                         <id>test-compile</id>

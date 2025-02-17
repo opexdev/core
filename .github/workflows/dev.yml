@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        java: [ 17 ]
+        java: [ 21 ]
     name: Build OPEX and run tests with java ${{ matrix.java }}
     steps:
       - name: Checkout Source Code
