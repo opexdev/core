@@ -93,18 +93,18 @@ logging:
     org.zalando.logbook: TRACE
 app:
   accountant:
-    url: lb://opex-accountant
+    url: http://opex-accountant
   matching-gateway:
-    url: lb://opex-matching-gateway
+    url: http://opex-matching-gateway
   wallet:
-    url: lb://opex-wallet
+    url: http://opex-wallet
   market:
-    url: lb://opex-market
+    url: http://opex-market
   opex-bc-gateway:
-    url: lb://opex-bc-gateway
+    url: http://opex-bc-gateway
   auth:
-    cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
-    token-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/token
+    cert-url: http://opex-auth/auth/realms/opex/protocol/openid-connect/certs
+    token-url: http://opex-auth/auth/realms/opex/protocol/openid-connect/token
     api-key-client:
       secret: ${API_KEY_CLIENT_SECRET}
   binance:
