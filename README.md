@@ -38,56 +38,42 @@ microservice project work as a vanilla core for running cryptocurrency exchanges
 
 ## <a name="build-and-run"></a>Build and Run
 
-You need to have [Maven](https://maven.apache.org) and [Docker](https://www.docker.com) installed.
+You need to have [Maven](https://maven.apache.org) and [Docker](https://www.docker.com) installed on your machine.
 
-1. Clone the repository `git clone https://github.com/opexdev/core.git`
-1. Run `cd core`
-1. You will need to create and add the following [Environment Variables](#environment-variables) to the `.env` file located in the root of your project
-1. Run `mvn clean install` command.
-1. Run `docker compose -f .\docker-compose.yml -f .\docker-compose.override.yml -f .\docker-compose.build.yml -f .\docker-compose.local.yml up -d --build`.
-1. Run `docker ps` to see if every service is running.
+1. Clone the repository using `git clone https://github.com/opexdev/core.git`
+2. `cd` to the cloned directory
+3. Create `.env` file in the root directory of the project and add the required [environment variables](#environment-variables).
+4. Run `mvn clean install` command to build the project.
+5. After successful build, create docker images using `docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.build.yml -f docker-compose.local.yml up build`.
+6. Run the project using `docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.build.yml -f docker-compose.local.yml up -d`
+7. Now run `docker ps` command to see if services are healthy.
 
 
 ## <a name="environment-variables"></a>Environment Variables
 ```
 APP_NAME=Opex-local
-
 APP_BASE_URL=localhost:8080
-
 PANEL_PASS=admin
-
 BACKEND_USER=admin
-
+KEYCLOAK_ADMIN_USERNAME=opex
+KEYCLOAK_ADMIN_PASSWORD=hiopex
 SMTP_PASS=x
-
 OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET=x
-
 API_KEY_CLIENT_SECRET=x
-
 KEYCLOAK_FRONTEND_URL=http://localhost:8083/auth
-
 KEYCLOAK_ADMIN_URL=http://localhost:8083/auth
-
 KEYCLOAK_VERIFY_REDIRECT_URL=http://localhost:8080/verify
-
 KEYCLOAK_FORGOT_REDIRECT_URL=http://localhost:8080/forgot
-
-PREFERENCES=preferences.yml
-
 WHITELIST_REGISTER_ENABLED=true
-
 WHITELIST_LOGIN_ENABLED=true
-
 WALLET_BACKUP_ENABLED=false
-
 TAG=debug
 ```
-| Variable | Description |
-| :-------- | :------------------------- |
-| SMTP_PASS | An SMTP password is a password used to access an email account's |
-| OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET | Ignore this |
-| API_KEY_CLIENT_SECRET |(Please do this after starting the project, then rebuild and run the process again.) </br>1. Go to http://localhost:8083/auth/admin/master/console/#/realms/opex/clients </br>2. Click on Opex-api-key </br>3. In the Credentials section, click on Regenerate Secret </br>4. Copy the generated secret and paste it into this section |
-| PREFERENCES | For the initialization |
+| Variable                          | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+|:----------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| SMTP_PASS                         | An SMTP password is a password used to access an email account's                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| API_KEY_CLIENT_SECRET             | In order to have access to api key feature of our API, please follow the steps below:</br>1. Go to Keycloak's admin panel located at http://localhost:8083/auth/admin/master/console/#/realms/opex/clients <br/>2. Login with the username and password you provided in the `.env` file (KEYCLOAK_ADMIN_USERNAME and KEYCLOAK_ADMIN_PASSWORD)<br/>3. Go to `clients` section in the left menu </br>4. Click on `opex-api-key` client </br>5. In the credentials section, click on `Regenerate Secret` button </br>6. Copy the generated secret and paste it into this section |
+| OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET | Ignore this                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 
 ## <a name="live-demo"></a>Live Demo
 
