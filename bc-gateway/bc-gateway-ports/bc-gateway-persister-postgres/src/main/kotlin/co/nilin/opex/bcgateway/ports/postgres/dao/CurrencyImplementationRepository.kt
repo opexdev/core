@@ -30,7 +30,6 @@ interface CurrencyImplementationRepository : ReactiveCrudRepository<CurrencyOnCh
         where implementation_symbol = :symbol and chain = :chain
     """
     )
-
     fun findWithdrawDataBySymbolAndChain(symbol: String, chain: String): Mono<WithdrawData>
 
     fun findByCurrencySymbolAndChain(symbol: String, chain: String): Mono<CurrencyOnChainGatewayModel>

@@ -78,12 +78,6 @@
                 <version>${interceptor.version}</version>
             </dependency>
             <dependency>
-                <groupId>co.nilin.opex.utility</groupId>
-                <artifactId>preferences</artifactId>
-                <version>${preferences.version}</version>
-            </dependency>
-            <!-- https://mvnrepository.com/artifact/org.springframework.batch/spring-batch-core -->
-            <dependency>
                 <groupId>org.springframework.batch</groupId>
                 <artifactId>spring-batch-core</artifactId>
                 <version>5.1.0</version>

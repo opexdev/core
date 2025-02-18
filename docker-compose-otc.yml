@@ -29,7 +29,6 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
-      - PREFERENCES=$PREFERENCES
       - DRIVE_FOLDER_ID=$DRIVE_FOLDER_ID
       - BACKUP_ENABLED=$WALLET_BACKUP_ENABLED
       - SPRING_PROFILES_ACTIVE=otc
@@ -37,8 +36,6 @@ services:
       - AUTH_JWK_ENDPOINT=${JWK_ENDPOINT}
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    #    configs:
-    #      - preferences.yml
     depends_on:
       - postgres-wallet
       - vault
@@ -92,7 +89,6 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
-      - PREFERENCES=$PREFERENCES
       - ADDRESS_EXP_TIME=7200
       - SPRING_PROFILES_ACTIVE=otc
       - AUTH_URL=${AUTH_URL}
@@ -100,8 +96,6 @@ services:
       - OMNI_URL=${OMNI_URL}
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    #    configs:
-    #      - preferences.yml
     depends_on:
       - vault
       - postgres-bc-gateway
@@ -120,7 +114,6 @@ services:
     volumes:
       - bc-gateway-data:/var/lib/postgresql/data/
 
-
 volumes:
   wallet-data:
   vault-data:
@@ -137,6 +130,3 @@ secrets:
     file: opex.dev.crt
   private_pem:
     file: private.pem
-configs:
-  preferences.yml:
-    file: preferences.yml

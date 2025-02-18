@@ -2,38 +2,23 @@ version: '3.8'
 services:
   accountant:
     build: accountant/accountant-app
-    volumes:
-      - "./preferences-dev.yml:/preferences.yml"
   eventlog:
     build: eventlog/eventlog-app
   matching-engine:
     build: matching-engine/matching-engine-app
-    volumes:
-      - "./preferences-dev.yml:/preferences.yml"
   matching-engine-duo:
     build: matching-engine/matching-engine-app
-    volumes:
-      - "./preferences-dev.yml:/preferences.yml"
   matching-gateway:
     build: matching-gateway/matching-gateway-app
   auth:
     build: user-management/keycloak-gateway
-    volumes:
-      - "./preferences-dev.yml:/preferences.yml"
   wallet:
     build: wallet/wallet-app
     volumes:
-      - "./preferences-dev.yml:/preferences.yml"
       - "./drive-key.json:/drive-key.json"
   market:
     build: market/market-app
-    volumes:
-      - "./preferences-dev.yml:/preferences.yml"
   api:
     build: api/api-app
-    volumes:
-      - "./preferences-dev.yml:/preferences.yml"
   bc-gateway:
     build: bc-gateway/bc-gateway-app
-    volumes:
-      - "./preferences-dev.yml:/preferences.yml"
