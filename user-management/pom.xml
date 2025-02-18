@@ -33,10 +33,6 @@
             <artifactId>spring-boot-starter-test</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.utility</groupId>
-            <artifactId>preferences</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
         </dependency>
@@ -52,11 +48,6 @@
                 <groupId>co.nilin.opex.utility</groupId>
                 <artifactId>error-handler</artifactId>
                 <version>${error-hanlder.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>co.nilin.opex.utility</groupId>
-                <artifactId>preferences</artifactId>
-                <version>${preferences.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.auth</groupId>

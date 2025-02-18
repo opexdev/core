@@ -216,9 +216,6 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
-      - PREFERENCES=$PREFERENCES
-    configs:
-      - preferences.yml
     networks:
       - default
     depends_on:
@@ -264,9 +261,6 @@ services:
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - REDIS_HOST=redis
       - SYMBOLS=BTC_USDT,ETH_USDT,BTC_IRT,ETH_IRT,USDT_IRT,ETH_BUSD,BTC_BUSD,BNB_BUSD
-      - PREFERENCES=$PREFERENCES
-    configs:
-      - preferences.yml
     networks:
       - default
     depends_on:
@@ -286,9 +280,6 @@ services:
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - REDIS_HOST=redis-duo
       - SYMBOLS=SOL_USDT,DOGE_USDT,TON_USDT
-      - PREFERENCES=$PREFERENCES
-    configs:
-      - preferences.yml
     networks:
       - default
     depends_on:
@@ -335,7 +326,6 @@ services:
       - FORGOT_REDIRECT_URL=$KEYCLOAK_FORGOT_REDIRECT_URL
       - VAULT_URL=http://vault:8200
       - VAULT_HOST=vault
-      - PREFERENCES=$PREFERENCES
       - APP_NAME=$APP_NAME
       - APP_BASE_URL=$APP_BASE_URL
       - WHITELIST_REGISTER_ENABLED=$WHITELIST_REGISTER_ENABLED
@@ -364,11 +354,8 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
-      - PREFERENCES=$PREFERENCES
       - DRIVE_FOLDER_ID=$DRIVE_FOLDER_ID
       - BACKUP_ENABLED=$WALLET_BACKUP_ENABLED
-    configs:
-      - preferences.yml
     depends_on:
       - kafka-1
       - kafka-2
@@ -394,7 +381,6 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
-      - PREFERENCES=$PREFERENCES
     depends_on:
       - kafka-1
       - kafka-2
@@ -420,10 +406,7 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
-      - PREFERENCES=$PREFERENCES
       - API_KEY_CLIENT_SECRET=$API_KEY_CLIENT_SECRET
-    configs:
-      - preferences.yml
     depends_on:
       - accountant
       - matching-gateway
@@ -450,10 +433,7 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
-      - PREFERENCES=$PREFERENCES
       - ADDRESS_EXP_TIME=100
-    configs:
-      - preferences.yml
     depends_on:
       - kafka-1
       - kafka-2
@@ -499,6 +479,3 @@ secrets:
     file: opex.dev.crt
   private_pem:
     file: private.pem
-configs:
-  preferences.yml:
-    file: preferences.yml
