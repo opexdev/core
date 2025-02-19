@@ -14,15 +14,8 @@ import java.math.BigDecimal
 class ChartController(private val marketQueryHandler: MarketQueryHandler) {
 
     enum class Period {
-        DAILY,
-        WEEKLY,
-        MONTHLY
+        DAILY, WEEKLY, MONTHLY
     }
-
-    data class SparkLineRequest(
-        val symbols: List<String>,
-        val period: Period
-    )
 
     @GetMapping("/{symbol}/candle")
     suspend fun getCandleDataForSymbol(
@@ -37,10 +30,11 @@ class ChartController(private val marketQueryHandler: MarketQueryHandler) {
 
     @GetMapping("/spark-line")
     suspend fun getSparkLineForSymbols(
-        @RequestBody request: SparkLineRequest
+        @RequestParam("symbols") symbols: List<String>,
+        @RequestParam("period") period: Period
     ): List<SparkLineDataResponse> {
-        return request.symbols.mapNotNull { symbol ->
-            val priceData: List<PriceTime> = when (request.period) {
+        return symbols.mapNotNull { symbol ->
+            val priceData: List<PriceTime> = when (period) {
                 Period.WEEKLY -> marketQueryHandler.getWeeklyPriceData(symbol)
                 Period.MONTHLY -> marketQueryHandler.getMonthlyPriceData(symbol)
                 Period.DAILY -> marketQueryHandler.getDailyPriceData(symbol)
