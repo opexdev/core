@@ -1,5 +1,6 @@
 package co.nilin.opex.market.app.controller
 
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.market.app.data.SparkLineDataResponse
 import co.nilin.opex.market.core.inout.CandleData
 import co.nilin.opex.market.core.inout.PriceTime
@@ -13,8 +14,16 @@ import java.math.BigDecimal
 @RequestMapping("/v1/chart")
 class ChartController(private val marketQueryHandler: MarketQueryHandler) {
 
-    enum class Period {
-        DAILY, WEEKLY, MONTHLY
+    enum class Period(val code: String) {
+        DAILY("24h"),
+        WEEKLY("7d"),
+        MONTHLY("1M");
+
+        companion object {
+            fun fromCode(code: String): Period? {
+                return values().find { it.code == code }
+            }
+        }
     }
 
     @GetMapping("/{symbol}/candle")
@@ -31,8 +40,9 @@ class ChartController(private val marketQueryHandler: MarketQueryHandler) {
     @GetMapping("/spark-line")
     suspend fun getSparkLineForSymbols(
         @RequestParam("symbols") symbols: List<String>,
-        @RequestParam("period") period: Period
+        @RequestParam("period") periodCode: String
     ): List<SparkLineDataResponse> {
+        val period = Period.fromCode(periodCode) ?: throw OpexError.BadRequest.exception("Invalid period")
         return symbols.mapNotNull { symbol ->
             val priceData: List<PriceTime> = when (period) {
                 Period.WEEKLY -> marketQueryHandler.getWeeklyPriceData(symbol)
