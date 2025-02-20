@@ -13,6 +13,6 @@ interface GatewayTerminalRepository : ReactiveCrudRepository<GatewayTerminalMode
 
     fun deleteByTerminalIdAndGatewayId(terminalId: Long, gatewayId: Long): Mono<Void>
 
-    @Query("select b.* from gateway_terminal gt join terminal t on gt.terminal_id=t.id where gt.gateway_id=:gatewayId ")
+    @Query("select t.* from gateway_terminal gt join terminal t on gt.terminal_id=t.id where gt.gateway_id=:gatewayId ")
     fun findByGatewayId(gatewayId: Long): Flux<TerminalModel>?
 }

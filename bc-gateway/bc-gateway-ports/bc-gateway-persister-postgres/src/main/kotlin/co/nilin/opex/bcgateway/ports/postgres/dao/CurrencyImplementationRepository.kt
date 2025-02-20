@@ -26,7 +26,7 @@ interface CurrencyImplementationRepository : ReactiveCrudRepository<CurrencyOnCh
     @Query(
         """
         select withdraw_enabled as is_enabled, withdraw_fee as fee, withdraw_min as minimum 
-        from currency_implementations 
+        from currency_on_chain_gateway 
         where implementation_symbol = :symbol and chain = :chain
     """
     )
