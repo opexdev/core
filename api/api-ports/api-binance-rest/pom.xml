@@ -35,6 +35,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
+            <version>3.4.3</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
