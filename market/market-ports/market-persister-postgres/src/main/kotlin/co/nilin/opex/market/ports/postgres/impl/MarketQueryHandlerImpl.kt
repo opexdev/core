@@ -90,7 +90,7 @@ class MarketQueryHandlerImpl(
         val cacheKey = "recentTrades:${symbol.lowercase()}"
         val recentTradesCache = redisCacheHelper.getList<MarketTrade>(cacheKey)
         if (!recentTradesCache.isNullOrEmpty())
-            return recentTradesCache.toList().takeLast(limit)
+            return recentTradesCache.toList().take(limit)
 
         return tradeRepository.findBySymbolSortDescendingByCreateDate(symbol, limit)
             .map {
