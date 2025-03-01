@@ -7,8 +7,14 @@ data class WalletDataResponse(
 )
 
 data class WalletCurrencyData(
-    val currency: String,
-    val free: Double,
-    val locked: Double,
-    val pendingWithdraw: Double
+    val currency: String = "",
+    val free: Double = 0.0,
+    val locked: Double = 0.0,
+    val pendingWithdraw: Double = 0.0
+)
+
+data class RawWalletDataResponse(
+    val uuid: String,
+    val title: String,
+    val wallets: String
 )

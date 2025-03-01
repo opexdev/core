@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
+import co.nilin.opex.wallet.core.inout.WalletCurrencyData
 import co.nilin.opex.wallet.core.inout.WalletData
 import co.nilin.opex.wallet.core.inout.WalletDataResponse
 import co.nilin.opex.wallet.core.inout.WalletTotal
@@ -8,6 +9,7 @@ import co.nilin.opex.wallet.core.spi.WalletDataManager
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepositoryV2
 import co.nilin.opex.wallet.ports.postgres.dao.WalletRepository
 import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.stereotype.Component
@@ -50,14 +52,28 @@ class WalletDataManagerImpl(
         limit: Int,
         offset: Int
     ): List<WalletDataResponse> {
-
+        val objectMapper = jacksonObjectMapper()
         return walletRepository.findWalletDataByCriteria(
             uuid,
             currency,
             excludeSystem,
             limit,
             offset
-        ).collectList().awaitFirstOrElse { emptyList() }
+        ).map { raw ->
+            val walletsList = try {
+                objectMapper.readValue(
+                    raw.wallets,
+                    object : com.fasterxml.jackson.core.type.TypeReference<List<WalletCurrencyData>>() {}
+                )
+            } catch (e: Exception) {
+                emptyList<WalletCurrencyData>()
+            }
+            WalletDataResponse(
+                uuid = raw.uuid,
+                title = raw.title,
+                wallets = walletsList
+            )
+        }.collectList().awaitFirstOrElse { emptyList() }
     }
 
     override suspend fun findSystemWalletsTotal(): List<WalletTotal> {

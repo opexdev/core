@@ -1,7 +1,7 @@
 package co.nilin.opex.wallet.ports.postgres.dao
 
+import co.nilin.opex.wallet.core.inout.RawWalletDataResponse
 import co.nilin.opex.wallet.core.inout.WalletData
-import co.nilin.opex.wallet.core.inout.WalletDataResponse
 import co.nilin.opex.wallet.core.inout.WalletTotal
 import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.ports.postgres.model.WalletModel
@@ -116,7 +116,7 @@ interface WalletRepository : ReactiveCrudRepository<WalletModel, Long> {
         excludeSystem: Boolean,
         limit: Int,
         offset: Int
-    ): Flux<WalletDataResponse>
+    ): Flux<RawWalletDataResponse>
 
     @Query(
         """
