@@ -81,6 +81,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     TerminalNotFound(6035, "Object not found", HttpStatus.BAD_REQUEST),
     VoucherNotFound(6036, "Voucher not found", HttpStatus.NOT_FOUND),
     InvalidVoucher(6037, "Invalid Voucher", HttpStatus.BAD_REQUEST),
+    PairIsNotAvailable(6038, "Pair is not available", HttpStatus.BAD_REQUEST),
 
 
     // code 7000: api

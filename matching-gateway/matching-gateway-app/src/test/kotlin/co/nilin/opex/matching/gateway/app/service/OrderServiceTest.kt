@@ -7,6 +7,7 @@ import co.nilin.opex.matching.gateway.app.spi.PairConfigLoader
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.inout.OrderSubmitResult
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.KafkaHealthIndicator
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.OrderRequestEventSubmitter
+import co.nilin.opex.matching.gateway.ports.postgres.service.PairSettingService
 import io.mockk.MockKException
 import io.mockk.clearMocks
 import io.mockk.coEvery
@@ -23,11 +24,14 @@ private class OrderServiceTest {
     private val eventSubmitter: OrderRequestEventSubmitter = mockk()
     private val pairConfigLoader: PairConfigLoader = mockk()
     private val kafkaHealthIndicator: KafkaHealthIndicator = mockk()
+    private val pairSettingService: PairSettingService = mockk()
+
     private val orderService: OrderService = OrderService(
         accountantApiProxy,
         orderRequestEventSubmitter,
         pairConfigLoader,
-        kafkaHealthIndicator
+        pairSettingService,
+        kafkaHealthIndicator,
     )
 
     private fun stubASK() {

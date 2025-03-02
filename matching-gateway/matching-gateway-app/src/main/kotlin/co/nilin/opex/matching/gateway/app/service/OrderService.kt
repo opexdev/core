@@ -12,6 +12,7 @@ import co.nilin.opex.matching.gateway.ports.kafka.submitter.inout.OrderSubmitReq
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.inout.OrderSubmitResult
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.KafkaHealthIndicator
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.OrderRequestEventSubmitter
+import co.nilin.opex.matching.gateway.ports.postgres.service.PairSettingService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
@@ -21,6 +22,7 @@ class OrderService(
     val accountantApiProxy: AccountantApiProxy,
     val orderRequestEventSubmitter: OrderRequestEventSubmitter,
     val pairConfigLoader: PairConfigLoader,
+    val pairSettingService: PairSettingService,
     private val kafkaHealthIndicator: KafkaHealthIndicator,
 ) {
 
@@ -28,6 +30,11 @@ class OrderService(
 
     suspend fun submitNewOrder(createOrderRequest: CreateOrderRequest): OrderSubmitResult {
         require(createOrderRequest.price >= BigDecimal.ZERO)
+
+        val pairSetting = pairSettingService.load(createOrderRequest.pair)
+        if (!pairSetting.isAvailable)
+            throw OpexError.PairIsNotAvailable.exception()
+
         val symbolSides = createOrderRequest.pair.split("_")
         val symbol = if (createOrderRequest.direction == OrderDirection.ASK)
             symbolSides[0]
