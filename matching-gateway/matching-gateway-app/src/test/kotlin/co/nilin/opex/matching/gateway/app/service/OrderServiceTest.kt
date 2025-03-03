@@ -36,6 +36,9 @@ private class OrderServiceTest {
 
     private fun stubASK() {
         coEvery {
+            pairSettingService.load(VALID.ETH_USDT)
+        } returns VALID.PAIR_SETTING
+        coEvery {
             pairConfigLoader.load(
                 VALID.ETH_USDT,
                 OrderDirection.ASK
@@ -47,16 +50,19 @@ private class OrderServiceTest {
                 VALID.ETH,
                 VALID.CREATE_ORDER_REQUEST_ASK.quantity
             )
-        } returns true
-        coEvery {
-            orderRequestEventSubmitter.submit(any())
-        } returns OrderSubmitResult(null)
-        coEvery {
-            kafkaHealthIndicator.isHealthy
-        } returns true
+            coEvery {
+                orderRequestEventSubmitter.submit(any())
+            } returns OrderSubmitResult(null)
+            coEvery {
+                kafkaHealthIndicator.isHealthy
+            } returns true
+        }
     }
 
     private fun stubBID() {
+        coEvery {
+            pairSettingService.load(VALID.ETH_USDT)
+        } returns VALID.PAIR_SETTING
         coEvery {
             pairConfigLoader.load(
                 VALID.ETH_USDT,
@@ -90,11 +96,13 @@ private class OrderServiceTest {
     @Test
     fun givenPair_whenSubmitNewOrderByInvalidSymbol_thenThrow(): Unit = runBlocking {
         stubASK()
-        clearMocks(pairConfigLoader)
+        clearMocks(pairConfigLoader, pairSettingService)
         coEvery {
             pairConfigLoader.load("BTC_ETH", OrderDirection.ASK)
         } throws Exception()
-
+        coEvery {
+            pairSettingService.load("BTC_ETH")
+        } throws Exception()
         assertThatThrownBy {
             runBlocking {
                 orderService.submitNewOrder(VALID.CREATE_ORDER_REQUEST_ASK.copy(pair = "BTC_ETH"))
@@ -136,11 +144,13 @@ private class OrderServiceTest {
     @Test
     fun givenPair_whenSubmitNewOrderByBIDAndInvalidSymbol_thenThrow(): Unit = runBlocking {
         stubBID()
-        clearMocks(pairConfigLoader)
+        clearMocks(pairConfigLoader, pairSettingService)
         coEvery {
             pairConfigLoader.load("BTC_USDT", OrderDirection.BID)
         } throws Exception()
-
+        coEvery {
+            pairSettingService.load("BTC_USDT")
+        } throws Exception()
         assertThatThrownBy {
             runBlocking {
                 orderService.submitNewOrder(VALID.CREATE_ORDER_REQUEST_BID.copy(pair = "BTC_USDT"))
