@@ -72,6 +72,16 @@ class TransferService(
             .firstOrNull() ?: throw OpexError.NOT_EXCHANGEABLE_CURRENCIES.exception()
         return amount.multiply(rate.rate)
     }
+    suspend fun calculateSourceAmount(
+            symbol: String,
+            amount: BigDecimal,
+            destSymbol: String,
+    ): BigDecimal {
+        val rate = currencyGraph.buildRoutes(symbol, destSymbol)
+                .map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }
+                .firstOrNull() ?: throw OpexError.NOT_EXCHANGEABLE_CURRENCIES.exception()
+        return amount.divide(rate.rate)
+    }
 
     suspend fun reserveTransfer(
         sourceAmount: BigDecimal,
