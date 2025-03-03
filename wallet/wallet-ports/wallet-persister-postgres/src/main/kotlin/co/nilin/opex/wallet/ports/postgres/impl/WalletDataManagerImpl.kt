@@ -9,7 +9,8 @@ import co.nilin.opex.wallet.core.spi.WalletDataManager
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepositoryV2
 import co.nilin.opex.wallet.ports.postgres.dao.WalletRepository
 import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.databind.ObjectMapper
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.stereotype.Component
@@ -17,7 +18,8 @@ import org.springframework.stereotype.Component
 @Component
 class WalletDataManagerImpl(
     private val walletRepository: WalletRepository,
-    private val currencyRepositoryV2: CurrencyRepositoryV2
+    private val currencyRepositoryV2: CurrencyRepositoryV2,
+    private val objectMapper: ObjectMapper
 ) : WalletDataManager {
 
     override suspend fun findWalletDataByCriteria(
@@ -52,7 +54,6 @@ class WalletDataManagerImpl(
         limit: Int,
         offset: Int
     ): List<WalletDataResponse> {
-        val objectMapper = jacksonObjectMapper()
         return walletRepository.findWalletDataByCriteria(
             uuid,
             currency,
@@ -63,7 +64,7 @@ class WalletDataManagerImpl(
             val walletsList = try {
                 objectMapper.readValue(
                     raw.wallets,
-                    object : com.fasterxml.jackson.core.type.TypeReference<List<WalletCurrencyData>>() {}
+                    object : TypeReference<List<WalletCurrencyData>>() {}
                 )
             } catch (e: Exception) {
                 emptyList<WalletCurrencyData>()
