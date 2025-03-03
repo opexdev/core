@@ -41,7 +41,6 @@ class OrderService(
         else
             symbolSides[1]
 
-        //TODO cache
         val pairConfig = pairConfigLoader.load(createOrderRequest.pair, createOrderRequest.direction)
 
         val canCreateOrder = runCatching {

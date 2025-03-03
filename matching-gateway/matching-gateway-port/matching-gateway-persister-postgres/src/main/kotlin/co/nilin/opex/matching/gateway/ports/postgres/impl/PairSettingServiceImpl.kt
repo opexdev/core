@@ -45,6 +45,8 @@ class PairSettingServiceImpl(
     override suspend fun update(pair: String, isAvailable: Boolean): PairSetting {
         val pairSetting =
             pairSettingRepository.findByPair(pair).awaitFirstOrNull() ?: throw OpexError.PairNotFound.exception()
+        if (pairSetting.isAvailable == isAvailable)
+            throw OpexError.BadRequest.exception("Pair availability is already $isAvailable")
         pairSetting.apply {
             this.isAvailable = isAvailable
             this.updateDate = LocalDateTime.now()
