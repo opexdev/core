@@ -38,25 +38,29 @@ private class OrderServiceTest {
         coEvery {
             pairSettingService.load(VALID.ETH_USDT)
         } returns VALID.PAIR_SETTING
+
         coEvery {
             pairConfigLoader.load(
                 VALID.ETH_USDT,
                 OrderDirection.ASK
             )
         } returns VALID.PAIR_CONFIG
+
         coEvery {
             accountantApiProxy.canCreateOrder(
                 VALID.CREATE_ORDER_REQUEST_ASK.uuid!!,
                 VALID.ETH,
                 VALID.CREATE_ORDER_REQUEST_ASK.quantity
             )
-            coEvery {
-                orderRequestEventSubmitter.submit(any())
-            } returns OrderSubmitResult(null)
-            coEvery {
-                kafkaHealthIndicator.isHealthy
-            } returns true
-        }
+        } returns true
+
+        coEvery {
+            orderRequestEventSubmitter.submit(any())
+        } returns OrderSubmitResult(null)
+
+        coEvery {
+            kafkaHealthIndicator.isHealthy
+        } returns true
     }
 
     private fun stubBID() {
