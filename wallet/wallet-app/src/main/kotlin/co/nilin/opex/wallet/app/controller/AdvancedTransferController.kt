@@ -47,6 +47,25 @@ class AdvancedTransferController {
         return TransferPreEvaluateResponse(transferService.calculateDestinationAmount(symbol, amount, destSymbol))
     }
 
+    @GetMapping("/v3/amount/{symbol}/{amount}_{destSymbol}")
+    @ApiResponse(
+            message = "OK",
+            code = 200,
+            examples = Example(
+                    ExampleProperty(
+                            value = "{ \"destAmount\": \"111\"}",
+                            mediaType = "application/json"
+                    )
+            )
+    )
+    suspend fun calculateSourceAmount(
+            @PathVariable symbol: String,
+            @PathVariable amount: BigDecimal,
+            @PathVariable destSymbol: String,
+    ): TransferPreEvaluateResponse {
+        return TransferPreEvaluateResponse(transferService.calculateSourceAmount(symbol, amount, destSymbol))
+    }
+
     @PostMapping("/v3/transfer/reserve")
     @ApiResponse(
         message = "OK",
