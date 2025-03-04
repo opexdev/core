@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.ports.postgres.dao
 
+import co.nilin.opex.wallet.core.inout.RawWalletDataResponse
 import co.nilin.opex.wallet.core.inout.WalletData
 import co.nilin.opex.wallet.core.inout.WalletTotal
 import co.nilin.opex.wallet.core.model.WalletType
@@ -78,12 +79,54 @@ interface WalletRepository : ReactiveCrudRepository<WalletModel, Long> {
 
     @Query(
         """
+    WITH WalletSummary AS (
+        SELECT 
+            wo.uuid,
+            wo.title,
+            w.currency,
+            SUM(CASE WHEN w.wallet_type = 'MAIN' THEN w.balance ELSE 0 END) AS free,
+            SUM(CASE WHEN w.wallet_type = 'EXCHANGE' THEN w.balance ELSE 0 END) AS locked,
+            SUM(CASE WHEN w.wallet_type = 'CASHOUT' THEN w.balance ELSE 0 END) AS pending_withdraw
+        FROM wallet_owner wo
+        JOIN wallet w ON w.owner = wo.id
+        WHERE (:currency IS NULL OR w.currency = :currency)
+            AND (:uuid IS NULL OR wo.uuid = :uuid)
+            AND (:excludeSystem = false OR wo.uuid != '1')
+        GROUP BY wo.uuid, wo.title, w.currency
+    )
+    SELECT 
+        ws.uuid,
+        ws.title,
+        json_agg(
+            json_build_object(
+                'currency', ws.currency,
+                'free', ws.free,
+                'locked', ws.locked,
+                'pendingWithdraw', ws.pending_withdraw
+            )
+        ) AS wallets
+    FROM WalletSummary ws
+    GROUP BY ws.uuid, ws.title
+    LIMIT :limit OFFSET :offset
+    """
+    )
+    fun findWalletDataByCriteria(
+        uuid: String?,
+        currency: String?,
+        excludeSystem: Boolean,
+        limit: Int,
+        offset: Int
+    ): Flux<RawWalletDataResponse>
+
+    @Query(
+        """
         select w.currency, sum(balance) as balance from wallet w
         join wallet_owner wo on w.owner = wo.id
         where wo.uuid = '1' and wallet_type in ('MAIN', 'EXCHANGE')
         group by w.currency
     """
     )
+
     fun findSystemWalletsTotal(): Flux<WalletTotal>
 
     @Query(
