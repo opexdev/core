@@ -1,8 +1,10 @@
 package co.nilin.opex.matching.gateway.ports.postgres.service
 
-import co.nilin.opex.common.utils.DynamicInterval
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.matching.gateway.ports.postgres.dao.PairSettingRepository
-import co.nilin.opex.matching.gateway.ports.postgres.util.RedisCacheHelper
+import co.nilin.opex.matching.gateway.ports.postgres.dto.PairSetting
+import co.nilin.opex.matching.gateway.ports.postgres.util.CacheManager
+import co.nilin.opex.matching.gateway.ports.postgres.util.toPairSetting
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -16,7 +18,7 @@ import javax.annotation.PostConstruct
 @Service
 class PairSettingInitializer(
     private val pairSettingRepository: PairSettingRepository,
-    private val redisCacheHelper: RedisCacheHelper,
+    private val cacheManager: CacheManager<String, PairSetting>,
     @Value("\${app.symbols}")
     private val symbols: String
 ) {
@@ -39,9 +41,10 @@ class PairSettingInitializer(
                     val existingPair = pairSettingRepository.findByPair(pair).awaitFirstOrNull()
 
                     val pairToCache = existingPair ?: pairSettingRepository.insert(pair, true).awaitFirstOrNull()
+                    ?: throw OpexError.BadRequest.exception()
                     logger.info("Added Pair: $pair")
 
-                    redisCacheHelper.put(pair, pairToCache, DynamicInterval(5, TimeUnit.MINUTES))
+                    cacheManager.put(pair, pairToCache.toPairSetting(), 5, TimeUnit.MINUTES)
 
                     if (existingPair != null) {
                         logger.info("Pair already exists: $pair")

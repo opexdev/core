@@ -25,9 +25,6 @@ spring:
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
     initialization-mode: always
-  redis:
-    host: redis-cache
-    port: 6379
 management:
   endpoints:
     web:

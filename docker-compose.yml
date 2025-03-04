@@ -314,7 +314,6 @@ services:
       - consul
       - matching-engine
       - postgres-matching-gateway
-      - redis-cache
     labels:
       collect_logs: "true"
     deploy:

@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS PAIR_SETTING
 (
-    PAIR             VARCHAR(72) PRIMARY KEY,
-    IS_AVAILABLE        BOOLEAN     NOT NULL DEFAULT TRUE,
-    UPDATE_DATE      TIMESTAMP
+    pair             VARCHAR(72) PRIMARY KEY,
+    is_available        BOOLEAN     NOT NULL DEFAULT TRUE,
+    update_date      TIMESTAMP
     );
 COMMIT;

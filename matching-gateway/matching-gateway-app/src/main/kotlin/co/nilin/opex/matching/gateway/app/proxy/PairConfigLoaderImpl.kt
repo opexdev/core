@@ -1,27 +1,26 @@
 package co.nilin.opex.matching.gateway.app.proxy
 
-import co.nilin.opex.common.utils.DynamicInterval
 import co.nilin.opex.matching.engine.core.model.OrderDirection
 import co.nilin.opex.matching.gateway.app.inout.PairConfig
 import co.nilin.opex.matching.gateway.app.spi.AccountantApiProxy
 import co.nilin.opex.matching.gateway.app.spi.PairConfigLoader
-import co.nilin.opex.matching.gateway.ports.postgres.util.RedisCacheHelper
+import co.nilin.opex.matching.gateway.ports.postgres.util.CacheManager
 import org.springframework.stereotype.Service
 import java.util.concurrent.TimeUnit
 
 @Service
 class PairConfigLoaderImpl(
     private val accountantApiProxy: AccountantApiProxy,
-    private val redisCacheHelper: RedisCacheHelper
+    private val cacheManager: CacheManager<String, PairConfig>
 ) : PairConfigLoader {
     override suspend fun load(pair: String, direction: OrderDirection): PairConfig {
-        return redisCacheHelper.get<PairConfig>("pair-config:$pair-$direction")
+        return cacheManager.get("pair-config:$pair-$direction")
             ?: accountantApiProxy.fetchPairConfig(pair, direction)
                 .also {
-                    redisCacheHelper.put(
+                    cacheManager.put(
                         "pair-config:$pair-$direction",
                         it,
-                        DynamicInterval(5, TimeUnit.MINUTES)
+                        5, TimeUnit.MINUTES
                     )
 
                 }
