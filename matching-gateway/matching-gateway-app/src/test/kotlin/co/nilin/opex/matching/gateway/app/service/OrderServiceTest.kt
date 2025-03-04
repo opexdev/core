@@ -7,6 +7,7 @@ import co.nilin.opex.matching.gateway.app.spi.PairConfigLoader
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.inout.OrderSubmitResult
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.KafkaHealthIndicator
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.OrderRequestEventSubmitter
+import co.nilin.opex.matching.gateway.ports.postgres.service.PairSettingService
 import io.mockk.MockKException
 import io.mockk.clearMocks
 import io.mockk.coEvery
@@ -23,20 +24,28 @@ private class OrderServiceTest {
     private val eventSubmitter: OrderRequestEventSubmitter = mockk()
     private val pairConfigLoader: PairConfigLoader = mockk()
     private val kafkaHealthIndicator: KafkaHealthIndicator = mockk()
+    private val pairSettingService: PairSettingService = mockk()
+
     private val orderService: OrderService = OrderService(
         accountantApiProxy,
         orderRequestEventSubmitter,
         pairConfigLoader,
-        kafkaHealthIndicator
+        pairSettingService,
+        kafkaHealthIndicator,
     )
 
     private fun stubASK() {
+        coEvery {
+            pairSettingService.load(VALID.ETH_USDT)
+        } returns VALID.PAIR_SETTING
+
         coEvery {
             pairConfigLoader.load(
                 VALID.ETH_USDT,
                 OrderDirection.ASK
             )
         } returns VALID.PAIR_CONFIG
+
         coEvery {
             accountantApiProxy.canCreateOrder(
                 VALID.CREATE_ORDER_REQUEST_ASK.uuid!!,
@@ -44,15 +53,20 @@ private class OrderServiceTest {
                 VALID.CREATE_ORDER_REQUEST_ASK.quantity
             )
         } returns true
+
         coEvery {
             orderRequestEventSubmitter.submit(any())
         } returns OrderSubmitResult(null)
+
         coEvery {
             kafkaHealthIndicator.isHealthy
         } returns true
     }
 
     private fun stubBID() {
+        coEvery {
+            pairSettingService.load(VALID.ETH_USDT)
+        } returns VALID.PAIR_SETTING
         coEvery {
             pairConfigLoader.load(
                 VALID.ETH_USDT,
@@ -86,11 +100,13 @@ private class OrderServiceTest {
     @Test
     fun givenPair_whenSubmitNewOrderByInvalidSymbol_thenThrow(): Unit = runBlocking {
         stubASK()
-        clearMocks(pairConfigLoader)
+        clearMocks(pairConfigLoader, pairSettingService)
         coEvery {
             pairConfigLoader.load("BTC_ETH", OrderDirection.ASK)
         } throws Exception()
-
+        coEvery {
+            pairSettingService.load("BTC_ETH")
+        } throws Exception()
         assertThatThrownBy {
             runBlocking {
                 orderService.submitNewOrder(VALID.CREATE_ORDER_REQUEST_ASK.copy(pair = "BTC_ETH"))
@@ -132,11 +148,13 @@ private class OrderServiceTest {
     @Test
     fun givenPair_whenSubmitNewOrderByBIDAndInvalidSymbol_thenThrow(): Unit = runBlocking {
         stubBID()
-        clearMocks(pairConfigLoader)
+        clearMocks(pairConfigLoader, pairSettingService)
         coEvery {
             pairConfigLoader.load("BTC_USDT", OrderDirection.BID)
         } throws Exception()
-
+        coEvery {
+            pairSettingService.load("BTC_USDT")
+        } throws Exception()
         assertThatThrownBy {
             runBlocking {
                 orderService.submitNewOrder(VALID.CREATE_ORDER_REQUEST_BID.copy(pair = "BTC_USDT"))

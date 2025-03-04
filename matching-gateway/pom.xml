@@ -18,6 +18,7 @@
     <modules>
         <module>matching-gateway-app</module>
         <module>matching-gateway-port/matching-gateway-submitter-kafka</module>
+        <module>matching-gateway-port/matching-gateway-persister-postgres</module>
     </modules>
 
     <dependencies>
@@ -46,6 +47,11 @@
             <dependency>
                 <groupId>co.nilin.opex.matching.gateway.ports.kafka.submitter</groupId>
                 <artifactId>matching-gateway-submitter-kafka</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.matching.gateway.ports.postgres</groupId>
+                <artifactId>matching-gateway-persister-postgres</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

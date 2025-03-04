@@ -40,6 +40,10 @@
             <artifactId>matching-gateway-submitter-kafka</artifactId>
         </dependency>
         <dependency>
+            <groupId>co.nilin.opex.matching.gateway.ports.postgres</groupId>
+            <artifactId>matching-gateway-persister-postgres</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-consul-all</artifactId>
         </dependency>
