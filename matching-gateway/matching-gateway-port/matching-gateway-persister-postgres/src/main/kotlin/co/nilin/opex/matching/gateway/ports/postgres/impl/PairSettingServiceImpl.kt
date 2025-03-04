@@ -45,7 +45,7 @@ class PairSettingServiceImpl(
         val pairSetting =
             pairSettingRepository.findByPair(pair).awaitFirstOrNull() ?: throw OpexError.PairNotFound.exception()
         if (pairSetting.isAvailable == isAvailable)
-            throw OpexError.BadRequest.exception("Pair availability is already $isAvailable")
+            return pairSetting.toPairSetting()
         pairSetting.apply {
             this.isAvailable = isAvailable
             this.updateDate = LocalDateTime.now()
