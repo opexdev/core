@@ -6,15 +6,17 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer
 import org.jfree.data.xy.XYSeries
 import org.jfree.data.xy.XYSeriesCollection
 import org.jfree.graphics2d.svg.SVGGraphics2D
+import java.awt.Color
 import java.awt.Rectangle
 import java.math.BigDecimal
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.Base64
 
 fun createLineChart(prices: List<BigDecimal>, times: List<LocalDateTime>): String {
     val series = XYSeries("Price").apply {
         prices.zip(times).forEach { (price, time) ->
-            add(time.atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli(), price.toDouble())
+            add(time.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(), price.toDouble())
         }
     }
     val dataset = XYSeriesCollection().apply {
@@ -33,12 +35,21 @@ fun createLineChart(prices: List<BigDecimal>, times: List<LocalDateTime>): Strin
     val plot: XYPlot = chart.xyPlot
     val renderer = XYLineAndShapeRenderer(true, false)
     // Set chart color
-    renderer.setSeriesPaint(0, java.awt.Color.WHITE)
+    renderer.setSeriesPaint(0, Color.WHITE)
     // Set axis ranges to keep the chart logical
     plot.rangeAxis.range = org.jfree.data.Range(
         prices.minOrNull()?.toDouble()?.times(0.99) ?: 0.0,
         prices.maxOrNull()?.toDouble() ?: 0.0
     )
+
+    val timesInMillis = times.map { it.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() }
+    plot.domainAxis.range = org.jfree.data.Range(
+        timesInMillis.minOrNull()?.toDouble() ?: 0.0,
+        timesInMillis.maxOrNull()?.toDouble() ?: 0.0
+    )
+    plot.domainAxis.lowerMargin = 0.0
+    plot.domainAxis.upperMargin = 0.0
+
     // Remove gridlines, axis, and background
     plot.renderer = renderer
     plot.isDomainGridlinesVisible = false
