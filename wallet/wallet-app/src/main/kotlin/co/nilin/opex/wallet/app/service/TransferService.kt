@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.util.*
 
 
@@ -80,7 +81,7 @@ class TransferService(
         val rate = currencyGraph.buildRoutes(symbol, destSymbol)
                 .map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }
                 .firstOrNull() ?: throw OpexError.NOT_EXCHANGEABLE_CURRENCIES.exception()
-        return amount.divide(rate.rate)
+        return amount.divide(rate.rate,10,RoundingMode.HALF_UP)
     }
 
     suspend fun reserveTransfer(
