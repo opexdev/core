@@ -55,4 +55,16 @@ class ChartController(private val marketQueryHandler: MarketQueryHandler) {
             SparkLineDataResponse(symbol, isTrendUp, svgData)
         }
     }
+
+    @GetMapping("/v1/hi")
+    suspend fun hiv1(
+    ): String {
+        return "hi"
+    }
+
+    @GetMapping("/v2/hi")
+    suspend fun hiv2(
+    ): String {
+        return "hi"
+    }
 }
