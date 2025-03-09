@@ -1,0 +1,15 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: user-management-core
+
+keycloak:
+  url: http://localhost:8080
+  realm: opex
+  client-id: "opex-admin"
+  client-secret: "**********"
+
+otp:
+  url: http://localhost:8081
