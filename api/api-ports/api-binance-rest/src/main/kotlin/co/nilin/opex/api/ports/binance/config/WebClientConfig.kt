@@ -22,14 +22,14 @@ class WebClientConfig {
     @Bean
     fun webClient(webclientBuilder: WebClient.Builder): WebClient {
         val cp = ConnectionProvider.builder("apiBinanceWebclientConnectionPool")
-            .maxConnections(500)
+            .maxConnections(5000)
             .maxIdleTime(Duration.ofSeconds(20))
             .maxLifeTime(Duration.ofMinutes(2))
-            .pendingAcquireTimeout(Duration.ofSeconds(5))
+            .pendingAcquireTimeout(Duration.ofSeconds(10))
             .evictInBackground(Duration.ofSeconds(30))
             .build()
         val client = HttpClient.create(cp)
-            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
             .responseTimeout(Duration.ofSeconds(10))
         return webclientBuilder.clientConnector(ReactorClientHttpConnector(client)).build()
     }
