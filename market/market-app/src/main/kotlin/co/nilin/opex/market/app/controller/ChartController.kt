@@ -65,6 +65,6 @@ class ChartController(private val marketQueryHandler: MarketQueryHandler) {
     @GetMapping("/v2/hi")
     suspend fun hiv2(
     ): String {
-        return "hi"
+        return "global hi"
     }
 }

@@ -25,11 +25,11 @@ class RateLimiterService(
         return Bucket.builder().addLimit(limit).build()
     }
 
-    fun checkRateLimit(key: String, maxRequests: Int, windowInSeconds: Int , apiPath : String): Boolean {
+    fun checkRateLimit(key: String, maxRequests: Int, windowInSeconds: Int, apiPath: String): Boolean {
         val redisKey = "rate-limit:$key-$apiPath"
 
         val storedTokenCount: Long? = redisCacheHelper.get(redisKey)
-        val bucket = buckets.computeIfAbsent(key) { createBucket(maxRequests, windowInSeconds.toLong()) }
+        val bucket = buckets.computeIfAbsent(redisKey) { createBucket(maxRequests, windowInSeconds.toLong()) }
 
         if (storedTokenCount == null) {
             bucket.reset()
