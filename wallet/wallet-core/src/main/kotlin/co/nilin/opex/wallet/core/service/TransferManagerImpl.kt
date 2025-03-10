@@ -384,6 +384,7 @@ class TransferManagerImpl(
                     gainerBalance + amount,
                     amount,
                     UserTransactionCategory.VOUCHER,
+                    command.description
                 )
                 userTransactionManager.save(gainerTx)
             }
