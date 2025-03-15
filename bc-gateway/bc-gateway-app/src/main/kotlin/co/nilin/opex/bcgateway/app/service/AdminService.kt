@@ -37,14 +37,17 @@ class AdminService(
         addressTypeHandler.addAddressType(name, addressRegex, memoRegex)
     }
 
-    suspend fun addAddress(addresses: List<String>, memos: List<String?>?, addressType: String) {
+    suspend fun addAddresses(addresses: List<String>, memos: List<String?>?, addressType: String) {
         var addressTypeObj =
             addressTypeHandler.fetchAddressType(addressType) ?: throw OpexError.InvalidAddressType.exception()
-        val reservedAddress = addresses.mapIndexed { index, address ->
-            val memo: String? = memos?.getOrNull(index)
-            ReservedAddress(address = address, memo = memo ?: "", type = addressTypeObj)
+        val reservedAddresses = addresses.mapIndexed { index, address ->
+            ReservedAddress(
+                address = address,
+                memo = memos?.getOrNull(index).orEmpty(),
+                type = addressTypeObj
+            )
         }
-        reservedAddressHandler.addReservedAddress(reservedAddress)
+        reservedAddressHandler.addReservedAddress(reservedAddresses)
     }
 
 //    suspend fun addToken(body: TokenRequest): CryptoCurrencyCommand {

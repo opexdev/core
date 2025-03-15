@@ -42,9 +42,9 @@ class AdminController(
         service.addAddressType(body.name, body.addressRegex, body.memoRegex)
     }
 
-    @PostMapping("/address")
-    suspend fun addAddress(@RequestBody body: AddAddressRequest) {
-        service.addAddress(body.addresses, body.memos, body.addressType)
+    @PostMapping("/addresses")
+    suspend fun addAddresses(@RequestBody body: AddAddressesRequest) {
+        service.addAddresses(body.addresses, body.memos, body.addressType)
     }
 
     // shifted to crypto currency class!
