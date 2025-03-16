@@ -5,10 +5,15 @@ import java.time.LocalDateTime
 
 @Table("otp")
 data class OTP(
-    val code: Int,
+    val code: String,
     val subject: String,
     val tracingCode: String,
     val type: OTPType,
     val expiresAt: LocalDateTime,
     val id: Long? = null,
-)
+) {
+
+    fun isExpired(): Boolean {
+        return LocalDateTime.now().isBefore(expiresAt)
+    }
+}

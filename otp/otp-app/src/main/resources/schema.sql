@@ -1,7 +1,7 @@
 create table if not exists otp
 (
     id           serial primary key,
-    code         varchar(16) not null,
+    code         text        not null,
     subject      text        not null,
     tracing_code text        not null unique,
     type         varchar(16) not null,
