@@ -32,6 +32,7 @@
         <module>user-management</module>
         <module>wallet</module>
         <module>bc-gateway</module>
+        <module>otp</module>
         <module>common</module>
     </modules>
 
