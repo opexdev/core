@@ -23,6 +23,7 @@ class AdminController(private val marketQueryHandler: MarketQueryHandler) {
             request.takerUuid,
             request.fromDate?.asLocalDateTime(),
             request.toDate?.asLocalDateTime(),
+            request.excludeSelfTrade,
             request.limit,
             request.offset
         )

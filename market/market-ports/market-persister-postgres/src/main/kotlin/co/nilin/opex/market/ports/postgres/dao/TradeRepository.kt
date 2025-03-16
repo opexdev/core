@@ -514,6 +514,7 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
             and (:takerUuid is null or taker_uuid = :takerUuid) 
             and (:fromDate is null or trade_date >= :fromDate) 
             and (:toDate is null or trade_date <= :toDate) 
+            and (:excludeSelfTrade is false or maker_uuid != taker_uuid)
         order by trade_date DESC 
         limit :limit
         offset :offset
@@ -525,6 +526,7 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         takerUuid: String?,
         fromDate: LocalDateTime?,
         toDate: LocalDateTime?,
+        excludeSelfTrade: Boolean,
         limit: Int,
         offset: Int,
     ): Flow<TradeModel>

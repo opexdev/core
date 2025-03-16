@@ -123,10 +123,11 @@ class MarketQueryHandlerImpl(
         takerUuid: String?,
         fromDate: LocalDateTime?,
         toDate: LocalDateTime?,
+        excludeSelfTrade: Boolean,
         limit: Int,
         offset: Int,
     ): List<TradeData> {
-        return tradeRepository.findByCriteria(symbol, makerUuid, takerUuid, fromDate, toDate, limit, offset)
+        return tradeRepository.findByCriteria(symbol, makerUuid, takerUuid, fromDate, toDate,excludeSelfTrade, limit, offset)
             .map {
                 TradeData(
                     tradeId = it.tradeId,

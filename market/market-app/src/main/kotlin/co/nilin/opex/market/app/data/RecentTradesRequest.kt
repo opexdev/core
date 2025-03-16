@@ -6,6 +6,7 @@ data class RecentTradesRequest(
     val takerUuid: String?,
     val fromDate: Long?,
     val toDate: Long?,
+    val excludeSelfTrade : Boolean = true,
     val limit: Int,
     val offset: Int,
 

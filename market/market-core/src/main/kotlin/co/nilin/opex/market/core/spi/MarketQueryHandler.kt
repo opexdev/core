@@ -24,6 +24,7 @@ interface MarketQueryHandler {
         takerUuid: String?,
         fromDate: LocalDateTime?,
         toDate: LocalDateTime?,
+        excludeSelfTrade: Boolean,
         limit: Int,
         offset: Int,
     ): List<TradeData>
