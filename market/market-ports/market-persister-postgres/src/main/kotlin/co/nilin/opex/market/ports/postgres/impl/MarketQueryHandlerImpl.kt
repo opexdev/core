@@ -30,7 +30,7 @@ class MarketQueryHandlerImpl(
     private val orderRepository: OrderRepository,
     private val tradeRepository: TradeRepository,
     private val orderStatusRepository: OrderStatusRepository,
-    private val redisCacheHelper: RedisCacheHelper
+    private val redisCacheHelper: RedisCacheHelper,
 ) : MarketQueryHandler {
 
     //TODO merge order and status fetching in query
@@ -117,6 +117,34 @@ class MarketQueryHandlerImpl(
             .also { redisCacheHelper.setExpiration(cacheKey, 60.minutes()) }
     }
 
+    override suspend fun recentTrades(
+        symbol: String?,
+        makerUuid: String?,
+        takerUuid: String?,
+        fromDate: LocalDateTime?,
+        toDate: LocalDateTime?,
+        excludeSelfTrade: Boolean,
+        limit: Int,
+        offset: Int,
+    ): List<TradeData> {
+        return tradeRepository.findByCriteria(symbol, makerUuid, takerUuid, fromDate, toDate,excludeSelfTrade, limit, offset)
+            .map {
+                TradeData(
+                    tradeId = it.tradeId,
+                    symbol = it.symbol,
+                    matchedPrice = it.matchedPrice,
+                    matchedQuantity = it.matchedQuantity,
+                    takerPrice = it.takerPrice,
+                    makerPrice = it.makerPrice,
+                    tradeDate = it.tradeDate,
+                    makerUuid = it.makerUuid,
+                    takerUuid = it.takerUuid,
+                )
+            }
+            .toList()
+    }
+
+
     override suspend fun lastPrice(symbol: String?): List<PriceTicker> {
         val list = redisCacheHelper.getOrElse("lastPrice", 1.minutes()) {
             if (symbol.isNullOrEmpty())
@@ -141,7 +169,7 @@ class MarketQueryHandlerImpl(
         interval: String,
         startTime: Long?,
         endTime: Long?,
-        limit: Int
+        limit: Int,
     ): List<CandleData> {
         val st = if (startTime == null)
             tradeRepository.findFirstByCreateDate().awaitFirstOrNull()?.createDate ?: LocalDateTime.now()
@@ -237,6 +265,7 @@ class MarketQueryHandlerImpl(
             tradeRepository.findByMostTrades(interval.getLocalDateTime()).awaitSingleOrNull()
         }
     }
+
     override suspend fun getWeeklyPriceData(symbol: String): List<PriceTime> {
         return getPriceDataWithCache(
             symbol = symbol,
@@ -263,11 +292,12 @@ class MarketQueryHandlerImpl(
             fromDate = LocalDateTime.now().minusDays(1)
         )
     }
-   private suspend fun getPriceDataWithCache(
+
+    private suspend fun getPriceDataWithCache(
         symbol: String,
         cacheKeyPrefix: String,
         interval: String,
-        fromDate: LocalDateTime
+        fromDate: LocalDateTime,
     ): List<PriceTime> {
         val cacheKey = "${cacheKeyPrefix}:${symbol.lowercase()}"
         val cachedData = redisCacheHelper.getList<PriceTime>(cacheKey)

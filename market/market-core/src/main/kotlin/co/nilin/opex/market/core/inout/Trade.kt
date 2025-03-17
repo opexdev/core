@@ -3,6 +3,7 @@ package co.nilin.opex.market.core.inout
 import java.math.BigDecimal
 import java.util.*
 
+// User trade data
 data class Trade(
     val symbol: String,
     val id: Long,

@@ -56,6 +56,7 @@ class AppConfig(private val resourceLoader: ResourceLoader) {
             .replace("-----BEGIN PUBLIC KEY-----", "")
             .replace("-----END PUBLIC KEY-----", "")
             .replace("\n", "")
+            .replace("\r", "")
 
         val keyBytes = Base64.getDecoder().decode(publicKeyString)
         val keySpec = X509EncodedKeySpec(keyBytes)

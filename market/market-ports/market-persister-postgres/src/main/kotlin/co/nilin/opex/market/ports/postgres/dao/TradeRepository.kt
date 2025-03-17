@@ -46,7 +46,7 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         startTime: Date?,
         @Param("endTime")
         endTime: Date?,
-        limit: Int
+        limit: Int,
     ): Flow<TradeModel>
 
     @Query("select * from trades where symbol = :symbol order by create_date desc limit :limit")
@@ -54,7 +54,7 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         @Param("symbol")
         symbol: String,
         @Param("limit")
-        limit: Int
+        limit: Int,
     ): Flow<TradeModel>
 
     @Query(
@@ -416,7 +416,7 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         startDate: LocalDateTime?,
         endDate: LocalDateTime?,
         offset: Int?,
-        limit: Int?
+        limit: Int?,
     ): Flux<Transaction>
 
 
@@ -471,7 +471,7 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         startDate: LocalDateTime?,
         endDate: LocalDateTime?,
         offset: Int?,
-        limit: Int?
+        limit: Int?,
     ): Flux<Transaction>
 
     @Query(
@@ -504,4 +504,30 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         @Param("endTime")
         endTime: LocalDateTime,
     ): Flux<PriceTimeData>
+
+
+    @Query(
+        """
+        select * from trades where
+             (:symbol is null or symbol = :symbol) 
+            and (:makerUuid is null or maker_uuid = :makerUuid) 
+            and (:takerUuid is null or taker_uuid = :takerUuid) 
+            and (:fromDate is null or trade_date >= :fromDate) 
+            and (:toDate is null or trade_date <= :toDate) 
+            and (:excludeSelfTrade is false or maker_uuid != taker_uuid)
+        order by trade_date DESC 
+        limit :limit
+        offset :offset
+        """
+    )
+    suspend fun findByCriteria(
+        symbol: String?,
+        makerUuid: String?,
+        takerUuid: String?,
+        fromDate: LocalDateTime?,
+        toDate: LocalDateTime?,
+        excludeSelfTrade: Boolean,
+        limit: Int,
+        offset: Int,
+    ): Flow<TradeModel>
 }

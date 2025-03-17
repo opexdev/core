@@ -15,7 +15,7 @@ class AdminController(
     private val service: AdminService,
     private val chainLoader: ChainLoader,
     private val currencyHandler: CurrencyHandlerImplV2,
-    private val addressTypeHandler: AddressTypeHandler
+    private val addressTypeHandler: AddressTypeHandler,
 ) {
 
     @GetMapping("/chain")
@@ -42,6 +42,10 @@ class AdminController(
         service.addAddressType(body.name, body.addressRegex, body.memoRegex)
     }
 
+    @PostMapping("/addresses")
+    suspend fun addAddresses(@RequestBody body: AddAddressesRequest) {
+        service.addAddresses(body.addresses, body.memos, body.addressType)
+    }
 
     // shifted to crypto currency class!
 
