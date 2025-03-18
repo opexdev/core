@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 @Table("otp")
 data class OTP(
     val code: String,
-    val subject: String,
+    val receiver: String,
     val tracingCode: String,
     val type: OTPType,
     val expiresAt: LocalDateTime,

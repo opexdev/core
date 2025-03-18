@@ -8,5 +8,6 @@ data class OTPConfig(
     @Id val type: OTPType,
     var expireTimeSeconds: Int = 60,
     var charCount: Int = 6,
-    var isEnabled: Boolean = true,
+    var includeAlphabetChars: Boolean = false,
+    var isEnabled: Boolean = true
 )
