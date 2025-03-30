@@ -1,0 +1,48 @@
+package co.nilin.opex.auth.model
+
+import com.fasterxml.jackson.annotation.JsonProperty
+
+data class PasswordFlowTokenRequest(
+    val username: String,
+    val password: String,
+    val otpVerifyRequest: OTPVerifyRequest?
+)
+
+data class ExternalIdpTokenRequest(
+    val idToken: String,
+    val accessToken: String,
+    val idp: String,
+    val otpVerifyRequest: OTPVerifyRequest?
+)
+
+data class Token(
+    @JsonProperty("access_token")
+    val accessToken: String,          // The access token
+
+    @JsonProperty("expires_in")
+    val expiresIn: Int?,               // Expiration time of the access token in seconds
+
+    @JsonProperty("refresh_expires_in")
+    val refreshExpiresIn: Int?,        // Expiration time of the refresh token in seconds
+
+    @JsonProperty("refresh_token")
+    val refreshToken: String?,         // The refresh token
+
+    @JsonProperty("token_type")
+    val tokenType: String?,            // Type of token (usually "Bearer")
+
+    @JsonProperty("not-before-policy")
+    val notBeforePolicy: Int?,         // Timestamp indicating when the token becomes valid
+
+    @JsonProperty("session_state")
+    val sessionState: String?,         // Session state (optional)
+
+    @JsonProperty("scope")
+    val scope: String?                 // Scopes associated with the token
+
+)
+
+data class TokenResponse(
+    val token: Token?,
+    val otpSendResponse: OTPSendResponse?
+)

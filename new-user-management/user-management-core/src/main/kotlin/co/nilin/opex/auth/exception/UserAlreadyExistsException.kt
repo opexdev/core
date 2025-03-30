@@ -1,3 +1,3 @@
 package co.nilin.opex.auth.exception
 
-class UserAlreadyExistsException(message: String) : RuntimeException(message) 
+class UserAlreadyExistsException(username: String) : RuntimeException("User with email ${username} already exists.")

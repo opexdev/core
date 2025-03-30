@@ -1592,6 +1592,19 @@
                 "name": "map-roles-composite"
               }
             ]
+          },
+          {
+            "name": "idp.resource.6456448e-2415-49ad-bf95-1b5176557862",
+            "type": "IdentityProvider",
+            "ownerManagedAccess": false,
+            "attributes": {},
+            "_id": "6e7f2b92-270c-43f1-a1ec-ea63a84a1ed8",
+            "uris": [],
+            "scopes": [
+              {
+                "name": "token-exchange"
+              }
+            ]
           }
         ],
         "policies": [
@@ -1612,7 +1625,7 @@
             "logic": "POSITIVE",
             "decisionStrategy": "UNANIMOUS",
             "config": {
-              "clients": "[\"web-app\"]"
+              "clients": "[\"web-app\", \"opex-admin\"]"
             }
           },
           {
@@ -1690,6 +1703,19 @@
             "config": {
               "resources": "[\"client.resource.13d76feb-d762-4409-bb84-7a75bc395a61\"]",
               "scopes": "[\"token-exchange\"]"
+            }
+          },
+          {
+            "id": "f5035f7f-a56a-445f-a2c5-1f3de30da46a",
+            "name": "token-exchange.permission.idp.6456448e-2415-49ad-bf95-1b5176557862",
+            "description": "",
+            "type": "scope",
+            "logic": "POSITIVE",
+            "decisionStrategy": "UNANIMOUS",
+            "config": {
+              "resources": "[\"idp.resource.6456448e-2415-49ad-bf95-1b5176557862\"]",
+              "scopes": "[\"token-exchange\"]",
+              "applyPolicies": "[\"opex-api-exchange\"]"
             }
           },
           {
@@ -2874,7 +2900,18 @@
   "enabledEventTypes": [],
   "adminEventsEnabled": false,
   "adminEventsDetailsEnabled": false,
-  "identityProviders": [],
+  "identityProviders": [{
+    "alias": "google",
+    "providerId": "google",
+    "internalId": "6456448e-2415-49ad-bf95-1b5176557862",
+    "enabled": true,
+    "config": {
+      "clientId": "625813606110-er3v3sol4v206kdg40gf0ltqv08scgs2.apps.googleusercontent.com",
+      "clientSecret": "**********",
+      "defaultScope": "openid profile email",
+      "autoLink": true
+    }
+  }],
   "identityProviderMappers": [],
   "components": {
     "org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy": [

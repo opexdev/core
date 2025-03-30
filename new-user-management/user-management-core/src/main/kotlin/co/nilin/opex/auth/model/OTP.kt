@@ -6,16 +6,25 @@ data class OTPSendRequest(
     @field:NotBlank(message = "receiver is required")
     val receiver: String,
     @field:NotBlank(message = "type is required")
-    val type: String, //valid otp types can be fetched from server
+    val otpTypes: List<String>
 )
 
 data class OTPSendResponse(
-    val tracingCode: String
+    val tracingCode: String,
+    val otpTypes: List<String>
 )
+
+data class OTPCode (
+    @field:NotBlank(message = "code is required")
+    val code: String,
+
+    @field:NotBlank(message = "otpType is required")
+    val otpType: String,
+)
+
 
 data class OTPVerifyRequest(
     @field:NotBlank(message = "tracingCode is required")
     val tracingCode: String,
-    @field:NotBlank(message = "code is required")
-    val code: String
+    val otpCodes: List<OTPCode>
 )
