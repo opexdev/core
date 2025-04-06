@@ -36,6 +36,7 @@ class UserService(@Qualifier("otpWebClient") private val otpClient: WebClient,
         } catch (e: Exception) {
             val userId =  keycloakProxy.createExternalIdpUser(email, username, externalIdpUserRegisterRequest.password)
             keycloakProxy.linkGoogleIdentity(userId, email, googleUserId)
+            return
         }
         throw UserAlreadyExistsException(email)
     }
