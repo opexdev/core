@@ -10,4 +10,5 @@ class KeycloakConfig {
     lateinit var realm: String
     lateinit var clientId: String
     lateinit var clientSecret: String
+    lateinit var googleClientId: String
 } 

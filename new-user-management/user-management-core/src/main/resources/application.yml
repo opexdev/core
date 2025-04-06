@@ -10,6 +10,7 @@ keycloak:
   realm: opex
   client-id: "opex-admin"
   client-secret: "**********"
+  google-client-id: ${GOOGLE_CLIENT_ID}
 
 otp:
   url: http://localhost:8081
