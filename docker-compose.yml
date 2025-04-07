@@ -205,6 +205,10 @@ services:
     <<: *postgres-db
     volumes:
       - bc-gateway-data:/var/lib/postgresql/data/
+  postgres-otp:
+    <<: *postgres-db
+    volumes:
+      - otp-data:/var/lib/postgresql/data/
   accountant:
     image: ghcr.io/opexdev/accountant
     environment:
@@ -470,6 +474,28 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  otp:
+    image: ghcr.io/opexdev/otp
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - CONSUL_HOST=consul
+      - DB_IP_PORT=postgres-otp
+      - DB_USER=${DB_USER:-opex}
+      - DB_PASS=${DB_PASS:-hiopex}
+      - SMS_PROVIDER_API_KEY=${SMS_PROVIDER_API_KEY}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+    depends_on:
+      - consul
+      - postgres-otp
+    networks:
+      - default
+    labels:
+      collect_logs: "true"
+    deploy:
+      restart_policy:
+        condition: on-failure
 volumes:
   zookeeper-data:
   zookeeper-log:
@@ -489,6 +515,7 @@ volumes:
   market-data:
   api-data:
   bc-gateway-data:
+  otp-data:
 networks:
   opex:
     external: true

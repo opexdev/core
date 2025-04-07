@@ -5,6 +5,7 @@ import co.nilin.opex.otp.app.model.OTP
 import co.nilin.opex.otp.app.model.OTPType
 import co.nilin.opex.otp.app.repository.OTPConfigRepository
 import co.nilin.opex.otp.app.repository.OTPRepository
+import co.nilin.opex.otp.app.service.message.MessageManager
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Component
@@ -16,7 +17,8 @@ import kotlin.random.Random
 @Component
 class OTPService(
     private val repository: OTPRepository,
-    private val configRepository: OTPConfigRepository
+    private val configRepository: OTPConfigRepository,
+    private val messageManager: MessageManager
 ) {
 
     private val logger by LoggerDelegate()
@@ -32,8 +34,9 @@ class OTPService(
         }
 
         val expireTime = LocalDateTime.now().plusSeconds(config.expireTimeSeconds.toLong())
+        val code = generateCode(config.charCount, config.includeAlphabetChars)
         val newOtp = OTP(
-            generateCode(config.charCount, config.includeAlphabetChars).encode(),
+            code.encode(),
             receiver,
             UUID.randomUUID().toString(),
             type,
@@ -41,7 +44,7 @@ class OTPService(
         )
 
         val otp = repository.save(newOtp)
-        //todo send code to receiver
+        messageManager.sendMessage(type, code, receiver)
         return otp.tracingCode
     }
 

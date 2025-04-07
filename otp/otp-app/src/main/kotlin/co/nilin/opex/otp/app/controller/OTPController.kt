@@ -16,13 +16,13 @@ import javax.validation.Valid
 class OTPController(private val otpService: OTPService) {
 
     @PostMapping
-    suspend fun requestOTP(@RequestBody @Valid request: NewOTPRequest): NewOTPResponse {
+    suspend fun requestOTP(@RequestBody request: NewOTPRequest): NewOTPResponse {
         val tracingCode = otpService.requestOTP(request.receiver, request.type)
         return NewOTPResponse(tracingCode)
     }
 
     @PostMapping("/verify")
-    suspend fun verifyOTP(@RequestBody @Valid request: VerifyOTPRequest): VerifyOTPResponse {
+    suspend fun verifyOTP(@RequestBody request: VerifyOTPRequest): VerifyOTPResponse {
         val isValid = otpService.verifyOTP(request.code, request.tracingCode)
         return VerifyOTPResponse(isValid)
     }

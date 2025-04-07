@@ -14,6 +14,6 @@ data class OTP(
 ) {
 
     fun isExpired(): Boolean {
-        return LocalDateTime.now().isBefore(expiresAt)
+        return LocalDateTime.now().isAfter(expiresAt)
     }
 }

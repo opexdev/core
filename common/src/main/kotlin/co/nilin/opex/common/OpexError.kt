@@ -95,6 +95,9 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
 
     // code 11000: market
 
+    // code 12000: otp
+    OTPConfigNotFound(12001, "Config for otp type not found", HttpStatus.NOT_FOUND),
+
     ;
 
     override fun code() = this.code
