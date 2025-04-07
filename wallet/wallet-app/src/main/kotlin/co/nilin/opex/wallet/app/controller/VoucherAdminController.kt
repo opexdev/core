@@ -2,7 +2,7 @@ package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.wallet.app.service.VoucherService
 import co.nilin.opex.wallet.core.inout.VoucherData
-import co.nilin.opex.wallet.core.model.VoucherStatus
+import co.nilin.opex.wallet.core.model.VoucherGroupStatus
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -16,7 +16,7 @@ class VoucherAdminController(private val voucherService: VoucherService) {
 
     @GetMapping
     suspend fun getVoucher(
-        @RequestParam status: VoucherStatus?,
+        @RequestParam status: VoucherGroupStatus?,
         @RequestParam limit: Int?,
         @RequestParam offset: Int?
     ): List<VoucherData> {

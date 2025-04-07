@@ -399,3 +399,75 @@ CREATE TABLE IF NOT EXISTS voucher
     voucher_group     INTEGER REFERENCES voucher_group (id)
 );
 
+CREATE TABLE IF NOT EXISTS voucher_usage
+(
+    id           SERIAL PRIMARY KEY,
+    voucher      INTEGER  NOT NULL REFERENCES voucher (id),
+    use_date     TIMESTAMP,
+    uuid         VARCHAR(36)
+);
+CREATE INDEX IF NOT EXISTS idx_voucher_usage_voucher ON voucher_usage (voucher);
+CREATE INDEX IF NOT EXISTS idx_voucher_usage_uuid ON voucher_usage (uuid);
+
+CREATE TABLE IF NOT EXISTS voucher_sale_data
+(
+    id                    SERIAL PRIMARY KEY,
+    voucher               INTEGER  NOT NULL REFERENCES voucher (id),
+    national_code         VARCHAR(10) NOT NULL ,
+    phone_number          VARCHAR(11) NOT NULL ,
+    transaction_number    VARCHAR(255) NOT NULL ,
+    transaction_amount    DECIMAL NOT NULL ,
+    sale_date             TIMESTAMP NOT NULL ,
+    seller_uuid           VARCHAR(36) NOT NULL
+);
+
+DO
+$$
+    BEGIN
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'voucher_group' AND column_name = 'type') THEN ALTER TABLE voucher_group
+            ADD COLUMN type VARCHAR(20) ;
+        END IF;
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'voucher_group' AND column_name = 'status') THEN ALTER TABLE voucher_group
+            ADD COLUMN status VARCHAR(20);
+        END IF;
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'voucher_group' AND column_name = 'remaining_usage') THEN ALTER TABLE voucher_group
+            ADD COLUMN remaining_usage INTEGER;
+        END IF;
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'voucher_group' AND column_name = 'user_limit') THEN ALTER TABLE voucher_group
+            ADD COLUMN user_limit INTEGER;
+        END IF;
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'voucher_group' AND column_name = 'version') THEN ALTER TABLE voucher_group
+            ADD COLUMN version INTEGER;
+        END IF;
+        IF EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'voucher' AND column_name = 'voucher_group') THEN ALTER TABLE voucher
+            ALTER COLUMN voucher_group SET NOT NULL ;
+        END IF;
+        IF EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'voucher' AND column_name = 'status') THEN ALTER TABLE voucher
+            DROP COLUMN status;
+        END IF;
+        IF EXISTS (SELECT 1
+                   FROM information_schema.columns
+                   WHERE table_name = 'voucher' AND column_name = 'use_date') THEN ALTER TABLE voucher
+            DROP COLUMN use_date;
+        END IF;
+        IF EXISTS (SELECT 1
+                   FROM information_schema.columns
+                   WHERE table_name = 'voucher' AND column_name = 'uuid') THEN ALTER TABLE voucher
+            DROP COLUMN uuid;
+        END IF;
+    END
+$$;
