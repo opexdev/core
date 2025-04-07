@@ -2906,8 +2906,8 @@
     "internalId": "6456448e-2415-49ad-bf95-1b5176557862",
     "enabled": true,
     "config": {
-      "clientId": "625813606110-er3v3sol4v206kdg40gf0ltqv08scgs2.apps.googleusercontent.com",
-      "clientSecret": "**********",
+      "clientId": "${GOOGLE_CLIENT_ID}",
+      "clientSecret": "${GOOGLE_CLIENT_SECRET}",
       "defaultScope": "openid profile email",
       "autoLink": true
     }

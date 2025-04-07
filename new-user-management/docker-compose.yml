@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   keycloak:
-    image: quay.io/keycloak/keycloak:22.0.5
+    image: quay.io/keycloak/keycloak:26.1
     container_name: keycloak
     environment:
       KEYCLOAK_ADMIN: admin
@@ -13,6 +13,8 @@ services:
       KC_DB_PASSWORD: keycloak
       KC_HEALTH_ENABLED: true
       KC_METRICS_ENABLED: true
+      GOOGLE_CLIENT_ID: 625813606110-er3v3sol4v206kdg40gf0ltqv08scgs2.apps.googleusercontent.com
+      GOOGLE_CLIENT_SECRET: "*************"
     command:
       - start-dev
       - --import-realm

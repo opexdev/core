@@ -3,6 +3,7 @@ package co.nilin.opex.auth.controller
 import co.nilin.opex.auth.exception.UserAlreadyExistsException
 import co.nilin.opex.auth.exception.UserNotFoundException
 import co.nilin.opex.auth.model.ErrorResponse
+import com.auth0.jwt.exceptions.JWTVerificationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ControllerAdvice
@@ -27,5 +28,13 @@ class GlobalExceptionHandler {
     ): ResponseEntity<ErrorResponse> {
         val path = exchange.request.path.value()
         return ResponseEntity(ErrorResponse(Instant.now(), HttpStatus.NOT_FOUND.value(), UserNotFoundException::class.simpleName!!, ex.message!!, path), HttpStatus.CONFLICT)
+    }
+
+    @ExceptionHandler(JWTVerificationException::class)
+    fun handleInvalidToken(ex: JWTVerificationException
+                                , exchange: ServerWebExchange
+    ): ResponseEntity<ErrorResponse> {
+        val path = exchange.request.path.value()
+        return ResponseEntity(ErrorResponse(Instant.now(), HttpStatus.BAD_REQUEST.value(), JWTVerificationException::class.simpleName!!, ex.message!!, path), HttpStatus.CONFLICT)
     }
 }
