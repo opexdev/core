@@ -15,16 +15,20 @@ interface VoucherUsageRepository : ReactiveCrudRepository<VoucherUsageModel, Lon
     fun existsVoucherUsage(voucherId: Long): Mono<Boolean>
 
     @Query(
-        "select count(*) from voucher_usage vu" +
-                " inner join voucher v on v.id = vu.voucher" +
-                " inner join voucher_group vg on v.voucher_group = vg.id" +
-                " where vu.uuid = :uuid and vg.id = :voucherGroupId"
+        """
+        select count(*) from voucher_usage vu
+            inner join voucher v on v.id = vu.voucher
+            inner join voucher_group vg on v.voucher_group = vg.id
+                where vu.uuid = :uuid and vg.id = :voucherGroupId
+        """
     )
     fun count(uuid: String, voucherGroupId: Long): Mono<Long>
 
     @Query(
-        "select count(*) from voucher_usage" +
-                " where voucher = :voucherId"
+        """
+        select count(*) from voucher_usage
+            where voucher = :voucherId
+        """
     )
     fun count(voucherId : Long): Mono<Long>
 

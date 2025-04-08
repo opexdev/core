@@ -412,10 +412,10 @@ CREATE INDEX IF NOT EXISTS idx_voucher_usage_uuid ON voucher_usage (uuid);
 CREATE TABLE IF NOT EXISTS voucher_sale_data
 (
     id                    SERIAL PRIMARY KEY,
-    voucher               INTEGER  NOT NULL REFERENCES voucher (id),
+    voucher               INTEGER  NOT NULL UNIQUE REFERENCES voucher (id),
     national_code         VARCHAR(10) NOT NULL ,
     phone_number          VARCHAR(11) NOT NULL ,
-    transaction_number    VARCHAR(255) NOT NULL ,
+    transaction_number    VARCHAR(255) NOT NULL UNIQUE ,
     transaction_amount    DECIMAL NOT NULL ,
     sale_date             TIMESTAMP NOT NULL ,
     seller_uuid           VARCHAR(36) NOT NULL

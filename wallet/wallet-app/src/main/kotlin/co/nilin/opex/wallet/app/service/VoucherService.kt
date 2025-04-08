@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.app.service
 
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.wallet.app.dto.SellVoucherRequest
 import co.nilin.opex.wallet.core.inout.Deposit
 import co.nilin.opex.wallet.core.inout.SubmitVoucherResponse
 import co.nilin.opex.wallet.core.inout.VoucherData
@@ -40,16 +41,32 @@ class VoucherService(
     }
 
     suspend fun getVoucher(publicCode: String): VoucherData {
-        return voucherManager.findByPublicCode(publicCode) ?: throw OpexError.VoucherNotFound.exception()
+        return voucherManager.getVoucherDataByPublicCode(publicCode)
     }
 
-    suspend fun getVouchers(status: VoucherGroupStatus?, limit: Int?, offset: Int?): List<VoucherData> {
-        return voucherManager.findAll(status, limit, offset)
+    suspend fun getVouchers(type: VoucherGroupType?, limit: Int?, offset: Int?): List<VoucherData> {
+        return voucherManager.getVouchers(type, limit, offset)
     }
 
-    suspend fun sellVoucher(voucherSaleData: VoucherSaleData) : VoucherSaleData{
+    suspend fun sellVoucher(request: SellVoucherRequest, uuid: String) {
+        val voucher = voucherManager.getVoucherByPublicCode(request.publicCode)
+        val voucherId = requireNotNull(voucher.id) { "Voucher ID cannot be null" }
 
-        TODO()
+        if (voucher.voucherGroup.type != VoucherGroupType.SALE || voucherManager.getUsageCount(voucherId) > 0)
+            throw OpexError.InvalidVoucher.exception("This voucher cannot be sold")
+
+        voucherManager.saveVoucherSaleData(
+            VoucherSaleData(
+                voucherId,
+                request.nationalCode,
+                request.phoneNumber,
+                request.transactionNumber,
+                request.transactionAmount,
+                LocalDateTime.now(),
+                uuid
+            )
+        )
+        logger.info("Voucher with code: ${request.publicCode} sold by $uuid")
     }
 
     private fun hashWithSHA256(input: String): String {
@@ -58,68 +75,65 @@ class VoucherService(
     }
 
     private suspend fun findAndValidateVoucher(code: String, uuid: String): Voucher {
-
-        val voucher = voucherManager.findByPrivateCode(hashWithSHA256(code))
-            ?: throw OpexError.VoucherNotFound.exception("Voucher with the provided code was not found")
-
-        val voucherGroup = voucherManager.findVoucherGroup(requireNotNull(voucher.voucherGroup.id))
-            ?: throw OpexError.VoucherGroupNotFound.exception("Voucher group not found")
-
+        val voucher = voucherManager.getVoucherByPrivateCode(hashWithSHA256(code))
+        val voucherGroup = voucherManager.getVoucherGroup(requireNotNull(voucher.voucherGroup.id))
         validateVoucher(voucher, voucherGroup, uuid)
-
         return voucher
     }
 
-
     private suspend fun validateVoucher(voucher: Voucher, voucherGroup: VoucherGroup, uuid: String) {
-        if (voucher.expireDate < LocalDateTime.now()) {
-            throw OpexError.InvalidVoucher.exception("Voucher has expired")
-        }
+        if (voucherGroup.status != VoucherGroupStatus.ACTIVE)
+            throw OpexError.VoucherGroupIsInactive.exception()
+
+        if (voucher.expireDate < LocalDateTime.now())
+            throw OpexError.VoucherExpired.exception()
 
         val voucherGroupId = requireNotNull(voucherGroup.id) { "Voucher group ID cannot be null" }
+        val voucherId = requireNotNull(voucher.id) { "Voucher ID cannot be null" }
+
+        validateUserLimit(voucherGroup, uuid, voucherGroupId)
 
         when (voucherGroup.type) {
-            VoucherGroupType.GIFT -> {
-                if (voucherManager.isExistVoucherUsage(requireNotNull(voucher.id))) {
-                    throw OpexError.InvalidVoucher.exception("Voucher has already been used")
-                }
+            VoucherGroupType.GIFT -> validateGiftVoucher(voucherId)
+            VoucherGroupType.CAMPAIGN -> validateCampaignVoucher(voucherGroup)
+            VoucherGroupType.SALE -> validateSaleVoucher(voucherId)
+            else -> throw OpexError.BadRequest.exception("Unsupported voucher group type: ${voucherGroup.type}")
+        }
+    }
 
-                voucherGroup.userLimit?.let { limit ->
-                    val usageCount = voucherManager.findUsageCount(uuid, voucherGroupId)
-                    if (usageCount >= limit) {
-                        throw OpexError.InvalidVoucher.exception("Voucher usage limit exceeded for user")
-                    }
-                }
-            }
-
-            VoucherGroupType.CAMPAIGN -> {
-                val remainingUsage = voucherGroup.remainingUsage
-                    ?: throw OpexError.InvalidVoucher.exception("Campaign voucher is not available")
-
-                if (remainingUsage < 1) {
-                    throw OpexError.InvalidVoucher.exception("No remaining usage for this campaign voucher")
-                }
-
-                voucherGroup.userLimit?.let { limit ->
-                    val usageCount = voucherManager.findUsageCount(uuid, voucherGroupId)
-                    if (usageCount >= limit) {
-                        throw OpexError.InvalidVoucher.exception("Voucher usage limit exceeded for user")
-                    }
-                }
-
-                voucherManager.updateVoucherGroupRemaining(voucherGroupId, remainingUsage - 1)
-            }
-
-            VoucherGroupType.SALE -> {
-                logger.info("Voucher type SALE is not implemented yet")
-            }
-
-            else -> {
-                throw OpexError.BadRequest.exception("Unsupported voucher group type: ${voucherGroup.type}")
+    private suspend fun validateUserLimit(group: VoucherGroup, uuid: String, groupId: Long) {
+        group.userLimit?.let { limit ->
+            val usageCount = voucherManager.getUsageCount(uuid, groupId)
+            if (usageCount >= limit) {
+                throw OpexError.InvalidVoucher.exception("Voucher usage limit exceeded for user")
             }
         }
     }
 
+    private suspend fun validateGiftVoucher(voucherId: Long) {
+        if (voucherManager.isExistVoucherUsage(voucherId)) {
+            throw OpexError.VoucherAlreadyUsed.exception()
+        }
+    }
+
+    private suspend fun validateCampaignVoucher(group: VoucherGroup) {
+        val remainingUsage = group.remainingUsage
+            ?: throw OpexError.InvalidVoucher.exception("Campaign voucher is not available")
+
+        if (remainingUsage < 1) {
+            throw OpexError.InvalidVoucher.exception("No remaining usage for this campaign voucher")
+        }
+    }
+
+    private suspend fun validateSaleVoucher(voucherId: Long) {
+        if (voucherManager.isExistVoucherUsage(voucherId)) {
+            throw OpexError.VoucherAlreadyUsed.exception()
+        }
+
+        if (!voucherManager.isExistVoucherSaleData(voucherId)) {
+            throw OpexError.InvalidVoucher.exception("Voucher sale data not found")
+        }
+    }
 
     private suspend fun executeTransfer(voucher: Voucher, userId: String, transferRef: String) {
         logger.info("Executing transfer for voucher: ${voucher.publicCode} to user: $userId with reference: $transferRef")

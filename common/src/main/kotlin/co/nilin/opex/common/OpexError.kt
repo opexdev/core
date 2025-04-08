@@ -83,6 +83,9 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     InvalidVoucher(6037, "Invalid Voucher", HttpStatus.BAD_REQUEST),
     PairIsNotAvailable(6038, "Pair is not available", HttpStatus.BAD_REQUEST),
     VoucherGroupNotFound(6039, "Voucher Group not found", HttpStatus.NOT_FOUND),
+    VoucherGroupIsInactive(6040, "Voucher Group is inactive", HttpStatus.BAD_REQUEST),
+    VoucherAlreadyUsed(6041, "Voucher has already been used", HttpStatus.BAD_REQUEST),
+    VoucherExpired(6042, "Voucher has expired", HttpStatus.BAD_REQUEST),
 
 
 

@@ -1,8 +1,11 @@
 package co.nilin.opex.wallet.app.controller
 
+import co.nilin.opex.wallet.app.dto.SellVoucherRequest
 import co.nilin.opex.wallet.app.service.VoucherService
 import co.nilin.opex.wallet.core.inout.VoucherData
-import co.nilin.opex.wallet.core.model.VoucherGroupStatus
+import co.nilin.opex.wallet.core.model.VoucherGroupType
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -16,10 +19,18 @@ class VoucherAdminController(private val voucherService: VoucherService) {
 
     @GetMapping
     suspend fun getVoucher(
-        @RequestParam status: VoucherGroupStatus?,
+        @RequestParam type: VoucherGroupType?,
         @RequestParam limit: Int?,
-        @RequestParam offset: Int?
+        @RequestParam offset: Int?,
     ): List<VoucherData> {
-        return voucherService.getVouchers(status, limit, offset)
+        return voucherService.getVouchers(type, limit, offset)
+    }
+
+    @PostMapping("/sell")
+    suspend fun sellVoucher(
+        @RequestBody request: SellVoucherRequest,
+        @CurrentSecurityContext securityContext: SecurityContext,
+    ) {
+        return voucherService.sellVoucher(request, securityContext.authentication.name)
     }
 }

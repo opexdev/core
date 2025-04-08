@@ -5,13 +5,16 @@ import co.nilin.opex.wallet.core.inout.VoucherData
 import co.nilin.opex.wallet.core.inout.VoucherGroupData
 import co.nilin.opex.wallet.core.model.Voucher
 import co.nilin.opex.wallet.core.model.VoucherGroup
-import co.nilin.opex.wallet.core.model.VoucherGroupStatus
+import co.nilin.opex.wallet.core.model.VoucherGroupType
+import co.nilin.opex.wallet.core.model.VoucherSaleData
 import co.nilin.opex.wallet.core.spi.VoucherManager
 import co.nilin.opex.wallet.ports.postgres.dao.VoucherGroupRepository
 import co.nilin.opex.wallet.ports.postgres.dao.VoucherRepository
+import co.nilin.opex.wallet.ports.postgres.dao.VoucherSaleDataRepository
 import co.nilin.opex.wallet.ports.postgres.dao.VoucherUsageRepository
 import co.nilin.opex.wallet.ports.postgres.model.VoucherGroupModel
 import co.nilin.opex.wallet.ports.postgres.model.VoucherModel
+import co.nilin.opex.wallet.ports.postgres.model.VoucherSaleDataModel
 import co.nilin.opex.wallet.ports.postgres.model.VoucherUsageModel
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -26,16 +29,22 @@ class VoucherServiceImpl(
     private val voucherRepository: VoucherRepository,
     private val voucherGroupRepository: VoucherGroupRepository,
     private val voucherUsageRepository: VoucherUsageRepository,
+    private val voucherSaleDataRepository: VoucherSaleDataRepository,
 ) : VoucherManager {
 
     private val logger = LoggerFactory.getLogger(VoucherServiceImpl::class.java)
 
-    override suspend fun findByPublicCode(code: String): VoucherData? {
+    override suspend fun getVoucherDataByPublicCode(code: String): VoucherData {
         return voucherRepository.findByPublicCode(code).awaitFirstOrNull()?.asVoucherData()
             ?: throw OpexError.VoucherNotFound.exception()
     }
 
-    override suspend fun findByPrivateCode(code: String): Voucher? {
+    override suspend fun getVoucherByPublicCode(code: String): Voucher {
+        return voucherRepository.findByPublicCode(code).awaitFirstOrNull()?.asVoucher()
+            ?: throw OpexError.VoucherNotFound.exception()
+    }
+
+    override suspend fun getVoucherByPrivateCode(code: String): Voucher {
         return voucherRepository.findByPrivateCode(code).awaitFirstOrNull()?.asVoucher()
             ?: throw OpexError.VoucherNotFound.exception()
     }
@@ -45,15 +54,15 @@ class VoucherServiceImpl(
         voucherUsageRepository.save(voucherUsageModel).awaitFirst()
     }
 
-    override suspend fun findAll(
-        status: VoucherGroupStatus?,
+    override suspend fun getVouchers(
+        type: VoucherGroupType?,
         limit: Int?,
         offset: Int?,
     ): List<VoucherData> {
-        return voucherRepository.findAll(status, limit, offset).map { it.asVoucherData() }.toList()
+        return voucherRepository.findAll(type, limit, offset).map { it.asVoucherData() }.toList()
     }
 
-    override suspend fun findVoucherGroup(id: Long): VoucherGroup? {
+    override suspend fun getVoucherGroup(id: Long): VoucherGroup {
         return voucherGroupRepository.findById(id).awaitFirstOrNull()?.asVoucherGroup()
             ?: throw OpexError.VoucherGroupNotFound.exception()
     }
@@ -62,16 +71,24 @@ class VoucherServiceImpl(
         return voucherUsageRepository.existsVoucherUsage(voucherId).awaitFirst()
     }
 
-    override suspend fun findUsageCount(uuid: String, voucherGroupId: Long): Long {
+    override suspend fun getUsageCount(uuid: String, voucherGroupId: Long): Long {
         return voucherUsageRepository.count(uuid, voucherGroupId).awaitFirst()
     }
 
-    override suspend fun findUsageCount(voucherId: Long): Long {
+    override suspend fun getUsageCount(voucherId: Long): Long {
         return voucherUsageRepository.count(voucherId).awaitFirst()
     }
 
     override suspend fun updateVoucherGroupRemaining(voucherGroupId: Long, remainingUsage: Int) {
-        voucherGroupRepository.updateRemaining(voucherGroupId,remainingUsage).awaitFirstOrNull()
+        voucherGroupRepository.updateRemaining(voucherGroupId, remainingUsage).awaitFirstOrNull()
+    }
+
+    override suspend fun isExistVoucherSaleData(voucherId: Long): Boolean {
+        return voucherSaleDataRepository.existVoucherSaleData(voucherId).awaitFirst()
+    }
+
+    override suspend fun saveVoucherSaleData(voucherSaleData: VoucherSaleData) {
+        voucherSaleDataRepository.save(voucherSaleData.asVoucherSaleDataModel()).awaitFirst()
     }
 
     private suspend fun VoucherModel.asVoucher(): Voucher {
@@ -99,7 +116,8 @@ class VoucherServiceImpl(
             createDate,
             voucherGroup =
                 voucherGroupRepository.findById(voucherGroup).awaitFirstOrNull()?.asVoucherGroupData(),
-            usageCount = id?.let { voucherUsageRepository.count(it).awaitFirst() } ?: throw OpexError.VoucherNotFound.exception()
+            usageCount = id?.let { voucherUsageRepository.count(it).awaitFirst() }
+                ?: throw OpexError.VoucherNotFound.exception()
         )
     }
 
@@ -124,6 +142,20 @@ class VoucherServiceImpl(
             type,
             remainingUsage,
             userLimit,
+        )
+    }
+
+    private fun VoucherSaleData.asVoucherSaleDataModel(): VoucherSaleDataModel {
+        return VoucherSaleDataModel(
+            null,
+            voucher,
+            nationalCode,
+            phoneNumber,
+            transactionNumber,
+            transactionAmount,
+            saleDate ?: LocalDateTime.now(),
+            sellerUuid
+
         )
     }
 }
