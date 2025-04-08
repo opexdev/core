@@ -1,15 +1,16 @@
 create table if not exists otp
 (
-    id           serial primary key,
-    code         text        not null,
-    receiver     text        not null,
-    tracing_code text        not null unique,
-    type         varchar(16) not null,
-    expires_at   timestamp   not null,
-    request_date timestamp   not null default current_timestamp,
-    is_verified  boolean     not null default false,
-    is_active    boolean     not null default true,
-    verify_time  timestamp
+    id              serial primary key,
+    code            text        not null,
+    receiver        text        not null,
+    tracing_code    text        not null unique,
+    type            varchar(16) not null,
+    expires_at      timestamp   not null,
+    request_date    timestamp   not null default current_timestamp,
+    is_verified     boolean     not null default false,
+    is_active       boolean     not null default true,
+    composite_order text,
+    verify_time     timestamp
 );
 
 create table if not exists otp_config

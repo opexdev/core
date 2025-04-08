@@ -22,6 +22,7 @@ class MessageManager(
         return when (type) {
             OTPType.SMS -> smsSender
             OTPType.EMAIL -> emailSender
+            OTPType.COMPOSITE -> throw IllegalStateException("Composite sender not supported")
         }
     }
 }

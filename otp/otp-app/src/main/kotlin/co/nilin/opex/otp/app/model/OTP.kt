@@ -11,9 +11,11 @@ data class OTP(
     val tracingCode: String,
     val type: OTPType,
     val expiresAt: LocalDateTime,
+    val compositeOrder: String? = null,
     val requestDate: LocalDateTime = LocalDateTime.now(),
     val isVerified: Boolean = false,
     val isActive: Boolean = true,
+    val verifyTime: LocalDateTime? = null,
     @Id val id: Long? = null,
 ) {
 
