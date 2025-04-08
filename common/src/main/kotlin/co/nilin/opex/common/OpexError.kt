@@ -97,6 +97,8 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
 
     // code 12000: otp
     OTPConfigNotFound(12001, "Config for otp type not found", HttpStatus.NOT_FOUND),
+    UnableToSendOTP(12002, "Unable to send OTP code to the receiver", HttpStatus.INTERNAL_SERVER_ERROR),
+    OTPAlreadyRequested(12003, "OTP code is already requested for the receiver and OTP type", HttpStatus.BAD_REQUEST),
 
     ;
 

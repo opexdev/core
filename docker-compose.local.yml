@@ -25,6 +25,9 @@ services:
   akhq:
     ports:
       - "127.0.0.1:10100:8080"
+  postgres-otp:
+    ports:
+      - "127.0.0.1:5462:5432"
   accountant:
     ports:
       - "127.0.0.1:8089:8080"

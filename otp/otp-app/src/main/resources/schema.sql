@@ -6,7 +6,10 @@ create table if not exists otp
     tracing_code text        not null unique,
     type         varchar(16) not null,
     expires_at   timestamp   not null,
-    unique (receiver, type)
+    request_date timestamp   not null default current_timestamp,
+    is_verified  boolean     not null default false,
+    is_active    boolean     not null default true,
+    verify_time  timestamp
 );
 
 create table if not exists otp_config
@@ -20,5 +23,10 @@ create table if not exists otp_config
     check (char_count between 4 and 100)
 );
 
-insert into otp_config values ('EMAIL', 60, 8, true) on conflict do nothing;
-insert into otp_config values ('SMS') on conflict do nothing;
+insert into otp_config
+values ('EMAIL', 60, 8, true)
+on conflict do nothing;
+
+insert into otp_config
+values ('SMS')
+on conflict do nothing;

@@ -1,5 +1,6 @@
 package co.nilin.opex.otp.app.service
 
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.utils.LoggerDelegate
 import co.nilin.opex.otp.app.model.OTP
 import co.nilin.opex.otp.app.model.OTPType
@@ -18,19 +19,22 @@ import kotlin.random.Random
 class OTPService(
     private val repository: OTPRepository,
     private val configRepository: OTPConfigRepository,
-    private val messageManager: MessageManager
+    private val messageManager: MessageManager,
+    private val encoder: BCryptPasswordEncoder
 ) {
 
     private val logger by LoggerDelegate()
-    private val encoder = BCryptPasswordEncoder()
 
     suspend fun requestOTP(receiver: String, type: OTPType): String {
         val config = configRepository.findById(type).awaitSingleOrNull()
-            ?: throw IllegalStateException("Config for type $type not found")
+            ?: throw OpexError.OTPConfigNotFound.exception()
 
-        val currentOtp = repository.findByReceiverAndType(receiver, type)
-        if (currentOtp != null && !currentOtp.isExpired()) {
-            throw IllegalStateException("Otp already requested for receiver: $receiver and type: $type")
+        // Check whether receiver has an active otp of specified type
+        repository.findActiveByReceiverAndType(receiver, type)?.let {
+            if (it.isExpired())
+                repository.markInactive(it.id!!)
+            else
+                throw OpexError.OTPAlreadyRequested.exception()
         }
 
         val expireTime = LocalDateTime.now().plusSeconds(config.expireTimeSeconds.toLong())
@@ -43,8 +47,9 @@ class OTPService(
             expireTime
         )
 
+        logger.debug("${newOtp.tracingCode} -> $code")
+        messageManager.sendMessage(config, type, code, receiver)
         val otp = repository.save(newOtp)
-        messageManager.sendMessage(type, code, receiver)
         return otp.tracingCode
     }
 
@@ -69,8 +74,8 @@ class OTPService(
             return false
         }
 
-        if (code.encode() == otp.code) {
-            repository.deleteById(otp.id!!)
+        if (encoder.matches(code, otp.code)) {
+            repository.markVerified(otp.id!!)
             return true
         }
         return false
