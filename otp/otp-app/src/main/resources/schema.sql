@@ -9,7 +9,6 @@ create table if not exists otp
     request_date    timestamp   not null default current_timestamp,
     is_verified     boolean     not null default false,
     is_active       boolean     not null default true,
-    composite_order text,
     verify_time     timestamp
 );
 
@@ -30,4 +29,8 @@ on conflict do nothing;
 
 insert into otp_config
 values ('SMS')
+on conflict do nothing;
+
+insert into otp_config
+values ('COMPOSITE', 120)
 on conflict do nothing;

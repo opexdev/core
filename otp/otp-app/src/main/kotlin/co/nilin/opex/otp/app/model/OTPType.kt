@@ -1,6 +1,7 @@
 package co.nilin.opex.otp.app.model
 
-enum class OTPType {
+enum class OTPType(val compositeOrder: Int) {
 
-    SMS, EMAIL, COMPOSITE
+    SMS(0), EMAIL(1),
+    COMPOSITE(99)
 }
