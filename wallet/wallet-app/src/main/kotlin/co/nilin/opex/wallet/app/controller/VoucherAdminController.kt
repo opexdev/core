@@ -38,7 +38,7 @@ class VoucherAdminController(private val voucherService: VoucherService) {
     }
 
     @GetMapping("/sell/{code}")
-    suspend fun sellVoucher(
+    suspend fun getVoucherSaleData(
         @PathVariable code: String,
     ): VoucherSaleDataResponse {
         return voucherService.getVoucherSaleData(code)
