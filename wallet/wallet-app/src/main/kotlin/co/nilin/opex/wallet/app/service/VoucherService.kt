@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.app.service
 
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.SellVoucherRequest
+import co.nilin.opex.wallet.app.dto.VoucherSaleDataResponse
 import co.nilin.opex.wallet.core.inout.Deposit
 import co.nilin.opex.wallet.core.inout.SubmitVoucherResponse
 import co.nilin.opex.wallet.core.inout.VoucherData
@@ -45,8 +46,14 @@ class VoucherService(
         return voucherManager.getVoucherDataByPublicCode(publicCode)
     }
 
-    suspend fun getVouchers(type: VoucherGroupType?, limit: Int?, offset: Int?): List<VoucherData> {
-        return voucherManager.getVouchers(type, limit, offset)
+    suspend fun getVouchers(
+        type: VoucherGroupType?,
+        issuer: String?,
+        isUsed: Boolean?,
+        limit: Int?,
+        offset: Int?,
+    ): List<VoucherData> {
+        return voucherManager.getVouchers(type, issuer, isUsed, limit, offset)
     }
 
     suspend fun sellVoucher(request: SellVoucherRequest, uuid: String) {
@@ -70,8 +77,28 @@ class VoucherService(
         logger.info("Voucher with code: ${request.publicCode} sold by $uuid")
     }
 
+    suspend fun getVoucherSaleData(publicCode: String): VoucherSaleDataResponse {
+        val voucher = voucherManager.getVoucherByPublicCode(publicCode)
+        val voucherId = requireNotNull(voucher.id) { "Voucher ID cannot be null" }
+
+        if (voucher.voucherGroup.type != VoucherGroupType.SALE)
+            throw OpexError.InvalidVoucher.exception("Voucher type must be 'SALE'")
+
+        val voucherSaleData = voucherManager.getVoucherSaleData(voucherId)
+
+        return VoucherSaleDataResponse(
+            publicCode,
+            voucherSaleData.nationalCode,
+            voucherSaleData.phoneNumber,
+            voucherSaleData.transactionNumber,
+            voucherSaleData.transactionAmount,
+            voucherSaleData.saleDate,
+            voucherSaleData.sellerUuid
+        )
+    }
+
     private suspend fun updateVoucherGroupRemaining(voucherGroup: VoucherGroup) {
-        if (voucherGroup.type == VoucherGroupType.CAMPAIGN || voucherGroup.remainingUsage != null )
+        if (voucherGroup.type == VoucherGroupType.CAMPAIGN || voucherGroup.remainingUsage != null)
             voucherManager.updateVoucherGroupRemaining(
                 requireNotNull(voucherGroup.id),
                 requireNotNull(voucherGroup.remainingUsage) - 1

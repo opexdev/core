@@ -13,4 +13,6 @@ interface VoucherSaleDataRepository : ReactiveCrudRepository<VoucherSaleDataMode
         "select exists(select 1 from voucher_sale_data where voucher = :voucherId)"
     )
     fun existVoucherSaleData(voucherId: Long): Mono<Boolean>
+
+    fun findByVoucher(voucherId: Long): Mono<VoucherSaleDataModel>
 }
