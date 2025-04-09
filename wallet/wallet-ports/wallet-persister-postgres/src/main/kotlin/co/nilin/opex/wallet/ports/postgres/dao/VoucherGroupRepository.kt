@@ -10,7 +10,14 @@ import reactor.core.publisher.Mono
 @Repository
 interface VoucherGroupRepository : ReactiveCrudRepository<VoucherGroupModel, Long> {
 
-    @Query("update voucher_group set remaining_usage = :remainingUsage  where id = :id")
-    fun updateRemaining(id: Long, remainingUsage: Int): Mono<Int>
+    @Query(
+        """
+    UPDATE voucher_group 
+    SET remaining_usage = :remainingUsage, version = version + 1
+    WHERE id = :id AND version = :version
+    RETURNING *
+    """
+    )
+    fun updateRemainingWithVersion(id: Long, remainingUsage: Int, version: Long): Mono<VoucherGroupModel>
 
 }

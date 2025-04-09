@@ -16,5 +16,5 @@ data class VoucherGroupModel(
     var remainingUsage: Int? = null,
     var userLimit: Int? = null,
     @Version
-    var version: Long? = null
+    var version: Long
 )

@@ -8,5 +8,5 @@ data class VoucherGroup(
     var type: VoucherGroupType = VoucherGroupType.GIFT,
     var remainingUsage: Int? = null,
     var userLimit: Int? = null,
-    var version: Long? = null
+    var version: Long
 )

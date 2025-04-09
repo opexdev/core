@@ -27,6 +27,7 @@ class VoucherService(
     suspend fun submitVoucher(uuid: String, code: String): SubmitVoucherResponse {
         logger.info("Submitting voucher for user: $uuid with code: $code")
         val voucher = findAndValidateVoucher(code, uuid)
+        updateVoucherGroupRemaining(voucher.voucherGroup)
         voucherManager.saveVoucherUsage(requireNotNull(voucher.id), uuid)
         val transferRef = "wallet:voucher:" + UUID.randomUUID().toString()
         executeTransfer(voucher, uuid, transferRef)
@@ -67,6 +68,14 @@ class VoucherService(
             )
         )
         logger.info("Voucher with code: ${request.publicCode} sold by $uuid")
+    }
+
+    private suspend fun updateVoucherGroupRemaining(voucherGroup: VoucherGroup) {
+        if (voucherGroup.type == VoucherGroupType.CAMPAIGN || voucherGroup.remainingUsage != null )
+            voucherManager.updateVoucherGroupRemaining(
+                requireNotNull(voucherGroup.id),
+                requireNotNull(voucherGroup.remainingUsage) - 1
+            )
     }
 
     private fun hashWithSHA256(input: String): String {

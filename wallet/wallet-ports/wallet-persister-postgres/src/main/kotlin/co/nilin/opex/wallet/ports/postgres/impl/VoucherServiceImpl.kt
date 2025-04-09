@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactor.awaitSingle
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
@@ -80,7 +81,23 @@ class VoucherServiceImpl(
     }
 
     override suspend fun updateVoucherGroupRemaining(voucherGroupId: Long, remainingUsage: Int) {
-        voucherGroupRepository.updateRemaining(voucherGroupId, remainingUsage).awaitFirstOrNull()
+
+        val current = voucherGroupRepository.findById(voucherGroupId).awaitSingle()
+            ?: throw OpexError.VoucherGroupNotFound.exception()
+
+        if (current.remainingUsage == null || current.remainingUsage!! <= 0)
+            throw OpexError.BadRequest.exception("No voucher remaining usage")
+
+        val updatedGroup =
+            voucherGroupRepository.updateRemainingWithVersion(voucherGroupId, remainingUsage, current.version)
+                .awaitFirstOrNull() ?: throw OpexError.BadRequest.exception("Voucher group update failed")
+
+        val updatedRemaining = updatedGroup.remainingUsage
+            ?: throw OpexError.BadRequest.exception("No voucher remaining usage")
+
+        if (updatedGroup.version <= current.version || updatedRemaining > remainingUsage) {
+            throw OpexError.BadRequest.exception("Voucher group update failed")
+        }
     }
 
     override suspend fun isExistVoucherSaleData(voucherId: Long): Boolean {

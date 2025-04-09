@@ -447,7 +447,7 @@ $$
         IF NOT EXISTS (SELECT 1
                        FROM information_schema.columns
                        WHERE table_name = 'voucher_group' AND column_name = 'version') THEN ALTER TABLE voucher_group
-            ADD COLUMN version INTEGER;
+            ADD COLUMN version INTEGER DEFAULT 1;
         END IF;
         IF EXISTS (SELECT 1
                        FROM information_schema.columns
