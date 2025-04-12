@@ -1,5 +1,6 @@
 package co.nilin.opex.otp.app.model
 
+import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 import java.time.LocalDateTime
 
@@ -10,10 +11,14 @@ data class OTP(
     val tracingCode: String,
     val type: OTPType,
     val expiresAt: LocalDateTime,
-    val id: Long? = null,
+    val requestDate: LocalDateTime = LocalDateTime.now(),
+    val isVerified: Boolean = false,
+    val isActive: Boolean = true,
+    val verifyTime: LocalDateTime? = null,
+    @Id val id: Long? = null,
 ) {
 
     fun isExpired(): Boolean {
-        return LocalDateTime.now().isBefore(expiresAt)
+        return expiresAt.isBefore(LocalDateTime.now())
     }
 }

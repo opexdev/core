@@ -3,6 +3,11 @@ server:
 spring:
   application:
     name: opex-otp
+  r2dbc:
+    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
+    username: ${DB_USER}
+    password: ${DB_PASS}
+    initialization-mode: always
   cloud:
     bootstrap:
       enabled: true
@@ -19,7 +24,7 @@ management:
     web:
       base-path: /actuator
       exposure:
-        include: [ "health", "prometheus", "metrics" ]
+        include: [ "health", "prometheus", "metrics", "logging" ]
   endpoint:
     health:
       show-details: when_authorized
@@ -27,37 +32,18 @@ management:
       enabled: true
     prometheus:
       enabled: true
-logbook:
-  secure-filter:
-    enabled: true
-  format:
-    style: http
-  filter:
-    enabled: true
-    form-request-mode: BODY
-  attribute-extractors:
-    - type: JwtFirstMatchingClaimExtractor
-      claim-names: [ "sub", "subject" ]
-  obfuscate:
-    headers:
-      - Authorization
-    parameters:
-      - password
-    json-body-fields:
-      - password
-    replacement: "***"
-  write:
-    max-body-size: 10_000 #kb
-  predicate:
-    exclude:
-      - path: /auth**
-      - path: /actuator/**
-      - path: /swagger**
 logging:
   level:
     co.nilin: INFO
-    org.zalando.logbook: TRACE
-swagger:
-  authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token}
+    # org.zalando.logbook: TRACE
+app:
+  auth:
+    cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
 otp:
-  expires-seconds: 60
+  sms:
+    provider:
+      api-key: ${SMS_PROVIDER_API_KEY}
+  email:
+    host: ${SMTP_HOST}
+    username: ${SMTP_USER}
+    password: ${SMTP_PASS}

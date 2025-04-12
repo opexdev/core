@@ -1,48 +1,90 @@
 package co.nilin.opex.otp.app.service
 
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.utils.LoggerDelegate
+import co.nilin.opex.otp.app.data.OTPCode
+import co.nilin.opex.otp.app.data.OTPReceiver
 import co.nilin.opex.otp.app.model.OTP
+import co.nilin.opex.otp.app.model.OTPConfig
 import co.nilin.opex.otp.app.model.OTPType
 import co.nilin.opex.otp.app.repository.OTPConfigRepository
 import co.nilin.opex.otp.app.repository.OTPRepository
+import co.nilin.opex.otp.app.service.message.MessageManager
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
-import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.math.pow
 import kotlin.random.Random
 
-@Component
+@Service
 class OTPService(
     private val repository: OTPRepository,
-    private val configRepository: OTPConfigRepository
+    private val configRepository: OTPConfigRepository,
+    private val messageManager: MessageManager,
+    private val encoder: BCryptPasswordEncoder
 ) {
 
     private val logger by LoggerDelegate()
-    private val encoder = BCryptPasswordEncoder()
 
     suspend fun requestOTP(receiver: String, type: OTPType): String {
-        val config = configRepository.findById(type).awaitSingleOrNull()
-            ?: throw IllegalStateException("Config for type $type not found")
+        checkActiveOTP(receiver, type)
+        val config = getConfig(type)
+        val code = generateCode(config.charCount, config.includeAlphabetChars)
+        return storeOTP(receiver, type, code, config)
+    }
 
-        val currentOtp = repository.findByReceiverAndType(receiver, type)
-        if (currentOtp != null && !currentOtp.isExpired()) {
-            throw IllegalStateException("Otp already requested for receiver: $receiver and type: $type")
+    suspend fun requestCompositeOTP(receivers: Set<OTPReceiver>): String {
+        val type = OTPType.COMPOSITE
+        val mainConfig = getConfig(type)
+        val receiver = receivers.joinToString(",") { it.receiver }
+        checkActiveOTP(receiver, type)
+
+        val compositeCode = StringBuilder()
+        receivers.forEach {
+            val config = getConfig(it.type)
+            val code = generateCode(config.charCount, config.includeAlphabetChars)
+            messageManager.sendMessage(config, type, code, receiver)
+            compositeCode.append(code)
         }
 
+        return storeOTP(receiver, type, compositeCode.toString(), mainConfig)
+    }
+
+    private suspend fun storeOTP(
+        receiver: String,
+        type: OTPType,
+        code: String,
+        config: OTPConfig,
+    ): String {
         val expireTime = LocalDateTime.now().plusSeconds(config.expireTimeSeconds.toLong())
         val newOtp = OTP(
-            generateCode(config.charCount, config.includeAlphabetChars).encode(),
+            code.encode(),
             receiver,
             UUID.randomUUID().toString(),
             type,
             expireTime
         )
 
+        logger.debug("${newOtp.tracingCode} -> $code")
         val otp = repository.save(newOtp)
-        //todo send code to receiver
         return otp.tracingCode
+    }
+
+    private suspend fun checkActiveOTP(receiver: String, type: OTPType) {
+        // Check whether receiver has an active otp of specified type
+        repository.findActiveByReceiverAndType(receiver, type)?.let {
+            if (it.isExpired())
+                repository.markInactive(it.id!!)
+            else
+                throw OpexError.OTPAlreadyRequested.exception()
+        }
+    }
+
+    private suspend fun getConfig(type: OTPType): OTPConfig {
+        return configRepository.findById(type).awaitSingleOrNull()
+            ?: throw OpexError.OTPConfigNotFound.exception()
     }
 
     suspend fun verifyOTP(code: String, tracingCode: String): Boolean {
@@ -50,9 +92,19 @@ class OTPService(
         return verifyOtp(code, otp)
     }
 
-    suspend fun verifyOtp(code: String, receiver: String, type: OTPType): Boolean {
-        val otp = repository.findByReceiverAndType(receiver, type)
-        return verifyOtp(code, otp)
+    suspend fun verifyCompositeOTP(codes: Set<OTPCode>, tracingCode: String): Boolean {
+        repository.findByTracingCode(tracingCode)?.let {
+            if (it.type != OTPType.COMPOSITE)
+                throw OpexError.BadRequest.exception()
+
+            val code = reconstructCode(codes)
+            return verifyOtp(code, it)
+        }
+        return false
+    }
+
+    private suspend fun reconstructCode(codes: Set<OTPCode>): String {
+        return codes.sortedBy { it.type.compositeOrder }.joinToString("") { it.code }
     }
 
     private suspend fun verifyOtp(code: String, otp: OTP?): Boolean {
@@ -66,8 +118,8 @@ class OTPService(
             return false
         }
 
-        if (code.encode() == otp.code) {
-            repository.deleteById(otp.id!!)
+        if (encoder.matches(code, otp.code)) {
+            repository.markVerified(otp.id!!)
             return true
         }
         return false

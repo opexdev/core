@@ -45,3 +45,6 @@ services:
   bc-gateway:
     image: ghcr.io/opexdev/bc-gateway:$TAG
     build: bc-gateway/bc-gateway-app
+  otp:
+    image: ghcr.io/opexdev/otp:$TAG
+    build: otp/otp-app

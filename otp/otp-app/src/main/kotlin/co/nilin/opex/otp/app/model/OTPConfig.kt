@@ -9,5 +9,6 @@ data class OTPConfig(
     var expireTimeSeconds: Int = 60,
     var charCount: Int = 6,
     var includeAlphabetChars: Boolean = false,
-    var isEnabled: Boolean = true
+    var isEnabled: Boolean = true,
+    var messageTemplate: String = "%s",
 )
