@@ -26,12 +26,13 @@ create table if not exists otp_config
 
 create table if not exists totp
 (
-    id         serial primary key,
-    userId     text      not null unique,
-    secret     text      not null unique,
-    label      text,
-    is_enabled boolean   not null default true,
-    created_at timestamp not null default current_timestamp
+    id           serial primary key,
+    user_id      text      not null unique,
+    secret       text      not null unique,
+    label        text,
+    is_enabled   boolean   not null default true,
+    is_activated boolean   not null default false,
+    created_at   timestamp not null default current_timestamp
 );
 
 create table if not exists totp_config

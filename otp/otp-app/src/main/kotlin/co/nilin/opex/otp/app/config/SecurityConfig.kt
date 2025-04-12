@@ -24,6 +24,7 @@ class SecurityConfig(private val webClient: WebClient) {
         http.csrf().disable()
             .authorizeExchange()
             .pathMatchers("/v1/otp/**").permitAll()
+            .pathMatchers("/v1/totp/**").permitAll()
             .anyExchange().authenticated()
             .and()
             .oauth2ResourceServer()

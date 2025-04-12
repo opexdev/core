@@ -20,6 +20,7 @@ class TOTPService(
 
     suspend fun setupTOTP(userId: String, label: String? = null): String {
         val config = configRepository.findOne()
+        repository.findByUserId(userId)?.let { throw OpexError.TOTPAlreadyRegistered.exception() }
         val secret = generateSecret()
         val uri = generateUri(userId, config.issuer, secret, label)
         repository.save(TOTP(userId, secret, label))
@@ -39,6 +40,19 @@ class TOTPService(
         val totp = repository.findByUserId(userId) ?: throw OpexError.TOTPNotFound.exception()
         if (!totp.isActivated) throw OpexError.TOTPSetupIncomplete.exception()
         return isCodeValid(totp.secret, code.trim())
+    }
+
+    suspend fun removeTOTP(userId: String, code: String) {
+        val totp = repository.findByUserId(userId) ?: throw OpexError.TOTPNotFound.exception()
+        if (!totp.isActivated)
+            repository.deleteById(totp.id!!)
+        else {
+            val isValid = isCodeValid(totp.secret, code.trim())
+            if (isValid)
+                repository.deleteById(totp.id!!)
+            else
+                throw OpexError.InvalidTOTPCode.exception()
+        }
     }
 
     private suspend fun generateSecret(): String {
