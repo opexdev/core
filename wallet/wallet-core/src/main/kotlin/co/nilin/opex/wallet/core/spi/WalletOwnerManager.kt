@@ -9,7 +9,7 @@ interface WalletOwnerManager {
 
     suspend fun isDepositAllowed(owner: WalletOwner, amount: Amount): Boolean
     suspend fun isWithdrawAllowed(owner: WalletOwner, amount: Amount): Boolean
-    suspend fun findWalletOwner(uuid: String): WalletOwner?
+    suspend fun  findWalletOwner(uuid: String): WalletOwner?
     suspend fun createWalletOwner(uuid: String, title: String, userLevel: String): WalletOwner
     suspend fun findAllWalletOwners(): List<WalletOwner>
 }
