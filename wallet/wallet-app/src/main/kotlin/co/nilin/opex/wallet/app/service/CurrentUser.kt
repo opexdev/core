@@ -17,16 +17,16 @@ class CurrentUserProvider {
         val jwt: Jwt = authentication.token
 
         return CurrentUser(
-                uuid = jwt.getClaimAsString("id"),
-                firstName = jwt.getClaimAsString("first_name"),
-                lastName = jwt.getClaimAsString("last_name"),
-                fullName = listOfNotNull(
-                        jwt.getClaimAsString("first_name"),
-                        jwt.getClaimAsString("last_name")
-                ).joinToString(" "),
-                mobile = jwt.getClaimAsString("mobile"),
-                roles = jwt.getClaimAsStringList("roles") ?: emptyList(),
-                level = jwt.getClaimAsString("level")
+            uuid = jwt.getClaimAsString("id"),
+            firstName = jwt.getClaimAsString("first_name"),
+            lastName = jwt.getClaimAsString("last_name"),
+            fullName = listOfNotNull(
+                jwt.getClaimAsString("first_name"),
+                jwt.getClaimAsString("last_name")
+            ).joinToString(" "),
+            mobile = jwt.getClaimAsString("mobile"),
+            roles = jwt.getClaimAsStringList("roles") ?: emptyList(),
+            level = jwt.getClaimAsString("level")
         )
     }
 }

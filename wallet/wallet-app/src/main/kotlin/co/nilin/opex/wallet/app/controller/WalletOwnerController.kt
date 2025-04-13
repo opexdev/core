@@ -20,28 +20,30 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/v1/owner")
 class WalletOwnerController(
-        private val walletOwnerManager: WalletOwnerManager,
-        private val walletManager: WalletManager,
-        private val environment: Environment,
-        private val currentUserProvider: CurrentUserProvider
+    private val walletOwnerManager: WalletOwnerManager,
+    private val walletManager: WalletManager,
+    private val environment: Environment,
+    private val currentUserProvider: CurrentUserProvider
 ) {
 
     @GetMapping("/{uuid}/wallets")
     @ApiResponse(
-            message = "OK",
-            code = 200,
-            examples = Example(
-                    ExampleProperty(
-                            value = "{ }",
-                            mediaType = "application/json"
-                    )
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = "{ }",
+                mediaType = "application/json"
             )
+        )
     )
     suspend fun getAllWallets(@PathVariable uuid: String): List<WalletData> {
         val owner = walletOwnerManager.findWalletOwner(uuid) ?: run {
             if (currentUserProvider.getCurrentUser()?.uuid.equals(uuid) && environment.activeProfiles.contains("otc"))
-                walletOwnerManager.createWalletOwner(uuid, currentUserProvider.getCurrentUser()?.fullName
-                        ?: currentUserProvider.getCurrentUser()?.mobile ?: "not set", "")
+                walletOwnerManager.createWalletOwner(
+                    uuid, currentUserProvider.getCurrentUser()?.fullName
+                        ?: currentUserProvider.getCurrentUser()?.mobile ?: "not set", ""
+                )
             throw OpexError.WalletOwnerNotFound.exception()
         }
         val wallets = walletManager.findWalletsByOwner(owner)
@@ -50,14 +52,14 @@ class WalletOwnerController(
 
     @GetMapping("/{uuid}/wallets/{symbol}")
     @ApiResponse(
-            message = "OK",
-            code = 200,
-            examples = Example(
-                    ExampleProperty(
-                            value = "{ }",
-                            mediaType = "application/json"
-                    )
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = "{ }",
+                mediaType = "application/json"
             )
+        )
     )
     suspend fun getWallet(@PathVariable uuid: String, @PathVariable symbol: String): WalletData {
         val owner = walletOwnerManager.findWalletOwner(uuid) ?: throw OpexError.WalletOwnerNotFound.exception()
@@ -67,14 +69,14 @@ class WalletOwnerController(
 
     @GetMapping("/{uuid}/limits")
     @ApiResponse(
-            message = "OK",
-            code = 200,
-            examples = Example(
-                    ExampleProperty(
-                            value = "{ }",
-                            mediaType = "application/json"
-                    )
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = "{ }",
+                mediaType = "application/json"
             )
+        )
     )
     suspend fun getWalletOwnerLimits(@PathVariable uuid: String): OwnerLimitsResponse {
         val owner = walletOwnerManager.findWalletOwner(uuid) ?: throw OpexError.WalletOwnerNotFound.exception()
