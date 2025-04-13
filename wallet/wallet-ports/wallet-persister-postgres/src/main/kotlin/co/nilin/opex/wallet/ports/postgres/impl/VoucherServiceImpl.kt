@@ -2,10 +2,7 @@ package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.inout.VoucherData
-import co.nilin.opex.wallet.core.model.Voucher
-import co.nilin.opex.wallet.core.model.VoucherGroup
-import co.nilin.opex.wallet.core.model.VoucherGroupType
-import co.nilin.opex.wallet.core.model.VoucherSaleData
+import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.spi.VoucherManager
 import co.nilin.opex.wallet.ports.postgres.dao.VoucherGroupRepository
 import co.nilin.opex.wallet.ports.postgres.dao.VoucherRepository
@@ -15,6 +12,7 @@ import co.nilin.opex.wallet.ports.postgres.model.VoucherGroupModel
 import co.nilin.opex.wallet.ports.postgres.model.VoucherModel
 import co.nilin.opex.wallet.ports.postgres.model.VoucherSaleDataModel
 import co.nilin.opex.wallet.ports.postgres.model.VoucherUsageModel
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
@@ -113,6 +111,10 @@ class VoucherServiceImpl(
             ?: throw OpexError.InvalidVoucher.exception("Voucher sale data not found")
     }
 
+    override suspend fun getVoucherUsageData(voucherId: Long): List<VoucherUsage> {
+        return voucherUsageRepository.findByVoucher(voucherId).map {it.asVoucherUsage()}.toList()
+    }
+
     private suspend fun VoucherModel.asVoucher(): Voucher {
         return Voucher(
             id,
@@ -166,6 +168,14 @@ class VoucherServiceImpl(
             transactionAmount,
             saleDate,
             sellerUuid
+        )
+    }
+    private fun VoucherUsageModel.asVoucherUsage():VoucherUsage
+    {
+        return VoucherUsage(
+            voucher,
+            useDate,
+            uuid
         )
     }
 }

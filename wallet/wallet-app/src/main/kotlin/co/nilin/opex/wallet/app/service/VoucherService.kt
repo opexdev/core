@@ -3,6 +3,7 @@ package co.nilin.opex.wallet.app.service
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.SellVoucherRequest
 import co.nilin.opex.wallet.app.dto.VoucherSaleDataResponse
+import co.nilin.opex.wallet.app.dto.VoucherUsageDataResponse
 import co.nilin.opex.wallet.core.inout.Deposit
 import co.nilin.opex.wallet.core.inout.SubmitVoucherResponse
 import co.nilin.opex.wallet.core.inout.VoucherData
@@ -95,6 +96,16 @@ class VoucherService(
             voucherSaleData.saleDate,
             voucherSaleData.sellerUuid
         )
+    }
+
+    suspend fun getVoucherUsageData(publicCode: String): List<VoucherUsageDataResponse> {
+        val voucher = voucherManager.getVoucherByPublicCode(publicCode)
+        val voucherId = requireNotNull(voucher.id) { "Voucher ID cannot be null" }
+
+        val usageData = voucherManager.getVoucherUsageData(voucherId)
+        return usageData.map { usage ->
+            VoucherUsageDataResponse(usage.useDate, usage.uuid)
+        }
     }
 
     private suspend fun updateVoucherGroupRemaining(voucherGroup: VoucherGroup) {

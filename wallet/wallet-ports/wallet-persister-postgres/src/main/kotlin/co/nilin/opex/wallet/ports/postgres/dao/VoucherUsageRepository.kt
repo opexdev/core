@@ -1,6 +1,8 @@
 package co.nilin.opex.wallet.ports.postgres.dao
 
+import co.nilin.opex.wallet.core.model.Voucher
 import co.nilin.opex.wallet.ports.postgres.model.VoucherUsageModel
+import kotlinx.coroutines.flow.Flow
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
@@ -32,4 +34,5 @@ interface VoucherUsageRepository : ReactiveCrudRepository<VoucherUsageModel, Lon
     )
     fun count(voucherId : Long): Mono<Long>
 
+    fun findByVoucher(voucherId: Long) : Flow<VoucherUsageModel>
 }

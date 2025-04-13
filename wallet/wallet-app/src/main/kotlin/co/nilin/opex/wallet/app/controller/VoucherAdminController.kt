@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.wallet.app.dto.SellVoucherRequest
 import co.nilin.opex.wallet.app.dto.VoucherSaleDataResponse
+import co.nilin.opex.wallet.app.dto.VoucherUsageDataResponse
 import co.nilin.opex.wallet.app.service.VoucherService
 import co.nilin.opex.wallet.core.inout.VoucherData
 import co.nilin.opex.wallet.core.model.VoucherGroupType
@@ -19,7 +20,7 @@ class VoucherAdminController(private val voucherService: VoucherService) {
     }
 
     @GetMapping
-    suspend fun getVoucher(
+    suspend fun getVouchers(
         @RequestParam type: VoucherGroupType?,
         @RequestParam issuer: String?,
         @RequestParam isUsed: Boolean?,
@@ -42,5 +43,10 @@ class VoucherAdminController(private val voucherService: VoucherService) {
         @PathVariable code: String,
     ): VoucherSaleDataResponse {
         return voucherService.getVoucherSaleData(code)
+    }
+
+    @GetMapping("/usage/{code}")
+    suspend fun getVoucherUsageData(@PathVariable code: String): List<VoucherUsageDataResponse> {
+        return voucherService.getVoucherUsageData(code)
     }
 }

@@ -5,6 +5,7 @@ import co.nilin.opex.wallet.core.model.Voucher
 import co.nilin.opex.wallet.core.model.VoucherGroup
 import co.nilin.opex.wallet.core.model.VoucherGroupType
 import co.nilin.opex.wallet.core.model.VoucherSaleData
+import co.nilin.opex.wallet.core.model.VoucherUsage
 
 interface VoucherManager {
 
@@ -21,4 +22,5 @@ interface VoucherManager {
     suspend fun isExistVoucherSaleData(voucherId: Long): Boolean
     suspend fun saveVoucherSaleData(voucherSaleData: VoucherSaleData)
     suspend fun getVoucherSaleData(voucherId: Long) : VoucherSaleData
+    suspend fun getVoucherUsageData(voucherId : Long) : List<VoucherUsage>
 }
