@@ -21,6 +21,7 @@ interface VoucherRepository : ReactiveCrudRepository<VoucherModel, Long> {
            v.amount,
            v.currency,
            v.expire_date,
+           v.create_date,
            vg.type,
            vg.issuer,
            vg.description,
@@ -42,6 +43,7 @@ interface VoucherRepository : ReactiveCrudRepository<VoucherModel, Long> {
            v.amount,
            v.currency,
            v.expire_date,
+           v.create_date,
            vg.type,
            vg.issuer,
            vg.description,
@@ -50,10 +52,10 @@ interface VoucherRepository : ReactiveCrudRepository<VoucherModel, Long> {
 
     from voucher v
              inner join voucher_group vg on v.voucher_group = vg.id
-             inner join voucher_usage vu on v.id = vu.voucher
+             left join voucher_usage vu on v.id = vu.voucher
       WHERE (:type IS NULL OR vg.type = :type)
       AND (:issuer IS NULL OR vg.issuer = :issuer)
-      AND (:isUsed IS NULL OR (:isUsed = true AND vu.uuid IS NOT NULL) OR (:isUsed = false AND vu.uuid IS NULL)) 
+      AND (:isUsed IS NULL OR (:isUsed = true AND vu IS NOT NULL) OR (:isUsed = false AND vu IS NULL)) 
     GROUP BY v.id, vg.id
     limit :limit
     offset :offset

@@ -10,6 +10,7 @@ data class VoucherData(
     val amount: BigDecimal,
     val currency: String,
     val expireDate: LocalDateTime,
+    val createDate: LocalDateTime ,
     val type: VoucherGroupType,
     val issuer: String,
     val description: String ? = null,
