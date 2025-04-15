@@ -1,0 +1,190 @@
+package co.nilin.opex.profile.app.controller
+
+import co.nilin.opex.profile.app.service.LinkAccountManagement
+import co.nilin.opex.profile.app.service.ProfileApprovalRequestManagement
+import co.nilin.opex.profile.app.service.ProfileManagement
+import co.nilin.opex.profile.core.data.limitation.*
+import co.nilin.opex.profile.core.data.linkedbankAccount.LinkedAccountHistoryResponse
+import co.nilin.opex.profile.core.data.linkedbankAccount.LinkedAccountResponse
+import co.nilin.opex.profile.core.data.linkedbankAccount.LinkedBankAccountRequest
+import co.nilin.opex.profile.core.data.linkedbankAccount.VerifyLinkedAccountRequest
+import co.nilin.opex.profile.core.data.profile.*
+import co.nilin.opex.profile.ports.postgres.imp.LimitationManagementImp
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.reactive.awaitFirstOrNull
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
+import org.springframework.web.bind.annotation.*
+
+@RestController
+@RequestMapping("/v2/admin/profile")
+
+class ProfileAdminController(
+    val profileManagement: ProfileManagement,
+    val linkAccountManagement: LinkAccountManagement,
+    val profileApprovalRequestManagement: ProfileApprovalRequestManagement,
+    val limitManagement: LimitationManagementImp
+) {
+
+    data class ChangeRequestStatusBody(
+        val id: Long,
+        val description: String
+    )
+
+    @PostMapping("/{userId}")
+    suspend fun createManually(@PathVariable("userId") userId: String, @RequestBody newProfile: Profile): Profile? {
+        return profileManagement.create(userId, newProfile)?.awaitFirstOrNull()
+    }
+
+    @PutMapping("/{userId}")
+    suspend fun updateAsAdmin(@PathVariable("userId") userId: String, @RequestBody newProfile: Profile): Profile? {
+        return profileManagement.updateAsAdmin(userId, newProfile)?.awaitFirstOrNull()
+    }
+
+    @GetMapping("/history/{userId}")
+    suspend fun getHistory(
+        @PathVariable("userId") userId: String,
+        @RequestParam offset: Int?, @RequestParam size: Int?
+    ): List<ProfileHistory>? {
+        return profileManagement.getHistory(userId, offset ?: 0, size ?: 1000)
+    }
+
+    @PostMapping("")
+    suspend fun getProfiles(
+        @RequestParam offset: Int?, @RequestParam size: Int?,
+        @RequestBody profileRequest: ProfileRequest
+    ): List<Profile?>? {
+        return profileManagement.getAllProfiles(offset ?: 0, size ?: 1000, profileRequest)?.toList()
+    }
+
+
+    @GetMapping("/{userId}")
+    suspend fun getProfile(@PathVariable("userId") userId: String): Profile? {
+        return profileManagement.getProfile(userId)?.awaitFirstOrNull()
+    }
+
+    // =====================================Approval Requests====================================
+
+    @GetMapping("/approval-requests/{status}")
+    suspend fun getApprovalRequests(@PathVariable("status") status: ProfileApprovalRequestStatus): List<ProfileApprovalResponse> {
+        return profileApprovalRequestManagement.getApprovalRequests(status)
+    }
+
+    @GetMapping("/approval-request/{id}")
+    suspend fun getApprovalRequest(@PathVariable("id") id: Long): ProfileApprovalResponse {
+        return profileApprovalRequestManagement.getApprovalRequest(id)
+    }
+
+    @PostMapping("/approve-request")
+    suspend fun approveRequest(
+        @RequestBody changeRequestStatusBody: ChangeRequestStatusBody,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): ProfileApprovalResponse {
+        return profileApprovalRequestManagement.approveRequest(
+            changeRequestStatusBody.id,
+            securityContext.authentication.name,
+            changeRequestStatusBody.description
+        )
+    }
+
+    @PostMapping("/reject-request")
+    suspend fun rejectRequest(
+        @RequestBody changeRequestStatusBody: ChangeRequestStatusBody,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): ProfileApprovalResponse {
+        return profileApprovalRequestManagement.rejectRequest(
+            changeRequestStatusBody.id,
+            securityContext.authentication.name,
+            changeRequestStatusBody.description
+        )
+    }
+    // =====================================linked accounts====================================
+
+    @GetMapping("/linked-account/{userId}")
+    suspend fun getLinkedAccount(@PathVariable userId: String): Flow<LinkedAccountResponse>? {
+        return linkAccountManagement.getAccounts(userId)
+    }
+
+    @GetMapping("/linked-account/history/{accountId}")
+    suspend fun getHistoryLinkedAccount(@PathVariable accountId: String): Flow<LinkedAccountHistoryResponse>? {
+
+        return linkAccountManagement.getHistoryLinkedAccount(accountId)
+    }
+
+    @PostMapping("/linked-account/{userId}")
+    suspend fun addLinkedAccount(
+        @PathVariable userId: String,
+        @RequestBody linkedBankAccountRequest: LinkedBankAccountRequest,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): LinkedAccountResponse? {
+        linkedBankAccountRequest.userId = userId
+        linkedBankAccountRequest.description = "Inserted by admin: ${securityContext.authentication.name}"
+        return linkAccountManagement.addNewAccount(linkedBankAccountRequest)?.awaitFirstOrNull()
+    }
+
+    @PutMapping("/linked-account/verify/{accountId}")
+    suspend fun verifyLinkedAccount(
+        @PathVariable accountId: String, @RequestBody verifyRequest: VerifyLinkedAccountRequest,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): LinkedAccountResponse? {
+        verifyRequest.accountId = accountId
+        verifyRequest.verifier = securityContext.authentication.name
+        return linkAccountManagement.verifyAccount(verifyRequest)?.awaitFirstOrNull()
+
+    }
+
+    //==============================================limitation services=================================================
+
+
+    @PostMapping("/limitation")
+    suspend fun updateLimitation(@RequestBody permissionRequest: UpdateLimitationRequest) {
+        permissionRequest.reason ?: LimitationReason.Other
+        limitManagement.updateLimitation(permissionRequest)
+    }
+
+    @GetMapping("/limitation")
+    suspend fun getLimitation(
+        @RequestParam("userId") userId: String?,
+        @RequestParam("action") action: ActionType?,
+        @RequestParam("reason") reason: LimitationReason?,
+        @RequestParam("groupBy") groupBy: String?,
+        @RequestParam("size") size: Int?,
+        @RequestParam("offset") offset: Int?
+    ): LimitationResponse? {
+
+        var res = limitManagement.getLimitation(userId, action, reason, offset ?: 0, size ?: 1000)?.toList()
+
+        return when (groupBy) {
+            "user" -> LimitationResponse(res?.groupBy { r -> r.userId })
+            "action" -> LimitationResponse(res?.groupBy { r -> r.actionType?.name })
+            "reason" -> LimitationResponse(res?.groupBy { r -> (r.reason ?: LimitationReason.Other).name })
+            else -> {
+                LimitationResponse(totalData = res)
+            }
+        }
+
+    }
+
+    @GetMapping("/limitation/history")
+    suspend fun getLimitationHistory(
+        @RequestParam("userId") userId: String?,
+        @RequestParam("action") action: ActionType?,
+        @RequestParam("reason") reason: LimitationReason?,
+        @RequestParam("groupBy") groupBy: String?,
+        @RequestParam("size") size: Int?,
+        @RequestParam("offset") offset: Int?
+    ): LimitationHistoryResponse? {
+
+        var res = limitManagement.getLimitationHistory(userId, action, reason, offset ?: 0, size ?: 1000)?.toList()
+        return when (groupBy) {
+            "user" -> LimitationHistoryResponse(res?.groupBy { r -> r.userId })
+            "action" -> LimitationHistoryResponse(res?.groupBy { r -> r.actionType?.name })
+            "reason" -> LimitationHistoryResponse(res?.groupBy { r -> (r.reason ?: LimitationReason.Other).name })
+            else -> {
+                LimitationHistoryResponse(totalData = res)
+            }
+        }
+    }
+
+}

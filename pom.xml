@@ -32,6 +32,7 @@
         <module>wallet</module>
         <module>bc-gateway</module>
         <module>common</module>
+        <module>profile</module>
     </modules>
 
     <dependencies>

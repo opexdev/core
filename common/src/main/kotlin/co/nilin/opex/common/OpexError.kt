@@ -107,6 +107,15 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
 
     // code 11000: market
 
+    //code 12000 profile
+    UserIdAlreadyExists(120001, "User with this id or email is already registered", HttpStatus.BAD_REQUEST),
+    InvalidLinkedAccount(120002, "Irrelevant account", HttpStatus.BAD_REQUEST),
+    AccountNotFound(120003, " Account not found", HttpStatus.BAD_REQUEST),
+    DuplicateAccount(120004, " Duplicate account", HttpStatus.BAD_REQUEST),
+    InvalidIban(120005, " Invalid iban number", HttpStatus.BAD_REQUEST),
+    InvalidCard(120006, " Invalid card number", HttpStatus.BAD_REQUEST),
+    VerificationFailed(120007, "Verification Failed", HttpStatus.BAD_REQUEST),
+    ProfileApprovalRequestAlreadyExists(120008, "Request Already Exists", HttpStatus.BAD_REQUEST),
     ;
 
     override fun code() = this.code

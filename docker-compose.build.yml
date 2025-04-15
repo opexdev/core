@@ -45,3 +45,6 @@ services:
   bc-gateway:
     image: ghcr.io/opexdev/bc-gateway:$TAG
     build: bc-gateway/bc-gateway-app
+  profile:
+    image: registry.opex.dev/repository/dockernilin-repo/profile:$TAG
+    build: profile/profile-app

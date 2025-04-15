@@ -22,3 +22,5 @@ services:
     build: api/api-app
   bc-gateway:
     build: bc-gateway/bc-gateway-app
+  profile:
+    build: profile/profile-app
