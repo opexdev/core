@@ -30,7 +30,7 @@ interface VoucherRepository : ReactiveCrudRepository<VoucherModel, Long> {
 
     from voucher v
              inner join voucher_group vg on v.voucher_group = vg.id
-             inner join voucher_usage vu on v.id = vu.voucher
+             left join voucher_usage vu on v.id = vu.voucher
     where public_code = :code
     GROUP BY v.id, vg.id
     """
@@ -54,7 +54,7 @@ interface VoucherRepository : ReactiveCrudRepository<VoucherModel, Long> {
              inner join voucher_group vg on v.voucher_group = vg.id
              left join voucher_usage vu on v.id = vu.voucher
       WHERE (:type IS NULL OR vg.type = :type)
-      AND (:issuer IS NULL OR vg.issuer = :issuer)
+      AND (:issuer IS NULL OR vg.issuer ILIKE CONCAT('%', :issuer, '%'))
       AND (:isUsed IS NULL OR (:isUsed = true AND vu IS NOT NULL) OR (:isUsed = false AND vu IS NULL)) 
     GROUP BY v.id, vg.id
     limit :limit

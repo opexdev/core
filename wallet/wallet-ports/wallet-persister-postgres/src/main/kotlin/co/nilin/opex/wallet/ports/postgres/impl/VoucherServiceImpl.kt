@@ -108,7 +108,7 @@ class VoucherServiceImpl(
 
     override suspend fun getVoucherSaleData(voucherId: Long): VoucherSaleData {
         return voucherSaleDataRepository.findByVoucher(voucherId).awaitFirstOrNull()?.asVoucherSaleData()
-            ?: throw OpexError.InvalidVoucher.exception("Voucher sale data not found")
+            ?: throw OpexError.VoucherSaleDataNotFound.exception()
     }
 
     override suspend fun getVoucherUsageData(voucherId: Long): List<VoucherUsage> {
