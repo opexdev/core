@@ -40,7 +40,7 @@ class PairSettingInitializer(
                 symbols.split(",").forEach { pair ->
                     val existingPair = pairSettingRepository.findByPair(pair).awaitFirstOrNull()
 
-                    val pairToCache = existingPair ?: pairSettingRepository.insert(pair, true).awaitFirstOrNull()
+                    val pairToCache = existingPair ?: pairSettingRepository.insert(pair, false).awaitFirstOrNull()
                     ?: throw OpexError.BadRequest.exception()
                     logger.info("Added Pair: $pair")
 

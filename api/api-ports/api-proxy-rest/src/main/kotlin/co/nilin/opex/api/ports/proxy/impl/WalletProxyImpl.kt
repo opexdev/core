@@ -1,9 +1,6 @@
 package co.nilin.opex.api.ports.proxy.impl
 
-import co.nilin.opex.api.core.inout.OwnerLimitsResponse
-import co.nilin.opex.api.core.inout.TransactionHistoryResponse
-import co.nilin.opex.api.core.inout.Wallet
-import co.nilin.opex.api.core.inout.WithdrawHistoryResponse
+import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.WalletProxy
 import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
 import co.nilin.opex.api.ports.proxy.data.TransactionRequest
@@ -80,7 +77,7 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
         endTime: Long?,
         limit: Int,
         offset: Int,
-        ascendingByTime: Boolean?
+        ascendingByTime: Boolean?,
     ): List<TransactionHistoryResponse> {
         logger.info("fetching deposit transaction history for $uuid")
         return withContext(ProxyDispatchers.wallet) {
@@ -105,7 +102,7 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
         endTime: Long?,
         limit: Int,
         offset: Int,
-        ascendingByTime: Boolean?
+        ascendingByTime: Boolean?,
     ): List<WithdrawHistoryResponse> {
         logger.info("fetching withdraw transaction history for $uuid")
         return withContext(ProxyDispatchers.wallet) {
@@ -122,5 +119,25 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
         }
     }
 
-
+    override suspend fun getGateWays(
+        includeManualGateways: Boolean,
+        includeOffChainGateways: Boolean,
+        includeOnChainGateways: Boolean,
+    ): List<CurrencyGatewayCommand> {
+        return withContext(ProxyDispatchers.wallet) {
+            webClient.get()
+                .uri("$baseUrl/currency/gateways") {
+                    it.queryParam("includeManualGateways", includeManualGateways)
+                    it.queryParam("includeOffChainGateways", includeOffChainGateways)
+                    it.queryParam("includeOnChainGateways", includeOnChainGateways)
+                    it.build()
+                }.accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<CurrencyGatewayCommand>()
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
+        }
+    }
 }
