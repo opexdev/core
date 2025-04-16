@@ -1,27 +1,24 @@
 package co.nilin.opex.auth.service
 
-import co.nilin.opex.auth.config.KeycloakConfig
 import co.nilin.opex.auth.exception.UserAlreadyExistsException
-import co.nilin.opex.auth.model.ExternalIdpTokenRequest
 import co.nilin.opex.auth.model.ExternalIdpUserRegisterRequest
 import co.nilin.opex.auth.model.RegisterUserRequest
 import co.nilin.opex.auth.proxy.GoogleProxy
 import co.nilin.opex.auth.proxy.KeycloakProxy
-import org.springframework.beans.factory.annotation.Qualifier
+import co.nilin.opex.auth.proxy.OTPProxy
 import org.springframework.stereotype.Service
-import org.springframework.web.reactive.function.client.WebClient
 
 @Service
-class UserService(@Qualifier("otpWebClient") private val otpClient: WebClient,
-                  private val keycloakProxy: KeycloakProxy,
-                  private val googleProxy: GoogleProxy) {
-
+class UserService(
+    private val otpProxy: OTPProxy,
+    private val keycloakProxy: KeycloakProxy,
+    private val googleProxy: GoogleProxy
+) {
 
     suspend fun registerUser(request: RegisterUserRequest) {
-
-        //TODO validate otp
+        val isOTPValid = otpProxy.verifyOTP(request.username, request.otpVerifyRequest)
+        if (!isOTPValid) throw IllegalArgumentException("Invalid OTP")
         keycloakProxy.createUser(request.email, request.username, request.password, request.firstName, request.lastName)
-
     }
 
     suspend fun registerExternalIdpUser(externalIdpUserRegisterRequest: ExternalIdpUserRegisterRequest) {
@@ -34,7 +31,7 @@ class UserService(@Qualifier("otpWebClient") private val otpClient: WebClient,
         try {
             keycloakProxy.findUsername(email)
         } catch (e: Exception) {
-            val userId =  keycloakProxy.createExternalIdpUser(email, username, externalIdpUserRegisterRequest.password)
+            val userId = keycloakProxy.createExternalIdpUser(email, username, externalIdpUserRegisterRequest.password)
             keycloakProxy.linkGoogleIdentity(userId, email, googleUserId)
             return
         }

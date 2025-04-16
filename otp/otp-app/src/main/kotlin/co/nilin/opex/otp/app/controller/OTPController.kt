@@ -16,22 +16,22 @@ import javax.validation.Valid
 class OTPController(private val otpService: OTPService) {
 
     @PostMapping
-    suspend fun requestOTP(@RequestBody request: List<OTPReceiver>): NewOTPResponse {
-        validateOTPRequest(request.map { it.type })
-        val tracingCode = if (request.size == 1)
-            otpService.requestOTP(request[0].receiver, request[0].type)
+    suspend fun requestOTP(@RequestBody request: NewOTPRequest): NewOTPResponse {
+        validateOTPRequest(request.receivers.map { it.type })
+        val tracingCode = if (request.receivers.size == 1)
+            otpService.requestOTP(request.receivers[0].receiver, request.receivers[0].type, request.userId)
         else
-            otpService.requestCompositeOTP(request.toSet())
+            otpService.requestCompositeOTP(request.receivers.toSet(), request.userId)
         return NewOTPResponse(tracingCode)
     }
 
-    @PostMapping("/verify/{tracingCode}")
-    suspend fun verifyOTP(@PathVariable tracingCode: String, @RequestBody request: List<OTPCode>): VerifyOTPResponse {
-        validateOTPRequest(request.map { it.type })
-        val isValid = if (request.size == 1)
-            otpService.verifyOTP(request[0].code, tracingCode)
+    @PostMapping("/verify")
+    suspend fun verifyOTP(@RequestBody request: VerifyOTPRequest): VerifyOTPResponse {
+        validateOTPRequest(request.otpCodes.map { it.type })
+        val isValid = if (request.otpCodes.size == 1)
+            otpService.verifyOTP(request.otpCodes[0].code, request.tracingCode, request.userId)
         else
-            otpService.verifyCompositeOTP(request.toSet(), tracingCode)
+            otpService.verifyCompositeOTP(request.otpCodes.toSet(), request.tracingCode, request.userId)
         return VerifyOTPResponse(isValid)
     }
 

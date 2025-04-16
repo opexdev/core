@@ -14,7 +14,7 @@ data class OTPSendResponse(
     val otpTypes: List<String>
 )
 
-data class OTPCode (
+data class OTPCode(
     @field:NotBlank(message = "code is required")
     val code: String,
 
@@ -27,4 +27,8 @@ data class OTPVerifyRequest(
     @field:NotBlank(message = "tracingCode is required")
     val tracingCode: String,
     val otpCodes: List<OTPCode>
+)
+
+data class OTPVerifyResponse(
+    val result: Boolean
 )

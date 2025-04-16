@@ -28,14 +28,14 @@ class OTPService(
 
     private val logger by LoggerDelegate()
 
-    suspend fun requestOTP(receiver: String, type: OTPType): String {
+    suspend fun requestOTP(receiver: String, type: OTPType, userId: String): String {
         checkActiveOTP(receiver, type)
         val config = getConfig(type)
         val code = generateCode(config.charCount, config.includeAlphabetChars)
-        return storeOTP(receiver, type, code, config)
+        return storeOTP(receiver, type, code, config, userId)
     }
 
-    suspend fun requestCompositeOTP(receivers: Set<OTPReceiver>): String {
+    suspend fun requestCompositeOTP(receivers: Set<OTPReceiver>, userId: String): String {
         val type = OTPType.COMPOSITE
         val mainConfig = getConfig(type)
         val receiver = receivers.joinToString(",") { it.receiver }
@@ -49,7 +49,7 @@ class OTPService(
             compositeCode.append(code)
         }
 
-        return storeOTP(receiver, type, compositeCode.toString(), mainConfig)
+        return storeOTP(receiver, type, compositeCode.toString(), mainConfig, userId)
     }
 
     private suspend fun storeOTP(
@@ -57,14 +57,16 @@ class OTPService(
         type: OTPType,
         code: String,
         config: OTPConfig,
+        userId: String
     ): String {
         val expireTime = LocalDateTime.now().plusSeconds(config.expireTimeSeconds.toLong())
         val newOtp = OTP(
             code.encode(),
             receiver,
+            userId,
             UUID.randomUUID().toString(),
             type,
-            expireTime
+            expireTime,
         )
 
         logger.debug("${newOtp.tracingCode} -> $code")
@@ -87,18 +89,18 @@ class OTPService(
             ?: throw OpexError.OTPConfigNotFound.exception()
     }
 
-    suspend fun verifyOTP(code: String, tracingCode: String): Boolean {
+    suspend fun verifyOTP(code: String, tracingCode: String, userId: String): Boolean {
         val otp = repository.findByTracingCode(tracingCode)
-        return verifyOtp(code, otp)
+        return verifyOtp(code, otp, userId)
     }
 
-    suspend fun verifyCompositeOTP(codes: Set<OTPCode>, tracingCode: String): Boolean {
+    suspend fun verifyCompositeOTP(codes: Set<OTPCode>, tracingCode: String, userId: String): Boolean {
         repository.findByTracingCode(tracingCode)?.let {
             if (it.type != OTPType.COMPOSITE)
                 throw OpexError.BadRequest.exception()
 
             val code = reconstructCode(codes)
-            return verifyOtp(code, it)
+            return verifyOtp(code, it, userId)
         }
         return false
     }
@@ -107,9 +109,14 @@ class OTPService(
         return codes.sortedBy { it.type.compositeOrder }.joinToString("") { it.code }
     }
 
-    private suspend fun verifyOtp(code: String, otp: OTP?): Boolean {
+    private suspend fun verifyOtp(code: String, otp: OTP?, userId: String): Boolean {
         if (otp == null) {
             logger.warn("Otp request not found")
+            return false
+        }
+
+        if (otp.userId != userId) {
+            logger.warn("Otp userId mismatch")
             return false
         }
 
@@ -118,11 +125,13 @@ class OTPService(
             return false
         }
 
-        if (encoder.matches(code, otp.code)) {
-            repository.markVerified(otp.id!!)
-            return true
+        if (!encoder.matches(code, otp.code)) {
+            logger.warn("Otp request invalid")
+            return false
         }
-        return false
+
+        repository.markVerified(otp.id!!)
+        return true
     }
 
     private suspend fun generateCode(length: Int): String {

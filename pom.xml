@@ -34,6 +34,7 @@
         <module>bc-gateway</module>
         <module>otp</module>
         <module>common</module>
+        <module>new-user-management/user-management-core</module>
     </modules>
 
     <dependencies>

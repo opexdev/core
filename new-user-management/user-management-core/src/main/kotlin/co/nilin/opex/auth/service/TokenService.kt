@@ -1,27 +1,27 @@
 package co.nilin.opex.auth.service;
 
-import co.nilin.opex.auth.config.KeycloakConfig
-import co.nilin.opex.auth.exception.UserAlreadyExistsException
 import co.nilin.opex.auth.exception.UserNotFoundException
-import co.nilin.opex.auth.model.*
+import co.nilin.opex.auth.model.ExternalIdpTokenRequest
+import co.nilin.opex.auth.model.OTPSendResponse
+import co.nilin.opex.auth.model.PasswordFlowTokenRequest
+import co.nilin.opex.auth.model.TokenResponse
 import co.nilin.opex.auth.proxy.GoogleProxy
 import co.nilin.opex.auth.proxy.KeycloakProxy
-import org.springframework.beans.factory.annotation.Qualifier
+import co.nilin.opex.auth.proxy.OTPProxy
 import org.springframework.stereotype.Service
-import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.awaitBody
 import java.util.*
 
 @Service
 class TokenService(
-    @Qualifier("otpWebClient") private val otpClient: WebClient,
+    private val otpProxy: OTPProxy,
     private val keycloakProxy: KeycloakProxy,
     private val googleProxy: GoogleProxy
 ) {
     suspend fun getToken(tokenRequest: PasswordFlowTokenRequest): TokenResponse {
-        val token = keycloakProxy.getToken(tokenRequest.username, tokenRequest.password);
+        val token = keycloakProxy.getToken(tokenRequest.username, tokenRequest.password)
         if (tokenRequest.otpVerifyRequest != null) {
-            //TODO verify input otp codes and throw error if not verified
+            val isOTPValid = otpProxy.verifyOTP(tokenRequest.username, tokenRequest.otpVerifyRequest)
+            if (!isOTPValid) throw IllegalStateException("Invalid otp verification code")
         } else {
             val requiredOtpTypes = listOf("SMS") //TODO check which type of otp is required for login
             if (!requiredOtpTypes.isEmpty()) {
