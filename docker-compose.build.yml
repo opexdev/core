@@ -33,6 +33,9 @@ services:
   auth:
     image: ghcr.io/opexdev/auth:$TAG
     build: user-management/keycloak-gateway
+  auth-gateway:
+    image: ghcr.io/opexdev/auth-gateway:$TAG
+    build: auth-gateway/auth-gateway-app
   wallet:
     image: ghcr.io/opexdev/wallet:$TAG
     build: wallet/wallet-app

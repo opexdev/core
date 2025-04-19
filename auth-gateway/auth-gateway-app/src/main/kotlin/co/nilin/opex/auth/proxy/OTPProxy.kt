@@ -2,7 +2,7 @@ package co.nilin.opex.auth.proxy
 
 import co.nilin.opex.auth.model.OTPVerifyRequest
 import co.nilin.opex.auth.model.OTPVerifyResponse
-import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component

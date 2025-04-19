@@ -34,7 +34,7 @@
         <module>bc-gateway</module>
         <module>otp</module>
         <module>common</module>
-        <module>new-user-management/user-management-core</module>
+        <module>auth-gateway</module>
     </modules>
 
     <dependencies>
@@ -116,6 +116,9 @@
                         <goals>
                             <goal>compile</goal>
                         </goals>
+                        <configuration>
+                            <jvmTarget>${java.version}</jvmTarget>
+                        </configuration>
                     </execution>
                     <execution>
                         <id>test-compile</id>

@@ -4,10 +4,10 @@ import co.nilin.opex.auth.config.KeycloakConfig
 import co.nilin.opex.auth.exception.UserAlreadyExistsException
 import co.nilin.opex.auth.model.KeycloakUser
 import co.nilin.opex.auth.model.Token
-import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpStatusCode
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.ClientResponse
@@ -16,10 +16,12 @@ import org.springframework.web.reactive.function.client.awaitBody
 import org.springframework.web.reactive.function.client.bodyToMono
 
 @Service
-class KeycloakProxy(@Qualifier("keycloakWebClient") private val keycloakClient: WebClient,
-                    private val keycloakConfig: KeycloakConfig)
-{
-   suspend fun getAdminAccessToken(): String {
+class KeycloakProxy(
+    @Qualifier("keycloakWebClient") private val keycloakClient: WebClient,
+    private val keycloakConfig: KeycloakConfig
+) {
+
+    suspend fun getAdminAccessToken(): String {
         val tokenUrl = "${keycloakConfig.url}/realms/${keycloakConfig.realm}/protocol/openid-connect/token"
         val response = keycloakClient.post()
             .uri(tokenUrl)
@@ -30,7 +32,7 @@ class KeycloakProxy(@Qualifier("keycloakWebClient") private val keycloakClient: 
         return response.accessToken
     }
 
-    suspend fun getToken(username: String, password: String?): Token{
+    suspend fun getToken(username: String, password: String?): Token {
         val userTokenUrl = "${keycloakConfig.url}/realms/${keycloakConfig.realm}/protocol/openid-connect/token"
         return keycloakClient.post()
             .uri(userTokenUrl)
@@ -42,7 +44,8 @@ class KeycloakProxy(@Qualifier("keycloakWebClient") private val keycloakClient: 
 
     suspend fun exchangeGoogleTokenForKeycloakToken(accessToken: String): Token {
         val tokenUrl = "${keycloakConfig.url}/realms/${keycloakConfig.realm}/protocol/openid-connect/token"
-        val requestBody = "client_id=${keycloakConfig.clientId}&client_secret=${keycloakConfig.clientSecret}&grant_type=urn:ietf:params:oauth:grant-type:token-exchange&subject_token=$accessToken&subject_token_type=urn:ietf:params:oauth:token-type:access_token&subject_issuer=google"
+        val requestBody =
+            "client_id=${keycloakConfig.clientId}&client_secret=${keycloakConfig.clientSecret}&grant_type=urn:ietf:params:oauth:grant-type:token-exchange&subject_token=$accessToken&subject_token_type=urn:ietf:params:oauth:token-type:access_token&subject_issuer=google"
         return keycloakClient.post()
             .uri(tokenUrl)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
@@ -73,7 +76,6 @@ class KeycloakProxy(@Qualifier("keycloakWebClient") private val keycloakClient: 
         // Step 4: Return the username of the first user in the list
         return users[0].id
     }
-
 
 
     suspend fun createExternalIdpUser(email: String, username: String, password: String): String {
@@ -109,9 +111,8 @@ class KeycloakProxy(@Qualifier("keycloakWebClient") private val keycloakClient: 
         return findUsername(email)
     }
 
-    suspend fun createUser(email: String, username: String, password: String, firstName: String?, lastName: String?) {
+    suspend fun createUser(email: String?, mobile: String?, password: String, firstName: String?, lastName: String?) {
         val keycloakUrl = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users"
-
         val token = getAdminAccessToken()
 
         val response = keycloakClient.post()
@@ -120,7 +121,7 @@ class KeycloakProxy(@Qualifier("keycloakWebClient") private val keycloakClient: 
             .header("Authorization", "Bearer $token")
             .bodyValue(
                 mapOf(
-                    "username" to username,
+                    //"username" to username,
                     "email" to email,
                     "emailVerified" to true,
                     "firstName" to firstName,
@@ -139,16 +140,16 @@ class KeycloakProxy(@Qualifier("keycloakWebClient") private val keycloakClient: 
                 )
             )
             .retrieve()
-            .onStatus({ it == HttpStatusCode.valueOf(409) }) { response: ClientResponse ->
-                throw UserAlreadyExistsException(email)
+            .onStatus({ it == HttpStatus.valueOf(409) }) { response: ClientResponse ->
+                throw UserAlreadyExistsException(email?:"")
             }
             .toBodilessEntity()
             .awaitSingle() // Await the completion of the request
     }
 
     suspend fun linkGoogleIdentity(userId: String, email: String, googleUserId: String) {
-
-        val identityUrl = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users/$userId/federated-identity/google"
+        val identityUrl =
+            "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users/$userId/federated-identity/google"
         val identityRequest = mapOf(
             "identityProvider" to "google",
             "userId" to googleUserId, // Use the Google user ID from the token

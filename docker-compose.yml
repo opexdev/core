@@ -109,6 +109,33 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.1
+    container_name: keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres-keycloak:5432/opex
+      KC_DB_USERNAME: ${DB_USER}
+      KC_DB_PASSWORD: ${DB_PASS}
+      KC_HEALTH_ENABLED: true
+      KC_METRICS_ENABLED: true
+      GOOGLE_CLIENT_ID: 625813606110-er3v3sol4v206kdg40gf0ltqv08scgs2.apps.googleusercontent.com
+      GOOGLE_CLIENT_SECRET: "*************"
+    command:
+      - start-dev
+      - --import-realm
+      - --features=admin-fine-grained-authz,token-exchange
+    volumes:
+      - ./auth-gateway/keycloak-setup/realms:/opt/keycloak/data/import
+    depends_on:
+      - postgres-keycloak
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
   vault:
     image: ghcr.io/opexdev/vault-opex
     volumes:
@@ -189,6 +216,10 @@ services:
     <<: *postgres-db
     volumes:
       - auth-data:/var/lib/postgresql/data/
+  postgres-keycloak:
+    <<: *postgres-db
+    volumes:
+      - keycloak-data:/var/lib/postgresql/data/
   postgres-wallet:
     <<: *postgres-db
     volumes:
@@ -358,6 +389,17 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  auth-gateway:
+    image: ghcr.io/opexdev/auth-gateway
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+    networks:
+      - default
+    labels:
+      collect_logs: "true"
+    deploy:
+      restart_policy:
+        condition: on-failure
   wallet:
     image: ghcr.io/opexdev/wallet
     environment:
@@ -511,6 +553,7 @@ volumes:
   accountant-data:
   eventlog-data:
   auth-data:
+  keycloak-data:
   wallet-data:
   market-data:
   api-data:

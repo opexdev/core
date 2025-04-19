@@ -1,0 +1,31 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: user-management-core
+  cloud:
+    consul:
+      host: ${CONSUL_HOST:localhost}
+      port: 8500
+      discovery:
+        #healthCheckPath: ${management.context-path}/health
+        instance-id: ${spring.application.name}:${server.port}
+        healthCheckInterval: 20s
+        prefer-ip-address: true
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: [ "health", "prometheus", "metrics", "loggers" ]
+
+keycloak:
+  url: http://keycloak:8080
+  realm: opex
+  client-id: "opex-admin"
+  client-secret: "**********"
+  google-client-id: ${GOOGLE_CLIENT_ID}
+
+otp:
+  url: http://localhost:8081

@@ -16,9 +16,15 @@ class UserService(
 ) {
 
     suspend fun registerUser(request: RegisterUserRequest) {
-        val isOTPValid = otpProxy.verifyOTP(request.username, request.otpVerifyRequest)
-        if (!isOTPValid) throw IllegalArgumentException("Invalid OTP")
-        keycloakProxy.createUser(request.email, request.username, request.password, request.firstName, request.lastName)
+        //val isOTPValid = otpProxy.verifyOTP(request.username, request.otpVerifyRequest)
+        //if (!isOTPValid) throw IllegalArgumentException("Invalid OTP")
+        keycloakProxy.createUser(
+            request.email,
+            request.mobile,
+            request.password,
+            request.firstName,
+            request.lastName
+        )
     }
 
     suspend fun registerExternalIdpUser(externalIdpUserRegisterRequest: ExternalIdpUserRegisterRequest) {
