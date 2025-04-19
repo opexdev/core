@@ -4,6 +4,8 @@ import co.nilin.opex.api.core.inout.MatchConstraint
 import co.nilin.opex.api.core.inout.MatchingOrderType
 import co.nilin.opex.api.core.inout.OrderDirection
 import co.nilin.opex.api.core.inout.OrderSubmitResult
+import co.nilin.opex.api.core.inout.PairConfigResponse
+import co.nilin.opex.api.core.inout.PairSetting
 import java.math.BigDecimal
 
 interface MatchingGatewayProxy {
@@ -27,4 +29,6 @@ interface MatchingGatewayProxy {
         symbol: String,
         token: String?
     ): OrderSubmitResult?
+
+    suspend fun getPairSettings(): List<PairSetting>
 }
