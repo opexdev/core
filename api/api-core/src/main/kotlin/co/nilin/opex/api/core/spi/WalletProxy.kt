@@ -38,4 +38,6 @@ interface WalletProxy {
         includeOnChainGateways: Boolean,
     ): List<CurrencyGatewayCommand>
 
+    suspend fun getCurrencies(): List<CurrencyData>
+
 }

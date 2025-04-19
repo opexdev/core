@@ -175,3 +175,22 @@ fun TerminalModel.toDto(): TerminalCommand {
         identifier, active, type, metaData, description
     )
 }
+
+fun CurrencyModel.toCurrencyData(): CurrencyData {
+    return CurrencyData(
+        symbol,
+        uuid,
+        name,
+        precision,
+        title,
+        alias,
+        icon,
+        isTransitive,
+        isActive,
+        sign,
+        description,
+        shortDescription,
+        externalUrl,
+        order
+    )
+}

@@ -140,4 +140,18 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
                 .awaitFirstOrElse { emptyList() }
         }
     }
+
+    override suspend fun getCurrencies(): List<CurrencyData> {
+        return withContext(ProxyDispatchers.wallet) {
+            webClient.get()
+                .uri("$baseUrl/currency/all")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<CurrencyData>()
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
+        }
+    }
 }

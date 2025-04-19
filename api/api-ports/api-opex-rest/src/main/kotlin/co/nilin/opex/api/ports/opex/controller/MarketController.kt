@@ -1,5 +1,6 @@
 package co.nilin.opex.api.ports.opex.controller
 
+import co.nilin.opex.api.core.inout.CurrencyData
 import co.nilin.opex.api.core.inout.CurrencyGatewayCommand
 import co.nilin.opex.api.core.inout.PairFeeResponse
 import co.nilin.opex.api.core.inout.PairInfoResponse
@@ -20,8 +21,8 @@ class MarketController(
 ) {
 
     @GetMapping("/currency")
-    suspend fun getCurrencies(){
-        walletProxy
+    suspend fun getCurrencies(): List<CurrencyData> {
+        return walletProxy.getCurrencies()
     }
 
     @GetMapping("/pair")
