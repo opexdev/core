@@ -1,8 +1,8 @@
 package co.nilin.opex.wallet.app.dto
 
-import java.time.LocalDateTime
+import java.util.*
 
 data class VoucherUsageDataResponse(
-    var useDate: LocalDateTime,
+    var useDate: Date,
     var uuid: String,
 )

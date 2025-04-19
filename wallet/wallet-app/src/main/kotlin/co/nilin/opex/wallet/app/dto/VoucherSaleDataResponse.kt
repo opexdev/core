@@ -1,7 +1,7 @@
 package co.nilin.opex.wallet.app.dto
 
 import java.math.BigDecimal
-import java.time.LocalDateTime
+import java.util.*
 
 data class VoucherSaleDataResponse(
     val publicCode: String,
@@ -9,6 +9,6 @@ data class VoucherSaleDataResponse(
     val phoneNumber: String,
     val transactionNumber: String,
     val transactionAmount: BigDecimal,
-    val saleDate: LocalDateTime?,
-    val sellerUuid: String, 
+    val saleDate: Date?,
+    val sellerUuid: String,
 )

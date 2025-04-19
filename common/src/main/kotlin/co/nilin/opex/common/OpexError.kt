@@ -87,6 +87,9 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     VoucherAlreadyUsed(6041, "Voucher has already been used", HttpStatus.BAD_REQUEST),
     VoucherExpired(6042, "Voucher has expired", HttpStatus.BAD_REQUEST),
     VoucherSaleDataNotFound(6043, "Voucher sale data not found", HttpStatus.NOT_FOUND),
+    VoucherNotForSale(6044, "Voucher not for sale", HttpStatus.BAD_REQUEST),
+    VoucherUsageLimitExceeded(6045, "Voucher usage limit exceeded", HttpStatus.BAD_REQUEST),
+
 
 
 

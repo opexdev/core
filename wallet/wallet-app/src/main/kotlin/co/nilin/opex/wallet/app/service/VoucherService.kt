@@ -4,6 +4,7 @@ import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.SellVoucherRequest
 import co.nilin.opex.wallet.app.dto.VoucherSaleDataResponse
 import co.nilin.opex.wallet.app.dto.VoucherUsageDataResponse
+import co.nilin.opex.wallet.app.utils.asDate
 import co.nilin.opex.wallet.core.inout.Deposit
 import co.nilin.opex.wallet.core.inout.SubmitVoucherResponse
 import co.nilin.opex.wallet.core.inout.VoucherData
@@ -62,7 +63,7 @@ class VoucherService(
         val voucherId = requireNotNull(voucher.id) { "Voucher ID cannot be null" }
 
         if (voucher.voucherGroup.type != VoucherGroupType.SALE || voucherManager.getUsageCount(voucherId) > 0)
-            throw OpexError.InvalidVoucher.exception("This voucher cannot be sold")
+            throw OpexError.VoucherNotForSale.exception()
 
         voucherManager.saveVoucherSaleData(
             VoucherSaleData(
@@ -83,7 +84,7 @@ class VoucherService(
         val voucherId = requireNotNull(voucher.id) { "Voucher ID cannot be null" }
 
         if (voucher.voucherGroup.type != VoucherGroupType.SALE)
-            throw OpexError.InvalidVoucher.exception("Voucher type must be 'SALE'")
+            throw OpexError.VoucherNotForSale.exception()
 
         val voucherSaleData = voucherManager.getVoucherSaleData(voucherId)
 
@@ -93,7 +94,7 @@ class VoucherService(
             voucherSaleData.phoneNumber,
             voucherSaleData.transactionNumber,
             voucherSaleData.transactionAmount,
-            voucherSaleData.saleDate,
+            voucherSaleData.saleDate?.asDate(),
             voucherSaleData.sellerUuid
         )
     }
@@ -104,7 +105,7 @@ class VoucherService(
 
         val usageData = voucherManager.getVoucherUsageData(voucherId)
         return usageData.map { usage ->
-            VoucherUsageDataResponse(usage.useDate, usage.uuid)
+            VoucherUsageDataResponse(usage.useDate.asDate(), usage.uuid)
         }
     }
 
@@ -152,7 +153,7 @@ class VoucherService(
         group.userLimit?.let { limit ->
             val usageCount = voucherManager.getUsageCount(uuid, groupId)
             if (usageCount >= limit) {
-                throw OpexError.InvalidVoucher.exception("Voucher usage limit exceeded for user")
+                throw OpexError.VoucherUsageLimitExceeded.exception("Voucher usage limit exceeded for user")
             }
         }
     }
@@ -165,10 +166,10 @@ class VoucherService(
 
     private suspend fun validateCampaignVoucher(group: VoucherGroup) {
         val remainingUsage = group.remainingUsage
-            ?: throw OpexError.InvalidVoucher.exception("Campaign voucher is not available")
+            ?: throw OpexError.VoucherUsageLimitExceeded.exception("Campaign voucher is not available")
 
         if (remainingUsage < 1) {
-            throw OpexError.InvalidVoucher.exception("No remaining usage for this campaign voucher")
+            throw OpexError.VoucherUsageLimitExceeded.exception("No remaining usage for this campaign voucher")
         }
     }
 
@@ -178,7 +179,7 @@ class VoucherService(
         }
 
         if (!voucherManager.isExistVoucherSaleData(voucherId)) {
-            throw OpexError.InvalidVoucher.exception("Voucher sale data not found")
+            throw OpexError.VoucherSaleDataNotFound.exception("Voucher sale data not found")
         }
     }
 

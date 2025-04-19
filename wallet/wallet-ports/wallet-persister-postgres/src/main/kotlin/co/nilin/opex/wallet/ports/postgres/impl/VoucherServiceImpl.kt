@@ -84,14 +84,14 @@ class VoucherServiceImpl(
             ?: throw OpexError.VoucherGroupNotFound.exception()
 
         if (current.remainingUsage == null || current.remainingUsage!! <= 0)
-            throw OpexError.BadRequest.exception("No voucher remaining usage")
+            throw OpexError.VoucherUsageLimitExceeded.exception("No voucher remaining usage")
 
         val updatedGroup =
             voucherGroupRepository.updateRemainingWithVersion(voucherGroupId, remainingUsage, current.version)
                 .awaitFirstOrNull() ?: throw OpexError.BadRequest.exception("Voucher group update failed")
 
         val updatedRemaining = updatedGroup.remainingUsage
-            ?: throw OpexError.BadRequest.exception("No voucher remaining usage")
+            ?: throw OpexError.VoucherUsageLimitExceeded.exception("No voucher remaining usage")
 
         if (updatedGroup.version <= current.version || updatedRemaining > remainingUsage) {
             throw OpexError.BadRequest.exception("Voucher group update failed")
