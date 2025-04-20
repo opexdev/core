@@ -145,19 +145,6 @@ class DepositService(
                             it.depositMax
                         )
                     }
-
-                    is ManualGatewayCommand -> {
-                        depositCommand.depositType = DepositType.MANUALLY
-                        depositCommand.currency = it.currencySymbol!!
-                        depositCommand.network = null
-                        return GatewayData(
-                            it.isActive ?: true && it.depositAllowed ?: true,
-                            BigDecimal.ZERO,
-                            it.depositMin ?: BigDecimal.ZERO,
-                            it.depositMax
-                        )
-                    }
-
                     else -> {
                         throw OpexError.GatewayNotFount.exception()
                     }

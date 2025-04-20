@@ -125,40 +125,6 @@ fun OffChainGatewayCommand.toModel(): OffChainGatewayModel {
     )
 }
 
-fun ManualGatewayModel.toDto(): ManualGatewayCommand {
-    return ManualGatewayCommand(
-        allowedFor,
-        currencySymbol,
-        gatewayUuid,
-        isActive,
-        withdrawFee,
-        withdrawAllowed,
-        depositAllowed,
-        depositMin,
-        depositMax,
-        withdrawMin,
-        withdrawMax
-    )
-}
-
-fun ManualGatewayCommand.toModel(): ManualGatewayModel {
-    return ManualGatewayModel(
-        null,
-        gatewayUuid!!,
-        currencySymbol!!,
-        allowedFor,
-        withdrawAllowed,
-        depositAllowed,
-        withdrawFee,
-        withdrawMin,
-        withdrawMax,
-        depositMin,
-        depositMax,
-        isActive
-    )
-}
-
-
 fun TerminalCommand.toModel(): TerminalModel {
     return TerminalModel(
         null,
