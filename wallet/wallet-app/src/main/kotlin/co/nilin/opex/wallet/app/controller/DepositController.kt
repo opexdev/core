@@ -75,7 +75,8 @@ class DepositController(
             chain,
             null,
             depositType = DepositType.ON_CHAIN,
-            gatewayUuid = gatewayUuid
+            gatewayUuid = gatewayUuid,
+            null
         )
     }
 }

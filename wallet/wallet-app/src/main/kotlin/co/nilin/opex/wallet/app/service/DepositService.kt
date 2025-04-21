@@ -23,8 +23,10 @@ class DepositService(
     private val currencyService: CurrencyServiceV2,
     private val depositPersister: DepositPersister,
     private val transferService: TransferService,
-    private val traceDepositService: TraceDepositService
-) {
+    private val traceDepositService: TraceDepositService,
+    private val currencyServiceV2: CurrencyServiceV2,
+
+    ) {
     private val logger = LoggerFactory.getLogger(DepositService::class.java)
 
     @Transactional
@@ -33,17 +35,27 @@ class DepositService(
         receiverUuid: String,
         senderUuid: String,
         amount: BigDecimal,
-        request: ManualTransferRequest
+        request: ManualTransferRequest,
     ): TransferResult? {
         logger.info("deposit manually: $senderUuid to $receiverUuid on $symbol at ${LocalDateTime.now()}")
+
+        val gateway = currencyServiceV2.fetchCurrencyGateway(request.gatewayUuid, symbol)
+            ?: throw OpexError.GatewayNotFount.exception()
+
+        if (gateway !is OffChainGatewayCommand || gateway.transferMethod != TransferMethod.MANUALLY) {
+            throw OpexError.GatewayNotFount.exception()
+        }
+
         walletOwnerManager.findWalletOwner(senderUuid)?.let { it.level }
             ?: throw OpexException(OpexError.WalletOwnerNotFound)
+
         walletOwnerManager.findWalletOwner(receiverUuid)?.let { it.level }
             ?: walletOwnerManager.createWalletOwner(
                 receiverUuid,
                 "not set",
                 "1"
             ).level
+
         return deposit(
             symbol,
             receiverUuid,
@@ -53,8 +65,9 @@ class DepositService(
             request.ref,
             null,
             request.attachment,
-            DepositType.MANUALLY,
-            request.gatewayUuid
+            DepositType.OFF_CHAIN,
+            request.gatewayUuid,
+            TransferMethod.MANUALLY
         )
     }
 
@@ -70,7 +83,8 @@ class DepositService(
         chain: String?,
         attachment: String?,
         depositType: DepositType,
-        gatewayUuid: String?
+        gatewayUuid: String?,
+        transferMethod: TransferMethod?,
     ): TransferResult? {
         logger.info("A ${depositType.name} deposit tx on $symbol-$chain was received for $receiverUuid .......")
 
@@ -84,7 +98,8 @@ class DepositService(
             status = DepositStatus.DONE,
             depositType = depositType,
             network = chain,
-            attachment = attachment
+            attachment = attachment,
+            transferMethod = transferMethod
         )
 
         val gatewayData = fetchDepositData(gatewayUuid, symbol, depositType, depositCommand)
@@ -128,7 +143,7 @@ class DepositService(
         gatewayUuid: String?,
         symbol: String,
         depositType: DepositType,
-        depositCommand: Deposit
+        depositCommand: Deposit,
     ): GatewayData {
 
         gatewayUuid?.let {
@@ -145,6 +160,20 @@ class DepositService(
                             it.depositMax
                         )
                     }
+
+                    is OffChainGatewayCommand -> {
+                        depositCommand.depositType = DepositType.OFF_CHAIN
+                        depositCommand.currency = it.currencySymbol!!
+                        depositCommand.network = null
+                        depositCommand.transferMethod = it.transferMethod
+                        return GatewayData(
+                            it.isActive ?: true && it.depositAllowed ?: true,
+                            BigDecimal.ZERO,
+                            it.depositMin ?: BigDecimal.ZERO,
+                            it.depositMax
+                        )
+                    }
+
                     else -> {
                         throw OpexError.GatewayNotFount.exception()
                     }
@@ -165,7 +194,7 @@ class DepositService(
         endTime: LocalDateTime?,
         limit: Int?,
         size: Int?,
-        ascendingByTime: Boolean?
+        ascendingByTime: Boolean?,
     ): List<DepositResponse> {
         return depositPersister.findDepositHistory(uuid, symbol, startTime, endTime, limit, size, ascendingByTime)
             .map {
@@ -181,7 +210,8 @@ class DepositService(
                     it.status,
                     it.depositType,
                     it.attachment,
-                    it.createDate
+                    it.createDate,
+                    it.transferMethod
                 )
             }
     }
@@ -197,7 +227,7 @@ class DepositService(
         status: List<DepositStatus>?,
         offset: Int?,
         size: Int?,
-        ascendingByTime: Boolean?
+        ascendingByTime: Boolean?,
     ): List<DepositResponse> {
 
         return depositPersister.findByCriteria(
@@ -224,7 +254,8 @@ class DepositService(
                 it.status,
                 it.depositType,
                 it.attachment,
-                it.createDate
+                it.createDate,
+                it.transferMethod
             )
         }
     }

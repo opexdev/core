@@ -67,6 +67,7 @@ fun Deposit.toModel(): DepositModel {
         attachment,
         depositType,
         createDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(),
+        transferMethod
     )
 }
 
@@ -87,7 +88,8 @@ fun DepositModel.toDto(): Deposit {
         depositType,
         attachment,
         Date.from(createDate.atZone(ZoneId.systemDefault())?.toInstant()),
-        id
+        id,
+        transferMethod
     )
 }
 

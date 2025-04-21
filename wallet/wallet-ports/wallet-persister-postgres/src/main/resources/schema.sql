@@ -192,8 +192,6 @@ CREATE TABLE IF NOT EXISTS deposits
 ALTER TABLE deposits
     add COLUMN IF NOT EXISTS attachment VARCHAR(255);
 
-
-
 CREATE TABLE IF NOT EXISTS currency_off_chain_gateway
 (
     id               SERIAL PRIMARY KEY,
@@ -470,6 +468,18 @@ $$
                    FROM information_schema.columns
                    WHERE table_name = 'voucher' AND column_name = 'uuid') THEN ALTER TABLE voucher
             DROP COLUMN uuid;
+        END IF;
+    END
+$$;
+
+
+DO
+$$
+    BEGIN
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'deposits' AND column_name = 'transfer_method') THEN ALTER TABLE deposits
+            ADD COLUMN transfer_method VARCHAR(255);
         END IF;
     END
 $$;

@@ -5,11 +5,10 @@ import co.nilin.opex.wallet.app.dto.SellVoucherRequest
 import co.nilin.opex.wallet.app.dto.VoucherSaleDataResponse
 import co.nilin.opex.wallet.app.dto.VoucherUsageDataResponse
 import co.nilin.opex.wallet.app.utils.asDate
-import co.nilin.opex.wallet.core.inout.Deposit
-import co.nilin.opex.wallet.core.inout.SubmitVoucherResponse
-import co.nilin.opex.wallet.core.inout.VoucherData
+import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.*
-import co.nilin.opex.wallet.core.spi.DepositPersister
+import co.nilin.opex.wallet.core.model.DepositType
+import co.nilin.opex.wallet.core.service.GatewayService
 import co.nilin.opex.wallet.core.spi.VoucherManager
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -21,8 +20,8 @@ import java.util.*
 @Service
 class VoucherService(
     private val voucherManager: VoucherManager,
-    private val transferService: TransferService,
-    private val depositPersister: DepositPersister,
+    private val depositService: DepositService,
+    private val gatewayService: GatewayService,
 ) {
     private val logger = LoggerFactory.getLogger(VoucherService::class.java)
 
@@ -32,10 +31,8 @@ class VoucherService(
         val voucher = findAndValidateVoucher(code, uuid)
         updateVoucherGroupRemaining(voucher.voucherGroup)
         voucherManager.saveVoucherUsage(requireNotNull(voucher.id), uuid)
-        val transferRef = "wallet:voucher:" + UUID.randomUUID().toString()
-        executeTransfer(voucher, uuid, transferRef)
-        persistDeposit(voucher, uuid, transferRef)
-        logger.info("Voucher submitted successfully for user: $uuid with transfer reference: $transferRef")
+        deposit(voucher, uuid)
+        logger.info("Voucher ${voucher.publicCode} submitted successfully for user: $uuid")
         return SubmitVoucherResponse(
             voucher.amount,
             voucher.currency,
@@ -183,35 +180,28 @@ class VoucherService(
         }
     }
 
-    private suspend fun executeTransfer(voucher: Voucher, userId: String, transferRef: String) {
-        logger.info("Executing transfer for voucher: ${voucher.publicCode} to user: $userId with reference: $transferRef")
-        transferService.transfer(
-            symbol = voucher.currency,
-            senderWalletType = WalletType.MAIN,
-            senderUuid = "1",
-            receiverWalletType = WalletType.MAIN,
-            receiverUuid = userId,
-            amount = voucher.amount,
-            description = voucher.voucherGroup.description,
-            transferRef = transferRef,
-            transferCategory = TransferCategory.VOUCHER
-        )
-    }
+    private suspend fun deposit(voucher: Voucher, uuid: String) {
+        val transferRef = "wallet:voucher:" + UUID.randomUUID().toString()
+        logger.info("Executing deposit for voucher: ${voucher.publicCode} to user: $uuid with reference: $transferRef")
 
-    private suspend fun persistDeposit(voucher: Voucher, userId: String, transferRef: String) {
-        logger.info("Persisting deposit for voucher: ${voucher.publicCode} to user: $userId with reference: $transferRef")
-        depositPersister.persist(
-            Deposit(
-                ownerUuid = userId,
-                depositUuid = UUID.randomUUID().toString(),
-                currency = voucher.currency,
-                amount = voucher.amount,
-                note = "VOUCHER",
-                transactionRef = transferRef,
-                status = DepositStatus.DONE,
-                depositType = DepositType.MANUALLY,
-                attachment = null,
-            )
+        val gatewayUuid = gatewayService
+            .fetchGateways(voucher.currency, listOf(GatewayType.OffChain))
+            ?.find { it is OffChainGatewayCommand && it.transferMethod == TransferMethod.VOUCHER }
+            ?.gatewayUuid
+            ?: throw OpexError.GatewayNotFount.exception()
+
+        depositService.deposit(
+            voucher.currency,
+            uuid,
+            WalletType.MAIN,
+            voucher.amount,
+            "VOUCHER:${voucher.publicCode}",
+            transferRef,
+            null,
+            null,
+            DepositType.OFF_CHAIN,
+            gatewayUuid,
+            TransferMethod.VOUCHER
         )
     }
 }

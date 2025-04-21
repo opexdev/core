@@ -33,7 +33,7 @@ class ManualWithdrawService(
         logger.info("withdraw manually: $sourceUuid to $receiverUuid on $symbol at ${LocalDateTime.now()}")
 
         currencyServiceV2.fetchCurrencyGateway(request.gatewayUuid, symbol)
-            ?.takeIf { it is OffChainGatewayCommand && it.transferMethod == TransferMethod.MANUAL }
+            ?.takeIf { it is OffChainGatewayCommand && it.transferMethod == TransferMethod.MANUALLY }
             ?.let {
                 val gatewayData = GatewayData(
                     it.isActive ?: true && it.withdrawAllowed ?: true,
