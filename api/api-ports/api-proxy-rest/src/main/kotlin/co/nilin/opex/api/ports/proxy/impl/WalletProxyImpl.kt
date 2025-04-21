@@ -8,21 +8,16 @@ import co.nilin.opex.api.core.spi.WalletProxy
 import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
 import co.nilin.opex.api.ports.proxy.data.TransactionRequest
 import co.nilin.opex.common.utils.LoggerDelegate
-import kotlinx.coroutines.reactive.awaitFirstOrElse
-import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
+import org.springframework.http.RequestEntity
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.body
-import org.springframework.web.reactive.function.client.bodyToFlux
-import org.springframework.web.reactive.function.client.bodyToMono
-import reactor.core.publisher.Mono
+import org.springframework.web.client.RestTemplate
+import org.springframework.web.util.UriComponentsBuilder
 
 @Component
-class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
+class WalletProxyImpl(private val restTemplate: RestTemplate) : WalletProxy {
 
     private val logger by LoggerDelegate()
 
@@ -32,43 +27,54 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
     override suspend fun getWallets(uuid: String?, token: String?): List<Wallet> {
         logger.info("fetching wallets for $uuid")
         return withContext(ProxyDispatchers.wallet) {
-            webClient.get()
-                .uri("$baseUrl/v1/owner/$uuid/wallets")
-                .accept(MediaType.APPLICATION_JSON)
+            val uri = UriComponentsBuilder.fromUriString("$baseUrl/v1/owner/$uuid/wallets")
+                .build()
+                .toUri()
+
+            val request = RequestEntity.get(uri)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<Wallet>()
-                .collectList()
-                .awaitSingle()
+                .build()
+
+            restTemplate.exchange(
+                request,
+                Array<Wallet>::class.java
+            ).body?.toList() ?: emptyList()
         }
     }
 
     override suspend fun getWallet(uuid: String?, token: String?, symbol: String): Wallet {
         logger.info("fetching wallet for $uuid")
         return withContext(ProxyDispatchers.wallet) {
-            webClient.get()
-                .uri("$baseUrl/v1/owner/$uuid/wallets/$symbol")
-                .accept(MediaType.APPLICATION_JSON)
+            val uri = UriComponentsBuilder.fromUriString("$baseUrl/v1/owner/$uuid/wallets/$symbol")
+                .build()
+                .toUri()
+
+            val request = RequestEntity.get(uri)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono<Wallet>()
-                .awaitSingle()
+                .build()
+
+            restTemplate.exchange(
+                request,
+                Wallet::class.java
+            ).body ?: throw RuntimeException("Failed to get wallet for $uuid")
         }
     }
 
     override suspend fun getOwnerLimits(uuid: String?, token: String?): OwnerLimitsResponse {
         logger.info("fetching owner limits for $uuid")
         return withContext(ProxyDispatchers.wallet) {
-            webClient.get()
-                .uri("$baseUrl/v1/owner/$uuid/limits")
-                .accept(MediaType.APPLICATION_JSON)
+            val uri = UriComponentsBuilder.fromUriString("$baseUrl/v1/owner/$uuid/limits")
+                .build()
+                .toUri()
+
+            val request = RequestEntity.get(uri)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono<OwnerLimitsResponse>()
-                .awaitSingle()
+                .build()
+
+            restTemplate.exchange(
+                request,
+                OwnerLimitsResponse::class.java
+            ).body ?: throw RuntimeException("Failed to get owner limits for $uuid")
         }
     }
 
@@ -84,16 +90,18 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
     ): List<TransactionHistoryResponse> {
         logger.info("fetching deposit transaction history for $uuid")
         return withContext(ProxyDispatchers.wallet) {
-            webClient.post()
-                .uri("$baseUrl/transaction/deposit/$uuid")
-                .accept(MediaType.APPLICATION_JSON)
+            val uri = UriComponentsBuilder.fromUriString("$baseUrl/transaction/deposit/$uuid")
+                .build()
+                .toUri()
+
+            val request = RequestEntity.post(uri)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-                .body(Mono.just(TransactionRequest(coin, startTime, endTime, limit, offset, ascendingByTime)))
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<TransactionHistoryResponse>()
-                .collectList()
-                .awaitFirstOrElse { emptyList() }
+                .body(TransactionRequest(coin, startTime, endTime, limit, offset, ascendingByTime))
+
+            restTemplate.exchange(
+                request,
+                Array<TransactionHistoryResponse>::class.java
+            ).body?.toList() ?: emptyList()
         }
     }
 
@@ -109,18 +117,18 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
     ): List<WithdrawHistoryResponse> {
         logger.info("fetching withdraw transaction history for $uuid")
         return withContext(ProxyDispatchers.wallet) {
-            webClient.post()
-                .uri("$baseUrl/withdraw/history/$uuid")
-                .accept(MediaType.APPLICATION_JSON)
+            val uri = UriComponentsBuilder.fromUriString("$baseUrl/withdraw/history/$uuid")
+                .build()
+                .toUri()
+
+            val request = RequestEntity.post(uri)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-                .body(Mono.just(TransactionRequest(coin, startTime, endTime, limit, offset, ascendingByTime)))
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<WithdrawHistoryResponse>()
-                .collectList()
-                .awaitFirstOrElse { emptyList() }
+                .body(TransactionRequest(coin, startTime, endTime, limit, offset, ascendingByTime))
+
+            restTemplate.exchange(
+                request,
+                Array<WithdrawHistoryResponse>::class.java
+            ).body?.toList() ?: emptyList()
         }
     }
-
-
 }

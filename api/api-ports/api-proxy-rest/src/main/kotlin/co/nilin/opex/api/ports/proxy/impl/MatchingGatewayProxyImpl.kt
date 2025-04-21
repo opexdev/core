@@ -9,20 +9,18 @@ import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
 import co.nilin.opex.api.ports.proxy.data.CancelOrderRequest
 import co.nilin.opex.api.ports.proxy.data.CreateOrderRequest
 import co.nilin.opex.common.utils.LoggerDelegate
-import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
+import org.springframework.http.RequestEntity
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.body
-import org.springframework.web.reactive.function.client.bodyToMono
-import reactor.core.publisher.Mono
+import org.springframework.web.client.RestTemplate
+import org.springframework.web.util.UriComponentsBuilder
 import java.math.BigDecimal
-import java.net.URI
 
 @Component
-class MatchingGatewayProxyImpl(private val client: WebClient) : MatchingGatewayProxy {
+class MatchingGatewayProxyImpl(private val restTemplate: RestTemplate) : MatchingGatewayProxy {
 
     private val logger by LoggerDelegate()
 
@@ -43,16 +41,20 @@ class MatchingGatewayProxyImpl(private val client: WebClient) : MatchingGatewayP
         logger.info("calling matching-gateway order create")
         val body = CreateOrderRequest(uuid, pair, price, quantity, direction, matchConstraint, orderType, userLevel)
         return withContext(ProxyDispatchers.general) {
-            client.post()
-                .uri(URI.create("$baseUrl/order"))
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
+            val uri = UriComponentsBuilder.fromUriString("$baseUrl/order")
+                .build()
+                .toUri()
+
+            val request = RequestEntity.post(uri)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .header("Authorization", "Bearer $token")
-                .body(Mono.just(body))
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono<OrderSubmitResult>()
-                .awaitSingleOrNull()
+                .body(body)
+
+            restTemplate.exchange(
+                request,
+                OrderSubmitResult::class.java
+            ).body
         }
 
     }
@@ -66,16 +68,20 @@ class MatchingGatewayProxyImpl(private val client: WebClient) : MatchingGatewayP
     ): OrderSubmitResult? {
         logger.info("calling matching-gateway order cancel")
         return withContext(ProxyDispatchers.general) {
-            client.post()
-                .uri(URI.create("$baseUrl/order/cancel"))
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
+            val uri = UriComponentsBuilder.fromUriString("$baseUrl/order/cancel")
+                .build()
+                .toUri()
+
+            val request = RequestEntity.post(uri)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .header("Authorization", "Bearer $token")
-                .body(Mono.just(CancelOrderRequest(ouid, uuid, orderId, symbol)))
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono<OrderSubmitResult>()
-                .awaitSingleOrNull()
+                .body(CancelOrderRequest(ouid, uuid, orderId, symbol))
+
+            restTemplate.exchange(
+                request,
+                OrderSubmitResult::class.java
+            ).body
         }
     }
 }
