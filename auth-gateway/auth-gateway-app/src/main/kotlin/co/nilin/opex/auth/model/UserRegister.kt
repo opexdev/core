@@ -12,6 +12,7 @@ data class RegisterUserRequest(
     val password: String,
 
     val otpCode: String,
+    val otpType: String,
     val otpTracingCode: String,
 
     val firstName: String? = null,
@@ -28,5 +29,13 @@ data class ExternalIdpUserRegisterRequest(
 data class KeycloakUser(
     val id: String,
     val username: String,
-    val email: String
+    val email: String?,
+    val firstName: String?,
+    val lastName: String?,
+    val attributes: Map<String, List<String>>
+)
+
+data class Attribute(
+    val key: String,
+    val value: String
 )

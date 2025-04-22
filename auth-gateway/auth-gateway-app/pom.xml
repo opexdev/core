@@ -71,10 +71,9 @@
             <version>0.22.1</version>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.accountant.core</groupId>
-            <artifactId>accountant-core</artifactId>
-            <version>1.0.1-beta.7</version>
-            <scope>compile</scope>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-admin-client</artifactId>
+            <version>26.0.0</version>
         </dependency>
     </dependencies>
 

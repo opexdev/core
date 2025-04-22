@@ -127,6 +127,7 @@ services:
       - start-dev
       - --import-realm
       - --features=admin-fine-grained-authz,token-exchange
+      - --log-level=DEBUG
     volumes:
       - ./auth-gateway/keycloak-setup/realms:/opt/keycloak/data/import
     depends_on:

@@ -1,11 +1,11 @@
 package co.nilin.opex.auth.service
 
 import co.nilin.opex.auth.exception.UserAlreadyExistsException
-import co.nilin.opex.auth.model.ExternalIdpUserRegisterRequest
-import co.nilin.opex.auth.model.RegisterUserRequest
+import co.nilin.opex.auth.model.*
 import co.nilin.opex.auth.proxy.GoogleProxy
 import co.nilin.opex.auth.proxy.KeycloakProxy
 import co.nilin.opex.auth.proxy.OTPProxy
+import co.nilin.opex.common.OpexError
 import org.springframework.stereotype.Service
 
 @Service
@@ -16,9 +16,25 @@ class UserService(
 ) {
 
     suspend fun registerUser(request: RegisterUserRequest) {
-        //val isOTPValid = otpProxy.verifyOTP(request.username, request.otpVerifyRequest)
-        //if (!isOTPValid) throw IllegalArgumentException("Invalid OTP")
+        if (request.email.isNullOrBlank() && request.mobile.isNullOrBlank())
+            throw OpexError.BadRequest.exception()
+        val username = request.email ?: request.mobile
+
+        val otpRequest = OTPVerifyRequest(request.otpTracingCode, listOf(OTPCode(request.otpCode, request.otpType)))
+        val isOTPValid = otpProxy.verifyOTP(username!!, otpRequest)
+        if (!isOTPValid) throw OpexError.InvalidOTP.exception()
+
+        val attr = if (request.email.isNullOrBlank())
+            Attribute("mobile", request.mobile!!)
+        else
+            Attribute("email", request.email)
+
+        val users = keycloakProxy.findUserByAttribute(attr)
+        if (users.isNotEmpty())
+            throw OpexError.UserAlreadyExists.exception()
+
         keycloakProxy.createUser(
+            username!!,
             request.email,
             request.mobile,
             request.password,
@@ -35,7 +51,7 @@ class UserService(
             ?: throw IllegalArgumentException("Google user ID (sub) not found in token")
         val username = email // Use email as the username
         try {
-            keycloakProxy.findUsername(email)
+            keycloakProxy.findUserByEmail(email)
         } catch (e: Exception) {
             val userId = keycloakProxy.createExternalIdpUser(email, username, externalIdpUserRegisterRequest.password)
             keycloakProxy.linkGoogleIdentity(userId, email, googleUserId)

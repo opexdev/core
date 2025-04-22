@@ -18,9 +18,6 @@ class UserController(private val userService: UserService) {
 
     @PostMapping("/register")
     suspend fun registerUser(@Valid @RequestBody request: RegisterUserRequest): ResponseEntity<Any> {
-        if (request.email.isNullOrBlank() && request.email.isNullOrBlank())
-            throw OpexError.InvalidRequestBody.exception()
-
         userService.registerUser(request)
         return ResponseEntity.ok().build()
     }

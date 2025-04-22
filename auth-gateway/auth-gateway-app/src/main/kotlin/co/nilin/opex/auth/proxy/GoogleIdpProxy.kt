@@ -26,7 +26,7 @@ class GoogleProxy(private val keycloakConfig: KeycloakConfig) {
             .build()
 
         val decoded = verifier.verify(googleToken)
-        if ( decoded.audience.isEmpty() || !decoded.audience.contains(keycloakConfig.googleClientId)){
+        if ( decoded.audience.isEmpty() || !decoded.audience.contains(keycloakConfig.adminClient.googleClientId)){
            throw JWTVerificationException("Google token's audience doesn't match")
         }
         return decoded

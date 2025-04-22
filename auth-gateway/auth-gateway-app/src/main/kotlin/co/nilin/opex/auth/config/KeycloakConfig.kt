@@ -8,7 +8,12 @@ import org.springframework.stereotype.Component
 class KeycloakConfig {
     lateinit var url: String
     lateinit var realm: String
-    lateinit var clientId: String
-    lateinit var clientSecret: String
-    lateinit var googleClientId: String
-} 
+    lateinit var adminClient: Client
+    lateinit var webClient: Client
+}
+
+data class Client(
+    val id: String,
+    val secret: String,
+    val googleClientId: String?
+)

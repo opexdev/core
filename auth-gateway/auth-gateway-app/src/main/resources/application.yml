@@ -19,13 +19,47 @@ management:
       base-path: /actuator
       exposure:
         include: [ "health", "prometheus", "metrics", "loggers" ]
-
+logbook:
+  secure-filter:
+    enabled: true
+  format:
+    style: http
+  filter:
+    enabled: true
+    form-request-mode: BODY
+  attribute-extractors:
+    - type: JwtFirstMatchingClaimExtractor
+      claim-names: [ "sub", "subject" ]
+  obfuscate:
+    headers:
+      - Authorization
+    parameters:
+      - password
+    json-body-fields:
+      - password
+    replacement: "***"
+  write:
+    max-body-size: 500 #kb
+  predicate:
+    exclude:
+      - path: /auth**
+      - path: /actuator/**
+      - path: /swagger**
+      - path: /config/**
+logging:
+  level:
+    co.nilin: INFO
+    org.zalando.logbook: TRACE
 keycloak:
   url: http://keycloak:8080
   realm: opex
-  client-id: "opex-admin"
-  client-secret: "**********"
-  google-client-id: ${GOOGLE_CLIENT_ID}
+  admin-client:
+    id: "opex-admin"
+    secret: xxx
+    google-client-id: ${GOOGLE_CLIENT_ID}
+  web-client:
+    id: "web-app"
+    secret: xxx
 
 otp:
   url: http://localhost:8081
