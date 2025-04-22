@@ -4,7 +4,9 @@ import co.nilin.opex.auth.config.KeycloakConfig
 import co.nilin.opex.auth.exception.UserAlreadyExistsException
 import co.nilin.opex.auth.model.Attribute
 import co.nilin.opex.auth.model.KeycloakUser
+import co.nilin.opex.auth.model.LoginMethod
 import co.nilin.opex.auth.model.Token
+import co.nilin.opex.common.OpexError
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.beans.factory.annotation.Qualifier
@@ -37,12 +39,17 @@ class KeycloakProxy(
         return response.accessToken
     }
 
-    suspend fun getUserToken(username: String, password: String?): Token {
+    suspend fun getUserToken(username: String, password: String?, loginMethod: LoginMethod): Token {
+        val attribute = Attribute(if (loginMethod == LoginMethod.EMAIL) "email" else "mobile", username)
+        val users = findUserByAttribute(attribute)
+        if (users.isEmpty())
+            throw OpexError.UserNotFound.exception()
+
         val userTokenUrl = "${keycloakConfig.url}/realms/${keycloakConfig.realm}/protocol/openid-connect/token"
         return keycloakClient.post()
             .uri(userTokenUrl)
             .header("Content-Type", "application/x-www-form-urlencoded")
-            .bodyValue("client_id=${webClient.id}&client_secret=${webClient.secret}&grant_type=password&username=${username}&password=${password}")
+            .bodyValue("client_id=${webClient.id}&client_secret=${webClient.secret}&grant_type=password&username=${users[0].username}&password=${password}")
             .retrieve()
             .awaitBody<Token>()
     }

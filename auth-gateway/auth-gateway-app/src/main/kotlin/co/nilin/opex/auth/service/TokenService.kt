@@ -18,7 +18,7 @@ class TokenService(
     private val googleProxy: GoogleProxy
 ) {
     suspend fun getToken(tokenRequest: PasswordFlowTokenRequest): TokenResponse {
-        val token = keycloakProxy.getUserToken(tokenRequest.username, tokenRequest.password)
+        val token = keycloakProxy.getUserToken(tokenRequest.username, tokenRequest.password, tokenRequest.loginMethod)
         if (tokenRequest.otpVerifyRequest != null) {
             val isOTPValid = otpProxy.verifyOTP(tokenRequest.username, tokenRequest.otpVerifyRequest)
             if (!isOTPValid) throw IllegalStateException("Invalid otp verification code")
