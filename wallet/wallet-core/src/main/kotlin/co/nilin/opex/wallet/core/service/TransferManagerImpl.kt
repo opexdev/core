@@ -147,7 +147,9 @@ class TransferManagerImpl(
                     currency,
                     command.destWallet.balance.amount + amount,
                     amount,
-                    UserTransactionCategory.DEPOSIT
+                    UserTransactionCategory.DEPOSIT,
+                    command.description
+
                 )
                 userTransactionManager.save(tx)
             }
