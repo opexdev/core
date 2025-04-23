@@ -120,14 +120,12 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
     }
 
     override suspend fun getGateWays(
-        includeManualGateways: Boolean,
         includeOffChainGateways: Boolean,
         includeOnChainGateways: Boolean,
     ): List<CurrencyGatewayCommand> {
         return withContext(ProxyDispatchers.wallet) {
             webClient.get()
                 .uri("$baseUrl/currency/gateways") {
-                    it.queryParam("includeManualGateways", includeManualGateways)
                     it.queryParam("includeOffChainGateways", includeOffChainGateways)
                     it.queryParam("includeOnChainGateways", includeOnChainGateways)
                     it.build()

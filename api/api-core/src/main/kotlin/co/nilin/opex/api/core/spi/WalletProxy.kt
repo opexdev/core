@@ -33,7 +33,6 @@ interface WalletProxy {
     ): List<WithdrawHistoryResponse>
 
     suspend fun getGateWays(
-        includeManualGateways: Boolean,
         includeOffChainGateways: Boolean,
         includeOnChainGateways: Boolean,
     ): List<CurrencyGatewayCommand>

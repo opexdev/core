@@ -48,11 +48,10 @@ class MarketController(
 
     @GetMapping("/currency/gateway")
     suspend fun getCurrencyGateways(
-        @RequestParam(defaultValue = "true") includeManualGateways: Boolean,
         @RequestParam(defaultValue = "true") includeOffChainGateways: Boolean,
         @RequestParam(defaultValue = "true") includeOnChainGateways: Boolean,
     ): List<CurrencyGatewayCommand> {
-        return walletProxy.getGateWays(includeManualGateways, includeOffChainGateways, includeOnChainGateways)
+        return walletProxy.getGateWays(includeOffChainGateways, includeOnChainGateways)
     }
 
     @GetMapping("/pair/fee")
