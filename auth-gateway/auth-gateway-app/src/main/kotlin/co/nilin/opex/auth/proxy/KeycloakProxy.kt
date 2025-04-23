@@ -153,9 +153,8 @@ class KeycloakProxy(
 
     suspend fun createUser(
         username: String,
-        email: String?,
-        mobile: String?,
         password: String,
+        loginMethod: LoginMethod,
         firstName: String?,
         lastName: String?
     ) {
@@ -169,7 +168,6 @@ class KeycloakProxy(
             .bodyValue(
                 mapOf(
                     "username" to username,
-                    "email" to email,
                     "emailVerified" to true,
                     "firstName" to firstName,
                     "lastName" to lastName,
@@ -182,15 +180,14 @@ class KeycloakProxy(
                         )
                     ),
                     "attributes" to mapOf(
-                        "kycLevel" to "0",
-                        "mobile" to mobile
-                    )
-                )
+                        "kycLevel" to "0"
+                    ).apply { if (loginMethod == LoginMethod.MOBILE) "mobile" to username }
+                ).apply { if (loginMethod == LoginMethod.EMAIL) "email" to username }
             )
             .retrieve()
-            .onStatus({ it == HttpStatus.valueOf(409) }) { response: ClientResponse ->
-                throw UserAlreadyExistsException(email ?: "")
-            }
+            /*.onStatus({ it == HttpStatus.valueOf(409) }) { response: ClientResponse ->
+                //throw UserAlreadyExistsException(email ?: "")
+            }*/
             .toBodilessEntity()
             .awaitSingle() // Await the completion of the request
     }

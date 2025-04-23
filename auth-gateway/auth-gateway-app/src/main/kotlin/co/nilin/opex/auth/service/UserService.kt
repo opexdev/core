@@ -16,28 +16,21 @@ class UserService(
 ) {
 
     suspend fun registerUser(request: RegisterUserRequest) {
-        if (request.email.isNullOrBlank() && request.mobile.isNullOrBlank())
-            throw OpexError.BadRequest.exception()
-        val username = request.email ?: request.mobile
+        //TODO add validation for mobile and email
 
         val otpRequest = OTPVerifyRequest(request.otpTracingCode, listOf(OTPCode(request.otpCode, request.otpType)))
-        val isOTPValid = otpProxy.verifyOTP(username!!, otpRequest)
+        val isOTPValid = otpProxy.verifyOTP(request.username, otpRequest)
         if (!isOTPValid) throw OpexError.InvalidOTP.exception()
 
-        val attr = if (request.email.isNullOrBlank())
-            Attribute("mobile", request.mobile!!)
-        else
-            Attribute("email", request.email)
-
-        val users = keycloakProxy.findUserByAttribute(attr)
+        val attribute = Attribute(if (request.loginMethod == LoginMethod.EMAIL) "email" else "mobile", request.username)
+        val users = keycloakProxy.findUserByAttribute(attribute)
         if (users.isNotEmpty())
             throw OpexError.UserAlreadyExists.exception()
 
         keycloakProxy.createUser(
-            username!!,
-            request.email,
-            request.mobile,
+            request.username,
             request.password,
+            request.loginMethod,
             request.firstName,
             request.lastName
         )
@@ -46,9 +39,9 @@ class UserService(
     suspend fun registerExternalIdpUser(externalIdpUserRegisterRequest: ExternalIdpUserRegisterRequest) {
         val decodedJWT = googleProxy.validateGoogleToken(externalIdpUserRegisterRequest.idToken)
         val email = decodedJWT.getClaim("email").asString()
-            ?: throw IllegalArgumentException("Email not found in Google token")
+            ?: throw OpexError.GmailNotFoundInToken.exception()
         val googleUserId = decodedJWT.getClaim("sub").asString()
-            ?: throw IllegalArgumentException("Google user ID (sub) not found in token")
+            ?: throw OpexError.UserIDNotFoundInToken.exception()
         val username = email // Use email as the username
         try {
             keycloakProxy.findUserByEmail(email)

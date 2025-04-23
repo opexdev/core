@@ -1,15 +1,10 @@
 package co.nilin.opex.auth.model
 
-import jakarta.validation.constraints.Email
-import jakarta.validation.constraints.NotBlank
-
 data class RegisterUserRequest(
     // One of these must be sent
-    @field:Email(message = "Invalid email format")
-    val email: String?,
-    val mobile: String?,
-
+    val username: String,
     val password: String,
+    val loginMethod: LoginMethod,
 
     val otpCode: String,
     val otpType: String,
