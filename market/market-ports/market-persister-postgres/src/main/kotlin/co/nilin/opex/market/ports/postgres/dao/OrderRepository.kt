@@ -1,6 +1,7 @@
 package co.nilin.opex.market.ports.postgres.dao
 
 import co.nilin.opex.market.core.inout.AggregatedOrderPriceModel
+import co.nilin.opex.market.core.inout.OrderData
 import co.nilin.opex.market.core.inout.OrderDirection
 import co.nilin.opex.market.core.inout.OrderType
 import co.nilin.opex.market.ports.postgres.model.OrderModel
@@ -136,25 +137,25 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
 
     @Query(
         """
-        SELECT O.CREATE_DATE,
+SELECT O.CREATE_DATE,
        O.SYMBOL,
        O.ORDER_TYPE,
        O.SIDE,
        O.PRICE,
        O.QUANTITY,
-       TRUNC(OS.EXECUTED_QUANTITY * 100 / O.QUANTITY) || '%' AS EXECUTED_PERCENTAGE,
        O.TAKER_FEE,
        O.MAKER_FEE,
-       O.PRICE * O.QUANTITY                                  AS TOTAL,
        OS.STATUS,
-       OS.APPEARANCE
+       OS.APPEARANCE,
+       OS.DATE AS UPDATE_DATE
 FROM ORDERS O
          LEFT JOIN (SELECT *
                     FROM ORDER_STATUS OS1
                     WHERE OS1.date = (SELECT MAX(OS2.date)
                                       FROM ORDER_STATUS OS2
                                       WHERE OS2.OUID = OS1.OUID)) OS ON O.OUID = OS.OUID
- WHERE (:symbol IS NULL OR ORDERS.symbol = :symbol)
+ WHERE uuid = :uuid
+   and (:symbol IS NULL OR ORDERS.symbol = :symbol)
    and (:fromDate IS NULL OR ORDERS.create_date >= :fromDate)
    and (:toDate IS NULL OR ORDERS.create_date <= :toDate)
    and (:orderType IS NULL OR ORDERS.order_type <= :orderType)
@@ -164,6 +165,7 @@ ORDER BY CREATE_DATE DESC
     """
     )
     fun findByCriteria(
+        uuid: String,
         symbol: String?,
         fromDate: Date?,
         toDate: Date?,
@@ -171,5 +173,5 @@ ORDER BY CREATE_DATE DESC
         direction: OrderDirection?,
         limit: Int?,
         offset: Int?,
-    )
+    ): Flow<OrderData>
 }

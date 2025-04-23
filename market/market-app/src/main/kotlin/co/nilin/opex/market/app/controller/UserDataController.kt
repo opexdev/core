@@ -6,6 +6,7 @@ import co.nilin.opex.market.core.spi.UserQueryHandler
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
+import java.util.*
 
 @RestController
 @RequestMapping("/v1/user")
@@ -25,7 +26,7 @@ class UserDataController(private val userQueryHandler: UserQueryHandler) {
     suspend fun getUserOpenOrders(
         @PathVariable uuid: String,
         @PathVariable symbol: String,
-        @RequestParam limit: Int
+        @RequestParam limit: Int,
     ): List<Order> {
         return userQueryHandler.openOrders(uuid, symbol, limit)
     }
@@ -44,11 +45,35 @@ class UserDataController(private val userQueryHandler: UserQueryHandler) {
     suspend fun getTxOfTrades(
         @PathVariable user: String,
         @RequestBody transactionRequest: TransactionRequest,
-        @CurrentSecurityContext securityContext: SecurityContext
+        @CurrentSecurityContext securityContext: SecurityContext,
     ): TransactionResponse? {
         if (securityContext.authentication.name != user)
             throw OpexError.Forbidden.exception()
         return userQueryHandler.txOfTrades(transactionRequest.apply { owner = user })
     }
+
+    @GetMapping("/history")
+    suspend fun getOrderHistory(
+        @RequestParam symbol: String?,
+        @RequestParam fromDate: Date?,
+        @RequestParam toDate: Date?,
+        @RequestParam orderType: OrderType?,
+        @RequestParam direction: OrderDirection?,
+        @RequestParam limit: Int?,
+        @RequestParam offset: Int?,
+        @CurrentSecurityContext securityContext: SecurityContext,
+    ): List<OrderData> {
+        return userQueryHandler.getOrderHistory(
+            securityContext.authentication.name,
+            symbol,
+            fromDate,
+            toDate,
+            orderType,
+            direction,
+            limit,
+            offset
+        )
+    }
+
 
 }

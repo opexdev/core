@@ -1,6 +1,7 @@
 package co.nilin.opex.market.core.spi
 
 import co.nilin.opex.market.core.inout.*
+import java.util.*
 
 interface UserQueryHandler {
 
@@ -15,5 +16,16 @@ interface UserQueryHandler {
     suspend fun allTrades(uuid: String, request: TradeRequest): List<Trade>
 
     suspend fun txOfTrades(transactionRequest: TransactionRequest): TransactionResponse?
+
+    suspend fun getOrderHistory(
+        uuid: String,
+        symbol: String?,
+        fromDate: Date?,
+        toDate: Date?,
+        orderType: OrderType?,
+        direction: OrderDirection?,
+        limit: Int?,
+        offset: Int?,
+    ): List<OrderData>
 
 }
