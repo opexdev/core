@@ -49,6 +49,7 @@ class WithdrawController(private val withdrawService: WithdrawService) {
                     destNetwork,
                     destNote,
                     gatewayUuid,
+                    null,
                     null
                 )
             }
@@ -99,6 +100,7 @@ class WithdrawController(private val withdrawService: WithdrawService) {
                 it.attachment,
                 it.createDate,
                 it.lastUpdateDate,
+                it.transferMethod,
             )
         }
     }

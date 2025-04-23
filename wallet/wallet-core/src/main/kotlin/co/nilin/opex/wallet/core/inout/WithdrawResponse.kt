@@ -23,5 +23,6 @@ class WithdrawResponse(
     var withdrawType: WithdrawType,
     var attachment: String?,
     val createDate: LocalDateTime,
-    val lastUpdateDate: LocalDateTime?
-)
+    val lastUpdateDate: LocalDateTime?,
+    var transferMethod: TransferMethod?,
+    )

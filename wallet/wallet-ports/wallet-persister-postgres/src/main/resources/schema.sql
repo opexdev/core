@@ -481,5 +481,10 @@ $$
                        WHERE table_name = 'deposits' AND column_name = 'transfer_method') THEN ALTER TABLE deposits
             ADD COLUMN transfer_method VARCHAR(255);
         END IF;
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'withdraws' AND column_name = 'transfer_method') THEN ALTER TABLE withdraws
+            ADD COLUMN transfer_method VARCHAR(255);
+        END IF;
     END
 $$;
