@@ -4,7 +4,6 @@ data class RegisterUserRequest(
     // One of these must be sent
     val username: String,
     val password: String,
-    val loginMethod: LoginMethod,
 
     val otpCode: String,
     val otpType: String,
@@ -34,3 +33,9 @@ data class Attribute(
     val key: String,
     val value: String
 )
+
+enum class UsernameType {
+    MOBILE, EMAIL, UNKNOWN;
+
+    fun isUnknown() = this == UNKNOWN
+}

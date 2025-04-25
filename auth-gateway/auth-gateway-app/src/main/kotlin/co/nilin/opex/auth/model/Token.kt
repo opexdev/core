@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
 data class PasswordFlowTokenRequest(
     val username: String,
     val password: String,
-    val loginMethod: LoginMethod,
     val otpVerifyRequest: OTPVerifyRequest?,
     val rememberMe: Boolean = false
 )
@@ -48,7 +47,3 @@ data class TokenResponse(
     val token: Token?,
     val otpSendResponse: OTPSendResponse?
 )
-
-enum class LoginMethod {
-    EMAIL, MOBILE
-}

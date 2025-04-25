@@ -1,11 +1,7 @@
 package co.nilin.opex.auth.proxy
 
 import co.nilin.opex.auth.config.KeycloakConfig
-import co.nilin.opex.auth.exception.UserAlreadyExistsException
-import co.nilin.opex.auth.model.Attribute
-import co.nilin.opex.auth.model.KeycloakUser
-import co.nilin.opex.auth.model.LoginMethod
-import co.nilin.opex.auth.model.Token
+import co.nilin.opex.auth.model.*
 import co.nilin.opex.common.OpexError
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitSingle
@@ -14,7 +10,6 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
-import org.springframework.web.reactive.function.client.ClientResponse
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
 import org.springframework.web.reactive.function.client.bodyToMono
@@ -39,8 +34,8 @@ class KeycloakProxy(
         return response.accessToken
     }
 
-    suspend fun getUserToken(username: String, password: String?, loginMethod: LoginMethod): Token {
-        val attribute = Attribute(if (loginMethod == LoginMethod.EMAIL) "email" else "mobile", username)
+    suspend fun getUserToken(username: String, password: String?, usernameType: UsernameType): Token {
+        val attribute = Attribute(if (usernameType == UsernameType.EMAIL) "email" else "mobile", username)
         val users = findUserByAttribute(attribute)
         if (users.isEmpty())
             throw OpexError.UserNotFound.exception()
@@ -154,7 +149,7 @@ class KeycloakProxy(
     suspend fun createUser(
         username: String,
         password: String,
-        loginMethod: LoginMethod,
+        usernameType: UsernameType,
         firstName: String?,
         lastName: String?
     ) {
@@ -181,13 +176,13 @@ class KeycloakProxy(
                     ),
                     "attributes" to mapOf(
                         "kycLevel" to "0"
-                    ).apply { if (loginMethod == LoginMethod.MOBILE) "mobile" to username }
-                ).apply { if (loginMethod == LoginMethod.EMAIL) "email" to username }
+                    ).apply { if (usernameType == UsernameType.MOBILE) "mobile" to username }
+                ).apply { if (usernameType == UsernameType.EMAIL) "email" to username }
             )
             .retrieve()
-            /*.onStatus({ it == HttpStatus.valueOf(409) }) { response: ClientResponse ->
-                //throw UserAlreadyExistsException(email ?: "")
-            }*/
+            .onStatus({ it == HttpStatus.valueOf(409) }) {
+                throw OpexError.UserAlreadyExists.exception()
+            }
             .toBodilessEntity()
             .awaitSingle() // Await the completion of the request
     }

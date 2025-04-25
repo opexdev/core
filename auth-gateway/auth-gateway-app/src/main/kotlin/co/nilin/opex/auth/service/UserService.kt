@@ -1,10 +1,10 @@
 package co.nilin.opex.auth.service
 
-import co.nilin.opex.auth.exception.UserAlreadyExistsException
 import co.nilin.opex.auth.model.*
 import co.nilin.opex.auth.proxy.GoogleProxy
 import co.nilin.opex.auth.proxy.KeycloakProxy
 import co.nilin.opex.auth.proxy.OTPProxy
+import co.nilin.opex.auth.utils.UsernameValidator
 import co.nilin.opex.common.OpexError
 import org.springframework.stereotype.Service
 
@@ -16,21 +16,20 @@ class UserService(
 ) {
 
     suspend fun registerUser(request: RegisterUserRequest) {
-        //TODO add validation for mobile and email
-
         val otpRequest = OTPVerifyRequest(request.otpTracingCode, listOf(OTPCode(request.otpCode, request.otpType)))
         val isOTPValid = otpProxy.verifyOTP(request.username, otpRequest)
         if (!isOTPValid) throw OpexError.InvalidOTP.exception()
 
-        val attribute = Attribute(if (request.loginMethod == LoginMethod.EMAIL) "email" else "mobile", request.username)
-        val users = keycloakProxy.findUserByAttribute(attribute)
-        if (users.isNotEmpty())
-            throw OpexError.UserAlreadyExists.exception()
+        val usernameType = UsernameValidator.getType(request.username)
+        if (usernameType.isUnknown())
+            throw OpexError.InvalidUsername.exception()
+
+        checkDuplicateUser(request.username, usernameType)
 
         keycloakProxy.createUser(
             request.username,
             request.password,
-            request.loginMethod,
+            usernameType,
             request.firstName,
             request.lastName
         )
@@ -42,15 +41,22 @@ class UserService(
             ?: throw OpexError.GmailNotFoundInToken.exception()
         val googleUserId = decodedJWT.getClaim("sub").asString()
             ?: throw OpexError.UserIDNotFoundInToken.exception()
+
         val username = email // Use email as the username
-        try {
-            keycloakProxy.findUserByEmail(email)
-        } catch (e: Exception) {
-            val userId = keycloakProxy.createExternalIdpUser(email, username, externalIdpUserRegisterRequest.password)
-            keycloakProxy.linkGoogleIdentity(userId, email, googleUserId)
-            return
-        }
-        throw UserAlreadyExistsException(email)
+        checkDuplicateUser(username, UsernameType.EMAIL)
+
+        if (!UsernameValidator.isValidEmail(username))
+            throw OpexError.InvalidUsername.exception()
+
+        val userId = keycloakProxy.createExternalIdpUser(email, username, externalIdpUserRegisterRequest.password)
+        keycloakProxy.linkGoogleIdentity(userId, email, googleUserId)
+    }
+
+    private suspend fun checkDuplicateUser(username: String, usernameType: UsernameType) {
+        val attribute = Attribute(if (usernameType == UsernameType.EMAIL) "email" else "mobile", username)
+        val users = keycloakProxy.findUserByAttribute(attribute)
+        if (users.isNotEmpty())
+            throw OpexError.UserAlreadyExists.exception()
     }
 
 }

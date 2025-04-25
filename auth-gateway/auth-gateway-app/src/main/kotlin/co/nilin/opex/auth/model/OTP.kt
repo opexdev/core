@@ -2,16 +2,18 @@ package co.nilin.opex.auth.model
 
 import jakarta.validation.constraints.NotBlank
 
-data class OTPSendRequest(
-    @field:NotBlank(message = "receiver is required")
+data class NewOTPRequest(
+    val userId: String,
+    val receivers: List<OTPReceiver>
+)
+
+data class OTPReceiver(
     val receiver: String,
-    @field:NotBlank(message = "type is required")
-    val otpTypes: List<String>
+    val type: String,
 )
 
 data class OTPSendResponse(
-    val tracingCode: String,
-    val otpTypes: List<String>
+    val tracingCode: String
 )
 
 data class OTPCode(
@@ -21,7 +23,6 @@ data class OTPCode(
     @field:NotBlank(message = "otpType is required")
     val otpType: String,
 )
-
 
 data class OTPVerifyRequest(
     @field:NotBlank(message = "tracingCode is required")
