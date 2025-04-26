@@ -1,6 +1,7 @@
 package co.nilin.opex.market.ports.postgres.dao
 
 import co.nilin.opex.market.core.inout.AggregatedOrderPriceModel
+import co.nilin.opex.market.core.inout.MatchingOrderType
 import co.nilin.opex.market.core.inout.OrderData
 import co.nilin.opex.market.core.inout.OrderDirection
 import co.nilin.opex.market.core.inout.OrderType
@@ -137,8 +138,7 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
 
     @Query(
         """
-SELECT O.CREATE_DATE,
-       O.SYMBOL,
+SELECT O.SYMBOL,
        O.ORDER_TYPE,
        O.SIDE,
        O.PRICE,
@@ -147,6 +147,7 @@ SELECT O.CREATE_DATE,
        O.MAKER_FEE,
        OS.STATUS,
        OS.APPEARANCE,
+       O.CREATE_DATE,
        OS.DATE AS UPDATE_DATE
 FROM ORDERS O
          LEFT JOIN (SELECT *
@@ -155,13 +156,13 @@ FROM ORDERS O
                                       FROM ORDER_STATUS OS2
                                       WHERE OS2.OUID = OS1.OUID)) OS ON O.OUID = OS.OUID
  WHERE uuid = :uuid
-   and (:symbol IS NULL OR ORDERS.symbol = :symbol)
-   and (:fromDate IS NULL OR ORDERS.create_date >= :fromDate)
-   and (:toDate IS NULL OR ORDERS.create_date <= :toDate)
-   and (:orderType IS NULL OR ORDERS.order_type <= :orderType)
-   and (:direction IS NULL OR ORDERS.side <= :direction)
+   and (:symbol IS NULL OR O.symbol = :symbol)
+   and (:fromDate IS NULL OR O.create_date >= :fromDate)
+   and (:toDate IS NULL OR O.create_date <= :toDate)
+   and (:orderType IS NULL OR O.order_type = :orderType)
+   and (:direction IS NULL OR O.side = :direction)
 ORDER BY CREATE_DATE DESC
- LIMIT :LIMIT OFFSET :OFFSET;
+ LIMIT :limit OFFSET :offset;
     """
     )
     fun findByCriteria(
@@ -169,7 +170,7 @@ ORDER BY CREATE_DATE DESC
         symbol: String?,
         fromDate: Date?,
         toDate: Date?,
-        orderType: OrderType?,
+        orderType: MatchingOrderType?,
         direction: OrderDirection?,
         limit: Int?,
         offset: Int?,

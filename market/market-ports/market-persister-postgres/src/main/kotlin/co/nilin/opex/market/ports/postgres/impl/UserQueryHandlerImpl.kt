@@ -151,12 +151,11 @@ class UserQueryHandlerImpl(
         symbol: String?,
         fromDate: Date?,
         toDate: Date?,
-        orderType: OrderType?,
+        orderType: MatchingOrderType?,
         direction: OrderDirection?,
         limit: Int?,
         offset: Int?,
-    ): List<OrderData> {
-        return orderRepository.findByCriteria(
+    ): List<OrderData> { return orderRepository.findByCriteria(
             uuid,
             symbol,
             fromDate,

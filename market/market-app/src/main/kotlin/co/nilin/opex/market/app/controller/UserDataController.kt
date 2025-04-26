@@ -52,19 +52,19 @@ class UserDataController(private val userQueryHandler: UserQueryHandler) {
         return userQueryHandler.txOfTrades(transactionRequest.apply { owner = user })
     }
 
-    @GetMapping("/history")
+    @GetMapping("/history/{uuid}")
     suspend fun getOrderHistory(
         @RequestParam symbol: String?,
         @RequestParam fromDate: Date?,
         @RequestParam toDate: Date?,
-        @RequestParam orderType: OrderType?,
+        @RequestParam orderType: MatchingOrderType?,
         @RequestParam direction: OrderDirection?,
         @RequestParam limit: Int?,
         @RequestParam offset: Int?,
-        @CurrentSecurityContext securityContext: SecurityContext,
+        @PathVariable uuid: String,
     ): List<OrderData> {
         return userQueryHandler.getOrderHistory(
-            securityContext.authentication.name,
+            uuid,
             symbol,
             fromDate,
             toDate,

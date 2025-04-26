@@ -1,4 +1,4 @@
-package co.nilin.opex.market.core.inout
+package co.nilin.opex.api.core.inout
 
 import java.math.BigDecimal
 import java.time.LocalDateTime

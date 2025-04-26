@@ -1,6 +1,9 @@
 package co.nilin.opex.api.core.spi
 
+import co.nilin.opex.api.core.inout.MatchingOrderType
 import co.nilin.opex.api.core.inout.Order
+import co.nilin.opex.api.core.inout.OrderData
+import co.nilin.opex.api.core.inout.OrderDirection
 import co.nilin.opex.api.core.inout.Trade
 import java.security.Principal
 import java.util.*
@@ -27,4 +30,15 @@ interface MarketUserDataProxy {
         endTime: Date?,
         limit: Int?
     ): List<Trade>
+
+    suspend fun getOrderHistory(
+        principal: Principal,
+        symbol: String?,
+        fromDate: Date?,
+        toDate: Date?,
+        orderType: MatchingOrderType?,
+        direction: OrderDirection?,
+        limit: Int?,
+        offset: Int?,
+    ): List<OrderData>
 }

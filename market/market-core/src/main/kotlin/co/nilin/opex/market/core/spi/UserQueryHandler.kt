@@ -22,7 +22,7 @@ interface UserQueryHandler {
         symbol: String?,
         fromDate: Date?,
         toDate: Date?,
-        orderType: OrderType?,
+        orderType: MatchingOrderType?,
         direction: OrderDirection?,
         limit: Int?,
         offset: Int?,
