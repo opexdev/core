@@ -28,7 +28,7 @@ class TokenService(
             val otpType = if (usernameType == UsernameType.EMAIL) "EMAIL" else "SMS"
             val requiredOtpTypes = listOf(OTPReceiver(tokenRequest.username, otpType))
             val otpSendResponse = otpProxy.requestOTP(tokenRequest.username, requiredOtpTypes)
-            return TokenResponse(null, otpSendResponse)
+            return TokenResponse(null, otpSendResponse.tracingCode)
         }
         return TokenResponse(token, null)
     }

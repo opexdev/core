@@ -45,5 +45,5 @@ data class Token(
 
 data class TokenResponse(
     val token: Token?,
-    val otpSendResponse: OTPSendResponse?
+    val otpTracingCode: String?
 )

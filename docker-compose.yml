@@ -394,6 +394,7 @@ services:
     image: ghcr.io/opexdev/auth-gateway
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - CONSUL_HOST=consul
     networks:
       - default
     labels:

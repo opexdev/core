@@ -55,6 +55,10 @@ class TOTPService(
         }
     }
 
+    suspend fun findTOTP(userId: String): TOTP? {
+        return repository.findByUserId(userId)
+    }
+
     private suspend fun generateSecret(): String {
         val config = configRepository.findOne()
         val generator = DefaultSecretGenerator(config.secretChars)

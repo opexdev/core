@@ -32,6 +32,7 @@ class OTPService(
         checkActiveOTP(receiver, type)
         val config = getConfig(type)
         val code = generateCode(config.charCount, config.includeAlphabetChars)
+        messageManager.sendMessage(config, type, code, receiver)
         return storeOTP(receiver, type, code, config, userId)
     }
 

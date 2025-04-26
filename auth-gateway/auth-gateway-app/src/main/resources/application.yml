@@ -5,6 +5,8 @@ spring:
   application:
     name: user-management-core
   cloud:
+    bootstrap:
+      enabled: true
     consul:
       host: ${CONSUL_HOST:localhost}
       port: 8500
@@ -55,11 +57,11 @@ keycloak:
   realm: opex
   admin-client:
     id: "opex-admin"
-    secret: x
+    secret: 83ExGcigKFT3xxp7Kx6wYB8mfO9TjQVY
     google-client-id: ${GOOGLE_CLIENT_ID}
   web-client:
     id: "web-app"
-    secret: x
+    secret: HOD37kiSPbYS0vZxRVX52CvqcmhRxkqH
 
 otp:
-  url: http://localhost:8081
+  url: http://opex-otp/v1

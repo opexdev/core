@@ -15,16 +15,22 @@ class UserService(
     private val googleProxy: GoogleProxy
 ) {
 
-    suspend fun registerUser(request: RegisterUserRequest) {
-        val otpRequest = OTPVerifyRequest(request.otpTracingCode, listOf(OTPCode(request.otpCode, request.otpType)))
-        val isOTPValid = otpProxy.verifyOTP(request.username, otpRequest)
-        if (!isOTPValid) throw OpexError.InvalidOTP.exception()
-
+    suspend fun registerUser(request: RegisterUserRequest): RegisterUserResponse {
         val usernameType = UsernameValidator.getType(request.username)
         if (usernameType.isUnknown())
             throw OpexError.InvalidUsername.exception()
 
         checkDuplicateUser(request.username, usernameType)
+
+        val otpType = if (usernameType == UsernameType.EMAIL) "EMAIL" else "SMS"
+        if (request.otpCode == null && request.otpTracingCode == null) {
+            val response = otpProxy.requestOTP(request.username, listOf(OTPReceiver(request.username, otpType)))
+            return RegisterUserResponse(null, response.tracingCode)
+        }
+
+        val otpRequest = OTPVerifyRequest(request.otpTracingCode ?: "", listOf(OTPCode(request.otpCode ?: "", otpType)))
+        val isOTPValid = otpProxy.verifyOTP(request.username, otpRequest)
+        if (!isOTPValid) throw OpexError.InvalidOTP.exception()
 
         keycloakProxy.createUser(
             request.username,
@@ -33,6 +39,8 @@ class UserService(
             request.firstName,
             request.lastName
         )
+
+        return RegisterUserResponse(request.username, null)
     }
 
     suspend fun registerExternalIdpUser(externalIdpUserRegisterRequest: ExternalIdpUserRegisterRequest) {

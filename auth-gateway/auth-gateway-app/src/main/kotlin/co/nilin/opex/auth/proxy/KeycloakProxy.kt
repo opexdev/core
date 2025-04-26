@@ -161,7 +161,7 @@ class KeycloakProxy(
             .header("Content-Type", "application/json")
             .withAdminToken(token)
             .bodyValue(
-                mapOf(
+                hashMapOf(
                     "username" to username,
                     "emailVerified" to true,
                     "firstName" to firstName,
@@ -174,10 +174,10 @@ class KeycloakProxy(
                             "temporary" to false
                         )
                     ),
-                    "attributes" to mapOf(
+                    "attributes" to hashMapOf(
                         "kycLevel" to "0"
-                    ).apply { if (usernameType == UsernameType.MOBILE) "mobile" to username }
-                ).apply { if (usernameType == UsernameType.EMAIL) "email" to username }
+                    ).apply { if (usernameType == UsernameType.MOBILE) put("mobile", username) }
+                ).apply { if (usernameType == UsernameType.EMAIL) put("email", username) }
             )
             .retrieve()
             .onStatus({ it == HttpStatus.valueOf(409) }) {

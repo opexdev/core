@@ -16,15 +16,13 @@ import org.springframework.web.reactive.function.client.toEntity
 @Component
 class OTPProxy(@Qualifier("otpWebClient") private val webClient: WebClient) {
 
-    private val baseUrl = "lb://opex-otp/v1"
-
     suspend fun requestOTP(userId: String, receivers: List<OTPReceiver>): OTPSendResponse {
         val request = object {
             val userId = userId
             val receivers = receivers
         }
 
-        return webClient.post().uri("$baseUrl/otp")
+        return webClient.post().uri("/otp")
             .contentType(MediaType.APPLICATION_JSON)
             .body(BodyInserters.fromValue(request))
             .retrieve()
@@ -43,7 +41,7 @@ class OTPProxy(@Qualifier("otpWebClient") private val webClient: WebClient) {
                 }
             }
         }
-        val response = webClient.post().uri("$baseUrl/otp/verify")
+        val response = webClient.post().uri("/otp/verify")
             .contentType(MediaType.APPLICATION_JSON)
             .body(BodyInserters.fromValue(request))
             .retrieve()
