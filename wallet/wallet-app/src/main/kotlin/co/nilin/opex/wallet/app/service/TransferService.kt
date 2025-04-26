@@ -217,7 +217,7 @@ class TransferService(
 //todo what should we do for admin receiver
         val receiverOwner = walletOwnerManager.findWalletOwner(receiverUuid) ?: walletOwnerManager.createWalletOwner(
             receiverUuid,
-            "not set",
+            "Not Set",
             "1"
         )
         val receiverCurrency = currencyManager.fetchCurrency(FetchCurrency(symbol = destSymbol))
