@@ -5,10 +5,8 @@ import com.fasterxml.jackson.annotation.JsonInclude
 data class RegisterUserRequest(
     val username: String,
     val password: String,
-
     val otpCode: String?,
     val otpTracingCode: String?,
-
     val firstName: String? = null,
     val lastName: String? = null
 )
@@ -34,14 +32,3 @@ data class KeycloakUser(
     val lastName: String?,
     val attributes: Map<String, List<String>>?
 )
-
-data class Attribute(
-    val key: String,
-    val value: String
-)
-
-enum class UsernameType {
-    MOBILE, EMAIL, UNKNOWN;
-
-    fun isUnknown() = this == UNKNOWN
-}

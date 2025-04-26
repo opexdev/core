@@ -21,7 +21,6 @@ class KeycloakProxy(
 ) {
 
     private val adminClient = keycloakConfig.adminClient
-    private val webClient = keycloakConfig.webClient
 
     suspend fun getAdminAccessToken(): String {
         val tokenUrl = "${keycloakConfig.url}/realms/${keycloakConfig.realm}/protocol/openid-connect/token"
@@ -34,9 +33,13 @@ class KeycloakProxy(
         return response.accessToken
     }
 
-    suspend fun getUserToken(username: String, password: String?, usernameType: UsernameType): Token {
-        val attribute = Attribute(if (usernameType == UsernameType.EMAIL) "email" else "mobile", username)
-        val users = findUserByAttribute(attribute)
+    suspend fun getUserToken(
+        username: Username,
+        password: String?,
+        clientId: String,
+        clientSecret: String
+    ): Token {
+        val users = findUserByAttribute(username.asAttribute())
         if (users.isEmpty())
             throw OpexError.UserNotFound.exception()
 
@@ -44,7 +47,21 @@ class KeycloakProxy(
         return keycloakClient.post()
             .uri(userTokenUrl)
             .header("Content-Type", "application/x-www-form-urlencoded")
-            .bodyValue("client_id=${webClient.id}&client_secret=${webClient.secret}&grant_type=password&username=${users[0].username}&password=${password}")
+            .bodyValue("client_id=${clientId}&client_secret=${clientSecret}&grant_type=password&username=${users[0].username}&password=${password}")
+            .retrieve()
+            .awaitBody<Token>()
+    }
+
+    suspend fun refreshUserToken(
+        refreshToken: String,
+        clientId: String,
+        clientSecret: String
+    ): Token {
+        val userTokenUrl = "${keycloakConfig.url}/realms/${keycloakConfig.realm}/protocol/openid-connect/token"
+        return keycloakClient.post()
+            .uri(userTokenUrl)
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .bodyValue("client_id=${clientId}&client_secret=${clientSecret}&grant_type=refresh_token&refresh_token=${refreshToken}")
             .retrieve()
             .awaitBody<Token>()
     }
@@ -84,22 +101,9 @@ class KeycloakProxy(
         return users[0].id
     }
 
-    suspend fun findUserByUsername(username: String): KeycloakUser? {
-        // Step 1: Build the URL for the Keycloak Admin REST API
-        val userSearchUrl = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users?username=${username}"
-
-        // Step 2: Make a GET request to Keycloak's Admin REST API
-        val users = keycloakClient.get()
-            .uri(userSearchUrl)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer ${getAdminAccessToken()}")
-            .accept(MediaType.APPLICATION_JSON)
-            .retrieve()
-            .bodyToMono<List<KeycloakUser>>()
-            .awaitSingle()
-
-        if (users.isEmpty())
-            return null
-        return users[0]
+    suspend fun findUserByUsername(username: Username): KeycloakUser? {
+        val users = findUserByAttribute(username.asAttribute())
+        return if (users.isEmpty()) null else users[0]
     }
 
     suspend fun findUserByAttribute(attr: Attribute): List<KeycloakUser> {
@@ -113,10 +117,10 @@ class KeycloakProxy(
             .awaitFirstOrElse { emptyList() }
     }
 
-    suspend fun createExternalIdpUser(email: String, username: String, password: String): String {
+    suspend fun createExternalIdpUser(email: String, username: Username, password: String): String {
         val userUrl = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users"
         val userRequest = mapOf(
-            "username" to username,
+            "username" to username.value,
             "email" to email,
             "emailVerified" to true,
             "enabled" to true,
@@ -126,6 +130,10 @@ class KeycloakProxy(
                     "value" to password,
                     "temporary" to false
                 )
+            ),
+            "attributes" to hashMapOf(
+                "kycLevel" to "0",
+                Attributes.OTP to username.type.otpType.name
             )
         )
 
@@ -147,9 +155,8 @@ class KeycloakProxy(
     }
 
     suspend fun createUser(
-        username: String,
+        username: Username,
         password: String,
-        usernameType: UsernameType,
         firstName: String?,
         lastName: String?
     ) {
@@ -162,7 +169,7 @@ class KeycloakProxy(
             .withAdminToken(token)
             .bodyValue(
                 hashMapOf(
-                    "username" to username,
+                    "username" to username.value,
                     "emailVerified" to true,
                     "firstName" to firstName,
                     "lastName" to lastName,
@@ -176,8 +183,12 @@ class KeycloakProxy(
                     ),
                     "attributes" to hashMapOf(
                         "kycLevel" to "0"
-                    ).apply { if (usernameType == UsernameType.MOBILE) put("mobile", username) }
-                ).apply { if (usernameType == UsernameType.EMAIL) put("email", username) }
+                    ).apply {
+                        if (username.type == UsernameType.MOBILE)
+                            put("mobile", username.value)
+                        put(Attributes.OTP, username.type.otpType.name)
+                    }
+                ).apply { if (username.type == UsernameType.EMAIL) put("email", username.value) }
             )
             .retrieve()
             .onStatus({ it == HttpStatus.valueOf(409) }) {

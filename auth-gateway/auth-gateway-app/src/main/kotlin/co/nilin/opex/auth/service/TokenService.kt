@@ -16,20 +16,28 @@ class TokenService(
     private val keycloakProxy: KeycloakProxy,
     private val googleProxy: GoogleProxy
 ) {
-    suspend fun getToken(tokenRequest: PasswordFlowTokenRequest): TokenResponse {
-        val usernameType = UsernameValidator.getType(tokenRequest.username)
-        if (usernameType.isUnknown()) throw OpexError.InvalidUsername.exception()
 
-        val token = keycloakProxy.getUserToken(tokenRequest.username, tokenRequest.password, usernameType)
-        if (tokenRequest.otpVerifyRequest != null) {
-            val isOTPValid = otpProxy.verifyOTP(tokenRequest.username, tokenRequest.otpVerifyRequest)
-            if (!isOTPValid) throw OpexError.InvalidOTP.exception()
-        } else {
-            val otpType = if (usernameType == UsernameType.EMAIL) "EMAIL" else "SMS"
-            val requiredOtpTypes = listOf(OTPReceiver(tokenRequest.username, otpType))
-            val otpSendResponse = otpProxy.requestOTP(tokenRequest.username, requiredOtpTypes)
+    suspend fun getToken(request: PasswordFlowTokenRequest): TokenResponse {
+        val username = Username.create(request.username)
+        val user = keycloakProxy.findUserByUsername(username) ?: throw OpexError.UserNotFound.exception()
+
+        val otpType = OTPType.valueOf(user.attributes?.get(Attributes.OTP)?.get(0) ?: "NONE")
+        if (request.otpCode == null && request.otpTracingCode == null) {
+            val requiredOtpTypes = listOf(OTPReceiver(request.username, otpType))
+            val otpSendResponse = otpProxy.requestOTP(request.username, requiredOtpTypes)
             return TokenResponse(null, otpSendResponse.tracingCode)
         }
+
+        val otpRequest = OTPVerifyRequest(request.otpTracingCode ?: "", listOf(OTPCode(request.otpCode ?: "", otpType)))
+        val isOTPValid = otpProxy.verifyOTP(request.username, otpRequest)
+        if (!isOTPValid) throw OpexError.InvalidOTP.exception()
+
+        val token = keycloakProxy.getUserToken(
+            username,
+            request.password,
+            request.clientId,
+            request.clientSecret
+        )
         return TokenResponse(token, null)
     }
 
@@ -48,5 +56,10 @@ class TokenService(
                 tokenRequest.accessToken
             ), null
         )
+    }
+
+    suspend fun refreshToken(request: RefreshTokenRequest): TokenResponse {
+        val token = keycloakProxy.refreshUserToken(request.refreshToken, request.clientId, request.clientSecret)
+        return TokenResponse(token, null)
     }
 }

@@ -9,7 +9,7 @@ data class NewOTPRequest(
 
 data class OTPReceiver(
     val receiver: String,
-    val type: String,
+    val type: OTPType,
 )
 
 data class OTPSendResponse(
@@ -21,7 +21,7 @@ data class OTPCode(
     val code: String,
 
     @field:NotBlank(message = "otpType is required")
-    val otpType: String,
+    val otpType: OTPType,
 )
 
 data class OTPVerifyRequest(

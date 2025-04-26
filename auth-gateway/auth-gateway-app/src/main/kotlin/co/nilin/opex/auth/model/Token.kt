@@ -5,8 +5,17 @@ import com.fasterxml.jackson.annotation.JsonProperty
 data class PasswordFlowTokenRequest(
     val username: String,
     val password: String,
-    val otpVerifyRequest: OTPVerifyRequest?,
+    val clientId: String,
+    val clientSecret: String,
+    val otpCode: String?,
+    val otpTracingCode: String?,
     val rememberMe: Boolean = false
+)
+
+data class RefreshTokenRequest(
+    val clientId: String,
+    val clientSecret: String,
+    val refreshToken: String
 )
 
 data class ExternalIdpTokenRequest(

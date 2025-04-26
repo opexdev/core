@@ -59,9 +59,6 @@ keycloak:
     id: "opex-admin"
     secret: 83ExGcigKFT3xxp7Kx6wYB8mfO9TjQVY
     google-client-id: ${GOOGLE_CLIENT_ID}
-  web-client:
-    id: "web-app"
-    secret: HOD37kiSPbYS0vZxRVX52CvqcmhRxkqH
 
 otp:
   url: http://opex-otp/v1
