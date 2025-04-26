@@ -454,21 +454,21 @@ $$
                        WHERE table_name = 'voucher' AND column_name = 'voucher_group') THEN ALTER TABLE voucher
             ALTER COLUMN voucher_group SET NOT NULL ;
         END IF;
-        IF EXISTS (SELECT 1
-                       FROM information_schema.columns
-                       WHERE table_name = 'voucher' AND column_name = 'status') THEN ALTER TABLE voucher
-            DROP COLUMN status;
-        END IF;
-        IF EXISTS (SELECT 1
-                   FROM information_schema.columns
-                   WHERE table_name = 'voucher' AND column_name = 'use_date') THEN ALTER TABLE voucher
-            DROP COLUMN use_date;
-        END IF;
-        IF EXISTS (SELECT 1
-                   FROM information_schema.columns
-                   WHERE table_name = 'voucher' AND column_name = 'uuid') THEN ALTER TABLE voucher
-            DROP COLUMN uuid;
-        END IF;
+--         IF EXISTS (SELECT 1
+--                        FROM information_schema.columns
+--                        WHERE table_name = 'voucher' AND column_name = 'status') THEN ALTER TABLE voucher
+--             DROP COLUMN status;
+--         END IF;
+--         IF EXISTS (SELECT 1
+--                    FROM information_schema.columns
+--                    WHERE table_name = 'voucher' AND column_name = 'use_date') THEN ALTER TABLE voucher
+--             DROP COLUMN use_date;
+--         END IF;
+--         IF EXISTS (SELECT 1
+--                    FROM information_schema.columns
+--                    WHERE table_name = 'voucher' AND column_name = 'uuid') THEN ALTER TABLE voucher
+--             DROP COLUMN uuid;
+--         END IF;
     END
 $$;
 
