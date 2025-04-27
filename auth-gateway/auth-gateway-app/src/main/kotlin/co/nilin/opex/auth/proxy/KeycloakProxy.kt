@@ -107,7 +107,7 @@ class KeycloakProxy(
         return if (users.isEmpty()) null else users[0]
     }
 
-    suspend fun findUserByAttribute(attr: Attribute): List<KeycloakUser> {
+    private suspend fun findUserByAttribute(attr: Attribute): List<KeycloakUser> {
         val uri = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users?q=${attr.key}:${attr.value}"
 
         return keycloakClient.get()

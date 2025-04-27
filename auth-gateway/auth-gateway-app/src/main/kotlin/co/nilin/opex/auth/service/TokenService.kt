@@ -21,7 +21,7 @@ class TokenService(
         val username = Username.create(request.username)
         val user = keycloakProxy.findUserByUsername(username) ?: throw OpexError.UserNotFound.exception()
 
-        val otpType = OTPType.valueOf(user.attributes?.get(Attributes.OTP)?.get(0) ?: "NONE")
+        val otpType = OTPType.valueOf(user.attributes?.get(Attributes.OTP)?.get(0) ?: OTPType.NONE.name)
         if (request.otpCode == null && request.otpTracingCode == null) {
             val requiredOtpTypes = listOf(OTPReceiver(request.username, otpType))
             val otpSendResponse = otpProxy.requestOTP(request.username, requiredOtpTypes)
@@ -37,7 +37,8 @@ class TokenService(
             request.password,
             request.clientId,
             request.clientSecret
-        )
+        ).apply { if (!request.rememberMe) refreshToken = null }
+
         return TokenResponse(token, null)
     }
 

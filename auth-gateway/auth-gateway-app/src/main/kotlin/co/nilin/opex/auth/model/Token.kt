@@ -9,7 +9,7 @@ data class PasswordFlowTokenRequest(
     val clientSecret: String,
     val otpCode: String?,
     val otpTracingCode: String?,
-    val rememberMe: Boolean = false
+    val rememberMe: Boolean = true
 )
 
 data class RefreshTokenRequest(
@@ -36,7 +36,7 @@ data class Token(
     val refreshExpiresIn: Int?,        // Expiration time of the refresh token in seconds
 
     @JsonProperty("refresh_token")
-    val refreshToken: String?,         // The refresh token
+    var refreshToken: String?,         // The refresh token
 
     @JsonProperty("token_type")
     val tokenType: String?,            // Type of token (usually "Bearer")
