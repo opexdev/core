@@ -52,6 +52,10 @@ class UserService(
         keycloakProxy.linkGoogleIdentity(userId, email, googleUserId)
     }
 
+    suspend fun logout(token: String) {
+        keycloakProxy.logout(token)
+    }
+
     private suspend fun checkDuplicateUser(username: Username) {
         keycloakProxy.findUserByUsername(username)?.let { throw OpexError.UserAlreadyExists.exception() }
     }

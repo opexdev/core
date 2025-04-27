@@ -5,6 +5,7 @@ import co.nilin.opex.auth.model.*
 import co.nilin.opex.common.OpexError
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -219,6 +220,17 @@ class KeycloakProxy(
         if (response.statusCode.isError) {
             throw RuntimeException("Failed to link Google identity to Keycloak user")
         }
+    }
+
+    suspend fun logout(token: String) {
+        val url = "${keycloakConfig.url}/auth/realms/${keycloakConfig.realm}/user-management/user/logout"
+        keycloakClient.post()
+            .uri(url)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .toBodilessEntity()
+            .awaitSingleOrNull()
     }
 
     suspend fun WebClient.RequestHeadersSpec<*>.withAdminToken(token: String? = null): WebClient.RequestHeadersSpec<*> {

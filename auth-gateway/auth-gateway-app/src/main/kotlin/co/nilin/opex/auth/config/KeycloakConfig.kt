@@ -7,9 +7,9 @@ import org.springframework.stereotype.Component
 @ConfigurationProperties(prefix = "keycloak")
 class KeycloakConfig {
     lateinit var url: String
+    lateinit var certUrl: String
     lateinit var realm: String
     lateinit var adminClient: Client
-    lateinit var webClient: Client
 }
 
 data class Client(
