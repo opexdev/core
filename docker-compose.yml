@@ -113,16 +113,16 @@ services:
     image: quay.io/keycloak/keycloak:26.1
     container_name: keycloak
     environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_ADMIN: ${KEYCLOAK_PANEL_USERNAME}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_PANEL_PASSWORD}
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://postgres-keycloak:5432/opex
       KC_DB_USERNAME: ${DB_USER}
       KC_DB_PASSWORD: ${DB_PASS}
       KC_HEALTH_ENABLED: true
       KC_METRICS_ENABLED: true
-      GOOGLE_CLIENT_ID: 625813606110-er3v3sol4v206kdg40gf0ltqv08scgs2.apps.googleusercontent.com
-      GOOGLE_CLIENT_SECRET: "*************"
+      GOOGLE_CLIENT_ID: ${KC_GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${KC_GOOGLE_CLIENT_SECRET}
     command:
       - start-dev
       - --import-realm
