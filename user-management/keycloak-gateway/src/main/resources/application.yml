@@ -61,7 +61,7 @@ management:
     web:
       base-path: /actuator
       exposure:
-        include: ["health", "prometheus", "metrics"]
+        include: [ "health", "prometheus", "metrics" ]
   endpoint:
     health:
       show-details: when_authorized
@@ -94,6 +94,6 @@ app:
   forgot-redirect-url: ${FORGOT_REDIRECT_URL}
   whitelist:
     register:
-       enabled: ${WHITELIST_REGISTER_ENABLED:true}
+      enabled: ${WHITELIST_REGISTER_ENABLED:true}
     login:
-       enabled: ${WHITELIST_LOGIN_ENABLED:true}
+      enabled: ${WHITELIST_LOGIN_ENABLED:true}

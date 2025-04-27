@@ -20,12 +20,17 @@ spring:
         instance-id: ${spring.application.name}:${server.port}
         healthCheckInterval: 20s
         prefer-ip-address: true
+  r2dbc:
+    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
+    username: ${dbusername:opex}
+    password: ${dbpassword:hiopex}
+    initialization-mode: always
 management:
   endpoints:
     web:
       base-path: /actuator
       exposure:
-        include: ["health", "prometheus", "metrics"]
+        include: [ "health", "prometheus", "metrics" ]
   endpoint:
     health:
       show-details: when_authorized
@@ -64,9 +69,12 @@ logging:
     co.nilin: INFO
     org.zalando.logbook: TRACE
 app:
+  symbols: ${SYMBOLS}
   accountant:
     url: lb://opex-accountant
   auth:
     cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
 swagger:
   authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token}
+
+

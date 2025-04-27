@@ -4,7 +4,7 @@ import co.nilin.opex.wallet.core.model.otc.*
 
 interface RateService {
 
-    suspend fun addRate(rate: Rate)
+    suspend fun addRate(rate: Rate, ignoreIfExist: Boolean? = false)
 
     suspend fun deleteRate(rate: Rate): Rates
 
@@ -12,19 +12,19 @@ interface RateService {
 
     suspend fun getRate(sourceSymbol: String, destinationSymbol: String): Rate?
 
-    suspend fun updateRate(rate: Rate):Rates
+    suspend fun updateRate(rate: Rate): Rates
 
-    suspend fun addForbiddenPair(forbiddenPair:ForbiddenPair)
+    suspend fun addForbiddenPair(forbiddenPair: ForbiddenPair)
 
-    suspend fun deleteForbiddenPair(forbiddenPair:ForbiddenPair):ForbiddenPairs
+    suspend fun deleteForbiddenPair(forbiddenPair: ForbiddenPair): ForbiddenPairs
 
-    suspend fun getForbiddenPairs():ForbiddenPairs
+    suspend fun getForbiddenPairs(): ForbiddenPairs
 
 
-    suspend fun addTransitiveSymbols(symbols:Symbols)
+    suspend fun addTransitiveSymbols(symbols: Symbols)
 
-    suspend fun deleteTransitiveSymbols(symbols:Symbols):Symbols
+    suspend fun deleteTransitiveSymbols(symbols: Symbols): Symbols
 
-    suspend fun getTransitiveSymbols():Symbols
+    suspend fun getTransitiveSymbols(): Symbols
 
 }

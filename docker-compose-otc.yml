@@ -29,14 +29,13 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
-      - PREFERENCES=$PREFERENCES
       - DRIVE_FOLDER_ID=$DRIVE_FOLDER_ID
       - BACKUP_ENABLED=$WALLET_BACKUP_ENABLED
       - SPRING_PROFILES_ACTIVE=otc
-      - auth_url=${AUTH_URL}
-      - auth_jwk_endpoint=${JWK_ENDPOINT}
-    configs:
-      - preferences.yml
+      - AUTH_URL=${AUTH_URL}
+      - AUTH_JWK_ENDPOINT=${JWK_ENDPOINT}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       - postgres-wallet
       - vault
@@ -51,6 +50,8 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+    volumes:
+      - documents:/Documents
   vault:
     image: ghcr.io/opexdev/vault-opex:${TAG}
     volumes:
@@ -88,15 +89,13 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
-      - PREFERENCES=$PREFERENCES
-      - ADDRESS_EXP_TIME=120
+      - ADDRESS_EXP_TIME=7200
       - SPRING_PROFILES_ACTIVE=otc
-      - auth_url=${AUTH_URL}
-      - auth_jwk_endpoint=${JWK_ENDPOINT}
-    dns:
-      - "8.8.8.8"
-    configs:
-      - preferences.yml
+      - AUTH_URL=${AUTH_URL}
+      - AUTH_JWK_ENDPOINT=${JWK_ENDPOINT}
+      - OMNI_URL=${OMNI_URL}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       - vault
       - postgres-bc-gateway
@@ -115,11 +114,11 @@ services:
     volumes:
       - bc-gateway-data:/var/lib/postgresql/data/
 
-
 volumes:
   wallet-data:
   vault-data:
   bc-gateway-data:
+  documents:
 
 networks:
   default:
@@ -131,6 +130,3 @@ secrets:
     file: opex.dev.crt
   private_pem:
     file: private.pem
-configs:
-  preferences.yml:
-    file: preferences.yml

@@ -75,6 +75,18 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     WithdrawAmountLessThanMinimum(6025, "Withdraw amount is less than minimum", HttpStatus.BAD_REQUEST),
     WithdrawCannotBeCanceled(6026, "Withdraw cannot be canceled", HttpStatus.BAD_REQUEST),
     WithdrawCannotBeRejected(6027, "Withdraw cannot be rejected", HttpStatus.BAD_REQUEST),
+    WithdrawAmountMoreThanMinimum(6028, "Withdraw amount is more than minimum", HttpStatus.BAD_REQUEST),
+    ImplNotFound(6029, null, HttpStatus.NOT_FOUND),
+    InvalidWithdrawStatus(6030, "Withdraw status is invalid", HttpStatus.NOT_FOUND),
+    GatewayNotFount(6031, null, HttpStatus.NOT_FOUND),
+    GatewayIsExist(6032, null, HttpStatus.NOT_FOUND),
+    InvalidDeposit(6033, "Invalid deposit", HttpStatus.BAD_REQUEST),
+    TerminalIsExist(6034, "This identifier is exist", HttpStatus.BAD_REQUEST),
+    TerminalNotFound(6035, "Object not found", HttpStatus.BAD_REQUEST),
+    VoucherNotFound(6036, "Voucher not found", HttpStatus.NOT_FOUND),
+    InvalidVoucher(6037, "Invalid Voucher", HttpStatus.BAD_REQUEST),
+    PairIsNotAvailable(6038, "Pair is not available", HttpStatus.BAD_REQUEST),
+
 
     // code 7000: api
     OrderNotFound(7001, "No order found", HttpStatus.NOT_FOUND),

@@ -6,10 +6,10 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
-        java: [ 17 ]
+        java: [ 21 ]
     name: Build OPEX and run tests with java ${{ matrix.java }}
     steps:
       - name: Checkout Source Code
@@ -20,7 +20,7 @@ jobs:
           distribution: 'adopt'
           java-package: jdk
           java-version: ${{ matrix.java }}
-#          cache: maven
+      #          cache: maven
       - name: Build
         run: mvn -B -T 1C clean install -Potc
       - name: Run Tests

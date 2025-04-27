@@ -1,12 +1,12 @@
 package co.nilin.opex.wallet.app.controller
 
+
 import co.nilin.opex.wallet.app.dto.DepositHistoryRequest
-import co.nilin.opex.wallet.app.dto.DepositResponse
-import co.nilin.opex.wallet.app.dto.ManualTransferRequest
-import co.nilin.opex.wallet.app.service.TransferService
-import co.nilin.opex.wallet.core.inout.Deposit
+import co.nilin.opex.wallet.app.service.DepositService
+import co.nilin.opex.wallet.core.inout.DepositResponse
 import co.nilin.opex.wallet.core.inout.TransferResult
-import co.nilin.opex.wallet.core.spi.DepositPersister
+import co.nilin.opex.wallet.core.model.DepositType
+import co.nilin.opex.wallet.core.model.WalletType
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
@@ -19,18 +19,17 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 
 @RestController
-@RequestMapping("/v1/deposit")
+@RequestMapping
 class DepositController(
-    private val depositPersister: DepositPersister,
-    private val transferService: TransferService
+    private val depositService: DepositService,
 ) {
 
-    @PostMapping("/history")
+    @PostMapping("/v1/deposit/history")
     suspend fun getDepositTransactionsForUser(
         @RequestBody request: DepositHistoryRequest,
         @CurrentSecurityContext securityContext: SecurityContext
     ): List<DepositResponse> {
-        return depositPersister.findDepositHistory(
+        return depositService.findDepositHistory(
             securityContext.authentication.name,
             request.currency,
             request.startTime?.let {
@@ -42,24 +41,10 @@ class DepositController(
             request.limit,
             request.offset,
             request.ascendingByTime
-        ).map {
-            DepositResponse(
-                it.id!!,
-                it.ownerUuid,
-                it.currency,
-                it.amount,
-                it.network,
-                it.note,
-                it.transactionRef,
-                it.status,
-                it.depositType,
-                it.createDate
-            )
-        }
+        )
     }
 
-
-    @PostMapping("/manually/{amount}_{symbol}/{receiverUuid}")
+    @PostMapping("/deposit/{amount}_{chain}_{symbol}/{receiverUuid}_{receiverWalletType}")
     @ApiResponse(
         message = "OK",
         code = 200,
@@ -70,19 +55,27 @@ class DepositController(
             )
         )
     )
-    suspend fun depositManually(
-        @PathVariable("symbol") symbol: String,
-        @PathVariable("receiverUuid") receiverUuid: String,
-        @PathVariable("amount") amount: BigDecimal,
-        @RequestBody request: ManualTransferRequest,
-        @CurrentSecurityContext securityContext: SecurityContext
-    ): TransferResult {
-        return transferService.depositManually(
+    suspend fun deposit(
+        @PathVariable symbol: String,
+        @PathVariable receiverUuid: String,
+        @PathVariable receiverWalletType: WalletType,
+        @PathVariable amount: BigDecimal,
+        @RequestParam description: String?,
+        @RequestParam transferRef: String?,
+        @RequestParam gatewayUuid: String?,
+        @PathVariable chain: String?
+    ): TransferResult? {
+        return depositService.deposit(
             symbol,
             receiverUuid,
-            securityContext.authentication.name,
+            receiverWalletType,
             amount,
-            request
+            description,
+            transferRef,
+            chain,
+            null,
+            depositType = DepositType.ON_CHAIN,
+            gatewayUuid = gatewayUuid
         )
     }
 }

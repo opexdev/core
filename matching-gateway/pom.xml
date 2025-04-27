@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -18,6 +18,7 @@
     <modules>
         <module>matching-gateway-app</module>
         <module>matching-gateway-port/matching-gateway-submitter-kafka</module>
+        <module>matching-gateway-port/matching-gateway-persister-postgres</module>
     </modules>
 
     <dependencies>
@@ -46,6 +47,11 @@
             <dependency>
                 <groupId>co.nilin.opex.matching.gateway.ports.kafka.submitter</groupId>
                 <artifactId>matching-gateway-submitter-kafka</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.matching.gateway.ports.postgres</groupId>
+                <artifactId>matching-gateway-persister-postgres</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

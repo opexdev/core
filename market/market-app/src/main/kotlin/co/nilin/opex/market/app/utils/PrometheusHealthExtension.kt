@@ -6,7 +6,6 @@ import org.springframework.boot.actuate.health.HealthComponent
 import org.springframework.boot.actuate.health.HealthEndpoint
 import org.springframework.boot.actuate.health.SystemHealth
 import org.springframework.context.annotation.Profile
-import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 

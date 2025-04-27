@@ -7,6 +7,7 @@ import co.nilin.opex.bcgateway.ports.postgres.dao.AddressTypeRepository
 import co.nilin.opex.bcgateway.ports.postgres.dao.ChainAddressTypeRepository
 import co.nilin.opex.bcgateway.ports.postgres.dao.ChainRepository
 import co.nilin.opex.bcgateway.ports.postgres.model.ChainAddressTypeModel
+import co.nilin.opex.common.OpexError
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
@@ -14,7 +15,6 @@ import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.stereotype.Component
-import co.nilin.opex.common.OpexError
 
 @Component
 class ChainHandler(

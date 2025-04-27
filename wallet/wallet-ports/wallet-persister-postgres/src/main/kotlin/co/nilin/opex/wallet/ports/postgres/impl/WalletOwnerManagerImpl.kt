@@ -4,9 +4,11 @@ import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.WalletLimitAction
 import co.nilin.opex.wallet.core.model.WalletOwner
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
-import co.nilin.opex.wallet.ports.postgres.dao.*
+import co.nilin.opex.wallet.ports.postgres.dao.TransactionRepository
+import co.nilin.opex.wallet.ports.postgres.dao.WalletConfigRepository
+import co.nilin.opex.wallet.ports.postgres.dao.WalletLimitsRepository
+import co.nilin.opex.wallet.ports.postgres.dao.WalletOwnerRepository
 import co.nilin.opex.wallet.ports.postgres.dto.toPlainObject
-import co.nilin.opex.wallet.ports.postgres.model.WalletConfigModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletLimitsModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletOwnerModel
 import kotlinx.coroutines.flow.map

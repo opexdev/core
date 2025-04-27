@@ -5,9 +5,9 @@ import co.nilin.opex.wallet.core.model.WalletOwner
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.google.api.client.http.FileContent
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
-import com.google.api.client.http.FileContent
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import com.google.auth.http.HttpCredentialsAdapter
@@ -17,13 +17,13 @@ import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
-import com.google.api.services.drive.model.File as GoogleFile
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.io.File
 import java.nio.file.Files
 import java.time.LocalDateTime
 import java.util.concurrent.Executors
+import com.google.api.services.drive.model.File as GoogleFile
 
 @Service
 @Profile("!test")
@@ -48,10 +48,13 @@ class BackupService(
         runBlocking(dispatcher) {
             try {
                 val data = arrayListOf<OwnerAndWallets>()
+
+                logger.info("Fetching wallets for backup...")
                 walletOwnerManager.findAllWalletOwners().forEach {
                     data.add(OwnerAndWallets(it, walletManager.findAllWalletsBriefNotZero(it.id!!)))
                 }
 
+                logger.info("Writing wallets to temp file")
                 val file = writeWalletsToFile(data)
                 upload(file, file.name, folderId)
             } catch (e: Exception) {
@@ -69,6 +72,7 @@ class BackupService(
 
     private fun upload(file: File, fileName: String, folderId: String) {
         try {
+            logger.info("Start upload process with folderId:$folderId")
             val authFile = File("/drive-key.json")
             val credentials = GoogleCredentials.fromStream(authFile.inputStream()).createScoped(DriveScopes.DRIVE)
             val requestInitializer = HttpCredentialsAdapter(credentials)
@@ -86,9 +90,9 @@ class BackupService(
             val uploaded = service.files().create(metadata, content)
                 .setFields("id,name")
                 .execute()
-            println("File uploaded: ${uploaded.id}--${uploaded.name}")
+            logger.info("File uploaded: ${uploaded.id}--${uploaded.name}")
         } catch (e: Exception) {
-            logger.error("Wallet backup is enabled but could not upload to Google Drive")
+            logger.error("Wallet backup is enabled but could not upload to Google Drive", e)
         }
     }
 

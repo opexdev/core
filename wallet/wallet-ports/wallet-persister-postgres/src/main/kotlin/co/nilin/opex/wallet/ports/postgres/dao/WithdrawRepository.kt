@@ -4,7 +4,6 @@ import co.nilin.opex.wallet.core.model.WithdrawStatus
 import co.nilin.opex.wallet.ports.postgres.model.WithdrawModel
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.r2dbc.repository.Query
-import org.springframework.data.repository.query.Param
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Mono
@@ -34,7 +33,11 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
             and (:destTxRef is null or wth.dest_transaction_ref = :destTxRef) 
             and (:destAddress is null or wth.dest_address = :destAddress) 
             and (:currency is null or wm.currency in (:currency)) 
-        order by wth.id
+            and (:startTime is null or create_date > :startTime )
+            and (:endTime is null or create_date <= :endTime)
+        order by  CASE WHEN :ascendingByTime=true THEN create_date END ASC,
+                  CASE WHEN :ascendingByTime=false THEN create_date END DESC
+        offset :offset limit :size;
         """
     )
     fun findByCriteria(
@@ -42,6 +45,11 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         currency: String?,
         destTxRef: String?,
         destAddress: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        ascendingByTime: Boolean? = false,
+        offset: Int? = 0,
+        size: Int? = 10000
     ): Flow<WithdrawModel>
 
     @Query(
@@ -54,7 +62,11 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
             and (:destAddress is null or wth.dest_address = :destAddress) 
             and (:currency is null or wm.currency in (:currency)) 
             and wth.status in (:status)
-        order by wth.id
+            and (:startTime is null or create_date > :startTime )
+            and (:endTime is null or create_date <= :endTime)
+        order by  CASE WHEN :ascendingByTime=true THEN create_date END ASC,
+                  CASE WHEN :ascendingByTime=false THEN create_date END DESC
+        offset :offset limit :size;
         """
     )
     fun findByCriteria(
@@ -62,7 +74,12 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         currency: String?,
         destTxRef: String?,
         destAddress: String?,
-        status: List<WithdrawStatus>?
+        status: List<WithdrawStatus>?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        ascendingByTime: Boolean? = false,
+        offset: Int? = 0,
+        size: Int? = 10000
     ): Flow<WithdrawModel>
 
     @Query(
@@ -83,8 +100,8 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         currency: String?,
         destTxRef: String?,
         destAddress: String?,
-        offset: Int,
-        size: Int
+        offset: Int? = 0,
+        size: Int? = 10000
     ): Flow<WithdrawModel>
 
     @Query(
@@ -107,8 +124,8 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         destTxRef: String?,
         destAddress: String?,
         status: List<WithdrawStatus>,
-        offset: Int,
-        size: Int
+        offset: Int? = 0,
+        size: Int? = 10000
     ): Flow<WithdrawModel>
 
     @Query(
@@ -159,39 +176,20 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
             and (:currency is null or currency = :currency)
             and (:startTime is null or create_date > :startTime )
             and (:endTime is null or create_date <= :endTime)
-        order by create_date
+        order by  CASE WHEN :ascendingByTime=true THEN create_date END ASC,
+                  CASE WHEN :ascendingByTime=false THEN create_date END DESC
         limit :limit
         offset :offset
         """
     )
-    fun findWithdrawHistoryAsc(
+    fun findWithdrawHistory(
         uuid: String,
         currency: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
-        limit: Int,
-        offset: Int
-    ): Flow<WithdrawModel>
-
-    @Query(
-        """
-        select * from withdraws 
-        where uuid = :uuid
-            and (:currency is null or currency = :currency)
-            and (:startTime is null or create_date > :startTime )
-            and (:endTime is null or create_date <= :endTime)
-        order by create_date DESC 
-        limit :limit
-        offset :offset
-        """
-    )
-    fun findWithdrawHistoryDesc(
-        uuid: String,
-        currency: String?,
-        startTime: LocalDateTime?,
-        endTime: LocalDateTime?,
-        limit: Int,
-        offset: Int
+        ascendingByTime: Boolean,
+        limit: Int? = 0,
+        offset: Int? = 10000
     ): Flow<WithdrawModel>
 
 //    @Query(

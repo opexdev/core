@@ -1,8 +1,8 @@
-name:  Build, Test, and Deploy otc (PRD env) services for specific partner
+name: Build, Test, and Deploy otc (PRD env) services for specific partner
 on:
-#  push:
-#    branches:
-#      - main
+  #  push:
+  #    branches:
+  #      - main
 
   workflow_dispatch:
     inputs:
@@ -14,7 +14,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         java: [ 17 ]
@@ -107,7 +107,7 @@ jobs:
           echo "password=$server_pass" >> $GITHUB_OUTPUT
 
       - name: Build
-        run:  |
+        run: |
           mvn -pl common -am  -B -T 1C clean install -Potc
           mvn -pl wallet,bc-gateway -amd  -B -T 1C clean install -Potc
 

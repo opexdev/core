@@ -38,7 +38,7 @@ management:
     web:
       base-path: /actuator
       exposure:
-        include: ["health", "metrics"]
+        include: [ "health", "metrics" ]
   endpoint:
     health:
       show-details: always

@@ -18,16 +18,27 @@ interface MarketQueryHandler {
 
     suspend fun recentTrades(symbol: String, limit: Int): List<MarketTrade>
 
+    suspend fun recentTrades(
+        symbol: String?,
+        makerUuid: String?,
+        takerUuid: String?,
+        fromDate: LocalDateTime?,
+        toDate: LocalDateTime?,
+        excludeSelfTrade: Boolean,
+        limit: Int,
+        offset: Int,
+    ): List<TradeData>
+
     suspend fun lastPrice(symbol: String?): List<PriceTicker>
 
     suspend fun getBestPriceForSymbols(symbols: List<String>): List<BestPrice>
 
     suspend fun getCandleInfo(
-            symbol: String,
-            interval: String,
-            startTime: Long?,
-            endTime: Long?,
-            limit: Int
+        symbol: String,
+        interval: String,
+        startTime: Long?,
+        endTime: Long?,
+        limit: Int,
     ): List<CandleData>
 
     suspend fun numberOfActiveUsers(interval: Interval): Long
@@ -44,5 +55,9 @@ interface MarketQueryHandler {
 
     suspend fun mostTrades(interval: Interval): TradeVolumeStat?
 
+    suspend fun getWeeklyPriceData(symbol: String): List<PriceTime>
 
+    suspend fun getMonthlyPriceData(symbol: String): List<PriceTime>
+
+    suspend fun getDailyPriceData(symbol: String): List<PriceTime>
 }

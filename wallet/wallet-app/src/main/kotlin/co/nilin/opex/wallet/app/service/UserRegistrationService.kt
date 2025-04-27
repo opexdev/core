@@ -1,35 +1,35 @@
 package co.nilin.opex.wallet.app.service
 
-import co.nilin.opex.common.OpexError
-import co.nilin.opex.utility.preferences.Preferences
 import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.WalletType
-import co.nilin.opex.wallet.core.spi.CurrencyService
+import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent
-import org.springframework.beans.factory.annotation.Autowired
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
+import java.math.BigDecimal
 
 @Component
 class UserRegistrationService(
-    private val walletOwnerManager: WalletOwnerManager,
-    private val walletManager: WalletManager,
-    private val currencyService: CurrencyService
+    val walletOwnerManager: WalletOwnerManager,
+    val walletManager: WalletManager,
+    val currencyService: CurrencyServiceManager
 ) {
 
-    @Autowired
-    private lateinit var preferences: Preferences
+    private val logger = LoggerFactory.getLogger(UserRegistrationService::class.java)
 
     @Transactional
     suspend fun registerNewUser(event: UserCreatedEvent) {
-        val owner =
-            walletOwnerManager.createWalletOwner(event.uuid, "${event.email}-${event.firstName} ${event.lastName}", "1")
+        val title = "${event.email} | ${event.firstName} ${event.lastName}"
+        val owner = walletOwnerManager.createWalletOwner(event.uuid, title, "1") //TODO define proper user levels
 
-        preferences.currencies.forEach {
-            val currency = currencyService.getCurrency(it.symbol) ?: throw OpexError.CurrencyNotFound.exception()
-            walletManager.createWallet(owner, Amount(currency, it.gift), currency, WalletType.MAIN)
+        val currencies = currencyService.fetchCurrencies()?.currencies ?: run {
+            logger.warn("Could not fetch currencies")
+            return
         }
+
+        currencies.forEach { walletManager.createWallet(owner, Amount(it, BigDecimal.ZERO), it, WalletType.MAIN) }
     }
 }

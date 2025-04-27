@@ -6,6 +6,7 @@ import co.nilin.opex.matching.engine.core.model.OrderType
 import co.nilin.opex.matching.gateway.app.inout.CancelOrderRequest
 import co.nilin.opex.matching.gateway.app.inout.CreateOrderRequest
 import co.nilin.opex.matching.gateway.app.inout.PairConfig
+import co.nilin.opex.matching.gateway.ports.postgres.dto.PairSetting
 import java.math.BigDecimal
 
 object VALID {
@@ -22,6 +23,8 @@ object VALID {
     const val ORDER_DIRECTION_ASK = "ASK"
 
     val PAIR_CONFIG = PairConfig(ETH_USDT, ETH, USDT, BigDecimal.valueOf(0.01), BigDecimal.valueOf(0.0001))
+
+    val PAIR_SETTING = PairSetting(ETH_USDT, true, null)
 
     val CREATE_ORDER_REQUEST_ASK = CreateOrderRequest(
         UUID,

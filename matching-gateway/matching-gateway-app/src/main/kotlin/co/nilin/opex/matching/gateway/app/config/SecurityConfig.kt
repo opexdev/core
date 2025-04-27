@@ -1,5 +1,6 @@
 package co.nilin.opex.matching.gateway.app.config
 
+import co.nilin.opex.matching.gateway.app.utils.hasRole
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
@@ -23,6 +24,7 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/swagger-ui/**").permitAll()
             .pathMatchers("/swagger-resources/**").permitAll()
             .pathMatchers("/v2/api-docs").permitAll()
+            .pathMatchers("/pair-setting/**").hasRole("SCOPE_trust", "admin_system")
             .pathMatchers("/**").hasAuthority("SCOPE_trust")
             .anyExchange().authenticated()
             .and()

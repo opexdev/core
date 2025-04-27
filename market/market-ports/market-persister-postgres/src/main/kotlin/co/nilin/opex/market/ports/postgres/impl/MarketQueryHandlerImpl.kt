@@ -19,7 +19,6 @@ import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.stereotype.Component
-import java.lang.StringBuilder
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDateTime
@@ -31,7 +30,7 @@ class MarketQueryHandlerImpl(
     private val orderRepository: OrderRepository,
     private val tradeRepository: TradeRepository,
     private val orderStatusRepository: OrderStatusRepository,
-    private val redisCacheHelper: RedisCacheHelper
+    private val redisCacheHelper: RedisCacheHelper,
 ) : MarketQueryHandler {
 
     //TODO merge order and status fetching in query
@@ -91,7 +90,7 @@ class MarketQueryHandlerImpl(
         val cacheKey = "recentTrades:${symbol.lowercase()}"
         val recentTradesCache = redisCacheHelper.getList<MarketTrade>(cacheKey)
         if (!recentTradesCache.isNullOrEmpty())
-            return recentTradesCache.toList()
+            return recentTradesCache.toList().take(limit)
 
         return tradeRepository.findBySymbolSortDescendingByCreateDate(symbol, limit)
             .map {
@@ -118,6 +117,34 @@ class MarketQueryHandlerImpl(
             .also { redisCacheHelper.setExpiration(cacheKey, 60.minutes()) }
     }
 
+    override suspend fun recentTrades(
+        symbol: String?,
+        makerUuid: String?,
+        takerUuid: String?,
+        fromDate: LocalDateTime?,
+        toDate: LocalDateTime?,
+        excludeSelfTrade: Boolean,
+        limit: Int,
+        offset: Int,
+    ): List<TradeData> {
+        return tradeRepository.findByCriteria(symbol, makerUuid, takerUuid, fromDate, toDate,excludeSelfTrade, limit, offset)
+            .map {
+                TradeData(
+                    tradeId = it.tradeId,
+                    symbol = it.symbol,
+                    matchedPrice = it.matchedPrice,
+                    matchedQuantity = it.matchedQuantity,
+                    takerPrice = it.takerPrice,
+                    makerPrice = it.makerPrice,
+                    tradeDate = it.tradeDate,
+                    makerUuid = it.makerUuid,
+                    takerUuid = it.takerUuid,
+                )
+            }
+            .toList()
+    }
+
+
     override suspend fun lastPrice(symbol: String?): List<PriceTicker> {
         val list = redisCacheHelper.getOrElse("lastPrice", 1.minutes()) {
             if (symbol.isNullOrEmpty())
@@ -142,7 +169,7 @@ class MarketQueryHandlerImpl(
         interval: String,
         startTime: Long?,
         endTime: Long?,
-        limit: Int
+        limit: Int,
     ): List<CandleData> {
         val st = if (startTime == null)
             tradeRepository.findFirstByCreateDate().awaitFirstOrNull()?.createDate ?: LocalDateTime.now()
@@ -237,6 +264,64 @@ class MarketQueryHandlerImpl(
         return redisCacheHelper.getOrElse("mostTrades:${interval.label}", 1.minutes()) {
             tradeRepository.findByMostTrades(interval.getLocalDateTime()).awaitSingleOrNull()
         }
+    }
+
+    override suspend fun getWeeklyPriceData(symbol: String): List<PriceTime> {
+        return getPriceDataWithCache(
+            symbol = symbol,
+            cacheKeyPrefix = "weeklyPriceData",
+            interval = "4h",
+            fromDate = LocalDateTime.now().minusDays(7)
+        )
+    }
+
+    override suspend fun getMonthlyPriceData(symbol: String): List<PriceTime> {
+        return getPriceDataWithCache(
+            symbol = symbol,
+            cacheKeyPrefix = "monthlyPriceData",
+            interval = "24h",
+            fromDate = LocalDateTime.now().minusDays(30)
+        )
+    }
+
+    override suspend fun getDailyPriceData(symbol: String): List<PriceTime> {
+        return getPriceDataWithCache(
+            symbol = symbol,
+            cacheKeyPrefix = "dailyPriceData",
+            interval = "1h",
+            fromDate = LocalDateTime.now().minusDays(1)
+        )
+    }
+
+    private suspend fun getPriceDataWithCache(
+        symbol: String,
+        cacheKeyPrefix: String,
+        interval: String,
+        fromDate: LocalDateTime,
+    ): List<PriceTime> {
+        val cacheKey = "${cacheKeyPrefix}:${symbol.lowercase()}"
+        val cachedData = redisCacheHelper.getList<PriceTime>(cacheKey)
+        if (!cachedData.isNullOrEmpty()) {
+            return cachedData.toList()
+        }
+
+        return tradeRepository.getPriceTimeData(symbol, interval, fromDate, LocalDateTime.now())
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+            .let { priceTimes ->
+                var lastNonNullPrice: BigDecimal? = null
+                val firstNonNullPrice = priceTimes.firstOrNull { it.closePrice != null }?.closePrice ?: BigDecimal.ZERO
+                priceTimes.map { item ->
+                    val price = item.closePrice ?: lastNonNullPrice ?: firstNonNullPrice
+                    lastNonNullPrice = price
+                    PriceTime(
+                        item.closeTime,
+                        price
+                    )
+                }
+                    .onEach { redisCacheHelper.putListItem(cacheKey, it) }
+                    .also { redisCacheHelper.setExpiration(cacheKey, 1.hours()) }
+            }
     }
 
     private fun TradeTickerData.asPriceChangeResponse(openTime: Long, closeTime: Long) = PriceChange(

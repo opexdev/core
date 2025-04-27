@@ -11,5 +11,5 @@ import org.springframework.scheduling.annotation.EnableScheduling
 class MarketAppApplication
 
 fun main(args: Array<String>) {
-	runApplication<MarketAppApplication>(*args)
+    runApplication<MarketAppApplication>(*args)
 }

@@ -1,26 +1,36 @@
 package co.nilin.opex.api.ports.binance.config
 
-import org.springframework.cloud.client.ServiceInstance
-import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalancer
-import org.springframework.cloud.client.loadbalancer.reactive.ReactorLoadBalancerExchangeFilterFunction
+import io.netty.channel.ChannelOption
+import org.springframework.cloud.client.loadbalancer.LoadBalanced
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.web.reactive.function.client.WebClient
-import org.zalando.logbook.Logbook
-import org.zalando.logbook.netty.LogbookClientHandler
 import reactor.netty.http.client.HttpClient
+import reactor.netty.resources.ConnectionProvider
+import java.time.Duration
 
 @Configuration
 class WebClientConfig {
 
     @Bean
-    fun webClient(loadBalancerFactory: ReactiveLoadBalancer.Factory<ServiceInstance>, logbook: Logbook): WebClient {
-        val client = HttpClient.create().doOnConnected { it.addHandlerLast(LogbookClientHandler(logbook)) }
+    @LoadBalanced
+    fun webClientBuilder(): WebClient.Builder {
         return WebClient.builder()
-            //.clientConnector(ReactorClientHttpConnector(client))
-            .filter(ReactorLoadBalancerExchangeFilterFunction(loadBalancerFactory, emptyList()))
-            .build()
     }
 
+    @Bean
+    fun webClient(webclientBuilder: WebClient.Builder): WebClient {
+        val cp = ConnectionProvider.builder("apiBinanceWebclientConnectionPool")
+            .maxConnections(5000)
+            .maxIdleTime(Duration.ofSeconds(20))
+            .maxLifeTime(Duration.ofMinutes(2))
+            .pendingAcquireTimeout(Duration.ofSeconds(10))
+            .evictInBackground(Duration.ofSeconds(30))
+            .build()
+        val client = HttpClient.create(cp)
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
+            .responseTimeout(Duration.ofSeconds(10))
+        return webclientBuilder.clientConnector(ReactorClientHttpConnector(client)).build()
+    }
 }

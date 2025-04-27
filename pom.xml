@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -17,7 +17,6 @@
         <spring.version>2.7.6</spring.version>
         <spring-cloud.version>2021.0.5</spring-cloud.version>
         <error-hanlder.version>1.0.1</error-hanlder.version>
-        <preferences.version>1.0.0</preferences.version>
         <interceptor.version>1.0.0</interceptor.version>
         <skip.unit.tests>true</skip.unit.tests>
     </properties>
