@@ -35,7 +35,7 @@ class UserController(private val userService: UserService) {
 
     @PostMapping("/logout")
     suspend fun logout(@CurrentSecurityContext securityContext: SecurityContext) {
-        userService.logout(securityContext.jwtAuthentication().tokenValue())
+        userService.logout(securityContext.jwtAuthentication().name)
     }
 
 }

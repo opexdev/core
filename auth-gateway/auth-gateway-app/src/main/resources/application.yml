@@ -54,11 +54,11 @@ logging:
     org.zalando.logbook: TRACE
 keycloak:
   url: http://keycloak:8080
-  cert-url: http://keycloak:8080/auth/realms/opex/protocol/openid-connect/certs
+  cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
   realm: opex
   admin-client:
     id: "opex-admin"
-    secret: 83ExGcigKFT3xxp7Kx6wYB8mfO9TjQVY
+    secret: ${ADMIN_CLIENT_SECRET}
     google-client-id: ${GOOGLE_CLIENT_ID}
 
 otp:

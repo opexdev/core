@@ -222,12 +222,12 @@ class KeycloakProxy(
         }
     }
 
-    suspend fun logout(token: String) {
-        val url = "${keycloakConfig.url}/auth/realms/${keycloakConfig.realm}/user-management/user/logout"
+    suspend fun logout(userId: String) {
+        val url = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users/${userId}/logout"
         keycloakClient.post()
             .uri(url)
             .contentType(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .withAdminToken()
             .retrieve()
             .toBodilessEntity()
             .awaitSingleOrNull()

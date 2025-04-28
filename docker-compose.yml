@@ -113,8 +113,8 @@ services:
     image: quay.io/keycloak/keycloak:26.1
     container_name: keycloak
     environment:
-      KEYCLOAK_ADMIN: ${KEYCLOAK_PANEL_USERNAME}
-      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_PANEL_PASSWORD}
+      KEYCLOAK_ADMIN: ${KC_PANEL_USERNAME}
+      KEYCLOAK_ADMIN_PASSWORD: ${KC_PANEL_PASSWORD}
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://postgres-keycloak:5432/opex
       KC_DB_USERNAME: ${DB_USER}
@@ -392,6 +392,7 @@ services:
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - CONSUL_HOST=consul
+      - ADMIN_CLIENT_SECRET=${KC_ADMIN_CLIENT_SECRET}
     networks:
       - default
     labels:

@@ -17,19 +17,19 @@ class AuthController(private val tokenService: TokenService) {
 
     @PostMapping("/token")
     suspend fun getToken(@RequestBody tokenRequest: PasswordFlowTokenRequest): ResponseEntity<TokenResponse> {
-        val tokenResponse = tokenService.getToken(tokenRequest);
-        return ResponseEntity.ok().body(tokenResponse);
+        val tokenResponse = tokenService.getToken(tokenRequest)
+        return ResponseEntity.ok().body(tokenResponse)
     }
 
     @PostMapping("/token-external")
     suspend fun getToken(@RequestBody tokenRequest: ExternalIdpTokenRequest): ResponseEntity<TokenResponse> {
-        val tokenResponse = tokenService.getToken(tokenRequest);
-        return ResponseEntity.ok().body(tokenResponse);
+        val tokenResponse = tokenService.getToken(tokenRequest)
+        return ResponseEntity.ok().body(tokenResponse)
     }
 
     @PostMapping("/refresh")
     suspend fun refreshToken(@RequestBody tokenRequest: RefreshTokenRequest): ResponseEntity<TokenResponse> {
         val tokenResponse = tokenService.refreshToken(tokenRequest)
-        return ResponseEntity.ok().body(tokenResponse);
+        return ResponseEntity.ok().body(tokenResponse)
     }
 }

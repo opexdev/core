@@ -24,6 +24,7 @@ class SecurityConfig(
         return http.csrf { it.disable() }
             .authorizeExchange {
                 it.pathMatchers("/actuator/**").permitAll()
+                it.pathMatchers("/api/v1/oauth/protocol/openid-connect/**").permitAll()
                     .pathMatchers("/api/v1/oauth.***").permitAll()
                     .pathMatchers("/api/v1/users/register**").permitAll()
                     .anyExchange().authenticated()

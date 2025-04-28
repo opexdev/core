@@ -52,8 +52,8 @@ class UserService(
         keycloakProxy.linkGoogleIdentity(userId, email, googleUserId)
     }
 
-    suspend fun logout(token: String) {
-        keycloakProxy.logout(token)
+    suspend fun logout(userId:String) {
+        keycloakProxy.logout(userId)
     }
 
     private suspend fun checkDuplicateUser(username: Username) {
