@@ -1,5 +1,6 @@
 package co.nilin.opex.otp.app.service.message
 
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.utils.LoggerDelegate
 import co.nilin.opex.otp.app.model.OTPConfig
 import co.nilin.opex.otp.app.model.OTPType
