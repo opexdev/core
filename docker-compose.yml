@@ -109,6 +109,34 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.1
+    container_name: keycloak
+    environment:
+      KEYCLOAK_ADMIN: ${KC_PANEL_USERNAME}
+      KEYCLOAK_ADMIN_PASSWORD: ${KC_PANEL_PASSWORD}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres-keycloak:5432/opex
+      KC_DB_USERNAME: ${DB_USER}
+      KC_DB_PASSWORD: ${DB_PASS}
+      KC_HEALTH_ENABLED: true
+      KC_METRICS_ENABLED: true
+      GOOGLE_CLIENT_ID: ${KC_GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${KC_GOOGLE_CLIENT_SECRET}
+    command:
+      - start-dev
+      - --import-realm
+      - --features=admin-fine-grained-authz,token-exchange
+      - --log-level=DEBUG
+    volumes:
+      - ./auth-gateway/keycloak-setup/realms:/opt/keycloak/data/import
+    depends_on:
+      - postgres-keycloak
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
   vault:
     image: ghcr.io/opexdev/vault-opex
     volumes:
@@ -189,6 +217,10 @@ services:
     <<: *postgres-db
     volumes:
       - auth-data:/var/lib/postgresql/data/
+  postgres-keycloak:
+    <<: *postgres-db
+    volumes:
+      - keycloak-data:/var/lib/postgresql/data/
   postgres-wallet:
     <<: *postgres-db
     volumes:
@@ -209,6 +241,10 @@ services:
     <<: *postgres-db
     volumes:
       - matching-gateway-data:/var/lib/postgresql/data/
+  postgres-otp:
+    <<: *postgres-db
+    volumes:
+      - otp-data:/var/lib/postgresql/data/
   accountant:
     image: ghcr.io/opexdev/accountant
     environment:
@@ -351,6 +387,19 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  auth-gateway:
+    image: ghcr.io/opexdev/auth-gateway
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - CONSUL_HOST=consul
+      - ADMIN_CLIENT_SECRET=${KC_ADMIN_CLIENT_SECRET}
+    networks:
+      - default
+    labels:
+      collect_logs: "true"
+    deploy:
+      restart_policy:
+        condition: on-failure
   wallet:
     image: ghcr.io/opexdev/wallet
     environment:
@@ -457,6 +506,28 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  otp:
+    image: ghcr.io/opexdev/otp
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - CONSUL_HOST=consul
+      - DB_IP_PORT=postgres-otp
+      - DB_USER=${DB_USER:-opex}
+      - DB_PASS=${DB_PASS:-hiopex}
+      - SMS_PROVIDER_API_KEY=${SMS_PROVIDER_API_KEY}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+    depends_on:
+      - consul
+      - postgres-otp
+    networks:
+      - default
+    labels:
+      collect_logs: "true"
+    deploy:
+      restart_policy:
+        condition: on-failure
 volumes:
   zookeeper-data:
   zookeeper-log:
@@ -472,11 +543,13 @@ volumes:
   accountant-data:
   eventlog-data:
   auth-data:
+  keycloak-data:
   wallet-data:
   market-data:
   api-data:
   bc-gateway-data:
   matching-gateway-data:
+  otp-data:
 networks:
   opex:
     external: true

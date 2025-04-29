@@ -22,9 +22,22 @@ services:
   redis-cache:
     ports:
       - "6380:6379"
+  keycloak:
+    ports:
+      - "8193:8080"
   akhq:
     ports:
       - "127.0.0.1:10100:8080"
+  auth-gateway:
+    ports:
+      - "8184:8080"
+      - "127.0.0.1:1055:5005"
+  postgres-keycloak:
+    ports:
+      - "127.0.0.1:5461:5432"
+  postgres-otp:
+    ports:
+      - "127.0.0.1:5462:5432"
   accountant:
     ports:
       - "127.0.0.1:8089:8080"
@@ -60,3 +73,7 @@ services:
     ports:
       - "0.0.0.0:8095:8080"
       - "127.0.0.1:1052:5005"
+  otp:
+    ports:
+      - "0.0.0.0:8097:8080"
+      - "127.0.0.1:1053:5005"
