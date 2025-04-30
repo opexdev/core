@@ -339,6 +339,8 @@ services:
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-matching-gateway
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_HOST=vault
       - SYMBOLS=BTC_USDT,ETH_USDT,BTC_IRT,ETH_IRT,USDT_IRT,ETH_BUSD,BTC_BUSD,BNB_BUSD
     networks:
       - default

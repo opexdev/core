@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: user-management-core
+    name: opex-auth-gateway
   cloud:
     bootstrap:
       enabled: true
