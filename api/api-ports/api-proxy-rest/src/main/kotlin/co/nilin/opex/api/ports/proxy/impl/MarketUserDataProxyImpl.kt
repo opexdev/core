@@ -109,10 +109,10 @@ class MarketUserDataProxyImpl(private val webClient: WebClient) : MarketUserData
     }
 
     override suspend fun getOrderHistory(
-        principal: Principal,
+        uuid: String,
         symbol: String?,
-        fromDate: Date?,
-        toDate: Date?,
+        startTime: Long?,
+        endTime: Long?,
         orderType: MatchingOrderType?,
         direction: OrderDirection?,
         limit: Int?,
@@ -120,10 +120,10 @@ class MarketUserDataProxyImpl(private val webClient: WebClient) : MarketUserData
     ): List<OrderData> {
         return withContext(ProxyDispatchers.market) {
             webClient.get()
-                .uri("$baseUrl/v1/user/history/${principal.name}") {
+                .uri("$baseUrl/v1/user/order/history/$uuid") {
                     it.queryParam("symbol", symbol)
-                    it.queryParam("fromDate", fromDate)
-                    it.queryParam("toDate", toDate)
+                    it.queryParam("startTime", startTime)
+                    it.queryParam("endTime", endTime)
                     it.queryParam("orderType", orderType)
                     it.queryParam("direction", direction)
                     it.queryParam("limit", limit)
@@ -134,6 +134,35 @@ class MarketUserDataProxyImpl(private val webClient: WebClient) : MarketUserData
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToFlux<OrderData>()
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
+        }
+    }
+
+    override suspend fun getTradeHistory(
+        uuid: String,
+        symbol: String?,
+        startTime: Long?,
+        endTime: Long?,
+        direction: OrderDirection?,
+        limit: Int?,
+        offset: Int?,
+    ): List<Trade> {
+        return withContext(ProxyDispatchers.market) {
+            webClient.get()
+                .uri("$baseUrl/v1/user/trade/history/$uuid") {
+                    it.queryParam("symbol", symbol)
+                    it.queryParam("startTime", startTime)
+                    it.queryParam("endTime", endTime)
+                    it.queryParam("direction", direction)
+                    it.queryParam("limit", limit)
+                    it.queryParam("offset", offset)
+                    it.build()
+                }.accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<Trade>()
                 .collectList()
                 .awaitFirstOrElse { emptyList() }
         }

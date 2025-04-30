@@ -66,7 +66,7 @@ class WithdrawService(
             throw OpexError.WithdrawAmountLessThanMinimum.exception()
 
         if (withdrawCommand.amount > withdrawData.maximum)
-            throw OpexError.WithdrawAmountMoreThanMinimum.exception()
+            throw OpexError.WithdrawAmountGreaterThanMaximum.exception()
 
 
         val transferResultDetailed = transferManager.transfer(

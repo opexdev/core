@@ -1,7 +1,7 @@
 package co.nilin.opex.market.core.spi
 
 import co.nilin.opex.market.core.inout.*
-import java.util.*
+import java.time.LocalDateTime
 
 interface UserQueryHandler {
 
@@ -20,12 +20,22 @@ interface UserQueryHandler {
     suspend fun getOrderHistory(
         uuid: String,
         symbol: String?,
-        fromDate: Date?,
-        toDate: Date?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
         orderType: MatchingOrderType?,
         direction: OrderDirection?,
         limit: Int?,
         offset: Int?,
     ): List<OrderData>
+
+    suspend fun getTradeHistory(
+        uuid: String,
+        symbol: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        direction: OrderDirection?,
+        limit: Int?,
+        offset: Int?,
+    ): List<Trade>
 
 }

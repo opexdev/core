@@ -1,12 +1,12 @@
 package co.nilin.opex.market.app.controller
 
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.market.app.utils.asLocalDateTime
 import co.nilin.opex.market.core.inout.*
 import co.nilin.opex.market.core.spi.UserQueryHandler
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
-import java.util.*
 
 @RestController
 @RequestMapping("/v1/user")
@@ -52,11 +52,11 @@ class UserDataController(private val userQueryHandler: UserQueryHandler) {
         return userQueryHandler.txOfTrades(transactionRequest.apply { owner = user })
     }
 
-    @GetMapping("/history/{uuid}")
+    @GetMapping("/order/history/{uuid}")
     suspend fun getOrderHistory(
         @RequestParam symbol: String?,
-        @RequestParam fromDate: Date?,
-        @RequestParam toDate: Date?,
+        @RequestParam startTime: Long?,
+        @RequestParam endTime: Long?,
         @RequestParam orderType: MatchingOrderType?,
         @RequestParam direction: OrderDirection?,
         @RequestParam limit: Int?,
@@ -66,8 +66,8 @@ class UserDataController(private val userQueryHandler: UserQueryHandler) {
         return userQueryHandler.getOrderHistory(
             uuid,
             symbol,
-            fromDate,
-            toDate,
+            startTime?.let { startTime.asLocalDateTime() },
+            endTime?.let { endTime.asLocalDateTime() },
             orderType,
             direction,
             limit,
@@ -75,5 +75,25 @@ class UserDataController(private val userQueryHandler: UserQueryHandler) {
         )
     }
 
+    @GetMapping("/trade/history/{uuid}")
+    suspend fun getTradeHistory(
+        @PathVariable uuid: String,
+        @RequestParam symbol: String?,
+        @RequestParam startTime: Long?,
+        @RequestParam endTime: Long?,
+        @RequestParam direction: OrderDirection?,
+        @RequestParam limit: Int?,
+        @RequestParam offset: Int?,
+    ): List<Trade> {
+        return userQueryHandler.getTradeHistory(
+            uuid,
+            symbol,
+            startTime?.let { startTime.asLocalDateTime() },
+            endTime?.let { endTime.asLocalDateTime() },
+            direction,
+            limit,
+            offset
+        )
+    }
 
 }

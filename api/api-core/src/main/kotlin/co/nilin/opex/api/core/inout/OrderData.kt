@@ -2,6 +2,7 @@ package co.nilin.opex.api.core.inout
 
 import java.math.BigDecimal
 import java.time.LocalDateTime
+import java.util.*
 
 data class OrderData(
     val symbol: String,
@@ -11,8 +12,7 @@ data class OrderData(
     val quantity: BigDecimal,
     val takerFee: BigDecimal,
     val makerFee: BigDecimal,
-    val status: Int,
-    val appearance: Int,
+    val status: OrderStatus,
     val createDate: LocalDateTime,
     val updateDate: LocalDateTime,
 )

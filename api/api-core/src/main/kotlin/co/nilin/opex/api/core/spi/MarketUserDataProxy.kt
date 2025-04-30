@@ -32,13 +32,23 @@ interface MarketUserDataProxy {
     ): List<Trade>
 
     suspend fun getOrderHistory(
-        principal: Principal,
+        uuid : String,
         symbol: String?,
-        fromDate: Date?,
-        toDate: Date?,
+        startTime: Long?,
+        endTime: Long?,
         orderType: MatchingOrderType?,
         direction: OrderDirection?,
         limit: Int?,
         offset: Int?,
     ): List<OrderData>
+
+    suspend fun getTradeHistory(
+        uuid : String,
+        symbol: String?,
+        startTime: Long?,
+        endTime: Long?,
+        direction: OrderDirection?,
+        limit: Int?,
+        offset: Int?,
+    ): List<Trade>
 }

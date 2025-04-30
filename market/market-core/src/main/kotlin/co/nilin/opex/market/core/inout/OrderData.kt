@@ -2,6 +2,7 @@ package co.nilin.opex.market.core.inout
 
 import java.math.BigDecimal
 import java.time.LocalDateTime
+import java.util.Date
 
 data class OrderData(
     val symbol: String,

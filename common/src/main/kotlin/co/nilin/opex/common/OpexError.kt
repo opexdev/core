@@ -71,7 +71,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     WithdrawAmountLessThanMinimum(6025, "Withdraw amount is less than minimum", HttpStatus.BAD_REQUEST),
     WithdrawCannotBeCanceled(6026, "Withdraw cannot be canceled", HttpStatus.BAD_REQUEST),
     WithdrawCannotBeRejected(6027, "Withdraw cannot be rejected", HttpStatus.BAD_REQUEST),
-    WithdrawAmountMoreThanMinimum(6028, "Withdraw amount is more than minimum", HttpStatus.BAD_REQUEST),
+    WithdrawAmountGreaterThanMaximum(6028, "Withdraw amount is more than maximum", HttpStatus.BAD_REQUEST),
     ImplNotFound(6029, null, HttpStatus.NOT_FOUND),
     InvalidWithdrawStatus(6030, "Withdraw status is invalid", HttpStatus.NOT_FOUND),
     GatewayNotFount(6031, null, HttpStatus.NOT_FOUND),

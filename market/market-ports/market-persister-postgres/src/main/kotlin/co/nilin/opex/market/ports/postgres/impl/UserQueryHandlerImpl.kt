@@ -149,21 +149,42 @@ class UserQueryHandlerImpl(
     override suspend fun getOrderHistory(
         uuid: String,
         symbol: String?,
-        fromDate: Date?,
-        toDate: Date?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
         orderType: MatchingOrderType?,
         direction: OrderDirection?,
         limit: Int?,
         offset: Int?,
-    ): List<OrderData> { return orderRepository.findByCriteria(
+    ): List<OrderData> {
+        return orderRepository.findByCriteria(
             uuid,
             symbol,
-            fromDate,
-            toDate,
+            startTime,
+            endTime,
             orderType,
             direction,
             limit,
             offset,
+        ).toList()
+    }
+
+    override suspend fun getTradeHistory(
+        uuid: String,
+        symbol: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        direction: OrderDirection?,
+        limit: Int?,
+        offset: Int?,
+    ): List<Trade> {
+        return tradeRepository.findByCriteria(
+            uuid,
+            symbol,
+            startTime,
+            endTime,
+            direction,
+            limit,
+            offset
         ).toList()
     }
 }

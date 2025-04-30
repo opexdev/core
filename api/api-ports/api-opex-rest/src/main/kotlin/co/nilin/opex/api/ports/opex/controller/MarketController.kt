@@ -33,10 +33,8 @@ class MarketController(
             pairSettings[config.pair]?.run {
                 PairInfoResponse(
                     pair = config.pair,
-                    leftSideWalletSymbol = config.leftSideWalletSymbol,
-                    rightSideWalletSymbol = config.rightSideWalletSymbol,
-                    leftSideFraction = config.leftSideFraction,
-                    rightSideFraction = config.rightSideFraction,
+                    baseAsset = config.leftSideWalletSymbol,
+                    quoteAsset = config.rightSideWalletSymbol,
                     isAvailable = isAvailable,
                     minOrder = minOrder,
                     maxOrder = maxOrder,

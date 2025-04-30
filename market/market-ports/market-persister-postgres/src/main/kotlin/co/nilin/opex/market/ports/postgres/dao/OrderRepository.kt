@@ -4,7 +4,6 @@ import co.nilin.opex.market.core.inout.AggregatedOrderPriceModel
 import co.nilin.opex.market.core.inout.MatchingOrderType
 import co.nilin.opex.market.core.inout.OrderData
 import co.nilin.opex.market.core.inout.OrderDirection
-import co.nilin.opex.market.core.inout.OrderType
 import co.nilin.opex.market.ports.postgres.model.OrderModel
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.r2dbc.repository.Query
@@ -138,38 +137,38 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
 
     @Query(
         """
-SELECT O.SYMBOL,
-       O.ORDER_TYPE,
-       O.SIDE,
-       O.PRICE,
-       O.QUANTITY,
-       O.TAKER_FEE,
-       O.MAKER_FEE,
-       OS.STATUS,
-       OS.APPEARANCE,
-       O.CREATE_DATE,
-       OS.DATE AS UPDATE_DATE
-FROM ORDERS O
-         LEFT JOIN (SELECT *
-                    FROM ORDER_STATUS OS1
-                    WHERE OS1.date = (SELECT MAX(OS2.date)
-                                      FROM ORDER_STATUS OS2
-                                      WHERE OS2.OUID = OS1.OUID)) OS ON O.OUID = OS.OUID
+select o.symbol,
+       o.order_type,
+       o.side,
+       o.price,
+       o.quantity,
+       o.taker_fee,
+       o.maker_fee,
+       os.status,
+       os.appearance,
+       o.create_date,
+       os.date as update_date
+from orders o
+         left join (select *
+                    from order_status os1
+                    where os1.date = (select max(os2.date)
+                                      from order_status os2
+                                      where os2.ouid = os1.ouid)) os on o.ouid = os.ouid
  WHERE uuid = :uuid
-   and (:symbol IS NULL OR O.symbol = :symbol)
-   and (:fromDate IS NULL OR O.create_date >= :fromDate)
-   and (:toDate IS NULL OR O.create_date <= :toDate)
-   and (:orderType IS NULL OR O.order_type = :orderType)
-   and (:direction IS NULL OR O.side = :direction)
-ORDER BY CREATE_DATE DESC
- LIMIT :limit OFFSET :offset;
+   and (:symbol is null or o.symbol = :symbol)
+   and (:startTime is null or o.create_date >= :startTime)
+   and (:endTime is null or o.create_date <= :endTime)
+   and (:orderType is null or o.order_type = :orderType)
+   and (:direction is null or o.side = :direction)
+order by create_date desc
+ limit :limit offset :offset;
     """
     )
     fun findByCriteria(
         uuid: String,
         symbol: String?,
-        fromDate: Date?,
-        toDate: Date?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
         orderType: MatchingOrderType?,
         direction: OrderDirection?,
         limit: Int?,
