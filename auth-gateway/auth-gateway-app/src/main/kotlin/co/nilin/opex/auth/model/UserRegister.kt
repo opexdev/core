@@ -17,6 +17,10 @@ data class RegisterUserResponse(
     val otpTracingCode: String?,
 )
 
+data class GenericOTPResponse(
+    val tracingCode: String?
+)
+
 data class ExternalIdpUserRegisterRequest(
     val idToken: String,
     val idp: String,
@@ -31,4 +35,12 @@ data class KeycloakUser(
     val firstName: String?,
     val lastName: String?,
     val attributes: Map<String, List<String>>?
+)
+
+data class ForgetPasswordRequest(
+    val username: String,
+    val newPassword: String,
+    val newPasswordConfirmation: String,
+    val otpCode: String?,
+    val otpTracingCode: String?,
 )

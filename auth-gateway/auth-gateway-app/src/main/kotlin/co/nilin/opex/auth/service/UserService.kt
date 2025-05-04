@@ -52,8 +52,27 @@ class UserService(
         keycloakProxy.linkGoogleIdentity(userId, email, googleUserId)
     }
 
-    suspend fun logout(userId:String) {
+    suspend fun logout(userId: String) {
         keycloakProxy.logout(userId)
+    }
+
+    suspend fun forgetPassword(request: ForgetPasswordRequest): String? {
+        val username = Username.create(request.username)
+        if (request.newPassword != request.newPasswordConfirmation) throw OpexError.InvalidPassword.exception()
+
+        val user = keycloakProxy.findUserByUsername(username) ?: return null
+        if (request.otpCode.isNullOrBlank() && request.otpTracingCode.isNullOrBlank()) {
+            val otp = otpProxy.requestOTP(request.username, listOf(OTPReceiver(username.value, username.type.otpType)))
+            return otp.tracingCode
+        } else {
+            val req =
+                OTPVerifyRequest(request.otpTracingCode!!, listOf(OTPCode(request.otpCode!!, username.type.otpType)))
+            val isValid = otpProxy.verifyOTP(request.username, req)
+            if (!isValid) throw OpexError.InvalidOTP.exception()
+        }
+
+        keycloakProxy.resetPassword(user.id, request.newPassword)
+        return null
     }
 
     private suspend fun checkDuplicateUser(username: Username) {

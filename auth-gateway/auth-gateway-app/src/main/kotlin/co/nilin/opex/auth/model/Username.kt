@@ -12,7 +12,7 @@ data class Username(
 
     companion object {
         fun create(username: String): Username {
-            val type = UsernameValidator.getType(username)
+            val type = UsernameValidator.getType(username.replace("+", ""))
             if (type.isUnknown()) throw OpexError.InvalidUsername.exception()
             return Username(username, type)
         }

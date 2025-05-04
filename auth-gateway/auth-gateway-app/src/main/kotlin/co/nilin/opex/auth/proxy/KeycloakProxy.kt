@@ -50,6 +50,9 @@ class KeycloakProxy(
             .header("Content-Type", "application/x-www-form-urlencoded")
             .bodyValue("client_id=${clientId}&client_secret=${clientSecret}&grant_type=password&username=${users[0].username}&password=${password}")
             .retrieve()
+            .onStatus({ it == HttpStatus.valueOf(401) }) {
+                throw OpexError.InvalidUserCredentials.exception()
+            }
             .awaitBody<Token>()
     }
 
@@ -228,6 +231,23 @@ class KeycloakProxy(
             .uri(url)
             .contentType(MediaType.APPLICATION_JSON)
             .withAdminToken()
+            .retrieve()
+            .toBodilessEntity()
+            .awaitSingleOrNull()
+    }
+
+    suspend fun resetPassword(userId: String, newPassword: String) {
+        val url = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users/${userId}/reset-password"
+        val request = object {
+            val type = "password"
+            val value = newPassword
+            val temporary = false
+        }
+        keycloakClient.put()
+            .uri(url)
+            .contentType(MediaType.APPLICATION_JSON)
+            .withAdminToken()
+            .bodyValue(request)
             .retrieve()
             .toBodilessEntity()
             .awaitSingleOrNull()

@@ -45,6 +45,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     GmailNotFoundInToken(5012, "Email not found in Google token", HttpStatus.NOT_FOUND),
     UserIDNotFoundInToken(5013, "Google user ID (sub) not found in token", HttpStatus.NOT_FOUND),
     InvalidUsername(5014, "Invalid username", HttpStatus.BAD_REQUEST),
+    InvalidUserCredentials(5015, "Invalid user credentials", HttpStatus.BAD_REQUEST),
 
 
     // code 6000: wallet
