@@ -27,6 +27,4 @@ class AppConfig {
         adminKafkaEventListener.addEventListener(adminEventListener)
         financialActionKafkaListener.addEventListener(financialActionEventListener)
     }
-
-
 }

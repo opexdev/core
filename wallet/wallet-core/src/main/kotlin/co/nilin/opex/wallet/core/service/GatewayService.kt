@@ -1,19 +1,20 @@
 package co.nilin.opex.wallet.core.service
 
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.wallet.core.inout.*
+import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
+import co.nilin.opex.wallet.core.inout.GatewayType
+import co.nilin.opex.wallet.core.inout.OffChainGatewayCommand
+import co.nilin.opex.wallet.core.inout.OnChainGatewayCommand
 import co.nilin.opex.wallet.core.spi.GatewayPersister
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
-import java.util.*
 
 @Service
 class GatewayService(
     @Qualifier("onChainGateway") private val onChainGateway: GatewayPersister,
     @Qualifier("offChainGateway") private val offChainGateway: GatewayPersister,
-    @Qualifier("manualGateway") private val manualGateway: GatewayPersister,
-    private val authService: AuthService
+    private val authService: AuthService,
 ) {
     private val logger = LoggerFactory.getLogger(GatewayService::class.java)
     suspend fun createGateway(currencyGateway: CurrencyGatewayCommand): CurrencyGatewayCommand? {
@@ -27,11 +28,6 @@ class GatewayService(
             is OffChainGatewayCommand -> {
                 currencyGateway.apply { gatewayUuid = "ofg_$gatewayUuid" }
                 return offChainGateway.createGateway(currencyGateway)
-            }
-
-            is ManualGatewayCommand -> {
-                currencyGateway.apply { gatewayUuid = "mag_$gatewayUuid" }
-                return manualGateway.createGateway(currencyGateway)
             }
 
             else -> throw OpexError.BadRequest.exception()
@@ -49,10 +45,6 @@ class GatewayService(
                 return offChainGateway.updateGateway(currencyGateway)
             }
 
-            is ManualGatewayCommand -> {
-                return manualGateway.updateGateway(currencyGateway)
-            }
-
             else -> throw OpexError.BadRequest.exception()
 
         }
@@ -60,16 +52,13 @@ class GatewayService(
 
     suspend fun fetchGateways(
         currencySymbol: String? = null,
-        includeGateways: List<GatewayType>? = null
+        includeGateways: List<GatewayType>? = null,
     ): List<CurrencyGatewayCommand>? {
         includeGateways?.map { logger.info(it.name) }
         var gateways = ArrayList<CurrencyGatewayCommand>()
         if (includeGateways != null) {
-            if (GatewayType.Manually in includeGateways)
-                manualGateway.fetchGateways(currencySymbol)?.toList()?.let { it1 -> gateways.addAll(it1) }
-
-            if (GatewayType.OffChain in includeGateways)
-                offChainGateway.fetchGateways(currencySymbol)?.toList()?.let { it1 -> gateways.addAll(it1) }
+            if (GatewayType.OffChain in includeGateways) offChainGateway.fetchGateways(currencySymbol)?.toList()
+                ?.let { it1 -> gateways.addAll(it1) }
 
             if (GatewayType.OnChain in includeGateways) {
                 val token = authService.extractToken()
@@ -82,33 +71,21 @@ class GatewayService(
 
 
     suspend fun fetchGateway(currencyGatewayUuid: String, currencySymbol: String): CurrencyGatewayCommand? {
-
-
         if (currencyGatewayUuid.startsWith("ofg")) {
             return offChainGateway.fetchGatewayDetail(currencyGatewayUuid, currencySymbol)
-        } else if (currencyGatewayUuid.startsWith("mag")) {
-            return manualGateway.fetchGatewayDetail(currencyGatewayUuid, currencySymbol)
         } else if (currencyGatewayUuid.startsWith("ong")) {
             val token = authService.extractToken()
             return onChainGateway.fetchGatewayDetail(currencyGatewayUuid, currencySymbol, token)
 
-        } else
-            throw OpexError.GatewayNotFount.exception()
+        } else throw OpexError.GatewayNotFount.exception()
     }
 
 
     suspend fun deleteGateway(currencyGatewayUuid: String, currencySymbol: String) {
 
-
         if (currencyGatewayUuid.startsWith("ofg")) {
             offChainGateway.deleteGateway(
-                currencyGatewayUuid,
-                currencySymbol
-            )
-        } else if (currencyGatewayUuid.startsWith("mag")) {
-            manualGateway.deleteGateway(
-                currencyGatewayUuid,
-                currencySymbol
+                currencyGatewayUuid, currencySymbol
             )
         } else {
             val token = authService.extractToken()

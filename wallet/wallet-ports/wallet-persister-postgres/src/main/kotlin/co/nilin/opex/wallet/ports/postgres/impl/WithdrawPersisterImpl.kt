@@ -41,6 +41,7 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
                 withdraw.attachment,
                 withdraw.createDate,
                 withdraw.lastUpdateDate,
+                withdraw.transferMethod
             )
         ).awaitFirst().asWithdraw()
     }
@@ -189,7 +190,8 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
             withdrawType,
             attachment,
             createDate,
-            lastUpdateDate
+            lastUpdateDate,
+            transferMethod
         )
     }
 
@@ -215,7 +217,8 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
             withdrawType,
             attachment,
             createDate,
-            lastUpdateDate
+            lastUpdateDate,
+            transferMethod
         )
     }
 }

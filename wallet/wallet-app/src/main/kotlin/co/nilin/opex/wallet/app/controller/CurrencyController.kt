@@ -34,13 +34,11 @@ class CurrencyController(
     @GetMapping("/{currencySymbol}")
     suspend fun getCurrency(
         @PathVariable("currencySymbol") currencySymbol: String,
-        @RequestParam includeManualGateways: Boolean? = false,
         @RequestParam includeOffChainGateways: Boolean? = false,
         @RequestParam includeOnChainGateways: Boolean? = false,
     ): CurrencyDto? {
 
         val includeGateways = mutableListOf<GatewayType>().apply {
-            if (includeManualGateways == true) add(GatewayType.Manually)
             if (includeOffChainGateways == true) add(GatewayType.OffChain)
             if (includeOnChainGateways == true) add(GatewayType.OnChain)
         }
@@ -49,13 +47,11 @@ class CurrencyController(
 
     @GetMapping("")
     suspend fun getCurrencies(
-        @RequestParam includeManualGateways: Boolean? = false,
         @RequestParam includeOffChainGateways: Boolean? = false,
         @RequestParam includeOnChainGateways: Boolean? = false,
     ): CurrenciesDto? {
         val includeGateways = mutableListOf<GatewayType>().apply {
 
-            if (includeManualGateways == true) add(GatewayType.Manually)
             if (includeOffChainGateways == true) add(GatewayType.OffChain)
             if (includeOnChainGateways == true) add(GatewayType.OnChain)
         }
@@ -108,12 +104,10 @@ class CurrencyController(
 
     @GetMapping("/gateways")
     suspend fun getGateways(
-        @RequestParam includeManualGateways: Boolean? = false,
         @RequestParam includeOffChainGateways: Boolean? = false,
         @RequestParam includeOnChainGateways: Boolean? = false,
     ): List<CurrencyGatewayCommand>? {
         val includeGateways = mutableListOf<GatewayType>().apply {
-            if (includeManualGateways == true) add(GatewayType.Manually)
             if (includeOffChainGateways == true) add(GatewayType.OffChain)
             if (includeOnChainGateways == true) add(GatewayType.OnChain)
         }
