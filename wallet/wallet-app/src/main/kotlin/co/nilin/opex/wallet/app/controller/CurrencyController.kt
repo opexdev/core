@@ -3,6 +3,7 @@ package co.nilin.opex.wallet.app.controller
 import co.nilin.opex.wallet.app.dto.CurrenciesDto
 import co.nilin.opex.wallet.app.dto.CurrencyDto
 import co.nilin.opex.wallet.app.service.CurrencyServiceV2
+import co.nilin.opex.wallet.core.inout.CurrencyData
 import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
 import co.nilin.opex.wallet.core.inout.GatewayType
 import co.nilin.opex.wallet.core.inout.TerminalCommand
@@ -57,6 +58,10 @@ class CurrencyController(
         return currencyService.fetchCurrenciesWithGateways(includeGateways)
     }
 
+    @GetMapping("/all")
+    suspend fun getCurrencies(): List<CurrencyData> {
+        return currencyService.fetchCurrencies()
+    }
 
     @PostMapping("/{currencySymbol}/gateway")
     suspend fun addGateway2Currency(

@@ -1,7 +1,7 @@
 package co.nilin.opex.api.ports.proxy.impl
 
 import co.nilin.opex.api.core.inout.PairFeeResponse
-import co.nilin.opex.api.core.inout.PairInfoResponse
+import co.nilin.opex.api.core.inout.PairConfigResponse
 import co.nilin.opex.api.core.spi.AccountantProxy
 import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
 import co.nilin.opex.common.utils.LoggerDelegate
@@ -22,7 +22,7 @@ class AccountantProxyImpl(private val webClient: WebClient) : AccountantProxy {
     @Value("\${app.accountant.url}")
     private lateinit var baseUrl: String
 
-    override suspend fun getPairConfigs(): List<PairInfoResponse> {
+    override suspend fun getPairConfigs(): List<PairConfigResponse> {
         logger.info("fetching pair configs")
         return withContext(ProxyDispatchers.general) {
             webClient.get()
@@ -30,7 +30,7 @@ class AccountantProxyImpl(private val webClient: WebClient) : AccountantProxy {
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<PairInfoResponse>()
+                .bodyToFlux<PairConfigResponse>()
                 .collectList()
                 .awaitSingle()
         }

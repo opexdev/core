@@ -4,8 +4,12 @@ import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.CurrenciesDto
 import co.nilin.opex.wallet.app.dto.CurrencyDto
 import co.nilin.opex.wallet.app.utils.toDto
-import co.nilin.opex.wallet.core.inout.*
-import co.nilin.opex.wallet.core.model.*
+import co.nilin.opex.wallet.core.inout.CurrencyData
+import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
+import co.nilin.opex.wallet.core.inout.GatewayType
+import co.nilin.opex.wallet.core.inout.OffChainGatewayCommand
+import co.nilin.opex.wallet.core.inout.OnChainGatewayCommand
+import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.service.GatewayService
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.core.spi.WalletManager
@@ -20,7 +24,7 @@ import java.util.stream.Collectors
 class CurrencyServiceV2(
     @Qualifier("newVersion") private val currencyServiceManager: CurrencyServiceManager,
     private val walletManager: WalletManager,
-    private val gatewayService: GatewayService
+    private val gatewayService: GatewayService,
 ) {
     private val logger = LoggerFactory.getLogger(CurrencyServiceManager::class.java)
 
@@ -57,7 +61,7 @@ class CurrencyServiceV2(
 
     suspend fun fetchCurrencyWithGateways(
         currencySymbol: String,
-        includeGateways: List<GatewayType>? = null
+        includeGateways: List<GatewayType>? = null,
     ): CurrencyDto? {
         return currencyServiceManager.fetchCurrency(FetchCurrency(symbol = currencySymbol))
             ?.let { it ->
@@ -146,6 +150,10 @@ class CurrencyServiceV2(
 //                    if (it.isCryptoCurrency == true)
                 return gatewayService.updateCryptoGateway(request);
             } ?: throw OpexError.CurrencyNotFound.exception()
+    }
+
+    suspend fun fetchCurrencies(): List<CurrencyData> {
+        return currencyServiceManager.fetchAllCurrencies()
     }
 
 

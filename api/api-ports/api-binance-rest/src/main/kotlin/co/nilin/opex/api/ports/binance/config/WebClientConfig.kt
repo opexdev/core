@@ -10,7 +10,7 @@ import reactor.netty.http.client.HttpClient
 import reactor.netty.resources.ConnectionProvider
 import java.time.Duration
 
-@Configuration
+@Configuration("binanceWebClientConfig")
 class WebClientConfig {
 
     @Bean

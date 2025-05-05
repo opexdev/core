@@ -48,7 +48,7 @@ class ManualWithdrawService(
                     throw OpexError.WithdrawAmountLessThanMinimum.exception()
 
                 if (amount > gatewayData.maximum)
-                    throw OpexError.WithdrawAmountMoreThanMinimum.exception()
+                    throw OpexError.WithdrawAmountGreaterThanMaximum.exception()
 
             }
             ?: throw OpexError.GatewayNotFount.exception()

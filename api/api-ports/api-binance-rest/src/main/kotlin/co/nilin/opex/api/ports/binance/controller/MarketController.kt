@@ -19,7 +19,7 @@ import java.math.BigDecimal
 import java.security.Principal
 import java.time.ZoneId
 
-@RestController
+@RestController("binanceMarketController")
 class MarketController(
     private val accountantProxy: AccountantProxy,
     private val marketDataProxy: MarketDataProxy,
