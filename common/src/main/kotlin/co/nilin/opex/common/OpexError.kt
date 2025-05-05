@@ -39,9 +39,13 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     AlreadyInKYC(5007, "KYC flow for this user has executed", HttpStatus.BAD_REQUEST),
     UserKYCBlocked(5008, "User is blocked from KYC", HttpStatus.BAD_REQUEST),
     InvalidPassword(5009, "Password is not valid", HttpStatus.BAD_REQUEST),
-    UserAlreadyExists(5009, "User with email is already registered", HttpStatus.BAD_REQUEST),
+    UserAlreadyExists(5009, "User is already registered", HttpStatus.BAD_REQUEST),
     LoginIsLimited(5010, "Your email is not in whitelist", HttpStatus.BAD_REQUEST),
     RegisterIsLimited(5011, "Your email is not in whitelist", HttpStatus.BAD_REQUEST),
+    GmailNotFoundInToken(5012, "Email not found in Google token", HttpStatus.NOT_FOUND),
+    UserIDNotFoundInToken(5013, "Google user ID (sub) not found in token", HttpStatus.NOT_FOUND),
+    InvalidUsername(5014, "Invalid username", HttpStatus.BAD_REQUEST),
+
 
     // code 6000: wallet
     WalletOwnerNotFound(6001, null, HttpStatus.NOT_FOUND),
@@ -106,6 +110,15 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     InvalidCaptcha(10001, "Captcha is not valid", HttpStatus.BAD_REQUEST),
 
     // code 11000: market
+
+    // code 12000: otp
+    OTPConfigNotFound(12001, "Config for otp type not found", HttpStatus.NOT_FOUND),
+    UnableToSendOTP(12002, "Unable to send OTP code to the receiver", HttpStatus.INTERNAL_SERVER_ERROR),
+    OTPAlreadyRequested(12003, "OTP code is already requested for the receiver and OTP type", HttpStatus.BAD_REQUEST),
+    TOTPNotFound(12004, "TOTP for the requested user not found", HttpStatus.NOT_FOUND),
+    InvalidTOTPCode(12005, "TOTP code is invalid", HttpStatus.BAD_REQUEST),
+    TOTPSetupIncomplete(12006, "TOTP setup is incomplete", HttpStatus.BAD_REQUEST),
+    TOTPAlreadyRegistered(12007, "User already registered for TOTP", HttpStatus.BAD_REQUEST),
 
     ;
 
