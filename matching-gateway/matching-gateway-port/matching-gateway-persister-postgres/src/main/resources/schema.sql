@@ -21,7 +21,7 @@ $$
         IF NOT EXISTS (SELECT 1
                        FROM information_schema.columns
                        WHERE table_name = 'pair_setting' AND column_name = 'order_types') THEN ALTER TABLE pair_setting
-            ADD COLUMN order_types varchar(255) NOT NULL default 'LIMIT,MARKET' ;
+            ADD COLUMN order_types varchar(255) NOT NULL default 'LIMIT_ORDER, MARKET_ORDER' ;
         END IF;
     END
 $$;
