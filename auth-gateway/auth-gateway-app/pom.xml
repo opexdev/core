@@ -94,7 +94,7 @@
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-admin-client</artifactId>
-            <version>26.0.0</version>
+            <version>26.0.5</version>
         </dependency>
         <dependency>
             <groupId>com.sun.mail</groupId>
