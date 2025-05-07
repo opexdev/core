@@ -19,9 +19,14 @@ class OTPController(private val otpService: OTPService) {
     suspend fun requestOTP(@RequestBody request: NewOTPRequest): NewOTPResponse {
         validateOTPRequest(request.receivers.map { it.type })
         val tracingCode = if (request.receivers.size == 1)
-            otpService.requestOTP(request.receivers[0].receiver, request.receivers[0].type, request.userId)
+            otpService.requestOTP(
+                request.receivers[0].receiver,
+                request.receivers[0].type,
+                request.userId,
+                request.action
+            )
         else
-            otpService.requestCompositeOTP(request.receivers.toSet(), request.userId)
+            otpService.requestCompositeOTP(request.receivers.toSet(), request.userId, request.action)
         return NewOTPResponse(tracingCode)
     }
 
@@ -29,9 +34,9 @@ class OTPController(private val otpService: OTPService) {
     suspend fun verifyOTP(@RequestBody request: VerifyOTPRequest): VerifyOTPResponse {
         validateOTPRequest(request.otpCodes.map { it.type })
         val isValid = if (request.otpCodes.size == 1)
-            otpService.verifyOTP(request.otpCodes[0].code, request.tracingCode, request.userId)
+            otpService.verifyOTP(request.otpCodes[0].code, request.userId)
         else
-            otpService.verifyCompositeOTP(request.otpCodes.toSet(), request.tracingCode, request.userId)
+            otpService.verifyCompositeOTP(request.otpCodes.toSet(), request.userId)
         return VerifyOTPResponse(isValid)
     }
 

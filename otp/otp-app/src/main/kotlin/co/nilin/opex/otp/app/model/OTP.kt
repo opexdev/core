@@ -9,6 +9,7 @@ data class OTP(
     val code: String,
     val receiver: String,
     val userId: String,
+    val action: String,
     val tracingCode: String,
     val type: OTPType,
     val expiresAt: LocalDateTime,
