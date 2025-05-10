@@ -121,6 +121,69 @@ class KeycloakProxy(
             .awaitFirstOrElse { emptyList() }
     }
 
+    suspend fun createUser(
+        username: Username,
+        firstName: String?,
+        lastName: String?,
+        enabled: Boolean
+    ) {
+        val keycloakUrl = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users"
+        val token = getAdminAccessToken()
+
+        val response = keycloakClient.post()
+            .uri(keycloakUrl)
+            .header("Content-Type", "application/json")
+            .withAdminToken(token)
+            .bodyValue(
+                hashMapOf(
+                    "username" to username.value,
+                    "emailVerified" to enabled,
+                    "firstName" to firstName,
+                    "lastName" to lastName,
+                    "enabled" to enabled,
+                    "attributes" to hashMapOf(
+                        "kycLevel" to "0"
+                    ).apply {
+                        if (username.type == UsernameType.MOBILE)
+                            put("mobile", username.value)
+                        put(Attributes.OTP, username.type.otpType.name)
+                    }
+                ).apply { if (username.type == UsernameType.EMAIL) put("email", username.value) }
+            )
+            .retrieve()
+            .onStatus({ it == HttpStatus.valueOf(409) }) {
+                throw OpexError.UserAlreadyExists.exception()
+            }
+            .toBodilessEntity()
+            .awaitSingle()
+    }
+
+    suspend fun confirmCreateUser(username: Username, password: String) {
+        val keycloakUrl = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users"
+        val token = getAdminAccessToken()
+
+        val response = keycloakClient.post()
+            .uri(keycloakUrl)
+            .header("Content-Type", "application/json")
+            .withAdminToken(token)
+            .bodyValue(
+                hashMapOf(
+                    "emailVerified" to true,
+                    "enabled" to true,
+                    "credentials" to listOf(
+                        mapOf(
+                            "type" to "password",
+                            "value" to password,
+                            "temporary" to false
+                        )
+                    )
+                )
+            )
+            .retrieve()
+            .toBodilessEntity()
+            .awaitSingle()
+    }
+
     suspend fun createExternalIdpUser(email: String, username: Username, password: String): String {
         val userUrl = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users"
         val userRequest = mapOf(
@@ -156,50 +219,6 @@ class KeycloakProxy(
 
         // Return the user ID (you may need to query Keycloak to get the user ID)
         return findUserByEmail(email)
-    }
-
-    suspend fun createUser(
-        username: Username,
-        password: String,
-        firstName: String?,
-        lastName: String?
-    ) {
-        val keycloakUrl = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users"
-        val token = getAdminAccessToken()
-
-        val response = keycloakClient.post()
-            .uri(keycloakUrl)
-            .header("Content-Type", "application/json")
-            .withAdminToken(token)
-            .bodyValue(
-                hashMapOf(
-                    "username" to username.value,
-                    "emailVerified" to true,
-                    "firstName" to firstName,
-                    "lastName" to lastName,
-                    "enabled" to true,
-                    "credentials" to listOf(
-                        mapOf(
-                            "type" to "password",
-                            "value" to password,
-                            "temporary" to false
-                        )
-                    ),
-                    "attributes" to hashMapOf(
-                        "kycLevel" to "0"
-                    ).apply {
-                        if (username.type == UsernameType.MOBILE)
-                            put("mobile", username.value)
-                        put(Attributes.OTP, username.type.otpType.name)
-                    }
-                ).apply { if (username.type == UsernameType.EMAIL) put("email", username.value) }
-            )
-            .retrieve()
-            .onStatus({ it == HttpStatus.valueOf(409) }) {
-                throw OpexError.UserAlreadyExists.exception()
-            }
-            .toBodilessEntity()
-            .awaitSingle() // Await the completion of the request
     }
 
     suspend fun linkGoogleIdentity(userId: String, email: String, googleUserId: String) {

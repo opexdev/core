@@ -4,7 +4,8 @@ import co.nilin.opex.common.OpexError
 import co.nilin.opex.otp.app.data.*
 import co.nilin.opex.otp.app.model.OTPType
 import co.nilin.opex.otp.app.service.OTPService
-import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -16,9 +17,9 @@ import javax.validation.Valid
 class OTPController(private val otpService: OTPService) {
 
     @PostMapping
-    suspend fun requestOTP(@RequestBody request: NewOTPRequest): NewOTPResponse {
+    suspend fun requestOTP(@RequestBody request: NewOTPRequest): ResponseEntity<Nothing> {
         validateOTPRequest(request.receivers.map { it.type })
-        val tracingCode = if (request.receivers.size == 1)
+        if (request.receivers.size == 1)
             otpService.requestOTP(
                 request.receivers[0].receiver,
                 request.receivers[0].type,
@@ -27,7 +28,7 @@ class OTPController(private val otpService: OTPService) {
             )
         else
             otpService.requestCompositeOTP(request.receivers.toSet(), request.userId, request.action)
-        return NewOTPResponse(tracingCode)
+        return ResponseEntity.status(HttpStatus.CREATED).build()
     }
 
     @PostMapping("/verify")

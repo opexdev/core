@@ -25,11 +25,14 @@ data class OTPCode(
 )
 
 data class OTPVerifyRequest(
-    @field:NotBlank(message = "tracingCode is required")
-    val tracingCode: String,
+    val userId: String,
     val otpCodes: List<OTPCode>
 )
 
 data class OTPVerifyResponse(
     val result: Boolean
 )
+
+enum class OTPAction {
+    REGISTER, FORGET, NONE
+}

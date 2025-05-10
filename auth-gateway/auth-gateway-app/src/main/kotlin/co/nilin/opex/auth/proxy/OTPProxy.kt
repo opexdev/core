@@ -30,10 +30,9 @@ class OTPProxy(@Qualifier("otpWebClient") private val webClient: WebClient) {
             .awaitSingle().body ?: throw OpexError.InternalServerError.exception()
     }
 
-    suspend fun verifyOTP(userId: String, verifyRequest: OTPVerifyRequest): Boolean {
+    suspend fun verifyOTP(verifyRequest: OTPVerifyRequest): Boolean {
         val request = object {
-            val userId = userId
-            val tracingCode = verifyRequest.tracingCode
+            val userId = verifyRequest.userId
             val otpCodes = verifyRequest.otpCodes.map {
                 object {
                     val type = it.otpType
