@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.ports.postgres.model
 
+import co.nilin.opex.wallet.core.inout.TransferMethod
 import co.nilin.opex.wallet.core.model.DepositStatus
 import co.nilin.opex.wallet.core.model.DepositType
 import org.springframework.data.annotation.Id
@@ -28,4 +29,5 @@ data class DepositModel(
     val attachment: String?,
     var depositType: DepositType,
     val createDate: LocalDateTime = LocalDateTime.now(),
-)
+    var transferMethod: TransferMethod?,
+    )

@@ -6,7 +6,7 @@ import java.math.BigDecimal
 import java.util.*
 
 enum class GatewayType() {
-    OnChain, OffChain, Manually
+    OnChain, OffChain
 }
 
 @JsonTypeInfo(
@@ -17,7 +17,6 @@ enum class GatewayType() {
 @JsonSubTypes(
     JsonSubTypes.Type(value = OffChainGatewayCommand::class, name = "OffChain"),
     JsonSubTypes.Type(value = OnChainGatewayCommand::class, name = "OnChain"),
-    JsonSubTypes.Type(value = ManualGatewayCommand::class, name = "Manually")
 )
 open abstract class CurrencyGatewayCommand(
     open var currencySymbol: String? = null,
@@ -34,32 +33,6 @@ open abstract class CurrencyGatewayCommand(
 
 data class OffChainGatewayCommand(
     var transferMethod: TransferMethod,
-    override var currencySymbol: String? = null,
-    override var gatewayUuid: String? = UUID.randomUUID().toString(),
-    override var isActive: Boolean? = true,
-    override var withdrawFee: BigDecimal? = BigDecimal.ZERO,
-    override var withdrawAllowed: Boolean? = true,
-    override var depositAllowed: Boolean? = true,
-    override var depositMin: BigDecimal? = BigDecimal.ZERO,
-    override var depositMax: BigDecimal? = BigDecimal.ZERO,
-    override var withdrawMin: BigDecimal? = BigDecimal.ZERO,
-    override var withdrawMax: BigDecimal? = BigDecimal.ZERO,
-) : CurrencyGatewayCommand(
-    currencySymbol,
-    gatewayUuid,
-    isActive,
-    withdrawFee,
-    withdrawAllowed,
-    depositAllowed,
-    depositMin,
-    depositMax,
-    withdrawMin,
-    withdrawMax
-)
-
-data class ManualGatewayCommand(
-
-    var allowedFor: String,
     override var currencySymbol: String? = null,
     override var gatewayUuid: String? = UUID.randomUUID().toString(),
     override var isActive: Boolean? = true,

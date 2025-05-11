@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.ports.postgres.model
 
+import co.nilin.opex.wallet.core.inout.TransferMethod
 import co.nilin.opex.wallet.core.model.WithdrawStatus
 import co.nilin.opex.wallet.core.model.WithdrawType
 import org.springframework.data.annotation.Id
@@ -33,4 +34,5 @@ data class WithdrawModel(
     var attachment: String?,
     val createDate: LocalDateTime = LocalDateTime.now(),
     val lastUpdateDate: LocalDateTime? = null,
-)
+    var transferMethod: TransferMethod?,
+    )

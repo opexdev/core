@@ -34,6 +34,13 @@ class OrderService(
         val pairSetting = pairSettingService.load(createOrderRequest.pair)
         if (!pairSetting.isAvailable)
             throw OpexError.PairIsNotAvailable.exception()
+        if (!pairSetting.orderTypes.split(",").contains(createOrderRequest.orderType.name)) {
+            throw OpexError.InvalidOrderType.exception()
+        }
+        if (createOrderRequest.quantity > pairSetting.maxOrder || createOrderRequest.quantity < pairSetting.minOrder) {
+            throw OpexError.InvalidQuantity.exception()
+        }
+
 
         val symbolSides = createOrderRequest.pair.split("_")
         val symbol = if (createOrderRequest.direction == OrderDirection.ASK)

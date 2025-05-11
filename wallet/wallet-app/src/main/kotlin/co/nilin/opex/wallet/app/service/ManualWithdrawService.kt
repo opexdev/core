@@ -3,7 +3,8 @@ package co.nilin.opex.wallet.app.service
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.ManualTransferRequest
 import co.nilin.opex.wallet.core.inout.GatewayData
-import co.nilin.opex.wallet.core.inout.ManualGatewayCommand
+import co.nilin.opex.wallet.core.inout.OffChainGatewayCommand
+import co.nilin.opex.wallet.core.inout.TransferMethod
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.spi.WithdrawPersister
@@ -17,7 +18,7 @@ import java.time.LocalDateTime
 class ManualWithdrawService(
     private val transferService: TransferService,
     private val withdrawPersister: WithdrawPersister,
-    private val currencyServiceV2: CurrencyServiceV2
+    private val currencyServiceV2: CurrencyServiceV2,
 ) {
     private val logger = LoggerFactory.getLogger(ManualWithdrawService::class.java)
 
@@ -27,11 +28,12 @@ class ManualWithdrawService(
         receiverUuid: String,
         sourceUuid: String,
         amount: BigDecimal,
-        request: ManualTransferRequest
+        request: ManualTransferRequest,
     ): TransferResult {
         logger.info("withdraw manually: $sourceUuid to $receiverUuid on $symbol at ${LocalDateTime.now()}")
 
-        currencyServiceV2.fetchCurrencyGateway(request.gatewayUuid, symbol)?.takeIf { it is ManualGatewayCommand }
+        currencyServiceV2.fetchCurrencyGateway(request.gatewayUuid, symbol)
+            ?.takeIf { it is OffChainGatewayCommand && it.transferMethod == TransferMethod.MANUALLY }
             ?.let {
                 val gatewayData = GatewayData(
                     it.isActive ?: true && it.withdrawAllowed ?: true,
@@ -46,7 +48,7 @@ class ManualWithdrawService(
                     throw OpexError.WithdrawAmountLessThanMinimum.exception()
 
                 if (amount > gatewayData.maximum)
-                    throw OpexError.WithdrawAmountMoreThanMinimum.exception()
+                    throw OpexError.WithdrawAmountGreaterThanMaximum.exception()
 
             }
             ?: throw OpexError.GatewayNotFount.exception()
@@ -84,8 +86,9 @@ class ManualWithdrawService(
                 null,
                 WithdrawStatus.DONE,
                 receiverUuid,
-                WithdrawType.MANUALLY,
+                WithdrawType.OFF_CHAIN,
                 request.attachment,
+                transferMethod = TransferMethod.MANUALLY
             )
         )
         return tx.transferResult;

@@ -28,6 +28,8 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
 
     // code 4000: matching-gateway
     SubmitOrderForbiddenByAccountant(4001, null, HttpStatus.BAD_REQUEST),
+    InvalidOrderType(4002, "Invalid order type", HttpStatus.BAD_REQUEST),
+    InvalidQuantity(4003, "Invalid quantity", HttpStatus.BAD_REQUEST),
 
     // code 5000: user-management
     EmailAlreadyVerified(5001, "Email is already verified", HttpStatus.BAD_REQUEST),
@@ -77,7 +79,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     WithdrawAmountLessThanMinimum(6025, "Withdraw amount is less than minimum", HttpStatus.BAD_REQUEST),
     WithdrawCannotBeCanceled(6026, "Withdraw cannot be canceled", HttpStatus.BAD_REQUEST),
     WithdrawCannotBeRejected(6027, "Withdraw cannot be rejected", HttpStatus.BAD_REQUEST),
-    WithdrawAmountMoreThanMinimum(6028, "Withdraw amount is more than minimum", HttpStatus.BAD_REQUEST),
+    WithdrawAmountGreaterThanMaximum(6028, "Withdraw amount is more than maximum", HttpStatus.BAD_REQUEST),
     ImplNotFound(6029, null, HttpStatus.NOT_FOUND),
     InvalidWithdrawStatus(6030, "Withdraw status is invalid", HttpStatus.NOT_FOUND),
     GatewayNotFount(6031, null, HttpStatus.NOT_FOUND),
@@ -88,6 +90,15 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     VoucherNotFound(6036, "Voucher not found", HttpStatus.NOT_FOUND),
     InvalidVoucher(6037, "Invalid Voucher", HttpStatus.BAD_REQUEST),
     PairIsNotAvailable(6038, "Pair is not available", HttpStatus.BAD_REQUEST),
+    VoucherGroupNotFound(6039, "Voucher Group not found", HttpStatus.NOT_FOUND),
+    VoucherGroupIsInactive(6040, "Voucher Group is inactive", HttpStatus.BAD_REQUEST),
+    VoucherAlreadyUsed(6041, "Voucher has already been used", HttpStatus.BAD_REQUEST),
+    VoucherExpired(6042, "Voucher has expired", HttpStatus.BAD_REQUEST),
+    VoucherSaleDataNotFound(6043, "Voucher sale data not found", HttpStatus.NOT_FOUND),
+    VoucherNotForSale(6044, "Voucher not for sale", HttpStatus.BAD_REQUEST),
+    VoucherUsageLimitExceeded(6045, "Voucher usage limit exceeded", HttpStatus.BAD_REQUEST),
+
+
 
 
     // code 7000: api

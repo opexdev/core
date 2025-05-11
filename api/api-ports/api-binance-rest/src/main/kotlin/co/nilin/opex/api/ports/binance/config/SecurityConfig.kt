@@ -15,7 +15,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.server.WebFilter
 
 @EnableWebFluxSecurity
-@Configuration
+@Configuration("binanceSecurityConfig")
 class SecurityConfig(
     private val webClient: WebClient,
     private val apiKeyFilter: APIKeyFilter,
