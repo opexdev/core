@@ -7,8 +7,7 @@ data class PasswordFlowTokenRequest(
     val password: String,
     val clientId: String,
     val clientSecret: String,
-    val otpCode: String?,
-    val otpTracingCode: String?,
+    val otp: String?,
     val rememberMe: Boolean = true
 )
 
@@ -54,5 +53,10 @@ data class Token(
 
 data class TokenResponse(
     val token: Token?,
-    val otpTracingCode: String?
+    val otp: RequiredOTP?
+)
+
+data class RequiredOTP(
+    val type: OTPType,
+    val receiver: String?
 )
