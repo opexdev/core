@@ -6,6 +6,7 @@ class RegisterUserRequest {
     var lastName: String? = null
     var email: String? = null
     var captchaAnswer: String? = null
+    var captchaType: CaptchaType? = CaptchaType.INTERNAL
     var password: String? = null
     var passwordConfirmation: String? = null
 
@@ -16,6 +17,7 @@ class RegisterUserRequest {
         lastName: String?,
         email: String?,
         captchaAnswer: String?,
+        captchaType: CaptchaType?,
         password: String?,
         passwordConfirmation: String?
     ) {
@@ -23,6 +25,7 @@ class RegisterUserRequest {
         this.lastName = lastName
         this.email = email
         this.captchaAnswer = captchaAnswer
+        this.captchaType = captchaType
         this.password = password
         this.passwordConfirmation = passwordConfirmation
     }
