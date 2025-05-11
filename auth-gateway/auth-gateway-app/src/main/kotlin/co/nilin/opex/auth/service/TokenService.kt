@@ -5,10 +5,8 @@ import co.nilin.opex.auth.model.*
 import co.nilin.opex.auth.proxy.GoogleProxy
 import co.nilin.opex.auth.proxy.KeycloakProxy
 import co.nilin.opex.auth.proxy.OTPProxy
-import co.nilin.opex.auth.utils.UsernameValidator
 import co.nilin.opex.common.OpexError
 import org.springframework.stereotype.Service
-import java.util.*
 
 @Service
 class TokenService(
@@ -24,12 +22,12 @@ class TokenService(
         val otpType = OTPType.valueOf(user.attributes?.get(Attributes.OTP)?.get(0) ?: OTPType.NONE.name)
         if (request.otpCode == null && request.otpTracingCode == null) {
             val requiredOtpTypes = listOf(OTPReceiver(request.username, otpType))
-            val otpSendResponse = otpProxy.requestOTP(request.username, requiredOtpTypes)
-            return TokenResponse(null, otpSendResponse.tracingCode)
+            otpProxy.requestOTP(request.username, requiredOtpTypes)
+            return TokenResponse(null, "otpSendResponse.tracingCode")
         }
 
         val otpRequest = OTPVerifyRequest(request.otpTracingCode ?: "", listOf(OTPCode(request.otpCode ?: "", otpType)))
-        val isOTPValid = otpProxy.verifyOTP(request.username, otpRequest)
+        val isOTPValid = otpProxy.verifyOTP(otpRequest)
         if (!isOTPValid) throw OpexError.InvalidOTP.exception()
 
         val token = keycloakProxy.getUserToken(

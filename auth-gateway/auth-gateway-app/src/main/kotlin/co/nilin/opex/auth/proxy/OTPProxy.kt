@@ -1,11 +1,10 @@
 package co.nilin.opex.auth.proxy
 
 import co.nilin.opex.auth.model.OTPReceiver
-import co.nilin.opex.auth.model.OTPSendResponse
 import co.nilin.opex.auth.model.OTPVerifyRequest
 import co.nilin.opex.auth.model.OTPVerifyResponse
-import co.nilin.opex.common.OpexError
 import kotlinx.coroutines.reactive.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
@@ -16,18 +15,18 @@ import org.springframework.web.reactive.function.client.toEntity
 @Component
 class OTPProxy(@Qualifier("otpWebClient") private val webClient: WebClient) {
 
-    suspend fun requestOTP(userId: String, receivers: List<OTPReceiver>): OTPSendResponse {
+    suspend fun requestOTP(userId: String, receivers: List<OTPReceiver>) {
         val request = object {
             val userId = userId
             val receivers = receivers
         }
 
-        return webClient.post().uri("/otp")
+        webClient.post().uri("/otp")
             .contentType(MediaType.APPLICATION_JSON)
             .body(BodyInserters.fromValue(request))
             .retrieve()
-            .toEntity<OTPSendResponse>()
-            .awaitSingle().body ?: throw OpexError.InternalServerError.exception()
+            .toBodilessEntity()
+            .awaitSingleOrNull()
     }
 
     suspend fun verifyOTP(verifyRequest: OTPVerifyRequest): Boolean {

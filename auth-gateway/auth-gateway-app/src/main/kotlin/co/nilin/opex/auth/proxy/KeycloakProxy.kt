@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.awaitBody
 import org.springframework.web.reactive.function.client.bodyToMono
 
@@ -158,11 +159,11 @@ class KeycloakProxy(
             .awaitSingle()
     }
 
-    suspend fun confirmCreateUser(username: Username, password: String) {
-        val keycloakUrl = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users"
+    suspend fun confirmCreateUser(user: KeycloakUser, password: String) {
+        val keycloakUrl = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users/${user.id}"
         val token = getAdminAccessToken()
 
-        val response = keycloakClient.post()
+        keycloakClient.put()
             .uri(keycloakUrl)
             .header("Content-Type", "application/json")
             .withAdminToken(token)

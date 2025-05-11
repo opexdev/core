@@ -14,8 +14,8 @@ interface OTPRepository : CoroutineCrudRepository<OTP, Long> {
     @Query("select * from otp where user_id = :userId and is_active is true")
     suspend fun findActiveByUserId(userId: String): OTP?
 
-    @Query("select * from otp where (receiver = :receiver and type = :type and is_active is true) or user_id = :userId")
-    suspend fun findActiveByReceiverAndTypeOrUserId(receiver: String, type: OTPType, userId:String): OTP?
+    @Query("select * from otp where is_active is true and ((receiver = :receiver and type = :type) or user_id = :userId)")
+    suspend fun findActiveByReceiverAndTypeOrUserId(receiver: String, type: OTPType, userId: String): OTP?
 
     @Query("update otp set is_active = false where id = :id")
     suspend fun markInactive(id: Long)

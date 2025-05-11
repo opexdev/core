@@ -2,18 +2,9 @@ package co.nilin.opex.auth.model
 
 import jakarta.validation.constraints.NotBlank
 
-data class NewOTPRequest(
-    val userId: String,
-    val receivers: List<OTPReceiver>
-)
-
 data class OTPReceiver(
     val receiver: String,
     val type: OTPType,
-)
-
-data class OTPSendResponse(
-    val tracingCode: String
 )
 
 data class OTPCode(

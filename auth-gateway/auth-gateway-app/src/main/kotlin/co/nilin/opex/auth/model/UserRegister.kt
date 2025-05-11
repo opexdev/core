@@ -28,10 +28,6 @@ data class TokenData(
     val action: OTPAction
 )
 
-data class GenericOTPResponse(
-    val tracingCode: String?
-)
-
 data class ExternalIdpUserRegisterRequest(
     val idToken: String,
     val idp: String,
@@ -48,12 +44,6 @@ data class KeycloakUser(
     val emailVerified: Boolean,
     val enabled: Boolean,
     val attributes: Map<String, List<String>>?
-)
-
-data class ForgetPasswordRequest(
-    val username: String,
-    val otpCode: String?,
-    val otpTracingCode: String?,
 )
 
 data class ConfirmForgetRequest(

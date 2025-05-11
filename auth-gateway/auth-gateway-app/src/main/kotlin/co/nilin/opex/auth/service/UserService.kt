@@ -28,17 +28,18 @@ class UserService(
 
     suspend fun registerUser(request: RegisterUserRequest) {
         val username = Username.create(request.username)
-        checkDuplicateUser(username)
-
-        keycloakProxy.createUser(
-            username,
-            request.firstName,
-            request.lastName,
-            false
-        )
+        val userStatus = isUserDuplicate(username)
 
         val otpType = username.type.otpType
         otpProxy.requestOTP(request.username, listOf(OTPReceiver(request.username, otpType)))
+
+        if (!userStatus)
+            keycloakProxy.createUser(
+                username,
+                request.firstName,
+                request.lastName,
+                false
+            )
     }
 
     suspend fun verifyRegister(request: VerifyOTPRequest): String {
@@ -55,7 +56,11 @@ class UserService(
             throw OpexError.InvalidRegisterToken.exception()
 
         val username = Username.create(data.userId)
-        keycloakProxy.confirmCreateUser(username, request.password)
+        val user = keycloakProxy.findUserByUsername(username)
+        if (user == null || user.enabled)
+            throw OpexError.BadRequest.exception()
+
+        keycloakProxy.confirmCreateUser(user, request.password)
 
         return if (request.clientId.isNullOrBlank() || request.clientSecret.isNullOrBlank())
             null
@@ -71,7 +76,7 @@ class UserService(
             ?: throw OpexError.UserIDNotFoundInToken.exception()
 
         val username = Username.create(email) // Use email as the username
-        checkDuplicateUser(username)
+        isUserDuplicate(username)
 
         val userId = keycloakProxy.createExternalIdpUser(email, username, externalIdpUserRegisterRequest.password)
         keycloakProxy.linkGoogleIdentity(userId, email, googleUserId)
@@ -81,10 +86,10 @@ class UserService(
         keycloakProxy.logout(userId)
     }
 
-    suspend fun forgetPassword(request: ForgetPasswordRequest) {
-        val username = Username.create(request.username)
-        val user = keycloakProxy.findUserByUsername(username) ?: return
-        otpProxy.requestOTP(username.value, listOf(OTPReceiver(username.value, username.type.otpType)))
+    suspend fun forgetPassword(username: String) {
+        val uName = Username.create(username)
+        val user = keycloakProxy.findUserByUsername(uName) ?: return
+        otpProxy.requestOTP(uName.value, listOf(OTPReceiver(uName.value, uName.type.otpType)))
     }
 
     suspend fun verifyForget(request: VerifyOTPRequest): String {
@@ -109,10 +114,14 @@ class UserService(
         keycloakProxy.resetPassword(user.id, request.newPassword)
     }
 
-    private suspend fun checkDuplicateUser(username: Username) {
+    private suspend fun isUserDuplicate(username: Username): Boolean {
         val user = keycloakProxy.findUserByUsername(username)
-        if (user == null || !user.enabled)
-            return
+        return if (user == null)
+            false
+        else if (!user.enabled)
+            return true
+        else
+            throw OpexError.UserAlreadyExists.exception()
     }
 
     private fun generateToken(userId: String, action: OTPAction): String {
