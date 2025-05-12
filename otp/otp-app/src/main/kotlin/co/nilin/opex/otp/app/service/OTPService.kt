@@ -28,19 +28,19 @@ class OTPService(
 
     private val logger by LoggerDelegate()
 
-    suspend fun requestOTP(receiver: String, type: OTPType, userId: String): String {
-        checkActiveOTP(receiver, type)
+    suspend fun requestOTP(receiver: String, type: OTPType, userId: String, action: String?): String {
+        checkActiveOTP(receiver, type, userId)
         val config = getConfig(type)
         val code = generateCode(config.charCount, config.includeAlphabetChars)
         messageManager.sendMessage(config, type, code, receiver)
-        return storeOTP(receiver, type, code, config, userId)
+        return storeOTP(receiver, type, code, config, userId, action)
     }
 
-    suspend fun requestCompositeOTP(receivers: Set<OTPReceiver>, userId: String): String {
+    suspend fun requestCompositeOTP(receivers: Set<OTPReceiver>, userId: String, action: String?): String {
         val type = OTPType.COMPOSITE
         val mainConfig = getConfig(type)
         val receiver = receivers.joinToString(",") { it.receiver }
-        checkActiveOTP(receiver, type)
+        checkActiveOTP(receiver, type, userId)
 
         val compositeCode = StringBuilder()
         receivers.forEach {
@@ -50,7 +50,7 @@ class OTPService(
             compositeCode.append(code)
         }
 
-        return storeOTP(receiver, type, compositeCode.toString(), mainConfig, userId)
+        return storeOTP(receiver, type, compositeCode.toString(), mainConfig, userId, action)
     }
 
     private suspend fun storeOTP(
@@ -58,13 +58,15 @@ class OTPService(
         type: OTPType,
         code: String,
         config: OTPConfig,
-        userId: String
+        userId: String,
+        action: String?
     ): String {
         val expireTime = LocalDateTime.now().plusSeconds(config.expireTimeSeconds.toLong())
         val newOtp = OTP(
             code.encode(),
             receiver,
             userId,
+            action ?: "UNSPECIFIED",
             UUID.randomUUID().toString(),
             type,
             expireTime,
@@ -75,9 +77,9 @@ class OTPService(
         return otp.tracingCode
     }
 
-    private suspend fun checkActiveOTP(receiver: String, type: OTPType) {
+    private suspend fun checkActiveOTP(receiver: String, type: OTPType, userId: String) {
         // Check whether receiver has an active otp of specified type
-        repository.findActiveByReceiverAndType(receiver, type)?.let {
+        repository.findActiveByReceiverAndTypeOrUserId(receiver, type, userId)?.let {
             if (it.isExpired())
                 repository.markInactive(it.id!!)
             else
@@ -90,13 +92,31 @@ class OTPService(
             ?: throw OpexError.OTPConfigNotFound.exception()
     }
 
-    suspend fun verifyOTP(code: String, tracingCode: String, userId: String): Boolean {
-        val otp = repository.findByTracingCode(tracingCode)
+    suspend fun verifyOTP(code: String, userId: String): Boolean {
+        val otp = repository.findActiveByUserId(userId)
         return verifyOtp(code, otp, userId)
     }
 
-    suspend fun verifyCompositeOTP(codes: Set<OTPCode>, tracingCode: String, userId: String): Boolean {
-        repository.findByTracingCode(tracingCode)?.let {
+    suspend fun verifyCompositeOTP(codes: Set<OTPCode>, userId: String): Boolean {
+        repository.findActiveByUserId(userId)?.let {
+            if (it.type != OTPType.COMPOSITE)
+                throw OpexError.BadRequest.exception()
+
+            val code = reconstructCode(codes)
+            return verifyOtp(code, it, userId)
+        }
+        return false
+    }
+
+    @Deprecated("Use userId instead")
+    suspend fun verifyOTP(code: String, userId: String, tracingCode: String?): Boolean {
+        val otp = repository.findByTracingCode(tracingCode!!)
+        return verifyOtp(code, otp, userId)
+    }
+
+    @Deprecated("Use userId instead")
+    suspend fun verifyCompositeOTP(codes: Set<OTPCode>, userId: String, tracingCode: String?): Boolean {
+        repository.findByTracingCode(tracingCode!!)?.let {
             if (it.type != OTPType.COMPOSITE)
                 throw OpexError.BadRequest.exception()
 

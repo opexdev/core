@@ -1,20 +1,31 @@
 package co.nilin.opex.auth.model
 
-import com.fasterxml.jackson.annotation.JsonInclude
-
 data class RegisterUserRequest(
     val username: String,
-    val password: String,
-    val otpCode: String?,
-    val otpTracingCode: String?,
     val firstName: String? = null,
     val lastName: String? = null
 )
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
-data class RegisterUserResponse(
-    val username: String?,
-    val otpTracingCode: String?,
+data class VerifyOTPRequest(
+    val username: String,
+    val otp: String
+)
+
+data class OTPActionTokenResponse(
+    val token: String
+)
+
+data class ConfirmRegisterRequest(
+    val password: String,
+    val token: String,
+    val clientId: String?,
+    val clientSecret: String?
+)
+
+data class TokenData(
+    val isValid: Boolean,
+    val userId: String,
+    val action: OTPAction
 )
 
 data class ExternalIdpUserRegisterRequest(
@@ -30,5 +41,13 @@ data class KeycloakUser(
     val email: String?,
     val firstName: String?,
     val lastName: String?,
+    val emailVerified: Boolean,
+    val enabled: Boolean,
     val attributes: Map<String, List<String>>?
+)
+
+data class ConfirmForgetRequest(
+    val newPassword: String,
+    val newPasswordConfirmation: String,
+    val token: String
 )

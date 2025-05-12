@@ -395,6 +395,8 @@ services:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - CONSUL_HOST=consul
       - ADMIN_CLIENT_SECRET=${KC_ADMIN_CLIENT_SECRET}
+    volumes:
+      - auth-gateway-keys:/app/keys
     networks:
       - default
     labels:
@@ -552,6 +554,7 @@ volumes:
   bc-gateway-data:
   matching-gateway-data:
   otp-data:
+  auth-gateway-keys:
 networks:
   opex:
     external: true

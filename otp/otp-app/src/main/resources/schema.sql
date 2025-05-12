@@ -4,6 +4,7 @@ create table if not exists otp
     code         text        not null,
     receiver     text        not null,
     user_id      text        not null,
+    action       text        not null,
     tracing_code text        not null unique,
     type         varchar(16) not null,
     expires_at   timestamp   not null,

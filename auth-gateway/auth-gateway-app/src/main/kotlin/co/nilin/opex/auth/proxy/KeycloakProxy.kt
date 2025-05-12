@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.awaitBody
 import org.springframework.web.reactive.function.client.bodyToMono
 
@@ -50,6 +51,9 @@ class KeycloakProxy(
             .header("Content-Type", "application/x-www-form-urlencoded")
             .bodyValue("client_id=${clientId}&client_secret=${clientSecret}&grant_type=password&username=${users[0].username}&password=${password}")
             .retrieve()
+            .onStatus({ it == HttpStatus.valueOf(401) }) {
+                throw OpexError.InvalidUserCredentials.exception()
+            }
             .awaitBody<Token>()
     }
 
@@ -118,6 +122,69 @@ class KeycloakProxy(
             .awaitFirstOrElse { emptyList() }
     }
 
+    suspend fun createUser(
+        username: Username,
+        firstName: String?,
+        lastName: String?,
+        enabled: Boolean
+    ) {
+        val keycloakUrl = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users"
+        val token = getAdminAccessToken()
+
+        val response = keycloakClient.post()
+            .uri(keycloakUrl)
+            .header("Content-Type", "application/json")
+            .withAdminToken(token)
+            .bodyValue(
+                hashMapOf(
+                    "username" to username.value,
+                    "emailVerified" to enabled,
+                    "firstName" to firstName,
+                    "lastName" to lastName,
+                    "enabled" to enabled,
+                    "attributes" to hashMapOf(
+                        "kycLevel" to "0"
+                    ).apply {
+                        if (username.type == UsernameType.MOBILE)
+                            put("mobile", username.value)
+                        put(Attributes.OTP, username.type.otpType.name)
+                    }
+                ).apply { if (username.type == UsernameType.EMAIL) put("email", username.value) }
+            )
+            .retrieve()
+            .onStatus({ it == HttpStatus.valueOf(409) }) {
+                throw OpexError.UserAlreadyExists.exception()
+            }
+            .toBodilessEntity()
+            .awaitSingle()
+    }
+
+    suspend fun confirmCreateUser(user: KeycloakUser, password: String) {
+        val keycloakUrl = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users/${user.id}"
+        val token = getAdminAccessToken()
+
+        keycloakClient.put()
+            .uri(keycloakUrl)
+            .header("Content-Type", "application/json")
+            .withAdminToken(token)
+            .bodyValue(
+                hashMapOf(
+                    "emailVerified" to true,
+                    "enabled" to true,
+                    "credentials" to listOf(
+                        mapOf(
+                            "type" to "password",
+                            "value" to password,
+                            "temporary" to false
+                        )
+                    )
+                )
+            )
+            .retrieve()
+            .toBodilessEntity()
+            .awaitSingle()
+    }
+
     suspend fun createExternalIdpUser(email: String, username: Username, password: String): String {
         val userUrl = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users"
         val userRequest = mapOf(
@@ -155,50 +222,6 @@ class KeycloakProxy(
         return findUserByEmail(email)
     }
 
-    suspend fun createUser(
-        username: Username,
-        password: String,
-        firstName: String?,
-        lastName: String?
-    ) {
-        val keycloakUrl = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users"
-        val token = getAdminAccessToken()
-
-        val response = keycloakClient.post()
-            .uri(keycloakUrl)
-            .header("Content-Type", "application/json")
-            .withAdminToken(token)
-            .bodyValue(
-                hashMapOf(
-                    "username" to username.value,
-                    "emailVerified" to true,
-                    "firstName" to firstName,
-                    "lastName" to lastName,
-                    "enabled" to true,
-                    "credentials" to listOf(
-                        mapOf(
-                            "type" to "password",
-                            "value" to password,
-                            "temporary" to false
-                        )
-                    ),
-                    "attributes" to hashMapOf(
-                        "kycLevel" to "0"
-                    ).apply {
-                        if (username.type == UsernameType.MOBILE)
-                            put("mobile", username.value)
-                        put(Attributes.OTP, username.type.otpType.name)
-                    }
-                ).apply { if (username.type == UsernameType.EMAIL) put("email", username.value) }
-            )
-            .retrieve()
-            .onStatus({ it == HttpStatus.valueOf(409) }) {
-                throw OpexError.UserAlreadyExists.exception()
-            }
-            .toBodilessEntity()
-            .awaitSingle() // Await the completion of the request
-    }
-
     suspend fun linkGoogleIdentity(userId: String, email: String, googleUserId: String) {
         val identityUrl =
             "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users/$userId/federated-identity/google"
@@ -228,6 +251,23 @@ class KeycloakProxy(
             .uri(url)
             .contentType(MediaType.APPLICATION_JSON)
             .withAdminToken()
+            .retrieve()
+            .toBodilessEntity()
+            .awaitSingleOrNull()
+    }
+
+    suspend fun resetPassword(userId: String, newPassword: String) {
+        val url = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users/${userId}/reset-password"
+        val request = object {
+            val type = "password"
+            val value = newPassword
+            val temporary = false
+        }
+        keycloakClient.put()
+            .uri(url)
+            .contentType(MediaType.APPLICATION_JSON)
+            .withAdminToken()
+            .bodyValue(request)
             .retrieve()
             .toBodilessEntity()
             .awaitSingleOrNull()
