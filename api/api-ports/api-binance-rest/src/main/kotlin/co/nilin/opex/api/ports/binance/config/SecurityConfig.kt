@@ -39,6 +39,7 @@ class SecurityConfig(
                     .pathMatchers("/v3/klines").permitAll()
                     .pathMatchers("/socket").permitAll()
                     .pathMatchers("/v1/landing/**").permitAll()
+                    .pathMatchers("/opex/v1/market/**").permitAll()
                     .pathMatchers("/**").hasAuthority("SCOPE_trust")
                     .anyExchange().authenticated()
             }
