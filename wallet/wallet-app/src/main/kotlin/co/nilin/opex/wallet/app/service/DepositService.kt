@@ -3,6 +3,7 @@ package co.nilin.opex.wallet.app.service
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.app.dto.ManualTransferRequest
+import co.nilin.opex.wallet.app.utils.asLocalDateTime
 import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.DepositStatus
 import co.nilin.opex.wallet.core.model.DepositType
@@ -260,5 +261,17 @@ class DepositService(
         }
     }
 
-
+    suspend fun getDepositSummary(
+        uuid: String,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        limit: Int?,
+    ): List<TransactionSummary> {
+        return depositPersister.getDepositSummary(
+            uuid,
+            startTime,
+            endTime,
+            limit,
+        )
+    }
 }

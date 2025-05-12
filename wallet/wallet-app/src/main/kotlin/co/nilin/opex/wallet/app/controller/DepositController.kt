@@ -3,7 +3,9 @@ package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.wallet.app.dto.DepositHistoryRequest
 import co.nilin.opex.wallet.app.service.DepositService
+import co.nilin.opex.wallet.app.utils.asLocalDateTime
 import co.nilin.opex.wallet.core.inout.DepositResponse
+import co.nilin.opex.wallet.core.inout.TransactionSummary
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.DepositType
 import co.nilin.opex.wallet.core.model.WalletType
@@ -27,7 +29,7 @@ class DepositController(
     @PostMapping("/v1/deposit/history")
     suspend fun getDepositTransactionsForUser(
         @RequestBody request: DepositHistoryRequest,
-        @CurrentSecurityContext securityContext: SecurityContext
+        @CurrentSecurityContext securityContext: SecurityContext,
     ): List<DepositResponse> {
         return depositService.findDepositHistory(
             securityContext.authentication.name,
@@ -63,7 +65,7 @@ class DepositController(
         @RequestParam description: String?,
         @RequestParam transferRef: String?,
         @RequestParam gatewayUuid: String?,
-        @PathVariable chain: String?
+        @PathVariable chain: String?,
     ): TransferResult? {
         return depositService.deposit(
             symbol,
@@ -77,6 +79,21 @@ class DepositController(
             depositType = DepositType.ON_CHAIN,
             gatewayUuid = gatewayUuid,
             null
+        )
+    }
+
+    @GetMapping("/v1/deposit/summary")
+    suspend fun getUserDepositSummary(
+        @RequestParam startTime: Long?,
+        @RequestParam endTime: Long?,
+        @RequestParam limit: Int?,
+        @CurrentSecurityContext securityContext: SecurityContext,
+    ): List<TransactionSummary> {
+        return depositService.getDepositSummary(
+            securityContext.authentication.name,
+            startTime?.asLocalDateTime(),
+            endTime?.asLocalDateTime(),
+            limit,
         )
     }
 }
