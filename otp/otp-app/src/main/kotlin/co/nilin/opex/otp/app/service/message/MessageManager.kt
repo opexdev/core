@@ -16,6 +16,7 @@ class MessageManager(
 
     suspend fun sendMessage(config: OTPConfig, otpType: OTPType, code: String, receiver: String) {
         val message = String.format(config.messageTemplate, code)
+        logger.info("$message -> $receiver")
         val result = getSender(otpType).send(receiver, message)
         if (!result)
             throw OpexError.UnableToSendOTP.exception()
