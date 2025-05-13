@@ -39,4 +39,28 @@ interface WalletProxy {
 
     suspend fun getCurrencies(): List<CurrencyData>
 
+    suspend fun getUserTradeTransactionSummary(
+        uuid: String,
+        token: String,
+        startTime: Long?,
+        endTime: Long?,
+        limit: Int?,
+    ): List<TransactionSummary>
+
+    suspend fun getUserDesitSummary(
+        uuid: String,
+        token: String,
+        startTime: Long?,
+        endTime: Long?,
+        limit: Int?,
+    ): List<TransactionSummary>
+
+    suspend fun getUserWithdrawSummary(
+        uuid: String,
+        token: String,
+        startTime: Long?,
+        endTime: Long?,
+        limit: Int?,
+    ): List<TransactionSummary>
+
 }

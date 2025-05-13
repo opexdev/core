@@ -6,8 +6,6 @@ import co.nilin.opex.wallet.core.inout.TransactionSummary
 import co.nilin.opex.wallet.core.model.UserTransactionHistory
 import co.nilin.opex.wallet.core.spi.ReservedTransferManager
 import co.nilin.opex.wallet.core.spi.UserTransactionManager
-import org.springframework.security.core.annotation.CurrentSecurityContext
-import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 import java.security.Principal
 import java.time.Instant
@@ -41,15 +39,15 @@ class TransactionController(
         }
     }
 
-    @GetMapping("/trade/summary")
+    @GetMapping("/trade/summary/{uuid}")
     suspend fun getUserTradeTransactionSummary(
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
         @RequestParam limit: Int?,
-        @CurrentSecurityContext securityContext: SecurityContext,
+        @PathVariable uuid: String,
     ): List<TransactionSummary> {
         return manager.getTradeTransactionSummary(
-            securityContext.authentication.name,
+            uuid,
             startTime?.asLocalDateTime(),
             endTime?.asLocalDateTime(),
             limit,

@@ -107,15 +107,15 @@ class WithdrawController(private val withdrawService: WithdrawService) {
         }
     }
 
-    @GetMapping("/summary")
+    @GetMapping("/summary/{uuid}")
     suspend fun getUserWithdrawSummary(
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
         @RequestParam limit: Int?,
-        @CurrentSecurityContext securityContext: SecurityContext,
+        @PathVariable uuid: String,
     ): List<TransactionSummary> {
         return withdrawService.getWithdrawSummary(
-            securityContext.authentication.name,
+            uuid,
             startTime?.asLocalDateTime(),
             endTime?.asLocalDateTime(),
             limit,

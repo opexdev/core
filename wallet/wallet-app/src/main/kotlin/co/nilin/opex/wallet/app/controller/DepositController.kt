@@ -82,15 +82,15 @@ class DepositController(
         )
     }
 
-    @GetMapping("/v1/deposit/summary")
+    @GetMapping("/v1/deposit/summary/{uuid}")
     suspend fun getUserDepositSummary(
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
         @RequestParam limit: Int?,
-        @CurrentSecurityContext securityContext: SecurityContext,
+        @PathVariable uuid: String,
     ): List<TransactionSummary> {
         return depositService.getDepositSummary(
-            securityContext.authentication.name,
+            uuid,
             startTime?.asLocalDateTime(),
             endTime?.asLocalDateTime(),
             limit,
