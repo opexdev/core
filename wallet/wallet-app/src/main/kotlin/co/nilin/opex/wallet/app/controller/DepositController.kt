@@ -82,7 +82,7 @@ class DepositController(
         )
     }
 
-    @GetMapping("/v1/deposit/summary/{uuid}")
+    @GetMapping("/deposit/summary/{uuid}")
     suspend fun getUserDepositSummary(
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,

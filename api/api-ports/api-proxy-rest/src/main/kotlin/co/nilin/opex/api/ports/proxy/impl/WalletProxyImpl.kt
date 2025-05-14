@@ -155,7 +155,6 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
 
     override suspend fun getUserTradeTransactionSummary(
         uuid: String,
-        token: String,
         startTime: Long?,
         endTime: Long?,
         limit: Int?,
@@ -168,7 +167,7 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
                     it.queryParam("limit", limit)
                     it.build()
                 }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE , HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToFlux<TransactionSummary>()
@@ -177,22 +176,21 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
         }
     }
 
-    override suspend fun getUserDesitSummary(
+    override suspend fun getUserDepositSummary(
         uuid: String,
-        token: String,
         startTime: Long?,
         endTime: Long?,
         limit: Int?,
     ): List<TransactionSummary> {
         return withContext(ProxyDispatchers.wallet) {
             webClient.get()
-                .uri("$baseUrl/v1/deposit/summary/$uuid") {
+                .uri("$baseUrl/deposit/summary/$uuid") {
                     it.queryParam("startTime", startTime)
                     it.queryParam("endTime", endTime)
                     it.queryParam("limit", limit)
                     it.build()
                 }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE,HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToFlux<TransactionSummary>()
@@ -203,7 +201,6 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
 
     override suspend fun getUserWithdrawSummary(
         uuid: String,
-        token: String,
         startTime: Long?,
         endTime: Long?,
         limit: Int?,
@@ -216,7 +213,7 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
                     it.queryParam("limit", limit)
                     it.build()
                 }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE , HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToFlux<TransactionSummary>()

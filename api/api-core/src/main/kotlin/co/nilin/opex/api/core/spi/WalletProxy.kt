@@ -41,15 +41,13 @@ interface WalletProxy {
 
     suspend fun getUserTradeTransactionSummary(
         uuid: String,
-        token: String,
         startTime: Long?,
         endTime: Long?,
         limit: Int?,
     ): List<TransactionSummary>
 
-    suspend fun getUserDesitSummary(
+    suspend fun getUserDepositSummary(
         uuid: String,
-        token: String,
         startTime: Long?,
         endTime: Long?,
         limit: Int?,
@@ -57,7 +55,6 @@ interface WalletProxy {
 
     suspend fun getUserWithdrawSummary(
         uuid: String,
-        token: String,
         startTime: Long?,
         endTime: Long?,
         limit: Int?,
