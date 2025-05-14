@@ -63,3 +63,5 @@ keycloak:
 
 otp:
   url: http://opex-otp/v1
+captcha:
+  url: http://opex-captcha

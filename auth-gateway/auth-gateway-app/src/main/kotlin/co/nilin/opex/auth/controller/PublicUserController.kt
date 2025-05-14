@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -39,8 +38,8 @@ class PublicUserController(private val userService: UserService) {
     }
 
     @PostMapping("/forget")
-    suspend fun forgetPassword(@RequestParam username: String): ResponseEntity<Nothing> {
-        userService.forgetPassword(username)
+    suspend fun forgetPassword(@RequestBody request: ForgotPasswordRequest): ResponseEntity<Nothing> {
+        userService.forgetPassword(request)
         return ResponseEntity.ok().build()
     }
 

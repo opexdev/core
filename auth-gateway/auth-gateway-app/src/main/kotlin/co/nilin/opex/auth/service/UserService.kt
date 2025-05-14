@@ -1,6 +1,7 @@
 package co.nilin.opex.auth.service
 
 import co.nilin.opex.auth.model.*
+import co.nilin.opex.auth.proxy.CaptchaProxy
 import co.nilin.opex.auth.proxy.GoogleProxy
 import co.nilin.opex.auth.proxy.KeycloakProxy
 import co.nilin.opex.auth.proxy.OTPProxy
@@ -21,12 +22,14 @@ class UserService(
     private val keycloakProxy: KeycloakProxy,
     private val googleProxy: GoogleProxy,
     private val privateKey: PrivateKey,
-    private val publicKey: PublicKey
+    private val publicKey: PublicKey,
+    private val captchaProxy: CaptchaProxy,
 ) {
 
     private val logger by LoggerDelegate()
 
     suspend fun registerUser(request: RegisterUserRequest) {
+        captchaProxy.validateCaptcha(request.captchaCode, request.captchaType ?: CaptchaType.INTERNAL)
         val username = Username.create(request.username)
         val userStatus = isUserDuplicate(username)
 
@@ -86,8 +89,9 @@ class UserService(
         keycloakProxy.logout(userId)
     }
 
-    suspend fun forgetPassword(username: String) {
-        val uName = Username.create(username)
+    suspend fun forgetPassword(request: ForgotPasswordRequest) {
+        captchaProxy.validateCaptcha(request.captchaCode, request.captchaType ?: CaptchaType.INTERNAL)
+        val uName = Username.create(request.username)
         val user = keycloakProxy.findUserByUsername(uName) ?: return
         otpProxy.requestOTP(uName.value, listOf(OTPReceiver(uName.value, uName.type.otpType)))
     }

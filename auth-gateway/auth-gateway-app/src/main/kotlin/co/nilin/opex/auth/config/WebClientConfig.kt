@@ -27,4 +27,11 @@ class WebClientConfig {
         return builder.build()
     }
 
+    @Bean("captchaWebClient")
+    fun captchaWebClient(captchaConfig: CaptchaConfig): WebClient {
+        return WebClient.builder()
+            .baseUrl(captchaConfig.url)
+            .build()
+    }
+
 } 
