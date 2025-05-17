@@ -194,6 +194,7 @@ class VoucherService(
             voucher.currency,
             uuid,
             WalletType.MAIN,
+            null,
             voucher.amount,
             "VOUCHER:${voucher.publicCode}",
             transferRef,
