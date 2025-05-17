@@ -14,10 +14,12 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/v1/user/public")
 class PublicUserController(private val userService: UserService) {
 
+
+    //TODO IMPORTANT: remove in production
     @PostMapping("/register")
-    suspend fun registerUser(@Valid @RequestBody request: RegisterUserRequest): ResponseEntity<Nothing> {
-        userService.registerUser(request)
-        return ResponseEntity.ok().build()
+    suspend fun registerUser(@Valid @RequestBody request: RegisterUserRequest): ResponseEntity<TempOtpResponse> {
+        val otp = userService.registerUser(request)
+        return ResponseEntity.ok().body(TempOtpResponse(otp))
     }
 
     @PostMapping("/register/verify")
@@ -38,10 +40,11 @@ class PublicUserController(private val userService: UserService) {
         return ResponseEntity.ok().build()
     }
 
+    //TODO IMPORTANT: remove in production
     @PostMapping("/forget")
-    suspend fun forgetPassword(@RequestParam username: String): ResponseEntity<Nothing> {
-        userService.forgetPassword(username)
-        return ResponseEntity.ok().build()
+    suspend fun forgetPassword(@RequestParam username: String): ResponseEntity<TempOtpResponse> {
+        val code = userService.forgetPassword(username)
+        return ResponseEntity.ok().body(TempOtpResponse(code))
     }
 
     @PostMapping("/forget/verify")

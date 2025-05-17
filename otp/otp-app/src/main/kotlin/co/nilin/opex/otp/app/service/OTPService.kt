@@ -33,7 +33,8 @@ class OTPService(
         val config = getConfig(type)
         val code = generateCode(config.charCount, config.includeAlphabetChars)
         messageManager.sendMessage(config, type, code, receiver)
-        return storeOTP(receiver, type, code, config, userId, action)
+        storeOTP(receiver, type, code, config, userId, action)
+        return code
     }
 
     suspend fun requestCompositeOTP(receivers: Set<OTPReceiver>, userId: String, action: String?): String {
@@ -50,7 +51,8 @@ class OTPService(
             compositeCode.append(code)
         }
 
-        return storeOTP(receiver, type, compositeCode.toString(), mainConfig, userId, action)
+        storeOTP(receiver, type, compositeCode.toString(), mainConfig, userId, action)
+        return compositeCode.toString()
     }
 
     private suspend fun storeOTP(
@@ -88,8 +90,10 @@ class OTPService(
     }
 
     private suspend fun getConfig(type: OTPType): OTPConfig {
-        return configRepository.findById(type).awaitSingleOrNull()
-            ?: throw OpexError.OTPConfigNotFound.exception()
+        return configRepository.findById(type).awaitSingleOrNull()?.apply {
+            if (!isEnabled)
+                throw OpexError.OTPDisabled.exception()
+        } ?: throw OpexError.OTPConfigNotFound.exception()
     }
 
     suspend fun verifyOTP(code: String, userId: String): Boolean {

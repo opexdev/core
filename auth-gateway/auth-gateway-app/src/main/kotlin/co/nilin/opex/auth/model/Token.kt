@@ -53,7 +53,9 @@ data class Token(
 
 data class TokenResponse(
     val token: Token?,
-    val otp: RequiredOTP?
+    val otp: RequiredOTP?,
+    //TODO IMPORTANT: remove in production
+    val otpCode: String?,
 )
 
 data class RequiredOTP(

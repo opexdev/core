@@ -24,6 +24,9 @@ data class OTPVerifyResponse(
     val result: Boolean
 )
 
+//TODO IMPORTANT: remove in production
+data class TempOtpResponse(val otp: String)
+
 enum class OTPAction {
     REGISTER, FORGET, NONE
 }

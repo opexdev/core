@@ -69,6 +69,7 @@ class DepositController(
             symbol,
             receiverUuid,
             receiverWalletType,
+            null,
             amount,
             description,
             transferRef,

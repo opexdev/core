@@ -10,5 +10,6 @@ data class OTPConfig(
     var charCount: Int = 6,
     var includeAlphabetChars: Boolean = false,
     var isEnabled: Boolean = true,
+    var isActivated: Boolean = false,
     var messageTemplate: String = "%s",
 )

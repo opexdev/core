@@ -60,6 +60,7 @@ class DepositService(
             symbol,
             receiverUuid,
             WalletType.MAIN,
+            senderUuid,
             amount,
             request.description,
             request.ref,
@@ -77,6 +78,7 @@ class DepositService(
         symbol: String,
         receiverUuid: String,
         receiverWalletType: WalletType,
+        senderUuid: String?,
         amount: BigDecimal,
         description: String?,
         transferRef: String?,
@@ -119,10 +121,19 @@ class DepositService(
 
         if (depositCommand.status == DepositStatus.DONE) {
             logger.info("Going to charge wallet on a ${depositType.name} deposit event :$symbol-$chain-$receiverUuid-$amount")
+            val actualSenderUuid = if (
+                senderUuid != null &&
+                depositType == DepositType.OFF_CHAIN &&
+                transferMethod == TransferMethod.MANUALLY
+            ) {
+                senderUuid
+            } else {
+                walletOwnerManager.systemUuid
+            }
             return transferService.transfer(
                 symbol,
                 WalletType.MAIN,
-                walletOwnerManager.systemUuid,
+                actualSenderUuid,
                 receiverWalletType,
                 receiverUuid,
                 amount,
