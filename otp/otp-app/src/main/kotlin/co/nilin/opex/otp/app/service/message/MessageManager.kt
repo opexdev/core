@@ -16,10 +16,13 @@ class MessageManager(
 
     suspend fun sendMessage(config: OTPConfig, otpType: OTPType, code: String, receiver: String) {
         val message = String.format(config.messageTemplate, code)
-        logger.info("$message -> $receiver")
-        val result = getSender(otpType).send(receiver, message)
-        if (!result)
-            throw OpexError.UnableToSendOTP.exception()
+        if (config.isActivated) {
+            val result = getSender(otpType).send(receiver, message)
+            if (!result)
+                throw OpexError.UnableToSendOTP.exception()
+        } else {
+            logger.warn("OTP for type ${otpType.name} is not activated. Message will not be sent. $message -> $receiver")
+        }
     }
 
     suspend fun getSender(type: OTPType): MessageSender {
