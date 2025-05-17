@@ -121,14 +121,14 @@ class DepositService(
 
         if (depositCommand.status == DepositStatus.DONE) {
             logger.info("Going to charge wallet on a ${depositType.name} deposit event :$symbol-$chain-$receiverUuid-$amount")
-            val actualSenderUuid = if (
+            val (actualSenderUuid, actualTransferCategory) = if (
                 senderUuid != null &&
                 depositType == DepositType.OFF_CHAIN &&
                 transferMethod == TransferMethod.MANUALLY
             ) {
-                senderUuid
+                senderUuid to TransferCategory.DEPOSIT_MANUALLY
             } else {
-                walletOwnerManager.systemUuid
+                walletOwnerManager.systemUuid to TransferCategory.DEPOSIT
             }
             return transferService.transfer(
                 symbol,
@@ -139,7 +139,7 @@ class DepositService(
                 amount,
                 description,
                 transferRef,
-                TransferCategory.DEPOSIT,
+                actualTransferCategory,
             ).transferResult
         } else throw OpexError.InvalidDeposit.exception()
 
