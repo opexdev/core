@@ -10,16 +10,20 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import javax.validation.Valid
 
 @RestController
 @RequestMapping("/v1/otp")
 class OTPController(private val otpService: OTPService) {
 
+    //TODO IMPORTANT: remove in production
+    data class TempOtpResponse(val otp: String)
+    //TODO IMPORTANT: remove in production
+
+    //TODO IMPORTANT: remove in production
     @PostMapping
-    suspend fun requestOTP(@RequestBody request: NewOTPRequest): ResponseEntity<Nothing> {
+    suspend fun requestOTP(@RequestBody request: NewOTPRequest): ResponseEntity<TempOtpResponse> {
         validateOTPRequest(request.receivers.map { it.type })
-        if (request.receivers.size == 1)
+        val code = if (request.receivers.size == 1)
             otpService.requestOTP(
                 request.receivers[0].receiver,
                 request.receivers[0].type,
@@ -28,7 +32,7 @@ class OTPController(private val otpService: OTPService) {
             )
         else
             otpService.requestCompositeOTP(request.receivers.toSet(), request.userId, request.action)
-        return ResponseEntity.status(HttpStatus.CREATED).build()
+        return ResponseEntity.status(HttpStatus.CREATED).body(TempOtpResponse(code))
     }
 
     @PostMapping("/verify")

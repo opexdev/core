@@ -26,12 +26,13 @@ class UserService(
 
     private val logger by LoggerDelegate()
 
-    suspend fun registerUser(request: RegisterUserRequest) {
+    //TODO IMPORTANT: remove in production
+    suspend fun registerUser(request: RegisterUserRequest): String {
         val username = Username.create(request.username)
         val userStatus = isUserDuplicate(username)
 
         val otpType = username.type.otpType
-        otpProxy.requestOTP(request.username, listOf(OTPReceiver(request.username, otpType)))
+        val res = otpProxy.requestOTP(request.username, listOf(OTPReceiver(request.username, otpType)))
 
         if (!userStatus)
             keycloakProxy.createUser(
@@ -40,6 +41,7 @@ class UserService(
                 request.lastName,
                 false
             )
+        return res.otp
     }
 
     suspend fun verifyRegister(request: VerifyOTPRequest): String {
@@ -86,10 +88,11 @@ class UserService(
         keycloakProxy.logout(userId)
     }
 
-    suspend fun forgetPassword(username: String) {
+    suspend fun forgetPassword(username: String): String {
         val uName = Username.create(username)
-        val user = keycloakProxy.findUserByUsername(uName) ?: return
-        otpProxy.requestOTP(uName.value, listOf(OTPReceiver(uName.value, uName.type.otpType)))
+        val user = keycloakProxy.findUserByUsername(uName) ?: return null ?: ""
+        //TODO IMPORTANT: remove in production
+        return otpProxy.requestOTP(uName.value, listOf(OTPReceiver(uName.value, uName.type.otpType))).otp
     }
 
     suspend fun verifyForget(request: VerifyOTPRequest): String {
