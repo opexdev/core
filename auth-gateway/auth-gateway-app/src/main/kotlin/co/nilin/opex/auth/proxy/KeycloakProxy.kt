@@ -39,7 +39,7 @@ class KeycloakProxy(
         username: Username,
         password: String?,
         clientId: String,
-        clientSecret: String
+        clientSecret: String?
     ): Token {
         val users = findUserByAttribute(username.asAttribute())
         if (users.isEmpty())
@@ -60,7 +60,7 @@ class KeycloakProxy(
     suspend fun refreshUserToken(
         refreshToken: String,
         clientId: String,
-        clientSecret: String
+        clientSecret: String?
     ): Token {
         val userTokenUrl = "${keycloakConfig.url}/realms/${keycloakConfig.realm}/protocol/openid-connect/token"
         return keycloakClient.post()

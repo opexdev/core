@@ -6,14 +6,14 @@ data class PasswordFlowTokenRequest(
     val username: String,
     val password: String,
     val clientId: String,
-    val clientSecret: String,
+    val clientSecret: String?,
     val otp: String?,
     val rememberMe: Boolean = true
 )
 
 data class RefreshTokenRequest(
     val clientId: String,
-    val clientSecret: String,
+    val clientSecret: String?,
     val refreshToken: String
 )
 
