@@ -86,7 +86,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         if (!auth.hasScopeAccess("trust")) return ErrorHandler.forbidden()
 
         runCatching {
-            validateCaptcha("${request.captchaAnswer}-${session.context.connection.remoteAddr}")
+            validateCaptcha("${request.captchaAnswer}", request.captchaType ?: CaptchaType.INTERNAL)
         }.onFailure {
             return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.InvalidCaptcha)
         }
@@ -139,12 +139,13 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @Produces(MediaType.APPLICATION_JSON)
     fun forgotPassword(
         @QueryParam("email") email: String?,
-        @QueryParam("captcha") captcha: String
+        @QueryParam("captcha") captcha: String,
+        @QueryParam("captchaType") captchaType: CaptchaType?,
     ): Response {
         val uri = UriBuilder.fromUri(forgotUrl)
 
         runCatching {
-            validateCaptcha("$captcha-${session.context.connection.remoteAddr}")
+            validateCaptcha(captcha, captchaType ?: CaptchaType.INTERNAL)
         }.onFailure {
             return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.InvalidCaptcha)
         }
@@ -215,9 +216,13 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     @POST
     @Path("user/request-verify")
     @Produces(MediaType.APPLICATION_JSON)
-    fun requestVerifyEmail(@QueryParam("email") email: String?, @QueryParam("captcha") captcha: String): Response {
+    fun requestVerifyEmail(
+        @QueryParam("email") email: String?,
+        @QueryParam("captcha") captcha: String,
+        @QueryParam("captchaType") captchaType: CaptchaType?,
+    ): Response {
         runCatching {
-            validateCaptcha("${captcha}-${session.context.connection.remoteAddr}")
+            validateCaptcha(captcha, captchaType ?: CaptchaType.INTERNAL)
         }.onFailure {
             return ErrorHandler.response(Response.Status.BAD_REQUEST, OpexError.InvalidCaptcha)
         }
@@ -429,9 +434,12 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         return session.userCredentialManager().isConfiguredFor(opexRealm, user, OTPCredentialModel.TYPE)
     }
 
-    private fun validateCaptcha(proof: String) {
+    private fun validateCaptcha(proof: String, type: CaptchaType) {
         val client: HttpClient = HttpClientBuilder.create().build()
-        val post = HttpGet(URIBuilder("http://captcha:8080/verify").addParameter("proof", proof).build())
+        val post = HttpGet(
+            URIBuilder("http://captcha:8080/verify").addParameter("proof", proof).addParameter("type", type.name)
+                .build()
+        )
         client.execute(post).let { response ->
             logger.info(response.statusLine.statusCode.toString())
             check(response.statusLine.statusCode / 500 != 5) { "Could not connect to Opex-Captcha service." }

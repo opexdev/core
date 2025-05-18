@@ -1,7 +1,6 @@
 package co.nilin.opex.api.ports.proxy.impl
 
-import co.nilin.opex.api.core.inout.Order
-import co.nilin.opex.api.core.inout.Trade
+import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.MarketUserDataProxy
 import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
 import co.nilin.opex.api.ports.proxy.data.AllOrderRequest
@@ -35,7 +34,7 @@ class MarketUserDataProxyImpl(private val webClient: WebClient) : MarketUserData
         principal: Principal,
         symbol: String,
         orderId: Long?,
-        origClientOrderId: String?
+        origClientOrderId: String?,
     ): Order? {
         return withContext(ProxyDispatchers.market) {
             webClient.post()
@@ -71,7 +70,7 @@ class MarketUserDataProxyImpl(private val webClient: WebClient) : MarketUserData
         symbol: String?,
         startTime: Date?,
         endTime: Date?,
-        limit: Int?
+        limit: Int?,
     ): List<Order> {
         return withContext(ProxyDispatchers.market) {
             webClient.post()
@@ -93,7 +92,7 @@ class MarketUserDataProxyImpl(private val webClient: WebClient) : MarketUserData
         fromTrade: Long?,
         startTime: Date?,
         endTime: Date?,
-        limit: Int?
+        limit: Int?,
     ): List<Trade> {
         return withContext(ProxyDispatchers.market) {
             webClient.post()
@@ -109,4 +108,63 @@ class MarketUserDataProxyImpl(private val webClient: WebClient) : MarketUserData
         }
     }
 
+    override suspend fun getOrderHistory(
+        uuid: String,
+        symbol: String?,
+        startTime: Long?,
+        endTime: Long?,
+        orderType: MatchingOrderType?,
+        direction: OrderDirection?,
+        limit: Int?,
+        offset: Int?,
+    ): List<OrderData> {
+        return withContext(ProxyDispatchers.market) {
+            webClient.get()
+                .uri("$baseUrl/v1/user/order/history/$uuid") {
+                    it.queryParam("symbol", symbol)
+                    it.queryParam("startTime", startTime)
+                    it.queryParam("endTime", endTime)
+                    it.queryParam("orderType", orderType)
+                    it.queryParam("direction", direction)
+                    it.queryParam("limit", limit)
+                    it.queryParam("offset", offset)
+                    it.build()
+                }.accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<OrderData>()
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
+        }
+    }
+
+    override suspend fun getTradeHistory(
+        uuid: String,
+        symbol: String?,
+        startTime: Long?,
+        endTime: Long?,
+        direction: OrderDirection?,
+        limit: Int?,
+        offset: Int?,
+    ): List<Trade> {
+        return withContext(ProxyDispatchers.market) {
+            webClient.get()
+                .uri("$baseUrl/v1/user/trade/history/$uuid") {
+                    it.queryParam("symbol", symbol)
+                    it.queryParam("startTime", startTime)
+                    it.queryParam("endTime", endTime)
+                    it.queryParam("direction", direction)
+                    it.queryParam("limit", limit)
+                    it.queryParam("offset", offset)
+                    it.build()
+                }.accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<Trade>()
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
+        }
+    }
 }

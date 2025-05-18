@@ -24,7 +24,7 @@ object VALID {
 
     val PAIR_CONFIG = PairConfig(ETH_USDT, ETH, USDT, BigDecimal.valueOf(0.01), BigDecimal.valueOf(0.0001))
 
-    val PAIR_SETTING = PairSetting(ETH_USDT, true, null)
+    val PAIR_SETTING = PairSetting(ETH_USDT, true, 0.0000001.toBigDecimal(), 100.toBigDecimal(), "LIMIT_ORDER,MARKET_ORDER", null)
 
     val CREATE_ORDER_REQUEST_ASK = CreateOrderRequest(
         UUID,

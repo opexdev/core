@@ -3,7 +3,6 @@ package co.nilin.opex.wallet.app.service
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.ReservedTransferResponse
 import co.nilin.opex.wallet.app.service.otc.GraphService
-import co.nilin.opex.wallet.core.inout.ManualGatewayCommand
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.inout.TransferResultDetailed
@@ -32,9 +31,9 @@ class TransferService(
     private val currencyGraph: GraphService,
     private val reservedTransferManager: ReservedTransferManager,
     private val meterRegistry: MeterRegistry,
-    private val currencyService: CurrencyServiceV2
+    private val currencyService: CurrencyServiceV2,
 
-) {
+    ) {
 
     private val logger = LoggerFactory.getLogger(TransferService::class.java)
 
@@ -48,7 +47,7 @@ class TransferService(
         amount: BigDecimal,
         description: String?,
         transferRef: String?,
-        transferCategory: TransferCategory = TransferCategory.NO_CATEGORY
+        transferCategory: TransferCategory = TransferCategory.NO_CATEGORY,
     ): TransferResultDetailed {
         return _transfer(
             symbol,
@@ -92,7 +91,7 @@ class TransferService(
         senderUuid: String,
         senderWalletType: WalletType,
         receiverUuid: String,
-        receiverWalletType: WalletType
+        receiverWalletType: WalletType,
     ): ReservedTransferResponse {
         val rate = currencyGraph.buildRoutes(sourceSymbol, destSymbol)
             .map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }
@@ -141,7 +140,7 @@ class TransferService(
         transferRef: String?,
         issuer: String? = null,
         //todo need to review
-        transferCategory: TransferCategory = TransferCategory.PURCHASE_FINALIZED
+        transferCategory: TransferCategory = TransferCategory.PURCHASE_FINALIZED,
     ): TransferResultDetailed {
         val reservations = reservedTransferManager.fetchValidReserve(reserveNumber)
             ?: throw OpexError.InvalidReserveNumber.exception()
@@ -203,7 +202,7 @@ class TransferService(
         transferRef: String?,
         transferCategory: TransferCategory = TransferCategory.NO_CATEGORY,
         destSymbol: String = symbol,
-        destAmount: BigDecimal = amount
+        destAmount: BigDecimal = amount,
     ): TransferResultDetailed {
         if (senderWalletType == WalletType.CASHOUT || receiverWalletType == WalletType.CASHOUT)
             throw OpexError.InvalidCashOutUsage.exception()
@@ -254,7 +253,7 @@ class TransferService(
     private suspend fun checkIfSystemHasEnoughBalance(
         destSymbol: String,
         receiverWalletType: WalletType,
-        finalAmount: BigDecimal?
+        finalAmount: BigDecimal?,
     ) {
         val destCurrency = currencyManager.fetchCurrency(FetchCurrency(symbol = destSymbol))!!
         val system = walletOwnerManager.findWalletOwner(walletOwnerManager.systemUuid)
@@ -267,11 +266,4 @@ class TransferService(
             throw OpexError.CurrentSystemAssetsAreNotEnough.exception()
         }
     }
-
-    internal suspend fun isManualDepositAllowed(symbol: String, gatewayUuid: String): Boolean {
-        var gateway = currencyService.fetchCurrencyGateway(gatewayUuid, symbol)
-        return gateway is ManualGatewayCommand && gateway.depositAllowed == true && gateway.isActive == true
-    }
-
-
 }

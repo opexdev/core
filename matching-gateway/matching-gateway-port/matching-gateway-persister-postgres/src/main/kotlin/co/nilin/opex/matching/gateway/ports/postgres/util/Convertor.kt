@@ -8,6 +8,9 @@ fun PairSettingModel.toPairSetting(): PairSetting {
     return PairSetting(
         pair,
         isAvailable,
+        minOrder,
+        maxOrder,
+        orderTypes,
         updateDate,
     )
 }

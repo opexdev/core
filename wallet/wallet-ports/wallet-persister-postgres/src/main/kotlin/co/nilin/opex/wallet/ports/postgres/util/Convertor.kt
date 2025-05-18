@@ -67,6 +67,7 @@ fun Deposit.toModel(): DepositModel {
         attachment,
         depositType,
         createDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(),
+        transferMethod
     )
 }
 
@@ -87,7 +88,8 @@ fun DepositModel.toDto(): Deposit {
         depositType,
         attachment,
         Date.from(createDate.atZone(ZoneId.systemDefault())?.toInstant()),
-        id
+        id,
+        transferMethod
     )
 }
 
@@ -125,40 +127,6 @@ fun OffChainGatewayCommand.toModel(): OffChainGatewayModel {
     )
 }
 
-fun ManualGatewayModel.toDto(): ManualGatewayCommand {
-    return ManualGatewayCommand(
-        allowedFor,
-        currencySymbol,
-        gatewayUuid,
-        isActive,
-        withdrawFee,
-        withdrawAllowed,
-        depositAllowed,
-        depositMin,
-        depositMax,
-        withdrawMin,
-        withdrawMax
-    )
-}
-
-fun ManualGatewayCommand.toModel(): ManualGatewayModel {
-    return ManualGatewayModel(
-        null,
-        gatewayUuid!!,
-        currencySymbol!!,
-        allowedFor,
-        withdrawAllowed,
-        depositAllowed,
-        withdrawFee,
-        withdrawMin,
-        withdrawMax,
-        depositMin,
-        depositMax,
-        isActive
-    )
-}
-
-
 fun TerminalCommand.toModel(): TerminalModel {
     return TerminalModel(
         null,
@@ -173,5 +141,24 @@ fun TerminalModel.toDto(): TerminalCommand {
         uuid!!,
         owner,
         identifier, active, type, metaData, description
+    )
+}
+
+fun CurrencyModel.toCurrencyData(): CurrencyData {
+    return CurrencyData(
+        symbol,
+        uuid,
+        name,
+        precision,
+        title,
+        alias,
+        icon,
+        isTransitive,
+        isActive,
+        sign,
+        description,
+        shortDescription,
+        externalUrl,
+        order
     )
 }

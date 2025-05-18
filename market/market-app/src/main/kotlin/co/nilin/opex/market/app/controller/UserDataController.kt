@@ -1,6 +1,7 @@
 package co.nilin.opex.market.app.controller
 
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.market.app.utils.asLocalDateTime
 import co.nilin.opex.market.core.inout.*
 import co.nilin.opex.market.core.spi.UserQueryHandler
 import org.springframework.security.core.annotation.CurrentSecurityContext
@@ -25,7 +26,7 @@ class UserDataController(private val userQueryHandler: UserQueryHandler) {
     suspend fun getUserOpenOrders(
         @PathVariable uuid: String,
         @PathVariable symbol: String,
-        @RequestParam limit: Int
+        @RequestParam limit: Int,
     ): List<Order> {
         return userQueryHandler.openOrders(uuid, symbol, limit)
     }
@@ -44,11 +45,55 @@ class UserDataController(private val userQueryHandler: UserQueryHandler) {
     suspend fun getTxOfTrades(
         @PathVariable user: String,
         @RequestBody transactionRequest: TransactionRequest,
-        @CurrentSecurityContext securityContext: SecurityContext
+        @CurrentSecurityContext securityContext: SecurityContext,
     ): TransactionResponse? {
         if (securityContext.authentication.name != user)
             throw OpexError.Forbidden.exception()
         return userQueryHandler.txOfTrades(transactionRequest.apply { owner = user })
+    }
+
+    @GetMapping("/order/history/{uuid}")
+    suspend fun getOrderHistory(
+        @RequestParam symbol: String?,
+        @RequestParam startTime: Long?,
+        @RequestParam endTime: Long?,
+        @RequestParam orderType: MatchingOrderType?,
+        @RequestParam direction: OrderDirection?,
+        @RequestParam limit: Int?,
+        @RequestParam offset: Int?,
+        @PathVariable uuid: String,
+    ): List<OrderData> {
+        return userQueryHandler.getOrderHistory(
+            uuid,
+            symbol,
+            startTime?.let { startTime.asLocalDateTime() },
+            endTime?.let { endTime.asLocalDateTime() },
+            orderType,
+            direction,
+            limit,
+            offset
+        )
+    }
+
+    @GetMapping("/trade/history/{uuid}")
+    suspend fun getTradeHistory(
+        @PathVariable uuid: String,
+        @RequestParam symbol: String?,
+        @RequestParam startTime: Long?,
+        @RequestParam endTime: Long?,
+        @RequestParam direction: OrderDirection?,
+        @RequestParam limit: Int?,
+        @RequestParam offset: Int?,
+    ): List<Trade> {
+        return userQueryHandler.getTradeHistory(
+            uuid,
+            symbol,
+            startTime?.let { startTime.asLocalDateTime() },
+            endTime?.let { endTime.asLocalDateTime() },
+            direction,
+            limit,
+            offset
+        )
     }
 
 }

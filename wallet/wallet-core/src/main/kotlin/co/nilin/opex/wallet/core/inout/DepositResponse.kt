@@ -17,5 +17,6 @@ data class DepositResponse(
     val status: DepositStatus,
     val type: DepositType,
     val attachment: String?,
-    val createDate: Date?
+    val createDate: Date?,
+    val transferMethod: TransferMethod?
 )

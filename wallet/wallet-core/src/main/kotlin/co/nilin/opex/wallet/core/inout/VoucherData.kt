@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.core.inout
 
-import co.nilin.opex.wallet.core.model.VoucherStatus
+import co.nilin.opex.wallet.core.model.VoucherGroupStatus
+import co.nilin.opex.wallet.core.model.VoucherGroupType
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
@@ -8,10 +9,12 @@ data class VoucherData(
     val publicCode: String,
     val amount: BigDecimal,
     val currency: String,
-    var status: VoucherStatus,
     val expireDate: LocalDateTime,
-    val createDate: LocalDateTime = LocalDateTime.now(),
-    var useDate: LocalDateTime? = null,
-    var uuid: String? = null,
-    var voucherGroup: VoucherGroupData?,
+    val createDate: LocalDateTime ,
+    val type: VoucherGroupType,
+    val issuer: String,
+    val description: String ? = null,
+    val groupStatus : VoucherGroupStatus,
+    val usagesCount : Int
 )
+

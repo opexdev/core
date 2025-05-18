@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.core.spi
 
+import co.nilin.opex.wallet.core.inout.TransactionSummary
 import co.nilin.opex.wallet.core.inout.WithdrawResponse
 import co.nilin.opex.wallet.core.model.Withdraw
 import co.nilin.opex.wallet.core.model.WithdrawStatus
@@ -31,7 +32,7 @@ interface WithdrawPersister {
         endTime: LocalDateTime?,
         ascendingByTime: Boolean?,
         offset: Int,
-        size: Int
+        size: Int,
     ): List<WithdrawResponse>
 
     suspend fun countByCriteria(
@@ -39,7 +40,7 @@ interface WithdrawPersister {
         currency: String?,
         destTxRef: String?,
         destAddress: String?,
-        status: List<WithdrawStatus>
+        status: List<WithdrawStatus>,
     ): Long
 
     suspend fun findWithdrawHistory(
@@ -49,6 +50,13 @@ interface WithdrawPersister {
         endTime: LocalDateTime?,
         limit: Int,
         offset: Int,
-        ascendingByTime: Boolean?
+        ascendingByTime: Boolean?,
     ): List<WithdrawResponse>
+
+    suspend fun getWithdrawSummary(
+        uuid: String,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        limit: Int?,
+    ): List<TransactionSummary>
 }

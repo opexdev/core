@@ -15,7 +15,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.server.WebFilter
 
 @EnableWebFluxSecurity
-@Configuration
+@Configuration("binanceSecurityConfig")
 class SecurityConfig(
     private val webClient: WebClient,
     private val apiKeyFilter: APIKeyFilter,
@@ -39,6 +39,7 @@ class SecurityConfig(
                     .pathMatchers("/v3/klines").permitAll()
                     .pathMatchers("/socket").permitAll()
                     .pathMatchers("/v1/landing/**").permitAll()
+                    .pathMatchers("/opex/v1/market/**").permitAll()
                     .pathMatchers("/**").hasAuthority("SCOPE_trust")
                     .anyExchange().authenticated()
             }

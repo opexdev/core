@@ -13,5 +13,6 @@ class WithdrawCommand(
     var destNetwork: String?,
     val destNote: String?,
     val gatewayUuid: String?,
-    var withdrawType: WithdrawType?
-)
+    var withdrawType: WithdrawType?,
+    var transferMethod: TransferMethod?,
+    )
