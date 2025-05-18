@@ -16,14 +16,14 @@ data class PasswordFlowTokenRequest(
 data class RefreshTokenRequest(
     val clientId: String,
     val clientSecret: String,
-    val refreshToken: String,
+    val refreshToken: String
 )
 
 data class ExternalIdpTokenRequest(
     val idToken: String,
     val accessToken: String,
     val idp: String,
-    val otpVerifyRequest: OTPVerifyRequest?,
+    val otpVerifyRequest: OTPVerifyRequest?
 )
 
 data class Token(
@@ -49,16 +49,18 @@ data class Token(
     val sessionState: String?,         // Session state (optional)
 
     @JsonProperty("scope")
-    val scope: String?,                 // Scopes associated with the token
+    val scope: String?                 // Scopes associated with the token
 
 )
 
 data class TokenResponse(
     val token: Token?,
     val otp: RequiredOTP?,
+    //TODO IMPORTANT: remove in production
+    val otpCode: String?,
 )
 
 data class RequiredOTP(
     val type: OTPType,
-    val receiver: String?,
+    val receiver: String?
 )

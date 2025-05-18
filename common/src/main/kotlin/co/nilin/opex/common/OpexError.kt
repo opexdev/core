@@ -132,6 +132,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     InvalidTOTPCode(12005, "TOTP code is invalid", HttpStatus.BAD_REQUEST),
     TOTPSetupIncomplete(12006, "TOTP setup is incomplete", HttpStatus.BAD_REQUEST),
     TOTPAlreadyRegistered(12007, "User already registered for TOTP", HttpStatus.BAD_REQUEST),
+    OTPDisabled(12008, "OTP for this receiver type is disabled", HttpStatus.INTERNAL_SERVER_ERROR),
 
     ;
 

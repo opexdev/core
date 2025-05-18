@@ -30,18 +30,18 @@ class TokenService(
                 request.clientId,
                 request.clientSecret
             ).apply { if (!request.rememberMe) refreshToken = null }
-            return TokenResponse(token, null)
+            return TokenResponse(token, null, null)
         }
 
         if (request.otp.isNullOrBlank()) {
             val requiredOtpTypes = listOf(OTPReceiver(username.value, otpType))
-            otpProxy.requestOTP(username.value, requiredOtpTypes)
+            val res = otpProxy.requestOTP(username.value, requiredOtpTypes)
             val receiver = when (otpType) {
                 OTPType.EMAIL -> user.email
                 OTPType.SMS -> user.attributes?.get(Attributes.MOBILE)?.get(0)
                 else -> null
             }
-            return TokenResponse(null, RequiredOTP(otpType, receiver))
+            return TokenResponse(null, RequiredOTP(otpType, receiver), res.otp)
         }
 
         val otpRequest = OTPVerifyRequest(username.value, listOf(OTPCode(request.otp, username.type.otpType)))
@@ -55,7 +55,7 @@ class TokenService(
             request.clientSecret
         ).apply { if (!request.rememberMe) refreshToken = null }
 
-        return TokenResponse(token, null)
+        return TokenResponse(token, null, null)
     }
 
     suspend fun getToken(tokenRequest: ExternalIdpTokenRequest): TokenResponse {
@@ -71,12 +71,12 @@ class TokenService(
         return TokenResponse(
             keycloakProxy.exchangeGoogleTokenForKeycloakToken(
                 tokenRequest.accessToken
-            ), null
+            ), null, null
         )
     }
 
     suspend fun refreshToken(request: RefreshTokenRequest): TokenResponse {
         val token = keycloakProxy.refreshUserToken(request.refreshToken, request.clientId, request.clientSecret)
-        return TokenResponse(token, null)
+        return TokenResponse(token, null, null)
     }
 }
