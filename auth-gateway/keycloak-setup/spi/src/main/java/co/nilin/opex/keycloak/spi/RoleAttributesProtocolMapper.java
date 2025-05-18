@@ -9,7 +9,6 @@ import org.keycloak.representations.AccessToken;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class RoleAttributesProtocolMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper {
@@ -60,29 +59,33 @@ public class RoleAttributesProtocolMapper extends AbstractOIDCProtocolMapper imp
         String claimName = mappingModel.getConfig().get(OIDCAttributeMapperHelper.TOKEN_CLAIM_NAME);
         var finalList = new ArrayList<>();
 
-        if (user != null) {
-            List<RoleModel> userRoles = user.getUser().getRoleMappingsStream().collect(Collectors.toList());
+        List<RoleModel> userRoles = user.getUser().getRealmRoleMappingsStream().collect(Collectors.toList());
+        for (RoleModel role : userRoles) {
+            extract(role, attributeNameToInclude, finalList);
+            var compositeRoles = role.getCompositesStream().collect(Collectors.toList());
+            compositeRoles.forEach(r -> extract(r, attributeNameToInclude, finalList));
+        }
 
-            for (RoleModel role : userRoles) {
-                Map<String, List<String>> attributes = role.getAttributes();
-                if (attributes.containsKey(attributeNameToInclude)) {
-                    var att = attributes.get(attributeNameToInclude);
-                    if (att.isEmpty())
-                        return token;
-                    var value = att.get(0);
-                    var list = value.split(",");
-                    for (var v : list) {
-                        if (!v.isBlank())
-                            finalList.add(v);
-                    }
-                }
-            }
-
-            if (!finalList.isEmpty()) {
-                token.getOtherClaims().put(claimName != null && !claimName.isEmpty() ? claimName : ROLE_ATTRIBUTES_CLAIM, finalList);
-            }
+        if (!finalList.isEmpty()) {
+            token.getOtherClaims().put(claimName != null && !claimName.isEmpty() ? claimName : ROLE_ATTRIBUTES_CLAIM, finalList);
         }
         return token;
+    }
+
+    private void extract(RoleModel role, String attributeNameToInclude, ArrayList<Object> list) {
+        var attributes = role.getAttributes();
+        if (attributes.containsKey(attributeNameToInclude)) {
+            var att = attributes.get(attributeNameToInclude);
+            if (att.isEmpty())
+                return;
+
+            var value = att.get(0);
+            var splt = value.split(",");
+            for (var v : splt) {
+                if (!v.isBlank())
+                    list.add(v);
+            }
+        }
     }
 
 }
