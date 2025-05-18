@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.core.spi
 
 import co.nilin.opex.wallet.core.inout.Deposit
+import co.nilin.opex.wallet.core.inout.TransactionSummary
 import co.nilin.opex.wallet.core.model.DepositStatus
 import java.time.LocalDateTime
 
@@ -31,4 +32,10 @@ interface DepositPersister {
         ascendingByTime: Boolean?,
     ): List<Deposit>
 
+    suspend fun getDepositSummary(
+        uuid: String,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        limit: Int?,
+    ): List<TransactionSummary>
 }

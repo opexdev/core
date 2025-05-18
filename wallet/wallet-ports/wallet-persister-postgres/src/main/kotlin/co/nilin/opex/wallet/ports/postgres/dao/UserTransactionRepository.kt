@@ -1,8 +1,10 @@
 package co.nilin.opex.wallet.ports.postgres.dao
 
+import co.nilin.opex.wallet.core.inout.TransactionSummary
 import co.nilin.opex.wallet.core.model.UserTransactionCategory
 import co.nilin.opex.wallet.core.model.UserTransactionHistory
 import co.nilin.opex.wallet.ports.postgres.model.UserTransactionModel
+import kotlinx.coroutines.flow.Flow
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
@@ -34,7 +36,7 @@ interface UserTransactionRepository : ReactiveCrudRepository<UserTransactionMode
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
         limit: Int,
-        offset: Int
+        offset: Int,
     ): Flux<UserTransactionHistory>
 
     @Query(
@@ -59,6 +61,28 @@ interface UserTransactionRepository : ReactiveCrudRepository<UserTransactionMode
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
         limit: Int,
-        offset: Int
+        offset: Int,
     ): Flux<UserTransactionHistory>
+
+
+    @Query("""
+        SELECT
+            ut.currency,
+            SUM(ABS(ut.balance_change)) AS amount
+        FROM user_transaction ut
+        inner join wallet_owner wo on ut.owner_id = wo.id
+        where category = 'TRADE'
+        and wo.uuid = :uuid
+        and (:startTime is null or date >= :startTime )
+        and (:endTime is null or date <= :endTime)
+        GROUP BY ut.owner_id, ut.currency
+        ORDER BY amount desc
+        limit :limit;
+    """)
+    fun getTradeTransactionSummary(
+        uuid: String,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        limit: Int?,
+    ): Flow<TransactionSummary>
 }

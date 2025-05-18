@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
+import co.nilin.opex.wallet.core.inout.TransactionSummary
 import co.nilin.opex.wallet.core.inout.WithdrawResponse
 import co.nilin.opex.wallet.core.model.Withdraw
 import co.nilin.opex.wallet.core.model.WithdrawStatus
@@ -220,5 +221,14 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
             lastUpdateDate,
             transferMethod
         )
+    }
+
+    override suspend fun getWithdrawSummary(
+        uuid: String,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        limit: Int?,
+    ): List<TransactionSummary> {
+        return withdrawRepository.getWithdrawSummary(uuid, startTime, endTime, limit).toList()
     }
 }

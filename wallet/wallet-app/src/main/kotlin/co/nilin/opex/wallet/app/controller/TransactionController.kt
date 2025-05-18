@@ -1,13 +1,12 @@
 package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.wallet.app.dto.UserTransactionRequest
+import co.nilin.opex.wallet.app.utils.asLocalDateTime
+import co.nilin.opex.wallet.core.inout.TransactionSummary
 import co.nilin.opex.wallet.core.model.UserTransactionHistory
 import co.nilin.opex.wallet.core.spi.ReservedTransferManager
 import co.nilin.opex.wallet.core.spi.UserTransactionManager
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.security.Principal
 import java.time.Instant
 import java.time.LocalDateTime
@@ -17,14 +16,14 @@ import java.time.ZoneId
 @RequestMapping("/v2/transaction")
 class TransactionController(
     private val manager: UserTransactionManager,
-    private val reservedTransferManager: ReservedTransferManager
+    private val reservedTransferManager: ReservedTransferManager,
 
-) {
+    ) {
 
     @PostMapping
     suspend fun getUserTransactions(
         principal: Principal,
-        @RequestBody request: UserTransactionRequest
+        @RequestBody request: UserTransactionRequest,
     ): List<UserTransactionHistory> {
         return with(request) {
             manager.getTransactionHistory(
@@ -38,6 +37,21 @@ class TransactionController(
                 offset ?: 0
             )
         }
+    }
+
+    @GetMapping("/trade/summary/{uuid}")
+    suspend fun getUserTradeTransactionSummary(
+        @RequestParam startTime: Long?,
+        @RequestParam endTime: Long?,
+        @RequestParam limit: Int?,
+        @PathVariable uuid: String,
+    ): List<TransactionSummary> {
+        return manager.getTradeTransactionSummary(
+            uuid,
+            startTime?.asLocalDateTime(),
+            endTime?.asLocalDateTime(),
+            limit,
+        )
     }
 
 }
