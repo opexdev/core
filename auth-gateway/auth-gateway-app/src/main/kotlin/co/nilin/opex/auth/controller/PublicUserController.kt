@@ -42,8 +42,8 @@ class PublicUserController(private val userService: UserService) {
 
     //TODO IMPORTANT: remove in production
     @PostMapping("/forget")
-    suspend fun forgetPassword(@RequestParam username: String): ResponseEntity<TempOtpResponse> {
-        val code = userService.forgetPassword(username)
+    suspend fun forgetPassword(@RequestBody request: ForgotPasswordRequest): ResponseEntity<TempOtpResponse> {
+        val code = userService.forgetPassword(request)
         return ResponseEntity.ok().body(TempOtpResponse(code))
     }
 
