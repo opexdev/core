@@ -27,4 +27,16 @@ class WebClientConfig {
         return builder.build()
     }
 
+    @LoadBalanced
+    @Bean("captchaWebclientBuilder")
+    fun captchaWebClientBuilder(captchaConfig: CaptchaConfig): WebClient.Builder {
+        return WebClient.builder().baseUrl(captchaConfig.url)
+    }
+
+
+    @Bean("captchaWebClient")
+    fun captchaWebClient(@Qualifier("captchaWebclientBuilder") builder: WebClient.Builder): WebClient {
+        return builder.build()
+    }
+
 } 
