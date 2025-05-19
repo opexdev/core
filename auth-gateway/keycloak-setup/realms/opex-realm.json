@@ -51,7 +51,12 @@
         "id": "01633d43-b1b2-4c6d-a987-e8a88664ed5c",
         "name": "super-admin",
         "description": "",
-        "composite": false,
+        "composite": true,
+        "composites": {
+          "realm": [
+            "admin"
+          ]
+        },
         "clientRole": false,
         "containerId": "opex",
         "attributes": {}
@@ -60,12 +65,30 @@
         "id": "77c38736-27cc-4787-b83c-6b30872df6f7",
         "name": "user-1",
         "description": "Base user role",
+        "composite": true,
+        "composites": {
+          "realm": [
+            "user"
+          ]
+        },
+        "clientRole": false,
+        "containerId": "opex",
+        "attributes": {
+          "permissions": [
+            "deposit:create:crypto"
+          ]
+        }
+      },
+      {
+        "id": "7a788c40-fb3f-47e6-bdbe-2004b999afb6",
+        "name": "user",
+        "description": "Default role for all users",
         "composite": false,
         "clientRole": false,
         "containerId": "opex",
         "attributes": {
           "permissions": [
-            "order:create,wallet:read"
+            "order:create,order:cancel"
           ]
         }
       },
@@ -83,9 +106,6 @@
         "description": "${role_default-roles}",
         "composite": true,
         "composites": {
-          "realm": [
-            "offline_access"
-          ],
           "client": {
             "account": [
               "manage-account",
@@ -110,6 +130,33 @@
         "id": "0dd6a8c7-d669-4941-9ea1-521980e9c53f",
         "name": "uma_authorization",
         "description": "${role_uma_authorization}",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "opex",
+        "attributes": {}
+      },
+      {
+        "id": "904fce7c-bea5-43ed-8526-580370b1827e",
+        "name": "user-2",
+        "description": "",
+        "composite": true,
+        "composites": {
+          "realm": [
+            "user"
+          ]
+        },
+        "clientRole": false,
+        "containerId": "opex",
+        "attributes": {
+          "permissions": [
+            "deposit:create:crypto,deposit:create:fiat,withdraw:create,address:assign,voucher:submit,withdraw:cancel,withdraw:create:crypto,withdraw:create:fiat"
+          ]
+        }
+      },
+      {
+        "id": "99bad44d-9a1b-403f-9b90-2fc81646adf6",
+        "name": "admin",
+        "description": "Base role for all admin users",
         "composite": false,
         "clientRole": false,
         "containerId": "opex",
