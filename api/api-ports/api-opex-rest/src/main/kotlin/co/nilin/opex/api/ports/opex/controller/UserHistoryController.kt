@@ -26,8 +26,8 @@ class UserHistoryController(
         @RequestParam endTime: Long?,
         @RequestParam orderType: MatchingOrderType?,
         @RequestParam direction: OrderDirection?,
-        @RequestParam limit: Int? = 10,
-        @RequestParam offset: Int? = 0,
+        @RequestParam limit: Int?,
+        @RequestParam offset: Int?,
         @CurrentSecurityContext securityContext: SecurityContext,
     ): List<OrderData> {
         return marketUserDataProxy.getOrderHistory(
@@ -37,8 +37,8 @@ class UserHistoryController(
             endTime,
             orderType,
             direction,
-            limit,
-            offset,
+            limit ?: 10,
+            offset ?: 0,
         )
     }
 
@@ -48,12 +48,56 @@ class UserHistoryController(
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
         @RequestParam direction: OrderDirection?,
-        @RequestParam limit: Int? = 10,
-        @RequestParam offset: Int? = 0,
+        @RequestParam limit: Int?,
+        @RequestParam offset: Int?,
         @CurrentSecurityContext securityContext: SecurityContext,
     ): List<Trade> {
         return marketUserDataProxy.getTradeHistory(
-            securityContext.authentication.name, symbol, startTime, endTime, direction, limit, offset
+            securityContext.authentication.name, symbol, startTime, endTime, direction, limit ?: 10, offset ?: 10
+        )
+    }
+
+    @GetMapping("/history/withdraw")
+    suspend fun getWithdrawHistory(
+        @RequestParam currency: String?,
+        @RequestParam startTime: Long?,
+        @RequestParam endTime: Long?,
+        @RequestParam limit: Int?,
+        @RequestParam offset: Int?,
+        @RequestParam ascendingByTime: Boolean?,
+        @CurrentSecurityContext securityContext: SecurityContext,
+    ): List<WithdrawHistoryResponse> {
+        return walletProxy.getWithdrawTransactions(
+            securityContext.jwtAuthentication().name,
+            securityContext.jwtAuthentication().tokenValue(),
+            currency,
+            startTime,
+            endTime,
+            limit ?: 10,
+            offset ?: 0,
+            ascendingByTime,
+        )
+    }
+
+    @GetMapping("/history/deposit")
+    suspend fun getDepositHistory(
+        @RequestParam currency: String?,
+        @RequestParam startTime: Long?,
+        @RequestParam endTime: Long?,
+        @RequestParam limit: Int?,
+        @RequestParam offset: Int?,
+        @RequestParam ascendingByTime: Boolean?,
+        @CurrentSecurityContext securityContext: SecurityContext,
+    ): List<DepositHistoryResponse> {
+        return walletProxy.getDepositTransactions(
+            securityContext.jwtAuthentication().name,
+            securityContext.jwtAuthentication().tokenValue(),
+            currency,
+            startTime,
+            endTime,
+            limit ?: 10,
+            offset ?: 0,
+            ascendingByTime,
         )
     }
 

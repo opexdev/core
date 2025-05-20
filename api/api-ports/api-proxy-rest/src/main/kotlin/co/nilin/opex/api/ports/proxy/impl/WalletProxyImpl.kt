@@ -72,23 +72,23 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
     override suspend fun getDepositTransactions(
         uuid: String,
         token: String?,
-        coin: String?,
+        currency: String?,
         startTime: Long?,
         endTime: Long?,
         limit: Int,
         offset: Int,
         ascendingByTime: Boolean?,
-    ): List<TransactionHistoryResponse> {
+    ): List<DepositHistoryResponse> {
         logger.info("fetching deposit transaction history for $uuid")
         return withContext(ProxyDispatchers.wallet) {
             webClient.post()
-                .uri("$baseUrl/transaction/deposit/$uuid")
+                .uri("$baseUrl/v1/deposit/history")
                 .accept(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-                .body(Mono.just(TransactionRequest(coin, startTime, endTime, limit, offset, ascendingByTime)))
+                .body(Mono.just(TransactionRequest(currency, startTime, endTime, limit, offset, ascendingByTime)))
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<TransactionHistoryResponse>()
+                .bodyToFlux<DepositHistoryResponse>()
                 .collectList()
                 .awaitFirstOrElse { emptyList() }
         }
@@ -97,7 +97,7 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
     override suspend fun getWithdrawTransactions(
         uuid: String,
         token: String?,
-        coin: String?,
+        currency: String?,
         startTime: Long?,
         endTime: Long?,
         limit: Int,
@@ -107,10 +107,10 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
         logger.info("fetching withdraw transaction history for $uuid")
         return withContext(ProxyDispatchers.wallet) {
             webClient.post()
-                .uri("$baseUrl/withdraw/history/$uuid")
+                .uri("$baseUrl/withdraw/history")
                 .accept(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-                .body(Mono.just(TransactionRequest(coin, startTime, endTime, limit, offset, ascendingByTime)))
+                .body(Mono.just(TransactionRequest(currency, startTime, endTime, limit, offset, ascendingByTime)))
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToFlux<WithdrawHistoryResponse>()

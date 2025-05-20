@@ -1,14 +1,14 @@
 package co.nilin.opex.api.core.inout
 
 import java.math.BigDecimal
+import java.time.LocalDateTime
 
 data class WithdrawHistoryResponse(
-    val withdrawId: Long?,
+    val withdrawId: Long,
     val uuid: String,
     val amount: BigDecimal,
     val currency: String,
-    val acceptedFee: BigDecimal,
-    val appliedFee: BigDecimal?,
+    val appliedFee: BigDecimal,
     val destAmount: BigDecimal?,
     val destSymbol: String?,
     val destAddress: String?,
@@ -16,7 +16,24 @@ data class WithdrawHistoryResponse(
     var destNote: String?,
     var destTransactionRef: String?,
     val statusReason: String?,
-    val status: String,
-    val createDate: Long,
-    val acceptDate: Long?
+    val status: WithdrawStatus,
+    var applicator: String?,
+    var withdrawType: WithdrawType,
+    var attachment: String?,
+    val createDate: LocalDateTime,
+    val lastUpdateDate: LocalDateTime?,
+    var transferMethod: TransferMethod?,
 )
+
+enum class WithdrawStatus {
+
+    CREATED,
+    PROCESSING,
+    CANCELED,
+    REJECTED,
+    DONE
+}
+
+enum class WithdrawType {
+    CARD_TO_CARD, SHEBA, ON_CHAIN
+}

@@ -13,18 +13,18 @@ interface WalletProxy {
     suspend fun getDepositTransactions(
         uuid: String,
         token: String?,
-        coin: String?,
+        currency: String?,
         startTime: Long?,
         endTime: Long?,
         limit: Int,
         offset: Int,
         ascendingByTime: Boolean?,
-    ): List<TransactionHistoryResponse>
+    ): List<DepositHistoryResponse>
 
     suspend fun getWithdrawTransactions(
         uuid: String,
         token: String?,
-        coin: String?,
+        currency: String?,
         startTime: Long?,
         endTime: Long?,
         limit: Int,
