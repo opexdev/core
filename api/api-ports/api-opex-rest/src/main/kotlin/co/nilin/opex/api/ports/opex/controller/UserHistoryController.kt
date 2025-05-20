@@ -133,7 +133,8 @@ class UserHistoryController(
         @CurrentSecurityContext securityContext: SecurityContext,
     ): List<TransactionSummary> {
         return walletProxy.getUserTradeTransactionSummary(
-            securityContext.authentication.name,
+            securityContext.jwtAuthentication().name,
+            securityContext.jwtAuthentication().tokenValue(),
             startTime,
             endTime,
             limit,
@@ -148,7 +149,8 @@ class UserHistoryController(
         @CurrentSecurityContext securityContext: SecurityContext,
     ): List<TransactionSummary> {
         return walletProxy.getUserDepositSummary(
-            securityContext.authentication.name,
+            securityContext.jwtAuthentication().name,
+            securityContext.jwtAuthentication().tokenValue(),
             startTime,
             endTime,
             limit,
@@ -163,7 +165,8 @@ class UserHistoryController(
         @CurrentSecurityContext securityContext: SecurityContext,
     ): List<TransactionSummary> {
         return walletProxy.getUserWithdrawSummary(
-            securityContext.authentication.name,
+            securityContext.jwtAuthentication().name,
+            securityContext.jwtAuthentication().tokenValue(),
             startTime,
             endTime,
             limit,

@@ -190,6 +190,7 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
 
     override suspend fun getUserTradeTransactionSummary(
         uuid: String,
+        token: String?,
         startTime: Long?,
         endTime: Long?,
         limit: Int?,
@@ -202,7 +203,7 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
                     it.queryParam("limit", limit)
                     it.build()
                 }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToFlux<TransactionSummary>()
@@ -213,6 +214,7 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
 
     override suspend fun getUserDepositSummary(
         uuid: String,
+        token: String?,
         startTime: Long?,
         endTime: Long?,
         limit: Int?,
@@ -225,7 +227,7 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
                     it.queryParam("limit", limit)
                     it.build()
                 }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToFlux<TransactionSummary>()
@@ -236,6 +238,7 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
 
     override suspend fun getUserWithdrawSummary(
         uuid: String,
+        token: String?,
         startTime: Long?,
         endTime: Long?,
         limit: Int?,
@@ -248,7 +251,7 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
                     it.queryParam("limit", limit)
                     it.build()
                 }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToFlux<TransactionSummary>()
