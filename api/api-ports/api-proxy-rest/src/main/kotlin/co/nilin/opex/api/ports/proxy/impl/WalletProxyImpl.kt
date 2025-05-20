@@ -119,6 +119,41 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
         }
     }
 
+    override suspend fun getTransactions(
+        uuid: String,
+        token: String?,
+        currency: String?,
+        category: UserTransactionCategory?,
+        startTime: Long?,
+        endTime: Long?,
+        limit: Int,
+        offset: Int,
+        ascendingByTime: Boolean?
+    ): List<UserTransactionHistory> {
+        return webClient.post()
+            .uri("$baseUrl/v2/transaction")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(
+                Mono.just(
+                    UserTransactionRequest(
+                        currency,
+                        category,
+                        startTime,
+                        endTime,
+                        limit,
+                        offset,
+                        ascendingByTime
+                    )
+                )
+            )
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToFlux<UserTransactionHistory>()
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+    }
+
     override suspend fun getGateWays(
         includeOffChainGateways: Boolean,
         includeOnChainGateways: Boolean,

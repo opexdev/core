@@ -101,6 +101,30 @@ class UserHistoryController(
         )
     }
 
+    @GetMapping("/history/transaction")
+    suspend fun getTransactionHistory(
+        @RequestParam currency: String?,
+        @RequestParam category: UserTransactionCategory?,
+        @RequestParam startTime: Long?,
+        @RequestParam endTime: Long?,
+        @RequestParam limit: Int?,
+        @RequestParam offset: Int?,
+        @RequestParam ascendingByTime: Boolean?,
+        @CurrentSecurityContext securityContext: SecurityContext,
+    ): List<UserTransactionHistory> {
+        return walletProxy.getTransactions(
+            securityContext.jwtAuthentication().name,
+            securityContext.jwtAuthentication().tokenValue(),
+            currency,
+            category,
+            startTime,
+            endTime,
+            limit ?: 10,
+            offset ?: 0,
+            ascendingByTime,
+        )
+    }
+
     @GetMapping("/summary/trade")
     suspend fun getTradeTransactionSummary(
         @RequestParam startTime: Long?,

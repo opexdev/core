@@ -32,6 +32,18 @@ interface WalletProxy {
         ascendingByTime: Boolean?,
     ): List<WithdrawHistoryResponse>
 
+    suspend fun getTransactions(
+        uuid: String,
+        token: String?,
+        currency: String?,
+        category: UserTransactionCategory?,
+        startTime: Long?,
+        endTime: Long?,
+        limit: Int,
+        offset: Int,
+        ascendingByTime: Boolean?,
+    ): List<UserTransactionHistory>
+
     suspend fun getGateWays(
         includeOffChainGateways: Boolean,
         includeOnChainGateways: Boolean,
