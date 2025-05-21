@@ -47,8 +47,13 @@ class UserService(
     suspend fun verifyRegister(request: VerifyOTPRequest): String {
         val username = Username.create(request.username)
         val otpRequest = OTPVerifyRequest(username.value, listOf(OTPCode(request.otp, username.type.otpType)))
-        val isOTPValid = otpProxy.verifyOTP(otpRequest)
-        if (!isOTPValid) throw OpexError.InvalidOTP.exception()
+        val otpResult = otpProxy.verifyOTP(otpRequest)
+        if (!otpResult.result) {
+            when (otpResult.type) {
+                OTPResultType.EXPIRED -> throw OpexError.ExpiredOTP.exception()
+                else -> throw OpexError.InvalidOTP.exception()
+            }
+        }
         return generateToken(username.value, OTPAction.REGISTER)
     }
 
@@ -98,8 +103,13 @@ class UserService(
     suspend fun verifyForget(request: VerifyOTPRequest): String {
         val username = Username.create(request.username)
         val otpRequest = OTPVerifyRequest(username.value, listOf(OTPCode(request.otp, username.type.otpType)))
-        val isOTPValid = otpProxy.verifyOTP(otpRequest)
-        if (!isOTPValid) throw OpexError.InvalidOTP.exception()
+        val otpResult = otpProxy.verifyOTP(otpRequest)
+        if (!otpResult.result) {
+            when (otpResult.type) {
+                OTPResultType.EXPIRED -> throw OpexError.ExpiredOTP.exception()
+                else -> throw OpexError.InvalidOTP.exception()
+            }
+        }
         return generateToken(username.value, OTPAction.FORGET)
     }
 

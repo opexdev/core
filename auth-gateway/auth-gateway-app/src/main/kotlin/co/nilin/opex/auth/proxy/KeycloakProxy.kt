@@ -11,10 +11,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
-import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.WebClientResponseException
-import org.springframework.web.reactive.function.client.awaitBody
-import org.springframework.web.reactive.function.client.bodyToMono
+import org.springframework.web.reactive.function.client.*
 
 @Service
 class KeycloakProxy(
@@ -55,6 +52,20 @@ class KeycloakProxy(
                 throw OpexError.InvalidUserCredentials.exception()
             }
             .awaitBody<Token>()
+    }
+
+    suspend fun checkUserCredentials(user: KeycloakUser, password: String) {
+        keycloakClient.post()
+            .uri("${keycloakConfig.url}/realms/${keycloakConfig.realm}/password/validate")
+            .header("Content-Type", "application/json")
+            .bodyValue(
+                object {
+                    val userId = user.id
+                    val password = password
+                }
+            ).retrieve()
+            .onStatus({ it == HttpStatus.valueOf(401) }) { throw OpexError.InvalidUserCredentials.exception() }
+            .awaitBodilessEntity()
     }
 
     suspend fun refreshUserToken(

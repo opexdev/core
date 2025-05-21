@@ -31,7 +31,7 @@ class OTPProxy(@Qualifier("otpWebClient") private val webClient: WebClient) {
             .awaitBody()
     }
 
-    suspend fun verifyOTP(verifyRequest: OTPVerifyRequest): Boolean {
+    suspend fun verifyOTP(verifyRequest: OTPVerifyRequest): OTPVerifyResponse {
         val request = object {
             val userId = verifyRequest.userId
             val otpCodes = verifyRequest.otpCodes.map {
@@ -41,17 +41,10 @@ class OTPProxy(@Qualifier("otpWebClient") private val webClient: WebClient) {
                 }
             }
         }
-        val response = webClient.post().uri("/otp/verify")
+        return webClient.post().uri("/otp/verify")
             .contentType(MediaType.APPLICATION_JSON)
             .body(BodyInserters.fromValue(request))
             .retrieve()
-            .toEntity<OTPVerifyResponse>()
-            .awaitSingle()
-
-        if (response.statusCode.isError) {
-            return false
-        }
-
-        return response.body?.result ?: false
+            .awaitBody()
     }
 }

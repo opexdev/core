@@ -49,6 +49,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     InvalidUsername(5014, "Invalid username", HttpStatus.BAD_REQUEST),
     InvalidUserCredentials(5015, "Invalid user credentials", HttpStatus.BAD_REQUEST),
     InvalidRegisterToken(5016, "Invalid register token", HttpStatus.BAD_REQUEST),
+    ExpiredOTP(5017, "OTP is expired", HttpStatus.BAD_REQUEST),
 
 
     // code 6000: wallet
@@ -97,8 +98,6 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     VoucherSaleDataNotFound(6043, "Voucher sale data not found", HttpStatus.NOT_FOUND),
     VoucherNotForSale(6044, "Voucher not for sale", HttpStatus.BAD_REQUEST),
     VoucherUsageLimitExceeded(6045, "Voucher usage limit exceeded", HttpStatus.BAD_REQUEST),
-
-
 
 
     // code 7000: api
