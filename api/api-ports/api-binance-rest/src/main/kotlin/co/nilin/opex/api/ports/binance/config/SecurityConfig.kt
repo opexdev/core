@@ -1,11 +1,11 @@
 package co.nilin.opex.api.ports.binance.config
 
 import co.nilin.opex.api.core.spi.APIKeyFilter
+import co.nilin.opex.common.security.ReactiveCustomJwtConverter
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Profile
-import org.springframework.security.config.Customizer
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder
 import org.springframework.security.config.web.server.ServerHttpSecurity
@@ -15,8 +15,8 @@ import org.springframework.security.web.server.SecurityWebFilterChain
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.server.WebFilter
 
-@Profile("binance")
 @EnableWebFluxSecurity
+@EnableMethodSecurity
 @Configuration("binanceSecurityConfig")
 class SecurityConfig(
     private val webClient: WebClient,
@@ -42,11 +42,12 @@ class SecurityConfig(
                     .pathMatchers("/socket").permitAll()
                     .pathMatchers("/v1/landing/**").permitAll()
                     .pathMatchers("/opex/v1/market/**").permitAll()
+                    .pathMatchers("/test/**").hasAuthority("PERM_order:write")
                     .pathMatchers("/**").hasAuthority("SCOPE_trust")
                     .anyExchange().authenticated()
             }
             .addFilterBefore(apiKeyFilter as WebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
-            .oauth2ResourceServer { it.jwt(Customizer.withDefaults()) }
+            .oauth2ResourceServer { it.jwt { jwt -> jwt.jwtAuthenticationConverter(ReactiveCustomJwtConverter()) } }
             .build()
     }
 
@@ -54,7 +55,7 @@ class SecurityConfig(
     @Throws(Exception::class)
     fun reactiveJwtDecoder(): ReactiveJwtDecoder? {
         return NimbusReactiveJwtDecoder.withJwkSetUri(jwkUrl)
-            .webClient(webClient)
+            .webClient(WebClient.create())
             .build()
     }
 }

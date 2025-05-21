@@ -14,12 +14,10 @@ import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder
 import org.springframework.security.web.server.SecurityWebFilterChain
 import org.springframework.web.reactive.function.client.WebClient
 
-@Profile("kc")
-@EnableWebFluxSecurity
-@EnableMethodSecurity
-@Configuration("opexSecurityConfig")
+//@EnableWebFluxSecurity
+//@EnableMethodSecurity
+//@Configuration("opexSecurityConfig")
 class SecurityConfig(
-    private val webClient: WebClient,
     private val apiKeyFilter: APIKeyFilter,
     @Value("\${app.auth.cert-url}")
     private val jwkUrl: String
@@ -32,6 +30,7 @@ class SecurityConfig(
                 it.pathMatchers("/actuator/**").permitAll()
                     .pathMatchers("/swagger-ui/**").permitAll()
                     .pathMatchers("/opex/v1/market/**").permitAll()
+                    .pathMatchers("/opex/v1/order/**").hasAuthority("PERM_order:write")
                     .pathMatchers("/**").hasAuthority("SCOPE_trust")
                     .anyExchange().authenticated()
             }
@@ -44,7 +43,7 @@ class SecurityConfig(
     @Throws(Exception::class)
     fun reactiveJwtDecoder(): ReactiveJwtDecoder? {
         return NimbusReactiveJwtDecoder.withJwkSetUri(jwkUrl)
-            .webClient(webClient)
+            .webClient(WebClient.builder().build())
             .build()
     }
 }
