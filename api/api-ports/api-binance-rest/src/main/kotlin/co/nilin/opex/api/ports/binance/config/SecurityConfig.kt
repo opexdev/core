@@ -5,7 +5,6 @@ import co.nilin.opex.common.security.ReactiveCustomJwtConverter
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder
 import org.springframework.security.config.web.server.ServerHttpSecurity
@@ -16,7 +15,6 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.server.WebFilter
 
 @EnableWebFluxSecurity
-@EnableMethodSecurity
 @Configuration("binanceSecurityConfig")
 class SecurityConfig(
     private val webClient: WebClient,
@@ -42,8 +40,6 @@ class SecurityConfig(
                     .pathMatchers("/socket").permitAll()
                     .pathMatchers("/v1/landing/**").permitAll()
                     .pathMatchers("/opex/v1/market/**").permitAll()
-                    .pathMatchers("/test/**").hasAuthority("PERM_order:write")
-                    .pathMatchers("/**").hasAuthority("SCOPE_trust")
                     .anyExchange().authenticated()
             }
             .addFilterBefore(apiKeyFilter as WebFilter, SecurityWebFiltersOrder.AUTHENTICATION)

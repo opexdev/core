@@ -23,7 +23,7 @@ class SecurityConfig(
     private val jwkUrl: String
 ) {
 
-    @Bean
+    //@Bean
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain {
         return http.csrf { it.disable() }
             .authorizeExchange {
@@ -39,7 +39,7 @@ class SecurityConfig(
             .build()
     }
 
-    @Bean
+    //@Bean
     @Throws(Exception::class)
     fun reactiveJwtDecoder(): ReactiveJwtDecoder? {
         return NimbusReactiveJwtDecoder.withJwkSetUri(jwkUrl)

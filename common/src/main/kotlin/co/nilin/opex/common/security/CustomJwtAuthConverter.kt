@@ -25,9 +25,12 @@ class CustomJwtAuthConverter : JwtAuthenticationConverter() {
 class ReactiveCustomJwtConverter : Converter<Jwt, Mono<AbstractAuthenticationToken>> {
 
     override fun convert(source: Jwt): Mono<AbstractAuthenticationToken> {
-        val authorities = source.getClaimAsStringList("permissions")
+        val permissions = source.getClaimAsStringList("permissions")
             .map { SimpleGrantedAuthority("PERM_${it}") }
             .toList()
-        return Mono.just(JwtAuthenticationToken(source, authorities))
+        val roles = source.getClaimAsStringList("roles")
+            .map { SimpleGrantedAuthority("ROLE_${it}") }
+            .toList()
+        return Mono.just(JwtAuthenticationToken(source, roles + permissions))
     }
 }

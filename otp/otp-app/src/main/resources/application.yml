@@ -38,7 +38,7 @@ logging:
     # org.zalando.logbook: TRACE
 app:
   auth:
-    cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
+    cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
 otp:
   sms:
     provider:

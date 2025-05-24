@@ -1,5 +1,6 @@
 package co.nilin.opex.matching.gateway.app.config
 
+import co.nilin.opex.common.security.ReactiveCustomJwtConverter
 import co.nilin.opex.matching.gateway.app.utils.hasRole
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -26,12 +27,11 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/swagger-resources/**").permitAll()
             .pathMatchers("/v2/api-docs").permitAll()
             .pathMatchers(HttpMethod.GET, "/pair-setting/**").permitAll()
-            .pathMatchers(HttpMethod.PUT, "/pair-setting/**").hasRole("SCOPE_trust", "admin_system")
-            .pathMatchers("/**").hasAuthority("SCOPE_trust")
+            .pathMatchers(HttpMethod.PUT, "/pair-setting/**").hasAuthority("ROLE_admin")
             .anyExchange().authenticated()
             .and()
             .oauth2ResourceServer()
-            .jwt()
+            .jwt { it.jwtAuthenticationConverter(ReactiveCustomJwtConverter()) }
         return http.build()
     }
 
