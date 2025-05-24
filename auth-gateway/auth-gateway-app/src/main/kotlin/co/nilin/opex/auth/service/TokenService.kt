@@ -2,21 +2,23 @@ package co.nilin.opex.auth.service
 
 import co.nilin.opex.auth.exception.UserNotFoundException
 import co.nilin.opex.auth.model.*
+import co.nilin.opex.auth.proxy.CaptchaProxy
 import co.nilin.opex.auth.proxy.GoogleProxy
 import co.nilin.opex.auth.proxy.KeycloakProxy
 import co.nilin.opex.auth.proxy.OTPProxy
 import co.nilin.opex.common.OpexError
 import org.springframework.stereotype.Service
-import reactor.kotlin.core.publisher.toMono
 
 @Service
 class TokenService(
     private val otpProxy: OTPProxy,
     private val keycloakProxy: KeycloakProxy,
-    private val googleProxy: GoogleProxy
+    private val googleProxy: GoogleProxy,
+    private val captchaProxy: CaptchaProxy,
 ) {
 
     suspend fun getToken(request: PasswordFlowTokenRequest): TokenResponse {
+        captchaProxy.validateCaptcha(request.captchaCode, request.captchaType ?: CaptchaType.INTERNAL)
         val username = Username.create(request.username)
         val user = keycloakProxy.findUserByUsername(username) ?: throw OpexError.UserNotFound.exception()
 

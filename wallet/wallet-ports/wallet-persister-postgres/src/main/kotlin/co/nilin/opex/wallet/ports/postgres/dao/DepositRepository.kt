@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.ports.postgres.dao
 
+import co.nilin.opex.wallet.core.inout.TransactionSummary
 import co.nilin.opex.wallet.core.model.DepositStatus
 import co.nilin.opex.wallet.ports.postgres.model.DepositModel
 import kotlinx.coroutines.flow.Flow
@@ -33,7 +34,7 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
         limit: Int? = 0,
         offset: Int? = 10000,
         ascendingByTime: Boolean? = false,
-        status: List<DepositStatus>? = listOf<DepositStatus>(DepositStatus.DONE, DepositStatus.INVALID)
+        status: List<DepositStatus>? = listOf<DepositStatus>(DepositStatus.DONE, DepositStatus.INVALID),
     ): Flow<DepositModel>
 
 
@@ -60,12 +61,12 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
         endTime: LocalDateTime?,
         ascendingByTime: Boolean? = false,
         offset: Int? = 0,
-        limit: Int? = 10000
+        limit: Int? = 10000,
     ): Flow<DepositModel>
 
 
     @Query(
-            """
+        """
         select * from deposits 
         where ( :owner is null or uuid = :owner)
             and (:sourceAddress is null or source_address = :sourceAddress) 
@@ -80,15 +81,36 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
         """
     )
     fun findByCriteria(
-            owner: String?,
-            currency: String?,
-            sourceAddress: String?,
-            transactionRef: String?,
-            startTime: LocalDateTime?,
-            endTime: LocalDateTime?,
-            status: List<DepositStatus>?,
-            ascendingByTime: Boolean? = false,
-            offset: Int? = 0,
-            limit: Int? = 10000
+        owner: String?,
+        currency: String?,
+        sourceAddress: String?,
+        transactionRef: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        status: List<DepositStatus>?,
+        ascendingByTime: Boolean? = false,
+        offset: Int? = 0,
+        limit: Int? = 10000,
     ): Flow<DepositModel>
+
+
+    @Query(
+        """
+       SELECT currency,
+            SUM(amount) AS amount
+        FROM deposits
+        WHERE uuid = :uuid
+            and (:startTime is null or create_date >= :startTime )
+            and (:endTime is null or create_date <= :endTime)
+        GROUP BY uuid, currency
+        ORDER BY amount DESC
+        limit :limit;
+   """
+    )
+    fun getDepositSummary(
+        uuid: String,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        limit: Int?,
+    ): Flow<TransactionSummary>
 }

@@ -373,4 +373,18 @@ class WithdrawService(
         return withdrawPersister.findWithdrawHistory(uuid, currency, startTime, endTime, limit, offset, ascendingByTime)
     }
 
+    suspend fun getWithdrawSummary(
+        uuid: String,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        limit: Int?,
+    ): List<TransactionSummary> {
+        return withdrawPersister.getWithdrawSummary(
+            uuid,
+            startTime,
+            endTime,
+            limit,
+        )
+    }
+
 }

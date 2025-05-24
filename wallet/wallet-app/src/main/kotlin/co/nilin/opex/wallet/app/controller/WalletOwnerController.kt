@@ -1,6 +1,5 @@
 package co.nilin.opex.wallet.app.controller
 
-
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.OwnerLimitsResponse
 import co.nilin.opex.wallet.app.dto.WalletData
@@ -41,8 +40,7 @@ class WalletOwnerController(
         val owner = walletOwnerManager.findWalletOwner(uuid) ?: run {
             if (currentUserProvider.getCurrentUser()?.uuid.equals(uuid) && environment.activeProfiles.contains("otc"))
                 walletOwnerManager.createWalletOwner(
-                    uuid, currentUserProvider.getCurrentUser()?.fullName
-                        ?: currentUserProvider.getCurrentUser()?.mobile ?: "not set", ""
+                    uuid, currentUserProvider.getCurrentUser()?.mobile ?: "not set", ""
                 )
             throw OpexError.WalletOwnerNotFound.exception()
         }

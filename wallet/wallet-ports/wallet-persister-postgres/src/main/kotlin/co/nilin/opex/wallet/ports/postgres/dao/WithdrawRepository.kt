@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.ports.postgres.dao
 
+import co.nilin.opex.wallet.core.inout.TransactionSummary
 import co.nilin.opex.wallet.core.model.WithdrawStatus
 import co.nilin.opex.wallet.ports.postgres.model.WithdrawModel
 import kotlinx.coroutines.flow.Flow
@@ -207,5 +208,25 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
 //        @Param("endTime") endTime: LocalDateTime?,
 //        @Param("limit") limit: Int,
 //    ): Flow<WithdrawModel>
+
+    @Query(
+        """
+       SELECT currency,
+            SUM(amount) AS amount
+        FROM withdraws
+        WHERE uuid = :uuid
+            and (:startTime is null or create_date >= :startTime )
+            and (:endTime is null or create_date <= :endTime)
+        GROUP BY uuid, currency
+        ORDER BY amount DESC
+        limit :limit;
+   """
+    )
+    fun getWithdrawSummary(
+        uuid: String,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        limit: Int?,
+    ): Flow<TransactionSummary>
 
 }

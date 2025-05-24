@@ -3,6 +3,7 @@ package co.nilin.opex.wallet.app.service
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.app.dto.ManualTransferRequest
+import co.nilin.opex.wallet.app.utils.asLocalDateTime
 import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.DepositStatus
 import co.nilin.opex.wallet.core.model.DepositType
@@ -121,14 +122,14 @@ class DepositService(
 
         if (depositCommand.status == DepositStatus.DONE) {
             logger.info("Going to charge wallet on a ${depositType.name} deposit event :$symbol-$chain-$receiverUuid-$amount")
-            val actualSenderUuid = if (
+            val (actualSenderUuid, actualTransferCategory) = if (
                 senderUuid != null &&
                 depositType == DepositType.OFF_CHAIN &&
                 transferMethod == TransferMethod.MANUALLY
             ) {
-                senderUuid
+                senderUuid to TransferCategory.DEPOSIT_MANUALLY
             } else {
-                walletOwnerManager.systemUuid
+                walletOwnerManager.systemUuid to TransferCategory.DEPOSIT
             }
             return transferService.transfer(
                 symbol,
@@ -139,7 +140,7 @@ class DepositService(
                 amount,
                 description,
                 transferRef,
-                TransferCategory.DEPOSIT,
+                actualTransferCategory,
             ).transferResult
         } else throw OpexError.InvalidDeposit.exception()
 
@@ -271,5 +272,17 @@ class DepositService(
         }
     }
 
-
+    suspend fun getDepositSummary(
+        uuid: String,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        limit: Int?,
+    ): List<TransactionSummary> {
+        return depositPersister.getDepositSummary(
+            uuid,
+            startTime,
+            endTime,
+            limit,
+        )
+    }
 }
