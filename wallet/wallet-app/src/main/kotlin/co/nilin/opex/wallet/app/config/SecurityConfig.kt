@@ -49,7 +49,7 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/payment/internal/**").permitAll()
             .pathMatchers("/inquiry/**").permitAll()
             .pathMatchers("/v2/transfer/**").permitAll()
-            .pathMatchers("/voucher/**").authenticated()
+            .pathMatchers("/voucher/**").hasAuthority("PERM_voucher:submit")
             .anyExchange().authenticated()
             .and()
             .oauth2ResourceServer()

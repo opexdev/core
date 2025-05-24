@@ -88,7 +88,7 @@
         "containerId": "opex",
         "attributes": {
           "permissions": [
-            "order:create,order:cancel"
+            "order:write,address:assign"
           ]
         }
       },
@@ -106,6 +106,9 @@
         "description": "${role_default-roles}",
         "composite": true,
         "composites": {
+          "realm": [
+            "user-1"
+          ],
           "client": {
             "account": [
               "manage-account",
@@ -149,7 +152,7 @@
         "containerId": "opex",
         "attributes": {
           "permissions": [
-            "deposit:create:crypto,deposit:create:fiat,withdraw:create,address:assign,voucher:submit,withdraw:cancel,withdraw:create:crypto,withdraw:create:fiat"
+            "deposit:create:fiat,withdraw:create:crypto,withdraw:create:fiat,voucher:submit"
           ]
         }
       },
@@ -1082,7 +1085,6 @@
       "defaultClientScopes": [
         "trust",
         "basic",
-        "email",
         "role_permission_attribute"
       ],
       "optionalClientScopes": []
@@ -1213,7 +1215,6 @@
       "defaultClientScopes": [
         "trust",
         "basic",
-        "email",
         "role_permission_attribute"
       ],
       "optionalClientScopes": []
@@ -2208,7 +2209,6 @@
       "defaultClientScopes": [
         "trust",
         "basic",
-        "email",
         "role_permission_attribute"
       ],
       "optionalClientScopes": []
@@ -2708,12 +2708,107 @@
           "consentRequired": false,
           "config": {
             "introspection.token.claim": "true",
-            "multivalued": "true",
             "userinfo.token.claim": "true",
+            "multivalued": "true",
             "id.token.claim": "true",
-            "lightweight.claim": "false",
+            "lightweight.claim": "true",
             "access.token.claim": "true",
             "claim.name": "roles",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "id": "aeca072b-0153-4ffc-b3de-bea60f4a7fd7",
+          "name": "Mobile",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "aggregate.attrs": "false",
+            "introspection.token.claim": "true",
+            "multivalued": "false",
+            "userinfo.token.claim": "true",
+            "user.attribute": "mobile",
+            "id.token.claim": "true",
+            "lightweight.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "mobile",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "id": "b37f97ee-3a0a-498f-9535-f2afe2a881b9",
+          "name": "Email",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "aggregate.attrs": "false",
+            "introspection.token.claim": "true",
+            "multivalued": "false",
+            "userinfo.token.claim": "true",
+            "user.attribute": "email",
+            "id.token.claim": "true",
+            "lightweight.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "email",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "id": "a163e6a9-3fbe-481d-b783-779acdf41436",
+          "name": "First name",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "aggregate.attrs": "false",
+            "introspection.token.claim": "true",
+            "multivalued": "false",
+            "userinfo.token.claim": "true",
+            "user.attribute": "firstName",
+            "id.token.claim": "true",
+            "lightweight.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "firstName",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "id": "ba98367f-171f-490d-8fdf-65ab4cdf46f4",
+          "name": "Last name",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "aggregate.attrs": "false",
+            "introspection.token.claim": "true",
+            "multivalued": "false",
+            "userinfo.token.claim": "true",
+            "user.attribute": "lastName",
+            "id.token.claim": "true",
+            "lightweight.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "lastName",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "id": "270e9cfc-cdbf-4fa1-8358-47e381abce45",
+          "name": "Username",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "aggregate.attrs": "false",
+            "introspection.token.claim": "true",
+            "multivalued": "false",
+            "userinfo.token.claim": "true",
+            "user.attribute": "username",
+            "id.token.claim": "true",
+            "lightweight.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "username",
             "jsonType.label": "String"
           }
         }
