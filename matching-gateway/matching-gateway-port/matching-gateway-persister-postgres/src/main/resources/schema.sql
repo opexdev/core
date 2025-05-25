@@ -11,12 +11,12 @@ $$
         IF NOT EXISTS (SELECT 1
                        FROM information_schema.columns
                        WHERE table_name = 'pair_setting' AND column_name = 'min_order') THEN ALTER TABLE pair_setting
-            ADD COLUMN min_order DECIMAL NOT NULL default 0.000001;
+            ADD COLUMN min_order DECIMAL NOT NULL default 1;
         END IF;
         IF NOT EXISTS (SELECT 1
                        FROM information_schema.columns
                        WHERE table_name = 'pair_setting' AND column_name = 'max_order') THEN ALTER TABLE pair_setting
-            ADD COLUMN max_order DECIMAL NOT NULL default 100;
+            ADD COLUMN max_order DECIMAL NOT NULL default 1;
         END IF;
         IF NOT EXISTS (SELECT 1
                        FROM information_schema.columns
