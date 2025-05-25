@@ -5,6 +5,7 @@ import co.nilin.opex.common.security.ReactiveCustomJwtConverter
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder
 import org.springframework.security.config.web.server.ServerHttpSecurity
@@ -39,6 +40,8 @@ class SecurityConfig(
                     .pathMatchers("/v3/klines").permitAll()
                     .pathMatchers("/socket").permitAll()
                     .pathMatchers("/v1/landing/**").permitAll()
+                    .pathMatchers(HttpMethod.POST, "/v3/order").hasAuthority("PERM_order:write")
+                    .pathMatchers(HttpMethod.DELETE, "/v3/order").hasAuthority("PERM_order:write")
                     .pathMatchers("/opex/v1/market/**").permitAll()
                     .anyExchange().authenticated()
             }

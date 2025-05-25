@@ -31,7 +31,7 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/currency/**").permitAll()
             .pathMatchers("/filter/**").authenticated()
             .pathMatchers("/admin/**").hasAuthority("ROLE_admin")
-            .pathMatchers("/v1/address/assign").hasAuthority("PREM_address_assign")
+            .pathMatchers("/v1/address/assign").hasAuthority("PREM_address:assign")
             .pathMatchers(HttpMethod.PUT, "/v1/address").hasAuthority("ROLE_admin")
             .pathMatchers("/deposit/**").permitAll()
             .pathMatchers("/addresses/**").hasAuthority("ROLE_admin")
