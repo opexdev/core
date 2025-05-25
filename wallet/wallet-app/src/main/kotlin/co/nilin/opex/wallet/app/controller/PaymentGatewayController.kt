@@ -83,8 +83,9 @@ class PaymentGatewayController(
             transactionRef = request.reference,
             status = DepositStatus.DONE,
             depositType = DepositType.OFF_CHAIN,
-            network = TransferMethod.IPG.name,
-            attachment = null
+            network = null,
+            attachment = null,
+            transferMethod = TransferMethod.IPG
         )
         traceDepositService.saveDepositInNewTransaction(depositCommand)
 

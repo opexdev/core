@@ -1,6 +1,8 @@
 package co.nilin.opex.market.ports.postgres.dao
 
 import co.nilin.opex.market.core.inout.AggregatedOrderPriceModel
+import co.nilin.opex.market.core.inout.MatchingOrderType
+import co.nilin.opex.market.core.inout.OrderData
 import co.nilin.opex.market.core.inout.OrderDirection
 import co.nilin.opex.market.ports.postgres.model.OrderModel
 import kotlinx.coroutines.flow.Flow
@@ -25,8 +27,9 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
     @Query("select * from orders where symbol = :symbol and order_id = :orderId")
     fun findBySymbolAndOrderId(
         @Param("symbol")
-        symbol: String, @Param("orderId")
-        orderId: Long
+        symbol: String,
+        @Param("orderId")
+        orderId: Long,
     ): Mono<OrderModel>
 
     @Query("select * from orders where symbol = :symbol and client_order_id = :origClientOrderId")
@@ -34,7 +37,7 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
         @Param("symbol")
         symbol: String,
         @Param("origClientOrderId")
-        origClientOrderId: String
+        origClientOrderId: String,
     ): Mono<OrderModel>
 
     @Query(
@@ -53,7 +56,7 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
         symbol: String?,
         @Param("statuses")
         status: Collection<Int>,
-        limit: Int
+        limit: Int,
     ): Flow<OrderModel>
 
     @Query(
@@ -75,7 +78,7 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
         startTime: Date?,
         @Param("endTime")
         endTime: Date?,
-        limit: Int
+        limit: Int,
     ): Flow<OrderModel>
 
     @Query(
@@ -96,7 +99,7 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
         @Param("limit")
         limit: Int,
         @Param("statuses")
-        status: Collection<Int>
+        status: Collection<Int>,
     ): Flux<AggregatedOrderPriceModel>
 
     @Query(
@@ -117,7 +120,7 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
         @Param("limit")
         limit: Int,
         @Param("statuses")
-        status: Collection<Int>
+        status: Collection<Int>,
     ): Flux<AggregatedOrderPriceModel>
 
     @Query("select * from orders where symbol = :symbol order by create_date desc limit 1")
@@ -131,4 +134,44 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
 
     @Query("select count(*) from orders where symbol = :symbol and create_date >= :interval")
     fun countBySymbolNewerThan(interval: LocalDateTime, symbol: String): Flow<Long>
+
+    @Query(
+        """
+select o.symbol,
+       o.order_type,
+       o.side,
+       o.price,
+       o.quantity,
+       o.taker_fee,
+       o.maker_fee,
+       os.status,
+       os.appearance,
+       o.create_date,
+       os.date as update_date
+from orders o
+         left join (select *
+                    from order_status os1
+                    where os1.date = (select max(os2.date)
+                                      from order_status os2
+                                      where os2.ouid = os1.ouid)) os on o.ouid = os.ouid
+ WHERE uuid = :uuid
+   and (:symbol is null or o.symbol = :symbol)
+   and (:startTime is null or o.create_date >= :startTime)
+   and (:endTime is null or o.create_date <= :endTime)
+   and (:orderType is null or o.order_type = :orderType)
+   and (:direction is null or o.side = :direction)
+order by create_date desc
+ limit :limit offset :offset;
+    """
+    )
+    fun findByCriteria(
+        uuid: String,
+        symbol: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        orderType: MatchingOrderType?,
+        direction: OrderDirection?,
+        limit: Int?,
+        offset: Int?,
+    ): Flow<OrderData>
 }

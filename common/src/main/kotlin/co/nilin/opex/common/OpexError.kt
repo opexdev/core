@@ -28,6 +28,8 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
 
     // code 4000: matching-gateway
     SubmitOrderForbiddenByAccountant(4001, null, HttpStatus.BAD_REQUEST),
+    InvalidOrderType(4002, "Invalid order type", HttpStatus.BAD_REQUEST),
+    InvalidQuantity(4003, "Invalid quantity", HttpStatus.BAD_REQUEST),
 
     // code 5000: user-management
     EmailAlreadyVerified(5001, "Email is already verified", HttpStatus.BAD_REQUEST),
@@ -39,9 +41,16 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     AlreadyInKYC(5007, "KYC flow for this user has executed", HttpStatus.BAD_REQUEST),
     UserKYCBlocked(5008, "User is blocked from KYC", HttpStatus.BAD_REQUEST),
     InvalidPassword(5009, "Password is not valid", HttpStatus.BAD_REQUEST),
-    UserAlreadyExists(5009, "User with email is already registered", HttpStatus.BAD_REQUEST),
+    UserAlreadyExists(5009, "User is already registered", HttpStatus.BAD_REQUEST),
     LoginIsLimited(5010, "Your email is not in whitelist", HttpStatus.BAD_REQUEST),
     RegisterIsLimited(5011, "Your email is not in whitelist", HttpStatus.BAD_REQUEST),
+    GmailNotFoundInToken(5012, "Email not found in Google token", HttpStatus.NOT_FOUND),
+    UserIDNotFoundInToken(5013, "Google user ID (sub) not found in token", HttpStatus.NOT_FOUND),
+    InvalidUsername(5014, "Invalid username", HttpStatus.BAD_REQUEST),
+    InvalidUserCredentials(5015, "Invalid user credentials", HttpStatus.BAD_REQUEST),
+    InvalidRegisterToken(5016, "Invalid register token", HttpStatus.BAD_REQUEST),
+    ExpiredOTP(5017, "OTP is expired", HttpStatus.BAD_REQUEST),
+
 
     // code 6000: wallet
     WalletOwnerNotFound(6001, null, HttpStatus.NOT_FOUND),
@@ -71,7 +80,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     WithdrawAmountLessThanMinimum(6025, "Withdraw amount is less than minimum", HttpStatus.BAD_REQUEST),
     WithdrawCannotBeCanceled(6026, "Withdraw cannot be canceled", HttpStatus.BAD_REQUEST),
     WithdrawCannotBeRejected(6027, "Withdraw cannot be rejected", HttpStatus.BAD_REQUEST),
-    WithdrawAmountMoreThanMinimum(6028, "Withdraw amount is more than minimum", HttpStatus.BAD_REQUEST),
+    WithdrawAmountGreaterThanMaximum(6028, "Withdraw amount is more than maximum", HttpStatus.BAD_REQUEST),
     ImplNotFound(6029, null, HttpStatus.NOT_FOUND),
     InvalidWithdrawStatus(6030, "Withdraw status is invalid", HttpStatus.NOT_FOUND),
     GatewayNotFount(6031, null, HttpStatus.NOT_FOUND),
@@ -82,6 +91,13 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     VoucherNotFound(6036, "Voucher not found", HttpStatus.NOT_FOUND),
     InvalidVoucher(6037, "Invalid Voucher", HttpStatus.BAD_REQUEST),
     PairIsNotAvailable(6038, "Pair is not available", HttpStatus.BAD_REQUEST),
+    VoucherGroupNotFound(6039, "Voucher Group not found", HttpStatus.NOT_FOUND),
+    VoucherGroupIsInactive(6040, "Voucher Group is inactive", HttpStatus.BAD_REQUEST),
+    VoucherAlreadyUsed(6041, "Voucher has already been used", HttpStatus.BAD_REQUEST),
+    VoucherExpired(6042, "Voucher has expired", HttpStatus.BAD_REQUEST),
+    VoucherSaleDataNotFound(6043, "Voucher sale data not found", HttpStatus.NOT_FOUND),
+    VoucherNotForSale(6044, "Voucher not for sale", HttpStatus.BAD_REQUEST),
+    VoucherUsageLimitExceeded(6045, "Voucher usage limit exceeded", HttpStatus.BAD_REQUEST),
 
 
     // code 7000: api
@@ -107,15 +123,26 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
 
     // code 11000: market
 
+    // code 12000: otp
+    OTPConfigNotFound(12001, "Config for otp type not found", HttpStatus.NOT_FOUND),
+    UnableToSendOTP(12002, "Unable to send OTP code to the receiver", HttpStatus.INTERNAL_SERVER_ERROR),
+    OTPAlreadyRequested(12003, "OTP code is already requested for the receiver and OTP type", HttpStatus.BAD_REQUEST),
+    TOTPNotFound(12004, "TOTP for the requested user not found", HttpStatus.NOT_FOUND),
+    InvalidTOTPCode(12005, "TOTP code is invalid", HttpStatus.BAD_REQUEST),
+    TOTPSetupIncomplete(12006, "TOTP setup is incomplete", HttpStatus.BAD_REQUEST),
+    TOTPAlreadyRegistered(12007, "User already registered for TOTP", HttpStatus.BAD_REQUEST),
+    OTPDisabled(12008, "OTP for this receiver type is disabled", HttpStatus.INTERNAL_SERVER_ERROR),
+
+
     //code 12000 profile
-    UserIdAlreadyExists(120001, "User with this id or email is already registered", HttpStatus.BAD_REQUEST),
-    InvalidLinkedAccount(120002, "Irrelevant account", HttpStatus.BAD_REQUEST),
-    AccountNotFound(120003, " Account not found", HttpStatus.BAD_REQUEST),
-    DuplicateAccount(120004, " Duplicate account", HttpStatus.BAD_REQUEST),
-    InvalidIban(120005, " Invalid iban number", HttpStatus.BAD_REQUEST),
-    InvalidCard(120006, " Invalid card number", HttpStatus.BAD_REQUEST),
-    VerificationFailed(120007, "Verification Failed", HttpStatus.BAD_REQUEST),
-    ProfileApprovalRequestAlreadyExists(120008, "Request Already Exists", HttpStatus.BAD_REQUEST),
+    UserIdAlreadyExists(130001, "User with this id or email is already registered", HttpStatus.BAD_REQUEST),
+    InvalidLinkedAccount(130002, "Irrelevant account", HttpStatus.BAD_REQUEST),
+    AccountNotFound(130003, " Account not found", HttpStatus.BAD_REQUEST),
+    DuplicateAccount(130004, " Duplicate account", HttpStatus.BAD_REQUEST),
+    InvalidIban(130005, " Invalid iban number", HttpStatus.BAD_REQUEST),
+    InvalidCard(130006, " Invalid card number", HttpStatus.BAD_REQUEST),
+    VerificationFailed(130007, "Verification Failed", HttpStatus.BAD_REQUEST),
+    ProfileApprovalRequestAlreadyExists(130008, "Request Already Exists", HttpStatus.BAD_REQUEST),
     ;
 
     override fun code() = this.code

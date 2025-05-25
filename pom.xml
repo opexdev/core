@@ -31,7 +31,9 @@
         <module>user-management</module>
         <module>wallet</module>
         <module>bc-gateway</module>
+        <module>otp</module>
         <module>common</module>
+        <module>auth-gateway</module>
         <module>profile</module>
     </modules>
 

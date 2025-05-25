@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.core.model
 
+import co.nilin.opex.wallet.core.inout.TransferMethod
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
@@ -24,8 +25,9 @@ data class Withdraw(
     var withdrawType: WithdrawType,
     var attachment: String?,
     val createDate: LocalDateTime = LocalDateTime.now(),
-    val lastUpdateDate: LocalDateTime? = null
-) {
+    val lastUpdateDate: LocalDateTime? = null,
+    var transferMethod: TransferMethod?,
+    ) {
 
     fun canBeProcessed(): Boolean {
         return status == WithdrawStatus.CREATED

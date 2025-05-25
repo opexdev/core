@@ -41,13 +41,14 @@ class PairSettingServiceImpl(
             .awaitFirstOrNull() ?: emptyList()
     }
 
-    override suspend fun update(pair: String, isAvailable: Boolean): PairSetting {
+    override suspend fun update(pairSetting: PairSetting): PairSetting {
         val pairSetting =
-            pairSettingRepository.findByPair(pair).awaitFirstOrNull() ?: throw OpexError.PairNotFound.exception()
-        if (pairSetting.isAvailable == isAvailable)
-            return pairSetting.toPairSetting()
+            pairSettingRepository.findByPair(pairSetting.pair).awaitFirstOrNull() ?: throw OpexError.PairNotFound.exception()
         pairSetting.apply {
-            this.isAvailable = isAvailable
+            this.isAvailable = pairSetting.isAvailable
+            this.minOrder = pairSetting.minOrder
+            this.maxOrder = pairSetting.maxOrder
+            this.orderTypes = pairSetting.orderTypes
             this.updateDate = LocalDateTime.now()
         }
         return pairSettingRepository.save(pairSetting).awaitFirst().toPairSetting().also {

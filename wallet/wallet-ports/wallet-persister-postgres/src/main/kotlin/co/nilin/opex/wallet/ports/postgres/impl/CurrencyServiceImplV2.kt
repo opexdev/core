@@ -6,12 +6,15 @@ package co.nilin.opex.wallet.ports.postgres.impl
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.inout.CurrenciesCommand
 import co.nilin.opex.wallet.core.inout.CurrencyCommand
+import co.nilin.opex.wallet.core.inout.CurrencyData
 import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepositoryV2
 import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
 import co.nilin.opex.wallet.ports.postgres.util.toCommand
+import co.nilin.opex.wallet.ports.postgres.util.toCurrencyData
 import co.nilin.opex.wallet.ports.postgres.util.toModel
+import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -61,6 +64,15 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
     override suspend fun fetchCurrencies(request: FetchCurrency?): CurrenciesCommand? {
         return CurrenciesCommand(loadCurrencies(request)?.map { it.toCommand() }
             ?.collect(Collectors.toList())?.awaitFirstOrNull())
+    }
+
+    override suspend fun fetchAllCurrencies(): List<CurrencyData> {
+        return currencyRepository.fetchAll()
+            .map {
+                it.toCurrencyData()
+            }
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
     }
 
     override suspend fun fetchCurrency(request: FetchCurrency): CurrencyCommand? {

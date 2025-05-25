@@ -24,7 +24,7 @@ import java.util.*
 class UserQueryHandlerImpl(
     private val orderRepository: OrderRepository,
     private val tradeRepository: TradeRepository,
-    private val orderStatusRepository: OrderStatusRepository
+    private val orderStatusRepository: OrderStatusRepository,
 ) : UserQueryHandler {
 
     //TODO merge order and status fetching in query
@@ -103,42 +103,88 @@ class UserQueryHandlerImpl(
     override suspend fun txOfTrades(transactionRequest: TransactionRequest): TransactionResponse? {
 
         if (transactionRequest.ascendingByTime == true)
-            return TransactionResponse(tradeRepository.findTxOfTradesAsc(transactionRequest.owner!!,
-                transactionRequest.startTime?.let {
-                    LocalDateTime.ofInstant(
-                        Instant.ofEpochMilli(transactionRequest.startTime!!),
-                        ZoneId.systemDefault()
-                    )
-                }
-                    ?: null,
-                transactionRequest.endTime?.let {
-                    LocalDateTime.ofInstant(
-                        Instant.ofEpochMilli(transactionRequest.endTime!!),
-                        ZoneId.systemDefault()
-                    )
-                }
-                    ?: null,
-                transactionRequest.offset, transactionRequest.limit
-            ).map { it.toDto() }.collectList()?.awaitFirstOrNull()
+            return TransactionResponse(
+                tradeRepository.findTxOfTradesAsc(
+                    transactionRequest.owner!!,
+                    transactionRequest.startTime?.let {
+                        LocalDateTime.ofInstant(
+                            Instant.ofEpochMilli(transactionRequest.startTime!!),
+                            ZoneId.systemDefault()
+                        )
+                    }
+                        ?: null,
+                    transactionRequest.endTime?.let {
+                        LocalDateTime.ofInstant(
+                            Instant.ofEpochMilli(transactionRequest.endTime!!),
+                            ZoneId.systemDefault()
+                        )
+                    }
+                        ?: null,
+                    transactionRequest.offset, transactionRequest.limit
+                ).map { it.toDto() }.collectList()?.awaitFirstOrNull()
             )
         else
-            return TransactionResponse(tradeRepository.findTxOfTradesDesc(transactionRequest.owner!!,
-                transactionRequest.startTime?.let {
-                    LocalDateTime.ofInstant(
-                        Instant.ofEpochMilli(transactionRequest.startTime!!),
-                        ZoneId.systemDefault()
-                    )
-                }
-                    ?: null,
-                transactionRequest.endTime?.let {
-                    LocalDateTime.ofInstant(
-                        Instant.ofEpochMilli(transactionRequest.endTime!!),
-                        ZoneId.systemDefault()
-                    )
-                }
-                    ?: null,
-                transactionRequest.offset, transactionRequest.limit
-            ).map { it.toDto() }.collectList()?.awaitFirstOrNull()
+            return TransactionResponse(
+                tradeRepository.findTxOfTradesDesc(
+                    transactionRequest.owner!!,
+                    transactionRequest.startTime?.let {
+                        LocalDateTime.ofInstant(
+                            Instant.ofEpochMilli(transactionRequest.startTime!!),
+                            ZoneId.systemDefault()
+                        )
+                    }
+                        ?: null,
+                    transactionRequest.endTime?.let {
+                        LocalDateTime.ofInstant(
+                            Instant.ofEpochMilli(transactionRequest.endTime!!),
+                            ZoneId.systemDefault()
+                        )
+                    }
+                        ?: null,
+                    transactionRequest.offset, transactionRequest.limit
+                ).map { it.toDto() }.collectList()?.awaitFirstOrNull()
             )
+    }
+
+    override suspend fun getOrderHistory(
+        uuid: String,
+        symbol: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        orderType: MatchingOrderType?,
+        direction: OrderDirection?,
+        limit: Int?,
+        offset: Int?,
+    ): List<OrderData> {
+        return orderRepository.findByCriteria(
+            uuid,
+            symbol,
+            startTime,
+            endTime,
+            orderType,
+            direction,
+            limit,
+            offset,
+        ).toList()
+    }
+
+    override suspend fun getTradeHistory(
+        uuid: String,
+        symbol: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        direction: OrderDirection?,
+        limit: Int?,
+        offset: Int?,
+    ): List<Trade> {
+        return tradeRepository.findByCriteria(
+            uuid,
+            symbol,
+            startTime,
+            endTime,
+            direction,
+            limit,
+            offset
+        ).toList()
     }
 }

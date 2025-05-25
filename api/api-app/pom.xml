@@ -52,6 +52,11 @@
             <artifactId>api-binance-rest</artifactId>
         </dependency>
         <dependency>
+            <groupId>co.nilin.opex.api.ports.opex</groupId>
+            <artifactId>api-opex-rest</artifactId>
+            <version>1.0.1-beta.7</version>
+        </dependency>
+        <dependency>
             <groupId>co.nilin.opex.api.ports.postgres</groupId>
             <artifactId>api-persister-postgres</artifactId>
         </dependency>

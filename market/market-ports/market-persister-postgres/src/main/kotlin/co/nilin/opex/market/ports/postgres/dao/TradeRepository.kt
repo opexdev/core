@@ -1,7 +1,9 @@
 package co.nilin.opex.market.ports.postgres.dao
 
 import co.nilin.opex.market.core.inout.BestPrice
+import co.nilin.opex.market.core.inout.OrderDirection
 import co.nilin.opex.market.core.inout.PriceStat
+import co.nilin.opex.market.core.inout.Trade
 import co.nilin.opex.market.core.inout.TradeVolumeStat
 import co.nilin.opex.market.core.inout.Transaction
 import co.nilin.opex.market.ports.postgres.model.*
@@ -530,4 +532,48 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         limit: Int,
         offset: Int,
     ): Flow<TradeModel>
+
+
+
+    @Query(
+        """
+select t.symbol,
+       t.id,
+       case when :uuid = t.maker_uuid then t.maker_ouid else t.taker_ouid end             as ouid,
+       case when :uuid = t.maker_uuid then t.maker_price else t.taker_price end           as price,
+       t.matched_quantity,
+       t.quote_asset,
+       case when :uuid = t.maker_uuid then t.maker_commission else t.taker_commission end as commission,
+       case
+           when :uuid = t.maker_uuid then t.maker_commission_asset
+           else t.taker_commission_asset end                                              as commission_asset,
+       t.trade_date,
+       case
+           when :uuid = t.maker_uuid and o.side = 'ask' then true
+           else false
+           end                                                                            as is_buyer,
+       t.maker_uuid = :uuid                                                               as is_maker,
+       true                                                                               as is_best_match,
+       case when o.side = 'bid' and t.maker_uuid = :uuid then true else false end         as is_maker_buyer
+from trades t
+         inner join orders o on o.ouid in (t.maker_ouid, t.taker_ouid)
+where :uuid in (t.maker_uuid, t.taker_uuid)    
+            and (:symbol is null or t.symbol = :symbol) 
+            and (:startTime is null or t.trade_date >= :startTime) 
+            and (:endTime is null or t.trade_date <= :endTime) 
+            and (:direction is null or o.side = :direction)
+        order by t.trade_date desc 
+        limit :limit
+        offset :offset
+        """
+    )
+    suspend fun findByCriteria(
+        uuid: String,
+        symbol: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        direction: OrderDirection?,
+        limit: Int?,
+        offset: Int?,
+    ) : Flow<Trade>
 }

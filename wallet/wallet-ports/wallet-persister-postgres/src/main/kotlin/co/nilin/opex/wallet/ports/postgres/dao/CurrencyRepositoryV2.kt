@@ -43,4 +43,8 @@ interface CurrencyRepositoryV2 : ReactiveCrudRepository<CurrencyModel, String> {
         order: Int? = null
     ): Mono<Void>
 
+
+    @Query("select * from currency order by display_order ")
+    fun fetchAll(): Flux<CurrencyModel>
+
 }

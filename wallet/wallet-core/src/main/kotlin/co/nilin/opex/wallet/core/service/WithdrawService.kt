@@ -5,6 +5,7 @@ import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.model.WithdrawType
 import co.nilin.opex.wallet.core.spi.*
+import io.micrometer.core.instrument.MeterRegistry
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
@@ -13,7 +14,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.time.LocalDateTime
-import io.micrometer.core.instrument.MeterRegistry
 
 @Service
 class WithdrawService(
@@ -27,7 +27,7 @@ class WithdrawService(
     private val meterRegistry: MeterRegistry,
     private val gatewayService: GatewayService,
     @Qualifier("onChainGateway") private val bcGatewayProxy: GatewayPersister,
-    @Value("\${app.system.uuid}") private val systemUuid: String
+    @Value("\${app.system.uuid}") private val systemUuid: String,
 ) {
     private val logger = LoggerFactory.getLogger(WithdrawService::class.java)
 
@@ -66,7 +66,7 @@ class WithdrawService(
             throw OpexError.WithdrawAmountLessThanMinimum.exception()
 
         if (withdrawCommand.amount > withdrawData.maximum)
-            throw OpexError.WithdrawAmountMoreThanMinimum.exception()
+            throw OpexError.WithdrawAmountGreaterThanMaximum.exception()
 
 
         val transferResultDetailed = transferManager.transfer(
@@ -99,7 +99,8 @@ class WithdrawService(
                 WithdrawStatus.CREATED,
                 null,
                 withdrawCommand.withdrawType!!,
-                null
+                null,
+                transferMethod = withdrawCommand.transferMethod
             )
         )
         try {
@@ -135,6 +136,7 @@ class WithdrawService(
                         withdrawCommand.currency = it.currencySymbol!!
                         withdrawCommand.destNetwork = it.transferMethod.name
                         withdrawCommand.withdrawType = WithdrawType.OFF_CHAIN
+                        withdrawCommand.transferMethod = it.transferMethod
                         GatewayData(
                             it.isActive ?: true && it.withdrawAllowed ?: true,
                             it.withdrawFee ?: BigDecimal.ZERO,
@@ -207,6 +209,7 @@ class WithdrawService(
                 acceptCommand.attachment,
                 withdraw.createDate,
                 LocalDateTime.now(),
+                withdraw.transferMethod
             )
         )
 
@@ -306,6 +309,7 @@ class WithdrawService(
                 withdraw.attachment,
                 withdraw.createDate,
                 LocalDateTime.now(),
+                withdraw.transferMethod
             )
         )
         return WithdrawActionResult(withdraw.withdrawId!!, updateWithdraw.status)
@@ -325,7 +329,7 @@ class WithdrawService(
         endTime: LocalDateTime?,
         ascendingByTime: Boolean,
         offset: Int,
-        size: Int
+        size: Int,
     ): List<WithdrawResponse> {
         return withdrawPersister.findByCriteria(
             ownerUuid,
@@ -364,9 +368,23 @@ class WithdrawService(
         endTime: LocalDateTime?,
         limit: Int,
         offset: Int,
-        ascendingByTime: Boolean? = false
+        ascendingByTime: Boolean? = false,
     ): List<WithdrawResponse> {
         return withdrawPersister.findWithdrawHistory(uuid, currency, startTime, endTime, limit, offset, ascendingByTime)
+    }
+
+    suspend fun getWithdrawSummary(
+        uuid: String,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        limit: Int?,
+    ): List<TransactionSummary> {
+        return withdrawPersister.getWithdrawSummary(
+            uuid,
+            startTime,
+            endTime,
+            limit,
+        )
     }
 
 }

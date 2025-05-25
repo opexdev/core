@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.app.config
 
+import co.nilin.opex.common.security.ReactiveCustomJwtConverter
 import co.nilin.opex.wallet.app.utils.hasRole
 import co.nilin.opex.wallet.app.utils.hasRoleAndLevel
 import org.springframework.beans.factory.annotation.Value
@@ -25,32 +26,34 @@ class SecurityConfig(private val webClient: WebClient) {
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
         http.csrf().disable()
             .authorizeExchange()
-            .pathMatchers("/balanceOf/**").hasAuthority("SCOPE_trust")
-            .pathMatchers("/owner/**").hasAuthority("SCOPE_trust")
-            .pathMatchers("/withdraw").hasAuthority("SCOPE_trust")
-            .pathMatchers(HttpMethod.PUT, "/currency/**").hasRole("SCOPE_trust", "admin_system")
-            .pathMatchers(HttpMethod.POST, "/currency/**").hasRole("SCOPE_trust", "admin_system")
-            .pathMatchers(HttpMethod.DELETE, "/currency/**").hasRole("SCOPE_trust", "admin_system")
-            .pathMatchers("/manually/**").hasRole("SCOPE_trust", "admin_finance")
+            .pathMatchers("/v2/transaction/trade/summary/**").permitAll()
+            .pathMatchers("/withdraw/summary/**").permitAll()
+            .pathMatchers("/balanceOf/**").authenticated()
+            .pathMatchers("/owner/**").authenticated()
+            .pathMatchers("/withdraw").authenticated()
+            .pathMatchers(HttpMethod.PUT, "/currency/**").hasAuthority("ROLE_admin")
+            .pathMatchers(HttpMethod.POST, "/currency/**").hasAuthority("ROLE_admin")
+            .pathMatchers(HttpMethod.DELETE, "/currency/**").hasAuthority("ROLE_admin")
+            .pathMatchers("/manually/**").hasAuthority("ROLE_admin")
             .pathMatchers("/withdraw/history/**").authenticated()
-            .pathMatchers("/withdraw").hasAuthority("SCOPE_trust")
-            .pathMatchers("/withdraw/**").hasAuthority("SCOPE_trust")
-            .pathMatchers("/transaction/**").hasAuthority("SCOPE_trust")
-            .pathMatchers("/admin/**").hasRole("SCOPE_trust", "admin_finance")
-            .pathMatchers("/stats/**").hasRole("SCOPE_trust", "admin_finance")
+            .pathMatchers("/withdraw").authenticated()
+            .pathMatchers("/withdraw/**").authenticated()
+            .pathMatchers("/transaction/**").authenticated()
+            .pathMatchers("/admin/**").hasAuthority("ROLE_admin")
+            .pathMatchers("/stats/**").hasAuthority("ROLE_admin")
             .pathMatchers(HttpMethod.GET, "/currency/**").permitAll()
             .pathMatchers("/actuator/**").permitAll()
-            .pathMatchers("/storage/**").hasRole("SCOPE_trust", "admin_system")
+            .pathMatchers("/storage/**").hasAuthority("ROLE_admin")
             .pathMatchers("/deposit/**").permitAll()
             .pathMatchers("/internal/deposit/**").permitAll()
             .pathMatchers("/payment/internal/**").permitAll()
             .pathMatchers("/inquiry/**").permitAll()
             .pathMatchers("/v2/transfer/**").permitAll()
-            .pathMatchers("/voucher/**").hasAuthority("SCOPE_trust")
+            .pathMatchers("/voucher/**").hasAuthority("PERM_voucher:submit")
             .anyExchange().authenticated()
             .and()
             .oauth2ResourceServer()
-            .jwt()
+            .jwt { it.jwtAuthenticationConverter(ReactiveCustomJwtConverter()) }
         return http.build()
     }
 

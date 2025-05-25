@@ -108,7 +108,7 @@ logbook:
 app:
   auth:
     url: lb://opex-auth
-    cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
+    cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
     client-id: none
     client-secret: none
   system:

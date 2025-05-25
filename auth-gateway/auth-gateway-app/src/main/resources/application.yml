@@ -1,0 +1,68 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: opex-auth-gateway
+  cloud:
+    bootstrap:
+      enabled: true
+    consul:
+      host: ${CONSUL_HOST:localhost}
+      port: 8500
+      discovery:
+        #healthCheckPath: ${management.context-path}/health
+        instance-id: ${spring.application.name}:${server.port}
+        healthCheckInterval: 20s
+        prefer-ip-address: true
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: [ "health", "prometheus", "metrics", "loggers" ]
+logbook:
+  secure-filter:
+    enabled: true
+  format:
+    style: http
+  filter:
+    enabled: true
+    form-request-mode: BODY
+  attribute-extractors:
+    - type: JwtFirstMatchingClaimExtractor
+      claim-names: [ "sub", "subject" ]
+  obfuscate:
+    headers:
+      - Authorization
+    parameters:
+      - password
+    json-body-fields:
+      - password
+    replacement: "***"
+  write:
+    max-body-size: 500 #kb
+  predicate:
+    exclude:
+      - path: /auth**
+      - path: /actuator/**
+      - path: /swagger**
+      - path: /config/**
+logging:
+  level:
+    co.nilin: INFO
+    org.zalando.logbook: TRACE
+keycloak:
+  url: http://keycloak:8080
+  cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
+  realm: opex
+  admin-client:
+    id: "opex-admin"
+    secret: ${ADMIN_CLIENT_SECRET}
+    google-client-id: ${GOOGLE_CLIENT_ID}
+
+otp:
+  url: http://opex-otp/v1
+captcha:
+  url: http://opex-captcha
+  enabled: false

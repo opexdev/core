@@ -22,6 +22,7 @@ data class Deposit(
     var attachment: String?,
     var createDate: Date = Date(),
     val id: Long? = null,
+    var transferMethod: TransferMethod?,
 )
 
 data class Deposits(var deposits: List<Deposit>)

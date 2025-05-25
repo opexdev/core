@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.wallet.core.inout.Deposit
+import co.nilin.opex.wallet.core.inout.TransactionSummary
 import co.nilin.opex.wallet.core.model.DepositStatus
 import co.nilin.opex.wallet.core.spi.DepositPersister
 import co.nilin.opex.wallet.ports.postgres.dao.DepositRepository
@@ -72,5 +73,17 @@ class DepositPersisterImpl(private val depositRepository: DepositRepository) : D
         ).map { it.toDto() }.toList()
     }
 
-
+    override suspend fun getDepositSummary(
+        uuid: String,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        limit: Int?,
+    ) : List<TransactionSummary>{
+        return depositRepository.getDepositSummary(
+            uuid,
+            startTime,
+            endTime,
+            limit
+        ).toList()
+    }
 }

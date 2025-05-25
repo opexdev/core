@@ -3,6 +3,8 @@ package co.nilin.opex.wallet.app.controller
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.RequestWithdrawBody
 import co.nilin.opex.wallet.app.dto.WithdrawHistoryRequest
+import co.nilin.opex.wallet.app.utils.asLocalDateTime
+import co.nilin.opex.wallet.core.inout.TransactionSummary
 import co.nilin.opex.wallet.core.inout.WithdrawActionResult
 import co.nilin.opex.wallet.core.inout.WithdrawCommand
 import co.nilin.opex.wallet.core.inout.WithdrawResponse
@@ -49,6 +51,7 @@ class WithdrawController(private val withdrawService: WithdrawService) {
                     destNetwork,
                     destNote,
                     gatewayUuid,
+                    null,
                     null
                 )
             }
@@ -99,8 +102,24 @@ class WithdrawController(private val withdrawService: WithdrawService) {
                 it.attachment,
                 it.createDate,
                 it.lastUpdateDate,
+                it.transferMethod,
             )
         }
+    }
+
+    @GetMapping("/summary/{uuid}")
+    suspend fun getUserWithdrawSummary(
+        @RequestParam startTime: Long?,
+        @RequestParam endTime: Long?,
+        @RequestParam limit: Int?,
+        @PathVariable uuid: String,
+    ): List<TransactionSummary> {
+        return withdrawService.getWithdrawSummary(
+            uuid,
+            startTime?.asLocalDateTime(),
+            endTime?.asLocalDateTime(),
+            limit,
+        )
     }
 
 

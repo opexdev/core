@@ -16,7 +16,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
 
-@RestController
+@RestController("walletBinanceController")
 class WalletController(
     private val walletProxy: WalletProxy,
     private val symbolMapper: SymbolMapper,
