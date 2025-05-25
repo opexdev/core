@@ -1,6 +1,7 @@
 package co.nilin.opex.api.core.spi
 
 import co.nilin.opex.api.core.inout.*
+import java.math.BigDecimal
 
 interface WalletProxy {
 
@@ -12,7 +13,7 @@ interface WalletProxy {
 
     suspend fun getDepositTransactions(
         uuid: String,
-        token: String?,
+        token: String,
         currency: String?,
         startTime: Long?,
         endTime: Long?,
@@ -23,7 +24,7 @@ interface WalletProxy {
 
     suspend fun getWithdrawTransactions(
         uuid: String,
-        token: String?,
+        token: String,
         currency: String?,
         startTime: Long?,
         endTime: Long?,
@@ -34,7 +35,7 @@ interface WalletProxy {
 
     suspend fun getTransactions(
         uuid: String,
-        token: String?,
+        token: String,
         currency: String?,
         category: UserTransactionCategory?,
         startTime: Long?,
@@ -53,7 +54,7 @@ interface WalletProxy {
 
     suspend fun getUserTradeTransactionSummary(
         uuid: String,
-        token: String?,
+        token: String,
         startTime: Long?,
         endTime: Long?,
         limit: Int?,
@@ -61,7 +62,7 @@ interface WalletProxy {
 
     suspend fun getUserDepositSummary(
         uuid: String,
-        token: String?,
+        token: String,
         startTime: Long?,
         endTime: Long?,
         limit: Int?,
@@ -69,10 +70,35 @@ interface WalletProxy {
 
     suspend fun getUserWithdrawSummary(
         uuid: String,
-        token: String?,
+        token: String,
         startTime: Long?,
         endTime: Long?,
         limit: Int?,
     ): List<TransactionSummary>
 
+    suspend fun deposit(
+        symbol: String,
+        receiverUuid: String,
+        receiverWalletType: WalletType,
+        amount: BigDecimal,
+        description: String?,
+        transferRef: String?,
+        gatewayUuid: String?,
+        chain: String?,
+    ): TransferResult?
+
+    suspend fun requestWithdraw(
+        token: String,
+        request: RequestWithdrawBody
+    ):WithdrawActionResult
+
+    suspend fun cancelWithdraw(
+        token: String,
+        withdrawId: Long
+    ):Void?
+
+    suspend fun findWithdraw(
+        token: String,
+        withdrawId: Long
+    ): WithdrawResponse
 }
