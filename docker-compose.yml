@@ -342,6 +342,7 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SYMBOLS=BTC_USDT,ETH_USDT,BTC_IRT,ETH_IRT,USDT_IRT,ETH_BUSD,BTC_BUSD,BNB_BUSD
+      - MATCHING_GATEWAY_DB_PASS=${MATCHING_GATEWAY_DB_PASS}
     networks:
       - default
     depends_on:
