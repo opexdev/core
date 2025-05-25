@@ -12,7 +12,7 @@ spring:
   r2dbc:
     url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
     username: ${dbusername:opex}
-    password: ${MATCHING_GATEWAY_DB_PASS:hiopex}
+    password: ${DB_PASS:hiopex}
     initialization-mode: always
   cloud:
     bootstrap:
