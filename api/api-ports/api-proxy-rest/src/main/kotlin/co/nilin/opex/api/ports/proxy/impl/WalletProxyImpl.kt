@@ -325,5 +325,19 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
             .bodyToMono<WithdrawResponse>()
             .awaitFirstOrElse { throw OpexError.WithdrawNotFound.exception() }
     }
+
+    override suspend fun submitVoucher(
+        code: String,
+        token: String
+    ): SubmitVoucherResponse {
+        return webClient.put()
+            .uri("$baseUrl/voucher/$code")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<SubmitVoucherResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
 }
 

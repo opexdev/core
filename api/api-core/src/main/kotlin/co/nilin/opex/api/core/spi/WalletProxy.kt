@@ -101,4 +101,6 @@ interface WalletProxy {
         token: String,
         withdrawId: Long
     ): WithdrawResponse
+
+    suspend fun submitVoucher(code : String , token :String) : SubmitVoucherResponse
 }
