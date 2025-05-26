@@ -1,8 +1,6 @@
-package co.nilin.opex.auth.gateway.config
+package co.nilin.opex.auth.config
 
-import co.nilin.opex.auth.core.spi.KycLevelUpdatedEventListener
-import co.nilin.opex.auth.gateway.model.AuthEvent
-import co.nilin.opex.user.managment.ports.kafka.consumer.KycLevelUpdatedKafkaListener
+import co.nilin.opex.auth.data.AuthEvent
 import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringSerializer
@@ -19,50 +17,44 @@ import org.springframework.kafka.core.ProducerFactory
 import org.springframework.kafka.support.serializer.JsonSerializer
 import java.util.function.Supplier
 
+object KafkaTopics {
+    const val AUTH = "auth"
+}
+
 @Configuration
-class KafkaConfig {
-
+class KafkaProducerConfig(
     @Value("\${spring.kafka.bootstrap-servers}")
-    private lateinit var bootstrapServers: String
+    private val bootstrapServers: String
+) {
 
-    @Bean("authProducerConfigs")
+    @Bean
     fun producerConfigs(): Map<String, Any> {
         return mapOf(
             ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
             ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
             ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JsonSerializer::class.java,
             ProducerConfig.ACKS_CONFIG to "all",
-            JsonSerializer.TYPE_MAPPINGS to "user_created_event:co.nilin.opex.auth.gateway.model.UserCreatedEvent"
+            JsonSerializer.TYPE_MAPPINGS to "userCreatedEvent:co.nilin.opex.auth.data.UserCreatedEvent"
         )
     }
 
-    @Bean("authProducerFactory")
-    fun producerFactory(@Qualifier("authProducerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String, AuthEvent> {
+    @Bean
+    fun producerFactory(producerConfigs: Map<String, Any>): ProducerFactory<String, AuthEvent> {
         return DefaultKafkaProducerFactory(producerConfigs)
     }
 
-    @Bean("authKafkaTemplate")
-    fun kafkaTemplate(@Qualifier("authProducerFactory") producerFactory: ProducerFactory<String, AuthEvent>): KafkaTemplate<String, AuthEvent> {
+    @Bean
+    fun kafkaTemplate(producerFactory: ProducerFactory<String, AuthEvent>): KafkaTemplate<String, AuthEvent> {
         return KafkaTemplate(producerFactory)
     }
 
     @Autowired
     fun createUserCreatedTopics(applicationContext: GenericApplicationContext) {
         applicationContext.registerBean("topic_auth", NewTopic::class.java, Supplier {
-            TopicBuilder.name("auth")
+            TopicBuilder.name(KafkaTopics.AUTH)
                 .partitions(1)
                 .replicas(1)
                 .build()
         })
-    }
-
-    @Autowired
-    fun configureEventListeners(
-
-        kycLevelUpdatedKafkaListener: KycLevelUpdatedKafkaListener,
-        kycLevelUpdatedEventListener: KycLevelUpdatedEventListener
-    ) {
-        kycLevelUpdatedKafkaListener.addEventListener(kycLevelUpdatedEventListener)
-
     }
 }

@@ -5,6 +5,7 @@ import java.time.LocalDateTime
 class UserCreatedEvent {
     var eventDate: LocalDateTime = LocalDateTime.now()
     lateinit var uuid: String
+    lateinit var username: String
     var firstName: String? = null
     var lastName: String? = null
     var email: String? = null

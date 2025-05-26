@@ -128,8 +128,7 @@ DROP TRIGGER IF EXISTS linked_account_log_update on public.linked_bank_account;
 DROP TRIGGER IF EXISTS linked_account_log_delete on public.linked_bank_account;
 
 
-CREATE
-    OR REPLACE FUNCTION triger_function() RETURNS TRIGGER AS
+CREATE OR REPLACE FUNCTION triger_function() RETURNS TRIGGER AS
 $BODY$
 BEGIN
     INSERT INTO public.profile_history (original_data_id, change_request_date, change_request_type, email, user_id,
@@ -141,13 +140,11 @@ BEGIN
             OLD.postal_code, OLD.creator, OLD.kyc_level);
     RETURN NULL;
 END;
-$BODY$
-    language plpgsql;
+$BODY$ language plpgsql;
 
 
 
-CREATE
-    OR REPLACE FUNCTION triger_delete_function() RETURNS TRIGGER AS
+CREATE OR REPLACE FUNCTION triger_delete_function() RETURNS TRIGGER AS
 $BODY$
 BEGIN
     INSERT INTO public.profile_history (original_data_id, change_request_date, change_request_type, email, user_id,
@@ -159,13 +156,11 @@ BEGIN
             OLD.postal_code, OLD.creator, OLD.kyc_level);
     RETURN NULL;
 END;
-$BODY$
-    language plpgsql;
+$BODY$ language plpgsql;
 
 
 
-CREATE
-    OR REPLACE FUNCTION triger_limitation_function() RETURNS TRIGGER AS
+CREATE OR REPLACE FUNCTION triger_limitation_function() RETURNS TRIGGER AS
 $BODY$
 BEGIN
     INSERT INTO public.limitation_history (change_request_date, change_request_type, user_id, create_date, action_type,
@@ -174,13 +169,11 @@ BEGIN
             OLD.description, OLD.reason);
     RETURN NULL;
 END;
-$BODY$
-    language plpgsql;
+$BODY$ language plpgsql;
 
 
 
-CREATE
-    OR REPLACE FUNCTION triger_delete_limitation_function() RETURNS TRIGGER AS
+CREATE OR REPLACE FUNCTION triger_delete_limitation_function() RETURNS TRIGGER AS
 $BODY$
 BEGIN
     INSERT INTO public.limitation_history (change_request_date, change_request_type, user_id, create_date, action_type,
@@ -189,13 +182,11 @@ BEGIN
             OLD.description, OLD.reason);
     RETURN NULL;
 END;
-$BODY$
-    language plpgsql;
+$BODY$ language plpgsql;
 
 
 
-CREATE
-    OR REPLACE FUNCTION triger_linked_account_function() RETURNS TRIGGER AS
+CREATE OR REPLACE FUNCTION triger_linked_account_function() RETURNS TRIGGER AS
 $BODY$
 BEGIN
     INSERT INTO public.linked_bank_account_history (change_request_date, change_request_type, user_id, verified_date,
@@ -204,12 +195,10 @@ BEGIN
             OLD.description, OLD.account_id);
     RETURN NULL;
 END;
-$BODY$
-    language plpgsql;
+$BODY$ language plpgsql;
 
 
-CREATE
-    OR REPLACE FUNCTION triger_delete_linked_account_function() RETURNS TRIGGER AS
+CREATE OR REPLACE FUNCTION triger_delete_linked_account_function() RETURNS TRIGGER AS
 $BODY$
 BEGIN
     INSERT INTO public.linked_bank_account_history (change_request_date, change_request_type, user_id, verified_date,
@@ -218,8 +207,7 @@ BEGIN
             OLD.description, OLD.account_id);
     RETURN NULL;
 END;
-$BODY$
-    language plpgsql;
+$BODY$ language plpgsql;
 
 
 
@@ -261,48 +249,47 @@ EXECUTE PROCEDURE triger_delete_linked_account_function();
 
 CREATE TABLE IF NOT EXISTS profile_approval_request
 (
-    id              SERIAL PRIMARY KEY,
-    profile_id      BIGINT NOT NULL,
-    status          VARCHAR(100) NOT NULL,
-    create_date     TIMESTAMP,
-    update_date     TIMESTAMP,
-    updater         VARCHAR(100),
-    description     VARCHAR(255)
-    );
+    id          SERIAL PRIMARY KEY,
+    profile_id  BIGINT       NOT NULL,
+    status      VARCHAR(100) NOT NULL,
+    create_date TIMESTAMP,
+    update_date TIMESTAMP,
+    updater     VARCHAR(100),
+    description VARCHAR(255)
+);
 
 DO
 $$
-BEGIN
+    BEGIN
         IF NOT EXISTS (SELECT 1
                        FROM information_schema.columns
                        WHERE table_name = 'profile' AND column_name = 'verification_status') THEN ALTER TABLE profile
-    ADD COLUMN verification_status VARCHAR(255);
-END IF;
-END
+            ADD COLUMN verification_status VARCHAR(255);
+        END IF;
+    END
 $$;
 
 DO
 $$
-BEGIN
+    BEGIN
         IF NOT EXISTS (SELECT 1
                        FROM information_schema.columns
-                       WHERE table_name = 'profile_history' AND column_name = 'verification_status') THEN ALTER TABLE profile_history
-    ADD COLUMN verification_status VARCHAR(255);
-END IF;
-END
+                       WHERE table_name = 'profile_history'
+                         AND column_name = 'verification_status') THEN ALTER TABLE profile_history
+            ADD COLUMN verification_status VARCHAR(255);
+        END IF;
+    END
 $$;
 
 DO
 $$
-BEGIN
-    IF EXISTS (
-        SELECT 1
-        FROM information_schema.columns
-        WHERE table_name = 'profile_history'
-          AND column_name = 'gender'
-          AND data_type != 'character varying') THEN
-ALTER TABLE profile_history
-    ALTER COLUMN gender SET DATA TYPE VARCHAR(50);
-END IF;
-END
+    BEGIN
+        IF EXISTS (SELECT 1
+                   FROM information_schema.columns
+                   WHERE table_name = 'profile_history'
+                     AND column_name = 'gender'
+                     AND data_type != 'character varying') THEN ALTER TABLE profile_history
+            ALTER COLUMN gender SET DATA TYPE VARCHAR(50);
+        END IF;
+    END
 $$;

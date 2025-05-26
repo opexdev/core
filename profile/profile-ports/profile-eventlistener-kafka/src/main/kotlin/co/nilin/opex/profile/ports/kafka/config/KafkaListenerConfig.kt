@@ -44,8 +44,7 @@ class KafkaListenerConfig {
             ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
             ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JsonDeserializer::class.java,
             JsonDeserializer.TRUSTED_PACKAGES to "co.nilin.opex.*",
-            JsonDeserializer.TYPE_MAPPINGS to "user_created_event:co.nilin.opex.profile.core.data.event.UserCreatedEvent,kyc_level_updated_event:co.nilin.opex.profile.core.data.event.KycLevelUpdatedEvent"
-
+            JsonDeserializer.TYPE_MAPPINGS to "userCreatedEvent:co.nilin.opex.profile.core.data.event.UserCreatedEvent,kyc_level_updated_event:co.nilin.opex.profile.core.data.event.KycLevelUpdatedEvent"
         )
     }
 
@@ -76,11 +75,11 @@ class KafkaListenerConfig {
         @Qualifier("profileKafkaTemplate") template: KafkaTemplate<String, UserCreatedEvent>,
         @Qualifier("profileConsumerFactory") consumerFactory: ConsumerFactory<String, UserCreatedEvent>
     ) {
-        val containerProps = ContainerProperties(Pattern.compile("auth_user_created"))
+        val containerProps = ContainerProperties(Pattern.compile("auth"))
         containerProps.messageListener = listener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
         container.setBeanName("UserCreatedKafkaListenerContainer")
-        container.commonErrorHandler = createConsumerErrorHandler(template, "auth_user_created.DLT")
+        container.commonErrorHandler = createConsumerErrorHandler(template, "auth.DLT")
         container.start()
     }
 

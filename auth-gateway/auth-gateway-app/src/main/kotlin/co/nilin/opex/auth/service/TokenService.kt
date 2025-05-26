@@ -1,6 +1,5 @@
 package co.nilin.opex.auth.service
 
-import co.nilin.opex.auth.exception.UserNotFoundException
 import co.nilin.opex.auth.model.*
 import co.nilin.opex.auth.proxy.CaptchaProxy
 import co.nilin.opex.auth.proxy.GoogleProxy
@@ -41,7 +40,7 @@ class TokenService(
             val res = otpProxy.requestOTP(username.value, requiredOtpTypes)
             val receiver = when (otpType) {
                 OTPType.EMAIL -> user.email
-                OTPType.SMS -> user.attributes?.get(Attributes.MOBILE)?.get(0)
+                OTPType.SMS -> user.mobile
                 else -> null
             }
             return TokenResponse(null, RequiredOTP(otpType, receiver), res.otp)
@@ -74,7 +73,7 @@ class TokenService(
         try {
             keycloakProxy.findUserByEmail(email)
         } catch (e: Exception) {
-            throw UserNotFoundException(email)
+            throw OpexError.UserNotFound.exception()
         }
         return TokenResponse(
             keycloakProxy.exchangeGoogleTokenForKeycloakToken(

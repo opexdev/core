@@ -1,5 +1,7 @@
 package co.nilin.opex.auth.service
 
+import co.nilin.opex.auth.data.UserCreatedEvent
+import co.nilin.opex.auth.kafka.AuthEventProducer
 import co.nilin.opex.auth.model.*
 import co.nilin.opex.auth.proxy.CaptchaProxy
 import co.nilin.opex.auth.proxy.GoogleProxy
@@ -24,6 +26,7 @@ class UserService(
     private val privateKey: PrivateKey,
     private val publicKey: PublicKey,
     private val captchaProxy: CaptchaProxy,
+    private val authProducer: AuthEventProducer
 ) {
 
     private val logger by LoggerDelegate()
@@ -71,6 +74,10 @@ class UserService(
             throw OpexError.BadRequest.exception()
 
         keycloakProxy.confirmCreateUser(user, request.password)
+
+        // Send event to let other services know a user just registered
+        val event = UserCreatedEvent(user.id, user.username, user.email, user.mobile, user.firstName, user.lastName)
+        authProducer.send(event)
 
         return if (request.clientId.isNullOrBlank() || request.clientSecret.isNullOrBlank())
             null

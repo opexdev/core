@@ -46,7 +46,9 @@ data class KeycloakUser(
     val emailVerified: Boolean,
     val enabled: Boolean,
     val attributes: Map<String, List<String>>?,
-)
+) {
+    val mobile: String? = attributes?.get(Attributes.MOBILE)?.get(0)
+}
 
 data class ConfirmForgetRequest(
     val newPassword: String,
