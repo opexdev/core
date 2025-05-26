@@ -6,15 +6,14 @@ import co.nilin.opex.api.core.inout.OrderType
 import co.nilin.opex.api.core.inout.TimeInForce
 import com.fasterxml.jackson.annotation.JsonInclude
 import java.math.BigDecimal
-import java.util.*
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class NewOrderResponse(
+data class CancelOrderResponse(
     val symbol: String,
-    val orderId: Long,
+    val origClientOrderId: String?,
+    val orderId: Long?,
     val orderListId: Long, //Unless OCO, value will be -1
     val clientOrderId: String?,
-    val transactTime: Date,
     val price: BigDecimal?,
     val origQty: BigDecimal?,
     val executedQty: BigDecimal?,
@@ -22,13 +21,5 @@ data class NewOrderResponse(
     val status: OrderStatus?,
     val timeInForce: TimeInForce?,
     val type: OrderType?,
-    val side: OrderSide?,
-    val fills: List<FillsData>?
-)
-
-data class FillsData(
-    val price: BigDecimal,
-    val qty: BigDecimal,
-    val commission: BigDecimal,
-    val commissionAsset: String
+    val side: OrderSide?
 )

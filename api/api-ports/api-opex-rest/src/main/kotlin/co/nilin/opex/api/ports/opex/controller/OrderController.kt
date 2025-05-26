@@ -3,15 +3,12 @@ package co.nilin.opex.api.ports.opex.controller
 import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.MarketUserDataProxy
 import co.nilin.opex.api.core.spi.MatchingGatewayProxy
-import co.nilin.opex.api.ports.binance.data.CancelOrderResponse
-import co.nilin.opex.api.ports.binance.data.QueryOrderResponse
-import co.nilin.opex.api.ports.binance.util.*
+import co.nilin.opex.api.ports.opex.data.CancelOrderResponse
 import co.nilin.opex.api.ports.opex.data.NewOrderResponse
-import co.nilin.opex.api.ports.opex.util.jwtAuthentication
-import co.nilin.opex.api.ports.opex.util.tokenValue
+import co.nilin.opex.api.ports.opex.data.QueryOrderResponse
+import co.nilin.opex.api.ports.opex.util.*
 import co.nilin.opex.common.OpexError
 import io.swagger.annotations.ApiParam
-import org.springframework.http.MediaType
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
@@ -26,10 +23,7 @@ class OrderController(
     val queryHandler: MarketUserDataProxy,
     val matchingGatewayProxy: MatchingGatewayProxy,
 ) {
-    @PostMapping(
-        consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE],
-        produces = [MediaType.APPLICATION_JSON_VALUE]
-    )
+    @PostMapping
     suspend fun createNewOrder(
         @RequestParam
         symbol: String,
@@ -81,10 +75,7 @@ class OrderController(
         )
     }
 
-    @DeleteMapping(
-        consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE],
-        produces = [MediaType.APPLICATION_JSON_VALUE]
-    )
+    @DeleteMapping
     suspend fun cancelOrder(
         principal: Principal,
         @RequestParam
@@ -133,10 +124,7 @@ class OrderController(
         return response
     }
 
-    @GetMapping(
-        consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE],
-        produces = [MediaType.APPLICATION_JSON_VALUE]
-    )
+    @GetMapping
     suspend fun queryOrder(
         principal: Principal,
         @RequestParam
@@ -152,11 +140,7 @@ class OrderController(
             ?: throw OpexError.OrderNotFound.exception()
     }
 
-    @GetMapping(
-        "/open",
-        consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE],
-        produces = [MediaType.APPLICATION_JSON_VALUE]
-    )
+    @GetMapping("/open")
     suspend fun fetchOpenOrders(
         principal: Principal,
         @RequestParam(required = false)

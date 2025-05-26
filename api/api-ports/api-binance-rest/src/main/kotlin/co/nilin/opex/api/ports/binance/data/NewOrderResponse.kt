@@ -25,10 +25,3 @@ data class NewOrderResponse(
     val side: OrderSide?,
     val fills: List<FillsData>?
 )
-
-data class FillsData(
-    val price: BigDecimal,
-    val qty: BigDecimal,
-    val commission: BigDecimal,
-    val commissionAsset: String
-)
