@@ -75,7 +75,7 @@ class OrderController(
         )
     }
 
-    @DeleteMapping
+    @PutMapping
     suspend fun cancelOrder(
         principal: Principal,
         @RequestParam

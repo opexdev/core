@@ -27,7 +27,7 @@ class WithdrawController(
         )
     }
 
-    @PostMapping("/{withdrawId}/cancel")
+    @PutMapping("/{withdrawId}/cancel")
     suspend fun cancelWithdraw(
         @CurrentSecurityContext securityContext: SecurityContext,
         @PathVariable withdrawId: Long
