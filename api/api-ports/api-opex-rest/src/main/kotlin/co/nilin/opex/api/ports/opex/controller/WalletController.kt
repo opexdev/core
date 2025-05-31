@@ -1,5 +1,6 @@
 package co.nilin.opex.api.ports.opex.controller
 
+import co.nilin.opex.api.core.inout.OwnerLimitsResponse
 import co.nilin.opex.api.core.spi.WalletProxy
 import co.nilin.opex.api.ports.opex.data.AssetResponse
 import co.nilin.opex.api.ports.opex.util.jwtAuthentication
@@ -35,5 +36,13 @@ class WalletController(
             )
         }
         return result
+    }
+
+    @GetMapping("/limits")
+    suspend fun getWalletOwnerLimits(@CurrentSecurityContext securityContext: SecurityContext): OwnerLimitsResponse {
+        return walletProxy.getOwnerLimits(
+            securityContext.jwtAuthentication().name,
+            securityContext.jwtAuthentication().tokenValue(),
+        )
     }
 }

@@ -4,8 +4,10 @@ import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.WalletProxy
 import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
 import co.nilin.opex.api.ports.proxy.data.TransactionRequest
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.utils.LoggerDelegate
 import kotlinx.coroutines.reactive.awaitFirstOrElse
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Value
@@ -71,24 +73,24 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
 
     override suspend fun getDepositTransactions(
         uuid: String,
-        token: String?,
-        coin: String?,
+        token: String,
+        currency: String?,
         startTime: Long?,
         endTime: Long?,
         limit: Int,
         offset: Int,
         ascendingByTime: Boolean?,
-    ): List<TransactionHistoryResponse> {
+    ): List<DepositHistoryResponse> {
         logger.info("fetching deposit transaction history for $uuid")
         return withContext(ProxyDispatchers.wallet) {
             webClient.post()
-                .uri("$baseUrl/transaction/deposit/$uuid")
+                .uri("$baseUrl/v1/deposit/history")
                 .accept(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-                .body(Mono.just(TransactionRequest(coin, startTime, endTime, limit, offset, ascendingByTime)))
+                .body(Mono.just(TransactionRequest(currency, startTime, endTime, limit, offset, ascendingByTime)))
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<TransactionHistoryResponse>()
+                .bodyToFlux<DepositHistoryResponse>()
                 .collectList()
                 .awaitFirstOrElse { emptyList() }
         }
@@ -96,8 +98,8 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
 
     override suspend fun getWithdrawTransactions(
         uuid: String,
-        token: String?,
-        coin: String?,
+        token: String,
+        currency: String?,
         startTime: Long?,
         endTime: Long?,
         limit: Int,
@@ -107,16 +109,51 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
         logger.info("fetching withdraw transaction history for $uuid")
         return withContext(ProxyDispatchers.wallet) {
             webClient.post()
-                .uri("$baseUrl/withdraw/history/$uuid")
+                .uri("$baseUrl/withdraw/history")
                 .accept(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-                .body(Mono.just(TransactionRequest(coin, startTime, endTime, limit, offset, ascendingByTime)))
+                .body(Mono.just(TransactionRequest(currency, startTime, endTime, limit, offset, ascendingByTime)))
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToFlux<WithdrawHistoryResponse>()
                 .collectList()
                 .awaitFirstOrElse { emptyList() }
         }
+    }
+
+    override suspend fun getTransactions(
+        uuid: String,
+        token: String,
+        currency: String?,
+        category: UserTransactionCategory?,
+        startTime: Long?,
+        endTime: Long?,
+        limit: Int,
+        offset: Int,
+        ascendingByTime: Boolean?
+    ): List<UserTransactionHistory> {
+        return webClient.post()
+            .uri("$baseUrl/v2/transaction")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(
+                Mono.just(
+                    UserTransactionRequest(
+                        currency,
+                        category,
+                        startTime,
+                        endTime,
+                        limit,
+                        offset,
+                        ascendingByTime
+                    )
+                )
+            )
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToFlux<UserTransactionHistory>()
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
     }
 
     override suspend fun getGateWays(
@@ -155,6 +192,7 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
 
     override suspend fun getUserTradeTransactionSummary(
         uuid: String,
+        token: String,
         startTime: Long?,
         endTime: Long?,
         limit: Int?,
@@ -167,7 +205,7 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
                     it.queryParam("limit", limit)
                     it.build()
                 }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToFlux<TransactionSummary>()
@@ -178,6 +216,7 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
 
     override suspend fun getUserDepositSummary(
         uuid: String,
+        token: String,
         startTime: Long?,
         endTime: Long?,
         limit: Int?,
@@ -190,7 +229,7 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
                     it.queryParam("limit", limit)
                     it.build()
                 }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToFlux<TransactionSummary>()
@@ -201,6 +240,7 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
 
     override suspend fun getUserWithdrawSummary(
         uuid: String,
+        token: String,
         startTime: Long?,
         endTime: Long?,
         limit: Int?,
@@ -213,7 +253,7 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
                     it.queryParam("limit", limit)
                     it.build()
                 }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToFlux<TransactionSummary>()
@@ -221,4 +261,76 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
                 .awaitFirstOrElse { emptyList() }
         }
     }
+
+    override suspend fun deposit(
+        request: RequestDepositBody
+    ): TransferResult? {
+        return withContext(ProxyDispatchers.wallet) {
+            webClient.post()
+                .uri("$baseUrl/deposit/${request.amount}_${request.chain}_${request.symbol}/${request.receiverUuid}_${request.receiverWalletType}") {
+                    it.apply {
+                        request.description?.let { description -> queryParam("description", description) }
+                        request.transferRef?.let { transferRef -> queryParam("transferRef", transferRef) }
+                        request.gatewayUuid?.let { gatewayUuid -> queryParam("gatewayUuid", gatewayUuid) }
+                    }.build()
+                }.accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToMono<TransferResult>()
+                .awaitFirstOrNull()
+        }
+    }
+
+    override suspend fun requestWithdraw(
+        token: String,
+        request: RequestWithdrawBody
+    ): WithdrawActionResult {
+        return webClient.post()
+            .uri("$baseUrl/withdraw")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<WithdrawActionResult>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun cancelWithdraw(token: String, withdrawId: Long): Void? {
+        return webClient.post()
+            .uri("$baseUrl/withdraw/$withdrawId/cancel")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono(Void::class.java)
+            .awaitFirstOrNull()
+    }
+
+    override suspend fun findWithdraw(token: String, withdrawId: Long): WithdrawResponse {
+        return webClient.get()
+            .uri("$baseUrl/withdraw/$withdrawId")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<WithdrawResponse>()
+            .awaitFirstOrElse { throw OpexError.WithdrawNotFound.exception() }
+    }
+
+    override suspend fun submitVoucher(
+        code: String,
+        token: String
+    ): SubmitVoucherResponse {
+        return webClient.put()
+            .uri("$baseUrl/voucher/$code")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<SubmitVoucherResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
 }
+

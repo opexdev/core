@@ -3,7 +3,7 @@ package co.nilin.opex.api.core.inout
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
-data class WithdrawHistoryResponse(
+class WithdrawResponse(
     val withdrawId: Long,
     val uuid: String,
     val amount: BigDecimal,
@@ -24,7 +24,3 @@ data class WithdrawHistoryResponse(
     val lastUpdateDate: LocalDateTime?,
     var transferMethod: TransferMethod?,
 )
-
-enum class WithdrawType {
-    CARD_TO_CARD, SHEBA, ON_CHAIN , OFF_CHAIN
-}
