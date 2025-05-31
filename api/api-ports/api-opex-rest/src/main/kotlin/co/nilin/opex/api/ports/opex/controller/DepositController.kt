@@ -14,7 +14,7 @@ class DepositController(
     private val walletProxy: WalletProxy,
 ) {
 
-    @PostMapping("/{amount}_{chain}_{symbol}/{receiverUuid}_{receiverWalletType}")
+    @PostMapping
     suspend fun deposit(
         @RequestBody request: RequestDepositBody
     ): TransferResult? {
