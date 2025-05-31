@@ -1,6 +1,7 @@
 package co.nilin.opex.api.core.spi
 
 import co.nilin.opex.api.core.inout.*
+import java.math.BigDecimal
 
 interface WalletProxy {
 
@@ -12,25 +13,37 @@ interface WalletProxy {
 
     suspend fun getDepositTransactions(
         uuid: String,
-        token: String?,
-        coin: String?,
+        token: String,
+        currency: String?,
         startTime: Long?,
         endTime: Long?,
         limit: Int,
         offset: Int,
         ascendingByTime: Boolean?,
-    ): List<TransactionHistoryResponse>
+    ): List<DepositHistoryResponse>
 
     suspend fun getWithdrawTransactions(
         uuid: String,
-        token: String?,
-        coin: String?,
+        token: String,
+        currency: String?,
         startTime: Long?,
         endTime: Long?,
         limit: Int,
         offset: Int,
         ascendingByTime: Boolean?,
     ): List<WithdrawHistoryResponse>
+
+    suspend fun getTransactions(
+        uuid: String,
+        token: String,
+        currency: String?,
+        category: UserTransactionCategory?,
+        startTime: Long?,
+        endTime: Long?,
+        limit: Int,
+        offset: Int,
+        ascendingByTime: Boolean?,
+    ): List<UserTransactionHistory>
 
     suspend fun getGateWays(
         includeOffChainGateways: Boolean,
@@ -41,6 +54,7 @@ interface WalletProxy {
 
     suspend fun getUserTradeTransactionSummary(
         uuid: String,
+        token: String,
         startTime: Long?,
         endTime: Long?,
         limit: Int?,
@@ -48,6 +62,7 @@ interface WalletProxy {
 
     suspend fun getUserDepositSummary(
         uuid: String,
+        token: String,
         startTime: Long?,
         endTime: Long?,
         limit: Int?,
@@ -55,9 +70,30 @@ interface WalletProxy {
 
     suspend fun getUserWithdrawSummary(
         uuid: String,
+        token: String,
         startTime: Long?,
         endTime: Long?,
         limit: Int?,
     ): List<TransactionSummary>
 
+    suspend fun deposit(
+        request: RequestDepositBody
+    ): TransferResult?
+
+    suspend fun requestWithdraw(
+        token: String,
+        request: RequestWithdrawBody
+    ):WithdrawActionResult
+
+    suspend fun cancelWithdraw(
+        token: String,
+        withdrawId: Long
+    ):Void?
+
+    suspend fun findWithdraw(
+        token: String,
+        withdrawId: Long
+    ): WithdrawResponse
+
+    suspend fun submitVoucher(code : String , token :String) : SubmitVoucherResponse
 }

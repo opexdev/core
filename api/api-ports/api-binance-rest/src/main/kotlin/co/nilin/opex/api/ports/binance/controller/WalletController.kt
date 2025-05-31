@@ -1,20 +1,19 @@
 package co.nilin.opex.api.ports.binance.controller
 
-import co.nilin.opex.api.core.inout.DepositDetails
-import co.nilin.opex.api.core.inout.TransactionHistoryResponse
 import co.nilin.opex.api.core.spi.*
-import co.nilin.opex.api.ports.binance.data.*
+import co.nilin.opex.api.ports.binance.data.AssetResponse
+import co.nilin.opex.api.ports.binance.data.AssetsEstimatedValue
+import co.nilin.opex.api.ports.binance.data.AssignAddressResponse
+import co.nilin.opex.api.ports.binance.data.PairFeeResponse
 import co.nilin.opex.api.ports.binance.util.jwtAuthentication
 import co.nilin.opex.api.ports.binance.util.tokenValue
 import co.nilin.opex.common.OpexError
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
 import java.math.BigDecimal
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.util.*
 
 @RestController("walletBinanceController")
 class WalletController(
@@ -43,153 +42,151 @@ class WalletController(
         return AssignAddressResponse(address[0].address, coin, network, "", "")
     }
 
-    @GetMapping("/v1/capital/deposit/hisrec")
-    suspend fun getDepositTransactions(
-        @RequestParam(required = false)
-        coin: String?,
-        @RequestParam("network", required = false)
-        status: Int?,
-        @RequestParam(required = false)
-        startTime: Long?,
-        @RequestParam(required = false)
-        endTime: Long?,
-        @RequestParam(required = false)
-        offset: Int?,
-        @RequestParam(required = false)
-        limit: Int?,
-        @RequestParam(required = false)
-        recvWindow: Long?, //The value cannot be greater than 60000
-        @RequestParam
-        timestamp: Long,
-        @RequestParam(required = false)
-        ascendingByTime: Boolean? = false,
-        @CurrentSecurityContext securityContext: SecurityContext
-    ): List<DepositResponse> {
-        val validLimit = limit ?: 1000
-        val deposits = walletProxy.getDepositTransactions(
-            securityContext.jwtAuthentication().name,
-            securityContext.jwtAuthentication().tokenValue(),
-            coin,
-            startTime ?: null,
-            endTime ?: null,
-            if (validLimit > 1000 || validLimit < 1) 1000 else validLimit,
-            offset ?: 0,
-            ascendingByTime
-        )
-        if (deposits.isEmpty())
-            return emptyList()
+//    @GetMapping("/v1/capital/deposit/hisrec")
+//    suspend fun getDepositTransactions(
+//        @RequestParam(required = false)
+//        coin: String?,
+//        @RequestParam("network", required = false)
+//        status: Int?,
+//        @RequestParam(required = false)
+//        startTime: Long?,
+//        @RequestParam(required = false)
+//        endTime: Long?,
+//        @RequestParam(required = false)
+//        offset: Int?,
+//        @RequestParam(required = false)
+//        limit: Int?,
+//        @RequestParam(required = false)
+//        recvWindow: Long?, //The value cannot be greater than 60000
+//        @RequestParam
+//        timestamp: Long,
+//        @RequestParam(required = false)
+//        ascendingByTime: Boolean? = false,
+//        @CurrentSecurityContext securityContext: SecurityContext
+//    ): List<DepositResponse> {
+//        val validLimit = limit ?: 1000
+//        val deposits = walletProxy.getDepositTransactions(
+//            securityContext.jwtAuthentication().name,
+//            securityContext.jwtAuthentication().tokenValue(),
+//            coin,
+//            startTime ?: null,
+//            endTime ?: null,
+//            if (validLimit > 1000 || validLimit < 1) 1000 else validLimit,
+//            offset ?: 0,
+//            ascendingByTime
+//        )
+//        if (deposits.isEmpty())
+//            return emptyList()
+//
+//        val details = bcGatewayProxy.getDepositDetails(deposits.filterNot { it.ref.isNullOrBlank() }.map { it.ref!! })
+//        return matchDepositsAndDetails(deposits, details)
+//    }
 
-        val details = bcGatewayProxy.getDepositDetails(deposits.filterNot { it.ref.isNullOrBlank() }.map { it.ref!! })
-        return matchDepositsAndDetails(deposits, details)
-    }
-
-    @GetMapping("/v1/capital/withdraw/history")
-    suspend fun getWithdrawTransactions(
-        @RequestParam(required = false)
-        coin: String,
-        @RequestParam(required = false)
-        withdrawOrderId: String?,
-        @RequestParam("status", required = false)
-        withdrawStatus: Int?,
-        @RequestParam(required = false)
-        offset: Int?,
-        @RequestParam(required = false)
-        limit: Int?,
-        @RequestParam(required = false)
-        startTime: Long?,
-        @RequestParam(required = false)
-        endTime: Long?,
-        @RequestParam(required = false)
-        ascendingByTime: Boolean? = false,
-        @RequestParam(required = false)
-        recvWindow: Long?, //The value cannot be greater than 60000
-        @RequestParam
-        timestamp: Long,
-        @CurrentSecurityContext securityContext: SecurityContext
-    ): List<WithdrawResponse> {
-        val validLimit = limit ?: 1000
-        val response = walletProxy.getWithdrawTransactions(
-            securityContext.jwtAuthentication().name,
-            securityContext.jwtAuthentication().tokenValue(),
-            coin,
-            startTime ?: null,
-            endTime ?: null,
-            if (validLimit > 1000 || validLimit < 1) 1000 else validLimit,
-            offset ?: 0,
-            ascendingByTime
-        )
-        return response.map {
-            val status = when (it.status) {
-                "CREATED" -> 0
-                "DONE" -> 1
-                "REJECTED" -> 2
-                else -> -1
-            }
-
-            WithdrawResponse(
-                it.destAddress ?: "0x0",
-                it.amount,
-                LocalDateTime.ofInstant(Instant.ofEpochMilli(it.createDate), ZoneId.systemDefault())
-                    .toString()
-                    .replace("T", " "),
-                it.destSymbol ?: "",
-                it.withdrawId?.toString() ?: "",
-                "",
-                it.destNetwork ?: "",
-                1,
-                status,
-                it.appliedFee.toString(),
-                3,
-                it.destTransactionRef ?: it.withdrawId.toString(),
-                if (status == 1 && it.acceptDate != null) it.acceptDate!! else it.createDate
-            )
-        }
-    }
+//    @GetMapping("/v1/capital/withdraw/history")
+//    suspend fun getWithdrawTransactions(
+//        @RequestParam(required = false)
+//        coin: String,
+//        @RequestParam(required = false)
+//        withdrawOrderId: String?,
+//        @RequestParam("status", required = false)
+//        withdrawStatus: Int?,
+//        @RequestParam(required = false)
+//        offset: Int?,
+//        @RequestParam(required = false)
+//        limit: Int?,
+//        @RequestParam(required = false)
+//        startTime: Long?,
+//        @RequestParam(required = false)
+//        endTime: Long?,
+//        @RequestParam(required = false)
+//        ascendingByTime: Boolean? = false,
+//        @RequestParam(required = false)
+//        recvWindow: Long?, //The value cannot be greater than 60000
+//        @RequestParam
+//        timestamp: Long,
+//        @CurrentSecurityContext securityContext: SecurityContext
+//    ): List<WithdrawResponse> {
+//        val validLimit = limit ?: 1000
+//        val response = walletProxy.getWithdrawTransactions(
+//            securityContext.jwtAuthentication().name,
+//            securityContext.jwtAuthentication().tokenValue(),
+//            coin,
+//            startTime ?: null,
+//            endTime ?: null,
+//            if (validLimit > 1000 || validLimit < 1) 1000 else validLimit,
+//            offset ?: 0,
+//            ascendingByTime
+//        )
+//        return response.map {
+//            val status = when (it.status) {
+//                "CREATED" -> 0
+//                "DONE" -> 1
+//                "REJECTED" -> 2
+//                else -> -1
+//            }
+//
+//            WithdrawResponse(
+//                it.destAddress ?: "0x0",
+//                it.amount,
+//                it.createDate,
+//                it.destSymbol ?: "",
+//                it.withdrawId?.toString() ?: "",
+//                "",
+//                it.destNetwork ?: "",
+//                1,
+//                status,
+//                it.appliedFee.toString(),
+//                3,
+//                it.destTransactionRef ?: it.withdrawId.toString(),
+//                if (status == 1 && it.acceptDate != null) it.acceptDate!! else it.createDate,
+//                it.transferMethod
+//            )
+//        }
+//    }
 
 
-    @PostMapping("/v2/capital/withdraw/history")
-    suspend fun getWithdrawTransactionsV2(
-        @RequestBody withdrawRequest: WithDrawRequest,
-        @CurrentSecurityContext securityContext: SecurityContext
-    ): List<WithdrawResponse> {
-        val validLimit = withdrawRequest.limit ?: 1000
-        val response = walletProxy.getWithdrawTransactions(
-            securityContext.jwtAuthentication().name,
-            securityContext.jwtAuthentication().tokenValue(),
-            withdrawRequest.coin,
-            withdrawRequest.startTime ?: null,
-            withdrawRequest.endTime ?: null,
-            if (validLimit > 1000 || validLimit < 1) 1000 else validLimit,
-            withdrawRequest.offset ?: 0,
-            withdrawRequest.ascendingByTime
-        )
-        return response.map {
-            val status = when (it.status) {
-                "CREATED" -> 0
-                "DONE" -> 1
-                "REJECTED" -> 2
-                else -> -1
-            }
-
-            WithdrawResponse(
-                it.destAddress ?: "0x0",
-                it.amount,
-                LocalDateTime.ofInstant(Instant.ofEpochMilli(it.createDate), ZoneId.systemDefault())
-                    .toString()
-                    .replace("T", " "),
-                it.destSymbol ?: "",
-                it.withdrawId?.toString() ?: "",
-                "",
-                it.destNetwork ?: "",
-                1,
-                status,
-                it.appliedFee.toString(),
-                3,
-                it.destTransactionRef ?: it.withdrawId.toString(),
-                if (status == 1 && it.acceptDate != null) it.acceptDate!! else it.createDate
-            )
-        }
-    }
+//    @PostMapping("/v2/capital/withdraw/history")
+//    suspend fun getWithdrawTransactionsV2(
+//        @RequestBody withdrawRequest: WithDrawRequest,
+//        @CurrentSecurityContext securityContext: SecurityContext
+//    ): List<WithdrawResponse> {
+//        val validLimit = withdrawRequest.limit ?: 1000
+//        val response = walletProxy.getWithdrawTransactions(
+//            securityContext.jwtAuthentication().name,
+//            securityContext.jwtAuthentication().tokenValue(),
+//            withdrawRequest.coin,
+//            withdrawRequest.startTime ?: null,
+//            withdrawRequest.endTime ?: null,
+//            if (validLimit > 1000 || validLimit < 1) 1000 else validLimit,
+//            withdrawRequest.offset ?: 0,
+//            withdrawRequest.ascendingByTime
+//        )
+//        return response.map {
+//            val status = when (it.status) {
+//                "CREATED" -> 0
+//                "DONE" -> 1
+//                "REJECTED" -> 2
+//                else -> -1
+//            }
+//
+//            WithdrawResponse(
+//                it.destAddress ?: "0x0",
+//                it.amount,
+//                it.createDate,
+//                it.destSymbol ?: "",
+//                it.withdrawId?.toString() ?: "",
+//                "",
+//                it.destNetwork ?: "",
+//                1,
+//                status,
+//                it.appliedFee.toString(),
+//                3,
+//                it.destTransactionRef ?: it.withdrawId.toString(),
+//                if (status == 1 && it.acceptDate != null) it.acceptDate!! else it.createDate,
+//                it.transferMethod
+//            )
+//        }
+//    }
 
     @GetMapping("/v1/asset/tradeFee")
     suspend fun getPairFees(
@@ -298,30 +295,30 @@ class WalletController(
         return AssetsEstimatedValue(value, quoteAsset.uppercase(), zeroAssets)
     }
 
-    private fun matchDepositsAndDetails(
-        deposits: List<TransactionHistoryResponse>,
-        details: List<DepositDetails>
-    ): List<DepositResponse> {
-        val detailMap = details.associateBy { it.hash }
-        return deposits.associateWith {
-            detailMap[it.ref]
-        }.mapNotNull { (deposit, detail) ->
-            detail?.let {
-                DepositResponse(
-                    deposit.amount,
-                    deposit.currency,
-                    detail.chain,
-                    1,
-                    detail.address,
-                    null,
-                    deposit.ref ?: deposit.id.toString(),
-                    deposit.date,
-                    1,
-                    "1/1",
-                    "1/1",
-                    deposit.date
-                )
-            }
-        }
-    }
+//    private fun matchDepositsAndDetails(
+//        deposits: List<TransactionHistoryResponse>,
+//        details: List<DepositDetails>
+//    ): List<DepositResponse> {
+//        val detailMap = details.associateBy { it.hash }
+//        return deposits.associateWith {
+//            detailMap[it.ref]
+//        }.mapNotNull { (deposit, detail) ->
+//            detail?.let {
+//                DepositResponse(
+//                    deposit.amount,
+//                    deposit.currency,
+//                    detail.chain,
+//                    1,
+//                    detail.address,
+//                    null,
+//                    deposit.ref ?: deposit.id.toString(),
+//                    deposit.date,
+//                    1,
+//                    "1/1",
+//                    "1/1",
+//                    deposit.date
+//                )
+//            }
+//        }
+//    }
 }

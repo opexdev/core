@@ -1,7 +1,6 @@
 package co.nilin.opex.wallet.app.config
 
 import co.nilin.opex.common.security.ReactiveCustomJwtConverter
-import co.nilin.opex.wallet.app.utils.hasRole
 import co.nilin.opex.wallet.app.utils.hasRoleAndLevel
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -26,8 +25,6 @@ class SecurityConfig(private val webClient: WebClient) {
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
         http.csrf().disable()
             .authorizeExchange()
-            .pathMatchers("/v2/transaction/trade/summary/**").permitAll()
-            .pathMatchers("/withdraw/summary/**").permitAll()
             .pathMatchers("/balanceOf/**").authenticated()
             .pathMatchers("/owner/**").authenticated()
             .pathMatchers("/withdraw").authenticated()
