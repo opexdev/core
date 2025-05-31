@@ -75,7 +75,7 @@
         "containerId": "opex",
         "attributes": {
           "permissions": [
-            "deposit:create:crypto"
+            "deposit:write"
           ]
         }
       },
@@ -152,7 +152,7 @@
         "containerId": "opex",
         "attributes": {
           "permissions": [
-            "deposit:create:fiat,withdraw:create:crypto,withdraw:create:fiat,voucher:submit"
+            "withdraw:write,voucher:submit"
           ]
         }
       },

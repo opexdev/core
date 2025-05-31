@@ -10,14 +10,10 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/opex/v1/deposit")
-class DepositController(
-    private val walletProxy: WalletProxy,
-) {
+class DepositController(private val walletProxy: WalletProxy) {
 
     @PostMapping
-    suspend fun deposit(
-        @RequestBody request: RequestDepositBody
-    ): TransferResult? {
+    suspend fun deposit(@RequestBody request: RequestDepositBody): TransferResult? {
         return walletProxy.deposit(request)
     }
 }

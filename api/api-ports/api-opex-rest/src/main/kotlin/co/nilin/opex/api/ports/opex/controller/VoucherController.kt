@@ -13,9 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/opex/v1/voucher")
-class VoucherController(
-    private val walletProxy: WalletProxy,
-) {
+class VoucherController(private val walletProxy: WalletProxy) {
 
     @PutMapping("/{code}")
     suspend fun submitVoucher(
