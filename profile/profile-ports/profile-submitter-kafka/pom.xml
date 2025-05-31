@@ -39,11 +39,6 @@
             <groupId>co.nilin.opex.profile</groupId>
             <artifactId>profile-core</artifactId>
         </dependency>
-        <dependency>
-            <groupId>co.nilin.opex.kyc</groupId>
-            <artifactId>kyc-core</artifactId>
-        </dependency>
-
     </dependencies>
 
 

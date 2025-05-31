@@ -1,8 +1,8 @@
 package co.nilin.opex.profile.ports.postgres.imp
 
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.kyc.core.utils.convert
 import co.nilin.opex.profile.core.data.linkedbankAccount.*
+import co.nilin.opex.profile.ports.postgres.utils.convert
 import co.nilin.opex.profile.core.spi.LinkedAccountPersister
 import co.nilin.opex.profile.ports.postgres.dao.LinkedAccountHistoryRepository
 import co.nilin.opex.profile.ports.postgres.dao.LinkedAccountRepository

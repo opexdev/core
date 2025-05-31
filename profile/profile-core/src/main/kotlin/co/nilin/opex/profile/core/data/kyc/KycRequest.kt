@@ -1,7 +1,5 @@
 package co.nilin.opex.profile.core.data.kyc
 
-
-import co.nilin.opex.kyc.core.data.KycStep
 import java.time.LocalDateTime
 
 open class KycRequest {
@@ -13,5 +11,4 @@ open class KycRequest {
     var createDate: LocalDateTime? = LocalDateTime.now()
     var description: String? = null
     var method: KycMethod? = null
-
 }
