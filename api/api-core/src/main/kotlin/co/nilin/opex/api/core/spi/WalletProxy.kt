@@ -77,14 +77,7 @@ interface WalletProxy {
     ): List<TransactionSummary>
 
     suspend fun deposit(
-        symbol: String,
-        receiverUuid: String,
-        receiverWalletType: WalletType,
-        amount: BigDecimal,
-        description: String?,
-        transferRef: String?,
-        gatewayUuid: String?,
-        chain: String?,
+        request: RequestDepositBody
     ): TransferResult?
 
     suspend fun requestWithdraw(

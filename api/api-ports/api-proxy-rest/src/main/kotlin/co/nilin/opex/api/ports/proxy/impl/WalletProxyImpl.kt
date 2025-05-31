@@ -19,7 +19,6 @@ import org.springframework.web.reactive.function.client.body
 import org.springframework.web.reactive.function.client.bodyToFlux
 import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
-import java.math.BigDecimal
 
 @Component
 class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
@@ -264,22 +263,16 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
     }
 
     override suspend fun deposit(
-        symbol: String,
-        receiverUuid: String,
-        receiverWalletType: WalletType,
-        amount: BigDecimal,
-        description: String?,
-        transferRef: String?,
-        gatewayUuid: String?,
-        chain: String?
+        request: RequestDepositBody
     ): TransferResult? {
         return withContext(ProxyDispatchers.wallet) {
-            webClient.get()
-                .uri("$baseUrl/deposit/${amount}_${chain}_${symbol}/${receiverUuid}_${receiverWalletType}") {
-                    it.queryParam("description", description)
-                    it.queryParam("transferRef", transferRef)
-                    it.queryParam("gatewayUuid", gatewayUuid)
-                    it.build()
+            webClient.post()
+                .uri("$baseUrl/deposit/${request.amount}_${request.chain}_${request.symbol}/${request.receiverUuid}_${request.receiverWalletType}") {
+                    it.apply {
+                        request.description?.let { description -> queryParam("description", description) }
+                        request.transferRef?.let { transferRef -> queryParam("transferRef", transferRef) }
+                        request.gatewayUuid?.let { gatewayUuid -> queryParam("gatewayUuid", gatewayUuid) }
+                    }.build()
                 }.accept(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .retrieve()
