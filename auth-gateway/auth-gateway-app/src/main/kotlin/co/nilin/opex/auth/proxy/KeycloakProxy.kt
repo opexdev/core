@@ -11,10 +11,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
-import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.WebClientResponseException
-import org.springframework.web.reactive.function.client.awaitBody
-import org.springframework.web.reactive.function.client.bodyToMono
+import org.springframework.web.reactive.function.client.*
 
 @Service
 class KeycloakProxy(
@@ -39,7 +36,7 @@ class KeycloakProxy(
         username: Username,
         password: String?,
         clientId: String,
-        clientSecret: String
+        clientSecret: String?
     ): Token {
         val users = findUserByAttribute(username.asAttribute())
         if (users.isEmpty())
@@ -57,10 +54,24 @@ class KeycloakProxy(
             .awaitBody<Token>()
     }
 
+    suspend fun checkUserCredentials(user: KeycloakUser, password: String) {
+        keycloakClient.post()
+            .uri("${keycloakConfig.url}/realms/${keycloakConfig.realm}/password/validate")
+            .header("Content-Type", "application/json")
+            .bodyValue(
+                object {
+                    val userId = user.id
+                    val password = password
+                }
+            ).retrieve()
+            .onStatus({ it == HttpStatus.valueOf(401) }) { throw OpexError.InvalidUserCredentials.exception() }
+            .awaitBodilessEntity()
+    }
+
     suspend fun refreshUserToken(
         refreshToken: String,
         clientId: String,
-        clientSecret: String
+        clientSecret: String?
     ): Token {
         val userTokenUrl = "${keycloakConfig.url}/realms/${keycloakConfig.realm}/protocol/openid-connect/token"
         return keycloakClient.post()

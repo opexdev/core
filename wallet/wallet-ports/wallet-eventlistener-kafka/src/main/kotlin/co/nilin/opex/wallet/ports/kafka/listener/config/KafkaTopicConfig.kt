@@ -14,8 +14,8 @@ class KafkaTopicConfig {
 
     @Autowired
     fun createTopics(applicationContext: GenericApplicationContext) {
-        applicationContext.registerBean("topic_auth_user_created", NewTopic::class.java, Supplier {
-            TopicBuilder.name("auth_user_created")
+        applicationContext.registerBean("topic_auth", NewTopic::class.java, Supplier {
+            TopicBuilder.name("auth")
                 .partitions(1)
                 .replicas(1)
                 .build()

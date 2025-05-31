@@ -21,7 +21,8 @@ data class OTPVerifyRequest(
 )
 
 data class OTPVerifyResponse(
-    val result: Boolean
+    val result: Boolean,
+    val type: OTPResultType
 )
 
 //TODO IMPORTANT: remove in production
@@ -29,4 +30,8 @@ data class TempOtpResponse(val otp: String)
 
 enum class OTPAction {
     REGISTER, FORGET, NONE
+}
+
+enum class OTPResultType {
+    VALID, EXPIRED, INCORRECT, INVALID
 }

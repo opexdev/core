@@ -1,6 +1,5 @@
 package co.nilin.opex.auth.service
 
-import co.nilin.opex.auth.exception.UserNotFoundException
 import co.nilin.opex.auth.model.*
 import co.nilin.opex.auth.proxy.CaptchaProxy
 import co.nilin.opex.auth.proxy.GoogleProxy
@@ -23,6 +22,7 @@ class TokenService(
         val user = keycloakProxy.findUserByUsername(username) ?: throw OpexError.UserNotFound.exception()
 
         val otpType = OTPType.valueOf(user.attributes?.get(Attributes.OTP)?.get(0) ?: OTPType.NONE.name)
+
         if (otpType == OTPType.NONE) {
             val token = keycloakProxy.getUserToken(
                 username,
@@ -34,19 +34,26 @@ class TokenService(
         }
 
         if (request.otp.isNullOrBlank()) {
+            keycloakProxy.checkUserCredentials(user, request.password)
+
             val requiredOtpTypes = listOf(OTPReceiver(username.value, otpType))
             val res = otpProxy.requestOTP(username.value, requiredOtpTypes)
             val receiver = when (otpType) {
                 OTPType.EMAIL -> user.email
-                OTPType.SMS -> user.attributes?.get(Attributes.MOBILE)?.get(0)
+                OTPType.SMS -> user.mobile
                 else -> null
             }
             return TokenResponse(null, RequiredOTP(otpType, receiver), res.otp)
         }
 
         val otpRequest = OTPVerifyRequest(username.value, listOf(OTPCode(request.otp, username.type.otpType)))
-        val isOTPValid = otpProxy.verifyOTP(otpRequest)
-        if (!isOTPValid) throw OpexError.InvalidOTP.exception()
+        val otpResult = otpProxy.verifyOTP(otpRequest)
+        if (!otpResult.result) {
+            when (otpResult.type) {
+                OTPResultType.EXPIRED -> throw OpexError.ExpiredOTP.exception()
+                else -> throw OpexError.InvalidOTP.exception()
+            }
+        }
 
         val token = keycloakProxy.getUserToken(
             username,
@@ -66,7 +73,7 @@ class TokenService(
         try {
             keycloakProxy.findUserByEmail(email)
         } catch (e: Exception) {
-            throw UserNotFoundException(email)
+            throw OpexError.UserNotFound.exception()
         }
         return TokenResponse(
             keycloakProxy.exchangeGoogleTokenForKeycloakToken(

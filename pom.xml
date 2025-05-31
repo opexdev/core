@@ -34,6 +34,7 @@
         <module>otp</module>
         <module>common</module>
         <module>auth-gateway</module>
+        <module>profile</module>
     </modules>
 
     <dependencies>

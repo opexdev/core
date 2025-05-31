@@ -1,5 +1,7 @@
 package co.nilin.opex.auth.service
 
+import co.nilin.opex.auth.data.UserCreatedEvent
+import co.nilin.opex.auth.kafka.AuthEventProducer
 import co.nilin.opex.auth.model.*
 import co.nilin.opex.auth.proxy.CaptchaProxy
 import co.nilin.opex.auth.proxy.GoogleProxy
@@ -24,6 +26,7 @@ class UserService(
     private val privateKey: PrivateKey,
     private val publicKey: PublicKey,
     private val captchaProxy: CaptchaProxy,
+    private val authProducer: AuthEventProducer
 ) {
 
     private val logger by LoggerDelegate()
@@ -50,8 +53,13 @@ class UserService(
     suspend fun verifyRegister(request: VerifyOTPRequest): String {
         val username = Username.create(request.username)
         val otpRequest = OTPVerifyRequest(username.value, listOf(OTPCode(request.otp, username.type.otpType)))
-        val isOTPValid = otpProxy.verifyOTP(otpRequest)
-        if (!isOTPValid) throw OpexError.InvalidOTP.exception()
+        val otpResult = otpProxy.verifyOTP(otpRequest)
+        if (!otpResult.result) {
+            when (otpResult.type) {
+                OTPResultType.EXPIRED -> throw OpexError.ExpiredOTP.exception()
+                else -> throw OpexError.InvalidOTP.exception()
+            }
+        }
         return generateToken(username.value, OTPAction.REGISTER)
     }
 
@@ -66,6 +74,10 @@ class UserService(
             throw OpexError.BadRequest.exception()
 
         keycloakProxy.confirmCreateUser(user, request.password)
+
+        // Send event to let other services know a user just registered
+        val event = UserCreatedEvent(user.id, user.username, user.email, user.mobile, user.firstName, user.lastName)
+        authProducer.send(event)
 
         return if (request.clientId.isNullOrBlank() || request.clientSecret.isNullOrBlank())
             null
@@ -102,8 +114,13 @@ class UserService(
     suspend fun verifyForget(request: VerifyOTPRequest): String {
         val username = Username.create(request.username)
         val otpRequest = OTPVerifyRequest(username.value, listOf(OTPCode(request.otp, username.type.otpType)))
-        val isOTPValid = otpProxy.verifyOTP(otpRequest)
-        if (!isOTPValid) throw OpexError.InvalidOTP.exception()
+        val otpResult = otpProxy.verifyOTP(otpRequest)
+        if (!otpResult.result) {
+            when (otpResult.type) {
+                OTPResultType.EXPIRED -> throw OpexError.ExpiredOTP.exception()
+                else -> throw OpexError.InvalidOTP.exception()
+            }
+        }
         return generateToken(username.value, OTPAction.FORGET)
     }
 

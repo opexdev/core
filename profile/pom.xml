@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>core</artifactId>
+        <groupId>co.nilin.opex</groupId>
+        <version>1.0.1-beta.7</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>profile</artifactId>
+    <packaging>pom</packaging>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <modules>
+        <module>profile-core</module>
+        <module>profile-app</module>
+        <module>profile-ports/profile-postgres</module>
+        <module>profile-ports/profile-eventlistener-kafka</module>
+        <module>profile-ports/profile-submitter-kafka</module>
+        <module>profile-ports/profile-kyc-proxy</module>
+        <module>profile-ports/profile-shahkar-proxy</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>co.nilin.opex.profile</groupId>
+                <artifactId>profile-app</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.profile</groupId>
+                <artifactId>profile-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.profile.ports</groupId>
+                <artifactId>profile-eventlistener-kafka</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.profile.ports</groupId>
+                <artifactId>profile-submitter-kafka</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.profile.ports</groupId>
+                <artifactId>profile-postgres</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.admin.gateway</groupId>
+                <artifactId>admin-app</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.utility</groupId>
+                <artifactId>logging-handler</artifactId>
+                <version>${logging-handler.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.utility</groupId>
+                <artifactId>interceptors</artifactId>
+                <version>${interceptor.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.profile.ports</groupId>
+                <artifactId>profile-kyc-proxy</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.profile.ports</groupId>
+                <artifactId>profile-shahkar-proxy</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.10.1</version>
+        </dependency>
+        <dependency>
+            <groupId>co.nilin.opex</groupId>
+            <artifactId>common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+        </dependency>
+    </dependencies>
+</project>

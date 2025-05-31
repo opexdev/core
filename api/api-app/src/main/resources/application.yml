@@ -103,8 +103,8 @@ app:
   opex-bc-gateway:
     url: http://opex-bc-gateway
   auth:
-    cert-url: http://opex-auth/auth/realms/opex/protocol/openid-connect/certs
-    token-url: http://opex-auth/auth/realms/opex/protocol/openid-connect/token
+    cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
+    token-url: http://keycloak:8080/realms/opex/protocol/openid-connect/token
     api-key-client:
       secret: ${API_KEY_CLIENT_SECRET}
   binance:

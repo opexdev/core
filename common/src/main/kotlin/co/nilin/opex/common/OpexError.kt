@@ -49,6 +49,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     InvalidUsername(5014, "Invalid username", HttpStatus.BAD_REQUEST),
     InvalidUserCredentials(5015, "Invalid user credentials", HttpStatus.BAD_REQUEST),
     InvalidRegisterToken(5016, "Invalid register token", HttpStatus.BAD_REQUEST),
+    ExpiredOTP(5017, "OTP is expired", HttpStatus.BAD_REQUEST),
 
 
     // code 6000: wallet
@@ -99,8 +100,6 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     VoucherUsageLimitExceeded(6045, "Voucher usage limit exceeded", HttpStatus.BAD_REQUEST),
 
 
-
-
     // code 7000: api
     OrderNotFound(7001, "No order found", HttpStatus.NOT_FOUND),
     SymbolNotFound(7002, "No symbol found", HttpStatus.NOT_FOUND),
@@ -134,6 +133,16 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     TOTPAlreadyRegistered(12007, "User already registered for TOTP", HttpStatus.BAD_REQUEST),
     OTPDisabled(12008, "OTP for this receiver type is disabled", HttpStatus.INTERNAL_SERVER_ERROR),
 
+
+    //code 12000 profile
+    UserIdAlreadyExists(130001, "User with this id or email is already registered", HttpStatus.BAD_REQUEST),
+    InvalidLinkedAccount(130002, "Irrelevant account", HttpStatus.BAD_REQUEST),
+    AccountNotFound(130003, " Account not found", HttpStatus.BAD_REQUEST),
+    DuplicateAccount(130004, " Duplicate account", HttpStatus.BAD_REQUEST),
+    InvalidIban(130005, " Invalid iban number", HttpStatus.BAD_REQUEST),
+    InvalidCard(130006, " Invalid card number", HttpStatus.BAD_REQUEST),
+    VerificationFailed(130007, "Verification Failed", HttpStatus.BAD_REQUEST),
+    ProfileApprovalRequestAlreadyExists(130008, "Request Already Exists", HttpStatus.BAD_REQUEST),
     ;
 
     override fun code() = this.code

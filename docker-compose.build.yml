@@ -9,6 +9,9 @@ services:
   kafka-3:
     image: ghcr.io/opexdev/kafka:$TAG
     build: docker-images/kafka
+  keycloak:
+    image: ghcr.io/opexdev/keycloak:$TAG
+    build: auth-gateway/keycloak-setup
   vault:
     image: ghcr.io/opexdev/vault-opex:$TAG
     build: docker-images/vault
@@ -51,3 +54,6 @@ services:
   otp:
     image: ghcr.io/opexdev/otp:$TAG
     build: otp/otp-app
+  profile:
+    image: registry.opex.dev/repository/dockernilin-repo/profile:$TAG
+    build: profile/profile-app

@@ -73,11 +73,11 @@ class WalletKafkaConfig(private val environment: Environment) {
         template: KafkaTemplate<String, UserCreatedEvent>,
         @Qualifier("walletConsumerFactory") consumerFactory: ConsumerFactory<String, UserCreatedEvent>
     ) {
-        val containerProps = ContainerProperties(Pattern.compile("auth_user_created"))
+        val containerProps = ContainerProperties(Pattern.compile("auth"))
         containerProps.messageListener = listener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
         container.setBeanName("UserCreatedKafkaListenerContainer")
-        container.commonErrorHandler = createConsumerErrorHandler(template, "auth_user_created.DLT")
+        container.commonErrorHandler = createConsumerErrorHandler(template, "auth.DLT")
         container.start()
     }
 

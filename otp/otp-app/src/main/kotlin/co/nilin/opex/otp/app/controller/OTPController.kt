@@ -36,13 +36,13 @@ class OTPController(private val otpService: OTPService) {
     }
 
     @PostMapping("/verify")
-    suspend fun verifyOTP(@RequestBody request: VerifyOTPRequest): VerifyOTPResponse {
+    suspend fun verifyOTP(@RequestBody request: VerifyOTPRequest): OTPResult {
         validateOTPRequest(request.otpCodes.map { it.type })
-        val isValid = if (request.otpCodes.size == 1)
+        val result = if (request.otpCodes.size == 1)
             otpService.verifyOTP(request.otpCodes[0].code, request.userId)
         else
             otpService.verifyCompositeOTP(request.otpCodes.toSet(), request.userId)
-        return VerifyOTPResponse(isValid)
+        return OTPResult(result.isValid, result)
     }
 
     private fun validateOTPRequest(request: List<OTPType>) {

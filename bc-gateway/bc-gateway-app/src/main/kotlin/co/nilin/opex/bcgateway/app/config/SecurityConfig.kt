@@ -1,7 +1,7 @@
 package co.nilin.opex.bcgateway.app.config
 
-import co.nilin.opex.bcgateway.app.utils.hasRole
 import co.nilin.opex.bcgateway.app.utils.hasRoleAndLevel
+import co.nilin.opex.common.security.ReactiveCustomJwtConverter
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Profile
@@ -29,18 +29,19 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/swagger-resources/**").permitAll()
             .pathMatchers("/wallet-sync/**").permitAll()
             .pathMatchers("/currency/**").permitAll()
-            .pathMatchers("/filter/**").hasAuthority("SCOPE_trust")
-            .pathMatchers("/admin/**").hasRole("SCOPE_trust", "admin_system")
-            .pathMatchers("/v1/address/**").permitAll()
+            .pathMatchers("/filter/**").authenticated()
+            .pathMatchers("/admin/**").hasAuthority("ROLE_admin")
+            .pathMatchers("/v1/address/assign").hasAuthority("PREM_address:assign")
+            .pathMatchers(HttpMethod.PUT, "/v1/address").hasAuthority("ROLE_admin")
             .pathMatchers("/deposit/**").permitAll()
-            .pathMatchers("/addresses/**").hasRole("SCOPE_trust", "admin_system")
+            .pathMatchers("/addresses/**").hasAuthority("ROLE_admin")
             .pathMatchers("/scanner/**").permitAll()
             .pathMatchers("/crypto-currency/**").permitAll()
             .pathMatchers("/currency/**").permitAll()
             .anyExchange().authenticated()
             .and()
             .oauth2ResourceServer()
-            .jwt()
+            .jwt { it.jwtAuthenticationConverter(ReactiveCustomJwtConverter()) }
         return http.build()
     }
 

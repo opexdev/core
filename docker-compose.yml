@@ -110,7 +110,7 @@ services:
       restart_policy:
         condition: on-failure
   keycloak:
-    image: quay.io/keycloak/keycloak:26.1
+    image: ghcr.io/opexdev/keycloak
     container_name: keycloak
     environment:
       KEYCLOAK_ADMIN: ${KC_PANEL_USERNAME}
@@ -126,10 +126,8 @@ services:
     command:
       - start-dev
       - --import-realm
-      - --features=admin-fine-grained-authz,token-exchange
-      - --log-level=DEBUG
-    volumes:
-      - ./auth-gateway/keycloak-setup/realms:/opt/keycloak/data/import
+      - --features=admin-fine-grained-authz,token-exchange,scripts
+      - --log-level=INFO
     depends_on:
       - postgres-keycloak
     networks:
@@ -245,6 +243,10 @@ services:
     <<: *postgres-db
     volumes:
       - otp-data:/var/lib/postgresql/data/
+  postgres-profile:
+    <<: *postgres-db
+    volumes:
+      - profile-data:/var/lib/postgresql/data/
   accountant:
     image: ghcr.io/opexdev/accountant
     environment:
@@ -532,6 +534,28 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  profile:
+    image: registry.opex.dev/repository/dockernilin-repo/profile
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
+      - CONSUL_HOST=consul
+      - DB_IP_PORT=postgres-profile
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_HOST=vault
+      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - consul
+      - postgres-profile
+      - vault
+    labels:
+      collect_logs: "true"
+    deploy:
+      restart_policy:
+        condition: on-failure
 volumes:
   zookeeper-data:
   zookeeper-log:
@@ -555,6 +579,7 @@ volumes:
   matching-gateway-data:
   otp-data:
   auth-gateway-keys:
+  profile-data:
 networks:
   opex:
     external: true
