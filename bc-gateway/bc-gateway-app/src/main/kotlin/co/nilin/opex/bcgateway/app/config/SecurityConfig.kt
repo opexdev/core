@@ -73,7 +73,7 @@ class SecurityConfig(private val webClient: WebClient) {
     @Throws(Exception::class)
     fun reactiveJwtDecoder(): ReactiveJwtDecoder? {
         return NimbusReactiveJwtDecoder.withJwkSetUri(jwkUrl)
-            .webClient(webClient)
+            .webClient(WebClient.create())
             .build()
     }
 

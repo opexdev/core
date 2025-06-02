@@ -57,22 +57,7 @@ class OrderController(
             "*",
             securityContext.jwtAuthentication().tokenValue()
         )
-        return NewOrderResponse(
-            symbol,
-            -1,
-            -1,
-            null,
-            Date(),
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null
-        )
+        return NewOrderResponse(symbol)
     }
 
     @PutMapping

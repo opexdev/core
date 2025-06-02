@@ -22,7 +22,7 @@ class UserRegistrationService(
 
     @Transactional
     suspend fun registerNewUser(event: UserCreatedEvent) {
-        val title = "${event.email} | ${event.firstName} ${event.lastName}"
+        val title = "${event.username} | ${event.email ?: ""} - ${event.mobile ?: ""}"
         val owner = walletOwnerManager.createWalletOwner(event.uuid, title, "1") //TODO define proper user levels
 
         val currencies = currencyService.fetchCurrencies()?.currencies ?: run {

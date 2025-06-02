@@ -4,6 +4,10 @@ server:
 spring:
   application:
     name: opex-auth-gateway
+  kafka:
+    bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
+    consumer:
+      group-id: auth
   cloud:
     bootstrap:
       enabled: true
