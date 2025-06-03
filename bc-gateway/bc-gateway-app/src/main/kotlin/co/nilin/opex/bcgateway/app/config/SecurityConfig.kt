@@ -38,6 +38,15 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/scanner/**").permitAll()
             .pathMatchers("/crypto-currency/**").permitAll()
             .pathMatchers("/currency/**").permitAll()
+            //otc
+            .pathMatchers(HttpMethod.PUT, "/v1/address").hasAuthority("ROLE_admin")
+            .pathMatchers("/admin/**").hasAuthority("ROLE_admin")
+            .pathMatchers("/wallet-sync/**").hasRoleAndLevel("System") //TODO ?
+            .pathMatchers("/crypto-currency/chain").hasAuthority("ROLE_admin")
+            .pathMatchers("/crypto-currency/**").hasRoleAndLevel("System") //TODO ?
+            .pathMatchers("/omni-balance/bc/**").hasAuthority("ROLE_admin")
+            .pathMatchers("/actuator/**").permitAll()
+            .pathMatchers("/scanner/**").permitAll()
             .anyExchange().authenticated()
             .and()
             .oauth2ResourceServer()

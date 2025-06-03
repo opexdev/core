@@ -47,6 +47,21 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/inquiry/**").permitAll()
             .pathMatchers("/v2/transfer/**").permitAll()
             .pathMatchers("/voucher/**").hasAuthority("PERM_voucher:submit")
+            //otc
+            .pathMatchers("/admin/**").hasAuthority("ROLE_admin")
+            .pathMatchers(HttpMethod.GET, "/otc/**").permitAll()
+            .pathMatchers(HttpMethod.PUT, "/otc/**").hasAuthority("ROLE_admin")
+            .pathMatchers(HttpMethod.POST, "/otc/**").hasAuthority("ROLE_admin")
+            .pathMatchers(HttpMethod.DELETE, "/otc/**").hasAuthority("ROLE_admin")
+            .pathMatchers(HttpMethod.GET, "/currency/**").permitAll()
+            .pathMatchers(HttpMethod.PUT, "/currency/**").hasAuthority("ROLE_admin")
+            .pathMatchers(HttpMethod.POST, "/currency/**").hasAuthority("ROLE_admin")
+            .pathMatchers(HttpMethod.DELETE, "/currency/**").hasAuthority("ROLE_admin")
+            .pathMatchers("/manually/**").hasAuthority("ROLE_admin")
+            .pathMatchers("/deposit/**").hasRoleAndLevel("System") //TODO ?
+            .pathMatchers("/internal/deposit/**").hasRoleAndLevel("System") //TODO ?
+            .pathMatchers("/stats/**").hasAuthority("ROLE_admin")
+            .pathMatchers("/storage/**").hasAuthority("ROLE_admin")
             .anyExchange().authenticated()
             .and()
             .oauth2ResourceServer()
