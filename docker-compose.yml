@@ -526,7 +526,7 @@ services:
       restart_policy:
         condition: on-failure
   profile:
-    image: registry.opex.dev/repository/dockernilin-repo/profile
+    image: ghcr.io/opexdev/profile
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
       - CONSUL_HOST=consul

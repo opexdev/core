@@ -55,5 +55,5 @@ services:
     image: ghcr.io/opexdev/otp:$TAG
     build: otp/otp-app
   profile:
-    image: registry.opex.dev/repository/dockernilin-repo/profile:$TAG
+    image: ghcr.io/opexdev/profile:$TAG
     build: profile/profile-app
