@@ -58,8 +58,8 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers(HttpMethod.POST, "/currency/**").hasAuthority("ROLE_admin")
             .pathMatchers(HttpMethod.DELETE, "/currency/**").hasAuthority("ROLE_admin")
             .pathMatchers("/manually/**").hasAuthority("ROLE_admin")
-            .pathMatchers("/deposit/**").hasRoleAndLevel("System") //TODO ?
-            .pathMatchers("/internal/deposit/**").hasRoleAndLevel("System") //TODO ?
+            .pathMatchers("/deposit/**").hasAuthority("ROLE_system")
+            .pathMatchers("/internal/deposit/**").hasAuthority("ROLE_system")
             .pathMatchers("/stats/**").hasAuthority("ROLE_admin")
             .pathMatchers("/storage/**").hasAuthority("ROLE_admin")
             .anyExchange().authenticated()

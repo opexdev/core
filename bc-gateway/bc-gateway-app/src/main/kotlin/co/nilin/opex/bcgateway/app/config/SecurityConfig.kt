@@ -41,9 +41,9 @@ class SecurityConfig(private val webClient: WebClient) {
             //otc
             .pathMatchers(HttpMethod.PUT, "/v1/address").hasAuthority("ROLE_admin")
             .pathMatchers("/admin/**").hasAuthority("ROLE_admin")
-            .pathMatchers("/wallet-sync/**").hasRoleAndLevel("System") //TODO ?
+            .pathMatchers("/wallet-sync/**").hasAuthority("ROLE_system")
             .pathMatchers("/crypto-currency/chain").hasAuthority("ROLE_admin")
-            .pathMatchers("/crypto-currency/**").hasRoleAndLevel("System") //TODO ?
+            .pathMatchers("/crypto-currency/**").hasAuthority("ROLE_system")
             .pathMatchers("/omni-balance/bc/**").hasAuthority("ROLE_admin")
             .pathMatchers("/actuator/**").permitAll()
             .pathMatchers("/scanner/**").permitAll()
