@@ -22,6 +22,11 @@ class UserDataController(private val userQueryHandler: UserQueryHandler) {
         return userQueryHandler.queryOrder(uuid, request) ?: throw OpexError.NotFound.exception()
     }
 
+    @GetMapping("/{uuid}/orders/open")
+    suspend fun getUserOpenOrders(@PathVariable uuid: String, @RequestParam limit: Int): List<Order> {
+        return userQueryHandler.openOrders(uuid, limit)
+    }
+
     @GetMapping("/{uuid}/orders/{symbol}/open")
     suspend fun getUserOpenOrders(
         @PathVariable uuid: String,

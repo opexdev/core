@@ -49,6 +49,17 @@ class UserQueryHandlerImpl(
         return order.asOrderDTO(status)
     }
 
+    override suspend fun openOrders(uuid: String, limit: Int): List<Order> {
+        return orderRepository.findByUuidAndSymbolAndStatus(
+            uuid,
+            null,
+            listOf(OrderStatus.NEW.code, OrderStatus.PARTIALLY_FILLED.code),
+            limit
+        ).filter { orderModel -> orderModel.constraint != null }
+            .map { it.asOrderDTO(orderStatusRepository.findMostRecentByOUID(it.ouid).awaitFirstOrNull()) }
+            .toList()
+    }
+
     override suspend fun openOrders(uuid: String, symbol: String?, limit: Int): List<Order> {
         return orderRepository.findByUuidAndSymbolAndStatus(
             uuid,

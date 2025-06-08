@@ -9,6 +9,8 @@ interface UserQueryHandler {
 
     suspend fun queryOrder(uuid: String, request: QueryOrderRequest): Order?
 
+    suspend fun openOrders(uuid: String, limit: Int): List<Order>
+
     suspend fun openOrders(uuid: String, symbol: String?, limit: Int): List<Order>
 
     suspend fun allOrders(uuid: String, allOrderRequest: AllOrderRequest): List<Order>
