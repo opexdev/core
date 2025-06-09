@@ -126,7 +126,7 @@ services:
     command:
       - start-dev
       - --import-realm
-      - --features=admin-fine-grained-authz,token-exchange,scripts
+      - --features=admin-fine-grained-authz,token-exchange,scripts,token-exchange
       - --log-level=INFO
     depends_on:
       - postgres-keycloak
