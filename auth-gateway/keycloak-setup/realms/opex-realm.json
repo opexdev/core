@@ -389,7 +389,16 @@
         }
       ],
       "ios-app": [],
-      "opex-api-key": [],
+      "opex-api-key": [
+        {
+          "id": "95d01e3b-1442-415c-9f86-4d86187558ca",
+          "name": "uma_protection",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "d2f0f1b6-46b7-4678-842a-8c67524ea2da",
+          "attributes": {}
+        }
+      ],
       "security-admin-console": [],
       "admin-cli": [],
       "account-console": [],
@@ -606,6 +615,27 @@
         "account": [
           "manage-account",
           "view-profile"
+        ]
+      },
+      "notBefore": 0,
+      "groups": []
+    },
+    {
+      "id": "4bb55f60-faa0-464a-b0a3-04a18f421dff",
+      "username": "service-account-opex-api-key",
+      "emailVerified": false,
+      "createdTimestamp": 1749460715817,
+      "enabled": true,
+      "totp": false,
+      "serviceAccountClientId": "opex-api-key",
+      "disableableCredentialTypes": [],
+      "requiredActions": [],
+      "realmRoles": [
+        "default-roles-opex"
+      ],
+      "clientRoles": {
+        "opex-api-key": [
+          "uma_protection"
         ]
       },
       "notBefore": 0,
@@ -1340,6 +1370,11 @@
     {
       "id": "d2f0f1b6-46b7-4678-842a-8c67524ea2da",
       "clientId": "opex-api-key",
+      "name": "",
+      "description": "",
+      "rootUrl": "",
+      "adminUrl": "",
+      "baseUrl": "",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
@@ -1355,23 +1390,26 @@
       "standardFlowEnabled": true,
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": true,
-      "serviceAccountsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": true,
       "publicClient": false,
       "frontchannelLogout": false,
       "protocol": "openid-connect",
       "attributes": {
         "saml.assertion.signature": "false",
         "access.token.lifespan": "43200",
-        "client.secret.creation.time": "1745062711",
+        "client.secret.creation.time": "1749460384",
         "saml.multivalued.roles": "false",
         "saml.force.post.binding": "false",
         "saml.encrypt": "false",
         "post.logout.redirect.uris": "+",
+        "oauth2.device.authorization.grant.enabled": "false",
         "backchannel.logout.revoke.offline.tokens": "false",
         "saml.server.signature": "false",
         "saml.server.signature.keyinfo.ext": "false",
         "exclude.session.state.from.auth.response": "false",
         "realm_client": "false",
+        "oidc.ciba.grant.enabled": "false",
         "backchannel.logout.session.required": "true",
         "client_credentials.use_refresh_token": "false",
         "saml_force_name_id_format": "false",
@@ -1386,17 +1424,52 @@
       "nodeReRegistrationTimeout": -1,
       "defaultClientScopes": [
         "trust",
-        "web-origins",
-        "acr",
-        "profile",
         "basic",
-        "email"
+        "role_permission_attribute"
       ],
       "optionalClientScopes": [
-        "address",
-        "offline_access",
-        "microprofile-jwt"
-      ]
+        "offline_access"
+      ],
+      "authorizationSettings": {
+        "allowRemoteResourceManagement": true,
+        "policyEnforcementMode": "ENFORCING",
+        "resources": [
+          {
+            "name": "Default Resource",
+            "type": "urn:opex-api-key:resources:default",
+            "ownerManagedAccess": false,
+            "attributes": {},
+            "uris": [
+              "/*"
+            ]
+          }
+        ],
+        "policies": [
+          {
+            "name": "Default Policy",
+            "description": "A policy that grants access only for users within this realm",
+            "type": "js",
+            "logic": "POSITIVE",
+            "decisionStrategy": "AFFIRMATIVE",
+            "config": {
+              "code": "// by default, grants any permission associated with this policy\n$evaluation.grant();\n"
+            }
+          },
+          {
+            "name": "Default Permission",
+            "description": "A permission that applies to the default resource type",
+            "type": "resource",
+            "logic": "POSITIVE",
+            "decisionStrategy": "UNANIMOUS",
+            "config": {
+              "defaultResourceType": "urn:opex-api-key:resources:default",
+              "applyPolicies": "[\"Default Policy\"]"
+            }
+          }
+        ],
+        "scopes": [],
+        "decisionStrategy": "UNANIMOUS"
+      }
     },
     {
       "id": "6a4bfbd0-576d-4778-af56-56f876647355",
@@ -2177,7 +2250,7 @@
       "frontchannelLogout": true,
       "protocol": "openid-connect",
       "attributes": {
-        "access.token.lifespan": "600",
+        "access.token.lifespan": "3600",
         "request.object.signature.alg": "any",
         "frontchannel.logout.session.required": "true",
         "oauth2.device.authorization.grant.enabled": "false",
@@ -2208,6 +2281,7 @@
       "nodeReRegistrationTimeout": -1,
       "defaultClientScopes": [
         "trust",
+        "audience-opex-api-key",
         "basic",
         "role_permission_attribute"
       ],
@@ -2521,6 +2595,34 @@
       ]
     },
     {
+      "id": "dbb7860d-fba0-4c05-8b99-f2f9cdd3ffb4",
+      "name": "audience-opex-api-key",
+      "description": "",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "false",
+        "display.on.consent.screen": "true",
+        "gui.order": "",
+        "consent.screen.text": ""
+      },
+      "protocolMappers": [
+        {
+          "id": "627885b9-1bb8-465a-9125-e9603ac1dcd5",
+          "name": "audience-opex-api-key",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "opex-api-key",
+            "id.token.claim": "false",
+            "lightweight.claim": "false",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
       "id": "51d49314-b511-43e0-9258-bfb873758a78",
       "name": "web-origins",
       "description": "OpenID Connect scope for add allowed web origins to the access token",
@@ -2576,6 +2678,17 @@
             "access.token.claim": "true",
             "claim.name": "auth_time",
             "jsonType.label": "long"
+          }
+        },
+        {
+          "id": "f4b67796-04fa-49b5-846f-a5ab81587c55",
+          "name": "audience resolve",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-resolve-mapper",
+          "consentRequired": false,
+          "config": {
+            "introspection.token.claim": "true",
+            "access.token.claim": "true"
           }
         }
       ]
@@ -2924,7 +3037,8 @@
     "web-origins",
     "role_permission_attribute",
     "role_list",
-    "realm-roles"
+    "realm-roles",
+    "audience-opex-api-key"
   ],
   "defaultOptionalClientScopes": [
     "offline_access",
