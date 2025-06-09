@@ -22,7 +22,8 @@ class WalletOwnerController(
     private val walletOwnerManager: WalletOwnerManager,
     private val walletManager: WalletManager,
     private val environment: Environment,
-    private val currentUserProvider: CurrentUserProvider
+    private val currentUserProvider: CurrentUserProvider,
+    private val balanceParser: BalanceParser,
 ) {
 
     @GetMapping("/{uuid}/wallets")
@@ -45,7 +46,7 @@ class WalletOwnerController(
             throw OpexError.WalletOwnerNotFound.exception()
         }
         val wallets = walletManager.findWalletsByOwner(owner)
-        return BalanceParser.parse(wallets)
+        return balanceParser.parse(wallets)
     }
 
     @GetMapping("/{uuid}/wallets/{symbol}")
@@ -62,7 +63,7 @@ class WalletOwnerController(
     suspend fun getWallet(@PathVariable uuid: String, @PathVariable symbol: String): WalletData {
         val owner = walletOwnerManager.findWalletOwner(uuid) ?: throw OpexError.WalletOwnerNotFound.exception()
         val wallets = walletManager.findWalletByOwnerAndSymbol(owner, symbol)
-        return BalanceParser.parseSingleCurrency(wallets) ?: throw OpexError.WalletNotFound.exception()
+        return balanceParser.parseSingleCurrency(wallets) ?: throw OpexError.WalletNotFound.exception()
     }
 
     @GetMapping("/{uuid}/limits")

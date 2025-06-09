@@ -7,10 +7,12 @@ import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.inout.CurrenciesCommand
 import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import co.nilin.opex.wallet.core.inout.CurrencyData
+import co.nilin.opex.wallet.core.inout.CurrencyPrecision
 import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepositoryV2
 import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
+import co.nilin.opex.wallet.ports.postgres.util.RedisCacheHelper
 import co.nilin.opex.wallet.ports.postgres.util.toCommand
 import co.nilin.opex.wallet.ports.postgres.util.toCurrencyData
 import co.nilin.opex.wallet.ports.postgres.util.toModel
@@ -23,7 +25,8 @@ import reactor.core.publisher.Mono
 import java.util.stream.Collectors
 
 @Service("newVersion")
-class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : CurrencyServiceManager {
+class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2, val redisCacheHelper: RedisCacheHelper) :
+    CurrencyServiceManager {
     private val logger = LoggerFactory.getLogger(CurrencyServiceImplV2::class.java)
 
 
@@ -35,6 +38,7 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
                 return null
         } ?: run {
             return doPersist(request.toModel())?.toCommand()
+                .also { redisCacheHelper.put("${request.symbol}-precision", request.precision) }
         }
     }
 
@@ -43,6 +47,7 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
         return loadCurrency(FetchCurrency(symbol = request.symbol))
             ?.awaitFirstOrNull()?.let {
                 doSave(it.toCommand().updateTo(request).toModel())?.toCommand()
+                    .also { redisCacheHelper.put("${request.symbol}-precision", request.precision) }
             } ?: throw OpexError.CurrencyNotFound.exception()
 
     }
@@ -58,6 +63,7 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
     override suspend fun deleteCurrency(request: FetchCurrency): Void? {
         return loadCurrency(request)?.awaitFirstOrNull()?.let {
             currencyRepository.deleteById(it.symbol!!)?.awaitFirstOrNull()
+                .also { redisCacheHelper.evict("${request.symbol}-precision") }
         }
     }
 
@@ -77,6 +83,10 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2) : Curr
 
     override suspend fun fetchCurrency(request: FetchCurrency): CurrencyCommand? {
         return loadCurrency(request)?.awaitFirstOrNull()?.toCommand()
+    }
+
+    override suspend fun fetchAllCurrenciesPrecision(): List<CurrencyPrecision> {
+        return currencyRepository.fetchAllCurrenciesPrecision().collectList().awaitFirstOrElse { emptyList() }
     }
 
     private suspend fun loadCurrency(request: FetchCurrency): Mono<CurrencyModel>? {
