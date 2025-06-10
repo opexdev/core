@@ -13,10 +13,10 @@ class PrecisionService(
 
     //TODO optimize this
     fun calculatePrecision(amount: BigDecimal, symbol: String): BigDecimal {
-        val precision = redisCacheHelper.get<BigDecimal>("$symbol-precision") ?: return amount
+        val precision = redisCacheHelper.get<BigDecimal>("$symbol-precision")?.toInt() ?: return amount
 
-        val scaledAmount = amount.setScale(precision.toInt(), RoundingMode.DOWN)
-        if (scaledAmount != BigDecimal.ZERO) {
+        val scaledAmount = amount.setScale(precision, RoundingMode.DOWN)
+        if (scaledAmount != BigDecimal.ZERO.setScale(precision)) {
             return scaledAmount
         }
         val decimalPart = amount.stripTrailingZeros().toPlainString().substringAfter('.', "")
