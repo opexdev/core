@@ -3,6 +3,7 @@ package co.nilin.opex.wallet.app.service
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.ReservedTransferResponse
 import co.nilin.opex.wallet.app.service.otc.GraphService
+import co.nilin.opex.wallet.app.utils.PrecisionService
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.inout.TransferResultDetailed
@@ -32,6 +33,7 @@ class TransferService(
     private val reservedTransferManager: ReservedTransferManager,
     private val meterRegistry: MeterRegistry,
     private val currencyService: CurrencyServiceV2,
+    private val precisionService: PrecisionService,
 
     ) {
 
@@ -93,11 +95,12 @@ class TransferService(
         receiverUuid: String,
         receiverWalletType: WalletType,
     ): ReservedTransferResponse {
+        precisionService.validatePrecision(sourceAmount, sourceSymbol)
         val rate = currencyGraph.buildRoutes(sourceSymbol, destSymbol)
             .map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }
             .firstOrNull() ?: throw OpexError.NOT_EXCHANGEABLE_CURRENCIES.exception()
         val finalAmount = sourceAmount.multiply(rate.rate)
-
+        precisionService.validatePrecision(finalAmount, destSymbol)
         if (sourceAmount == BigDecimal.ZERO || finalAmount == BigDecimal.ZERO)
             throw OpexError.InvalidAmount.exception()
 
