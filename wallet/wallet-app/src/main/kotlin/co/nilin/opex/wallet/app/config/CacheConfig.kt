@@ -37,30 +37,4 @@ class CacheConfig {
             afterPropertiesSet()
         }
     }
-
-    @Bean
-    fun cacheManager(connectionFactory: RedisConnectionFactory, mapper: ObjectMapper): CacheManager {
-        val newMapper = mapper.copy().apply {
-            activateDefaultTyping(mapper.polymorphicTypeValidator, ObjectMapper.DefaultTyping.NON_FINAL)
-            findAndRegisterModules()
-            registerKotlinModule()
-        }
-        return RedisCacheManagerBuilder.fromConnectionFactory(connectionFactory)
-            .withCacheConfiguration(
-                "marketCache",
-                RedisCacheConfiguration.defaultCacheConfig()
-                    .entryTtl(Duration.ofMinutes(10))
-                    .disableCachingNullValues()
-                    .serializeValuesWith(
-                        RedisSerializationContext.SerializationPair
-                            .fromSerializer(GenericJackson2JsonRedisSerializer(newMapper))
-                    )
-            )
-            .build()
-    }
-
-    @Bean
-    fun marketCacheWrapper(cacheManager: CacheManager): CacheHelper {
-        return CacheHelper(cacheManager, "marketCache")
-    }
 }
