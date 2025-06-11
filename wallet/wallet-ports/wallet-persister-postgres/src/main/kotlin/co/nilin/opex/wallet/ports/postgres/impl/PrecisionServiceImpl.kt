@@ -1,18 +1,20 @@
-package co.nilin.opex.wallet.app.utils
+package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.wallet.core.service.PrecisionService
 import co.nilin.opex.wallet.ports.postgres.util.RedisCacheHelper
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
 import java.math.RoundingMode
+import kotlin.text.iterator
 
 @Component
-class PrecisionService(
+class PrecisionServiceImpl(
     private val redisCacheHelper: RedisCacheHelper,
-) {
+) : PrecisionService {
 
     //TODO optimize this
-    fun calculatePrecision(amount: BigDecimal, symbol: String): BigDecimal {
+    override fun calculatePrecision(amount: BigDecimal, symbol: String): BigDecimal {
         val precision = redisCacheHelper.get<BigDecimal>("$symbol-precision")?.toInt() ?: return amount
 
         val scaledAmount = amount.setScale(precision, RoundingMode.DOWN)
@@ -37,7 +39,7 @@ class PrecisionService(
     }
 
 
-    fun validatePrecision(amount: BigDecimal, symbol: String) {
+    override fun validatePrecision(amount: BigDecimal, symbol: String) {
         val precision = redisCacheHelper.get<BigDecimal>("$symbol-precision")
             ?: throw OpexError.NotFound.exception("Precision not found for symbol: $symbol")
 
@@ -48,7 +50,7 @@ class PrecisionService(
         }
     }
 
-    fun getPrecision(symbol: String): BigDecimal {
+    override fun getPrecision(symbol: String): BigDecimal {
         return redisCacheHelper.get<BigDecimal>("$symbol-precision")
             ?: throw OpexError.NotFound.exception("Precision not found for symbol: $symbol")
     }

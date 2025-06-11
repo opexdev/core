@@ -3,6 +3,8 @@ package co.nilin.opex.wallet.app.utils
 import co.nilin.opex.wallet.app.dto.WalletData
 import co.nilin.opex.wallet.core.model.Wallet
 import co.nilin.opex.wallet.core.model.WalletType
+import co.nilin.opex.wallet.core.service.PrecisionService
+import co.nilin.opex.wallet.ports.postgres.impl.PrecisionServiceImpl
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
 
