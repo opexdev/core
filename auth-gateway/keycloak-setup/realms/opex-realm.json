@@ -106,9 +106,6 @@
         "description": "${role_default-roles}",
         "composite": true,
         "composites": {
-          "realm": [
-            "user-1"
-          ],
           "client": {
             "account": [
               "manage-account",
@@ -414,7 +411,16 @@
           "attributes": {}
         }
       ],
-      "opex-admin": [],
+      "opex-admin": [
+        {
+          "id": "cd0dca5f-aa89-4a97-8cb7-6525f919c3b6",
+          "name": "uma_protection",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "fb5f91c4-42fa-4769-b45d-febef22b4976",
+          "attributes": {}
+        }
+      ],
       "account": [
         {
           "id": "8daa8096-d14e-4d1c-ad1f-83f822016aa1",
@@ -610,7 +616,11 @@
       ],
       "clientRoles": {
         "realm-management": [
+          "realm-admin",
           "manage-users"
+        ],
+        "opex-admin": [
+          "uma_protection"
         ],
         "account": [
           "manage-account",
@@ -921,7 +931,10 @@
       "id": "13d76feb-d762-4409-bb84-7a75bc395a61",
       "clientId": "admin-cli",
       "name": "${client_admin-cli}",
+      "description": "",
       "rootUrl": "",
+      "adminUrl": "",
+      "baseUrl": "",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
@@ -941,24 +954,36 @@
       "frontchannelLogout": false,
       "protocol": "openid-connect",
       "attributes": {
-        "saml.assertion.signature": "false",
+        "request.object.signature.alg": "any",
         "saml.multivalued.roles": "false",
         "saml.force.post.binding": "false",
-        "saml.encrypt": "false",
         "post.logout.redirect.uris": "+",
-        "saml.server.signature": "false",
+        "oauth2.device.authorization.grant.enabled": "false",
         "backchannel.logout.revoke.offline.tokens": "false",
         "saml.server.signature.keyinfo.ext": "false",
-        "exclude.session.state.from.auth.response": "false",
+        "use.refresh.tokens": "true",
         "realm_client": "false",
-        "client.use.lightweight.access.token.enabled": "true",
+        "oidc.ciba.grant.enabled": "false",
         "backchannel.logout.session.required": "false",
         "client_credentials.use_refresh_token": "false",
-        "saml_force_name_id_format": "false",
         "saml.client.signature": "false",
+        "require.pushed.authorization.requests": "false",
+        "request.object.encryption.enc": "any",
+        "saml.assertion.signature": "false",
+        "client.secret.creation.time": "1749563219",
+        "request.object.encryption.alg": "any",
+        "client.introspection.response.allow.jwt.claim.enabled": "false",
+        "saml.encrypt": "false",
+        "saml.server.signature": "false",
+        "exclude.session.state.from.auth.response": "false",
+        "client.use.lightweight.access.token.enabled": "true",
+        "request.object.required": "not required",
+        "saml_force_name_id_format": "false",
         "tls.client.certificate.bound.access.tokens": "false",
+        "acr.loa.map": "{}",
         "saml.authnstatement": "false",
         "display.on.consent.screen": "false",
+        "token.response.type.bearer.lower-case": "false",
         "saml.onetimeuse.condition": "false"
       },
       "authenticationFlowBindingOverrides": {},
@@ -1253,7 +1278,10 @@
       "id": "fb5f91c4-42fa-4769-b45d-febef22b4976",
       "clientId": "opex-admin",
       "name": "${client_opex-admin}",
+      "description": "",
       "rootUrl": "${authBaseUrl}",
+      "adminUrl": "",
+      "baseUrl": "",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
@@ -1270,6 +1298,7 @@
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": true,
       "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": true,
       "publicClient": false,
       "frontchannelLogout": false,
       "protocol": "openid-connect",
@@ -1281,11 +1310,13 @@
         "saml.force.post.binding": "false",
         "saml.encrypt": "false",
         "post.logout.redirect.uris": "+",
+        "oauth2.device.authorization.grant.enabled": "false",
         "backchannel.logout.revoke.offline.tokens": "false",
         "saml.server.signature": "false",
         "saml.server.signature.keyinfo.ext": "false",
         "exclude.session.state.from.auth.response": "false",
         "realm_client": "false",
+        "oidc.ciba.grant.enabled": "false",
         "backchannel.logout.session.required": "false",
         "client_credentials.use_refresh_token": "false",
         "saml_force_name_id_format": "false",
@@ -1354,6 +1385,7 @@
         }
       ],
       "defaultClientScopes": [
+        "service_account",
         "trust",
         "web-origins",
         "acr",
@@ -1365,7 +1397,47 @@
         "address",
         "offline_access",
         "microprofile-jwt"
-      ]
+      ],
+      "authorizationSettings": {
+        "allowRemoteResourceManagement": true,
+        "policyEnforcementMode": "ENFORCING",
+        "resources": [
+          {
+            "name": "Default Resource",
+            "type": "urn:opex-admin:resources:default",
+            "ownerManagedAccess": false,
+            "attributes": {},
+            "uris": [
+              "/*"
+            ]
+          }
+        ],
+        "policies": [
+          {
+            "name": "Default Policy",
+            "description": "A policy that grants access only for users within this realm",
+            "type": "js",
+            "logic": "POSITIVE",
+            "decisionStrategy": "AFFIRMATIVE",
+            "config": {
+              "code": "// by default, grants any permission associated with this policy\n$evaluation.grant();\n"
+            }
+          },
+          {
+            "name": "Default Permission",
+            "description": "A permission that applies to the default resource type",
+            "type": "resource",
+            "logic": "POSITIVE",
+            "decisionStrategy": "UNANIMOUS",
+            "config": {
+              "defaultResourceType": "urn:opex-admin:resources:default",
+              "applyPolicies": "[\"Default Policy\"]"
+            }
+          }
+        ],
+        "scopes": [],
+        "decisionStrategy": "UNANIMOUS"
+      }
     },
     {
       "id": "d2f0f1b6-46b7-4678-842a-8c67524ea2da",
@@ -1424,6 +1496,7 @@
       "nodeReRegistrationTimeout": -1,
       "defaultClientScopes": [
         "trust",
+        "Forced_Roles",
         "basic",
         "role_permission_attribute"
       ],
@@ -2268,6 +2341,7 @@
         "client.secret.creation.time": "1747492073",
         "request.object.encryption.alg": "any",
         "client.introspection.response.allow.jwt.claim.enabled": "false",
+        "standard.token.exchange.enabled": "false",
         "exclude.session.state.from.auth.response": "false",
         "client.use.lightweight.access.token.enabled": "false",
         "request.object.required": "not required",
@@ -2590,6 +2664,35 @@
             "claim.name": "zoneinfo",
             "jsonType.label": "String",
             "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "id": "d1debc5e-632b-4c2e-863b-2f5b2b1572d5",
+      "name": "user-roles",
+      "description": "",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "gui.order": "",
+        "consent.screen.text": ""
+      },
+      "protocolMappers": [
+        {
+          "id": "d8aa4645-5f5b-41e7-b7e6-b12739ca0cca",
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "foo",
+            "introspection.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String",
+            "multivalued": "true"
           }
         }
       ]
@@ -3026,6 +3129,32 @@
           }
         }
       ]
+    },
+    {
+      "id": "60575b8d-b5ab-47c3-a2fa-b14e77d4f392",
+      "name": "Forced_Roles",
+      "description": "",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "false",
+        "display.on.consent.screen": "true",
+        "gui.order": "",
+        "consent.screen.text": ""
+      },
+      "protocolMappers": [
+        {
+          "id": "a2ffe329-0ed7-4861-a6aa-e72a25b98770",
+          "name": "roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "forced-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.name": "roles",
+            "jsonType.label": "String",
+            "key.name": "roles"
+          }
+        }
+      ]
     }
   ],
   "defaultDefaultClientScopes": [
@@ -3038,7 +3167,9 @@
     "role_permission_attribute",
     "role_list",
     "realm-roles",
-    "audience-opex-api-key"
+    "audience-opex-api-key",
+    "user-roles",
+    "Forced_Roles"
   ],
   "defaultOptionalClientScopes": [
     "offline_access",

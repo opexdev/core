@@ -4,14 +4,20 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.cloud.client.loadbalancer.LoadBalanced
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.web.reactive.function.client.WebClient
+import org.zalando.logbook.Logbook
+import org.zalando.logbook.netty.LogbookClientHandler
+import reactor.netty.http.client.HttpClient
 
 @Configuration
 class WebClientConfig {
 
     @Bean("keycloakWebClient")
-    fun keycloakWebClient(keycloakConfig: KeycloakConfig): WebClient {
+    fun keycloakWebClient(keycloakConfig: KeycloakConfig, logbook: Logbook): WebClient {
+        val client = HttpClient.create().doOnConnected { it.addHandlerLast(LogbookClientHandler(logbook)) }
         return WebClient.builder()
+            .clientConnector(ReactorClientHttpConnector(client))
             .baseUrl(keycloakConfig.url)
             .build()
     }
