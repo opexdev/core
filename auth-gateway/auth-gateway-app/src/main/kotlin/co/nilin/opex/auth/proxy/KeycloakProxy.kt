@@ -3,9 +3,11 @@ package co.nilin.opex.auth.proxy
 import co.nilin.opex.auth.config.KeycloakConfig
 import co.nilin.opex.auth.model.*
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.common.utils.LoggerDelegate
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import org.keycloak.admin.client.resource.RealmResource
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -15,11 +17,14 @@ import org.springframework.web.reactive.function.client.*
 
 @Service
 class KeycloakProxy(
-    @Qualifier("keycloakWebClient") private val keycloakClient: WebClient,
-    private val keycloakConfig: KeycloakConfig
+    @Qualifier("keycloakWebClient")
+    private val keycloakClient: WebClient,
+    private val keycloakConfig: KeycloakConfig,
+    private val opexRealm: RealmResource
 ) {
 
     private val adminClient = keycloakConfig.adminClient
+    private val logger by LoggerDelegate()
 
     suspend fun getAdminAccessToken(): String {
         val tokenUrl = "${keycloakConfig.url}/realms/${keycloakConfig.realm}/protocol/openid-connect/token"
@@ -194,6 +199,12 @@ class KeycloakProxy(
             .retrieve()
             .toBodilessEntity()
             .awaitSingle()
+    }
+
+    suspend fun assignDefaultRoles(user: KeycloakUser) {
+        val role = opexRealm.roles().get("user-1").toRepresentation()
+        val u = opexRealm.users().get(user.id)
+        u.roles().realmLevel().add(mutableListOf(role))
     }
 
     suspend fun createExternalIdpUser(email: String, username: Username, password: String): String {

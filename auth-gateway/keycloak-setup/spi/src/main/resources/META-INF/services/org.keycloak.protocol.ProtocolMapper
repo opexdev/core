@@ -1,1 +1,2 @@
 co.nilin.opex.keycloak.spi.RoleAttributesProtocolMapper
+co.nilin.opex.keycloak.spi.ForcedRoleProtocolMapper
