@@ -272,7 +272,7 @@ class TransferService(
         }
     }
 
-    private fun validateMinimumAmount(
+    private suspend fun validateMinimumAmount(
         sourceSymbol: String,
         sourceAmount: BigDecimal,
         destAmount: BigDecimal,

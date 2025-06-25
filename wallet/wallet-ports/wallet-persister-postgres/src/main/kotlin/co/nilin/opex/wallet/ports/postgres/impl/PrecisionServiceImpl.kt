@@ -1,16 +1,17 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.service.PrecisionService
+import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.ports.postgres.util.RedisCacheHelper
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
 import java.math.RoundingMode
-import kotlin.text.iterator
 
 @Component
 class PrecisionServiceImpl(
-    private val redisCacheHelper: RedisCacheHelper,
+    private val redisCacheHelper: RedisCacheHelper, private val currencyServiceManager: CurrencyServiceManager
 ) : PrecisionService {
 
     //TODO optimize this
@@ -39,9 +40,10 @@ class PrecisionServiceImpl(
     }
 
 
-    override fun validatePrecision(amount: BigDecimal, symbol: String) {
-        val precision = redisCacheHelper.get<BigDecimal>("$symbol-precision")
-            ?: throw OpexError.NotFound.exception("Precision not found for symbol: $symbol")
+    override suspend fun validatePrecision(amount: BigDecimal, symbol: String) {
+        val precision = redisCacheHelper.get<BigDecimal>("$symbol-precision") ?: (currencyServiceManager.fetchCurrency(
+            FetchCurrency(symbol = symbol)
+        )?.precision ?: throw OpexError.CurrencyNotFound.exception())
 
         val actualScale = amount.stripTrailingZeros().scale()
 
@@ -50,10 +52,10 @@ class PrecisionServiceImpl(
         }
     }
 
-    override fun getPrecision(symbol: String): BigDecimal {
-        return redisCacheHelper.get<BigDecimal>("$symbol-precision")
-            ?: throw OpexError.NotFound.exception("Precision not found for symbol: $symbol")
+    override suspend fun getPrecision(symbol: String): BigDecimal {
+        return redisCacheHelper.get<BigDecimal>("$symbol-precision") ?: (currencyServiceManager.fetchCurrency(
+            FetchCurrency(symbol = symbol)
+        )?.precision ?: throw OpexError.CurrencyNotFound.exception())
     }
-
 
 }
