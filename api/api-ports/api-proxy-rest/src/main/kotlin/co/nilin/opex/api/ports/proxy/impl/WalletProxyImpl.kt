@@ -121,6 +121,19 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
         }
     }
 
+    override suspend fun getSwapTransactions(token: String, request: UserTransactionRequest): List<SwapResponse> {
+        return webClient.post()
+            .uri("$baseUrl/v1/swap/history")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToFlux<SwapResponse>()
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+    }
+
     override suspend fun getTransactions(
         uuid: String,
         token: String,
@@ -139,13 +152,17 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
             .body(
                 Mono.just(
                     UserTransactionRequest(
+                        null,
                         currency,
+                        null,
+                        null,
                         category,
                         startTime,
                         endTime,
                         limit,
                         offset,
-                        ascendingByTime
+                        ascendingByTime == true,
+                        null
                     )
                 )
             )

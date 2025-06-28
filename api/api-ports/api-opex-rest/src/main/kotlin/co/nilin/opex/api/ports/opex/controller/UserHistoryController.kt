@@ -7,10 +7,7 @@ import co.nilin.opex.api.ports.opex.util.jwtAuthentication
 import co.nilin.opex.api.ports.opex.util.tokenValue
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/opex/v1/user")
@@ -123,6 +120,14 @@ class UserHistoryController(
             offset ?: 0,
             ascendingByTime,
         )
+    }
+
+    @PostMapping("/history/swap")
+    suspend fun getSwapHistory(
+        @CurrentSecurityContext securityContext: SecurityContext,
+        @RequestBody request: UserTransactionRequest
+    ): List<SwapResponse> {
+        return walletProxy.getSwapTransactions(securityContext.jwtAuthentication().tokenValue(), request)
     }
 
     @GetMapping("/summary/trade")
