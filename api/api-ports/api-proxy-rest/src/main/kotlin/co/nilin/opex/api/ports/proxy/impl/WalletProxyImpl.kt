@@ -332,5 +332,20 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
             .bodyToMono<SubmitVoucherResponse>()
             .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
     }
+
+    override suspend fun getQuoteCurrencies(): List<QuoteCurrency> {
+        return withContext(ProxyDispatchers.wallet) {
+            webClient.get()
+                .uri("$baseUrl/currency/quotes") {
+                    it.queryParam("isActive", true)
+                    it.build()
+                }.accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<QuoteCurrency>()
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
+        }
+    }
 }
 
