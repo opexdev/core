@@ -4,7 +4,7 @@ data class TransactionRequest(
     val currency: String?,
     val startTime: Long? = null,
     val endTime: Long? = null,
-    val limit: Int,
-    val offset: Int,
+    val limit: Int?,
+    val offset: Int?,
     val ascendingByTime: Boolean? = false
 )

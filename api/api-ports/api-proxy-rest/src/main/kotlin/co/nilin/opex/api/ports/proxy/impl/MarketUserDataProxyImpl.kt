@@ -139,6 +139,32 @@ class MarketUserDataProxyImpl(private val webClient: WebClient) : MarketUserData
         }
     }
 
+    override suspend fun getOrderHistoryCount(
+        uuid: String,
+        symbol: String?,
+        startTime: Long?,
+        endTime: Long?,
+        orderType: MatchingOrderType?,
+        direction: OrderDirection?,
+    ): Long {
+        return withContext(ProxyDispatchers.market) {
+            webClient.get()
+                .uri("$baseUrl/v1/user/order/history/count/$uuid") {
+                    it.queryParam("symbol", symbol)
+                    it.queryParam("startTime", startTime)
+                    it.queryParam("endTime", endTime)
+                    it.queryParam("orderType", orderType)
+                    it.queryParam("direction", direction)
+                    it.build()
+                }.accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToMono<Long>()
+                .awaitFirstOrElse { 0L }
+        }
+    }
+
     override suspend fun getTradeHistory(
         uuid: String,
         symbol: String?,
@@ -165,6 +191,30 @@ class MarketUserDataProxyImpl(private val webClient: WebClient) : MarketUserData
                 .bodyToFlux<Trade>()
                 .collectList()
                 .awaitFirstOrElse { emptyList() }
+        }
+    }
+
+    override suspend fun getTradeHistoryCount(
+        uuid: String,
+        symbol: String?,
+        startTime: Long?,
+        endTime: Long?,
+        direction: OrderDirection?,
+    ): Long {
+        return withContext(ProxyDispatchers.market) {
+            webClient.get()
+                .uri("$baseUrl/v1/user/trade/history/count/$uuid") {
+                    it.queryParam("symbol", symbol)
+                    it.queryParam("startTime", startTime)
+                    it.queryParam("endTime", endTime)
+                    it.queryParam("direction", direction)
+                    it.build()
+                }.accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToMono<Long>()
+                .awaitFirstOrElse { 0L }
         }
     }
 }

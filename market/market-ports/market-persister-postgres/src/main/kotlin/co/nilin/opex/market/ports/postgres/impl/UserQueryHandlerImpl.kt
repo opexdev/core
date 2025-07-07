@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.stereotype.Component
@@ -179,6 +180,24 @@ class UserQueryHandlerImpl(
         ).toList()
     }
 
+    override suspend fun getOrderHistoryCount(
+        uuid: String,
+        symbol: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        orderType: MatchingOrderType?,
+        direction: OrderDirection?
+    ): Long {
+        return orderRepository.countByCriteria(
+            uuid,
+            symbol,
+            startTime,
+            endTime,
+            orderType,
+            direction,
+        ).awaitFirstOrElse { 0L }
+    }
+
     override suspend fun getTradeHistory(
         uuid: String,
         symbol: String?,
@@ -197,5 +216,21 @@ class UserQueryHandlerImpl(
             limit,
             offset
         ).toList()
+    }
+
+    override suspend fun getTradeHistoryCount(
+        uuid: String,
+        symbol: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        direction: OrderDirection?
+    ): Long {
+        return tradeRepository.countByCriteria(
+            uuid,
+            symbol,
+            startTime,
+            endTime,
+            direction,
+        ).awaitFirst()
     }
 }

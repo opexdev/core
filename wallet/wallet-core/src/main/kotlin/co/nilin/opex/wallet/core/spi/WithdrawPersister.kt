@@ -53,6 +53,13 @@ interface WithdrawPersister {
         ascendingByTime: Boolean?,
     ): List<WithdrawResponse>
 
+    suspend fun findWithdrawHistoryCount(
+        uuid: String,
+        currency: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+    ): Long
+
     suspend fun getWithdrawSummary(
         uuid: String,
         startTime: LocalDateTime?,

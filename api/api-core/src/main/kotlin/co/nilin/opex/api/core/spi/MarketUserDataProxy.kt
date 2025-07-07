@@ -42,6 +42,15 @@ interface MarketUserDataProxy {
         offset: Int?,
     ): List<OrderData>
 
+    suspend fun getOrderHistoryCount(
+        uuid : String,
+        symbol: String?,
+        startTime: Long?,
+        endTime: Long?,
+        orderType: MatchingOrderType?,
+        direction: OrderDirection?,
+    ): Long
+
     suspend fun getTradeHistory(
         uuid : String,
         symbol: String?,
@@ -51,4 +60,12 @@ interface MarketUserDataProxy {
         limit: Int?,
         offset: Int?,
     ): List<Trade>
+
+    suspend fun getTradeHistoryCount(
+        uuid : String,
+        symbol: String?,
+        startTime: Long?,
+        endTime: Long?,
+        direction: OrderDirection?,
+    ): Long
 }

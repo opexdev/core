@@ -534,7 +534,6 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
     ): Flow<TradeModel>
 
 
-
     @Query(
         """
 select t.symbol,
@@ -556,7 +555,7 @@ select t.symbol,
        true                                                                               as is_best_match,
        case when o.side = 'bid' and t.maker_uuid = :uuid then true else false end         as is_maker_buyer
 from trades t
-         inner join orders o on o.ouid in (t.maker_ouid, t.taker_ouid)
+         inner join orders o on o.ouid = t.maker_ouid or o.ouid = t.taker_ouid
 where :uuid in (t.maker_uuid, t.taker_uuid)    
             and (:symbol is null or t.symbol = :symbol) 
             and (:startTime is null or t.trade_date >= :startTime) 
@@ -575,5 +574,25 @@ where :uuid in (t.maker_uuid, t.taker_uuid)
         direction: OrderDirection?,
         limit: Int?,
         offset: Int?,
-    ) : Flow<Trade>
+    ): Flow<Trade>
+
+    @Query(
+        """
+select count(*)
+from trades t
+         inner join orders o on o.ouid = t.maker_ouid or o.ouid = t.taker_ouid
+where :uuid in (t.maker_uuid, t.taker_uuid)    
+            and (:symbol is null or t.symbol = :symbol) 
+            and (:startTime is null or t.trade_date >= :startTime) 
+            and (:endTime is null or t.trade_date <= :endTime) 
+            and (:direction is null or o.side = :direction)
+        """
+    )
+    suspend fun countByCriteria(
+        uuid: String,
+        symbol: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        direction: OrderDirection?,
+    ): Mono<Long>
 }

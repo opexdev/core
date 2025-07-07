@@ -3,7 +3,6 @@ package co.nilin.opex.wallet.app.service
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.app.dto.ManualTransferRequest
-import co.nilin.opex.wallet.app.utils.asLocalDateTime
 import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.DepositStatus
 import co.nilin.opex.wallet.core.model.DepositType
@@ -226,6 +225,15 @@ class DepositService(
                     it.transferMethod
                 )
             }
+    }
+
+    suspend fun getDepositHistoryCount(
+        uuid: String,
+        symbol: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+    ): Long {
+        return depositPersister.getDepositHistoryCount(uuid, symbol, startTime, endTime)
     }
 
 

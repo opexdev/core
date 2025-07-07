@@ -80,6 +80,27 @@ class UserDataController(private val userQueryHandler: UserQueryHandler) {
         )
     }
 
+    @GetMapping("/order/history/count/{uuid}")
+    suspend fun getOrderHistoryCount(
+        @RequestParam symbol: String?,
+        @RequestParam startTime: Long?,
+        @RequestParam endTime: Long?,
+        @RequestParam orderType: MatchingOrderType?,
+        @RequestParam direction: OrderDirection?,
+        @RequestParam limit: Int?,
+        @RequestParam offset: Int?,
+        @PathVariable uuid: String,
+    ): Long {
+        return userQueryHandler.getOrderHistoryCount(
+            uuid,
+            symbol,
+            startTime?.let { startTime.asLocalDateTime() },
+            endTime?.let { endTime.asLocalDateTime() },
+            orderType,
+            direction,
+        )
+    }
+
     @GetMapping("/trade/history/{uuid}")
     suspend fun getTradeHistory(
         @PathVariable uuid: String,
@@ -98,6 +119,23 @@ class UserDataController(private val userQueryHandler: UserQueryHandler) {
             direction,
             limit,
             offset
+        )
+    }
+
+    @GetMapping("/trade/history/count/{uuid}")
+    suspend fun getTradeHistoryCount(
+        @PathVariable uuid: String,
+        @RequestParam symbol: String?,
+        @RequestParam startTime: Long?,
+        @RequestParam endTime: Long?,
+        @RequestParam direction: OrderDirection?,
+    ): Long {
+        return userQueryHandler.getTradeHistoryCount(
+            uuid,
+            symbol,
+            startTime?.let { startTime.asLocalDateTime() },
+            endTime?.let { endTime.asLocalDateTime() },
+            direction,
         )
     }
 

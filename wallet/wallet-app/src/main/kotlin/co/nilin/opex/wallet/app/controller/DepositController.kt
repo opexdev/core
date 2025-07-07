@@ -46,6 +46,23 @@ class DepositController(
         )
     }
 
+    @PostMapping("/v1/deposit/history/count")
+    suspend fun getDepositTransactionsCountForUser(
+        @RequestBody request: DepositHistoryRequest,
+        @CurrentSecurityContext securityContext: SecurityContext,
+    ): Long {
+        return depositService.getDepositHistoryCount(
+            securityContext.authentication.name,
+            request.currency,
+            request.startTime?.let {
+                LocalDateTime.ofInstant(Instant.ofEpochMilli(request.startTime), ZoneId.systemDefault())
+            },
+            request.endTime?.let {
+                LocalDateTime.ofInstant(Instant.ofEpochMilli(request.endTime), ZoneId.systemDefault())
+            },
+        )
+    }
+
     @PostMapping("/deposit/{amount}_{chain}_{symbol}/{receiverUuid}_{receiverWalletType}")
     @ApiResponse(
         message = "OK",

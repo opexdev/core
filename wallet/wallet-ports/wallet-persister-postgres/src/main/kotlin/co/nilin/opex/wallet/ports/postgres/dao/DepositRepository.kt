@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
+import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 
 @Repository
@@ -113,4 +114,24 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
         endTime: LocalDateTime?,
         limit: Int?,
     ): Flow<TransactionSummary>
+
+
+    @Query(
+        """
+        select count(*) from deposits 
+        where uuid = :uuid
+            and (:currency is null or currency = :currency)
+            and (:startTime is null or create_date > :startTime )
+            and (:endTime is null or create_date <= :endTime)
+            and status in (:status)
+
+        """
+    )
+    fun countByCriteria(
+        uuid: String,
+        currency: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        status: List<DepositStatus>? = listOf<DepositStatus>(DepositStatus.DONE, DepositStatus.INVALID),
+    ): Mono<Long>
 }
