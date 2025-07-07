@@ -48,6 +48,7 @@ spring:
     vault:
       enabled: false
 app:
+  symbols: BTC_USDT,ETH_USDT,BTC_IRT,ETH_IRT,USDT_IRT,ETH_BUSD,BTC_BUSD,BNB_BUSD
   auth:
     url: none
     cert-url: none
