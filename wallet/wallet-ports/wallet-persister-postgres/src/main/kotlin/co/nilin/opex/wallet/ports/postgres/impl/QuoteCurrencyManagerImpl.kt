@@ -27,7 +27,7 @@ class QuoteCurrencyManagerImpl(
                     isActive,
                     LocalDateTime.now(),
                 )
-            )
+            ).awaitFirstOrNull()
         }
 
     }

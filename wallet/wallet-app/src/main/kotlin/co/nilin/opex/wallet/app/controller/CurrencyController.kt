@@ -152,7 +152,7 @@ class CurrencyController(
     @PutMapping("/quote/{currency}")
     suspend fun updateQuoteCurrency(
         @PathVariable("currency") currency: String,
-        @RequestBody isActive: Boolean,
+        @RequestParam isActive: Boolean,
     ) {
         quoteCurrencyManager.update(currency, isActive)
     }

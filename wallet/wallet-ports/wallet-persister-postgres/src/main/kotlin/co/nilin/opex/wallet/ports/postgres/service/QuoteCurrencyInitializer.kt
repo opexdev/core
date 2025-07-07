@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.ports.postgres.service
 
 import co.nilin.opex.wallet.ports.postgres.dao.QuoteCurrencyRepository
+import co.nilin.opex.wallet.ports.postgres.model.QuoteCurrencyModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -43,10 +44,8 @@ class QuoteCurrencyInitializer(
                 quoteSymbols.forEach { quote ->
                     val existing = quoteCurrencyRepository.findByCurrency(quote).awaitFirstOrNull()
                     if (existing == null) {
-                        quoteCurrencyRepository.insert(
-                            quote,
-                            false,
-                            LocalDateTime.now()
+                        quoteCurrencyRepository.save(
+                            QuoteCurrencyModel(null, quote, false, LocalDateTime.now())
                         ).awaitFirstOrNull()
                         logger.info("Quote currency inserted: $quote")
                     }

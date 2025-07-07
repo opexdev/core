@@ -17,7 +17,4 @@ interface QuoteCurrencyRepository : ReactiveCrudRepository<QuoteCurrencyModel, L
     @Query("SELECT * FROM quote_currency WHERE (:isActive IS NULL OR is_active = :isActive)")
     fun findAllByActive(isActive: Boolean?): Flow<QuoteCurrency>
 
-    @Query("insert into quote_currency (currency,is_active,last_update_date) values (:currency,:isActive,:updateDate)")
-    fun insert(currency: String, isActive: Boolean, updateDate: LocalDateTime): Mono<Void>
-
 }
