@@ -201,9 +201,7 @@ class MarketController(
 
     @GetMapping("/currencyInfo/quotes")
     suspend fun getQuoteCurrencies(): List<String> {
-        return accountantProxy.getPairConfigs()
-            .map { it.rightSideWalletSymbol }
-            .distinct()
+        return walletProxy.getQuoteCurrencies().map { it.currency }
     }
 
     @GetMapping("/klines")

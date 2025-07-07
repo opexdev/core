@@ -1,7 +1,6 @@
 package co.nilin.opex.api.core.spi
 
 import co.nilin.opex.api.core.inout.*
-import java.math.BigDecimal
 
 interface WalletProxy {
 
@@ -83,17 +82,19 @@ interface WalletProxy {
     suspend fun requestWithdraw(
         token: String,
         request: RequestWithdrawBody
-    ):WithdrawActionResult
+    ): WithdrawActionResult
 
     suspend fun cancelWithdraw(
         token: String,
         withdrawId: Long
-    ):Void?
+    ): Void?
 
     suspend fun findWithdraw(
         token: String,
         withdrawId: Long
     ): WithdrawResponse
 
-    suspend fun submitVoucher(code : String , token :String) : SubmitVoucherResponse
+    suspend fun submitVoucher(code: String, token: String): SubmitVoucherResponse
+
+    suspend fun getQuoteCurrencies(): List<QuoteCurrency>
 }

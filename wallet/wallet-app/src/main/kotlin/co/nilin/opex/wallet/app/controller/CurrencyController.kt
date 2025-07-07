@@ -7,7 +7,9 @@ import co.nilin.opex.wallet.core.inout.CurrencyData
 import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
 import co.nilin.opex.wallet.core.inout.GatewayType
 import co.nilin.opex.wallet.core.inout.TerminalCommand
+import co.nilin.opex.wallet.core.model.QuoteCurrency
 import co.nilin.opex.wallet.core.spi.GatewayTerminalManager
+import co.nilin.opex.wallet.core.spi.QuoteCurrencyManager
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*
 class CurrencyController(
     private val currencyService: CurrencyServiceV2,
     private val gatewayTerminalManager: GatewayTerminalManager,
+    private val quoteCurrencyManager: QuoteCurrencyManager,
 ) {
 
     @PostMapping("")
@@ -137,6 +140,21 @@ class CurrencyController(
         @RequestBody terminal: List<String>,
     ) {
         return gatewayTerminalManager.revokeTerminalsToGateway(gatewayUuid, terminal)
+    }
+
+    @GetMapping("/quotes")
+    suspend fun getQuoteCurrencies(
+        @RequestParam isActive: Boolean?,
+    ): List<QuoteCurrency> {
+        return quoteCurrencyManager.getAll(isActive)
+    }
+
+    @PutMapping("/quote/{currency}")
+    suspend fun updateQuoteCurrency(
+        @PathVariable("currency") currency: String,
+        @RequestParam isActive: Boolean,
+    ) {
+        quoteCurrencyManager.update(currency, isActive)
     }
 
 }

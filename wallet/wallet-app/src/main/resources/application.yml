@@ -121,6 +121,7 @@ app:
     url: lb://opex-bc-gateway
   reserved-transfer:
     life-time: 15 #minutes
+  symbols: ${SYMBOLS}
 logging:
   level:
     root: INFO

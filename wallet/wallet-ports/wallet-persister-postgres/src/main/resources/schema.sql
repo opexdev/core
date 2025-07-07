@@ -488,3 +488,11 @@ $$
         END IF;
     END
 $$;
+
+CREATE TABLE IF NOT EXISTS quote_currency
+(
+    id          SERIAL PRIMARY KEY,
+    currency    VARCHAR(25) NOT NULL UNIQUE REFERENCES currency (symbol),
+    is_active         BOOLEAN      NOT NULL DEFAULT false,
+    last_update_date TIMESTAMP
+);
