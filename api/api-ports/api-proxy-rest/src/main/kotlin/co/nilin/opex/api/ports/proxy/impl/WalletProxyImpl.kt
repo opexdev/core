@@ -96,6 +96,27 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
         }
     }
 
+    override suspend fun getDepositTransactionsCount(
+        uuid: String,
+        token: String,
+        currency: String?,
+        startTime: Long?,
+        endTime: Long?,
+    ): Long {
+        logger.info("fetching deposit transaction count for $uuid")
+        return withContext(ProxyDispatchers.wallet) {
+            webClient.post()
+                .uri("$baseUrl/v1/deposit/history/count")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .body(Mono.just(TransactionRequest(currency, startTime, endTime, null, null)))
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToMono<Long>()
+                .awaitFirstOrElse { 0L }
+        }
+    }
+
     override suspend fun getWithdrawTransactions(
         uuid: String,
         token: String,
@@ -118,6 +139,27 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
                 .bodyToFlux<WithdrawHistoryResponse>()
                 .collectList()
                 .awaitFirstOrElse { emptyList() }
+        }
+    }
+
+    override suspend fun getWithdrawTransactionsCount(
+        uuid: String,
+        token: String,
+        currency: String?,
+        startTime: Long?,
+        endTime: Long?,
+    ): Long {
+        logger.info("fetching withdraw transaction count for $uuid")
+        return withContext(ProxyDispatchers.wallet) {
+            webClient.post()
+                .uri("$baseUrl/withdraw/history/count")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .body(Mono.just(TransactionRequest(currency, startTime, endTime, null, null)))
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToMono<Long>()
+                .awaitFirstOrElse { 0L }
         }
     }
 
@@ -154,6 +196,25 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
             .bodyToFlux<UserTransactionHistory>()
             .collectList()
             .awaitFirstOrElse { emptyList() }
+    }
+
+    override suspend fun getTransactionsCount(
+        uuid: String,
+        token: String,
+        currency: String?,
+        category: UserTransactionCategory?,
+        startTime: Long?,
+        endTime: Long?,
+    ): Long {
+        return webClient.post()
+            .uri("$baseUrl/v2/transaction/count")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(UserTransactionRequest(currency, category, startTime, endTime)))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<Long>()
+            .awaitFirstOrElse { 0L }
     }
 
     override suspend fun getGateWays(
@@ -346,6 +407,21 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
                 .collectList()
                 .awaitFirstOrElse { emptyList() }
         }
+    }
+
+    override suspend fun getSwapTransactionsCount(
+        token: String,
+        request: UserTransactionRequest
+    ): Long {
+        return webClient.post()
+            .uri("$baseUrl/v1/swap/history/count")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<Long>()
+            .awaitFirstOrElse { 0L }
     }
 }
 

@@ -39,4 +39,24 @@ interface ReservedTransferRepository : ReactiveCrudRepository<ReservedTransferMo
         offset: Int? = 0,
         status: ReservedStatus?
     ): Flow<ReservedTransferModel>?
+
+    @Query(
+        """
+        select count(*) from reserved_transfer 
+        where ( :owner is null or sender_uuid=:owner)
+            and (:sourceSymbol is null or source_symbol =:sourceSymbol)
+            and (:destSymbol is null or dest_symbol =:destSymbol)
+            and (:startTime is null or reserve_date > :startTime )
+            and (:endTime is null or reserve_date <= :endTime)
+            and (:status is null or status=:status)
+        """
+    )
+    fun countByCriteria(
+        owner: String?,
+        sourceSymbol: String?,
+        destSymbol: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        status: ReservedStatus?
+    ): Mono<Long>
 }

@@ -8,6 +8,8 @@ import co.nilin.opex.api.ports.opex.util.tokenValue
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -42,6 +44,25 @@ class UserHistoryController(
         )
     }
 
+    @GetMapping("/history/order/count")
+    suspend fun getOrderHistoryCount(
+        @RequestParam symbol: String?,
+        @RequestParam startTime: Long?,
+        @RequestParam endTime: Long?,
+        @RequestParam orderType: MatchingOrderType?,
+        @RequestParam direction: OrderDirection?,
+        @CurrentSecurityContext securityContext: SecurityContext,
+    ): Long {
+        return marketUserDataProxy.getOrderHistoryCount(
+            securityContext.authentication.name,
+            symbol,
+            startTime,
+            endTime,
+            orderType,
+            direction,
+        )
+    }
+
     @GetMapping("/history/trade")
     suspend fun getTradeHistory(
         @RequestParam symbol: String?,
@@ -54,6 +75,19 @@ class UserHistoryController(
     ): List<Trade> {
         return marketUserDataProxy.getTradeHistory(
             securityContext.authentication.name, symbol, startTime, endTime, direction, limit ?: 10, offset ?: 10
+        )
+    }
+
+    @GetMapping("/history/trade/count")
+    suspend fun getTradeHistoryCount(
+        @RequestParam symbol: String?,
+        @RequestParam startTime: Long?,
+        @RequestParam endTime: Long?,
+        @RequestParam direction: OrderDirection?,
+        @CurrentSecurityContext securityContext: SecurityContext,
+    ): Long {
+        return marketUserDataProxy.getTradeHistoryCount(
+            securityContext.authentication.name, symbol, startTime, endTime, direction
         )
     }
 
@@ -79,6 +113,22 @@ class UserHistoryController(
         )
     }
 
+    @GetMapping("/history/withdraw/count")
+    suspend fun getWithdrawHistoryCount(
+        @RequestParam currency: String?,
+        @RequestParam startTime: Long?,
+        @RequestParam endTime: Long?,
+        @CurrentSecurityContext securityContext: SecurityContext,
+    ): Long {
+        return walletProxy.getWithdrawTransactionsCount(
+            securityContext.jwtAuthentication().name,
+            securityContext.jwtAuthentication().tokenValue(),
+            currency,
+            startTime,
+            endTime,
+        )
+    }
+
     @GetMapping("/history/deposit")
     suspend fun getDepositHistory(
         @RequestParam currency: String?,
@@ -98,6 +148,22 @@ class UserHistoryController(
             limit ?: 10,
             offset ?: 0,
             ascendingByTime,
+        )
+    }
+
+    @GetMapping("/history/deposit/count")
+    suspend fun getDepositHistoryCount(
+        @RequestParam currency: String?,
+        @RequestParam startTime: Long?,
+        @RequestParam endTime: Long?,
+        @CurrentSecurityContext securityContext: SecurityContext,
+    ): Long {
+        return walletProxy.getDepositTransactionsCount(
+            securityContext.jwtAuthentication().name,
+            securityContext.jwtAuthentication().tokenValue(),
+            currency,
+            startTime,
+            endTime,
         )
     }
 
@@ -122,6 +188,24 @@ class UserHistoryController(
             limit ?: 10,
             offset ?: 0,
             ascendingByTime,
+        )
+    }
+
+    @GetMapping("/history/transaction/count")
+    suspend fun getTransactionHistoryCount(
+        @RequestParam currency: String?,
+        @RequestParam category: UserTransactionCategory?,
+        @RequestParam startTime: Long?,
+        @RequestParam endTime: Long?,
+        @CurrentSecurityContext securityContext: SecurityContext,
+    ): Long {
+        return walletProxy.getTransactionsCount(
+            securityContext.jwtAuthentication().name,
+            securityContext.jwtAuthentication().tokenValue(),
+            currency,
+            category,
+            startTime,
+            endTime,
         )
     }
 
@@ -171,5 +255,12 @@ class UserHistoryController(
             endTime,
             limit,
         )
+    }
+    @PostMapping("/history/swap/count")
+    suspend fun getSwapHistoryCount(
+        @CurrentSecurityContext securityContext: SecurityContext,
+        @RequestBody request: UserTransactionRequest
+    ): Long {
+        return walletProxy.getSwapTransactionsCount(securityContext.jwtAuthentication().tokenValue(), request)
     }
 }

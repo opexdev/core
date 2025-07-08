@@ -10,6 +10,7 @@ import co.nilin.opex.wallet.ports.postgres.util.toModel
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactive.awaitFirstOrElse
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -33,6 +34,15 @@ class DepositPersisterImpl(private val depositRepository: DepositRepository) : D
         val deposits =
                 depositRepository.findDepositHistory(uuid, currency, startTime, endTime, limit, offset, ascendingByTime)
         return deposits.map { it.toDto() }.toList()
+    }
+
+    override suspend fun getDepositHistoryCount(
+        uuid: String,
+        currency: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?
+    ): Long {
+        return depositRepository.countByCriteria(uuid, currency, startTime, endTime).awaitFirstOrElse { 0L }
     }
 
     override suspend fun findByCriteria(

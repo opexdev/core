@@ -171,6 +171,22 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
         return withdraws.map { it.asWithdrawResponse() }.toList()
     }
 
+    override suspend fun findWithdrawHistoryCount(
+        uuid: String,
+        currency: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+    ): Long {
+
+        return withdrawRepository.findWithdrawHistoryCount(
+            uuid,
+            currency,
+            startTime,
+            endTime,
+        ).awaitFirstOrElse { 0L }
+
+    }
+
 
     private suspend fun WithdrawModel.asWithdrawResponse(): WithdrawResponse {
         return WithdrawResponse(
