@@ -124,7 +124,6 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
             and (:startTime is null or create_date > :startTime )
             and (:endTime is null or create_date <= :endTime)
             and status in (:status)
-
         """
     )
     fun countByCriteria(

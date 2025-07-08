@@ -25,5 +25,14 @@ interface ReservedTransferManager {
         status: ReservedStatus?
     ): List<SwapResponse>?
 
+    suspend fun countByCriteria(
+        owner: String?,
+        sourceSymbol: String?,
+        destSymbol: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        status: ReservedStatus?
+    ): Long
+
 
 }

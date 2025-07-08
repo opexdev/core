@@ -408,5 +408,20 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
                 .awaitFirstOrElse { emptyList() }
         }
     }
+
+    override suspend fun getSwapTransactionsCount(
+        token: String,
+        request: UserTransactionRequest
+    ): Long {
+        return webClient.post()
+            .uri("$baseUrl/v1/swap/history/count")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<Long>()
+            .awaitFirstOrElse { 0L }
+    }
 }
 

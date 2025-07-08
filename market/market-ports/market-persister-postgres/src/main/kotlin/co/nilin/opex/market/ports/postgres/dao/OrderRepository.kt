@@ -179,11 +179,6 @@ order by create_date desc
         """
 select count(*)
 from orders o
-         left join (select *
-                    from order_status os1
-                    where os1.date = (select max(os2.date)
-                                      from order_status os2
-                                      where os2.ouid = os1.ouid)) os on o.ouid = os.ouid
  WHERE uuid = :uuid
    and (:symbol is null or o.symbol = :symbol)
    and (:startTime is null or o.create_date >= :startTime)

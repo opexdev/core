@@ -122,4 +122,6 @@ interface WalletProxy {
     suspend fun submitVoucher(code: String, token: String): SubmitVoucherResponse
 
     suspend fun getQuoteCurrencies(): List<QuoteCurrency>
+
+    suspend fun getSwapTransactionsCount(token: String, request: UserTransactionRequest):Long
 }
