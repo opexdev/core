@@ -74,6 +74,7 @@ class UserService(
             throw OpexError.BadRequest.exception()
 
         keycloakProxy.confirmCreateUser(user, request.password)
+        keycloakProxy.assignDefaultRoles(user)
 
         // Send event to let other services know a user just registered
         val event = UserCreatedEvent(user.id, user.username, user.email, user.mobile, user.firstName, user.lastName)

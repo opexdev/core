@@ -174,4 +174,26 @@ order by create_date desc
         limit: Int?,
         offset: Int?,
     ): Flow<OrderData>
+
+    @Query(
+        """
+select count(*)
+from orders o
+ WHERE uuid = :uuid
+   and (:symbol is null or o.symbol = :symbol)
+   and (:startTime is null or o.create_date >= :startTime)
+   and (:endTime is null or o.create_date <= :endTime)
+   and (:orderType is null or o.order_type = :orderType)
+   and (:direction is null or o.side = :direction)
+    """
+    )
+    fun countByCriteria(
+        uuid: String,
+        symbol: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        orderType: MatchingOrderType?,
+        direction: OrderDirection?,
+    ): Mono<Long>
+
 }

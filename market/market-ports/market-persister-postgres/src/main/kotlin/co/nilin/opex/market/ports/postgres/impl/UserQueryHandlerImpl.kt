@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.stereotype.Component
@@ -47,6 +48,17 @@ class UserQueryHandlerImpl(
 
         val status = orderStatusRepository.findMostRecentByOUID(order.ouid).awaitFirstOrNull()
         return order.asOrderDTO(status)
+    }
+
+    override suspend fun openOrders(uuid: String, limit: Int): List<Order> {
+        return orderRepository.findByUuidAndSymbolAndStatus(
+            uuid,
+            null,
+            listOf(OrderStatus.NEW.code, OrderStatus.PARTIALLY_FILLED.code),
+            limit
+        ).filter { orderModel -> orderModel.constraint != null }
+            .map { it.asOrderDTO(orderStatusRepository.findMostRecentByOUID(it.ouid).awaitFirstOrNull()) }
+            .toList()
     }
 
     override suspend fun openOrders(uuid: String, symbol: String?, limit: Int): List<Order> {
@@ -168,6 +180,24 @@ class UserQueryHandlerImpl(
         ).toList()
     }
 
+    override suspend fun getOrderHistoryCount(
+        uuid: String,
+        symbol: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        orderType: MatchingOrderType?,
+        direction: OrderDirection?
+    ): Long {
+        return orderRepository.countByCriteria(
+            uuid,
+            symbol,
+            startTime,
+            endTime,
+            orderType,
+            direction,
+        ).awaitFirstOrElse { 0L }
+    }
+
     override suspend fun getTradeHistory(
         uuid: String,
         symbol: String?,
@@ -186,5 +216,21 @@ class UserQueryHandlerImpl(
             limit,
             offset
         ).toList()
+    }
+
+    override suspend fun getTradeHistoryCount(
+        uuid: String,
+        symbol: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        direction: OrderDirection?
+    ): Long {
+        return tradeRepository.countByCriteria(
+            uuid,
+            symbol,
+            startTime,
+            endTime,
+            direction,
+        ).awaitFirst()
     }
 }

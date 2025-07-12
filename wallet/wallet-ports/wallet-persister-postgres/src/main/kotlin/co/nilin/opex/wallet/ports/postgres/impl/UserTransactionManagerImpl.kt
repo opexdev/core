@@ -9,6 +9,7 @@ import co.nilin.opex.wallet.ports.postgres.dao.UserTransactionRepository
 import co.nilin.opex.wallet.ports.postgres.model.UserTransactionModel
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirstOrElse
+import kotlinx.coroutines.reactor.awaitFirst
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
@@ -47,6 +48,16 @@ class UserTransactionManagerImpl(private val repository: UserTransactionReposito
             repository.findUserTransactionHistoryDesc(userId, currency, category, startTime, endTime, limit, offset)
 
         return transactions.collectList().awaitFirstOrElse { emptyList() }
+    }
+
+    override suspend fun getTransactionHistoryCount(
+        userId: String?,
+        currency: String?,
+        category: UserTransactionCategory?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?
+    ): Long {
+       return repository.countByCriteria(userId, currency, category, startTime, endTime).awaitFirstOrElse { 0L }
     }
 
     override suspend fun getTradeTransactionSummary(

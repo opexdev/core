@@ -107,6 +107,24 @@ class WithdrawController(private val withdrawService: WithdrawService) {
         }
     }
 
+    @PostMapping("/history/count")
+    suspend fun getWithdrawTransactionsCountForUser(
+        @CurrentSecurityContext securityContext: SecurityContext,
+        @RequestBody request: WithdrawHistoryRequest,
+    ): Long {
+        return withdrawService.findWithdrawHistoryCount(
+            securityContext.authentication.name,
+            request.currency,
+            request.startTime?.let {
+                LocalDateTime.ofInstant(Instant.ofEpochMilli(request.startTime), ZoneId.systemDefault())
+            }
+                ?: null,
+            request.endTime?.let {
+                LocalDateTime.ofInstant(Instant.ofEpochMilli(request.endTime), ZoneId.systemDefault())
+            } ?: null,
+        )
+    }
+
     @GetMapping("/summary/{uuid}")
     suspend fun getUserWithdrawSummary(
         @RequestParam startTime: Long?,

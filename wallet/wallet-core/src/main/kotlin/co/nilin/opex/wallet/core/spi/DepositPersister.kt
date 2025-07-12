@@ -19,6 +19,13 @@ interface DepositPersister {
         ascendingByTime: Boolean?
     ): List<Deposit>
 
+    suspend fun getDepositHistoryCount (
+        uuid: String,
+        currency: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+    ): Long
+
     suspend fun findByCriteria(
         ownerUuid: String?,
         symbol: String?,

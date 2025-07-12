@@ -21,6 +21,14 @@ interface UserTransactionManager {
         offset: Int,
     ): List<UserTransactionHistory>
 
+    suspend fun getTransactionHistoryCount(
+        userId: String?,
+        currency: String?,
+        category: UserTransactionCategory?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+    ): Long
+
     suspend fun getTradeTransactionSummary(
         uuid: String,
         startTime: LocalDateTime?,
