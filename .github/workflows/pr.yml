@@ -21,6 +21,8 @@ jobs:
           java-package: jdk
           java-version: ${{ matrix.java }}
       #          cache: maven
+      - name: Revove mvn locks
+        run: rm -f ~/.m2/repository/.lock
       - name: Build
         run: mvn -B -T 1C clean install -Potc
       - name: Run Tests
