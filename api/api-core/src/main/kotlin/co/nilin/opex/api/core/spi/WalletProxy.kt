@@ -21,6 +21,14 @@ interface WalletProxy {
         ascendingByTime: Boolean?,
     ): List<DepositHistoryResponse>
 
+    suspend fun getDepositTransactionsCount(
+        uuid: String,
+        token: String,
+        currency: String?,
+        startTime: Long?,
+        endTime: Long?,
+    ): Long
+
     suspend fun getWithdrawTransactions(
         uuid: String,
         token: String,
@@ -32,7 +40,13 @@ interface WalletProxy {
         ascendingByTime: Boolean?,
     ): List<WithdrawHistoryResponse>
 
-    suspend fun getSwapTransactions(token: String, request: UserTransactionRequest): List<SwapResponse>
+    suspend fun getWithdrawTransactionsCount(
+        uuid: String,
+        token: String,
+        currency: String?,
+        startTime: Long?,
+        endTime: Long?,
+    ): Long
 
     suspend fun getTransactions(
         uuid: String,
@@ -45,6 +59,15 @@ interface WalletProxy {
         offset: Int,
         ascendingByTime: Boolean?,
     ): List<UserTransactionHistory>
+
+    suspend fun getTransactionsCount(
+        uuid: String,
+        token: String,
+        currency: String?,
+        category: UserTransactionCategory?,
+        startTime: Long?,
+        endTime: Long?,
+    ): Long
 
     suspend fun getGateWays(
         includeOffChainGateways: Boolean,
@@ -97,4 +120,9 @@ interface WalletProxy {
     ): WithdrawResponse
 
     suspend fun submitVoucher(code: String, token: String): SubmitVoucherResponse
+
+    suspend fun getQuoteCurrencies(): List<QuoteCurrency>
+
+    suspend fun getSwapTransactions(token: String, request: UserTransactionRequest): List<SwapResponse>
+    suspend fun getSwapTransactionsCount(token: String, request: UserTransactionRequest): Long
 }

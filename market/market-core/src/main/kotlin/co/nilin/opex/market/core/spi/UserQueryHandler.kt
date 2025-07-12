@@ -9,6 +9,8 @@ interface UserQueryHandler {
 
     suspend fun queryOrder(uuid: String, request: QueryOrderRequest): Order?
 
+    suspend fun openOrders(uuid: String, limit: Int): List<Order>
+
     suspend fun openOrders(uuid: String, symbol: String?, limit: Int): List<Order>
 
     suspend fun allOrders(uuid: String, allOrderRequest: AllOrderRequest): List<Order>
@@ -28,6 +30,15 @@ interface UserQueryHandler {
         offset: Int?,
     ): List<OrderData>
 
+    suspend fun getOrderHistoryCount(
+        uuid: String,
+        symbol: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        orderType: MatchingOrderType?,
+        direction: OrderDirection?,
+    ): Long
+
     suspend fun getTradeHistory(
         uuid: String,
         symbol: String?,
@@ -38,4 +49,11 @@ interface UserQueryHandler {
         offset: Int?,
     ): List<Trade>
 
+    suspend fun getTradeHistoryCount(
+        uuid: String,
+        symbol: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        direction: OrderDirection?,
+    ): Long
 }

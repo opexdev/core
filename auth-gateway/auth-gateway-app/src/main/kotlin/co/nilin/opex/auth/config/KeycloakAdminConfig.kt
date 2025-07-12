@@ -1,6 +1,7 @@
 package co.nilin.opex.auth.config
 
 import org.keycloak.admin.client.Keycloak
+import org.keycloak.admin.client.KeycloakBuilder
 import org.keycloak.admin.client.resource.RealmResource
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -10,12 +11,13 @@ class KeycloakAdminConfig {
 
     @Bean
     fun keycloak(config: KeycloakConfig): Keycloak {
-        return Keycloak.getInstance(
-            config.url,
-            config.realm,
-            config.adminClient.id,
-            config.adminClient.secret,
-        )
+        return KeycloakBuilder.builder()
+            .serverUrl(config.url)
+            .realm(config.realm)
+            .clientId(config.adminClient.id)
+            .clientSecret(config.adminClient.secret)
+            .grantType("client_credentials")
+            .build()
     }
 
     @Bean

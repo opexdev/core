@@ -12,12 +12,12 @@ import org.springframework.web.reactive.function.client.bodyToMono
 
 @Component
 class AuthProxy(
-    private val client: WebClient,
     @Value("\${app.auth.token-url}")
     private val tokenUrl: String
 ) {
 
     private val logger = LoggerFactory.getLogger(AuthProxy::class.java)
+    private val client = WebClient.create()
 
     suspend fun exchangeToken(clientSecret: String, token: String): AccessTokenResponse {
         val body = BodyInserters.fromFormData("client_id", "opex-api-key")

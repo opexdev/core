@@ -7,6 +7,7 @@ import co.nilin.opex.wallet.core.spi.ReservedTransferManager
 import co.nilin.opex.wallet.ports.postgres.dao.ReservedTransferRepository
 import co.nilin.opex.wallet.ports.postgres.model.ReservedTransferModel
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -63,6 +64,24 @@ class ReservedTransferImpl(private val reservedTransferRepository: ReservedTrans
             offset,
             status
         )?.toList()?.map { it.asResponse() }
+    }
+
+    override suspend fun countByCriteria(
+        owner: String?,
+        sourceSymbol: String?,
+        destSymbol: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        status: ReservedStatus?
+    ): Long {
+        return reservedTransferRepository.countByCriteria(
+            owner,
+            sourceSymbol,
+            destSymbol,
+            startTime,
+            endTime,
+            status
+        ).awaitFirstOrElse { 0L }
     }
 
     fun ReservedTransferModel.asResponse(): SwapResponse {

@@ -39,6 +39,22 @@ class TransactionController(
         }
     }
 
+    @PostMapping("/count")
+    suspend fun getUserTransactionsCount(
+        principal: Principal,
+        @RequestBody request: UserTransactionRequest,
+    ): Long {
+        return with(request) {
+            manager.getTransactionHistoryCount(
+                principal.name,
+                currency,
+                category,
+                startTime?.let { LocalDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneId.systemDefault()) },
+                endTime?.let { LocalDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneId.systemDefault()) },
+            )
+        }
+    }
+
     @GetMapping("/trade/summary/{uuid}")
     suspend fun getUserTradeTransactionSummary(
         @RequestParam startTime: Long?,

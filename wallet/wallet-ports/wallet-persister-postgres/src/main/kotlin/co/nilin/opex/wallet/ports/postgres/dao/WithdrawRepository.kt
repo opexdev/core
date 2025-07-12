@@ -193,6 +193,22 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         offset: Int? = 10000
     ): Flow<WithdrawModel>
 
+    @Query(
+        """
+        select count(*) from withdraws 
+        where uuid = :uuid
+            and (:currency is null or currency = :currency)
+            and (:startTime is null or create_date > :startTime )
+            and (:endTime is null or create_date <= :endTime)
+        """
+    )
+    fun findWithdrawHistoryCount(
+        uuid: String,
+        currency: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+    ): Mono<Long>
+
 //    @Query(
 //        """
 //        select * from withdraws

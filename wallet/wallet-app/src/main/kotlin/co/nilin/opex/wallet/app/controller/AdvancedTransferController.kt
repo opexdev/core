@@ -1,7 +1,10 @@
 package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.wallet.app.dto.*
+import co.nilin.opex.wallet.app.dto.ReservedTransferResponse
+import co.nilin.opex.wallet.app.dto.TransferPreEvaluateResponse
+import co.nilin.opex.wallet.app.dto.TransferReserveRequest
+import co.nilin.opex.wallet.app.dto.UserTransactionRequest
 import co.nilin.opex.wallet.app.service.TransferService
 import co.nilin.opex.wallet.core.inout.SwapResponse
 import co.nilin.opex.wallet.core.inout.TransferResult
@@ -49,19 +52,19 @@ class AdvancedTransferController {
 
     @GetMapping("/v3/amount/{symbol}/{amount}_{destSymbol}")
     @ApiResponse(
-            message = "OK",
-            code = 200,
-            examples = Example(
-                    ExampleProperty(
-                            value = "{ \"destAmount\": \"111\"}",
-                            mediaType = "application/json"
-                    )
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = "{ \"destAmount\": \"111\"}",
+                mediaType = "application/json"
             )
+        )
     )
     suspend fun calculateSourceAmount(
-            @PathVariable symbol: String,
-            @PathVariable amount: BigDecimal,
-            @PathVariable destSymbol: String,
+        @PathVariable symbol: String,
+        @PathVariable amount: BigDecimal,
+        @PathVariable destSymbol: String,
     ): TransferPreEvaluateResponse {
         return TransferPreEvaluateResponse(transferService.calculateSourceAmount(symbol, amount, destSymbol))
     }
@@ -160,6 +163,34 @@ class AdvancedTransferController {
                 limit ?: 10,
                 offset ?: 0,
                 ascendingByTime,
+                status
+            )
+        }
+    }
+
+    @PostMapping("/v1/swap/history/count")
+    suspend fun getSwapHistoryCount(
+        @CurrentSecurityContext securityContext: SecurityContext,
+        @RequestBody request: UserTransactionRequest
+
+    ): Long {
+        return with(request) {
+            reservedTransferManager.countByCriteria(
+                securityContext.authentication.name,
+                sourceSymbol,
+                destSymbol,
+                startTime?.let {
+                    LocalDateTime.ofInstant(
+                        Instant.ofEpochMilli(it),
+                        ZoneId.systemDefault()
+                    )
+                },
+                endTime?.let {
+                    LocalDateTime.ofInstant(
+                        Instant.ofEpochMilli(it),
+                        ZoneId.systemDefault()
+                    )
+                },
                 status
             )
         }
