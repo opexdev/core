@@ -37,7 +37,8 @@ class OrderService(
         if (!pairSetting.orderTypes.split(",").contains(createOrderRequest.orderType.name)) {
             throw OpexError.InvalidOrderType.exception()
         }
-        if (createOrderRequest.quantity > pairSetting.maxOrder || createOrderRequest.quantity < pairSetting.minOrder) {
+        if ((createOrderRequest.quantity * createOrderRequest.price) > pairSetting.maxOrder ||
+            (createOrderRequest.quantity * createOrderRequest.price) < pairSetting.minOrder) {
             throw OpexError.InvalidQuantity.exception()
         }
 
