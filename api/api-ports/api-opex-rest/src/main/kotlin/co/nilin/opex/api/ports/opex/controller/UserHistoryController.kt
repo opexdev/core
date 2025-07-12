@@ -3,16 +3,13 @@ package co.nilin.opex.api.ports.opex.controller
 import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.MarketUserDataProxy
 import co.nilin.opex.api.core.spi.WalletProxy
+import co.nilin.opex.api.ports.opex.data.OrderDataResponse
 import co.nilin.opex.api.ports.opex.util.jwtAuthentication
+import co.nilin.opex.api.ports.opex.util.toResponse
 import co.nilin.opex.api.ports.opex.util.tokenValue
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/opex/v1/user")
@@ -31,7 +28,7 @@ class UserHistoryController(
         @RequestParam limit: Int?,
         @RequestParam offset: Int?,
         @CurrentSecurityContext securityContext: SecurityContext,
-    ): List<OrderData> {
+    ): List<OrderDataResponse> {
         return marketUserDataProxy.getOrderHistory(
             securityContext.authentication.name,
             symbol,
@@ -41,7 +38,7 @@ class UserHistoryController(
             direction,
             limit ?: 10,
             offset ?: 0,
-        )
+        ).map { it.toResponse() }
     }
 
     @GetMapping("/history/order/count")
@@ -256,6 +253,15 @@ class UserHistoryController(
             limit,
         )
     }
+
+    @PostMapping("/history/swap")
+    suspend fun getSwapHistory(
+        @CurrentSecurityContext securityContext: SecurityContext,
+        @RequestBody request: UserTransactionRequest
+    ): List<SwapResponse> {
+        return walletProxy.getSwapTransactions(securityContext.jwtAuthentication().tokenValue(), request)
+    }
+
     @PostMapping("/history/swap/count")
     suspend fun getSwapHistoryCount(
         @CurrentSecurityContext securityContext: SecurityContext,

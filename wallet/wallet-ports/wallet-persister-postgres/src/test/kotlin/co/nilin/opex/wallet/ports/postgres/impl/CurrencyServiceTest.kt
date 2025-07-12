@@ -3,6 +3,7 @@ package co.nilin.opex.wallet.ports.postgres.impl
 import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepositoryV2
 import co.nilin.opex.wallet.ports.postgres.impl.sample.VALID
+import co.nilin.opex.wallet.ports.postgres.util.RedisCacheHelper
 import co.nilin.opex.wallet.ports.postgres.util.toModel
 import io.mockk.every
 import io.mockk.mockk
@@ -13,7 +14,8 @@ import reactor.core.publisher.Mono
 
 private class CurrencyServiceTest {
     private val currencyRepository: CurrencyRepositoryV2 = mockk()
-    private val currencyService: CurrencyServiceImplV2 = CurrencyServiceImplV2(currencyRepository)
+    private val redisCacheHelper: RedisCacheHelper = mockk()
+    private val currencyService: CurrencyServiceImplV2 = CurrencyServiceImplV2(currencyRepository,redisCacheHelper)
 
     @Test
     fun givenCurrency_whenGetCurrency_thenReturnCurrency(): Unit = runBlocking {

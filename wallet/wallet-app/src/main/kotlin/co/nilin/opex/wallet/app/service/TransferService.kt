@@ -12,8 +12,8 @@ import co.nilin.opex.wallet.core.model.TransferCategory
 import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.model.otc.Rate
 import co.nilin.opex.wallet.core.model.otc.ReservedTransfer
+import co.nilin.opex.wallet.core.service.PrecisionService
 import co.nilin.opex.wallet.core.spi.*
-import io.micrometer.core.instrument.MeterRegistry
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -30,8 +30,7 @@ class TransferService(
     private val walletOwnerManager: WalletOwnerManager,
     private val currencyGraph: GraphService,
     private val reservedTransferManager: ReservedTransferManager,
-    private val meterRegistry: MeterRegistry,
-    private val currencyService: CurrencyServiceV2,
+    private val precisionService: PrecisionService,
 
     ) {
 
@@ -93,13 +92,16 @@ class TransferService(
         receiverUuid: String,
         receiverWalletType: WalletType,
     ): ReservedTransferResponse {
+        precisionService.validatePrecision(sourceAmount, sourceSymbol)
         val rate = currencyGraph.buildRoutes(sourceSymbol, destSymbol)
             .map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }
             .firstOrNull() ?: throw OpexError.NOT_EXCHANGEABLE_CURRENCIES.exception()
         val finalAmount = sourceAmount.multiply(rate.rate)
-
         if (sourceAmount == BigDecimal.ZERO || finalAmount == BigDecimal.ZERO)
             throw OpexError.InvalidAmount.exception()
+        val destAmount = precisionService.calculatePrecision(finalAmount, destSymbol)
+        validateMinimumAmount(sourceSymbol, sourceAmount, destAmount, destSymbol, rate.rate)
+        precisionService.validatePrecision(destAmount, destSymbol)
 
         checkIfSystemHasEnoughBalance(destSymbol, receiverWalletType, finalAmount)
         val reserveNumber = UUID.randomUUID().toString()
@@ -266,4 +268,32 @@ class TransferService(
             throw OpexError.CurrentSystemAssetsAreNotEnough.exception()
         }
     }
+
+    private suspend fun validateMinimumAmount(
+        sourceSymbol: String,
+        sourceAmount: BigDecimal,
+        destAmount: BigDecimal,
+        destSymbol: String,
+        rate: BigDecimal
+    ) {
+        fun minPrecisionAmount(precision: Int): BigDecimal =
+            BigDecimal.ONE.scaleByPowerOfTen(-precision)
+
+        val sourcePrecision = precisionService.getPrecision(sourceSymbol).toInt()
+        val destPrecision = precisionService.getPrecision(destSymbol).toInt()
+
+        val minSourceAmount = minPrecisionAmount(sourcePrecision)
+        val minDestAmount = minPrecisionAmount(destPrecision)
+
+        val minimumSource =
+            maxOf(minSourceAmount, minDestAmount.divide(rate)).setScale(sourcePrecision, RoundingMode.DOWN)
+        val minimumDest =
+            maxOf(minDestAmount, minSourceAmount.multiply(rate)).setScale(destPrecision, RoundingMode.DOWN)
+
+        if (sourceAmount < minimumSource || destAmount < minimumDest) {
+            throw OpexError.InvalidAmount.exception("amount is lower than minimum")
+        }
+    }
+
+
 }

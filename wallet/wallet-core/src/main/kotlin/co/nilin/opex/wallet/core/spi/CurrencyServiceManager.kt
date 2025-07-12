@@ -5,6 +5,7 @@ package co.nilin.opex.wallet.core.spi
 import co.nilin.opex.wallet.core.inout.CurrenciesCommand
 import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import co.nilin.opex.wallet.core.inout.CurrencyData
+import co.nilin.opex.wallet.core.inout.CurrencyPrecision
 
 import co.nilin.opex.wallet.core.model.FetchCurrency
 
@@ -19,4 +20,5 @@ interface CurrencyServiceManager {
     //    suspend fun prepareCurrencyToBeACryptoCurrency(request: String): CurrencyCommand?
     suspend fun deleteCurrency(request: FetchCurrency): Void?
 
+    suspend fun fetchAllCurrenciesPrecision(): List<CurrencyPrecision>
 }

@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.ports.postgres.dao
 
+import co.nilin.opex.wallet.core.inout.CurrencyPrecision
 import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
@@ -47,4 +48,6 @@ interface CurrencyRepositoryV2 : ReactiveCrudRepository<CurrencyModel, String> {
     @Query("select * from currency order by display_order ")
     fun fetchAll(): Flux<CurrencyModel>
 
+    @Query("select symbol,precision from currency")
+    fun fetchAllCurrenciesPrecision(): Flux<CurrencyPrecision>
 }

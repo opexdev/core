@@ -26,6 +26,7 @@ class WithdrawService(
     private val environment: Environment,
     private val meterRegistry: MeterRegistry,
     private val gatewayService: GatewayService,
+    private val precisionService: PrecisionService,
     @Qualifier("onChainGateway") private val bcGatewayProxy: GatewayPersister,
     @Value("\${app.system.uuid}") private val systemUuid: String,
 ) {
@@ -33,7 +34,7 @@ class WithdrawService(
 
     @Transactional
     suspend fun requestWithdraw(withdrawCommand: WithdrawCommand): WithdrawActionResult {
-
+        precisionService.validatePrecision(withdrawCommand.amount, withdrawCommand.currency)
 
         val currency = currencyService.fetchCurrency(FetchCurrency(symbol = withdrawCommand.currency))
             ?: throw OpexError.CurrencyNotFound.exception()

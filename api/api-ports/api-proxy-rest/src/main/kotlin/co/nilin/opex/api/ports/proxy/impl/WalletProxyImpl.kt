@@ -181,13 +181,17 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
             .body(
                 Mono.just(
                     UserTransactionRequest(
+                        null,
                         currency,
+                        null,
+                        null,
                         category,
                         startTime,
                         endTime,
                         limit,
                         offset,
-                        ascendingByTime
+                        ascendingByTime == true,
+                        null
                     )
                 )
             )
@@ -210,7 +214,20 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
             .uri("$baseUrl/v2/transaction/count")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-            .body(Mono.just(UserTransactionRequest(currency, category, startTime, endTime)))
+            .body(
+                Mono.just(
+                    UserTransactionRequest(
+                        null,
+                        currency,
+                        null,
+                        null,
+                        category,
+                        startTime,
+                        endTime,
+                        null
+                    )
+                )
+            )
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<Long>()
@@ -407,6 +424,19 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
                 .collectList()
                 .awaitFirstOrElse { emptyList() }
         }
+    }
+
+    override suspend fun getSwapTransactions(token: String, request: UserTransactionRequest): List<SwapResponse> {
+        return webClient.post()
+            .uri("$baseUrl/v1/swap/history")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToFlux<SwapResponse>()
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
     }
 
     override suspend fun getSwapTransactionsCount(

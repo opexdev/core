@@ -3,9 +3,15 @@ package co.nilin.opex.wallet.app.utils
 import co.nilin.opex.wallet.app.dto.WalletData
 import co.nilin.opex.wallet.core.model.Wallet
 import co.nilin.opex.wallet.core.model.WalletType
+import co.nilin.opex.wallet.core.service.PrecisionService
+import co.nilin.opex.wallet.ports.postgres.impl.PrecisionServiceImpl
+import org.springframework.stereotype.Component
 import java.math.BigDecimal
 
-object BalanceParser {
+@Component
+class BalanceParser(
+    private val precisionService: PrecisionService
+) {
 
     fun parse(list: List<Wallet>): List<WalletData> {
         val result = arrayListOf<WalletData>()
@@ -13,9 +19,9 @@ object BalanceParser {
         for (w in list) {
             result.addOrGet(w.currency.symbol).apply {
                 when (w.type) {
-                    WalletType.MAIN -> balance = w.balance.amount
-                    WalletType.EXCHANGE -> locked = w.balance.amount
-                    WalletType.CASHOUT -> withdraw = w.balance.amount
+                    WalletType.MAIN -> balance = precisionService.calculatePrecision(w.balance.amount, w.currency.symbol)
+                    WalletType.EXCHANGE -> locked = precisionService.calculatePrecision(w.balance.amount, w.currency.symbol)
+                    WalletType.CASHOUT -> withdraw = precisionService.calculatePrecision(w.balance.amount, w.currency.symbol)
                 }
             }
         }
@@ -32,9 +38,12 @@ object BalanceParser {
                 throw IllegalStateException("Found multiple currencies while parsing for single")
 
             when (w.type) {
-                WalletType.MAIN -> result.balance = w.balance.amount
-                WalletType.EXCHANGE -> result.locked = w.balance.amount
-                WalletType.CASHOUT -> result.withdraw = w.balance.amount
+                WalletType.MAIN -> result.balance = precisionService.calculatePrecision(w.balance.amount, w.currency.symbol)
+                WalletType.EXCHANGE -> result.locked =
+                    precisionService.calculatePrecision(w.balance.amount, w.currency.symbol)
+
+                WalletType.CASHOUT -> result.withdraw =
+                    precisionService.calculatePrecision(w.balance.amount, w.currency.symbol)
             }
         }
         return result

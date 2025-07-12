@@ -123,5 +123,6 @@ interface WalletProxy {
 
     suspend fun getQuoteCurrencies(): List<QuoteCurrency>
 
-    suspend fun getSwapTransactionsCount(token: String, request: UserTransactionRequest):Long
+    suspend fun getSwapTransactions(token: String, request: UserTransactionRequest): List<SwapResponse>
+    suspend fun getSwapTransactionsCount(token: String, request: UserTransactionRequest): Long
 }
