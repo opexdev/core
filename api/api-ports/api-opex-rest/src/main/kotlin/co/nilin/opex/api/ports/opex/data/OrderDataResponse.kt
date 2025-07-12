@@ -1,10 +1,13 @@
-package co.nilin.opex.api.core.inout
+package co.nilin.opex.api.ports.opex.data
 
+import co.nilin.opex.api.core.inout.MatchingOrderType
+import co.nilin.opex.api.core.inout.OrderDirection
+import co.nilin.opex.api.core.inout.OrderStatus
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.*
 
-data class OrderData(
+data class OrderDataResponse(
     val symbol: String,
     val orderType: MatchingOrderType,
     val side: OrderDirection,
@@ -12,8 +15,7 @@ data class OrderData(
     val quantity: BigDecimal,
     val takerFee: BigDecimal,
     val makerFee: BigDecimal,
-    val status: Int,
-    val appearance: Int,
+    val status: OrderStatus,
     val createDate: LocalDateTime,
     val updateDate: LocalDateTime,
 )

@@ -214,7 +214,20 @@ class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
             .uri("$baseUrl/v2/transaction/count")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-            .body(Mono.just(UserTransactionRequest(currency, category, startTime, endTime)))
+            .body(
+                Mono.just(
+                    UserTransactionRequest(
+                        null,
+                        currency,
+                        null,
+                        null,
+                        category,
+                        startTime,
+                        endTime,
+                        null
+                    )
+                )
+            )
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<Long>()

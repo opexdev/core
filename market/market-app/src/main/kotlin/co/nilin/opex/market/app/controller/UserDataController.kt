@@ -87,8 +87,6 @@ class UserDataController(private val userQueryHandler: UserQueryHandler) {
         @RequestParam endTime: Long?,
         @RequestParam orderType: MatchingOrderType?,
         @RequestParam direction: OrderDirection?,
-        @RequestParam limit: Int?,
-        @RequestParam offset: Int?,
         @PathVariable uuid: String,
     ): Long {
         return userQueryHandler.getOrderHistoryCount(
