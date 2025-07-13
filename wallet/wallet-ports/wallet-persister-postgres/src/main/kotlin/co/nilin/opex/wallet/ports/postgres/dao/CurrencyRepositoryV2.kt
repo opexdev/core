@@ -50,4 +50,7 @@ interface CurrencyRepositoryV2 : ReactiveCrudRepository<CurrencyModel, String> {
 
     @Query("select symbol,precision from currency")
     fun fetchAllCurrenciesPrecision(): Flux<CurrencyPrecision>
+
+    @Query("select max_order from currency where symbol=:symbol")
+    fun fetchCurrencyMaxOrder(symbol: String): Mono<BigDecimal>?
 }

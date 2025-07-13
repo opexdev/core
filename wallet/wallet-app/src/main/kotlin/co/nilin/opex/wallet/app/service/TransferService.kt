@@ -92,18 +92,18 @@ class TransferService(
         receiverUuid: String,
         receiverWalletType: WalletType,
     ): ReservedTransferResponse {
-        precisionService.validatePrecision(sourceAmount, sourceSymbol)
-        val rate = currencyGraph.buildRoutes(sourceSymbol, destSymbol)
-            .map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }
-            .firstOrNull() ?: throw OpexError.NOT_EXCHANGEABLE_CURRENCIES.exception()
-        val finalAmount = sourceAmount.multiply(rate.rate)
-        if (sourceAmount == BigDecimal.ZERO || finalAmount == BigDecimal.ZERO)
-            throw OpexError.InvalidAmount.exception()
-        val destAmount = precisionService.calculatePrecision(finalAmount, destSymbol)
-        validateMinimumAmount(sourceSymbol, sourceAmount, destAmount, destSymbol, rate.rate)
-        precisionService.validatePrecision(destAmount, destSymbol)
+        validateInitialAmountAndPrecision(sourceAmount, sourceSymbol)
 
-        checkIfSystemHasEnoughBalance(destSymbol, receiverWalletType, finalAmount)
+        val rate = fetchRateOrThrow(sourceSymbol, destSymbol)
+        val destAmount = calculateDestAmount(sourceAmount, rate)
+        val scaledDestAmount = precisionService.calculatePrecision(destAmount, destSymbol)
+
+        validateMinimumAmount(sourceSymbol, sourceAmount, scaledDestAmount, destSymbol, rate.rate)
+        validateMaximumAmount(sourceSymbol, sourceAmount, destSymbol, scaledDestAmount)
+        precisionService.validatePrecision(scaledDestAmount, destSymbol)
+
+        checkIfSystemHasEnoughBalance(destSymbol, receiverWalletType, destAmount)
+
         val reserveNumber = UUID.randomUUID().toString()
         val resp = reservedTransferManager.reserve(
             ReservedTransfer(
@@ -115,7 +115,7 @@ class TransferService(
                 receiverUuid = receiverUuid,
                 senderWalletType = senderWalletType,
                 receiverWalletType = receiverWalletType,
-                reservedDestAmount = finalAmount,
+                reservedDestAmount = destAmount,
                 rate = rate.rate
             )
         )
@@ -269,6 +269,36 @@ class TransferService(
         }
     }
 
+    private suspend fun validateInitialAmountAndPrecision(
+        sourceAmount: BigDecimal,
+        sourceSymbol: String
+    ) {
+        if (sourceAmount == BigDecimal.ZERO) {
+            throw OpexError.InvalidAmount.exception("source amount cannot be zero")
+        }
+        precisionService.validatePrecision(sourceAmount, sourceSymbol)
+    }
+
+    private suspend fun fetchRateOrThrow(
+        sourceSymbol: String,
+        destSymbol: String
+    ): Rate {
+        return currencyGraph.buildRoutes(sourceSymbol, destSymbol)
+            .map { route -> Rate(route.getSourceSymbol(), route.getDestSymbol(), route.getRate()) }
+            .firstOrNull() ?: throw OpexError.NOT_EXCHANGEABLE_CURRENCIES.exception()
+    }
+
+    private fun calculateDestAmount(
+        sourceAmount: BigDecimal,
+        rate: Rate
+    ): BigDecimal {
+        val destAmount = sourceAmount.multiply(rate.rate)
+        if (destAmount == BigDecimal.ZERO) {
+            throw OpexError.InvalidAmount.exception("dest amount is zero")
+        }
+        return destAmount
+    }
+
     private suspend fun validateMinimumAmount(
         sourceSymbol: String,
         sourceAmount: BigDecimal,
@@ -291,9 +321,22 @@ class TransferService(
             maxOf(minDestAmount, minSourceAmount.multiply(rate)).setScale(destPrecision, RoundingMode.DOWN)
 
         if (sourceAmount < minimumSource || destAmount < minimumDest) {
-            throw OpexError.InvalidAmount.exception("amount is lower than minimum")
+            throw OpexError.InvalidMinimumAmount.exception("amount is lower than minimum")
         }
     }
 
+    private suspend fun validateMaximumAmount(
+        sourceSymbol: String,
+        sourceAmount: BigDecimal,
+        destSymbol: String,
+        destAmount: BigDecimal,
+    ) {
+        suspend fun getMaxOrder(symbol: String): BigDecimal {
+            return currencyManager.fetchCurrencyMaxOrder(symbol) ?: throw OpexError.CurrencyNotFound.exception()
+        }
 
+        if (sourceAmount > getMaxOrder(sourceSymbol) || destAmount > getMaxOrder(destSymbol)) {
+            throw OpexError.InvalidMaximumAmount.exception("amount is higher than maximum")
+        }
+    }
 }

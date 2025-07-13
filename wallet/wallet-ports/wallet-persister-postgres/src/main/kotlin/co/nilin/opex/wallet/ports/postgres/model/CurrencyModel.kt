@@ -28,5 +28,6 @@ data class CurrencyModel(
     @Column("external_url")
     var externalUrl: String? = null,
     @Column("display_order")
-    var order: Int? = null
+    var order: Int? = null,
+    var maxOrder : BigDecimal? = null,
 )

@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.math.BigDecimal
 import java.util.stream.Collectors
 
 @Service("newVersion")
@@ -87,6 +88,10 @@ class CurrencyServiceImplV2(val currencyRepository: CurrencyRepositoryV2, val re
 
     override suspend fun fetchAllCurrenciesPrecision(): List<CurrencyPrecision> {
         return currencyRepository.fetchAllCurrenciesPrecision().collectList().awaitFirstOrElse { emptyList() }
+    }
+
+    override suspend fun fetchCurrencyMaxOrder(symbol: String): BigDecimal? {
+        return currencyRepository.fetchCurrencyMaxOrder(symbol)?.awaitFirstOrNull()
     }
 
     private suspend fun loadCurrency(request: FetchCurrency): Mono<CurrencyModel>? {
