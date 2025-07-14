@@ -36,30 +36,6 @@ services:
   postgres-otp:
     ports:
       - "127.0.0.1:5462:5432"
-  postgres-accountant:
-    ports:
-      - "5432:5432"
-  postgres-eventlog:
-    ports:
-      - "5433:5432"
-  postgres-auth:
-    ports:
-      - "5434:5432"
-  postgres-wallet:
-    ports:
-      - "5435:5432"
-  postgres-api:
-    ports:
-      - "5436:5432"
-  postgres-market:
-    ports:
-      - "5438:5432"
-  postgres-bc-gateway:
-    ports:
-      - "5437:5432"
-  postgres-matching-gateway:
-    ports:
-      - "5439:5432"
   accountant:
     ports:
       - "127.0.0.1:8089:8080"
