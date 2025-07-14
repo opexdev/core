@@ -316,7 +316,7 @@ class TransferService(
         val minDestAmount = minPrecisionAmount(destPrecision)
 
         val minimumSource =
-            maxOf(minSourceAmount, minDestAmount.divide(rate)).setScale(sourcePrecision, RoundingMode.DOWN)
+            maxOf(minSourceAmount, minDestAmount.divide(rate, 10, RoundingMode.DOWN)).setScale(sourcePrecision, RoundingMode.DOWN)
         val minimumDest =
             maxOf(minDestAmount, minSourceAmount.multiply(rate)).setScale(destPrecision, RoundingMode.DOWN)
 
