@@ -239,7 +239,7 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
         )
     }
 
-    override suspend fun getWithdrawSummary(
+    override suspend fun  getWithdrawSummary(
         uuid: String,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,

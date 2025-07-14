@@ -138,10 +138,13 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
     @Query(
         """
 select o.symbol,
+       o.order_id,
        o.order_type,
        o.side,
        o.price,
        o.quantity,
+       o.quote_quantity,
+       os.executed_quantity,
        o.taker_fee,
        o.maker_fee,
        os.status,
