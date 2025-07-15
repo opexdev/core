@@ -100,7 +100,7 @@ class UserQueryHandlerImpl(
                 if (isMakerBuyer) makerOrder.quoteQuantity!! else takerOrder.quoteQuantity!!,
                 if (it.takerUuid == uuid) it.takerCommission!! else it.makerCommission!!,
                 if (it.takerUuid == uuid) it.takerCommissionAsset!! else it.makerCommissionAsset!!,
-                Date.from(it.createDate.atZone(ZoneId.systemDefault()).toInstant()),
+                it.createDate,
                 if (it.takerUuid == uuid)
                     OrderDirection.ASK == takerOrder.direction
                 else

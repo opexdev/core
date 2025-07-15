@@ -71,7 +71,7 @@ class UserHistoryController(
         @CurrentSecurityContext securityContext: SecurityContext,
     ): List<Trade> {
         return marketUserDataProxy.getTradeHistory(
-            securityContext.authentication.name, symbol, startTime, endTime, direction, limit ?: 10, offset ?: 10
+            securityContext.authentication.name, symbol, startTime, endTime, direction, limit ?: 10, offset ?: 0
         )
     }
 
