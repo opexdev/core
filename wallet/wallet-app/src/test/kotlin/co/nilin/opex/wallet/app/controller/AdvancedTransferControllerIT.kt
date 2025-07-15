@@ -43,13 +43,13 @@ class AdvancedTransferControllerIT : KafkaEnabledTest() {
     fun setup() {
 
         runBlocking {
-            currencyService.createNewCurrency(CurrencyCommand("ETH", name = "ETH", precision = BigDecimal.TEN), true)
-            currencyService.createNewCurrency(CurrencyCommand("BTC", name = "BTC", precision = BigDecimal.TEN), true)
+            currencyService.createNewCurrency(CurrencyCommand("ETH", name = "ETH", precision = BigDecimal.TEN , maxOrder = BigDecimal.valueOf(1000)), true)
+            currencyService.createNewCurrency(CurrencyCommand("BTC", name = "BTC", precision = BigDecimal.TEN  , maxOrder = BigDecimal.valueOf(1000)), true)
             currencyService.createNewCurrency(
-                CurrencyCommand("USDT", name = "USDT", precision = BigDecimal.valueOf(2)),
+                CurrencyCommand("USDT", name = "USDT", precision = BigDecimal.valueOf(2) , maxOrder = BigDecimal.valueOf(1000000000)),
                 true
             )
-            currencyService.createNewCurrency(CurrencyCommand("Z", name = "Z", precision = BigDecimal.valueOf(2)), true)
+            currencyService.createNewCurrency(CurrencyCommand("Z", name = "Z", precision = BigDecimal.valueOf(2), maxOrder = BigDecimal.valueOf(10000)), true)
 
 
         }
