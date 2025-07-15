@@ -1,6 +1,7 @@
 package co.nilin.opex.market.core.inout
 
 import java.math.BigDecimal
+import java.time.LocalDateTime
 import java.util.*
 
 // User trade data
@@ -13,7 +14,7 @@ data class Trade(
     val quoteQuantity: BigDecimal,
     val commission: BigDecimal,
     val commissionAsset: String,
-    val time: Date,
+    val time: LocalDateTime,
     val isBuyer: Boolean,
     val isMaker: Boolean,
     val isBestMatch: Boolean,
