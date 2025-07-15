@@ -21,7 +21,8 @@ fun CurrencyCommand.toModel(): CurrencyModel {
         description,
         shortDescription,
         externalUrl,
-        order
+        order,
+        maxOrder
     )
 }
 
@@ -44,7 +45,8 @@ fun CurrencyModel.toCommand(): CurrencyCommand {
         externalUrl,
         null,
         null,
-        order
+        order,
+        maxOrder
     )
 }
 
@@ -159,6 +161,7 @@ fun CurrencyModel.toCurrencyData(): CurrencyData {
         description,
         shortDescription,
         externalUrl,
-        order
+        order,
+        maxOrder
     )
 }

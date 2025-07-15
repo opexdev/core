@@ -496,3 +496,14 @@ CREATE TABLE IF NOT EXISTS quote_currency
     is_active         BOOLEAN      NOT NULL DEFAULT false,
     last_update_date TIMESTAMP
 );
+
+DO
+$$
+BEGIN
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'currency' AND column_name = 'max_order') THEN ALTER TABLE currency
+    ADD COLUMN max_order DECIMAL;
+END IF;
+END
+$$;

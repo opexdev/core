@@ -19,5 +19,6 @@ data class CurrencyData(
     var shortDescription: String? = null,
     var externalUrl: String? = null,
     var order: Int? = null,
+    var maxOrder : BigDecimal? = null,
 
     )

@@ -24,7 +24,8 @@ data class CurrencyDto(
     var gateways: List<CurrencyGatewayCommand>? = null,
     var availableGatewayType: String? = null,
     var order: Int? = null,
-    var systemBalance: BigDecimal? = null
+    var systemBalance: BigDecimal? = null,
+    var maxOrder: BigDecimal? = null,
 
 ) {
 
@@ -50,7 +51,8 @@ data class CurrencyDto(
             externalUrl,
             gateways,
             availableGatewayType,
-            order
+            order,
+            maxOrder
         )
     }
 }

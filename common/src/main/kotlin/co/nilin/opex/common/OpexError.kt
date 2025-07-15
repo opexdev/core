@@ -98,6 +98,8 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     VoucherSaleDataNotFound(6043, "Voucher sale data not found", HttpStatus.NOT_FOUND),
     VoucherNotForSale(6044, "Voucher not for sale", HttpStatus.BAD_REQUEST),
     VoucherUsageLimitExceeded(6045, "Voucher usage limit exceeded", HttpStatus.BAD_REQUEST),
+    InvalidMaximumAmount(6046, "Invalid maximum amount", HttpStatus.BAD_REQUEST),
+    InvalidMinimumAmount(6047, "Invalid minimum amount", HttpStatus.BAD_REQUEST),
 
 
     // code 7000: api

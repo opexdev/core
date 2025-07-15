@@ -8,6 +8,7 @@ import co.nilin.opex.wallet.core.inout.CurrencyData
 import co.nilin.opex.wallet.core.inout.CurrencyPrecision
 
 import co.nilin.opex.wallet.core.model.FetchCurrency
+import java.math.BigDecimal
 
 interface CurrencyServiceManager {
 
@@ -21,4 +22,6 @@ interface CurrencyServiceManager {
     suspend fun deleteCurrency(request: FetchCurrency): Void?
 
     suspend fun fetchAllCurrenciesPrecision(): List<CurrencyPrecision>
+    suspend fun fetchCurrencyMaxOrder(symbol: String): BigDecimal?
+
 }

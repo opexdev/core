@@ -538,15 +538,15 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         """
 select t.symbol,
        t.id,
-       case when :uuid = t.maker_uuid then t.maker_ouid else t.taker_ouid end             as ouid,
+       o.order_id,
        case when :uuid = t.maker_uuid then t.maker_price else t.taker_price end           as price,
-       t.matched_quantity,
-       t.quote_asset,
+       t.matched_quantity as quantity,
+       o.quote_quantity,
        case when :uuid = t.maker_uuid then t.maker_commission else t.taker_commission end as commission,
        case
            when :uuid = t.maker_uuid then t.maker_commission_asset
            else t.taker_commission_asset end                                              as commission_asset,
-       t.trade_date,
+       t.trade_date as time,
        case
            when :uuid = t.maker_uuid and o.side = 'ask' then true
            else false
@@ -555,7 +555,9 @@ select t.symbol,
        true                                                                               as is_best_match,
        case when o.side = 'bid' and t.maker_uuid = :uuid then true else false end         as is_maker_buyer
 from trades t
-         inner join orders o on o.ouid = t.maker_ouid or o.ouid = t.taker_ouid
+         inner join orders o on
+        (t.maker_uuid = :uuid and o.ouid = t.maker_ouid) or
+        (t.taker_uuid = :uuid and o.ouid = t.taker_ouid)
 where :uuid in (t.maker_uuid, t.taker_uuid)    
             and (:symbol is null or t.symbol = :symbol) 
             and (:startTime is null or t.trade_date >= :startTime) 
@@ -580,7 +582,9 @@ where :uuid in (t.maker_uuid, t.taker_uuid)
         """
 select count(*)
 from trades t
-         inner join orders o on o.ouid = t.maker_ouid or o.ouid = t.taker_ouid
+         inner join orders o on
+        (t.maker_uuid = :uuid and o.ouid = t.maker_ouid) or
+        (t.taker_uuid = :uuid and o.ouid = t.taker_ouid)
 where :uuid in (t.maker_uuid, t.taker_uuid)    
             and (:symbol is null or t.symbol = :symbol) 
             and (:startTime is null or t.trade_date >= :startTime) 
