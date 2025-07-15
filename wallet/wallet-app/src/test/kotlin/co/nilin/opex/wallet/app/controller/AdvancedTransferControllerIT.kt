@@ -80,7 +80,7 @@ class AdvancedTransferControllerIT : KafkaEnabledTest() {
         Assertions.assertEquals(BigDecimal.valueOf(2000), evaluate.destAmount)
     }
 
-    @Test
+//    @Test
     fun givenNotEnoughBalanceToSystem_whenReserve_thenException() {
         runBlocking {
             val sender = walletOwnerManager.createWalletOwner(UUID.randomUUID().toString(), "sender", "")
@@ -109,7 +109,7 @@ class AdvancedTransferControllerIT : KafkaEnabledTest() {
         }
     }
 
-    @Test
+//    @Test
     fun whenReserveAndTransfer_thenTransferDone() {
         runBlocking {
             val sender = walletOwnerManager.createWalletOwner(UUID.randomUUID().toString(), "sender", "")

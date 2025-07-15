@@ -332,7 +332,7 @@ class TransferService(
         destAmount: BigDecimal,
     ) {
         suspend fun getMaxOrder(symbol: String): BigDecimal {
-            return currencyManager.fetchCurrencyMaxOrder(symbol) ?: throw OpexError.CurrencyNotFound.exception()
+            return currencyManager.fetchCurrencyMaxOrder(symbol)?: BigDecimal.ZERO
         }
 
         if (sourceAmount > getMaxOrder(sourceSymbol) || destAmount > getMaxOrder(destSymbol)) {
