@@ -102,7 +102,7 @@ class TransferService(
         validateMaximumAmount(sourceSymbol, sourceAmount, destSymbol, scaledDestAmount)
         precisionService.validatePrecision(scaledDestAmount, destSymbol)
 
-        checkIfSystemHasEnoughBalance(destSymbol, receiverWalletType, destAmount)
+        checkIfSystemHasEnoughBalance(destSymbol, receiverWalletType, scaledDestAmount)
 
         val reserveNumber = UUID.randomUUID().toString()
         val resp = reservedTransferManager.reserve(
@@ -115,7 +115,7 @@ class TransferService(
                 receiverUuid = receiverUuid,
                 senderWalletType = senderWalletType,
                 receiverWalletType = receiverWalletType,
-                reservedDestAmount = destAmount,
+                reservedDestAmount = scaledDestAmount,
                 rate = rate.rate
             )
         )
