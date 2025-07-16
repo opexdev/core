@@ -547,13 +547,10 @@ select t.symbol,
            when :uuid = t.maker_uuid then t.maker_commission_asset
            else t.taker_commission_asset end                                              as commission_asset,
        t.trade_date as time,
-       case
-           when :uuid = t.maker_uuid and o.side = 'ask' then true
-           else false
-           end                                                                            as is_buyer,
+       o.side = 'BID'                                                                     as is_buyer,
        t.maker_uuid = :uuid                                                               as is_maker,
        true                                                                               as is_best_match,
-       case when o.side = 'bid' and t.maker_uuid = :uuid then true else false end         as is_maker_buyer
+       case when o.side = 'BID' and t.maker_uuid = :uuid then true else false end         as is_maker_buyer
 from trades t
          inner join orders o on
         (t.maker_uuid = :uuid and o.ouid = t.maker_ouid) or
