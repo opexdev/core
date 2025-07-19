@@ -1,4 +1,4 @@
-package co.nilin.opex.wallet.app.config
+package co.nilin.opex.common.config
 
 import co.nilin.opex.common.utils.CustomErrorTranslator
 import co.nilin.opex.utility.error.spi.ErrorTranslator
@@ -10,9 +10,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.context.support.ReloadableResourceBundleMessageSource
 
 @Configuration
-@Profile("otc")
 class ErrorConfig {
-
     @Bean
     fun messageSource(): MessageSource {
         val messageSource = ReloadableResourceBundleMessageSource()
@@ -23,7 +21,7 @@ class ErrorConfig {
     }
 
     @Bean
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(ErrorTranslator::class)
     fun translator(): ErrorTranslator {
         return CustomErrorTranslator(messageSource = messageSource())
     }
