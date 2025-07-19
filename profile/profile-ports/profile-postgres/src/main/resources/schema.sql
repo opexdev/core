@@ -293,3 +293,33 @@ $$
         END IF;
     END
 $$;
+
+DO
+$$
+BEGIN
+        IF EXISTS (SELECT 1
+                   FROM information_schema.columns
+                   WHERE table_name = 'profile'
+                     AND column_name = 'email') THEN ALTER TABLE profile
+               ALTER COLUMN email DROP NOT NULL;
+        END IF;
+        IF EXISTS (SELECT 1
+                   FROM information_schema.columns
+                   WHERE table_name = 'profile'
+                     AND column_name = 'identifier') THEN ALTER TABLE profile
+               ADD CONSTRAINT unique_identifier UNIQUE (identifier);
+        END IF;
+        IF EXISTS (SELECT 1
+                   FROM information_schema.columns
+                   WHERE table_name = 'profile'
+                     AND column_name = 'mobile') THEN ALTER TABLE profile
+              ADD CONSTRAINT unique_mobile UNIQUE (mobile);
+        END IF;
+        IF EXISTS (SELECT 1
+                   FROM information_schema.columns
+                   WHERE table_name = 'profile_history'
+                     AND column_name = 'email') THEN ALTER TABLE profile_history
+              ALTER COLUMN email DROP NOT NULL;
+        END IF;
+END
+$$;
