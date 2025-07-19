@@ -113,7 +113,10 @@ class ProfileManagementImp(
     }
 
     override suspend fun createProfile(data: Profile): Mono<Profile> {
-        profileRepository.findByUserIdOrEmail(data.userId!!, data.email!!)?.awaitFirstOrNull()?.let {
+        if (data.email.isNullOrBlank() && data.mobile.isNullOrBlank()) {
+            throw OpexError.BadRequest.exception("email and mobile is null or empty")
+        }
+        profileRepository.findByUserIdOrEmailOrMobile(data.userId!!, data.email, data.mobile)?.awaitFirstOrNull()?.let {
             throw OpexError.UserIdAlreadyExists.exception()
         } ?: run {
             val profile: ProfileModel = data.convert(ProfileModel::class.java)
