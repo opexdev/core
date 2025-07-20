@@ -47,6 +47,9 @@ class OrderPersisterTest {
             openOrderRepository.delete(any<String>())
         } returns Mono.empty()
         every { redisCacheHelper.put(any(), any()) } returns Unit
+        every {
+            orderRepository.findByOuid(any())
+        } returns Mono.just(VALID.MAKER_ORDER_MODEL)
         coEvery { marketOrderProducer.openOrderUpdate(any(), any()) } returns Unit
 
         assertThatNoException().isThrownBy { runBlocking { orderPersister.save(VALID.RICH_ORDER) } }
@@ -66,6 +69,9 @@ class OrderPersisterTest {
         every {
             openOrderRepository.delete(any<String>())
         } returns Mono.empty()
+        every {
+            orderRepository.findByOuid(any())
+        } returns Mono.just(VALID.MAKER_ORDER_MODEL)
         coEvery { marketOrderProducer.openOrderUpdate(any(), any()) } returns Unit
 
         assertThatNoException().isThrownBy { runBlocking { orderPersister.update(VALID.RICH_ORDER_UPDATE) } }
