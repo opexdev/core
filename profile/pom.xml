@@ -26,6 +26,7 @@
         <module>profile-ports/profile-submitter-kafka</module>
         <module>profile-ports/profile-kyc-proxy</module>
         <module>profile-ports/profile-shahkar-proxy</module>
+        <module>profile-ports/profile-otp-proxy</module>
     </modules>
 
     <dependencyManagement>

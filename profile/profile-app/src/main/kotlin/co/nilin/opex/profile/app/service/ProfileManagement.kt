@@ -5,6 +5,7 @@ import co.nilin.opex.common.OpexError
 import co.nilin.opex.profile.core.data.event.KycLevelUpdatedEvent
 import co.nilin.opex.profile.core.data.event.UserCreatedEvent
 import co.nilin.opex.profile.core.data.kyc.KycLevel
+import co.nilin.opex.profile.core.data.otp.*
 import co.nilin.opex.profile.core.data.profile.*
 import co.nilin.opex.profile.core.spi.*
 import kotlinx.coroutines.flow.map
@@ -22,7 +23,8 @@ class ProfileManagement(
     private val limitationPersister: LimitationPersister,
     private val profileApprovalRequestPersister: ProfileApprovalRequestPersister,
     private val shahkarInquiry: ShahkarInquiry,
-    private val kycLevelUpdatedPublisher: KycLevelUpdatedPublisher
+    private val kycLevelUpdatedPublisher: KycLevelUpdatedPublisher,
+    private val otpProxy: OtpProxy,
 ) {
     private val logger = LoggerFactory.getLogger(ProfileManagement::class.java)
     suspend fun registerNewUser(event: UserCreatedEvent) {
@@ -101,24 +103,50 @@ class ProfileManagement(
         profilePersister.updateUserLevel(userId, userLevel)
     }
 
-    //TODO Need OTP
-    suspend fun updateMobile(userId: String, mobile: String) {
-        val profile = profilePersister.getProfile(userId)?.awaitFirstOrNull()
-            ?: throw OpexError.NotFound.exception("profile not found")
-        if (profile.mobile.isNullOrEmpty())
-            profilePersister.updateMobile(userId, mobile)
-        else
-            throw OpexError.BadRequest.exception("Mobile cannot be changed")
+    suspend fun requestUpdateMobile(userId: String, mobile: String): TempOtpResponse {
+        profilePersister.validateMobileForUpdate(userId, mobile)
+        return otpProxy.requestOtp(
+            NewOTPRequest(
+                userId,
+                listOf(OTPReceiver(userId, OTPType.SMS)),
+                "UPDATE_MOBILE"
+            )
+        ) //TODO fix action
     }
 
-    //TODO Need OTP
-    suspend fun updateEmail(userId: String, email: String) {
-        val profile = profilePersister.getProfile(userId)?.awaitFirstOrNull()
-            ?: throw OpexError.NotFound.exception("profile not found")
-        if (profile.email.isNullOrEmpty())
+    suspend fun updateMobile(userId: String, mobile: String, otpCode: String) {
+        val verifyResponse = otpProxy.verifyOtp(
+            VerifyOTPRequest(
+                userId,
+                listOf(OTPCode(OTPType.SMS, otpCode))
+            )
+        )
+        if (verifyResponse.result)
+            profilePersister.updateMobile(userId, mobile)
+        else throw OpexError.InvalidOTP.exception()
+    }
+
+    suspend fun requestUpdateEmail(userId: String, email: String): TempOtpResponse {
+        profilePersister.validateEmailForUpdate(userId, email)
+        return otpProxy.requestOtp(
+            NewOTPRequest(
+                userId,
+                listOf(OTPReceiver(userId, OTPType.EMAIL)),
+                "UPDATE_EMAIL"
+            )
+        ) //TODO fix action
+    }
+
+    suspend fun updateEmail(userId: String, email: String, otpCode: String) {
+        val verifyResponse = otpProxy.verifyOtp(
+            VerifyOTPRequest(
+                userId,
+                listOf(OTPCode(OTPType.EMAIL, otpCode))
+            )
+        )
+        if (verifyResponse.result)
             profilePersister.updateEmail(userId, email)
-        else
-            throw OpexError.BadRequest.exception("Email cannot be changed")
+        else throw OpexError.InvalidOTP.exception()
     }
 
     suspend fun completeProfile(

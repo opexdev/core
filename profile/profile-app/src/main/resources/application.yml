@@ -51,6 +51,8 @@ app:
     cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
   kyc:
     url: lb://opex-kyc/v2/admin/kyc/internal
+  otp:
+    url: http://opex-otp/v1
 management:
   endpoints:
     web:
@@ -64,3 +66,6 @@ management:
       enabled: true
     prometheus:
       enabled: true
+inquiry:
+  shahkar: true
+  comparative: true

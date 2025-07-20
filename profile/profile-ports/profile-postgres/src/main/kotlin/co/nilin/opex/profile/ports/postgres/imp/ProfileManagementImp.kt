@@ -37,6 +37,8 @@ class ProfileManagementImp(
     private var kycProxyImp: KycProxyImp,
 ) : ProfilePersister {
     private val logger = LoggerFactory.getLogger(ProfileManagementImp::class.java)
+    private val EmailRegex = Regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
+    private val MobileRegex = Regex("^09\\d{9}$")
 
     @Transactional
     override suspend fun updateProfile(id: String, data: UpdateProfileRequest): Mono<Profile> {
@@ -192,18 +194,44 @@ class ProfileManagementImp(
         } ?: throw OpexError.UserNotFound.exception()
     }
 
+    override suspend fun validateEmailForUpdate(userId: String, email: String) {
+        validateEmailFormat(email)
+
+        if (profileRepository.findByEmail(email)?.awaitFirstOrNull() != null)
+            throw OpexError.EmailAlreadyExists.exception()
+
+        val profile = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
+            ?: throw OpexError.ProfileNotfound.exception()
+
+        if (!profile.email.isNotEmpty())
+            throw OpexError.EmailAlreadySet.exception()
+    }
+
+    override suspend fun validateMobileForUpdate(userId: String, mobile: String) {
+        validateMobileFormat(mobile)
+
+        if (profileRepository.findByMobile(mobile)?.awaitFirstOrNull() != null)
+            throw OpexError.MobileAlreadyExists.exception()
+
+        val profile = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
+            ?: throw OpexError.ProfileNotfound.exception()
+
+        if (!profile.mobile.isNullOrEmpty())
+            throw OpexError.MobileAlreadySet.exception()
+    }
+
     override suspend fun updateMobile(userId: String, mobile: String) {
-        val profileModel = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
-            ?: throw OpexError.UserNotFound.exception()
-        profileModel.mobile = mobile
-        profileRepository.save(profileModel).awaitFirstOrNull()
+        val profile = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
+            ?: throw OpexError.ProfileNotfound.exception()
+        profile.mobile = mobile
+        profileRepository.save(profile).awaitFirstOrNull()
     }
 
     override suspend fun updateEmail(userId: String, email: String) {
-        val profileModel = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
-            ?: throw OpexError.UserNotFound.exception()
-        profileModel.email = email
-        profileRepository.save(profileModel).awaitFirstOrNull()
+        val profile = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
+            ?: throw OpexError.ProfileNotfound.exception()
+        profile.email = email
+        profileRepository.save(profile).awaitFirstOrNull()
     }
 
     fun isMajorChanges(oldData: ProfileModel, newData: UpdateProfileRequest): Boolean {
@@ -257,5 +285,13 @@ class ProfileManagementImp(
             this.userId = userId
             this.description = reason
         })
+    }
+
+    private fun validateEmailFormat(email: String) {
+        if (!EmailRegex.matches(email)) throw OpexError.InvalidEmail.exception()
+    }
+
+    private fun validateMobileFormat(mobile: String) {
+        if (!MobileRegex.matches(mobile)) throw OpexError.InvalidMobile.exception()
     }
 }

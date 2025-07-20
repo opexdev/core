@@ -1,6 +1,7 @@
 package co.nilin.opex.profile.app.controller
 
 import co.nilin.opex.profile.app.service.ProfileManagement
+import co.nilin.opex.profile.core.data.otp.TempOtpResponse
 import co.nilin.opex.profile.core.data.profile.CompleteProfileRequest
 import co.nilin.opex.profile.core.data.profile.CompleteProfileResponse
 import co.nilin.opex.profile.core.data.profile.Profile
@@ -11,7 +12,7 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/v2/profile")
+@RequestMapping
 
 class ProfileController(val profileManagement: ProfileManagement) {
 
@@ -37,20 +38,39 @@ class ProfileController(val profileManagement: ProfileManagement) {
         return profileManagement.completeProfile(securityContext.authentication.name, completeProfileRequest)
     }
 
-    //TODO update mobile and email need improvement
-    @PutMapping("/mobile/{mobile}")
-    suspend fun updateMobile(
+    //TODO use dto for input
+    @PutMapping("/request/mobile/{mobile}")
+    suspend fun requestUpdateMobile(
         @PathVariable mobile: String,
         @CurrentSecurityContext securityContext: SecurityContext
-    ) {
-        profileManagement.updateMobile(securityContext.authentication.name, mobile)
+    ): TempOtpResponse {
+        return profileManagement.requestUpdateMobile(securityContext.authentication.name, mobile)
     }
 
-    @PutMapping("/email/{email}")
-    suspend fun updateEmail(
-        @PathVariable email: String,
+    @PutMapping("/mobile/{mobile}/{otpCode}")
+    suspend fun updateMobile(
+        @PathVariable mobile: String,
+        @PathVariable otpCode: String,
         @CurrentSecurityContext securityContext: SecurityContext
     ) {
-        profileManagement.updateEmail(securityContext.authentication.name, email)
+        profileManagement.updateMobile(securityContext.authentication.name, mobile, otpCode)
+    }
+
+    //TODO use dto for input
+    @PutMapping("/request/email/{email}")
+    suspend fun requestUpdateEmail(
+        @PathVariable email: String,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): TempOtpResponse {
+        return profileManagement.requestUpdateEmail(securityContext.authentication.name, email)
+    }
+
+    @PutMapping("/email/{email}/{otpCode}")
+    suspend fun updateEmail(
+        @PathVariable email: String,
+        @PathVariable otpCode: String,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ) {
+        profileManagement.updateEmail(securityContext.authentication.name, email, otpCode)
     }
 }

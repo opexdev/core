@@ -47,5 +47,8 @@ interface ProfileRepository : ReactiveCrudRepository<ProfileModel, Long> {
     """)
     fun findByUserIdOrEmailOrMobile(userId: String, email: String? , mobile : String?): Mono<ProfileModel>?
 
+    fun findByMobile(mobile : String?): Mono<ProfileModel>?
+
+    fun findByEmail(email: String?): Mono<ProfileModel>?
 
 }
