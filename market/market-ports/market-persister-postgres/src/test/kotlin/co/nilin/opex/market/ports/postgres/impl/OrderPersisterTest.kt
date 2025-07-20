@@ -1,10 +1,12 @@
 package co.nilin.opex.market.ports.postgres.impl
 
+import co.nilin.opex.market.core.spi.MarketOrderProducer
 import co.nilin.opex.market.ports.postgres.dao.OpenOrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderStatusRepository
 import co.nilin.opex.market.ports.postgres.impl.sample.VALID
 import co.nilin.opex.market.ports.postgres.util.RedisCacheHelper
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
@@ -16,9 +18,16 @@ class OrderPersisterTest {
     private val orderRepository = mockk<OrderRepository>()
     private val orderStatusRepository = mockk<OrderStatusRepository>()
     private val openOrderRepository = mockk<OpenOrderRepository>()
+    private val marketOrderProducer = mockk<MarketOrderProducer>()
     private val redisCacheHelper = mockk<RedisCacheHelper>()
     private val orderPersister =
-        OrderPersisterImpl(orderRepository, orderStatusRepository, openOrderRepository, redisCacheHelper)
+        OrderPersisterImpl(
+            orderRepository,
+            orderStatusRepository,
+            openOrderRepository,
+            redisCacheHelper,
+            marketOrderProducer
+        )
 
     @Test
     fun givenOrderRepo_whenSaveRichOrder_thenSuccess(): Unit = runBlocking {
@@ -38,6 +47,7 @@ class OrderPersisterTest {
             openOrderRepository.delete(any<String>())
         } returns Mono.empty()
         every { redisCacheHelper.put(any(), any()) } returns Unit
+        coEvery { marketOrderProducer.openOrderUpdate(any(), any()) } returns Unit
 
         assertThatNoException().isThrownBy { runBlocking { orderPersister.save(VALID.RICH_ORDER) } }
     }
@@ -56,6 +66,7 @@ class OrderPersisterTest {
         every {
             openOrderRepository.delete(any<String>())
         } returns Mono.empty()
+        coEvery { marketOrderProducer.openOrderUpdate(any(), any()) } returns Unit
 
         assertThatNoException().isThrownBy { runBlocking { orderPersister.update(VALID.RICH_ORDER_UPDATE) } }
     }

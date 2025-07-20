@@ -19,6 +19,7 @@
         <module>market-app</module>
         <module>market-core</module>
         <module>market-ports/market-eventlistener-kafka</module>
+        <module>market-ports/market-eventproducer-kafka</module>
         <module>market-ports/market-persister-postgres</module>
     </modules>
 
@@ -49,6 +50,11 @@
                 <groupId>co.nilin.opex.market.ports.kafka.listener</groupId>
                 <artifactId>market-eventlistener-kafka</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.market.ports.kafka.producer</groupId>
+                <artifactId>market-eventproducer-kafka</artifactId>
+                <version>1.0.1-beta.7</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.market.ports.binance</groupId>
