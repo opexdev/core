@@ -27,6 +27,7 @@
         <module>profile-ports/profile-kyc-proxy</module>
         <module>profile-ports/profile-shahkar-proxy</module>
         <module>profile-ports/profile-otp-proxy</module>
+        <module>profile-ports/profile-auth-proxy</module>
     </modules>
 
     <dependencyManagement>
@@ -79,6 +80,16 @@
             <dependency>
                 <groupId>co.nilin.opex.profile.ports</groupId>
                 <artifactId>profile-shahkar-proxy</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.profile.ports</groupId>
+                <artifactId>profile-otp-proxy</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.profile.ports</groupId>
+                <artifactId>profile-auth-proxy</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

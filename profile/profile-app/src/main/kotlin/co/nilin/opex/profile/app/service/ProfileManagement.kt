@@ -25,6 +25,7 @@ class ProfileManagement(
     private val shahkarInquiry: ShahkarInquiry,
     private val kycLevelUpdatedPublisher: KycLevelUpdatedPublisher,
     private val otpProxy: OtpProxy,
+    private val authProxy: AuthProxy,
 ) {
     private val logger = LoggerFactory.getLogger(ProfileManagement::class.java)
     suspend fun registerNewUser(event: UserCreatedEvent) {
@@ -107,46 +108,48 @@ class ProfileManagement(
         profilePersister.validateMobileForUpdate(userId, mobile)
         return otpProxy.requestOtp(
             NewOTPRequest(
-                userId,
-                listOf(OTPReceiver(userId, OTPType.SMS)),
-                "UPDATE_MOBILE"
+                mobile,
+                listOf(OTPReceiver(mobile, OTPType.SMS)),
+                OTPAction.UPDATE_MOBILE.name
             )
-        ) //TODO fix action
+        )
     }
 
     suspend fun updateMobile(userId: String, mobile: String, otpCode: String) {
         val verifyResponse = otpProxy.verifyOtp(
             VerifyOTPRequest(
-                userId,
+                mobile,
                 listOf(OTPCode(OTPType.SMS, otpCode))
             )
         )
-        if (verifyResponse.result)
+        if (verifyResponse.result) {
+            authProxy.updateMobile(userId, mobile)
             profilePersister.updateMobile(userId, mobile)
-        else throw OpexError.InvalidOTP.exception()
+        } else throw OpexError.InvalidOTP.exception()
     }
 
     suspend fun requestUpdateEmail(userId: String, email: String): TempOtpResponse {
         profilePersister.validateEmailForUpdate(userId, email)
         return otpProxy.requestOtp(
             NewOTPRequest(
-                userId,
-                listOf(OTPReceiver(userId, OTPType.EMAIL)),
-                "UPDATE_EMAIL"
+                email,
+                listOf(OTPReceiver(email, OTPType.EMAIL)),
+                OTPAction.UPDATE_EMAIL.name
             )
-        ) //TODO fix action
+        )
     }
 
     suspend fun updateEmail(userId: String, email: String, otpCode: String) {
         val verifyResponse = otpProxy.verifyOtp(
             VerifyOTPRequest(
-                userId,
+                email,
                 listOf(OTPCode(OTPType.EMAIL, otpCode))
             )
         )
-        if (verifyResponse.result)
+        if (verifyResponse.result) {
+            authProxy.updateEmail(userId, email)
             profilePersister.updateEmail(userId, email)
-        else throw OpexError.InvalidOTP.exception()
+        } else throw OpexError.InvalidOTP.exception()
     }
 
     suspend fun completeProfile(

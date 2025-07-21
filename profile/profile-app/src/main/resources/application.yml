@@ -53,6 +53,8 @@ app:
     url: lb://opex-kyc/v2/admin/kyc/internal
   otp:
     url: http://opex-otp/v1
+  auth-gateway:
+    url: http://opex-auth-gateway
 management:
   endpoints:
     web:

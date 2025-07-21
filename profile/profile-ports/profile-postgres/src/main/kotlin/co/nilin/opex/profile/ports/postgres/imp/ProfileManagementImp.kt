@@ -197,27 +197,27 @@ class ProfileManagementImp(
     override suspend fun validateEmailForUpdate(userId: String, email: String) {
         validateEmailFormat(email)
 
-        if (profileRepository.findByEmail(email)?.awaitFirstOrNull() != null)
-            throw OpexError.EmailAlreadyExists.exception()
-
         val profile = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
             ?: throw OpexError.ProfileNotfound.exception()
 
-        if (!profile.email.isNotEmpty())
+        if (!profile.email.isNullOrEmpty())
             throw OpexError.EmailAlreadySet.exception()
+
+        if (profileRepository.findByEmail(email)?.awaitFirstOrNull() != null)
+            throw OpexError.EmailAlreadyExists.exception()
     }
 
     override suspend fun validateMobileForUpdate(userId: String, mobile: String) {
         validateMobileFormat(mobile)
-
-        if (profileRepository.findByMobile(mobile)?.awaitFirstOrNull() != null)
-            throw OpexError.MobileAlreadyExists.exception()
 
         val profile = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
             ?: throw OpexError.ProfileNotfound.exception()
 
         if (!profile.mobile.isNullOrEmpty())
             throw OpexError.MobileAlreadySet.exception()
+
+        if (profileRepository.findByMobile(mobile)?.awaitFirstOrNull() != null)
+            throw OpexError.MobileAlreadyExists.exception()
     }
 
     override suspend fun updateMobile(userId: String, mobile: String) {

@@ -6,7 +6,7 @@ import co.nilin.opex.profile.core.data.profile.UserStatus
 import java.time.LocalDateTime
 
 open class Profile {
-    lateinit var email: String
+    var email: String? = null
     lateinit var userId: String
     var firstName: String? = null
     var lastName: String? = null

@@ -139,6 +139,18 @@ class UserService(
         keycloakProxy.resetPassword(user.id, request.newPassword)
     }
 
+    suspend fun updateMobile(request: UpdateMobileRequest) {
+        keycloakProxy.updateUserMobile(request.userId, request.mobile)
+    }
+
+    suspend fun updateEmail(request: UpdateEmailRequest) {
+        keycloakProxy.updateUserEmail(request.userId, request.email)
+    }
+
+    suspend fun updateName(request: UpdateNameRequest) {
+        keycloakProxy.updateUserName(request.userId, request.firstName, request.lastName)
+    }
+
     private suspend fun isUserDuplicate(username: Username): Boolean {
         val user = keycloakProxy.findUserByUsername(username)
         return if (user == null)

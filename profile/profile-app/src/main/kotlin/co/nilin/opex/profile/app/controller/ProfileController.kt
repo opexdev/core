@@ -1,5 +1,9 @@
 package co.nilin.opex.profile.app.controller
 
+import co.nilin.opex.profile.app.dto.UpdateEmailRequest
+import co.nilin.opex.profile.app.dto.UpdateMobileRequest
+import co.nilin.opex.profile.app.dto.VerifyUpdateEmailRequest
+import co.nilin.opex.profile.app.dto.VerifyUpdateMobileRequest
 import co.nilin.opex.profile.app.service.ProfileManagement
 import co.nilin.opex.profile.core.data.otp.TempOtpResponse
 import co.nilin.opex.profile.core.data.profile.CompleteProfileRequest
@@ -38,39 +42,35 @@ class ProfileController(val profileManagement: ProfileManagement) {
         return profileManagement.completeProfile(securityContext.authentication.name, completeProfileRequest)
     }
 
-    //TODO use dto for input
-    @PutMapping("/request/mobile/{mobile}")
+    @PostMapping("/mobile")
     suspend fun requestUpdateMobile(
-        @PathVariable mobile: String,
+        @RequestBody request: UpdateMobileRequest,
         @CurrentSecurityContext securityContext: SecurityContext
     ): TempOtpResponse {
-        return profileManagement.requestUpdateMobile(securityContext.authentication.name, mobile)
+        return profileManagement.requestUpdateMobile(securityContext.authentication.name, request.mobile)
     }
 
-    @PutMapping("/mobile/{mobile}/{otpCode}")
-    suspend fun updateMobile(
-        @PathVariable mobile: String,
-        @PathVariable otpCode: String,
+    @PutMapping("/mobile")
+    suspend fun verifyUpdateMobile(
+        @RequestBody request: VerifyUpdateMobileRequest,
         @CurrentSecurityContext securityContext: SecurityContext
     ) {
-        profileManagement.updateMobile(securityContext.authentication.name, mobile, otpCode)
+        profileManagement.updateMobile(securityContext.authentication.name, request.mobile, request.otp)
     }
 
-    //TODO use dto for input
-    @PutMapping("/request/email/{email}")
+    @PostMapping("/email")
     suspend fun requestUpdateEmail(
-        @PathVariable email: String,
+        @RequestBody request: UpdateEmailRequest,
         @CurrentSecurityContext securityContext: SecurityContext
     ): TempOtpResponse {
-        return profileManagement.requestUpdateEmail(securityContext.authentication.name, email)
+        return profileManagement.requestUpdateEmail(securityContext.authentication.name, request.email)
     }
 
-    @PutMapping("/email/{email}/{otpCode}")
-    suspend fun updateEmail(
-        @PathVariable email: String,
-        @PathVariable otpCode: String,
+    @PutMapping("/email")
+    suspend fun verifyUpdateEmail(
+        @RequestBody request: VerifyUpdateEmailRequest,
         @CurrentSecurityContext securityContext: SecurityContext
     ) {
-        profileManagement.updateEmail(securityContext.authentication.name, email, otpCode)
+        profileManagement.updateEmail(securityContext.authentication.name, request.email, request.otp)
     }
 }
