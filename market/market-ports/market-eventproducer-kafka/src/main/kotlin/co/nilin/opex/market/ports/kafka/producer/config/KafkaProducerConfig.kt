@@ -1,10 +1,13 @@
 package co.nilin.opex.market.ports.kafka.producer.config
 
+import co.nilin.opex.market.core.event.RichOrderEvent
+import co.nilin.opex.market.core.event.RichTrade
 import co.nilin.opex.market.core.inout.MarketOrderEvent
 import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -26,7 +29,7 @@ class KafkaProducerConfig(
     private val bootstrapServers: String
 ) {
 
-    @Bean
+    @Bean("marketProducerConfigs")
     fun producerConfigs(): Map<String, Any> {
         return mapOf(
             ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
@@ -37,13 +40,33 @@ class KafkaProducerConfig(
         )
     }
 
-    @Bean
-    fun producerFactory(producerConfigs: Map<String, Any>): ProducerFactory<String, MarketOrderEvent> {
+    @Bean("richTradeProducerFactory")
+    fun richTradeProducerFactory(@Qualifier("marketProducerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, RichTrade> {
+        return DefaultKafkaProducerFactory(producerConfigs)
+    }
+
+    @Bean("richTradeKafkaTemplate")
+    fun richTradeTemplate(@Qualifier("richTradeProducerFactory") factory: ProducerFactory<String?, RichTrade>): KafkaTemplate<String?, RichTrade> {
+        return KafkaTemplate(factory)
+    }
+
+    @Bean("richOrderProducerFactory")
+    fun richOrderProducerFactory(@Qualifier("marketProducerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, RichOrderEvent> {
+        return DefaultKafkaProducerFactory(producerConfigs)
+    }
+
+    @Bean("richOrderKafkaTemplate")
+    fun richOrderTemplate(@Qualifier("richOrderProducerFactory") factory: ProducerFactory<String?, RichOrderEvent>): KafkaTemplate<String?, RichOrderEvent> {
+        return KafkaTemplate(factory)
+    }
+
+    @Bean("marketOrderKafkaTemplate")
+    fun marketOrderProducerFactory(@Qualifier("marketProducerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String, MarketOrderEvent> {
         return DefaultKafkaProducerFactory(producerConfigs)
     }
 
     @Bean
-    fun kafkaTemplate(producerFactory: ProducerFactory<String, MarketOrderEvent>): KafkaTemplate<String, MarketOrderEvent> {
+    fun kafkaTemplate(@Qualifier("marketOrderKafkaTemplate") producerFactory: ProducerFactory<String, MarketOrderEvent>): KafkaTemplate<String, MarketOrderEvent> {
         return KafkaTemplate(producerFactory)
     }
 
