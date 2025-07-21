@@ -5,6 +5,7 @@ import co.nilin.opex.market.core.event.RichOrder
 import co.nilin.opex.market.core.event.RichOrderUpdate
 import co.nilin.opex.market.core.inout.Order
 import co.nilin.opex.market.core.inout.OrderStatus
+import co.nilin.opex.market.core.spi.MarketOrderProducer
 import co.nilin.opex.market.core.spi.OrderPersister
 import co.nilin.opex.market.ports.postgres.dao.OpenOrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderRepository
@@ -25,7 +26,8 @@ class OrderPersisterImpl(
     private val orderRepository: OrderRepository,
     private val orderStatusRepository: OrderStatusRepository,
     private val openOrderRepository: OpenOrderRepository,
-    private val redisCacheHelper: RedisCacheHelper
+    private val redisCacheHelper: RedisCacheHelper,
+    private val marketOrderProducer: MarketOrderProducer
 ) : OrderPersister {
 
     private val logger = LoggerFactory.getLogger(OrderPersisterImpl::class.java)
@@ -75,6 +77,7 @@ class OrderPersisterImpl(
             logger.info("Order ${order.ouid} deleted from open orders")
         }
 
+        marketOrderProducer.openOrderUpdate(order.uuid, order.pair)
         justTry { redisCacheHelper.put("lastOrder", orderModel.asOrderDTO(lastStatus)) }
     }
 
@@ -98,6 +101,8 @@ class OrderPersisterImpl(
             openOrderRepository.delete(orderUpdate.ouid).awaitSingleOrNull()
             logger.info("Order ${orderUpdate.ouid} deleted from open orders")
         }
+        val order = orderRepository.findByOuid(orderUpdate.ouid).awaitFirstOrNull() ?: return
+        marketOrderProducer.openOrderUpdate(order.uuid, order.symbol)
     }
 
     override suspend fun load(ouid: String): Order? {
