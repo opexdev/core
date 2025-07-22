@@ -507,7 +507,9 @@ services:
       - DB_IP_PORT=postgres-otp
       - DB_USER=${DB_USER:-opex}
       - DB_PASS=${DB_PASS:-hiopex}
+      - SMS_PROVIDER_URL=${SMS_PROVIDER_URL}
       - SMS_PROVIDER_API_KEY=${SMS_PROVIDER_API_KEY}
+      - SMS_PROVIDER_TEMPLATE=${SMS_PROVIDER_TEMPLATE}
       - SMTP_HOST=${SMTP_HOST}
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASS=${SMTP_PASS}

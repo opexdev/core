@@ -42,7 +42,9 @@ app:
 otp:
   sms:
     provider:
+      url: ${SMS_PROVIDER_URL}
       api-key: ${SMS_PROVIDER_API_KEY}
+      template: ${SMS_PROVIDER_TEMPLATE}
   email:
     host: ${SMTP_HOST}
     username: ${SMTP_USER}

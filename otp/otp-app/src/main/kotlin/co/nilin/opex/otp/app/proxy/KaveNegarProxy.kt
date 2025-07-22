@@ -10,20 +10,23 @@ import org.springframework.web.util.UriComponentsBuilder
 
 @Component
 class KaveNegarProxy(
+    @Value("\${otp.sms.provider.url}")
+    private val url: String,
     @Value("\${otp.sms.provider.api-key}")
     private val apiKey: String,
+    @Value("\${otp.sms.provider.template}")
+    private val template: String,
     private val webClient: WebClient
 ) {
 
     private val logger by LoggerDelegate()
-    private val baseUrl = "https://api.kavenegar.com/v1/$apiKey/"
+    private val baseUrl = "${url}/$apiKey/"
 
     suspend fun send(receiver: String, message: String, sender: String? = null, type: String? = null): Boolean {
-        val uri = UriComponentsBuilder.fromUriString("$baseUrl/sms/send.json")
+        val uri = UriComponentsBuilder.fromUriString("$baseUrl/verify/lookup.json")
             .queryParam("receptor", receiver)
-            .queryParam("message", message)
-            .queryParam("sender", sender)
-            .queryParam("type", type)
+            .queryParam("template", template)
+            .queryParam("token", message)
             .build().toUri()
 
         return try {
