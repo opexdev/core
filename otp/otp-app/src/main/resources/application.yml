@@ -47,5 +47,7 @@ otp:
       template: ${SMS_PROVIDER_TEMPLATE}
   email:
     host: ${SMTP_HOST}
+    port: ${SMTP_PORT}
     username: ${SMTP_USER}
     password: ${SMTP_PASS}
+    from: ${SMTP_FROM}
