@@ -9,7 +9,7 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <groupId>co.nilin.opex.profile.ports</groupId>
-    <artifactId>profile-shahkar-proxy</artifactId>
+    <artifactId>profile-inquiry-proxy</artifactId>
     <name>profile-shahkar-proxy</name>
     <description>profile-shahkar-proxy</description>
 
@@ -36,6 +36,11 @@
         <dependency>
             <groupId>co.nilin.opex.profile</groupId>
             <artifactId>profile-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ibm.icu</groupId>
+            <artifactId>icu4j</artifactId>
+            <version>74.1</version>
         </dependency>
     </dependencies>
 

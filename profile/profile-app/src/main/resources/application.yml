@@ -69,5 +69,8 @@ management:
     prometheus:
       enabled: true
 inquiry:
-  shahkar: true
-  comparative: true
+  mobile-indentiy: true
+  personal-indentiy: true
+  url: ${JIBIT_URL}
+  api-key: ${JIBIT_API_KEY}
+  secret-key: ${JIBIT_SECRET_KEY}

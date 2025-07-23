@@ -303,23 +303,63 @@ BEGIN
                      AND column_name = 'email') THEN ALTER TABLE profile
                ALTER COLUMN email DROP NOT NULL;
         END IF;
-        IF EXISTS (SELECT 1
-                   FROM information_schema.columns
-                   WHERE table_name = 'profile'
-                     AND column_name = 'identifier') THEN ALTER TABLE profile
-               ADD CONSTRAINT unique_identifier UNIQUE (identifier);
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'unique_identifier'
+        ) THEN
+            ALTER TABLE profile
+                ADD CONSTRAINT unique_identifier UNIQUE (identifier);
         END IF;
-        IF EXISTS (SELECT 1
-                   FROM information_schema.columns
-                   WHERE table_name = 'profile'
-                     AND column_name = 'mobile') THEN ALTER TABLE profile
-              ADD CONSTRAINT unique_mobile UNIQUE (mobile);
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'unique_mobile'
+        ) THEN
+            ALTER TABLE profile
+                ADD CONSTRAINT unique_mobile UNIQUE (mobile);
         END IF;
         IF EXISTS (SELECT 1
                    FROM information_schema.columns
                    WHERE table_name = 'profile_history'
                      AND column_name = 'email') THEN ALTER TABLE profile_history
               ALTER COLUMN email DROP NOT NULL;
+        END IF;
+
+        IF EXISTS (SELECT 1
+                   FROM information_schema.columns
+                   WHERE table_name = 'profile'
+                     AND column_name = 'verification_status') THEN ALTER TABLE profile
+            DROP COLUMN verification_status;
+        END IF;
+        IF EXISTS (SELECT 1
+                   FROM information_schema.columns
+                   WHERE table_name = 'profile_history'
+                     AND column_name = 'verification_status') THEN ALTER TABLE profile_history
+            DROP COLUMN verification_status;
+        END IF;
+
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'profile' AND column_name = 'mobile_identity_match') THEN ALTER TABLE profile
+            ADD COLUMN mobile_identity_match BOOLEAN;
+        END IF;
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'profile_history'
+                         AND column_name = 'mobile_identity_match') THEN ALTER TABLE profile_history
+            ADD COLUMN mobile_identity_match BOOLEAN;
+        END IF;
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'profile' AND column_name = 'personal_identity_match') THEN ALTER TABLE profile
+            ADD COLUMN personal_identity_match BOOLEAN;
+        END IF;
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'profile_history'
+                         AND column_name = 'personal_identity_match') THEN ALTER TABLE profile_history
+            ADD COLUMN personal_identity_match BOOLEAN;
         END IF;
 END
 $$;

@@ -143,7 +143,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     DuplicateAccount(13004, " Duplicate account", HttpStatus.BAD_REQUEST),
     InvalidIban(13005, " Invalid iban number", HttpStatus.BAD_REQUEST),
     InvalidCard(13006, " Invalid card number", HttpStatus.BAD_REQUEST),
-    VerificationFailed(13007, "Verification Failed", HttpStatus.BAD_REQUEST),
+    ShahkarVerificationFailed(13007, "Shahkar Verification Failed", HttpStatus.BAD_REQUEST),
     ProfileApprovalRequestAlreadyExists(13008, "Request Already Exists", HttpStatus.BAD_REQUEST),
     ProfileNotfound(13009, "Profile not found", HttpStatus.NOT_FOUND),
     EmailAlreadyExists(13010, "Email already exists", HttpStatus.BAD_REQUEST),
@@ -152,6 +152,8 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     InvalidMobile(13013, "Invalid mobile", HttpStatus.BAD_REQUEST),
     MobileAlreadySet(13014, "Mobile already set", HttpStatus.BAD_REQUEST),
     EmailAlreadySet(13015, "Email already set", HttpStatus.BAD_REQUEST),
+    ProfileAlreadyCompleted(13016, "Profile already completed", HttpStatus.BAD_REQUEST),
+    ComparativeVerificationFailed(13017, "Comparative Verification Failed", HttpStatus.BAD_REQUEST),
     ;
 
     override fun code() = this.code

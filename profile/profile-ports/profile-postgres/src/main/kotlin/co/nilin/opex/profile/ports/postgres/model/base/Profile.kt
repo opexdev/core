@@ -23,6 +23,7 @@ open class Profile {
     var lastUpdateDate: LocalDateTime? = null
     var creator: String? = null
     var kycLevel: KycLevel? = KycLevel.Level1
-    var verificationStatus : Boolean? = false
+    var mobileIdentityMatch : Boolean? = false
+    var personalIdentityMatch : Boolean? = false
 
 }

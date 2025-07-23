@@ -8,7 +8,13 @@ import reactor.core.publisher.Mono
 interface ProfilePersister {
 
     suspend fun updateProfile(id: String, data: UpdateProfileRequest): Mono<Profile>
-    suspend fun completeProfile(id: String, data: CompleteProfileRequest): Mono<CompleteProfileResponse>
+    suspend fun completeProfile(
+        id: String,
+        data: CompleteProfileRequest,
+        mobileIdentityMatch: Boolean,
+        personalIdentityMatch: Boolean
+    ): Mono<CompleteProfileResponse>
+
     suspend fun updateProfileAsAdmin(id: String, data: Profile): Mono<Profile>
     suspend fun createProfile(data: Profile): Mono<Profile>
     suspend fun getProfile(userId: String): Mono<Profile>?

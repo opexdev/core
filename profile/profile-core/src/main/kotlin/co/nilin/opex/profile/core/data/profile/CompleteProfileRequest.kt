@@ -1,18 +1,15 @@
 package co.nilin.opex.profile.core.data.profile
 
-import co.nilin.opex.profile.core.data.kyc.KycLevel
 import java.time.LocalDateTime
 
 data class CompleteProfileRequest(
     var firstName: String,
     var lastName: String,
-    var address: String ? = null,
+    var address: String? = null,
     var telephone: String? = null,
     var postalCode: String? = null,
     var nationality: String,
     var identifier: String,
     var gender: Gender,
     var birthDate: LocalDateTime,
-    var kycLevel: KycLevel? = KycLevel.Level1,
-    var verificationStatus: Boolean? = false
 )

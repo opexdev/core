@@ -16,23 +16,35 @@ class WebClientConfig {
     @Qualifier("loadBalanced")
     fun loadBalancedWebClient(loadBalancerFactory: ReactiveLoadBalancer.Factory<ServiceInstance>): WebClient {
         return WebClient.builder()
-                .filter(ReactorLoadBalancerExchangeFilterFunction(loadBalancerFactory, emptyList()))
-                .exchangeStrategies(
-                        ExchangeStrategies.builder()
-                                .codecs { it.defaultCodecs().maxInMemorySize(20 * 1024 * 1024) }
-                                .build()
-                )
-                .build()
+            .filter(ReactorLoadBalancerExchangeFilterFunction(loadBalancerFactory, emptyList()))
+            .exchangeStrategies(
+                ExchangeStrategies.builder()
+                    .codecs { it.defaultCodecs().maxInMemorySize(20 * 1024 * 1024) }
+                    .build()
+            )
+            .build()
     }
 
     @Bean
     fun webClient(loadBalancerFactory: ReactiveLoadBalancer.Factory<ServiceInstance>): WebClient {
         return WebClient.builder()
-                .filter(
-                        ReactorLoadBalancerExchangeFilterFunction(
-                                loadBalancerFactory, LoadBalancerProperties(), emptyList()
-                        )
+            .filter(
+                ReactorLoadBalancerExchangeFilterFunction(
+                    loadBalancerFactory, LoadBalancerProperties(), emptyList()
                 )
-                .build()
+            )
+            .build()
+    }
+
+    @Bean
+    @Qualifier("plainWebClient")
+    fun plainWebClient(): WebClient {
+        return WebClient.builder()
+            .exchangeStrategies(
+                ExchangeStrategies.builder()
+                    .codecs { it.defaultCodecs().maxInMemorySize(20 * 1024 * 1024) }
+                    .build()
+            )
+            .build()
     }
 }

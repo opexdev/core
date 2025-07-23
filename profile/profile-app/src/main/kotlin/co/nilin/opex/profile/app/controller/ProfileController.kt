@@ -34,7 +34,7 @@ class ProfileController(val profileManagement: ProfileManagement) {
         return profileManagement.update(securityContext.authentication.name, newProfile)?.awaitFirstOrNull()
     }
 
-    @PostMapping("/Completion")
+    @PostMapping("/completion")
     suspend fun completeProfile(
         @RequestBody completeProfileRequest: CompleteProfileRequest,
         @CurrentSecurityContext securityContext: SecurityContext

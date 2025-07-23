@@ -75,26 +75,36 @@ class ProfileManagementImp(
         } ?: throw OpexError.UserNotFound.exception()
     }
 
-    override suspend fun completeProfile(id: String, data: CompleteProfileRequest): Mono<CompleteProfileResponse> {
-        return profileRepository.findByUserId(id)?.awaitFirstOrNull()?.let { it ->
+    override suspend fun completeProfile(
+        id: String,
+        data: CompleteProfileRequest,
+        mobileIdentityMatch: Boolean,
+        personalIdentityMatch: Boolean
+    ): Mono<CompleteProfileResponse> {
+        val existingProfile = profileRepository.findByUserId(id)?.awaitFirstOrNull()
+            ?: throw OpexError.ProfileNotfound.exception()
 
-            var newProfileModel = data.convert(ProfileModel::class.java)
-            newProfileModel.email = it.email
-            newProfileModel.mobile = it.mobile
-            newProfileModel.id = it.id
-            newProfileModel.userId = it.userId
-            newProfileModel.status = it.status
-            newProfileModel.createDate = it.createDate
-            newProfileModel.lastUpdateDate = LocalDateTime.now()
-            profileRepository.save(newProfileModel)
-                .map { savedProfile ->
-                    convertProfileModelToCompleteProfileResponse(savedProfile).apply {
-                        if (it.nationality == "Iranian")
-                            kycLevel = KycLevel.Level2
-                    }
+        var newProfileModel = data.convert(ProfileModel::class.java)
+        newProfileModel.email = existingProfile.email
+        newProfileModel.mobile = existingProfile.mobile
+        newProfileModel.id = existingProfile.id
+        newProfileModel.userId = existingProfile.userId
+        newProfileModel.status = existingProfile.status
+        newProfileModel.createDate = existingProfile.createDate
+        newProfileModel.lastUpdateDate = LocalDateTime.now()
+        newProfileModel.mobileIdentityMatch = mobileIdentityMatch
+        newProfileModel.personalIdentityMatch = personalIdentityMatch
+
+        return profileRepository.save(newProfileModel)
+            .map { saved ->
+                val response = convertProfileModelToCompleteProfileResponse(saved)
+                if (saved.nationality == "IR") {
+                    response.kycLevel = KycLevel.Level2
                 }
-        } ?: throw OpexError.UserNotFound.exception()
+                response
+            }
     }
+
 
     //todo
     //update shared fields in keycloak

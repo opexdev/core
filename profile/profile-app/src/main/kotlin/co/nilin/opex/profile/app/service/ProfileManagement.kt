@@ -10,8 +10,10 @@ import co.nilin.opex.profile.core.data.profile.*
 import co.nilin.opex.profile.core.spi.*
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
@@ -22,10 +24,17 @@ class ProfileManagement(
     private val linkedAccountPersister: LinkedAccountPersister,
     private val limitationPersister: LimitationPersister,
     private val profileApprovalRequestPersister: ProfileApprovalRequestPersister,
-    private val shahkarInquiry: ShahkarInquiry,
+    private val shahkarInquiry: InquiryProxy,
     private val kycLevelUpdatedPublisher: KycLevelUpdatedPublisher,
     private val otpProxy: OtpProxy,
     private val authProxy: AuthProxy,
+    private val inquiryProxy: InquiryProxy,
+
+    @Value("\${inquiry.mobile-indentiy}")
+    private var mobileIdentityEnabled: Boolean,
+
+    @Value("\${inquiry.personal-indentiy}")
+    private var personalIdentityEnabled: Boolean,
 ) {
     private val logger = LoggerFactory.getLogger(ProfileManagement::class.java)
     suspend fun registerNewUser(event: UserCreatedEvent) {
@@ -147,38 +156,81 @@ class ProfileManagement(
             )
         )
         if (verifyResponse.result) {
-            authProxy.updateEmail(userId, email)
+            authProxy.updateEmail(userId, email) //TODO rollback in error ?
             profilePersister.updateEmail(userId, email)
         } else throw OpexError.InvalidOTP.exception()
     }
 
     suspend fun completeProfile(
         userId: String,
-        completeProfileRequest: CompleteProfileRequest
+        request: CompleteProfileRequest
     ): CompleteProfileResponse {
+
         val profile = profilePersister.getProfile(userId)?.awaitFirstOrNull()
-            ?: throw OpexError.NotFound.exception("profile not found")
+            ?: throw OpexError.ProfileNotfound.exception()
+
         if (profile.kycLevel == KycLevel.Level2) {
-            throw OpexError.BadRequest.exception("Profile already completed")
+            throw OpexError.ProfileAlreadyCompleted.exception()
         }
-        val isIranian = completeProfileRequest.nationality == "Iranian"
+
+        val isIranian = request.nationality == "IR"
+        var useMobileIdentity = false
+        var usePersonalIdentity = false
+
         if (isIranian) {
-            if (!shahkarInquiry.getInquiryResult(
-                    completeProfileRequest.identifier,
-                    profile.mobile ?: throw OpexError.BadRequest.exception("Profile mobile is empty")
-                )
-            ) {
-                throw OpexError.VerificationFailed.exception("Mobile and identifier do not match")
+            if (mobileIdentityEnabled) {
+                verifyMobileIdentity(request.identifier, profile.mobile!!)
+                useMobileIdentity = true
             }
-            completeProfileRequest.verificationStatus = true
+
+            if (personalIdentityEnabled) {
+                verifyPersonalIdentity(
+                    request.identifier,
+                    request.firstName,
+                    request.lastName,
+                    request.birthDate
+                )
+                usePersonalIdentity = true
+            }
         }
-        val completedProfile = profilePersister.completeProfile(userId, completeProfileRequest).awaitFirstOrNull()
-            ?: throw OpexError.BadRequest.exception("profile not found for userId: $userId")
-        if (isIranian)
-            kycLevelUpdatedPublisher.publish(KycLevelUpdatedEvent(userId, KycLevel.Level2, LocalDateTime.now()))
-        else
+
+        val completedProfile = profilePersister
+            .completeProfile(userId, request, useMobileIdentity, usePersonalIdentity)
+            .awaitFirst()
+
+        if (isIranian) {
+            kycLevelUpdatedPublisher.publish(
+                KycLevelUpdatedEvent(userId, KycLevel.Level2, LocalDateTime.now())
+            )
+        } else {
             saveProfileApprovalRequest(completedProfile.id)
+        }
+
         return completedProfile
+    }
+
+
+    private suspend fun verifyMobileIdentity(identifier: String, mobile: String) {
+        if (!inquiryProxy.getShahkarInquiryResult(
+                identifier,
+                mobile
+            )
+        ) throw OpexError.ShahkarVerificationFailed.exception()
+    }
+
+    private suspend fun verifyPersonalIdentity(
+        identifier: String,
+        firstName: String,
+        lastName: String,
+        birthDate: LocalDateTime
+    ) {
+        if (!inquiryProxy.getComparativeInquiryResult(
+                identifier,
+                birthDate,
+                firstName,
+                lastName
+            )
+        ) throw OpexError.ComparativeVerificationFailed.exception()
     }
 
     private suspend fun saveProfileApprovalRequest(profileId: Long) {

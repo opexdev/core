@@ -57,7 +57,7 @@
         </dependency>
         <dependency>
             <groupId>co.nilin.opex.profile.ports</groupId>
-            <artifactId>profile-shahkar-proxy</artifactId>
+            <artifactId>profile-inquiry-proxy</artifactId>
         </dependency>
     </dependencies>
 

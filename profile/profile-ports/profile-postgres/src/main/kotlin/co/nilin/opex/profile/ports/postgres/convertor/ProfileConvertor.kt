@@ -20,6 +20,7 @@ fun convertProfileModelToCompleteProfileResponse(profileModel: ProfileModel): Co
         birthDate = profileModel.birthDate,
         status = profileModel.status,
         kycLevel = profileModel.kycLevel,
-        verificationStatus = profileModel.verificationStatus
+        mobileIdentityMatch = profileModel.mobileIdentityMatch,
+        personalIdentityMatch = profileModel.personalIdentityMatch,
     )
 }
