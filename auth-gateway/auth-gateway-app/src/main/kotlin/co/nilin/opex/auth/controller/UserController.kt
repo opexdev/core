@@ -18,14 +18,14 @@ class UserController(private val userService: UserService) {
         userService.logout(securityContext.jwtAuthentication().name)
     }
 
-    @PutMapping("/email")
+    @PutMapping("/update/email")
     suspend fun updateEmail(
         @RequestBody request: UpdateEmailRequest
     ) {
         userService.updateEmail(request)
     }
 
-    @PutMapping("/mobile")
+    @PutMapping("/update/mobile")
     suspend fun updateMobile(
         @RequestBody request: UpdateMobileRequest
     ) {
@@ -33,7 +33,7 @@ class UserController(private val userService: UserService) {
 
     }
 
-    @PutMapping("/name")
+    @PutMapping("/update/name")
     suspend fun updateName(
         @RequestBody request: UpdateNameRequest
     ) {

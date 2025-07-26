@@ -3,6 +3,7 @@ package co.nilin.opex.auth.config
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpMethod
 import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.ServerHttpSecurity
@@ -27,6 +28,7 @@ class SecurityConfig(
                     .pathMatchers("/v1/oauth/protocol/openid-connect/**").permitAll()
                     .pathMatchers("/v1/oauth.***").permitAll()
                     .pathMatchers("/v1/user/public/**").permitAll()
+                    .pathMatchers("/v1/user/update/**").permitAll()
                     .anyExchange().authenticated()
             }
             .oauth2ResourceServer { it.jwt(Customizer.withDefaults()) }
