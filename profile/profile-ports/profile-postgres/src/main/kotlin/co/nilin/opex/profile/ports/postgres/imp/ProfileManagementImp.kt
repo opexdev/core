@@ -91,6 +91,8 @@ class ProfileManagementImp(
         newProfileModel.userId = existingProfile.userId
         newProfileModel.status = existingProfile.status
         newProfileModel.createDate = existingProfile.createDate
+        newProfileModel.creator = existingProfile.creator
+        newProfileModel.kycLevel = existingProfile.kycLevel
         newProfileModel.lastUpdateDate = LocalDateTime.now()
         newProfileModel.mobileIdentityMatch = mobileIdentityMatch
         newProfileModel.personalIdentityMatch = personalIdentityMatch
@@ -148,7 +150,7 @@ class ProfileManagementImp(
     override suspend fun getProfile(id: Long): Mono<Profile> {
         val profile: Profile =
             profileRepository.findById(id).awaitFirstOrNull()?.convert(Profile::class.java)
-                ?: throw OpexError.UserNotFound.exception()
+                ?: throw OpexError.ProfileNotfound.exception()
         return Mono.just(profile)
     }
 
@@ -212,9 +214,6 @@ class ProfileManagementImp(
 
         if (!profile.email.isNullOrEmpty())
             throw OpexError.EmailAlreadySet.exception()
-
-        if (profileRepository.findByEmail(email)?.awaitFirstOrNull() != null)
-            throw OpexError.EmailAlreadyExists.exception()
     }
 
     override suspend fun validateMobileForUpdate(userId: String, mobile: String) {
@@ -225,12 +224,11 @@ class ProfileManagementImp(
 
         if (!profile.mobile.isNullOrEmpty())
             throw OpexError.MobileAlreadySet.exception()
-
-        if (profileRepository.findByMobile(mobile)?.awaitFirstOrNull() != null)
-            throw OpexError.MobileAlreadyExists.exception()
     }
 
     override suspend fun updateMobile(userId: String, mobile: String) {
+        if (profileRepository.findByMobile(mobile)?.awaitFirstOrNull() != null)
+            throw OpexError.MobileAlreadyExists.exception()
         val profile = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
             ?: throw OpexError.ProfileNotfound.exception()
         profile.mobile = mobile
@@ -238,6 +236,8 @@ class ProfileManagementImp(
     }
 
     override suspend fun updateEmail(userId: String, email: String) {
+        if (profileRepository.findByEmail(email)?.awaitFirstOrNull() != null)
+            throw OpexError.EmailAlreadyExists.exception()
         val profile = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
             ?: throw OpexError.ProfileNotfound.exception()
         profile.email = email

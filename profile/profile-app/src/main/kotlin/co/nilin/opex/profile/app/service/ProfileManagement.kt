@@ -197,6 +197,7 @@ class ProfileManagement(
         val completedProfile = profilePersister
             .completeProfile(userId, request, useMobileIdentity, usePersonalIdentity)
             .awaitFirst()
+        authProxy.updateName(userId, request.firstName, request.lastName)
 
         if (isIranian) {
             kycLevelUpdatedPublisher.publish(

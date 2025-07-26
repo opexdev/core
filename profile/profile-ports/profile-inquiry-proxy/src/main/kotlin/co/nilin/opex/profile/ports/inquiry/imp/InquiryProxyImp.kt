@@ -1,5 +1,6 @@
 package co.nilin.opex.profile.ports.inquiry.imp
 
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.profile.core.spi.InquiryProxy
 import co.nilin.opex.profile.ports.inquiry.data.ComparativeResponse
 import co.nilin.opex.profile.ports.inquiry.data.ShahkarResponse
@@ -13,7 +14,6 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 @Component
 class InquiryProxyImp(
@@ -34,6 +34,7 @@ class InquiryProxyImp(
             .header(HttpHeaders.AUTHORIZATION, "Bearer ${tokenProvider.getToken()}")
             .accept(MediaType.APPLICATION_JSON)
             .retrieve()
+            .onStatus({ t -> t.isError }, { throw OpexError.ShahkarInquiryUnavailable.exception() })
             .awaitBody<ShahkarResponse>()
             .matched
     }
@@ -57,6 +58,7 @@ class InquiryProxyImp(
             .header(HttpHeaders.AUTHORIZATION, "Bearer ${tokenProvider.getToken()}")
             .accept(MediaType.APPLICATION_JSON)
             .retrieve()
+            .onStatus({ t -> t.isError }, { throw OpexError.ComparativeInquiryUnavailable.exception() })
             .awaitBody<ComparativeResponse>()
 
         return (response.firstNameSimilarityPercentage >= 95 && response.lastNameSimilarityPercentage >= 95)
