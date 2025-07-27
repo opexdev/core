@@ -204,8 +204,10 @@ CREATE TABLE IF NOT EXISTS currency_off_chain_gateway
     withdraw_max     DECIMAL      NOT NULL,
     deposit_min      DECIMAL      NOT NULL,
     deposit_max      DECIMAL      NOT NULL,
-    is_active        BOOLEAN      NOT NULL        DEFAULT TRUE,
+    is_deposit_active        BOOLEAN      NOT NULL        DEFAULT TRUE,
+    is_withdraw_active        BOOLEAN      NOT NULL        DEFAULT TRUE,
     transfer_method  VARCHAR(256) NOT NULL,
+    description            TEXT,
     UNIQUE (currency_symbol, transfer_method)
 
 );
@@ -506,4 +508,25 @@ BEGIN
     ADD COLUMN max_order DECIMAL;
 END IF;
 END
+$$;
+
+DO
+$$
+    BEGIN
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'currency_off_chain_gateway' AND column_name = 'is_deposit_active') THEN ALTER TABLE currency_off_chain_gateway
+        ADD COLUMN is_deposit_active Boolean NOT NULL DEFAULT TRUE;
+        END IF;
+        IF EXISTS (SELECT 1
+                               FROM information_schema.columns
+                               WHERE table_name = 'currency_off_chain_gateway' AND column_name = 'is_active') THEN ALTER TABLE currency_off_chain_gateway
+        RENAME COLUMN is_active TO is_withdraw_active;
+        END IF;
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'currency_off_chain_gateway' AND column_name = 'description') THEN ALTER TABLE currency_off_chain_gateway
+        ADD COLUMN description TEXT;
+        END IF;
+    END
 $$;

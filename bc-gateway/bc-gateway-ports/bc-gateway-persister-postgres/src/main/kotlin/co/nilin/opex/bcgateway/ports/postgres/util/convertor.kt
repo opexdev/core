@@ -21,7 +21,9 @@ fun CryptoCurrencyCommand.toModel(): CurrencyOnChainGatewayModel {
         depositMin,
         depositMax,
         decimal,
-        isActive
+        isDepositActive,
+        isWithdrawActive,
+        description,
     )
 }
 
@@ -31,7 +33,8 @@ fun CurrencyOnChainGatewayModel.toDto(): CryptoCurrencyCommand {
         currencySymbol,
         gatewayUuid!!,
         implementationSymbol,
-        isActive,
+        isDepositActive,
+        isWithdrawActive,
         isToken,
         tokenName,
         tokenAddress,
@@ -43,7 +46,8 @@ fun CurrencyOnChainGatewayModel.toDto(): CryptoCurrencyCommand {
         depositMin,
         depositMax,
         decimal,
-        chain
+        chain,
+        description,
     )
 
 }

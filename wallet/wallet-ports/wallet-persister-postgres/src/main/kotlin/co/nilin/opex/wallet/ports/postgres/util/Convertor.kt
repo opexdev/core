@@ -1,7 +1,10 @@
 package co.nilin.opex.wallet.ports.postgres.util
 
 import co.nilin.opex.wallet.core.inout.*
-import co.nilin.opex.wallet.ports.postgres.model.*
+import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
+import co.nilin.opex.wallet.ports.postgres.model.DepositModel
+import co.nilin.opex.wallet.ports.postgres.model.OffChainGatewayModel
+import co.nilin.opex.wallet.ports.postgres.model.TerminalModel
 import java.time.ZoneId
 import java.util.*
 
@@ -101,14 +104,16 @@ fun OffChainGatewayModel.toDto(): CurrencyGatewayCommand {
         TransferMethod.valueOf(transferMethod),
         currencySymbol,
         gatewayUuid,
-        isActive,
+        isDepositActive,
+        isWithdrawActive,
         withdrawFee,
         withdrawAllowed,
         depositAllowed,
         depositMin,
         depositMax,
         withdrawMin,
-        withdrawMax
+        withdrawMax,
+        description
     )
 
 }
@@ -125,7 +130,9 @@ fun OffChainGatewayCommand.toModel(): OffChainGatewayModel {
         depositMin,
         depositMax,
         transferMethod.name,
-        isActive
+        isDepositActive,
+        isWithdrawActive,
+        description,
     )
 }
 

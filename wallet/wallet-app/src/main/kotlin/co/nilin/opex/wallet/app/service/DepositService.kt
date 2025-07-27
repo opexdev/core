@@ -165,7 +165,7 @@ class DepositService(
                         depositCommand.currency = it.currencySymbol!!
                         depositCommand.network = it.chain
                         return GatewayData(
-                            it.isActive ?: true && it.depositAllowed ?: true,
+                            it.isDepositActive ?: true && it.depositAllowed ?: true,
                             BigDecimal.ZERO,
                             it.depositMin ?: BigDecimal.ZERO,
                             it.depositMax
@@ -178,7 +178,7 @@ class DepositService(
                         depositCommand.network = null
                         depositCommand.transferMethod = it.transferMethod
                         return GatewayData(
-                            it.isActive ?: true && it.depositAllowed ?: true,
+                            it.isDepositActive ?: true && it.depositAllowed ?: true,
                             BigDecimal.ZERO,
                             it.depositMin ?: BigDecimal.ZERO,
                             it.depositMax

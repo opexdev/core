@@ -77,7 +77,9 @@ CREATE TABLE IF NOT EXISTS currency_on_chain_gateway
     deposit_min           DECIMAL      NOT NULL,
     deposit_max           DECIMAL      NOT NULL,
     decimal               INTEGER      NOT NULL,
-    is_active             BOOLEAN      NOT NULL        DEFAULT TRUE,
+    is_deposit_active        BOOLEAN      NOT NULL        DEFAULT TRUE,
+    is_withdraw_active        BOOLEAN      NOT NULL        DEFAULT TRUE,
+    description            TEXT,
     UNIQUE (currency_symbol, chain, implementation_symbol)
 );
 
@@ -95,5 +97,25 @@ CREATE TABLE IF NOT EXISTS deposits
     depositor_memo VARCHAR(72)
 );
 
+DO
+$$
+BEGIN
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'currency_on_chain_gateway' AND column_name = 'is_deposit_active') THEN ALTER TABLE currency_on_chain_gateway
+    ADD COLUMN is_deposit_active Boolean NOT NULL DEFAULT TRUE;
+END IF;
+        IF EXISTS (SELECT 1
+                               FROM information_schema.columns
+                               WHERE table_name = 'currency_on_chain_gateway' AND column_name = 'is_active') THEN ALTER TABLE currency_on_chain_gateway
+    RENAME COLUMN is_active TO is_withdraw_active;
+END IF;
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'currency_on_chain_gateway' AND column_name = 'description') THEN ALTER TABLE currency_on_chain_gateway
+    ADD COLUMN description TEXT;
+END IF;
+END
+$$;
 
 

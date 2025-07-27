@@ -6,7 +6,8 @@ data class CryptoCurrencyCommand(
     var currencySymbol: String,
     var gatewayUuid: String?,
     var implementationSymbol: String? = currencySymbol,
-    var isActive: Boolean? = true,
+    var isDepositActive: Boolean? = true,
+    var isWithdrawActive: Boolean? = true,
     var isToken: Boolean? = false,
     var tokenName: String? = null,
     var tokenAddress: String? = null,
@@ -19,7 +20,8 @@ data class CryptoCurrencyCommand(
     var depositMax: BigDecimal? = BigDecimal.ZERO,
     var decimal: Int,
     var chain: String,
-    var type: String = "OnChain"
+    var description: String?,
+    var type: String = "OnChain",
 
 //        var chainDetail: Chain? = null
 
