@@ -24,6 +24,7 @@ fun CryptoCurrencyCommand.toModel(): CurrencyOnChainGatewayModel {
         isDepositActive,
         isWithdrawActive,
         description,
+        displayOrder,
     )
 }
 
@@ -48,7 +49,9 @@ fun CurrencyOnChainGatewayModel.toDto(): CryptoCurrencyCommand {
         decimal,
         chain,
         description,
-    )
+        displayOrder,
+
+        )
 
 }
 

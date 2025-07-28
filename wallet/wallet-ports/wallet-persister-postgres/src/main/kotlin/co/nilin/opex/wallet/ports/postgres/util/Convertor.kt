@@ -113,7 +113,8 @@ fun OffChainGatewayModel.toDto(): CurrencyGatewayCommand {
         depositMax,
         withdrawMin,
         withdrawMax,
-        description
+        description,
+        displayOrder
     )
 
 }
@@ -133,6 +134,7 @@ fun OffChainGatewayCommand.toModel(): OffChainGatewayModel {
         isDepositActive,
         isWithdrawActive,
         description,
+        displayOrder
     )
 }
 
@@ -141,7 +143,7 @@ fun TerminalCommand.toModel(): TerminalModel {
         null,
         uuid,
         owner,
-        identifier, active, type, metaData, description
+        identifier, active, type, metaData, description,displayOrder
     )
 }
 
@@ -149,7 +151,7 @@ fun TerminalModel.toDto(): TerminalCommand {
     return TerminalCommand(
         uuid!!,
         owner,
-        identifier, active, type, metaData, description
+        identifier, active, type, metaData, description,displayOrder
     )
 }
 
@@ -169,6 +171,6 @@ fun CurrencyModel.toCurrencyData(): CurrencyData {
         shortDescription,
         externalUrl,
         order,
-        maxOrder
+        maxOrder,
     )
 }

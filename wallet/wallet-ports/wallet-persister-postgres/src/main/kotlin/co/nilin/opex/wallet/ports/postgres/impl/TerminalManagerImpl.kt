@@ -31,7 +31,7 @@ class TerminalManagerImpl(private val terminalRepository: TerminalRepository) : 
     }
 
     override suspend fun fetchTerminal(): List<TerminalCommand>? {
-        return terminalRepository.findAll().map { it.toDto() }?.collectList()?.awaitSingleOrNull()
+        return terminalRepository.findAllByOrderByDisplayOrder().map { it.toDto() }?.collectList()?.awaitSingleOrNull()
     }
 
     override suspend fun fetchTerminal(uuid: String): TerminalCommand? {

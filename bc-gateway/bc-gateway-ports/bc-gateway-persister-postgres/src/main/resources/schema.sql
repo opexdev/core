@@ -80,6 +80,7 @@ CREATE TABLE IF NOT EXISTS currency_on_chain_gateway
     is_deposit_active        BOOLEAN      NOT NULL        DEFAULT TRUE,
     is_withdraw_active        BOOLEAN      NOT NULL        DEFAULT TRUE,
     description            TEXT,
+    display_order     INTEGER,
     UNIQUE (currency_symbol, chain, implementation_symbol)
 );
 
@@ -103,18 +104,23 @@ BEGIN
         IF NOT EXISTS (SELECT 1
                        FROM information_schema.columns
                        WHERE table_name = 'currency_on_chain_gateway' AND column_name = 'is_deposit_active') THEN ALTER TABLE currency_on_chain_gateway
-    ADD COLUMN is_deposit_active Boolean NOT NULL DEFAULT TRUE;
-END IF;
+        ADD COLUMN is_deposit_active Boolean NOT NULL DEFAULT TRUE;
+        END IF;
         IF EXISTS (SELECT 1
                                FROM information_schema.columns
                                WHERE table_name = 'currency_on_chain_gateway' AND column_name = 'is_active') THEN ALTER TABLE currency_on_chain_gateway
-    RENAME COLUMN is_active TO is_withdraw_active;
-END IF;
+        RENAME COLUMN is_active TO is_withdraw_active;
+        END IF;
         IF NOT EXISTS (SELECT 1
                        FROM information_schema.columns
                        WHERE table_name = 'currency_on_chain_gateway' AND column_name = 'description') THEN ALTER TABLE currency_on_chain_gateway
-    ADD COLUMN description TEXT;
-END IF;
+        ADD COLUMN description TEXT;
+        END IF;
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'currency_on_chain_gateway' AND column_name = 'display_order') THEN ALTER TABLE currency_on_chain_gateway
+        ADD COLUMN display_order INTEGER;
+        END IF;
 END
 $$;
 

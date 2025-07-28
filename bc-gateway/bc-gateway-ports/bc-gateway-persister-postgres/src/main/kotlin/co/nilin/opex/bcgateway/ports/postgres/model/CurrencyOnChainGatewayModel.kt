@@ -26,6 +26,7 @@ class CurrencyOnChainGatewayModel(
     @Column("is_deposit_active") var isDepositActive: Boolean? = true,
     @Column("is_withdraw_active") var isWithdrawActive: Boolean? = true,
     @Column("description") val description: String?,
+    @Column("display_order") val displayOrder: Int? = null,
 
     )
 

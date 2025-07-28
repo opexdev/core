@@ -21,6 +21,7 @@ data class CryptoCurrencyCommand(
     var decimal: Int,
     var chain: String,
     var description: String?,
+    var displayOrder: Int? = null,
     var type: String = "OnChain",
 
 //        var chainDetail: Chain? = null
