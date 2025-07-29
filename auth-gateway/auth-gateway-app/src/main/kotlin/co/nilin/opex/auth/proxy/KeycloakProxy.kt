@@ -313,8 +313,8 @@ class KeycloakProxy(
         var internalId: String;
         var attempts = 0
         do {
-            if (attempts >= 20) {
-                throw OpexError.InternalServerError.exception("Couldn't generate unique internalId after 20 attempts")
+            if (attempts >= 10) {
+                throw OpexError.InternalIdGenerateFailed.exception()
             }
             internalId = generateRandomID()
             attempts++
