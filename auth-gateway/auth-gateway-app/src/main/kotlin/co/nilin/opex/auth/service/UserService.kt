@@ -1,5 +1,6 @@
 package co.nilin.opex.auth.service
 
+import co.nilin.opex.auth.data.ActiveSession
 import co.nilin.opex.auth.data.UserCreatedEvent
 import co.nilin.opex.auth.kafka.AuthEventProducer
 import co.nilin.opex.auth.model.*
@@ -137,6 +138,22 @@ class UserService(
         val user = keycloakProxy.findUserByUsername(username) ?: return
 
         keycloakProxy.resetPassword(user.id, request.newPassword)
+    }
+
+    suspend fun fetchActiveSessions(uuid: String, currentSessionId: String): List<ActiveSession> {
+        return keycloakProxy.fetchActiveSessions(uuid, currentSessionId)
+    }
+
+    suspend fun logoutSession(uuid: String, sessionId: String) {
+        keycloakProxy.logoutSession(uuid, sessionId)
+    }
+
+    suspend fun logoutOthers(uuid: String, currentSessionId: String) {
+        keycloakProxy.logoutOthers(uuid, currentSessionId)
+    }
+
+    suspend fun logoutAll(uuid: String) {
+        keycloakProxy.logoutAll(uuid)
     }
 
     private suspend fun isUserDuplicate(username: Username): Boolean {

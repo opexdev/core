@@ -1,6 +1,7 @@
 package co.nilin.opex.auth.proxy
 
 import co.nilin.opex.auth.config.KeycloakConfig
+import co.nilin.opex.auth.data.ActiveSession
 import co.nilin.opex.auth.model.*
 import co.nilin.opex.auth.utils.generateRandomID
 import co.nilin.opex.common.OpexError
@@ -9,6 +10,7 @@ import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.keycloak.admin.client.resource.RealmResource
+import org.keycloak.admin.client.resource.UserResource
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -140,6 +142,10 @@ class KeycloakProxy(
             .retrieve()
             .bodyToMono<List<KeycloakUser>>()
             .awaitFirstOrElse { emptyList() }
+    }
+
+    private suspend fun findUser(uuid: String): UserResource? {
+        return opexRealm.users().get(uuid)
     }
 
     suspend fun createUser(
@@ -299,12 +305,59 @@ class KeycloakProxy(
             .awaitSingleOrNull()
     }
 
-    suspend fun WebClient.RequestHeadersSpec<*>.withAdminToken(token: String? = null): WebClient.RequestHeadersSpec<*> {
+    suspend fun fetchActiveSessions(uuid: String, currentSessionId: String): List<ActiveSession> {
+        val user = findUser(uuid) ?: throw OpexError.BadRequest.exception()
+        val sessions = user.userSessions
+        return sessions.map {
+            ActiveSession(
+                it.id,
+                it.username,
+                it.userId,
+                it.ipAddress,
+                it.start,
+                it.lastAccess,
+                it.clients.values.firstOrNull(),
+                it.id == currentSessionId
+            )
+        }
+    }
+
+    suspend fun logoutSession(uuid: String, sessionId: String) {
+        val user = findUser(uuid) ?: throw OpexError.BadRequest.exception()
+        user.userSessions.find { it.id == sessionId } ?: OpexError.BadRequest.exception()
+        callLogout(sessionId)
+    }
+
+    suspend fun logoutOthers(uuid: String, currentSessionId: String) {
+        val user = findUser(uuid) ?: throw OpexError.BadRequest.exception()
+        user.userSessions.forEach {
+            if (currentSessionId != it.id)
+                callLogout(it.id)
+        }
+    }
+
+    suspend fun logoutAll(uuid: String) {
+        val user = findUser(uuid) ?: throw OpexError.BadRequest.exception()
+        //user.userSessions.forEach { opexRealm.deleteSession(it.id, true) }
+        user.logout()
+    }
+
+    private suspend fun callLogout(sessionId: String) {
+        val url = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/sessions/$sessionId"
+        keycloakClient.delete()
+            .uri(url)
+            .withAdminToken()
+            .retrieve()
+            .toBodilessEntity()
+            .awaitSingleOrNull()
+    }
+
+    private suspend fun WebClient.RequestHeadersSpec<*>.withAdminToken(token: String? = null): WebClient.RequestHeadersSpec<*> {
         header(HttpHeaders.AUTHORIZATION, "Bearer ${token ?: getAdminAccessToken()}")
         return this
     }
 
-    suspend fun WebClient.RequestBodySpec.withAdminToken(token: String? = null): WebClient.RequestBodySpec {
+    private suspend fun WebClient.RequestBodySpec.withAdminToken(token: String? = null): WebClient.RequestBodySpec {
         header(HttpHeaders.AUTHORIZATION, "Bearer ${token ?: getAdminAccessToken()}")
         return this
     }
