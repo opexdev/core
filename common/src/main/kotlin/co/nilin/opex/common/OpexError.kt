@@ -51,6 +51,8 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     InvalidRegisterToken(5016, "Invalid register token", HttpStatus.BAD_REQUEST),
     ExpiredOTP(5017, "OTP is expired", HttpStatus.BAD_REQUEST),
     InvalidToken(5018, "Invalid token", HttpStatus.BAD_REQUEST),
+    InternalIdGenerateFailed(5019, "Internal id generate failed", HttpStatus.INTERNAL_SERVER_ERROR),
+
 
 
     // code 6000: wallet
