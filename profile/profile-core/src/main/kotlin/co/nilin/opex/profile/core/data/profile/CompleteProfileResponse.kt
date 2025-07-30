@@ -19,5 +19,6 @@ open class CompleteProfileResponse(
     var birthDate: LocalDateTime? = null,
     var status: UserStatus? = null,
     var kycLevel: KycLevel? = null,
-    var verificationStatus: Boolean? = false
+    var mobileIdentityMatch : Boolean? = false,
+    var personalIdentityMatch : Boolean? = false
 )

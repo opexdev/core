@@ -20,8 +20,7 @@ class SecurityConfig(private val webClient: WebClient) {
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
         http.csrf().disable()
             .authorizeExchange()
-            //     .pathMatchers("/**").permitAll()
-            .pathMatchers("**/admin/**").hasRole("SCOPE_trust", "admin_system")
+            .pathMatchers("/admin/**").hasAuthority("ROLE_admin")
             .pathMatchers("/actuator/**").permitAll()
             .anyExchange().authenticated()
             .and()

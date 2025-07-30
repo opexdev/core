@@ -6,7 +6,7 @@ import co.nilin.opex.profile.core.data.profile.UserStatus
 import java.time.LocalDateTime
 
 open class Profile {
-    lateinit var email: String
+    var email: String? = null
     lateinit var userId: String
     var firstName: String? = null
     var lastName: String? = null
@@ -23,6 +23,7 @@ open class Profile {
     var lastUpdateDate: LocalDateTime? = null
     var creator: String? = null
     var kycLevel: KycLevel? = KycLevel.Level1
-    var verificationStatus : Boolean? = false
+    var mobileIdentityMatch : Boolean? = false
+    var personalIdentityMatch : Boolean? = false
 
 }

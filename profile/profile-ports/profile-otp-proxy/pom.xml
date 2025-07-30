@@ -9,9 +9,9 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <groupId>co.nilin.opex.profile.ports</groupId>
-    <artifactId>profile-shahkar-proxy</artifactId>
-    <name>profile-shahkar-proxy</name>
-    <description>profile-shahkar-proxy</description>
+    <artifactId>profile-otp-proxy</artifactId>
+    <name>profile-otp-proxy</name>
+    <description>profile-otp-proxy</description>
 
     <dependencies>
         <dependency>

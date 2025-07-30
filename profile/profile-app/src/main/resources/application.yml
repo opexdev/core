@@ -51,6 +51,10 @@ app:
     cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
   kyc:
     url: lb://opex-kyc/v2/admin/kyc/internal
+  otp:
+    url: lb://opex-otp/v1
+  auth-gateway:
+    url: lb://opex-auth-gateway
 management:
   endpoints:
     web:
@@ -64,3 +68,9 @@ management:
       enabled: true
     prometheus:
       enabled: true
+inquiry:
+  mobile-indentiy: true
+  personal-indentiy: true
+  url: ${JIBIT_URL}
+  api-key: ${JIBIT_API_KEY}
+  secret-key: ${JIBIT_SECRET_KEY}

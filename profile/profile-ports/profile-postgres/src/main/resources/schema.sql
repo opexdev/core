@@ -1,15 +1,15 @@
 CREATE TABLE IF NOT EXISTS profile
 (
     id               SERIAL PRIMARY KEY,
-    email            VARCHAR(100) NOT NULL UNIQUE,
+    email            VARCHAR(100) UNIQUE,
     last_name        VARCHAR(256),
     user_id          VARCHAR(100) NOT NULL UNIQUE,
     create_date      TIMESTAMP,
-    identifier       VARCHAR(100),
+    identifier       VARCHAR(100) UNIQUE,
     address          VARCHAR(256),
     first_name       VARCHAR(256),
     telephone        VARCHAR(256),
-    mobile           VARCHAR(256),
+    mobile           VARCHAR(256) UNIQUE,
     nationality      VARCHAR(256),
     gender           VARCHAR(50),
     birth_date       TIMESTAMP,
@@ -17,7 +17,9 @@ CREATE TABLE IF NOT EXISTS profile
     postal_code      VARCHAR(100),
     creator          VARCHAR(100),
     last_update_date TIMESTAMP DEFAULT CURRENT_DATE,
-    kyc_level        varchar(100)
+    kyc_level        varchar(100),
+    personal_identity_match BOOLEAN,
+    mobile_identity_match BOOLEAN
 );
 
 CREATE TABLE IF NOT EXISTS profile_history
@@ -33,7 +35,7 @@ CREATE TABLE IF NOT EXISTS profile_history
     telephone           VARCHAR(256),
     mobile              VARCHAR(256),
     nationality         VARCHAR(256),
-    gender              BOOLEAN,
+    gender              VARCHAR(50),
     birth_date          TIMESTAMP,
     status              VARCHAR(100),
     last_update_date    TIMESTAMP,
@@ -43,7 +45,9 @@ CREATE TABLE IF NOT EXISTS profile_history
     postal_code         VARCHAR(100),
     change_request_date TIMESTAMP,
     change_request_type VARCHAR(100),
-    kyc_level           varchar(100)
+    kyc_level           varchar(100),
+    personal_identity_match BOOLEAN,
+    mobile_identity_match BOOLEAN
 );
 
 
@@ -133,11 +137,11 @@ $BODY$
 BEGIN
     INSERT INTO public.profile_history (original_data_id, change_request_date, change_request_type, email, user_id,
                                         create_date, identifier, address, first_name, last_name, mobile, telephone,
-                                        nationality, gender, birth_date, status, postal_code, creator, kyc_level)
+                                        nationality, gender, birth_date, status, postal_code, creator, kyc_level,personal_identity_match,mobile_identity_match)
     VALUES (OLD.id, now(), 'UPDATE', OLD.email, OLD.user_id, OLD.create_date, OLD.identifier, OLD.address,
             OLD.first_name,
             OLD.last_name, OLD.mobile, OLD.telephone, OLD.nationality, OLD.gender, OLD.birth_date, OLD.status,
-            OLD.postal_code, OLD.creator, OLD.kyc_level);
+            OLD.postal_code, OLD.creator, OLD.kyc_level,OLD.personal_identity_match,OLD.mobile_identity_match);
     RETURN NULL;
 END;
 $BODY$ language plpgsql;
@@ -149,11 +153,11 @@ $BODY$
 BEGIN
     INSERT INTO public.profile_history (original_data_id, change_request_date, change_request_type, email, user_id,
                                         create_date, identifier, address, first_name, last_name, mobile, telephone,
-                                        nationality, gender, birth_date, status, postal_code, creator, kyc_level)
+                                        nationality, gender, birth_date, status, postal_code, creator, kyc_level,personal_identity_match,mobile_identity_match)
     VALUES (OLD.id, now(), 'DELETE', OLD.email, OLD.user_id, OLD.create_date, OLD.identifier, OLD.address,
             OLD.first_name,
             OLD.last_name, OLD.mobile, OLD.telephone, OLD.nationality, OLD.gender, OLD.birth_date, OLD.status,
-            OLD.postal_code, OLD.creator, OLD.kyc_level);
+            OLD.postal_code, OLD.creator, OLD.kyc_level,OLD.personal_identity_match,OLD.mobile_identity_match);
     RETURN NULL;
 END;
 $BODY$ language plpgsql;
@@ -255,71 +259,6 @@ CREATE TABLE IF NOT EXISTS profile_approval_request
     create_date TIMESTAMP,
     update_date TIMESTAMP,
     updater     VARCHAR(100),
-    description VARCHAR(255)
+    description VARCHAR(255),
+    UNIQUE (profile_id, status)
 );
-
-DO
-$$
-    BEGIN
-        IF NOT EXISTS (SELECT 1
-                       FROM information_schema.columns
-                       WHERE table_name = 'profile' AND column_name = 'verification_status') THEN ALTER TABLE profile
-            ADD COLUMN verification_status VARCHAR(255);
-        END IF;
-    END
-$$;
-
-DO
-$$
-    BEGIN
-        IF NOT EXISTS (SELECT 1
-                       FROM information_schema.columns
-                       WHERE table_name = 'profile_history'
-                         AND column_name = 'verification_status') THEN ALTER TABLE profile_history
-            ADD COLUMN verification_status VARCHAR(255);
-        END IF;
-    END
-$$;
-
-DO
-$$
-    BEGIN
-        IF EXISTS (SELECT 1
-                   FROM information_schema.columns
-                   WHERE table_name = 'profile_history'
-                     AND column_name = 'gender'
-                     AND data_type != 'character varying') THEN ALTER TABLE profile_history
-            ALTER COLUMN gender SET DATA TYPE VARCHAR(50);
-        END IF;
-    END
-$$;
-
-DO
-$$
-BEGIN
-        IF EXISTS (SELECT 1
-                   FROM information_schema.columns
-                   WHERE table_name = 'profile'
-                     AND column_name = 'email') THEN ALTER TABLE profile
-               ALTER COLUMN email DROP NOT NULL;
-        END IF;
-        IF EXISTS (SELECT 1
-                   FROM information_schema.columns
-                   WHERE table_name = 'profile'
-                     AND column_name = 'identifier') THEN ALTER TABLE profile
-               ADD CONSTRAINT unique_identifier UNIQUE (identifier);
-        END IF;
-        IF EXISTS (SELECT 1
-                   FROM information_schema.columns
-                   WHERE table_name = 'profile'
-                     AND column_name = 'mobile') THEN ALTER TABLE profile
-              ADD CONSTRAINT unique_mobile UNIQUE (mobile);
-        END IF;
-        IF EXISTS (SELECT 1
-                   FROM information_schema.columns
-                   WHERE table_name = 'profile_history'
-                     AND column_name = 'email') THEN ALTER TABLE profile_history
-              ALTER COLUMN email DROP NOT NULL;
-        END IF;
-END
-$$;

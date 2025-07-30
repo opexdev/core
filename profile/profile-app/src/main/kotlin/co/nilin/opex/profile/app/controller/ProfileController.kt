@@ -1,17 +1,20 @@
 package co.nilin.opex.profile.app.controller
 
+import co.nilin.opex.common.OpexError
+import co.nilin.opex.profile.app.dto.ContactUpdateConfirmRequest
+import co.nilin.opex.profile.app.dto.ContactUpdateRequest
 import co.nilin.opex.profile.app.service.ProfileManagement
+import co.nilin.opex.profile.core.data.otp.TempOtpResponse
 import co.nilin.opex.profile.core.data.profile.CompleteProfileRequest
 import co.nilin.opex.profile.core.data.profile.CompleteProfileResponse
 import co.nilin.opex.profile.core.data.profile.Profile
-import co.nilin.opex.profile.core.data.profile.UpdateProfileRequest
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/v2/profile")
+@RequestMapping
 
 class ProfileController(val profileManagement: ProfileManagement) {
 
@@ -20,16 +23,15 @@ class ProfileController(val profileManagement: ProfileManagement) {
         return profileManagement.getProfile(securityContext.authentication.name)?.awaitFirstOrNull()
     }
 
+//    @PutMapping("")
+//    suspend fun update(
+//        @RequestBody newProfile: UpdateProfileRequest,
+//        @CurrentSecurityContext securityContext: SecurityContext
+//    ): Profile? {
+//        return profileManagement.update(securityContext.authentication.name, newProfile)?.awaitFirstOrNull()
+//    }
 
-    @PutMapping("")
-    suspend fun update(
-        @RequestBody newProfile: UpdateProfileRequest,
-        @CurrentSecurityContext securityContext: SecurityContext
-    ): Profile? {
-        return profileManagement.update(securityContext.authentication.name, newProfile)?.awaitFirstOrNull()
-    }
-
-    @PostMapping("/Completion")
+    @PutMapping("/completion")
     suspend fun completeProfile(
         @RequestBody completeProfileRequest: CompleteProfileRequest,
         @CurrentSecurityContext securityContext: SecurityContext
@@ -37,20 +39,33 @@ class ProfileController(val profileManagement: ProfileManagement) {
         return profileManagement.completeProfile(securityContext.authentication.name, completeProfileRequest)
     }
 
-    //TODO update mobile and email need improvement
-    @PutMapping("/mobile/{mobile}")
-    suspend fun updateMobile(
-        @PathVariable mobile: String,
+    @PostMapping("/contact/update/otp-request")
+    suspend fun requestContactUpdate(
+        @RequestBody request: ContactUpdateRequest,
         @CurrentSecurityContext securityContext: SecurityContext
-    ) {
-        profileManagement.updateMobile(securityContext.authentication.name, mobile)
+    ): TempOtpResponse {
+        val username = securityContext.authentication.name
+        return if (!request.email.isNullOrBlank()) {
+            profileManagement.requestUpdateEmail(username, request.email)
+        } else if (!request.mobile.isNullOrBlank()) {
+            profileManagement.requestUpdateMobile(username, request.mobile)
+        } else {
+            throw OpexError.BadRequest.exception("Either email or mobile must be provided.")
+        }
     }
 
-    @PutMapping("/email/{email}")
-    suspend fun updateEmail(
-        @PathVariable email: String,
+    @PatchMapping("/contact/update/otp-verification")
+    suspend fun confirmContactUpdate(
+        @RequestBody request: ContactUpdateConfirmRequest,
         @CurrentSecurityContext securityContext: SecurityContext
     ) {
-        profileManagement.updateEmail(securityContext.authentication.name, email)
+        val username = securityContext.authentication.name
+        if (!request.email.isNullOrBlank()) {
+            profileManagement.updateEmail(username, request.email, request.otpCode)
+        } else if (!request.mobile.isNullOrBlank()) {
+            profileManagement.updateMobile(username, request.mobile, request.otpCode)
+        } else {
+            throw OpexError.BadRequest.exception("Either email or mobile must be provided.")
+        }
     }
 }

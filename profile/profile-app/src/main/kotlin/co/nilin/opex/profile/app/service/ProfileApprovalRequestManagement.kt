@@ -26,13 +26,13 @@ class ProfileApprovalRequestManagement(
 
     suspend fun getApprovalRequest(id: Long): ProfileApprovalResponse {
         return profileApprovalRequestPersister.getRequestById(id).awaitFirstOrNull()
-            ?: throw OpexError.NotFound.exception("Request not found")
+            ?: throw OpexError.ProfileApprovalRequestNotfound.exception()
     }
 
     suspend fun approveRequest(id: Long, updater: String, description: String): ProfileApprovalResponse {
         val request = changeRequestStatus(id, updater, ProfileApprovalRequestStatus.APPROVED, description)
         val profile = profilePersister.getProfile(request.profileId)?.awaitFirstOrNull()
-            ?: throw OpexError.NotFound.exception("Request not found")
+            ?: throw OpexError.ProfileNotfound.exception()
         kycLevelUpdatedPublisher.publish(KycLevelUpdatedEvent(profile.userId!!, KycLevel.Level2, LocalDateTime.now()))
         return request
     }
@@ -48,9 +48,9 @@ class ProfileApprovalRequestManagement(
         description: String
     ): ProfileApprovalResponse {
         var request = (profileApprovalRequestPersister.getRequestById(id).awaitFirstOrNull()
-            ?: throw OpexError.NotFound.exception("Request not found"))
+            ?: throw OpexError.ProfileApprovalRequestNotfound.exception())
         if (request.status != ProfileApprovalRequestStatus.PENDING)
-            throw OpexError.BadRequest.exception("Only pending requests can be changed")
+            throw OpexError.InvalidProfileApprovalRequestStatus.exception()
         request.apply {
             status = newStatus
             updateDate = LocalDateTime.now()

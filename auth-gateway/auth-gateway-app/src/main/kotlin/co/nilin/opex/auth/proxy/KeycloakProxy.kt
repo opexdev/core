@@ -362,6 +362,54 @@ class KeycloakProxy(
         return this
     }
 
+    suspend fun updateUserMobile(userId: String, newMobile: String) {
+        val url = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users/$userId"
+        val patch = mapOf(
+            "attributes" to mapOf("mobile" to newMobile)
+        )
+        keycloakClient.put()
+            .uri(url)
+            .contentType(MediaType.APPLICATION_JSON)
+            .withAdminToken()
+            .bodyValue(patch)
+            .retrieve()
+            .toBodilessEntity()
+            .awaitSingleOrNull()
+    }
+
+    suspend fun updateUserEmail(userId: String, newEmail: String) {
+        val url = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users/$userId"
+        val patch = mapOf(
+            "email" to newEmail,
+            "emailVerified" to true
+        )
+        keycloakClient.put()
+            .uri(url)
+            .contentType(MediaType.APPLICATION_JSON)
+            .withAdminToken()
+            .bodyValue(patch)
+            .retrieve()
+            .toBodilessEntity()
+            .awaitSingleOrNull()
+    }
+
+    suspend fun updateUserName(userId: String, firstName: String?, lastName: String?) {
+        val url = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users/$userId"
+        val patch = mutableMapOf<String, Any>()
+
+        firstName?.let { patch["firstName"] = it }
+        lastName?.let { patch["lastName"] = it }
+
+        keycloakClient.put()
+            .uri(url)
+            .contentType(MediaType.APPLICATION_JSON)
+            .withAdminToken()
+            .bodyValue(patch)
+            .retrieve()
+            .toBodilessEntity()
+            .awaitSingleOrNull()
+    }
+
     private suspend fun generateRandomInternalID(): String {
         var internalId: String;
         var attempts = 0
@@ -373,5 +421,6 @@ class KeycloakProxy(
             attempts++
         } while (findUserByAttribute(Attribute("username", internalId)).isNotEmpty())
         return internalId
+
     }
 }

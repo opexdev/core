@@ -1,5 +1,8 @@
 package co.nilin.opex.auth.controller
 
+import co.nilin.opex.auth.model.UpdateEmailRequest
+import co.nilin.opex.auth.model.UpdateMobileRequest
+import co.nilin.opex.auth.model.UpdateNameRequest
 import co.nilin.opex.auth.data.ActiveSession
 import co.nilin.opex.auth.service.UserService
 import co.nilin.opex.auth.utils.jwtAuthentication
@@ -17,6 +20,27 @@ class UserController(private val userService: UserService) {
         userService.logout(securityContext.jwtAuthentication().name)
     }
 
+    @PutMapping("/update/email")
+    suspend fun updateEmail(
+        @RequestBody request: UpdateEmailRequest
+    ) {
+        userService.updateEmail(request)
+    }
+
+    @PutMapping("/update/mobile")
+    suspend fun updateMobile(
+        @RequestBody request: UpdateMobileRequest
+    ) {
+        userService.updateMobile(request)
+
+    }
+
+    @PutMapping("/update/name")
+    suspend fun updateName(
+        @RequestBody request: UpdateNameRequest
+    ) {
+        userService.updateName(request)
+    }
     @GetMapping("/session")
     suspend fun getSessions(@CurrentSecurityContext securityContext: SecurityContext): List<ActiveSession> {
         val uuid = securityContext.authentication.name
