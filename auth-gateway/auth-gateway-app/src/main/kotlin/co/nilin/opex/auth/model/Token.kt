@@ -10,7 +10,7 @@ data class PasswordFlowTokenRequest(
     val otp: String?,
     val rememberMe: Boolean = true,
     val captchaType: CaptchaType? = CaptchaType.INTERNAL,
-    val captchaCode: String,
+    val captchaCode: String?,
 )
 
 data class RefreshTokenRequest(

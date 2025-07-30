@@ -1,9 +1,10 @@
 package co.nilin.opex.auth.service
 
+import co.nilin.opex.auth.data.ActionType
+import co.nilin.opex.auth.data.ActiveSession
 import co.nilin.opex.auth.data.UserCreatedEvent
 import co.nilin.opex.auth.kafka.AuthEventProducer
 import co.nilin.opex.auth.model.*
-import co.nilin.opex.auth.proxy.CaptchaProxy
 import co.nilin.opex.auth.proxy.GoogleProxy
 import co.nilin.opex.auth.proxy.KeycloakProxy
 import co.nilin.opex.auth.proxy.OTPProxy
@@ -25,15 +26,20 @@ class UserService(
     private val googleProxy: GoogleProxy,
     private val privateKey: PrivateKey,
     private val publicKey: PublicKey,
-    private val captchaProxy: CaptchaProxy,
-    private val authProducer: AuthEventProducer
+    private val authProducer: AuthEventProducer,
+    private val captchaHandler: CaptchaHandler
 ) {
 
     private val logger by LoggerDelegate()
 
     //TODO IMPORTANT: remove in production
     suspend fun registerUser(request: RegisterUserRequest): String {
-        captchaProxy.validateCaptcha(request.captchaCode, request.captchaType ?: CaptchaType.INTERNAL)
+        captchaHandler.validateCaptchaWithActionCache(
+            username = request.username,
+            captchaCode = request.captchaCode,
+            captchaType = request.captchaType,
+            action = ActionType.REGISTER
+        )
         val username = Username.create(request.username)
         val userStatus = isUserDuplicate(username)
 
@@ -105,7 +111,12 @@ class UserService(
     }
 
     suspend fun forgetPassword(request: ForgotPasswordRequest): String {
-        captchaProxy.validateCaptcha(request.captchaCode, request.captchaType ?: CaptchaType.INTERNAL)
+        captchaHandler.validateCaptchaWithActionCache(
+            username = request.username,
+            captchaCode = request.captchaCode,
+            captchaType = request.captchaType,
+            action = ActionType.FORGET
+        )
         val uName = Username.create(request.username)
         val user = keycloakProxy.findUserByUsername(uName) ?: return null ?: ""
         //TODO IMPORTANT: remove in production
@@ -149,6 +160,21 @@ class UserService(
 
     suspend fun updateName(request: UpdateNameRequest) {
         keycloakProxy.updateUserName(request.userId, request.firstName, request.lastName)
+
+    suspend fun fetchActiveSessions(uuid: String, currentSessionId: String): List<ActiveSession> {
+        return keycloakProxy.fetchActiveSessions(uuid, currentSessionId)
+    }
+
+    suspend fun logoutSession(uuid: String, sessionId: String) {
+        keycloakProxy.logoutSession(uuid, sessionId)
+    }
+
+    suspend fun logoutOthers(uuid: String, currentSessionId: String) {
+        keycloakProxy.logoutOthers(uuid, currentSessionId)
+    }
+
+    suspend fun logoutAll(uuid: String) {
+        keycloakProxy.logoutAll(uuid)
     }
 
     private suspend fun isUserDuplicate(username: Username): Boolean {

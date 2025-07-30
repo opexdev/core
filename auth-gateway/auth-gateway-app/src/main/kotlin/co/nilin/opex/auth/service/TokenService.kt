@@ -1,7 +1,7 @@
 package co.nilin.opex.auth.service
 
+import co.nilin.opex.auth.data.ActionType
 import co.nilin.opex.auth.model.*
-import co.nilin.opex.auth.proxy.CaptchaProxy
 import co.nilin.opex.auth.proxy.GoogleProxy
 import co.nilin.opex.auth.proxy.KeycloakProxy
 import co.nilin.opex.auth.proxy.OTPProxy
@@ -13,11 +13,16 @@ class TokenService(
     private val otpProxy: OTPProxy,
     private val keycloakProxy: KeycloakProxy,
     private val googleProxy: GoogleProxy,
-    private val captchaProxy: CaptchaProxy,
+    private val captchaHandler: CaptchaHandler,
 ) {
 
     suspend fun getToken(request: PasswordFlowTokenRequest): TokenResponse {
-        captchaProxy.validateCaptcha(request.captchaCode, request.captchaType ?: CaptchaType.INTERNAL)
+        captchaHandler.validateCaptchaWithActionCache(
+            username = request.username,
+            captchaCode = request.captchaCode,
+            captchaType = request.captchaType,
+            action = ActionType.LOGIN
+        )
         val username = Username.create(request.username)
         val user = keycloakProxy.findUserByUsername(username) ?: throw OpexError.UserNotFound.exception()
 

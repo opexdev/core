@@ -68,6 +68,10 @@
 			<artifactId>market-eventlistener-kafka</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>co.nilin.opex.market.ports.kafka.producer</groupId>
+			<artifactId>market-eventproducer-kafka</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>

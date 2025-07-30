@@ -5,7 +5,7 @@ data class RegisterUserRequest(
     val firstName: String? = null,
     val lastName: String? = null,
     val captchaType: CaptchaType? = CaptchaType.INTERNAL,
-    val captchaCode: String,
+    val captchaCode: String?,
 )
 
 data class VerifyOTPRequest(
@@ -59,5 +59,5 @@ data class ConfirmForgetRequest(
 data class ForgotPasswordRequest(
     val username: String,
     val captchaType: CaptchaType? = CaptchaType.INTERNAL,
-    val captchaCode: String,
+    val captchaCode: String?,
 )
