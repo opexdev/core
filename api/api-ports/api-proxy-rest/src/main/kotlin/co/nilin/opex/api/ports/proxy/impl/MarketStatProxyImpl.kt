@@ -4,86 +4,58 @@ import co.nilin.opex.api.core.inout.PriceStat
 import co.nilin.opex.api.core.inout.TradeVolumeStat
 import co.nilin.opex.api.core.spi.MarketStatProxy
 import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
+import co.nilin.opex.api.ports.proxy.utils.noBody
 import co.nilin.opex.common.utils.Interval
-import kotlinx.coroutines.reactive.awaitFirstOrElse
-import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
+import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.bodyToFlux
-import org.springframework.web.reactive.function.client.bodyToMono
+import org.springframework.web.client.RestTemplate
+import org.springframework.web.client.exchange
+import org.springframework.web.util.UriComponentsBuilder
 
 @Component
 class MarketStatProxyImpl(
-    private val webClient: WebClient,
+    private val restTemplate: RestTemplate,
     @Value("\${app.market.url}")
     private val baseUrl: String
 ) : MarketStatProxy {
 
     override suspend fun getMostIncreasedInPricePairs(interval: Interval, limit: Int): List<PriceStat> {
         return withContext(ProxyDispatchers.market) {
-            webClient.get()
-                .uri("$baseUrl/v1/stats/price/most-increased") {
-                    it.queryParam("interval", interval)
-                    it.queryParam("limit", limit)
-                    it.build()
-                }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<PriceStat>()
-                .collectList()
-                .awaitFirstOrElse { emptyList() }
+            val uri = UriComponentsBuilder.fromUriString("$baseUrl/v1/stats/price/most-increased")
+                .queryParam("interval", interval)
+                .queryParam("limit", limit)
+                .build().toUri()
+            restTemplate.exchange<Array<PriceStat>>(uri, HttpMethod.GET, noBody()).body?.toList() ?: emptyList()
         }
     }
 
     override suspend fun getMostDecreasedInPricePairs(interval: Interval, limit: Int): List<PriceStat> {
         return withContext(ProxyDispatchers.market) {
-            webClient.get()
-                .uri("$baseUrl/v1/stats/price/most-decreased") {
-                    it.queryParam("interval", interval)
-                    it.queryParam("limit", limit)
-                    it.build()
-                }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<PriceStat>()
-                .collectList()
-                .awaitFirstOrElse { emptyList() }
+            val uri = UriComponentsBuilder.fromUriString("$baseUrl/v1/stats/price/most-decreased")
+                .queryParam("interval", interval)
+                .queryParam("limit", limit)
+                .build().toUri()
+            restTemplate.exchange<Array<PriceStat>>(uri, HttpMethod.GET, noBody()).body?.toList() ?: emptyList()
         }
     }
 
     override suspend fun getHighestVolumePair(interval: Interval): TradeVolumeStat? {
         return withContext(ProxyDispatchers.market) {
-            webClient.get()
-                .uri("$baseUrl/v1/stats/volume/highest") {
-                    it.queryParam("interval", interval)
-                    it.build()
-                }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono<TradeVolumeStat>()
-                .awaitSingleOrNull()
+            val uri = UriComponentsBuilder.fromUriString("$baseUrl/v1/stats/volume/highest")
+                .queryParam("interval", interval)
+                .build().toUri()
+            restTemplate.exchange<TradeVolumeStat>(uri, HttpMethod.GET, noBody()).body
         }
     }
 
     override suspend fun getTradeCountPair(interval: Interval): TradeVolumeStat? {
         return withContext(ProxyDispatchers.market) {
-            webClient.get()
-                .uri("$baseUrl/v1/stats/most-trades") {
-                    it.queryParam("interval", interval)
-                    it.build()
-                }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono<TradeVolumeStat>()
-                .awaitSingleOrNull()
+            val uri = UriComponentsBuilder.fromUriString("$baseUrl/v1/stats/most-trades")
+                .queryParam("interval", interval)
+                .build().toUri()
+            restTemplate.exchange<TradeVolumeStat>(uri, HttpMethod.GET, noBody()).body
         }
     }
 }

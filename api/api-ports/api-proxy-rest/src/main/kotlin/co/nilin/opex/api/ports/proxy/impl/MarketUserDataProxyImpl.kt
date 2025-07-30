@@ -3,27 +3,25 @@ package co.nilin.opex.api.ports.proxy.impl
 import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.MarketUserDataProxy
 import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
-import co.nilin.opex.api.ports.proxy.data.AllOrderRequest
 import co.nilin.opex.api.ports.proxy.data.QueryOrderRequest
 import co.nilin.opex.api.ports.proxy.data.TradeRequest
+import co.nilin.opex.api.ports.proxy.utils.body
+import co.nilin.opex.api.ports.proxy.utils.defaultHeaders
+import co.nilin.opex.api.ports.proxy.utils.noBody
 import co.nilin.opex.common.utils.LoggerDelegate
-import kotlinx.coroutines.reactive.awaitFirstOrElse
-import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
+import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.body
-import org.springframework.web.reactive.function.client.bodyToFlux
-import org.springframework.web.reactive.function.client.bodyToMono
-import reactor.core.publisher.Mono
+import org.springframework.web.client.RestTemplate
+import org.springframework.web.client.exchange
+import org.springframework.web.client.postForObject
+import org.springframework.web.util.UriComponentsBuilder
 import java.security.Principal
 import java.util.*
 
 @Component
-class MarketUserDataProxyImpl(private val webClient: WebClient) : MarketUserDataProxy {
+class MarketUserDataProxyImpl(private val restTemplate: RestTemplate) : MarketUserDataProxy {
 
     private val logger by LoggerDelegate()
 
@@ -37,31 +35,19 @@ class MarketUserDataProxyImpl(private val webClient: WebClient) : MarketUserData
         origClientOrderId: String?,
     ): Order? {
         return withContext(ProxyDispatchers.market) {
-            webClient.post()
-                .uri("$baseUrl/v1/user/${principal.name}/order/query")
-                .accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .body(Mono.just(QueryOrderRequest(symbol, orderId, origClientOrderId)))
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono<Order>()
-                .awaitSingleOrNull()
+            restTemplate.postForObject<Order?>(
+                "$baseUrl/v1/user/${principal.name}/order/query",
+                body(QueryOrderRequest(symbol, orderId, origClientOrderId))
+            )
         }
     }
 
     override suspend fun openOrders(principal: Principal, symbol: String?, limit: Int?): List<Order> {
         return withContext(ProxyDispatchers.market) {
-            webClient.get()
-                .uri("$baseUrl/v1/user/${principal.name}/orders/$symbol/open") {
-                    it.queryParam("limit", limit ?: 100)
-                    it.build()
-                }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<Order>()
-                .collectList()
-                .awaitFirstOrElse { emptyList() }
+            val uri = UriComponentsBuilder.fromUriString("$baseUrl/v1/user/${principal.name}/orders/$symbol/open")
+                .queryParam("limit", limit ?: 100)
+                .build().toUri()
+            restTemplate.exchange<Array<Order>>(uri, HttpMethod.GET, noBody()).body?.toList() ?: emptyList()
         }
     }
 
@@ -73,16 +59,8 @@ class MarketUserDataProxyImpl(private val webClient: WebClient) : MarketUserData
         limit: Int?,
     ): List<Order> {
         return withContext(ProxyDispatchers.market) {
-            webClient.post()
-                .uri("$baseUrl/v1/user/${principal.name}/orders")
-                .accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .body(Mono.just(AllOrderRequest(symbol, startTime, endTime, limit ?: 500)))
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<Order>()
-                .collectList()
-                .awaitFirstOrElse { emptyList() }
+            restTemplate.postForObject<Array<Order>>("$baseUrl/v1/user/${principal.name}/orders", defaultHeaders())
+                .toList()
         }
     }
 
@@ -95,16 +73,10 @@ class MarketUserDataProxyImpl(private val webClient: WebClient) : MarketUserData
         limit: Int?,
     ): List<Trade> {
         return withContext(ProxyDispatchers.market) {
-            webClient.post()
-                .uri("$baseUrl/v1/user/${principal.name}/trades")
-                .accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .body(Mono.just(TradeRequest(symbol, fromTrade, startTime, endTime, limit ?: 500)))
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<Trade>()
-                .collectList()
-                .awaitFirstOrElse { emptyList() }
+            restTemplate.postForObject<Array<Trade>>(
+                "$baseUrl/v1/user/${principal.name}/trades",
+                body(TradeRequest(symbol, fromTrade, startTime, endTime, limit ?: 500))
+            ).toList()
         }
     }
 
@@ -119,23 +91,16 @@ class MarketUserDataProxyImpl(private val webClient: WebClient) : MarketUserData
         offset: Int?,
     ): List<OrderData> {
         return withContext(ProxyDispatchers.market) {
-            webClient.get()
-                .uri("$baseUrl/v1/user/order/history/$uuid") {
-                    it.queryParam("symbol", symbol)
-                    it.queryParam("startTime", startTime)
-                    it.queryParam("endTime", endTime)
-                    it.queryParam("orderType", orderType)
-                    it.queryParam("direction", direction)
-                    it.queryParam("limit", limit)
-                    it.queryParam("offset", offset)
-                    it.build()
-                }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<OrderData>()
-                .collectList()
-                .awaitFirstOrElse { emptyList() }
+            val uri = UriComponentsBuilder.fromUriString("$baseUrl/v1/user/order/history/$uuid")
+                .queryParam("symbol", symbol)
+                .queryParam("startTime", startTime)
+                .queryParam("endTime", endTime)
+                .queryParam("orderType", orderType)
+                .queryParam("direction", direction)
+                .queryParam("limit", limit)
+                .queryParam("offset", offset)
+                .build().toUri()
+            restTemplate.exchange<Array<OrderData>>(uri, HttpMethod.GET, noBody()).body?.toList() ?: emptyList()
         }
     }
 
@@ -148,20 +113,14 @@ class MarketUserDataProxyImpl(private val webClient: WebClient) : MarketUserData
         direction: OrderDirection?,
     ): Long {
         return withContext(ProxyDispatchers.market) {
-            webClient.get()
-                .uri("$baseUrl/v1/user/order/history/count/$uuid") {
-                    it.queryParam("symbol", symbol)
-                    it.queryParam("startTime", startTime)
-                    it.queryParam("endTime", endTime)
-                    it.queryParam("orderType", orderType)
-                    it.queryParam("direction", direction)
-                    it.build()
-                }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono<Long>()
-                .awaitFirstOrElse { 0L }
+            val uri = UriComponentsBuilder.fromUriString("$baseUrl/v1/user/order/history/count/$uuid")
+                .queryParam("symbol", symbol)
+                .queryParam("startTime", startTime)
+                .queryParam("endTime", endTime)
+                .queryParam("orderType", orderType)
+                .queryParam("direction", direction)
+                .build().toUri()
+            restTemplate.exchange<Long>(uri, HttpMethod.GET, noBody()).body ?: 0
         }
     }
 
@@ -175,22 +134,15 @@ class MarketUserDataProxyImpl(private val webClient: WebClient) : MarketUserData
         offset: Int?,
     ): List<Trade> {
         return withContext(ProxyDispatchers.market) {
-            webClient.get()
-                .uri("$baseUrl/v1/user/trade/history/$uuid") {
-                    it.queryParam("symbol", symbol)
-                    it.queryParam("startTime", startTime)
-                    it.queryParam("endTime", endTime)
-                    it.queryParam("direction", direction)
-                    it.queryParam("limit", limit)
-                    it.queryParam("offset", offset)
-                    it.build()
-                }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<Trade>()
-                .collectList()
-                .awaitFirstOrElse { emptyList() }
+            val uri = UriComponentsBuilder.fromUriString("$baseUrl/v1/user/trade/history/$uuid")
+                .queryParam("symbol", symbol)
+                .queryParam("startTime", startTime)
+                .queryParam("endTime", endTime)
+                .queryParam("direction", direction)
+                .queryParam("limit", limit)
+                .queryParam("offset", offset)
+                .build().toUri()
+            restTemplate.exchange<List<Trade>>(uri, HttpMethod.GET, noBody()).body?.toList() ?: emptyList()
         }
     }
 
@@ -202,19 +154,13 @@ class MarketUserDataProxyImpl(private val webClient: WebClient) : MarketUserData
         direction: OrderDirection?,
     ): Long {
         return withContext(ProxyDispatchers.market) {
-            webClient.get()
-                .uri("$baseUrl/v1/user/trade/history/count/$uuid") {
-                    it.queryParam("symbol", symbol)
-                    it.queryParam("startTime", startTime)
-                    it.queryParam("endTime", endTime)
-                    it.queryParam("direction", direction)
-                    it.build()
-                }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono<Long>()
-                .awaitFirstOrElse { 0L }
+            val uri = UriComponentsBuilder.fromUriString("$baseUrl/v1/user/trade/history/count/$uuid")
+                .queryParam("symbol", symbol)
+                .queryParam("startTime", startTime)
+                .queryParam("endTime", endTime)
+                .queryParam("direction", direction)
+                .build().toUri()
+            restTemplate.exchange<Long>(uri, HttpMethod.GET, noBody()).body ?: 0
         }
     }
 }
