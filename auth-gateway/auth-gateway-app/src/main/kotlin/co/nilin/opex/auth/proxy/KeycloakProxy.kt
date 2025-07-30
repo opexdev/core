@@ -361,6 +361,7 @@ class KeycloakProxy(
         header(HttpHeaders.AUTHORIZATION, "Bearer ${token ?: getAdminAccessToken()}")
         return this
     }
+
     suspend fun updateUserMobile(userId: String, newMobile: String) {
         val url = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users/$userId"
         val patch = mapOf(
@@ -407,6 +408,8 @@ class KeycloakProxy(
             .retrieve()
             .toBodilessEntity()
             .awaitSingleOrNull()
+    }
+
     private suspend fun generateRandomInternalID(): String {
         var internalId: String;
         var attempts = 0

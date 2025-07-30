@@ -160,6 +160,7 @@ class UserService(
 
     suspend fun updateName(request: UpdateNameRequest) {
         keycloakProxy.updateUserName(request.userId, request.firstName, request.lastName)
+    }
 
     suspend fun fetchActiveSessions(uuid: String, currentSessionId: String): List<ActiveSession> {
         return keycloakProxy.fetchActiveSessions(uuid, currentSessionId)
@@ -213,6 +214,5 @@ class UserService(
             return TokenData(false, "", OTPAction.REGISTER)
         }
     }
-
+    
 }
-
