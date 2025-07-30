@@ -1,15 +1,13 @@
 package co.nilin.opex.profile.app.controller
 
-import co.nilin.opex.profile.app.dto.UpdateEmailRequest
-import co.nilin.opex.profile.app.dto.UpdateMobileRequest
-import co.nilin.opex.profile.app.dto.VerifyUpdateEmailRequest
-import co.nilin.opex.profile.app.dto.VerifyUpdateMobileRequest
+import co.nilin.opex.common.OpexError
+import co.nilin.opex.profile.app.dto.ContactUpdateConfirmRequest
+import co.nilin.opex.profile.app.dto.ContactUpdateRequest
 import co.nilin.opex.profile.app.service.ProfileManagement
 import co.nilin.opex.profile.core.data.otp.TempOtpResponse
 import co.nilin.opex.profile.core.data.profile.CompleteProfileRequest
 import co.nilin.opex.profile.core.data.profile.CompleteProfileResponse
 import co.nilin.opex.profile.core.data.profile.Profile
-import co.nilin.opex.profile.core.data.profile.UpdateProfileRequest
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
@@ -33,7 +31,7 @@ class ProfileController(val profileManagement: ProfileManagement) {
 //        return profileManagement.update(securityContext.authentication.name, newProfile)?.awaitFirstOrNull()
 //    }
 
-    @PostMapping("/completion")
+    @PutMapping("/completion")
     suspend fun completeProfile(
         @RequestBody completeProfileRequest: CompleteProfileRequest,
         @CurrentSecurityContext securityContext: SecurityContext
@@ -41,35 +39,33 @@ class ProfileController(val profileManagement: ProfileManagement) {
         return profileManagement.completeProfile(securityContext.authentication.name, completeProfileRequest)
     }
 
-    @PostMapping("/mobile")
-    suspend fun requestUpdateMobile(
-        @RequestBody request: UpdateMobileRequest,
+    @PostMapping("/contact/update/otp-request")
+    suspend fun requestContactUpdate(
+        @RequestBody request: ContactUpdateRequest,
         @CurrentSecurityContext securityContext: SecurityContext
     ): TempOtpResponse {
-        return profileManagement.requestUpdateMobile(securityContext.authentication.name, request.mobile)
+        val username = securityContext.authentication.name
+        return if (!request.email.isNullOrBlank()) {
+            profileManagement.requestUpdateEmail(username, request.email)
+        } else if (!request.mobile.isNullOrBlank()) {
+            profileManagement.requestUpdateMobile(username, request.mobile)
+        } else {
+            throw OpexError.BadRequest.exception("Either email or mobile must be provided.")
+        }
     }
 
-    @PutMapping("/mobile")
-    suspend fun verifyUpdateMobile(
-        @RequestBody request: VerifyUpdateMobileRequest,
+    @PatchMapping("/contact/update/otp-verification")
+    suspend fun confirmContactUpdate(
+        @RequestBody request: ContactUpdateConfirmRequest,
         @CurrentSecurityContext securityContext: SecurityContext
     ) {
-        profileManagement.updateMobile(securityContext.authentication.name, request.mobile, request.otp)
-    }
-
-    @PostMapping("/email")
-    suspend fun requestUpdateEmail(
-        @RequestBody request: UpdateEmailRequest,
-        @CurrentSecurityContext securityContext: SecurityContext
-    ): TempOtpResponse {
-        return profileManagement.requestUpdateEmail(securityContext.authentication.name, request.email)
-    }
-
-    @PutMapping("/email")
-    suspend fun verifyUpdateEmail(
-        @RequestBody request: VerifyUpdateEmailRequest,
-        @CurrentSecurityContext securityContext: SecurityContext
-    ) {
-        profileManagement.updateEmail(securityContext.authentication.name, request.email, request.otp)
+        val username = securityContext.authentication.name
+        if (!request.email.isNullOrBlank()) {
+            profileManagement.updateEmail(username, request.email, request.otpCode)
+        } else if (!request.mobile.isNullOrBlank()) {
+            profileManagement.updateMobile(username, request.mobile, request.otpCode)
+        } else {
+            throw OpexError.BadRequest.exception("Either email or mobile must be provided.")
+        }
     }
 }
