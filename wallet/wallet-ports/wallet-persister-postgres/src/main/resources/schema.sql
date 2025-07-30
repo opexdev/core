@@ -204,8 +204,11 @@ CREATE TABLE IF NOT EXISTS currency_off_chain_gateway
     withdraw_max     DECIMAL      NOT NULL,
     deposit_min      DECIMAL      NOT NULL,
     deposit_max      DECIMAL      NOT NULL,
-    is_active        BOOLEAN      NOT NULL        DEFAULT TRUE,
+    is_deposit_active        BOOLEAN      NOT NULL        DEFAULT TRUE,
+    is_withdraw_active        BOOLEAN      NOT NULL        DEFAULT TRUE,
     transfer_method  VARCHAR(256) NOT NULL,
+    description            TEXT,
+    display_order     INTEGER,
     UNIQUE (currency_symbol, transfer_method)
 
 );
@@ -237,7 +240,8 @@ CREATE TABLE IF NOT EXISTS terminal
     identifier      VARCHAR(255) NOT NULL,
     active          BOOLEAN DEFAULT TRUE,
     type            VARCHAR(255) NOT NULL,
-    bank_swift_code VARCHAR(255) NOT NULL
+    bank_swift_code VARCHAR(255) NOT NULL,
+    display_order     INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS gateway_terminal
@@ -506,4 +510,35 @@ BEGIN
     ADD COLUMN max_order DECIMAL;
 END IF;
 END
+$$;
+
+DO
+$$
+    BEGIN
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'currency_off_chain_gateway' AND column_name = 'is_deposit_active') THEN ALTER TABLE currency_off_chain_gateway
+        ADD COLUMN is_deposit_active Boolean NOT NULL DEFAULT TRUE;
+        END IF;
+        IF EXISTS (SELECT 1
+                               FROM information_schema.columns
+                               WHERE table_name = 'currency_off_chain_gateway' AND column_name = 'is_active') THEN ALTER TABLE currency_off_chain_gateway
+        RENAME COLUMN is_active TO is_withdraw_active;
+        END IF;
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'currency_off_chain_gateway' AND column_name = 'description') THEN ALTER TABLE currency_off_chain_gateway
+        ADD COLUMN description TEXT;
+        END IF;
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'currency_off_chain_gateway' AND column_name = 'display_order') THEN ALTER TABLE currency_off_chain_gateway
+            ADD COLUMN display_order INTEGER;
+        END IF;
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'terminal' AND column_name = 'display_order') THEN ALTER TABLE terminal
+            ADD COLUMN display_order INTEGER;
+        END IF;
+    END
 $$;
