@@ -1,7 +1,10 @@
 package co.nilin.opex.wallet.ports.postgres.util
 
 import co.nilin.opex.wallet.core.inout.*
-import co.nilin.opex.wallet.ports.postgres.model.*
+import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
+import co.nilin.opex.wallet.ports.postgres.model.DepositModel
+import co.nilin.opex.wallet.ports.postgres.model.OffChainGatewayModel
+import co.nilin.opex.wallet.ports.postgres.model.TerminalModel
 import java.time.ZoneId
 import java.util.*
 
@@ -101,14 +104,17 @@ fun OffChainGatewayModel.toDto(): CurrencyGatewayCommand {
         TransferMethod.valueOf(transferMethod),
         currencySymbol,
         gatewayUuid,
-        isActive,
+        isDepositActive,
+        isWithdrawActive,
         withdrawFee,
         withdrawAllowed,
         depositAllowed,
         depositMin,
         depositMax,
         withdrawMin,
-        withdrawMax
+        withdrawMax,
+        description,
+        displayOrder
     )
 
 }
@@ -125,7 +131,10 @@ fun OffChainGatewayCommand.toModel(): OffChainGatewayModel {
         depositMin,
         depositMax,
         transferMethod.name,
-        isActive
+        isDepositActive,
+        isWithdrawActive,
+        description,
+        displayOrder
     )
 }
 
@@ -134,7 +143,7 @@ fun TerminalCommand.toModel(): TerminalModel {
         null,
         uuid,
         owner,
-        identifier, active, type, metaData, description
+        identifier, active, type, metaData, description,displayOrder
     )
 }
 
@@ -142,7 +151,7 @@ fun TerminalModel.toDto(): TerminalCommand {
     return TerminalCommand(
         uuid!!,
         owner,
-        identifier, active, type, metaData, description
+        identifier, active, type, metaData, description,displayOrder
     )
 }
 
@@ -162,6 +171,6 @@ fun CurrencyModel.toCurrencyData(): CurrencyData {
         shortDescription,
         externalUrl,
         order,
-        maxOrder
+        maxOrder,
     )
 }

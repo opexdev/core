@@ -40,6 +40,7 @@ class AssignAddressServiceImplUnitTest {
             UUID.randomUUID().toString(),
             currency,
             true,
+            true,
             false,
             null,
             null,
@@ -52,6 +53,7 @@ class AssignAddressServiceImplUnitTest {
             BigDecimal.ZERO,
             18,
             ethChain.name,
+            null
 //                ethChain
         )
 
@@ -60,6 +62,7 @@ class AssignAddressServiceImplUnitTest {
             currency,
             UUID.randomUUID().toString(),
             currency,
+            true,
             true,
             false,
             "WETH",
@@ -73,6 +76,7 @@ class AssignAddressServiceImplUnitTest {
             BigDecimal.ZERO,
             18,
             bscChain.name,
+            null
 //                bscChain
 
         )

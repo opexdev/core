@@ -69,10 +69,10 @@ class CurrencyServiceV2(
                 var gateways = gatewayService.fetchGateways(currencySymbol, includeGateways)
                 return it.apply {
                     it.depositAllowed =
-                        gateways?.stream()?.filter { it.isActive == true }?.map(CurrencyGatewayCommand::depositAllowed)
+                        gateways?.stream()?.filter { it.isDepositActive == true }?.map(CurrencyGatewayCommand::depositAllowed)
                             ?.reduce { t, u -> t ?: false || u ?: false }?.orElseGet { false }
                     it.withdrawAllowed =
-                        gateways?.stream()?.filter { it.isActive == true }?.map(CurrencyGatewayCommand::withdrawAllowed)
+                        gateways?.stream()?.filter { it.isWithdrawActive == true }?.map(CurrencyGatewayCommand::withdrawAllowed)
                             ?.reduce { t, u -> t ?: false || u ?: false }?.orElseGet { false }
                     it.gateways = gateways
                     //It is a stupid field for resolving front-end developers need
@@ -119,10 +119,10 @@ class CurrencyServiceV2(
         return CurrenciesDto(currencies?.stream()?.map {
             it.apply {
                 it.gateways = groupedByGateways?.get(it.symbol)
-                it.depositAllowed = groupedByGateways?.get(it.symbol)?.stream()?.filter { g -> g.isActive == true }
+                it.depositAllowed = groupedByGateways?.get(it.symbol)?.stream()?.filter { g -> g.isDepositActive == true }
                     ?.map(CurrencyGatewayCommand::depositAllowed)?.reduce { t, u -> t ?: false || u ?: false }
                     ?.orElseGet { false }
-                it.withdrawAllowed = groupedByGateways?.get(it.symbol)?.stream()?.filter { g -> g.isActive == true }
+                it.withdrawAllowed = groupedByGateways?.get(it.symbol)?.stream()?.filter { g -> g.isWithdrawActive == true }
                     ?.map(CurrencyGatewayCommand::withdrawAllowed)?.reduce { t, u -> t ?: false || u ?: false }
                     ?.orElseGet { false }
                 it.gateways?.forEach { gateway ->

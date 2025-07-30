@@ -126,7 +126,7 @@ class WithdrawService(
                         withdrawCommand.destSymbol = it.implementationSymbol!!
                         withdrawCommand.withdrawType = WithdrawType.ON_CHAIN
                         GatewayData(
-                            it.isActive ?: true && it.withdrawAllowed ?: true,
+                            it.isWithdrawActive ?: true && it.withdrawAllowed ?: true,
                             it.withdrawFee ?: BigDecimal.ZERO,
                             it.withdrawMin ?: BigDecimal.ZERO,
                             it.withdrawMax
@@ -139,7 +139,7 @@ class WithdrawService(
                         withdrawCommand.withdrawType = WithdrawType.OFF_CHAIN
                         withdrawCommand.transferMethod = it.transferMethod
                         GatewayData(
-                            it.isActive ?: true && it.withdrawAllowed ?: true,
+                            it.isWithdrawActive ?: true && it.withdrawAllowed ?: true,
                             it.withdrawFee ?: BigDecimal.ZERO,
                             it.withdrawMin ?: BigDecimal.ZERO,
                             it.withdrawMax

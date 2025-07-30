@@ -15,5 +15,6 @@ data class TerminalModel(
     var active: Boolean? = true,
     var type: TransferMethod,
     var metaData: String,
-    var description : String?
+    var description : String?,
+    var displayOrder: Int? = null,
 )

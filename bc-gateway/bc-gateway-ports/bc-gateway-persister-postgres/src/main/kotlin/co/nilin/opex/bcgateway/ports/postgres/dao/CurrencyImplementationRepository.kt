@@ -13,7 +13,7 @@ interface CurrencyImplementationRepository : ReactiveCrudRepository<CurrencyOnCh
 
     fun findByGatewayUuid(uuid: String): Mono<CurrencyOnChainGatewayModel>?
 
-    @Query("select * from currency_on_chain_gateway where (:gatewayUuid is null or gateway_uuid=:gatewayUuid) and (:currencySymbol is null or currency_symbol=:currencySymbol ) and (:implementationSymbol is null or implementation_symbol=:implementationSymbol ) and (:chain is null or chain=:chain )  ")
+    @Query("select * from currency_on_chain_gateway where (:gatewayUuid is null or gateway_uuid=:gatewayUuid) and (:currencySymbol is null or currency_symbol=:currencySymbol ) and (:implementationSymbol is null or implementation_symbol=:implementationSymbol ) and (:chain is null or chain=:chain ) order by display_order")
     fun findGateways(
         currencySymbol: String? = null,
         gatewayUuid: String? = null,

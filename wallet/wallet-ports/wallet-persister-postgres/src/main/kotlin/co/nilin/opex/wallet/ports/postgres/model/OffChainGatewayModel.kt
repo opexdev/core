@@ -19,5 +19,8 @@ data class OffChainGatewayModel(
     @Column("deposit_min") var depositMin: BigDecimal? = BigDecimal.ZERO,
     @Column("deposit_max") var depositMax: BigDecimal? = BigDecimal.ZERO,
     @Column("transfer_method") var transferMethod: String,
-    @Column("is_active") var isActive: Boolean? = true,
-)
+    @Column("is_deposit_active") var isDepositActive: Boolean? = true,
+    @Column("is_withdraw_active") var isWithdrawActive: Boolean? = true,
+    @Column("description") val description: String? = null,
+    @Column("display_order") val displayOrder: Int? = null,
+    )

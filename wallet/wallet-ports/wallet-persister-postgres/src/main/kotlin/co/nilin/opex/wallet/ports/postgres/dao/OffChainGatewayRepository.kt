@@ -16,7 +16,7 @@ interface OffChainGatewayRepository : ReactiveCrudRepository<OffChainGatewayMode
 
     fun deleteByGatewayUuid(uuid: String): Mono<Void>
 
-    @Query("select * from currency_off_chain_gateway where (:gatewayUuid is null or gateway_uuid=:gatewayUuid) and (:currencySymbol is null or currency_symbol=:currencySymbol )  ")
+    @Query("select * from currency_off_chain_gateway where (:gatewayUuid is null or gateway_uuid=:gatewayUuid) and (:currencySymbol is null or currency_symbol=:currencySymbol ) order by display_order")
     fun findGateways(currencySymbol: String? = null, gatewayUuid: String? = null): Flux<OffChainGatewayModel>?
 
     fun findByCurrencySymbolAndAndTransferMethod(
