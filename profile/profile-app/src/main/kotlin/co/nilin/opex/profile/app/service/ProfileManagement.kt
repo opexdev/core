@@ -156,7 +156,7 @@ class ProfileManagement(
             )
         )
         if (verifyResponse.result) {
-            authProxy.updateEmail(userId, email) //TODO rollback in error ?
+            authProxy.updateEmail(userId, email)
             profilePersister.updateEmail(userId, email)
         } else throw OpexError.InvalidOTP.exception()
     }
@@ -173,7 +173,7 @@ class ProfileManagement(
             throw OpexError.ProfileAlreadyCompleted.exception()
         }
 
-        val isIranian = request.nationality == NationalityType.IRANIAN.name
+        val isIranian = request.nationality == NationalityType.IRANIAN
         var useMobileIdentity = false
         var usePersonalIdentity = false
 

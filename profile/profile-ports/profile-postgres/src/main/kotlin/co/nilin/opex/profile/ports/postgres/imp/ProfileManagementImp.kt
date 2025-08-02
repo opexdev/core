@@ -100,7 +100,7 @@ class ProfileManagementImp(
         return profileRepository.save(newProfileModel)
             .map { saved ->
                 val response = convertProfileModelToCompleteProfileResponse(saved)
-                if (saved.nationality == NationalityType.IRANIAN.name) {
+                if (saved.nationality == NationalityType.IRANIAN) {
                     response.kycLevel = KycLevel.Level2
                 }
                 response

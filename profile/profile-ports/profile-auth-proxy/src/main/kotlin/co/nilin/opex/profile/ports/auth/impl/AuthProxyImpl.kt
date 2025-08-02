@@ -14,7 +14,7 @@ class AuthProxyImpl(private val webClient: WebClient) : AuthProxy {
     private lateinit var baseUrl: String
 
     override suspend fun updateEmail(userId: String, email: String) {
-        webClient.put().uri("$baseUrl/v1/user/email")
+        webClient.put().uri("$baseUrl/v1/user/update/email")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(mapOf("userId" to userId, "email" to email))
             .retrieve()
@@ -22,7 +22,7 @@ class AuthProxyImpl(private val webClient: WebClient) : AuthProxy {
     }
 
     override suspend fun updateMobile(userId: String, mobile: String) {
-        webClient.put().uri("$baseUrl/v1/user/mobile")
+        webClient.put().uri("$baseUrl/v1/user/update/mobile")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(mapOf("userId" to userId, "mobile" to mobile))
             .retrieve()
@@ -30,7 +30,7 @@ class AuthProxyImpl(private val webClient: WebClient) : AuthProxy {
     }
 
     override suspend fun updateName(userId: String, firstName: String, lastName: String) {
-        webClient.put().uri("$baseUrl/v1/user/name")
+        webClient.put().uri("$baseUrl/v1/user/update/name")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(mapOf("userId" to userId, "firstName" to firstName, "lastName" to lastName))
             .retrieve()

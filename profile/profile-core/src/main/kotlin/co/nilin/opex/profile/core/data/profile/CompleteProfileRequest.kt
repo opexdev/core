@@ -8,7 +8,7 @@ data class CompleteProfileRequest(
     var address: String? = null,
     var telephone: String? = null,
     var postalCode: String? = null,
-    var nationality: String,
+    var nationality: NationalityType,
     var identifier: String,
     var gender: Gender,
     var birthDate: LocalDateTime,

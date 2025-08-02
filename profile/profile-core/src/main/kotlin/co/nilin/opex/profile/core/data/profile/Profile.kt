@@ -15,7 +15,7 @@ data class Profile(
     var mobile: String? = null,
     var telephone: String? = null,
     var postalCode: String? = null,
-    var nationality: String? = null,
+    var nationality: NationalityType? = null,
     var identifier: String? = null,
     var gender: Gender? = null,
     var birthDate: LocalDateTime? = null,
