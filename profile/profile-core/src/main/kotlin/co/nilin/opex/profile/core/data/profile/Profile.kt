@@ -6,7 +6,6 @@ import co.nilin.opex.profile.core.data.linkedbankAccount.LinkedAccountResponse
 import com.fasterxml.jackson.annotation.JsonInclude
 import java.time.LocalDateTime
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
 data class Profile(
     var email: String?,
     var userId: String?,

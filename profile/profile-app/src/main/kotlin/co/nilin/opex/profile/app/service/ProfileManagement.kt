@@ -173,7 +173,7 @@ class ProfileManagement(
             throw OpexError.ProfileAlreadyCompleted.exception()
         }
 
-        val isIranian = request.nationality == "IR"
+        val isIranian = request.nationality == NationalityType.IRANIAN.name
         var useMobileIdentity = false
         var usePersonalIdentity = false
 
