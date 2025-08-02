@@ -17,6 +17,7 @@ import co.nilin.opex.profile.ports.postgres.convertor.convertProfileModelToCompl
 import co.nilin.opex.profile.ports.postgres.dao.ProfileHistoryRepository
 import co.nilin.opex.profile.ports.postgres.dao.ProfileRepository
 import co.nilin.opex.profile.ports.postgres.model.entity.ProfileModel
+import co.nilin.opex.profile.ports.postgres.utils.toProfileModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -84,18 +85,11 @@ class ProfileManagementImp(
         val existingProfile = profileRepository.findByUserId(id)?.awaitFirstOrNull()
             ?: throw OpexError.ProfileNotfound.exception()
 
-        var newProfileModel = data.convert(ProfileModel::class.java)
-        newProfileModel.email = existingProfile.email
-        newProfileModel.mobile = existingProfile.mobile
-        newProfileModel.id = existingProfile.id
-        newProfileModel.userId = existingProfile.userId
-        newProfileModel.status = existingProfile.status
-        newProfileModel.createDate = existingProfile.createDate
-        newProfileModel.creator = existingProfile.creator
-        newProfileModel.kycLevel = existingProfile.kycLevel
-        newProfileModel.lastUpdateDate = LocalDateTime.now()
-        newProfileModel.mobileIdentityMatch = mobileIdentityMatch
-        newProfileModel.personalIdentityMatch = personalIdentityMatch
+        val newProfileModel = data.toProfileModel(
+            existing = existingProfile,
+            mobileMatch = mobileIdentityMatch,
+            personalMatch = personalIdentityMatch
+        )
 
         return profileRepository.save(newProfileModel)
             .map { saved ->

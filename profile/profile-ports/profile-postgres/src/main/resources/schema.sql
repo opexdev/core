@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS profile
 CREATE TABLE IF NOT EXISTS profile_history
 (
     id                  SERIAL PRIMARY KEY,
-    email               VARCHAR(100) NOT NULL,
+    email               VARCHAR(100),
     last_name           VARCHAR(256),
     user_id             VARCHAR(100) NOT NULL,
     create_date         TIMESTAMP,
@@ -262,3 +262,14 @@ CREATE TABLE IF NOT EXISTS profile_approval_request
     description VARCHAR(255),
     UNIQUE (profile_id, status)
 );
+
+DO
+$$
+    BEGIN
+        IF  EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'profile_history' AND column_name = 'email') THEN ALTER TABLE profile_history
+            ALTER COLUMN email DROP NOT NULL;
+        END IF;
+    END
+$$;
