@@ -2,13 +2,11 @@ package co.nilin.opex.api.ports.proxy.impl
 
 import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.MatchingGatewayProxy
-import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
 import co.nilin.opex.api.ports.proxy.data.CancelOrderRequest
 import co.nilin.opex.api.ports.proxy.data.CreateOrderRequest
 import co.nilin.opex.api.ports.proxy.utils.body
 import co.nilin.opex.api.ports.proxy.utils.defaultHeaders
 import co.nilin.opex.common.utils.LoggerDelegate
-import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
@@ -24,7 +22,7 @@ class MatchingGatewayProxyImpl(private val restTemplate: RestTemplate) : Matchin
     @Value("\${app.matching-gateway.url}")
     private lateinit var baseUrl: String
 
-    override suspend fun createNewOrder(
+    override fun createNewOrder(
         uuid: String?,
         pair: String,
         price: BigDecimal,
@@ -40,7 +38,7 @@ class MatchingGatewayProxyImpl(private val restTemplate: RestTemplate) : Matchin
         return restTemplate.postForObject<OrderSubmitResult?>("$baseUrl/order", body(request))
     }
 
-    override suspend fun cancelOrder(
+    override fun cancelOrder(
         ouid: String,
         uuid: String,
         orderId: Long,
@@ -48,17 +46,13 @@ class MatchingGatewayProxyImpl(private val restTemplate: RestTemplate) : Matchin
         token: String?,
     ): OrderSubmitResult? {
         logger.info("calling matching-gateway order cancel")
-        return withContext(ProxyDispatchers.general) {
-            restTemplate.postForObject<OrderSubmitResult?>(
-                "$baseUrl/order/cancel",
-                body(CancelOrderRequest(ouid, uuid, orderId, symbol))
-            )
-        }
+        return restTemplate.postForObject<OrderSubmitResult?>(
+            "$baseUrl/order/cancel",
+            body(CancelOrderRequest(ouid, uuid, orderId, symbol))
+        )
     }
 
-    override suspend fun getPairSettings(): List<PairSetting> {
-        return withContext(ProxyDispatchers.wallet) {
-            restTemplate.getForObject<Array<PairSetting>>("$baseUrl/pair-setting", defaultHeaders()).toList()
-        }
+    override fun getPairSettings(): List<PairSetting> {
+        return restTemplate.getForObject<Array<PairSetting>>("$baseUrl/pair-setting", defaultHeaders()).toList()
     }
 }

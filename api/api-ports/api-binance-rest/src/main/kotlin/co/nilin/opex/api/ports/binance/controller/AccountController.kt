@@ -49,7 +49,7 @@ class AccountController(
             )
         )
     )
-    suspend fun createNewOrder(
+    fun createNewOrder(
         @RequestParam
         symbol: String,
         @RequestParam
@@ -125,7 +125,7 @@ class AccountController(
         consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE],
         produces = [MediaType.APPLICATION_JSON_VALUE]
     )
-    suspend fun cancelOrder(
+    fun cancelOrder(
         principal: Principal,
         @RequestParam
         symbol: String,
@@ -203,7 +203,7 @@ class AccountController(
             )
         )
     )
-    suspend fun queryOrder(
+    fun queryOrder(
         principal: Principal,
         @RequestParam
         symbol: String,
@@ -246,7 +246,7 @@ class AccountController(
             )
         )
     )
-    suspend fun fetchOpenOrders(
+    fun fetchOpenOrders(
         principal: Principal,
         @RequestParam(required = false)
         symbol: String?,
@@ -284,7 +284,7 @@ class AccountController(
             )
         )
     )
-    suspend fun fetchAllOrders(
+    fun fetchAllOrders(
         principal: Principal,
         @RequestParam(required = false)
         symbol: String?,
@@ -328,7 +328,7 @@ class AccountController(
             )
         )
     )
-    suspend fun fetchAllTrades(
+    fun fetchAllTrades(
         principal: Principal,
         @RequestParam
         symbol: String?,
@@ -385,7 +385,7 @@ class AccountController(
             )
         )
     )
-    suspend fun accountInfo(
+    fun accountInfo(
         @CurrentSecurityContext securityContext: SecurityContext,
         @ApiParam(value = "The value cannot be greater than 60000")
         @RequestParam(required = false)

@@ -6,12 +6,6 @@ import co.nilin.opex.api.core.spi.APIKeyService
 import co.nilin.opex.api.ports.postgres.dao.APIKeyRepository
 import co.nilin.opex.api.ports.postgres.model.APIKeyModel
 import co.nilin.opex.common.OpexError
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.reactive.awaitFirstOrElse
-import kotlinx.coroutines.reactive.awaitFirstOrNull
-import kotlinx.coroutines.reactor.awaitSingle
-import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.cache.Cache
@@ -37,14 +31,14 @@ class APIKeyServiceImpl(
 
     private val logger = LoggerFactory.getLogger(APIKeyServiceImpl::class.java)
 
-    override suspend fun createAPIKey(
+    override fun createAPIKey(
         userId: String,
         label: String,
         expirationTime: LocalDateTime?,
         allowedIPs: String?,
         currentToken: String
     ): Pair<String, APIKey> {
-        if (apiKeyRepository.countByUserId(userId).awaitFirstOrElse { 0 } >= 10)
+        if ((apiKeyRepository.countByUserId(userId) ?: 0) >= 10)
             throw OpexError.APIKeyLimitReached.exception()
 
         val secret = generateSecret()
@@ -60,7 +54,7 @@ class APIKeyServiceImpl(
                 allowedIPs,
                 tokenExpiration(tokenResponse.expires_in)
             )
-        ).awaitSingle()
+        )
 
         return Pair(
             secret,
@@ -70,13 +64,12 @@ class APIKeyServiceImpl(
         )
     }
 
-    override suspend fun getAPIKey(key: String, secret: String): APIKey? = coroutineScope {
-        val apiKey = getFromCache(key)
-            ?: apiKeyRepository.findByKey(key).awaitSingleOrNull()?.apply { putCache(this) }
+    override fun getAPIKey(key: String, secret: String): APIKey? {
+        val apiKey = getFromCache(key) ?: apiKeyRepository.findByKey(key)?.apply { putCache(this) }
 
-        with(apiKey) {
+        return with(apiKey) {
             if (this != null) {
-                launch { checkupAPIKey(this@with, secret) }
+                checkupAPIKey(this@with, secret)
                 APIKey(
                     userId,
                     label,
@@ -92,8 +85,8 @@ class APIKeyServiceImpl(
         }
     }
 
-    override suspend fun getKeysByUserId(userId: String): List<APIKey> {
-        return apiKeyRepository.findAllByUserId(userId).collectList().awaitFirstOrElse { emptyList() }
+    override fun getKeysByUserId(userId: String): List<APIKey> {
+        return apiKeyRepository.findAllByUserId(userId)
             .map {
                 APIKey(
                     it.userId,
@@ -108,22 +101,22 @@ class APIKeyServiceImpl(
             }
     }
 
-    override suspend fun changeKeyState(userId: String, key: String, isEnabled: Boolean) {
-        val apiKey = apiKeyRepository.findByKey(key).awaitSingleOrNull() ?: throw OpexError.NotFound.exception()
+    override fun changeKeyState(userId: String, key: String, isEnabled: Boolean) {
+        val apiKey = apiKeyRepository.findByKey(key) ?: throw OpexError.NotFound.exception()
         if (apiKey.userId != userId)
             throw OpexError.Forbidden.exception()
         apiKey.isEnabled = isEnabled
-        apiKeyRepository.save(apiKey).awaitSingle()
+        apiKeyRepository.save(apiKey)
     }
 
-    override suspend fun deleteKey(userId: String, key: String) {
-        val apiKey = apiKeyRepository.findByKey(key).awaitSingleOrNull() ?: throw OpexError.NotFound.exception()
+    override fun deleteKey(userId: String, key: String) {
+        val apiKey = apiKeyRepository.findByKey(key) ?: throw OpexError.NotFound.exception()
         if (apiKey.userId != userId)
             throw OpexError.Forbidden.exception()
-        apiKeyRepository.delete(apiKey).awaitFirstOrNull()
+        apiKeyRepository.delete(apiKey)
     }
 
-    private suspend fun checkupAPIKey(apiKey: APIKeyModel, secret: String) {
+    private fun checkupAPIKey(apiKey: APIKeyModel, secret: String) {
         if (apiKey.isExpired || !apiKey.isEnabled)
             return
 
@@ -132,7 +125,7 @@ class APIKeyServiceImpl(
             if (apiKey.expirationTime?.isBefore(now) == true) {
                 logger.info("Expiring api key ${apiKey.key}")
                 apiKey.isExpired = true
-                apiKeyRepository.save(apiKey).awaitSingle().apply { updateCache(this) }
+                apiKeyRepository.save(apiKey).apply { updateCache(this) }
                 logger.info("API key ${apiKey.key} is expired")
                 return
             }
@@ -144,7 +137,7 @@ class APIKeyServiceImpl(
                     accessToken = encryptAES(response.access_token, secret)
                     tokenExpirationTime = tokenExpiration(response.expires_in)
                 }
-                apiKeyRepository.save(apiKey).awaitSingle().apply { updateCache(this) }
+                apiKeyRepository.save(apiKey).apply { updateCache(this) }
                 logger.info("API key ${apiKey.key} token refreshed")
             }
         } catch (e: Exception) {

@@ -10,11 +10,11 @@ import java.util.*
 
 interface MarketUserDataProxy {
 
-    suspend fun queryOrder(principal: Principal, symbol: String, orderId: Long?, origClientOrderId: String?): Order?
+    fun queryOrder(principal: Principal, symbol: String, orderId: Long?, origClientOrderId: String?): Order?
 
-    suspend fun openOrders(principal: Principal, symbol: String?, limit: Int?): List<Order>
+    fun openOrders(principal: Principal, symbol: String?, limit: Int?): List<Order>
 
-    suspend fun allOrders(
+    fun allOrders(
         principal: Principal,
         symbol: String?,
         startTime: Date?,
@@ -22,7 +22,7 @@ interface MarketUserDataProxy {
         limit: Int?
     ): List<Order>
 
-    suspend fun allTrades(
+    fun allTrades(
         principal: Principal,
         symbol: String?,
         fromTrade: Long?,
@@ -31,7 +31,7 @@ interface MarketUserDataProxy {
         limit: Int?
     ): List<Trade>
 
-    suspend fun getOrderHistory(
+    fun getOrderHistory(
         uuid : String,
         symbol: String?,
         startTime: Long?,
@@ -42,7 +42,7 @@ interface MarketUserDataProxy {
         offset: Int?,
     ): List<OrderData>
 
-    suspend fun getOrderHistoryCount(
+    fun getOrderHistoryCount(
         uuid : String,
         symbol: String?,
         startTime: Long?,
@@ -51,7 +51,7 @@ interface MarketUserDataProxy {
         direction: OrderDirection?,
     ): Long
 
-    suspend fun getTradeHistory(
+    fun getTradeHistory(
         uuid : String,
         symbol: String?,
         startTime: Long?,
@@ -61,7 +61,7 @@ interface MarketUserDataProxy {
         offset: Int?,
     ): List<Trade>
 
-    suspend fun getTradeHistoryCount(
+    fun getTradeHistoryCount(
         uuid : String,
         symbol: String?,
         startTime: Long?,

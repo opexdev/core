@@ -20,24 +20,18 @@ class AccountantProxyImpl(private val restTemplate: RestTemplate) : AccountantPr
     @Value("\${app.accountant.url}")
     private lateinit var baseUrl: String
 
-    override suspend fun getPairConfigs(): List<PairConfigResponse> {
+    override fun getPairConfigs(): List<PairConfigResponse> {
         logger.info("fetching pair configs")
-        return withContext(Dispatchers.IO) {
-            restTemplate.getForObject<Array<PairConfigResponse>>("$baseUrl/config/all", defaultHeaders()).toList()
-        }
+        return restTemplate.getForObject<Array<PairConfigResponse>>("$baseUrl/config/all", defaultHeaders()).toList()
     }
 
-    override suspend fun getFeeConfigs(): List<PairFeeResponse> {
+    override fun getFeeConfigs(): List<PairFeeResponse> {
         logger.info("fetching fee configs")
-        return withContext(Dispatchers.IO) {
-            restTemplate.getForObject<Array<PairFeeResponse>>("$baseUrl/config/fee", defaultHeaders()).toList()
-        }
+        return restTemplate.getForObject<Array<PairFeeResponse>>("$baseUrl/config/fee", defaultHeaders()).toList()
     }
 
-    override suspend fun getFeeConfig(symbol: String): PairFeeResponse {
+    override fun getFeeConfig(symbol: String): PairFeeResponse {
         logger.info("fetching fee configs for $symbol")
-        return withContext(Dispatchers.IO) {
-            restTemplate.getForObject<PairFeeResponse>("$baseUrl/config/fee/$symbol", defaultHeaders())
-        }
+        return restTemplate.getForObject<PairFeeResponse>("$baseUrl/config/fee/$symbol", defaultHeaders())
     }
 }

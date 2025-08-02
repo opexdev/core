@@ -19,7 +19,7 @@ class UserHistoryController(
 ) {
 
     @GetMapping("/history/order")
-    suspend fun getOrderHistory(
+    fun getOrderHistory(
         @RequestParam symbol: String?,
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
@@ -42,7 +42,7 @@ class UserHistoryController(
     }
 
     @GetMapping("/history/order/count")
-    suspend fun getOrderHistoryCount(
+    fun getOrderHistoryCount(
         @RequestParam symbol: String?,
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
@@ -61,7 +61,7 @@ class UserHistoryController(
     }
 
     @GetMapping("/history/trade")
-    suspend fun getTradeHistory(
+    fun getTradeHistory(
         @RequestParam symbol: String?,
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
@@ -76,7 +76,7 @@ class UserHistoryController(
     }
 
     @GetMapping("/history/trade/count")
-    suspend fun getTradeHistoryCount(
+    fun getTradeHistoryCount(
         @RequestParam symbol: String?,
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
@@ -89,7 +89,7 @@ class UserHistoryController(
     }
 
     @GetMapping("/history/withdraw")
-    suspend fun getWithdrawHistory(
+    fun getWithdrawHistory(
         @RequestParam currency: String?,
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
@@ -111,7 +111,7 @@ class UserHistoryController(
     }
 
     @GetMapping("/history/withdraw/count")
-    suspend fun getWithdrawHistoryCount(
+    fun getWithdrawHistoryCount(
         @RequestParam currency: String?,
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
@@ -127,7 +127,7 @@ class UserHistoryController(
     }
 
     @GetMapping("/history/deposit")
-    suspend fun getDepositHistory(
+    fun getDepositHistory(
         @RequestParam currency: String?,
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
@@ -149,7 +149,7 @@ class UserHistoryController(
     }
 
     @GetMapping("/history/deposit/count")
-    suspend fun getDepositHistoryCount(
+    fun getDepositHistoryCount(
         @RequestParam currency: String?,
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
@@ -165,7 +165,7 @@ class UserHistoryController(
     }
 
     @GetMapping("/history/transaction")
-    suspend fun getTransactionHistory(
+    fun getTransactionHistory(
         @RequestParam currency: String?,
         @RequestParam category: UserTransactionCategory?,
         @RequestParam startTime: Long?,
@@ -189,7 +189,7 @@ class UserHistoryController(
     }
 
     @GetMapping("/history/transaction/count")
-    suspend fun getTransactionHistoryCount(
+    fun getTransactionHistoryCount(
         @RequestParam currency: String?,
         @RequestParam category: UserTransactionCategory?,
         @RequestParam startTime: Long?,
@@ -207,7 +207,7 @@ class UserHistoryController(
     }
 
     @GetMapping("/summary/trade")
-    suspend fun getTradeTransactionSummary(
+    fun getTradeTransactionSummary(
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
         @RequestParam limit: Int?,
@@ -223,7 +223,7 @@ class UserHistoryController(
     }
 
     @GetMapping("/summary/deposit")
-    suspend fun getDepositSummary(
+    fun getDepositSummary(
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
         @RequestParam limit: Int?,
@@ -239,7 +239,7 @@ class UserHistoryController(
     }
 
     @GetMapping("/summary/withdraw")
-    suspend fun getWithdrawSummary(
+    fun getWithdrawSummary(
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
         @RequestParam limit: Int?,
@@ -255,7 +255,7 @@ class UserHistoryController(
     }
 
     @PostMapping("/history/swap")
-    suspend fun getSwapHistory(
+    fun getSwapHistory(
         @CurrentSecurityContext securityContext: SecurityContext,
         @RequestBody request: UserTransactionRequest
     ): List<SwapResponse> {
@@ -263,7 +263,7 @@ class UserHistoryController(
     }
 
     @PostMapping("/history/swap/count")
-    suspend fun getSwapHistoryCount(
+    fun getSwapHistoryCount(
         @CurrentSecurityContext securityContext: SecurityContext,
         @RequestBody request: UserTransactionRequest
     ): Long {

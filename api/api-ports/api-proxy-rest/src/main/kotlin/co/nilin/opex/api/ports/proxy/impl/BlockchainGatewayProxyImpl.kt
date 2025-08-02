@@ -3,12 +3,10 @@ package co.nilin.opex.api.ports.proxy.impl
 import co.nilin.opex.api.core.inout.AssignResponse
 import co.nilin.opex.api.core.inout.DepositDetails
 import co.nilin.opex.api.core.spi.BlockchainGatewayProxy
-import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
 import co.nilin.opex.api.ports.proxy.data.AssignAddressRequest
 import co.nilin.opex.api.ports.proxy.data.DepositDetailsRequest
 import co.nilin.opex.api.ports.proxy.utils.body
 import co.nilin.opex.common.utils.LoggerDelegate
-import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
@@ -22,24 +20,20 @@ class BlockchainGatewayProxyImpl(private val restTemplate: RestTemplate) : Block
     @Value("\${app.opex-bc-gateway.url}")
     private lateinit var baseUrl: String
 
-    override suspend fun assignAddress(uuid: String, currency: String, chain: String): AssignResponse? {
+    override fun assignAddress(uuid: String, currency: String, chain: String): AssignResponse? {
         logger.info("calling bc-gateway assign")
-        return withContext(ProxyDispatchers.general) {
-            restTemplate.postForObject<AssignResponse>(
-                "$baseUrl/v1/address/assign",
-                body(AssignAddressRequest(uuid, currency, chain))
-            )
-        }
+        return restTemplate.postForObject<AssignResponse>(
+            "$baseUrl/v1/address/assign",
+            body(AssignAddressRequest(uuid, currency, chain))
+        )
     }
 
-    override suspend fun getDepositDetails(refs: List<String>): List<DepositDetails> {
+    override fun getDepositDetails(refs: List<String>): List<DepositDetails> {
         logger.info("calling bc-gateway deposit details")
-        return withContext(ProxyDispatchers.general) {
-            restTemplate.postForObject<Array<DepositDetails>>(
-                "$baseUrl/deposit/find/all",
-                body(DepositDetailsRequest(refs))
-            ).toList()
-        }
+        return restTemplate.postForObject<Array<DepositDetails>>(
+            "$baseUrl/deposit/find/all",
+            body(DepositDetailsRequest(refs))
+        ).toList()
     }
 
 //    override suspend fun getCurrencyImplementations(currency: String?): List<CurrencyImplementation> {

@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController
 class VoucherController(private val walletProxy: WalletProxy) {
 
     @PutMapping("/{code}")
-    suspend fun submitVoucher(
+    fun submitVoucher(
         @PathVariable code: String,
         @CurrentSecurityContext securityContext: SecurityContext
     ): SubmitVoucherResponse {
