@@ -1,7 +1,5 @@
 package co.nilin.opex.profile.core.data.profile
 
-import java.time.LocalDateTime
-
 data class CompleteProfileRequest(
     var firstName: String,
     var lastName: String,
@@ -11,5 +9,5 @@ data class CompleteProfileRequest(
     var nationality: NationalityType,
     var identifier: String,
     var gender: Gender,
-    var birthDate: LocalDateTime,
+    var birthDate: Long,
 )

@@ -223,15 +223,16 @@ class ProfileManagement(
         identifier: String,
         firstName: String,
         lastName: String,
-        birthDate: LocalDateTime
+        birthDate: Long
     ) {
-        if (!inquiryProxy.getComparativeInquiryResult(
-                identifier,
-                birthDate,
-                firstName,
-                lastName
-            )
-        ) throw OpexError.ComparativeVerificationFailed.exception()
+        val comparativeInquiryResult = inquiryProxy.getComparativeInquiryResult(
+            identifier,
+            birthDate,
+            firstName,
+            lastName
+        )
+        if (comparativeInquiryResult.firstNameSimilarityPercentage < 95) throw OpexError.FirstNameIsNotSimilarEnough.exception()
+        if (comparativeInquiryResult.lastNameSimilarityPercentage < 95) throw OpexError.LastNameIsNotSimilarEnough.exception()
     }
 
     private suspend fun saveProfileApprovalRequest(profileId: Long) {

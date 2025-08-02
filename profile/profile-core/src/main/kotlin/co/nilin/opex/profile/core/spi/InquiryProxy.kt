@@ -1,5 +1,6 @@
 package co.nilin.opex.profile.core.spi
 
+import co.nilin.opex.profile.core.data.profile.ComparativeResponse
 import java.time.LocalDateTime
 
 interface InquiryProxy {
@@ -7,8 +8,8 @@ interface InquiryProxy {
 
     suspend fun getComparativeInquiryResult(
         identifier: String,
-        birthDate: LocalDateTime,
+        birthDate: Long,
         firstName: String,
         lastName: String
-    ): Boolean
+    ): ComparativeResponse
 }

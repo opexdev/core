@@ -1,8 +1,8 @@
 package co.nilin.opex.profile.ports.inquiry.imp
 
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.profile.core.data.profile.ComparativeResponse
 import co.nilin.opex.profile.core.spi.InquiryProxy
-import co.nilin.opex.profile.ports.inquiry.data.ComparativeResponse
 import co.nilin.opex.profile.ports.inquiry.data.ShahkarResponse
 import co.nilin.opex.profile.ports.inquiry.utils.TokenProvider
 import co.nilin.opex.profile.ports.inquiry.utils.toPersianDateFormatted
@@ -41,13 +41,13 @@ class InquiryProxyImp(
 
     override suspend fun getComparativeInquiryResult(
         identifier: String,
-        birthDate: LocalDateTime,
+        birthDate: Long,
         firstName: String,
         lastName: String
-    ): Boolean {
+    ): ComparativeResponse {
         val birthDateFormatted = birthDate.toPersianDateFormatted()
 
-        val response = webClient.get()
+        return webClient.get()
             .uri("$baseUrl/v1/services/identity/similarity") {
                 it.queryParam("nationalCode", identifier)
                 it.queryParam("birthDate", birthDateFormatted)
@@ -60,7 +60,5 @@ class InquiryProxyImp(
             .retrieve()
             .onStatus({ t -> t.isError }, { throw OpexError.ComparativeInquiryUnavailable.exception() })
             .awaitBody<ComparativeResponse>()
-
-        return (response.firstNameSimilarityPercentage >= 95 && response.lastNameSimilarityPercentage >= 95)
     }
 }
