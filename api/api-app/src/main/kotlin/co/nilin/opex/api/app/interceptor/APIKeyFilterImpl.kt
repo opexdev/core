@@ -20,7 +20,7 @@ class APIKeyFilterImpl(private val apiKeyService: APIKeyServiceImpl) : APIKeyFil
     ) {
         val key = request.getHeader("X-API-KEY")
         if (!key.isNullOrEmpty()) {
-            val secret = request.getHeader("X-API-KEY")
+            val secret = request.getHeader("X-API-SECRET")
             if (secret.isNullOrEmpty()) {
                 chain.doFilter(request, response)
                 return
@@ -28,28 +28,35 @@ class APIKeyFilterImpl(private val apiKeyService: APIKeyServiceImpl) : APIKeyFil
 
             val apiKey = apiKeyService.getAPIKey(key, secret)
             if (apiKey != null && apiKey.isEnabled && apiKey.accessToken != null && !apiKey.isExpired) {
-                val wrappedReq = RequestWrapper(request)
-                wrappedReq.addHeader("Authorization", "Bearer ${apiKey.accessToken}")
-                chain.doFilter(wrappedReq, response)
+                val auth = "Bearer ${apiKey.accessToken}"
+                val wReq = object : HttpServletRequestWrapper(request) {
+                    override fun getHeader(name: String?): String {
+                        return when (name) {
+                            "Authorization" -> auth
+                            else -> super.getHeader(name)
+                        }
+                    }
+
+                    override fun getHeaders(name: String?): Enumeration<String> {
+                        return when (name) {
+                            "Authorization" -> Collections.enumeration(listOf(auth))
+                            else -> super.getHeaders(name)
+                        }
+                    }
+
+                    override fun getHeaderNames(): Enumeration<String> {
+                        val names = mutableListOf<String>()
+                        request.headerNames.toList().forEach { names.add(it) }
+                        names.add("Authorization")
+                        return Collections.enumeration(names.distinct())
+                    }
+                }
+
+                chain.doFilter(wReq, response)
                 return
             }
         }
         chain.doFilter(request, response)
     }
 
-}
-
-class RequestWrapper(request: HttpServletRequest) : HttpServletRequestWrapper(request) {
-
-    private val customHeaders = hashMapOf<String, String>()
-
-    fun addHeader(key: String, value: String) {
-        customHeaders[key] = value
-    }
-
-    override fun getHeaderNames(): Enumeration<String> {
-        val names = HashSet(Collections.list(super.getHeaderNames()))
-        names.addAll(customHeaders.keys)
-        return Collections.enumeration(names)
-    }
 }

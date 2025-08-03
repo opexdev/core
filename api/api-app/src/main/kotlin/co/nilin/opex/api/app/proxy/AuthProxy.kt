@@ -8,26 +8,34 @@ import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
+import org.springframework.http.client.SimpleClientHttpRequestFactory
 import org.springframework.stereotype.Component
+import org.springframework.util.LinkedMultiValueMap
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.exchange
-import org.springframework.web.reactive.function.BodyInserters
 
 @Component
 class AuthProxy(
     @Value("\${app.auth.token-url}")
-    private val tokenUrl: String,
-    private val restTemplate: RestTemplate
+    private val tokenUrl: String
 ) {
 
     private val logger = LoggerFactory.getLogger(AuthProxy::class.java)
+    private val restTemplate = RestTemplate(
+        SimpleClientHttpRequestFactory().apply {
+            setConnectTimeout(100000)
+            setReadTimeout(10000)
+        }
+    )
 
     fun exchangeToken(clientSecret: String, token: String): AccessTokenResponse {
-        val body = BodyInserters.fromFormData("client_id", "opex-api-key")
-            .with("client_secret", clientSecret)
-            .with("subject_token", token)
-            .with("grant_type", "urn:ietf:params:oauth:grant-type:token-exchange")
-            .with("scope", "offline_access")
+        val body = LinkedMultiValueMap<String, String>().apply {
+            add("client_id", "opex-api-key")
+            add("client_secret", clientSecret)
+            add("subject_token", token)
+            add("grant_type", "urn:ietf:params:oauth:grant-type:token-exchange")
+            add("scope", "offline_access")
+        }
 
         logger.info("Request token exchange for user")
 
@@ -40,10 +48,12 @@ class AuthProxy(
     }
 
     fun refreshToken(clientSecret: String, refreshToken: String): AccessTokenResponse {
-        val body = BodyInserters.fromFormData("client_id", "opex-api-key")
-            .with("client_secret", clientSecret)
-            .with("refresh_token", refreshToken)
-            .with("grant_type", "refresh_token")
+        val body = LinkedMultiValueMap<String, String>().apply {
+            add("client_id", "opex-api-key")
+            add("client_secret", clientSecret)
+            add("refresh_token", refreshToken)
+            add("grant_type", "refresh_token")
+        }
 
         logger.info("Refreshing token")
 
