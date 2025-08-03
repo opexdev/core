@@ -78,7 +78,7 @@ class WalletProxyImpl(private val restTemplate: RestTemplate) : WalletProxy {
         logger.info("fetching deposit transaction count for $uuid")
         return restTemplate.exchange<Long>(
             "$baseUrl/v1/deposit/history/count",
-            HttpMethod.GET,
+            HttpMethod.POST,
             body(TransactionRequest(currency, startTime, endTime, null, null), token)
         ).body ?: 0L
     }
