@@ -36,7 +36,7 @@ class MarketController(
     // 1000 - 10
     // 5000 - 50
     @GetMapping("/v3/depth")
-    suspend fun orderBook(
+    fun orderBook(
         @RequestParam
         symbol: String,
         @RequestParam(required = false)
@@ -74,7 +74,7 @@ class MarketController(
     }
 
     @GetMapping("/v3/trades")
-    suspend fun recentTrades(
+    fun recentTrades(
         principal: Principal,
         @RequestParam
         symbol: String,
@@ -101,7 +101,7 @@ class MarketController(
     }
 
     @GetMapping("/v3/ticker/{duration:24h|7d|1M}")
-    suspend fun priceChange(
+    fun priceChange(
         @PathVariable duration: String,
         @RequestParam(required = false) symbol: String?,
         @RequestParam(required = false) quote: String?
@@ -142,7 +142,7 @@ class MarketController(
     // 1 for a single symbol
     // 2 when the symbol parameter is omitted
     @GetMapping("/v3/ticker/price")
-    suspend fun priceTicker(@RequestParam(required = false) symbol: String?): List<PriceTicker> {
+    fun priceTicker(@RequestParam(required = false) symbol: String?): List<PriceTicker> {
         val symbols = symbolMapper.symbolToAliasMap()
         val localSymbol = if (symbol == null)
             null
@@ -152,32 +152,30 @@ class MarketController(
     }
 
     @GetMapping("/v3/exchangeInfo")
-    suspend fun pairInfo(
+    fun pairInfo(
         @RequestParam(required = false)
         symbol: String?,
         @RequestParam(required = false)
         symbols: String?
-    ): ExchangeInfoResponse = coroutineScope {
+    ): ExchangeInfoResponse {
         val symbolsMap = symbolMapper.symbolToAliasMap()
-        val fee = async { accountantProxy.getFeeConfigs() }
-        val pairConfigs = async {
-            accountantProxy.getPairConfigs().map {
-                ExchangeInfoSymbol(
-                    symbolsMap[it.pair] ?: it.pair,
-                    "TRADING",
-                    it.leftSideWalletSymbol.uppercase(),
-                    it.leftSideFraction.scale(),
-                    it.rightSideWalletSymbol.uppercase(),
-                    it.rightSideFraction.scale()
-                )
-            }
+        val fee = accountantProxy.getFeeConfigs()
+        val pairConfigs = accountantProxy.getPairConfigs().map {
+            ExchangeInfoSymbol(
+                symbolsMap[it.pair] ?: it.pair,
+                "TRADING",
+                it.leftSideWalletSymbol.uppercase(),
+                it.leftSideFraction.scale(),
+                it.rightSideWalletSymbol.uppercase(),
+                it.rightSideFraction.scale()
+            )
         }
-        ExchangeInfoResponse(fees = fee.await(), symbols = pairConfigs.await())
+        return ExchangeInfoResponse(fees = fee, symbols = pairConfigs)
     }
 
     // Custom service
 //    @GetMapping("/v3/currencyInfo")
-//    suspend fun getNetworks(@RequestParam(required = false) currency: String?): List<CurrencyNetworkResponse> {
+//    fun getNetworks(@RequestParam(required = false) currency: String?): List<CurrencyNetworkResponse> {
 //        return blockchainGatewayProxy.getCurrencyImplementations(currency)
 //            .groupBy { it.currency }
 //            .toList()
@@ -201,7 +199,7 @@ class MarketController(
 
     // Custom service
     @GetMapping("/v3/currencyInfo/quotes")
-    suspend fun getQuoteCurrencies(): List<String> {
+    fun getQuoteCurrencies(): List<String> {
         return accountantProxy.getPairConfigs()
             .map { it.rightSideWalletSymbol }
             .distinct()
@@ -209,7 +207,7 @@ class MarketController(
 
     // Weight(IP): 1
     @GetMapping("/v3/klines")
-    suspend fun klines(
+    fun klines(
         @RequestParam
         symbol: String,
         @RequestParam

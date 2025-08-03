@@ -17,7 +17,7 @@ class WithdrawController(
 ) {
 
     @PostMapping
-    suspend fun requestWithdraw(
+    fun requestWithdraw(
         @CurrentSecurityContext securityContext: SecurityContext,
         @RequestBody request: RequestWithdrawBody
     ): WithdrawActionResult? {
@@ -28,7 +28,7 @@ class WithdrawController(
     }
 
     @PutMapping("/{withdrawId}/cancel")
-    suspend fun cancelWithdraw(
+    fun cancelWithdraw(
         @CurrentSecurityContext securityContext: SecurityContext,
         @PathVariable withdrawId: Long
     ) {
@@ -39,7 +39,7 @@ class WithdrawController(
     }
 
     @GetMapping("/{withdrawId}")
-    suspend fun findWithdraw(
+    fun findWithdraw(
         @CurrentSecurityContext securityContext: SecurityContext,
         @PathVariable withdrawId: Long
     ): WithdrawResponse {

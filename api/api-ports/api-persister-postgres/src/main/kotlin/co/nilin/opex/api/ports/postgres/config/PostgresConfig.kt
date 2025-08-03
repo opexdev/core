@@ -3,22 +3,27 @@ package co.nilin.opex.api.ports.postgres.config
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.io.Resource
-import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories
-import org.springframework.r2dbc.core.DatabaseClient
+import org.springframework.data.jdbc.repository.config.EnableJdbcRepositories
+import org.springframework.jdbc.core.JdbcTemplate
+import java.nio.charset.StandardCharsets
 
 @Configuration
-@EnableR2dbcRepositories(basePackages = ["co.nilin.opex"])
+@EnableJdbcRepositories(basePackages = ["co.nilin.opex"])
 class PostgresConfig(
-    db: DatabaseClient,
+    template: JdbcTemplate,
     @Value("classpath:schema.sql") private val schemaResource: Resource
 ) {
     init {
-        val schemaReader = schemaResource.inputStream.reader()
-        val schema = schemaReader.readText().trim()
-        schemaReader.close()
-        val initDb = db.sql { schema }
-        initDb // initialize the database
-            .then()
-            .subscribe() // execute
+        val schema = schemaResource.inputStream
+            .bufferedReader(StandardCharsets.UTF_8)
+            .use { it.readText().trim() }
+
+        val statements = schema.split(";")
+            .map { it.trim() }
+            .filter { it.isNotBlank() }
+
+        statements.forEach {
+            template.execute(it)
+        }
     }
 }

@@ -4,13 +4,13 @@ import co.nilin.opex.api.core.inout.*
 
 interface WalletProxy {
 
-    suspend fun getWallets(uuid: String?, token: String?): List<Wallet>
+    fun getWallets(uuid: String?, token: String?): List<Wallet>
 
-    suspend fun getWallet(uuid: String?, token: String?, symbol: String): Wallet
+    fun getWallet(uuid: String?, token: String?, symbol: String): Wallet
 
-    suspend fun getOwnerLimits(uuid: String?, token: String?): OwnerLimitsResponse
+    fun getOwnerLimits(uuid: String?, token: String?): OwnerLimitsResponse
 
-    suspend fun getDepositTransactions(
+    fun getDepositTransactions(
         uuid: String,
         token: String,
         currency: String?,
@@ -21,7 +21,7 @@ interface WalletProxy {
         ascendingByTime: Boolean?,
     ): List<DepositHistoryResponse>
 
-    suspend fun getDepositTransactionsCount(
+    fun getDepositTransactionsCount(
         uuid: String,
         token: String,
         currency: String?,
@@ -29,7 +29,7 @@ interface WalletProxy {
         endTime: Long?,
     ): Long
 
-    suspend fun getWithdrawTransactions(
+    fun getWithdrawTransactions(
         uuid: String,
         token: String,
         currency: String?,
@@ -40,7 +40,7 @@ interface WalletProxy {
         ascendingByTime: Boolean?,
     ): List<WithdrawHistoryResponse>
 
-    suspend fun getWithdrawTransactionsCount(
+    fun getWithdrawTransactionsCount(
         uuid: String,
         token: String,
         currency: String?,
@@ -48,7 +48,7 @@ interface WalletProxy {
         endTime: Long?,
     ): Long
 
-    suspend fun getTransactions(
+    fun getTransactions(
         uuid: String,
         token: String,
         currency: String?,
@@ -60,7 +60,7 @@ interface WalletProxy {
         ascendingByTime: Boolean?,
     ): List<UserTransactionHistory>
 
-    suspend fun getTransactionsCount(
+    fun getTransactionsCount(
         uuid: String,
         token: String,
         currency: String?,
@@ -69,14 +69,14 @@ interface WalletProxy {
         endTime: Long?,
     ): Long
 
-    suspend fun getGateWays(
+    fun getGateWays(
         includeOffChainGateways: Boolean,
         includeOnChainGateways: Boolean,
     ): List<CurrencyGatewayCommand>
 
-    suspend fun getCurrencies(): List<CurrencyData>
+    fun getCurrencies(): List<CurrencyData>
 
-    suspend fun getUserTradeTransactionSummary(
+    fun getUserTradeTransactionSummary(
         uuid: String,
         token: String,
         startTime: Long?,
@@ -84,7 +84,7 @@ interface WalletProxy {
         limit: Int?,
     ): List<TransactionSummary>
 
-    suspend fun getUserDepositSummary(
+    fun getUserDepositSummary(
         uuid: String,
         token: String,
         startTime: Long?,
@@ -92,7 +92,7 @@ interface WalletProxy {
         limit: Int?,
     ): List<TransactionSummary>
 
-    suspend fun getUserWithdrawSummary(
+    fun getUserWithdrawSummary(
         uuid: String,
         token: String,
         startTime: Long?,
@@ -100,29 +100,29 @@ interface WalletProxy {
         limit: Int?,
     ): List<TransactionSummary>
 
-    suspend fun deposit(
+    fun deposit(
         request: RequestDepositBody
     ): TransferResult?
 
-    suspend fun requestWithdraw(
+    fun requestWithdraw(
         token: String,
         request: RequestWithdrawBody
     ): WithdrawActionResult
 
-    suspend fun cancelWithdraw(
+    fun cancelWithdraw(
         token: String,
         withdrawId: Long
-    ): Void?
+    )
 
-    suspend fun findWithdraw(
+    fun findWithdraw(
         token: String,
         withdrawId: Long
     ): WithdrawResponse
 
-    suspend fun submitVoucher(code: String, token: String): SubmitVoucherResponse
+    fun submitVoucher(code: String, token: String): SubmitVoucherResponse
 
-    suspend fun getQuoteCurrencies(): List<QuoteCurrency>
+    fun getQuoteCurrencies(): List<QuoteCurrency>
 
-    suspend fun getSwapTransactions(token: String, request: UserTransactionRequest): List<SwapResponse>
-    suspend fun getSwapTransactionsCount(token: String, request: UserTransactionRequest): Long
+    fun getSwapTransactions(token: String, request: UserTransactionRequest): List<SwapResponse>
+    fun getSwapTransactionsCount(token: String, request: UserTransactionRequest): Long
 }

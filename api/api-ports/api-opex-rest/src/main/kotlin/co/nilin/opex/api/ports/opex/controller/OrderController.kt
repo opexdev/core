@@ -24,7 +24,7 @@ class OrderController(
     val matchingGatewayProxy: MatchingGatewayProxy,
 ) {
     @PostMapping
-    suspend fun createNewOrder(
+    fun createNewOrder(
         @RequestParam
         symbol: String,
         @RequestParam
@@ -61,7 +61,7 @@ class OrderController(
     }
 
     @PutMapping
-    suspend fun cancelOrder(
+    fun cancelOrder(
         principal: Principal,
         @RequestParam
         symbol: String,
@@ -110,7 +110,7 @@ class OrderController(
     }
 
     @GetMapping
-    suspend fun queryOrder(
+    fun queryOrder(
         principal: Principal,
         @RequestParam
         symbol: String,
@@ -126,7 +126,7 @@ class OrderController(
     }
 
     @GetMapping("/open")
-    suspend fun fetchOpenOrders(
+    fun fetchOpenOrders(
         principal: Principal,
         @RequestParam(required = false)
         symbol: String?,

@@ -1,62 +1,39 @@
 package co.nilin.opex.api.ports.proxy.impl
 
 import co.nilin.opex.api.core.inout.AssignResponse
-import co.nilin.opex.api.core.inout.CurrencyImplementation
 import co.nilin.opex.api.core.inout.DepositDetails
 import co.nilin.opex.api.core.spi.BlockchainGatewayProxy
-import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
 import co.nilin.opex.api.ports.proxy.data.AssignAddressRequest
 import co.nilin.opex.api.ports.proxy.data.DepositDetailsRequest
+import co.nilin.opex.api.ports.proxy.utils.body
 import co.nilin.opex.common.utils.LoggerDelegate
-import kotlinx.coroutines.reactive.awaitFirstOrElse
-import kotlinx.coroutines.reactor.awaitSingleOrNull
-import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.body
-import org.springframework.web.reactive.function.client.bodyToFlux
-import reactor.core.publisher.Mono
-import java.net.URI
+import org.springframework.web.client.RestTemplate
+import org.springframework.web.client.postForObject
 
 @Component
-class BlockchainGatewayProxyImpl(private val client: WebClient) : BlockchainGatewayProxy {
+class BlockchainGatewayProxyImpl(private val restTemplate: RestTemplate) : BlockchainGatewayProxy {
 
     private val logger by LoggerDelegate()
 
     @Value("\${app.opex-bc-gateway.url}")
     private lateinit var baseUrl: String
 
-    override suspend fun assignAddress(uuid: String, currency: String, chain: String): AssignResponse? {
+    override fun assignAddress(uuid: String, currency: String, chain: String): AssignResponse? {
         logger.info("calling bc-gateway assign")
-        return withContext(ProxyDispatchers.general) {
-            client.post()
-                .uri(URI.create("$baseUrl/v1/address/assign"))
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(Mono.just(AssignAddressRequest(uuid, currency, chain)))
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono(AssignResponse::class.java)
-                .awaitSingleOrNull()
-        }
+        return restTemplate.postForObject<AssignResponse>(
+            "$baseUrl/v1/address/assign",
+            body(AssignAddressRequest(uuid, currency, chain))
+        )
     }
 
-    override suspend fun getDepositDetails(refs: List<String>): List<DepositDetails> {
+    override fun getDepositDetails(refs: List<String>): List<DepositDetails> {
         logger.info("calling bc-gateway deposit details")
-        return withContext(ProxyDispatchers.general) {
-            client.post()
-                .uri(URI.create("$baseUrl/deposit/find/all"))
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(Mono.just(DepositDetailsRequest(refs)))
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<DepositDetails>()
-                .collectList()
-                .awaitFirstOrElse { emptyList() }
-        }
+        return restTemplate.postForObject<Array<DepositDetails>>(
+            "$baseUrl/deposit/find/all",
+            body(DepositDetailsRequest(refs))
+        ).toList()
     }
 
 //    override suspend fun getCurrencyImplementations(currency: String?): List<CurrencyImplementation> {

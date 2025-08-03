@@ -2,258 +2,145 @@ package co.nilin.opex.api.ports.proxy.impl
 
 import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.MarketDataProxy
-import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
+import co.nilin.opex.api.ports.proxy.utils.defaultHeaders
+import co.nilin.opex.api.ports.proxy.utils.noBody
 import co.nilin.opex.common.utils.Interval
 import co.nilin.opex.common.utils.LoggerDelegate
-import kotlinx.coroutines.reactive.awaitFirstOrElse
-import kotlinx.coroutines.reactor.awaitSingleOrNull
-import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
+import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.bodyToFlux
-import org.springframework.web.reactive.function.client.bodyToMono
+import org.springframework.web.client.RestTemplate
+import org.springframework.web.client.exchange
+import org.springframework.web.client.getForObject
+import org.springframework.web.util.UriComponentsBuilder
 import java.util.*
 
 @Component
-class MarketDataProxyImpl(private val webClient: WebClient) : MarketDataProxy {
+class MarketDataProxyImpl(private val restTemplate: RestTemplate) : MarketDataProxy {
 
     private val logger by LoggerDelegate()
 
     @Value("\${app.market.url}")
     private lateinit var baseUrl: String
 
-    override suspend fun getTradeTickerData(interval: Interval): List<PriceChange> {
-        return withContext(ProxyDispatchers.market) {
-            webClient.get()
-                .uri("$baseUrl/v1/market/ticker") {
-                    it.queryParam("interval", interval)
-                    it.build()
-                }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<PriceChange>()
-                .collectList()
-                .awaitFirstOrElse { emptyList() }
-        }
+    override fun getTradeTickerData(interval: Interval): List<PriceChange> {
+        val uri = UriComponentsBuilder.fromUriString("$baseUrl/v1/market/ticker")
+            .queryParam("interval", interval)
+            .build().toUri()
+
+        return restTemplate.exchange<Array<PriceChange>>(uri, HttpMethod.GET, noBody()).body?.toList() ?: emptyList()
     }
 
-    override suspend fun getTradeTickerDataBySymbol(symbol: String, interval: Interval): PriceChange {
-        return withContext(ProxyDispatchers.market) {
-            webClient.get()
-                .uri("$baseUrl/v1/market/$symbol/ticker") {
-                    it.queryParam("interval", interval)
-                    it.build()
-                }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono<PriceChange>()
-                .awaitSingleOrNull()
-                ?: PriceChange(symbol, openTime = Date().time, closeTime = interval.getTime())
-        }
+    override fun getTradeTickerDataBySymbol(symbol: String, interval: Interval): PriceChange {
+        val uri = UriComponentsBuilder.fromUriString("$baseUrl/v1/market/$symbol/ticker")
+            .queryParam("interval", interval)
+            .build().toUri()
+
+        return restTemplate.exchange<PriceChange?>(uri, HttpMethod.GET, noBody()).body ?: PriceChange(
+            symbol,
+            openTime = Date().time,
+            closeTime = interval.getTime()
+        )
     }
 
-    override suspend fun openBidOrders(symbol: String, limit: Int): List<OrderBook> {
-        return withContext(ProxyDispatchers.market) {
-            webClient.get()
-                .uri("$baseUrl/v1/market/$symbol/order-book") {
-                    it.queryParam("limit", limit)
-                    it.queryParam("direction", OrderDirection.BID)
-                    it.build()
-                }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<OrderBook>()
-                .collectList()
-                .awaitFirstOrElse { emptyList() }
-        }
+    override fun openBidOrders(symbol: String, limit: Int): List<OrderBook> {
+        val uri = UriComponentsBuilder.fromUriString("$baseUrl/v1/market/$symbol/order-book")
+            .queryParam("limit", limit)
+            .queryParam("direction", OrderDirection.BID)
+            .build().toUri()
+
+        return restTemplate.exchange<Array<OrderBook>>(uri, HttpMethod.GET, noBody()).body?.toList() ?: emptyList()
     }
 
-    override suspend fun openAskOrders(symbol: String, limit: Int): List<OrderBook> {
-        return withContext(ProxyDispatchers.market) {
-            webClient.get()
-                .uri("$baseUrl/v1/market/$symbol/order-book") {
-                    it.queryParam("limit", limit)
-                    it.queryParam("direction", OrderDirection.ASK)
-                    it.build()
-                }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<OrderBook>()
-                .collectList()
-                .awaitFirstOrElse { emptyList() }
-        }
+    override fun openAskOrders(symbol: String, limit: Int): List<OrderBook> {
+
+        val uri = UriComponentsBuilder.fromUriString("$baseUrl/v1/market/$symbol/order-book")
+            .queryParam("limit", limit)
+            .queryParam("direction", OrderDirection.ASK)
+            .build().toUri()
+
+        return restTemplate.exchange<Array<OrderBook>>(uri, HttpMethod.GET, noBody()).body?.toList() ?: emptyList()
     }
 
-    override suspend fun lastOrder(symbol: String): Order? {
-        return withContext(ProxyDispatchers.market) {
-            webClient.get()
-                .uri("$baseUrl/v1/market/$symbol/last-order")
-                .accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono<Order>()
-                .awaitSingleOrNull()
-        }
+    override fun lastOrder(symbol: String): Order? {
+        return restTemplate.getForObject<Order?>("$baseUrl/v1/market/$symbol/last-order", defaultHeaders())
     }
 
-    override suspend fun recentTrades(symbol: String, limit: Int): List<MarketTrade> {
-        return withContext(ProxyDispatchers.market) {
-            webClient.get()
-                .uri("$baseUrl/v1/market/$symbol/recent-trades") {
-                    it.queryParam("limit", limit)
-                    it.build()
-                }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<MarketTrade>()
-                .collectList()
-                .awaitFirstOrElse { emptyList() }
-        }
+    override fun recentTrades(symbol: String, limit: Int): List<MarketTrade> {
+        val uri = UriComponentsBuilder.fromUriString("$baseUrl/v1/market/$symbol/recent-trades")
+            .queryParam("limit", limit)
+            .build().toUri()
+        return restTemplate.exchange<Array<MarketTrade>>(uri, HttpMethod.GET, noBody()).body?.toList() ?: emptyList()
     }
 
-    override suspend fun lastPrice(symbol: String?): List<PriceTicker> {
-        return withContext(ProxyDispatchers.market) {
-            webClient.get()
-                .uri("$baseUrl/v1/market/prices") {
-                    it.queryParam("symbol", symbol)
-                    it.build()
-                }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<PriceTicker>()
-                .collectList()
-                .awaitFirstOrElse { emptyList() }
-        }
+    override fun lastPrice(symbol: String?): List<PriceTicker> {
+        val uri = UriComponentsBuilder.fromUriString("$baseUrl/v1/market/prices")
+            .queryParam("symbol", symbol)
+            .build().toUri()
+        return restTemplate.exchange<Array<PriceTicker>>(uri, HttpMethod.GET, noBody()).body?.toList() ?: emptyList()
     }
 
-    override suspend fun getBestPriceForSymbols(symbols: List<String>): List<BestPrice> {
-        return withContext(ProxyDispatchers.market) {
-            webClient.get()
-                .uri("$baseUrl/v1/market/best-prices") {
-                    it.queryParam("symbols", symbols)
-                    it.build()
-                }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<BestPrice>()
-                .collectList()
-                .awaitFirstOrElse { emptyList() }
-        }
+    override fun getBestPriceForSymbols(symbols: List<String>): List<BestPrice> {
+        val uri = UriComponentsBuilder.fromUriString("$baseUrl/v1/market/best-price")
+            .queryParam("symbols", symbols)
+            .build().toUri()
+        return restTemplate.exchange<Array<BestPrice>>(uri, HttpMethod.GET, noBody()).body?.toList() ?: emptyList()
     }
 
-    override suspend fun getCandleInfo(
+    override fun getCandleInfo(
         symbol: String,
         interval: String,
         startTime: Long?,
         endTime: Long?,
         limit: Int
     ): List<CandleData> {
-        return withContext(ProxyDispatchers.market) {
-            webClient.get()
-                .uri("$baseUrl/v1/chart/$symbol/candle") {
-                    it.queryParam("interval", interval)
-                    it.queryParam("since", startTime)
-                    it.queryParam("until", endTime)
-                    it.queryParam("limit", limit)
-                    it.build()
-                }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<CandleData>()
-                .collectList()
-                .awaitFirstOrElse { emptyList() }
-        }
+        val uri = UriComponentsBuilder.fromUriString("$baseUrl/v1/chart/$symbol/candle")
+            .queryParam("interval", interval)
+            .queryParam("since", startTime)
+            .queryParam("until", endTime)
+            .queryParam("limit", limit)
+            .build().toUri()
+        return restTemplate.exchange<Array<CandleData>>(uri, HttpMethod.GET, noBody()).body?.toList() ?: emptyList()
     }
 
-    override suspend fun getMarketCurrencyRates(quote: String, base: String?): List<CurrencyRate> {
-        return withContext(ProxyDispatchers.market) {
-            webClient.get()
-                .uri(if (base.isNullOrEmpty()) "$baseUrl/v1/rate/EXTERNAL" else "$baseUrl/v1/rate/$base/EXTERNAL") {
-                    it.queryParam("quote", quote)
-                    it.build()
-                }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<CurrencyRate>()
-                .collectList()
-                .awaitFirstOrElse { emptyList() }
-        }
+    override fun getMarketCurrencyRates(quote: String, base: String?): List<CurrencyRate> {
+        val url = if (base.isNullOrEmpty()) "$baseUrl/v1/rate/EXTERNAL" else "$baseUrl/v1/rate/$base/EXTERNAL"
+        val uri = UriComponentsBuilder.fromUriString(url)
+            .queryParam("quote", quote)
+            .build().toUri()
+        return restTemplate.exchange<Array<CurrencyRate>>(uri, HttpMethod.GET, noBody()).body?.toList() ?: emptyList()
     }
 
-    override suspend fun getExternalCurrencyRates(quote: String, base: String?): List<CurrencyRate> {
-        return withContext(ProxyDispatchers.market) {
-            webClient.get()
-                .uri(if (base.isNullOrEmpty()) "$baseUrl/v1/rate/EXTERNAL" else "$baseUrl/v1/rate/$base/EXTERNAL") {
-                    it.queryParam("quote", quote)
-                    it.build()
-                }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<CurrencyRate>()
-                .collectList()
-                .awaitFirstOrElse { emptyList() }
-        }
+    override fun getExternalCurrencyRates(quote: String, base: String?): List<CurrencyRate> {
+
+        val url = if (base.isNullOrEmpty()) "$baseUrl/v1/rate/EXTERNAL" else "$baseUrl/v1/rate/$base/EXTERNAL"
+        val uri = UriComponentsBuilder.fromUriString(url)
+            .queryParam("quote", quote)
+            .build().toUri()
+        return restTemplate.exchange<Array<CurrencyRate>>(uri, HttpMethod.GET, noBody()).body?.toList() ?: emptyList()
     }
 
-    override suspend fun countActiveUsers(interval: Interval): Long {
-        return withContext(ProxyDispatchers.market) {
-            webClient.get()
-                .uri("$baseUrl/v1/market/active-users") {
-                    it.queryParam("interval", interval)
-                    it.build()
-                }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono<CountResponse>()
-                .awaitSingleOrNull()
-                ?.value ?: 0
-        }
+    override fun countActiveUsers(interval: Interval): Long {
+
+        val uri = UriComponentsBuilder.fromUriString("$baseUrl/v1/market/active-users")
+            .queryParam("interval", interval)
+            .build().toUri()
+        return restTemplate.exchange<CountResponse?>(uri, HttpMethod.GET, noBody()).body?.value ?: 0
     }
 
-    override suspend fun countTotalOrders(interval: Interval): Long {
-        return withContext(ProxyDispatchers.market) {
-            webClient.get()
-                .uri("$baseUrl/v1/market/orders-count") {
-                    it.queryParam("interval", interval)
-                    it.build()
-                }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono<CountResponse>()
-                .awaitSingleOrNull()
-                ?.value ?: 0
-        }
+    override fun countTotalOrders(interval: Interval): Long {
+
+        val uri = UriComponentsBuilder.fromUriString("$baseUrl/v1/market/orders-count")
+            .queryParam("interval", interval)
+            .build().toUri()
+        return restTemplate.exchange<CountResponse?>(uri, HttpMethod.GET, noBody()).body?.value ?: 0
     }
 
-    override suspend fun countTotalTrades(interval: Interval): Long {
-        return withContext(ProxyDispatchers.market) {
-            webClient.get()
-                .uri("$baseUrl/v1/market/trades-count") {
-                    it.queryParam("interval", interval)
-                    it.build()
-                }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono<CountResponse>()
-                .awaitSingleOrNull()
-                ?.value ?: 0
-        }
+    override fun countTotalTrades(interval: Interval): Long {
+
+        val uri = UriComponentsBuilder.fromUriString("$baseUrl/v1/market/trades-count")
+            .queryParam("interval", interval)
+            .build().toUri()
+        return restTemplate.exchange<CountResponse?>(uri, HttpMethod.GET, noBody()).body?.value ?: 0
     }
 }

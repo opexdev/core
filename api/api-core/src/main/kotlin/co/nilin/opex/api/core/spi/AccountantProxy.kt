@@ -5,10 +5,10 @@ import co.nilin.opex.api.core.inout.PairConfigResponse
 
 interface AccountantProxy {
 
-    suspend fun getPairConfigs(): List<PairConfigResponse>
+    fun getPairConfigs(): List<PairConfigResponse>
 
-    suspend fun getFeeConfigs(): List<PairFeeResponse>
+    fun getFeeConfigs(): List<PairFeeResponse>
 
-    suspend fun getFeeConfig(symbol: String): PairFeeResponse
+    fun getFeeConfig(symbol: String): PairFeeResponse
 
 }

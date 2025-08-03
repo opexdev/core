@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 class DepositController(private val walletProxy: WalletProxy) {
 
     @PostMapping
-    suspend fun deposit(@RequestBody request: RequestDepositBody): TransferResult? {
+    fun deposit(@RequestBody request: RequestDepositBody): TransferResult? {
         return walletProxy.deposit(request)
     }
 }

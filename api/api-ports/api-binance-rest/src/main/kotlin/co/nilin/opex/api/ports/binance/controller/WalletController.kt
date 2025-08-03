@@ -25,7 +25,7 @@ class WalletController(
 ) {
 
     @GetMapping("/v1/capital/deposit/address")
-    suspend fun assignAddress(
+    fun assignAddress(
         @RequestParam
         coin: String,
         @RequestParam
@@ -189,7 +189,7 @@ class WalletController(
 //    }
 
     @GetMapping("/v1/asset/tradeFee")
-    suspend fun getPairFees(
+    fun getPairFees(
         @RequestParam(required = false)
         symbol: String?,
         @RequestParam(required = false)
@@ -223,7 +223,7 @@ class WalletController(
     }
 
     @GetMapping("/v1/asset/getUserAsset")
-    suspend fun getUserAssets(
+    fun getUserAssets(
         @CurrentSecurityContext
         securityContext: SecurityContext,
         @RequestParam(required = false)
