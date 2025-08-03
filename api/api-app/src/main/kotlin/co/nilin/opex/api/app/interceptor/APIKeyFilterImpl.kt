@@ -30,23 +30,23 @@ class APIKeyFilterImpl(private val apiKeyService: APIKeyServiceImpl) : APIKeyFil
             if (apiKey != null && apiKey.isEnabled && apiKey.accessToken != null && !apiKey.isExpired) {
                 val auth = "Bearer ${apiKey.accessToken}"
                 val wReq = object : HttpServletRequestWrapper(request) {
-                    override fun getHeader(name: String?): String {
-                        return when (name) {
-                            "Authorization" -> auth
-                            else -> super.getHeader(name)
-                        }
+                    override fun getHeader(name: String?): String? {
+                        return if (name?.equals("Authorization", true) == true)
+                            auth
+                        else
+                            super.getHeader(name)
                     }
 
                     override fun getHeaders(name: String?): Enumeration<String> {
-                        return when (name) {
-                            "Authorization" -> Collections.enumeration(listOf(auth))
-                            else -> super.getHeaders(name)
-                        }
+                        return if (name?.equals("Authorization", true) == true)
+                            Collections.enumeration(listOf(auth))
+                        else
+                            super.getHeaders(name)
                     }
 
                     override fun getHeaderNames(): Enumeration<String> {
                         val names = mutableListOf<String>()
-                        request.headerNames.toList().forEach { names.add(it) }
+                        request.headerNames?.toList()?.let { h -> h.forEach { names.add(it) } }
                         names.add("Authorization")
                         return Collections.enumeration(names.distinct())
                     }
