@@ -35,7 +35,7 @@ class MatchingGatewayProxyImpl(private val restTemplate: RestTemplate) : Matchin
     ): OrderSubmitResult? {
         logger.info("calling matching-gateway order create")
         val request = CreateOrderRequest(uuid, pair, price, quantity, direction, matchConstraint, orderType, userLevel)
-        return restTemplate.exchange<OrderSubmitResult?>("$baseUrl/order", HttpMethod.POST, body(request)).body
+        return restTemplate.exchange<OrderSubmitResult?>("$baseUrl/order", HttpMethod.POST, body(request, token)).body
     }
 
     override fun cancelOrder(
@@ -49,7 +49,7 @@ class MatchingGatewayProxyImpl(private val restTemplate: RestTemplate) : Matchin
         return restTemplate.exchange<OrderSubmitResult?>(
             "$baseUrl/order/cancel",
             HttpMethod.POST,
-            body(CancelOrderRequest(ouid, uuid, orderId, symbol))
+            body(CancelOrderRequest(ouid, uuid, orderId, symbol), token)
         ).body
     }
 
