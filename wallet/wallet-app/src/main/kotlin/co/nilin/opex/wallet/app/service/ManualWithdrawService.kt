@@ -36,7 +36,7 @@ class ManualWithdrawService(
             ?.takeIf { it is OffChainGatewayCommand && it.transferMethod == TransferMethod.MANUALLY }
             ?.let {
                 val gatewayData = GatewayData(
-                    it.isActive ?: true && it.withdrawAllowed ?: true,
+                    it.isWithdrawActive ?: true && it.withdrawAllowed ?: true,
                     it.withdrawFee ?: BigDecimal.ZERO,
                     it.withdrawMin ?: BigDecimal.ZERO,
                     it.withdrawMax

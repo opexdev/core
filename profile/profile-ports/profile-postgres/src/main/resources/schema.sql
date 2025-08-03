@@ -1,15 +1,15 @@
 CREATE TABLE IF NOT EXISTS profile
 (
     id               SERIAL PRIMARY KEY,
-    email            VARCHAR(100) NOT NULL UNIQUE,
+    email            VARCHAR(100) UNIQUE,
     last_name        VARCHAR(256),
     user_id          VARCHAR(100) NOT NULL UNIQUE,
     create_date      TIMESTAMP,
-    identifier       VARCHAR(100),
+    identifier       VARCHAR(100) UNIQUE,
     address          VARCHAR(256),
     first_name       VARCHAR(256),
     telephone        VARCHAR(256),
-    mobile           VARCHAR(256),
+    mobile           VARCHAR(256) UNIQUE,
     nationality      VARCHAR(256),
     gender           VARCHAR(50),
     birth_date       TIMESTAMP,
@@ -18,13 +18,15 @@ CREATE TABLE IF NOT EXISTS profile
     creator          VARCHAR(100),
     last_update_date TIMESTAMP DEFAULT CURRENT_DATE,
     kyc_level        varchar(100),
-    verification_status VARCHAR(255)
+    verification_status VARCHAR(255),
+    personal_identity_match BOOLEAN,
+    mobile_identity_match BOOLEAN
 );
 
 CREATE TABLE IF NOT EXISTS profile_history
 (
     id                  SERIAL PRIMARY KEY,
-    email               VARCHAR(100) NOT NULL,
+    email               VARCHAR(100),
     last_name           VARCHAR(256),
     user_id             VARCHAR(100) NOT NULL,
     create_date         TIMESTAMP,
@@ -45,7 +47,10 @@ CREATE TABLE IF NOT EXISTS profile_history
     change_request_date TIMESTAMP,
     change_request_type VARCHAR(100),
     kyc_level           varchar(100),
+    personal_identity_match BOOLEAN,
+    mobile_identity_match BOOLEAN,
     verification_status VARCHAR(255)
+
 );
 
 
@@ -90,10 +95,12 @@ CREATE TABLE IF NOT EXISTS linked_bank_account
     verified          BOOLEAN,
     verifier          VARCHAR(100),
     number            VARCHAR(100),
-    account_id        VARCHAR(100),
+    account_id        VARCHAR(100) UNIQUE,
     description       VARCHAR(100)
 );
 
+ALTER TABLE linked_bank_account
+    DROP CONSTRAINT IF EXISTS unique_account;
 ALTER TABLE linked_bank_account
     ADD CONSTRAINT unique_account UNIQUE (user_id, number);
 
@@ -130,11 +137,11 @@ $BODY$
 BEGIN
     INSERT INTO public.profile_history (original_data_id, change_request_date, change_request_type, email, user_id,
                                         create_date, identifier, address, first_name, last_name, mobile, telephone,
-                                        nationality, gender, birth_date, status, postal_code, creator, kyc_level)
+                                        nationality, gender, birth_date, status, postal_code, creator, kyc_level,personal_identity_match,mobile_identity_match)
     VALUES (OLD.id, now(), 'UPDATE', OLD.email, OLD.user_id, OLD.create_date, OLD.identifier, OLD.address,
             OLD.first_name,
             OLD.last_name, OLD.mobile, OLD.telephone, OLD.nationality, OLD.gender, OLD.birth_date, OLD.status,
-            OLD.postal_code, OLD.creator, OLD.kyc_level);
+            OLD.postal_code, OLD.creator, OLD.kyc_level,OLD.personal_identity_match,OLD.mobile_identity_match);
     RETURN NULL;
 END;
 $BODY$ language plpgsql;
@@ -146,14 +153,16 @@ $BODY$
 BEGIN
     INSERT INTO public.profile_history (original_data_id, change_request_date, change_request_type, email, user_id,
                                         create_date, identifier, address, first_name, last_name, mobile, telephone,
-                                        nationality, gender, birth_date, status, postal_code, creator, kyc_level)
+                                        nationality, gender, birth_date, status, postal_code, creator, kyc_level,personal_identity_match,mobile_identity_match)
     VALUES (OLD.id, now(), 'DELETE', OLD.email, OLD.user_id, OLD.create_date, OLD.identifier, OLD.address,
             OLD.first_name,
             OLD.last_name, OLD.mobile, OLD.telephone, OLD.nationality, OLD.gender, OLD.birth_date, OLD.status,
-            OLD.postal_code, OLD.creator, OLD.kyc_level);
+            OLD.postal_code, OLD.creator, OLD.kyc_level,OLD.personal_identity_match,OLD.mobile_identity_match);
     RETURN NULL;
 END;
 $BODY$ language plpgsql;
+
+
 
 CREATE OR REPLACE FUNCTION triger_limitation_function() RETURNS TRIGGER AS
 $BODY$
@@ -179,6 +188,8 @@ BEGIN
 END;
 $BODY$ language plpgsql;
 
+
+
 CREATE OR REPLACE FUNCTION triger_linked_account_function() RETURNS TRIGGER AS
 $BODY$
 BEGIN
@@ -202,6 +213,8 @@ BEGIN
 END;
 $BODY$ language plpgsql;
 
+
+
 CREATE TRIGGER profile_log_update
     AFTER UPDATE
     ON profile
@@ -212,6 +225,8 @@ CREATE TRIGGER profile_log_delete
     ON profile
     FOR EACH ROW
 EXECUTE PROCEDURE triger_delete_function();
+
+
 CREATE TRIGGER limitation_log_update
     AFTER UPDATE
     ON limitation
@@ -223,12 +238,13 @@ CREATE TRIGGER limitation_log_delete
     FOR EACH ROW
 EXECUTE PROCEDURE triger_delete_limitation_function();
 
+
+
 CREATE TRIGGER linked_account_log_update
     AFTER UPDATE
     ON linked_bank_account
     FOR EACH ROW
 EXECUTE PROCEDURE triger_linked_account_function();
-
 CREATE TRIGGER linked_account_log_delete
     AFTER DELETE
     ON linked_bank_account
@@ -243,6 +259,42 @@ CREATE TABLE IF NOT EXISTS profile_approval_request
     create_date TIMESTAMP,
     update_date TIMESTAMP,
     updater     VARCHAR(100),
-    description VARCHAR(255)
+    description VARCHAR(255),
+    UNIQUE (profile_id, status)
 );
 
+DO
+$$
+    BEGIN
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'profile' AND column_name = 'verification_status') THEN ALTER TABLE profile
+            ADD COLUMN verification_status VARCHAR(255);
+        END IF;
+    END
+$$;
+
+DO
+$$
+    BEGIN
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'profile_history'
+                         AND column_name = 'verification_status') THEN ALTER TABLE profile_history
+            ADD COLUMN verification_status VARCHAR(255);
+        END IF;
+    END
+$$;
+
+DO
+$$
+    BEGIN
+        IF EXISTS (SELECT 1
+                   FROM information_schema.columns
+                   WHERE table_name = 'profile_history'
+                     AND column_name = 'gender'
+                     AND data_type != 'character varying') THEN ALTER TABLE profile_history
+            ALTER COLUMN gender SET DATA TYPE VARCHAR(50);
+        END IF;
+    END
+$$;

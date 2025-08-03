@@ -207,12 +207,33 @@ CREATE TABLE IF NOT EXISTS currency_off_chain_gateway
     withdraw_max     DECIMAL      NOT NULL,
     deposit_min      DECIMAL      NOT NULL,
     deposit_max      DECIMAL      NOT NULL,
-    is_active        BOOLEAN      NOT NULL        DEFAULT TRUE,
+    is_deposit_active        BOOLEAN      NOT NULL        DEFAULT TRUE,
+    is_withdraw_active        BOOLEAN      NOT NULL        DEFAULT TRUE,
     transfer_method  VARCHAR(256) NOT NULL,
+    description            TEXT,
+    display_order     INTEGER,
     UNIQUE (currency_symbol, transfer_method)
 
 );
 
+
+-- CREATE TABLE IF NOT EXISTS currency_manual_gateway
+-- (
+--     id               SERIAL PRIMARY KEY,
+--     currency_symbol  VARCHAR(72)  NOT NULL,
+--     gateway_uuid     VARCHAR(256) NOT NULL UNIQUE DEFAULT uuid_generate_v4(),
+--     withdraw_allowed BOOLEAN      NOT NULL,
+--     deposit_allowed  BOOLEAN      NOT NULL,
+--     withdraw_fee     DECIMAL      NOT NULL,
+--     withdraw_min     DECIMAL      NOT NULL,
+--     withdraw_max     DECIMAL      NOT NULL,
+--     deposit_min      DECIMAL      NOT NULL,
+--     deposit_max      DECIMAL      NOT NULL,
+--     is_active        BOOLEAN      NOT NULL        DEFAULT TRUE,
+--     allowed_for      VARCHAR(256) NOT NULL,
+--     UNIQUE (currency_symbol, allowed_for)
+--
+-- );
 
 CREATE TABLE IF NOT EXISTS terminal
 (
@@ -222,8 +243,8 @@ CREATE TABLE IF NOT EXISTS terminal
     identifier      VARCHAR(255) NOT NULL,
     active          BOOLEAN DEFAULT TRUE,
     type            VARCHAR(255) NOT NULL,
-    meta_data VARCHAR(255) NOT NULL,
-    description VARCHAR(255)
+    bank_swift_code VARCHAR(255) NOT NULL,
+    display_order     INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS gateway_terminal
@@ -235,6 +256,132 @@ CREATE TABLE IF NOT EXISTS gateway_terminal
 
 );
 
+---------------------------------------------------------------------------
+------------------------ Withdraw from otc to opex ------------------------
+---------------------------------------------------------------------------
+UPDATE currency_off_chain_gateway
+SET transfer_method = CASE
+                          WHEN transfer_method = 'Card2card' THEN 'CARD'
+                          WHEN transfer_method = 'Sheba' THEN 'SHEBA' END
+WHERE transfer_method IN ('Card2card', 'Sheba');
+
+
+
+UPDATE withdraws
+SET dest_network = CASE WHEN dest_network = 'Card2card' THEN 'CARD' WHEN dest_network = 'Sheba' THEN 'SHEBA' END
+WHERE dest_network IN ('Card2card', 'Sheba');
+
+-- Rename tables
+DO
+$$
+    BEGIN
+        IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'bank_data') AND
+           Not EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'terminal') THEN
+            EXECUTE 'ALTER TABLE bank_data RENAME TO terminal' ;
+        END IF;
+
+        IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'gateway_bank_data') AND
+           Not EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'gateway_bank_data') THEN
+            EXECUTE 'ALTER TABLE gateway_bank_data RENAME TO gateway_terminal' ;
+        END IF;
+    END
+$$;
+
+UPDATE terminal
+SET type = CASE WHEN type = 'Card2card' THEN 'CARD' WHEN type = 'Sheba' THEN 'SHEBA' END
+WHERE type IN ('Card2card', 'Sheba');
+
+--
+-- -- Rename sequences
+-- DO
+-- $$
+--     BEGIN
+--         IF EXISTS (SELECT 1
+--                    FROM pg_class
+--                    WHERE relkind = 'S' AND relname = 'bank_data_id_seq') THEN ALTER SEQUENCE bank_data_id_seq RENAME TO terminal_id_seq;
+--         END IF;
+--
+--         IF EXISTS (SELECT 1
+--                    FROM pg_class
+--                    WHERE relkind = 'S'
+--                      AND relname = 'gateway_bank_data_id_seq') THEN ALTER SEQUENCE gateway_bank_data_id_seq RENAME TO gateway_terminal_id_seq;
+--         END IF;
+--     END
+-- $$;
+--
+-- Rename columns
+DO
+$$
+    BEGIN
+        IF EXISTS (SELECT 1
+                   FROM information_schema.columns
+                   WHERE table_name = 'terminal' AND column_name = 'bank_swift_code') THEN ALTER TABLE terminal
+            RENAME COLUMN bank_swift_code TO meta_data;
+        END IF;
+
+        IF EXISTS (SELECT 1
+                   FROM information_schema.columns
+                   WHERE table_name = 'gateway_terminal'
+                     AND column_name = 'bank_data_id') THEN ALTER TABLE gateway_terminal
+            RENAME COLUMN bank_data_id TO terminal_id;
+        END IF;
+    END
+$$;
+
+--
+-- Add new column
+DO
+$$
+    BEGIN
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'terminal' AND column_name = 'description') THEN ALTER TABLE terminal
+            ADD COLUMN description VARCHAR(255);
+        END IF;
+    END
+$$;
+
+--
+-- Rename/add  constraints
+-- DO
+-- $$
+--     BEGIN
+--         IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'bank_data_pkey') THEN ALTER TABLE terminal
+--             RENAME CONSTRAINT bank_data_pkey TO terminal_pkey;
+--         END IF;
+--
+--         IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'gateway_bank_data_pkey') THEN ALTER TABLE gateway_terminal
+--             RENAME CONSTRAINT gateway_bank_data_pkey TO gateway_terminal_pkey;
+--         END IF;
+--
+--         IF EXISTS (SELECT 1
+--                    FROM pg_constraint
+--                    WHERE conname = 'gateway_bank_data_bank_data_id_gateway_id_key') THEN ALTER TABLE gateway_terminal
+--             RENAME CONSTRAINT gateway_bank_data_bank_data_id_gateway_id_key TO gateway_terminal_terminal_id_gateway_id_key;
+--         END IF;
+--
+--         IF EXISTS (SELECT 1
+--                    FROM pg_constraint
+--                    WHERE conname = 'gateway_bank_data_bank_data_id_fkey') THEN ALTER TABLE gateway_terminal
+--             RENAME CONSTRAINT gateway_bank_data_bank_data_id_fkey TO gateway_terminal_terminal_id_fkey;
+--         END IF;
+--
+--         IF EXISTS (SELECT 1
+--                    FROM pg_constraint
+--                    WHERE conname = 'gateway_bank_data_gateway_id_fkey') THEN ALTER TABLE gateway_terminal
+--             RENAME CONSTRAINT gateway_bank_data_gateway_id_fkey TO gateway_terminal_gateway_id_fkey;
+--         END IF;
+
+--         IF Not EXISTS (SELECT 1
+--                    FROM pg_constraint
+--                    WHERE conname = 'unique_transaction_ref') THEN ALTER TABLE deposits
+--             ADD CONSTRAINT unique_transaction_ref UNIQUE (transaction_ref);
+--         END IF;
+--     END
+-- $$;
+-- ---------------------------------------------------------------------------
+-- ---------------------------------- END ------------------------------------
+-- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS voucher_group
 (
     id          SERIAL PRIMARY KEY,
@@ -256,6 +403,8 @@ CREATE TABLE IF NOT EXISTS voucher
     uuid         VARCHAR(36),
     voucher_group     INTEGER REFERENCES voucher_group (id) NOT NULL
 );
+
+DROP TABLE IF EXISTS currency_manual_gateway;
 
 CREATE TABLE IF NOT EXISTS voucher_usage
 (
@@ -284,6 +433,74 @@ CREATE TABLE IF NOT EXISTS voucher_sale_data
     seller_uuid           VARCHAR(36) NOT NULL
 );
 
+DO
+$$
+    BEGIN
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'voucher_group' AND column_name = 'type') THEN ALTER TABLE voucher_group
+            ADD COLUMN type VARCHAR(20) ;
+        END IF;
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'voucher_group' AND column_name = 'status') THEN ALTER TABLE voucher_group
+            ADD COLUMN status VARCHAR(20);
+        END IF;
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'voucher_group' AND column_name = 'remaining_usage') THEN ALTER TABLE voucher_group
+            ADD COLUMN remaining_usage INTEGER;
+        END IF;
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'voucher_group' AND column_name = 'user_limit') THEN ALTER TABLE voucher_group
+            ADD COLUMN user_limit INTEGER;
+        END IF;
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'voucher_group' AND column_name = 'version') THEN ALTER TABLE voucher_group
+            ADD COLUMN version INTEGER DEFAULT 1;
+        END IF;
+        IF EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'voucher' AND column_name = 'voucher_group') THEN ALTER TABLE voucher
+            ALTER COLUMN voucher_group SET NOT NULL ;
+        END IF;
+--         IF EXISTS (SELECT 1
+--                        FROM information_schema.columns
+--                        WHERE table_name = 'voucher' AND column_name = 'status') THEN ALTER TABLE voucher
+--             DROP COLUMN status;
+--         END IF;
+--         IF EXISTS (SELECT 1
+--                    FROM information_schema.columns
+--                    WHERE table_name = 'voucher' AND column_name = 'use_date') THEN ALTER TABLE voucher
+--             DROP COLUMN use_date;
+--         END IF;
+--         IF EXISTS (SELECT 1
+--                    FROM information_schema.columns
+--                    WHERE table_name = 'voucher' AND column_name = 'uuid') THEN ALTER TABLE voucher
+--             DROP COLUMN uuid;
+--         END IF;
+    END
+$$;
+
+
+DO
+$$
+    BEGIN
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'deposits' AND column_name = 'transfer_method') THEN ALTER TABLE deposits
+            ADD COLUMN transfer_method VARCHAR(255);
+        END IF;
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'withdraws' AND column_name = 'transfer_method') THEN ALTER TABLE withdraws
+            ADD COLUMN transfer_method VARCHAR(255);
+        END IF;
+    END
+$$;
+
 CREATE TABLE IF NOT EXISTS quote_currency
 (
     id          SERIAL PRIMARY KEY,
@@ -291,3 +508,14 @@ CREATE TABLE IF NOT EXISTS quote_currency
     is_active         BOOLEAN      NOT NULL DEFAULT false,
     last_update_date TIMESTAMP
 );
+
+DO
+$$
+BEGIN
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'currency' AND column_name = 'max_order') THEN ALTER TABLE currency
+    ADD COLUMN max_order DECIMAL;
+END IF;
+END
+$$;

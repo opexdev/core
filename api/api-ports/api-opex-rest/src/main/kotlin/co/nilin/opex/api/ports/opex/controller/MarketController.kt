@@ -27,12 +27,12 @@ class MarketController(
     private val validDurations = arrayListOf("24h", "7d", "1M")
 
     @GetMapping("/currency")
-    suspend fun getCurrencies(): List<CurrencyData> {
+    fun getCurrencies(): List<CurrencyData> {
         return walletProxy.getCurrencies()
     }
 
     @GetMapping("/pair")
-    suspend fun getPairs(): List<PairInfoResponse> {
+    fun getPairs(): List<PairInfoResponse> {
         val pairSettings = matchingGatewayProxy.getPairSettings().associateBy { it.pair }
 
         return accountantProxy.getPairConfigs().mapNotNull { config ->
@@ -51,7 +51,7 @@ class MarketController(
     }
 
     @GetMapping("/currency/gateway")
-    suspend fun getCurrencyGateways(
+    fun getCurrencyGateways(
         @RequestParam(defaultValue = "true") includeOffChainGateways: Boolean,
         @RequestParam(defaultValue = "true") includeOnChainGateways: Boolean,
     ): List<CurrencyGatewayCommand> {
@@ -59,44 +59,36 @@ class MarketController(
     }
 
     @GetMapping("/pair/fee")
-    suspend fun getPairFees(): List<PairFeeResponse> {
+    fun getPairFees(): List<PairFeeResponse> {
         return accountantProxy.getFeeConfigs()
     }
 
     @GetMapping("/stats")
-    suspend fun getMarketStats(
+    fun getMarketStats(
         @RequestParam interval: String,
         @RequestParam(required = false) limit: Int?
-    ): MarketStatResponse = coroutineScope {
+    ): MarketStatResponse  {
         val intervalEnum = Interval.findByLabel(interval) ?: Interval.Week
         val validLimit = getValidLimit(limit)
 
-        val mostIncreased = async {
-            marketStatProxy.getMostIncreasedInPricePairs(intervalEnum, validLimit)
-        }
+        val mostIncreased = marketStatProxy.getMostIncreasedInPricePairs(intervalEnum, validLimit)
 
-        val mostDecreased = async {
-            marketStatProxy.getMostDecreasedInPricePairs(intervalEnum, validLimit)
-        }
+        val mostDecreased = marketStatProxy.getMostDecreasedInPricePairs(intervalEnum, validLimit)
 
-        val highestVolume = async {
-            marketStatProxy.getHighestVolumePair(intervalEnum)
-        }
+        val highestVolume = marketStatProxy.getHighestVolumePair(intervalEnum)
 
-        val mostTrades = async {
-            marketStatProxy.getTradeCountPair(intervalEnum)
-        }
+        val mostTrades = marketStatProxy.getTradeCountPair(intervalEnum)
 
-        MarketStatResponse(
-            mostIncreased.await(),
-            mostDecreased.await(),
-            highestVolume.await(),
-            mostTrades.await()
+        return MarketStatResponse(
+            mostIncreased,
+            mostDecreased,
+            highestVolume,
+            mostTrades
         )
     }
 
     @GetMapping("/info")
-    suspend fun getMarketInfo(@RequestParam interval: String): MarketInfoResponse {
+    fun getMarketInfo(@RequestParam interval: String): MarketInfoResponse {
         val intervalEnum = Interval.findByLabel(interval) ?: Interval.ThreeMonth
         return MarketInfoResponse(
             marketDataProxy.countActiveUsers(intervalEnum),
@@ -106,7 +98,7 @@ class MarketController(
     }
 
     @GetMapping("/depth")
-    suspend fun orderBook(
+    fun orderBook(
         @RequestParam
         symbol: String,
         @RequestParam(required = false)
@@ -143,7 +135,7 @@ class MarketController(
     }
 
     @GetMapping("/trades")
-    suspend fun recentTrades(
+    fun recentTrades(
         @RequestParam
         symbol: String,
         @RequestParam(required = false)
@@ -168,7 +160,7 @@ class MarketController(
     }
 
     @GetMapping("/ticker/{duration:24h|7d|1M}")
-    suspend fun priceChange(
+    fun priceChange(
         @PathVariable duration: String,
         @RequestParam(required = false) symbol: String?,
         @RequestParam(required = false) quote: String?
@@ -195,17 +187,17 @@ class MarketController(
     }
 
     @GetMapping("/ticker/price")
-    suspend fun priceTicker(@RequestParam(required = false) symbol: String?): List<PriceTicker> {
+    fun priceTicker(@RequestParam(required = false) symbol: String?): List<PriceTicker> {
         return marketDataProxy.lastPrice(symbol)
     }
 
     @GetMapping("/currencyInfo/quotes")
-    suspend fun getQuoteCurrencies(): List<String> {
+    fun getQuoteCurrencies(): List<String> {
         return walletProxy.getQuoteCurrencies().map { it.currency }
     }
 
     @GetMapping("/klines")
-    suspend fun klines(
+    fun klines(
         @RequestParam
         symbol: String,
         @RequestParam

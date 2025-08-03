@@ -18,7 +18,7 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/v2/admin/profile")
+@RequestMapping("/admin/profile")
 
 class ProfileAdminController(
     val profileManagement: ProfileManagement,

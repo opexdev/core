@@ -39,7 +39,16 @@ interface ProfileRepository : ReactiveCrudRepository<ProfileModel, Long> {
     fun searchUsersBy(userId: String?, mobile: String?, email: String?, firstName: String?, lastName: String?, nationalCode: String?, createDateFrom: LocalDateTime?, createDateTo: LocalDateTime?, pageable: Pageable): Flow<ProfileModel>?
 
 
-    fun findByUserIdOrEmail(userId: String, email: String): Mono<ProfileModel>?
+    @Query("""
+        SELECT * FROM profile
+        WHERE user_id = :userId
+        OR ( :mobile IS NOT NULL AND mobile = :mobile )
+        OR ( :email IS NOT NULL AND lower(email) = lower(:email) )
+    """)
+    fun findByUserIdOrEmailOrMobile(userId: String, email: String? , mobile : String?): Mono<ProfileModel>?
 
+    fun findByMobile(mobile : String?): Mono<ProfileModel>?
+
+    fun findByEmail(email: String?): Mono<ProfileModel>?
 
 }

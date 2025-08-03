@@ -15,13 +15,13 @@ import java.security.Principal
 class APIKeyController(private val apiKeyService: APIKeyServiceImpl) {
 
     @GetMapping
-    suspend fun getKeys(principal: Principal): List<APIKeyResponse> {
+    fun getKeys(principal: Principal): List<APIKeyResponse> {
         return apiKeyService.getKeysByUserId(principal.name)
             .map { APIKeyResponse(it.label, it.expirationTime, it.allowedIPs, it.key, it.isEnabled) }
     }
 
     @PostMapping
-    suspend fun create(
+    fun create(
         @RequestBody request: CreateAPIKeyRequest,
         @CurrentSecurityContext securityContext: SecurityContext
     ): Any {
@@ -40,17 +40,17 @@ class APIKeyController(private val apiKeyService: APIKeyServiceImpl) {
     }
 
     @PutMapping("/{key}/enable")
-    suspend fun enableKey(principal: Principal, @PathVariable key: String) {
+    fun enableKey(principal: Principal, @PathVariable key: String) {
         apiKeyService.changeKeyState(principal.name, key, true)
     }
 
     @PutMapping("/{key}/disable")
-    suspend fun disableKey(principal: Principal, @PathVariable key: String) {
+    fun disableKey(principal: Principal, @PathVariable key: String) {
         apiKeyService.changeKeyState(principal.name, key, false)
     }
 
     @DeleteMapping("/{key}")
-    suspend fun deleteKey(principal: Principal, @PathVariable key: String) {
+    fun deleteKey(principal: Principal, @PathVariable key: String) {
         apiKeyService.deleteKey(principal.name, key)
     }
 

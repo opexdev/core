@@ -2,11 +2,12 @@ package co.nilin.opex.profile.ports.postgres.model.base
 
 import co.nilin.opex.profile.core.data.profile.Gender
 import co.nilin.opex.profile.core.data.kyc.KycLevel
+import co.nilin.opex.profile.core.data.profile.NationalityType
 import co.nilin.opex.profile.core.data.profile.UserStatus
 import java.time.LocalDateTime
 
 open class Profile {
-    lateinit var email: String
+    var email: String? = null
     lateinit var userId: String
     var firstName: String? = null
     var lastName: String? = null
@@ -14,7 +15,7 @@ open class Profile {
     var mobile: String? = null
     var telephone: String? = null
     var postalCode: String? = null
-    var nationality: String? = null
+    var nationality: NationalityType? = null
     var identifier: String? = null
     var gender: Gender? = null
     lateinit var birthDate: LocalDateTime
@@ -23,6 +24,7 @@ open class Profile {
     var lastUpdateDate: LocalDateTime? = null
     var creator: String? = null
     var kycLevel: KycLevel? = KycLevel.Level1
-    var verificationStatus : Boolean? = false
+    var mobileIdentityMatch : Boolean? = false
+    var personalIdentityMatch : Boolean? = false
 
 }

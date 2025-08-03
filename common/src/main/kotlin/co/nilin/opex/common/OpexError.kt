@@ -50,6 +50,10 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     InvalidUserCredentials(5015, "Invalid user credentials", HttpStatus.BAD_REQUEST),
     InvalidRegisterToken(5016, "Invalid register token", HttpStatus.BAD_REQUEST),
     ExpiredOTP(5017, "OTP is expired", HttpStatus.BAD_REQUEST),
+    InvalidToken(5018, "Invalid token", HttpStatus.BAD_REQUEST),
+    InternalIdGenerateFailed(5019, "Internal id generate failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    CaptchaRequired(5020, "Captcha required", HttpStatus.BAD_REQUEST),
+
 
 
     // code 6000: wallet
@@ -137,14 +141,28 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
 
 
     //code 12000 profile
-    UserIdAlreadyExists(130001, "User with this id or email is already registered", HttpStatus.BAD_REQUEST),
-    InvalidLinkedAccount(130002, "Irrelevant account", HttpStatus.BAD_REQUEST),
-    AccountNotFound(130003, " Account not found", HttpStatus.BAD_REQUEST),
-    DuplicateAccount(130004, " Duplicate account", HttpStatus.BAD_REQUEST),
-    InvalidIban(130005, " Invalid iban number", HttpStatus.BAD_REQUEST),
-    InvalidCard(130006, " Invalid card number", HttpStatus.BAD_REQUEST),
-    VerificationFailed(130007, "Verification Failed", HttpStatus.BAD_REQUEST),
-    ProfileApprovalRequestAlreadyExists(130008, "Request Already Exists", HttpStatus.BAD_REQUEST),
+    UserIdAlreadyExists(13001, "User with this id or email is already registered", HttpStatus.BAD_REQUEST),
+    InvalidLinkedAccount(13002, "Irrelevant account", HttpStatus.BAD_REQUEST),
+    AccountNotFound(13003, " Account not found", HttpStatus.BAD_REQUEST),
+    DuplicateAccount(13004, " Duplicate account", HttpStatus.BAD_REQUEST),
+    InvalidIban(13005, " Invalid iban number", HttpStatus.BAD_REQUEST),
+    InvalidCard(13006, " Invalid card number", HttpStatus.BAD_REQUEST),
+    ShahkarVerificationFailed(13007, "Shahkar Verification Failed", HttpStatus.BAD_REQUEST),
+    ProfileApprovalRequestAlreadyExists(13008, "Request Already Exists", HttpStatus.BAD_REQUEST),
+    ProfileNotfound(13009, "Profile not found", HttpStatus.NOT_FOUND),
+    EmailAlreadyExists(13010, "Email already exists", HttpStatus.BAD_REQUEST),
+    MobileAlreadyExists(13011, "Mobile already exists", HttpStatus.BAD_REQUEST),
+    InvalidEmail(13012, "Invalid email", HttpStatus.BAD_REQUEST),
+    InvalidMobile(13013, "Invalid mobile", HttpStatus.BAD_REQUEST),
+    MobileAlreadySet(13014, "Mobile already set", HttpStatus.BAD_REQUEST),
+    EmailAlreadySet(13015, "Email already set", HttpStatus.BAD_REQUEST),
+    ProfileAlreadyCompleted(13016, "Profile already completed", HttpStatus.BAD_REQUEST),
+    FirstNameIsNotSimilarEnough(13017, "The first name is not similar enough.", HttpStatus.BAD_REQUEST),
+    LastNameIsNotSimilarEnough(13018, "The last name is not similar enough.", HttpStatus.BAD_REQUEST),
+    ShahkarInquiryUnavailable(13019,"Shahkar inquiry unavailable" , HttpStatus.SERVICE_UNAVAILABLE),
+    ComparativeInquiryUnavailable(13020,"Comparative inquiry unavailable" , HttpStatus.SERVICE_UNAVAILABLE),
+    ProfileApprovalRequestNotfound(13021, "Profile approval request not found", HttpStatus.NOT_FOUND),
+    InvalidProfileApprovalRequestStatus(13022, "Invalid profile approval request status", HttpStatus.BAD_REQUEST),
     ;
 
     override fun code() = this.code

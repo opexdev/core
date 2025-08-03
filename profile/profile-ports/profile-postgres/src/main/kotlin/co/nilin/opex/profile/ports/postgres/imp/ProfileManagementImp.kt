@@ -17,6 +17,7 @@ import co.nilin.opex.profile.ports.postgres.convertor.convertProfileModelToCompl
 import co.nilin.opex.profile.ports.postgres.dao.ProfileHistoryRepository
 import co.nilin.opex.profile.ports.postgres.dao.ProfileRepository
 import co.nilin.opex.profile.ports.postgres.model.entity.ProfileModel
+import co.nilin.opex.profile.ports.postgres.utils.toProfileModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -37,6 +38,8 @@ class ProfileManagementImp(
     private var kycProxyImp: KycProxyImp,
 ) : ProfilePersister {
     private val logger = LoggerFactory.getLogger(ProfileManagementImp::class.java)
+    private val EmailRegex = Regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
+    private val MobileRegex = Regex("^09\\d{9}$")
 
     @Transactional
     override suspend fun updateProfile(id: String, data: UpdateProfileRequest): Mono<Profile> {
@@ -73,26 +76,31 @@ class ProfileManagementImp(
         } ?: throw OpexError.UserNotFound.exception()
     }
 
-    override suspend fun completeProfile(id: String, data: CompleteProfileRequest): Mono<CompleteProfileResponse> {
-        return profileRepository.findByUserId(id)?.awaitFirstOrNull()?.let { it ->
+    override suspend fun completeProfile(
+        id: String,
+        data: CompleteProfileRequest,
+        mobileIdentityMatch: Boolean,
+        personalIdentityMatch: Boolean
+    ): Mono<CompleteProfileResponse> {
+        val existingProfile = profileRepository.findByUserId(id)?.awaitFirstOrNull()
+            ?: throw OpexError.ProfileNotfound.exception()
 
-            var newProfileModel = data.convert(ProfileModel::class.java)
-            newProfileModel.email = it.email
-            newProfileModel.mobile = it.mobile
-            newProfileModel.id = it.id
-            newProfileModel.userId = it.userId
-            newProfileModel.status = it.status
-            newProfileModel.createDate = it.createDate
-            newProfileModel.lastUpdateDate = LocalDateTime.now()
-            profileRepository.save(newProfileModel)
-                .map { savedProfile ->
-                    convertProfileModelToCompleteProfileResponse(savedProfile).apply {
-                        if (it.nationality == "Iranian")
-                            kycLevel = KycLevel.Level2
-                    }
+        val newProfileModel = data.toProfileModel(
+            existing = existingProfile,
+            mobileMatch = mobileIdentityMatch,
+            personalMatch = personalIdentityMatch
+        )
+
+        return profileRepository.save(newProfileModel)
+            .map { saved ->
+                val response = convertProfileModelToCompleteProfileResponse(saved)
+                if (saved.nationality == NationalityType.IRANIAN) {
+                    response.kycLevel = KycLevel.Level2
                 }
-        } ?: throw OpexError.UserNotFound.exception()
+                response
+            }
     }
+
 
     //todo
     //update shared fields in keycloak
@@ -113,7 +121,10 @@ class ProfileManagementImp(
     }
 
     override suspend fun createProfile(data: Profile): Mono<Profile> {
-        profileRepository.findByUserIdOrEmail(data.userId!!, data.email!!)?.awaitFirstOrNull()?.let {
+        if (data.email.isNullOrBlank() && data.mobile.isNullOrBlank()) {
+            throw OpexError.BadRequest.exception("email and mobile is null or empty")
+        }
+        profileRepository.findByUserIdOrEmailOrMobile(data.userId!!, data.email, data.mobile)?.awaitFirstOrNull()?.let {
             throw OpexError.UserIdAlreadyExists.exception()
         } ?: run {
             val profile: ProfileModel = data.convert(ProfileModel::class.java)
@@ -133,7 +144,7 @@ class ProfileManagementImp(
     override suspend fun getProfile(id: Long): Mono<Profile> {
         val profile: Profile =
             profileRepository.findById(id).awaitFirstOrNull()?.convert(Profile::class.java)
-                ?: throw OpexError.UserNotFound.exception()
+                ?: throw OpexError.ProfileNotfound.exception()
         return Mono.just(profile)
     }
 
@@ -189,18 +200,42 @@ class ProfileManagementImp(
         } ?: throw OpexError.UserNotFound.exception()
     }
 
+    override suspend fun validateEmailForUpdate(userId: String, email: String) {
+        validateEmailFormat(email)
+
+        val profile = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
+            ?: throw OpexError.ProfileNotfound.exception()
+
+        if (!profile.email.isNullOrEmpty())
+            throw OpexError.EmailAlreadySet.exception()
+    }
+
+    override suspend fun validateMobileForUpdate(userId: String, mobile: String) {
+        validateMobileFormat(mobile)
+
+        val profile = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
+            ?: throw OpexError.ProfileNotfound.exception()
+
+        if (!profile.mobile.isNullOrEmpty())
+            throw OpexError.MobileAlreadySet.exception()
+    }
+
     override suspend fun updateMobile(userId: String, mobile: String) {
-        val profileModel = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
-            ?: throw OpexError.UserNotFound.exception()
-        profileModel.mobile = mobile
-        profileRepository.save(profileModel).awaitFirstOrNull()
+        if (profileRepository.findByMobile(mobile)?.awaitFirstOrNull() != null)
+            throw OpexError.MobileAlreadyExists.exception()
+        val profile = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
+            ?: throw OpexError.ProfileNotfound.exception()
+        profile.mobile = mobile
+        profileRepository.save(profile).awaitFirstOrNull()
     }
 
     override suspend fun updateEmail(userId: String, email: String) {
-        val profileModel = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
-            ?: throw OpexError.UserNotFound.exception()
-        profileModel.email = email
-        profileRepository.save(profileModel).awaitFirstOrNull()
+        if (profileRepository.findByEmail(email)?.awaitFirstOrNull() != null)
+            throw OpexError.EmailAlreadyExists.exception()
+        val profile = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
+            ?: throw OpexError.ProfileNotfound.exception()
+        profile.email = email
+        profileRepository.save(profile).awaitFirstOrNull()
     }
 
     fun isMajorChanges(oldData: ProfileModel, newData: UpdateProfileRequest): Boolean {
@@ -254,5 +289,13 @@ class ProfileManagementImp(
             this.userId = userId
             this.description = reason
         })
+    }
+
+    private fun validateEmailFormat(email: String) {
+        if (!EmailRegex.matches(email)) throw OpexError.InvalidEmail.exception()
+    }
+
+    private fun validateMobileFormat(mobile: String) {
+        if (!MobileRegex.matches(mobile)) throw OpexError.InvalidMobile.exception()
     }
 }

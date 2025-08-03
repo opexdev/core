@@ -511,10 +511,14 @@ services:
       - DB_IP_PORT=postgres-otp
       - DB_USER=${DB_USER:-opex}
       - DB_PASS=${DB_PASS:-hiopex}
+      - SMS_PROVIDER_URL=${SMS_PROVIDER_URL}
       - SMS_PROVIDER_API_KEY=${SMS_PROVIDER_API_KEY}
+      - SMS_PROVIDER_TEMPLATE=${SMS_PROVIDER_TEMPLATE}
       - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASS=${SMTP_PASS}
+      - SMTP_FROM=${SMTP_FROM}
     depends_on:
       - consul
       - postgres-otp
@@ -528,13 +532,16 @@ services:
   profile:
     image: ghcr.io/opexdev/profile
     environment:
-      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-profile
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
+      - JIBIT_URL=${JIBIT_URL}
+      - JIBIT_API_KEY=${JIBIT_API_KEY}
+      - JIBIT_SECRET_KEY=${JIBIT_SECRET_KEY}
     depends_on:
       - kafka-1
       - kafka-2

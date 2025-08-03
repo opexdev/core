@@ -13,11 +13,12 @@ open class CompleteProfileResponse(
     var mobile: String? = null,
     var telephone: String? = null,
     var postalCode: String? = null,
-    var nationality: String? = null,
+    var nationality: NationalityType? = null,
     var identifier: String? = null,
     var gender: Gender? = null,
     var birthDate: LocalDateTime? = null,
     var status: UserStatus? = null,
     var kycLevel: KycLevel? = null,
-    var verificationStatus: Boolean? = false
+    var mobileIdentityMatch: Boolean? = false,
+    var personalIdentityMatch: Boolean? = false
 )

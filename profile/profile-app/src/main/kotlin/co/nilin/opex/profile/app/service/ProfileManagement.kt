@@ -5,12 +5,15 @@ import co.nilin.opex.common.OpexError
 import co.nilin.opex.profile.core.data.event.KycLevelUpdatedEvent
 import co.nilin.opex.profile.core.data.event.UserCreatedEvent
 import co.nilin.opex.profile.core.data.kyc.KycLevel
+import co.nilin.opex.profile.core.data.otp.*
 import co.nilin.opex.profile.core.data.profile.*
 import co.nilin.opex.profile.core.spi.*
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
@@ -21,8 +24,17 @@ class ProfileManagement(
     private val linkedAccountPersister: LinkedAccountPersister,
     private val limitationPersister: LimitationPersister,
     private val profileApprovalRequestPersister: ProfileApprovalRequestPersister,
-    private val shahkarInquiry: ShahkarInquiry,
-    private val kycLevelUpdatedPublisher: KycLevelUpdatedPublisher
+    private val shahkarInquiry: InquiryProxy,
+    private val kycLevelUpdatedPublisher: KycLevelUpdatedPublisher,
+    private val otpProxy: OtpProxy,
+    private val authProxy: AuthProxy,
+    private val inquiryProxy: InquiryProxy,
+
+    @Value("\${inquiry.mobile-indentiy}")
+    private var mobileIdentityEnabled: Boolean,
+
+    @Value("\${inquiry.personal-indentiy}")
+    private var personalIdentityEnabled: Boolean,
 ) {
     private val logger = LoggerFactory.getLogger(ProfileManagement::class.java)
     suspend fun registerNewUser(event: UserCreatedEvent) {
@@ -101,53 +113,126 @@ class ProfileManagement(
         profilePersister.updateUserLevel(userId, userLevel)
     }
 
-    //TODO Need OTP
-    suspend fun updateMobile(userId: String, mobile: String) {
-        val profile = profilePersister.getProfile(userId)?.awaitFirstOrNull()
-            ?: throw OpexError.NotFound.exception("profile not found")
-        if (profile.mobile.isNullOrEmpty())
-            profilePersister.updateMobile(userId, mobile)
-        else
-            throw OpexError.BadRequest.exception("Mobile cannot be changed")
+    suspend fun requestUpdateMobile(userId: String, mobile: String): TempOtpResponse {
+        profilePersister.validateMobileForUpdate(userId, mobile)
+        return otpProxy.requestOtp(
+            NewOTPRequest(
+                mobile,
+                listOf(OTPReceiver(mobile, OTPType.SMS)),
+                OTPAction.UPDATE_MOBILE.name
+            )
+        )
     }
 
-    //TODO Need OTP
-    suspend fun updateEmail(userId: String, email: String) {
-        val profile = profilePersister.getProfile(userId)?.awaitFirstOrNull()
-            ?: throw OpexError.NotFound.exception("profile not found")
-        if (profile.email.isNullOrEmpty())
+    suspend fun updateMobile(userId: String, mobile: String, otpCode: String) {
+        val verifyResponse = otpProxy.verifyOtp(
+            VerifyOTPRequest(
+                mobile,
+                listOf(OTPCode(OTPType.SMS, otpCode))
+            )
+        )
+        if (verifyResponse.result) {
+            authProxy.updateMobile(userId, mobile)
+            profilePersister.updateMobile(userId, mobile)
+        } else throw OpexError.InvalidOTP.exception()
+    }
+
+    suspend fun requestUpdateEmail(userId: String, email: String): TempOtpResponse {
+        profilePersister.validateEmailForUpdate(userId, email)
+        return otpProxy.requestOtp(
+            NewOTPRequest(
+                email,
+                listOf(OTPReceiver(email, OTPType.EMAIL)),
+                OTPAction.UPDATE_EMAIL.name
+            )
+        )
+    }
+
+    suspend fun updateEmail(userId: String, email: String, otpCode: String) {
+        val verifyResponse = otpProxy.verifyOtp(
+            VerifyOTPRequest(
+                email,
+                listOf(OTPCode(OTPType.EMAIL, otpCode))
+            )
+        )
+        if (verifyResponse.result) {
+            authProxy.updateEmail(userId, email)
             profilePersister.updateEmail(userId, email)
-        else
-            throw OpexError.BadRequest.exception("Email cannot be changed")
+        } else throw OpexError.InvalidOTP.exception()
     }
 
     suspend fun completeProfile(
         userId: String,
-        completeProfileRequest: CompleteProfileRequest
+        request: CompleteProfileRequest
     ): CompleteProfileResponse {
+
         val profile = profilePersister.getProfile(userId)?.awaitFirstOrNull()
-            ?: throw OpexError.NotFound.exception("profile not found")
+            ?: throw OpexError.ProfileNotfound.exception()
+
         if (profile.kycLevel == KycLevel.Level2) {
-            throw OpexError.BadRequest.exception("Profile already completed")
+            throw OpexError.ProfileAlreadyCompleted.exception()
         }
-        val isIranian = completeProfileRequest.nationality == "Iranian"
+
+        val isIranian = request.nationality == NationalityType.IRANIAN
+        var useMobileIdentity = false
+        var usePersonalIdentity = false
+
         if (isIranian) {
-            if (!shahkarInquiry.getInquiryResult(
-                    completeProfileRequest.identifier,
-                    profile.mobile ?: throw OpexError.BadRequest.exception("Profile mobile is empty")
-                )
-            ) {
-                throw OpexError.VerificationFailed.exception("Mobile and identifier do not match")
+            if (mobileIdentityEnabled) {
+                verifyMobileIdentity(request.identifier, profile.mobile!!)
+                useMobileIdentity = true
             }
-            completeProfileRequest.verificationStatus = true
+
+            if (personalIdentityEnabled) {
+                verifyPersonalIdentity(
+                    request.identifier,
+                    request.firstName,
+                    request.lastName,
+                    request.birthDate
+                )
+                usePersonalIdentity = true
+            }
         }
-        val completedProfile = profilePersister.completeProfile(userId, completeProfileRequest).awaitFirstOrNull()
-            ?: throw OpexError.BadRequest.exception("profile not found for userId: $userId")
-        if (isIranian)
-            kycLevelUpdatedPublisher.publish(KycLevelUpdatedEvent(userId, KycLevel.Level2, LocalDateTime.now()))
-        else
+
+        val completedProfile = profilePersister
+            .completeProfile(userId, request, useMobileIdentity, usePersonalIdentity)
+            .awaitFirst()
+        authProxy.updateName(userId, request.firstName, request.lastName)
+
+        if (isIranian) {
+            kycLevelUpdatedPublisher.publish(
+                KycLevelUpdatedEvent(userId, KycLevel.Level2, LocalDateTime.now())
+            )
+        } else {
             saveProfileApprovalRequest(completedProfile.id)
+        }
+
         return completedProfile
+    }
+
+
+    private suspend fun verifyMobileIdentity(identifier: String, mobile: String) {
+        if (!inquiryProxy.getShahkarInquiryResult(
+                identifier,
+                mobile
+            )
+        ) throw OpexError.ShahkarVerificationFailed.exception()
+    }
+
+    private suspend fun verifyPersonalIdentity(
+        identifier: String,
+        firstName: String,
+        lastName: String,
+        birthDate: Long
+    ) {
+        val comparativeInquiryResult = inquiryProxy.getComparativeInquiryResult(
+            identifier,
+            birthDate,
+            firstName,
+            lastName
+        )
+        if (comparativeInquiryResult.firstNameSimilarityPercentage < 95) throw OpexError.FirstNameIsNotSimilarEnough.exception()
+        if (comparativeInquiryResult.lastNameSimilarityPercentage < 95) throw OpexError.LastNameIsNotSimilarEnough.exception()
     }
 
     private suspend fun saveProfileApprovalRequest(profileId: Long) {
