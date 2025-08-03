@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*
 
 class ProfileController(val profileManagement: ProfileManagement) {
 
-    @GetMapping("")
+    @GetMapping("/personal-data")
     suspend fun getProfile(@CurrentSecurityContext securityContext: SecurityContext): Profile? {
         return profileManagement.getProfile(securityContext.authentication.name)?.awaitFirstOrNull()
     }
