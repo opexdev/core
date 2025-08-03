@@ -5,13 +5,13 @@ import co.nilin.opex.api.core.spi.MatchingGatewayProxy
 import co.nilin.opex.api.ports.proxy.data.CancelOrderRequest
 import co.nilin.opex.api.ports.proxy.data.CreateOrderRequest
 import co.nilin.opex.api.ports.proxy.utils.body
-import co.nilin.opex.api.ports.proxy.utils.defaultHeaders
+import co.nilin.opex.api.ports.proxy.utils.noBody
 import co.nilin.opex.common.utils.LoggerDelegate
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
-import org.springframework.web.client.getForObject
-import org.springframework.web.client.postForObject
+import org.springframework.web.client.exchange
 import java.math.BigDecimal
 
 @Component
@@ -35,7 +35,7 @@ class MatchingGatewayProxyImpl(private val restTemplate: RestTemplate) : Matchin
     ): OrderSubmitResult? {
         logger.info("calling matching-gateway order create")
         val request = CreateOrderRequest(uuid, pair, price, quantity, direction, matchConstraint, orderType, userLevel)
-        return restTemplate.postForObject<OrderSubmitResult?>("$baseUrl/order", body(request))
+        return restTemplate.exchange<OrderSubmitResult?>("$baseUrl/order", HttpMethod.POST, body(request)).body
     }
 
     override fun cancelOrder(
@@ -46,13 +46,18 @@ class MatchingGatewayProxyImpl(private val restTemplate: RestTemplate) : Matchin
         token: String?,
     ): OrderSubmitResult? {
         logger.info("calling matching-gateway order cancel")
-        return restTemplate.postForObject<OrderSubmitResult?>(
+        return restTemplate.exchange<OrderSubmitResult?>(
             "$baseUrl/order/cancel",
+            HttpMethod.POST,
             body(CancelOrderRequest(ouid, uuid, orderId, symbol))
-        )
+        ).body
     }
 
     override fun getPairSettings(): List<PairSetting> {
-        return restTemplate.getForObject<Array<PairSetting>>("$baseUrl/pair-setting", defaultHeaders()).toList()
+        return restTemplate.exchange<Array<PairSetting>>(
+            "$baseUrl/pair-setting",
+            HttpMethod.GET,
+            noBody()
+        ).body?.toList() ?: emptyList()
     }
 }

@@ -5,7 +5,6 @@ import co.nilin.opex.api.core.spi.MarketUserDataProxy
 import co.nilin.opex.api.ports.proxy.data.QueryOrderRequest
 import co.nilin.opex.api.ports.proxy.data.TradeRequest
 import co.nilin.opex.api.ports.proxy.utils.body
-import co.nilin.opex.api.ports.proxy.utils.defaultHeaders
 import co.nilin.opex.api.ports.proxy.utils.noBody
 import co.nilin.opex.common.utils.LoggerDelegate
 import org.springframework.beans.factory.annotation.Value
@@ -13,7 +12,6 @@ import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.exchange
-import org.springframework.web.client.postForObject
 import org.springframework.web.util.UriComponentsBuilder
 import java.security.Principal
 import java.util.*
@@ -32,10 +30,11 @@ class MarketUserDataProxyImpl(private val restTemplate: RestTemplate) : MarketUs
         orderId: Long?,
         origClientOrderId: String?,
     ): Order? {
-        return restTemplate.postForObject<Order?>(
+        return restTemplate.exchange<Order?>(
             "$baseUrl/v1/user/${principal.name}/order/query",
+            HttpMethod.POST,
             body(QueryOrderRequest(symbol, orderId, origClientOrderId))
-        )
+        ).body
     }
 
     override fun openOrders(principal: Principal, symbol: String?, limit: Int?): List<Order> {
@@ -52,8 +51,11 @@ class MarketUserDataProxyImpl(private val restTemplate: RestTemplate) : MarketUs
         endTime: Date?,
         limit: Int?,
     ): List<Order> {
-        return restTemplate.postForObject<Array<Order>>("$baseUrl/v1/user/${principal.name}/orders", defaultHeaders())
-            .toList()
+        return restTemplate.exchange<Array<Order>>(
+            "$baseUrl/v1/user/${principal.name}/orders",
+            HttpMethod.POST,
+            noBody()
+        ).body?.toList() ?: emptyList()
     }
 
     override fun allTrades(
@@ -64,10 +66,11 @@ class MarketUserDataProxyImpl(private val restTemplate: RestTemplate) : MarketUs
         endTime: Date?,
         limit: Int?,
     ): List<Trade> {
-        return restTemplate.postForObject<Array<Trade>>(
+        return restTemplate.exchange<Array<Trade>>(
             "$baseUrl/v1/user/${principal.name}/trades",
+            HttpMethod.POST,
             body(TradeRequest(symbol, fromTrade, startTime, endTime, limit ?: 500))
-        ).toList()
+        ).body?.toList() ?: emptyList()
     }
 
     override fun getOrderHistory(
