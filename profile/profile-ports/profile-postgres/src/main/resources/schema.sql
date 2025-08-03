@@ -17,7 +17,8 @@ CREATE TABLE IF NOT EXISTS profile
     postal_code      VARCHAR(100),
     creator          VARCHAR(100),
     last_update_date TIMESTAMP DEFAULT CURRENT_DATE,
-    kyc_level        varchar(100)
+    kyc_level        varchar(100),
+    verification_status VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS profile_history
@@ -33,7 +34,7 @@ CREATE TABLE IF NOT EXISTS profile_history
     telephone           VARCHAR(256),
     mobile              VARCHAR(256),
     nationality         VARCHAR(256),
-    gender              BOOLEAN,
+    gender              VARCHAR(50),
     birth_date          TIMESTAMP,
     status              VARCHAR(100),
     last_update_date    TIMESTAMP,
@@ -43,7 +44,8 @@ CREATE TABLE IF NOT EXISTS profile_history
     postal_code         VARCHAR(100),
     change_request_date TIMESTAMP,
     change_request_type VARCHAR(100),
-    kyc_level           varchar(100)
+    kyc_level           varchar(100),
+    verification_status VARCHAR(255)
 );
 
 
@@ -88,12 +90,10 @@ CREATE TABLE IF NOT EXISTS linked_bank_account
     verified          BOOLEAN,
     verifier          VARCHAR(100),
     number            VARCHAR(100),
-    account_id        VARCHAR(100) UNIQUE,
+    account_id        VARCHAR(100),
     description       VARCHAR(100)
 );
 
-ALTER TABLE linked_bank_account
-    DROP CONSTRAINT IF EXISTS unique_account;
 ALTER TABLE linked_bank_account
     ADD CONSTRAINT unique_account UNIQUE (user_id, number);
 
@@ -114,9 +114,6 @@ CREATE TABLE IF NOT EXISTS linked_bank_account_history
     change_request_date TIMESTAMP,
     change_request_type VARCHAR(100)
 );
-
--- Alter table limitation_history add column reason Varchar(100);
-
 
 DROP TRIGGER IF EXISTS profile_log_update on public.profile;
 DROP TRIGGER IF EXISTS profile_log_delete on public.profile;
@@ -158,8 +155,6 @@ BEGIN
 END;
 $BODY$ language plpgsql;
 
-
-
 CREATE OR REPLACE FUNCTION triger_limitation_function() RETURNS TRIGGER AS
 $BODY$
 BEGIN
@@ -184,8 +179,6 @@ BEGIN
 END;
 $BODY$ language plpgsql;
 
-
-
 CREATE OR REPLACE FUNCTION triger_linked_account_function() RETURNS TRIGGER AS
 $BODY$
 BEGIN
@@ -209,8 +202,6 @@ BEGIN
 END;
 $BODY$ language plpgsql;
 
-
-
 CREATE TRIGGER profile_log_update
     AFTER UPDATE
     ON profile
@@ -221,8 +212,6 @@ CREATE TRIGGER profile_log_delete
     ON profile
     FOR EACH ROW
 EXECUTE PROCEDURE triger_delete_function();
-
-
 CREATE TRIGGER limitation_log_update
     AFTER UPDATE
     ON limitation
@@ -234,13 +223,12 @@ CREATE TRIGGER limitation_log_delete
     FOR EACH ROW
 EXECUTE PROCEDURE triger_delete_limitation_function();
 
-
-
 CREATE TRIGGER linked_account_log_update
     AFTER UPDATE
     ON linked_bank_account
     FOR EACH ROW
 EXECUTE PROCEDURE triger_linked_account_function();
+
 CREATE TRIGGER linked_account_log_delete
     AFTER DELETE
     ON linked_bank_account
@@ -258,38 +246,3 @@ CREATE TABLE IF NOT EXISTS profile_approval_request
     description VARCHAR(255)
 );
 
-DO
-$$
-    BEGIN
-        IF NOT EXISTS (SELECT 1
-                       FROM information_schema.columns
-                       WHERE table_name = 'profile' AND column_name = 'verification_status') THEN ALTER TABLE profile
-            ADD COLUMN verification_status VARCHAR(255);
-        END IF;
-    END
-$$;
-
-DO
-$$
-    BEGIN
-        IF NOT EXISTS (SELECT 1
-                       FROM information_schema.columns
-                       WHERE table_name = 'profile_history'
-                         AND column_name = 'verification_status') THEN ALTER TABLE profile_history
-            ADD COLUMN verification_status VARCHAR(255);
-        END IF;
-    END
-$$;
-
-DO
-$$
-    BEGIN
-        IF EXISTS (SELECT 1
-                   FROM information_schema.columns
-                   WHERE table_name = 'profile_history'
-                     AND column_name = 'gender'
-                     AND data_type != 'character varying') THEN ALTER TABLE profile_history
-            ALTER COLUMN gender SET DATA TYPE VARCHAR(50);
-        END IF;
-    END
-$$;

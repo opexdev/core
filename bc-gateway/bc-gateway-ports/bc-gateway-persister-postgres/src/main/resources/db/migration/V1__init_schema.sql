@@ -53,11 +53,7 @@ CREATE TABLE IF NOT EXISTS chain_address_types
     UNIQUE (chain_name, addr_type_id)
 );
 
--- CREATE TABLE IF NOT EXISTS currency
--- (
---     symbol VARCHAR(72) PRIMARY KEY,
---     name   VARCHAR(72) NOT NULL
--- );
+
 
 CREATE TABLE IF NOT EXISTS currency_on_chain_gateway
 (
@@ -80,8 +76,6 @@ CREATE TABLE IF NOT EXISTS currency_on_chain_gateway
     is_active             BOOLEAN      NOT NULL        DEFAULT TRUE,
     UNIQUE (currency_symbol, chain, implementation_symbol)
 );
-
-
 
 CREATE TABLE IF NOT EXISTS deposits
 (
