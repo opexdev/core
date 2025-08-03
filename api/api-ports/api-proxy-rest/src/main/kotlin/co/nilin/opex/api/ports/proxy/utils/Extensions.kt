@@ -37,6 +37,8 @@ internal fun body(body: Any, auth: String) = HttpEntity(body, defaultHeaders().w
 
 internal fun noBody() = HttpEntity<String>(defaultHeaders())
 
+internal fun noBody(auth: String?) = HttpEntity<String>(defaultHeaders().withAuth(auth))
+
 internal fun HttpHeaders.withAuth(auth: String?): HttpHeaders {
     add("Authorization", "Bearer $auth")
     return this
