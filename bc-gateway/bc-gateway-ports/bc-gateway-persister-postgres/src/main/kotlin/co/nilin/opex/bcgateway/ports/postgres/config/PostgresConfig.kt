@@ -5,12 +5,14 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import org.springframework.core.io.Resource
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories
 import org.springframework.r2dbc.core.DatabaseClient
 
 @Configuration
 @EnableR2dbcRepositories(basePackages = ["co.nilin.opex"])
+@Profile("!test")
 class PostgresConfig {
     private val logger = LoggerFactory.getLogger(PostgresConfig::class.java)
 
