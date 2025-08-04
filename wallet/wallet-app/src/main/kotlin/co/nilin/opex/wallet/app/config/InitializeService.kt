@@ -8,11 +8,13 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.DependsOn
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
 
 @Component
 @DependsOn("postgresConfig")
+@Profile("!test")
 class InitializeService(
     @Value("\${app.system.uuid}")
     private val systemUuid: String,
