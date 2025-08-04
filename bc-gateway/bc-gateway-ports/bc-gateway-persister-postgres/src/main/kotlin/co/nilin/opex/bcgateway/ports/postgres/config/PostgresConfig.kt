@@ -12,7 +12,6 @@ import org.springframework.r2dbc.core.DatabaseClient
 
 @Configuration
 @EnableR2dbcRepositories(basePackages = ["co.nilin.opex"])
-@Profile("!test")
 class PostgresConfig {
     private val logger = LoggerFactory.getLogger(PostgresConfig::class.java)
 
