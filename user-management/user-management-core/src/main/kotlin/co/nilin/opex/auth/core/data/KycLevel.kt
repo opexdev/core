@@ -1,6 +1,6 @@
 package co.nilin.opex.auth.core.data
 
 enum class KycLevel {
-    Level1, Level2,
+    LEVEL_1, LEVEL_2,LEVEL_3
 }
 

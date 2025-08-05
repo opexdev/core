@@ -2,6 +2,7 @@ package co.nilin.opex.auth.proxy
 
 import co.nilin.opex.auth.config.KeycloakConfig
 import co.nilin.opex.auth.data.ActiveSession
+import co.nilin.opex.auth.data.UserRole
 import co.nilin.opex.auth.model.*
 import co.nilin.opex.auth.utils.generateRandomID
 import co.nilin.opex.common.OpexError
@@ -211,10 +212,10 @@ class KeycloakProxy(
             .awaitSingle()
     }
 
-    suspend fun assignDefaultRoles(user: KeycloakUser) {
-        val role = opexRealm.roles().get("user-1").toRepresentation()
-        val u = opexRealm.users().get(user.id)
-        u.roles().realmLevel().add(mutableListOf(role))
+    suspend fun assignRole(userId: String, role: UserRole) {
+        val roleRepresentation = opexRealm.roles().get(role.keycloakName).toRepresentation()
+        val userResource = opexRealm.users().get(userId)
+        userResource.roles().realmLevel().add(listOf(roleRepresentation))
     }
 
     suspend fun createExternalIdpUser(email: String, username: Username, password: String): String {
@@ -363,52 +364,46 @@ class KeycloakProxy(
     }
 
     suspend fun updateUserMobile(userId: String, newMobile: String) {
-        val url = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users/$userId"
-        val patch = mapOf(
-            "attributes" to mapOf("mobile" to newMobile)
-        )
-        keycloakClient.put()
-            .uri(url)
-            .contentType(MediaType.APPLICATION_JSON)
-            .withAdminToken()
-            .bodyValue(patch)
-            .retrieve()
-            .toBodilessEntity()
-            .awaitSingleOrNull()
+        updateUserFields(userId, mapOf("attributes" to mapOf("mobile" to newMobile)))
     }
 
     suspend fun updateUserEmail(userId: String, newEmail: String) {
-        val url = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users/$userId"
-        val patch = mapOf(
-            "email" to newEmail,
-            "emailVerified" to true
-        )
-        keycloakClient.put()
-            .uri(url)
-            .contentType(MediaType.APPLICATION_JSON)
-            .withAdminToken()
-            .bodyValue(patch)
-            .retrieve()
-            .toBodilessEntity()
-            .awaitSingleOrNull()
+        updateUserFields(userId, mapOf("email" to newEmail, "emailVerified" to true))
     }
 
     suspend fun updateUserName(userId: String, firstName: String?, lastName: String?) {
-        val url = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users/$userId"
-        val patch = mutableMapOf<String, Any>()
+        val updates = mutableMapOf<String, Any>()
+        firstName?.let { updates["firstName"] = it }
+        lastName?.let { updates["lastName"] = it }
+        updateUserFields(userId, updates)
 
-        firstName?.let { patch["firstName"] = it }
-        lastName?.let { patch["lastName"] = it }
+    }
+
+    private suspend fun updateUserFields(userId: String, updates: Map<String, Any>) {
+        val url = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users/$userId"
+
+        val existingUser = keycloakClient.get()
+            .uri(url)
+            .withAdminToken()
+            .retrieve()
+            .bodyToMono<Map<String, Any>>()
+            .awaitSingle()
+            .toMutableMap()
+
+        updates.forEach { (key, value) ->
+            existingUser[key] = value
+        }
 
         keycloakClient.put()
             .uri(url)
             .contentType(MediaType.APPLICATION_JSON)
             .withAdminToken()
-            .bodyValue(patch)
+            .bodyValue(existingUser)
             .retrieve()
             .toBodilessEntity()
             .awaitSingleOrNull()
     }
+
 
     private suspend fun generateRandomInternalID(): String {
         var internalId: String;

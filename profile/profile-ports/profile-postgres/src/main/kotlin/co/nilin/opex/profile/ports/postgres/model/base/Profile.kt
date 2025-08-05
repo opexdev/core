@@ -23,7 +23,7 @@ open class Profile {
     var createDate: LocalDateTime? = null
     var lastUpdateDate: LocalDateTime? = null
     var creator: String? = null
-    var kycLevel: KycLevel? = KycLevel.Level1
+    var kycLevel: KycLevel? = KycLevel.LEVEL_1
     var mobileIdentityMatch : Boolean? = false
     var personalIdentityMatch : Boolean? = false
 

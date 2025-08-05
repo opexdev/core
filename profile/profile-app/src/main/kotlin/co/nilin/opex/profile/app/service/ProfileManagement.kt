@@ -24,7 +24,6 @@ class ProfileManagement(
     private val linkedAccountPersister: LinkedAccountPersister,
     private val limitationPersister: LimitationPersister,
     private val profileApprovalRequestPersister: ProfileApprovalRequestPersister,
-    private val shahkarInquiry: InquiryProxy,
     private val kycLevelUpdatedPublisher: KycLevelUpdatedPublisher,
     private val otpProxy: OtpProxy,
     private val authProxy: AuthProxy,
@@ -50,7 +49,7 @@ class ProfileManagement(
                     createDate = LocalDateTime.now(),
                     lastUpdateDate = LocalDateTime.now(),
                     creator = "system",
-                    kycLevel = KycLevel.Level1
+                    kycLevel = KycLevel.LEVEL_1
                 )
             )
         }
@@ -169,7 +168,7 @@ class ProfileManagement(
         val profile = profilePersister.getProfile(userId)?.awaitFirstOrNull()
             ?: throw OpexError.ProfileNotfound.exception()
 
-        if (profile.kycLevel == KycLevel.Level2) {
+        if (profile.kycLevel == KycLevel.LEVEL_2) {
             throw OpexError.ProfileAlreadyCompleted.exception()
         }
 
@@ -201,7 +200,7 @@ class ProfileManagement(
 
         if (isIranian) {
             kycLevelUpdatedPublisher.publish(
-                KycLevelUpdatedEvent(userId, KycLevel.Level2, LocalDateTime.now())
+                KycLevelUpdatedEvent(userId, KycLevel.LEVEL_2, LocalDateTime.now())
             )
         } else {
             saveProfileApprovalRequest(completedProfile.id)

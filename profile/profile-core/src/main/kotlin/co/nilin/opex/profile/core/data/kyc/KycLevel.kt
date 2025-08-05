@@ -1,6 +1,6 @@
 package co.nilin.opex.profile.core.data.kyc
 
 enum class KycLevel {
-    Level1, Level2, Level3
+    LEVEL_1, LEVEL_2, LEVEL_3
 }
 
