@@ -95,7 +95,7 @@ class ProfileManagementImp(
             .map { saved ->
                 val response = convertProfileModelToCompleteProfileResponse(saved)
                 if (saved.nationality == NationalityType.IRANIAN) {
-                    response.kycLevel = KycLevel.Level2
+                    response.kycLevel = KycLevel.LEVEL_2
                 }
                 response
             }
@@ -250,7 +250,7 @@ class ProfileManagementImp(
     suspend fun applyMajorChangesRequirements(oldData: ProfileModel, newData: UpdateProfileRequest): KycLevel? {
         //todo
         //read from panel
-        val newKycLevel = KycLevel.Level1
+        val newKycLevel = KycLevel.LEVEL_1
 
         updateKycLevel(userId = oldData.userId!!, kycLevel = newKycLevel, LimitationReason.MajorProfileChange.name)
         limitationManagementImp.updateLimitation(
@@ -268,7 +268,7 @@ class ProfileManagementImp(
     suspend fun applyContactChangesRequirements(oldData: ProfileModel, newData: UpdateProfileRequest): KycLevel? {
         //todo
         //read from panel
-        val newKycLevel = KycLevel.Level1
+        val newKycLevel = KycLevel.LEVEL_1
 
         updateKycLevel(userId = oldData.userId!!, kycLevel = newKycLevel, LimitationReason.MajorProfileChange.name)
         limitationManagementImp.updateLimitation(
@@ -284,7 +284,7 @@ class ProfileManagementImp(
 
     suspend fun updateKycLevel(userId: String, kycLevel: KycLevel, reason: String?) {
         val kycLevelDetail =
-            if (kycLevel == KycLevel.Level1) KycLevelDetail.ManualUpdateLevel1 else KycLevelDetail.ManualUpdateLevel3
+            if (kycLevel == KycLevel.LEVEL_1) KycLevelDetail.ManualUpdateLevel1 else KycLevelDetail.ManualUpdateLevel3
         kycProxyImp.updateKycLevel(ManualUpdateRequest(kycLevelDetail).apply {
             this.userId = userId
             this.description = reason
