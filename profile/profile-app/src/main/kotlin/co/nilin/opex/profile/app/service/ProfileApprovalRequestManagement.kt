@@ -33,7 +33,7 @@ class ProfileApprovalRequestManagement(
         val request = changeRequestStatus(id, updater, ProfileApprovalRequestStatus.APPROVED, description)
         val profile = profilePersister.getProfile(request.profileId)?.awaitFirstOrNull()
             ?: throw OpexError.ProfileNotfound.exception()
-        kycLevelUpdatedPublisher.publish(KycLevelUpdatedEvent(profile.userId!!, KycLevel.Level2, LocalDateTime.now()))
+        kycLevelUpdatedPublisher.publish(KycLevelUpdatedEvent(profile.userId!!, KycLevel.LEVEL_2, LocalDateTime.now()))
         return request
     }
 

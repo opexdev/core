@@ -1,14 +1,14 @@
 package co.nilin.opex.profile.core.data.kyc
 
 enum class  KycLevelDetail(val kycLevel: KycLevel) {
-    Registered(KycLevel.Level1),
-    ProfileCompleted(KycLevel.Level2),
-    UploadDataLevel3(KycLevel.Level2),
-    AcceptedManualReview(KycLevel.Level3),
-    RejectedManualReview(KycLevel.Level2),
-    ManualUpdateLevel1(KycLevel.Level1),
-    ManualUpdateLevel2(KycLevel.Level2),
-    ManualUpdateLevel3(KycLevel.Level3);
+    Registered(KycLevel.LEVEL_1),
+    ProfileCompleted(KycLevel.LEVEL_2),
+    UploadDataLevel3(KycLevel.LEVEL_2),
+    AcceptedManualReview(KycLevel.LEVEL_3),
+    RejectedManualReview(KycLevel.LEVEL_2),
+    ManualUpdateLevel1(KycLevel.LEVEL_1),
+    ManualUpdateLevel2(KycLevel.LEVEL_2),
+    ManualUpdateLevel3(KycLevel.LEVEL_3);
 
 
     public val previousValidSteps: List<KycLevelDetail>?
