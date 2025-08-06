@@ -22,6 +22,11 @@ spring:
       initial-size: 10
       max-size: 32
       validation-query: select 1
+  cache:
+    type: redis
+  redis:
+    host: redis-cache
+    port: 6379
   cloud:
     bootstrap:
       enabled: true
