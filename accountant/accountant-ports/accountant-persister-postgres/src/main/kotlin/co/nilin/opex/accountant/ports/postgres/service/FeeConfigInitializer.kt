@@ -6,9 +6,18 @@ import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import javax.annotation.PostConstruct
 
+
 @Service
 class FeeConfigInitializer(private val redisCacheHelper: RedisCacheHelper) {
+
     private val logger = LoggerFactory.getLogger(FeeConfigInitializer::class.java)
+
+    data class Fee(val maker: BigDecimal, val taker: BigDecimal)
+    private val initialFees = mapOf(
+        "user-1" to Fee(BigDecimal("0.5"), BigDecimal("0.6")),
+        "user-2" to Fee(BigDecimal("0.3"), BigDecimal("0.35")),
+        "user-3" to Fee(BigDecimal("0.2"), BigDecimal("0.25"))
+    )
 
     @PostConstruct
     fun initialize() {
@@ -20,12 +29,10 @@ class FeeConfigInitializer(private val redisCacheHelper: RedisCacheHelper) {
         """.trimIndent()
         )
         try {
-            putAndLog("fee:maker:user-1", BigDecimal.valueOf(0.5))
-            putAndLog("fee:taker:user-1", BigDecimal.valueOf(0.5))
-            putAndLog("fee:maker:user-2", BigDecimal.valueOf(0.3))
-            putAndLog("fee:taker:user-2", BigDecimal.valueOf(0.3))
-            putAndLog("fee:maker:user-3", BigDecimal.valueOf(0.2))
-            putAndLog("fee:taker:user-3", BigDecimal.valueOf(0.2))
+            initialFees.forEach { (user, fee) ->
+                putAndLog("fee:maker:$user", fee.maker)
+                putAndLog("fee:taker:$user", fee.taker)
+            }
 
             logger.info(
                 """
