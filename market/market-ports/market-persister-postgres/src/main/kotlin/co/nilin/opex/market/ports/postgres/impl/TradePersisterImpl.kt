@@ -7,12 +7,15 @@ import co.nilin.opex.market.core.inout.RateSource
 import co.nilin.opex.market.core.spi.TradePersister
 import co.nilin.opex.market.ports.postgres.dao.CurrencyRateRepository
 import co.nilin.opex.market.ports.postgres.dao.TradeRepository
+import co.nilin.opex.market.ports.postgres.dao.UserTradeVolumeRepository
 import co.nilin.opex.market.ports.postgres.model.TradeModel
 import co.nilin.opex.market.ports.postgres.util.RedisCacheHelper
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
@@ -22,6 +25,7 @@ class TradePersisterImpl(
     private val tradeRepository: TradeRepository,
     private val currencyRateRepository: CurrencyRateRepository,
     private val redisCacheHelper: RedisCacheHelper,
+    private val tradeVolumeRepository: UserTradeVolumeRepository
 ) : TradePersister {
 
     private val logger = LoggerFactory.getLogger(TradePersisterImpl::class.java)
@@ -55,6 +59,13 @@ class TradePersisterImpl(
         ).awaitFirstOrNull()
         logger.info("RichTrade ${trade.id} saved")
 
+        val today = LocalDate.now()
+        tradeVolumeRepository.insertOrUpdate(trade.makerUuid, trade.pair, today, trade.matchedQuantity)
+            .awaitSingleOrNull()
+        tradeVolumeRepository.insertOrUpdate(trade.takerUuid, trade.pair, today, trade.matchedQuantity)
+            .awaitSingleOrNull()
+        logger.info("Trade volume updated")
+
         currencyRateRepository.createOrUpdate(
             pair[0].uppercase(),
             pair[1].uppercase(),
@@ -63,6 +74,10 @@ class TradePersisterImpl(
         ).awaitFirstOrNull()
         logger.info("Rate between ${pair[0]} and ${pair[1]} updated")
 
+        updateCache(trade, tradeEntity)
+    }
+
+    private fun updateCache(trade: RichTrade, tradeEntity: TradeModel?) {
         try {
             if (tradeEntity == null || !redisCacheHelper.hasKey("recentTrades:${trade.pair.lowercase()}")) return
             val isMakerBuyer = trade.makerDirection == OrderDirection.BID
@@ -90,6 +105,5 @@ class TradePersisterImpl(
         } catch (e: Exception) {
             logger.info("Could not update recentTrades cache")
         }
-
     }
 }

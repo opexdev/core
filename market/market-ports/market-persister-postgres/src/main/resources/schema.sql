@@ -67,20 +67,18 @@ CREATE TABLE IF NOT EXISTS trades
 CREATE INDEX IF NOT EXISTS idx_trades_symbol on trades (symbol);
 CREATE INDEX IF NOT EXISTS idx_trades_create_date on trades (create_date);
 
-CREATE TABLE IF NOT EXISTS user_ranged_action
+CREATE TABLE IF NOT EXISTS user_trade_volume
 (
-    id         SERIAL PRIMARY KEY,
-    user_id    VARCHAR(36) NOT NULL,
-    action     TEXT        NOT NULL,
-    interval   TEXT        NOT NULL,
-    start_date TIME        not null,
-    end_date   TIME        not null,
-    value      decimal,
-    unique (user_id, action, start_date, end_date)
+    id      SERIAL PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL,
+    pair    TEXT        NOT NULL,
+    date    DATE        not null,
+    value   decimal,
+    unique (user_id, pair, date)
 );
-CREATE INDEX IF NOT EXISTS idx_user_ranged_action_user_id ON user_ranged_action (user_id);
-CREATE INDEX IF NOT EXISTS idx_user_ranged_action_start_date ON user_ranged_action (start_date);
-CREATE INDEX IF NOT EXISTS idx_user_ranged_action_end_date ON user_ranged_action (end_date);
+CREATE INDEX IF NOT EXISTS idx_user_trade_volume_user_id ON user_trade_volume (user_id);
+CREATE INDEX IF NOT EXISTS idx_user_trade_volume_pair ON user_trade_volume (pair);
+CREATE INDEX IF NOT EXISTS idx_user_trade_volume_start_date ON user_trade_volume (date);
 
 CREATE TABLE IF NOT EXISTS currency_rate
 (
