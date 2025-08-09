@@ -26,5 +26,4 @@ open class Profile {
     var kycLevel: KycLevel? = KycLevel.Level1
     var mobileIdentityMatch : Boolean? = false
     var personalIdentityMatch : Boolean? = false
-
 }
