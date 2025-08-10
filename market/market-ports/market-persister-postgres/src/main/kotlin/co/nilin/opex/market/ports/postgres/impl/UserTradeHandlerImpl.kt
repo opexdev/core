@@ -1,23 +1,23 @@
 package co.nilin.opex.market.ports.postgres.impl
 
+import co.nilin.opex.market.core.inout.UserCurrencyVolume
+import co.nilin.opex.market.core.inout.UserTotalVolumeValue
+import co.nilin.opex.market.core.spi.UserTradeHandler
 import co.nilin.opex.market.ports.postgres.dao.UserTradeVolumeRepository
-import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.stereotype.Component
-import java.math.BigDecimal
 import java.time.LocalDate
 
 @Component
-class UserTradeHandlerImpl(private val repository: UserTradeVolumeRepository) {
+class UserTradeHandlerImpl(private val repository: UserTradeVolumeRepository): UserTradeHandler {
 
-    suspend fun getVolume(uuid: String, pair: String, date: LocalDate): BigDecimal {
-        return repository.findByUserAndPairAndDateAfter(uuid, pair, date).awaitFirstOrNull()?.value ?: BigDecimal.ZERO
+    override suspend fun getTotalVolume(uuid: String, date: LocalDate): UserTotalVolumeValue {
+        return repository.findTotalValueByUserAndAndDateAfter(uuid, date).awaitFirstOrNull()
+            ?: UserTotalVolumeValue.zero()
     }
 
-    suspend fun calculateTotalVolume(uuid: String, date: LocalDate) {
-        val userVolumes = repository.findAllByUserAndDateAfter(uuid, date)
-            .collectList()
-            .awaitFirstOrElse { emptyList() }
-
+    override suspend fun getVolumeByCurrency(uuid: String, currency: String, date: LocalDate): UserCurrencyVolume {
+        return repository.findByUserAndCurrencyAndDateAfter(uuid, currency, date).awaitFirstOrNull()
+            ?: UserCurrencyVolume.zero(currency)
     }
 }

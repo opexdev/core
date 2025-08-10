@@ -15,6 +15,7 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -59,13 +60,6 @@ class TradePersisterImpl(
         ).awaitFirstOrNull()
         logger.info("RichTrade ${trade.id} saved")
 
-        val today = LocalDate.now()
-        tradeVolumeRepository.insertOrUpdate(trade.makerUuid, trade.pair, today, trade.matchedQuantity)
-            .awaitSingleOrNull()
-        tradeVolumeRepository.insertOrUpdate(trade.takerUuid, trade.pair, today, trade.matchedQuantity)
-            .awaitSingleOrNull()
-        logger.info("Trade volume updated")
-
         currencyRateRepository.createOrUpdate(
             pair[0].uppercase(),
             pair[1].uppercase(),
@@ -74,7 +68,45 @@ class TradePersisterImpl(
         ).awaitFirstOrNull()
         logger.info("Rate between ${pair[0]} and ${pair[1]} updated")
 
+        calculateTradeVolume(trade, pair[0].uppercase(), pair[1].uppercase())
         updateCache(trade, tradeEntity)
+    }
+
+    private suspend fun calculateTradeVolume(trade: RichTrade, base: String, quote: String) {
+        val today = LocalDate.now()
+
+        var valueUSDT = BigDecimal.ZERO
+        var valueIRT = BigDecimal.ZERO
+
+        if (quote.equals("IRT", true)) {
+            val baseUSDTRate = currencyRateRepository.findByBaseAndQuoteAndSource(base, "USDT", RateSource.MARKET)
+                .awaitFirstOrNull()?.rate ?: BigDecimal.ZERO
+            valueUSDT = trade.matchedQuantity * baseUSDTRate
+            valueIRT = trade.matchedQuantity * trade.matchedPrice
+        } else if (quote.equals("USDT", true)) {
+            val baseIRTRate = currencyRateRepository.findByBaseAndQuoteAndSource(base, "IRT", RateSource.MARKET)
+                .awaitFirstOrNull()?.rate ?: BigDecimal.ZERO
+            valueUSDT = trade.matchedQuantity * trade.matchedPrice
+            valueIRT = trade.matchedQuantity * baseIRTRate
+        }
+
+        tradeVolumeRepository.insertOrUpdate(
+            trade.makerUuid,
+            base,
+            today,
+            trade.matchedQuantity,
+            valueUSDT,
+            valueIRT
+        ).awaitSingleOrNull()
+        tradeVolumeRepository.insertOrUpdate(
+            trade.takerUuid,
+            base,
+            today,
+            trade.matchedQuantity,
+            valueUSDT,
+            valueIRT
+        ).awaitFirstOrNull()
+        logger.info("Trade volume updated")
     }
 
     private fun updateCache(trade: RichTrade, tradeEntity: TradeModel?) {

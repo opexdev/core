@@ -1,16 +1,21 @@
 package co.nilin.opex.market.app.controller
 
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.common.utils.Interval
 import co.nilin.opex.market.app.utils.asLocalDateTime
 import co.nilin.opex.market.core.inout.*
 import co.nilin.opex.market.core.spi.UserQueryHandler
+import co.nilin.opex.market.core.spi.UserTradeHandler
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/v1/user")
-class UserDataController(private val userQueryHandler: UserQueryHandler) {
+class UserDataController(
+    private val userQueryHandler: UserQueryHandler,
+    private val userTradeHandler: UserTradeHandler
+) {
 
     @GetMapping("/{uuid}/order/{ouid}")
     suspend fun getOrder(@PathVariable uuid: String, @PathVariable ouid: String): Order {
@@ -135,6 +140,25 @@ class UserDataController(private val userQueryHandler: UserQueryHandler) {
             endTime?.let { endTime.asLocalDateTime() },
             direction,
         )
+    }
+
+    @GetMapping("/trade/volume/{uuid}")
+    suspend fun getTradeVolumeByCurrency(
+        @PathVariable uuid: String,
+        @RequestParam symbol: String,
+        @RequestParam interval: Interval // DAY, WEEK, MONTH
+    ): UserCurrencyVolume {
+        //TODO check valid intervals
+        return userTradeHandler.getVolumeByCurrency(uuid, symbol, interval.getLocalDateTime().toLocalDate())
+    }
+
+    @GetMapping("/trade/volume/total/{uuid}")
+    suspend fun getTotalTradeVolumeValue(
+        @PathVariable uuid: String,
+        @RequestParam interval: Interval // DAY, WEEK, MONTH
+    ): UserTotalVolumeValue {
+        //TODO check valid intervals
+        return userTradeHandler.getTotalVolume(uuid, interval.getLocalDateTime().toLocalDate())
     }
 
 }

@@ -36,6 +36,9 @@ services:
   postgres-otp:
     ports:
       - "127.0.0.1:5462:5432"
+  postgres-market:
+    ports:
+      - "127.0.0.1:5438:5432"
   accountant:
     ports:
       - "127.0.0.1:8089:8080"
