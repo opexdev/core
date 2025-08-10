@@ -32,7 +32,7 @@ spring:
     url: r2dbc:tc:postgresql:///wallet?TC_IMAGE_TAG=9.6.8
     initialization-mode: always
   datasource:
-    url: jdbc:tc:postgresql///wallet?TC_IMAGE_TAG=9.6.8
+    url: jdbc:tc:postgresql///wallet
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
   jpa:
