@@ -146,18 +146,16 @@ class UserDataController(
     suspend fun getTradeVolumeByCurrency(
         @PathVariable uuid: String,
         @RequestParam symbol: String,
-        @RequestParam interval: Interval // DAY, WEEK, MONTH
+        @RequestParam interval: Interval
     ): UserCurrencyVolume {
-        //TODO check valid intervals
         return userTradeHandler.getVolumeByCurrency(uuid, symbol, interval.getLocalDateTime().toLocalDate())
     }
 
     @GetMapping("/trade/volume/total/{uuid}")
     suspend fun getTotalTradeVolumeValue(
         @PathVariable uuid: String,
-        @RequestParam interval: Interval // DAY, WEEK, MONTH
+        @RequestParam interval: Interval
     ): UserTotalVolumeValue {
-        //TODO check valid intervals
         return userTradeHandler.getTotalVolume(uuid, interval.getLocalDateTime().toLocalDate())
     }
 
