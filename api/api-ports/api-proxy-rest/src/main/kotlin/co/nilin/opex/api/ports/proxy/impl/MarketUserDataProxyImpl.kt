@@ -6,6 +6,7 @@ import co.nilin.opex.api.ports.proxy.data.QueryOrderRequest
 import co.nilin.opex.api.ports.proxy.data.TradeRequest
 import co.nilin.opex.api.ports.proxy.utils.body
 import co.nilin.opex.api.ports.proxy.utils.noBody
+import co.nilin.opex.common.utils.Interval
 import co.nilin.opex.common.utils.LoggerDelegate
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpMethod
@@ -147,5 +148,20 @@ class MarketUserDataProxyImpl(private val restTemplate: RestTemplate) : MarketUs
             .queryParam("direction", direction)
             .build().toUri()
         return restTemplate.exchange<Long>(uri, HttpMethod.GET, noBody()).body ?: 0
+    }
+
+    override fun getTradeVolumeByCurrency(uuid: String, symbol: String, interval: Interval): UserCurrencyVolume {
+        val uri = UriComponentsBuilder.fromUriString("$baseUrl/v1/user/trade/volume/$uuid")
+            .queryParam("symbol", symbol)
+            .queryParam("interval", interval.toString())
+            .build().toUri()
+        return restTemplate.exchange<UserCurrencyVolume>(uri, HttpMethod.GET, noBody()).body!!
+    }
+
+    override fun getTotalTradeVolumeValue(uuid: String, interval: Interval): UserTotalVolumeValue {
+        val uri = UriComponentsBuilder.fromUriString("$baseUrl/v1/user/trade/volume/total/$uuid")
+            .queryParam("interval", interval.toString())
+            .build().toUri()
+        return restTemplate.exchange<UserTotalVolumeValue>(uri, HttpMethod.GET, noBody()).body!!
     }
 }

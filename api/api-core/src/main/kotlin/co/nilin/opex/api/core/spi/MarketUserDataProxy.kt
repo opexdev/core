@@ -1,10 +1,7 @@
 package co.nilin.opex.api.core.spi
 
-import co.nilin.opex.api.core.inout.MatchingOrderType
-import co.nilin.opex.api.core.inout.Order
-import co.nilin.opex.api.core.inout.OrderData
-import co.nilin.opex.api.core.inout.OrderDirection
-import co.nilin.opex.api.core.inout.Trade
+import co.nilin.opex.api.core.inout.*
+import co.nilin.opex.common.utils.Interval
 import java.security.Principal
 import java.util.*
 
@@ -32,7 +29,7 @@ interface MarketUserDataProxy {
     ): List<Trade>
 
     fun getOrderHistory(
-        uuid : String,
+        uuid: String,
         symbol: String?,
         startTime: Long?,
         endTime: Long?,
@@ -43,7 +40,7 @@ interface MarketUserDataProxy {
     ): List<OrderData>
 
     fun getOrderHistoryCount(
-        uuid : String,
+        uuid: String,
         symbol: String?,
         startTime: Long?,
         endTime: Long?,
@@ -52,7 +49,7 @@ interface MarketUserDataProxy {
     ): Long
 
     fun getTradeHistory(
-        uuid : String,
+        uuid: String,
         symbol: String?,
         startTime: Long?,
         endTime: Long?,
@@ -62,10 +59,14 @@ interface MarketUserDataProxy {
     ): List<Trade>
 
     fun getTradeHistoryCount(
-        uuid : String,
+        uuid: String,
         symbol: String?,
         startTime: Long?,
         endTime: Long?,
         direction: OrderDirection?,
     ): Long
+
+    fun getTradeVolumeByCurrency(uuid: String, symbol: String, interval: Interval): UserCurrencyVolume
+
+    fun getTotalTradeVolumeValue(uuid: String, interval: Interval): UserTotalVolumeValue
 }
