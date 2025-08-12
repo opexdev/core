@@ -10,14 +10,11 @@ import reactor.core.publisher.Mono
 
 interface ProfileApprovalRequestRepository : ReactiveCrudRepository<ProfileApprovalRequestModel, Long> {
 
-    fun findByProfileIdAndStatus(
-        profileId: Long,
-        status: ProfileApprovalRequestStatus
-    ): Mono<ProfileApprovalRequestModel>
+    fun findByProfileIdAndStatus(profileId: Long, status: ProfileApprovalRequestStatus): Mono<ProfileApprovalRequestModel>
 
     @Query("select * from profile_approval_request p where p.status = :status order by create_date desc")
     fun findByStatus(status: ProfileApprovalRequestStatus): Flow<ProfileApprovalRequestModel>?
 
-    @Query("select * from profile_approval_request p where p.profile_id = :profileId")
+    @Query("select * from profile_approval_request p where p.profile_id = :profileId order by id desc limit 1")
     fun findByProfileId(profileId: Long): Mono<ProfileApprovalUserResponse>
 }
