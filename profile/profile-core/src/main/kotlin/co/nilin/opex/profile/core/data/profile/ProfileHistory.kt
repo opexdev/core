@@ -18,7 +18,7 @@ data class ProfileHistory(
     var identifier: String? = null,
     var gender: Boolean? = null,
     var birthDate: LocalDateTime? = null,
-    var status: UserStatus? = null,
+    var status: ProfileStatus? = null,
     var createDate: LocalDateTime? = null,
     var lastUpdateDate: LocalDateTime? = null,
     var creator: String? = null,
