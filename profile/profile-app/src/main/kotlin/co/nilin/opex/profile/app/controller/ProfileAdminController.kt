@@ -29,7 +29,7 @@ class ProfileAdminController(
 
     data class ChangeRequestStatusBody(
         val id: Long,
-        val description: String
+        val description: String?
     )
 
     @PostMapping("/{userId}")
@@ -67,20 +67,20 @@ class ProfileAdminController(
     // =====================================Approval Requests====================================
 
     @GetMapping("/approval-requests/{status}")
-    suspend fun getApprovalRequests(@PathVariable("status") status: ProfileApprovalRequestStatus): List<ProfileApprovalResponse> {
+    suspend fun getApprovalRequests(@PathVariable("status") status: ProfileApprovalRequestStatus): List<ProfileApprovalAdminResponse> {
         return profileApprovalRequestManagement.getApprovalRequests(status)
     }
 
     @GetMapping("/approval-request/{id}")
-    suspend fun getApprovalRequest(@PathVariable("id") id: Long): ProfileApprovalResponse {
-        return profileApprovalRequestManagement.getApprovalRequest(id)
+    suspend fun getApprovalRequest(@PathVariable("id") id: Long): ProfileApprovalAdminResponse {
+        return profileApprovalRequestManagement.getApprovalRequestById(id)
     }
 
     @PostMapping("/approve-request")
     suspend fun approveRequest(
         @RequestBody changeRequestStatusBody: ChangeRequestStatusBody,
         @CurrentSecurityContext securityContext: SecurityContext
-    ): ProfileApprovalResponse {
+    ): ProfileApprovalAdminResponse {
         return profileApprovalRequestManagement.approveRequest(
             changeRequestStatusBody.id,
             securityContext.authentication.name,
@@ -92,7 +92,7 @@ class ProfileAdminController(
     suspend fun rejectRequest(
         @RequestBody changeRequestStatusBody: ChangeRequestStatusBody,
         @CurrentSecurityContext securityContext: SecurityContext
-    ): ProfileApprovalResponse {
+    ): ProfileApprovalAdminResponse {
         return profileApprovalRequestManagement.rejectRequest(
             changeRequestStatusBody.id,
             securityContext.authentication.name,

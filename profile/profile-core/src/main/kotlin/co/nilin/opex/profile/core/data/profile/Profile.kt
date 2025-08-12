@@ -3,7 +3,6 @@ package co.nilin.opex.profile.core.data.profile
 import co.nilin.opex.profile.core.data.kyc.KycLevel
 import co.nilin.opex.profile.core.data.limitation.Limitation
 import co.nilin.opex.profile.core.data.linkedbankAccount.LinkedAccountResponse
-import com.fasterxml.jackson.annotation.JsonInclude
 import java.time.LocalDateTime
 
 data class Profile(
@@ -19,13 +18,14 @@ data class Profile(
     var identifier: String? = null,
     var gender: Gender? = null,
     var birthDate: LocalDateTime? = null,
-    var status: UserStatus? = null,
+    var status: ProfileStatus? = null,
     var createDate: LocalDateTime? = null,
     var lastUpdateDate: LocalDateTime? = null,
     var creator: String? = null,
     var kycLevel: KycLevel? = null,
     var linkedAccounts: List<LinkedAccountResponse>? = null,
     var limitations: List<Limitation>? = null,
-    var verificationStatus : Boolean? = false
+    var mobileIdentityMatch: Boolean? = null,
+    var personalIdentityMatch: Boolean? = null
 
 )

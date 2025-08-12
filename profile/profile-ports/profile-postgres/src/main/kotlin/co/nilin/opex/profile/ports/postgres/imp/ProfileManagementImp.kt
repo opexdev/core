@@ -13,7 +13,6 @@ import co.nilin.opex.profile.core.spi.ProfilePersister
 import co.nilin.opex.profile.core.utils.compare
 import co.nilin.opex.profile.core.utils.convert
 import co.nilin.opex.profile.ports.kyc.imp.KycProxyImp
-import co.nilin.opex.profile.ports.postgres.convertor.convertProfileModelToCompleteProfileResponse
 import co.nilin.opex.profile.ports.postgres.dao.ProfileHistoryRepository
 import co.nilin.opex.profile.ports.postgres.dao.ProfileRepository
 import co.nilin.opex.profile.ports.postgres.model.entity.ProfileModel
@@ -21,6 +20,7 @@ import co.nilin.opex.profile.ports.postgres.utils.toProfileModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.PageRequest
@@ -79,9 +79,9 @@ class ProfileManagementImp(
     override suspend fun completeProfile(
         id: String,
         data: CompleteProfileRequest,
-        mobileIdentityMatch: Boolean,
-        personalIdentityMatch: Boolean
-    ): Mono<CompleteProfileResponse> {
+        mobileIdentityMatch: Boolean?,
+        personalIdentityMatch: Boolean?
+    ): Mono<Profile> {
         val existingProfile = profileRepository.findByUserId(id)?.awaitFirstOrNull()
             ?: throw OpexError.ProfileNotfound.exception()
 
@@ -91,16 +91,10 @@ class ProfileManagementImp(
             personalMatch = personalIdentityMatch
         )
 
-        return profileRepository.save(newProfileModel)
-            .map { saved ->
-                val response = convertProfileModelToCompleteProfileResponse(saved)
-                if (saved.nationality == NationalityType.IRANIAN) {
-                    response.kycLevel = KycLevel.LEVEL_2
-                }
-                response
-            }
+        return profileRepository.save(newProfileModel).map {
+            it.convert(Profile::class.java)
+        }
     }
-
 
     //todo
     //update shared fields in keycloak
@@ -138,6 +132,12 @@ class ProfileManagementImp(
         return profileRepository.findByUserId(userId)?.map {
             it.convert(Profile::class.java)
         } ?: throw OpexError.UserNotFound.exception()
+
+    }
+
+    override suspend fun getProfileId(userId: String): Long {
+
+        return profileRepository.findByUserId(userId)?.awaitFirst()?.id ?: throw OpexError.ProfileNotfound.exception()
 
     }
 
@@ -192,7 +192,7 @@ class ProfileManagementImp(
         return resp.toList()
     }
 
-    override suspend fun updateUserLevel(userId: String, userLevel: KycLevel) {
+    override suspend fun updateUserLevelAndStatus(userId: String, userLevel: KycLevel) {
         profileRepository.findByUserId(userId)?.block()?.let { profileModel ->
             profileModel.kycLevel = userLevel
             profileRepository.save(profileModel).awaitFirstOrNull()
@@ -226,6 +226,7 @@ class ProfileManagementImp(
         val profile = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
             ?: throw OpexError.ProfileNotfound.exception()
         profile.mobile = mobile
+        profile.status = ProfileStatus.CONTACT_INFO_COMPLETED
         profileRepository.save(profile).awaitFirstOrNull()
     }
 
@@ -235,6 +236,17 @@ class ProfileManagementImp(
         val profile = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
             ?: throw OpexError.ProfileNotfound.exception()
         profile.email = email
+        profile.status = ProfileStatus.CONTACT_INFO_COMPLETED
+        profileRepository.save(profile).awaitFirstOrNull()
+    }
+
+    override suspend fun updateStatus(
+        userId: String,
+        status: ProfileStatus
+    ) {
+        val profile = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
+            ?: throw OpexError.ProfileNotfound.exception()
+        profile.status = status
         profileRepository.save(profile).awaitFirstOrNull()
     }
 
