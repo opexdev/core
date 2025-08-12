@@ -3,7 +3,8 @@ package co.nilin.opex.profile.ports.postgres.imp
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.profile.core.data.profile.ProfileApprovalRequest
 import co.nilin.opex.profile.core.data.profile.ProfileApprovalRequestStatus
-import co.nilin.opex.profile.core.data.profile.ProfileApprovalResponse
+import co.nilin.opex.profile.core.data.profile.ProfileApprovalAdminResponse
+import co.nilin.opex.profile.core.data.profile.ProfileApprovalUserResponse
 import co.nilin.opex.profile.core.spi.ProfileApprovalRequestPersister
 import co.nilin.opex.profile.core.utils.convert
 import co.nilin.opex.profile.ports.postgres.dao.ProfileApprovalRequestRepository
@@ -32,26 +33,34 @@ class ProfileApprovalRequestManagementImp(
         }
     }
 
-    override suspend fun getRequests(status: ProfileApprovalRequestStatus): Flow<ProfileApprovalResponse>? {
+    override suspend fun getRequests(status: ProfileApprovalRequestStatus): Flow<ProfileApprovalAdminResponse>? {
         return profileApprovalRequestRepository.findByStatus(status)?.map { p ->
             p.convert(
-                ProfileApprovalResponse::class.java
+                ProfileApprovalAdminResponse::class.java
             )
         }
     }
 
-    override suspend fun getRequestById(id: Long): Mono<ProfileApprovalResponse> {
+    override suspend fun getRequestById(id: Long): Mono<ProfileApprovalAdminResponse> {
         return profileApprovalRequestRepository.findById(id).map { p ->
             p.convert(
-                ProfileApprovalResponse::class.java
+                ProfileApprovalAdminResponse::class.java
             )
         }
     }
 
-    override suspend fun update(request: ProfileApprovalResponse): ProfileApprovalResponse {
+    override suspend fun getRequestByProfileId(profileId: Long): Mono<ProfileApprovalUserResponse> {
+        return profileApprovalRequestRepository.findByProfileId(profileId).map { p ->
+            p.convert(
+                ProfileApprovalUserResponse::class.java
+            )
+        }    }
+
+    override suspend fun update(request: ProfileApprovalAdminResponse): ProfileApprovalAdminResponse {
         val requestApprovalRequest: ProfileApprovalRequestModel =
             request.convert(ProfileApprovalRequestModel::class.java)
         profileApprovalRequestRepository.save(requestApprovalRequest).awaitFirstOrNull()
+
         return request
     }
 }
