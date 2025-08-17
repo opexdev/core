@@ -12,4 +12,8 @@ class CurrencyRatePersisterImpl(private val repository: CurrencyRateRepository) 
     override suspend fun updateRate(base: String, quote: String, rate: BigDecimal) {
         repository.createOrUpdate(base, quote, rate).awaitSingleOrNull()
     }
+
+    override suspend fun getRate(base: String, quote: String): BigDecimal {
+        return repository.findByBaseAndQuote(base, quote).awaitSingleOrNull() ?: BigDecimal.ZERO
+    }
 }

@@ -21,8 +21,8 @@ interface CurrencyRateRepository : ReactiveCrudRepository<CurrencyRateModel, Lon
     )
     fun createOrUpdate(base: String, quote: String, rate: BigDecimal): Mono<Void>
 
-    @Query("select * from currency_rate where base = :base and quote = :quote and source = :source")
-    fun findByBaseAndQuote(base: String, quote: String): Mono<CurrencyRateModel>
+    @Query("select rate from currency_rate where base = :base and quote = :quote and source = :source")
+    fun findByBaseAndQuote(base: String, quote: String): Mono<BigDecimal>
 
     @Query("select * from currency_rate where quote = :quote and source = :source")
     fun findAllByQuote(quote: String): Flux<CurrencyRateModel>

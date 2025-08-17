@@ -21,8 +21,7 @@ open class OrderManagerImpl(
     private val orderPersister: OrderPersister,
     private val tempEventPersister: TempEventPersister,
     private val richOrderPublisher: RichOrderPublisher,
-    private val financialActionPublisher: FinancialActionPublisher,
-    private val jsonMapper: JsonMapper,
+    private val financialActionPublisher: FinancialActionPublisher
 ) : OrderManager {
 
     @Transactional
@@ -267,24 +266,6 @@ open class OrderManagerImpl(
             financialActionPublisher.publish(financialAction)
             financialActionPersister.updateStatus(financialAction.uuid, FinancialActionStatus.SENT)
         }
-    }
-
-    private fun createMap(rejectOrderEvent: RejectOrderEvent, order: Order): Map<String, Any> {
-        val orderMap: Map<String, Any> = jsonMapper.toMap(order)
-        val eventMap: Map<String, Any> = jsonMapper.toMap(rejectOrderEvent)
-        return orderMap + eventMap
-    }
-
-    private fun createMap(cancelOrderEvent: CancelOrderEvent, order: Order): Map<String, Any> {
-        val orderMap: Map<String, Any> = jsonMapper.toMap(order)
-        val eventMap: Map<String, Any> = jsonMapper.toMap(cancelOrderEvent)
-        return orderMap + eventMap
-    }
-
-    private fun createMap(submitOrderEvent: SubmitOrderEvent, order: Order): Map<String, Any> {
-        val orderMap: Map<String, Any> = jsonMapper.toMap(order)
-        val eventMap: Map<String, Any> = jsonMapper.toMap(submitOrderEvent)
-        return orderMap + eventMap
     }
 
 }
