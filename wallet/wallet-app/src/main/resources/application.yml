@@ -130,6 +130,8 @@ app:
       folder: ${DRIVE_FOLDER_ID:-}
   bc-gateway:
     url: lb://opex-bc-gateway
+  market:
+    url: lb://opex-market
   reserved-transfer:
     life-time: 15 #minutes
   symbols: ${SYMBOLS}

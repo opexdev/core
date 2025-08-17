@@ -542,3 +542,12 @@ $$
         END IF;
     END
 $$;
+
+CREATE TABLE IF NOT EXISTS total_assets_snapshot
+(
+    id          SERIAL PRIMARY KEY,
+    owner       INTEGER REFERENCES wallet_owner (id),
+    total_usdt  Decimal   not null,
+    total_irt   Decimal   not null,
+    snapshot_date  TIMESTAMP not null
+);
