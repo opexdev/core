@@ -22,7 +22,7 @@ open class TradeManagerImpl(
     private val richOrderPublisher: RichOrderPublisher,
     private val feeCalculator: FeeCalculator,
     private val financialActionPublisher: FinancialActionPublisher,
-    private val jsonMapper: JsonMapper
+    private val currencyRatePersister: CurrencyRatePersister
 ) : TradeManager {
 
     private val logger = LoggerFactory.getLogger(TradeManagerImpl::class.java)
@@ -183,6 +183,9 @@ open class TradeManagerImpl(
                 trade.eventDate
             )
         )
+
+        currencyRatePersister.updateRate(trade.pair.leftSideName, trade.pair.rightSideName, makerPrice)
+
         return financeActionPersister.persist(financialActions)
         //return financeActionPersister.persist(financialActions).also { publishFinancialActions(it) }
     }
@@ -249,11 +252,5 @@ open class TradeManagerImpl(
 
         if (!list.contains(financialAction))
             list.add(financialAction)
-    }
-
-    private fun createMap(tradeEvent: TradeEvent, order: Order): Map<String, Any> {
-        val orderMap: Map<String, Any> = jsonMapper.toMap(order)
-        val eventMap: Map<String, Any> = jsonMapper.toMap(tradeEvent)
-        return orderMap + eventMap
     }
 }

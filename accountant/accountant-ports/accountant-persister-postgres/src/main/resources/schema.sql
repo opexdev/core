@@ -126,6 +126,27 @@ CREATE TABLE IF NOT EXISTS user_fee
 );
 CREATE INDEX IF NOT EXISTS idx_user_fee_quote_symbol ON user_fee (quote_symbol);
 
+CREATE TABLE IF NOT EXISTS user_trade_volume
+(
+    id         SERIAL PRIMARY KEY,
+    user_id    VARCHAR(36) NOT NULL,
+    currency   TEXT        NOT NULL,
+    date       DATE        not null,
+    volume     decimal     not null,
+    value_usdt decimal     not null,
+    value_irt  decimal     not null,
+    unique (user_id, currency, date)
+);
+
+CREATE TABLE IF NOT EXISTS currency_rate
+(
+    id    SERIAL PRIMARY KEY,
+    base  VARCHAR(25) NOT NULL,
+    quote VARCHAR(25) NOT NULL,
+    rate  DECIMAL     NOT NULL DEFAULT 0,
+    UNIQUE (base, quote)
+);
+
 INSERT INTO user_fee (uuid, quote_symbol, maker_fee, taker_fee)
 values ('DEFAULT', 'USDT', 0.0025, 0.005),
        ('DEFAULT', 'IRT', 0.0025, 0.005)

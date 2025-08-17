@@ -26,6 +26,7 @@ internal class TradeManagerImplTest {
     private val richTradePublisher = mockk<RichTradePublisher>()
     private val userLevelLoader = mockk<UserLevelLoader>()
     private val financialActionPublisher = mockk<FinancialActionPublisher>()
+
     private val jsonMapper = JsonMapperTestImpl()
 
     private val orderManager = OrderManagerImpl(
@@ -49,7 +50,6 @@ internal class TradeManagerImplTest {
         richOrderPublisher,
         FeeCalculatorImpl("0x0", jsonMapper),
         financialActionPublisher,
-        jsonMapper
     )
 
     init {
