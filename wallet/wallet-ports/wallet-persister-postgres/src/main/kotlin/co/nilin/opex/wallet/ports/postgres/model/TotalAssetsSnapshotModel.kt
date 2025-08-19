@@ -11,9 +11,9 @@ data class TotalAssetsSnapshotModel(
     @Id
     val id: Long? = null,
     val owner: Long,
-    @Column("total_irt")
-    val totalIRT: BigDecimal,
     @Column("total_usdt")
     val totalUSDT: BigDecimal,
+    @Column("total_irt")
+    val totalIRT: BigDecimal,
     val snapshotDate: LocalDateTime,
 )

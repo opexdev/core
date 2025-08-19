@@ -551,3 +551,10 @@ CREATE TABLE IF NOT EXISTS total_assets_snapshot
     total_irt   Decimal   not null,
     snapshot_date  TIMESTAMP not null
 );
+
+CREATE TABLE IF NOT EXISTS price
+(
+    symbol       VARCHAR(50) PRIMARY KEY,
+    price        Decimal   NOT NULL,
+    updated_date TIMESTAMP NOT NULL DEFAULT NOW()
+);

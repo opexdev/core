@@ -8,9 +8,10 @@ import org.springframework.stereotype.Service
 @Service
 class WalletSnapshotService(private val totalAssetsSnapshotManager: TotalAssetsSnapshotManager) {
 
-    @Scheduled(cron = "0 59 14 * * ?") //FIXME TEST
+    @Scheduled(cron = "0 0 0 * * ?", zone = "GMT+3:30")
     fun createSnapshots() {
-        runBlocking { totalAssetsSnapshotManager.createSnapshotForAllOwners() }
+        runBlocking {
+            totalAssetsSnapshotManager.createSnapshot()
+        }
     }
-
 }
