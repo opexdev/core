@@ -25,9 +25,6 @@ interface WalletRepository : ReactiveCrudRepository<WalletModel, Long> {
     @Query("select * from wallet where owner = :owner")
     fun findByOwner(owner: Long): Flux<WalletModel>
 
-    @Query("select * from wallet where owner = :owner and balance > 0 and wallet_type != 'CASHOUT'")
-    fun findNonZeroByOwnerExcludeCashout(owner: Long): Flux<WalletModel>
-
     @Query("select * from wallet where owner = :owner and currency = :currency")
     fun findByOwnerAndCurrency(owner: Long, currency: String): Flux<WalletModel>
 
