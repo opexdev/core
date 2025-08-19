@@ -20,8 +20,8 @@ interface TotalAssetsSnapshotRepository : ReactiveCrudRepository<TotalAssetsSnap
     INSERT INTO total_assets_snapshot(owner, total_usdt, total_irt, snapshot_date)
     SELECT
         w.owner,
-        SUM(w.balance * p.price) AS total_usdt,
-        SUM(w.balance * p.price) * (SELECT price FROM price WHERE symbol = 'USDT_IRT') AS total_irt,
+        ROUND(SUM(w.balance * p.price), 2) AS total_usdt,
+        TRUNC(SUM(w.balance * p.price) * (SELECT price FROM price WHERE symbol = 'USDT_IRT')) AS total_irt,
         now() AS snapshot_date
     FROM wallet w
     JOIN price p ON w.currency||'_USDT' = p.symbol
