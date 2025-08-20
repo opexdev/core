@@ -18,14 +18,22 @@ interface TotalAssetsSnapshotRepository : ReactiveCrudRepository<TotalAssetsSnap
     @Query(
         """
     INSERT INTO total_assets_snapshot(owner, total_usdt, total_irt, snapshot_date)
-    SELECT
-        w.owner,
-        ROUND(SUM(w.balance * p.price), 2) AS total_usdt,
-        TRUNC(SUM(w.balance * p.price) * (SELECT price FROM price WHERE symbol = 'USDT_IRT')) AS total_irt,
-        now() AS snapshot_date
+    SELECT w.owner,
+       trunc(SUM(
+           COALESCE(p.price * w.balance, 0)
+           + CASE WHEN w.currency = 'USDT' THEN w.balance ELSE 0 END
+           + CASE WHEN w.currency = 'IRT' THEN w.balance / irt.price ELSE 0 END
+       ),2) AS total_usdt,
+       trunc(SUM(
+           COALESCE(p.price * w.balance, 0) * irt.price
+           + CASE WHEN w.currency = 'IRT' THEN w.balance ELSE 0 END
+           + CASE WHEN w.currency = 'USDT' THEN w.balance * irt.price ELSE 0 END
+       )) AS total_irt,
+       now() AS snapshot_date
     FROM wallet w
-    JOIN price p ON w.currency||'_USDT' = p.symbol
-    WHERE w.wallet_type != 'CASHOUT' and w.balance > 0
+    LEFT JOIN price p ON concat(w.currency,'_USDT') = p.symbol
+    CROSS JOIN (SELECT price FROM price WHERE symbol = 'USDT_IRT') irt
+    WHERE w.wallet_type != 'CASHOUT' AND w.balance > 0
     GROUP BY w.owner
     """
     )
