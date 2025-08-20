@@ -18,22 +18,34 @@ interface TotalAssetsSnapshotRepository : ReactiveCrudRepository<TotalAssetsSnap
     @Query(
         """
     INSERT INTO total_assets_snapshot(owner, total_usdt, total_irt, snapshot_date)
-    SELECT w.owner,
-       trunc(SUM(
-           COALESCE(p.price * w.balance, 0)
-           + CASE WHEN w.currency = 'USDT' THEN w.balance ELSE 0 END
-           + CASE WHEN w.currency = 'IRT' THEN w.balance / irt.price ELSE 0 END
-       ),2) AS total_usdt,
-       trunc(SUM(
-           COALESCE(p.price * w.balance, 0) * irt.price
-           + CASE WHEN w.currency = 'IRT' THEN w.balance ELSE 0 END
-           + CASE WHEN w.currency = 'USDT' THEN w.balance * irt.price ELSE 0 END
-       )) AS total_irt,
-       now() AS snapshot_date
+    WITH irt_price AS (
+        SELECT price AS irt_rate
+        FROM price
+        WHERE symbol = 'USDT_IRT'
+        LIMIT 1
+    )
+    SELECT
+        w.owner,
+        trunc(SUM(
+            CASE
+                WHEN w.currency = 'USDT' THEN w.balance
+                WHEN w.currency = 'IRT' THEN w.balance / irt.irt_rate
+                ELSE w.balance * COALESCE(p.price, 0)
+            END
+        ), 2) AS total_usdt,
+        trunc(SUM(
+            CASE
+                WHEN w.currency = 'USDT' THEN w.balance * irt.irt_rate
+                WHEN w.currency = 'IRT' THEN w.balance
+                ELSE w.balance * COALESCE(p.price, 0) * irt.irt_rate
+            END
+        ), 0) AS total_irt,
+        NOW() AS snapshot_date
     FROM wallet w
-    LEFT JOIN price p ON concat(w.currency,'_USDT') = p.symbol
-    CROSS JOIN (SELECT price FROM price WHERE symbol = 'USDT_IRT') irt
-    WHERE w.wallet_type != 'CASHOUT' AND w.balance > 0
+    LEFT JOIN price p ON w.currency || '_USDT' = p.symbol
+    CROSS JOIN irt_price irt
+    WHERE w.wallet_type != 'CASHOUT'
+      AND w.balance > 0
     GROUP BY w.owner
     """
     )
