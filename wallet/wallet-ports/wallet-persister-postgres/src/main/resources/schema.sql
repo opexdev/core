@@ -556,5 +556,5 @@ CREATE TABLE IF NOT EXISTS price
 (
     symbol       VARCHAR(50) PRIMARY KEY,
     price        DECIMAL   NOT NULL,
-    updated_date TIMESTAMP NOT NULL DEFAULT NOW()
+    update_date TIMESTAMP NOT NULL DEFAULT NOW()
 );
