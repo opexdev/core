@@ -107,8 +107,8 @@ class UserService(
         keycloakProxy.linkGoogleIdentity(userId, email, googleUserId)
     }
 
-    suspend fun logout(userId: String) {
-        keycloakProxy.logout(userId)
+    suspend fun logout(userId: String, sessionId: String) {
+        keycloakProxy.logoutSession(userId, sessionId)
     }
 
     suspend fun forgetPassword(request: ForgotPasswordRequest): String {

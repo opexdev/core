@@ -217,21 +217,43 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
     @Query("select symbol, matched_price from trades where create_date in (select max(create_date) from trades group by symbol)")
     fun findAllGroupBySymbol(): Flux<LastPrice>
 
-    @Query(
-        """
-        WITH intervals AS (SELECT * FROM interval_generator((TO_TIMESTAMP(:startTime)) ::TIMESTAMP WITHOUT TIME ZONE, (:endTime), :interval ::INTERVAL)), 
-        first_trade AS (
-            SELECT DISTINCT ON (f.start_time) f.start_time, f.end_time, t.matched_price AS open_price FROM intervals f 
-            LEFT JOIN trades t ON t.create_date >= f.start_time AND t.create_date < f.end_time AND t.symbol = :symbol
-            ORDER BY f.start_time, t.create_date
-        ), last_trade AS (
-            SELECT DISTINCT ON (f.start_time) f.start_time,  f.end_time,  t.matched_price AS close_price FROM intervals f
-            LEFT JOIN trades t ON t.create_date >= f.start_time AND t.create_date < f.end_time AND t.symbol = :symbol
-            ORDER BY f.start_time, t.create_date DESC
+    @Query("""
+    WITH intervals AS (
+        SELECT *
+        FROM interval_generator(
+            (:startTime)::TIMESTAMP WITHOUT TIME ZONE,
+            (:endTime)::TIMESTAMP WITHOUT TIME ZONE,
+            :interval::INTERVAL
         )
+    ),
+    first_trade AS (
+        SELECT DISTINCT ON (f.start_time)
+            f.start_time,
+            f.end_time,
+            t.matched_price AS open_price
+        FROM intervals f
+        LEFT JOIN trades t
+            ON t.create_date >= f.start_time
+           AND t.create_date < f.end_time
+           AND t.symbol = :symbol
+        ORDER BY f.start_time, t.create_date
+    ),
+    last_trade AS (
+        SELECT DISTINCT ON (f.start_time)
+            f.start_time,
+            f.end_time,
+            t.matched_price AS close_price
+        FROM intervals f
+        LEFT JOIN trades t
+            ON t.create_date >= f.start_time
+           AND t.create_date < f.end_time
+           AND t.symbol = :symbol
+        ORDER BY f.start_time, t.create_date DESC
+    ),
+    ohlcv AS (
         SELECT 
             i.start_time AS open_time,
-            i.end_time AS close_time, 
+            i.end_time   AS close_time,
             ft.open_price AS open,
             MAX(t.matched_price) AS high,
             MIN(t.matched_price) AS low,
@@ -240,15 +262,24 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
             COUNT(t.id) AS trades
         FROM intervals i
         LEFT JOIN trades t
-        ON t.create_date >= i.start_time AND t.create_date < i.end_time AND t.symbol = :symbol
+            ON t.create_date >= i.start_time
+           AND t.create_date < i.end_time
+           AND t.symbol = :symbol
         LEFT JOIN first_trade ft
-        ON i.start_time = ft.start_time
+            ON i.start_time = ft.start_time
         LEFT JOIN last_trade lt
-        ON i.start_time = lt.start_time
+            ON i.start_time = lt.start_time
         GROUP BY i.start_time, i.end_time, ft.open_price, lt.close_price
-        ORDER BY i.start_time;
-        """
     )
+    SELECT *
+    FROM (
+        SELECT *
+        FROM ohlcv
+        ORDER BY open_time DESC
+        limit :limit
+    ) sub
+    ORDER BY open_time ASC
+""")
     suspend fun candleData(
         @Param("symbol")
         symbol: String,
