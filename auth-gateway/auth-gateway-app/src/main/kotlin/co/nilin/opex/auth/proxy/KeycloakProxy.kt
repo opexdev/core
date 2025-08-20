@@ -174,7 +174,7 @@ class KeycloakProxy(
                     ).apply {
                         if (username.type == UsernameType.MOBILE)
                             put("mobile", username.value)
-                        put(Attributes.OTP, username.type.otpType.name)
+                        put(Attributes.OTP, OTPType.NONE.name)
                     }
                 ).apply { if (username.type == UsernameType.EMAIL) put("email", username.value) }
             )

@@ -18,7 +18,6 @@ object EventDispatcher {
         eventsHandler.getOrPut(type, { LinkedList() }).add(listener)
     }
 
-
     fun emit(event: CoreEvent) {
         var type: Class<*>? = event::class.java
         while (type != null) {
@@ -30,7 +29,6 @@ object EventDispatcher {
             type = type.superclass
         }
     }
-
 
     open class EventListener<T>(
         val lambda: (T) -> Unit
