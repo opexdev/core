@@ -1,8 +1,10 @@
 package co.nilin.opex.accountant.app.controller
 
 import co.nilin.opex.accountant.app.data.PairFeeResponse
+import co.nilin.opex.accountant.core.model.FeeConfig
 import co.nilin.opex.accountant.core.model.PairConfig
 import co.nilin.opex.accountant.core.model.PairFeeConfig
+import co.nilin.opex.accountant.core.spi.FeeConfigService
 import co.nilin.opex.accountant.core.spi.PairConfigLoader
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.matching.engine.core.model.OrderDirection
@@ -10,7 +12,10 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/config")
-class PairConfigController(private val pairConfigLoader: PairConfigLoader) {
+class PairConfigController(
+    private val pairConfigLoader: PairConfigLoader,
+    private val feeConfigService: FeeConfigService
+) {
 
     @GetMapping("/{pair}/fee/{direction}-{userLevel}")
     suspend fun fetchPairFeeConfig(
@@ -35,9 +40,8 @@ class PairConfigController(private val pairConfigLoader: PairConfigLoader) {
     }
 
     @GetMapping("/fee")
-    suspend fun getFeeConfigs(): List<PairFeeResponse> {
-        return pairConfigLoader.loadPairFeeConfigs()
-            .map { PairFeeResponse(it.pairConfig.pair, it.direction, it.userLevel, it.makerFee, it.takerFee) }
+    suspend fun getFeeConfigs(): List<FeeConfig> {
+        return feeConfigService.loadFeeConfigs()
     }
 
     @GetMapping("/fee/{pair}")

@@ -152,4 +152,16 @@ values ('DEFAULT', 'USDT', 0.0025, 0.005),
        ('DEFAULT', 'IRT', 0.0025, 0.005)
 ON CONFLICT DO NOTHING;
 
+    CREATE TABLE IF NOT EXISTS fee_config (
+    name VARCHAR(50) PRIMARY KEY,
+    display_order INTEGER NOT NULL UNIQUE,
+    min_asset_volume Decimal NOT NULL,
+    max_asset_volume Decimal,
+    min_trade_volume Decimal NOT NULL,
+    max_trade_volume Decimal,
+    maker_fee Decimal NOT NULL,
+    taker_fee Decimal NOT NULL,
+    condition VARCHAR(10) NOT NULL
+    );
+
 COMMIT;

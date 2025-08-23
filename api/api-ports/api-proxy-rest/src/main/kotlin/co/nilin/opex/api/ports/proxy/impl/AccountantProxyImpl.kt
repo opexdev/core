@@ -1,5 +1,6 @@
 package co.nilin.opex.api.ports.proxy.impl
 
+import co.nilin.opex.api.core.inout.FeeConfig
 import co.nilin.opex.api.core.inout.PairConfigResponse
 import co.nilin.opex.api.core.inout.PairFeeResponse
 import co.nilin.opex.api.core.spi.AccountantProxy
@@ -28,9 +29,9 @@ class AccountantProxyImpl(private val restTemplate: RestTemplate) : AccountantPr
         ).body?.toList() ?: emptyList()
     }
 
-    override fun getFeeConfigs(): List<PairFeeResponse> {
+    override fun getFeeConfigs(): List<FeeConfig> {
         logger.info("fetching fee configs")
-        return restTemplate.exchange<Array<PairFeeResponse>>(
+        return restTemplate.exchange<Array<FeeConfig>>(
             "$baseUrl/config/fee",
             HttpMethod.GET,
             noBody()
