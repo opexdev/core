@@ -6,10 +6,12 @@ data class SimpleOrder(
     val uuid: String,
     val price: Long,
     val quantity: Long,
+    val totalBudget: Long?,
     val matchConstraint: MatchConstraint,
     val orderType: OrderType,
     val direction: OrderDirection,
     var filledQuantity: Long,
+    var spentBudget: Long,
     var worse: SimpleOrder?,
     var better: SimpleOrder?,
     var bucket: Bucket?
@@ -30,10 +32,12 @@ data class SimpleOrder(
             uuid,
             price,
             quantity,
+            totalBudget,
             matchConstraint,
             orderType,
             direction,
-            filledQuantity
+            filledQuantity,
+            spentBudget
         )
     }
 }

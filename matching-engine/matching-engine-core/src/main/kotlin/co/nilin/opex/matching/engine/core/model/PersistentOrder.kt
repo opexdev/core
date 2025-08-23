@@ -6,10 +6,12 @@ class PersistentOrder {
     var uuid: String = ""
     var price: Long = 0
     var quantity: Long = 0
+    var totalBudget: Long? = 0
     lateinit var matchConstraint: MatchConstraint
     lateinit var orderType: OrderType
     lateinit var direction: OrderDirection
     var filledQuantity: Long = 0
+    var spentBudget: Long = 0
 
     constructor() {
 
@@ -21,19 +23,23 @@ class PersistentOrder {
         uuid: String,
         price: Long,
         quantity: Long,
+        totalBudget: Long?,
         matchConstraint: MatchConstraint,
         orderType: OrderType,
         direction: OrderDirection,
-        filledQuantity: Long
+        filledQuantity: Long,
+        spentBudget: Long
     ) {
         this.id = id
         this.ouid = ouid
         this.uuid = uuid
         this.price = price
         this.quantity = quantity
+        this.totalBudget = totalBudget
         this.matchConstraint = matchConstraint
         this.orderType = orderType
         this.direction = direction
         this.filledQuantity = filledQuantity
+        this.spentBudget = spentBudget
     }
 }

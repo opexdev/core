@@ -733,11 +733,13 @@ class SimpleOrderBookUnitTest {
             ) as SimpleOrder
         //then
         Assertions.assertEquals(0, order.filledQuantity)
-        Assertions.assertEquals(orderBook.bidOrders.entriesList().size, 2)
-        Assertions.assertEquals(orderBook.askOrders.entriesList().size, 1)
+        Assertions.assertEquals(2, orderBook.bidOrders.entriesList().size)
+        Assertions.assertEquals(1, orderBook.askOrders.entriesList().size)
         Assertions.assertEquals(bestBidOrder, orderBook.bestBidOrder)
         Assertions.assertEquals(bestAskOrder, orderBook.bestAskOrder)
     }
+
+
 
     @Test
     fun whenSample1SequenceOfOrdersOccurs_thenAllSuccess() {
@@ -849,4 +851,137 @@ class SimpleOrderBookUnitTest {
         Assertions.assertNotNull(orderBook.bestBidOrder)
         Assertions.assertNotNull(orderBook.bestAskOrder)
     }
+
+    @Test
+    fun givenOrderBookWithBidAndAskOrders_whenIocBudgetAskMarketOrderWithGreaterQuantityCreated_thenPartiallyFilled() {
+        //given
+        val orderBook = SimpleOrderBook(pair, false)
+        orderBook.handleNewOrderCommand(
+            OrderCreateCommand(
+                UUID.randomUUID().toString(),
+                uuid,
+                pair,
+                2,
+                1,
+                OrderDirection.BID,
+                MatchConstraint.GTC,
+                OrderType.LIMIT_ORDER
+            )
+        )
+        orderBook.handleNewOrderCommand(
+            OrderCreateCommand(
+                UUID.randomUUID().toString(),
+                uuid,
+                pair,
+                1,
+                3,
+                OrderDirection.BID,
+                MatchConstraint.GTC,
+                OrderType.LIMIT_ORDER
+            )
+        )
+        orderBook.handleNewOrderCommand(
+            OrderCreateCommand(
+                UUID.randomUUID().toString(),
+                uuid,
+                pair,
+                3,
+                1,
+                OrderDirection.ASK,
+                MatchConstraint.GTC,
+                OrderType.LIMIT_ORDER
+            )
+        )
+        val bestAskOrder = orderBook.bestAskOrder
+        //when
+        val order: SimpleOrder =
+            orderBook.handleNewOrderCommand(
+                OrderCreateCommand(
+                    UUID.randomUUID().toString(),
+                    uuid,
+                    pair,
+                    0,
+                    3,
+                    OrderDirection.ASK,
+                    MatchConstraint.IOC_BUDGET,
+                    OrderType.MARKET_ORDER,
+                    3
+                )
+            ) as SimpleOrder
+        //then
+        Assertions.assertEquals(2, order.filledQuantity)
+        Assertions.assertEquals(order.totalBudget, order.spentBudget)
+        Assertions.assertEquals(1, orderBook.bidOrders.entriesList().size)
+        Assertions.assertEquals(1, orderBook.askOrders.entriesList().size)
+        Assertions.assertNotNull(orderBook.bestBidOrder)
+        Assertions.assertEquals(1, orderBook.bestBidOrder!!.filledQuantity)
+        Assertions.assertEquals(bestAskOrder, orderBook.bestAskOrder)
+    }
+
+    @Test
+    fun givenOrderBookWithBidAndAskOrders_whenIocBudgetBidMarketOrderWithGreaterQuantityCreated_thenPartiallyFilled() {
+        //given
+        val orderBook = SimpleOrderBook(pair, false)
+        orderBook.handleNewOrderCommand(
+            OrderCreateCommand(
+                UUID.randomUUID().toString(),
+                uuid,
+                pair,
+                2,
+                1,
+                OrderDirection.ASK,
+                MatchConstraint.GTC,
+                OrderType.LIMIT_ORDER
+            )
+        )
+        orderBook.handleNewOrderCommand(
+            OrderCreateCommand(
+                UUID.randomUUID().toString(),
+                uuid,
+                pair,
+                3,
+                1,
+                OrderDirection.ASK,
+                MatchConstraint.GTC,
+                OrderType.LIMIT_ORDER
+            )
+        )
+        orderBook.handleNewOrderCommand(
+            OrderCreateCommand(
+                UUID.randomUUID().toString(),
+                uuid,
+                pair,
+                1,
+                1,
+                OrderDirection.BID,
+                MatchConstraint.GTC,
+                OrderType.LIMIT_ORDER
+            )
+        )
+        val bestBidOrder = orderBook.bestBidOrder
+        //when
+        val order: SimpleOrder =
+            orderBook.handleNewOrderCommand(
+                OrderCreateCommand(
+                    UUID.randomUUID().toString(),
+                    uuid,
+                    pair,
+                    0,
+                    3,
+                    OrderDirection.BID,
+                    MatchConstraint.IOC_BUDGET,
+                    OrderType.MARKET_ORDER,
+                    3
+                )
+            ) as SimpleOrder
+        //then
+        Assertions.assertEquals(1, order.filledQuantity)
+        Assertions.assertEquals(2, order.spentBudget)
+        Assertions.assertEquals(1,orderBook.bidOrders.entriesList().size)
+        Assertions.assertEquals(1,orderBook.askOrders.entriesList().size)
+        Assertions.assertNotNull(orderBook.bestAskOrder)
+        Assertions.assertEquals(0, orderBook.bestAskOrder!!.filledQuantity)
+        Assertions.assertEquals(orderBook.bestBidOrder, bestBidOrder)
+    }
+
 }

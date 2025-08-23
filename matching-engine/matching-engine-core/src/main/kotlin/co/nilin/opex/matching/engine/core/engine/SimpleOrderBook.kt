@@ -29,7 +29,8 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
         logNewOrder(orderCommand)
         val order = when (orderCommand.matchConstraint) {
             MatchConstraint.GTC -> {
-                if (orderCommand.orderType == OrderType.MARKET_ORDER) {
+                if (orderCommand.orderType == OrderType.MARKET_ORDER
+                    || orderCommand.totalBudget != null) {
                     if (!replayMode) {
                         EventDispatcher.emit(
                             RejectOrderEvent(
@@ -42,7 +43,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                                 orderCommand.matchConstraint,
                                 orderCommand.orderType,
                                 RequestedOperation.PLACE_ORDER,
-                                RejectReason.ORDER_TYPE_NOT_MATCHED_MATCHC
+                                if (orderCommand.totalBudget != null ) RejectReason.ORDER_PARAM_NOT_MATCH else RejectReason.ORDER_TYPE_NOT_MATCHED
                             )
                         )
                     }
@@ -54,9 +55,11 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                     orderCommand.uuid,
                     orderCommand.price,
                     orderCommand.quantity,
+                    null,
                     orderCommand.matchConstraint,
                     orderCommand.orderType,
                     orderCommand.direction,
+                    0,
                     0,
                     null,
                     null,
@@ -88,15 +91,86 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
             }
 
             MatchConstraint.IOC -> {
+                if (orderCommand.totalBudget != null){
+                    if (!replayMode) {
+                        EventDispatcher.emit(
+                            RejectOrderEvent(
+                                orderCommand.ouid,
+                                orderCommand.uuid,
+                                orderCommand.pair,
+                                orderCommand.price,
+                                orderCommand.quantity,
+                                orderCommand.direction,
+                                orderCommand.matchConstraint,
+                                orderCommand.orderType,
+                                RequestedOperation.PLACE_ORDER,
+                                RejectReason.ORDER_PARAM_NOT_MATCH
+                            )
+                        )
+                    }
+                    return null
+                }
                 val order = SimpleOrder(
                     orderCounter.incrementAndGet(),
                     orderCommand.ouid,
                     orderCommand.uuid,
                     orderCommand.price,
                     orderCommand.quantity,
+                    null,
                     orderCommand.matchConstraint,
                     orderCommand.orderType,
                     orderCommand.direction,
+                    0,
+                    0,
+                    null,
+                    null,
+                    null
+                )
+                if (!replayMode) {
+                    EventDispatcher.emit(
+                        CreateOrderEvent(
+                            orderCommand.ouid, orderCommand.uuid,
+                            order.id!!, orderCommand.pair, orderCommand.price,
+                            orderCommand.quantity, order.remainedQuantity(),
+                            orderCommand.direction, orderCommand.matchConstraint, orderCommand.orderType
+                        )
+                    )
+                }
+                // try to match instantly
+                val queueOrder = matchIocInstantly(order)
+                if (!replayMode) {
+                    if (queueOrder.filledQuantity != queueOrder.quantity) {
+                        EventDispatcher.emit(
+                            CancelOrderEvent(
+                                orderCommand.ouid,
+                                orderCommand.uuid,
+                                queueOrder.id!!,
+                                orderCommand.pair,
+                                order.price,
+                                order.quantity,
+                                order.remainedQuantity(),
+                                order.direction,
+                                order.matchConstraint,
+                                order.orderType
+                            )
+                        )
+                    }
+                }
+                queueOrder
+            }
+
+            MatchConstraint.IOC_BUDGET -> {
+                val order = SimpleOrder(
+                    orderCounter.incrementAndGet(),
+                    orderCommand.ouid,
+                    orderCommand.uuid,
+                    orderCommand.price,
+                    orderCommand.quantity,
+                    orderCommand.totalBudget,
+                    orderCommand.matchConstraint,
+                    orderCommand.orderType,
+                    orderCommand.direction,
+                    0,
                     0,
                     null,
                     null,
@@ -148,7 +222,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                             orderCommand.matchConstraint,
                             orderCommand.orderType,
                             RequestedOperation.PLACE_ORDER,
-                            RejectReason.OPERATION_NOT_MATCHED_MATCHC
+                            RejectReason.OPERATION_NOT_MATCHED
                         )
                     )
                 }
@@ -247,10 +321,12 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
             orderCommand.uuid,
             orderCommand.price,
             orderCommand.quantity,
+            order.totalBudget,
             order.matchConstraint,
             order.orderType,
             order.direction,
             order.filledQuantity,
+            order.spentBudget,
             null,
             null,
             null
@@ -335,7 +411,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                             order.matchConstraint,
                             order.orderType,
                             RequestedOperation.EDIT_ORDER,
-                            RejectReason.OPERATION_NOT_MATCHED_MATCHC
+                            RejectReason.OPERATION_NOT_MATCHED
                         )
                     )
                 }
@@ -429,7 +505,14 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
         var currentMaker = makerOrder
         var lastOrderOfMakerBucket = makerOrder.bucket!!.lastOrder
         do {
-            val instantMatchQuantity = Math.min(order.remainedQuantity(), currentMaker!!.remainedQuantity())
+            var instantMatchQuantity = order.remainedQuantity()
+                .coerceAtMost(currentMaker!!.remainedQuantity())
+            if ( order.totalBudget != null ){
+                val instantBudgetMatched = (order.totalBudget - order.spentBudget)/currentMaker.price
+                if ( instantBudgetMatched < instantMatchQuantity )
+                    instantMatchQuantity = instantBudgetMatched
+                order.spentBudget += instantMatchQuantity * currentMaker.price
+            }
             order.filledQuantity += instantMatchQuantity
             currentMaker.filledQuantity += instantMatchQuantity
             currentMaker.bucket!!.totalQuantity -= instantMatchQuantity
@@ -568,10 +651,12 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                 order.uuid,
                 order.price,
                 order.quantity,
+                order.totalBudget,
                 order.matchConstraint,
                 order.orderType,
                 order.direction,
                 order.filledQuantity,
+                order.spentBudget,
                 null,
                 null,
                 null
