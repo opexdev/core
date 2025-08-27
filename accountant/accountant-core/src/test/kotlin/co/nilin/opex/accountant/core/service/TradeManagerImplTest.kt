@@ -101,7 +101,7 @@ internal class TradeManagerImplTest {
             MatchConstraint.GTC,
             OrderType.LIMIT_ORDER
         )
-        prepareOrder(makerSubmitOrderEvent, BigDecimal.valueOf(0.1), BigDecimal.valueOf(0.12))
+        prepareOrder(pair, pairConfig, makerSubmitOrderEvent, BigDecimal.valueOf(0.1), BigDecimal.valueOf(0.12))
 
         val takerSubmitOrderEvent = SubmitOrderEvent(
             "touid",
@@ -116,7 +116,7 @@ internal class TradeManagerImplTest {
             OrderType.LIMIT_ORDER
         )
 
-        prepareOrder(takerSubmitOrderEvent, BigDecimal.valueOf(0.08), BigDecimal.valueOf(0.1))
+        prepareOrder(pair, pairConfig, takerSubmitOrderEvent, BigDecimal.valueOf(0.08), BigDecimal.valueOf(0.1))
 
         val tradeEvent = makeTradeEvent(pair, takerSubmitOrderEvent, makerSubmitOrderEvent, 1)
         //when
@@ -155,7 +155,7 @@ internal class TradeManagerImplTest {
             MatchConstraint.GTC,
             OrderType.LIMIT_ORDER
         )
-        prepareOrder(makerSubmitOrderEvent, BigDecimal.valueOf(0.1), BigDecimal.valueOf(0.12))
+        prepareOrder(pair, pairConfig, makerSubmitOrderEvent, BigDecimal.valueOf(0.1), BigDecimal.valueOf(0.12))
 
         val takerSubmitOrderEvent = SubmitOrderEvent(
             "touid",
@@ -170,7 +170,7 @@ internal class TradeManagerImplTest {
             OrderType.LIMIT_ORDER
         )
 
-        prepareOrder(takerSubmitOrderEvent, BigDecimal.valueOf(0.08), BigDecimal.valueOf(0.1))
+        prepareOrder(pair, pairConfig, takerSubmitOrderEvent, BigDecimal.valueOf(0.08), BigDecimal.valueOf(0.1))
 
         val tradeEvent = makeTradeEvent(pair, takerSubmitOrderEvent, makerSubmitOrderEvent, 1)
         //when
@@ -204,7 +204,7 @@ internal class TradeManagerImplTest {
             MatchConstraint.GTC,
             OrderType.LIMIT_ORDER
         )
-        prepareOrder(makerSubmitOrderEvent, BigDecimal.valueOf(0.1), BigDecimal.valueOf(0.12))
+        prepareOrder(pair, pairConfig, makerSubmitOrderEvent, BigDecimal.valueOf(0.1), BigDecimal.valueOf(0.12))
 
         val takerSubmitOrderEvent = SubmitOrderEvent(
             "touid",
@@ -219,7 +219,7 @@ internal class TradeManagerImplTest {
             OrderType.LIMIT_ORDER
         )
 
-        prepareOrder(takerSubmitOrderEvent, BigDecimal.valueOf(0.08), BigDecimal.valueOf(0.1))
+        prepareOrder(pair, pairConfig, takerSubmitOrderEvent, BigDecimal.valueOf(0.08), BigDecimal.valueOf(0.1))
 
         val tradeEvent = makeTradeEvent(pair, takerSubmitOrderEvent, makerSubmitOrderEvent, 1)
         //when
@@ -258,7 +258,7 @@ internal class TradeManagerImplTest {
             MatchConstraint.GTC,
             OrderType.LIMIT_ORDER
         )
-        prepareOrder(makerSubmitOrderEvent, BigDecimal.valueOf(0.1), BigDecimal.valueOf(0.12))
+        prepareOrder(pair, pairConfig, makerSubmitOrderEvent, BigDecimal.valueOf(0.1), BigDecimal.valueOf(0.12))
 
         val takerSubmitOrderEvent = SubmitOrderEvent(
             "touid",
@@ -273,7 +273,7 @@ internal class TradeManagerImplTest {
             OrderType.LIMIT_ORDER
         )
 
-        prepareOrder(takerSubmitOrderEvent, BigDecimal.valueOf(0.08), BigDecimal.valueOf(0.1))
+        prepareOrder(pair, pairConfig, takerSubmitOrderEvent, BigDecimal.valueOf(0.08), BigDecimal.valueOf(0.1))
 
         val tradeEvent = makeTradeEvent(pair, takerSubmitOrderEvent, makerSubmitOrderEvent, 1)
         //when
@@ -316,10 +316,23 @@ internal class TradeManagerImplTest {
     }
 
     private suspend fun prepareOrder(
+        pair: Pair,
+        pairConfig: PairConfig,
         submitOrderEvent: SubmitOrderEvent,
         makerFee: BigDecimal,
         takerFee: BigDecimal
     ) {
+        coEvery {
+            feeCalculator.getUserFee(submitOrderEvent.uuid)
+        } returns FeeConfig(
+            "Test", 1, BigDecimal.ONE, BigDecimal.ONE, BigDecimal.ONE, BigDecimal.ONE, makerFee, takerFee,
+            Condition.OR
+        )
+
+        coEvery {
+            pairConfigLoader.load(pair.toString(), submitOrderEvent.direction)
+        } returns pairConfig
+
         coEvery { financialActionPersister.persist(any()) } returnsArgument (0)
 
         val financialActions = orderManager.handleRequestOrder(submitOrderEvent)
