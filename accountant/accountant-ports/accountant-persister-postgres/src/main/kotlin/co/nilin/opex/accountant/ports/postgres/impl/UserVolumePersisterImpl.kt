@@ -1,5 +1,6 @@
 package co.nilin.opex.accountant.ports.postgres.impl
 
+import co.nilin.opex.accountant.core.inout.UserTotalVolumeValue
 import co.nilin.opex.accountant.core.spi.UserVolumePersister
 import co.nilin.opex.accountant.ports.postgres.dao.UserTradeVolumeRepository
 import kotlinx.coroutines.reactor.awaitSingleOrNull
@@ -19,5 +20,9 @@ class UserVolumePersisterImpl(private val repository: UserTradeVolumeRepository)
         valueIRT: BigDecimal
     ) {
         repository.insertOrUpdate(userId, currency, date, volume, valueUSDT, valueIRT).awaitSingleOrNull()
+    }
+
+    override suspend fun getUserVolumeData(uuid: String, startDate: LocalDate): UserTotalVolumeValue? {
+        return repository.findTotalValueByUserAndAndDateAfter(uuid, startDate).awaitSingleOrNull()
     }
 }

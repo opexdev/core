@@ -1,7 +1,11 @@
 package co.nilin.opex.accountant.core.service
 
+import co.nilin.opex.accountant.core.api.FeeCalculator
 import co.nilin.opex.accountant.core.inout.OrderStatus
-import co.nilin.opex.accountant.core.model.*
+import co.nilin.opex.accountant.core.model.FinancialAction
+import co.nilin.opex.accountant.core.model.FinancialActionCategory
+import co.nilin.opex.accountant.core.model.PairConfig
+import co.nilin.opex.accountant.core.model.WalletType
 import co.nilin.opex.accountant.core.spi.*
 import co.nilin.opex.matching.engine.core.eventh.events.CancelOrderEvent
 import co.nilin.opex.matching.engine.core.eventh.events.CreateOrderEvent
@@ -30,19 +34,18 @@ internal class OrderManagerImplTest {
     private val tempEventPersister = mockk<TempEventPersister>()
     private val pairConfigLoader = mockk<PairConfigLoader>()
     private val richOrderPublisher = mockk<RichOrderPublisher>()
-    private val userLevelLoader = mockk<UserLevelLoader>()
     private val financialActionPublisher = mockk<FinancialActionPublisher>()
+    private val feeCalculator = mockk<FeeCalculator>()
 
     private val orderManager = OrderManagerImpl(
         pairConfigLoader,
-        userLevelLoader,
         financialActionPersister,
         financialActionLoader,
         orderPersister,
         tempEventPersister,
         richOrderPublisher,
         financialActionPublisher,
-        JsonMapperTestImpl()
+        feeCalculator
     )
 
     init {
@@ -54,7 +57,6 @@ internal class OrderManagerImplTest {
         coEvery { financialActionPersister.persist(any()) } returnsArgument (0)
         coEvery { financialActionPersister.updateStatus(any<FinancialAction>(), any()) } returns Unit
         coEvery { financialActionPersister.updateStatus(any<String>(), any()) } returns Unit
-        coEvery { userLevelLoader.load(any()) } returns "*"
         coEvery { financialActionPublisher.publish(any()) } returns Unit
     }
 
@@ -71,16 +73,6 @@ internal class OrderManagerImplTest {
         )
         val submitOrderEvent = SubmitOrderEvent(
             "ouid", "uuid", null, pair, 30, 60, 0, OrderDirection.ASK, MatchConstraint.GTC, OrderType.LIMIT_ORDER
-        )
-
-        coEvery {
-            pairConfigLoader.load(pair.toString(), submitOrderEvent.direction, any())
-        } returns PairFeeConfig(
-            pairConfig,
-            submitOrderEvent.direction.toString(),
-            "",
-            BigDecimal.valueOf(0.1),
-            BigDecimal.valueOf(0.12)
         )
 
         coEvery { financialActionPersister.persist(any()) } returnsArgument (0)
@@ -128,16 +120,6 @@ internal class OrderManagerImplTest {
         )
         val submitOrderEvent = SubmitOrderEvent(
             "ouid", "uuid", null, pair, 35, 14, 0, OrderDirection.BID, MatchConstraint.GTC, OrderType.LIMIT_ORDER
-        )
-
-        coEvery {
-            pairConfigLoader.load(pair.toString(), submitOrderEvent.direction, any())
-        } returns PairFeeConfig(
-            pairConfig,
-            submitOrderEvent.direction.toString(),
-            "",
-            BigDecimal.valueOf(0.08),
-            BigDecimal.valueOf(0.1)
         )
 
         coEvery { financialActionPersister.persist(any()) } returnsArgument (0)

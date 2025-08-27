@@ -1,4 +1,4 @@
-package co.nilin.opex.wallet.core.model
+package co.nilin.opex.accountant.core.model
 
 import java.math.BigDecimal
 import java.time.LocalDateTime

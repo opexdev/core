@@ -1,5 +1,6 @@
 package co.nilin.opex.accountant.core.service
 
+import co.nilin.opex.accountant.core.api.FeeCalculator
 import co.nilin.opex.accountant.core.api.OrderManager
 import co.nilin.opex.accountant.core.inout.OrderStatus
 import co.nilin.opex.accountant.core.inout.RichOrder
@@ -15,13 +16,13 @@ import java.time.LocalDateTime
 
 open class OrderManagerImpl(
     private val pairConfigLoader: PairConfigLoader,
-    private val userLevelLoader: UserLevelLoader,
     private val financialActionPersister: FinancialActionPersister,
     private val financeActionLoader: FinancialActionLoader,
     private val orderPersister: OrderPersister,
     private val tempEventPersister: TempEventPersister,
     private val richOrderPublisher: RichOrderPublisher,
-    private val financialActionPublisher: FinancialActionPublisher
+    private val financialActionPublisher: FinancialActionPublisher,
+    private val feeCalculator: FeeCalculator
 ) : OrderManager {
 
     @Transactional
@@ -35,14 +36,13 @@ open class OrderManagerImpl(
             submitOrderEvent.pair.rightSideName
         }
 
-        val level = userLevelLoader.load(submitOrderEvent.uuid)
-        val pairFeeConfig = pairConfigLoader.load(
+        val pairConfig = pairConfigLoader.load(
             submitOrderEvent.pair.toString(),
             submitOrderEvent.direction,
-            level
         )
-        val makerFee = pairFeeConfig.makerFee * BigDecimal.ONE //user level formula
-        val takerFee = pairFeeConfig.takerFee * BigDecimal.ONE //user level formula
+        val fee = feeCalculator.getUserFee(submitOrderEvent.uuid)
+        val makerFee = fee.makerFee
+        val takerFee = fee.takerFee
 
         //create fa for transfer uuid symbol main wallet to uuid symbol exchange wallet
         /*
@@ -51,11 +51,11 @@ open class OrderManagerImpl(
          */
 
         val amount = if (submitOrderEvent.direction == OrderDirection.ASK) {
-            BigDecimal(submitOrderEvent.quantity).multiply(pairFeeConfig.pairConfig.leftSideFraction)
+            BigDecimal(submitOrderEvent.quantity).multiply(pairConfig.leftSideFraction)
         } else {
-            BigDecimal(submitOrderEvent.quantity).multiply(pairFeeConfig.pairConfig.leftSideFraction)
+            BigDecimal(submitOrderEvent.quantity).multiply(pairConfig.leftSideFraction)
                 .multiply(submitOrderEvent.price.toBigDecimal())
-                .multiply(pairFeeConfig.pairConfig.rightSideFraction)
+                .multiply(pairConfig.rightSideFraction)
         }
 
         //store order (ouid, uuid, fees, userlevel, pair, direction, price, quantity, filledQ, status, transfered)
@@ -66,8 +66,8 @@ open class OrderManagerImpl(
                 null,
                 makerFee,
                 takerFee,
-                pairFeeConfig.pairConfig.leftSideFraction,
-                pairFeeConfig.pairConfig.rightSideFraction,
+                pairConfig.leftSideFraction,
+                pairConfig.rightSideFraction,
                 submitOrderEvent.uuid,
                 submitOrderEvent.userLevel,
                 submitOrderEvent.direction,
@@ -77,10 +77,10 @@ open class OrderManagerImpl(
                 submitOrderEvent.quantity,
                 submitOrderEvent.quantity - submitOrderEvent.remainedQuantity,
                 submitOrderEvent.price.toBigDecimal()
-                    .multiply(pairFeeConfig.pairConfig.rightSideFraction),
+                    .multiply(pairConfig.rightSideFraction),
                 submitOrderEvent.quantity.toBigDecimal()
-                    .multiply(pairFeeConfig.pairConfig.leftSideFraction),
-                BigDecimal(submitOrderEvent.quantity - submitOrderEvent.remainedQuantity).multiply(pairFeeConfig.pairConfig.leftSideFraction),
+                    .multiply(pairConfig.leftSideFraction),
+                BigDecimal(submitOrderEvent.quantity - submitOrderEvent.remainedQuantity).multiply(pairConfig.leftSideFraction),
                 amount,
                 amount,
                 OrderStatus.REQUESTED.code
@@ -266,6 +266,12 @@ open class OrderManagerImpl(
             financialActionPublisher.publish(financialAction)
             financialActionPersister.updateStatus(financialAction.uuid, FinancialActionStatus.SENT)
         }
+    }
+
+    private suspend fun getFee(uuid: String): BigDecimal {
+
+
+        return BigDecimal.ONE
     }
 
 }

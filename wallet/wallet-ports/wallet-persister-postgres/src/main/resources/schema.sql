@@ -546,11 +546,12 @@ $$;
 CREATE TABLE IF NOT EXISTS total_assets_snapshot
 (
     id          SERIAL PRIMARY KEY,
-    owner       INTEGER REFERENCES wallet_owner (id),
+    uuid           VARCHAR(36)  NOT NULL,
     total_usdt  DECIMAL   NOT NULL,
     total_irt   DECIMAL   NOT NULL,
     snapshot_date  TIMESTAMP NOT NULL
 );
+CREATE INDEX IF NOT EXISTS idx_total_assets_snapshot_uuid ON total_assets_snapshot (uuid);
 
 CREATE TABLE IF NOT EXISTS price
 (

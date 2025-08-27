@@ -175,7 +175,7 @@ fun CurrencyModel.toCurrencyData(): CurrencyData {
 
 fun TotalAssetsSnapshotModel.toTotalAssetsSnapshot(): TotalAssetsSnapshot {
     return TotalAssetsSnapshot(
-        owner,
+        uuid,
         totalUSDT,
         totalIRT,
         snapshotDate

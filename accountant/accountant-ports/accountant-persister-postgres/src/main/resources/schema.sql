@@ -84,29 +84,6 @@ CREATE TABLE IF NOT EXISTS pair_config
     UNIQUE (left_side_wallet_symbol, right_side_wallet_symbol)
 );
 
-CREATE TABLE IF NOT EXISTS user_level
-(
-    level VARCHAR(36) PRIMARY KEY
-);
-
-CREATE TABLE IF NOT EXISTS pair_fee_config
-(
-    id             SERIAL PRIMARY KEY,
-    pair_config_id VARCHAR(72) NOT NULL REFERENCES pair_config (pair),
-    direction      VARCHAR(36) NOT NULL,
-    user_level     VARCHAR(36) NOT NULL REFERENCES user_level (level),
-    maker_fee      DECIMAL     NOT NULL,
-    taker_fee      DECIMAL     NOT NULL,
-    UNIQUE (direction, user_level, pair_config_id)
-);
-
-CREATE TABLE IF NOT EXISTS user_level_mapper
-(
-    id         SERIAL PRIMARY KEY,
-    uuid       VARCHAR(36) NOT NULL UNIQUE,
-    user_level VARCHAR(36) NOT NULL REFERENCES user_level (level)
-);
-
 CREATE TABLE IF NOT EXISTS temp_events
 (
     id         SERIAL PRIMARY KEY,
@@ -115,16 +92,6 @@ CREATE TABLE IF NOT EXISTS temp_events
     event_body TEXT        NOT NULL,
     event_date TIMESTAMP   NOT NULL
 );
-
-CREATE TABLE IF NOT EXISTS user_fee
-(
-    id           SERIAL PRIMARY KEY,
-    uuid         VARCHAR(32) NOT NULL UNIQUE,
-    quote_symbol VARCHAR(10) NOT NULL,
-    maker_fee    DECIMAL     NOT NULL,
-    taker_fee    DECIMAL     NOT NULL
-);
-CREATE INDEX IF NOT EXISTS idx_user_fee_quote_symbol ON user_fee (quote_symbol);
 
 CREATE TABLE IF NOT EXISTS user_trade_volume
 (
@@ -147,11 +114,6 @@ CREATE TABLE IF NOT EXISTS currency_rate
     UNIQUE (base, quote)
 );
 
-INSERT INTO user_fee (uuid, quote_symbol, maker_fee, taker_fee)
-values ('DEFAULT', 'USDT', 0.0025, 0.005),
-       ('DEFAULT', 'IRT', 0.0025, 0.005)
-ON CONFLICT DO NOTHING;
-
     CREATE TABLE IF NOT EXISTS fee_config (
     name VARCHAR(50) PRIMARY KEY,
     display_order INTEGER NOT NULL UNIQUE,
@@ -163,5 +125,10 @@ ON CONFLICT DO NOTHING;
     taker_fee Decimal NOT NULL,
     condition VARCHAR(10) NOT NULL
     );
+
+    DROP TABLE IF EXISTS pair_fee_config;
+    DROP TABLE IF EXISTS user_fee;
+    DROP TABLE IF EXISTS user_level_mapper;
+    DROP TABLE IF EXISTS user_level;
 
 COMMIT;

@@ -2,20 +2,55 @@ package co.nilin.opex.accountant.core.service
 
 import co.nilin.opex.accountant.core.api.FeeCalculator
 import co.nilin.opex.accountant.core.model.*
+import co.nilin.opex.accountant.core.spi.FeeConfigService
 import co.nilin.opex.accountant.core.spi.JsonMapper
+import co.nilin.opex.accountant.core.spi.UserVolumePersister
+import co.nilin.opex.accountant.core.spi.WalletProxy
+import co.nilin.opex.accountant.core.utils.CacheManager
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-import java.time.LocalDateTime
+import java.math.BigDecimal
+import java.time.*
+import java.util.concurrent.TimeUnit
 
 @Component
 class FeeCalculatorImpl(
+    private val walletProxy: WalletProxy,
+    private val feeConfigService: FeeConfigService,
+    private val userVolumePersister: UserVolumePersister,
+    private val cacheManager: CacheManager<String, FeeConfig>,
     @Value("\${app.address}") private val platformAddress: String,
     private val jsonMapper: JsonMapper
 ) : FeeCalculator {
 
     private val logger = LoggerFactory.getLogger(FeeCalculatorImpl::class.java)
+
+    private fun ttlUntilNextDay1amMillis(zone: ZoneId = ZoneId.of("GMT+03:30")): Long {
+        val now = ZonedDateTime.now(zone)
+        val target = now.toLocalDate().plusDays(1).atTime(1, 0).atZone(zone)
+        val ttl = Duration.between(now, target).toMillis()
+        return if (ttl > 0) ttl else Duration.ofHours(1).toMillis()
+    }
+
+    override suspend fun getUserFee(uuid: String): FeeConfig {
+        val cached = cacheManager.get(uuid)
+        if (cached != null) {
+            return cached
+        }
+
+        val totalAssets = walletProxy.getUserTotalAssets(uuid)
+        val userVolumeData = userVolumePersister.getUserVolumeData(uuid, LocalDate.now().minusMonths(1L))
+
+        val feeConfig = feeConfigService.loadMatchingFeeConfig(
+            totalAssets?.totalUSDT ?: BigDecimal.ZERO,
+            userVolumeData?.valueUSDT ?: BigDecimal.ZERO
+        )
+        val ttl = ttlUntilNextDay1amMillis()
+        cacheManager.put(uuid, feeConfig, ttl, TimeUnit.MILLISECONDS)
+        return feeConfig
+    }
 
     override suspend fun createFeeActions(
         trade: TradeEvent,

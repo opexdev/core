@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 data class TotalAssetsSnapshotModel(
     @Id
     val id: Long? = null,
-    val owner: Long,
+    val uuid: String,
     @Column("total_usdt")
     val totalUSDT: BigDecimal,
     @Column("total_irt")
