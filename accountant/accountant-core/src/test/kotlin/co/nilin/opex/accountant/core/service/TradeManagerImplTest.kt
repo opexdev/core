@@ -11,10 +11,13 @@ import co.nilin.opex.matching.engine.core.model.OrderDirection
 import co.nilin.opex.matching.engine.core.model.OrderType
 import co.nilin.opex.matching.engine.core.model.Pair
 import io.mockk.coEvery
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import java.math.BigDecimal
 
 internal class TradeManagerImplTest {
@@ -76,6 +79,8 @@ internal class TradeManagerImplTest {
         coEvery { financialActionPublisher.publish(any()) } returns Unit
         coEvery { financialActionPersister.updateStatus(any<FinancialAction>(), any()) } returns Unit
         coEvery { financialActionPersister.updateStatus(any<String>(), any()) } returns Unit
+        coEvery { currencyRatePersister.updateRate(any(), any(), any()) } just runs
+        coEvery { userVolumePersister.update(any(), any(), any(),any(),any(),any()) } just runs
     }
 
     @Test

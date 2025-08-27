@@ -2,10 +2,7 @@ package co.nilin.opex.accountant.core.service
 
 import co.nilin.opex.accountant.core.api.FeeCalculator
 import co.nilin.opex.accountant.core.inout.OrderStatus
-import co.nilin.opex.accountant.core.model.FinancialAction
-import co.nilin.opex.accountant.core.model.FinancialActionCategory
-import co.nilin.opex.accountant.core.model.PairConfig
-import co.nilin.opex.accountant.core.model.WalletType
+import co.nilin.opex.accountant.core.model.*
 import co.nilin.opex.accountant.core.spi.*
 import co.nilin.opex.matching.engine.core.eventh.events.CancelOrderEvent
 import co.nilin.opex.matching.engine.core.eventh.events.CreateOrderEvent
@@ -77,6 +74,15 @@ internal class OrderManagerImplTest {
 
         coEvery { financialActionPersister.persist(any()) } returnsArgument (0)
 
+        coEvery {
+            pairConfigLoader.load(pair.toString(), submitOrderEvent.direction)
+        } returns pairConfig
+
+        coEvery {
+            feeCalculator.getUserFee(submitOrderEvent.uuid)
+        } returns FeeConfig(
+            "Test", 1, BigDecimal.ONE, BigDecimal.ONE, BigDecimal.ONE, BigDecimal.ONE, BigDecimal.valueOf(0.08), BigDecimal.valueOf(0.1), Condition.OR
+        )
         //when
         val financialActions = orderManager.handleRequestOrder(submitOrderEvent)
 
@@ -123,6 +129,16 @@ internal class OrderManagerImplTest {
         )
 
         coEvery { financialActionPersister.persist(any()) } returnsArgument (0)
+
+        coEvery {
+            pairConfigLoader.load(pair.toString(), submitOrderEvent.direction)
+        } returns pairConfig
+
+        coEvery {
+            feeCalculator.getUserFee(submitOrderEvent.uuid)
+        } returns FeeConfig(
+            "Test", 1, BigDecimal.ONE, BigDecimal.ONE, BigDecimal.ONE, BigDecimal.ONE, BigDecimal.valueOf(0.08), BigDecimal.valueOf(0.1), Condition.OR
+        )
 
         //when
         val financialActions = orderManager.handleRequestOrder(submitOrderEvent)
