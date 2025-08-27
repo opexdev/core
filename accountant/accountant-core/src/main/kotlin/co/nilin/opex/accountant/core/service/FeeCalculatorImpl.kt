@@ -27,11 +27,11 @@ class FeeCalculatorImpl(
 
     private val logger = LoggerFactory.getLogger(FeeCalculatorImpl::class.java)
 
-    private fun ttlUntilNextDay1amMillis(zone: ZoneId = ZoneId.of("GMT+03:30")): Long {
+    private fun remainingMillisUntil1AM(zone: ZoneId = ZoneId.of("GMT+03:30")): Long {
         val now = ZonedDateTime.now(zone)
         val target = now.toLocalDate().plusDays(1).atTime(1, 0).atZone(zone)
-        val ttl = Duration.between(now, target).toMillis()
-        return if (ttl > 0) ttl else Duration.ofHours(1).toMillis()
+        val  remainingMillis = Duration.between(now, target).toMillis()
+        return if ( remainingMillis > 0)  remainingMillis else Duration.ofHours(1).toMillis()
     }
 
     override suspend fun getUserFee(uuid: String): FeeConfig {
@@ -47,8 +47,8 @@ class FeeCalculatorImpl(
             totalAssets?.totalUSDT ?: BigDecimal.ZERO,
             userVolumeData?.valueUSDT ?: BigDecimal.ZERO
         )
-        val ttl = ttlUntilNextDay1amMillis()
-        cacheManager.put(uuid, feeConfig, ttl, TimeUnit.MILLISECONDS)
+        val  remainingMillis = remainingMillisUntil1AM()
+        cacheManager.put(uuid, feeConfig,  remainingMillis, TimeUnit.MILLISECONDS)
         return feeConfig
     }
 
