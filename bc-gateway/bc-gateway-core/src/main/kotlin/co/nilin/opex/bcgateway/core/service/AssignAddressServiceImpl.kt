@@ -2,22 +2,19 @@ package co.nilin.opex.bcgateway.core.service
 
 import co.nilin.opex.bcgateway.core.api.AssignAddressService
 import co.nilin.opex.bcgateway.core.model.*
-import co.nilin.opex.bcgateway.core.spi.AssignedAddressHandler
-import co.nilin.opex.bcgateway.core.spi.ChainLoader
-import co.nilin.opex.bcgateway.core.spi.CryptoCurrencyHandlerV2
-import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
+import co.nilin.opex.bcgateway.core.spi.*
 import co.nilin.opex.bcgateway.core.utils.LoggerDelegate
 import co.nilin.opex.common.OpexError
 import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
-import java.util.UUID
 
 open class AssignAddressServiceImpl(
     private val currencyHandler: CryptoCurrencyHandlerV2,
     private val assignedAddressHandler: AssignedAddressHandler,
     private val reservedAddressHandler: ReservedAddressHandler,
+    private val addressTypeHandler: AddressTypeHandler,
     private val chainLoader: ChainLoader
 
 ) : AssignAddressService {
@@ -28,31 +25,21 @@ open class AssignAddressServiceImpl(
     @Transactional
     override suspend fun assignAddress(user: String, currency: String, gatewayUuid: String): List<AssignedAddress> {
         addressLifeTime = 7200
-        val currencyInfo = currencyHandler.fetchCurrencyOnChainGateways(FetchGateways(currencySymbol = currency, gatewayUuid =gatewayUuid))
+        val requestedGateway = currencyHandler.fetchOnChainGateway(currency = currency, gatewayUuid = gatewayUuid)
             ?: throw OpexError.CurrencyNotFound.exception()
-        val chains = currencyInfo
-            ?.map { imp -> chainLoader.fetchChainInfo(imp.chain) }
-        val addressTypes = chains
-            ?.flatMap { chain -> chain?.addressTypes!! }
-            ?.distinct()
-        val chainAddressTypeMap = HashMap<AddressType, MutableList<Chain>>()
-        chains?.forEach { chain ->
-            chain?.addressTypes?.forEach { addressType ->
-                chainAddressTypeMap.putIfAbsent(addressType, mutableListOf())
-                chainAddressTypeMap.getValue(addressType).add(chain!!)
-            }
-        }
+
+        val requestedChain = chainLoader.fetchChainInfo(requestedGateway.chain)
+
+        val addressTypes = chainLoader.fetchChainInfo(requestedChain.name)?.addressTypes
+
         val userAssignedAddresses =
             (assignedAddressHandler.fetchAssignedAddresses(user, addressTypes!!)).toMutableList()
+
         val result = mutableSetOf<AssignedAddress>()
+
         addressTypes.forEach { addressType ->
             val assigned = userAssignedAddresses.firstOrNull { assignAddress -> assignAddress.type == addressType }
             if (assigned != null) {
-                chainAddressTypeMap[addressType]?.forEach { chain ->
-                    if (!assigned.chains.contains(chain)) {
-                        assigned.chains.add(chain)
-                    }
-                }
                 result.add(assigned)
             } else {
                 val reservedAddress = reservedAddressHandler.peekReservedAddress(addressType)
@@ -62,7 +49,7 @@ open class AssignAddressServiceImpl(
                         reservedAddress.address,
                         reservedAddress.memo,
                         addressType,
-                        chainAddressTypeMap[addressType]!!,
+                        listOf(requestedChain).toMutableList(),
                         addressLifeTime?.let { LocalDateTime.now().plusSeconds(addressLifeTime!!) }
                             ?: null,
                         LocalDateTime.now(),
