@@ -1,4 +1,0 @@
-app:
-  auth:
-    cert-url: http://opex-auth/auth/realms/opex/protocol/openid-connect/certs
-    token-url: http://opex-auth/auth/realms/opex/protocol/openid-connect/token

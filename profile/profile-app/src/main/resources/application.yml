@@ -50,6 +50,8 @@ spring:
     import: vault://secret/${spring.application.name}
 swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
 app:
+  admin-approval:
+    profile-completion-request: false
   auth:
     cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
   kyc:

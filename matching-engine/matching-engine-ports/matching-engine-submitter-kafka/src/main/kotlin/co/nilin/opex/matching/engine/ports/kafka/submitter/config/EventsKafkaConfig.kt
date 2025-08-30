@@ -1,6 +1,7 @@
 package co.nilin.opex.matching.engine.ports.kafka.submitter.config
 
 import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
+import co.nilin.opex.matching.engine.core.inout.OrderBookUpdateEvent
 import co.nilin.opex.matching.engine.core.inout.OrderRequestEvent
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringSerializer
@@ -11,6 +12,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.kafka.core.DefaultKafkaProducerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.core.ProducerFactory
+import org.springframework.kafka.support.serializer.JsonDeserializer
 import org.springframework.kafka.support.serializer.JsonSerializer
 
 @Configuration
@@ -25,7 +27,9 @@ class EventsKafkaConfig {
             ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
             ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
             ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JsonSerializer::class.java,
-            ProducerConfig.ACKS_CONFIG to "all"
+            ProducerConfig.ACKS_CONFIG to "all",
+            JsonDeserializer.TRUSTED_PACKAGES to "co.nilin.opex.*",
+            JsonDeserializer.TYPE_MAPPINGS to "orderBookUpdate:co.nilin.opex.matching.engine.core.inout.OrderBookUpdateEvent"
         )
     }
 
@@ -47,6 +51,11 @@ class EventsKafkaConfig {
     @Bean("orderKafkaTemplate")
     fun orderKafkaTemplate(@Qualifier("orderProducerFactory") producerFactory: ProducerFactory<String?, OrderRequestEvent>): KafkaTemplate<String?, OrderRequestEvent> {
         return KafkaTemplate(producerFactory)
+    }
+
+    @Bean("orderBookUpdateTemplate")
+    fun orderBookUpdateTemplate(@Qualifier("producerConfigs") producerConfigs: Map<String, Any>): KafkaTemplate<String?, OrderBookUpdateEvent> {
+        return KafkaTemplate(DefaultKafkaProducerFactory(producerConfigs))
     }
 
 }

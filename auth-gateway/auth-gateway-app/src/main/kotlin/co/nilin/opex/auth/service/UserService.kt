@@ -3,6 +3,7 @@ package co.nilin.opex.auth.service
 import co.nilin.opex.auth.data.ActionType
 import co.nilin.opex.auth.data.ActiveSession
 import co.nilin.opex.auth.data.UserCreatedEvent
+import co.nilin.opex.auth.data.UserRole
 import co.nilin.opex.auth.kafka.AuthEventProducer
 import co.nilin.opex.auth.model.*
 import co.nilin.opex.auth.proxy.GoogleProxy
@@ -80,7 +81,7 @@ class UserService(
             throw OpexError.BadRequest.exception()
 
         keycloakProxy.confirmCreateUser(user, request.password)
-        keycloakProxy.assignDefaultRoles(user)
+        keycloakProxy.assignRole(user.id, UserRole.LEVEL_1)
 
         // Send event to let other services know a user just registered
         val event = UserCreatedEvent(user.id, user.username, user.email, user.mobile, user.firstName, user.lastName)
@@ -106,8 +107,8 @@ class UserService(
         keycloakProxy.linkGoogleIdentity(userId, email, googleUserId)
     }
 
-    suspend fun logout(userId: String) {
-        keycloakProxy.logout(userId)
+    suspend fun logout(userId: String, sessionId: String) {
+        keycloakProxy.logoutSession(userId, sessionId)
     }
 
     suspend fun forgetPassword(request: ForgotPasswordRequest): String {
@@ -214,5 +215,5 @@ class UserService(
             return TokenData(false, "", OTPAction.REGISTER)
         }
     }
-    
+
 }

@@ -159,10 +159,14 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     ProfileAlreadyCompleted(13016, "Profile already completed", HttpStatus.BAD_REQUEST),
     FirstNameIsNotSimilarEnough(13017, "The first name is not similar enough.", HttpStatus.BAD_REQUEST),
     LastNameIsNotSimilarEnough(13018, "The last name is not similar enough.", HttpStatus.BAD_REQUEST),
-    ShahkarInquiryUnavailable(13019,"Shahkar inquiry unavailable" , HttpStatus.SERVICE_UNAVAILABLE),
-    ComparativeInquiryUnavailable(13020,"Comparative inquiry unavailable" , HttpStatus.SERVICE_UNAVAILABLE),
+    ShahkarInquiryError(13019,"Shahkar inquiry error" , HttpStatus.SERVICE_UNAVAILABLE),
+    ComparativeInquiryError(13020,"Comparative inquiry error" , HttpStatus.SERVICE_UNAVAILABLE),
     ProfileApprovalRequestNotfound(13021, "Profile approval request not found", HttpStatus.NOT_FOUND),
     InvalidProfileApprovalRequestStatus(13022, "Invalid profile approval request status", HttpStatus.BAD_REQUEST),
+    InvalidBirthDate(13023, "Invalid birthdate", HttpStatus.BAD_REQUEST),
+    InvalidNationalCode(13024, "Invalid national code", HttpStatus.BAD_REQUEST),
+    InvalidMobileNumber(13025, "Invalid mobile number", HttpStatus.BAD_REQUEST),
+    IdentityInfoNotFound(113026, "Identity info not found", HttpStatus.NOT_FOUND),
     ;
 
     override fun code() = this.code

@@ -8,6 +8,9 @@ import co.nilin.opex.profile.core.data.kyc.KycLevel
 import co.nilin.opex.profile.core.data.otp.*
 import co.nilin.opex.profile.core.data.profile.*
 import co.nilin.opex.profile.core.spi.*
+import co.nilin.opex.profile.core.utils.handleComparativeError
+import co.nilin.opex.profile.core.utils.handleShahkarError
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
@@ -24,7 +27,6 @@ class ProfileManagement(
     private val linkedAccountPersister: LinkedAccountPersister,
     private val limitationPersister: LimitationPersister,
     private val profileApprovalRequestPersister: ProfileApprovalRequestPersister,
-    private val shahkarInquiry: InquiryProxy,
     private val kycLevelUpdatedPublisher: KycLevelUpdatedPublisher,
     private val otpProxy: OtpProxy,
     private val authProxy: AuthProxy,
@@ -35,6 +37,9 @@ class ProfileManagement(
 
     @Value("\${inquiry.personal-indentiy}")
     private var personalIdentityEnabled: Boolean,
+
+    @Value("\${app.admin-approval.profile-completion-request}")
+    private var isAdminApprovalRequired: Boolean,
 ) {
     private val logger = LoggerFactory.getLogger(ProfileManagement::class.java)
     suspend fun registerNewUser(event: UserCreatedEvent) {
@@ -46,11 +51,11 @@ class ProfileManagement(
                     email = email,
                     mobile = mobile,
                     userId = uuid,
-                    status = UserStatus.Active,
+                    status = ProfileStatus.CREATED,
                     createDate = LocalDateTime.now(),
                     lastUpdateDate = LocalDateTime.now(),
                     creator = "system",
-                    kycLevel = KycLevel.Level1
+                    kycLevel = KycLevel.LEVEL_1
                 )
             )
         }
@@ -110,7 +115,7 @@ class ProfileManagement(
     }
 
     suspend fun updateUserLevel(userId: String, userLevel: KycLevel) {
-        profilePersister.updateUserLevel(userId, userLevel)
+        profilePersister.updateUserLevelAndStatus(userId, userLevel)
     }
 
     suspend fun requestUpdateMobile(userId: String, mobile: String): TempOtpResponse {
@@ -161,88 +166,99 @@ class ProfileManagement(
         } else throw OpexError.InvalidOTP.exception()
     }
 
-    suspend fun completeProfile(
-        userId: String,
-        request: CompleteProfileRequest
-    ): CompleteProfileResponse {
-
+    suspend fun completeProfile(userId: String, request: CompleteProfileRequest): Profile {
         val profile = profilePersister.getProfile(userId)?.awaitFirstOrNull()
             ?: throw OpexError.ProfileNotfound.exception()
 
-        if (profile.kycLevel == KycLevel.Level2) {
+        if (profile.kycLevel == KycLevel.LEVEL_2) {
             throw OpexError.ProfileAlreadyCompleted.exception()
         }
 
         val isIranian = request.nationality == NationalityType.IRANIAN
-        var useMobileIdentity = false
-        var usePersonalIdentity = false
 
-        if (isIranian) {
-            if (mobileIdentityEnabled) {
-                verifyMobileIdentity(request.identifier, profile.mobile!!)
-                useMobileIdentity = true
-            }
+        val shahkarResponse = if (isIranian && mobileIdentityEnabled) {
+            inquiryProxy.getShahkarInquiryResult(request.identifier, profile.mobile!!)
+        } else null
 
-            if (personalIdentityEnabled) {
-                verifyPersonalIdentity(
-                    request.identifier,
-                    request.firstName,
-                    request.lastName,
-                    request.birthDate
-                )
-                usePersonalIdentity = true
-            }
+        val comparativeResponse = if (isIranian && personalIdentityEnabled) {
+            inquiryProxy.getComparativeInquiryResult(
+                request.identifier,
+                request.birthDate,
+                request.firstName,
+                request.lastName
+            )
+        } else null
+
+        val isMobileIdentityMatch = shahkarResponse?.let {
+            !it.isError() && it.matched == true
         }
 
-        val completedProfile = profilePersister
-            .completeProfile(userId, request, useMobileIdentity, usePersonalIdentity)
-            .awaitFirst()
+        val isPersonalIdentityMatch = comparativeResponse?.let {
+            !it.isError() &&
+                    (it.firstNameSimilarityPercentage ?: 0) >= 95 &&
+                    (it.lastNameSimilarityPercentage ?: 0) >= 95
+        }
+
+        val completedProfile = updateProfile(userId, request, isMobileIdentityMatch, isPersonalIdentityMatch)
+
         authProxy.updateName(userId, request.firstName, request.lastName)
 
-        if (isIranian) {
-            kycLevelUpdatedPublisher.publish(
-                KycLevelUpdatedEvent(userId, KycLevel.Level2, LocalDateTime.now())
-            )
-        } else {
-            saveProfileApprovalRequest(completedProfile.id)
-        }
+        validateInquiryResponses(shahkarResponse, comparativeResponse)
 
+        if (isIranian && !isAdminApprovalRequired) {
+            approveProfileAutomatically(userId, completedProfile)
+        } else {
+            requestAdminApproval(userId)
+        }
         return completedProfile
     }
 
-
-    private suspend fun verifyMobileIdentity(identifier: String, mobile: String) {
-        if (!inquiryProxy.getShahkarInquiryResult(
-                identifier,
-                mobile
-            )
-        ) throw OpexError.ShahkarVerificationFailed.exception()
-    }
-
-    private suspend fun verifyPersonalIdentity(
-        identifier: String,
-        firstName: String,
-        lastName: String,
-        birthDate: Long
-    ) {
-        val comparativeInquiryResult = inquiryProxy.getComparativeInquiryResult(
-            identifier,
-            birthDate,
-            firstName,
-            lastName
+    private suspend fun approveProfileAutomatically(userId: String, completedProfile: Profile) {
+        kycLevelUpdatedPublisher.publish(
+            KycLevelUpdatedEvent(userId, KycLevel.LEVEL_2, LocalDateTime.now())
         )
-        if (comparativeInquiryResult.firstNameSimilarityPercentage < 95) throw OpexError.FirstNameIsNotSimilarEnough.exception()
-        if (comparativeInquiryResult.lastNameSimilarityPercentage < 95) throw OpexError.LastNameIsNotSimilarEnough.exception()
+        completedProfile.kycLevel = KycLevel.LEVEL_2
+        profilePersister.updateStatus(userId, ProfileStatus.SYSTEM_APPROVED)
     }
 
-    private suspend fun saveProfileApprovalRequest(profileId: Long) {
+    private suspend fun requestAdminApproval(userId: String) {
+        saveProfileApprovalRequest(userId)
+        profilePersister.updateStatus(userId, ProfileStatus.PENDING_ADMIN_APPROVAL)
+    }
+
+    suspend fun updateProfile(
+        userId: String,
+        request: CompleteProfileRequest,
+        isMobileIdentityMatch: Boolean?,
+        isPersonalIdentityMatch: Boolean?
+    ): Profile = coroutineScope {
+        profilePersister.completeProfile(userId, request, isMobileIdentityMatch, isPersonalIdentityMatch).awaitFirst()
+    }
+
+    private fun validateInquiryResponses(
+        shahkarResponse: ShahkarResponse?,
+        comparativeResponse: ComparativeResponse?
+    ) {
+        shahkarResponse?.let {
+            if (it.isError()) handleShahkarError(it.code)
+            if (it.matched == false) throw OpexError.ShahkarVerificationFailed.exception()
+        }
+
+        comparativeResponse?.let {
+            if (it.isError()) handleComparativeError(it.code)
+            if ((it.firstNameSimilarityPercentage ?: 0) < 95)
+                throw OpexError.FirstNameIsNotSimilarEnough.exception()
+            if ((it.lastNameSimilarityPercentage ?: 0) < 95)
+                throw OpexError.LastNameIsNotSimilarEnough.exception()
+        }
+    }
+
+    private suspend fun saveProfileApprovalRequest(userId: String) {
         profileApprovalRequestPersister.save(
             ProfileApprovalRequest(
-                profileId = profileId,
+                profileId = profilePersister.getProfileId(userId),
                 status = ProfileApprovalRequestStatus.PENDING,
-                createDate = LocalDateTime.now(),
-                updateDate = null,
-                updater = null
+                createDate = LocalDateTime.now()
             )
         )
     }

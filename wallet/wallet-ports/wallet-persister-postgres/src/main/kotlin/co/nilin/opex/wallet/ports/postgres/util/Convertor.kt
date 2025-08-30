@@ -1,10 +1,8 @@
 package co.nilin.opex.wallet.ports.postgres.util
 
 import co.nilin.opex.wallet.core.inout.*
-import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
-import co.nilin.opex.wallet.ports.postgres.model.DepositModel
-import co.nilin.opex.wallet.ports.postgres.model.OffChainGatewayModel
-import co.nilin.opex.wallet.ports.postgres.model.TerminalModel
+import co.nilin.opex.wallet.core.model.TotalAssetsSnapshot
+import co.nilin.opex.wallet.ports.postgres.model.*
 import java.time.ZoneId
 import java.util.*
 
@@ -143,7 +141,7 @@ fun TerminalCommand.toModel(): TerminalModel {
         null,
         uuid,
         owner,
-        identifier, active, type, metaData, description,displayOrder
+        identifier, active, type, metaData, description, displayOrder
     )
 }
 
@@ -151,7 +149,7 @@ fun TerminalModel.toDto(): TerminalCommand {
     return TerminalCommand(
         uuid!!,
         owner,
-        identifier, active, type, metaData, description,displayOrder
+        identifier, active, type, metaData, description, displayOrder
     )
 }
 
@@ -172,5 +170,14 @@ fun CurrencyModel.toCurrencyData(): CurrencyData {
         externalUrl,
         order,
         maxOrder,
+    )
+}
+
+fun TotalAssetsSnapshotModel.toTotalAssetsSnapshot(): TotalAssetsSnapshot {
+    return TotalAssetsSnapshot(
+        owner,
+        totalUSDT,
+        totalIRT,
+        snapshotDate
     )
 }

@@ -17,30 +17,27 @@ class UserController(private val userService: UserService) {
 
     @PostMapping("/logout")
     suspend fun logout(@CurrentSecurityContext securityContext: SecurityContext) {
-        userService.logout(securityContext.jwtAuthentication().name)
+        val userId = securityContext.jwtAuthentication().name
+        val sid = securityContext.jwtAuthentication().tokenAttributes["sid"] as String?
+            ?: throw OpexError.InvalidToken.exception()
+        userService.logout(userId, sid)
     }
 
     @PutMapping("/update/email")
-    suspend fun updateEmail(
-        @RequestBody request: UpdateEmailRequest
-    ) {
+    suspend fun updateEmail(@RequestBody request: UpdateEmailRequest) {
         userService.updateEmail(request)
     }
 
     @PutMapping("/update/mobile")
-    suspend fun updateMobile(
-        @RequestBody request: UpdateMobileRequest
-    ) {
+    suspend fun updateMobile(@RequestBody request: UpdateMobileRequest) {
         userService.updateMobile(request)
-
     }
 
     @PutMapping("/update/name")
-    suspend fun updateName(
-        @RequestBody request: UpdateNameRequest
-    ) {
+    suspend fun updateName(@RequestBody request: UpdateNameRequest) {
         userService.updateName(request)
     }
+
     @GetMapping("/session")
     suspend fun getSessions(@CurrentSecurityContext securityContext: SecurityContext): List<ActiveSession> {
         val uuid = securityContext.authentication.name

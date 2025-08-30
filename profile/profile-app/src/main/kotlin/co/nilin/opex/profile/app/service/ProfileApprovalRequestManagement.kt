@@ -3,8 +3,10 @@ package co.nilin.opex.profile.app.service
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.profile.core.data.event.KycLevelUpdatedEvent
 import co.nilin.opex.profile.core.data.kyc.KycLevel
+import co.nilin.opex.profile.core.data.profile.ProfileApprovalAdminResponse
 import co.nilin.opex.profile.core.data.profile.ProfileApprovalRequestStatus
-import co.nilin.opex.profile.core.data.profile.ProfileApprovalResponse
+import co.nilin.opex.profile.core.data.profile.ProfileApprovalUserResponse
+import co.nilin.opex.profile.core.data.profile.ProfileStatus
 import co.nilin.opex.profile.core.spi.KycLevelUpdatedPublisher
 import co.nilin.opex.profile.core.spi.ProfileApprovalRequestPersister
 import co.nilin.opex.profile.core.spi.ProfilePersister
@@ -20,33 +22,44 @@ class ProfileApprovalRequestManagement(
     private val profilePersister: ProfilePersister,
 ) {
 
-    suspend fun getApprovalRequests(status: ProfileApprovalRequestStatus): List<ProfileApprovalResponse> {
+    suspend fun getApprovalRequests(status: ProfileApprovalRequestStatus): List<ProfileApprovalAdminResponse> {
         return profileApprovalRequestPersister.getRequests(status)?.toList() ?: emptyList()
     }
 
-    suspend fun getApprovalRequest(id: Long): ProfileApprovalResponse {
+    suspend fun getApprovalRequestById(id: Long): ProfileApprovalAdminResponse {
         return profileApprovalRequestPersister.getRequestById(id).awaitFirstOrNull()
             ?: throw OpexError.ProfileApprovalRequestNotfound.exception()
     }
 
-    suspend fun approveRequest(id: Long, updater: String, description: String): ProfileApprovalResponse {
+    suspend fun getApprovalRequestByUserId(userId: String): ProfileApprovalUserResponse {
+        val profileId = profilePersister.getProfileId(userId)
+        return profileApprovalRequestPersister.getRequestByProfileId(profileId).awaitFirstOrNull()
+            ?: throw OpexError.ProfileApprovalRequestNotfound.exception()
+    }
+
+    suspend fun approveRequest(id: Long, updater: String, description: String?): ProfileApprovalAdminResponse {
         val request = changeRequestStatus(id, updater, ProfileApprovalRequestStatus.APPROVED, description)
-        val profile = profilePersister.getProfile(request.profileId)?.awaitFirstOrNull()
+        val profileId = profilePersister.getProfile(request.profileId)?.awaitFirstOrNull()?.userId
             ?: throw OpexError.ProfileNotfound.exception()
-        kycLevelUpdatedPublisher.publish(KycLevelUpdatedEvent(profile.userId!!, KycLevel.Level2, LocalDateTime.now()))
+        kycLevelUpdatedPublisher.publish(KycLevelUpdatedEvent(profileId, KycLevel.LEVEL_2, LocalDateTime.now()))
+        profilePersister.updateStatus(profileId, ProfileStatus.ADMIN_APPROVED)
         return request
     }
 
-    suspend fun rejectRequest(id: Long, updater: String, description: String): ProfileApprovalResponse {
-        return changeRequestStatus(id, updater, ProfileApprovalRequestStatus.REJECTED, description)
+    suspend fun rejectRequest(id: Long, updater: String, description: String?): ProfileApprovalAdminResponse {
+        val request = changeRequestStatus(id, updater, ProfileApprovalRequestStatus.REJECTED, description)
+        val profileId = profilePersister.getProfile(request.profileId)?.awaitFirstOrNull()?.userId
+            ?: throw OpexError.ProfileNotfound.exception()
+        profilePersister.updateStatus(profileId, ProfileStatus.ADMIN_REJECTED)
+        return request
     }
 
     private suspend fun changeRequestStatus(
         id: Long,
         updater: String,
         newStatus: ProfileApprovalRequestStatus,
-        description: String
-    ): ProfileApprovalResponse {
+        description: String?
+    ): ProfileApprovalAdminResponse {
         var request = (profileApprovalRequestPersister.getRequestById(id).awaitFirstOrNull()
             ?: throw OpexError.ProfileApprovalRequestNotfound.exception())
         if (request.status != ProfileApprovalRequestStatus.PENDING)

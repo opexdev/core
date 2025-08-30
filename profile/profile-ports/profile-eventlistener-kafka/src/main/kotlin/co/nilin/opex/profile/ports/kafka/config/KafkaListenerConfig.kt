@@ -48,7 +48,6 @@ class KafkaListenerConfig {
         )
     }
 
-
     @Bean("profileConsumerFactory")
     fun consumerFactory(@Qualifier("consumerConfigs") consumerConfigs: Map<String, Any?>): ConsumerFactory<String, UserCreatedEvent> {
         return DefaultKafkaConsumerFactory(consumerConfigs)
