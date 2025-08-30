@@ -12,6 +12,7 @@ import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
+import java.util.UUID
 
 open class AssignAddressServiceImpl(
     private val currencyHandler: CryptoCurrencyHandlerV2,
@@ -25,14 +26,12 @@ open class AssignAddressServiceImpl(
     private val logger: Logger by LoggerDelegate()
 
     @Transactional
-    override suspend fun assignAddress(user: String, currency: String, chain: String): List<AssignedAddress> {
-        logger.info("address life time: " + addressLifeTime.toString())
+    override suspend fun assignAddress(user: String, currency: String, gatewayUuid: String): List<AssignedAddress> {
         addressLifeTime = 7200
-        val currencyInfo = currencyHandler.fetchCurrencyOnChainGateways(FetchGateways(currencySymbol = currency))
+        val currencyInfo = currencyHandler.fetchCurrencyOnChainGateways(FetchGateways(currencySymbol = currency, gatewayUuid =gatewayUuid))
             ?: throw OpexError.CurrencyNotFound.exception()
         val chains = currencyInfo
             ?.map { imp -> chainLoader.fetchChainInfo(imp.chain) }
-            ?.filter { it?.name.equals(chain, true) }
         val addressTypes = chains
             ?.flatMap { chain -> chain?.addressTypes!! }
             ?.distinct()
