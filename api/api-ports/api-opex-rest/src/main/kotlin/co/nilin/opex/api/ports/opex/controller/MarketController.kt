@@ -8,6 +8,8 @@ import co.nilin.opex.api.ports.opex.data.OrderBookResponse
 import co.nilin.opex.api.ports.opex.data.RecentTradeResponse
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.utils.Interval
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 import java.time.ZoneId
@@ -57,7 +59,7 @@ class MarketController(
     }
 
     @GetMapping("/fee")
-    fun getPairFees(): List<FeeConfig> {
+    fun getFeeConfigs(): List<FeeConfig> {
         return accountantProxy.getFeeConfigs()
     }
 

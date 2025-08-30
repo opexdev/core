@@ -1,6 +1,7 @@
 package co.nilin.opex.accountant.ports.postgres.impl
 
 import co.nilin.opex.accountant.core.model.FeeConfig
+import co.nilin.opex.accountant.core.model.UserFee
 import co.nilin.opex.accountant.core.spi.FeeConfigService
 import co.nilin.opex.accountant.ports.postgres.dao.FeeConfigRepository
 import co.nilin.opex.accountant.ports.postgres.model.FeeConfigModel
@@ -45,7 +46,7 @@ class FeeConfigServiceImpl(
     override suspend fun loadMatchingFeeConfig(
         assetVolume: BigDecimal,
         tradeVolume: BigDecimal
-    ): FeeConfig {
+    ): UserFee {
         return feeConfigRepository.findMatchingConfig(assetVolume, tradeVolume).awaitFirst()
     }
 

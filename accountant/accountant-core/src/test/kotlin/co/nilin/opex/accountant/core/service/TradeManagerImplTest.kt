@@ -17,7 +17,6 @@ import io.mockk.runs
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
 import java.math.BigDecimal
 
 internal class TradeManagerImplTest {
@@ -35,7 +34,7 @@ internal class TradeManagerImplTest {
     private val feeCalculator = mockk<FeeCalculator>()
     private val walletProxy = mockk<WalletProxy>()
     private val feeConfigService = mockk<FeeConfigService>()
-    private val cacheManager = mockk<CacheManager<String, FeeConfig>>()
+    private val cacheManager = mockk<CacheManager<String, UserFee>>()
 
     private val jsonMapper = JsonMapperTestImpl()
 
@@ -80,7 +79,7 @@ internal class TradeManagerImplTest {
         coEvery { financialActionPersister.updateStatus(any<FinancialAction>(), any()) } returns Unit
         coEvery { financialActionPersister.updateStatus(any<String>(), any()) } returns Unit
         coEvery { currencyRatePersister.updateRate(any(), any(), any()) } just runs
-        coEvery { userVolumePersister.update(any(), any(), any(),any(),any(),any()) } just runs
+        coEvery { userVolumePersister.update(any(), any(), any(), any(), any(), any()) } just runs
     }
 
     @Test
@@ -329,9 +328,8 @@ internal class TradeManagerImplTest {
     ) {
         coEvery {
             feeCalculator.getUserFee(submitOrderEvent.uuid)
-        } returns FeeConfig(
-            "Test", 1, BigDecimal.ONE, BigDecimal.ONE, BigDecimal.ONE, BigDecimal.ONE, makerFee, takerFee,
-            Condition.OR
+        } returns UserFee(
+            "Test", 1, makerFee, takerFee
         )
 
         coEvery {

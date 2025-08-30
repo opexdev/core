@@ -1,6 +1,7 @@
 package co.nilin.opex.accountant.ports.postgres.dao
 
 import co.nilin.opex.accountant.core.model.FeeConfig
+import co.nilin.opex.accountant.core.model.UserFee
 import co.nilin.opex.accountant.ports.postgres.model.FeeConfigModel
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
@@ -19,7 +20,7 @@ interface FeeConfigRepository : ReactiveCrudRepository<FeeConfigModel, Long> {
 
     @Query(
         """
-    SELECT *
+    SELECT name,display_order,maker_fee,taker_fee
     FROM fee_config
     WHERE
         (
@@ -39,6 +40,6 @@ interface FeeConfigRepository : ReactiveCrudRepository<FeeConfigModel, Long> {
     LIMIT 1
     """
     )
-    fun findMatchingConfig(assetVolume: BigDecimal, tradeVolume: BigDecimal): Mono<FeeConfig>
+    fun findMatchingConfig(assetVolume: BigDecimal, tradeVolume: BigDecimal): Mono<UserFee>
 
 }

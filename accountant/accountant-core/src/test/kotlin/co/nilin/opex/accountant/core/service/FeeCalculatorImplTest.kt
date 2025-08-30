@@ -1,8 +1,8 @@
 package co.nilin.opex.accountant.core.service
 
-import co.nilin.opex.accountant.core.model.FeeConfig
 import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.FinancialActionCategory
+import co.nilin.opex.accountant.core.model.UserFee
 import co.nilin.opex.accountant.core.model.WalletType
 import co.nilin.opex.accountant.core.spi.FeeConfigService
 import co.nilin.opex.accountant.core.spi.UserVolumePersister
@@ -18,7 +18,7 @@ internal class FeeCalculatorImplTest {
     private val walletProxy = mockk<WalletProxy>()
     private val feeConfigService = mockk<FeeConfigService>()
     private val userVolumePersister = mockk<UserVolumePersister>()
-    private val cacheManager = mockk<CacheManager<String, FeeConfig>>()
+    private val cacheManager = mockk<CacheManager<String, UserFee>>()
 
     private val receiverAddress = "0x0"
     private val feeCalculator = FeeCalculatorImpl(

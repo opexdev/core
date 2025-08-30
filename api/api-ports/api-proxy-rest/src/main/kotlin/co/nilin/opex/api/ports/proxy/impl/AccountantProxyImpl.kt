@@ -2,9 +2,10 @@ package co.nilin.opex.api.ports.proxy.impl
 
 import co.nilin.opex.api.core.inout.FeeConfig
 import co.nilin.opex.api.core.inout.PairConfigResponse
-import co.nilin.opex.api.core.inout.PairFeeResponse
+import co.nilin.opex.api.core.inout.UserFee
 import co.nilin.opex.api.core.spi.AccountantProxy
 import co.nilin.opex.api.ports.proxy.utils.noBody
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.utils.LoggerDelegate
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpMethod
@@ -32,18 +33,18 @@ class AccountantProxyImpl(private val restTemplate: RestTemplate) : AccountantPr
     override fun getFeeConfigs(): List<FeeConfig> {
         logger.info("fetching fee configs")
         return restTemplate.exchange<Array<FeeConfig>>(
-            "$baseUrl/config/fee",
+            "$baseUrl/fee/config",
             HttpMethod.GET,
             noBody()
         ).body?.toList() ?: emptyList()
     }
 
-    override fun getFeeConfig(symbol: String): PairFeeResponse {
-        logger.info("fetching fee configs for $symbol")
-        return restTemplate.exchange<PairFeeResponse>(
-            "$baseUrl/config/fee/$symbol",
+    override fun getUserFee(uuid: String): UserFee {
+        logger.info("fetching user fee")
+        return restTemplate.exchange<UserFee>(
+            "$baseUrl/fee/${uuid}",
             HttpMethod.GET,
             noBody()
-        ).body!!
+        ).body ?: throw OpexError.FeeConfigNotFound.exception()
     }
 }

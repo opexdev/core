@@ -1,8 +1,8 @@
 package co.nilin.opex.api.core.spi
 
 import co.nilin.opex.api.core.inout.FeeConfig
-import co.nilin.opex.api.core.inout.PairFeeResponse
 import co.nilin.opex.api.core.inout.PairConfigResponse
+import co.nilin.opex.api.core.inout.UserFee
 
 interface AccountantProxy {
 
@@ -10,6 +10,5 @@ interface AccountantProxy {
 
     fun getFeeConfigs(): List<FeeConfig>
 
-    fun getFeeConfig(symbol: String): PairFeeResponse
-
+    fun getUserFee(uuid: String): UserFee
 }

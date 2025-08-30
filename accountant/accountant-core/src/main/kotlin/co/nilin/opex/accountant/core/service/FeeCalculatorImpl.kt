@@ -20,7 +20,7 @@ class FeeCalculatorImpl(
     private val walletProxy: WalletProxy,
     private val feeConfigService: FeeConfigService,
     private val userVolumePersister: UserVolumePersister,
-    private val cacheManager: CacheManager<String, FeeConfig>,
+    private val cacheManager: CacheManager<String, UserFee>,
     @Value("\${app.address}") private val platformAddress: String,
     private val jsonMapper: JsonMapper
 ) : FeeCalculator {
@@ -30,11 +30,11 @@ class FeeCalculatorImpl(
     private fun remainingMillisUntil1AM(zone: ZoneId = ZoneId.of("GMT+03:30")): Long {
         val now = ZonedDateTime.now(zone)
         val target = now.toLocalDate().plusDays(1).atTime(1, 0).atZone(zone)
-        val  remainingMillis = Duration.between(now, target).toMillis()
-        return if ( remainingMillis > 0)  remainingMillis else Duration.ofHours(1).toMillis()
+        val remainingMillis = Duration.between(now, target).toMillis()
+        return if (remainingMillis > 0) remainingMillis else Duration.ofHours(1).toMillis()
     }
 
-    override suspend fun getUserFee(uuid: String): FeeConfig {
+    override suspend fun getUserFee(uuid: String): UserFee {
         val cached = cacheManager.get(uuid)
         if (cached != null) {
             return cached
@@ -47,8 +47,8 @@ class FeeCalculatorImpl(
             totalAssets?.totalUSDT ?: BigDecimal.ZERO,
             userVolumeData?.valueUSDT ?: BigDecimal.ZERO
         )
-        val  remainingMillis = remainingMillisUntil1AM()
-        cacheManager.put(uuid, feeConfig,  remainingMillis, TimeUnit.MILLISECONDS)
+        val remainingMillis = remainingMillisUntil1AM()
+        cacheManager.put(uuid, feeConfig, remainingMillis, TimeUnit.MILLISECONDS)
         return feeConfig
     }
 
