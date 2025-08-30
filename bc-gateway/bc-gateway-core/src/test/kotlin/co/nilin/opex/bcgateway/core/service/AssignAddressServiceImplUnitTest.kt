@@ -23,10 +23,11 @@ class AssignAddressServiceImplUnitTest {
 
 
     private val assignAddressServiceImpl =
-        AssignAddressServiceImpl(currencyHandler, assignedAddressHandler, reservedAddressHandler, chainLoader)
+            AssignAddressServiceImpl(currencyHandler, assignedAddressHandler, reservedAddressHandler, chainLoader)
 
     //    private val currency = Currency("ETH", "Ethereum")
     private val chain = "ETH_MAINNET"
+    private val gatewayUuid = "1"
     private val currency = "ETH"
     private val ethAddressType = AddressType(1, "ETH", "+*", ".*")
     private val ethMemoAddressType = AddressType(2, "ETH", "+*", "+*")
@@ -36,50 +37,53 @@ class AssignAddressServiceImplUnitTest {
 
     init {
         val eth = CryptoCurrencyCommand(
-            currency,
-            UUID.randomUUID().toString(),
-            currency,
-            true,
-            true,
-            false,
-            null,
-            null,
-            BigDecimal.ZERO,
-            true,
-            true,
-            BigDecimal.ZERO,
-            BigDecimal.ZERO,
-            BigDecimal.ZERO,
-            BigDecimal.ZERO,
-            18,
-            ethChain.name,
-            null
+                currency,
+                UUID.randomUUID().toString(),
+                currency,
+                true,
+                true,
+                false,
+                null,
+                null,
+                BigDecimal.ZERO,
+                true,
+                true,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                18,
+                ethChain.name,
+                null
 //                ethChain
         )
 
 
         val wrappedEth = CryptoCurrencyCommand(
-            currency,
-            UUID.randomUUID().toString(),
-            currency,
-            true,
-            true,
-            false,
-            "WETH",
-            "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-            BigDecimal.ZERO,
-            true,
-            true,
-            BigDecimal.ZERO,
-            BigDecimal.ZERO,
-            BigDecimal.ZERO,
-            BigDecimal.ZERO,
-            18,
-            bscChain.name,
-            null
+                currency,
+                UUID.randomUUID().toString(),
+                currency,
+                true,
+                true,
+                false,
+                "WETH",
+                "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+                BigDecimal.ZERO,
+                true,
+                true,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                18,
+                bscChain.name,
+                null
 //                bscChain
 
         )
+
+        coEvery { currencyHandler.fetchCurrencyOnChainGateways(FetchGateways(currencySymbol = currency, gatewayUuid = gatewayUuid)) } returns
+                listOf(eth, wrappedEth)
 
         coEvery { currencyHandler.fetchCurrencyOnChainGateways(FetchGateways(currencySymbol = currency)) } returns
                 listOf(eth, wrappedEth)
@@ -95,96 +99,96 @@ class AssignAddressServiceImplUnitTest {
 
     @Test
     fun givenReservedAddressAndUserWithNoAssignedAddress_whenAssignAddress_thenReservedAddressAssigned(): Unit =
-        runBlocking {
-            val user = UUID.randomUUID().toString()
-            coEvery {
-                assignedAddressHandler.fetchAssignedAddresses(
-                    eq(user),
-                    any()
-                )
-            } returns emptyList()
+            runBlocking {
+                val user = UUID.randomUUID().toString()
+                coEvery {
+                    assignedAddressHandler.fetchAssignedAddresses(
+                            eq(user),
+                            any()
+                    )
+                } returns emptyList()
 
-            coEvery { reservedAddressHandler.peekReservedAddress(ethAddressType) } returns ReservedAddress(
-                "0x1",
-                null,
-                ethAddressType
-            )
-
-            coEvery { reservedAddressHandler.peekReservedAddress(ethMemoAddressType) } returns ReservedAddress(
-                "0x2",
-                "Memo",
-                ethMemoAddressType
-            )
-
-            val assignedAddress = assignAddressServiceImpl.assignAddress(user, currency, chain)
-            assertThat(assignedAddress).isEqualTo(
-                listOf(
-                    AssignedAddress(
-                        user,
+                coEvery { reservedAddressHandler.peekReservedAddress(ethAddressType) } returns ReservedAddress(
                         "0x1",
                         null,
-                        ethAddressType,
-                        mutableListOf(ethChain)
-
-                    )
+                        ethAddressType
                 )
-            )
-        }
+
+                coEvery { reservedAddressHandler.peekReservedAddress(ethMemoAddressType) } returns ReservedAddress(
+                        "0x2",
+                        "Memo",
+                        ethMemoAddressType
+                )
+
+                val assignedAddress = assignAddressServiceImpl.assignAddress(user, currency, gatewayUuid)
+                assertThat(assignedAddress).isEqualTo(
+                        listOf(
+                                AssignedAddress(
+                                        user,
+                                        "0x1",
+                                        null,
+                                        ethAddressType,
+                                        mutableListOf(ethChain)
+
+                                )
+                        )
+                )
+            }
 
     @Test
     fun givenNoReservedAddressAndUserWithNoAssignedAddress_whenAssignAddress_thenExcpetion(): Unit = runBlocking {
         val user = UUID.randomUUID().toString()
         coEvery {
             assignedAddressHandler.fetchAssignedAddresses(
-                user,
-                listOf(ethAddressType, ethMemoAddressType)
+                    user,
+                    listOf(ethAddressType, ethMemoAddressType)
             )
         } returns emptyList()
         coEvery { reservedAddressHandler.peekReservedAddress(ethAddressType) } returns null
-        coEvery { assignAddressServiceImpl.assignAddress(user, currency, chain) } throws RuntimeException()
+        coEvery { assignAddressServiceImpl.assignAddress(user, currency, gatewayUuid) } throws RuntimeException()
     }
 
     @Test
     fun givenReservedAddressAndUserOneAssignedAddress_whenAssignAddress_thenReservedAddressAssigned(): Unit =
-        runBlocking {
-            val user = UUID.randomUUID().toString()
-            coEvery {
-                assignedAddressHandler.fetchAssignedAddresses(
-                    eq(user),
-                    any()
+            runBlocking {
+                val user = UUID.randomUUID().toString()
+                coEvery {
+                    assignedAddressHandler.fetchAssignedAddresses(
+                            eq(user),
+                            any()
+                    )
+                } returns mutableListOf(
+                        AssignedAddress(
+                                user,
+                                "0x1",
+                                null,
+                                ethAddressType,
+                                mutableListOf(ethChain)
+                        )
                 )
-            } returns mutableListOf(
-                AssignedAddress(
-                    user,
-                    "0x1",
-                    null,
-                    ethAddressType,
-                    mutableListOf(ethChain)
-                )
-            )
-            coEvery { reservedAddressHandler.peekReservedAddress(ethAddressType) } returns ReservedAddress(
-                "0x1",
-                null,
-                ethAddressType
-            )
-            coEvery { reservedAddressHandler.peekReservedAddress(ethMemoAddressType) } returns ReservedAddress(
-                "0x2",
-                "Memo",
-                ethMemoAddressType
-            )
-
-            val assignedAddress = assignAddressServiceImpl.assignAddress(user, currency, chain)
-            assertThat(assignedAddress).isEqualTo(
-                listOf(
-                    AssignedAddress(
-                        user,
+                coEvery { reservedAddressHandler.peekReservedAddress(ethAddressType) } returns ReservedAddress(
                         "0x1",
                         null,
-                        ethAddressType,
-                        mutableListOf(ethChain)
-                    )
+                        ethAddressType
                 )
-            )
-        }
+                coEvery { reservedAddressHandler.peekReservedAddress(ethMemoAddressType) } returns ReservedAddress(
+                        "0x2",
+                        "Memo",
+                        ethMemoAddressType
+                )
+
+                val assignedAddress = assignAddressServiceImpl.assignAddress(user, currency, gatewayUuid)
+                assertThat(assignedAddress).isEqualTo(
+                        listOf(
+                                AssignedAddress(
+                                        user,
+                                        "0x1",
+                                        null,
+                                        ethAddressType,
+                                        mutableListOf(ethChain)
+                                )
+                        )
+                )
+            }
 
 }
