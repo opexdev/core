@@ -16,7 +16,7 @@ class StorageController(private val documentService: DocumentService) {
         @RequestPart("data") data: Mono<FilePart>
     ): ResponseEntity<String>? {
         return documentService.createOrUpdateDocument(
-            data?.awaitFirst()
+            data.awaitFirst()
         )
     }
 

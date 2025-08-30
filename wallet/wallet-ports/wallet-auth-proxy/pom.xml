@@ -7,7 +7,7 @@
     <parent>
         <groupId>co.nilin.opex.wallet</groupId>
         <artifactId>wallet</artifactId>
-        <version>1.0.1-beta.7</version>
+        <version>1.0.1-beta.8</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 

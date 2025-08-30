@@ -4,7 +4,7 @@
     <parent>
         <artifactId>core</artifactId>
         <groupId>co.nilin.opex</groupId>
-        <version>1.0.1-beta.7</version>
+        <version>1.0.1-beta.8</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>

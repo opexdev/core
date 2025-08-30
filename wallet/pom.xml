@@ -6,7 +6,7 @@
     <parent>
         <artifactId>core</artifactId>
         <groupId>co.nilin.opex</groupId>
-        <version>1.0.1-beta.7</version>
+        <version>1.0.1-beta.8</version>
     </parent>
 
     <groupId>co.nilin.opex.wallet</groupId>
@@ -76,6 +76,11 @@
                 <groupId>co.nilin.opex.utility</groupId>
                 <artifactId>interceptors</artifactId>
                 <version>${interceptor.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.config</groupId>
+                <artifactId>config-core</artifactId>
+                <version>${project.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
