@@ -30,6 +30,11 @@ spring:
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
     initialization-mode: always
+  cache:
+    type: redis
+  redis:
+    host: redis-cache
+    port: 6379
   cloud:
     bootstrap:
       enabled: true
