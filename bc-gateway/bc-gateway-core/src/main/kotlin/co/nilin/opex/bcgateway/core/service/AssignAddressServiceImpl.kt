@@ -14,7 +14,6 @@ open class AssignAddressServiceImpl(
     private val currencyHandler: CryptoCurrencyHandlerV2,
     private val assignedAddressHandler: AssignedAddressHandler,
     private val reservedAddressHandler: ReservedAddressHandler,
-    private val addressTypeHandler: AddressTypeHandler,
     private val chainLoader: ChainLoader
 
 ) : AssignAddressService {
@@ -24,13 +23,14 @@ open class AssignAddressServiceImpl(
 
     @Transactional
     override suspend fun assignAddress(user: String, currency: String, gatewayUuid: String): List<AssignedAddress> {
+
         addressLifeTime = 7200
+
         val requestedGateway = currencyHandler.fetchOnChainGateway(currency = currency, gatewayUuid = gatewayUuid)
             ?: throw OpexError.CurrencyNotFound.exception()
 
         val requestedChain = chainLoader.fetchChainInfo(requestedGateway.chain)
-
-        val addressTypes = chainLoader.fetchChainInfo(requestedChain.name)?.addressTypes
+        val addressTypes = requestedChain?.addressTypes
 
         val userAssignedAddresses =
             (assignedAddressHandler.fetchAssignedAddresses(user, addressTypes!!)).toMutableList()

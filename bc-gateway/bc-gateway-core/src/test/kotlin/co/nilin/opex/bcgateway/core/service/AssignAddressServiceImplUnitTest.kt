@@ -2,10 +2,7 @@ package co.nilin.opex.bcgateway.core.service
 
 //import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
 import co.nilin.opex.bcgateway.core.model.*
-import co.nilin.opex.bcgateway.core.spi.AssignedAddressHandler
-import co.nilin.opex.bcgateway.core.spi.ChainLoader
-import co.nilin.opex.bcgateway.core.spi.CryptoCurrencyHandlerV2
-import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
+import co.nilin.opex.bcgateway.core.spi.*
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
@@ -95,6 +92,8 @@ class AssignAddressServiceImplUnitTest {
 
         coEvery { assignedAddressHandler.persist(any()) } returns Unit
         coEvery { reservedAddressHandler.remove(any()) } returns Unit
+
+
     }
 
     @Test
