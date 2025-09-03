@@ -11,7 +11,10 @@ import co.nilin.opex.api.ports.opex.util.tokenValue
 import co.nilin.opex.common.OpexError
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
 
 @RestController("walletOpexController")
 @RequestMapping("/opex/v1/wallet")
@@ -50,8 +53,8 @@ class WalletController(
 
     @GetMapping("/deposit/address")
     fun assignAddress(
-        @RequestParam  currency: String,
-        @RequestParam  gatewayUuid: String,
+        @RequestParam currency: String,
+        @RequestParam gatewayUuid: String,
         @CurrentSecurityContext securityContext: SecurityContext
     ): AssignAddressResponse {
 
@@ -64,6 +67,6 @@ class WalletController(
         )
         val address = response?.addresses
         if (address.isNullOrEmpty()) throw OpexError.InternalServerError.exception()
-        return AssignAddressResponse(address[0].address, currency)
+        return AssignAddressResponse(address[0].address, currency, address[0].expTime, address[0].assignedDate)
     }
 }
