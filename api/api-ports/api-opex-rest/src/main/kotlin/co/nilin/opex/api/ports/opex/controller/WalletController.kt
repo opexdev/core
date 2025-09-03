@@ -19,8 +19,6 @@ class WalletController(
     private val walletProxy: WalletProxy,
     private val bcGatewayProxy: BlockchainGatewayProxy,
 ) {
-    data class GetAssignAddressRequest(val currency: String, val gatewayUuid: String)
-
 
     @GetMapping("/asset")
     fun getUserAssets(
@@ -52,19 +50,20 @@ class WalletController(
 
     @GetMapping("/deposit/address")
     fun assignAddress(
-        @RequestBody assignAddressRequest: GetAssignAddressRequest,
+        @RequestParam  currency: String,
+        @RequestParam  gatewayUuid: String,
         @CurrentSecurityContext securityContext: SecurityContext
     ): AssignAddressResponse {
 
         val response = bcGatewayProxy.assignAddress(
             AssignAddressRequest(
                 securityContext.authentication.name,
-                assignAddressRequest.currency,
-                assignAddressRequest.gatewayUuid
+                currency,
+                gatewayUuid
             )
         )
         val address = response?.addresses
         if (address.isNullOrEmpty()) throw OpexError.InternalServerError.exception()
-        return AssignAddressResponse(address[0].address, assignAddressRequest.currency)
+        return AssignAddressResponse(address[0].address, currency)
     }
 }
