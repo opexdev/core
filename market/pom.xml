@@ -6,7 +6,7 @@
     <parent>
         <artifactId>core</artifactId>
         <groupId>co.nilin.opex</groupId>
-        <version>1.0.1-beta.8</version>
+        <version>1.0.1-beta.7</version>
     </parent>
 
     <groupId>co.nilin.opex.market</groupId>
@@ -54,7 +54,7 @@
             <dependency>
                 <groupId>co.nilin.opex.market.ports.kafka.producer</groupId>
                 <artifactId>market-eventproducer-kafka</artifactId>
-                <version>1.0.1-beta.8</version>
+                <version>1.0.1-beta.7</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.market.ports.binance</groupId>

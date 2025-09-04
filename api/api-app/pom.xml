@@ -6,7 +6,7 @@
     <parent>
         <groupId>co.nilin.opex.api</groupId>
         <artifactId>api</artifactId>
-        <version>1.0.1-beta.8</version>
+        <version>1.0.1-beta.7</version>
     </parent>
 
     <groupId>co.nilin.opex.api.app</groupId>
@@ -54,7 +54,7 @@
         <dependency>
             <groupId>co.nilin.opex.api.ports.opex</groupId>
             <artifactId>api-opex-rest</artifactId>
-            <version>1.0.1-beta.8</version>
+            <version>1.0.1-beta.7</version>
         </dependency>
         <dependency>
             <groupId>co.nilin.opex.api.ports.postgres</groupId>

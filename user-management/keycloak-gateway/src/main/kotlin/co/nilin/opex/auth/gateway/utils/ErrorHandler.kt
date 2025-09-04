@@ -2,7 +2,6 @@ package co.nilin.opex.auth.gateway.utils
 
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.translation.CustomErrorTranslator
-import co.nilin.opex.common.utils.userLanguageResolver
 import co.nilin.opex.utility.error.data.OpexException
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
@@ -19,7 +18,7 @@ object ErrorHandler {
     ): Response {
 
         return Response.status(status)
-            .entity(translator.translate(OpexException(error, message), userLanguageResolver()))
+            .entity(OpexException(error, message))
             .type(MediaType.APPLICATION_JSON_TYPE)
             .build()
 
