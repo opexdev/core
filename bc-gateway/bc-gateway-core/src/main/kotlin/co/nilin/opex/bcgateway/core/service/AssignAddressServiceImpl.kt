@@ -30,7 +30,7 @@ open class AssignAddressServiceImpl(
             ?: throw OpexError.CurrencyNotFound.exception()
 
         val requestedChain = chainLoader.fetchChainInfo(requestedGateway.chain)
-        val addressTypes = requestedChain?.addressTypes
+        val addressTypes = requestedChain?.addressTypes?: throw OpexError.BadRequest.exception()
 
         val userAssignedAddresses =
             (assignedAddressHandler.fetchAssignedAddresses(user, addressTypes!!)).toMutableList()
