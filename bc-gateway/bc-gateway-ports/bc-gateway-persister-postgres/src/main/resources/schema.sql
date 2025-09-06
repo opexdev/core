@@ -92,7 +92,7 @@ ALTER TABLE currency_on_chain_gateway
     add COLUMN IF NOT EXISTS withdraw_description TEXT;
 
 ALTER TABLE currency_on_chain_gateway
-    drop COLUMN description;
+    drop COLUMN  IF EXISTS description;
 
 
 CREATE TABLE IF NOT EXISTS deposits

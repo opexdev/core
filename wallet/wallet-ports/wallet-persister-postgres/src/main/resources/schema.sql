@@ -222,7 +222,7 @@ ALTER TABLE currency_off_chain_gateway
     add COLUMN IF NOT EXISTS withdraw_description TEXT;
 
 ALTER TABLE currency_off_chain_gateway
-    drop COLUMN description;
+    drop COLUMN  IF EXISTS description;
 
 
 -- CREATE TABLE IF NOT EXISTS currency_manual_gateway
