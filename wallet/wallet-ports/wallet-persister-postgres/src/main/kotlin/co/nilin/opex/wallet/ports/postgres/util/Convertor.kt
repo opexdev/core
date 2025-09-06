@@ -111,7 +111,8 @@ fun OffChainGatewayModel.toDto(): CurrencyGatewayCommand {
         depositMax,
         withdrawMin,
         withdrawMax,
-        description,
+        depositDescription,
+        withdrawDescription,
         displayOrder
     )
 
@@ -131,7 +132,8 @@ fun OffChainGatewayCommand.toModel(): OffChainGatewayModel {
         transferMethod.name,
         isDepositActive,
         isWithdrawActive,
-        description,
+        depositDescription,
+        withdrawDescription,
         displayOrder
     )
 }

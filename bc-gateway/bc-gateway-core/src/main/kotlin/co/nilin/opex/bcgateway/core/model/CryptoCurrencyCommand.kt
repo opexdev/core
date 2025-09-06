@@ -20,7 +20,8 @@ data class CryptoCurrencyCommand(
     var depositMax: BigDecimal? = BigDecimal.ZERO,
     var decimal: Int,
     var chain: String,
-    var description: String?,
+    var depositDescription: String? = null,
+    var withdrawDescription: String? = null,
     var displayOrder: Int? = null,
     var type: String = "OnChain",
 
