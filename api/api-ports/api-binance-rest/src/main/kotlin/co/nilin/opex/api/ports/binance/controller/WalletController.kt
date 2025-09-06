@@ -188,39 +188,39 @@ class WalletController(
 //        }
 //    }
 
-    @GetMapping("/v1/asset/tradeFee")
-    fun getPairFees(
-        @RequestParam(required = false)
-        symbol: String?,
-        @RequestParam(required = false)
-        recvWindow: Long?, //The value cannot be greater than 60000
-        @RequestParam
-        timestamp: Long
-    ): List<PairFeeResponse> {
-        return if (symbol != null) {
-            val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexError.SymbolNotFound.exception()
-
-            val fee = accountantProxy.getFeeConfig(internalSymbol)
-            arrayListOf<PairFeeResponse>().apply {
-                add(
-                    PairFeeResponse(
-                        symbol,
-                        fee.makerFee.toDouble(),
-                        fee.takerFee.toDouble()
-                    )
-                )
-            }
-        } else
-            accountantProxy.getFeeConfigs()
-                .distinctBy { it.pair }
-                .map {
-                    PairFeeResponse(
-                        symbolMapper.fromInternalSymbol(it.pair) ?: it.pair,
-                        it.makerFee.toDouble(),
-                        it.takerFee.toDouble()
-                    )
-                }
-    }
+//    @GetMapping("/v1/asset/tradeFee")
+//    fun getPairFees(
+//        @RequestParam(required = false)
+//        symbol: String?,
+//        @RequestParam(required = false)
+//        recvWindow: Long?, //The value cannot be greater than 60000
+//        @RequestParam
+//        timestamp: Long
+//    ): List<PairFeeResponse> {
+//        return if (symbol != null) {
+//            val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexError.SymbolNotFound.exception()
+//
+//            val fee = accountantProxy.getFeeConfig(internalSymbol)
+//            arrayListOf<PairFeeResponse>().apply {
+//                add(
+//                    PairFeeResponse(
+//                        symbol,
+//                        fee.makerFee.toDouble(),
+//                        fee.takerFee.toDouble()
+//                    )
+//                )
+//            }
+//        } else
+//            accountantProxy.getFeeConfigs()
+//                .distinctBy { it.pair }
+//                .map {
+//                    PairFeeResponse(
+//                        symbolMapper.fromInternalSymbol(it.pair) ?: it.pair,
+//                        it.makerFee.toDouble(),
+//                        it.takerFee.toDouble()
+//                    )
+//                }
+//    }
 
     @GetMapping("/v1/asset/getUserAsset")
     fun getUserAssets(

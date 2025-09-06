@@ -9,7 +9,10 @@ import co.nilin.opex.accountant.core.service.FinancialActionJobManagerImpl
 import co.nilin.opex.accountant.core.service.OrderManagerImpl
 import co.nilin.opex.accountant.core.service.TradeManagerImpl
 import co.nilin.opex.accountant.core.spi.*
-import co.nilin.opex.accountant.ports.kafka.listener.consumer.*
+import co.nilin.opex.accountant.ports.kafka.listener.consumer.EventKafkaListener
+import co.nilin.opex.accountant.ports.kafka.listener.consumer.OrderKafkaListener
+import co.nilin.opex.accountant.ports.kafka.listener.consumer.TempEventKafkaListener
+import co.nilin.opex.accountant.ports.kafka.listener.consumer.TradeKafkaListener
 import co.nilin.opex.accountant.ports.kafka.listener.spi.FAResponseListener
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
@@ -36,7 +39,6 @@ class AppConfig {
     @Bean
     fun orderManager(
         pairConfigLoader: PairConfigLoader,
-        userLevelLoader: UserLevelLoader,
         financialActionPersister: FinancialActionPersister,
         financeActionLoader: FinancialActionLoader,
         orderPersister: OrderPersister,
@@ -44,18 +46,17 @@ class AppConfig {
         tempEventRepublisher: TempEventRepublisher,
         richOrderPublisher: RichOrderPublisher,
         financialActionPublisher: FinancialActionPublisher,
-        jsonMapper: JsonMapper
+        feeCalculator: FeeCalculator
     ): OrderManager {
         return OrderManagerImpl(
             pairConfigLoader,
-            userLevelLoader,
             financialActionPersister,
             financeActionLoader,
             orderPersister,
             tempEventPersister,
             richOrderPublisher,
             financialActionPublisher,
-            jsonMapper
+            feeCalculator
         )
     }
 
@@ -69,7 +70,8 @@ class AppConfig {
         richOrderPublisher: RichOrderPublisher,
         feeCalculator: FeeCalculator,
         financialActionPublisher: FinancialActionPublisher,
-        jsonMapper: JsonMapper
+        currencyRatePersister: CurrencyRatePersister,
+        userVolumePersister: UserVolumePersister,
     ): TradeManager {
         return TradeManagerImpl(
             financeActionPersister,
@@ -80,7 +82,8 @@ class AppConfig {
             richOrderPublisher,
             feeCalculator,
             financialActionPublisher,
-            jsonMapper
+            currencyRatePersister,
+            userVolumePersister
         )
     }
 
@@ -129,11 +132,8 @@ class AppConfig {
     fun configureEventListener(
         eventKafkaListener: EventKafkaListener,
         accountantEventListener: AccountantEventListener,
-        kycLevelUpdatedKafkaListener: KycLevelUpdatedKafkaListener,
-        kycLevelUpdatedEventListener: KycLevelUpdatedListener
     ) {
         eventKafkaListener.addListener(accountantEventListener)
-        kycLevelUpdatedKafkaListener.addEventListener(kycLevelUpdatedEventListener)
     }
 
     @Autowired

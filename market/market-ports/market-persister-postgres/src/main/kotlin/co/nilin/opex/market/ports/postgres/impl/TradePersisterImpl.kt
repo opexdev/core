@@ -68,7 +68,7 @@ class TradePersisterImpl(
         ).awaitFirstOrNull()
         logger.info("Rate between ${pair[0]} and ${pair[1]} updated")
 
-        calculateTradeVolume(trade, pair[0].uppercase(), pair[1].uppercase())
+        //calculateTradeVolume(trade, pair[0].uppercase(), pair[1].uppercase()) // Moved to accountant
         updateCache(trade, tradeEntity)
     }
 

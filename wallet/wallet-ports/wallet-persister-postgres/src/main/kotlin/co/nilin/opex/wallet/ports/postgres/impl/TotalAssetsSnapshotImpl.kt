@@ -9,7 +9,6 @@ import co.nilin.opex.wallet.ports.postgres.util.toTotalAssetsSnapshot
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import java.time.LocalDateTime
 
 @Service
 class TotalAssetsSnapshotImpl(
@@ -31,11 +30,10 @@ class TotalAssetsSnapshotImpl(
         logger.info("Snapshot creation finished in {} ms", (end - start))
     }
 
-    override suspend fun getByOwnerIdAndDate(
-        ownerId: Long, fromDate: LocalDateTime?, toDate: LocalDateTime?
-    ): List<TotalAssetsSnapshot> {
-        return totalAssetsSnapshotRepository.findByOwnerIdAndSnapshotDate(ownerId, fromDate, toDate).collectList()
-            .awaitFirstOrNull()?.map { it.toTotalAssetsSnapshot() } ?: emptyList()
+    override suspend fun getUserLastSnapshot(
+        uuid: String
+    ): TotalAssetsSnapshot? {
+        return totalAssetsSnapshotRepository.findLastSnapshotByUuid(uuid).awaitFirstOrNull()?.toTotalAssetsSnapshot()
     }
 
     suspend fun savePrices() {
@@ -46,5 +44,4 @@ class TotalAssetsSnapshotImpl(
             ).awaitFirstOrNull()
         }
     }
-
 }

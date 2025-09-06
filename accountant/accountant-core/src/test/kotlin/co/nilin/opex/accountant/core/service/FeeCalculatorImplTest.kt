@@ -2,16 +2,33 @@ package co.nilin.opex.accountant.core.service
 
 import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.FinancialActionCategory
+import co.nilin.opex.accountant.core.model.UserFee
 import co.nilin.opex.accountant.core.model.WalletType
+import co.nilin.opex.accountant.core.spi.FeeConfigService
+import co.nilin.opex.accountant.core.spi.UserVolumePersister
+import co.nilin.opex.accountant.core.spi.WalletProxy
+import co.nilin.opex.accountant.core.utils.CacheManager
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 internal class FeeCalculatorImplTest {
+    private val walletProxy = mockk<WalletProxy>()
+    private val feeConfigService = mockk<FeeConfigService>()
+    private val userVolumePersister = mockk<UserVolumePersister>()
+    private val cacheManager = mockk<CacheManager<String, UserFee>>()
 
     private val receiverAddress = "0x0"
-    private val feeCalculator = FeeCalculatorImpl(receiverAddress, JsonMapperTestImpl())
+    private val feeCalculator = FeeCalculatorImpl(
+        walletProxy,
+        feeConfigService,
+        userVolumePersister,
+        cacheManager,
+        receiverAddress,
+        JsonMapperTestImpl()
+    )
 
     @Test
     fun givenTradeEventsAndOrders_whenFeeCalculated_feeActionsNotNull(): Unit = runBlocking {

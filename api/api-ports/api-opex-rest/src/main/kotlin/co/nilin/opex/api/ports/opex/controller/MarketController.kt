@@ -8,8 +8,8 @@ import co.nilin.opex.api.ports.opex.data.OrderBookResponse
 import co.nilin.opex.api.ports.opex.data.RecentTradeResponse
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.utils.Interval
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 import java.time.ZoneId
@@ -58,8 +58,8 @@ class MarketController(
         return walletProxy.getGateWays(includeOffChainGateways, includeOnChainGateways)
     }
 
-    @GetMapping("/pair/fee")
-    fun getPairFees(): List<PairFeeResponse> {
+    @GetMapping("/fee")
+    fun getFeeConfigs(): List<FeeConfig> {
         return accountantProxy.getFeeConfigs()
     }
 
@@ -67,7 +67,7 @@ class MarketController(
     fun getMarketStats(
         @RequestParam interval: String,
         @RequestParam(required = false) limit: Int?
-    ): MarketStatResponse  {
+    ): MarketStatResponse {
         val intervalEnum = Interval.findByLabel(interval) ?: Interval.Week
         val validLimit = getValidLimit(limit)
 

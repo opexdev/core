@@ -1,14 +1,11 @@
 package co.nilin.opex.wallet.ports.postgres.dao
 
-import co.nilin.opex.wallet.core.model.TotalAssetsSnapshot
 import co.nilin.opex.wallet.ports.postgres.model.TotalAssetsSnapshotModel
 import org.springframework.data.r2dbc.repository.Modifying
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import java.time.LocalDateTime
 
 @Repository
 interface TotalAssetsSnapshotRepository : ReactiveCrudRepository<TotalAssetsSnapshotModel, Long> {
@@ -17,7 +14,7 @@ interface TotalAssetsSnapshotRepository : ReactiveCrudRepository<TotalAssetsSnap
     @Modifying
     @Query(
         """
-    INSERT INTO total_assets_snapshot(owner, total_usdt, total_irt, snapshot_date)
+    INSERT INTO total_assets_snapshot(uuid, total_usdt, total_irt, snapshot_date)
     WITH irt_price AS (
         SELECT price AS irt_rate
         FROM price
@@ -25,7 +22,7 @@ interface TotalAssetsSnapshotRepository : ReactiveCrudRepository<TotalAssetsSnap
         LIMIT 1
     )
     SELECT
-        w.owner,
+        wo.uuid,
         trunc(SUM(
             CASE
                 WHEN w.currency = 'USDT' THEN w.balance
@@ -42,11 +39,12 @@ interface TotalAssetsSnapshotRepository : ReactiveCrudRepository<TotalAssetsSnap
         ), 0) AS total_irt,
         NOW() AS snapshot_date
     FROM wallet w
+    INNER JOIN public.wallet_owner wo on wo.id = w.owner
     LEFT JOIN price p ON w.currency || '_USDT' = p.symbol
     CROSS JOIN irt_price irt
     WHERE w.wallet_type != 'CASHOUT'
       AND w.balance > 0
-    GROUP BY w.owner
+    GROUP BY wo.uuid
     """
     )
     fun createSnapshotsDirectly(): Mono<Void>
@@ -55,16 +53,12 @@ interface TotalAssetsSnapshotRepository : ReactiveCrudRepository<TotalAssetsSnap
     @Query(
         """
         select * from total_assets_snapshot
-         where owner_id = :ownerId 
-         and (:startTime is null or snapshot_date > :startTime)
-         and (:endTime is null or snapshot_date <= :endTime)
+         where uuid = :uuid 
          order by id desc
+         limit 1
         """
     )
-    fun findByOwnerIdAndSnapshotDate(
-        ownerId: Long,
-        startTime: LocalDateTime?,
-        endTime: LocalDateTime?
-    ): Flux<TotalAssetsSnapshotModel>
-
+    fun findLastSnapshotByUuid(
+        uuid: String,
+    ): Mono<TotalAssetsSnapshotModel>
 }

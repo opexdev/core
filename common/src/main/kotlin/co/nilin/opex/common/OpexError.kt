@@ -23,6 +23,8 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     InvalidPair(2001, "%s is not available", HttpStatus.BAD_REQUEST),
     InvalidPairFee(2002, "%s fee is not available", HttpStatus.BAD_REQUEST),
     PairFeeNotFound(2002, "No fee for requested pair found", HttpStatus.NOT_FOUND),
+    FeeConfigAlreadyExists(2003, "Fee config already exists", HttpStatus.CONFLICT),
+    FeeConfigNotFound(2004, "Fee config not found", HttpStatus.NOT_FOUND),
 
     // code 3000: matching-engine
 
