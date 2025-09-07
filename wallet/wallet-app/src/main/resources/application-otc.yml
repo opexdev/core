@@ -88,6 +88,10 @@ app:
       folder: ${DRIVE_FOLDER_ID:-}
   bc-gateway:
     url: http://bc-gateway:8080
+  market:
+    url: http://market:8080
+  accountant:
+    url: http://accountant:8080
   reserved-transfer:
     life-time: 15 #minutes
 
@@ -100,3 +104,5 @@ logging:
     org.hibernate.SQL: DEBUG
     logging.level.org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
+withdraw-limit:
+  enabled: false

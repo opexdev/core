@@ -131,4 +131,21 @@ CREATE TABLE IF NOT EXISTS currency_rate
     DROP TABLE IF EXISTS user_level_mapper;
     DROP TABLE IF EXISTS user_level;
 
+CREATE TABLE IF NOT EXISTS user_withdraw_volume
+(
+    id         SERIAL PRIMARY KEY,
+    user_id    VARCHAR(36) NOT NULL,
+    date       DATE        not null,
+    value_usdt decimal     not null,
+    value_irt  decimal     not null,
+    unique (user_id, date)
+);
+
+CREATE TABLE IF NOT EXISTS withdraw_limit_config
+(
+    id         SERIAL PRIMARY KEY,
+    user_level    VARCHAR(20) NOT NULL UNIQUE,
+    daily_max_amount decimal     not null
+);
+
 COMMIT;

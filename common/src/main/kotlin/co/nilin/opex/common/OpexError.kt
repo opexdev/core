@@ -22,10 +22,11 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     // code 2000: accountant
     InvalidPair(2001, "%s is not available", HttpStatus.BAD_REQUEST),
     InvalidPairFee(2002, "%s fee is not available", HttpStatus.BAD_REQUEST),
-    PairFeeNotFound(2002, "No fee for requested pair found", HttpStatus.NOT_FOUND),
-    FeeConfigAlreadyExists(2003, "Fee config already exists", HttpStatus.CONFLICT),
-    FeeConfigNotFound(2004, "Fee config not found", HttpStatus.NOT_FOUND),
-
+    PairFeeNotFound(2003, "No fee for requested pair found", HttpStatus.NOT_FOUND),
+    FeeConfigAlreadyExists(2004, "Fee config already exists", HttpStatus.CONFLICT),
+    FeeConfigNotFound(2005, "Fee config not found", HttpStatus.NOT_FOUND),
+    WithdrawAmountExceeds(2006,"The requested withdraw amount exceeds your daily limit", HttpStatus.BAD_REQUEST),
+    WithdrawLimitConfigNotFound(2007, "Withdraw limit config not found", HttpStatus.NOT_FOUND),
     // code 3000: matching-engine
 
     // code 4000: matching-gateway

@@ -58,6 +58,8 @@ app:
     url: http://bc-gateway:8080
   market:
     url:  http://market:8080
+  accountant:
+    url:  http://accountant:8080
   system:
     uuid: 1
   reserved-transfer:
@@ -74,3 +76,5 @@ logging:
 swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
 test:
   topic: embedded-test-topic
+withdraw-limit:
+  enabled: false
