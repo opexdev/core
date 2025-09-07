@@ -17,7 +17,9 @@ class PrecisionServiceImpl(
     //TODO optimize this
     override fun calculatePrecision(amount: BigDecimal, symbol: String): BigDecimal {
         val precision = redisCacheHelper.get<BigDecimal>("$symbol-precision")?.toInt() ?: return amount
-
+        if (precision == 0) {
+            return amount.setScale(0, RoundingMode.DOWN)
+        }
         val scaledAmount = amount.setScale(precision, RoundingMode.DOWN)
         if (scaledAmount != BigDecimal.ZERO.setScale(precision)) {
             return scaledAmount
