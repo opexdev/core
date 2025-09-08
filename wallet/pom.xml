@@ -20,7 +20,6 @@
         <module>wallet-app</module>
         <module>wallet-ports/wallet-persister-postgres</module>
         <module>wallet-ports/wallet-eventlistener-kafka</module>
-        <module>wallet-ports/wallet-eventproducer-kafka</module>
         <module>wallet-ports/wallet-bcgateway-proxy</module>
         <module>wallet-ports/wallet-auth-proxy</module>
         <module>wallet-ports/wallet-market-proxy</module>
@@ -73,11 +72,6 @@
             <dependency>
                 <groupId>co.nilin.opex.wallet.ports.kafka.listener</groupId>
                 <artifactId>wallet-eventlistener-kafka</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>co.nilin.opex.wallet.ports.kafka.producer</groupId>
-                <artifactId>wallet-eventproducer-kafka</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

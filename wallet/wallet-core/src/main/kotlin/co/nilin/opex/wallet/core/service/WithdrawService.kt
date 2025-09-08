@@ -25,7 +25,7 @@ class WithdrawService(
     private val gatewayService: GatewayService,
     private val precisionService: PrecisionService,
     private val accountantProxy: AccountantProxy,
-    private val withdrawRequestEventProducer: WithdrawRequestEventProducer,
+    private val withdrawRequestEventSubmitter: WithdrawRequestEventSubmitter,
     @Qualifier("onChainGateway") private val bcGatewayProxy: GatewayPersister,
     @Value("\${app.system.uuid}") private val systemUuid: String,
     @Value("\${withdraw-limit.enabled}") private val withdrawLimitEnabled: Boolean,
@@ -115,7 +115,7 @@ class WithdrawService(
                 transferMethod = withdrawCommand.transferMethod
             )
         )
-        withdrawRequestEventProducer.send(
+        withdrawRequestEventSubmitter.send(
             withdraw.ownerUuid,
             withdraw.withdrawId,
             withdraw.currency,
@@ -264,7 +264,7 @@ class WithdrawService(
 
         withdraw.status = WithdrawStatus.CANCELED
         withdrawPersister.persist(withdraw)
-        withdrawRequestEventProducer.send(
+        withdrawRequestEventSubmitter.send(
             withdraw.ownerUuid,
             withdraw.withdrawId,
             withdraw.currency,
@@ -340,7 +340,7 @@ class WithdrawService(
                 withdraw.transferMethod
             )
         )
-        withdrawRequestEventProducer.send(
+        withdrawRequestEventSubmitter.send(
             withdraw.ownerUuid,
             withdraw.withdrawId,
             withdraw.currency,

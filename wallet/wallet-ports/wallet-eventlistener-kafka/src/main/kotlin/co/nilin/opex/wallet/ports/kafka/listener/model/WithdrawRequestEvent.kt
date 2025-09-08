@@ -1,4 +1,4 @@
-package co.nilin.opex.wallet.ports.kafka.producer.events
+package co.nilin.opex.wallet.ports.kafka.listener.model
 
 import co.nilin.opex.wallet.core.model.WithdrawStatus
 import java.math.BigDecimal

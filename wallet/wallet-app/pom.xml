@@ -116,10 +116,6 @@
             <artifactId>wallet-eventlistener-kafka</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.wallet.ports.kafka.producer</groupId>
-            <artifactId>wallet-eventproducer-kafka</artifactId>
-        </dependency>
-        <dependency>
             <groupId>co.nilin.opex.utility</groupId>
             <artifactId>error-handler</artifactId>
         </dependency>

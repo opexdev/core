@@ -4,7 +4,7 @@ import co.nilin.opex.wallet.core.model.WithdrawStatus
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
-interface WithdrawRequestEventProducer {
+interface WithdrawRequestEventSubmitter {
 
     suspend fun send(
         uuid: String,
