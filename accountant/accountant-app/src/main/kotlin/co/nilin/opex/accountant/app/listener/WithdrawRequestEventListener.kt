@@ -16,7 +16,7 @@ class WithdrawRequestEventListener(private val userWithdrawVolumePersister: User
     private val logger = LoggerFactory.getLogger(WithdrawRequestEventListener::class.java)
     val scope = CoroutineScope(Dispatchers.IO)
     override fun id(): String {
-        return "KycLevelUpdatedListener"
+        return "WithdrawRequestEventListener"
     }
 
     override fun onEvent(
