@@ -1,5 +1,6 @@
 package co.nilin.opex.accountant.ports.kafka.listener.inout
 
+import co.nilin.opex.accountant.core.model.WithdrawStatus
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
@@ -11,12 +12,3 @@ data class WithdrawRequestEvent(
     val status: WithdrawStatus,
     val createDate: LocalDateTime,
 )
-
-enum class WithdrawStatus {
-
-    CREATED,
-    PROCESSING,
-    CANCELED,
-    REJECTED,
-    DONE
-}

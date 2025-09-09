@@ -179,7 +179,7 @@ class AccountantKafkaConfig {
         @Qualifier("withdrawRequestKafkaTemplate") template: KafkaTemplate<String, WithdrawRequestEvent>,
         @Qualifier("withdrawRequestConsumerFactory") consumerFactory: ConsumerFactory<String, WithdrawRequestEvent>
     ) {
-        val containerProps = ContainerProperties(Pattern.compile("withdraw_reuest"))
+        val containerProps = ContainerProperties(Pattern.compile("withdraw_request"))
         containerProps.messageListener = listener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
         container.setBeanName("WithdrawRequestKafkaListenerContainer")

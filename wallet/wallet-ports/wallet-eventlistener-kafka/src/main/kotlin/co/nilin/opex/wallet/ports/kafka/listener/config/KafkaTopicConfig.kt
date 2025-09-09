@@ -25,7 +25,7 @@ class KafkaTopicConfig {
     @Autowired
     fun withdrawRequestTopics(applicationContext: GenericApplicationContext) {
         applicationContext.registerBean("topic_withdrawRequest", NewTopic::class.java, Supplier {
-            TopicBuilder.name("withdrawRequest")
+            TopicBuilder.name("withdraw_request")
                 .partitions(1)
                 .replicas(1)
                 .build()

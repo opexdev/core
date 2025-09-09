@@ -36,7 +36,7 @@ class WithdrawRequestSubmitter(
         retryTemplate.execute<Unit, Exception> {
             try {
                 template.send(
-                    "withdrawRequest",
+                    "withdraw_request",
                     WithdrawRequestEvent(uuid, withdrawId, currency, amount, withdrawStatus, createDate)
                 ).get()
                 logger.info("Withdraw request event sent")
