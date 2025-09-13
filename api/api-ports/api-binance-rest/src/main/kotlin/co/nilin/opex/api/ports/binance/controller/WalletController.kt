@@ -21,26 +21,26 @@ class WalletController(
     private val symbolMapper: SymbolMapper,
     private val marketDataProxy: MarketDataProxy,
     private val accountantProxy: AccountantProxy,
-    private val bcGatewayProxy: BlockchainGatewayProxy,
+//    private val bcGatewayProxy: BlockchainGatewayProxy,
 ) {
 
-    @GetMapping("/v1/capital/deposit/address")
-    fun assignAddress(
-        @RequestParam
-        coin: String,
-        @RequestParam
-        network: String,
-        @RequestParam(required = false)
-        recvWindow: Long?, //The value cannot be greater than 60000
-        @RequestParam
-        timestamp: Long,
-        @CurrentSecurityContext securityContext: SecurityContext
-    ): AssignAddressResponse {
-        val response = bcGatewayProxy.assignAddress(securityContext.jwtAuthentication().name, coin, network)
-        val address = response?.addresses
-        if (address.isNullOrEmpty()) throw OpexError.InternalServerError.exception()
-        return AssignAddressResponse(address[0].address, coin, network, "", "")
-    }
+//    @GetMapping("/v1/capital/deposit/address")
+//    fun assignAddress(
+//        @RequestParam
+//        coin: String,
+//        @RequestParam
+//        network: String,
+//        @RequestParam(required = false)
+//        recvWindow: Long?, //The value cannot be greater than 60000
+//        @RequestParam
+//        timestamp: Long,
+//        @CurrentSecurityContext securityContext: SecurityContext
+//    ): AssignAddressResponse {
+//        val response = bcGatewayProxy.assignAddress(securityContext.jwtAuthentication().name, coin, network)
+//        val address = response?.addresses
+//        if (address.isNullOrEmpty()) throw OpexError.InternalServerError.exception()
+//        return AssignAddressResponse(address[0].address, coin, network, "", "")
+//    }
 
     @GetMapping("/v1/asset/tradeFee")
     fun getPairFees(

@@ -1,9 +1,9 @@
 package co.nilin.opex.api.ports.proxy.impl
 
+import co.nilin.opex.api.core.inout.AssignAddressRequest
 import co.nilin.opex.api.core.inout.AssignResponse
 import co.nilin.opex.api.core.inout.DepositDetails
 import co.nilin.opex.api.core.spi.BlockchainGatewayProxy
-import co.nilin.opex.api.ports.proxy.data.AssignAddressRequest
 import co.nilin.opex.api.ports.proxy.data.DepositDetailsRequest
 import co.nilin.opex.api.ports.proxy.utils.body
 import co.nilin.opex.common.utils.LoggerDelegate
@@ -21,12 +21,12 @@ class BlockchainGatewayProxyImpl(private val restTemplate: RestTemplate) : Block
     @Value("\${app.opex-bc-gateway.url}")
     private lateinit var baseUrl: String
 
-    override fun assignAddress(uuid: String, currency: String, chain: String): AssignResponse? {
+    override fun assignAddress(assignAddressRequest: AssignAddressRequest): AssignResponse? {
         logger.info("calling bc-gateway assign")
         return restTemplate.exchange<AssignResponse>(
             "$baseUrl/v1/address/assign",
             HttpMethod.POST,
-            body(AssignAddressRequest(uuid, currency, chain))
+            body(assignAddressRequest)
         ).body
     }
 

@@ -113,12 +113,24 @@ services:
     <<: *postgres-db
     volumes:
       - bc-gateway-data:/var/lib/postgresql/data/
-
+  redis-cache:
+    image: redis/redis-stack:latest
+    volumes:
+      - redis-cache-data:/data
+    environment:
+      - REDIS_REPLICATION_MODE=master
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
 volumes:
   wallet-data:
   vault-data:
   bc-gateway-data:
   documents:
+  redis-cache-data:
+
 
 networks:
   default:

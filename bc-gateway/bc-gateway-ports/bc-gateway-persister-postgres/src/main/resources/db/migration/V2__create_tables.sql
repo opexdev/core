@@ -75,10 +75,21 @@ CREATE TABLE IF NOT EXISTS currency_on_chain_gateway
     decimal               INTEGER      NOT NULL,
     is_deposit_active        BOOLEAN      NOT NULL        DEFAULT TRUE,
     is_withdraw_active        BOOLEAN      NOT NULL        DEFAULT TRUE,
-    description            TEXT,
+    deposit_description            TEXT,
+    withdraw_description            TEXT,
     display_order     INTEGER,
     UNIQUE (currency_symbol, chain, implementation_symbol)
 );
+ALTER TABLE currency_on_chain_gateway
+    add COLUMN IF NOT EXISTS deposit_description TEXT;
+
+
+ALTER TABLE currency_on_chain_gateway
+    add COLUMN IF NOT EXISTS withdraw_description TEXT;
+
+ALTER TABLE currency_on_chain_gateway
+    drop COLUMN  IF EXISTS description;
+
 
 CREATE TABLE IF NOT EXISTS deposits
 (

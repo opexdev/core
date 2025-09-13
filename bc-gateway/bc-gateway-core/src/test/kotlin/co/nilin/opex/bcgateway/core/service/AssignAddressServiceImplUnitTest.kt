@@ -27,6 +27,7 @@ class AssignAddressServiceImplUnitTest {
 
     //    private val currency = Currency("ETH", "Ethereum")
     private val chain = "ETH_MAINNET"
+    private val gatewayUuid = "1"
     private val currency = "ETH"
     private val ethAddressType = AddressType(1, "ETH", "+*", ".*")
     private val ethMemoAddressType = AddressType(2, "ETH", "+*", "+*")
@@ -81,6 +82,16 @@ class AssignAddressServiceImplUnitTest {
 
         )
 
+        coEvery {
+            currencyHandler.fetchCurrencyOnChainGateways(
+                FetchGateways(
+                    currencySymbol = currency,
+                    gatewayUuid = gatewayUuid
+                )
+            )
+        } returns
+                listOf(eth, wrappedEth)
+
         coEvery { currencyHandler.fetchCurrencyOnChainGateways(FetchGateways(currencySymbol = currency)) } returns
                 listOf(eth, wrappedEth)
 
@@ -88,9 +99,14 @@ class AssignAddressServiceImplUnitTest {
 
         coEvery { chainLoader.fetchChainInfo(chain = bscChain.name) } returns bscChain
 
+        coEvery { currencyHandler.fetchOnChainGateway(currency = currency, gatewayUuid = gatewayUuid) } returns eth
+
+
 
         coEvery { assignedAddressHandler.persist(any()) } returns Unit
         coEvery { reservedAddressHandler.remove(any()) } returns Unit
+
+
     }
 
     @Test
@@ -116,7 +132,7 @@ class AssignAddressServiceImplUnitTest {
                 ethMemoAddressType
             )
 
-            val assignedAddress = assignAddressServiceImpl.assignAddress(user, currency, chain)
+            val assignedAddress = assignAddressServiceImpl.assignAddress(user, currency, gatewayUuid)
             assertThat(assignedAddress).isEqualTo(
                 listOf(
                     AssignedAddress(
@@ -141,7 +157,7 @@ class AssignAddressServiceImplUnitTest {
             )
         } returns emptyList()
         coEvery { reservedAddressHandler.peekReservedAddress(ethAddressType) } returns null
-        coEvery { assignAddressServiceImpl.assignAddress(user, currency, chain) } throws RuntimeException()
+        coEvery { assignAddressServiceImpl.assignAddress(user, currency, gatewayUuid) } throws RuntimeException()
     }
 
     @Test
@@ -173,7 +189,7 @@ class AssignAddressServiceImplUnitTest {
                 ethMemoAddressType
             )
 
-            val assignedAddress = assignAddressServiceImpl.assignAddress(user, currency, chain)
+            val assignedAddress = assignAddressServiceImpl.assignAddress(user, currency, gatewayUuid)
             assertThat(assignedAddress).isEqualTo(
                 listOf(
                     AssignedAddress(

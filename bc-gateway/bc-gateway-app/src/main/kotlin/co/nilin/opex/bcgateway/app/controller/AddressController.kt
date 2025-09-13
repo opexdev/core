@@ -23,7 +23,7 @@ class AddressController(
     private val reservedAddressHandler: ReservedAddressHandler,
     private val addressTypeHandler: AddressTypeHandler
 ) {
-    data class AssignAddressRequest(val uuid: String, val currency: String, val chain: String)
+    data class AssignAddressRequest(val uuid: String, val currency: String, val gatewayUuid: String)
     data class AssignAddressResponse(val addresses: List<AssignedAddress>)
 
     @PostMapping("/assign")
@@ -36,7 +36,7 @@ class AddressController(
         val assignedAddress = assignAddressService.assignAddress(
             assignAddressRequest.uuid,
             assignAddressRequest.currency,
-            assignAddressRequest.chain
+            assignAddressRequest.gatewayUuid
         )
 
         return AssignAddressResponse(assignedAddress);

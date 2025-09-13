@@ -210,11 +210,22 @@ CREATE TABLE IF NOT EXISTS currency_off_chain_gateway
     is_deposit_active        BOOLEAN      NOT NULL        DEFAULT TRUE,
     is_withdraw_active        BOOLEAN      NOT NULL        DEFAULT TRUE,
     transfer_method  VARCHAR(256) NOT NULL,
-    description            TEXT,
+    deposit_description            TEXT,
+    withdraw_description            TEXT,
     display_order     INTEGER,
     UNIQUE (currency_symbol, transfer_method)
 
 );
+
+ALTER TABLE currency_off_chain_gateway
+    add COLUMN IF NOT EXISTS deposit_description TEXT;
+
+
+ALTER TABLE currency_off_chain_gateway
+    add COLUMN IF NOT EXISTS withdraw_description TEXT;
+
+ALTER TABLE currency_off_chain_gateway
+    drop COLUMN  IF EXISTS description;
 
 
 -- CREATE TABLE IF NOT EXISTS currency_manual_gateway

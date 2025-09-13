@@ -22,7 +22,8 @@ fun CurrencyCommand.toDto(): CurrencyDto {
         externalUrl,
         gateways,
         availableGatewayType,
-        order
+        order,
+        maxOrder =  maxOrder
     )
 }
 
