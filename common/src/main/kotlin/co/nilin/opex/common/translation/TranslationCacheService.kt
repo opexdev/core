@@ -47,7 +47,7 @@ class TranslationCacheService(
             return cached.message
         }
         return try {
-            messageSource?.getMessage(key, null, Locale(userLanguage))
+            messageSource?.getMessage(key, null, Locale.of(userLanguage.lowercase()))
         } catch (ex: Exception) {
             key
         }

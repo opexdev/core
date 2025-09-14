@@ -24,7 +24,7 @@ class ChainHandler(
 ) : ChainLoader {
 
     override suspend fun addChain(name: String, addressType: String): Chain {
-        val chain = chainRepository.findByName(name)?.awaitFirstOrNull()
+        val chain = chainRepository.findByName(name).awaitFirstOrNull()
         if (chain != null)
             throw OpexError.BadRequest.exception()
 
@@ -51,7 +51,7 @@ class ChainHandler(
     }
 
     override suspend fun fetchChainInfo(chain: String): Chain {
-        val chainDao = chainRepository.findByName(chain)?.awaitSingle()
+        val chainDao = chainRepository.findByName(chain).awaitSingle()
         val addressTypes = chainRepository.findAddressTypesByName(chain)
             .map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }.toList()
         return Chain(chainDao.name, addressTypes)

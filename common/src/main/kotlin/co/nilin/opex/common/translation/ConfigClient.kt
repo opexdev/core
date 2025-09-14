@@ -6,7 +6,6 @@ import kotlinx.coroutines.reactive.awaitFirst
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.client.WebClient
 
 inline fun <reified T : Any?> typeRef(): ParameterizedTypeReference<T> = object : ParameterizedTypeReference<T>() {}
 
