@@ -1,24 +1,26 @@
 package co.nilin.opex.accountant.ports.postgres.impl
 
 import co.nilin.opex.accountant.core.inout.UserTotalVolumeValue
+import co.nilin.opex.accountant.core.model.BaseCurrency
 import co.nilin.opex.accountant.core.model.WithdrawStatus
 import co.nilin.opex.accountant.core.spi.CurrencyRatePersister
 import co.nilin.opex.accountant.core.spi.UserWithdrawVolumePersister
 import co.nilin.opex.accountant.ports.postgres.dao.UserWithdrawVolumeRepository
 import co.nilin.opex.common.OpexError
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.LocalDate
+import java.time.ZoneOffset
 
-enum class BaseCurrency {
-    IRT, USDT
-}
 
 @Component
 class UserWithdrawVolumePersisterImpl(
     private val repository: UserWithdrawVolumeRepository,
-    private val currencyRatePersister: CurrencyRatePersister
+    private val currencyRatePersister: CurrencyRatePersister,
+    @Value("\${app.zone-offset}") private val zoneOffsetString: String
 ) : UserWithdrawVolumePersister {
 
     override suspend fun update(
@@ -30,7 +32,13 @@ class UserWithdrawVolumePersisterImpl(
     ) {
         val (usdtAmount, irtAmount) = convertAmount(currency, amount)
         val (adjustedUsdt, adjustedIrt) = adjustForWithdrawStatus(usdtAmount, irtAmount, withdrawStatus)
-        repository.insertOrUpdate(userId, date, adjustedUsdt, adjustedIrt).awaitSingleOrNull()
+
+        repository.insertOrUpdate(
+            userId,
+            date.atStartOfDay().atOffset(ZoneOffset.of(zoneOffsetString)).toLocalDate(),
+            adjustedUsdt,
+            adjustedIrt
+        ).awaitSingleOrNull()
     }
 
     override suspend fun getUserVolumeData(uuid: String, startDate: LocalDate): UserTotalVolumeValue {
@@ -53,7 +61,7 @@ class UserWithdrawVolumePersisterImpl(
         return when (currency) {
             BaseCurrency.IRT.name -> {
                 val irtAmount = amount
-                val usdtAmount = amount.divide(usdtIrtRate)
+                val usdtAmount = amount.divide(usdtIrtRate, 10, RoundingMode.DOWN)
                 usdtAmount to irtAmount
             }
 

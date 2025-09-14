@@ -8,7 +8,8 @@ import java.time.LocalDateTime
 @Table("price")
 data class PriceModel(
     @Id
-    val symbol: String,
+    val baseCurrency: String,
+    val quoteCurrency: String,
     val price: BigDecimal,
     val updateDate: LocalDateTime,
 )

@@ -94,6 +94,7 @@ app:
     url: http://accountant:8080
   reserved-transfer:
     life-time: 15 #minutes
+  zone-offset: +03:30
 
 logging:
   level:

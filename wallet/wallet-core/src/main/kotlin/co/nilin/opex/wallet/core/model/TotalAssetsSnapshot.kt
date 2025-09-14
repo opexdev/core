@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 
 data class TotalAssetsSnapshot(
     val uuid: String,
-    val totalUSDT: BigDecimal,
-    val totalIRT: BigDecimal,
+    val totalAmount: BigDecimal,
+    val quoteCurrency: String,
     val snapshotDate: LocalDateTime,
 )

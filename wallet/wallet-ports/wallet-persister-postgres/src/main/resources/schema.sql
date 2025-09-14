@@ -547,15 +547,17 @@ CREATE TABLE IF NOT EXISTS total_assets_snapshot
 (
     id          SERIAL PRIMARY KEY,
     uuid           VARCHAR(36)  NOT NULL,
-    total_usdt  DECIMAL   NOT NULL,
-    total_irt   DECIMAL   NOT NULL,
+    total_amount  DECIMAL   NOT NULL,
+    quote_currency       VARCHAR(50) NOT NULL REFERENCES currency (symbol),
     snapshot_date  TIMESTAMP NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_total_assets_snapshot_uuid ON total_assets_snapshot (uuid);
 
 CREATE TABLE IF NOT EXISTS price
 (
-    symbol       VARCHAR(50) PRIMARY KEY,
+    base_currency       VARCHAR(50) PRIMARY KEY REFERENCES currency (symbol),
+    quote_currency       VARCHAR(50) REFERENCES currency (symbol) ,
     price        DECIMAL   NOT NULL,
-    update_date TIMESTAMP NOT NULL DEFAULT NOW()
+    update_date TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT price_base_quote_unique UNIQUE (base_currency, quote_currency)
 );

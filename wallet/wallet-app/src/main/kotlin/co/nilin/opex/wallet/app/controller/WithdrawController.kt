@@ -4,6 +4,8 @@ import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.RequestWithdrawBody
 import co.nilin.opex.wallet.app.dto.WithdrawHistoryRequest
 import co.nilin.opex.wallet.app.utils.asLocalDateTime
+import co.nilin.opex.wallet.app.utils.jwtAuthentication
+import co.nilin.opex.wallet.app.utils.tokenValue
 import co.nilin.opex.wallet.core.inout.TransactionSummary
 import co.nilin.opex.wallet.core.inout.WithdrawActionResult
 import co.nilin.opex.wallet.core.inout.WithdrawCommand
@@ -38,11 +40,14 @@ class WithdrawController(private val withdrawService: WithdrawService) {
 //    }
 
     @PostMapping
-    suspend fun requestWithdraw(principal: Principal, @RequestBody request: RequestWithdrawBody): WithdrawActionResult {
+    suspend fun requestWithdraw(
+        @CurrentSecurityContext securityContext: SecurityContext,
+        @RequestBody request: RequestWithdrawBody
+    ): WithdrawActionResult {
         return withdrawService.requestWithdraw(
             with(request) {
                 WithdrawCommand(
-                    principal.name,
+                    securityContext.authentication.name,
                     currency,
                     amount,
                     description,
@@ -54,7 +59,7 @@ class WithdrawController(private val withdrawService: WithdrawService) {
                     null,
                     null
                 )
-            }
+            }, securityContext.jwtAuthentication().tokenValue()
         )
     }
 

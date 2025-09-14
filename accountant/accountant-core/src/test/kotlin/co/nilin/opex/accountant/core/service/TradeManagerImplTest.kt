@@ -62,6 +62,7 @@ internal class TradeManagerImplTest {
             userVolumePersister,
             cacheManager,
             "0x0",
+            "GMT+03:30",
             JsonMapperTestImpl()
         ),
         financialActionPublisher,

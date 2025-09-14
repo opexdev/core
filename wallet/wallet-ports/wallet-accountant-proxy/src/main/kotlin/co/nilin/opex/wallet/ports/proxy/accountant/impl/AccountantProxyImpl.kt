@@ -23,7 +23,7 @@ class AccountantProxyImpl(private val webClient: WebClient) : AccountantProxy {
         amount: BigDecimal
     ): Boolean {
         return webClient.get()
-            .uri(URI.create("$baseUrl/{$uuid}/{$userLevel}/request_withdraw/{$amount}_{$currency}/allowed"))
+            .uri(URI.create("$baseUrl/$uuid/$userLevel/request_withdraw/${amount}_$currency/allowed"))
             .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })

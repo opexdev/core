@@ -22,12 +22,13 @@ class FeeCalculatorImpl(
     private val userVolumePersister: UserVolumePersister,
     private val cacheManager: CacheManager<String, UserFee>,
     @Value("\${app.address}") private val platformAddress: String,
+    @Value("\${app.zone-offset}") private val zoneOffsetString: String,
     private val jsonMapper: JsonMapper
 ) : FeeCalculator {
 
     private val logger = LoggerFactory.getLogger(FeeCalculatorImpl::class.java)
 
-    private fun remainingMillisUntil1AM(zone: ZoneId = ZoneId.of("GMT+03:30")): Long {
+    private fun remainingMillisUntil1AM(zone: ZoneId = ZoneId.of("GMT$zoneOffsetString")): Long {
         val now = ZonedDateTime.now(zone)
         val target = now.toLocalDate().plusDays(1).atTime(1, 0).atZone(zone)
         val remainingMillis = Duration.between(now, target).toMillis()

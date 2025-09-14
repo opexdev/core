@@ -5,6 +5,7 @@ import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.model.WithdrawType
 import co.nilin.opex.wallet.core.spi.*
+import co.nilin.opex.wallet.core.utils.JwtUtils
 import io.micrometer.core.instrument.MeterRegistry
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
@@ -34,7 +35,7 @@ class WithdrawService(
     private val logger = LoggerFactory.getLogger(WithdrawService::class.java)
 
     @Transactional
-    suspend fun requestWithdraw(withdrawCommand: WithdrawCommand): WithdrawActionResult {
+    suspend fun requestWithdraw(withdrawCommand: WithdrawCommand, token: String): WithdrawActionResult {
         precisionService.validatePrecision(withdrawCommand.amount, withdrawCommand.currency)
 
         val currency = currencyService.fetchCurrency(FetchCurrency(symbol = withdrawCommand.currency))
@@ -43,7 +44,7 @@ class WithdrawService(
         if (withdrawLimitEnabled) {
             if (!accountantProxy.canRequestWithdraw(
                     withdrawCommand.uuid,
-                    "user-1", // TODO
+                    UserRole.getHighestRoleKeycloakName(JwtUtils.extractRoles(token)) ?: UserRole.USER_1.keycloakName,
                     withdrawCommand.currency,
                     withdrawCommand.amount
                 )
@@ -115,6 +116,7 @@ class WithdrawService(
                 transferMethod = withdrawCommand.transferMethod
             )
         )
+        //TODO باعث خطا میشه تو otc ??
         withdrawRequestEventSubmitter.send(
             withdraw.ownerUuid,
             withdraw.withdrawId,
