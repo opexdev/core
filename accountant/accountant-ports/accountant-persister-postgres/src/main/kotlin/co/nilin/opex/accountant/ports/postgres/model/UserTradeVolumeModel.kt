@@ -12,9 +12,7 @@ class UserTradeVolumeModel(
     val currency: String,
     val date: LocalDate,
     val volume: BigDecimal,
-    @Column("value_usdt")
-    val valueUSDT: BigDecimal,
-    @Column("value_irt")
-    val valueIRT: BigDecimal,
+    val totalAmount: BigDecimal,
+    val quoteCurrency: String,
     @Id val id: Long? = null
 )

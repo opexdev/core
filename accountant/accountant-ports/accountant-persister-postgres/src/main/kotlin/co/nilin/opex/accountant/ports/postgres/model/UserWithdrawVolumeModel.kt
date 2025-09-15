@@ -11,8 +11,6 @@ data class UserWithdrawVolumeModel(
     @Id val id: Long? = null,
     val userId: String,
     val date: LocalDate,
-    @Column("value_usdt")
-    val valueUSDT: BigDecimal,
-    @Column("value_irt")
-    val valueIRT: BigDecimal,
+    val totalAmount: BigDecimal,
+    val quoteCurrency: String,
 )

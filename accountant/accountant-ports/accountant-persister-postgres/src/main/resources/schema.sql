@@ -100,9 +100,9 @@ CREATE TABLE IF NOT EXISTS user_trade_volume
     currency   TEXT        NOT NULL,
     date       DATE        not null,
     volume     decimal     not null,
-    value_usdt decimal     not null,
-    value_irt  decimal     not null,
-    unique (user_id, currency, date)
+    total_amount decimal     not null,
+    quote_currency       VARCHAR(50) NOT NULL,
+    unique (user_id, currency, date , quote_currency)
 );
 
 CREATE TABLE IF NOT EXISTS currency_rate
@@ -136,9 +136,9 @@ CREATE TABLE IF NOT EXISTS user_withdraw_volume
     id         SERIAL PRIMARY KEY,
     user_id    VARCHAR(36) NOT NULL,
     date       DATE        not null,
-    value_usdt decimal     not null,
-    value_irt  decimal     not null,
-    unique (user_id, date)
+    total_amount decimal     not null,
+    quote_currency       VARCHAR(50) NOT NULL,
+    unique (user_id, date,quote_currency)
 );
 
 CREATE TABLE IF NOT EXISTS withdraw_limit_config

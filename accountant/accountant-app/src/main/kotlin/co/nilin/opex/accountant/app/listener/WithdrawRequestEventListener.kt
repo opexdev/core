@@ -29,7 +29,7 @@ class WithdrawRequestEventListener(private val userWithdrawVolumePersister: User
         logger.info("Incoming WithdrawRequest event: $event")
         logger.info("==========================================================================")
         scope.launch {
-            userWithdrawVolumePersister.update(event.uuid, event.currency, event.amount, event.createDate.toLocalDate(), event.status)
+            userWithdrawVolumePersister.update(event.uuid, event.currency, event.amount, event.createDate, event.status)
         }
     }
 

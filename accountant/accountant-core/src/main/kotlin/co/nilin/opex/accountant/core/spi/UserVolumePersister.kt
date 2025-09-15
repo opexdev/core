@@ -1,6 +1,5 @@
 package co.nilin.opex.accountant.core.spi
 
-import co.nilin.opex.accountant.core.inout.UserTotalVolumeValue
 import java.math.BigDecimal
 import java.time.LocalDate
 
@@ -11,9 +10,9 @@ interface UserVolumePersister {
         currency: String,
         date: LocalDate,
         volume: BigDecimal,
-        valueUSDT: BigDecimal,
-        valueIRT: BigDecimal
+        totalAmount: BigDecimal,
+        quoteCurrency: String
     )
 
-    suspend fun getUserVolumeData(uuid: String, startDate: LocalDate): UserTotalVolumeValue?
+    suspend fun getUserVolumeData(uuid: String, startDate: LocalDate, quoteCurrency: String): BigDecimal?
 }

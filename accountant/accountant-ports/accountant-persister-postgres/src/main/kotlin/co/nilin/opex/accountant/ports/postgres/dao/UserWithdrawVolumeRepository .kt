@@ -1,6 +1,5 @@
 package co.nilin.opex.accountant.ports.postgres.dao
 
-import co.nilin.opex.accountant.core.inout.UserTotalVolumeValue
 import co.nilin.opex.accountant.ports.postgres.model.UserWithdrawVolumeModel
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
@@ -14,30 +13,33 @@ interface UserWithdrawVolumeRepository : ReactiveCrudRepository<UserWithdrawVolu
 
     @Query(
         """
-        insert into user_withdraw_volume (user_id, date, value_usdt, value_irt)
-        values (:userId, :date, :valueUSDT, :valueIRT)
-        on conflict (user_id, date)
+        insert into user_withdraw_volume (user_id, date, total_amount, quote_currency)
+        values (:userId, :date, :totalAmount, :quoteCurrency)
+        on conflict (user_id, date,quote_currency)
         do update 
-            set value_usdt = user_withdraw_volume.value_usdt + EXCLUDED.value_usdt,
-                value_irt = user_withdraw_volume.value_irt + EXCLUDED.value_irt
+            set total_amount = user_withdraw_volume.total_amount + EXCLUDED.total_amount
     """
     )
     fun insertOrUpdate(
         userId: String,
         date: LocalDate,
-        valueUSDT: BigDecimal,
-        valueIRT: BigDecimal
+        totalAmount: BigDecimal,
+        quoteCurrency: String
     ): Mono<Void>
 
 
     @Query(
         """
-        select sum(value_usdt) as value_USDT, sum(value_irt) as value_IRT
+        select sum(total_amount) as total_Amount, quote_currency
         from user_withdraw_volume 
-        where user_id = :userId and date >= :startDate
-        group by user_id
+        where user_id = :userId and date >= :startDate and quote_currency=:quoteCurrency
+        group by user_id , quote_currency
     """
     )
-    fun findTotalValueByUserAndAndDateAfter(userId: String, startDate: LocalDate): Mono<UserTotalVolumeValue>
+    fun findTotalValueByUserAndAndDateAfter(
+        userId: String,
+        startDate: LocalDate,
+        quoteCurrency: String
+    ): Mono<BigDecimal>
 
 }

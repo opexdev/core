@@ -1,7 +1,5 @@
 package co.nilin.opex.accountant.ports.postgres.dao
 
-import co.nilin.opex.accountant.core.inout.UserCurrencyVolume
-import co.nilin.opex.accountant.core.inout.UserTotalVolumeValue
 import co.nilin.opex.accountant.ports.postgres.model.UserTradeVolumeModel
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
@@ -15,13 +13,12 @@ interface UserTradeVolumeRepository : ReactiveCrudRepository<UserTradeVolumeMode
 
     @Query(
         """
-        insert into user_trade_volume (user_id, currency, date, volume, value_usdt, value_irt)
-        values (:userId, :currency, :date, :volume, :valueUSDT, :valueIRT)
-        on conflict (user_id, currency, date)
+        insert into user_trade_volume (user_id, currency, date, volume, total_amount, quote_currency)
+        values (:userId, :currency, :date, :volume, :totalAmount, :quoteCurrency)
+        on conflict (user_id, currency, date,quote_currency)
         do update 
             set volume = user_trade_volume.volume + EXCLUDED.volume,
-                value_usdt = user_trade_volume.value_usdt + EXCLUDED.value_usdt,
-                value_irt = user_trade_volume.value_irt + EXCLUDED.value_irt
+                total_amount = user_trade_volume.total_amount + EXCLUDED.total_amount
     """
     )
     fun insertOrUpdate(
@@ -29,31 +26,21 @@ interface UserTradeVolumeRepository : ReactiveCrudRepository<UserTradeVolumeMode
         currency: String,
         date: LocalDate,
         volume: BigDecimal,
-        valueUSDT: BigDecimal,
-        valueIRT: BigDecimal
+        totalAmount: BigDecimal,
+        quoteCurrency: String
     ): Mono<Void>
 
     @Query(
         """
-        select sum(value_usdt) as value_USDT, sum(value_irt) as value_IRT
+        select sum(total_amount) as total_amount
         from user_trade_volume 
-        where user_id = :userId and date >= :startDate
+        where user_id = :userId and date >= :startDate and quote_currency = :quoteCurrency
         group by user_id
     """
     )
-    fun findTotalValueByUserAndAndDateAfter(userId: String, startDate: LocalDate): Mono<UserTotalVolumeValue>
-
-    @Query(
-        """
-        select currency, sum(volume) as volume, sum(value_usdt) as value_USDT, sum(value_irt) as value_IRT
-        from user_trade_volume 
-        where user_id = :userId and date >= :startDate and currency = :currency
-        group by currency
-    """
-    )
-    fun findByUserAndCurrencyAndDateAfter(
+    fun findTotalValueByUserAndAndDateAfter(
         userId: String,
-        currency: String,
-        startDate: LocalDate
-    ): Mono<UserCurrencyVolume>
+        startDate: LocalDate,
+        quoteCurrency: String
+    ): Mono<BigDecimal>
 }

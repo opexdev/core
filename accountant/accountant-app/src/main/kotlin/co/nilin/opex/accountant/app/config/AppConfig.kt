@@ -12,13 +12,19 @@ import co.nilin.opex.accountant.core.spi.*
 import co.nilin.opex.accountant.ports.kafka.listener.consumer.*
 import co.nilin.opex.accountant.ports.kafka.listener.spi.FAResponseListener
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.EnableScheduling
 
 @Configuration
 @EnableScheduling
-class AppConfig {
+class AppConfig(
+    @Value("\${app.trade-volume-calculation-currency}")
+    private val tradeVolumeCalculationCurrency: String,
+    @Value("\${app.zone-offset}")
+    private val zoneOffsetString: String,
+) {
 
     @Bean
     fun getFinancialActionJobManager(
@@ -68,7 +74,7 @@ class AppConfig {
         feeCalculator: FeeCalculator,
         financialActionPublisher: FinancialActionPublisher,
         currencyRatePersister: CurrencyRatePersister,
-        userVolumePersister: UserVolumePersister,
+        userVolumePersister: UserVolumePersister
     ): TradeManager {
         return TradeManagerImpl(
             financeActionPersister,
@@ -80,7 +86,9 @@ class AppConfig {
             feeCalculator,
             financialActionPublisher,
             currencyRatePersister,
-            userVolumePersister
+            userVolumePersister,
+            tradeVolumeCalculationCurrency,
+            zoneOffsetString
         )
     }
 

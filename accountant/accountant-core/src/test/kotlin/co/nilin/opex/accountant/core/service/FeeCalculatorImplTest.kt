@@ -28,6 +28,7 @@ internal class FeeCalculatorImplTest {
         cacheManager,
         receiverAddress,
         "GMT+03:30",
+        "USDT",
         JsonMapperTestImpl(),
     )
 

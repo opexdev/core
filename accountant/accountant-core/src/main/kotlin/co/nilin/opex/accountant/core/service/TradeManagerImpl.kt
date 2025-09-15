@@ -8,13 +8,12 @@ import co.nilin.opex.accountant.core.inout.RichTrade
 import co.nilin.opex.accountant.core.model.*
 import co.nilin.opex.accountant.core.spi.*
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
-import kotlinx.coroutines.reactive.awaitFirstOrNull
-import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
-import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 open class TradeManagerImpl(
     private val financeActionPersister: FinancialActionPersister,
@@ -26,7 +25,9 @@ open class TradeManagerImpl(
     private val feeCalculator: FeeCalculator,
     private val financialActionPublisher: FinancialActionPublisher,
     private val currencyRatePersister: CurrencyRatePersister,
-    private val userVolumePersister: UserVolumePersister
+    private val userVolumePersister: UserVolumePersister,
+    private val tradeVolumeCalculationCurrency: String,
+    private val zoneOffsetString: String,
 ) : TradeManager {
 
     private val logger = LoggerFactory.getLogger(TradeManagerImpl::class.java)
@@ -195,36 +196,30 @@ open class TradeManagerImpl(
     }
 
     private suspend fun calculateTradeVolume(trade: RichTrade, base: String, quote: String) {
-        val today = LocalDate.now()
+        val today = LocalDateTime.now().atOffset(ZoneOffset.of(zoneOffsetString)).toLocalDate()
 
-        var valueUSDT = BigDecimal.ZERO
-        var valueIRT = BigDecimal.ZERO
-
-        if (quote.equals("IRT", true)) {
-            val baseUSDTRate = currencyRatePersister.getRate(base, "USDT")
-            valueUSDT = trade.matchedQuantity * baseUSDTRate
-            valueIRT = trade.matchedQuantity * trade.matchedPrice
-        } else if (quote.equals("USDT", true)) {
-            val baseIRTRate = currencyRatePersister.getRate(base, "IRT")
-            valueUSDT = trade.matchedQuantity * trade.matchedPrice
-            valueIRT = trade.matchedQuantity * baseIRTRate
+        val rate = if (quote == tradeVolumeCalculationCurrency) {
+            currencyRatePersister.getRate(base, quote)
+        } else {
+            currencyRatePersister.getRate(quote, tradeVolumeCalculationCurrency)
         }
+        val totalAmount = trade.matchedQuantity.multiply(rate)
 
         userVolumePersister.update(
             trade.makerUuid,
             base,
             today,
             trade.matchedQuantity,
-            valueUSDT,
-            valueIRT
+            totalAmount,
+            tradeVolumeCalculationCurrency
         )
         userVolumePersister.update(
             trade.takerUuid,
             base,
             today,
             trade.matchedQuantity,
-            valueUSDT,
-            valueIRT
+            totalAmount,
+            tradeVolumeCalculationCurrency
         )
         logger.info("Trade volume updated")
     }

@@ -12,7 +12,9 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
-import java.time.*
+import java.time.Duration
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.concurrent.TimeUnit
 
 @Component
@@ -23,17 +25,12 @@ class FeeCalculatorImpl(
     private val cacheManager: CacheManager<String, UserFee>,
     @Value("\${app.address}") private val platformAddress: String,
     @Value("\${app.zone-offset}") private val zoneOffsetString: String,
+    @Value("\${app.trade-volume-calculation-currency}")
+    private val tradeVolumeCalculationCurrency: String,
     private val jsonMapper: JsonMapper
 ) : FeeCalculator {
 
     private val logger = LoggerFactory.getLogger(FeeCalculatorImpl::class.java)
-
-    private fun remainingMillisUntil1AM(zone: ZoneId = ZoneId.of("GMT$zoneOffsetString")): Long {
-        val now = ZonedDateTime.now(zone)
-        val target = now.toLocalDate().plusDays(1).atTime(1, 0).atZone(zone)
-        val remainingMillis = Duration.between(now, target).toMillis()
-        return if (remainingMillis > 0) remainingMillis else Duration.ofHours(1).toMillis()
-    }
 
     override suspend fun getUserFee(uuid: String): UserFee {
         val cached = cacheManager.get(uuid)
@@ -42,11 +39,15 @@ class FeeCalculatorImpl(
         }
 
         val totalAssets = walletProxy.getUserTotalAssets(uuid)
-        val userVolumeData = userVolumePersister.getUserVolumeData(uuid, LocalDate.now().minusMonths(1L))
+        val userVolumeData = userVolumePersister.getUserVolumeData(
+            uuid,
+            LocalDateTime.now().atOffset(ZoneOffset.of(zoneOffsetString)).toLocalDate().minusMonths(1L),
+            tradeVolumeCalculationCurrency
+        )
 
         val feeConfig = feeConfigService.loadMatchingFeeConfig(
             totalAssets?.totalUSDT ?: BigDecimal.ZERO,
-            userVolumeData?.valueUSDT ?: BigDecimal.ZERO
+            userVolumeData ?: BigDecimal.ZERO
         )
         val remainingMillis = remainingMillisUntil1AM()
         cacheManager.put(uuid, feeConfig, remainingMillis, TimeUnit.MILLISECONDS)
@@ -119,5 +120,13 @@ class FeeCalculatorImpl(
         val orderMap: Map<String, Any> = jsonMapper.toMap(order)
         val eventMap: Map<String, Any> = jsonMapper.toMap(tradeEvent)
         return orderMap + eventMap
+    }
+
+    private fun remainingMillisUntil1AM(): Long {
+        val now = LocalDateTime.now().atOffset(ZoneOffset.of(zoneOffsetString))
+        val target =
+            LocalDateTime.now().atOffset(ZoneOffset.of(zoneOffsetString)).plusDays(1).withHour(1)
+        val remainingMillis = Duration.between(now, target).toMillis()
+        return if (remainingMillis > 0) remainingMillis else Duration.ofHours(1).toMillis()
     }
 }

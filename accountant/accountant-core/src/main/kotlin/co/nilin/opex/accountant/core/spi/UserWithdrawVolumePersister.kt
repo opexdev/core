@@ -1,18 +1,15 @@
 package co.nilin.opex.accountant.core.spi
 
-import co.nilin.opex.accountant.core.inout.UserTotalVolumeValue
 import co.nilin.opex.accountant.core.model.WithdrawStatus
 import java.math.BigDecimal
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 interface UserWithdrawVolumePersister {
     suspend fun update(
         userId: String,
         currency: String,
         amount: BigDecimal,
-        date: LocalDate,
-        withdrawStatus : WithdrawStatus
+        date: LocalDateTime,
+        withdrawStatus: WithdrawStatus
     )
-
-    suspend fun getUserVolumeData(uuid: String, startDate: LocalDate): UserTotalVolumeValue?
 }
