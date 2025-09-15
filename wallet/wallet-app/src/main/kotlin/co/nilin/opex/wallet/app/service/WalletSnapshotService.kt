@@ -19,7 +19,7 @@ class WalletSnapshotService(
     private val snapshotCurrency: String
 ) {
 
-    @Scheduled(cron = "0 57 18 * * ?", zone = "GMT" + "\${app.zone-offset}")
+    @Scheduled(cron = "0 0 0 * * ?", zone = "GMT" + "\${app.zone-offset}")
     fun createSnapshots() {
         runBlocking {
             updatePrices()
@@ -27,7 +27,7 @@ class WalletSnapshotService(
         }
     }
 
-    suspend fun updatePrices() {
+    private suspend fun updatePrices() { // TODO جابجاش کنم توی impl price
         val currencyPrices = graphService.fetchPrice(snapshotCurrency)
         currencyPrices?.forEach { currencyPrice ->
             priceRepository.upsert(
