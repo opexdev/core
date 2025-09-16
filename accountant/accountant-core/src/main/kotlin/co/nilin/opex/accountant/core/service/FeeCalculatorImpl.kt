@@ -39,14 +39,14 @@ class FeeCalculatorImpl(
         }
 
         val totalAssets = walletProxy.getUserTotalAssets(uuid)
-        val userVolumeData = userVolumePersister.getUserVolumeData(
+        val userVolumeData = userVolumePersister.getUserTotalTradeVolume(
             uuid,
             LocalDateTime.now().atOffset(ZoneOffset.of(zoneOffsetString)).toLocalDate().minusMonths(1L),
             tradeVolumeCalculationCurrency
         )
 
         val feeConfig = feeConfigService.loadMatchingFeeConfig(
-            totalAssets?.totalUSDT ?: BigDecimal.ZERO,
+            totalAssets?.totalAmount ?: BigDecimal.ZERO,
             userVolumeData ?: BigDecimal.ZERO
         )
         val remainingMillis = remainingMillisUntil1AM()

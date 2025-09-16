@@ -1,5 +1,6 @@
 package co.nilin.opex.accountant.ports.walletproxy.proxy
 
+import co.nilin.opex.accountant.core.model.CurrencyPrice
 import co.nilin.opex.accountant.core.model.TotalAssetsSnapshot
 import co.nilin.opex.accountant.core.model.WalletType
 import co.nilin.opex.accountant.core.spi.WalletProxy
@@ -69,5 +70,15 @@ class WalletProxyImpl(
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<TotalAssetsSnapshot>()
             .awaitFirstOrNull()
+    }
+
+    override suspend fun getPrices(quote: String): List<CurrencyPrice> {
+        return webClient.get()
+            .uri("$walletBaseUrl/otc/currency/price?unit=$quote")
+            .header("Content-Type", "application/json")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<List<CurrencyPrice>>()
+            .awaitFirst()
     }
 }

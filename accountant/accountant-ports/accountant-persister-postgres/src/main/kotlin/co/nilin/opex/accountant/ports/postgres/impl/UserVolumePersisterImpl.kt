@@ -21,7 +21,7 @@ class UserVolumePersisterImpl(private val repository: UserTradeVolumeRepository)
         repository.insertOrUpdate(userId, currency, date, volume, totalAmount, quoteCurrency).awaitSingleOrNull()
     }
 
-    override suspend fun getUserVolumeData(uuid: String, startDate: LocalDate, quoteCurrency: String): BigDecimal? {
+    override suspend fun getUserTotalTradeVolume(uuid: String, startDate: LocalDate, quoteCurrency: String): BigDecimal? {
         return repository.findTotalValueByUserAndAndDateAfter(uuid, startDate, quoteCurrency).awaitSingleOrNull()
     }
 }

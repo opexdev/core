@@ -62,7 +62,7 @@ internal class TradeManagerImplTest {
             userVolumePersister,
             cacheManager,
             "0x0",
-            "GMT+03:30",
+            "+03:30",
             "USDT",
             JsonMapperTestImpl()
         ),
@@ -70,7 +70,7 @@ internal class TradeManagerImplTest {
         currencyRatePersister,
         userVolumePersister,
         "USDT",
-        "GMT+03:30",
+        "+03:30",
     )
 
     init {

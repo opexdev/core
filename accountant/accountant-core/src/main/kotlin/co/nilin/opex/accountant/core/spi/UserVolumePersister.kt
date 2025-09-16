@@ -14,5 +14,5 @@ interface UserVolumePersister {
         quoteCurrency: String
     )
 
-    suspend fun getUserVolumeData(uuid: String, startDate: LocalDate, quoteCurrency: String): BigDecimal?
+    suspend fun getUserTotalTradeVolume(uuid: String, startDate: LocalDate, quoteCurrency: String): BigDecimal?
 }
