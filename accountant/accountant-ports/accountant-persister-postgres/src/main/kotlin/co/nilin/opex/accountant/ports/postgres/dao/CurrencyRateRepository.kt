@@ -13,10 +13,10 @@ interface CurrencyRateRepository : ReactiveCrudRepository<CurrencyRateModel, Lon
 
     @Query(
         """
-        insert into currency_rate (base, quote, rate)
-        values (:base, :quote, :rate)
+        insert into currency_rate (base, quote, rate,update_date)
+        values (:base, :quote, :rate , now())
         on conflict (base, quote)
-        do update set rate = excluded.rate
+        do update set rate = excluded.rate , update_date = now()
         """
     )
     fun createOrUpdate(base: String, quote: String, rate: BigDecimal): Mono<Void>

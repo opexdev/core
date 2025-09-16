@@ -111,6 +111,7 @@ CREATE TABLE IF NOT EXISTS currency_rate
     base  VARCHAR(25) NOT NULL,
     quote VARCHAR(25) NOT NULL,
     rate  DECIMAL     NOT NULL DEFAULT 0,
+    update_date TIMESTAMP   NOT NULL,
     UNIQUE (base, quote)
 );
 

@@ -95,6 +95,7 @@ app:
   reserved-transfer:
     life-time: 15 #minutes
   zone-offset: +03:30
+  snapshot-currency: USDT
 
 logging:
   level:

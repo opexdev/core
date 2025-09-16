@@ -64,6 +64,8 @@ app:
     uuid: 1
   reserved-transfer:
     life-time: 15 #minutes
+  zone-offset: +03:30
+  snapshot-currency: USDT
 logging:
   level:
     org.apache.kafka: ERROR
