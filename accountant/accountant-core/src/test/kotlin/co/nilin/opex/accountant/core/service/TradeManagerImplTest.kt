@@ -84,6 +84,7 @@ internal class TradeManagerImplTest {
         coEvery { financialActionPersister.updateStatus(any<String>(), any()) } returns Unit
         coEvery { currencyRatePersister.updateRate(any(), any(), any()) } just runs
         coEvery { userVolumePersister.update(any(), any(), any(), any(), any(), any()) } just runs
+        coEvery { currencyRatePersister.getRate(any(), any()) } returns BigDecimal.ONE
     }
 
     @Test
