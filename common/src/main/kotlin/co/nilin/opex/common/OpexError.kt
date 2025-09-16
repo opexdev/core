@@ -30,6 +30,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     SubmitOrderForbiddenByAccountant(4001, null, HttpStatus.BAD_REQUEST),
     InvalidOrderType(4002, "Invalid order type", HttpStatus.BAD_REQUEST),
     InvalidQuantity(4003, "Invalid quantity", HttpStatus.BAD_REQUEST),
+    InvalidPrice(4004, "Invalid price", HttpStatus.BAD_REQUEST),
 
     // code 5000: user-management
     EmailAlreadyVerified(5001, "Email is already verified", HttpStatus.BAD_REQUEST),

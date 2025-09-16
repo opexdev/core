@@ -118,7 +118,7 @@ class OrderPersisterImpl(
                 orderEvent.orderId,
                 orderEvent.price,
                 orderEvent.quantity,
-                orderEvent.quantity - orderEvent.remainedQuantity,
+                orderEvent.quantity!! - orderEvent.remainedQuantity,
                 orderEvent.javaClass.simpleName,
                 "agent",
                 "127.0.0.1",

@@ -4,9 +4,9 @@ class PersistentOrder {
     var id: Long = 0
     var ouid: String = ""
     var uuid: String = ""
-    var price: Long = 0
+    var price: Long? = null
     var quantity: Long = 0
-    var totalBudget: Long? = 0
+    var totalBudget: Long? = null
     lateinit var matchConstraint: MatchConstraint
     lateinit var orderType: OrderType
     lateinit var direction: OrderDirection
@@ -21,7 +21,7 @@ class PersistentOrder {
         id: Long,
         ouid: String,
         uuid: String,
-        price: Long,
+        price: Long?,
         quantity: Long,
         totalBudget: Long?,
         matchConstraint: MatchConstraint,

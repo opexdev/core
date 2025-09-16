@@ -8,6 +8,7 @@ import co.nilin.opex.matching.gateway.ports.kafka.submitter.inout.OrderSubmitRes
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.KafkaHealthIndicator
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.OrderRequestEventSubmitter
 import co.nilin.opex.matching.gateway.ports.postgres.service.PairSettingService
+import co.nilin.opex.utility.error.data.OpexException
 import io.mockk.MockKException
 import io.mockk.clearMocks
 import io.mockk.coEvery
@@ -77,7 +78,7 @@ private class OrderServiceTest {
             accountantApiProxy.canCreateOrder(
                 VALID.CREATE_ORDER_REQUEST_BID.uuid!!,
                 VALID.USDT,
-                VALID.CREATE_ORDER_REQUEST_BID.quantity * VALID.CREATE_ORDER_REQUEST_BID.price
+                VALID.CREATE_ORDER_REQUEST_BID.quantity * VALID.CREATE_ORDER_REQUEST_BID.price!!
             )
         } returns true
         coEvery {
@@ -86,6 +87,48 @@ private class OrderServiceTest {
         coEvery {
             kafkaHealthIndicator.isHealthy
         } returns true
+    }
+
+    private fun stubBIDWithIOCBudgetMarket() {
+        coEvery { pairSettingService.load(VALID.ETH_USDT) } returns VALID.PAIR_SETTING
+        coEvery { pairConfigLoader.load(VALID.ETH_USDT, OrderDirection.BID) } returns VALID.PAIR_CONFIG
+        coEvery {
+            accountantApiProxy.canCreateOrder(
+                VALID.CREATE_ORDER_REQUEST_BID_IOC_BUDGET_MARKET.uuid!!,
+                VALID.USDT,
+                VALID.CREATE_ORDER_REQUEST_BID_IOC_BUDGET_MARKET.totalBudget!!
+            )
+        } returns true
+        coEvery { orderRequestEventSubmitter.submit(any()) } returns OrderSubmitResult(null)
+        coEvery { kafkaHealthIndicator.isHealthy } returns true
+    }
+
+    private fun stubASKWithIOCBudgetMarket() {
+        coEvery { pairSettingService.load(VALID.ETH_USDT) } returns VALID.PAIR_SETTING
+        coEvery { pairConfigLoader.load(VALID.ETH_USDT, OrderDirection.ASK) } returns VALID.PAIR_CONFIG
+        coEvery {
+            accountantApiProxy.canCreateOrder(
+                VALID.CREATE_ORDER_REQUEST_ASK_IOC_BUDGET_MARKET.uuid!!,
+                VALID.ETH,
+                VALID.CREATE_ORDER_REQUEST_ASK_IOC_BUDGET_MARKET.totalBudget!!
+            )
+        } returns true
+        coEvery { orderRequestEventSubmitter.submit(any()) } returns OrderSubmitResult(null)
+        coEvery { kafkaHealthIndicator.isHealthy } returns true
+    }
+
+    private fun stubASKWithIOCBudgetLimit() {
+        coEvery { pairSettingService.load(VALID.ETH_USDT) } returns VALID.PAIR_SETTING
+        coEvery { pairConfigLoader.load(VALID.ETH_USDT, OrderDirection.ASK) } returns VALID.PAIR_CONFIG
+        coEvery {
+            accountantApiProxy.canCreateOrder(
+                VALID.CREATE_ORDER_REQUEST_ASK_IOC_BUDGET_LIMIT.uuid!!,
+                VALID.ETH,
+                VALID.CREATE_ORDER_REQUEST_ASK_IOC_BUDGET_LIMIT.totalBudget!!
+            )
+        } returns true
+        coEvery { orderRequestEventSubmitter.submit(any()) } returns OrderSubmitResult(null)
+        coEvery { kafkaHealthIndicator.isHealthy } returns true
     }
 
     @Test
@@ -194,4 +237,93 @@ private class OrderServiceTest {
             }
         }.isNotInstanceOf(MockKException::class.java)
     }
+
+    @Test
+    fun givenPair_whenSubmitNewOrderByBIDWithIOCBudgetMarket_thenOrderSubmitResult(): Unit = runBlocking {
+        stubBIDWithIOCBudgetMarket()
+
+        val orderSubmitResult = orderService.submitNewOrder(VALID.CREATE_ORDER_REQUEST_BID_IOC_BUDGET_MARKET)
+
+        assertThat(orderSubmitResult).isNotNull
+    }
+
+    @Test
+    fun givenPair_whenSubmitNewOrderByBIDWithIOCBudgetAndInvalidBudget_thenThrow(): Unit = runBlocking {
+        stubBIDWithIOCBudgetMarket()
+
+        // Test with budget below minimum
+        assertThatThrownBy {
+            runBlocking {
+                orderService.submitNewOrder(VALID.CREATE_ORDER_REQUEST_BID_IOC_BUDGET_MARKET.copy(
+                    totalBudget = BigDecimal.valueOf(0.00000001) // Below minimum
+                ))
+            }
+        }.isInstanceOf(OpexException::class.java)
+            .hasMessageContaining("Invalid quantity")
+
+        // Test with budget above maximum
+        assertThatThrownBy {
+            runBlocking {
+                orderService.submitNewOrder(VALID.CREATE_ORDER_REQUEST_BID_IOC_BUDGET_MARKET.copy(
+                    totalBudget = BigDecimal.valueOf(1000000) // Above maximum
+                ))
+            }
+        }.isInstanceOf(OpexException::class.java)
+            .hasMessageContaining("Invalid quantity")
+    }
+
+    @Test
+    fun givenPair_whenSubmitNewOrderByASKWithIOCBudgetMarket_thenOrderSubmitResult(): Unit = runBlocking {
+        stubASKWithIOCBudgetMarket()
+
+        val orderSubmitResult = orderService.submitNewOrder(VALID.CREATE_ORDER_REQUEST_ASK_IOC_BUDGET_MARKET)
+
+        assertThat(orderSubmitResult).isNotNull
+    }
+
+    @Test
+    fun givenPair_whenSubmitNewOrderByASKWithIOCBudgetLimit_thenOrderSubmitResult(): Unit = runBlocking {
+        stubASKWithIOCBudgetLimit()
+
+        val orderSubmitResult = orderService.submitNewOrder(VALID.CREATE_ORDER_REQUEST_ASK_IOC_BUDGET_LIMIT)
+
+        assertThat(orderSubmitResult).isNotNull
+    }
+
+    @Test
+    fun givenPair_whenSubmitNewOrderByBIDWithIOCBudgetAndPriceSet_thenThrow(): Unit = runBlocking {
+        stubBIDWithIOCBudgetMarket()
+
+        assertThatThrownBy {
+            runBlocking {
+                orderService.submitNewOrder(VALID.CREATE_ORDER_REQUEST_BID_IOC_BUDGET_MARKET.copy(price = BigDecimal.valueOf(3000)))
+            }
+        }.isInstanceOf(IllegalArgumentException::class.java)
+    }
+
+    @Test
+    fun givenPair_whenSubmitNewOrderByASKWithIOCBudgetLimitAndNoPrice_thenThrow(): Unit = runBlocking {
+        stubASKWithIOCBudgetLimit()
+
+        assertThatThrownBy {
+            runBlocking {
+                orderService.submitNewOrder(VALID.CREATE_ORDER_REQUEST_ASK_IOC_BUDGET_LIMIT.copy(price = null))
+            }
+        }.isInstanceOf(IllegalArgumentException::class.java)
+    }
+
+    @Test
+    fun givenPair_whenSubmitNewOrderByASKWithIOCBudgetMarketAndPriceSet_thenThrow(): Unit = runBlocking {
+        stubASKWithIOCBudgetMarket()
+
+        assertThatThrownBy {
+            runBlocking {
+                orderService.submitNewOrder(VALID.CREATE_ORDER_REQUEST_ASK_IOC_BUDGET_MARKET.copy(price = BigDecimal.valueOf(3000)))
+            }
+        }.isInstanceOf(IllegalArgumentException::class.java)
+    }
+
+
+
+
 }

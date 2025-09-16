@@ -8,10 +8,11 @@ import java.math.BigDecimal
 data class CreateOrderRequest(
     var uuid: String?,
     val pair: String,
-    val price: BigDecimal,
+    val price: BigDecimal?,
     val quantity: BigDecimal,
     val direction: OrderDirection,
     val matchConstraint: MatchConstraint,
     val orderType: OrderType,
-    val userLevel: String
+    val userLevel: String,
+    val totalBudget: BigDecimal?
 )

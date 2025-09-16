@@ -82,7 +82,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                     )
                 }
                 // try to match instantly
-                val queueOrder = matchInstantly(order)
+                val queueOrder = matchGtcInstantly(order)
                 // if remained quantity > 0 add to queue
                 if (queueOrder.filledQuantity != queueOrder.quantity) {
                     putGtcInQueue(queueOrder)
@@ -146,8 +146,8 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                                 orderCommand.uuid,
                                 queueOrder.id!!,
                                 orderCommand.pair,
-                                order.price,
-                                order.quantity,
+                                order.price!!,
+                                order.quantity!!,
                                 order.remainedQuantity(),
                                 order.direction,
                                 order.matchConstraint,
@@ -338,14 +338,14 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                     EventDispatcher.emit(
                         UpdatedOrderEvent(
                             orderCommand.ouid, orderCommand.uuid,
-                            order.id!!, orderCommand.pair, order.price, order.quantity,
+                            order.id!!, orderCommand.pair, order.price!!, order.quantity!!,
                             orderCommand.price, orderCommand.quantity, order.remainedQuantity(),
                             order.direction, order.matchConstraint, order.orderType
                         )
                     )
                 }
                 // try to match instantly
-                val queueOrder = matchInstantly(newOrder)
+                val queueOrder = matchGtcInstantly(newOrder)
                 //if remained quantity > 0 add to queue
                 if (queueOrder.filledQuantity != queueOrder.quantity) {
                     putGtcInQueue(queueOrder)
@@ -353,50 +353,6 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                 EventDispatcher.emit(OrderBookPublishedEvent(persistent()))
                 queueOrder
             }
-
-            MatchConstraint.IOC -> {
-                if (!replayMode) {
-                    EventDispatcher.emit(
-                        UpdatedOrderEvent(
-                            orderCommand.ouid,
-                            orderCommand.uuid,
-                            order.id!!,
-                            orderCommand.pair,
-                            order.price,
-                            order.quantity,
-                            orderCommand.price,
-                            orderCommand.quantity,
-                            order.remainedQuantity(),
-                            order.direction,
-                            order.matchConstraint,
-                            order.orderType
-                        )
-                    )
-                }
-                // try to match instantly
-                val queueOrder = matchIocInstantly(newOrder)
-                if (!replayMode) {
-                    if (queueOrder.filledQuantity != queueOrder.quantity) {
-                        EventDispatcher.emit(
-                            CancelOrderEvent(
-                                orderCommand.ouid,
-                                orderCommand.uuid,
-                                queueOrder.id!!,
-                                orderCommand.pair,
-                                order.price,
-                                order.quantity,
-                                order.remainedQuantity(),
-                                order.direction,
-                                order.matchConstraint,
-                                order.orderType
-                            )
-                        )
-                    }
-                }
-                EventDispatcher.emit(OrderBookPublishedEvent(persistent()))
-                queueOrder
-            }
-
             else -> {
                 if (!replayMode) {
                     EventDispatcher.emit(
@@ -442,16 +398,16 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
             setBestOrder(bestOrder.worse)
     }
 
-    private fun matchInstantly(order: SimpleOrder): SimpleOrder {
+    private fun matchGtcInstantly(order: SimpleOrder): SimpleOrder {
         if (order.direction == OrderDirection.BID) {
-            return matchInstantly(order, bestAskOrder, askOrders, { makerPrice: Long ->
-                makerPrice <= order.price
+            return matchGtcInstantly(order, bestAskOrder, askOrders, { makerPrice: Long ->
+                makerPrice <= order.price!!
             }) { newMakerOrder: SimpleOrder? ->
                 bestAskOrder = newMakerOrder
             }
         } else {
-            return matchInstantly(order, bestBidOrder, bidOrders, { makerPrice: Long ->
-                makerPrice >= order.price
+            return matchGtcInstantly(order, bestBidOrder, bidOrders, { makerPrice: Long ->
+                makerPrice >= order.price!!
             }) { newMakerOrder: SimpleOrder? ->
                 bestBidOrder = newMakerOrder
             }
@@ -460,15 +416,15 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
 
     private fun matchIocInstantly(order: SimpleOrder): SimpleOrder {
         if (order.direction == OrderDirection.BID) {
-            return matchInstantly(order, bestAskOrder, askOrders, { makerPrice: Long ->
-                order.orderType == OrderType.MARKET_ORDER || makerPrice <= order.price
+            return matchGtcInstantly(order, bestAskOrder, askOrders, { makerPrice: Long ->
+                order.orderType == OrderType.MARKET_ORDER || makerPrice <= order.price!!
 
             }) { newMakerOrder: SimpleOrder? ->
                 bestAskOrder = newMakerOrder
             }
         } else {
-            return matchInstantly(order, bestBidOrder, bidOrders, { makerPrice: Long ->
-                order.orderType == OrderType.MARKET_ORDER || makerPrice >= order.price
+            return matchGtcInstantly(order, bestBidOrder, bidOrders, { makerPrice: Long ->
+                order.orderType == OrderType.MARKET_ORDER || makerPrice >= order.price!!
             }) { newMakerOrder: SimpleOrder? ->
                 bestBidOrder = newMakerOrder
             }
@@ -491,7 +447,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
         }
     }
 
-    private fun matchInstantly(
+    private fun matchGtcInstantly(
         order: SimpleOrder,
         makerOrder: SimpleOrder?,
         queue: LongAdaptiveRadixTreeMap<Bucket>,
@@ -499,7 +455,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
         setNewMarkerOrder: (SimpleOrder?) -> Unit
     ): SimpleOrder {
         //the best sell price is higher the requested buy price, so no instant match
-        if (makerOrder == null || !isPriceMatched(makerOrder.price)) {
+        if (makerOrder == null || !isPriceMatched(makerOrder.price!!)) {
             return order
         }
         var currentMaker = makerOrder
@@ -508,10 +464,10 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
             var instantMatchQuantity = order.remainedQuantity()
                 .coerceAtMost(currentMaker!!.remainedQuantity())
             if ( order.totalBudget != null ){
-                val instantBudgetMatched = (order.totalBudget - order.spentBudget)/currentMaker.price
+                val instantBudgetMatched = (order.totalBudget - order.spentBudget)/currentMaker.price!!
                 if ( instantBudgetMatched < instantMatchQuantity )
                     instantMatchQuantity = instantBudgetMatched
-                order.spentBudget += instantMatchQuantity * currentMaker.price
+                order.spentBudget += instantMatchQuantity * currentMaker.price!!
             }
             order.filledQuantity += instantMatchQuantity
             currentMaker.filledQuantity += instantMatchQuantity
@@ -526,14 +482,14 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                         order.id
                             ?: 0,
                         order.direction,
-                        order.price,
+                        order.price ?: makerOrder.price,
                         order.remainedQuantity(),
                         currentMaker.ouid,
                         currentMaker.uuid,
                         currentMaker.id!!,
                         currentMaker.direction,
-                        currentMaker.price,
-                        currentMaker.remainedQuantity(),
+                        currentMaker.price!!,
+                        currentMaker.remainedQuantity()!!,
                         instantMatchQuantity
                     )
                 )
@@ -548,7 +504,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
             //remove the makerOrder
             orders.remove(currentMaker.id!!)
             if (currentMaker == lastOrderOfMakerBucket) {
-                queue.remove(currentMaker.price)
+                queue.remove(currentMaker.price!!)
                 if (currentMaker.worse != null)
                     lastOrderOfMakerBucket = currentMaker.worse!!.bucket!!.lastOrder
             }
@@ -556,7 +512,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
             currentMaker = currentMaker.worse
         } while (order.remainedQuantity() > 0
             && currentMaker != null
-            && isPriceMatched(currentMaker.price)
+            && isPriceMatched(currentMaker.price!!)
         )
         if (currentMaker != null) {
             currentMaker.better = null
@@ -576,7 +532,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
         if (order.id == null)
             order.id = orderCounter.incrementAndGet()
         orders[order.id!!] = order
-        var bucket = queue[order.price]
+        var bucket = queue[order.price!!]
         if (bucket != null) {
             bucket.ordersCount++
             bucket.totalQuantity += order.remainedQuantity()

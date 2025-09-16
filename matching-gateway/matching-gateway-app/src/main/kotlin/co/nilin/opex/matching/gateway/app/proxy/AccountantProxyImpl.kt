@@ -18,7 +18,7 @@ class AccountantProxyImpl(
     private val webClient: WebClient
 ) : AccountantApiProxy {
 
-    override suspend fun canCreateOrder(uuid: String, symbol: String, value: BigDecimal): Boolean {
+    override suspend fun canCreateOrder(uuid: String, symbol: String, value: BigDecimal?): Boolean {
         return webClient.get()
             .uri("$accountantBaseUrl/$uuid/create_order/${value}_${symbol}/allowed")
             .header("Content-Type", "application/json")

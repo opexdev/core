@@ -4,7 +4,7 @@ data class SimpleOrder(
     var id: Long?,
     val ouid: String,
     val uuid: String,
-    val price: Long,
+    val price: Long?,
     val quantity: Long,
     val totalBudget: Long?,
     val matchConstraint: MatchConstraint,

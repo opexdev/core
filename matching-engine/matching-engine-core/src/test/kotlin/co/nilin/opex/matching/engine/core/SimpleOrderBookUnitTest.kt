@@ -77,9 +77,9 @@ class SimpleOrderBookUnitTest {
         Assertions.assertEquals(orderBook.bestBidOrder, bestBidOrder)
         Assertions.assertEquals(bestBidOrder!!.worse, order)
         Assertions.assertEquals(order.better, bestBidOrder)
-        Assertions.assertEquals(orderBook.bidOrders.get(order.price).lastOrder, order)
-        Assertions.assertEquals(orderBook.bidOrders.get(order.price).totalQuantity, 2)
-        Assertions.assertEquals(orderBook.bidOrders.get(order.price).ordersCount, 2)
+        Assertions.assertEquals(orderBook.bidOrders.get(order.price!!).lastOrder, order)
+        Assertions.assertEquals(orderBook.bidOrders.get(order.price!!).totalQuantity, 2)
+        Assertions.assertEquals(orderBook.bidOrders.get(order.price!!).ordersCount, 2)
     }
 
     @Test
@@ -118,9 +118,9 @@ class SimpleOrderBookUnitTest {
         Assertions.assertEquals(orderBook.bestBidOrder, bestBidOrder)
         Assertions.assertEquals(bestBidOrder!!.worse, order)
         Assertions.assertEquals(order.better, bestBidOrder)
-        Assertions.assertEquals(orderBook.bidOrders.get(order.price).lastOrder, order)
-        Assertions.assertEquals(orderBook.bidOrders.get(order.price).totalQuantity, 1)
-        Assertions.assertEquals(orderBook.bidOrders.get(order.price).ordersCount, 1)
+        Assertions.assertEquals(orderBook.bidOrders.get(order.price!!).lastOrder, order)
+        Assertions.assertEquals(orderBook.bidOrders.get(order.price!!).totalQuantity, 1)
+        Assertions.assertEquals(orderBook.bidOrders.get(order.price!!).ordersCount, 1)
     }
 
     @Test
@@ -159,9 +159,9 @@ class SimpleOrderBookUnitTest {
         Assertions.assertEquals(orderBook.bestBidOrder, order)
         Assertions.assertEquals(bestBidOrder!!.better, order)
         Assertions.assertEquals(order.worse, bestBidOrder)
-        Assertions.assertEquals(orderBook.bidOrders.get(order.price).lastOrder, order)
-        Assertions.assertEquals(orderBook.bidOrders.get(order.price).totalQuantity, 1)
-        Assertions.assertEquals(orderBook.bidOrders.get(order.price).ordersCount, 1)
+        Assertions.assertEquals(orderBook.bidOrders.get(order.price!!).lastOrder, order)
+        Assertions.assertEquals(orderBook.bidOrders.get(order.price!!).totalQuantity, 1)
+        Assertions.assertEquals(orderBook.bidOrders.get(order.price!!).ordersCount, 1)
     }
 
     @Test
