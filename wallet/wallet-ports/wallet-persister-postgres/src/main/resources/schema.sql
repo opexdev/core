@@ -503,6 +503,39 @@ CREATE TABLE IF NOT EXISTS quote_currency
 
 DO
 $$
+    BEGIN
+        IF EXISTS (
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_name = 'quote_currency' AND column_name = 'is_active'
+        ) THEN
+            ALTER TABLE quote_currency RENAME COLUMN is_active TO is_reference;
+        END IF;
+
+        IF NOT EXISTS (
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_name = 'quote_currency' AND column_name = 'display_order'
+        ) THEN
+            ALTER TABLE quote_currency ADD COLUMN display_order INTEGER;
+        END IF;
+    END
+$$;
+
+
+DO
+$$
+    BEGIN
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'currency' AND column_name = 'max_order') THEN ALTER TABLE currency
+            ADD COLUMN max_order DECIMAL;
+        END IF;
+    END
+$$;
+
+DO
+$$
 BEGIN
         IF NOT EXISTS (SELECT 1
                        FROM information_schema.columns

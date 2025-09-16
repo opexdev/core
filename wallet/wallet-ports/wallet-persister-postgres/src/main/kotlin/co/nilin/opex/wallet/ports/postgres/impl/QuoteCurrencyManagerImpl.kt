@@ -14,11 +14,11 @@ class QuoteCurrencyManagerImpl(
     private val quoteCurrencyRepository: QuoteCurrencyRepository
 ) : QuoteCurrencyManager {
 
-    override suspend fun getAll(isActive: Boolean?): List<QuoteCurrency> {
-        return quoteCurrencyRepository.findAllByActive(isActive).toList()
+    override suspend fun getAll(isReference: Boolean?): List<QuoteCurrency> {
+        return quoteCurrencyRepository.findAllByReference(isReference).toList()
     }
 
-    override suspend fun update(currency: String, isActive: Boolean) {
+    override suspend fun update(currency: String, isActive: Boolean, displayOrder: Int) {
         quoteCurrencyRepository.findByCurrency(currency).awaitFirstOrNull()?.let { quoteCurrency ->
             quoteCurrencyRepository.save(
                 QuoteCurrencyModel(
@@ -26,6 +26,7 @@ class QuoteCurrencyManagerImpl(
                     currency,
                     isActive,
                     LocalDateTime.now(),
+                    displayOrder
                 )
             ).awaitFirstOrNull()
         }

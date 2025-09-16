@@ -47,7 +47,7 @@ class QuoteCurrencyInitializer(
                     val existing = quoteCurrencyRepository.findByCurrency(quote).awaitFirstOrNull()
                     if (existing == null) {
                         quoteCurrencyRepository.save(
-                            QuoteCurrencyModel(null, quote, false, LocalDateTime.now())
+                            QuoteCurrencyModel(null, quote, false, LocalDateTime.now(),null)
                         ).awaitFirstOrNull()
                         logger.info("Quote currency inserted: $quote")
                     }
