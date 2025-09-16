@@ -27,7 +27,7 @@ internal class FeeCalculatorImplTest {
         userVolumePersister,
         cacheManager,
         receiverAddress,
-        "GMT+03:30",
+        "+03:30",
         "USDT",
         JsonMapperTestImpl(),
     )
