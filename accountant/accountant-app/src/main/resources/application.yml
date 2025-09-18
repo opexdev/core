@@ -16,12 +16,13 @@ spring:
     password: ${dbpassword:hiopex}
     initialization-mode: always
     pool:
-      #max-idle-time: 5m
-      #max-life-time: 5m
-      #max-acquire-time: 5m
-      initial-size: 10
+      initial-size: 5
       max-size: 32
-      validation-query: select 1
+      max-idle-time: 10m
+      max-life-time: 30m
+      max-acquire-time: 10s
+      max-create-connection-time: 10s
+      validation-query: SELECT 1
   cloud:
     bootstrap:
       enabled: true
