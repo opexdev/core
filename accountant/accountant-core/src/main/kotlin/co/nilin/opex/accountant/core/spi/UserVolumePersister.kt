@@ -15,4 +15,10 @@ interface UserVolumePersister {
     )
 
     suspend fun getUserTotalTradeVolume(uuid: String, startDate: LocalDate, quoteCurrency: String): BigDecimal?
+    suspend fun getUserTotalTradeVolumeByCurrency(
+        uuid: String,
+        currency: String,
+        startDate: LocalDate,
+        quoteCurrency: String
+    ): BigDecimal?
 }

@@ -56,5 +56,5 @@ app:
       delay-seconds: 5
       delay-multiplier: 3
   zone-offset: +03:30
-  trade-volume-calculation-currency: USDT #Rename?
-  withdraw-volume-calculation-currency: USDT #Rename?
+  trade-volume-calculation-currency: USDT
+  withdraw-volume-calculation-currency: USDT

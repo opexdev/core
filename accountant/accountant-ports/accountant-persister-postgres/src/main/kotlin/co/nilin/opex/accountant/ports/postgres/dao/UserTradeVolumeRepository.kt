@@ -43,4 +43,19 @@ interface UserTradeVolumeRepository : ReactiveCrudRepository<UserTradeVolumeMode
         startDate: LocalDate,
         quoteCurrency: String
     ): Mono<BigDecimal>
+
+    @Query(
+        """
+        select sum(total_amount) as total_amount
+        from user_trade_volume 
+        where user_id = :userId and date >= :startDate and quote_currency = :quoteCurrency and currency = :currency
+        group by user_id
+    """
+    )
+    fun findTotalValueByUserAndAndDateAfterAndCurrency(
+        userId: String,
+        currency: String,
+        startDate: LocalDate,
+        quoteCurrency: String
+    ): Mono<BigDecimal>
 }
