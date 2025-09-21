@@ -18,6 +18,16 @@ data class SimpleOrder(
 ) : Order {
 
     fun remainedQuantity() = quantity - filledQuantity
+    fun totalBudgetConditionMet() =
+        if ( totalBudget == null ){
+            true
+        } else {
+            if (direction == OrderDirection.ASK ){
+                spentBudget >= totalBudget
+            } else {
+                spentBudget == totalBudget
+            }
+        }
 
     override fun id(): Long? = id
 

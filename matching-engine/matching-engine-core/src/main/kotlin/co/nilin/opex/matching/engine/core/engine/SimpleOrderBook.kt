@@ -5,6 +5,7 @@ import co.nilin.opex.matching.engine.core.eventh.events.*
 import co.nilin.opex.matching.engine.core.inout.*
 import co.nilin.opex.matching.engine.core.model.*
 import exchange.core2.collections.art.LongAdaptiveRadixTreeMap
+import kotlin.math.ceil
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
@@ -29,8 +30,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
         logNewOrder(orderCommand)
         val order = when (orderCommand.matchConstraint) {
             MatchConstraint.GTC -> {
-                if (orderCommand.orderType == OrderType.MARKET_ORDER
-                    || orderCommand.totalBudget != null) {
+                if (orderCommand.orderType == OrderType.MARKET_ORDER) {
                     if (!replayMode) {
                         EventDispatcher.emit(
                             RejectOrderEvent(
@@ -43,7 +43,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                                 orderCommand.matchConstraint,
                                 orderCommand.orderType,
                                 RequestedOperation.PLACE_ORDER,
-                                if (orderCommand.totalBudget != null ) RejectReason.ORDER_PARAM_NOT_MATCH else RejectReason.ORDER_TYPE_NOT_MATCHED
+                                if (orderCommand.totalBudget != null) RejectReason.ORDER_PARAM_NOT_MATCH else RejectReason.ORDER_TYPE_NOT_MATCHED
                             )
                         )
                     }
@@ -82,7 +82,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                     )
                 }
                 // try to match instantly
-                val queueOrder = matchGtcInstantly(order)
+                val queueOrder = matchInstantly(order)
                 // if remained quantity > 0 add to queue
                 if (queueOrder.filledQuantity != queueOrder.quantity) {
                     putGtcInQueue(queueOrder)
@@ -91,7 +91,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
             }
 
             MatchConstraint.IOC -> {
-                if (orderCommand.totalBudget != null){
+                if (orderCommand.totalBudget != null) {
                     if (!replayMode) {
                         EventDispatcher.emit(
                             RejectOrderEvent(
@@ -137,7 +137,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                     )
                 }
                 // try to match instantly
-                val queueOrder = matchIocInstantly(order)
+                val queueOrder = matchInstantly(order)
                 if (!replayMode) {
                     if (queueOrder.filledQuantity != queueOrder.quantity) {
                         EventDispatcher.emit(
@@ -160,6 +160,25 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
             }
 
             MatchConstraint.IOC_BUDGET -> {
+                if (orderCommand.totalBudget == null) {
+                    if (!replayMode) {
+                        EventDispatcher.emit(
+                            RejectOrderEvent(
+                                orderCommand.ouid,
+                                orderCommand.uuid,
+                                orderCommand.pair,
+                                orderCommand.price,
+                                orderCommand.quantity,
+                                orderCommand.direction,
+                                orderCommand.matchConstraint,
+                                orderCommand.orderType,
+                                RequestedOperation.PLACE_ORDER,
+                                RejectReason.ORDER_PARAM_NOT_MATCH
+                            )
+                        )
+                    }
+                    return null
+                }
                 val order = SimpleOrder(
                     orderCounter.incrementAndGet(),
                     orderCommand.ouid,
@@ -187,7 +206,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                     )
                 }
                 // try to match instantly
-                val queueOrder = matchIocInstantly(order)
+                val queueOrder = matchIocBudgetInstantly(order)
                 if (!replayMode) {
                     if (queueOrder.filledQuantity != queueOrder.quantity) {
                         EventDispatcher.emit(
@@ -345,7 +364,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                     )
                 }
                 // try to match instantly
-                val queueOrder = matchGtcInstantly(newOrder)
+                val queueOrder = matchInstantly(newOrder)
                 //if remained quantity > 0 add to queue
                 if (queueOrder.filledQuantity != queueOrder.quantity) {
                     putGtcInQueue(queueOrder)
@@ -353,6 +372,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                 EventDispatcher.emit(OrderBookPublishedEvent(persistent()))
                 queueOrder
             }
+
             else -> {
                 if (!replayMode) {
                     EventDispatcher.emit(
@@ -398,35 +418,43 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
             setBestOrder(bestOrder.worse)
     }
 
-    private fun matchGtcInstantly(order: SimpleOrder): SimpleOrder {
+    private fun matchInstantly(order: SimpleOrder): SimpleOrder {
         if (order.direction == OrderDirection.BID) {
-            return matchGtcInstantly(order, bestAskOrder, askOrders, { makerPrice: Long ->
-                makerPrice <= order.price!!
+            return matchInstantly(order, bestAskOrder, askOrders, { makerPrice: Long ->
+                order.orderType == OrderType.MARKET_ORDER || makerPrice <= order.price!!
             }) { newMakerOrder: SimpleOrder? ->
                 bestAskOrder = newMakerOrder
             }
         } else {
-            return matchGtcInstantly(order, bestBidOrder, bidOrders, { makerPrice: Long ->
-                makerPrice >= order.price!!
+            return matchInstantly(order, bestBidOrder, bidOrders, { makerPrice: Long ->
+                order.orderType == OrderType.MARKET_ORDER || makerPrice >= order.price!!
             }) { newMakerOrder: SimpleOrder? ->
                 bestBidOrder = newMakerOrder
             }
         }
     }
 
-    private fun matchIocInstantly(order: SimpleOrder): SimpleOrder {
+    private fun matchIocBudgetInstantly(order: SimpleOrder): SimpleOrder {
         if (order.direction == OrderDirection.BID) {
-            return matchGtcInstantly(order, bestAskOrder, askOrders, { makerPrice: Long ->
-                order.orderType == OrderType.MARKET_ORDER || makerPrice <= order.price!!
-
-            }) { newMakerOrder: SimpleOrder? ->
+            return matchIocBudgetInstantly(order, bestAskOrder, askOrders) { newMakerOrder: SimpleOrder? ->
                 bestAskOrder = newMakerOrder
             }
         } else {
-            return matchGtcInstantly(order, bestBidOrder, bidOrders, { makerPrice: Long ->
-                order.orderType == OrderType.MARKET_ORDER || makerPrice >= order.price!!
-            }) { newMakerOrder: SimpleOrder? ->
-                bestBidOrder = newMakerOrder
+            var dryCopy = this.copy()
+            dryCopy.replayMode = true
+            var dryResult = dryCopy.matchIocBudgetInstantly(order, dryCopy.bestBidOrder, dryCopy.bidOrders) { newMakerOrder: SimpleOrder? ->
+                dryCopy.bestBidOrder = newMakerOrder
+            }
+            if ( dryResult.totalBudgetConditionMet()) {
+                return matchIocBudgetInstantly(order, bestBidOrder, bidOrders) { newMakerOrder: SimpleOrder? ->
+                    bestBidOrder = newMakerOrder
+                }
+            } else {
+                return SimpleOrder(dryResult.id, dryResult.ouid
+                , dryResult.uuid, dryResult.price, dryResult.quantity
+                , dryResult.totalBudget, dryResult.matchConstraint,
+                    dryResult.orderType, dryResult.direction,
+                    0L, 0L, null, null, null)
             }
         }
     }
@@ -447,28 +475,36 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
         }
     }
 
-    private fun matchGtcInstantly(
+    private fun matchIocBudgetInstantly(
         order: SimpleOrder,
         makerOrder: SimpleOrder?,
         queue: LongAdaptiveRadixTreeMap<Bucket>,
-        isPriceMatched: (makerPrice: Long) -> Boolean,
         setNewMarkerOrder: (SimpleOrder?) -> Unit
     ): SimpleOrder {
         //the best sell price is higher the requested buy price, so no instant match
-        if (makerOrder == null || !isPriceMatched(makerOrder.price!!)) {
+        if (makerOrder == null) {
             return order
         }
+
         var currentMaker = makerOrder
         var lastOrderOfMakerBucket = makerOrder.bucket!!.lastOrder
         do {
-            var instantMatchQuantity = order.remainedQuantity()
-                .coerceAtMost(currentMaker!!.remainedQuantity())
-            if ( order.totalBudget != null ){
-                val instantBudgetMatched = (order.totalBudget - order.spentBudget)/currentMaker.price!!
-                if ( instantBudgetMatched < instantMatchQuantity )
-                    instantMatchQuantity = instantBudgetMatched
-                order.spentBudget += instantMatchQuantity * currentMaker.price!!
+            var instantMatchQuantity: Long
+
+            var instantBudgetMatched: Long
+            if (order.direction == OrderDirection.ASK) {
+                instantBudgetMatched = ceil(
+                    (order.totalBudget!!.toDouble() - order.spentBudget.toDouble())
+                            / currentMaker!!.price!!.toDouble()
+                ).toLong()
+            } else {
+                instantBudgetMatched = (order.totalBudget!! - order.spentBudget) / currentMaker!!.price!!
             }
+            instantMatchQuantity = currentMaker.quantity
+            if (instantBudgetMatched < instantMatchQuantity)
+                instantMatchQuantity = instantBudgetMatched
+            order.spentBudget += instantMatchQuantity * currentMaker.price!!
+
             order.filledQuantity += instantMatchQuantity
             currentMaker.filledQuantity += instantMatchQuantity
             currentMaker.bucket!!.totalQuantity -= instantMatchQuantity
@@ -482,7 +518,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                         order.id
                             ?: 0,
                         order.direction,
-                        order.price ?: makerOrder.price,
+                        currentMaker.price!!,
                         order.remainedQuantity(),
                         currentMaker.ouid,
                         currentMaker.uuid,
@@ -510,7 +546,77 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
             }
 
             currentMaker = currentMaker.worse
-        } while (order.remainedQuantity() > 0
+        } while (
+            !order.totalBudgetConditionMet()
+            && currentMaker != null
+        )
+        if (currentMaker != null) {
+            currentMaker.better = null
+        }
+        setNewMarkerOrder(currentMaker)
+        return order
+
+    }
+
+    private fun matchInstantly(
+        order: SimpleOrder,
+        makerOrder: SimpleOrder?,
+        queue: LongAdaptiveRadixTreeMap<Bucket>,
+        isPriceMatched: (makerPrice: Long) -> Boolean,
+        setNewMarkerOrder: (SimpleOrder?) -> Unit
+    ): SimpleOrder {
+        //the best sell price is higher the requested buy price, so no instant match
+        if (makerOrder == null || !isPriceMatched(makerOrder.price!!)) {
+            return order
+        }
+        var currentMaker = makerOrder
+        var lastOrderOfMakerBucket = makerOrder.bucket!!.lastOrder
+        do {
+            var instantMatchQuantity = order.remainedQuantity()
+                .coerceAtMost(currentMaker!!.remainedQuantity())
+
+            order.filledQuantity += instantMatchQuantity
+            currentMaker.filledQuantity += instantMatchQuantity
+            currentMaker.bucket!!.totalQuantity -= instantMatchQuantity
+            if (!replayMode) {
+                EventDispatcher.emit(
+                    TradeEvent(
+                        tradeCounter.incrementAndGet(),
+                        pair,
+                        order.ouid,
+                        order.uuid,
+                        order.id
+                            ?: 0,
+                        order.direction,
+                        order.price!!,
+                        order.remainedQuantity(),
+                        currentMaker.ouid,
+                        currentMaker.uuid,
+                        currentMaker.id!!,
+                        currentMaker.direction,
+                        currentMaker.price!!,
+                        currentMaker.remainedQuantity()!!,
+                        instantMatchQuantity
+                    )
+                )
+            }
+            if (currentMaker.remainedQuantity() == 0L) {
+                currentMaker.bucket!!.ordersCount--
+            }
+            //create trade with instantMatchQuantity
+            if (currentMaker.remainedQuantity() > 0) {
+                break
+            }
+            //remove the makerOrder
+            orders.remove(currentMaker.id!!)
+            if (currentMaker == lastOrderOfMakerBucket) {
+                queue.remove(currentMaker.price!!)
+                if (currentMaker.worse != null)
+                    lastOrderOfMakerBucket = currentMaker.worse!!.bucket!!.lastOrder
+            }
+
+            currentMaker = currentMaker.worse
+        } while ((order.remainedQuantity() > 0)
             && currentMaker != null
             && isPriceMatched(currentMaker.price!!)
         )
@@ -652,6 +758,73 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
             ********************************************
             
         """.trimIndent()
+        )
+    }
+
+    fun copy(): SimpleOrderBook {
+        val newOrderBook = SimpleOrderBook(pair, replayMode)
+
+        // Copy atomic counters
+        newOrderBook.orderCounter.set(orderCounter.get())
+        newOrderBook.tradeCounter.set(tradeCounter.get())
+
+        // Deep copy orders map
+        val ordersCopy = TreeMap<Long, SimpleOrder>()
+        orders.forEach { (id, order) ->
+            ordersCopy[id] = order.copy()
+        }
+        newOrderBook.orders.putAll(ordersCopy)
+
+        // Deep copy ask and bid orders trees
+        copyLongAdaptiveRadixTreeMap(askOrders, newOrderBook.askOrders, ordersCopy)
+        copyLongAdaptiveRadixTreeMap(bidOrders, newOrderBook.bidOrders, ordersCopy)
+
+        // Copy best orders references
+        newOrderBook.bestAskOrder = bestAskOrder?.id?.let { ordersCopy[it] }
+        newOrderBook.bestBidOrder = bestBidOrder?.id?.let { ordersCopy[it] }
+
+        // Copy last order reference
+        newOrderBook.lastOrder = lastOrder?.id?.let { ordersCopy[it] }
+
+        return newOrderBook
+    }
+
+    private fun copyLongAdaptiveRadixTreeMap(
+        original: LongAdaptiveRadixTreeMap<Bucket>,
+        copy: LongAdaptiveRadixTreeMap<Bucket>,
+        ordersCopy: TreeMap<Long, SimpleOrder>
+    ) {
+        original.entriesList().forEach { (price, bucket) ->
+            val newLastOrder = bucket.lastOrder.id?.let { ordersCopy[it] }
+                ?: throw IllegalStateException("Bucket's lastOrder or its ID is null")
+
+            val newBucket = Bucket(
+                price = bucket.price,
+                totalQuantity = bucket.totalQuantity,
+                ordersCount = bucket.ordersCount,
+                lastOrder = newLastOrder
+            )
+            copy.put(price, newBucket)
+        }
+    }
+
+    // Add copy method to SimpleOrder
+    fun SimpleOrder.copy(): SimpleOrder {
+        return SimpleOrder(
+            id = id,
+            ouid = ouid,
+            uuid = uuid,
+            price = price,
+            quantity = quantity,
+            totalBudget = totalBudget,
+            matchConstraint = matchConstraint,
+            orderType = orderType,
+            direction = direction,
+            filledQuantity = filledQuantity,
+            spentBudget = spentBudget,
+            bucket = null, // Will be set when reconstructing the tree
+            better = null, // Will be set when reconstructing the tree
+            worse = null  // Will be set when reconstructing the tree
         )
     }
 }

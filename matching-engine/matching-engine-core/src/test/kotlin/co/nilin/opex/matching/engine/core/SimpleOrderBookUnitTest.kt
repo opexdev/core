@@ -901,7 +901,7 @@ class SimpleOrderBookUnitTest {
                     uuid,
                     pair,
                     0,
-                    3,
+                    0,
                     OrderDirection.ASK,
                     MatchConstraint.IOC_BUDGET,
                     OrderType.MARKET_ORDER,
@@ -984,4 +984,323 @@ class SimpleOrderBookUnitTest {
         Assertions.assertEquals(orderBook.bestBidOrder, bestBidOrder)
     }
 
+    /*
+        Scenario 1: Buy IOC Market Order with Total Budget
+
+    Initial Order Book (Asks):
+
+        Sell Order A: Price = $10, Quantity = 100
+
+        Sell Order B: Price = $12, Quantity = 50
+
+        Sell Order C: Price = $15, Quantity = 200
+
+    New Order:
+    Buy IOC, Total Budget = $800
+
+    Matching Process:
+
+        Match with Sell Order A ($10):
+
+            Cost for 100 shares: $10 × 100 = $1,000 (exceeds budget).
+
+            Maximum affordable quantity: $800 / $10 = 80 shares.
+
+            Cost: $10 × 80 = $800 (fully exhausts budget).
+
+            Result: Partial fill of Sell Order A (80 shares). Remaining quantity in Sell Order A: 20 shares.
+
+        Order is fully filled; no further matching (IOC cancels unfilled portion, but here it is fully filled).
+
+    Order Book After:
+
+        Sell Order A: Price = $10, Quantity = 20
+
+        Sell Order B: Price = $12, Quantity = 50
+
+        Sell Order C: Price = $15, Quantity = 200
+
+         */
+
+    @Test
+    fun givenOrderBookWithScenario1_whenIocBudgetBidMarketOrderWithScenario1Received_thenOutputMatch() {
+        //given
+        val orderBook = SimpleOrderBook(pair, false)
+        listOf(
+            Pair(10L, 100L),
+            Pair(12L, 50L),
+            Pair(15L, 200L)
+        ).forEach { orderData ->
+            orderBook.handleNewOrderCommand(
+                OrderCreateCommand(
+                    UUID.randomUUID().toString(),
+                    uuid,
+                    pair,
+                    orderData.first,
+                    orderData.second,
+                    OrderDirection.ASK,
+                    MatchConstraint.GTC,
+                    OrderType.LIMIT_ORDER
+                )
+            )
+        }
+
+        val bestBidOrder = orderBook.bestBidOrder
+        //when
+        val order: SimpleOrder =
+            orderBook.handleNewOrderCommand(
+                OrderCreateCommand(
+                    UUID.randomUUID().toString(),
+                    uuid,
+                    pair,
+                    0,
+                    0,
+                    OrderDirection.BID,
+                    MatchConstraint.IOC_BUDGET,
+                    OrderType.MARKET_ORDER,
+                    800
+                )
+            ) as SimpleOrder
+        //then
+        Assertions.assertEquals(80, order.filledQuantity)
+        Assertions.assertEquals(800, order.spentBudget)
+        Assertions.assertEquals(0,orderBook.bidOrders.entriesList().size)
+        Assertions.assertEquals(3,orderBook.askOrders.entriesList().size)
+        Assertions.assertNotNull(orderBook.bestAskOrder)
+        Assertions.assertEquals(80, orderBook.bestAskOrder!!.filledQuantity)
+        Assertions.assertEquals(orderBook.bestBidOrder, bestBidOrder)
+    }
+
+    /*
+    Scenario 2: Buy IOC Market Order with Insufficient Liquidity
+
+    Initial Order Book (Asks):
+
+        Sell Order A: Price = $20, Quantity = 30
+
+    New Order:
+    Buy IOC, Total Budget = $1,000
+
+    Matching Process:
+
+        Match with Sell Order A ($20):
+
+            Cost for 30 shares: $20 × 30 = $600 (within budget).
+
+            Remaining budget: $400.
+
+            Result: Fully fill Sell Order A.
+
+        No more asks; the remaining budget $400 is canceled (IOC rule).
+
+    Order Book After:
+    Empty (all asks consumed).
+     */
+    @Test
+    fun givenOrderBookWithScenario2_whenIocBudgetBidMarketOrderWithScenario2Received_thenOutputMatch() {
+        //given
+        val orderBook = SimpleOrderBook(pair, false)
+        listOf(
+            Pair(20L, 30L)
+        ).forEach { orderData ->
+            orderBook.handleNewOrderCommand(
+                OrderCreateCommand(
+                    UUID.randomUUID().toString(),
+                    uuid,
+                    pair,
+                    orderData.first,
+                    orderData.second,
+                    OrderDirection.ASK,
+                    MatchConstraint.GTC,
+                    OrderType.LIMIT_ORDER
+                )
+            )
+        }
+
+        val bestBidOrder = orderBook.bestBidOrder
+        //when
+        val order: SimpleOrder =
+            orderBook.handleNewOrderCommand(
+                OrderCreateCommand(
+                    UUID.randomUUID().toString(),
+                    uuid,
+                    pair,
+                    0,
+                    0,
+                    OrderDirection.BID,
+                    MatchConstraint.IOC_BUDGET,
+                    OrderType.MARKET_ORDER,
+                    1000
+                )
+            ) as SimpleOrder
+        //then
+        Assertions.assertEquals(30, order.filledQuantity)
+        Assertions.assertEquals(600, order.spentBudget)
+        Assertions.assertEquals(0,orderBook.bidOrders.entriesList().size)
+        Assertions.assertEquals(0,orderBook.askOrders.entriesList().size)
+        Assertions.assertNull(orderBook.bestAskOrder)
+        Assertions.assertEquals(orderBook.bestBidOrder, bestBidOrder)
+    }
+
+    /*
+    Scenario 3: Sell IOC Market Order with Total Budget (Minimum Proceeds)
+
+    Initial Order Book (Bids):
+
+        Buy Order X: Price = $18, Quantity = 100
+
+        Buy Order Y: Price = $16, Quantity = 150
+
+        Buy Order Z: Price = $14, Quantity = 200
+
+    New Order:
+    Sell IOC, Total Budget (Minimum Proceeds) = $2,008
+
+    Matching Process:
+
+        Match with Buy Order X ($18):
+
+            Proceeds from 100 shares: $18 × 100 = $1,800.
+
+            Remaining to meet budget: $200.
+
+            Result: Fully fill Buy Order X.
+
+        Match with Buy Order Y ($16):
+
+            Required additional proceeds: $208.
+
+            Quantity needed: $200 / $16 = 13 shares.
+
+            Proceeds: $16 × 13 = $208.
+
+            Result: Partial fill of Buy Order Y (13 shares). Remaining quantity in Buy Order Y: 137 shares.
+
+        Total proceeds = $1,800 + $192 = $2,008 (budget met).
+
+    Order Book After:
+
+        Buy Order Y: Price = $16, Quantity = 137
+
+        Buy Order Z: Price = $14, Quantity = 200
+     */
+
+    @Test
+    fun givenOrderBookWithScenario3_whenIocBudgetAskMarketOrderWithScenario3Received_thenOutputMatch() {
+        //given
+        val orderBook = SimpleOrderBook(pair, false)
+        listOf(
+            Pair(18L, 100L),
+            Pair(16L, 150L),
+            Pair(14L, 200L),
+        ).forEach { orderData ->
+            orderBook.handleNewOrderCommand(
+                OrderCreateCommand(
+                    UUID.randomUUID().toString(),
+                    uuid,
+                    pair,
+                    orderData.first,
+                    orderData.second,
+                    OrderDirection.BID,
+                    MatchConstraint.GTC,
+                    OrderType.LIMIT_ORDER
+                )
+            )
+        }
+
+        val bestBidOrder = orderBook.bestBidOrder
+        //when
+        val order: SimpleOrder =
+            orderBook.handleNewOrderCommand(
+                OrderCreateCommand(
+                    UUID.randomUUID().toString(),
+                    uuid,
+                    pair,
+                    0,
+                    0,
+                    OrderDirection.ASK,
+                    MatchConstraint.IOC_BUDGET,
+                    OrderType.MARKET_ORDER,
+                    2000
+                )
+            ) as SimpleOrder
+        //then
+        Assertions.assertEquals(113, order.filledQuantity)
+        Assertions.assertEquals(2008, order.spentBudget)
+        Assertions.assertEquals(2,orderBook.bidOrders.entriesList().size)
+        Assertions.assertEquals(0,orderBook.askOrders.entriesList().size)
+        Assertions.assertNull(orderBook.bestAskOrder)
+        Assertions.assertEquals(13, orderBook.bestBidOrder!!.filledQuantity)
+        Assertions.assertNotEquals(orderBook.bestBidOrder, bestBidOrder)
+    }
+
+    /*
+
+Scenario 4: Sell IOC Market Order with Budget Not Met
+
+    Initial Order Book (Bids):
+
+        Buy Order X: Price = $5, Quantity = 100
+
+    New Order:
+    Sell IOC, Total Budget (Minimum Proceeds) = $1,000
+
+    Matching Process:
+
+        Match with Buy Order X ($5):
+
+            Maximum proceeds: $5 × 100 = $500 (less than $1,000).
+
+            Result: Order canceled entirely (IOC rule: no partial execution if budget is unmet).
+
+    Order Book After:
+    Unchanged (Buy Order X remains)
+     */
+    @Test
+    fun givenOrderBookWithScenario4_whenIocBudgetAskMarketOrderWithScenario4Received_thenOutputMatch() {
+        //given
+        val orderBook = SimpleOrderBook(pair, false)
+        listOf(
+            Pair(5L, 100L)
+        ).forEach { orderData ->
+            orderBook.handleNewOrderCommand(
+                OrderCreateCommand(
+                    UUID.randomUUID().toString(),
+                    uuid,
+                    pair,
+                    orderData.first,
+                    orderData.second,
+                    OrderDirection.BID,
+                    MatchConstraint.GTC,
+                    OrderType.LIMIT_ORDER
+                )
+            )
+        }
+
+        val bestBidOrder = orderBook.bestBidOrder
+        //when
+        val order: SimpleOrder =
+            orderBook.handleNewOrderCommand(
+                OrderCreateCommand(
+                    UUID.randomUUID().toString(),
+                    uuid,
+                    pair,
+                    0,
+                    0,
+                    OrderDirection.ASK,
+                    MatchConstraint.IOC_BUDGET,
+                    OrderType.MARKET_ORDER,
+                    1000
+                )
+            ) as SimpleOrder
+        //then
+        Assertions.assertEquals(0, order.filledQuantity)
+        Assertions.assertEquals(0, order.spentBudget)
+        Assertions.assertEquals(1,orderBook.bidOrders.entriesList().size)
+        Assertions.assertEquals(0,orderBook.askOrders.entriesList().size)
+        Assertions.assertNull(orderBook.bestAskOrder)
+        Assertions.assertNotNull(orderBook.bestBidOrder)
+        Assertions.assertEquals(0, orderBook.bestBidOrder!!.filledQuantity)
+
+    }
 }
