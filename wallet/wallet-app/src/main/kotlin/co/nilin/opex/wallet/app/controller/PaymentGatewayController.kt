@@ -36,10 +36,6 @@ class PaymentGatewayController(
     @Transactional
     suspend fun paymentDeposit(@RequestBody request: PaymentDepositRequest): PaymentDepositResponse {
         val receiverWalletType = WalletType.MAIN
-//        val convertedAmount = when (request.currency) {
-//            PaymentCurrency.RIALS -> (request.amount / BigDecimal.valueOf(10)).toLong()
-//            PaymentCurrency.TOMAN -> request.amount.toLong()
-//        }
 
         val currency =
             currencyService.fetchCurrency(FetchCurrency(symbol = request.currency.name))
@@ -62,8 +58,6 @@ class PaymentGatewayController(
             currency,
             receiverWalletType
         )
-
-
         transferManager.transfer(
             TransferCommand(
                 sourceWallet,
