@@ -1,4 +1,4 @@
-package co.nilin.opex.wallet.core.utils
+package co.nilin.opex.common.security
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.util.*

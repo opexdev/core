@@ -3,7 +3,7 @@ package co.nilin.opex.accountant.core.service
 import co.nilin.opex.accountant.core.api.FeeCalculator
 import co.nilin.opex.accountant.core.model.*
 import co.nilin.opex.accountant.core.spi.*
-import co.nilin.opex.accountant.core.utils.CacheManager
+import co.nilin.opex.common.utils.CacheManager
 import co.nilin.opex.matching.engine.core.eventh.events.SubmitOrderEvent
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
 import co.nilin.opex.matching.engine.core.model.MatchConstraint

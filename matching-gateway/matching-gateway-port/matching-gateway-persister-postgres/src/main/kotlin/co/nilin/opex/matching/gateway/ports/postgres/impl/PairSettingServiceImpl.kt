@@ -1,13 +1,14 @@
 package co.nilin.opex.matching.gateway.ports.postgres.impl
 
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.common.utils.CacheManager
 import co.nilin.opex.matching.gateway.ports.postgres.dao.PairSettingRepository
 import co.nilin.opex.matching.gateway.ports.postgres.dto.PairSetting
 import co.nilin.opex.matching.gateway.ports.postgres.service.PairSettingService
-import co.nilin.opex.matching.gateway.ports.postgres.util.CacheManager
 import co.nilin.opex.matching.gateway.ports.postgres.util.toPairSetting
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
@@ -15,7 +16,7 @@ import java.util.concurrent.TimeUnit
 @Service
 class PairSettingServiceImpl(
     private val pairSettingRepository: PairSettingRepository,
-    private val cacheManager: CacheManager<String, PairSetting>
+    @Qualifier("appCacheManager") private val cacheManager: CacheManager<String, PairSetting>
 ) : PairSettingService {
 
     override suspend fun load(pair: String): PairSetting {
@@ -43,7 +44,8 @@ class PairSettingServiceImpl(
 
     override suspend fun update(pairSetting: PairSetting): PairSetting {
         val pairSetting =
-            pairSettingRepository.findByPair(pairSetting.pair).awaitFirstOrNull() ?: throw OpexError.PairNotFound.exception()
+            pairSettingRepository.findByPair(pairSetting.pair).awaitFirstOrNull()
+                ?: throw OpexError.PairNotFound.exception()
         pairSetting.apply {
             this.isAvailable = pairSetting.isAvailable
             this.minOrder = pairSetting.minOrder

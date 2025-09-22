@@ -27,7 +27,7 @@ class WalletSnapshotService(
         }
     }
 
-    private suspend fun updatePrices() { // TODO جابجاش کنم توی impl price
+    private suspend fun updatePrices() {
         val currencyPrices = graphService.fetchPrice(snapshotCurrency)
         currencyPrices?.forEach { currencyPrice ->
             priceRepository.upsert(

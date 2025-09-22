@@ -1,11 +1,11 @@
 package co.nilin.opex.wallet.core.service
 
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.common.security.JwtUtils
 import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.model.WithdrawType
 import co.nilin.opex.wallet.core.spi.*
-import co.nilin.opex.wallet.core.utils.JwtUtils
 import io.micrometer.core.instrument.MeterRegistry
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
@@ -116,15 +116,16 @@ class WithdrawService(
                 transferMethod = withdrawCommand.transferMethod
             )
         )
-        //TODO باعث خطا میشه تو otc ??
-        withdrawRequestEventSubmitter.send(
-            withdraw.ownerUuid,
-            withdraw.withdrawId,
-            withdraw.currency,
-            withdraw.amount,
-            withdraw.status,
-            withdraw.createDate
-        )
+        if (withdrawLimitEnabled) {
+            withdrawRequestEventSubmitter.send(
+                withdraw.ownerUuid,
+                withdraw.withdrawId,
+                withdraw.currency,
+                withdraw.amount,
+                withdraw.status,
+                withdraw.createDate
+            )
+        }
         try {
             meterRegistry.counter("withdraw_request_event").increment()
         } catch (e: Exception) {

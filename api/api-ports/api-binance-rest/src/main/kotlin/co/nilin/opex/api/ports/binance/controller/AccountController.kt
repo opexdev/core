@@ -8,6 +8,8 @@ import co.nilin.opex.api.core.spi.WalletProxy
 import co.nilin.opex.api.ports.binance.data.*
 import co.nilin.opex.api.ports.binance.util.*
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.common.security.jwtAuthentication
+import co.nilin.opex.common.security.tokenValue
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example

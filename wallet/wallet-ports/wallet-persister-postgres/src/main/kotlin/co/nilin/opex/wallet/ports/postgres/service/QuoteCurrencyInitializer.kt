@@ -35,7 +35,6 @@ class QuoteCurrencyInitializer(
         )
         scope.launch {
             try {
-
                 val quoteSymbols = symbols.split(",")
                     .mapNotNull { symbol ->
                         val quote = symbol.substringAfter('_', "")
@@ -47,7 +46,7 @@ class QuoteCurrencyInitializer(
                     val existing = quoteCurrencyRepository.findByCurrency(quote).awaitFirstOrNull()
                     if (existing == null) {
                         quoteCurrencyRepository.save(
-                            QuoteCurrencyModel(null, quote, false, LocalDateTime.now(),null)
+                            QuoteCurrencyModel(null, quote, false, LocalDateTime.now(), null)
                         ).awaitFirstOrNull()
                         logger.info("Quote currency inserted: $quote")
                     }

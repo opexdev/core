@@ -1,4 +1,4 @@
-package co.nilin.opex.api.ports.binance.util
+package co.nilin.opex.common.security
 
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken

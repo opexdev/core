@@ -7,12 +7,13 @@ import co.nilin.opex.accountant.core.model.WalletType
 import co.nilin.opex.accountant.core.spi.FeeConfigService
 import co.nilin.opex.accountant.core.spi.UserVolumePersister
 import co.nilin.opex.accountant.core.spi.WalletProxy
-import co.nilin.opex.accountant.core.utils.CacheManager
+import co.nilin.opex.common.utils.CacheManager
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Qualifier
 import java.math.BigDecimal
 import java.util.concurrent.TimeUnit
 
@@ -21,7 +22,7 @@ internal class FeeCalculatorImplTest {
     private val walletProxy = mockk<WalletProxy>()
     private val feeConfigService = mockk<FeeConfigService>()
     private val userVolumePersister = mockk<UserVolumePersister>()
-    private val cacheManager = mockk<CacheManager<String, UserFee>>()
+    @Qualifier("appCacheManager") private val cacheManager = mockk<CacheManager<String, UserFee>>()
 
 
     private val receiverAddress = "0x0"

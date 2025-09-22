@@ -1,14 +1,15 @@
 package co.nilin.opex.matching.gateway.ports.postgres.service
 
+import co.nilin.opex.common.utils.CacheManager
 import co.nilin.opex.matching.gateway.ports.postgres.dao.PairSettingRepository
 import co.nilin.opex.matching.gateway.ports.postgres.dto.PairSetting
-import co.nilin.opex.matching.gateway.ports.postgres.util.CacheManager
 import co.nilin.opex.matching.gateway.ports.postgres.util.toPairSetting
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
@@ -18,7 +19,7 @@ import javax.annotation.PostConstruct
 @Service
 class PairSettingInitializer(
     private val pairSettingRepository: PairSettingRepository,
-    private val cacheManager: CacheManager<String, PairSetting>,
+    @Qualifier("appCacheManager") private val cacheManager: CacheManager<String, PairSetting>,
     @Value("\${app.symbols}")
     private val symbols: String
 ) {

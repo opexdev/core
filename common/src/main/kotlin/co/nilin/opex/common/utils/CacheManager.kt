@@ -1,10 +1,10 @@
-package co.nilin.opex.matching.gateway.ports.postgres.util
+package co.nilin.opex.common.utils
 
 import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
-@Component
+@Component("appCacheManager")
 class CacheManager<K, V> {
 
     private val cacheMap = ConcurrentHashMap<K, CacheEntry<V>>()
