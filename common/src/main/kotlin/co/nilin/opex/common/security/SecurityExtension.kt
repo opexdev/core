@@ -1,6 +1,7 @@
 package co.nilin.opex.common.security
 
 import org.springframework.security.core.context.SecurityContext
+import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 
 fun SecurityContext.jwtAuthentication(): JwtAuthenticationToken {
@@ -8,5 +9,5 @@ fun SecurityContext.jwtAuthentication(): JwtAuthenticationToken {
 }
 
 fun JwtAuthenticationToken.tokenValue(): String {
-    return this.token.tokenValue
+    return (this.principal as Jwt).tokenValue
 }
