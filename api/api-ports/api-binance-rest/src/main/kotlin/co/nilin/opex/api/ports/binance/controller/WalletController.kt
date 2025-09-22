@@ -1,13 +1,11 @@
 package co.nilin.opex.api.ports.binance.controller
 
-import co.nilin.opex.api.core.spi.*
+import co.nilin.opex.api.core.spi.MarketDataProxy
+import co.nilin.opex.api.core.spi.WalletProxy
 import co.nilin.opex.api.ports.binance.data.AssetResponse
 import co.nilin.opex.api.ports.binance.data.AssetsEstimatedValue
-import co.nilin.opex.api.ports.binance.data.AssignAddressResponse
-import co.nilin.opex.api.ports.binance.data.PairFeeResponse
-import co.nilin.opex.api.ports.binance.util.jwtAuthentication
-import co.nilin.opex.api.ports.binance.util.tokenValue
-import co.nilin.opex.common.OpexError
+import co.nilin.opex.common.security.jwtAuthentication
+import co.nilin.opex.common.security.tokenValue
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.GetMapping
@@ -18,64 +16,8 @@ import java.math.BigDecimal
 @RestController("walletBinanceController")
 class WalletController(
     private val walletProxy: WalletProxy,
-    private val symbolMapper: SymbolMapper,
     private val marketDataProxy: MarketDataProxy,
-    private val accountantProxy: AccountantProxy,
-//    private val bcGatewayProxy: BlockchainGatewayProxy,
 ) {
-
-//    @GetMapping("/v1/capital/deposit/address")
-//    fun assignAddress(
-//        @RequestParam
-//        coin: String,
-//        @RequestParam
-//        network: String,
-//        @RequestParam(required = false)
-//        recvWindow: Long?, //The value cannot be greater than 60000
-//        @RequestParam
-//        timestamp: Long,
-//        @CurrentSecurityContext securityContext: SecurityContext
-//    ): AssignAddressResponse {
-//        val response = bcGatewayProxy.assignAddress(securityContext.jwtAuthentication().name, coin, network)
-//        val address = response?.addresses
-//        if (address.isNullOrEmpty()) throw OpexError.InternalServerError.exception()
-//        return AssignAddressResponse(address[0].address, coin, network, "", "")
-//    }
-
-    @GetMapping("/v1/asset/tradeFee")
-    fun getPairFees(
-        @RequestParam(required = false)
-        symbol: String?,
-        @RequestParam(required = false)
-        recvWindow: Long?, //The value cannot be greater than 60000
-        @RequestParam
-        timestamp: Long
-    ): List<PairFeeResponse> {
-        return if (symbol != null) {
-            val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexError.SymbolNotFound.exception()
-
-            val fee = accountantProxy.getFeeConfig(internalSymbol)
-            arrayListOf<PairFeeResponse>().apply {
-                add(
-                    PairFeeResponse(
-                        symbol,
-                        fee.makerFee.toDouble(),
-                        fee.takerFee.toDouble()
-                    )
-                )
-            }
-        } else
-            accountantProxy.getFeeConfigs()
-                .distinctBy { it.pair }
-                .map {
-                    PairFeeResponse(
-                        symbolMapper.fromInternalSymbol(it.pair) ?: it.pair,
-                        it.makerFee.toDouble(),
-                        it.takerFee.toDouble()
-                    )
-                }
-    }
-
     @GetMapping("/v1/asset/getUserAsset")
     fun getUserAssets(
         @CurrentSecurityContext
@@ -148,5 +90,4 @@ class WalletController(
         wallets.find { it.asset.equals(quoteAsset, true) }?.let { value += it.balance }
         return AssetsEstimatedValue(value, quoteAsset.uppercase(), zeroAssets)
     }
-
 }

@@ -4,6 +4,7 @@ import co.nilin.opex.wallet.core.inout.FinancialActionResponseEvent
 import co.nilin.opex.wallet.ports.kafka.listener.model.AdminEvent
 import co.nilin.opex.wallet.ports.kafka.listener.model.FinancialActionEvent
 import co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent
+import co.nilin.opex.wallet.ports.kafka.listener.model.WithdrawRequestEvent
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.beans.factory.annotation.Qualifier
@@ -13,11 +14,13 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import org.springframework.kafka.core.DefaultKafkaProducerFactory
 import org.springframework.kafka.core.KafkaTemplate
+import org.springframework.kafka.core.ProducerFactory
 import org.springframework.kafka.support.serializer.JsonSerializer
 
 @Configuration
 @Profile("!otc")
 class KafkaProducerConfig {
+
 
     @Value("\${spring.kafka.bootstrap-servers}")
     private lateinit var bootstrapServers: String
@@ -29,7 +32,7 @@ class KafkaProducerConfig {
             ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
             ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JsonSerializer::class.java,
             ProducerConfig.ACKS_CONFIG to "all",
-            JsonSerializer.TYPE_MAPPINGS to "fiAction_response_event:co.nilin.opex.wallet.ports.kafka.submitter.event.FinancialActionResponseEvent"
+            JsonSerializer.TYPE_MAPPINGS to "fiAction_response_event:co.nilin.opex.wallet.core.inout.FinancialActionResponseEvent,withdrawRequestEvent:co.nilin.opex.wallet.ports.kafka.listener.model.WithdrawRequestEvent"
         )
     }
 
@@ -52,4 +55,15 @@ class KafkaProducerConfig {
     fun kafkaTemplate(@Qualifier("producerConfigs") configs: Map<String, Any?>): KafkaTemplate<String, FinancialActionResponseEvent> {
         return KafkaTemplate(DefaultKafkaProducerFactory(configs))
     }
+
+    @Bean
+    fun withdrawRequestKafkaTemplate(@Qualifier("withdrawRequestProducerFactory") factory: ProducerFactory<String?, WithdrawRequestEvent>): KafkaTemplate<String?, WithdrawRequestEvent> {
+        return KafkaTemplate(factory)
+    }
+
+    @Bean
+    fun withdrawRequestProducerFactory(@Qualifier("producerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, WithdrawRequestEvent> {
+        return DefaultKafkaProducerFactory(producerConfigs)
+    }
+
 }

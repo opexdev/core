@@ -16,9 +16,9 @@ class ReportingService(private val marketQueryHandler: MarketQueryHandler) {
         runBlocking {
             try {
                 val count = marketQueryHandler.numberOfOrders(Interval.FifteenMinutes, null)
-                logger.info("in the last 30 minutes, the number of orders : $count")
+                logger.info("In the last 30 minutes, the number of orders : $count")
             } catch (e: Exception) {
-                logger.error("Could not report orders cont", e)
+                logger.error("Could not report orders count", e)
             }
         }
     }

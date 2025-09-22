@@ -104,8 +104,8 @@
             <artifactId>wallet-auth-proxy</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.wallet.ports.market</groupId>
-            <artifactId>wallet-market-proxy</artifactId>
+            <groupId>co.nilin.opex.wallet.ports.accountant</groupId>
+            <artifactId>wallet-accountant-proxy</artifactId>
         </dependency>
         <dependency>
             <groupId>co.nilin.opex.wallet.ports.kafka.listener</groupId>

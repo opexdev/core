@@ -1,7 +1,6 @@
 package co.nilin.opex.wallet.ports.postgres.model
 
 import org.springframework.data.annotation.Id
-import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
 import java.time.LocalDateTime
@@ -10,10 +9,8 @@ import java.time.LocalDateTime
 data class TotalAssetsSnapshotModel(
     @Id
     val id: Long? = null,
-    val owner: Long,
-    @Column("total_usdt")
-    val totalUSDT: BigDecimal,
-    @Column("total_irt")
-    val totalIRT: BigDecimal,
+    val uuid: String,
+    val totalAmount: BigDecimal,
+    val quoteCurrency: String,
     val snapshotDate: LocalDateTime,
 )

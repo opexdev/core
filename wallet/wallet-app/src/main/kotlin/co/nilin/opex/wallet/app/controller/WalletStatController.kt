@@ -3,16 +3,18 @@ package co.nilin.opex.wallet.app.controller
 import co.nilin.opex.wallet.core.inout.WalletData
 import co.nilin.opex.wallet.core.inout.WalletDataResponse
 import co.nilin.opex.wallet.core.inout.WalletTotal
+import co.nilin.opex.wallet.core.model.TotalAssetsSnapshot
 import co.nilin.opex.wallet.core.model.WalletType
+import co.nilin.opex.wallet.core.spi.TotalAssetsSnapshotManager
 import co.nilin.opex.wallet.core.spi.WalletDataManager
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/stats")
-class WalletStatController(private val walletDataManager: WalletDataManager) {
+class WalletStatController(
+    private val walletDataManager: WalletDataManager,
+    private val totalAssetsSnapshotManager: TotalAssetsSnapshotManager
+) {
 
     @GetMapping("/wallets")
     suspend fun walletData(
@@ -45,5 +47,12 @@ class WalletStatController(private val walletDataManager: WalletDataManager) {
     @GetMapping("/wallets/user/total")
     suspend fun userWalletTotal(): List<WalletTotal>? {
         return walletDataManager.findUserWalletsTotal()
+    }
+
+    @GetMapping("/total-assets/{uuid}")
+    suspend fun getWalletTotalAssetsSnapshot(
+        @PathVariable uuid: String,
+    ): TotalAssetsSnapshot? {
+        return totalAssetsSnapshotManager.getUserLastSnapshot(uuid)
     }
 }

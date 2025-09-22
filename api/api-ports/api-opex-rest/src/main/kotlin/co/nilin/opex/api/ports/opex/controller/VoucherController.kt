@@ -2,8 +2,8 @@ package co.nilin.opex.api.ports.opex.controller
 
 import co.nilin.opex.api.core.inout.SubmitVoucherResponse
 import co.nilin.opex.api.core.spi.WalletProxy
-import co.nilin.opex.api.ports.opex.util.jwtAuthentication
-import co.nilin.opex.api.ports.opex.util.tokenValue
+import co.nilin.opex.common.security.jwtAuthentication
+import co.nilin.opex.common.security.tokenValue
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.PathVariable

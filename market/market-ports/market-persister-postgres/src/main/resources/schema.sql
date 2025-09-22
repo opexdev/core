@@ -67,31 +67,6 @@ CREATE TABLE IF NOT EXISTS trades
 CREATE INDEX IF NOT EXISTS idx_trades_symbol on trades (symbol);
 CREATE INDEX IF NOT EXISTS idx_trades_create_date on trades (create_date);
 
-CREATE TABLE IF NOT EXISTS user_trade_volume
-(
-    id         SERIAL PRIMARY KEY,
-    user_id    VARCHAR(36) NOT NULL,
-    currency   TEXT        NOT NULL,
-    date       DATE        not null,
-    volume     decimal     not null,
-    value_usdt decimal     not null,
-    value_irt  decimal     not null,
-    unique (user_id, currency, date)
-);
-CREATE INDEX IF NOT EXISTS idx_user_trade_volume_user_id ON user_trade_volume (user_id);
-CREATE INDEX IF NOT EXISTS idx_user_trade_volume_currency ON user_trade_volume (currency);
-CREATE INDEX IF NOT EXISTS idx_user_trade_volume_start_date ON user_trade_volume (date);
-
-CREATE TABLE IF NOT EXISTS currency_rate
-(
-    id     SERIAL PRIMARY KEY,
-    base   VARCHAR(25) NOT NULL,
-    quote  VARCHAR(25) NOT NULL,
-    source VARCHAR(25) NOT NULL,
-    rate   DECIMAL     NOT NULL,
-    UNIQUE (base, quote, source)
-);
-
 CREATE OR REPLACE FUNCTION interval_generator(
     start_ts TIMESTAMP without TIME ZONE,
     end_ts TIMESTAMP without TIME ZONE,

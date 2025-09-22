@@ -3,8 +3,8 @@ package co.nilin.opex.api.app.controller
 import co.nilin.opex.api.app.data.APIKeyResponse
 import co.nilin.opex.api.app.data.CreateAPIKeyRequest
 import co.nilin.opex.api.app.service.APIKeyServiceImpl
-import co.nilin.opex.api.ports.binance.util.jwtAuthentication
-import co.nilin.opex.api.ports.binance.util.tokenValue
+import co.nilin.opex.common.security.jwtAuthentication
+import co.nilin.opex.common.security.tokenValue
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*

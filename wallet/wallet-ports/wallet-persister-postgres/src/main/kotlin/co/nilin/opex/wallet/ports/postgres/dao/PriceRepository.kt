@@ -10,11 +10,13 @@ import java.math.BigDecimal
 @Repository
 interface PriceRepository : ReactiveCrudRepository<PriceModel, String> {
 
-    @Query("""
-        insert into price(symbol, price, update_date)
-        values (:symbol, :price, now())
-        on conflict (symbol)
+    @Query(
+        """
+        insert into price(base_currency,quote_currency, price, update_date)
+        values (:baseCurrency,:quoteCurrency ,:price, now())
+        on conflict (base_currency,quote_currency)
         do update set price = excluded.price, update_date = now()
-    """)
-    fun upsert(symbol: String, price: BigDecimal): Mono<Void>
+    """
+    )
+    fun upsert(baseCurrency: String, quoteCurrency: String, price: BigDecimal): Mono<Void>
 }

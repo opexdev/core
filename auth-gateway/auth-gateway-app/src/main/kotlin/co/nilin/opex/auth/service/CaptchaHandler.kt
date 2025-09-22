@@ -4,14 +4,15 @@ import co.nilin.opex.auth.data.ActionCache
 import co.nilin.opex.auth.data.ActionType
 import co.nilin.opex.auth.model.CaptchaType
 import co.nilin.opex.auth.proxy.CaptchaProxy
-import co.nilin.opex.auth.utils.CacheManager
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.common.utils.CacheManager
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.util.concurrent.TimeUnit
 
 @Service
 class CaptchaHandler(
-    private val cacheManager: CacheManager<String, ActionCache>,
+    @Qualifier("appCacheManager") private val cacheManager: CacheManager<String, ActionCache>,
     private val captchaProxy: CaptchaProxy
 ) {
     suspend fun validateCaptchaWithActionCache(
@@ -25,7 +26,10 @@ class CaptchaHandler(
         val cache = cacheManager.get(username)
 
         if (cache == null || cache.actionType != action || cache.remainingAttempts <= 0) {
-            captchaProxy.validateCaptcha(captchaCode ?: throw OpexError.CaptchaRequired.exception(), captchaType ?: CaptchaType.INTERNAL)
+            captchaProxy.validateCaptcha(
+                captchaCode ?: throw OpexError.CaptchaRequired.exception(),
+                captchaType ?: CaptchaType.INTERNAL
+            )
             cacheManager.put(username, ActionCache(action, maxAttempts), expireTimeMinutes, TimeUnit.MINUTES)
             return
         }
