@@ -1,7 +1,9 @@
 package co.nilin.opex.accountant.core.service
 
+import co.nilin.opex.accountant.core.api.FeeCalculator
 import co.nilin.opex.accountant.core.model.*
 import co.nilin.opex.accountant.core.spi.*
+import co.nilin.opex.common.utils.CacheManager
 import co.nilin.opex.matching.engine.core.eventh.events.SubmitOrderEvent
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
 import co.nilin.opex.matching.engine.core.model.MatchConstraint
@@ -9,7 +11,9 @@ import co.nilin.opex.matching.engine.core.model.OrderDirection
 import co.nilin.opex.matching.engine.core.model.OrderType
 import co.nilin.opex.matching.engine.core.model.Pair
 import io.mockk.coEvery
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -24,20 +28,25 @@ internal class TradeManagerImplTest {
     private val tempEventPersister = mockk<TempEventPersister>()
     private val richOrderPublisher = mockk<RichOrderPublisher>()
     private val richTradePublisher = mockk<RichTradePublisher>()
-    private val userLevelLoader = mockk<UserLevelLoader>()
     private val financialActionPublisher = mockk<FinancialActionPublisher>()
+    private val currencyRatePersister = mockk<CurrencyRatePersister>()
+    private val userVolumePersister = mockk<UserVolumePersister>()
+    private val feeCalculator = mockk<FeeCalculator>()
+    private val walletProxy = mockk<WalletProxy>()
+    private val feeConfigService = mockk<FeeConfigService>()
+    private val cacheManager = mockk<CacheManager<String, UserFee>>()
+
     private val jsonMapper = JsonMapperTestImpl()
 
     private val orderManager = OrderManagerImpl(
         pairConfigLoader,
-        userLevelLoader,
         financialActionPersister,
         financeActionLoader,
         orderPersister,
         tempEventPersister,
         richOrderPublisher,
         financialActionPublisher,
-        jsonMapper
+        feeCalculator
     )
 
     private val tradeManager = TradeManagerImpl(
@@ -47,9 +56,21 @@ internal class TradeManagerImplTest {
         tempEventPersister,
         richTradePublisher,
         richOrderPublisher,
-        FeeCalculatorImpl("0x0", jsonMapper),
+        FeeCalculatorImpl(
+            walletProxy,
+            feeConfigService,
+            userVolumePersister,
+            cacheManager,
+            "0x0",
+            "+03:30",
+            "USDT",
+            JsonMapperTestImpl()
+        ),
         financialActionPublisher,
-        jsonMapper
+        currencyRatePersister,
+        userVolumePersister,
+        "USDT",
+        "+03:30",
     )
 
     init {
@@ -58,10 +79,12 @@ internal class TradeManagerImplTest {
         coEvery { financeActionLoader.findLast(any(), any()) } returns null
         coEvery { richOrderPublisher.publish(any()) } returns Unit
         coEvery { richTradePublisher.publish(any()) } returns Unit
-        coEvery { userLevelLoader.load(any()) } returns "*"
         coEvery { financialActionPublisher.publish(any()) } returns Unit
         coEvery { financialActionPersister.updateStatus(any<FinancialAction>(), any()) } returns Unit
         coEvery { financialActionPersister.updateStatus(any<String>(), any()) } returns Unit
+        coEvery { currencyRatePersister.updateRate(any(), any(), any()) } just runs
+        coEvery { userVolumePersister.update(any(), any(), any(), any(), any(), any()) } just runs
+        coEvery { currencyRatePersister.getRate(any(), any()) } returns BigDecimal.ONE
     }
 
     @Test
@@ -309,22 +332,23 @@ internal class TradeManagerImplTest {
         takerFee: BigDecimal
     ) {
         coEvery {
-            pairConfigLoader.load(pair.toString(), submitOrderEvent.direction, any())
-        } returns PairFeeConfig(
-            pairConfig,
-            submitOrderEvent.direction.toString(),
-            "",
-            makerFee,
-            takerFee
+            feeCalculator.getUserFee(submitOrderEvent.uuid)
+        } returns UserFee(
+            "Test", 1, makerFee, takerFee
         )
+
+        coEvery {
+            pairConfigLoader.load(pair.toString(), submitOrderEvent.direction)
+        } returns pairConfig
+
         coEvery { financialActionPersister.persist(any()) } returnsArgument (0)
 
         val financialActions = orderManager.handleRequestOrder(submitOrderEvent)
 
-        val orderPairFeeConfig =
-            pairConfigLoader.load(submitOrderEvent.pair.toString(), submitOrderEvent.direction, "")
-        val orderMakerFee = orderPairFeeConfig.makerFee * BigDecimal.ONE //user level formula
-        val orderTakerFee = orderPairFeeConfig.takerFee * BigDecimal.ONE //user level formula
+        val pairConfig =
+            pairConfigLoader.load(submitOrderEvent.pair.toString(), submitOrderEvent.direction)
+        val orderMakerFee = makerFee
+        val orderTakerFee = takerFee
 
         coEvery { orderPersister.load(submitOrderEvent.ouid) } returns Order(
             submitOrderEvent.pair.toString(),
@@ -332,8 +356,8 @@ internal class TradeManagerImplTest {
             null,
             orderMakerFee,
             orderTakerFee,
-            orderPairFeeConfig.pairConfig.leftSideFraction,
-            orderPairFeeConfig.pairConfig.rightSideFraction,
+            pairConfig.leftSideFraction,
+            pairConfig.rightSideFraction,
             submitOrderEvent.uuid,
             submitOrderEvent.userLevel,
             submitOrderEvent.direction,

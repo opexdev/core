@@ -37,6 +37,7 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/withdraw/**").authenticated()
             .pathMatchers("/transaction/**").authenticated()
             .pathMatchers("/admin/**").hasAuthority("ROLE_admin")
+            .pathMatchers("/stats/total-assets/**").permitAll()
             .pathMatchers("/stats/**").hasAuthority("ROLE_admin")
             .pathMatchers(HttpMethod.GET, "/currency/**").permitAll()
             .pathMatchers("/actuator/**").permitAll()

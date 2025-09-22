@@ -514,6 +514,39 @@ CREATE TABLE IF NOT EXISTS quote_currency
 
 DO
 $$
+    BEGIN
+        IF EXISTS (
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_name = 'quote_currency' AND column_name = 'is_active'
+        ) THEN
+            ALTER TABLE quote_currency RENAME COLUMN is_active TO is_reference;
+        END IF;
+
+        IF NOT EXISTS (
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_name = 'quote_currency' AND column_name = 'display_order'
+        ) THEN
+            ALTER TABLE quote_currency ADD COLUMN display_order INTEGER;
+        END IF;
+    END
+$$;
+
+
+DO
+$$
+    BEGIN
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'currency' AND column_name = 'max_order') THEN ALTER TABLE currency
+            ADD COLUMN max_order DECIMAL;
+        END IF;
+    END
+$$;
+
+DO
+$$
 BEGIN
         IF NOT EXISTS (SELECT 1
                        FROM information_schema.columns
@@ -557,15 +590,18 @@ $$;
 CREATE TABLE IF NOT EXISTS total_assets_snapshot
 (
     id          SERIAL PRIMARY KEY,
-    owner       INTEGER REFERENCES wallet_owner (id),
-    total_usdt  DECIMAL   NOT NULL,
-    total_irt   DECIMAL   NOT NULL,
+    uuid           VARCHAR(36)  NOT NULL,
+    total_amount  DECIMAL   NOT NULL,
+    quote_currency       VARCHAR(50) NOT NULL REFERENCES currency (symbol),
     snapshot_date  TIMESTAMP NOT NULL
 );
+CREATE INDEX IF NOT EXISTS idx_total_assets_snapshot_uuid ON total_assets_snapshot (uuid);
 
 CREATE TABLE IF NOT EXISTS price
 (
-    symbol       VARCHAR(50) PRIMARY KEY,
+    base_currency       VARCHAR(50) PRIMARY KEY REFERENCES currency (symbol),
+    quote_currency       VARCHAR(50) REFERENCES currency (symbol) ,
     price        DECIMAL   NOT NULL,
-    update_date TIMESTAMP NOT NULL DEFAULT NOW()
+    update_date TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT price_base_quote_unique UNIQUE (base_currency, quote_currency)
 );

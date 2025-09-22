@@ -4,8 +4,8 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 data class TotalAssetsSnapshot(
-    val owner: Long,
-    val totalUSDT: BigDecimal,
-    val totalIRT: BigDecimal,
+    val uuid: String,
+    val totalAmount: BigDecimal,
+    val quoteCurrency: String,
     val snapshotDate: LocalDateTime,
 )

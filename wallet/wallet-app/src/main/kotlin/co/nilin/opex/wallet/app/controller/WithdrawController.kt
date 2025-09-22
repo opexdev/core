@@ -1,6 +1,8 @@
 package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.common.security.jwtAuthentication
+import co.nilin.opex.common.security.tokenValue
 import co.nilin.opex.wallet.app.dto.RequestWithdrawBody
 import co.nilin.opex.wallet.app.dto.WithdrawHistoryRequest
 import co.nilin.opex.wallet.app.utils.asLocalDateTime
@@ -26,23 +28,15 @@ class WithdrawController(private val withdrawService: WithdrawService) {
         return withdrawService.findWithdraw(withdrawId) ?: throw OpexError.WithdrawNotFound.exception()
     }
 
-//    @PostMapping("/search")
-//    suspend fun myWithdraws(principal: Principal, @RequestBody body: SearchWithdrawRequest): List<WithdrawResponse> {
-//        return withdrawService.findByCriteria(
-//            principal.name,
-//            body.currency,
-//            body.destTxRef,
-//            body.destAddress,
-//            body.status
-//        )
-//    }
-
     @PostMapping
-    suspend fun requestWithdraw(principal: Principal, @RequestBody request: RequestWithdrawBody): WithdrawActionResult {
+    suspend fun requestWithdraw(
+        @CurrentSecurityContext securityContext: SecurityContext,
+        @RequestBody request: RequestWithdrawBody
+    ): WithdrawActionResult {
         return withdrawService.requestWithdraw(
             with(request) {
                 WithdrawCommand(
-                    principal.name,
+                    securityContext.authentication.name,
                     currency,
                     amount,
                     description,
@@ -54,7 +48,7 @@ class WithdrawController(private val withdrawService: WithdrawService) {
                     null,
                     null
                 )
-            }
+            }, securityContext.jwtAuthentication().tokenValue()
         )
     }
 

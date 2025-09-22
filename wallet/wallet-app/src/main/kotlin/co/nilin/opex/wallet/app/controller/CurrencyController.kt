@@ -144,17 +144,18 @@ class CurrencyController(
 
     @GetMapping("/quotes")
     suspend fun getQuoteCurrencies(
-        @RequestParam isActive: Boolean?,
+        @RequestParam isReference: Boolean?,
     ): List<QuoteCurrency> {
-        return quoteCurrencyManager.getAll(isActive)
+        return quoteCurrencyManager.getAll(isReference)
     }
 
     @PutMapping("/quote/{currency}")
     suspend fun updateQuoteCurrency(
         @PathVariable("currency") currency: String,
-        @RequestParam isActive: Boolean,
+        @RequestParam isReference: Boolean,
+        @RequestParam displayOrder: Int,
     ) {
-        quoteCurrencyManager.update(currency, isActive)
+        quoteCurrencyManager.update(currency, isReference, displayOrder)
     }
 
 }

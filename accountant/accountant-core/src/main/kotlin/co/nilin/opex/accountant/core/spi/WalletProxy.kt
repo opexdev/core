@@ -1,5 +1,7 @@
 package co.nilin.opex.accountant.core.spi
 
+import co.nilin.opex.accountant.core.model.CurrencyPrice
+import co.nilin.opex.accountant.core.model.TotalAssetsSnapshot
 import co.nilin.opex.accountant.core.model.WalletType
 import java.math.BigDecimal
 
@@ -18,4 +20,10 @@ interface WalletProxy {
     )
 
     suspend fun canFulfil(symbol: String, walletType: WalletType, uuid: String, amount: BigDecimal): Boolean
+
+    suspend fun getUserTotalAssets(
+        uuid: String
+    ): TotalAssetsSnapshot?
+
+    suspend fun getPrices(quote : String) : List<CurrencyPrice>
 }

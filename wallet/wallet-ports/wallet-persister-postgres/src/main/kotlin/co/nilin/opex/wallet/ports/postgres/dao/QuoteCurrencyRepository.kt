@@ -7,14 +7,13 @@ import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Mono
-import java.time.LocalDateTime
 
 @Repository
 interface QuoteCurrencyRepository : ReactiveCrudRepository<QuoteCurrencyModel, Long> {
 
     fun findByCurrency(currency: String): Mono<QuoteCurrencyModel>
 
-    @Query("SELECT * FROM quote_currency WHERE (:isActive IS NULL OR is_active = :isActive)")
-    fun findAllByActive(isActive: Boolean?): Flow<QuoteCurrency>
+    @Query("SELECT * FROM quote_currency WHERE (:isReference IS NULL OR is_reference = :isReference) order by display_order")
+    fun findAllByReference(isReference: Boolean?): Flow<QuoteCurrency>
 
 }

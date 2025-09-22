@@ -105,3 +105,6 @@ app:
       count: 10
       delay-seconds: 5
       delay-multiplier: 3
+  zone-offset: +03:30
+  trade-volume-calculation-currency: USDT
+  withdraw-volume-calculation-currency: USDT

@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.core.service
 
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.common.security.JwtUtils
 import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.model.WithdrawType
@@ -9,7 +10,6 @@ import io.micrometer.core.instrument.MeterRegistry
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
@@ -22,22 +22,34 @@ class WithdrawService(
     private val walletOwnerManager: WalletOwnerManager,
     private val currencyService: CurrencyServiceManager,
     private val transferManager: TransferManager,
-    private val authService: AuthService,
-    private val environment: Environment,
     private val meterRegistry: MeterRegistry,
     private val gatewayService: GatewayService,
     private val precisionService: PrecisionService,
+    private val accountantProxy: AccountantProxy,
+    private val withdrawRequestEventSubmitter: WithdrawRequestEventSubmitter,
     @Qualifier("onChainGateway") private val bcGatewayProxy: GatewayPersister,
     @Value("\${app.system.uuid}") private val systemUuid: String,
-) {
+    @Value("\${withdraw-limit.enabled}") private val withdrawLimitEnabled: Boolean,
+
+    ) {
     private val logger = LoggerFactory.getLogger(WithdrawService::class.java)
 
     @Transactional
-    suspend fun requestWithdraw(withdrawCommand: WithdrawCommand): WithdrawActionResult {
+    suspend fun requestWithdraw(withdrawCommand: WithdrawCommand, token: String): WithdrawActionResult {
         precisionService.validatePrecision(withdrawCommand.amount, withdrawCommand.currency)
 
         val currency = currencyService.fetchCurrency(FetchCurrency(symbol = withdrawCommand.currency))
             ?: throw OpexError.CurrencyNotFound.exception()
+
+        if (withdrawLimitEnabled) {
+            if (!accountantProxy.canRequestWithdraw(
+                    withdrawCommand.uuid,
+                    UserRole.getHighestRoleKeycloakName(JwtUtils.extractRoles(token)) ?: UserRole.USER_1.keycloakName,
+                    withdrawCommand.currency,
+                    withdrawCommand.amount
+                )
+            ) throw OpexError.WithdrawAmountExceeds.exception()
+        }
         val owner =
             walletOwnerManager.findWalletOwner(withdrawCommand.uuid)
                 ?: throw OpexError.WalletOwnerNotFound.exception()
@@ -104,6 +116,16 @@ class WithdrawService(
                 transferMethod = withdrawCommand.transferMethod
             )
         )
+        if (withdrawLimitEnabled) {
+            withdrawRequestEventSubmitter.send(
+                withdraw.ownerUuid,
+                withdraw.withdrawId,
+                withdraw.currency,
+                withdraw.amount,
+                withdraw.status,
+                withdraw.createDate
+            )
+        }
         try {
             meterRegistry.counter("withdraw_request_event").increment()
         } catch (e: Exception) {
@@ -245,6 +267,14 @@ class WithdrawService(
 
         withdraw.status = WithdrawStatus.CANCELED
         withdrawPersister.persist(withdraw)
+        withdrawRequestEventSubmitter.send(
+            withdraw.ownerUuid,
+            withdraw.withdrawId,
+            withdraw.currency,
+            withdraw.amount,
+            withdraw.status,
+            withdraw.createDate
+        )
 
         transferManager.transfer(
             TransferCommand(
@@ -312,6 +342,14 @@ class WithdrawService(
                 LocalDateTime.now(),
                 withdraw.transferMethod
             )
+        )
+        withdrawRequestEventSubmitter.send(
+            withdraw.ownerUuid,
+            withdraw.withdrawId,
+            withdraw.currency,
+            withdraw.amount,
+            withdraw.status,
+            withdraw.createDate
         )
         return WithdrawActionResult(withdraw.withdrawId!!, updateWithdraw.status)
     }

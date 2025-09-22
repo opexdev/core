@@ -132,9 +132,13 @@ app:
     url: lb://opex-bc-gateway
   market:
     url: lb://opex-market
+  accountant:
+    url: lb://opex-accountant
   reserved-transfer:
     life-time: 15 #minutes
   symbols: ${SYMBOLS}
+  zone-offset: +03:30
+  snapshot-currency: USDT
 logging:
   level:
     root: INFO
@@ -145,4 +149,5 @@ logging:
     org.hibernate.SQL: DEBUG
     logging.level.org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
-
+withdraw-limit:
+    enabled: true

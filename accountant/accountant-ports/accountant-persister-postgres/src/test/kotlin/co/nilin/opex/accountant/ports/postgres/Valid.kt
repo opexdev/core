@@ -85,15 +85,6 @@ object Valid {
         0.01.toBigDecimal()
     )
 
-    val pairFeeConfigModel = PairFeeConfigModel(
-        1,
-        "BTC_USDT",
-        "BID",
-        "1",
-        0.01.toBigDecimal(),
-        0.01.toBigDecimal()
-    )
-
     class TestCoreEvent(val leftSidePair: String, val rightSidePair: String) :
         CoreEvent(Pair(leftSidePair, rightSidePair), currentTime)
 

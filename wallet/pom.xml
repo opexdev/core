@@ -22,7 +22,7 @@
         <module>wallet-ports/wallet-eventlistener-kafka</module>
         <module>wallet-ports/wallet-bcgateway-proxy</module>
         <module>wallet-ports/wallet-auth-proxy</module>
-        <module>wallet-ports/wallet-market-proxy</module>
+        <module>wallet-ports/wallet-accountant-proxy</module>
     </modules>
 
     <dependencies>
@@ -59,8 +59,8 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>co.nilin.opex.wallet.ports.market</groupId>
-                <artifactId>wallet-market-proxy</artifactId>
+                <groupId>co.nilin.opex.wallet.ports.accountant</groupId>
+                <artifactId>wallet-accountant-proxy</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

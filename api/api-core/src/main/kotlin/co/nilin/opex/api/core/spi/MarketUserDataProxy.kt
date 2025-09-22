@@ -1,7 +1,6 @@
 package co.nilin.opex.api.core.spi
 
 import co.nilin.opex.api.core.inout.*
-import co.nilin.opex.common.utils.Interval
 import java.security.Principal
 import java.util.*
 
@@ -65,8 +64,4 @@ interface MarketUserDataProxy {
         endTime: Long?,
         direction: OrderDirection?,
     ): Long
-
-    fun getTradeVolumeByCurrency(uuid: String, symbol: String, interval: Interval): UserCurrencyVolume
-
-    fun getTotalTradeVolumeValue(uuid: String, interval: Interval): UserTotalVolumeValue
 }
