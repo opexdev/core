@@ -16,7 +16,7 @@ class UserDataController(
     @Value("\${app.trade-volume-calculation-currency}")
     private val tradeVolumeCalculationCurrency: String,
 ) {
-    @GetMapping("/{uuid}")
+    @GetMapping("/fee/{uuid}")
     suspend fun getUserFee(@PathVariable uuid: String): UserFee {
         return feeCalculator.getUserFee(uuid)
     }
