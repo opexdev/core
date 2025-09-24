@@ -45,7 +45,7 @@ class AccountantProxyImpl(private val restTemplate: RestTemplate) : AccountantPr
     override fun getUserFee(uuid: String): UserFee {
         logger.info("fetching user fee")
         return restTemplate.exchange<UserFee>(
-            "$baseUrl/fee/${uuid}",
+            "$baseUrl/user/data/fee/$uuid",
             HttpMethod.GET,
             noBody()
         ).body ?: throw OpexError.FeeConfigNotFound.exception()
