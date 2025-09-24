@@ -9,11 +9,13 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Profile
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories
 import org.testcontainers.containers.PostgreSQLContainer
 import javax.sql.DataSource
 
 @TestConfiguration
+@Profile("test")
 @EnableR2dbcRepositories(basePackages = ["co.nilin.opex"])
 class PostgresEnabledTest(@Value("\${testcontainers.db.name}") private val name: String,
                           @Value("\${testcontainers.db.username}") private val username: String,
