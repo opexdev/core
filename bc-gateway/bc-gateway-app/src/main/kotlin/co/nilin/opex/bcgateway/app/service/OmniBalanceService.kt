@@ -10,8 +10,8 @@ import java.math.BigDecimal
 
 @Service
 class OmniBalanceService(
-        private val cryptoCurrencyHandlerV2: CryptoCurrencyHandlerV2,
-        private val omniWalletManager: OmniWalletManager
+    private val cryptoCurrencyHandlerV2: CryptoCurrencyHandlerV2,
+    private val omniWalletManager: OmniWalletManager
 ) {
 
     data class OmniBalanceForCurrency(val currency: String, val balance: BigDecimal? = BigDecimal.ZERO)
@@ -21,12 +21,12 @@ class OmniBalanceService(
 
     suspend fun fetchSystemBalance(currency: String): OmniBalanceForCurrency {
         val currencyImpls =
-                cryptoCurrencyHandlerV2.fetchCurrencyOnChainGateways(FetchGateways(currencySymbol = currency))
-                        ?: throw OpexError.CurrencyNotFound.exception()
+            cryptoCurrencyHandlerV2.fetchCurrencyOnChainGateways(FetchGateways(currencySymbol = currency))
+                ?: throw OpexError.CurrencyNotFound.exception()
         val totalBalance: BigDecimal? = currencyImpls?.map {
             when (it.isToken) {
                 true -> it.tokenAddress?.let { ta -> omniWalletManager.getTokenBalance(it).balance }
-                        ?: BigDecimal.ZERO
+                    ?: BigDecimal.ZERO
 
                 false -> omniWalletManager.getAssetBalance(it).balance ?: BigDecimal.ZERO
                 else -> BigDecimal.ZERO
@@ -37,14 +37,14 @@ class OmniBalanceService(
 
     suspend fun fetchSystemBalance(): List<OmniBalanceForCurrency>? {
         val currencyImpls = cryptoCurrencyHandlerV2.fetchCurrencyOnChainGateways(FetchGateways())
-                ?: throw OpexError.CurrencyNotFound.exception()
+            ?: throw OpexError.CurrencyNotFound.exception()
         val implsGroupedByCurrency = currencyImpls?.groupBy { it.currencySymbol }
         val result = ArrayList<OmniBalanceForCurrency>()
         for (currency in implsGroupedByCurrency?.keys ?: emptyList()) {
             val balance = implsGroupedByCurrency?.get(currency)?.map {
                 when (it.isToken) {
                     true -> it.tokenAddress?.let { ta -> omniWalletManager.getTokenBalance(it).balance }
-                            ?: BigDecimal.ZERO
+                        ?: BigDecimal.ZERO
 
                     false -> omniWalletManager.getAssetBalance(it).balance ?: BigDecimal.ZERO
                     else -> BigDecimal.ZERO

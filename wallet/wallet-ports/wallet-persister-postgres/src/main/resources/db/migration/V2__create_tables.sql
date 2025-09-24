@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS currency
     last_update_date  TIMESTAMP,
     create_date       TIMESTAMP,
     is_transitive     BOOLEAN NOT NULL DEFAULT FALSE,
+    is_active         BOOLEAN      NOT NULL DEFAULT TRUE,
     is_deposit_active Boolean NOT NULL DEFAULT TRUE,
     is_withdraw_active Boolean NOT NULL DEFAULT TRUE,
     sign              VARCHAR(25),
@@ -124,8 +125,6 @@ CREATE TABLE IF NOT EXISTS withdraws
     transfer_method VARCHAR(255)
 );
 
-ALTER TABLE withdraws
-    add COLUMN IF NOT EXISTS attachment VARCHAR(255);
 
 CREATE TABLE IF NOT EXISTS rate
 (
@@ -191,8 +190,7 @@ CREATE TABLE IF NOT EXISTS deposits
     attachment      VARCHAR(255),
     transfer_method VARCHAR(255)
 );
-ALTER TABLE deposits
-    add COLUMN IF NOT EXISTS attachment VARCHAR(255);
+
 
 CREATE TABLE IF NOT EXISTS currency_off_chain_gateway
 (
@@ -215,17 +213,6 @@ CREATE TABLE IF NOT EXISTS currency_off_chain_gateway
     UNIQUE (currency_symbol, transfer_method)
 
 );
-
-ALTER TABLE currency_off_chain_gateway
-    add COLUMN IF NOT EXISTS deposit_description TEXT;
-
-
-ALTER TABLE currency_off_chain_gateway
-    add COLUMN IF NOT EXISTS withdraw_description TEXT;
-
-ALTER TABLE currency_off_chain_gateway
-    drop COLUMN  IF EXISTS description;
-
 
 CREATE TABLE IF NOT EXISTS terminal
 (
