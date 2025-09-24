@@ -99,7 +99,7 @@ internal class FeeCalculatorImplTest {
     fun givenCachedValueExists_whenGetUserFeeCalled_thenReturnCachedValueAndSkipServices() {
         runBlocking {
             val uuid = "user_1"
-            val cachedFee = UserFee("test1", 1, BigDecimal("0.1"), BigDecimal("0.1"))
+            val cachedFee = UserFee("test1", BigDecimal("0.1"), BigDecimal("0.1"))
 
             every { cacheManager.get(uuid) } returns cachedFee
 
@@ -116,7 +116,7 @@ internal class FeeCalculatorImplTest {
     @Test
     fun givenNoCachedValue_whenGetUserFee_thenFetchFromServicesAndCacheIt() = runBlocking {
         val uuid = "user_2"
-        val expectedFee = UserFee("test2", 2, BigDecimal("0.2"), BigDecimal("0.2"))
+        val expectedFee = UserFee("test2", BigDecimal("0.2"), BigDecimal("0.2"))
 
         every { cacheManager.get(uuid) } returns null
         coEvery { walletProxy.getUserTotalAssets(uuid) } returns mockk {
@@ -147,7 +147,7 @@ internal class FeeCalculatorImplTest {
         val uuid = "user_3"
         val assets = BigDecimal("5000")
         val volume = BigDecimal("300")
-        val expectedFee = UserFee("test", 1, BigDecimal("0.1"), BigDecimal("0.1"))
+        val expectedFee = UserFee("test", BigDecimal("0.1"), BigDecimal("0.1"))
 
         every { cacheManager.get(uuid) } returns null
         coEvery { walletProxy.getUserTotalAssets(uuid) } returns mockk { every { totalAmount } returns assets }

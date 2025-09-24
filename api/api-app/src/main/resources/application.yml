@@ -112,5 +112,7 @@ app:
       secret: ${API_KEY_CLIENT_SECRET}
   binance:
     api-url: https://api1.binance.com
+  trade-volume-calculation-currency: USDT # also in accountant module
+  withdraw-volume-calculation-currency: USDT # also in accountant module
 swagger:
   authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token

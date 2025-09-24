@@ -6,7 +6,7 @@ import java.math.BigDecimal
 
 @Table("withdraw_limit_config")
 data class WithdrawLimitConfigModel(
-    @Id val id: Long? = null,
+    @Id val name: String,
     val userLevel: String,
     val dailyMaxAmount: BigDecimal,
 

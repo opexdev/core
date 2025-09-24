@@ -34,7 +34,7 @@ open class TradeManagerImpl(
 
     @Transactional
     override suspend fun handleTrade(trade: TradeEvent): List<FinancialAction> {
-        logger.info("Trade event started ${trade.tradeId}")
+//        logger.info("Trade event started ${trade.tradeId}")
         val financialActions = mutableListOf<FinancialAction>()
         //taker order by ouid
         val takerOrder = orderPersister.load(trade.takerOuid)

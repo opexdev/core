@@ -8,8 +8,7 @@ import co.nilin.opex.api.ports.opex.data.OrderBookResponse
 import co.nilin.opex.api.ports.opex.data.RecentTradeResponse
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.utils.Interval
-import org.springframework.security.core.annotation.CurrentSecurityContext
-import org.springframework.security.core.context.SecurityContext
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 import java.time.ZoneId
@@ -22,6 +21,10 @@ class MarketController(
     private val marketDataProxy: MarketDataProxy,
     private val walletProxy: WalletProxy,
     private val matchingGatewayProxy: MatchingGatewayProxy,
+    @Value("\${app.trade-volume-calculation-currency}")
+    private val tradeVolumeCalculationCurrency: String,
+    @Value("\${app.withdraw-volume-calculation-currency}")
+    private val withdrawVolumeCalculationCurrency: String
 ) {
     private val orderBookValidLimits = arrayListOf(5, 10, 20, 50, 100, 500, 1000, 5000)
     private val validDurations = arrayListOf("24h", "7d", "1M")
@@ -236,6 +239,22 @@ class MarketController(
                 )
             }
         return list
+    }
+
+    @GetMapping("/basic-data")
+    fun getBasicData(): MarketBasicData {
+        val quoteCurrencies = walletProxy.getQuoteCurrencies()
+        return MarketBasicData(
+            (quoteCurrencies.map { it.currency }),
+            (quoteCurrencies.filter { it.isReference }.map { it.currency }),
+            withdrawVolumeCalculationCurrency,
+            tradeVolumeCalculationCurrency
+        )
+    }
+
+    @GetMapping("/withdraw-limits")
+    fun getWithdrawLimits(): List<WithdrawLimitConfig> {
+        return accountantProxy.getWithdrawLimitConfigs()
     }
 
     private fun getValidLimit(limit: Int?): Int = when {

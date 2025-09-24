@@ -144,7 +144,7 @@ CREATE TABLE IF NOT EXISTS user_withdraw_volume
 
 CREATE TABLE IF NOT EXISTS withdraw_limit_config
 (
-    id         SERIAL PRIMARY KEY,
+    name VARCHAR(50) PRIMARY KEY,
     user_level    VARCHAR(20) NOT NULL UNIQUE,
     daily_max_amount decimal     not null
 );

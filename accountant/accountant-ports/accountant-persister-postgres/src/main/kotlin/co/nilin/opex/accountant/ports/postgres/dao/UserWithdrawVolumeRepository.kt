@@ -30,10 +30,10 @@ interface UserWithdrawVolumeRepository : ReactiveCrudRepository<UserWithdrawVolu
 
     @Query(
         """
-        select sum(total_amount) as total_Amount, quote_currency
+        select sum(total_amount) as total_Amount
         from user_withdraw_volume 
         where user_id = :userId and date >= :startDate and quote_currency=:quoteCurrency
-        group by user_id , quote_currency
+        group by user_id
     """
     )
     fun findTotalValueByUserAndAndDateAfter(
@@ -41,5 +41,4 @@ interface UserWithdrawVolumeRepository : ReactiveCrudRepository<UserWithdrawVolu
         startDate: LocalDate,
         quoteCurrency: String
     ): Mono<BigDecimal>
-
 }

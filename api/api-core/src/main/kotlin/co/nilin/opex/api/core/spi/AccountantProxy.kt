@@ -3,6 +3,7 @@ package co.nilin.opex.api.core.spi
 import co.nilin.opex.api.core.inout.FeeConfig
 import co.nilin.opex.api.core.inout.PairConfigResponse
 import co.nilin.opex.api.core.inout.UserFee
+import co.nilin.opex.api.core.inout.WithdrawLimitConfig
 import co.nilin.opex.common.utils.Interval
 import java.math.BigDecimal
 
@@ -17,4 +18,8 @@ interface AccountantProxy {
     fun getTradeVolumeByCurrency(uuid: String, symbol: String, interval: Interval): BigDecimal
 
     fun getTotalTradeVolumeValue(uuid: String, interval: Interval): BigDecimal
+
+    fun getWithdrawLimitConfigs(): List<WithdrawLimitConfig>
+
+    fun getTotalWithdrawVolumeValue(uuid: String, interval: Interval): BigDecimal
 }

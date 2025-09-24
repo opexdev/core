@@ -106,5 +106,5 @@ app:
       delay-seconds: 5
       delay-multiplier: 3
   zone-offset: +03:30
-  trade-volume-calculation-currency: USDT
-  withdraw-volume-calculation-currency: USDT
+  trade-volume-calculation-currency: USDT # also in api module
+  withdraw-volume-calculation-currency: USDT # also in api module
