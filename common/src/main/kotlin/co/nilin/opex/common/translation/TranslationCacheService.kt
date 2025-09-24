@@ -1,7 +1,7 @@
 package co.nilin.opex.common.translation
 
 import co.nilin.opex.common.data.MessageTranslation
-import co.nilin.opex.utility.error.data.UserLanguage
+import co.nilin.opex.common.data.UserLanguage
 import kotlinx.coroutines.*
 import org.springframework.context.MessageSource
 import org.springframework.stereotype.Service
@@ -47,7 +47,7 @@ class TranslationCacheService(
             return cached.message
         }
         return try {
-            messageSource?.getMessage(key, null, Locale.of(userLanguage.lowercase()))
+            messageSource?.getMessage(key, null, Locale(userLanguage.lowercase()))
         } catch (ex: Exception) {
             key
         }

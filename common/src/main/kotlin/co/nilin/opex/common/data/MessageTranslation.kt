@@ -1,6 +1,6 @@
 package co.nilin.opex.common.data
 
-import co.nilin.opex.utility.error.data.UserLanguage
+//After adjusting versions in various modules it should be moved to common project
 
 data class MessageTranslation(
     val key: String,

@@ -92,5 +92,8 @@ logging:
 app:
   auth:
     cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
+  custom-message:
+    enabled: ${CUSTOM_MESSAGE_ENABLED:false}
+    base-url: ${CUSTOM_MESSAGE_URL}
 swagger:
   authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token}

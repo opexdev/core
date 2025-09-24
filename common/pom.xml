@@ -14,7 +14,7 @@
     <packaging>jar</packaging>
     <artifactId>common</artifactId>
     <description>Common codes and logic</description>
-    <version>1.0.1-beta.28</version>
+    <version>1.0.1-beta.32</version>
 
     <dependencies>
         <dependency>

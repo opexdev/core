@@ -63,6 +63,8 @@ app:
     life-time: 15 #minutes
   zone-offset: +03:30
   snapshot-currency: USDT
+  withdraw-limit:
+    enabled: false
 testcontainers:
   db:
     username: ${dbusername:opex}
@@ -81,5 +83,3 @@ logging:
 swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
 test:
   topic: embedded-test-topic
-withdraw-limit:
-  enabled: false

@@ -144,6 +144,11 @@ app:
   symbols: ${SYMBOLS}
   zone-offset: +03:30
   snapshot-currency: USDT
+  withdraw-limit:
+    enabled: true
+  custom-message:
+    enabled: ${CUSTOM_MESSAGE_ENABLED:false}
+    base-url: ${CUSTOM_MESSAGE_URL}
 logging:
   level:
     root: INFO
@@ -154,5 +159,3 @@ logging:
     org.hibernate.SQL: DEBUG
     logging.level.org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
-withdraw-limit:
-    enabled: true

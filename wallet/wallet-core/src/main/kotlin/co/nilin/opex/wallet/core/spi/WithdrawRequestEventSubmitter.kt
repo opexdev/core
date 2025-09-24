@@ -5,7 +5,7 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 interface WithdrawRequestEventSubmitter {
-
+    //It is temporary class
     suspend fun send(
         uuid: String,
         withdrawId: Long?,
