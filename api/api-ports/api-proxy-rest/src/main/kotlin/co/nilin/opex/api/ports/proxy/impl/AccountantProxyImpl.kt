@@ -78,10 +78,10 @@ class AccountantProxyImpl(private val restTemplate: RestTemplate) : AccountantPr
 
     override fun getTotalWithdrawVolumeValue(
         uuid: String,
-        interval: Interval
+        date : Long
     ): BigDecimal {
         val uri = UriComponentsBuilder.fromUriString("$baseUrl/user/data/withdraw/volume/total/$uuid")
-            .queryParam("interval", interval.toString())
+            .queryParam("date", date)
             .build().toUri()
         return restTemplate.exchange<BigDecimal>(uri, HttpMethod.GET, noBody()).body!!
     }

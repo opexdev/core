@@ -1,5 +1,6 @@
 package co.nilin.opex.accountant.app.controller
 
+import co.nilin.opex.accountant.app.utils.asLocalDateTime
 import co.nilin.opex.accountant.core.api.FeeCalculator
 import co.nilin.opex.accountant.core.model.UserFee
 import co.nilin.opex.accountant.core.spi.UserVolumePersister
@@ -8,6 +9,7 @@ import co.nilin.opex.common.utils.Interval
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
+import java.time.LocalDateTime
 
 @RestController
 @RequestMapping("/user/data")
@@ -50,8 +52,8 @@ class UserDataController(
     }
 
     @GetMapping("/withdraw/volume/total/{uuid}")
-    suspend fun getWithdrawVolumeValue(@PathVariable uuid: String, @RequestParam interval: Interval): BigDecimal {
-        return userWithdrawVolumePersister.getTotalValueByUserAndDateAfter(uuid, interval.getLocalDateTime())
+    suspend fun getWithdrawVolumeValue(@PathVariable uuid: String, @RequestParam date: Long): BigDecimal {
+        return userWithdrawVolumePersister.getTotalValueByUserAndDateAfter(uuid, date.asLocalDateTime())
     }
 
 }
