@@ -22,7 +22,9 @@ jobs:
           java-version: ${{ matrix.java }}
       #          cache: maven
       - name: Build
-        run: mvn -B -T 1C clean install -Potc
+        run: |
+              mvn -pl common -am  -B -T 1C clean install -Potc
+              mvn -B -T 1C clean install -Potc
       - name: Run Tests
         run: mvn -B -T 1C -Dskip.unit.tests=false surefire:test
       - name: Build Docker images
