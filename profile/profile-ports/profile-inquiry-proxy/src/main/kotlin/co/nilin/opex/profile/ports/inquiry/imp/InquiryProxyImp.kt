@@ -19,7 +19,7 @@ class InquiryProxyImp(
     private val tokenProvider: TokenProvider
 ) : InquiryProxy {
 
-    @Value("\${inquiry.url}")
+    @Value("\${app.inquiry.url}")
     private lateinit var baseUrl: String
 
     override suspend fun getShahkarInquiryResult(identifier: String, mobile: String): ShahkarResponse {

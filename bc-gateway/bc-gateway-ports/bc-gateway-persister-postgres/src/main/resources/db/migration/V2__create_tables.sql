@@ -53,11 +53,7 @@ CREATE TABLE IF NOT EXISTS chain_address_types
     UNIQUE (chain_name, addr_type_id)
 );
 
--- CREATE TABLE IF NOT EXISTS currency
--- (
---     symbol VARCHAR(72) PRIMARY KEY,
---     name   VARCHAR(72) NOT NULL
--- );
+
 
 CREATE TABLE IF NOT EXISTS currency_on_chain_gateway
 (

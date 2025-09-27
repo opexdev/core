@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono
 
 @Component
 class CaptchaProxy(
-    @Value("\${captcha.enabled}") private val captchaEnabled: Boolean,
+    @Value("\${app.captcha.enabled}") private val captchaEnabled: Boolean,
     @Qualifier("captchaWebClient") private val webClient: WebClient,
 ) {
 

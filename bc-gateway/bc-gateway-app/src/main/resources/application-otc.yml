@@ -14,6 +14,10 @@ spring:
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
     initialization-mode: always
+  datasource:
+    url: jdbc:postgresql://${DB_IP_PORT:localhost}/opex
+    username: ${dbusername:opex}
+    password: ${dbpassword:hiopex}
   cloud:
     bootstrap:
       enabled: true
@@ -77,3 +81,6 @@ app:
     url: http://wallet:8080
   address:
     life-time: ${ADDRESS_EXP_TIME}  #    second
+  custom-message:
+    enabled: ${CUSTOM_MESSAGE_ENABLED:false}
+    base-url: ${CUSTOM_MESSAGE_URL}

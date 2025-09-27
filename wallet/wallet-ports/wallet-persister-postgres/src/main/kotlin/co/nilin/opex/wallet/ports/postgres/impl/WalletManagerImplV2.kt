@@ -243,7 +243,7 @@ class WalletManagerImplV2(
         type: WalletType
     ): Wallet {
         val walletModel = walletRepository
-            .save(WalletModel(owner.id!!, type, currency.symbol, balance?.amount))
+            .save(WalletModel(owner.id!!, type, currency.symbol, balance.amount))
             .awaitFirst()
         return Wallet(
             walletModel.id!!,

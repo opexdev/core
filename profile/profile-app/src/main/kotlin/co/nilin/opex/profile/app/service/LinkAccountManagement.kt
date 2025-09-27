@@ -41,6 +41,7 @@ class LinkAccountManagement(val linkedAccountPersister: LinkedAccountPersister) 
         when (bankAccountType) {
             BankAccountType.Sheba -> if (!number.isValidIBAN()) throw OpexError.InvalidIban.exception()
             BankAccountType.Card -> if (!number.isValidCardNumber()) throw OpexError.InvalidCard.exception()
+            else -> {}
         }
     }
 

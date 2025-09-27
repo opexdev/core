@@ -9,8 +9,6 @@ import java.time.LocalDateTime
 
 fun <T> Any.convert(classOfT: Class<T>): T = Gson().fromJson(Gson().toJson(this), classOfT)
 
-fun <T> Mono<Any>.convert(classOfT: Class<T>): Mono<T> = Mono.just(Gson().fromJson(Gson().toJson(this), classOfT))
-
 fun CompleteProfileRequest.toProfileModel(
     existing: ProfileModel,
     mobileMatch: Boolean?,

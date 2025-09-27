@@ -14,7 +14,7 @@ interface ChainRepository : ReactiveCrudRepository<ChainModel, String> {
     @Query("insert into chains values (:name) on conflict do nothing")
     fun insert(name: String): Mono<Void>
 
-    fun findByName(name: String): Mono<ChainModel>
+    fun findByName(name: String): Mono<ChainModel>?
 
     @Query(
         """

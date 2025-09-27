@@ -1,4 +1,4 @@
-FROM openjdk:11
+FROM openjdk:17
 ARG JAR_FILE=target/*.jar
 COPY ${JAR_FILE} app.jar
 COPY target/classes/opex-master-realm.json opex-master-realm.json

@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS profile
     creator          VARCHAR(100),
     last_update_date TIMESTAMP DEFAULT CURRENT_DATE,
     kyc_level        varchar(100),
+    verification_status VARCHAR(255),
     personal_identity_match BOOLEAN,
     mobile_identity_match BOOLEAN
 );
@@ -47,7 +48,9 @@ CREATE TABLE IF NOT EXISTS profile_history
     change_request_type VARCHAR(100),
     kyc_level           varchar(100),
     personal_identity_match BOOLEAN,
-    mobile_identity_match BOOLEAN
+    mobile_identity_match BOOLEAN,
+    verification_status VARCHAR(255)
+
 );
 
 
@@ -118,9 +121,6 @@ CREATE TABLE IF NOT EXISTS linked_bank_account_history
     change_request_date TIMESTAMP,
     change_request_type VARCHAR(100)
 );
-
--- Alter table limitation_history add column reason Varchar(100);
-
 
 DROP TRIGGER IF EXISTS profile_log_update on public.profile;
 DROP TRIGGER IF EXISTS profile_log_delete on public.profile;
@@ -266,10 +266,35 @@ CREATE TABLE IF NOT EXISTS profile_approval_request
 DO
 $$
     BEGIN
-        IF  EXISTS (SELECT 1
+        IF NOT EXISTS (SELECT 1
                        FROM information_schema.columns
-                       WHERE table_name = 'profile_history' AND column_name = 'email') THEN ALTER TABLE profile_history
-            ALTER COLUMN email DROP NOT NULL;
+                       WHERE table_name = 'profile' AND column_name = 'verification_status') THEN ALTER TABLE profile
+            ADD COLUMN verification_status VARCHAR(255);
+        END IF;
+    END
+$$;
+
+DO
+$$
+    BEGIN
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'profile_history'
+                         AND column_name = 'verification_status') THEN ALTER TABLE profile_history
+            ADD COLUMN verification_status VARCHAR(255);
+        END IF;
+    END
+$$;
+
+DO
+$$
+    BEGIN
+        IF EXISTS (SELECT 1
+                   FROM information_schema.columns
+                   WHERE table_name = 'profile_history'
+                     AND column_name = 'gender'
+                     AND data_type != 'character varying') THEN ALTER TABLE profile_history
+            ALTER COLUMN gender SET DATA TYPE VARCHAR(50);
         END IF;
     END
 $$;
