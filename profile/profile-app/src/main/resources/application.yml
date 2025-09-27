@@ -60,6 +60,15 @@ app:
     url: lb://opex-otp/v1
   auth-gateway:
     url: lb://opex-auth-gateway
+  inquiry:
+    mobile-indentiy: true
+    personal-indentiy: true
+    url: ${JIBIT_URL}
+    api-key: ${JIBIT_API_KEY}
+    secret-key: ${JIBIT_SECRET_KEY}
+  custom-message:
+    enabled: ${CUSTOM_MESSAGE_ENABLED:false}
+    base-url: ${CUSTOM_MESSAGE_URL}
 management:
   endpoints:
     web:
@@ -73,13 +82,4 @@ management:
       enabled: true
     prometheus:
       enabled: true
-app:
-  inquiry:
-    mobile-indentiy: true
-    personal-indentiy: true
-    url: ${JIBIT_URL}
-    api-key: ${JIBIT_API_KEY}
-    secret-key: ${JIBIT_SECRET_KEY}
-    custom-message:
-      enabled: ${CUSTOM_MESSAGE_ENABLED:false}
-      base-url: ${CUSTOM_MESSAGE_URL}
+
