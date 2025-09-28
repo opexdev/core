@@ -19,7 +19,7 @@ class AccountantTempEventListener(
     }
 
     override fun onEvent(event: CoreEvent, partition: Int, offset: Long, timestamp: Long) {
-//        logger.info("TempEvent received $event")
+        logger.info("TempEvent received $event")
         runBlocking {
             when (event) {
                 is CreateOrderEvent -> orderManager.handleNewOrder(event)
@@ -32,6 +32,6 @@ class AccountantTempEventListener(
                 }
             }
         }
-//        logger.info("TempEvent processed")
+        logger.info("TempEvent processed")
     }
 }
