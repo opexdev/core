@@ -111,7 +111,7 @@ class CurrencyHandlerImplV2(
         isToken: Boolean,
         tokenAddress: String?
     ): CryptoCurrencyCommand? {
-        chainRepository.findByName(chain).awaitFirstOrElse { throw OpexError.ChainNotFound.exception() }
+        chainRepository.findByName(chain)?.awaitFirstOrElse { throw OpexError.ChainNotFound.exception() }
 
         return if (isToken)
             currencyImplementationRepository.findTokenGateway(chain, tokenAddress!!).awaitSingleOrNull()?.toDto()

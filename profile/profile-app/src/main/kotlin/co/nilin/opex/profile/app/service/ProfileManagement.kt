@@ -32,10 +32,10 @@ class ProfileManagement(
     private val authProxy: AuthProxy,
     private val inquiryProxy: InquiryProxy,
 
-    @Value("\${inquiry.mobile-indentiy}")
+    @Value("\${app.inquiry.mobile-indentiy}")
     private var mobileIdentityEnabled: Boolean,
 
-    @Value("\${inquiry.personal-indentiy}")
+    @Value("\${app.inquiry.personal-indentiy}")
     private var personalIdentityEnabled: Boolean,
 
     @Value("\${app.admin-approval.profile-completion-request}")

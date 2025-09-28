@@ -10,10 +10,8 @@ import co.nilin.opex.bcgateway.ports.postgres.model.ChainAddressTypeModel
 import co.nilin.opex.common.OpexError
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
-import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.stereotype.Component
 
 @Component
@@ -32,8 +30,8 @@ class ChainHandler(
             ?: throw OpexError.InvalidAddressType.exception()
 
         chainRepository.insert(name).awaitFirstOrNull()
-        val model = chainRepository.findByName(name).awaitFirst()
-        chainAddressRepository.save(ChainAddressTypeModel(null, model.name, type.id!!)).awaitFirstOrNull()
+        val model = chainRepository.findByName(name)?.awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+        chainAddressRepository.save(ChainAddressTypeModel(null, model!!.name, type.id!!)).awaitFirstOrNull()
         return Chain(model.name, emptyList())
     }
 
@@ -51,10 +49,10 @@ class ChainHandler(
     }
 
     override suspend fun fetchChainInfo(chain: String): Chain {
-        val chainDao = chainRepository.findByName(chain)?.awaitSingle()
+        val chainDao = chainRepository.findByName(chain)?.awaitFirstOrElse { throw OpexError.ChainNotFound.exception() }
         val addressTypes = chainRepository.findAddressTypesByName(chain)
             .map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }.toList()
-        return Chain(chainDao.name, addressTypes)
+        return Chain(chainDao!!.name, addressTypes)
     }
 
 }

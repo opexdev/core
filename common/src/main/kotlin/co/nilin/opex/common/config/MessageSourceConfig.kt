@@ -1,18 +1,11 @@
-package co.nilin.opex.wallet.app.config
+package co.nilin.opex.common.config
 
-import co.nilin.opex.common.utils.CustomErrorTranslator
-import co.nilin.opex.utility.error.spi.ErrorTranslator
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.MessageSource
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Profile
 import org.springframework.context.support.ReloadableResourceBundleMessageSource
-
 @Configuration
-@Profile("otc")
-class ErrorConfig {
-
+class MessageSourceConfig {
     @Bean
     fun messageSource(): MessageSource {
         val messageSource = ReloadableResourceBundleMessageSource()
@@ -20,11 +13,5 @@ class ErrorConfig {
         messageSource.setCacheSeconds(10) //reload messages every 10 seconds
         messageSource.setDefaultEncoding("UTF-8")
         return messageSource
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    fun translator(): ErrorTranslator {
-        return CustomErrorTranslator(messageSource = messageSource())
     }
 }

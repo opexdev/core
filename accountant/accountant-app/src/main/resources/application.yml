@@ -108,3 +108,6 @@ app:
   zone-offset: +03:30
   trade-volume-calculation-currency: USDT # also in api module
   withdraw-volume-calculation-currency: USDT # also in api module
+  custom-message:
+    enabled: ${CUSTOM_MESSAGE_ENABLED:false}
+    base-url: ${CUSTOM_MESSAGE_URL}

@@ -51,3 +51,6 @@ otp:
     username: ${SMTP_USER}
     password: ${SMTP_PASS}
     from: ${SMTP_FROM}
+  custom-message:
+    enabled: ${CUSTOM_MESSAGE_ENABLED:false}
+    base-url: ${CUSTOM_MESSAGE_URL}
