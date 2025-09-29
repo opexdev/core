@@ -277,7 +277,7 @@ class WalletProxyImpl(private val restTemplate: RestTemplate) : WalletProxy {
 
     override fun getQuoteCurrencies(): List<QuoteCurrency> {
         val uri = UriComponentsBuilder.fromUriString("$baseUrl/currency/quotes")
-            .queryParam("isReference", true)
+//            .queryParam("isReference", true)
             .build().toUri()
         return restTemplate.exchange<Array<QuoteCurrency>>(uri, HttpMethod.GET, noBody()).body?.toList() ?: emptyList()
     }

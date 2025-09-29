@@ -4,6 +4,7 @@ import co.nilin.opex.accountant.core.model.WithdrawStatus
 import co.nilin.opex.accountant.core.spi.CurrencyRatePersister
 import co.nilin.opex.accountant.core.spi.UserWithdrawVolumePersister
 import co.nilin.opex.accountant.ports.postgres.dao.UserWithdrawVolumeRepository
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -39,5 +40,16 @@ class UserWithdrawVolumePersisterImpl(
             signedAmount,
             calculationCurrency
         ).awaitSingleOrNull()
+    }
+
+    override suspend fun getTotalValueByUserAndDateAfter(
+        uuid: String,
+        startDate: LocalDateTime
+    ): BigDecimal {
+        return repository.findTotalValueByUserAndAndDateAfter(
+            uuid,
+            startDate.atOffset(ZoneOffset.of(zoneOffsetString)).toLocalDate(),
+            calculationCurrency
+        ).awaitFirstOrNull() ?: BigDecimal.ZERO
     }
 }

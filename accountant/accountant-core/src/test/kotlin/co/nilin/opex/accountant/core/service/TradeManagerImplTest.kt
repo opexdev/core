@@ -334,7 +334,7 @@ internal class TradeManagerImplTest {
         coEvery {
             feeCalculator.getUserFee(submitOrderEvent.uuid)
         } returns UserFee(
-            "Test", 1, makerFee, takerFee
+            "Test", makerFee, takerFee
         )
 
         coEvery {

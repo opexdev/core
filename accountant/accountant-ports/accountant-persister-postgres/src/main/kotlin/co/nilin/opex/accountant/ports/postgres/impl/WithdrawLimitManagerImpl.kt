@@ -1,10 +1,12 @@
 package co.nilin.opex.accountant.ports.postgres.impl
 
+import co.nilin.opex.accountant.core.model.WithdrawLimitConfig
 import co.nilin.opex.accountant.core.spi.CurrencyRatePersister
 import co.nilin.opex.accountant.core.spi.WithdrawLimitManager
 import co.nilin.opex.accountant.ports.postgres.dao.UserWithdrawVolumeRepository
 import co.nilin.opex.accountant.ports.postgres.dao.WithdrawLimitConfigRepository
 import co.nilin.opex.common.OpexError
+import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -37,5 +39,17 @@ class WithdrawLimitManagerImpl(
         ).awaitFirstOrNull()
 
         return ((userWithdrawVolume ?: BigDecimal.ZERO) + (amount.multiply(rate))) < withdrawLimitConfig.dailyMaxAmount
+    }
+
+    override suspend fun getAll(): List<WithdrawLimitConfig> {
+        return withdrawLimitConfigRepository.findAll()
+            .map { model ->
+                WithdrawLimitConfig(
+                    name = model.name,
+                    dailyMaxAmount = model.dailyMaxAmount
+                )
+            }
+            .collectList()
+            .awaitFirst()
     }
 }

@@ -81,7 +81,7 @@ internal class OrderManagerImplTest {
         coEvery {
             feeCalculator.getUserFee(submitOrderEvent.uuid)
         } returns UserFee(
-            "Test", 1, BigDecimal.valueOf(0.08), BigDecimal.valueOf(0.1)
+            "Test", BigDecimal.valueOf(0.08), BigDecimal.valueOf(0.1)
         )
         //when
         val financialActions = orderManager.handleRequestOrder(submitOrderEvent)
@@ -137,7 +137,7 @@ internal class OrderManagerImplTest {
         coEvery {
             feeCalculator.getUserFee(submitOrderEvent.uuid)
         } returns UserFee(
-            "Test", 1, BigDecimal.valueOf(0.08), BigDecimal.valueOf(0.1)
+            "Test", BigDecimal.valueOf(0.08), BigDecimal.valueOf(0.1)
         )
 
         //when

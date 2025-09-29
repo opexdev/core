@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository
 import reactor.core.publisher.Mono
 
 @Repository
-interface WithdrawLimitConfigRepository : ReactiveCrudRepository<WithdrawLimitConfigModel, Long> {
+interface WithdrawLimitConfigRepository : ReactiveCrudRepository<WithdrawLimitConfigModel, String> {
 
     fun findByUserLevel(userLevel: String): Mono<WithdrawLimitConfigModel>
 }

@@ -2,11 +2,7 @@ package co.nilin.opex.api.core.inout
 
 import java.math.BigDecimal
 
-data class UserFee(
+data class WithdrawLimitConfig(
     val name: String,
-    val makerFee: BigDecimal,
-    val takerFee: BigDecimal,
-
-    )
-
-
+    val dailyMaxAmount: BigDecimal,
+)

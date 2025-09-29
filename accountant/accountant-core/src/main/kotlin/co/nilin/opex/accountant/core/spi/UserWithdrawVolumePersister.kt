@@ -12,4 +12,6 @@ interface UserWithdrawVolumePersister {
         date: LocalDateTime,
         withdrawStatus: WithdrawStatus
     )
+
+    suspend fun getTotalValueByUserAndDateAfter(uuid: String, startDate: LocalDateTime): BigDecimal
 }

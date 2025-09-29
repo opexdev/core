@@ -3,6 +3,7 @@ package co.nilin.opex.api.ports.proxy.impl
 import co.nilin.opex.api.core.inout.FeeConfig
 import co.nilin.opex.api.core.inout.PairConfigResponse
 import co.nilin.opex.api.core.inout.UserFee
+import co.nilin.opex.api.core.inout.WithdrawLimitConfig
 import co.nilin.opex.api.core.spi.AccountantProxy
 import co.nilin.opex.api.ports.proxy.utils.noBody
 import co.nilin.opex.common.OpexError
@@ -62,6 +63,25 @@ class AccountantProxyImpl(private val restTemplate: RestTemplate) : AccountantPr
     override fun getTotalTradeVolumeValue(uuid: String, interval: Interval): BigDecimal {
         val uri = UriComponentsBuilder.fromUriString("$baseUrl/user/data/trade/volume/total/$uuid")
             .queryParam("interval", interval.toString())
+            .build().toUri()
+        return restTemplate.exchange<BigDecimal>(uri, HttpMethod.GET, noBody()).body!!
+    }
+
+    override fun getWithdrawLimitConfigs(): List<WithdrawLimitConfig> {
+        logger.info("fetching withdraw limit configs")
+        return restTemplate.exchange<Array<WithdrawLimitConfig>>(
+            "$baseUrl/config/withdraw-limit",
+            HttpMethod.GET,
+            noBody()
+        ).body?.toList() ?: emptyList()
+    }
+
+    override fun getTotalWithdrawVolumeValue(
+        uuid: String,
+        date : Long
+    ): BigDecimal {
+        val uri = UriComponentsBuilder.fromUriString("$baseUrl/user/data/withdraw/volume/total/$uuid")
+            .queryParam("date", date)
             .build().toUri()
         return restTemplate.exchange<BigDecimal>(uri, HttpMethod.GET, noBody()).body!!
     }
