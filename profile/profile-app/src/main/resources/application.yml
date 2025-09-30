@@ -52,6 +52,7 @@ swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/proto
 app:
   admin-approval:
     profile-completion-request: false
+  mobile-regex : ^09\\d{9}$
   auth:
     cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
   kyc:

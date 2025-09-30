@@ -97,10 +97,6 @@ class ProfileManagement(
         return profilePersister.getProfile(userId)
     }
 
-    suspend fun update(userId: String, newProfile: UpdateProfileRequest): Mono<Profile>? {
-        return profilePersister.updateProfile(userId, newProfile)
-    }
-
     suspend fun updateAsAdmin(userId: String, newProfile: Profile): Mono<Profile>? {
         return profilePersister.updateProfileAsAdmin(userId, newProfile)
     }

@@ -118,6 +118,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.mockk</groupId>
+            <artifactId>mockk</artifactId>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>
