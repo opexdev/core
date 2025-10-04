@@ -6,7 +6,6 @@ import co.nilin.opex.api.core.inout.UserFee
 import co.nilin.opex.api.core.inout.WithdrawLimitConfig
 import co.nilin.opex.common.utils.Interval
 import java.math.BigDecimal
-import java.time.LocalDateTime
 
 interface AccountantProxy {
 
@@ -22,5 +21,5 @@ interface AccountantProxy {
 
     fun getWithdrawLimitConfigs(): List<WithdrawLimitConfig>
 
-    fun getTotalWithdrawVolumeValue(uuid: String, date: Long): BigDecimal
+    fun getTotalWithdrawVolumeValue(uuid: String, interval: Interval?): BigDecimal
 }

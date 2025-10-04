@@ -47,10 +47,10 @@ class UserDataController(
     @GetMapping("/withdraw/volume/total")
     suspend fun getTotalWithdrawVolumeValue(
         @CurrentSecurityContext securityContext: SecurityContext,
-        @RequestParam date: Long
+        @RequestParam(required = false) interval: Interval?
     ): BigDecimal {
         val uuid = securityContext.authentication.name
-        return accountantProxy.getTotalWithdrawVolumeValue(uuid, date)
+        return accountantProxy.getTotalWithdrawVolumeValue(uuid, interval)
     }
 
     private fun checkValidInterval(interval: Interval) {
