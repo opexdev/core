@@ -7,5 +7,6 @@ data class PaymentDepositRequest(
     val amount: BigDecimal,
     val currency: PaymentCurrency,
     val reference: String,
-    val description: String?
+    val description: String?,
+    val isIPG:Boolean?=true
 )
