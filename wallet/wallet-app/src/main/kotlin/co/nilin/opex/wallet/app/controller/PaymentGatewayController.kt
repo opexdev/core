@@ -8,6 +8,7 @@ import co.nilin.opex.wallet.core.inout.Deposit
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.inout.TransferMethod
 import co.nilin.opex.wallet.core.model.*
+import co.nilin.opex.wallet.core.service.GatewayService
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.core.spi.TransferManager
 import co.nilin.opex.wallet.core.spi.WalletManager
