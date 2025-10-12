@@ -24,7 +24,7 @@ data class Withdraw(
     var applicator: String? = null,
     var withdrawType: WithdrawType,
     var attachment: String? = null,
-    val createDate: LocalDateTime = LocalDateTime.now(),
+    var createDate: LocalDateTime = LocalDateTime.now(),
     var lastUpdateDate: LocalDateTime? = null,
     var transferMethod: TransferMethod? = null,
     val otpRequired: Int? = null,

@@ -97,6 +97,7 @@ class WithdrawServiceTest {
             destSymbol = DEST_SYMBOL,
             destAddress = DEST_ADDRESS,
             destNetwork = DEST_NETWORK,
+            createDate = LocalDateTime.now(),
             status = status,
             withdrawType = WithdrawType.ON_CHAIN,
             otpRequired = 2
@@ -523,6 +524,20 @@ class WithdrawServiceTest {
             }
 
             Assertions.assertEquals(OpexError.OTPAlreadyRequested, ex.error)
+        }
+
+        @Test
+        fun `should throw WithdrawRequestExpired when request otp after ten minute`() = runBlocking {
+            val withdraw = createWithdraw().apply { createDate = LocalDateTime.now().minusMinutes(11) }
+
+            coEvery { withdrawPersister.findById(WITHDRAW_ID) } returns withdraw
+            coEvery { withdrawOtpPersister.findByWithdrawId(WITHDRAW_ID) } returns listOf()
+
+            val ex = Assertions.assertThrows(OpexException::class.java) {
+                runBlocking { withdrawService.requestOTP(TOKEN, USER_UUID, WITHDRAW_ID, OTPType.SMS) }
+            }
+
+            Assertions.assertEquals(OpexError.WithdrawRequestExpired, ex.error)
         }
 
         @Test

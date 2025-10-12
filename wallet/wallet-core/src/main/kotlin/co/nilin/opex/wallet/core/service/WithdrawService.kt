@@ -118,6 +118,9 @@ class WithdrawService(
         if (withdraw.status != WithdrawStatus.REQUESTED) {
             throw OpexError.OTPCannotBeRequested.exception()
         }
+        withdrawOtpPersister.findByWithdrawId(withdrawId).find { t -> t.otpType == otpType }?.let {
+            throw OpexError.OTPAlreadyRequested.exception("OTP with type : $otpType already exists for withdraw : $withdrawId")
+        }
         if (Duration.between(withdraw.createDate, LocalDateTime.now()).toMinutes() > 10) {
             throw OpexError.WithdrawRequestExpired.exception("Withdraw request expired after 10 minutes")
         }
