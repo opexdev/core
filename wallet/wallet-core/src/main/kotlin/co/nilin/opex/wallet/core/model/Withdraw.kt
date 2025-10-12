@@ -10,31 +10,28 @@ data class Withdraw(
     val currency: String,
     val wallet: Long,
     val amount: BigDecimal,
-    val requestTransaction: String,
-    val finalizedTransaction: String?,
+    var requestTransaction: String? = null,
+    val finalizedTransaction: String? = null,
     val appliedFee: BigDecimal,
-    val destAmount: BigDecimal?,
-    val destSymbol: String?,
-    val destAddress: String?,
-    val destNetwork: String?,
-    var destNote: String?,
-    var destTransactionRef: String?,
-    val statusReason: String?,
+    val destAmount: BigDecimal? = null,
+    val destSymbol: String? = null,
+    val destAddress: String? = null,
+    val destNetwork: String? = null,
+    var destNote: String? = null,
+    var destTransactionRef: String? = null,
+    val statusReason: String? = null,
     var status: WithdrawStatus,
-    var applicator: String?,
+    var applicator: String? = null,
     var withdrawType: WithdrawType,
-    var attachment: String?,
+    var attachment: String? = null,
     val createDate: LocalDateTime = LocalDateTime.now(),
-    val lastUpdateDate: LocalDateTime? = null,
-    var transferMethod: TransferMethod?,
-    ) {
-
-    fun canBeProcessed(): Boolean {
-        return status == WithdrawStatus.CREATED
-    }
+    var lastUpdateDate: LocalDateTime? = null,
+    var transferMethod: TransferMethod? = null,
+    val otpRequired: Int? = null,
+) {
 
     fun canBeAccepted(): Boolean {
-        return status == WithdrawStatus.CREATED || status == WithdrawStatus.PROCESSING
+        return status == WithdrawStatus.CREATED
     }
 
     fun canBeCanceled(): Boolean {
@@ -42,6 +39,10 @@ data class Withdraw(
     }
 
     fun canBeRejected(): Boolean {
-        return status == WithdrawStatus.CREATED || status == WithdrawStatus.PROCESSING
+        return status == WithdrawStatus.CREATED || status == WithdrawStatus.ACCEPTED
+    }
+
+    fun canBeDone(): Boolean {
+        return status == WithdrawStatus.ACCEPTED
     }
 }

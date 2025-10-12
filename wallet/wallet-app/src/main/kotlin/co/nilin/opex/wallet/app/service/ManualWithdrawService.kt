@@ -88,7 +88,8 @@ class ManualWithdrawService(
                 receiverUuid,
                 WithdrawType.OFF_CHAIN,
                 request.attachment,
-                transferMethod = TransferMethod.MANUALLY
+                transferMethod = TransferMethod.MANUALLY,
+                otpRequired = 0
             )
         )
         return tx.transferResult;

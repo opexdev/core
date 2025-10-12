@@ -78,9 +78,11 @@ class WithdrawAdminController(
         )
     }
 
-    @PostMapping("/{withdrawId}/process")
-    suspend fun processWithdraw(@PathVariable withdrawId: Long): WithdrawActionResult {
-        return withdrawService.processWithdraw(withdrawId)
+    @PostMapping("/{withdrawId}/done")
+    suspend fun doneWithdraw(
+        @PathVariable withdrawId: Long,
+    ): WithdrawActionResult {
+        return withdrawService.doneWithdraw(withdrawId)
     }
 
     @PostMapping("/{withdrawId}/reject")

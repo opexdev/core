@@ -1,9 +1,9 @@
 package co.nilin.opex.api.core.inout
 
 enum class WithdrawStatus {
-
+    REQUESTED,
     CREATED,
-    PROCESSING,
+    ACCEPTED,
     CANCELED,
     REJECTED,
     DONE

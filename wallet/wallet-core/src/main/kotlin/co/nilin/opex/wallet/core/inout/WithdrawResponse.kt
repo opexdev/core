@@ -25,4 +25,5 @@ class WithdrawResponse(
     val createDate: LocalDateTime,
     val lastUpdateDate: LocalDateTime?,
     var transferMethod: TransferMethod?,
-    )
+    val otpRequired: Int?,
+)

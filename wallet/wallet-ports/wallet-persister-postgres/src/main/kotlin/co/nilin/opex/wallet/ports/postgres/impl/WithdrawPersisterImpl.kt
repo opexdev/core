@@ -42,10 +42,12 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
                 withdraw.attachment,
                 withdraw.createDate,
                 withdraw.lastUpdateDate,
-                withdraw.transferMethod
+                withdraw.transferMethod,
+                withdraw.otpRequired
             )
         ).awaitFirst().asWithdraw()
     }
+
 
     override suspend fun findById(withdrawId: Long): Withdraw? {
         return withdrawRepository.findById(withdrawId)
@@ -99,30 +101,6 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
 
             ).map { it.asWithdrawResponse() }.toList()
     }
-
-//    override suspend fun findByCriteria(
-//        ownerUuid: String?,
-//        currency: String?,
-//        destTxRef: String?,
-//        destAddress: String?,
-//        status: List<WithdrawStatus>
-//    ): List<WithdrawResponse> {
-//        return if (status.isEmpty())
-//            withdrawRepository.findByCriteria(
-//                ownerUuid,
-//                currency,
-//                destTxRef,
-//                destAddress,
-//            ).map { it.asWithdrawResponse() }.toList()
-//        else
-//            withdrawRepository.findByCriteria(
-//                ownerUuid,
-//                currency,
-//                destTxRef,
-//                destAddress,
-//                status
-//            ).map { it.asWithdrawResponse() }.toList()
-//    }
 
     override suspend fun countByCriteria(
         ownerUuid: String?,
@@ -208,7 +186,8 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
             attachment,
             createDate,
             lastUpdateDate,
-            transferMethod
+            transferMethod,
+            otpRequired
         )
     }
 
@@ -235,11 +214,12 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
             attachment,
             createDate,
             lastUpdateDate,
-            transferMethod
+            transferMethod,
+            otpRequired
         )
     }
 
-    override suspend fun  getWithdrawSummary(
+    override suspend fun getWithdrawSummary(
         uuid: String,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
