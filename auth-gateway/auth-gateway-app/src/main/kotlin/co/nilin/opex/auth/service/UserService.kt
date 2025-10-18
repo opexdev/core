@@ -34,7 +34,7 @@ class UserService(
     private val logger by LoggerDelegate()
 
     //TODO IMPORTANT: remove in production
-    suspend fun registerUser(request: RegisterUserRequest): String {
+    suspend fun registerUser(request: RegisterUserRequest): TempOtpResponse {
         captchaHandler.validateCaptchaWithActionCache(
             username = request.username,
             captchaCode = request.captchaCode,
@@ -45,7 +45,8 @@ class UserService(
         val userStatus = isUserDuplicate(username)
 
         val otpType = username.type.otpType
-        val res = otpProxy.requestOTP(request.username, listOf(OTPReceiver(request.username, otpType)))
+        val otpReceiver = OTPReceiver(request.username, otpType)
+        val res = otpProxy.requestOTP(request.username, listOf(otpReceiver))
 
         if (!userStatus)
             keycloakProxy.createUser(
@@ -54,7 +55,7 @@ class UserService(
                 request.lastName,
                 false
             )
-        return res.otp
+        return TempOtpResponse(res.otp, otpReceiver)
     }
 
     suspend fun verifyRegister(request: VerifyOTPRequest): String {
@@ -111,7 +112,7 @@ class UserService(
         keycloakProxy.logoutSession(userId, sessionId)
     }
 
-    suspend fun forgetPassword(request: ForgotPasswordRequest): String {
+    suspend fun forgetPassword(request: ForgotPasswordRequest): TempOtpResponse {
         captchaHandler.validateCaptchaWithActionCache(
             username = request.username,
             captchaCode = request.captchaCode,
@@ -119,9 +120,11 @@ class UserService(
             action = ActionType.FORGET
         )
         val uName = Username.create(request.username)
-        val user = keycloakProxy.findUserByUsername(uName) ?: return null ?: ""
+        val user = keycloakProxy.findUserByUsername(uName) ?: return TempOtpResponse("", null)
+        val otpReceiver = OTPReceiver(uName.value, uName.type.otpType)
         //TODO IMPORTANT: remove in production
-        return otpProxy.requestOTP(uName.value, listOf(OTPReceiver(uName.value, uName.type.otpType))).otp
+        val result = otpProxy.requestOTP(uName.value, listOf(otpReceiver))
+        return TempOtpResponse(result.otp, otpReceiver)
     }
 
     suspend fun verifyForget(request: VerifyOTPRequest): String {
