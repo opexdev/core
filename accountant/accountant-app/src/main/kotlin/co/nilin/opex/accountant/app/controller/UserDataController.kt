@@ -1,6 +1,5 @@
 package co.nilin.opex.accountant.app.controller
 
-import co.nilin.opex.accountant.app.utils.asLocalDateTime
 import co.nilin.opex.accountant.core.api.FeeCalculator
 import co.nilin.opex.accountant.core.model.UserFee
 import co.nilin.opex.accountant.core.spi.UserVolumePersister
@@ -52,8 +51,13 @@ class UserDataController(
     }
 
     @GetMapping("/withdraw/volume/total/{uuid}")
-    suspend fun getWithdrawVolumeValue(@PathVariable uuid: String, @RequestParam date: Long): BigDecimal {
-        return userWithdrawVolumePersister.getTotalValueByUserAndDateAfter(uuid, date.asLocalDateTime())
+    suspend fun getWithdrawVolumeValue(
+        @PathVariable uuid: String,
+        @RequestParam(required = false) interval: Interval?
+    ): BigDecimal {
+        return userWithdrawVolumePersister.getTotalValueByUserAndDateAfter(
+            uuid,
+            (interval?.getLocalDateTime() ?: LocalDateTime.now())
+        )
     }
-
 }
