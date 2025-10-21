@@ -8,5 +8,5 @@ data class PaymentDepositRequest(
     val currency: PaymentCurrency,
     val reference: String,
     val description: String?,
-    val isIPG:Boolean?=true
+    val isIPG: Boolean? = true
 )
