@@ -1,4 +1,4 @@
-package co.nilin.opex.profile.core.data.profile
+package co.nilin.opex.profile.core.data.inquiry
 
 data class ComparativeResponse(
     val firstNameSimilarityPercentage: Int? = null,

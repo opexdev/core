@@ -25,7 +25,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     PairFeeNotFound(2003, "No fee for requested pair found", HttpStatus.NOT_FOUND),
     FeeConfigAlreadyExists(2004, "Fee config already exists", HttpStatus.CONFLICT),
     FeeConfigNotFound(2005, "Fee config not found", HttpStatus.NOT_FOUND),
-    WithdrawAmountExceeds(2006,"The requested withdraw amount exceeds your daily limit", HttpStatus.BAD_REQUEST),
+    WithdrawAmountExceeds(2006, "The requested withdraw amount exceeds your daily limit", HttpStatus.BAD_REQUEST),
     WithdrawLimitConfigNotFound(2007, "Withdraw limit config not found", HttpStatus.NOT_FOUND),
     // code 3000: matching-engine
 
@@ -56,7 +56,6 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     InvalidToken(5018, "Invalid token", HttpStatus.BAD_REQUEST),
     InternalIdGenerateFailed(5019, "Internal id generate failed", HttpStatus.INTERNAL_SERVER_ERROR),
     CaptchaRequired(5020, "Captcha required", HttpStatus.BAD_REQUEST),
-
 
 
     // code 6000: wallet
@@ -162,14 +161,37 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     ProfileAlreadyCompleted(13016, "Profile already completed", HttpStatus.BAD_REQUEST),
     FirstNameIsNotSimilarEnough(13017, "The first name is not similar enough.", HttpStatus.BAD_REQUEST),
     LastNameIsNotSimilarEnough(13018, "The last name is not similar enough.", HttpStatus.BAD_REQUEST),
-    ShahkarInquiryError(13019,"Shahkar inquiry error" , HttpStatus.SERVICE_UNAVAILABLE),
-    ComparativeInquiryError(13020,"Comparative inquiry error" , HttpStatus.SERVICE_UNAVAILABLE),
+    ShahkarInquiryError(13019, "Shahkar inquiry error", HttpStatus.SERVICE_UNAVAILABLE),
+    ComparativeInquiryError(13020, "Comparative inquiry error", HttpStatus.SERVICE_UNAVAILABLE),
     ProfileApprovalRequestNotfound(13021, "Profile approval request not found", HttpStatus.NOT_FOUND),
     InvalidProfileApprovalRequestStatus(13022, "Invalid profile approval request status", HttpStatus.BAD_REQUEST),
     InvalidBirthDate(13023, "Invalid birthdate", HttpStatus.BAD_REQUEST),
     InvalidNationalCode(13024, "Invalid national code", HttpStatus.BAD_REQUEST),
     InvalidMobileNumber(13025, "Invalid mobile number", HttpStatus.BAD_REQUEST),
-    IdentityInfoNotFound(113026, "Identity info not found", HttpStatus.NOT_FOUND),
+    IdentityInfoNotFound(13026, "Identity info not found", HttpStatus.NOT_FOUND),
+    CardOwnershipMismatch(13027, "Card does not belong to the provided data", HttpStatus.BAD_REQUEST),
+    IbanOwnershipMismatch(13028, "Iban does not belong to the provided data", HttpStatus.BAD_REQUEST),
+    CardOwnershipInquiryError(13029, " Card ownership inquiry error", HttpStatus.SERVICE_UNAVAILABLE),
+    IbanOwnershipInquiryError(13030, " Iban ownership inquiry error", HttpStatus.SERVICE_UNAVAILABLE),
+    CardNotActive(13031, "Card not active", HttpStatus.BAD_REQUEST),
+    CardIsExpired(13032, "Card is expired", HttpStatus.BAD_REQUEST),
+    CardAccountNumberNotValid(13033, "Card account number not valid", HttpStatus.BAD_REQUEST),
+    CardRegisteredAsLost(13034, "Card registered as lost", HttpStatus.CONFLICT),
+    CardRegisteredAsStolen(13035, "Card registered as stolen", HttpStatus.CONFLICT),
+    CardSourceBankNotActive(13036, "Card source bank not active", HttpStatus.SERVICE_UNAVAILABLE),
+    CardBlackListed(13037, "Card blacklisted", HttpStatus.FORBIDDEN),
+    IbanNotFound(13038, "IBAN not found", HttpStatus.NOT_FOUND),
+    IbanOwnerNotFound(13039, "IBAN owner not found", HttpStatus.NOT_FOUND),
+    IbanIsRequired(13040, "IBAN is required", HttpStatus.BAD_REQUEST),
+    IbanInfoInquiryError(13041, "IBAN info inquiry failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    CardRequired(13042, "Card is required", HttpStatus.BAD_REQUEST),
+    CardTypeNotSupported(13043, "Card type not supported", HttpStatus.BAD_REQUEST),
+    IbanBlackListed(13044, "IBAN is blacklisted", HttpStatus.FORBIDDEN),
+    CardIbanInfoInquiryError(13045, "Card-IBAN info inquiry failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    BankAccountAlreadyExist(13046, "Bank account already exist", HttpStatus.BAD_REQUEST),
+    BankAccountNotFound(13047, "Bank account not found", HttpStatus.NOT_FOUND),
+    AddressBookNotFound(13048, "Address book not found", HttpStatus.NOT_FOUND)
+
     ;
 
     override fun code() = this.code

@@ -1,6 +1,6 @@
-package co.nilin.opex.profile.core.data.profile
+package co.nilin.opex.profile.core.data.inquiry
 
-data class ShahkarResponse(
+data class VerifyOwnershipResponse(
     val matched: Boolean? = null,
     val code: String? = null,
     val message: String? = null

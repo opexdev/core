@@ -100,6 +100,10 @@
             <artifactId>wallet-bcgateway-proxy</artifactId>
         </dependency>
         <dependency>
+            <groupId>co.nilin.opex.wallet.ports.profile</groupId>
+            <artifactId>wallet-profile-proxy</artifactId>
+        </dependency>
+        <dependency>
             <groupId>co.nilin.opex.wallet.ports.auth</groupId>
             <artifactId>wallet-auth-proxy</artifactId>
         </dependency>

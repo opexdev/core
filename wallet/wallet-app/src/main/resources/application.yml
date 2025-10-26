@@ -139,6 +139,8 @@ app:
     url: lb://opex-market
   accountant:
     url: lb://opex-accountant
+  profile:
+    url: lb://opex-profile
   reserved-transfer:
     life-time: 15 #minutes
   symbols: ${SYMBOLS}

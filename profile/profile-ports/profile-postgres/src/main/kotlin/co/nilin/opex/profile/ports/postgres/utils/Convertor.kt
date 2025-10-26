@@ -4,7 +4,6 @@ import co.nilin.opex.profile.core.data.profile.CompleteProfileRequest
 import co.nilin.opex.profile.core.data.profile.ProfileStatus
 import co.nilin.opex.profile.core.utils.gson
 import co.nilin.opex.profile.ports.postgres.model.entity.ProfileModel
-import com.google.gson.Gson
 import java.time.LocalDateTime
 
 fun <T> Any.convert(classOfT: Class<T>): T = gson.fromJson(gson.toJson(this), classOfT)

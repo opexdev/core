@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
@@ -36,10 +37,12 @@ class ProfileManagementImp(
     private var profileHistoryRepository: ProfileHistoryRepository,
     private var limitationManagementImp: LimitationManagementImp,
     private var kycProxyImp: KycProxyImp,
+    @Value("\${app.regex.email}")
+    private var EMAIL_REGEX: String,
+    @Value("\${app.regex.mobile}")
+    private var MOBILE_REGEX: String
 ) : ProfilePersister {
     private val logger = LoggerFactory.getLogger(ProfileManagementImp::class.java)
-    private val EmailRegex = Regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
-    private val MobileRegex = Regex("^09\\d{9}$")
 
     @Transactional
     override suspend fun updateProfile(id: String, data: UpdateProfileRequest): Mono<Profile> {
@@ -304,10 +307,10 @@ class ProfileManagementImp(
     }
 
     private fun validateEmailFormat(email: String) {
-        if (!EmailRegex.matches(email)) throw OpexError.InvalidEmail.exception()
+        if (!Regex(EMAIL_REGEX).matches(email)) throw OpexError.InvalidEmail.exception()
     }
 
     private fun validateMobileFormat(mobile: String) {
-        if (!MobileRegex.matches(mobile)) throw OpexError.InvalidMobile.exception()
+        if (!Regex(MOBILE_REGEX).matches(mobile)) throw OpexError.InvalidMobile.exception()
     }
 }

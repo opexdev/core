@@ -96,6 +96,8 @@ app:
     url: http://market:8080
   accountant:
     url: http://accountant:8080
+  profile:
+    url: http://profile:8080
   reserved-transfer:
     life-time: 15 #minutes
   zone-offset: +03:30
