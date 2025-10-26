@@ -19,6 +19,7 @@ import java.util.function.Supplier
 
 object KafkaTopics {
     const val AUTH = "auth"
+    const val LOGIN = "login"
 }
 
 @Configuration

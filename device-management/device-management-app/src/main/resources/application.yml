@@ -1,0 +1,91 @@
+server:
+  forward-headers-strategy: NATIVE
+  port: 8080
+spring:
+  application:
+    name: opex-device-management
+  main:
+    allow-bean-definition-overriding: false
+  kafka:
+    bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
+    consumer:
+      group-id: auth
+  datasource:
+    platform: postgres
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${DB_IP_PORT:localhost}/opex
+    username: ${dbusername:opex}
+    password: ${dbpassword:hiopex}
+    initialization-mode: always
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        jdbc.lob.non_contextual_creation: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show_sql: false
+        default_schema: schema.sql
+    open-in-view: false
+    show-sql: false
+
+
+  cloud:
+    bootstrap:
+      enabled: true
+    vault:
+      host: ${VAULT_HOST}
+      port: 8200
+      scheme: http
+      authentication: APPID
+      app-id:
+        user-id: co.nilin.opex.auth.gateway.utils.VaultUserIdMechanism
+      fail-fast: true
+      kv:
+        enabled: true
+        backend: secret
+        profile-separator: '/'
+        application-name: ${spring.application.name}
+    consul:
+      host: ${CONSUL_HOST:localhost}
+      port: 8500
+      discovery:
+        #healthCheckPath: ${management.context-path}/health
+        instance-id: ${spring.application.name}:${server.port}
+        healthCheckInterval: 20s
+        prefer-ip-address: true
+  config:
+    import: vault://secret/${spring.application.name}
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: [ "health", "prometheus", "metrics" ]
+  endpoint:
+    health:
+      show-details: when_authorized
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+keycloak:
+  adminUrl: ${ADMIN_URL:http://localhost:8080/auth}
+  frontendUrl: ${FRONTEND_URL:http://localhost:8080/auth}
+  server:
+    contextPath: "/auth"
+    adminUser:
+      username: ${admin_username:opex-admin}
+      password: ${admin_password:hiopex}
+    realmImportFile: /opex-realm.json
+  migration:
+    action: import
+    provider: singleFile
+    file: /opex-master-realm.json
+    strategy: OVERWRITE_EXISTING
+  profile:
+    feature:
+      admin_fine_grained_authz: enabled
+      token_exchange: enabled
+  hashicorp:
+    url: ${VAULT_URL}

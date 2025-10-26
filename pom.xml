@@ -36,6 +36,7 @@
         <module>common</module>
         <module>auth-gateway</module>
         <module>profile</module>
+        <module>device-management</module>
     </modules>
 
     <dependencies>

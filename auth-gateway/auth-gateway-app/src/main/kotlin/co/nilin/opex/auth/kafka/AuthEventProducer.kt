@@ -30,4 +30,15 @@ class AuthEventProducer(private val template: KafkaTemplate<String, AuthEvent>) 
             }
         }
     }
+    fun send(event: AuthEvent) {
+        retryTemplate.execute<Unit, Exception> {
+            template.send(KafkaTopics.AUTH, event).whenComplete { res, error ->
+                if (error != null) {
+                    logger.error("Error sending auth event", error)
+                    throw error
+                }
+                logger.info("Auth event sent")
+            }
+        }
+    }
 }
