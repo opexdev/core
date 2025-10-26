@@ -108,8 +108,8 @@ jobs:
 
       - name: Build
         run: |
-          mvn -pl common -am  -B -T 1C clean install -Potc
-          mvn -pl wallet,bc-gateway -amd  -B -T 1C clean install -Potc
+          mvn -pl common -am  -B  clean install -Potc
+          mvn -pl wallet,bc-gateway -amd  -B  clean install -Potc
 
       - name: Run Tests
         run: |

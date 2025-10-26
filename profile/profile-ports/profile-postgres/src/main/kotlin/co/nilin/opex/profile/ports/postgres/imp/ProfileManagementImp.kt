@@ -193,7 +193,7 @@ class ProfileManagementImp(
     }
 
     override suspend fun updateUserLevelAndStatus(userId: String, userLevel: KycLevel) {
-        profileRepository.findByUserId(userId)?.block()?.let { profileModel ->
+        profileRepository.findByUserId(userId)?.awaitFirstOrNull()?.let { profileModel ->
             profileModel.kycLevel = userLevel
             profileRepository.save(profileModel).awaitFirstOrNull()
 
