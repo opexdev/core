@@ -17,7 +17,7 @@ data class WithdrawModel(
     val wallet: Long,
     val amount: BigDecimal,
     @Column("req_transaction_id")
-    val requestTransaction: String,
+    val requestTransaction: String?,
     @Column("final_transaction_id")
     val finalizedTransaction: String?,
     val appliedFee: BigDecimal,
@@ -35,4 +35,5 @@ data class WithdrawModel(
     val createDate: LocalDateTime = LocalDateTime.now(),
     val lastUpdateDate: LocalDateTime? = null,
     var transferMethod: TransferMethod?,
-    )
+    val otpRequired: Int? = null
+)

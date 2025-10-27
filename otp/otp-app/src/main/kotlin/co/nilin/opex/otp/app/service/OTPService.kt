@@ -4,6 +4,7 @@ import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.utils.LoggerDelegate
 import co.nilin.opex.otp.app.data.OTPCode
 import co.nilin.opex.otp.app.data.OTPReceiver
+import co.nilin.opex.otp.app.data.OTPResult
 import co.nilin.opex.otp.app.data.OTPResultType
 import co.nilin.opex.otp.app.model.OTP
 import co.nilin.opex.otp.app.model.OTPConfig
@@ -15,7 +16,7 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 import kotlin.math.pow
 import kotlin.random.Random
 
@@ -97,67 +98,91 @@ class OTPService(
         } ?: throw OpexError.OTPConfigNotFound.exception()
     }
 
-    suspend fun verifyOTP(code: String, userId: String): OTPResultType {
+    suspend fun verifyOTP(code: String, userId: String): OTPResult {
         val otp = repository.findActiveByUserId(userId)
-        return verifyOtp(code, otp, userId)
+        val verifyOtpResponse = verifyOtp(code, otp, userId)
+
+        val tracingCode = if (verifyOtpResponse.type == OTPResultType.VALID) otp?.tracingCode else null
+        return OTPResult(verifyOtpResponse.result, verifyOtpResponse.type, tracingCode)
     }
 
-    suspend fun verifyCompositeOTP(codes: Set<OTPCode>, userId: String): OTPResultType {
-        repository.findActiveByUserId(userId)?.let {
-            if (it.type != OTPType.COMPOSITE)
-                throw OpexError.BadRequest.exception()
+    suspend fun verifyCompositeOTP(codes: Set<OTPCode>, userId: String): OTPResult {
+        val otp = repository.findActiveByUserId(userId)
+            ?: return OTPResult(false, OTPResultType.INVALID)
 
-            val code = reconstructCode(codes)
-            return verifyOtp(code, it, userId)
+        if (otp.type != OTPType.COMPOSITE)
+            throw OpexError.BadRequest.exception()
+
+        val code = reconstructCode(codes)
+        val result = verifyOtp(code, otp, userId)
+
+        return if (result.type == OTPResultType.VALID) {
+            result.copy(tracingCode = otp.tracingCode)
+        } else {
+            result.copy(tracingCode = null)
         }
-        return OTPResultType.INVALID
     }
 
     @Deprecated("Use userId instead")
-    suspend fun verifyOTP(code: String, userId: String, tracingCode: String?): OTPResultType {
-        val otp = repository.findByTracingCode(tracingCode!!)
-        return verifyOtp(code, otp, userId)
+    suspend fun verifyOTP(code: String, userId: String, tracingCode: String?): OTPResult {
+        val otp = tracingCode?.let { repository.findByTracingCode(it) }
+            ?: return OTPResult(false, OTPResultType.INVALID)
+
+        val result = verifyOtp(code, otp, userId)
+        return if (result.type == OTPResultType.VALID) {
+            result.copy(tracingCode = otp.tracingCode)
+        } else {
+            result.copy(tracingCode = null)
+        }
     }
 
     @Deprecated("Use userId instead")
-    suspend fun verifyCompositeOTP(codes: Set<OTPCode>, userId: String, tracingCode: String?): OTPResultType {
-        repository.findByTracingCode(tracingCode!!)?.let {
-            if (it.type != OTPType.COMPOSITE)
-                throw OpexError.BadRequest.exception()
+    suspend fun verifyCompositeOTP(codes: Set<OTPCode>, userId: String, tracingCode: String?): OTPResult {
+        val otp = tracingCode?.let { repository.findByTracingCode(it) }
+            ?: return OTPResult(false, OTPResultType.INVALID)
 
-            val code = reconstructCode(codes)
-            return verifyOtp(code, it, userId)
+        if (otp.type != OTPType.COMPOSITE)
+            throw OpexError.BadRequest.exception()
+
+        val code = reconstructCode(codes)
+        val result = verifyOtp(code, otp, userId)
+
+        return if (result.type == OTPResultType.VALID) {
+            result.copy(tracingCode = otp.tracingCode)
+        } else {
+            result.copy(tracingCode = null)
         }
-        return OTPResultType.INVALID
     }
 
     private suspend fun reconstructCode(codes: Set<OTPCode>): String {
         return codes.sortedBy { it.type.compositeOrder }.joinToString("") { it.code }
     }
 
-    private suspend fun verifyOtp(code: String, otp: OTP?, userId: String): OTPResultType {
+    private suspend fun verifyOtp(code: String, otp: OTP?, userId: String): OTPResult {
         if (otp == null) {
-            logger.warn("Otp request not found")
-            return OTPResultType.INVALID
+            logger.warn("OTP not found")
+            return OTPResult(false, OTPResultType.INVALID)
         }
 
         if (otp.userId != userId) {
-            logger.warn("Otp userId mismatch")
-            return OTPResultType.INVALID
+            logger.warn("OTP userId mismatch: expected=${otp.userId}, actual=$userId")
+            return OTPResult(false, OTPResultType.INVALID)
         }
 
         if (otp.isExpired()) {
-            logger.warn("Otp request expired. tracingCode: ${otp.tracingCode}")
-            return OTPResultType.EXPIRED
+            logger.warn("OTP expired. tracingCode=${otp.tracingCode}")
+            return OTPResult(false, OTPResultType.EXPIRED)
         }
 
         if (!encoder.matches(code, otp.code)) {
-            logger.warn("Otp request invalid")
-            return OTPResultType.INCORRECT
+            logger.warn("OTP incorrect. tracingCode=${otp.tracingCode}")
+            return OTPResult(false, OTPResultType.INCORRECT)
         }
 
         repository.markVerified(otp.id!!)
-        return OTPResultType.VALID
+        logger.info("OTP verified successfully. tracingCode=${otp.tracingCode}")
+
+        return OTPResult(true, OTPResultType.VALID)
     }
 
     private suspend fun generateCode(length: Int): String {

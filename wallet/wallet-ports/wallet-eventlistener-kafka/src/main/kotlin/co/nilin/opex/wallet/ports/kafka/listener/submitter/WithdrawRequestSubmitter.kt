@@ -6,7 +6,6 @@ import co.nilin.opex.wallet.core.spi.WithdrawRequestEventSubmitter
 import co.nilin.opex.wallet.ports.kafka.listener.model.WithdrawRequestEvent
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
-import org.springframework.context.annotation.Profile
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.retry.support.RetryTemplate
 import org.springframework.stereotype.Component
@@ -14,7 +13,7 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Component
-@ConditionalOnProperty(name = ["app.withdraw-limit.enabled"], havingValue = "true")
+@ConditionalOnProperty(name = ["app.withdraw.limit.enabled"], havingValue = "true")
 class WithdrawRequestSubmitter(
     @Qualifier("withdrawRequestKafkaTemplate") private val template: KafkaTemplate<String, WithdrawRequestEvent>
 ) :
