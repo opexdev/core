@@ -96,14 +96,18 @@ app:
     url: http://market:8080
   accountant:
     url: http://accountant:8080
+  otp:
+    url: http://opex-otp:8080/v1
   profile:
     url: http://profile:8080
   reserved-transfer:
     life-time: 15 #minutes
   zone-offset: +03:30
   snapshot-currency: USDT
-  withdraw-limit:
-    enabled: false
+  withdraw:
+    limit:
+      enabled: true
+    otp-required-count: 0
   custom-message:
     enabled: ${CUSTOM_MESSAGE_ENABLED:false}
     base-url: ${CUSTOM_MESSAGE_URL}

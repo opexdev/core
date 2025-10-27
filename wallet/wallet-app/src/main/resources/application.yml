@@ -139,6 +139,8 @@ app:
     url: lb://opex-market
   accountant:
     url: lb://opex-accountant
+  otp:
+    url: lb://opex-otp/v1
   profile:
     url: lb://opex-profile
   reserved-transfer:
@@ -146,8 +148,10 @@ app:
   symbols: ${SYMBOLS}
   zone-offset: +03:30
   snapshot-currency: USDT
-  withdraw-limit:
-    enabled: true
+  withdraw:
+    limit:
+      enabled: true
+    otp-required-count: 0
   custom-message:
     enabled: ${CUSTOM_MESSAGE_ENABLED:false}
     base-url: ${CUSTOM_MESSAGE_URL}

@@ -112,6 +112,14 @@
             <artifactId>wallet-accountant-proxy</artifactId>
         </dependency>
         <dependency>
+            <groupId>co.nilin.opex.wallet.ports.otp</groupId>
+            <artifactId>wallet-otp-proxy</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>co.nilin.opex.wallet.ports.profile</groupId>
+            <artifactId>wallet-profile-proxy</artifactId>
+        </dependency>
+        <dependency>
             <groupId>co.nilin.opex.wallet.ports.kafka.listener</groupId>
             <artifactId>wallet-eventlistener-kafka</artifactId>
         </dependency>

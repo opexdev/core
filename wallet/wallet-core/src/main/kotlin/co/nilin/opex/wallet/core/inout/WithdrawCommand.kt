@@ -7,7 +7,6 @@ class WithdrawCommand(
     val uuid: String,
     var currency: String,
     val amount: BigDecimal,
-    val description: String?,
     var destSymbol: String?,
     val destAddress: String,
     var destNetwork: String?,
@@ -15,4 +14,4 @@ class WithdrawCommand(
     val gatewayUuid: String?,
     var withdrawType: WithdrawType?,
     var transferMethod: TransferMethod?,
-    )
+)

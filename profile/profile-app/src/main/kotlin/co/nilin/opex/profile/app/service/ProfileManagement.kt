@@ -185,6 +185,7 @@ class ProfileManagement(
             KycLevelUpdatedEvent(userId, KycLevel.LEVEL_2, LocalDateTime.now())
         )
         completedProfile.kycLevel = KycLevel.LEVEL_2
+        completedProfile.status = ProfileStatus.SYSTEM_APPROVED
         profilePersister.updateStatus(userId, ProfileStatus.SYSTEM_APPROVED)
     }
 

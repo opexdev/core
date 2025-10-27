@@ -80,7 +80,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     WithdrawNotAllowed(6019, null, HttpStatus.BAD_REQUEST),
     DepositLimitExceeded(6020, "Deposit limit exceeded", HttpStatus.BAD_REQUEST),
     InvalidAmount(6021, "Invalid amount", HttpStatus.BAD_REQUEST),
-    WithdrawAlreadyProcessed(6022, "This withdraw request processed before", HttpStatus.BAD_REQUEST),
+    WithdrawCannotBeAccepted(6022, "Withdraw cannot be accepted", HttpStatus.BAD_REQUEST),
     InvalidAppliedFee(6023, "Applied fee is bigger than accepted fee", HttpStatus.BAD_REQUEST),
     WithdrawAmountExceedsWalletBalance(6024, "Withdraw amount exceeds wallet balance", HttpStatus.BAD_REQUEST),
     WithdrawAmountLessThanMinimum(6025, "Withdraw amount is less than minimum", HttpStatus.BAD_REQUEST),
@@ -106,7 +106,10 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     VoucherUsageLimitExceeded(6045, "Voucher usage limit exceeded", HttpStatus.BAD_REQUEST),
     InvalidMaximumAmount(6046, "Invalid maximum amount", HttpStatus.BAD_REQUEST),
     InvalidMinimumAmount(6047, "Invalid minimum amount", HttpStatus.BAD_REQUEST),
-
+    WithdrawCannotBeDone(6048, "Withdraw cannot be done", HttpStatus.BAD_REQUEST),
+    WithdrawCannotBeRequested(6049, "Withdraw cannot be requested", HttpStatus.BAD_REQUEST),
+    OTPCannotBeRequested(6050, "OTP cannot be requested", HttpStatus.BAD_REQUEST),
+    WithdrawRequestExpired(6051,"Withdraw request expired", HttpStatus.BAD_REQUEST),
 
     // code 7000: api
     OrderNotFound(7001, "No order found", HttpStatus.NOT_FOUND),

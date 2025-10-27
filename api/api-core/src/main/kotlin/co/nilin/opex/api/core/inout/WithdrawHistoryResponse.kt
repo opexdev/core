@@ -23,8 +23,9 @@ data class WithdrawHistoryResponse(
     val createDate: LocalDateTime,
     val lastUpdateDate: LocalDateTime?,
     var transferMethod: TransferMethod?,
+    val otpRequired: Int? = 0,
 )
 
 enum class WithdrawType {
-    CARD_TO_CARD, SHEBA, ON_CHAIN , OFF_CHAIN
+    CARD_TO_CARD, SHEBA, ON_CHAIN, OFF_CHAIN
 }

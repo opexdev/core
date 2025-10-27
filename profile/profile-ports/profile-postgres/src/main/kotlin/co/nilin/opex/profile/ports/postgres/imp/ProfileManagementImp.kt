@@ -123,11 +123,11 @@ class ProfileManagementImp(
         }
         profileRepository.findByUserIdOrEmailOrMobile(data.userId!!, data.email, data.mobile)?.awaitFirstOrNull()?.let {
             throw OpexError.UserIdAlreadyExists.exception()
-        } ?: run {
-            val profile: ProfileModel = data.convert(ProfileModel::class.java)
-            profileRepository.save(profile).awaitFirstOrNull()
-            return Mono.just(data)
         }
+        val profile: ProfileModel = data.convert(ProfileModel::class.java)
+        val saved = profileRepository.save(profile)
+            .awaitFirstOrNull() ?: throw OpexError.BadRequest.exception("Failed to save profile")
+        return Mono.just(saved.convert(Profile::class.java))
     }
 
     override suspend fun getProfile(userId: String): Mono<Profile>? {
@@ -196,7 +196,7 @@ class ProfileManagementImp(
     }
 
     override suspend fun updateUserLevelAndStatus(userId: String, userLevel: KycLevel) {
-        profileRepository.findByUserId(userId)?.block()?.let { profileModel ->
+        profileRepository.findByUserId(userId)?.awaitFirstOrNull()?.let { profileModel ->
             profileModel.kycLevel = userLevel
             profileRepository.save(profileModel).awaitFirstOrNull()
 

@@ -57,6 +57,8 @@ app:
     url:  http://market:8080
   accountant:
     url:  http://accountant:8080
+  otp:
+    url: http://opex-otp:8080/v1
   profile:
     url: http://profile:8080
   system:
@@ -65,8 +67,10 @@ app:
     life-time: 15 #minutes
   zone-offset: +03:30
   snapshot-currency: USDT
-  withdraw-limit:
-    enabled: false
+  withdraw:
+    limit:
+      enabled: false
+    otp-required-count: 0
 testcontainers:
   db:
     username: ${dbusername:opex}
