@@ -25,7 +25,6 @@
         <module>wallet-ports/wallet-auth-proxy</module>
         <module>wallet-ports/wallet-accountant-proxy</module>
         <module>wallet-ports/wallet-otp-proxy</module>
-        <module>wallet-ports/wallet-profile-proxy</module>
     </modules>
 
     <dependencies>
@@ -74,11 +73,6 @@
             <dependency>
                 <groupId>co.nilin.opex.wallet.ports.otp</groupId>
                 <artifactId>wallet-otp-proxy</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>co.nilin.opex.wallet.ports.profile</groupId>
-                <artifactId>wallet-profile-proxy</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

@@ -3,6 +3,13 @@ package co.nilin.opex.wallet.core.service
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.security.JwtUtils
 import co.nilin.opex.wallet.core.inout.*
+import co.nilin.opex.wallet.core.inout.otp.NewOTPRequest
+import co.nilin.opex.wallet.core.inout.otp.OTPAction
+import co.nilin.opex.wallet.core.inout.otp.OTPCode
+import co.nilin.opex.wallet.core.inout.otp.OTPReceiver
+import co.nilin.opex.wallet.core.inout.otp.OTPType
+import co.nilin.opex.wallet.core.inout.otp.TempOtpResponse
+import co.nilin.opex.wallet.core.inout.otp.VerifyOTPRequest
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.model.WithdrawType
 import co.nilin.opex.wallet.core.spi.*
@@ -35,6 +42,7 @@ class WithdrawService(
     @Value("\${app.system.uuid}") private val systemUuid: String,
     @Value("\${app.withdraw.limit.enabled}") private val withdrawLimitEnabled: Boolean,
     @Value("\${app.withdraw.otp-required-count}") private val otpRequiredCount: Int,
+    @Value("\${app.withdraw.bank-account-validation}") private val bankAccountValidation: Boolean,
 ) {
     private val logger = LoggerFactory.getLogger(WithdrawService::class.java)
 
@@ -45,6 +53,7 @@ class WithdrawService(
             fetchWithdrawData(withdrawCommand) ?: throw OpexError.GatewayNotFount.exception()
         if (!withdrawData.isEnabled)
             throw OpexError.WithdrawNotAllowed.exception()
+        if(bankAccountValidation)
         verifyOwnershipForWithdraw(token, withdrawCommand)
 
         val currency = currencyService.fetchCurrency(FetchCurrency(symbol = withdrawCommand.currency))
@@ -70,11 +79,6 @@ class WithdrawService(
 
         val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, WalletType.CASHOUT, currency)
             ?: walletManager.createWallet(owner, Amount(currency, BigDecimal.ZERO), currency, WalletType.CASHOUT)
-
-        val withdrawData = fetchWithdrawData(withdrawCommand)
-            ?: throw OpexError.GatewayNotFount.exception()
-
-        if (!withdrawData.isEnabled) throw OpexError.WithdrawNotAllowed.exception()
 
         val withdrawFee = withdrawData.fee
         val realAmount = withdrawCommand.amount - withdrawFee

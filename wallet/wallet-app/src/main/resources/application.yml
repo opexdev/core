@@ -150,8 +150,9 @@ app:
   snapshot-currency: USDT
   withdraw:
     limit:
-      enabled: true
-    otp-required-count: 0
+      enabled: false
+    otp-required-count: 1
+    bank-account-validation : false
   custom-message:
     enabled: ${CUSTOM_MESSAGE_ENABLED:false}
     base-url: ${CUSTOM_MESSAGE_URL}
