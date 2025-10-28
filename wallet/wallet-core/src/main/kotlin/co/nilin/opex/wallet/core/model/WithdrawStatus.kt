@@ -2,8 +2,9 @@ package co.nilin.opex.wallet.core.model
 
 enum class WithdrawStatus {
 
+    REQUESTED,
     CREATED,
-    PROCESSING,
+    ACCEPTED,
     CANCELED,
     REJECTED,
     DONE

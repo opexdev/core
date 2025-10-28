@@ -1,6 +1,6 @@
 package co.nilin.opex.otp.app.data
 
-data class OTPResult(val result: Boolean, val type: OTPResultType)
+data class OTPResult(val result: Boolean, val type: OTPResultType, val tracingCode: String? = null)
 
 enum class OTPResultType(val isValid: Boolean = false) {
 
