@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactive.awaitSingle
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -247,7 +248,7 @@ class ProfileManagementImp(
         val profile = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
             ?: throw OpexError.ProfileNotfound.exception()
         profile.status = status
-        profileRepository.save(profile).awaitFirstOrNull()
+        profileRepository.save(profile).awaitSingle()
     }
 
     fun isMajorChanges(oldData: ProfileModel, newData: UpdateProfileRequest): Boolean {
