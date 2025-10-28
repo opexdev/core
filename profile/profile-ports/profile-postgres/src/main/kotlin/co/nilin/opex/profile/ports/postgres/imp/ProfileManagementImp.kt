@@ -33,10 +33,10 @@ import java.time.LocalDateTime
 
 @Service
 class ProfileManagementImp(
-        private var profileRepository: ProfileRepository,
-        private var profileHistoryRepository: ProfileHistoryRepository,
-        private var limitationManagementImp: LimitationManagementImp,
-        private var kycProxyImp: KycProxyImp,
+    private var profileRepository: ProfileRepository,
+    private var profileHistoryRepository: ProfileHistoryRepository,
+    private var limitationManagementImp: LimitationManagementImp,
+    private var kycProxyImp: KycProxyImp,
 ) : ProfilePersister {
     private val logger = LoggerFactory.getLogger(ProfileManagementImp::class.java)
     private val EmailRegex = Regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
@@ -78,18 +78,18 @@ class ProfileManagementImp(
     }
 
     override suspend fun completeProfile(
-            id: String,
-            data: CompleteProfileRequest,
-            mobileIdentityMatch: Boolean?,
-            personalIdentityMatch: Boolean?
+        id: String,
+        data: CompleteProfileRequest,
+        mobileIdentityMatch: Boolean?,
+        personalIdentityMatch: Boolean?
     ): Mono<Profile> {
         val existingProfile = profileRepository.findByUserId(id)?.awaitFirstOrNull()
-                ?: throw OpexError.ProfileNotfound.exception()
+            ?: throw OpexError.ProfileNotfound.exception()
 
         val newProfileModel = data.toProfileModel(
-                existing = existingProfile,
-                mobileMatch = mobileIdentityMatch,
-                personalMatch = personalIdentityMatch
+            existing = existingProfile,
+            mobileMatch = mobileIdentityMatch,
+            personalMatch = personalIdentityMatch
         )
 
         return profileRepository.save(newProfileModel).map {
@@ -124,7 +124,7 @@ class ProfileManagementImp(
         }
         val profile: ProfileModel = data.convert(ProfileModel::class.java)
         val saved = profileRepository.save(profile)
-                .awaitFirstOrNull() ?: throw OpexError.BadRequest.exception("Failed to save profile")
+            .awaitFirstOrNull() ?: throw OpexError.BadRequest.exception("Failed to save profile")
         return Mono.just(saved.convert(Profile::class.java))
     }
 
@@ -144,25 +144,25 @@ class ProfileManagementImp(
 
     override suspend fun getProfile(id: Long): Mono<Profile> {
         val profile: Profile =
-                profileRepository.findById(id).awaitFirstOrNull()?.convert(Profile::class.java)
-                        ?: throw OpexError.ProfileNotfound.exception()
+            profileRepository.findById(id).awaitFirstOrNull()?.convert(Profile::class.java)
+                ?: throw OpexError.ProfileNotfound.exception()
         return Mono.just(profile)
     }
 
     override suspend fun getAllProfile(offset: Int, size: Int, profileRequest: ProfileRequest): Flow<Profile>? {
         if (profileRequest.partialSearch == false)
             return profileRepository.findUsersBy(
-                    profileRequest.userId, profileRequest.mobile,
-                    profileRequest.email, profileRequest.firstName, profileRequest.lastName,
-                    profileRequest.nationalCode, profileRequest.createDateFrom, profileRequest.createDateTo,
-                    PageRequest.of(offset, size, Sort.by(Sort.Direction.ASC, "id"))
+                profileRequest.userId, profileRequest.mobile,
+                profileRequest.email, profileRequest.firstName, profileRequest.lastName,
+                profileRequest.nationalCode, profileRequest.createDateFrom, profileRequest.createDateTo,
+                PageRequest.of(offset, size, Sort.by(Sort.Direction.ASC, "id"))
             )?.map { p -> p.convert(Profile::class.java) }
         else {
             return profileRepository.searchUsersBy(
-                    profileRequest.userId, profileRequest.mobile,
-                    profileRequest.email, profileRequest.firstName, profileRequest.lastName,
-                    profileRequest.nationalCode, profileRequest.createDateFrom, profileRequest.createDateTo,
-                    PageRequest.of(offset, size, Sort.by(Sort.Direction.ASC, "id"))
+                profileRequest.userId, profileRequest.mobile,
+                profileRequest.email, profileRequest.firstName, profileRequest.lastName,
+                profileRequest.nationalCode, profileRequest.createDateFrom, profileRequest.createDateTo,
+                PageRequest.of(offset, size, Sort.by(Sort.Direction.ASC, "id"))
             )?.map { p -> p.convert(Profile::class.java) }
         }
     }
@@ -172,23 +172,23 @@ class ProfileManagementImp(
 
         profileRepository.findByUserId(userId)?.awaitFirstOrNull() ?: throw OpexError.UserNotFound.exception()
         profileHistoryRepository.findByUserId(
-                userId,
-                PageRequest.of(offset, size, Sort.by(Sort.Direction.DESC, "changeRequestDate"))
+            userId,
+            PageRequest.of(offset, size, Sort.by(Sort.Direction.DESC, "changeRequestDate"))
         )
-                .map { p ->
-                    p.convert(ProfileHistory::class.java)
-                }
-                .toList()
-                .windowed(2, 1, true)
-                .forEach { window: List<ProfileHistory> ->
-                    val new = window.first()
-                    val past = window.last()
-                    if (past.userId?.isNotBlank() == true) {
-                        new.updatedItem = new.compare(past)
-                        resp.add(new)
-                    } else
-                        resp.add(past)
-                }
+            .map { p ->
+                p.convert(ProfileHistory::class.java)
+            }
+            .toList()
+            .windowed(2, 1, true)
+            .forEach { window: List<ProfileHistory> ->
+                val new = window.first()
+                val past = window.last()
+                if (past.userId?.isNotBlank() == true) {
+                    new.updatedItem = new.compare(past)
+                    resp.add(new)
+                } else
+                    resp.add(past)
+            }
 
         return resp.toList()
     }
@@ -205,7 +205,7 @@ class ProfileManagementImp(
         validateEmailFormat(email)
 
         val profile = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
-                ?: throw OpexError.ProfileNotfound.exception()
+            ?: throw OpexError.ProfileNotfound.exception()
 
         if (!profile.email.isNullOrEmpty())
             throw OpexError.EmailAlreadySet.exception()
@@ -215,7 +215,7 @@ class ProfileManagementImp(
         validateMobileFormat(mobile)
 
         val profile = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
-                ?: throw OpexError.ProfileNotfound.exception()
+            ?: throw OpexError.ProfileNotfound.exception()
 
         if (!profile.mobile.isNullOrEmpty())
             throw OpexError.MobileAlreadySet.exception()
@@ -225,7 +225,7 @@ class ProfileManagementImp(
         if (profileRepository.findByMobile(mobile)?.awaitFirstOrNull() != null)
             throw OpexError.MobileAlreadyExists.exception()
         val profile = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
-                ?: throw OpexError.ProfileNotfound.exception()
+            ?: throw OpexError.ProfileNotfound.exception()
         profile.mobile = mobile
         profile.status = ProfileStatus.CONTACT_INFO_COMPLETED
         profileRepository.save(profile).awaitFirstOrNull()
@@ -235,20 +235,20 @@ class ProfileManagementImp(
         if (profileRepository.findByEmail(email)?.awaitFirstOrNull() != null)
             throw OpexError.EmailAlreadyExists.exception()
         val profile = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
-                ?: throw OpexError.ProfileNotfound.exception()
+            ?: throw OpexError.ProfileNotfound.exception()
         profile.email = email
         profile.status = ProfileStatus.CONTACT_INFO_COMPLETED
         profileRepository.save(profile).awaitFirstOrNull()
     }
 
     override suspend fun updateStatus(
-            userId: String,
-            status: ProfileStatus
+        userId: String,
+        status: ProfileStatus
     ): Profile {
         val profile = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
-                ?: throw OpexError.ProfileNotfound.exception()
+            ?: throw OpexError.ProfileNotfound.exception()
         profile.status = status
-        val saved= profileRepository.save(profile).awaitSingle()
+        val saved = profileRepository.save(profile).awaitSingle()
         return saved.convert(Profile::class.java)
     }
 
@@ -268,12 +268,12 @@ class ProfileManagementImp(
 
         updateKycLevel(userId = oldData.userId!!, kycLevel = newKycLevel, LimitationReason.MajorProfileChange.name)
         limitationManagementImp.updateLimitation(
-                UpdateLimitationRequest(
-                        oldData.userId, arrayOf(
+            UpdateLimitationRequest(
+                oldData.userId, arrayOf(
 
-                        ActionType.CashOut, ActionType.Withdraw
+                    ActionType.CashOut, ActionType.Withdraw
                 ).asList(), null, LimitationUpdateType.Revoke, null, null, LimitationReason.MajorProfileChange
-                )
+            )
         )
 
         return newKycLevel
@@ -286,19 +286,19 @@ class ProfileManagementImp(
 
         updateKycLevel(userId = oldData.userId!!, kycLevel = newKycLevel, LimitationReason.MajorProfileChange.name)
         limitationManagementImp.updateLimitation(
-                UpdateLimitationRequest(
-                        oldData.userId, arrayOf(
+            UpdateLimitationRequest(
+                oldData.userId, arrayOf(
 
-                        ActionType.Withdraw
+                    ActionType.Withdraw
                 ).asList(), null, LimitationUpdateType.Revoke, null, null, LimitationReason.ContactProfileChange
-                )
+            )
         )
         return newKycLevel
     }
 
     suspend fun updateKycLevel(userId: String, kycLevel: KycLevel, reason: String?) {
         val kycLevelDetail =
-                if (kycLevel == KycLevel.LEVEL_1) KycLevelDetail.ManualUpdateLevel1 else KycLevelDetail.ManualUpdateLevel3
+            if (kycLevel == KycLevel.LEVEL_1) KycLevelDetail.ManualUpdateLevel1 else KycLevelDetail.ManualUpdateLevel3
         kycProxyImp.updateKycLevel(ManualUpdateRequest(kycLevelDetail).apply {
             this.userId = userId
             this.description = reason
