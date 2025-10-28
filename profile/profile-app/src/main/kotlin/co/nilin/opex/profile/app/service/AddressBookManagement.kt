@@ -12,8 +12,8 @@ import java.time.LocalDateTime
 class AddressBookManagement(
     private val addressBookPersister: AddressBookPersister,
 ) {
-    suspend fun addAddressBook(uuid: String, request: AddAddressBookItemRequest) {
-        addressBookPersister.save(
+    suspend fun addAddressBook(uuid: String, request: AddAddressBookItemRequest): AddressBookResponse {
+        return addressBookPersister.save(
             AddressBook(
                 uuid = uuid,
                 name = request.name,
@@ -21,15 +21,15 @@ class AddressBookManagement(
                 addressType = request.addressType,
                 createDate = LocalDateTime.now(),
             )
-        )
+        ).toAddressBookResponse()
     }
 
     suspend fun getAllAddressBooks(uuid: String): List<AddressBookResponse> {
         return addressBookPersister.findAll(uuid).map { it.toAddressBookResponse() }
     }
 
-    suspend fun updateAddressBook(uuid: String, id: Long, request: AddAddressBookItemRequest) {
-        addressBookPersister.update(
+    suspend fun updateAddressBook(uuid: String, id: Long, request: AddAddressBookItemRequest): AddressBookResponse {
+        return addressBookPersister.update(
             AddressBook(
                 id = id,
                 uuid = uuid,
@@ -37,7 +37,7 @@ class AddressBookManagement(
                 address = request.address,
                 addressType = request.addressType,
             )
-        )
+        ).toAddressBookResponse()
     }
 
     suspend fun deleteAddressBook(uuid: String, id: Long) {

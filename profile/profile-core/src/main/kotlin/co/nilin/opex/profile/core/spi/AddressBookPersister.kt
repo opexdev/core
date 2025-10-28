@@ -4,8 +4,8 @@ import co.nilin.opex.profile.core.data.profile.AddressBook
 
 interface AddressBookPersister {
 
-    suspend fun save(addressBook: AddressBook)
+    suspend fun save(addressBook: AddressBook) : AddressBook
     suspend fun findAll(uuid: String): List<AddressBook>
-    suspend fun update(addressBook: AddressBook)
+    suspend fun update(addressBook: AddressBook) : AddressBook
     suspend fun delete(uuid: String, id: Long)
 }

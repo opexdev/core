@@ -72,8 +72,7 @@ class BankAccountManagement(
             creator = "system"
         )
 
-        bankAccountPersister.save(bankAccount)
-        return bankAccount.toBankAccountResponse()
+        return bankAccountPersister.save(bankAccount).toBankAccountResponse()
     }
 
     suspend fun getBankAccounts(uuid: String): List<BankAccountResponse> {

@@ -6,10 +6,8 @@ import co.nilin.opex.profile.core.spi.AddressBookPersister
 import co.nilin.opex.profile.core.utils.convert
 import co.nilin.opex.profile.ports.postgres.dao.AddressBookRepository
 import co.nilin.opex.profile.ports.postgres.model.entity.AddressBookModel
-import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -17,17 +15,19 @@ import java.time.LocalDateTime
 class AddressBookManagementImp(
     private val addressBookRepository: AddressBookRepository
 ) : AddressBookPersister {
-    private val logger = LoggerFactory.getLogger(AddressBookManagementImp::class.java)
 
-    override suspend fun save(addressBook: AddressBook) {
-        addressBookRepository.save(addressBook.convert(AddressBookModel::class.java)).awaitFirst()
+    override suspend fun save(addressBook: AddressBook): AddressBook {
+        val savedAddressBook =
+            (addressBookRepository.save(addressBook.convert(AddressBookModel::class.java)).awaitFirstOrNull()
+                ?: throw OpexError.BadRequest.exception("Failed to save address book"))
+        return savedAddressBook.convert(AddressBook::class.java)
     }
 
     override suspend fun findAll(uuid: String): List<AddressBook> {
         return addressBookRepository.findAllByUuid(uuid).collectList().awaitFirstOrElse { emptyList() }
     }
 
-    override suspend fun update(request: AddressBook) {
+    override suspend fun update(request: AddressBook): AddressBook {
         val addressBook =
             addressBookRepository.findById(request.id!!).awaitFirstOrNull()
                 ?: throw OpexError.AddressBookNotFound.exception()
@@ -38,7 +38,9 @@ class AddressBookManagementImp(
                 addressType = request.addressType
                 updateDate = LocalDateTime.now()
             }
-            addressBookRepository.save(addressBook).awaitFirst()
+            val savedAddressBook = addressBookRepository.save(addressBook).awaitFirstOrNull()
+                ?: throw OpexError.AddressBookNotFound.exception("Failed to update address book")
+            return savedAddressBook.convert(AddressBook::class.java)
         } else throw OpexError.Forbidden.exception()
     }
 

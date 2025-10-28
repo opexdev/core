@@ -6,21 +6,20 @@ import co.nilin.opex.profile.core.spi.BankAccountPersister
 import co.nilin.opex.profile.core.utils.convert
 import co.nilin.opex.profile.ports.postgres.dao.BankAccountRepository
 import co.nilin.opex.profile.ports.postgres.model.entity.BankAccountModel
-import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
 @Service
 class BankAccountManagementImp(
     private val bankAccountRepository: BankAccountRepository,
 ) : BankAccountPersister {
-    private val logger = LoggerFactory.getLogger(BankAccountManagementImp::class.java)
 
-
-    override suspend fun save(bankAccount: BankAccount) {
-        bankAccountRepository.save(bankAccount.convert(BankAccountModel::class.java)).awaitFirst()
+    override suspend fun save(bankAccount: BankAccount): BankAccount {
+        val savedBankAccount =
+            bankAccountRepository.save(bankAccount.convert(BankAccountModel::class.java)).awaitFirstOrNull()
+                ?: throw OpexError.BadRequest.exception("Failed to save bank account")
+        return savedBankAccount.convert(BankAccount::class.java)
     }
 
     override suspend fun findAll(uuid: String): List<BankAccount> {

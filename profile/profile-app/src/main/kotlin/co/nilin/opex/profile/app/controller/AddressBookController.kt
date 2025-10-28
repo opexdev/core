@@ -17,8 +17,8 @@ class AddressBookController(
     suspend fun addAddressBook(
         @RequestBody request: AddAddressBookItemRequest,
         @CurrentSecurityContext securityContext: SecurityContext
-    ) {
-        addressBookManagement.addAddressBook(securityContext.authentication.name, request)
+    ): AddressBookResponse {
+        return addressBookManagement.addAddressBook(securityContext.authentication.name, request)
     }
 
     @GetMapping
@@ -39,8 +39,8 @@ class AddressBookController(
         @PathVariable("id") id: Long,
         @RequestBody request: AddAddressBookItemRequest,
         @CurrentSecurityContext securityContext: SecurityContext
-    ) {
-        addressBookManagement.updateAddressBook(securityContext.authentication.name, id, request)
+    ): AddressBookResponse {
+        return addressBookManagement.updateAddressBook(securityContext.authentication.name, id, request)
     }
 
 }

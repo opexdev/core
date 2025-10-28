@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS bank_account
     CHECK (card_number IS NOT NULL OR iban IS NOT NULL),
     UNIQUE (uuid, card_number, iban, account_number, status)
 );
-CREATE INDEX idx_bank_account_uuid ON bank_account (uuid);
+CREATE INDEX IF NOT EXISTS idx_bank_account_uuid ON bank_account (uuid);
 
 CREATE TABLE IF NOT EXISTS address_book
 (
@@ -33,4 +33,4 @@ CREATE TABLE IF NOT EXISTS address_book
     update_date  TIMESTAMP,
     UNIQUE (uuid, address, address_type)
 );
-CREATE INDEX idx_address_book_uuid ON address_book (uuid);
+CREATE INDEX IF NOT EXISTS idx_address_book_uuid ON address_book (uuid);
