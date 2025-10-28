@@ -6,14 +6,11 @@ spring:
   main:
     allow-bean-definition-overriding: true
     allow-circular-references: true
-  datasource:
-    url: jdbc:postgresql://${DB_IP_PORT:localhost}/opex
+  r2dbc:
+    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
-    driver-class-name: org.postgresql.Driver
-  sql:
-    init:
-      mode: always
+    initialization-mode: always
   cloud:
     bootstrap:
       enabled: true

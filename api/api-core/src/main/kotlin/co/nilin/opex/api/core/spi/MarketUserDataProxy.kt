@@ -1,16 +1,20 @@
 package co.nilin.opex.api.core.spi
 
-import co.nilin.opex.api.core.inout.*
+import co.nilin.opex.api.core.inout.MatchingOrderType
+import co.nilin.opex.api.core.inout.Order
+import co.nilin.opex.api.core.inout.OrderData
+import co.nilin.opex.api.core.inout.OrderDirection
+import co.nilin.opex.api.core.inout.Trade
 import java.security.Principal
 import java.util.*
 
 interface MarketUserDataProxy {
 
-    fun queryOrder(principal: Principal, symbol: String, orderId: Long?, origClientOrderId: String?): Order?
+    suspend fun queryOrder(principal: Principal, symbol: String, orderId: Long?, origClientOrderId: String?): Order?
 
-    fun openOrders(principal: Principal, symbol: String?, limit: Int?): List<Order>
+    suspend fun openOrders(principal: Principal, symbol: String?, limit: Int?): List<Order>
 
-    fun allOrders(
+    suspend fun allOrders(
         principal: Principal,
         symbol: String?,
         startTime: Date?,
@@ -18,7 +22,7 @@ interface MarketUserDataProxy {
         limit: Int?
     ): List<Order>
 
-    fun allTrades(
+    suspend fun allTrades(
         principal: Principal,
         symbol: String?,
         fromTrade: Long?,
@@ -27,7 +31,7 @@ interface MarketUserDataProxy {
         limit: Int?
     ): List<Trade>
 
-    fun getOrderHistory(
+    suspend fun getOrderHistory(
         uuid: String,
         symbol: String?,
         startTime: Long?,
@@ -38,7 +42,7 @@ interface MarketUserDataProxy {
         offset: Int?,
     ): List<OrderData>
 
-    fun getOrderHistoryCount(
+    suspend fun getOrderHistoryCount(
         uuid: String,
         symbol: String?,
         startTime: Long?,
@@ -47,7 +51,7 @@ interface MarketUserDataProxy {
         direction: OrderDirection?,
     ): Long
 
-    fun getTradeHistory(
+    suspend fun getTradeHistory(
         uuid: String,
         symbol: String?,
         startTime: Long?,
@@ -57,7 +61,7 @@ interface MarketUserDataProxy {
         offset: Int?,
     ): List<Trade>
 
-    fun getTradeHistoryCount(
+    suspend fun getTradeHistoryCount(
         uuid: String,
         symbol: String?,
         startTime: Long?,
