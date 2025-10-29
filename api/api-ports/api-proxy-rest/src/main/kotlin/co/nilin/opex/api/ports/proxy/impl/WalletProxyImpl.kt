@@ -4,25 +4,24 @@ import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.WalletProxy
 import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
 import co.nilin.opex.api.ports.proxy.data.TransactionRequest
-import co.nilin.opex.api.ports.proxy.utils.body
-import co.nilin.opex.api.ports.proxy.utils.defaultHeaders
-import co.nilin.opex.api.ports.proxy.utils.noBody
-import co.nilin.opex.api.ports.proxy.utils.withAuth
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.utils.LoggerDelegate
+import kotlinx.coroutines.reactive.awaitFirstOrElse
+import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.HttpMethod
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
-import org.springframework.web.client.RestTemplate
-import org.springframework.web.client.exchange
-import org.springframework.web.client.getForObject
-import org.springframework.web.client.postForObject
-import org.springframework.web.util.UriComponentsBuilder
-import java.math.BigDecimal
+import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.body
+import org.springframework.web.reactive.function.client.bodyToFlux
+import org.springframework.web.reactive.function.client.bodyToMono
+import reactor.core.publisher.Mono
 
 @Component
-class WalletProxyImpl(private val restTemplate: RestTemplate) : WalletProxy {
+class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
 
     private val logger by LoggerDelegate()
 
@@ -32,30 +31,43 @@ class WalletProxyImpl(private val restTemplate: RestTemplate) : WalletProxy {
     override suspend fun getWallets(uuid: String?, token: String?): List<Wallet> {
         logger.info("fetching wallets for $uuid")
         return withContext(ProxyDispatchers.wallet) {
-            restTemplate.getForObject<Array<Wallet>>(
-                "$baseUrl/v1/owner/$uuid/wallets",
-                defaultHeaders().withAuth(token)
-            ).toList()
+            webClient.get()
+                .uri("$baseUrl/v1/owner/$uuid/wallets")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<Wallet>()
+                .collectList()
+                .awaitSingle()
         }
     }
 
     override suspend fun getWallet(uuid: String?, token: String?, symbol: String): Wallet {
         logger.info("fetching wallet for $uuid")
         return withContext(ProxyDispatchers.wallet) {
-            restTemplate.getForObject<Wallet>(
-                "$baseUrl/v1/owner/$uuid/wallets/$symbol",
-                defaultHeaders().withAuth(token)
-            )
+            webClient.get()
+                .uri("$baseUrl/v1/owner/$uuid/wallets/$symbol")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToMono<Wallet>()
+                .awaitSingle()
         }
     }
 
     override suspend fun getOwnerLimits(uuid: String?, token: String?): OwnerLimitsResponse {
         logger.info("fetching owner limits for $uuid")
         return withContext(ProxyDispatchers.wallet) {
-            restTemplate.getForObject<OwnerLimitsResponse>(
-                "$baseUrl/v1/owner/$uuid/limits",
-                defaultHeaders().withAuth(token)
-            )
+            webClient.get()
+                .uri("$baseUrl/v1/owner/$uuid/limits")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToMono<OwnerLimitsResponse>()
+                .awaitSingle()
         }
     }
 
@@ -71,10 +83,16 @@ class WalletProxyImpl(private val restTemplate: RestTemplate) : WalletProxy {
     ): List<DepositHistoryResponse> {
         logger.info("fetching deposit transaction history for $uuid")
         return withContext(ProxyDispatchers.wallet) {
-            restTemplate.postForObject<Array<DepositHistoryResponse>>(
-                "$baseUrl/v1/deposit/history",
-                body(TransactionRequest(currency, startTime, endTime, limit, offset, ascendingByTime), token)
-            ).toList()
+            webClient.post()
+                .uri("$baseUrl/v1/deposit/history")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .body(Mono.just(TransactionRequest(currency, startTime, endTime, limit, offset, ascendingByTime)))
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<DepositHistoryResponse>()
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
         }
     }
 
@@ -87,10 +105,15 @@ class WalletProxyImpl(private val restTemplate: RestTemplate) : WalletProxy {
     ): Long {
         logger.info("fetching deposit transaction count for $uuid")
         return withContext(ProxyDispatchers.wallet) {
-            restTemplate.getForObject<Long>(
-                "$baseUrl/v1/deposit/history/count",
-                body(TransactionRequest(currency, startTime, endTime, null, null), token)
-            )
+            webClient.post()
+                .uri("$baseUrl/v1/deposit/history/count")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .body(Mono.just(TransactionRequest(currency, startTime, endTime, null, null)))
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToMono<Long>()
+                .awaitFirstOrElse { 0L }
         }
     }
 
@@ -106,10 +129,16 @@ class WalletProxyImpl(private val restTemplate: RestTemplate) : WalletProxy {
     ): List<WithdrawHistoryResponse> {
         logger.info("fetching withdraw transaction history for $uuid")
         return withContext(ProxyDispatchers.wallet) {
-            restTemplate.postForObject<Array<WithdrawHistoryResponse>>(
-                "$baseUrl/withdraw/history",
-                body(TransactionRequest(currency, startTime, endTime, limit, offset, ascendingByTime), token)
-            ).toList()
+            webClient.post()
+                .uri("$baseUrl/withdraw/history")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .body(Mono.just(TransactionRequest(currency, startTime, endTime, limit, offset, ascendingByTime)))
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<WithdrawHistoryResponse>()
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
         }
     }
 
@@ -122,11 +151,15 @@ class WalletProxyImpl(private val restTemplate: RestTemplate) : WalletProxy {
     ): Long {
         logger.info("fetching withdraw transaction count for $uuid")
         return withContext(ProxyDispatchers.wallet) {
-            restTemplate.postForObject<Long>(
-                "$baseUrl/withdraw/history/count",
-                TransactionRequest(currency, startTime, endTime, null, null),
-                token
-            )
+            webClient.post()
+                .uri("$baseUrl/withdraw/history/count")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .body(Mono.just(TransactionRequest(currency, startTime, endTime, null, null)))
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToMono<Long>()
+                .awaitFirstOrElse { 0L }
         }
     }
 
@@ -141,23 +174,32 @@ class WalletProxyImpl(private val restTemplate: RestTemplate) : WalletProxy {
         offset: Int,
         ascendingByTime: Boolean?
     ): List<UserTransactionHistory> {
-        val request = UserTransactionRequest(
-            null,
-            currency,
-            null,
-            null,
-            category,
-            startTime,
-            endTime,
-            limit,
-            offset,
-            ascendingByTime == true,
-            null
-        )
-        return restTemplate.postForObject<Array<UserTransactionHistory>>(
-            "$baseUrl/v2/transaction",
-            body(request, token)
-        ).toList()
+        return webClient.post()
+            .uri("$baseUrl/v2/transaction")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(
+                Mono.just(
+                    UserTransactionRequest(
+                        null,
+                        currency,
+                        null,
+                        null,
+                        category,
+                        startTime,
+                        endTime,
+                        limit,
+                        offset,
+                        ascendingByTime == true,
+                        null
+                    )
+                )
+            )
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToFlux<UserTransactionHistory>()
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
     }
 
     override suspend fun getTransactionsCount(
@@ -168,8 +210,28 @@ class WalletProxyImpl(private val restTemplate: RestTemplate) : WalletProxy {
         startTime: Long?,
         endTime: Long?,
     ): Long {
-        val request = UserTransactionRequest(null, currency, null, null, category, startTime, endTime, null)
-        return restTemplate.postForObject<Long>("$baseUrl/v2/transaction/count", body(request, token))
+        return webClient.post()
+            .uri("$baseUrl/v2/transaction/count")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(
+                Mono.just(
+                    UserTransactionRequest(
+                        null,
+                        currency,
+                        null,
+                        null,
+                        category,
+                        startTime,
+                        endTime,
+                        null
+                    )
+                )
+            )
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<Long>()
+            .awaitFirstOrElse { 0L }
     }
 
     override suspend fun getGateWays(
@@ -177,18 +239,32 @@ class WalletProxyImpl(private val restTemplate: RestTemplate) : WalletProxy {
         includeOnChainGateways: Boolean,
     ): List<CurrencyGatewayCommand> {
         return withContext(ProxyDispatchers.wallet) {
-            val uri = UriComponentsBuilder.fromUriString("$baseUrl/currency/gateways")
-                .queryParam("includeOffChainGateways", includeOffChainGateways)
-                .queryParam("includeOnChainGateways", includeOnChainGateways)
-                .build().toUri()
-            restTemplate.exchange<Array<CurrencyGatewayCommand>>(uri, HttpMethod.GET, noBody()).body?.toList()
-                ?: emptyList()
+            webClient.get()
+                .uri("$baseUrl/currency/gateways") {
+                    it.queryParam("includeOffChainGateways", includeOffChainGateways)
+                    it.queryParam("includeOnChainGateways", includeOnChainGateways)
+                    it.build()
+                }.accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<CurrencyGatewayCommand>()
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
         }
     }
 
     override suspend fun getCurrencies(): List<CurrencyData> {
         return withContext(ProxyDispatchers.wallet) {
-            restTemplate.getForObject<Array<CurrencyData>>("$baseUrl/currency/all", defaultHeaders()).toList()
+            webClient.get()
+                .uri("$baseUrl/currency/all")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<CurrencyData>()
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
         }
     }
 
@@ -200,13 +276,19 @@ class WalletProxyImpl(private val restTemplate: RestTemplate) : WalletProxy {
         limit: Int?,
     ): List<TransactionSummary> {
         return withContext(ProxyDispatchers.wallet) {
-            val uri = UriComponentsBuilder.fromUriString("$baseUrl/v2/transaction/trade/summary/$uuid")
-                .queryParam("startTime", startTime)
-                .queryParam("endTime", endTime)
-                .queryParam("limit", limit)
-                .build().toUri()
-            restTemplate.exchange<Array<TransactionSummary>>(uri, HttpMethod.GET, noBody()).body?.toList()
-                ?: emptyList()
+            webClient.get()
+                .uri("$baseUrl/v2/transaction/trade/summary/$uuid") {
+                    it.queryParam("startTime", startTime)
+                    it.queryParam("endTime", endTime)
+                    it.queryParam("limit", limit)
+                    it.build()
+                }.accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<TransactionSummary>()
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
         }
     }
 
@@ -218,13 +300,19 @@ class WalletProxyImpl(private val restTemplate: RestTemplate) : WalletProxy {
         limit: Int?,
     ): List<TransactionSummary> {
         return withContext(ProxyDispatchers.wallet) {
-            val uri = UriComponentsBuilder.fromUriString("$baseUrl/deposit/summary/$uuid")
-                .queryParam("startTime", startTime)
-                .queryParam("endTime", endTime)
-                .queryParam("limit", limit)
-                .build().toUri()
-            restTemplate.exchange<Array<TransactionSummary>>(uri, HttpMethod.GET, noBody()).body?.toList()
-                ?: emptyList()
+            webClient.get()
+                .uri("$baseUrl/deposit/summary/$uuid") {
+                    it.queryParam("startTime", startTime)
+                    it.queryParam("endTime", endTime)
+                    it.queryParam("limit", limit)
+                    it.build()
+                }.accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<TransactionSummary>()
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
         }
     }
 
@@ -236,13 +324,19 @@ class WalletProxyImpl(private val restTemplate: RestTemplate) : WalletProxy {
         limit: Int?,
     ): List<TransactionSummary> {
         return withContext(ProxyDispatchers.wallet) {
-            val uri = UriComponentsBuilder.fromUriString("$baseUrl/withdraw/summary/$uuid")
-                .queryParam("startTime", startTime)
-                .queryParam("endTime", endTime)
-                .queryParam("limit", limit)
-                .build().toUri()
-            restTemplate.exchange<Array<TransactionSummary>>(uri, HttpMethod.GET, noBody()).body?.toList()
-                ?: emptyList()
+            webClient.get()
+                .uri("$baseUrl/withdraw/summary/$uuid") {
+                    it.queryParam("startTime", startTime)
+                    it.queryParam("endTime", endTime)
+                    it.queryParam("limit", limit)
+                    it.build()
+                }.accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<TransactionSummary>()
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
         }
     }
 
@@ -250,15 +344,19 @@ class WalletProxyImpl(private val restTemplate: RestTemplate) : WalletProxy {
         request: RequestDepositBody
     ): TransferResult? {
         return withContext(ProxyDispatchers.wallet) {
-            val uri =
-                UriComponentsBuilder.fromUriString("$baseUrl/deposit/${request.amount}_${request.chain}_${request.symbol}/${request.receiverUuid}_${request.receiverWalletType}")
-                    .apply {
+            webClient.post()
+                .uri("$baseUrl/deposit/${request.amount}_${request.chain}_${request.symbol}/${request.receiverUuid}_${request.receiverWalletType}") {
+                    it.apply {
                         request.description?.let { description -> queryParam("description", description) }
                         request.transferRef?.let { transferRef -> queryParam("transferRef", transferRef) }
                         request.gatewayUuid?.let { gatewayUuid -> queryParam("gatewayUuid", gatewayUuid) }
-                    }
-                    .build().toUri()
-            restTemplate.exchange<TransferResult>(uri, HttpMethod.POST, noBody()).body
+                    }.build()
+                }.accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToMono<TransferResult>()
+                .awaitFirstOrNull()
         }
     }
 
@@ -266,50 +364,94 @@ class WalletProxyImpl(private val restTemplate: RestTemplate) : WalletProxy {
         token: String,
         request: RequestWithdrawBody
     ): WithdrawActionResult {
-        return restTemplate.postForObject<WithdrawActionResult?>("$baseUrl/withdraw", body(request, token))
-            ?: throw OpexError.BadRequest.exception()
+        return webClient.post()
+            .uri("$baseUrl/withdraw")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<WithdrawActionResult>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
     }
 
-    override suspend fun cancelWithdraw(token: String, withdrawId: Long) {
-        restTemplate.postForObject<Any>("$baseUrl/withdraw/$withdrawId/cancel", defaultHeaders().withAuth(token))
+    override suspend fun cancelWithdraw(token: String, withdrawId: Long): Void? {
+        return webClient.post()
+            .uri("$baseUrl/withdraw/$withdrawId/cancel")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono(Void::class.java)
+            .awaitFirstOrNull()
     }
 
     override suspend fun findWithdraw(token: String, withdrawId: Long): WithdrawResponse {
-        return restTemplate.postForObject<WithdrawResponse?>(
-            "$baseUrl/withdraw/$withdrawId",
-            defaultHeaders().withAuth(token)
-        ) ?: throw OpexError.WithdrawNotFound.exception()
+        return webClient.get()
+            .uri("$baseUrl/withdraw/$withdrawId")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<WithdrawResponse>()
+            .awaitFirstOrElse { throw OpexError.WithdrawNotFound.exception() }
     }
 
     override suspend fun submitVoucher(
         code: String,
         token: String
     ): SubmitVoucherResponse {
-        return restTemplate.postForObject<SubmitVoucherResponse?>(
-            "$baseUrl/voucher/$code",
-            defaultHeaders().withAuth(token)
-        ) ?: throw OpexError.BadRequest.exception()
+        return webClient.put()
+            .uri("$baseUrl/voucher/$code")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<SubmitVoucherResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
     }
 
     override suspend fun getQuoteCurrencies(): List<QuoteCurrency> {
         return withContext(ProxyDispatchers.wallet) {
-            val uri = UriComponentsBuilder.fromUriString("$baseUrl/currency/quotes")
-                .queryParam("isActive", true)
-                .build().toUri()
-            restTemplate.exchange<Array<QuoteCurrency>>(uri, HttpMethod.GET, noBody()).body?.toList() ?: emptyList()
+            webClient.get()
+                .uri("$baseUrl/currency/quotes") {
+                    it.queryParam("isActive", true)
+                    it.build()
+                }.accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<QuoteCurrency>()
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
         }
     }
 
     override suspend fun getSwapTransactions(token: String, request: UserTransactionRequest): List<SwapResponse> {
-        return restTemplate.postForObject<Array<SwapResponse>>("$baseUrl/v1/swap/history", body(request, token))
-            .toList()
+        return webClient.post()
+            .uri("$baseUrl/v1/swap/history")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToFlux<SwapResponse>()
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
     }
 
     override suspend fun getSwapTransactionsCount(
         token: String,
         request: UserTransactionRequest
     ): Long {
-        return restTemplate.postForObject<Long?>("$baseUrl/v1/swap/history/count", body(request, token)) ?: 0
+        return webClient.post()
+            .uri("$baseUrl/v1/swap/history/count")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<Long>()
+            .awaitFirstOrElse { 0L }
     }
 }
 

@@ -2,6 +2,7 @@ package co.nilin.opex.api.ports.proxy.impl
 
 import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.AccountantProxy
+import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
 import co.nilin.opex.api.ports.proxy.utils.defaultHeaders
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.utils.Interval
@@ -9,73 +10,126 @@ import co.nilin.opex.common.utils.LoggerDelegate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.getForObject
+import org.springframework.web.reactive.function.client.WebClient
 import java.math.BigDecimal
 
 @Component
-class AccountantProxyImpl(private val restTemplate: RestTemplate) : AccountantProxy {
+class AccountantProxyImpl(private val client: WebClient) : AccountantProxy {
 
     private val logger by LoggerDelegate()
 
     @Value("\${app.accountant.url}")
     private lateinit var baseUrl: String
 
-     override suspend fun getPairConfigs(): List<PairConfigResponse> {
+    override suspend fun getPairConfigs(): List<PairConfigResponse> {
         logger.info("fetching pair configs")
-        return withContext(Dispatchers.IO) {
-            restTemplate.getForObject<Array<PairConfigResponse>>("$baseUrl/config/all", defaultHeaders()).toList()
+        return withContext(ProxyDispatchers.general) {
+            client.get()
+                .uri("$baseUrl/config/all")
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .onStatus({ it.isError }, { it.createException() })
+                .bodyToFlux<PairConfigResponse>()
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
         }
     }
 
-     override suspend fun getFeeConfigs(): List<FeeConfig> {
+    override suspend fun getFeeConfigs(): List<FeeConfig> {
         logger.info("fetching fee configs")
-        return withContext(Dispatchers.IO) {
-            restTemplate.getForObject<Array<PairFeeResponse>>("$baseUrl/config/fee", defaultHeaders()).toList()
+        return withContext(ProxyDispatchers.general) {
+            client.get()
+                .uri("$baseUrl/config/fee")
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .onStatus({ it.isError }, { it.createException() })
+                .bodyToFlux<FeeConfig>()
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
         }
     }
+
     override suspend fun getUserFee(uuid: String): UserFee {
         logger.info("fetching user fee")
-        return restTemplate.exchange<UserFee>(
-            "$baseUrl/user/data/fee/$uuid",
-            HttpMethod.GET,
-            noBody()
-        ).body ?: throw OpexError.FeeConfigNotFound.exception()
+        return withContext(ProxyDispatchers.general) {
+            client.get()
+                .uri("$baseUrl/user/data/fee/$uuid")
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .onStatus({ it.isError }, { it.createException() })
+                .bodyToMono<UserFee>()
+                .awaitSingleOrNull() ?: throw OpexError.FeeConfigNotFound.exception()
+        }
     }
 
     override suspend fun getTradeVolumeByCurrency(uuid: String, symbol: String, interval: Interval): BigDecimal {
-        val uri = UriComponentsBuilder.fromUriString("$baseUrl/user/data/trade/volume/$uuid")
+        logger.info("fetching trade volume by currency")
+        val url = UriComponentsBuilder.fromUriString("$baseUrl/user/data/trade/volume/$uuid")
             .queryParam("symbol", symbol)
             .queryParam("interval", interval.toString())
             .build().toUri()
-        return restTemplate.exchange<BigDecimal>(uri, HttpMethod.GET, noBody()).body!!
+
+        return withContext(ProxyDispatchers.general) {
+            client.get()
+                .uri(uri)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .onStatus({ it.isError }, { it.createException() })
+                .bodyToMono<BigDecimal>()
+                .awaitSingle()
+        }
     }
 
     override suspend fun getTotalTradeVolumeValue(uuid: String, interval: Interval): BigDecimal {
+        logger.info("fetching total trade volume value")
         val uri = UriComponentsBuilder.fromUriString("$baseUrl/user/data/trade/volume/total/$uuid")
             .queryParam("interval", interval.toString())
             .build().toUri()
-        return restTemplate.exchange<BigDecimal>(uri, HttpMethod.GET, noBody()).body!!
+
+        return withContext(ProxyDispatchers.general) {
+            client.get()
+                .uri(uri)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .onStatus({ it.isError }, { it.createException() })
+                .bodyToMono<BigDecimal>()
+                .awaitSingle()
+        }
     }
 
     override suspend fun getWithdrawLimitConfigs(): List<WithdrawLimitConfig> {
         logger.info("fetching withdraw limit configs")
-        return restTemplate.exchange<Array<WithdrawLimitConfig>>(
-            "$baseUrl/config/withdraw-limit",
-            HttpMethod.GET,
-            noBody()
-        ).body?.toList() ?: emptyList()
+        return withContext(ProxyDispatchers.general) {
+            client.get()
+                .uri("$baseUrl/config/withdraw-limit")
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .onStatus({ it.isError }, { it.createException() })
+                .bodyToFlux<WithdrawLimitConfig>()
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
+        }
     }
 
-    override fun getTotalWithdrawVolumeValue(
-        uuid: String,
-        interval: Interval?
-    ): BigDecimal {
-        val uri = UriComponentsBuilder.fromUriString("$baseUrl/user/data/withdraw/volume/total/$uuid")
-            .apply { interval?.let { queryParam("interval", it.toString()) } }
-            .build()
-            .toUri()
-        return restTemplate.exchange<BigDecimal>(uri, HttpMethod.GET, noBody()).body!!
+    override suspend fun getTotalWithdrawVolumeValue(uuid: String, interval: Interval?): BigDecimal {
+        logger.info("fetching total withdraw volume value")
+        val uriBuilder = UriComponentsBuilder.fromUriString("$baseUrl/user/data/withdraw/volume/total/$uuid")
+        interval?.let { uriBuilder.queryParam("interval", it.toString()) }
+        val uri = uriBuilder.build().toUri()
+
+        return withContext(ProxyDispatchers.general) {
+            client.get()
+                .uri(uri)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .onStatus({ it.isError }, { it.createException() })
+                .bodyToMono<BigDecimal>()
+                .awaitSingle()
+        }
     }
+
 }
