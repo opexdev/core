@@ -2,19 +2,15 @@ package co.nilin.opex.profile.app.listener
 
 import co.nilin.opex.profile.app.service.ProfileManagement
 import co.nilin.opex.profile.core.spi.UserCreatedEventListener
-import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import co.nilin.opex.profile.core.data.event.UserCreatedEvent
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 @Component
 class UserCreatedListener(val userRegistrationService: ProfileManagement) : UserCreatedEventListener {
 
     private val logger = LoggerFactory.getLogger(UserCreatedListener::class.java)
-    val scope = CoroutineScope(Dispatchers.IO)
     override fun id(): String {
         return "UserCreatedEventListener"
     }
@@ -24,8 +20,13 @@ class UserCreatedListener(val userRegistrationService: ProfileManagement) : User
         logger.info("==========================================================================")
         logger.info("Incoming UserCreated event: $event")
         logger.info("==========================================================================")
-        scope.launch {
-            userRegistrationService.registerNewUser(event)
+        CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
+            try {
+                userRegistrationService.registerNewUser(event)
+                logger.info("User created  successfully ")
+            } catch (ex: Exception) {
+                logger.error("Failed to create new user", ex)
+            }
         }
     }
 }
