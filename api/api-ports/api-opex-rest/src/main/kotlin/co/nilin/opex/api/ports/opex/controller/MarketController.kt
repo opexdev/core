@@ -24,7 +24,9 @@ class MarketController(
     @Value("\${app.trade-volume-calculation-currency}")
     private val tradeVolumeCalculationCurrency: String,
     @Value("\${app.withdraw-volume-calculation-currency}")
-    private val withdrawVolumeCalculationCurrency: String
+    private val withdrawVolumeCalculationCurrency: String,
+    @Value("\${app.total-asset-calculation-currency}")
+    private val totalAssetCalculationCurrency: String
 ) {
     private val orderBookValidLimits = arrayListOf(5, 10, 20, 50, 100, 500, 1000, 5000)
     private val validDurations = arrayListOf("24h", "7d", "1M")
@@ -248,7 +250,8 @@ class MarketController(
             (quoteCurrencies.map { it.currency }),
             (quoteCurrencies.filter { it.isReference }.map { it.currency }),
             withdrawVolumeCalculationCurrency,
-            tradeVolumeCalculationCurrency
+            tradeVolumeCalculationCurrency,
+            totalAssetCalculationCurrency
         )
     }
 

@@ -147,12 +147,12 @@ app:
     life-time: 15 #minutes
   symbols: ${SYMBOLS}
   zone-offset: +03:30
-  snapshot-currency: USDT
+  snapshot-currency: ${TOTAL_ASSET_CALCULATION_CURRENCY}
   withdraw:
     limit:
-      enabled: false
-    otp-required-count: 1
-    bank-account-validation : false
+      enabled: ${WITHDRAW_LIMIT_ENABLED}
+    otp-required-count: ${WITHDRAW_OTP_REQUIRED_COUNT}
+    bank-account-validation: ${WITHDRAW_BANK_ACCOUNT_VALIDATION}
   custom-message:
     enabled: ${CUSTOM_MESSAGE_ENABLED:false}
     base-url: ${CUSTOM_MESSAGE_URL}
