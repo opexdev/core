@@ -244,11 +244,12 @@ class ProfileManagementImp(
     override suspend fun updateStatus(
         userId: String,
         status: ProfileStatus
-    ) {
+    ): Profile {
         val profile = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
             ?: throw OpexError.ProfileNotfound.exception()
         profile.status = status
-        profileRepository.save(profile).awaitSingle()
+        val saved = profileRepository.save(profile).awaitSingle()
+        return saved.convert(Profile::class.java)
     }
 
     fun isMajorChanges(oldData: ProfileModel, newData: UpdateProfileRequest): Boolean {
