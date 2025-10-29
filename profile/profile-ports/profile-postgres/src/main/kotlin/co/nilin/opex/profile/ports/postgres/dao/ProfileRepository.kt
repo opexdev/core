@@ -51,4 +51,7 @@ interface ProfileRepository : ReactiveCrudRepository<ProfileModel, Long> {
 
     fun findByEmail(email: String?): Mono<ProfileModel>?
 
+    @Query("UPDATE profile SET kyc_level = :level WHERE user_id = :userId")
+    fun updateKycLevelByUserId(userId: String, level: String): Mono<Void>
+
 }

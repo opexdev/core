@@ -193,11 +193,11 @@ class ProfileManagementImp(
         return resp.toList()
     }
 
+    //todo add version column to profile table
     override suspend fun updateUserLevelAndStatus(userId: String, userLevel: KycLevel) {
         profileRepository.findByUserId(userId)?.awaitFirstOrNull()?.let { profileModel ->
             profileModel.kycLevel = userLevel
-            profileRepository.save(profileModel).awaitFirstOrNull()
-
+            profileRepository.updateKycLevelByUserId(userId, userLevel.name).awaitFirstOrNull()
         } ?: throw OpexError.UserNotFound.exception()
     }
 
