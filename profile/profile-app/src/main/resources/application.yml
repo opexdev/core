@@ -51,8 +51,8 @@ spring:
 swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
 app:
   admin-approval:
-    profile-completion-request: false
-    bank-account: false
+    profile-completion-request: ${ADMIN_APPROVAL_PROFILE_COMPLETION_REQUEST:false}
+    bank-account: ${ADMIN_APPROVAL_BANK_ACCOUNT:false}
   auth:
     cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
   kyc:

@@ -112,9 +112,9 @@ app:
       secret: ${API_KEY_CLIENT_SECRET}
   binance:
     api-url: https://api1.binance.com
-  trade-volume-calculation-currency: ${TRADE_VOLUME_CALCULATION_CURRENCY}
-  withdraw-volume-calculation-currency: ${WITHDRAW_VOLUME_CALCULATION_CURRENCY}
-  total-asset-calculation-currency: ${TOTAL_ASSET_CALCULATION_CURRENCY}
+  trade-volume-calculation-currency: ${TRADE_VOLUME_CALCULATION_CURRENCY:USDT}
+  withdraw-volume-calculation-currency: ${WITHDRAW_VOLUME_CALCULATION_CURRENCY:USDT}
+  total-asset-calculation-currency: ${TOTAL_ASSET_CALCULATION_CURRENCY:USDT}
   custom-message:
     enabled: ${CUSTOM_MESSAGE_ENABLED:false}
     base-url: ${CUSTOM_MESSAGE_URL}
