@@ -63,8 +63,8 @@ class MarketController(
         return walletProxy.getGateWays(includeOffChainGateways, includeOnChainGateways)
     }
 
-    @GetMapping("/pair/fee")
-    suspend fun getPairFees(): List<FeeConfig> {
+    @GetMapping("/fee")
+    suspend fun getFeeConfigs(): List<FeeConfig> {
         return accountantProxy.getFeeConfigs()
     }
 
