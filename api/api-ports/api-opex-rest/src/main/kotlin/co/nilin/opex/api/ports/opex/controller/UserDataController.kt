@@ -40,7 +40,7 @@ class UserDataController(
     }
 
     @GetMapping("/fee")
-    fun getUserFee(@CurrentSecurityContext securityContext: SecurityContext): UserFee {
+    suspend fun getUserFee(@CurrentSecurityContext securityContext: SecurityContext): UserFee {
         return accountantProxy.getUserFee(securityContext.authentication.name)
     }
 

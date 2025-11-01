@@ -10,7 +10,7 @@ import java.math.BigDecimal
 
 interface MatchingGatewayProxy {
 
-    fun createNewOrder(
+    suspend fun createNewOrder(
         uuid: String?,
         pair: String,
         price: BigDecimal,
@@ -22,7 +22,7 @@ interface MatchingGatewayProxy {
         token: String?
     ): OrderSubmitResult?
 
-    fun cancelOrder(
+    suspend fun cancelOrder(
         ouid: String,
         uuid: String,
         orderId: Long,
@@ -30,5 +30,5 @@ interface MatchingGatewayProxy {
         token: String?
     ): OrderSubmitResult?
 
-    fun getPairSettings(): List<PairSetting>
+    suspend fun getPairSettings(): List<PairSetting>
 }

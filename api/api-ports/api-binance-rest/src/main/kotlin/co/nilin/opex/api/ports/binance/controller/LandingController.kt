@@ -31,7 +31,7 @@ class LandingController(
     private val logger = LoggerFactory.getLogger(LandingController::class.java)
 
     @GetMapping("/globalPrices")
-    fun getCurrencyPrices(@RequestParam usdSymbol: String): GlobalPriceResponse {
+    suspend fun getCurrencyPrices(@RequestParam usdSymbol: String): GlobalPriceResponse {
         val irtUSDPrice = marketDataProxy.getExternalCurrencyRates("IRT", usdSymbol)
         val globalPrice = try {
             globalMarketProxy.getPrices(symbolMapper.symbolToAliasMap().entries.map { it.value })
@@ -44,40 +44,48 @@ class LandingController(
     }
 
     @GetMapping("/marketStats")
-    fun getMarketStats(
+    suspend fun getMarketStats(
         @RequestParam interval: String,
         @RequestParam(required = false) limit: Int?
-    ): MarketStatResponse {
+    ): MarketStatResponse = coroutineScope {
         val intervalEnum = Interval.findByLabel(interval) ?: Interval.Week
         val validLimit = getValidLimit(limit)
         val symbols = symbolMapper.symbolToAliasMap()
 
-        val mostIncreased = marketStatProxy.getMostIncreasedInPricePairs(intervalEnum, validLimit)
-            .onEach { symbols[it.symbol]?.let { s -> it.symbol = s } }
-            .ifEmpty { symbols.entries.map { PriceStat(it.value, BigDecimal.ZERO, 0.0) } }
+        val mostIncreased = async {
+            marketStatProxy.getMostIncreasedInPricePairs(intervalEnum, validLimit)
+                .onEach { symbols[it.symbol]?.let { s -> it.symbol = s } }
+                .ifEmpty { symbols.entries.map { PriceStat(it.value, BigDecimal.ZERO, 0.0) } }
+        }
 
-        val mostDecreased = marketStatProxy.getMostDecreasedInPricePairs(intervalEnum, validLimit)
-            .onEach { symbols[it.symbol]?.let { s -> it.symbol = s } }
-            .ifEmpty { symbols.entries.map { PriceStat(it.value, BigDecimal.ZERO, 0.0) } }
+        val mostDecreased = async {
+            marketStatProxy.getMostDecreasedInPricePairs(intervalEnum, validLimit)
+                .onEach { symbols[it.symbol]?.let { s -> it.symbol = s } }
+                .ifEmpty { symbols.entries.map { PriceStat(it.value, BigDecimal.ZERO, 0.0) } }
+        }
 
-        val highestVolume = marketStatProxy.getHighestVolumePair(intervalEnum)
-            ?.apply { symbols[symbol]?.let { symbol = it } }
-            ?: TradeVolumeStat(symbols.entries.random().value, BigDecimal.ZERO, BigDecimal.ZERO, 0.0)
+        val highestVolume = async {
+            marketStatProxy.getHighestVolumePair(intervalEnum)
+                ?.apply { symbols[symbol]?.let { symbol = it } }
+                ?: TradeVolumeStat(symbols.entries.random().value, BigDecimal.ZERO, BigDecimal.ZERO, 0.0)
+        }
 
-        val mostTrades = marketStatProxy.getTradeCountPair(intervalEnum)
-            ?.apply { symbols[symbol]?.let { symbol = it } }
-            ?: TradeVolumeStat(symbols.entries.random().value, BigDecimal.ZERO, BigDecimal.ZERO, 0.0)
+        val mostTrades = async {
+            marketStatProxy.getTradeCountPair(intervalEnum)
+                ?.apply { symbols[symbol]?.let { symbol = it } }
+                ?: TradeVolumeStat(symbols.entries.random().value, BigDecimal.ZERO, BigDecimal.ZERO, 0.0)
+        }
 
-        return MarketStatResponse(
-            mostIncreased,
-            mostDecreased,
-            highestVolume,
-            mostTrades
+        MarketStatResponse(
+            mostIncreased.await(),
+            mostDecreased.await(),
+            highestVolume.await(),
+            mostTrades.await()
         )
     }
 
     @GetMapping("/exchangeInfo")
-    fun marketInfo(@RequestParam interval: String): MarketInfoResponse {
+    suspend fun marketInfo(@RequestParam interval: String): MarketInfoResponse {
         val intervalEnum = Interval.findByLabel(interval) ?: Interval.ThreeMonth
         return MarketInfoResponse(
             marketDataProxy.countActiveUsers(intervalEnum),
