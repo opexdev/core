@@ -72,7 +72,7 @@ class APIKeyServiceImpl(
 
     override suspend fun getAPIKey(key: String, secret: String): APIKey? = coroutineScope {
         val apiKey = getFromCache(key)
-            ?: apiKeyRepository.findByKey(key).awaitSingleOrNull()?.apply { putCache(this) }
+            ?: apiKeyRepository.findByKey(key)?.awaitSingleOrNull()?.apply { putCache(this) }
 
         with(apiKey) {
             if (this != null) {
@@ -109,7 +109,7 @@ class APIKeyServiceImpl(
     }
 
     override suspend fun changeKeyState(userId: String, key: String, isEnabled: Boolean) {
-        val apiKey = apiKeyRepository.findByKey(key).awaitSingleOrNull() ?: throw OpexError.NotFound.exception()
+        val apiKey = apiKeyRepository.findByKey(key)?.awaitSingleOrNull() ?: throw OpexError.NotFound.exception()
         if (apiKey.userId != userId)
             throw OpexError.Forbidden.exception()
         apiKey.isEnabled = isEnabled
@@ -117,7 +117,7 @@ class APIKeyServiceImpl(
     }
 
     override suspend fun deleteKey(userId: String, key: String) {
-        val apiKey = apiKeyRepository.findByKey(key).awaitSingleOrNull() ?: throw OpexError.NotFound.exception()
+        val apiKey = apiKeyRepository.findByKey(key)?.awaitSingleOrNull() ?: throw OpexError.NotFound.exception()
         if (apiKey.userId != userId)
             throw OpexError.Forbidden.exception()
         apiKeyRepository.delete(apiKey).awaitFirstOrNull()

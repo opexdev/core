@@ -52,6 +52,11 @@
             <artifactId>logbook-spring-boot-autoconfigure</artifactId>
             <version>3.9.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.zalando</groupId>
+            <artifactId>logbook-spring-boot-webflux-autoconfigure</artifactId>
+            <version>3.9.0</version>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>

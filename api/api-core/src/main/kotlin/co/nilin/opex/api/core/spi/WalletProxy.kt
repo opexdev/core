@@ -112,7 +112,7 @@ interface WalletProxy {
     suspend fun cancelWithdraw(
         token: String,
         withdrawId: Long
-    )
+    ): Void?
 
     suspend fun findWithdraw(
         token: String,

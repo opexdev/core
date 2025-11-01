@@ -8,6 +8,7 @@ import co.nilin.opex.api.ports.proxy.data.CreateOrderRequest
 import co.nilin.opex.api.ports.proxy.utils.body
 import co.nilin.opex.api.ports.proxy.utils.defaultHeaders
 import co.nilin.opex.common.utils.LoggerDelegate
+import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Value
@@ -20,6 +21,7 @@ import org.springframework.web.client.getForObject
 import org.springframework.web.client.postForObject
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.body
+import org.springframework.web.reactive.function.client.bodyToFlux
 import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
