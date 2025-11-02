@@ -4,6 +4,6 @@ import co.nilin.opex.api.core.inout.GlobalPrice
 
 interface GlobalMarketProxy {
 
-    fun getPrices(symbols: List<String>): List<GlobalPrice>
+    suspend fun getPrices(symbols: List<String>): List<GlobalPrice>
 
 }

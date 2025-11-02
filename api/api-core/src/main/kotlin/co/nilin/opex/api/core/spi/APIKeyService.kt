@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 
 interface APIKeyService {
 
-    fun createAPIKey(
+    suspend fun createAPIKey(
         userId: String,
         label: String,
         expirationTime: LocalDateTime?,
@@ -13,12 +13,12 @@ interface APIKeyService {
         currentToken: String
     ): Pair<String, APIKey>
 
-    fun getAPIKey(key: String, secret: String): APIKey?
+    suspend fun getAPIKey(key: String, secret: String): APIKey?
 
-    fun getKeysByUserId(userId: String): List<APIKey>
+    suspend fun getKeysByUserId(userId: String): List<APIKey>
 
-    fun changeKeyState(userId: String, key: String, isEnabled: Boolean)
+    suspend fun changeKeyState(userId: String, key: String, isEnabled: Boolean)
 
-    fun deleteKey(userId: String, key: String)
+    suspend fun deleteKey(userId: String, key: String)
 
 }

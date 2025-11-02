@@ -6,12 +6,12 @@ import co.nilin.opex.common.utils.Interval
 
 interface MarketStatProxy {
 
-    fun getMostIncreasedInPricePairs(interval: Interval, limit: Int): List<PriceStat>
+    suspend fun getMostIncreasedInPricePairs(interval: Interval, limit: Int): List<PriceStat>
 
-    fun getMostDecreasedInPricePairs(interval: Interval, limit: Int): List<PriceStat>
+    suspend fun getMostDecreasedInPricePairs(interval: Interval, limit: Int): List<PriceStat>
 
-    fun getHighestVolumePair(interval: Interval): TradeVolumeStat?
+    suspend fun getHighestVolumePair(interval: Interval): TradeVolumeStat?
 
-    fun getTradeCountPair(interval: Interval): TradeVolumeStat?
+    suspend fun getTradeCountPair(interval: Interval): TradeVolumeStat?
 
 }

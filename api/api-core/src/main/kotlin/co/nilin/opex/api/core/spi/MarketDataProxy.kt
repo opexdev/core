@@ -5,23 +5,23 @@ import co.nilin.opex.common.utils.Interval
 
 interface MarketDataProxy {
 
-    fun getTradeTickerData(interval: Interval): List<PriceChange>
+    suspend fun getTradeTickerData(interval: Interval): List<PriceChange>
 
-    fun getTradeTickerDataBySymbol(symbol: String, interval: Interval): PriceChange
+    suspend fun getTradeTickerDataBySymbol(symbol: String, interval: Interval): PriceChange
 
-    fun openBidOrders(symbol: String, limit: Int): List<OrderBook>
+    suspend fun openBidOrders(symbol: String, limit: Int): List<OrderBook>
 
-    fun openAskOrders(symbol: String, limit: Int): List<OrderBook>
+    suspend fun openAskOrders(symbol: String, limit: Int): List<OrderBook>
 
-    fun lastOrder(symbol: String): Order?
+    suspend fun lastOrder(symbol: String): Order?
 
-    fun recentTrades(symbol: String, limit: Int): List<MarketTrade>
+    suspend fun recentTrades(symbol: String, limit: Int): List<MarketTrade>
 
-    fun lastPrice(symbol: String?): List<PriceTicker>
+    suspend fun lastPrice(symbol: String?): List<PriceTicker>
 
-    fun getBestPriceForSymbols(symbols: List<String>): List<BestPrice>
+    suspend fun getBestPriceForSymbols(symbols: List<String>): List<BestPrice>
 
-    fun getCandleInfo(
+    suspend fun getCandleInfo(
         symbol: String,
         interval: String,
         startTime: Long?,
@@ -29,14 +29,14 @@ interface MarketDataProxy {
         limit: Int
     ): List<CandleData>
 
-    fun getMarketCurrencyRates(quote: String, base: String? = null): List<CurrencyRate>
+    suspend fun getMarketCurrencyRates(quote: String, base: String? = null): List<CurrencyRate>
 
-    fun getExternalCurrencyRates(quote: String, base: String? = null): List<CurrencyRate>
+    suspend fun getExternalCurrencyRates(quote: String, base: String? = null): List<CurrencyRate>
 
-    fun countActiveUsers(interval: Interval): Long
+    suspend fun countActiveUsers(interval: Interval): Long
 
-    fun countTotalOrders(interval: Interval): Long
+    suspend fun countTotalOrders(interval: Interval): Long
 
-    fun countTotalTrades(interval: Interval): Long
+    suspend fun countTotalTrades(interval: Interval): Long
 
 }

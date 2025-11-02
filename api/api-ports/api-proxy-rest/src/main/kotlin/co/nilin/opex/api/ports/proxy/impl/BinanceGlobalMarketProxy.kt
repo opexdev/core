@@ -2,6 +2,8 @@ package co.nilin.opex.api.ports.proxy.impl
 
 import co.nilin.opex.api.core.inout.GlobalPrice
 import co.nilin.opex.api.core.spi.GlobalMarketProxy
+import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
+import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
@@ -17,7 +19,7 @@ class BinanceGlobalMarketProxy(
 
     private val restTemplate = RestTemplate()
 
-    override fun getPrices(symbols: List<String>): List<GlobalPrice> {
+    override suspend fun getPrices(symbols: List<String>): List<GlobalPrice> {
         // Binance encoding requires to change some of the Java's encoding model
         // https://binance-docs.github.io/apidocs/spot/en/#symbol-price-ticker
         val param = symbols.map { s -> "\"$s\"" }.toString().replace(" ", "")
@@ -26,6 +28,8 @@ class BinanceGlobalMarketProxy(
             .build(true)
             .toUri()
 
-        return restTemplate.getForEntity<Array<GlobalPrice>>(uri).body?.toList() ?: emptyList()
+        return withContext(ProxyDispatchers.general) {
+            restTemplate.getForEntity<Array<GlobalPrice>>(uri).body?.toList() ?: emptyList()
+        }
     }
 }

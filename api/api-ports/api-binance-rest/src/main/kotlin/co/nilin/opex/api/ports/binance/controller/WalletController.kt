@@ -19,7 +19,7 @@ class WalletController(
     private val marketDataProxy: MarketDataProxy,
 ) {
     @GetMapping("/v1/asset/getUserAsset")
-    fun getUserAssets(
+    suspend fun getUserAssets(
         @CurrentSecurityContext
         securityContext: SecurityContext,
         @RequestParam(required = false)

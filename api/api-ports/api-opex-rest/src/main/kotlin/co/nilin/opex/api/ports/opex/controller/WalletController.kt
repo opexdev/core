@@ -6,9 +6,9 @@ import co.nilin.opex.api.core.spi.BlockchainGatewayProxy
 import co.nilin.opex.api.core.spi.WalletProxy
 import co.nilin.opex.api.ports.opex.data.AssetResponse
 import co.nilin.opex.api.ports.opex.data.AssignAddressResponse
+import co.nilin.opex.api.ports.opex.util.jwtAuthentication
+import co.nilin.opex.api.ports.opex.util.tokenValue
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.common.security.jwtAuthentication
-import co.nilin.opex.common.security.tokenValue
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.GetMapping
@@ -24,7 +24,7 @@ class WalletController(
 ) {
 
     @GetMapping("/asset")
-    fun getUserAssets(
+    suspend fun getUserAssets(
         @CurrentSecurityContext securityContext: SecurityContext,
         @RequestParam(required = false) symbol: String?,
     ): List<AssetResponse> {
@@ -44,7 +44,7 @@ class WalletController(
     }
 
     @GetMapping("/limits")
-    fun getWalletOwnerLimits(@CurrentSecurityContext securityContext: SecurityContext): OwnerLimitsResponse {
+    suspend fun getWalletOwnerLimits(@CurrentSecurityContext securityContext: SecurityContext): OwnerLimitsResponse {
         return walletProxy.getOwnerLimits(
             securityContext.jwtAuthentication().name,
             securityContext.jwtAuthentication().tokenValue(),
@@ -52,7 +52,7 @@ class WalletController(
     }
 
     @GetMapping("/deposit/address")
-    fun assignAddress(
+    suspend fun assignAddress(
         @RequestParam currency: String,
         @RequestParam gatewayUuid: String,
         @CurrentSecurityContext securityContext: SecurityContext
