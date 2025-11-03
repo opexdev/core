@@ -43,4 +43,29 @@ class WebClientConfig(private val logbook: Logbook) {
             .clientConnector(ReactorClientHttpConnector(client))
             .build()
     }
+
+    @Bean("keycloakWebClient")
+    fun keycloakWebClient( logbook: Logbook): WebClient {
+        val provider = ConnectionProvider.builder("apiKeycloakPool")
+            .maxConnections(100)
+            .maxIdleTime(Duration.ofSeconds(30))
+            .maxLifeTime(Duration.ofMinutes(2))
+            .pendingAcquireTimeout(Duration.ofSeconds(60))
+            .evictInBackground(Duration.ofMinutes(1))
+            .build()
+
+        val client = HttpClient.create(provider)
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
+            .responseTimeout(Duration.ofSeconds(10))
+            .keepAlive(true)
+            .doOnConnected { it.addHandlerLast(LogbookClientHandler(logbook)) }
+
+        client.warmup().block()
+
+        return WebClient.builder()
+            .clientConnector(ReactorClientHttpConnector(client))
+            .build()
+    }
+
+
 }
