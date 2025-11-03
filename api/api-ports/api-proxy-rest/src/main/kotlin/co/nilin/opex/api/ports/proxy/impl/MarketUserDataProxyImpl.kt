@@ -7,8 +7,12 @@ import co.nilin.opex.api.ports.proxy.data.AllOrderRequest
 import co.nilin.opex.api.ports.proxy.data.QueryOrderRequest
 import co.nilin.opex.api.ports.proxy.data.TradeRequest
 import co.nilin.opex.common.utils.LoggerDelegate
+import io.netty.handler.timeout.TimeoutException
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
@@ -30,6 +34,14 @@ class MarketUserDataProxyImpl(@Qualifier("generalWebClient") private val webClie
 
     @Value("\${app.market.url}")
     private lateinit var baseUrl: String
+    private suspend fun <T> retryOnce(backoffMs: Long = 200, block: suspend () -> T): T =
+        try {
+            block()
+        } catch (e: TimeoutException) {
+            delay(backoffMs); block()
+        }
+
+    private val mgLimiter = Semaphore(permits = 16, acquiredPermits = 0)
 
     override suspend fun queryOrder(
         principal: Principal,
@@ -52,17 +64,21 @@ class MarketUserDataProxyImpl(@Qualifier("generalWebClient") private val webClie
 
     override suspend fun openOrders(principal: Principal, symbol: String?, limit: Int?): List<Order> {
         return withContext(ProxyDispatchers.market) {
-            webClient.get()
-                .uri("$baseUrl/v1/user/${principal.name}/orders/$symbol/open") {
-                    it.queryParam("limit", limit ?: 100)
-                    it.build()
-                }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<Order>()
-                .collectList()
-                .awaitFirstOrElse { emptyList() }
+            mgLimiter.withPermit {
+                retryOnce {
+                    webClient.get()
+                        .uri("$baseUrl/v1/user/${principal.name}/orders/$symbol/open") {
+                            it.queryParam("limit", limit ?: 100)
+                            it.build()
+                        }.accept(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .retrieve()
+                        .onStatus({ t -> t.isError }, { it.createException() })
+                        .bodyToFlux<Order>()
+                        .collectList()
+                        .awaitFirstOrElse { emptyList() }
+                }
+            }
         }
     }
 
