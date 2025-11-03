@@ -5,20 +5,15 @@ import co.nilin.opex.api.core.spi.MatchingGatewayProxy
 import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
 import co.nilin.opex.api.ports.proxy.data.CancelOrderRequest
 import co.nilin.opex.api.ports.proxy.data.CreateOrderRequest
-import co.nilin.opex.api.ports.proxy.utils.body
-import co.nilin.opex.api.ports.proxy.utils.defaultHeaders
 import co.nilin.opex.common.utils.LoggerDelegate
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.withContext
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
-import org.springframework.web.client.RestTemplate
-import org.springframework.web.client.getForObject
-import org.springframework.web.client.postForObject
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.body
 import org.springframework.web.reactive.function.client.bodyToFlux
@@ -28,7 +23,7 @@ import java.math.BigDecimal
 import java.net.URI
 
 @Component
-class MatchingGatewayProxyImpl(private val client: WebClient) : MatchingGatewayProxy {
+class MatchingGatewayProxyImpl(@Qualifier("generalWebClient") private val client: WebClient) : MatchingGatewayProxy {
 
     private val logger by LoggerDelegate()
 
