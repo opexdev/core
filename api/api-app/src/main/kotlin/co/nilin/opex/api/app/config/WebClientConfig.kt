@@ -1,6 +1,7 @@
 package co.nilin.opex.api.app.config
 
 import io.netty.channel.ChannelOption
+import io.netty.handler.logging.LogLevel
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.cloud.client.ServiceInstance
 import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalancer
@@ -14,6 +15,7 @@ import org.zalando.logbook.Logbook
 import org.zalando.logbook.netty.LogbookClientHandler
 import reactor.netty.http.client.HttpClient
 import reactor.netty.resources.ConnectionProvider
+import reactor.netty.transport.logging.AdvancedByteBufFormat
 import java.time.Duration
 
 @Configuration
@@ -28,6 +30,7 @@ class WebClientConfig(private val logbook: Logbook) {
         .build()
 
     private val client = HttpClient.create(provider)
+        .wiretap("reactor.netty.http.client.HttpClient", LogLevel.DEBUG, AdvancedByteBufFormat.SIMPLE)
         .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
         .responseTimeout(Duration.ofSeconds(5))
         .keepAlive(true)

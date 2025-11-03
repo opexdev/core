@@ -5,7 +5,7 @@ import reactor.core.scheduler.Schedulers
 
 object ProxyDispatchers {
 
-    val general = Schedulers.newBoundedElastic(10, 20, "general").asCoroutineDispatcher()
-    val market = Schedulers.newBoundedElastic(30, 60, "market").asCoroutineDispatcher()
+    val general = Schedulers.newBoundedElastic(8, 16, "general").asCoroutineDispatcher()
+    val market = Schedulers.newBoundedElastic(8, 16, "market").asCoroutineDispatcher()
     val wallet = Schedulers.newBoundedElastic(10, 20, "wallet").asCoroutineDispatcher()
 }
