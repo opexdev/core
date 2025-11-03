@@ -11,6 +11,7 @@ import io.netty.handler.timeout.TimeoutException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Qualifier
@@ -40,7 +41,7 @@ class MarketUserDataProxyImpl(@Qualifier("generalWebClient") private val webClie
             delay(backoffMs); block()
         }
 
-    private val mgLimiter = Semaphore(permits = 16, acquiredPermits = 0) // fair-like behavior
+    private val mgLimiter = Semaphore(permits = 16, acquiredPermits = 0)
 
     override suspend fun queryOrder(
         principal: Principal,
