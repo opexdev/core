@@ -19,16 +19,17 @@ import java.time.Duration
 @Configuration
 class WebClientConfig(private val logbook: Logbook) {
     private val provider = ConnectionProvider.builder("apiPool")
-        .maxConnections(100)
+        .maxConnections(150)
+        .pendingAcquireMaxCount(100)
         .maxIdleTime(Duration.ofSeconds(30))
         .maxLifeTime(Duration.ofMinutes(2))
-        .pendingAcquireTimeout(Duration.ofSeconds(60))
+        .pendingAcquireTimeout(Duration.ofSeconds(10))
         .evictInBackground(Duration.ofMinutes(1))
         .build()
 
     private val client = HttpClient.create(provider)
-        .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
-        .responseTimeout(Duration.ofSeconds(10))
+        .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
+        .responseTimeout(Duration.ofSeconds(5))
         .keepAlive(true)
         .doOnConnected { it.addHandlerLast(LogbookClientHandler(logbook)) }
 
@@ -47,16 +48,16 @@ class WebClientConfig(private val logbook: Logbook) {
     @Bean("keycloakWebClient")
     fun keycloakWebClient( logbook: Logbook): WebClient {
         val provider = ConnectionProvider.builder("apiKeycloakPool")
-            .maxConnections(100)
+            .maxConnections(150)
             .maxIdleTime(Duration.ofSeconds(30))
             .maxLifeTime(Duration.ofMinutes(2))
-            .pendingAcquireTimeout(Duration.ofSeconds(60))
+            .pendingAcquireTimeout(Duration.ofSeconds(5))
             .evictInBackground(Duration.ofMinutes(1))
             .build()
 
         val client = HttpClient.create(provider)
-            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
-            .responseTimeout(Duration.ofSeconds(10))
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
+            .responseTimeout(Duration.ofSeconds(5))
             .keepAlive(true)
             .doOnConnected { it.addHandlerLast(LogbookClientHandler(logbook)) }
 

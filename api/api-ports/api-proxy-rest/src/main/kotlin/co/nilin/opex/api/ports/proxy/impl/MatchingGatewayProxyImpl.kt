@@ -6,8 +6,12 @@ import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
 import co.nilin.opex.api.ports.proxy.data.CancelOrderRequest
 import co.nilin.opex.api.ports.proxy.data.CreateOrderRequest
 import co.nilin.opex.common.utils.LoggerDelegate
+import io.netty.handler.timeout.TimeoutException
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
@@ -26,10 +30,16 @@ import java.net.URI
 class MatchingGatewayProxyImpl(@Qualifier("generalWebClient") private val client: WebClient) : MatchingGatewayProxy {
 
     private val logger by LoggerDelegate()
+    private suspend fun <T> retryOnce(backoffMs: Long = 200, block: suspend () -> T): T =
+        try {
+            block()
+        } catch (e: TimeoutException) {
+            delay(backoffMs); block()
+        }
 
     @Value("\${app.matching-gateway.url}")
     private lateinit var baseUrl: String
-
+    private val mgLimiter = Semaphore(permits = 16, acquiredPermits = 0) // fair-like behavior
     override suspend fun createNewOrder(
         uuid: String?,
         pair: String,
@@ -44,18 +54,21 @@ class MatchingGatewayProxyImpl(@Qualifier("generalWebClient") private val client
         logger.info("calling matching-gateway order create")
         val body = CreateOrderRequest(uuid, pair, price, quantity, direction, matchConstraint, orderType, userLevel)
         return withContext(ProxyDispatchers.general) {
-            client.post()
-                .uri(URI.create("$baseUrl/order"))
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer $token")
-                .body(Mono.just(body))
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono<OrderSubmitResult>()
-                .awaitSingleOrNull()
+            mgLimiter.withPermit {
+                retryOnce {
+                    client.post()
+                        .uri(URI.create("$baseUrl/order"))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer $token")
+                        .body(Mono.just(body))
+                        .retrieve()
+                        .onStatus({ t -> t.isError }, { it.createException() })
+                        .bodyToMono<OrderSubmitResult>()
+                        .awaitSingleOrNull()
+                }
+            }
         }
-
     }
 
     override suspend fun cancelOrder(
