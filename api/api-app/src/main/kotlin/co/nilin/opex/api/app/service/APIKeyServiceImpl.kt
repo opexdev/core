@@ -12,6 +12,8 @@ import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.cache.Cache
@@ -21,6 +23,7 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
@@ -36,7 +39,7 @@ class APIKeyServiceImpl(
 ) : APIKeyService {
 
     private val logger = LoggerFactory.getLogger(APIKeyServiceImpl::class.java)
-
+    private val refreshLocks = ConcurrentHashMap<String, Mutex>()
     override suspend fun createAPIKey(
         userId: String,
         label: String,
@@ -76,7 +79,7 @@ class APIKeyServiceImpl(
 
         with(apiKey) {
             if (this != null) {
-                launch { checkupAPIKey(this@with, secret) }
+                refreshIfNeeded(this@with, secret)
                 APIKey(
                     userId,
                     label,
@@ -121,6 +124,37 @@ class APIKeyServiceImpl(
         if (apiKey.userId != userId)
             throw OpexError.Forbidden.exception()
         apiKeyRepository.delete(apiKey).awaitFirstOrNull()
+    }
+
+    private suspend fun refreshIfNeeded(apiKey: APIKeyModel, secret: String) {
+        if (apiKey.isExpired || !apiKey.isEnabled) return
+        val now = LocalDateTime.now()
+
+        if (apiKey.expirationTime?.isBefore(now) == true) {
+            logger.info("Expiring api key ${apiKey.key}")
+            apiKey.isExpired = true
+            apiKeyRepository.save(apiKey).awaitSingle().apply { updateCache(this) }
+            logger.info("API key ${apiKey.key} is expired")
+            return
+        }
+
+        if (apiKey.tokenExpirationTime.isAfter(now)) return
+
+        val mutex = refreshLocks.computeIfAbsent(apiKey.key) { Mutex() }
+        mutex.withLock {
+            // Double-check after acquiring the lock to avoid redundant refresh
+            if (apiKey.tokenExpirationTime.isAfter(LocalDateTime.now())) return
+            try {
+                logger.info("Refreshing api key ${apiKey.key} token")
+                val response = authProxy.refreshToken(clientSecret, decryptAES(apiKey.refreshToken, secret))
+                apiKey.accessToken = encryptAES(response.access_token, secret)
+                apiKey.tokenExpirationTime = tokenExpiration(response.expires_in)
+                apiKeyRepository.save(apiKey).awaitSingle().apply { updateCache(this) }
+                logger.info("API key ${apiKey.key} token refreshed")
+            } catch (e: Exception) {
+                logger.error("Error refreshing api key ${apiKey.key}", e)
+            }
+        }
     }
 
     private suspend fun checkupAPIKey(apiKey: APIKeyModel, secret: String) {
