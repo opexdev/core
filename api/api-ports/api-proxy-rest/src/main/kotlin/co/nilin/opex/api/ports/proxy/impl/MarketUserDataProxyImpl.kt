@@ -10,6 +10,7 @@ import co.nilin.opex.common.utils.LoggerDelegate
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.withContext
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -23,7 +24,7 @@ import java.security.Principal
 import java.util.*
 
 @Component
-class MarketUserDataProxyImpl(private val webClient: WebClient) : MarketUserDataProxy {
+class MarketUserDataProxyImpl(@Qualifier("generalWebClient") private val webClient: WebClient) : MarketUserDataProxy {
 
     private val logger by LoggerDelegate()
 

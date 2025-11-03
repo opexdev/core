@@ -1,12 +1,16 @@
 package co.nilin.opex.api.ports.proxy.impl
 
-import co.nilin.opex.api.core.inout.*
+import co.nilin.opex.api.core.inout.FeeConfig
+import co.nilin.opex.api.core.inout.PairConfigResponse
+import co.nilin.opex.api.core.inout.UserFee
+import co.nilin.opex.api.core.inout.WithdrawLimitConfig
 import co.nilin.opex.api.core.spi.AccountantProxy
 import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
 import co.nilin.opex.common.utils.Interval
 import co.nilin.opex.common.utils.LoggerDelegate
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.withContext
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
@@ -17,7 +21,7 @@ import org.springframework.web.util.UriComponentsBuilder
 import java.math.BigDecimal
 
 @Component
-class AccountantProxyImpl(private val webClient: WebClient) : AccountantProxy {
+class AccountantProxyImpl(@Qualifier("generalWebClient") private val webClient: WebClient) : AccountantProxy {
 
     private val logger by LoggerDelegate()
 

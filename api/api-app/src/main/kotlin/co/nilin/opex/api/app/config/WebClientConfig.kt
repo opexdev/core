@@ -33,7 +33,7 @@ class WebClientConfig(private val logbook: Logbook) {
         .doOnConnected { it.addHandlerLast(LogbookClientHandler(logbook)) }
 
 
-    @Bean
+    @Bean("generalWebClient")
     fun loadBalancedWebClient(
         loadBalancerFactory: ReactiveLoadBalancer.Factory<ServiceInstance>,
 
