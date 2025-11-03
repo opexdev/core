@@ -18,7 +18,6 @@ import org.springframework.web.server.WebFilter
 @EnableWebFluxSecurity
 @Configuration("binanceSecurityConfig")
 class SecurityConfig(
-    private val webClient: WebClient,
     private val apiKeyFilter: APIKeyFilter,
     @Value("\${app.auth.cert-url}")
     private val jwkUrl: String
