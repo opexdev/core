@@ -1,8 +1,6 @@
 package co.nilin.opex.api.ports.opex.controller
 
-import co.nilin.opex.api.core.inout.RequestWithdrawBody
-import co.nilin.opex.api.core.inout.WithdrawActionResult
-import co.nilin.opex.api.core.inout.WithdrawResponse
+import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.WalletProxy
 import co.nilin.opex.api.ports.opex.util.jwtAuthentication
 import co.nilin.opex.api.ports.opex.util.tokenValue
@@ -46,6 +44,30 @@ class WithdrawController(
         return walletProxy.findWithdraw(
             securityContext.jwtAuthentication().tokenValue(),
             withdrawId
+        )
+    }
+
+    @PostMapping("/{withdrawId}/otp/{otpType}/request")
+    suspend fun requestOTP(
+        @CurrentSecurityContext securityContext: SecurityContext,
+        @PathVariable withdrawId: Long,
+        @PathVariable otpType: OTPType
+    ): TempOtpResponse {
+        return walletProxy.requestWithdrawOTP(securityContext.jwtAuthentication().tokenValue(), withdrawId, otpType)
+    }
+
+    @PostMapping("/{withdrawId}/otp/{otpType}/verify")
+    suspend fun verifyOTP(
+        @CurrentSecurityContext securityContext: SecurityContext,
+        @PathVariable withdrawId: Long,
+        @PathVariable otpType: OTPType,
+        @RequestParam otpCode: String,
+    ): WithdrawActionResult {
+        return walletProxy.verifyWithdrawOTP(
+            securityContext.jwtAuthentication().tokenValue(),
+            withdrawId,
+            otpType,
+            otpCode
         )
     }
 }

@@ -125,4 +125,7 @@ interface WalletProxy {
 
     suspend fun getSwapTransactions(token: String, request: UserTransactionRequest): List<SwapResponse>
     suspend fun getSwapTransactionsCount(token: String, request: UserTransactionRequest): Long
+
+    suspend fun requestWithdrawOTP(token: String, withdrawId: Long, otpType: OTPType) : TempOtpResponse
+    suspend fun verifyWithdrawOTP(token: String, withdrawId: Long, otpType: OTPType , otpCode: String) : WithdrawActionResult
 }

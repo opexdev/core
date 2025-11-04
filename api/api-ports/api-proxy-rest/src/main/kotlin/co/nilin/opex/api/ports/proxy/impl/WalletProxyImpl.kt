@@ -454,5 +454,36 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
             .bodyToMono<Long>()
             .awaitFirstOrElse { 0L }
     }
+
+    override suspend fun requestWithdrawOTP(
+        token: String,
+        withdrawId: Long,
+        otpType: OTPType
+    ): TempOtpResponse {
+        return webClient.post()
+            .uri("$baseUrl/withdraw/${withdrawId}/otp/${otpType}/request")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<TempOtpResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun verifyWithdrawOTP(
+        token: String,
+        withdrawId: Long,
+        otpType: OTPType,
+        otpCode: String
+    ): WithdrawActionResult {
+        return webClient.post()
+            .uri("$baseUrl/withdraw/${withdrawId}/otp/${otpType}/verify?otpCode=${otpCode}")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<WithdrawActionResult>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
 }
 
