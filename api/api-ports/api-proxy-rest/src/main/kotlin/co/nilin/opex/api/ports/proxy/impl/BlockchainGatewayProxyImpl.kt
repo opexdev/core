@@ -10,6 +10,7 @@ import co.nilin.opex.common.utils.LoggerDelegate
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.withContext
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
@@ -20,7 +21,8 @@ import reactor.core.publisher.Mono
 import java.net.URI
 
 @Component
-class BlockchainGatewayProxyImpl(private val client: WebClient) : BlockchainGatewayProxy {
+class BlockchainGatewayProxyImpl(@Qualifier("generalWebClient") private val client: WebClient) :
+    BlockchainGatewayProxy {
 
     private val logger by LoggerDelegate()
 

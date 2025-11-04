@@ -3,6 +3,7 @@ package co.nilin.opex.api.app.proxy
 import co.nilin.opex.api.app.data.AccessTokenResponse
 import kotlinx.coroutines.reactor.awaitSingle
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
@@ -13,11 +14,12 @@ import org.springframework.web.reactive.function.client.bodyToMono
 @Component
 class AuthProxy(
     @Value("\${app.auth.token-url}")
-    private val tokenUrl: String
+    private val tokenUrl: String,
+    @Qualifier("keycloakWebClient")
+    private val client:  WebClient
 ) {
 
     private val logger = LoggerFactory.getLogger(AuthProxy::class.java)
-    private val client = WebClient.create()
 
     suspend fun exchangeToken(clientSecret: String, token: String): AccessTokenResponse {
         val body = BodyInserters.fromFormData("client_id", "opex-api-key")

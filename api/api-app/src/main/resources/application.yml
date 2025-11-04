@@ -91,6 +91,11 @@ logging:
   level:
     co.nilin: INFO
     org.zalando.logbook: TRACE
+    reactor.netty.pool: DEBUG
+    reactor.netty.http.client: DEBUG
+    org.springframework.web.reactive.function.client: DEBUG
+    co.nilin.opex.api.ports.proxy.impl: DEBUG
+
 app:
   accountant:
     url: http://opex-accountant

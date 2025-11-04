@@ -10,6 +10,7 @@ import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.withContext
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -21,7 +22,7 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 
 @Component
-class WalletProxyImpl(private val webClient: WebClient) : WalletProxy {
+class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebClient) : WalletProxy {
 
     private val logger by LoggerDelegate()
 
