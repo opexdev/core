@@ -15,6 +15,15 @@ spring:
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
     initialization-mode: always
+    pool:
+    pool:
+      initial-size: 5
+      max-size: 32
+      max-idle-time: 10m
+      max-life-time: 30m
+      max-acquire-time: 10s
+      max-create-connection-time: 10s
+      validation-query: SELECT 1
   datasource:
     url: jdbc:postgresql://${DB_IP_PORT:localhost}/opex
     username: ${dbusername:opex}
