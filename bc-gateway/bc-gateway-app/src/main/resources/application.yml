@@ -16,7 +16,6 @@ spring:
     password: ${dbpassword:hiopex}
     initialization-mode: always
     pool:
-    pool:
       initial-size: 5
       max-size: 32
       max-idle-time: 10m
