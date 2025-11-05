@@ -30,6 +30,7 @@
         <module>device-management-app</module>
         <module>device-management-core</module>
         <module>device-management-ports/device-management-kafka-listener</module>
+        <module>device-management-ports/device-management-postgres</module>
     </modules>
 
     <dependencies>

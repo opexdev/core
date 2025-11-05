@@ -14,7 +14,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
 @EnableOpexErrorHandler
 @EnableConfigurationProperties
 @EnableScheduling
-@EntityScan(basePackages = ["co.nilin.opex.device-management.ports.postgres.model"])
+@EntityScan(basePackages = ["co.nilin.opex.device.ports.postgres.model"])
 class DeviceManagementApp
 
 fun main(args: Array<String>) {
