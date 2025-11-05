@@ -4,7 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Component
 
 @Component
-@ConfigurationProperties(prefix = "otp")
+@ConfigurationProperties(prefix = "app.otp")
 class OTPConfig {
     lateinit var url: String
 }

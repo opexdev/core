@@ -10,6 +10,7 @@ import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.utils.Interval
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 import java.time.ZoneId
@@ -22,17 +23,21 @@ class MarketController(
     private val marketDataProxy: MarketDataProxy,
     private val walletProxy: WalletProxy,
     private val matchingGatewayProxy: MatchingGatewayProxy,
+    @Value("\${app.trade-volume-calculation-currency}")
+    private val tradeVolumeCalculationCurrency: String,
+    @Value("\${app.withdraw-volume-calculation-currency}")
+    private val withdrawVolumeCalculationCurrency: String
 ) {
     private val orderBookValidLimits = arrayListOf(5, 10, 20, 50, 100, 500, 1000, 5000)
     private val validDurations = arrayListOf("24h", "7d", "1M")
 
     @GetMapping("/currency")
-    fun getCurrencies(): List<CurrencyData> {
+    suspend fun getCurrencies(): List<CurrencyData> {
         return walletProxy.getCurrencies()
     }
 
     @GetMapping("/pair")
-    fun getPairs(): List<PairInfoResponse> {
+    suspend fun getPairs(): List<PairInfoResponse> {
         val pairSettings = matchingGatewayProxy.getPairSettings().associateBy { it.pair }
 
         return accountantProxy.getPairConfigs().mapNotNull { config ->
@@ -51,44 +56,52 @@ class MarketController(
     }
 
     @GetMapping("/currency/gateway")
-    fun getCurrencyGateways(
+    suspend fun getCurrencyGateways(
         @RequestParam(defaultValue = "true") includeOffChainGateways: Boolean,
         @RequestParam(defaultValue = "true") includeOnChainGateways: Boolean,
     ): List<CurrencyGatewayCommand> {
         return walletProxy.getGateWays(includeOffChainGateways, includeOnChainGateways)
     }
 
-    @GetMapping("/pair/fee")
-    fun getPairFees(): List<PairFeeResponse> {
+    @GetMapping("/fee")
+    suspend fun getFeeConfigs(): List<FeeConfig> {
         return accountantProxy.getFeeConfigs()
     }
 
     @GetMapping("/stats")
-    fun getMarketStats(
+    suspend fun getMarketStats(
         @RequestParam interval: String,
         @RequestParam(required = false) limit: Int?
-    ): MarketStatResponse  {
+    ): MarketStatResponse = coroutineScope {
         val intervalEnum = Interval.findByLabel(interval) ?: Interval.Week
         val validLimit = getValidLimit(limit)
 
-        val mostIncreased = marketStatProxy.getMostIncreasedInPricePairs(intervalEnum, validLimit)
+        val mostIncreased = async {
+            marketStatProxy.getMostIncreasedInPricePairs(intervalEnum, validLimit)
+        }
 
-        val mostDecreased = marketStatProxy.getMostDecreasedInPricePairs(intervalEnum, validLimit)
+        val mostDecreased = async {
+            marketStatProxy.getMostDecreasedInPricePairs(intervalEnum, validLimit)
+        }
 
-        val highestVolume = marketStatProxy.getHighestVolumePair(intervalEnum)
+        val highestVolume = async {
+            marketStatProxy.getHighestVolumePair(intervalEnum)
+        }
 
-        val mostTrades = marketStatProxy.getTradeCountPair(intervalEnum)
+        val mostTrades = async {
+            marketStatProxy.getTradeCountPair(intervalEnum)
+        }
 
-        return MarketStatResponse(
-            mostIncreased,
-            mostDecreased,
-            highestVolume,
-            mostTrades
+        MarketStatResponse(
+            mostIncreased.await(),
+            mostDecreased.await(),
+            highestVolume.await(),
+            mostTrades.await()
         )
     }
 
     @GetMapping("/info")
-    fun getMarketInfo(@RequestParam interval: String): MarketInfoResponse {
+    suspend fun getMarketInfo(@RequestParam interval: String): MarketInfoResponse {
         val intervalEnum = Interval.findByLabel(interval) ?: Interval.ThreeMonth
         return MarketInfoResponse(
             marketDataProxy.countActiveUsers(intervalEnum),
@@ -98,7 +111,7 @@ class MarketController(
     }
 
     @GetMapping("/depth")
-    fun orderBook(
+    suspend fun orderBook(
         @RequestParam
         symbol: String,
         @RequestParam(required = false)
@@ -135,7 +148,7 @@ class MarketController(
     }
 
     @GetMapping("/trades")
-    fun recentTrades(
+    suspend fun recentTrades(
         @RequestParam
         symbol: String,
         @RequestParam(required = false)
@@ -160,7 +173,7 @@ class MarketController(
     }
 
     @GetMapping("/ticker/{duration:24h|7d|1M}")
-    fun priceChange(
+    suspend fun priceChange(
         @PathVariable duration: String,
         @RequestParam(required = false) symbol: String?,
         @RequestParam(required = false) quote: String?
@@ -187,17 +200,17 @@ class MarketController(
     }
 
     @GetMapping("/ticker/price")
-    fun priceTicker(@RequestParam(required = false) symbol: String?): List<PriceTicker> {
+    suspend fun priceTicker(@RequestParam(required = false) symbol: String?): List<PriceTicker> {
         return marketDataProxy.lastPrice(symbol)
     }
 
     @GetMapping("/currencyInfo/quotes")
-    fun getQuoteCurrencies(): List<String> {
+    suspend fun getQuoteCurrencies(): List<String> {
         return walletProxy.getQuoteCurrencies().map { it.currency }
     }
 
     @GetMapping("/klines")
-    fun klines(
+    suspend fun klines(
         @RequestParam
         symbol: String,
         @RequestParam
@@ -236,6 +249,22 @@ class MarketController(
                 )
             }
         return list
+    }
+
+    @GetMapping("/basic-data")
+    suspend fun getBasicData(): MarketBasicData {
+        val quoteCurrencies = walletProxy.getQuoteCurrencies()
+        return MarketBasicData(
+            (quoteCurrencies.map { it.currency }),
+            (quoteCurrencies.filter { it.isReference }.map { it.currency }),
+            withdrawVolumeCalculationCurrency,
+            tradeVolumeCalculationCurrency
+        )
+    }
+
+    @GetMapping("/withdraw-limits")
+    suspend fun getWithdrawLimits(): List<WithdrawLimitConfig> {
+        return accountantProxy.getWithdrawLimitConfigs()
     }
 
     private fun getValidLimit(limit: Int?): Int = when {

@@ -28,9 +28,6 @@ spring:
     consumer:
       auto-offset-reset: earliest
       group-id: wallet
-  r2dbc:
-    url: r2dbc:tc:postgresql:///wallet?TC_IMAGE_TAG=9.6.8
-    initialization-mode: always
   jpa:
     show-sql: true
     properties:
@@ -58,10 +55,28 @@ app:
     url: http://bc-gateway:8080
   market:
     url:  http://market:8080
+  accountant:
+    url:  http://accountant:8080
+  otp:
+    url: http://opex-otp:8080/v1
+  profile:
+    url: http://profile:8080
   system:
     uuid: 1
   reserved-transfer:
     life-time: 15 #minutes
+  zone-offset: +03:30
+  snapshot-currency: USDT
+  withdraw:
+    limit:
+      enabled: false
+    otp-required-count: 0
+testcontainers:
+  db:
+    username: ${dbusername:opex}
+    password: ${dbpassword:hiopex}
+    name: wallet
+    version: "postgres:14.9"
 logging:
   level:
     org.apache.kafka: ERROR

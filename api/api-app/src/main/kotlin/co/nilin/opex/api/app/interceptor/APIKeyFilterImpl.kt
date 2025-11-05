@@ -2,61 +2,39 @@ package co.nilin.opex.api.app.interceptor
 
 import co.nilin.opex.api.app.service.APIKeyServiceImpl
 import co.nilin.opex.api.core.spi.APIKeyFilter
-import jakarta.servlet.FilterChain
-import jakarta.servlet.http.HttpServletRequest
-import jakarta.servlet.http.HttpServletRequestWrapper
-import jakarta.servlet.http.HttpServletResponse
+import kotlinx.coroutines.reactor.mono
+import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Component
-import org.springframework.web.filter.OncePerRequestFilter
-import java.util.*
+import org.springframework.web.server.ServerWebExchange
+import org.springframework.web.server.WebFilter
+import org.springframework.web.server.WebFilterChain
+import reactor.core.publisher.Mono
 
 @Component
-class APIKeyFilterImpl(private val apiKeyService: APIKeyServiceImpl) : APIKeyFilter, OncePerRequestFilter() {
+class APIKeyFilterImpl(private val apiKeyService: APIKeyServiceImpl) : APIKeyFilter, WebFilter {
 
-    override fun doFilterInternal(
-        request: HttpServletRequest,
-        response: HttpServletResponse,
-        chain: FilterChain
-    ) {
-        val key = request.getHeader("X-API-KEY")
-        if (!key.isNullOrEmpty()) {
-            val secret = request.getHeader("X-API-SECRET")
-            if (secret.isNullOrEmpty()) {
-                chain.doFilter(request, response)
-                return
-            }
+    override fun filter(exchange: ServerWebExchange, chain: WebFilterChain): Mono<Void> {
 
-            val apiKey = apiKeyService.getAPIKey(key, secret)
-            if (apiKey != null && apiKey.isEnabled && apiKey.accessToken != null && !apiKey.isExpired) {
-                val auth = "Bearer ${apiKey.accessToken}"
-                val wReq = object : HttpServletRequestWrapper(request) {
-                    override fun getHeader(name: String?): String? {
-                        return if (name?.equals("Authorization", true) == true)
-                            auth
-                        else
-                            super.getHeader(name)
-                    }
+        val request = exchange.request
+        val key = request.headers["X-API-KEY"]
+        val secret = request.headers["X-API-SECRET"]
 
-                    override fun getHeaders(name: String?): Enumeration<String> {
-                        return if (name?.equals("Authorization", true) == true)
-                            Collections.enumeration(listOf(auth))
-                        else
-                            super.getHeaders(name)
-                    }
-
-                    override fun getHeaderNames(): Enumeration<String> {
-                        val names = mutableListOf<String>()
-                        request.headerNames?.toList()?.let { h -> h.forEach { names.add(it) } }
-                        names.add("Authorization")
-                        return Collections.enumeration(names.distinct())
-                    }
-                }
-
-                chain.doFilter(wReq, response)
-                return
-            }
+        if (key.isNullOrEmpty() || secret.isNullOrEmpty()) {
+            return chain.filter(exchange)
         }
-        chain.doFilter(request, response)
+        return mono {
+            val apiKey = apiKeyService.getAPIKey(key[0], secret[0])
+            if (apiKey != null && apiKey.isEnabled && apiKey.accessToken != null && !apiKey.isExpired) {
+                val req = exchange.request.mutate()
+                        .header("Authorization", "Bearer ${apiKey.accessToken}")
+                        .build()
+                exchange.mutate().request(req).build()
+            } else null
+        }.flatMap { updatedExchange ->
+            if (updatedExchange != null)
+                chain.filter(updatedExchange)
+            else
+                chain.filter(exchange)
+        }
     }
-
 }

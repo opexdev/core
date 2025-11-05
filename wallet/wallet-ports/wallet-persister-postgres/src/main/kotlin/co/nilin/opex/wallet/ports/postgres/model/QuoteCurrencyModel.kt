@@ -9,6 +9,7 @@ data class QuoteCurrencyModel(
     @Id
     val id: Long? = null,
     val currency: String,
-    val isActive: Boolean = false,
+    val isReference: Boolean = false,
     var lastUpdateDate: LocalDateTime = LocalDateTime.now(),
+    val displayOrder: Int? = null
 )

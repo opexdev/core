@@ -7,13 +7,13 @@ import org.springframework.stereotype.Component
 import co.nilin.opex.profile.core.spi.KycLevelUpdatedEventListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
 @Component
 class KycLevelUpdatedListener(val userRegistrationService: ProfileManagement) : KycLevelUpdatedEventListener {
 
     private val logger = LoggerFactory.getLogger(KycLevelUpdatedListener::class.java)
-    val scope = CoroutineScope(Dispatchers.IO)
     override fun id(): String {
         return "KycLevelUpdatedListener"
     }
@@ -23,8 +23,13 @@ class KycLevelUpdatedListener(val userRegistrationService: ProfileManagement) : 
         logger.info("==========================================================================")
         logger.info("Incoming UserLevelUpdated event: $event")
         logger.info("==========================================================================")
-        scope.launch {
-            userRegistrationService.updateUserLevel(event.userId, event.kycLevel)
+        CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
+            try {
+                userRegistrationService.updateUserLevel(event.userId, event.kycLevel)
+                logger.info("User level updated successfully for ${event.userId}")
+            } catch (ex: Exception) {
+                logger.error("Failed to update user level for ${event.userId}", ex)
+            }
         }
     }
 

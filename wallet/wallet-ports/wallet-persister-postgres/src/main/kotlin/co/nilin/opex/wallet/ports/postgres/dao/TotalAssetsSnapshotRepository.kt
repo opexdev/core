@@ -1,70 +1,49 @@
 package co.nilin.opex.wallet.ports.postgres.dao
 
-import co.nilin.opex.wallet.core.model.TotalAssetsSnapshot
 import co.nilin.opex.wallet.ports.postgres.model.TotalAssetsSnapshotModel
 import org.springframework.data.r2dbc.repository.Modifying
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import java.time.LocalDateTime
+import java.math.BigDecimal
 
 @Repository
 interface TotalAssetsSnapshotRepository : ReactiveCrudRepository<TotalAssetsSnapshotModel, Long> {
 
-
     @Modifying
     @Query(
         """
-    INSERT INTO total_assets_snapshot(owner, total_usdt, total_irt, snapshot_date)
-    WITH irt_price AS (
-        SELECT price AS irt_rate
-        FROM price
-        WHERE symbol = 'USDT_IRT'
-        LIMIT 1
-    )
-    SELECT
-        w.owner,
-        trunc(SUM(
-            CASE
-                WHEN w.currency = 'USDT' THEN w.balance
-                WHEN w.currency = 'IRT' THEN w.balance / irt.irt_rate
-                ELSE w.balance * COALESCE(p.price, 0)
-            END
-        ), 2) AS total_usdt,
-        trunc(SUM(
-            CASE
-                WHEN w.currency = 'USDT' THEN w.balance * irt.irt_rate
-                WHEN w.currency = 'IRT' THEN w.balance
-                ELSE w.balance * COALESCE(p.price, 0) * irt.irt_rate
-            END
-        ), 0) AS total_irt,
-        NOW() AS snapshot_date
+    INSERT INTO total_assets_snapshot(uuid, total_amount, quote_currency, snapshot_date)
+    SELECT wo.uuid,
+       trunc(SUM(
+                     CASE
+                         WHEN w.currency = :quoteCurrency THEN w.balance
+                         ELSE w.balance * COALESCE(p.price, 0)
+                         END
+             ), :precision)    AS total_amount,
+       :quoteCurrency as quote_currency,
+       NOW()          AS snapshot_date
     FROM wallet w
-    LEFT JOIN price p ON w.currency || '_USDT' = p.symbol
-    CROSS JOIN irt_price irt
+         INNER JOIN public.wallet_owner wo on wo.id = w.owner
+         LEFT JOIN price p ON w.currency = p.base_currency and p.quote_currency = :quoteCurrency
     WHERE w.wallet_type != 'CASHOUT'
-      AND w.balance > 0
-    GROUP BY w.owner
+     AND w.balance > 0
+    GROUP BY wo.uuid
     """
     )
-    fun createSnapshotsDirectly(): Mono<Void>
+    fun createSnapshotsDirectly(quoteCurrency : String ,precision : Int ): Mono<Void>
 
 
     @Query(
         """
         select * from total_assets_snapshot
-         where owner_id = :ownerId 
-         and (:startTime is null or snapshot_date > :startTime)
-         and (:endTime is null or snapshot_date <= :endTime)
+         where uuid = :uuid 
          order by id desc
+         limit 1
         """
     )
-    fun findByOwnerIdAndSnapshotDate(
-        ownerId: Long,
-        startTime: LocalDateTime?,
-        endTime: LocalDateTime?
-    ): Flux<TotalAssetsSnapshotModel>
-
+    fun findLastSnapshotByUuid(
+        uuid: String,
+    ): Mono<TotalAssetsSnapshotModel>
 }

@@ -36,6 +36,11 @@ spring:
       max-size: 20
       max-idle-time: 60s
       validation-query: SELECT 1
+   # initialization-mode: always
+  datasource:
+    url: jdbc:postgresql://${DB_IP_PORT:localhost}/opex
+    username: ${dbusername:opex}
+    password: ${dbpassword:hiopex}
   cache:
     type: redis
   redis:
@@ -132,9 +137,24 @@ app:
     url: lb://opex-bc-gateway
   market:
     url: lb://opex-market
+  accountant:
+    url: lb://opex-accountant
+  otp:
+    url: lb://opex-otp/v1
+  profile:
+    url: lb://opex-profile
   reserved-transfer:
     life-time: 15 #minutes
   symbols: ${SYMBOLS}
+  zone-offset: +03:30
+  snapshot-currency: USDT
+  withdraw:
+    limit:
+      enabled: true
+    otp-required-count: 2
+  custom-message:
+    enabled: ${CUSTOM_MESSAGE_ENABLED:false}
+    base-url: ${CUSTOM_MESSAGE_URL}
 logging:
   level:
     root: INFO
@@ -145,4 +165,3 @@ logging:
     org.hibernate.SQL: DEBUG
     logging.level.org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
-

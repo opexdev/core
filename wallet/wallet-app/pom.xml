@@ -104,8 +104,16 @@
             <artifactId>wallet-auth-proxy</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.wallet.ports.market</groupId>
-            <artifactId>wallet-market-proxy</artifactId>
+            <groupId>co.nilin.opex.wallet.ports.accountant</groupId>
+            <artifactId>wallet-accountant-proxy</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>co.nilin.opex.wallet.ports.otp</groupId>
+            <artifactId>wallet-otp-proxy</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>co.nilin.opex.wallet.ports.profile</groupId>
+            <artifactId>wallet-profile-proxy</artifactId>
         </dependency>
         <dependency>
             <groupId>co.nilin.opex.wallet.ports.kafka.listener</groupId>
@@ -229,15 +237,12 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>5.4.0</version>
             <scope>test</scope>
         </dependency>
-
-
     </dependencies>
 
     <dependencyManagement>

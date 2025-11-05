@@ -1,8 +1,8 @@
 package co.nilin.opex.wallet.app
 
+
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration
-//import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration
 import org.springframework.context.annotation.Import
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
@@ -30,4 +30,5 @@ abstract class KafkaEnabledTest {
             registry.add("spring.kafka.bootstrap-servers") { kafka.bootstrapServers }
         }
     }
+
 }

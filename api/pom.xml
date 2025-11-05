@@ -22,7 +22,6 @@
         <kotlin.version>2.1.0</kotlin.version>
         <spring.version>3.4.2</spring.version>
         <spring-cloud.version>2024.0.0</spring-cloud.version>
-        <error-hanlder.version>1.1.1</error-hanlder.version>
     </properties>
 
     <modules>
@@ -51,6 +50,11 @@
         <dependency>
             <groupId>org.zalando</groupId>
             <artifactId>logbook-spring-boot-autoconfigure</artifactId>
+            <version>3.9.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.zalando</groupId>
+            <artifactId>logbook-spring-boot-webflux-autoconfigure</artifactId>
             <version>3.9.0</version>
         </dependency>
     </dependencies>

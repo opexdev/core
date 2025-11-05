@@ -18,8 +18,8 @@ class PublicUserController(private val userService: UserService) {
     //TODO IMPORTANT: remove in production
     @PostMapping("/register")
     suspend fun registerUser(@Valid @RequestBody request: RegisterUserRequest): ResponseEntity<TempOtpResponse> {
-        val otp = userService.registerUser(request)
-        return ResponseEntity.ok().body(TempOtpResponse(otp))
+        val otpResponse = userService.registerUser(request)
+        return ResponseEntity.ok().body(otpResponse)
     }
 
     @PostMapping("/register/verify")
@@ -43,8 +43,8 @@ class PublicUserController(private val userService: UserService) {
     //TODO IMPORTANT: remove in production
     @PostMapping("/forget")
     suspend fun forgetPassword(@RequestBody request: ForgotPasswordRequest): ResponseEntity<TempOtpResponse> {
-        val code = userService.forgetPassword(request)
-        return ResponseEntity.ok().body(TempOtpResponse(code))
+        val otpResponse = userService.forgetPassword(request)
+        return ResponseEntity.ok().body(otpResponse)
     }
 
     @PostMapping("/forget/verify")

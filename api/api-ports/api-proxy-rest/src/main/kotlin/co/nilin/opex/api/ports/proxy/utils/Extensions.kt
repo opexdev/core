@@ -33,7 +33,7 @@ internal fun defaultHeaders(contentType: MediaType) = HttpHeaders().apply {
 
 internal fun body(body: Any) = HttpEntity(body, defaultHeaders())
 
-internal fun body(body: Any, auth: String?) = HttpEntity(body, defaultHeaders().withAuth(auth))
+internal fun body(body: Any, auth: String) = HttpEntity(body, defaultHeaders().withAuth(auth))
 
 internal fun noBody() = HttpEntity<String>(defaultHeaders())
 

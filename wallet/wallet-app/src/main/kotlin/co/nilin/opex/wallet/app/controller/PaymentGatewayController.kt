@@ -8,6 +8,7 @@ import co.nilin.opex.wallet.core.inout.Deposit
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.inout.TransferMethod
 import co.nilin.opex.wallet.core.model.*
+import co.nilin.opex.wallet.core.service.GatewayService
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.core.spi.TransferManager
 import co.nilin.opex.wallet.core.spi.WalletManager
@@ -27,11 +28,13 @@ class PaymentGatewayController(
     val currencyService: CurrencyServiceManager,
     val walletManager: WalletManager,
     val walletOwnerManager: WalletOwnerManager,
-    val traceDepositService: TraceDepositService
+    val traceDepositService: TraceDepositService,
+    val gatewayService: GatewayService
 
 ) {
 
     //todo refactor
+    //todo get and check gatewayUUId and terminalUUId
     @PostMapping("/internal/deposit")
     @Transactional
     suspend fun paymentDeposit(@RequestBody request: PaymentDepositRequest): PaymentDepositResponse {
@@ -79,7 +82,7 @@ class PaymentGatewayController(
             depositType = DepositType.OFF_CHAIN,
             network = null,
             attachment = null,
-            transferMethod = TransferMethod.IPG
+            transferMethod = if (request.isIPG == true) TransferMethod.IPG else TransferMethod.MPG
         )
         traceDepositService.saveDepositInNewTransaction(depositCommand)
 

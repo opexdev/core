@@ -6,6 +6,10 @@ x-postgres-db: &postgres-db
     - POSTGRES_DB=${DB_USER:-opex}
     - POSTGRES_READ_ONLY_USER=${DB_READ_ONLY_USER:-opex_reader}
     - POSTGRES_READ_ONLY_PASSWORD=${DB_READ_ONLY_PASS:-hiopex}
+  healthcheck:
+    test: [ "CMD", "pg_isready", "-U", "opex" ]
+    interval: 5s
+    retries: 10
   networks:
     - default
   deploy:

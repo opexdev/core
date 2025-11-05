@@ -34,6 +34,8 @@ services:
       - SPRING_PROFILES_ACTIVE=otc
       - AUTH_URL=${AUTH_URL}
       - AUTH_JWK_ENDPOINT=${JWK_ENDPOINT}
+      - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL}
+      - CUSTOM_MESSAGE_ENABLED=${CUSTOM_MESSAGE_ENABLED}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
@@ -71,7 +73,6 @@ services:
       - VANDAR_API_KEY=$VANDAR_API_KEY
       - CLIENT_SECRET=${CLIENT_SECRET}
       - CLIENT_ID=${CLIENT_ID}
-
     cap_add:
       - IPC_LOCK
     deploy:
@@ -94,6 +95,8 @@ services:
       - AUTH_URL=${AUTH_URL}
       - AUTH_JWK_ENDPOINT=${JWK_ENDPOINT}
       - OMNI_URL=${OMNI_URL}
+      - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL}
+      - CUSTOM_MESSAGE_ENABLED=${CUSTOM_MESSAGE_ENABLED}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:

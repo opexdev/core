@@ -8,6 +8,8 @@ import co.nilin.opex.api.ports.opex.data.NewOrderResponse
 import co.nilin.opex.api.ports.opex.data.QueryOrderResponse
 import co.nilin.opex.api.ports.opex.util.*
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.common.security.jwtAuthentication
+import co.nilin.opex.common.security.tokenValue
 import io.swagger.annotations.ApiParam
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
@@ -24,7 +26,7 @@ class OrderController(
     val matchingGatewayProxy: MatchingGatewayProxy,
 ) {
     @PostMapping
-    fun createNewOrder(
+    suspend fun createNewOrder(
         @RequestParam
         symbol: String,
         @RequestParam
@@ -61,7 +63,7 @@ class OrderController(
     }
 
     @PutMapping
-    fun cancelOrder(
+    suspend fun cancelOrder(
         principal: Principal,
         @RequestParam
         symbol: String,
@@ -110,7 +112,7 @@ class OrderController(
     }
 
     @GetMapping
-    fun queryOrder(
+    suspend fun queryOrder(
         principal: Principal,
         @RequestParam
         symbol: String,
@@ -126,7 +128,7 @@ class OrderController(
     }
 
     @GetMapping("/open")
-    fun fetchOpenOrders(
+    suspend fun fetchOpenOrders(
         principal: Principal,
         @RequestParam(required = false)
         symbol: String?,

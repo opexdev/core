@@ -1,12 +1,12 @@
 package co.nilin.opex.auth.controller
 
+import co.nilin.opex.auth.data.ActiveSession
 import co.nilin.opex.auth.model.UpdateEmailRequest
 import co.nilin.opex.auth.model.UpdateMobileRequest
 import co.nilin.opex.auth.model.UpdateNameRequest
-import co.nilin.opex.auth.data.ActiveSession
 import co.nilin.opex.auth.service.UserService
-import co.nilin.opex.auth.utils.jwtAuthentication
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.common.security.jwtAuthentication
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*

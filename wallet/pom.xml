@@ -22,7 +22,9 @@
         <module>wallet-ports/wallet-eventlistener-kafka</module>
         <module>wallet-ports/wallet-bcgateway-proxy</module>
         <module>wallet-ports/wallet-auth-proxy</module>
-        <module>wallet-ports/wallet-market-proxy</module>
+        <module>wallet-ports/wallet-accountant-proxy</module>
+        <module>wallet-ports/wallet-otp-proxy</module>
+        <module>wallet-ports/wallet-profile-proxy</module>
     </modules>
 
     <dependencies>
@@ -59,8 +61,18 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>co.nilin.opex.wallet.ports.market</groupId>
-                <artifactId>wallet-market-proxy</artifactId>
+                <groupId>co.nilin.opex.wallet.ports.accountant</groupId>
+                <artifactId>wallet-accountant-proxy</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.wallet.ports.otp</groupId>
+                <artifactId>wallet-otp-proxy</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.wallet.ports.profile</groupId>
+                <artifactId>wallet-profile-proxy</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -82,6 +94,11 @@
                 <groupId>co.nilin.opex.utility</groupId>
                 <artifactId>interceptors</artifactId>
                 <version>${interceptor.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.config</groupId>
+                <artifactId>config-core</artifactId>
+                <version>${project.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

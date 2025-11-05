@@ -97,3 +97,6 @@ app:
       enabled: ${WHITELIST_REGISTER_ENABLED:true}
     login:
       enabled: ${WHITELIST_LOGIN_ENABLED:true}
+  custom-message:
+    enabled: ${CUSTOM_MESSAGE_ENABLED:false}
+    base-url: ${CUSTOM_MESSAGE_URL}

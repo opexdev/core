@@ -65,9 +65,12 @@ keycloak:
     id: "opex-admin"
     secret: ${ADMIN_CLIENT_SECRET}
     google-client-id: ${GOOGLE_CLIENT_ID}
-
-otp:
-  url: http://opex-otp/v1
-captcha:
-  url: http://opex-captcha
-  enabled: false
+app:
+  otp:
+    url: http://opex-otp/v1
+  captcha:
+    url: http://opex-captcha
+    enabled: false
+  custom-message:
+    enabled: ${CUSTOM_MESSAGE_ENABLED:false}
+    base-url: ${CUSTOM_MESSAGE_URL}

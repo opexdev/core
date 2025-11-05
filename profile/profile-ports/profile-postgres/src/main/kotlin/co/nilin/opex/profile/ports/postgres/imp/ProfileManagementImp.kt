@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactive.awaitSingle
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -120,11 +121,11 @@ class ProfileManagementImp(
         }
         profileRepository.findByUserIdOrEmailOrMobile(data.userId!!, data.email, data.mobile)?.awaitFirstOrNull()?.let {
             throw OpexError.UserIdAlreadyExists.exception()
-        } ?: run {
-            val profile: ProfileModel = data.convert(ProfileModel::class.java)
-            profileRepository.save(profile).awaitFirstOrNull()
-            return Mono.just(data)
         }
+        val profile: ProfileModel = data.convert(ProfileModel::class.java)
+        val saved = profileRepository.save(profile)
+            .awaitFirstOrNull() ?: throw OpexError.BadRequest.exception("Failed to save profile")
+        return Mono.just(saved.convert(Profile::class.java))
     }
 
     override suspend fun getProfile(userId: String): Mono<Profile>? {
@@ -192,11 +193,11 @@ class ProfileManagementImp(
         return resp.toList()
     }
 
+    //todo add version column to profile table
     override suspend fun updateUserLevelAndStatus(userId: String, userLevel: KycLevel) {
-        profileRepository.findByUserId(userId)?.block()?.let { profileModel ->
+        profileRepository.findByUserId(userId)?.awaitFirstOrNull()?.let { profileModel ->
             profileModel.kycLevel = userLevel
-            profileRepository.save(profileModel).awaitFirstOrNull()
-
+            profileRepository.updateKycLevelByUserId(userId, userLevel.name).awaitFirstOrNull()
         } ?: throw OpexError.UserNotFound.exception()
     }
 
@@ -243,11 +244,12 @@ class ProfileManagementImp(
     override suspend fun updateStatus(
         userId: String,
         status: ProfileStatus
-    ) {
+    ): Profile {
         val profile = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
             ?: throw OpexError.ProfileNotfound.exception()
         profile.status = status
-        profileRepository.save(profile).awaitFirstOrNull()
+        val saved = profileRepository.save(profile).awaitSingle()
+        return saved.convert(Profile::class.java)
     }
 
     fun isMajorChanges(oldData: ProfileModel, newData: UpdateProfileRequest): Boolean {

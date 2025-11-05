@@ -42,3 +42,7 @@ management:
       enabled: true
     prometheus:
       enabled: true
+app:
+  custom-message:
+    enabled: ${CUSTOM_MESSAGE_ENABLED:false}
+    base-url: ${CUSTOM_MESSAGE_URL}

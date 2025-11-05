@@ -24,7 +24,7 @@ class WalletController(
 ) {
 
     @GetMapping("/asset")
-    fun getUserAssets(
+    suspend fun getUserAssets(
         @CurrentSecurityContext securityContext: SecurityContext,
         @RequestParam(required = false) symbol: String?,
     ): List<AssetResponse> {
@@ -44,7 +44,7 @@ class WalletController(
     }
 
     @GetMapping("/limits")
-    fun getWalletOwnerLimits(@CurrentSecurityContext securityContext: SecurityContext): OwnerLimitsResponse {
+    suspend fun getWalletOwnerLimits(@CurrentSecurityContext securityContext: SecurityContext): OwnerLimitsResponse {
         return walletProxy.getOwnerLimits(
             securityContext.jwtAuthentication().name,
             securityContext.jwtAuthentication().tokenValue(),
@@ -52,7 +52,7 @@ class WalletController(
     }
 
     @GetMapping("/deposit/address")
-    fun assignAddress(
+    suspend fun assignAddress(
         @RequestParam currency: String,
         @RequestParam gatewayUuid: String,
         @CurrentSecurityContext securityContext: SecurityContext

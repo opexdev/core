@@ -1,6 +1,8 @@
 package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.common.security.jwtAuthentication
+import co.nilin.opex.common.security.tokenValue
 import co.nilin.opex.wallet.app.dto.RequestWithdrawBody
 import co.nilin.opex.wallet.app.dto.WithdrawHistoryRequest
 import co.nilin.opex.wallet.app.utils.asLocalDateTime
@@ -8,6 +10,8 @@ import co.nilin.opex.wallet.core.inout.TransactionSummary
 import co.nilin.opex.wallet.core.inout.WithdrawActionResult
 import co.nilin.opex.wallet.core.inout.WithdrawCommand
 import co.nilin.opex.wallet.core.inout.WithdrawResponse
+import co.nilin.opex.wallet.core.inout.otp.OTPType
+import co.nilin.opex.wallet.core.inout.otp.TempOtpResponse
 import co.nilin.opex.wallet.core.service.WithdrawService
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
@@ -26,26 +30,17 @@ class WithdrawController(private val withdrawService: WithdrawService) {
         return withdrawService.findWithdraw(withdrawId) ?: throw OpexError.WithdrawNotFound.exception()
     }
 
-//    @PostMapping("/search")
-//    suspend fun myWithdraws(principal: Principal, @RequestBody body: SearchWithdrawRequest): List<WithdrawResponse> {
-//        return withdrawService.findByCriteria(
-//            principal.name,
-//            body.currency,
-//            body.destTxRef,
-//            body.destAddress,
-//            body.status
-//        )
-//    }
-
     @PostMapping
-    suspend fun requestWithdraw(principal: Principal, @RequestBody request: RequestWithdrawBody): WithdrawActionResult {
+    suspend fun requestWithdraw(
+        @CurrentSecurityContext securityContext: SecurityContext,
+        @RequestBody request: RequestWithdrawBody
+    ): WithdrawActionResult {
         return withdrawService.requestWithdraw(
             with(request) {
                 WithdrawCommand(
-                    principal.name,
+                    securityContext.authentication.name,
                     currency,
                     amount,
-                    description,
                     destSymbol,
                     destAddress,
                     destNetwork,
@@ -54,10 +49,33 @@ class WithdrawController(private val withdrawService: WithdrawService) {
                     null,
                     null
                 )
-            }
+            }, securityContext.jwtAuthentication().tokenValue()
         )
     }
 
+    @PostMapping("/{withdrawId}/otp/{otpType}/request")
+    suspend fun requestOTP(
+        @CurrentSecurityContext securityContext: SecurityContext,
+        @PathVariable withdrawId: Long,
+        @PathVariable otpType: OTPType
+    ): TempOtpResponse {
+        return withdrawService.requestOTP(
+            securityContext.jwtAuthentication().tokenValue(),
+            securityContext.authentication.name,
+            withdrawId,
+            otpType
+        )
+    }
+
+    @PostMapping("/{withdrawId}/otp/{otpType}/verify")
+    suspend fun verifyOTP(
+        @CurrentSecurityContext securityContext: SecurityContext,
+        @PathVariable withdrawId: Long,
+        @PathVariable otpType: OTPType,
+        @RequestParam otpCode: String,
+    ): WithdrawActionResult {
+        return withdrawService.verifyOTP(securityContext.jwtAuthentication().tokenValue(), withdrawId, otpType, otpCode)
+    }
 
     @PostMapping("/{withdrawId}/cancel")
     suspend fun cancelWithdraw(principal: Principal, @PathVariable withdrawId: Long) {
@@ -103,6 +121,7 @@ class WithdrawController(private val withdrawService: WithdrawService) {
                 it.createDate,
                 it.lastUpdateDate,
                 it.transferMethod,
+                it.otpRequired
             )
         }
     }

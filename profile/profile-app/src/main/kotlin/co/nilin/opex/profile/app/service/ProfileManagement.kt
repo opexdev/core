@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactive.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingle
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -32,10 +34,10 @@ class ProfileManagement(
     private val authProxy: AuthProxy,
     private val inquiryProxy: InquiryProxy,
 
-    @Value("\${inquiry.mobile-indentiy}")
+    @Value("\${app.inquiry.mobile-indentiy}")
     private var mobileIdentityEnabled: Boolean,
 
-    @Value("\${inquiry.personal-indentiy}")
+    @Value("\${app.inquiry.personal-indentiy}")
     private var personalIdentityEnabled: Boolean,
 
     @Value("\${app.admin-approval.profile-completion-request}")
@@ -205,25 +207,23 @@ class ProfileManagement(
 
         validateInquiryResponses(shahkarResponse, comparativeResponse)
 
-        if (isIranian && !isAdminApprovalRequired) {
-            approveProfileAutomatically(userId, completedProfile)
-        } else {
-            requestAdminApproval(userId)
-        }
-        return completedProfile
+        if (isIranian && !isAdminApprovalRequired)
+            return approveProfileAutomatically(userId, completedProfile)
+
+        return requestAdminApproval(userId)
+
     }
 
-    private suspend fun approveProfileAutomatically(userId: String, completedProfile: Profile) {
+    private suspend fun approveProfileAutomatically(userId: String, completedProfile: Profile): Profile {
         kycLevelUpdatedPublisher.publish(
             KycLevelUpdatedEvent(userId, KycLevel.LEVEL_2, LocalDateTime.now())
         )
-        completedProfile.kycLevel = KycLevel.LEVEL_2
-        profilePersister.updateStatus(userId, ProfileStatus.SYSTEM_APPROVED)
+        return profilePersister.updateStatus(userId, ProfileStatus.SYSTEM_APPROVED)
     }
 
-    private suspend fun requestAdminApproval(userId: String) {
+    private suspend fun requestAdminApproval(userId: String): Profile {
         saveProfileApprovalRequest(userId)
-        profilePersister.updateStatus(userId, ProfileStatus.PENDING_ADMIN_APPROVAL)
+        return profilePersister.updateStatus(userId, ProfileStatus.PENDING_ADMIN_APPROVAL)
     }
 
     suspend fun updateProfile(

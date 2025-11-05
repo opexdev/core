@@ -9,6 +9,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SymbolMapperTest {
@@ -19,16 +21,16 @@ class SymbolMapperTest {
     fun setUp() {
         every {
             symbolMapRepository.findByAliasKeyAndAlias("binance", "ETHUSDT")
-        } returns VALID.SYMBOL_MAP_MODEL
+        } returns Mono.just(VALID.SYMBOL_MAP_MODEL)
         every {
             symbolMapRepository.findByAliasKeyAndSymbol("binance", VALID.ETH_USDT)
-        } returns VALID.SYMBOL_MAP_MODEL
+        } returns Mono.just(VALID.SYMBOL_MAP_MODEL)
         every {
             symbolMapRepository.findAllByAliasKey("binance")
-        } returns listOf(VALID.SYMBOL_MAP_MODEL)
+        } returns Flux.just(VALID.SYMBOL_MAP_MODEL)
         every {
             symbolMapRepository.findAll()
-        } returns listOf(VALID.SYMBOL_MAP_MODEL)
+        } returns Flux.just(VALID.SYMBOL_MAP_MODEL)
     }
 
     @Test

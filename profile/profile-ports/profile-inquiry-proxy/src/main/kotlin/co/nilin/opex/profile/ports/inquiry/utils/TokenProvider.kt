@@ -15,9 +15,9 @@ import java.time.Instant
 @Service
 class TokenProvider(
     @Qualifier("plainWebClient") private val webClient: WebClient,
-    @Value("\${inquiry.url}") private var baseUrl: String,
-    @Value("\${inquiry.api-key}") private var apiKey: String,
-    @Value("\${inquiry.secret-key}") private var secretKey: String,
+    @Value("\${app.inquiry.url}") private var baseUrl: String,
+    @Value("\${app.inquiry.api-key}") private var apiKey: String,
+    @Value("\${app.inquiry.secret-key}") private var secretKey: String,
 ) {
 
     @Volatile

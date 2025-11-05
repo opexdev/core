@@ -4,6 +4,7 @@ import org.springframework.cloud.client.loadbalancer.LoadBalanced
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.client.SimpleClientHttpRequestFactory
+import org.springframework.web.client.DefaultResponseErrorHandler
 import org.springframework.web.client.RestTemplate
 
 @Configuration
@@ -16,6 +17,12 @@ class RestTemplateConfig {
             setConnectTimeout(100000)
             setReadTimeout(10000)
         }
-        return RestTemplate(factory)
+
+        val restTemplate = RestTemplate(factory)
+        restTemplate.errorHandler = DefaultResponseErrorHandler()
+
+        return restTemplate
     }
+
+
 }

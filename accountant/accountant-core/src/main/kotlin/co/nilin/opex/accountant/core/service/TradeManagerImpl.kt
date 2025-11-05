@@ -9,9 +9,11 @@ import co.nilin.opex.accountant.core.model.*
 import co.nilin.opex.accountant.core.spi.*
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 open class TradeManagerImpl(
     private val financeActionPersister: FinancialActionPersister,
@@ -22,7 +24,10 @@ open class TradeManagerImpl(
     private val richOrderPublisher: RichOrderPublisher,
     private val feeCalculator: FeeCalculator,
     private val financialActionPublisher: FinancialActionPublisher,
-    private val jsonMapper: JsonMapper
+    private val currencyRatePersister: CurrencyRatePersister,
+    private val userVolumePersister: UserVolumePersister,
+    private val tradeVolumeCalculationCurrency: String,
+    private val zoneOffsetString: String,
 ) : TradeManager {
 
     private val logger = LoggerFactory.getLogger(TradeManagerImpl::class.java)
@@ -154,37 +159,69 @@ open class TradeManagerImpl(
         val takerPrice = trade.takerPrice.toBigDecimal().multiply(takerOrder.rightSideFraction)
         val makerPrice = trade.makerPrice.toBigDecimal().multiply(makerOrder.rightSideFraction)
 
-        richTradePublisher.publish(
-            RichTrade(
-                trade.tradeId,
-                trade.pair.toString(),
-                trade.takerOuid,
-                trade.takerUuid,
-                trade.takerOrderId,
-                trade.takerDirection,
-                takerPrice,
-                takerOrder.origQuantity,
-                takerOrder.origPrice.multiply(takerOrder.origQuantity),
-                trade.takerRemainedQuantity.toBigDecimal().multiply(takerOrder.leftSideFraction),
-                feeActions.takerFeeAction.amount,
-                feeActions.takerFeeAction.symbol,
-                trade.makerOuid,
-                trade.makerUuid,
-                trade.makerOrderId,
-                trade.makerDirection,
-                makerPrice,
-                makerOrder.origQuantity,
-                makerOrder.origPrice.multiply(makerOrder.origQuantity),
-                trade.makerRemainedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction),
-                feeActions.makerFeeAction.amount,
-                feeActions.makerFeeAction.symbol,
-                makerPrice,
-                trade.matchedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction),
-                trade.eventDate
-            )
+        val richTrade = RichTrade(
+            trade.tradeId,
+            trade.pair.toString(),
+            trade.takerOuid,
+            trade.takerUuid,
+            trade.takerOrderId,
+            trade.takerDirection,
+            takerPrice,
+            takerOrder.origQuantity,
+            takerOrder.origPrice.multiply(takerOrder.origQuantity),
+            trade.takerRemainedQuantity.toBigDecimal().multiply(takerOrder.leftSideFraction),
+            feeActions.takerFeeAction.amount,
+            feeActions.takerFeeAction.symbol,
+            trade.makerOuid,
+            trade.makerUuid,
+            trade.makerOrderId,
+            trade.makerDirection,
+            makerPrice,
+            makerOrder.origQuantity,
+            makerOrder.origPrice.multiply(makerOrder.origQuantity),
+            trade.makerRemainedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction),
+            feeActions.makerFeeAction.amount,
+            feeActions.makerFeeAction.symbol,
+            makerPrice,
+            trade.matchedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction),
+            trade.eventDate
         )
+        richTradePublisher.publish(richTrade)
+
+        currencyRatePersister.updateRate(trade.pair.leftSideName, trade.pair.rightSideName, makerPrice)
+        calculateTradeVolume(richTrade, trade.pair.leftSideName, trade.pair.rightSideName)
+
         return financeActionPersister.persist(financialActions)
         //return financeActionPersister.persist(financialActions).also { publishFinancialActions(it) }
+    }
+
+    private suspend fun calculateTradeVolume(trade: RichTrade, base: String, quote: String) {
+        val today = LocalDateTime.now().atOffset(ZoneOffset.of(zoneOffsetString)).toLocalDate()
+
+        val rate = if (quote == tradeVolumeCalculationCurrency) {
+            currencyRatePersister.getRate(base, quote)
+        } else {
+            currencyRatePersister.getRate(quote, tradeVolumeCalculationCurrency)
+        }
+        val totalAmount = trade.matchedQuantity.multiply(rate)
+
+        userVolumePersister.update(
+            trade.makerUuid,
+            base,
+            today,
+            trade.matchedQuantity,
+            totalAmount,
+            tradeVolumeCalculationCurrency
+        )
+        userVolumePersister.update(
+            trade.takerUuid,
+            base,
+            today,
+            trade.matchedQuantity,
+            totalAmount,
+            tradeVolumeCalculationCurrency
+        )
+        logger.info("Trade volume updated")
     }
 
     private fun createFinalizeOrderFinancialAction(
@@ -249,11 +286,5 @@ open class TradeManagerImpl(
 
         if (!list.contains(financialAction))
             list.add(financialAction)
-    }
-
-    private fun createMap(tradeEvent: TradeEvent, order: Order): Map<String, Any> {
-        val orderMap: Map<String, Any> = jsonMapper.toMap(order)
-        val eventMap: Map<String, Any> = jsonMapper.toMap(tradeEvent)
-        return orderMap + eventMap
     }
 }

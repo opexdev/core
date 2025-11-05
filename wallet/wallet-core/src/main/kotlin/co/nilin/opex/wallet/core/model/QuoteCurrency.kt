@@ -4,6 +4,7 @@ import java.time.LocalDateTime
 
 data class QuoteCurrency(
     val currency: String,
-    val isActive: Boolean = false,
+    val isReference: Boolean = false,
     var lastUpdateDate: LocalDateTime = LocalDateTime.now(),
+    val displayOrder: Int? = null
 )
