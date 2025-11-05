@@ -4,7 +4,7 @@ import co.nilin.opex.common.OpexError
 import co.nilin.opex.profile.app.dto.AddBankAccountRequest
 import co.nilin.opex.profile.app.dto.BankAccountResponse
 import co.nilin.opex.profile.app.service.BankAccountManagement
-import org.springframework.beans.factory.annotation.Value
+import co.nilin.opex.profile.ports.postgres.utils.RegexPatterns
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/bank-account")
 class BankAccountController(
     val bankAccountManagement: BankAccountManagement,
-    @Value("\${app.regex.iban}")
-    private var IBAN_REGEX: String
 ) {
 
 
@@ -55,6 +53,6 @@ class BankAccountController(
             (cardNumber.isNullOrBlank() && iban.isNullOrBlank()) ||
             (!cardNumber.isNullOrBlank() && !iban.isNullOrBlank())
         ) throw OpexError.InvalidRequestBody.exception("Either Card Number or IBAN must be provided")
-        if (!iban.isNullOrBlank() && !Regex(IBAN_REGEX).matches(iban)) throw OpexError.InvalidIban.exception()
+        if (!iban.isNullOrBlank() && !RegexPatterns.IBAN.matches(iban)) throw OpexError.InvalidIban.exception()
     }
 }

@@ -16,6 +16,7 @@ import co.nilin.opex.profile.ports.kyc.imp.KycProxyImp
 import co.nilin.opex.profile.ports.postgres.dao.ProfileHistoryRepository
 import co.nilin.opex.profile.ports.postgres.dao.ProfileRepository
 import co.nilin.opex.profile.ports.postgres.model.entity.ProfileModel
+import co.nilin.opex.profile.ports.postgres.utils.RegexPatterns
 import co.nilin.opex.profile.ports.postgres.utils.toProfileModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -24,7 +25,6 @@ import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
@@ -38,10 +38,6 @@ class ProfileManagementImp(
     private var profileHistoryRepository: ProfileHistoryRepository,
     private var limitationManagementImp: LimitationManagementImp,
     private var kycProxyImp: KycProxyImp,
-    @Value("\${app.regex.email}")
-    private var EMAIL_REGEX: String,
-    @Value("\${app.regex.mobile}")
-    private var MOBILE_REGEX: String
 ) : ProfilePersister {
     private val logger = LoggerFactory.getLogger(ProfileManagementImp::class.java)
 
@@ -309,10 +305,10 @@ class ProfileManagementImp(
     }
 
     private fun validateEmailFormat(email: String) {
-        if (!Regex(EMAIL_REGEX).matches(email)) throw OpexError.InvalidEmail.exception()
+        if (!RegexPatterns.EMAIL.matches(email)) throw OpexError.InvalidEmail.exception()
     }
 
     private fun validateMobileFormat(mobile: String) {
-        if (!Regex(MOBILE_REGEX).matches(mobile)) throw OpexError.InvalidMobile.exception()
+        if (!RegexPatterns.MOBILE.matches(mobile)) throw OpexError.InvalidMobile.exception()
     }
 }

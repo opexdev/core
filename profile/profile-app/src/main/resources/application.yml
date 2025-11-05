@@ -70,10 +70,6 @@ app:
   custom-message:
     enabled: ${CUSTOM_MESSAGE_ENABLED:false}
     base-url: ${CUSTOM_MESSAGE_URL}
-  regex:
-    email: ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$
-    mobile: ^09\d{9}$
-    iban: ^IR[0-9]{24}$
 
 management:
   endpoints:
