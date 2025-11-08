@@ -10,6 +10,8 @@ import co.nilin.opex.wallet.core.inout.TransactionSummary
 import co.nilin.opex.wallet.core.inout.WithdrawActionResult
 import co.nilin.opex.wallet.core.inout.WithdrawCommand
 import co.nilin.opex.wallet.core.inout.WithdrawResponse
+import co.nilin.opex.wallet.core.inout.otp.OTPType
+import co.nilin.opex.wallet.core.inout.otp.TempOtpResponse
 import co.nilin.opex.wallet.core.service.WithdrawService
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
@@ -39,7 +41,6 @@ class WithdrawController(private val withdrawService: WithdrawService) {
                     securityContext.authentication.name,
                     currency,
                     amount,
-                    description,
                     destSymbol,
                     destAddress,
                     destNetwork,
@@ -52,6 +53,29 @@ class WithdrawController(private val withdrawService: WithdrawService) {
         )
     }
 
+    @PostMapping("/{withdrawId}/otp/{otpType}/request")
+    suspend fun requestOTP(
+        @CurrentSecurityContext securityContext: SecurityContext,
+        @PathVariable withdrawId: Long,
+        @PathVariable otpType: OTPType
+    ): TempOtpResponse {
+        return withdrawService.requestOTP(
+            securityContext.jwtAuthentication().tokenValue(),
+            securityContext.authentication.name,
+            withdrawId,
+            otpType
+        )
+    }
+
+    @PostMapping("/{withdrawId}/otp/{otpType}/verify")
+    suspend fun verifyOTP(
+        @CurrentSecurityContext securityContext: SecurityContext,
+        @PathVariable withdrawId: Long,
+        @PathVariable otpType: OTPType,
+        @RequestParam otpCode: String,
+    ): WithdrawActionResult {
+        return withdrawService.verifyOTP(securityContext.jwtAuthentication().tokenValue(), withdrawId, otpType, otpCode)
+    }
 
     @PostMapping("/{withdrawId}/cancel")
     suspend fun cancelWithdraw(principal: Principal, @PathVariable withdrawId: Long) {
@@ -97,6 +121,7 @@ class WithdrawController(private val withdrawService: WithdrawService) {
                 it.createDate,
                 it.lastUpdateDate,
                 it.transferMethod,
+                it.otpRequired
             )
         }
     }

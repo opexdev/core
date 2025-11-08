@@ -5,8 +5,7 @@ import java.math.BigDecimal
 data class UserFee(
     val name: String,
     val makerFee: BigDecimal,
-    val takerFee: BigDecimal,
-
+    val takerFee: BigDecimal
     )
 
 

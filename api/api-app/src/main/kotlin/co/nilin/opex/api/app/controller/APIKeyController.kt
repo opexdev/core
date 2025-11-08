@@ -4,7 +4,6 @@ import co.nilin.opex.api.app.data.APIKeyResponse
 import co.nilin.opex.api.app.data.CreateAPIKeyRequest
 import co.nilin.opex.api.app.service.APIKeyServiceImpl
 import co.nilin.opex.common.security.jwtAuthentication
-import co.nilin.opex.common.security.tokenValue
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
@@ -15,13 +14,13 @@ import java.security.Principal
 class APIKeyController(private val apiKeyService: APIKeyServiceImpl) {
 
     @GetMapping
-    fun getKeys(principal: Principal): List<APIKeyResponse> {
+    suspend fun getKeys(principal: Principal): List<APIKeyResponse> {
         return apiKeyService.getKeysByUserId(principal.name)
             .map { APIKeyResponse(it.label, it.expirationTime, it.allowedIPs, it.key, it.isEnabled) }
     }
 
     @PostMapping
-    fun create(
+    suspend fun create(
         @RequestBody request: CreateAPIKeyRequest,
         @CurrentSecurityContext securityContext: SecurityContext
     ): Any {
@@ -31,7 +30,7 @@ class APIKeyController(private val apiKeyService: APIKeyServiceImpl) {
             request.label,
             request.expiration?.getLocalDateTime(),
             request.allowedIPs,
-            jwt.tokenValue()
+            jwt.token.tokenValue
         )
         return object {
             val apiKey = response.second.key
@@ -40,17 +39,17 @@ class APIKeyController(private val apiKeyService: APIKeyServiceImpl) {
     }
 
     @PutMapping("/{key}/enable")
-    fun enableKey(principal: Principal, @PathVariable key: String) {
+    suspend fun enableKey(principal: Principal, @PathVariable key: String) {
         apiKeyService.changeKeyState(principal.name, key, true)
     }
 
     @PutMapping("/{key}/disable")
-    fun disableKey(principal: Principal, @PathVariable key: String) {
+    suspend fun disableKey(principal: Principal, @PathVariable key: String) {
         apiKeyService.changeKeyState(principal.name, key, false)
     }
 
     @DeleteMapping("/{key}")
-    fun deleteKey(principal: Principal, @PathVariable key: String) {
+    suspend fun deleteKey(principal: Principal, @PathVariable key: String) {
         apiKeyService.deleteKey(principal.name, key)
     }
 

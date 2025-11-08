@@ -9,17 +9,17 @@ import java.math.BigDecimal
 
 interface AccountantProxy {
 
-    fun getPairConfigs(): List<PairConfigResponse>
+    suspend fun getPairConfigs(): List<PairConfigResponse>
 
-    fun getFeeConfigs(): List<FeeConfig>
+    suspend fun getFeeConfigs(): List<FeeConfig>
 
-    fun getUserFee(uuid: String): UserFee
+    suspend fun getUserFee(uuid: String): UserFee
 
-    fun getTradeVolumeByCurrency(uuid: String, symbol: String, interval: Interval): BigDecimal
+    suspend fun getTradeVolumeByCurrency(uuid: String, symbol: String, interval: Interval): BigDecimal
 
-    fun getTotalTradeVolumeValue(uuid: String, interval: Interval): BigDecimal
+    suspend fun getTotalTradeVolumeValue(uuid: String, interval: Interval): BigDecimal
 
-    fun getWithdrawLimitConfigs(): List<WithdrawLimitConfig>
+    suspend fun getWithdrawLimitConfigs(): List<WithdrawLimitConfig>
 
-    fun getTotalWithdrawVolumeValue(uuid: String, interval: Interval?): BigDecimal
+    suspend fun getTotalWithdrawVolumeValue(uuid: String, interval: Interval?): BigDecimal
 }

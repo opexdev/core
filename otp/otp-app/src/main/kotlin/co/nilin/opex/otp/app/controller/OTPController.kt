@@ -1,7 +1,9 @@
 package co.nilin.opex.otp.app.controller
 
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.otp.app.data.*
+import co.nilin.opex.otp.app.data.NewOTPRequest
+import co.nilin.opex.otp.app.data.OTPResult
+import co.nilin.opex.otp.app.data.VerifyOTPRequest
 import co.nilin.opex.otp.app.model.OTPType
 import co.nilin.opex.otp.app.service.OTPService
 import org.springframework.http.HttpStatus
@@ -42,7 +44,7 @@ class OTPController(private val otpService: OTPService) {
             otpService.verifyOTP(request.otpCodes[0].code, request.userId)
         else
             otpService.verifyCompositeOTP(request.otpCodes.toSet(), request.userId)
-        return OTPResult(result.isValid, result)
+        return result
     }
 
     private fun validateOTPRequest(request: List<OTPType>) {

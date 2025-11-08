@@ -4,9 +4,9 @@ import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.MarketUserDataProxy
 import co.nilin.opex.api.core.spi.WalletProxy
 import co.nilin.opex.api.ports.opex.data.OrderDataResponse
+import co.nilin.opex.api.ports.opex.util.jwtAuthentication
 import co.nilin.opex.api.ports.opex.util.toResponse
-import co.nilin.opex.common.security.jwtAuthentication
-import co.nilin.opex.common.security.tokenValue
+import co.nilin.opex.api.ports.opex.util.tokenValue
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
@@ -19,7 +19,7 @@ class UserHistoryController(
 ) {
 
     @GetMapping("/history/order")
-    fun getOrderHistory(
+    suspend fun getOrderHistory(
         @RequestParam symbol: String?,
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
@@ -42,7 +42,7 @@ class UserHistoryController(
     }
 
     @GetMapping("/history/order/count")
-    fun getOrderHistoryCount(
+    suspend fun getOrderHistoryCount(
         @RequestParam symbol: String?,
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
@@ -61,7 +61,7 @@ class UserHistoryController(
     }
 
     @GetMapping("/history/trade")
-    fun getTradeHistory(
+    suspend fun getTradeHistory(
         @RequestParam symbol: String?,
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
@@ -76,7 +76,7 @@ class UserHistoryController(
     }
 
     @GetMapping("/history/trade/count")
-    fun getTradeHistoryCount(
+    suspend fun getTradeHistoryCount(
         @RequestParam symbol: String?,
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
@@ -89,7 +89,7 @@ class UserHistoryController(
     }
 
     @GetMapping("/history/withdraw")
-    fun getWithdrawHistory(
+    suspend fun getWithdrawHistory(
         @RequestParam currency: String?,
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
@@ -111,7 +111,7 @@ class UserHistoryController(
     }
 
     @GetMapping("/history/withdraw/count")
-    fun getWithdrawHistoryCount(
+    suspend fun getWithdrawHistoryCount(
         @RequestParam currency: String?,
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
@@ -127,7 +127,7 @@ class UserHistoryController(
     }
 
     @GetMapping("/history/deposit")
-    fun getDepositHistory(
+    suspend fun getDepositHistory(
         @RequestParam currency: String?,
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
@@ -149,7 +149,7 @@ class UserHistoryController(
     }
 
     @GetMapping("/history/deposit/count")
-    fun getDepositHistoryCount(
+    suspend fun getDepositHistoryCount(
         @RequestParam currency: String?,
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
@@ -165,7 +165,7 @@ class UserHistoryController(
     }
 
     @GetMapping("/history/transaction")
-    fun getTransactionHistory(
+    suspend fun getTransactionHistory(
         @RequestParam currency: String?,
         @RequestParam category: UserTransactionCategory?,
         @RequestParam startTime: Long?,
@@ -189,7 +189,7 @@ class UserHistoryController(
     }
 
     @GetMapping("/history/transaction/count")
-    fun getTransactionHistoryCount(
+    suspend fun getTransactionHistoryCount(
         @RequestParam currency: String?,
         @RequestParam category: UserTransactionCategory?,
         @RequestParam startTime: Long?,
@@ -207,7 +207,7 @@ class UserHistoryController(
     }
 
     @GetMapping("/summary/trade")
-    fun getTradeTransactionSummary(
+    suspend fun getTradeTransactionSummary(
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
         @RequestParam limit: Int?,
@@ -223,7 +223,7 @@ class UserHistoryController(
     }
 
     @GetMapping("/summary/deposit")
-    fun getDepositSummary(
+    suspend fun getDepositSummary(
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
         @RequestParam limit: Int?,
@@ -239,7 +239,7 @@ class UserHistoryController(
     }
 
     @GetMapping("/summary/withdraw")
-    fun getWithdrawSummary(
+    suspend fun getWithdrawSummary(
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
         @RequestParam limit: Int?,
@@ -255,7 +255,7 @@ class UserHistoryController(
     }
 
     @PostMapping("/history/swap")
-    fun getSwapHistory(
+    suspend fun getSwapHistory(
         @CurrentSecurityContext securityContext: SecurityContext,
         @RequestBody request: UserTransactionRequest
     ): List<SwapResponse> {
@@ -263,7 +263,7 @@ class UserHistoryController(
     }
 
     @PostMapping("/history/swap/count")
-    fun getSwapHistoryCount(
+    suspend fun getSwapHistoryCount(
         @CurrentSecurityContext securityContext: SecurityContext,
         @RequestBody request: UserTransactionRequest
     ): Long {

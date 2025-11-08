@@ -11,19 +11,22 @@ class SymbolMapperImpl(val symbolMapRepository: SymbolMapRepository) : SymbolMap
 
     private var symbolsCache: Map<String, String>? = null
 
-    override fun fromInternalSymbol(symbol: String?): String? {
+    override suspend fun fromInternalSymbol(symbol: String?): String? {
         if (symbol == null) return null
-        return symbolMapRepository.findByAliasKeyAndSymbol("binance", symbol)?.alias
+        return symbolMapRepository.findByAliasKeyAndSymbol("binance", symbol)?.awaitFirstOrNull()?.alias
     }
 
-    override fun toInternalSymbol(alias: String?): String? {
+    override suspend fun toInternalSymbol(alias: String?): String? {
         if (alias == null) return null
-        return symbolMapRepository.findByAliasKeyAndAlias("binance", alias)?.symbol
+        return symbolMapRepository.findByAliasKeyAndAlias("binance", alias)?.awaitFirstOrNull()?.symbol
     }
 
-    override fun symbolToAliasMap(): Map<String, String> {
+    override suspend fun symbolToAliasMap(): Map<String, String> {
         if (symbolsCache.isNullOrEmpty()) {
-            symbolsCache = symbolMapRepository.findAllByAliasKey("binance").associate { it.symbol to it.alias }
+            symbolsCache = symbolMapRepository.findAllByAliasKey("binance")
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
+                .associate { it.symbol to it.alias }
         }
         return symbolsCache!!
     }

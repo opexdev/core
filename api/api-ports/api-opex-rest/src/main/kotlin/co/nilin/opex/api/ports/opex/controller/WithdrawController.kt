@@ -4,8 +4,8 @@ import co.nilin.opex.api.core.inout.RequestWithdrawBody
 import co.nilin.opex.api.core.inout.WithdrawActionResult
 import co.nilin.opex.api.core.inout.WithdrawResponse
 import co.nilin.opex.api.core.spi.WalletProxy
-import co.nilin.opex.common.security.jwtAuthentication
-import co.nilin.opex.common.security.tokenValue
+import co.nilin.opex.api.ports.opex.util.jwtAuthentication
+import co.nilin.opex.api.ports.opex.util.tokenValue
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
@@ -17,7 +17,7 @@ class WithdrawController(
 ) {
 
     @PostMapping
-    fun requestWithdraw(
+    suspend fun requestWithdraw(
         @CurrentSecurityContext securityContext: SecurityContext,
         @RequestBody request: RequestWithdrawBody
     ): WithdrawActionResult? {
@@ -28,7 +28,7 @@ class WithdrawController(
     }
 
     @PutMapping("/{withdrawId}/cancel")
-    fun cancelWithdraw(
+    suspend fun cancelWithdraw(
         @CurrentSecurityContext securityContext: SecurityContext,
         @PathVariable withdrawId: Long
     ) {
@@ -39,7 +39,7 @@ class WithdrawController(
     }
 
     @GetMapping("/{withdrawId}")
-    fun findWithdraw(
+    suspend fun findWithdraw(
         @CurrentSecurityContext securityContext: SecurityContext,
         @PathVariable withdrawId: Long
     ): WithdrawResponse {

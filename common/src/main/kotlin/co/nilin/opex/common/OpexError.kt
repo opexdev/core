@@ -25,7 +25,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     PairFeeNotFound(2003, "No fee for requested pair found", HttpStatus.NOT_FOUND),
     FeeConfigAlreadyExists(2004, "Fee config already exists", HttpStatus.CONFLICT),
     FeeConfigNotFound(2005, "Fee config not found", HttpStatus.NOT_FOUND),
-    WithdrawAmountExceeds(2006,"The requested withdraw amount exceeds your daily limit", HttpStatus.BAD_REQUEST),
+    WithdrawAmountExceeds(2006, "The requested withdraw amount exceeds your daily limit", HttpStatus.BAD_REQUEST),
     WithdrawLimitConfigNotFound(2007, "Withdraw limit config not found", HttpStatus.NOT_FOUND),
     // code 3000: matching-engine
 
@@ -58,7 +58,6 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     CaptchaRequired(5020, "Captcha required", HttpStatus.BAD_REQUEST),
 
 
-
     // code 6000: wallet
     WalletOwnerNotFound(6001, null, HttpStatus.NOT_FOUND),
     WalletNotFound(6002, null, HttpStatus.NOT_FOUND),
@@ -81,7 +80,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     WithdrawNotAllowed(6019, null, HttpStatus.BAD_REQUEST),
     DepositLimitExceeded(6020, "Deposit limit exceeded", HttpStatus.BAD_REQUEST),
     InvalidAmount(6021, "Invalid amount", HttpStatus.BAD_REQUEST),
-    WithdrawAlreadyProcessed(6022, "This withdraw request processed before", HttpStatus.BAD_REQUEST),
+    WithdrawCannotBeAccepted(6022, "Withdraw cannot be accepted", HttpStatus.BAD_REQUEST),
     InvalidAppliedFee(6023, "Applied fee is bigger than accepted fee", HttpStatus.BAD_REQUEST),
     WithdrawAmountExceedsWalletBalance(6024, "Withdraw amount exceeds wallet balance", HttpStatus.BAD_REQUEST),
     WithdrawAmountLessThanMinimum(6025, "Withdraw amount is less than minimum", HttpStatus.BAD_REQUEST),
@@ -107,7 +106,10 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     VoucherUsageLimitExceeded(6045, "Voucher usage limit exceeded", HttpStatus.BAD_REQUEST),
     InvalidMaximumAmount(6046, "Invalid maximum amount", HttpStatus.BAD_REQUEST),
     InvalidMinimumAmount(6047, "Invalid minimum amount", HttpStatus.BAD_REQUEST),
-
+    WithdrawCannotBeDone(6048, "Withdraw cannot be done", HttpStatus.BAD_REQUEST),
+    WithdrawCannotBeRequested(6049, "Withdraw cannot be requested", HttpStatus.BAD_REQUEST),
+    OTPCannotBeRequested(6050, "OTP cannot be requested", HttpStatus.BAD_REQUEST),
+    WithdrawRequestExpired(6051,"Withdraw request expired", HttpStatus.BAD_REQUEST),
 
     // code 7000: api
     OrderNotFound(7001, "No order found", HttpStatus.NOT_FOUND),
@@ -162,8 +164,8 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     ProfileAlreadyCompleted(13016, "Profile already completed", HttpStatus.BAD_REQUEST),
     FirstNameIsNotSimilarEnough(13017, "The first name is not similar enough.", HttpStatus.BAD_REQUEST),
     LastNameIsNotSimilarEnough(13018, "The last name is not similar enough.", HttpStatus.BAD_REQUEST),
-    ShahkarInquiryError(13019,"Shahkar inquiry error" , HttpStatus.SERVICE_UNAVAILABLE),
-    ComparativeInquiryError(13020,"Comparative inquiry error" , HttpStatus.SERVICE_UNAVAILABLE),
+    ShahkarInquiryError(13019, "Shahkar inquiry error", HttpStatus.SERVICE_UNAVAILABLE),
+    ComparativeInquiryError(13020, "Comparative inquiry error", HttpStatus.SERVICE_UNAVAILABLE),
     ProfileApprovalRequestNotfound(13021, "Profile approval request not found", HttpStatus.NOT_FOUND),
     InvalidProfileApprovalRequestStatus(13022, "Invalid profile approval request status", HttpStatus.BAD_REQUEST),
     InvalidBirthDate(13023, "Invalid birthdate", HttpStatus.BAD_REQUEST),
