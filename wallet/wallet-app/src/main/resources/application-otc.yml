@@ -103,11 +103,12 @@ app:
   reserved-transfer:
     life-time: 15 #minutes
   zone-offset: +03:30
-  snapshot-currency: USDT
+  snapshot-currency: ${TOTAL_ASSET_CALCULATION_CURRENCY:USDT}
   withdraw:
     limit:
-      enabled: true
-    otp-required-count: 0
+      enabled: ${WITHDRAW_LIMIT_ENABLED:false}
+    otp-required-count: ${WITHDRAW_OTP_REQUIRED_COUNT:0}
+    bank-account-validation: ${WITHDRAW_BANK_ACCOUNT_VALIDATION:false}
   custom-message:
     enabled: ${CUSTOM_MESSAGE_ENABLED:false}
     base-url: ${CUSTOM_MESSAGE_URL}

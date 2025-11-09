@@ -16,6 +16,7 @@ import co.nilin.opex.profile.ports.kyc.imp.KycProxyImp
 import co.nilin.opex.profile.ports.postgres.dao.ProfileHistoryRepository
 import co.nilin.opex.profile.ports.postgres.dao.ProfileRepository
 import co.nilin.opex.profile.ports.postgres.model.entity.ProfileModel
+import co.nilin.opex.profile.ports.postgres.utils.RegexPatterns
 import co.nilin.opex.profile.ports.postgres.utils.toProfileModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -39,8 +40,6 @@ class ProfileManagementImp(
     private var kycProxyImp: KycProxyImp,
 ) : ProfilePersister {
     private val logger = LoggerFactory.getLogger(ProfileManagementImp::class.java)
-    private val EmailRegex = Regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
-    private val MobileRegex = Regex("^09\\d{9}$")
 
     @Transactional
     override suspend fun updateProfile(id: String, data: UpdateProfileRequest): Mono<Profile> {
@@ -306,10 +305,10 @@ class ProfileManagementImp(
     }
 
     private fun validateEmailFormat(email: String) {
-        if (!EmailRegex.matches(email)) throw OpexError.InvalidEmail.exception()
+        if (!RegexPatterns.EMAIL.matches(email)) throw OpexError.InvalidEmail.exception()
     }
 
     private fun validateMobileFormat(mobile: String) {
-        if (!MobileRegex.matches(mobile)) throw OpexError.InvalidMobile.exception()
+        if (!RegexPatterns.MOBILE.matches(mobile)) throw OpexError.InvalidMobile.exception()
     }
 }

@@ -4,6 +4,8 @@ package co.nilin.opex.profile.app.service
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.profile.core.data.event.KycLevelUpdatedEvent
 import co.nilin.opex.profile.core.data.event.UserCreatedEvent
+import co.nilin.opex.profile.core.data.inquiry.ComparativeResponse
+import co.nilin.opex.profile.core.data.inquiry.ShahkarResponse
 import co.nilin.opex.profile.core.data.kyc.KycLevel
 import co.nilin.opex.profile.core.data.otp.*
 import co.nilin.opex.profile.core.data.profile.*
@@ -11,7 +13,6 @@ import co.nilin.opex.profile.core.spi.*
 import co.nilin.opex.profile.core.utils.handleComparativeError
 import co.nilin.opex.profile.core.utils.handleShahkarError
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
@@ -25,9 +26,7 @@ import java.time.LocalDateTime
 
 @Component
 class ProfileManagement(
-    private val profilePersister: ProfilePersister,
-    private val linkedAccountPersister: LinkedAccountPersister,
-    private val limitationPersister: LimitationPersister,
+    private val profilePersister: ProfilePersister, private val limitationPersister: LimitationPersister,
     private val profileApprovalRequestPersister: ProfileApprovalRequestPersister,
     private val kycLevelUpdatedPublisher: KycLevelUpdatedPublisher,
     private val otpProxy: OtpProxy,
@@ -64,43 +63,11 @@ class ProfileManagement(
     }
 
     suspend fun getAllProfiles(offset: Int, size: Int, profileRequest: ProfileRequest): List<Profile?>? {
-        profileRequest.accountNumber?.let {
-            val res = profilePersister.getAllProfile(offset, size, profileRequest)?.toList()
-            val accountOwner =
-                linkedAccountPersister.getOwner(profileRequest.accountNumber!!, profileRequest.partialSearch)
-                    ?.map { profilePersister.getProfile(it.userId)?.awaitFirstOrNull() }?.toList()
-            if (res?.isEmpty() == true || accountOwner?.isEmpty() == true) {
-                return null
-            } else {
-                return addDetail(accountOwner!!::contains?.let { it1 -> res?.filter(it1) }, profileRequest)
-            }
-        } ?: run {
-            return addDetail(profilePersister.getAllProfile(offset, size, profileRequest)?.toList(), profileRequest)
-
-        }
-    }
-
-
-    private suspend fun addDetail(res: List<Profile?>?, profileRequest: ProfileRequest): List<Profile?>? {
-        if (profileRequest.includeLinkedAccount == true) {
-            res?.forEach {
-                it?.linkedAccounts = linkedAccountPersister.getAccounts(it?.userId!!)?.toList()
-            }
-        }
-        if (profileRequest.includeLimitation == true) {
-            res?.forEach {
-                it?.limitations = limitationPersister.getLimitation(it?.userId)?.toList()
-            }
-        }
-        return res;
+        return profilePersister.getAllProfile(offset, size, profileRequest)?.toList()
     }
 
     suspend fun getProfile(userId: String): Mono<Profile>? {
         return profilePersister.getProfile(userId)
-    }
-
-    suspend fun update(userId: String, newProfile: UpdateProfileRequest): Mono<Profile>? {
-        return profilePersister.updateProfile(userId, newProfile)
     }
 
     suspend fun updateAsAdmin(userId: String, newProfile: Profile): Mono<Profile>? {
@@ -128,7 +95,7 @@ class ProfileManagement(
                 listOf(OTPReceiver(mobile, OTPType.SMS)),
                 OTPAction.UPDATE_MOBILE.name
             )
-        )
+        ).apply { otpReceiver = OTPReceiver(mobile, OTPType.SMS) }
     }
 
     suspend fun updateMobile(userId: String, mobile: String, otpCode: String) {
@@ -152,7 +119,7 @@ class ProfileManagement(
                 listOf(OTPReceiver(email, OTPType.EMAIL)),
                 OTPAction.UPDATE_EMAIL.name
             )
-        )
+        ).apply { otpReceiver = OTPReceiver(email, OTPType.EMAIL) }
     }
 
     suspend fun updateEmail(userId: String, email: String, otpCode: String) {

@@ -27,14 +27,6 @@ class ProfileController(
         return profileManagement.getProfile(securityContext.authentication.name)?.awaitFirstOrNull()
     }
 
-//    @PutMapping("")
-//    suspend fun update(
-//        @RequestBody newProfile: UpdateProfileRequest,
-//        @CurrentSecurityContext securityContext: SecurityContext
-//    ): Profile? {
-//        return profileManagement.update(securityContext.authentication.name, newProfile)?.awaitFirstOrNull()
-//    }
-
     @PutMapping("/completion")
     suspend fun completeProfile(
         @RequestBody completeProfileRequest: CompleteProfileRequest,
