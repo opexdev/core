@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.ports.postgres.dao
 
 import co.nilin.opex.wallet.core.inout.TransactionSummary
+import co.nilin.opex.wallet.core.inout.WithdrawAdminResponse
 import co.nilin.opex.wallet.core.model.WithdrawStatus
 import co.nilin.opex.wallet.ports.postgres.model.WithdrawModel
 import kotlinx.coroutines.flow.Flow
@@ -27,19 +28,42 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
 
     @Query(
         """
-        select * from withdraws wth  
-        join wallet wm on wm.id = wth.wallet    
-        join wallet_owner wo on wm.owner = wo.id   
-        where ( :owner is null or wo.uuid = :owner)
-            and (:destTxRef is null or wth.dest_transaction_ref = :destTxRef) 
-            and (:destAddress is null or wth.dest_address = :destAddress) 
-            and (:currency is null or wm.currency in (:currency)) 
-            and (:startTime is null or create_date > :startTime )
-            and (:endTime is null or create_date <= :endTime)
-        order by  CASE WHEN :ascendingByTime=true THEN create_date END ASC,
-                  CASE WHEN :ascendingByTime=false THEN create_date END DESC
-        offset :offset limit :size;
-        """
+    select 
+        wth.id as withdraw_id,
+        wth.uuid as uuid,
+        split_part(wo.title, '|', 2) as owner_name,
+        wth.amount as amount,
+        wm.currency as currency,
+        wth.applied_fee as applied_fee,
+        wth.dest_amount as dest_amount,
+        wth.dest_symbol as dest_symbol,
+        wth.dest_address as dest_address,
+        wth.dest_network as dest_network,
+        wth.dest_notes as dest_note,
+        wth.dest_transaction_ref as dest_transaction_ref,
+        wth.status_reason as status_reason,
+        wth.status as status,
+        wth.applicator as applicator,
+        wth.withdraw_type as withdraw_type,
+        wth.attachment as attachment,
+        wth.create_date as create_date,
+        wth.last_update_date as last_update_date,
+        wth.transfer_method as transfer_method,
+        wth.otp_required as otp_required
+    from withdraws wth
+        join wallet wm on wm.id = wth.wallet
+        join wallet_owner wo on wm.owner = wo.id
+    where (:owner is null or wo.uuid = :owner)
+      and (:destTxRef is null or wth.dest_transaction_ref = :destTxRef)
+      and (:destAddress is null or wth.dest_address = :destAddress)
+      and (:currency is null or wm.currency in (:currency))
+      and (:startTime is null or wth.create_date > :startTime)
+      and (:endTime is null or wth.create_date <= :endTime)
+    order by  
+        CASE WHEN :ascendingByTime=true THEN wth.create_date END ASC,
+        CASE WHEN :ascendingByTime=false THEN wth.create_date END DESC
+    offset :offset limit :size;
+    """
     )
     fun findByCriteria(
         owner: String?,
@@ -51,24 +75,48 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         ascendingByTime: Boolean? = false,
         offset: Int? = 0,
         size: Int? = 10000
-    ): Flow<WithdrawModel>
+    ): Flow<WithdrawAdminResponse>
+
 
     @Query(
         """
-        select * from withdraws wth  
-        join wallet wm on wm.id = wth.wallet    
-        join wallet_owner wo on wm.owner = wo.id   
-        where ( :owner is null or wo.uuid = :owner)
-            and (:destTxRef is null or wth.dest_transaction_ref = :destTxRef) 
-            and (:destAddress is null or wth.dest_address = :destAddress) 
-            and (:currency is null or wm.currency in (:currency)) 
-            and wth.status in (:status)
-            and (:startTime is null or create_date > :startTime )
-            and (:endTime is null or create_date <= :endTime)
-        order by  CASE WHEN :ascendingByTime=true THEN create_date END ASC,
-                  CASE WHEN :ascendingByTime=false THEN create_date END DESC
-        offset :offset limit :size;
-        """
+    select 
+        wth.id as withdraw_id,
+        wth.uuid as uuid,
+        split_part(wo.title, '|', 2) as owner_name,
+        wth.amount as amount,
+        wm.currency as currency,
+        wth.applied_fee as applied_fee,
+        wth.dest_amount as dest_amount,
+        wth.dest_symbol as dest_symbol,
+        wth.dest_address as dest_address,
+        wth.dest_network as dest_network,
+        wth.dest_notes as dest_note,
+        wth.dest_transaction_ref as dest_transaction_ref,
+        wth.status_reason as status_reason,
+        wth.status as status,
+        wth.applicator as applicator,
+        wth.withdraw_type as withdraw_type,
+        wth.attachment as attachment,
+        wth.create_date as create_date,
+        wth.last_update_date as last_update_date,
+        wth.transfer_method as transfer_method,
+        wth.otp_required as otp_required
+    from withdraws wth
+        join wallet wm on wm.id = wth.wallet
+        join wallet_owner wo on wm.owner = wo.id
+    where (:owner is null or wo.uuid = :owner)
+      and (:destTxRef is null or wth.dest_transaction_ref = :destTxRef)
+      and (:destAddress is null or wth.dest_address = :destAddress)
+      and (:currency is null or wm.currency in (:currency))
+      and wth.status in (:status)
+      and (:startTime is null or wth.create_date > :startTime)
+      and (:endTime is null or wth.create_date <= :endTime)
+    order by  
+        CASE WHEN :ascendingByTime=true THEN wth.create_date END ASC,
+        CASE WHEN :ascendingByTime=false THEN wth.create_date END DESC
+    offset :offset limit :size;
+    """
     )
     fun findByCriteria(
         owner: String?,
@@ -81,7 +129,7 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         ascendingByTime: Boolean? = false,
         offset: Int? = 0,
         size: Int? = 10000
-    ): Flow<WithdrawModel>
+    ): Flow<WithdrawAdminResponse>
 
     @Query(
         """
@@ -127,7 +175,7 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
     @Query(
         """
         select * from withdraws 
-        where uuid = :uuid
+        where uuid = :uuid and status != 'REQUESTED'
             and (:currency is null or currency = :currency)
             and (:startTime is null or create_date > :startTime )
             and (:endTime is null or create_date <= :endTime)
@@ -150,7 +198,7 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
     @Query(
         """
         select count(*) from withdraws 
-        where uuid = :uuid
+        where uuid = :uuid and status != 'REQUESTED'
             and (:currency is null or currency = :currency)
             and (:startTime is null or create_date > :startTime )
             and (:endTime is null or create_date <= :endTime)
@@ -169,7 +217,7 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
        SELECT currency,
             SUM(amount) AS amount
         FROM withdraws
-        WHERE uuid = :uuid
+        WHERE uuid = :uuid and status != 'REQUESTED'
             and (:startTime is null or create_date >= :startTime )
             and (:endTime is null or create_date <= :endTime)
         GROUP BY uuid, currency

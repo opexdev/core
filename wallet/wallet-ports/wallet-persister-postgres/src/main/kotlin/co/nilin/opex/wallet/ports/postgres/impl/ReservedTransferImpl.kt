@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
+import co.nilin.opex.wallet.core.inout.AdminSwapResponse
 import co.nilin.opex.wallet.core.inout.SwapResponse
 import co.nilin.opex.wallet.core.model.otc.ReservedStatus
 import co.nilin.opex.wallet.core.model.otc.ReservedTransfer
@@ -12,7 +13,6 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
-import java.util.*
 
 @Component
 class ReservedTransferImpl(private val reservedTransferRepository: ReservedTransferRepository) :
@@ -64,6 +64,30 @@ class ReservedTransferImpl(private val reservedTransferRepository: ReservedTrans
             offset,
             status
         )?.toList()?.map { it.asResponse() }
+    }
+
+    override suspend fun findByCriteriaForAdmin(
+        owner: String?,
+        sourceSymbol: String?,
+        destSymbol: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        limit: Int,
+        offset: Int,
+        ascendingByTime: Boolean?,
+        status: ReservedStatus?
+    ): List<AdminSwapResponse> {
+        return reservedTransferRepository.findByCriteriaForAdmin(
+            owner,
+            sourceSymbol,
+            destSymbol,
+            startTime,
+            endTime,
+            ascendingByTime,
+            limit,
+            offset,
+            status
+        ).toList()
     }
 
     override suspend fun countByCriteria(

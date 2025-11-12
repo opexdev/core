@@ -41,7 +41,7 @@ class WithdrawAdminController(
         @RequestParam offset: Int,
         @RequestParam size: Int,
         @RequestBody body: AdminSearchWithdrawRequest
-    ): List<WithdrawResponse> {
+    ): List<WithdrawAdminResponse> {
         return withdrawService.findByCriteria(
             body.uuid,
             body.currency,

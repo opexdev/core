@@ -43,6 +43,7 @@ class SecurityConfig(
                     .pathMatchers(HttpMethod.DELETE, "/v3/order").hasAuthority("PERM_order:write")
 
                     // Opex endpoints
+                    .pathMatchers("/opex/v1/monitoring/**").permitAll()
                     .pathMatchers("/opex/v1/deposit/**").hasAuthority("DEPOSIT_deposit:write")
                     .pathMatchers(HttpMethod.POST, "/opex/v1/order").hasAuthority("PERM_order:write")
                     .pathMatchers(HttpMethod.PUT, "/opex/v1/order").hasAuthority("PERM_order:write")

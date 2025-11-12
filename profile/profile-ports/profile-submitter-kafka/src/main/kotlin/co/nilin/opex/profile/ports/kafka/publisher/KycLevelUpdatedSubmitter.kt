@@ -12,18 +12,18 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 @Component
-class KycLevelSubmitter(
+class KycLevelUpdatedSubmitter(
     @Qualifier("kycEventKafkaTemplate") private val kafkaTemplate: KafkaTemplate<String, KycLevelUpdatedEvent>,
 ) : KycLevelUpdatedPublisher {
 
-    private val logger = LoggerFactory.getLogger(KycLevelSubmitter::class.java)
+    private val logger = LoggerFactory.getLogger(KycLevelUpdatedSubmitter::class.java)
 
     val topic = "kyc_level_updated"
 
-    override suspend fun publish(update: KycLevelUpdatedEvent): Unit = suspendCoroutine { cont ->
+    override suspend fun publish(event: KycLevelUpdatedEvent): Unit = suspendCoroutine { cont ->
         logger.info("Submitting kycLevelUpdated")
 
-        val sendFuture = kafkaTemplate.send(topic, update)
+        val sendFuture = kafkaTemplate.send(topic, event)
         sendFuture.addCallback({
             cont.resume(Unit)
         }, {

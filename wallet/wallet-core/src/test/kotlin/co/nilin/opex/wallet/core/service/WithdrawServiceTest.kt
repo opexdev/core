@@ -450,7 +450,7 @@ class WithdrawServiceTest {
                 transferManager, meterRegistry, gatewayService, precisionService,
                 accountantProxy, withdrawRequestEventSubmitter, otpProxy, profileProxy,
                 withdrawOtpPersister, gatewayPersister, SYSTEM_UUID,
-                withdrawLimitEnabled = false, otpRequiredCount = 2 , bankAccountValidation = false
+                withdrawLimitEnabled = false, otpRequiredCount = 2, bankAccountValidation = false
             )
 
             val command = createWithdrawCommand()
@@ -608,7 +608,7 @@ class WithdrawServiceTest {
                 transferManager, meterRegistry, gatewayService, precisionService,
                 accountantProxy, withdrawRequestEventSubmitter, otpProxy, profileProxy,
                 withdrawOtpPersister, gatewayPersister, SYSTEM_UUID,
-                withdrawLimitEnabled = false, otpRequiredCount = 2 , bankAccountValidation = false
+                withdrawLimitEnabled = false, otpRequiredCount = 2, bankAccountValidation = false
             )
 
             val profile = createProfile()
@@ -629,7 +629,7 @@ class WithdrawServiceTest {
                 transferManager, meterRegistry, gatewayService, precisionService,
                 accountantProxy, withdrawRequestEventSubmitter, otpProxy, profileProxy,
                 withdrawOtpPersister, gatewayPersister, SYSTEM_UUID,
-                withdrawLimitEnabled = false, otpRequiredCount = 2 , bankAccountValidation = false
+                withdrawLimitEnabled = false, otpRequiredCount = 2, bankAccountValidation = false
             )
 
             val profile = createProfile()
@@ -652,7 +652,7 @@ class WithdrawServiceTest {
                 transferManager, meterRegistry, gatewayService, precisionService,
                 accountantProxy, withdrawRequestEventSubmitter, otpProxy, profileProxy,
                 withdrawOtpPersister, gatewayPersister, SYSTEM_UUID,
-                withdrawLimitEnabled = false, otpRequiredCount = 2 , bankAccountValidation = false
+                withdrawLimitEnabled = false, otpRequiredCount = 2, bankAccountValidation = false
             )
 
             val profile = createProfile()
@@ -675,7 +675,7 @@ class WithdrawServiceTest {
                 transferManager, meterRegistry, gatewayService, precisionService,
                 accountantProxy, withdrawRequestEventSubmitter, otpProxy, profileProxy,
                 withdrawOtpPersister, gatewayPersister, SYSTEM_UUID,
-                withdrawLimitEnabled = false, otpRequiredCount = 2 , bankAccountValidation = false
+                withdrawLimitEnabled = false, otpRequiredCount = 2, bankAccountValidation = false
             )
 
             val profile = createProfile()
@@ -1016,7 +1016,7 @@ class WithdrawServiceTest {
 
         @Test
         fun `should find withdraws by criteria`() = runBlocking {
-            val withdrawList = listOf(mockk<WithdrawResponse>(), mockk())
+            val withdrawList = listOf(mockk<WithdrawAdminResponse>(), mockk())
             val statuses = listOf(WithdrawStatus.CREATED, WithdrawStatus.ACCEPTED)
 
             coEvery {
@@ -1048,7 +1048,7 @@ class WithdrawServiceTest {
 
         @Test
         fun `should find withdraws with all criteria parameters`() = runBlocking {
-            val withdrawList = listOf(mockk<WithdrawResponse>())
+            val withdrawList = listOf(mockk<WithdrawAdminResponse>())
             val startTime = LocalDateTime.now().minusDays(7)
             val endTime = LocalDateTime.now()
             val statuses = listOf(WithdrawStatus.DONE)
@@ -1176,7 +1176,7 @@ class WithdrawServiceTest {
                 transferManager, meterRegistry, gatewayService, precisionService,
                 accountantProxy, withdrawRequestEventSubmitter, otpProxy, profileProxy,
                 withdrawOtpPersister, gatewayPersister, SYSTEM_UUID,
-                withdrawLimitEnabled = true, otpRequiredCount = 0 , bankAccountValidation = false
+                withdrawLimitEnabled = true, otpRequiredCount = 0, bankAccountValidation = false
             )
 
             val command = createWithdrawCommand()
@@ -1212,7 +1212,7 @@ class WithdrawServiceTest {
                 transferManager, meterRegistry, gatewayService, precisionService,
                 accountantProxy, withdrawRequestEventSubmitter, otpProxy, profileProxy,
                 withdrawOtpPersister, gatewayPersister, SYSTEM_UUID,
-                withdrawLimitEnabled = true, otpRequiredCount = 0 , bankAccountValidation = false
+                withdrawLimitEnabled = true, otpRequiredCount = 0, bankAccountValidation = false
             )
 
             val command = createWithdrawCommand()

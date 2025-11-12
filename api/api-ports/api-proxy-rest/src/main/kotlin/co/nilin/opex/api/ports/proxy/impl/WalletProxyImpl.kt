@@ -485,5 +485,97 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
             .bodyToMono<WithdrawActionResult>()
             .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
     }
+
+    override suspend fun getWithdrawTransactionsForMonitoring(
+        token: String,
+        request: InquiryRequest
+    ): List<WithdrawHistoryResponse> {
+        return webClient.post()
+            .uri("$baseUrl/admin/withdraw/search?offset=0&size=10000")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToFlux<WithdrawHistoryResponse>()
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+    }
+
+    override suspend fun getDepositTransactionsForMonitoring(
+        token: String,
+        request: InquiryRequest
+    ): List<DepositHistoryResponse> {
+        return webClient.post()
+            .uri("$baseUrl/admin/deposit/search?offset=0&size=10000")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToFlux<DepositHistoryResponse>()
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+    }
+
+    override suspend fun getSwapTransactionsForMonitoring(
+        token: String,
+        request: InquiryRequest
+    ): List<SwapHistoryResponse> {
+        return webClient.post()
+            .uri("$baseUrl/admin/v1/swap/history")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(
+                Mono.just(
+                    UserTransactionRequest(
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        request.startTime,
+                        null,
+                        10000,
+                        0,
+                        false,
+                        ReservedStatus.Committed
+                    )
+                )
+            )
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToFlux<SwapHistoryResponse>()
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+    }
+
+    override suspend fun getRecentTradesForMonitoring(
+        token: String,
+        request: InquiryRequest
+    ): List<AdminTransactionHistory> {
+        return webClient.post()
+            .uri("$baseUrl/admin/v2/transaction/history")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(
+                Mono.just(
+                    AdminTransactionHistoryRequest(
+                        null,
+                        TransferCategory.TRADE,
+                        request.startTime,
+                        null,
+                        10000,
+                        0,
+                        false
+                    )
+                )
+            )
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToFlux<AdminTransactionHistory>()
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+    }
 }
 

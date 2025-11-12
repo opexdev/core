@@ -126,6 +126,28 @@ interface WalletProxy {
     suspend fun getSwapTransactions(token: String, request: UserTransactionRequest): List<SwapResponse>
     suspend fun getSwapTransactionsCount(token: String, request: UserTransactionRequest): Long
 
-    suspend fun requestWithdrawOTP(token: String, withdrawId: Long, otpType: OTPType) : TempOtpResponse
-    suspend fun verifyWithdrawOTP(token: String, withdrawId: Long, otpType: OTPType , otpCode: String) : WithdrawActionResult
+    suspend fun requestWithdrawOTP(token: String, withdrawId: Long, otpType: OTPType): TempOtpResponse
+    suspend fun verifyWithdrawOTP(
+        token: String,
+        withdrawId: Long,
+        otpType: OTPType,
+        otpCode: String
+    ): WithdrawActionResult
+
+    suspend fun getWithdrawTransactionsForMonitoring(
+        token: String,
+        request: InquiryRequest
+    ): List<WithdrawHistoryResponse>
+
+    suspend fun getDepositTransactionsForMonitoring(
+        token: String,
+        request: InquiryRequest
+    ): List<DepositHistoryResponse>
+
+    suspend fun getSwapTransactionsForMonitoring(token: String, request: InquiryRequest): List<SwapHistoryResponse>
+
+    suspend fun getRecentTradesForMonitoring(
+        token: String,
+        request: InquiryRequest
+    ): List<AdminTransactionHistory>
 }

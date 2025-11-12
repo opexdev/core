@@ -248,7 +248,7 @@ class DepositService(
         offset: Int?,
         size: Int?,
         ascendingByTime: Boolean?,
-    ): List<DepositResponse> {
+    ): List<DepositAdminResponse> {
 
         return depositPersister.findByCriteria(
             ownerUuid,
@@ -261,23 +261,7 @@ class DepositService(
             offset,
             size,
             ascendingByTime
-        ).map {
-            DepositResponse(
-                it.id!!,
-                it.ownerUuid,
-                it.currency,
-                it.amount,
-                it.network,
-                it.note,
-                it.transactionRef,
-                it.sourceAddress,
-                it.status,
-                it.depositType,
-                it.attachment,
-                it.createDate,
-                it.transferMethod
-            )
-        }
+        )
     }
 
     suspend fun getDepositSummary(

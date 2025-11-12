@@ -6,6 +6,7 @@ import java.time.LocalDateTime
 data class WithdrawHistoryResponse(
     val withdrawId: Long,
     val uuid: String,
+    val ownerName: String?,
     val amount: BigDecimal,
     val currency: String,
     val appliedFee: BigDecimal,

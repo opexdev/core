@@ -3,13 +3,7 @@ package co.nilin.opex.wallet.core.service
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.security.JwtUtils
 import co.nilin.opex.wallet.core.inout.*
-import co.nilin.opex.wallet.core.inout.otp.NewOTPRequest
-import co.nilin.opex.wallet.core.inout.otp.OTPAction
-import co.nilin.opex.wallet.core.inout.otp.OTPCode
-import co.nilin.opex.wallet.core.inout.otp.OTPReceiver
-import co.nilin.opex.wallet.core.inout.otp.OTPType
-import co.nilin.opex.wallet.core.inout.otp.TempOtpResponse
-import co.nilin.opex.wallet.core.inout.otp.VerifyOTPRequest
+import co.nilin.opex.wallet.core.inout.otp.*
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.model.WithdrawType
 import co.nilin.opex.wallet.core.spi.*
@@ -53,8 +47,8 @@ class WithdrawService(
             fetchWithdrawData(withdrawCommand) ?: throw OpexError.GatewayNotFount.exception()
         if (!withdrawData.isEnabled)
             throw OpexError.WithdrawNotAllowed.exception()
-        if(bankAccountValidation)
-        verifyOwnershipForWithdraw(token, withdrawCommand)
+        if (bankAccountValidation)
+            verifyOwnershipForWithdraw(token, withdrawCommand)
 
         val currency = currencyService.fetchCurrency(FetchCurrency(symbol = withdrawCommand.currency))
             ?: throw OpexError.CurrencyNotFound.exception()
@@ -440,7 +434,7 @@ class WithdrawService(
         ascendingByTime: Boolean,
         offset: Int,
         size: Int,
-    ): List<WithdrawResponse> {
+    ): List<WithdrawAdminResponse> {
         return withdrawPersister.findByCriteria(
             ownerUuid, currency, destTxRef, destAddress, status, startTime, endTime, ascendingByTime, offset, size
         )

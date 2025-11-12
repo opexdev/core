@@ -2,6 +2,7 @@ package co.nilin.opex.profile.ports.kafka.config
 
 
 import co.nilin.opex.profile.core.data.event.KycLevelUpdatedEvent
+import co.nilin.opex.profile.core.data.event.ProfileUpdatedEvent
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.LoggerFactory
@@ -30,17 +31,27 @@ class KafkaProducerConfig {
             ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JsonSerializer::class.java,
             ProducerConfig.ACKS_CONFIG to "all",
             JsonDeserializer.TRUSTED_PACKAGES to "co.nilin.opex.*",
-            JsonSerializer.TYPE_MAPPINGS to "kyc_level_updated_event:co.nilin.opex.profile.core.data.event.KycLevelUpdatedEvent"
+            JsonSerializer.TYPE_MAPPINGS to "kyc_level_updated_event:co.nilin.opex.profile.core.data.event.KycLevelUpdatedEvent,profile_updated_event:co.nilin.opex.profile.core.data.event.ProfileUpdatedEvent"
         )
     }
 
     @Bean("kycEventProducerFactory")
-    fun producerFactory(@Qualifier("producerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, KycLevelUpdatedEvent> {
+    fun kycProducerFactory(@Qualifier("producerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, KycLevelUpdatedEvent> {
         return DefaultKafkaProducerFactory(producerConfigs)
     }
 
     @Bean("kycEventKafkaTemplate")
-    fun kafkaTemplate(@Qualifier("kycEventProducerFactory") producerFactory: ProducerFactory<String?, KycLevelUpdatedEvent>): KafkaTemplate<String?, KycLevelUpdatedEvent> {
+    fun kycKafkaTemplate(@Qualifier("kycEventProducerFactory") producerFactory: ProducerFactory<String?, KycLevelUpdatedEvent>): KafkaTemplate<String?, KycLevelUpdatedEvent> {
+        return KafkaTemplate(producerFactory)
+    }
+
+    @Bean("profileUpdatedEventProducerFactory")
+    fun profileProducerFactory(@Qualifier("producerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, ProfileUpdatedEvent> {
+        return DefaultKafkaProducerFactory(producerConfigs)
+    }
+
+    @Bean("profileUpdatedKafkaTemplate")
+    fun profileKafkaTemplate(@Qualifier("profileUpdatedEventProducerFactory") producerFactory: ProducerFactory<String?, ProfileUpdatedEvent>): KafkaTemplate<String?, ProfileUpdatedEvent> {
         return KafkaTemplate(producerFactory)
     }
 }

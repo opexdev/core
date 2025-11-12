@@ -18,6 +18,11 @@ class KafkaTopicConfig {
                 .replicas(1)
                 .build()
         })
+        applicationContext.registerBean("topic_profile_updated", NewTopic::class.java, Supplier {
+            TopicBuilder.name("profile_updated")
+                .partitions(1)
+                .replicas(1)
+                .build()
+        })
     }
-
 }

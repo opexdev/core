@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.ports.postgres.dao
 
+import co.nilin.opex.wallet.core.inout.DepositAdminResponse
 import co.nilin.opex.wallet.core.inout.TransactionSummary
 import co.nilin.opex.wallet.core.model.DepositStatus
 import co.nilin.opex.wallet.ports.postgres.model.DepositModel
@@ -41,17 +42,34 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
 
     @Query(
         """
-        select * from deposits 
-        where ( :owner is null or uuid = :owner)
-            and (:sourceAddress is null or source_address = :sourceAddress) 
-            and (:currency is null or currency =:currency) 
-            and (:transactionRef is null or transaction_ref =:transactionRef)
-            and (:startTime is null or create_date > :startTime )
-            and (:endTime is null or create_date <= :endTime)
-        order by  CASE WHEN :ascendingByTime=true THEN create_date END ASC,
-                  CASE WHEN :ascendingByTime=false THEN create_date END DESC
-        offset :offset limit :limit;
-        """
+    select 
+        d.id as id,
+        d.uuid as uuid,
+        split_part(wo.title, '|', 2) as owner_name,
+        d.currency as currency,
+        d.amount as amount,
+        d.network as network,
+        d.note as note,
+        d.transaction_ref as transaction_ref,
+        d.source_address as source_address,
+        d.status as status,
+        d.deposit_type as type,
+        d.attachment as attachment,
+        d.create_date as create_date,
+        d.transfer_method as transfer_method
+    from deposits d
+        join wallet_owner wo on d.uuid = wo.uuid
+    where (:owner is null or wo.uuid = :owner)
+      and (:sourceAddress is null or d.source_address = :sourceAddress)
+      and (:currency is null or d.currency = :currency)
+      and (:transactionRef is null or d.transaction_ref = :transactionRef)
+      and (:startTime is null or d.create_date > :startTime)
+      and (:endTime is null or d.create_date <= :endTime)
+    order by  
+        CASE WHEN :ascendingByTime=true THEN d.create_date END ASC,
+        CASE WHEN :ascendingByTime=false THEN d.create_date END DESC
+    offset :offset limit :limit;
+    """
     )
     fun findByCriteria(
         owner: String?,
@@ -63,23 +81,40 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
         ascendingByTime: Boolean? = false,
         offset: Int? = 0,
         limit: Int? = 10000,
-    ): Flow<DepositModel>
+    ): Flow<DepositAdminResponse>
 
 
     @Query(
         """
-        select * from deposits 
-        where ( :owner is null or uuid = :owner)
-            and (:sourceAddress is null or source_address = :sourceAddress) 
-            and (:currency is null or currency =:currency) 
-            and (:transactionRef is null or transaction_ref =:transactionRef)
-            and (:startTime is null or create_date > :startTime )
-            and (:endTime is null or create_date <= :endTime)
-            and  (:status is null or status in (:status))
-        order by  CASE WHEN :ascendingByTime=true THEN create_date END ASC,
-                  CASE WHEN :ascendingByTime=false THEN create_date END DESC
-        offset :offset limit :limit;
-        """
+    select 
+        d.id as id,
+        d.uuid as uuid,
+        split_part(wo.title, '|', 2) as owner_name,
+        d.currency as currency,
+        d.amount as amount,
+        d.network as network,
+        d.note as note,
+        d.transaction_ref as transaction_ref,
+        d.source_address as source_address,
+        d.status as status,
+        d.deposit_type as type,
+        d.attachment as attachment,
+        d.create_date as create_date,
+        d.transfer_method as transfer_method
+    from deposits d
+        join wallet_owner wo on d.uuid = wo.uuid
+    where (:owner is null or wo.uuid = :owner)
+      and (:sourceAddress is null or d.source_address = :sourceAddress)
+      and (:currency is null or d.currency = :currency)
+      and (:transactionRef is null or d.transaction_ref = :transactionRef)
+      and (:startTime is null or d.create_date > :startTime)
+      and (:endTime is null or d.create_date <= :endTime)
+      and  (:status is null or status in (:status))
+    order by  
+        CASE WHEN :ascendingByTime=true THEN d.create_date END ASC,
+        CASE WHEN :ascendingByTime=false THEN d.create_date END DESC
+    offset :offset limit :limit;
+    """
     )
     fun findByCriteria(
         owner: String?,
@@ -92,7 +127,7 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
         ascendingByTime: Boolean? = false,
         offset: Int? = 0,
         limit: Int? = 10000,
-    ): Flow<DepositModel>
+    ): Flow<DepositAdminResponse>
 
 
     @Query(

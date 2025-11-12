@@ -6,6 +6,7 @@ import java.util.*
 data class DepositHistoryResponse(
     val id: Long,
     val uuid: String,
+    val ownerName: String?,
     val currency: String,
     val amount: BigDecimal,
     val network: String?,

@@ -1,10 +1,7 @@
 package co.nilin.opex.wallet.ports.kafka.listener.config
 
 import co.nilin.opex.wallet.core.inout.FinancialActionResponseEvent
-import co.nilin.opex.wallet.ports.kafka.listener.model.AdminEvent
-import co.nilin.opex.wallet.ports.kafka.listener.model.FinancialActionEvent
-import co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent
-import co.nilin.opex.wallet.ports.kafka.listener.model.WithdrawRequestEvent
+import co.nilin.opex.wallet.ports.kafka.listener.model.*
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.beans.factory.annotation.Qualifier
@@ -38,6 +35,11 @@ class KafkaProducerConfig {
 
     @Bean
     fun userCreatedTemplate(@Qualifier("producerConfigs") configs: Map<String, Any>): KafkaTemplate<String?, UserCreatedEvent> {
+        return KafkaTemplate(DefaultKafkaProducerFactory(configs))
+    }
+
+    @Bean("profileUpdatedTemplate")
+    fun profileUpdatedTemplate(@Qualifier("producerConfigs") configs: Map<String, Any?>): KafkaTemplate<String, ProfileUpdatedEvent> {
         return KafkaTemplate(DefaultKafkaProducerFactory(configs))
     }
 

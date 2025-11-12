@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.core.spi
 
+import co.nilin.opex.wallet.core.inout.AdminSwapResponse
 import co.nilin.opex.wallet.core.inout.SwapResponse
 import co.nilin.opex.wallet.core.model.otc.ReservedStatus
 import co.nilin.opex.wallet.core.model.otc.ReservedTransfer
@@ -24,6 +25,19 @@ interface ReservedTransferManager {
         ascendingByTime: Boolean? = false,
         status: ReservedStatus?
     ): List<SwapResponse>?
+
+
+    suspend fun findByCriteriaForAdmin(
+        owner: String?,
+        sourceSymbol: String?,
+        destSymbol: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        limit: Int,
+        offset: Int,
+        ascendingByTime: Boolean? = false,
+        status: ReservedStatus?
+    ): List<AdminSwapResponse>
 
     suspend fun countByCriteria(
         owner: String?,

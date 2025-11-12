@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.wallet.core.inout.TransactionSummary
+import co.nilin.opex.wallet.core.inout.WithdrawAdminResponse
 import co.nilin.opex.wallet.core.inout.WithdrawResponse
 import co.nilin.opex.wallet.core.model.Withdraw
 import co.nilin.opex.wallet.core.model.WithdrawStatus
@@ -72,7 +73,7 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
         ascendingByTime: Boolean?,
         offset: Int,
         size: Int
-    ): List<WithdrawResponse> {
+    ): List<WithdrawAdminResponse> {
         return if (status.isEmpty())
             withdrawRepository.findByCriteria(
                 ownerUuid,
@@ -85,7 +86,7 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
                 offset,
                 size
 
-            ).map { it.asWithdrawResponse() }.toList()
+            ).toList()
         else
             withdrawRepository.findByCriteria(
                 ownerUuid,
@@ -99,7 +100,7 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
                 offset,
                 size
 
-            ).map { it.asWithdrawResponse() }.toList()
+            ).toList()
     }
 
     override suspend fun countByCriteria(

@@ -1,9 +1,6 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
-import co.nilin.opex.wallet.core.model.Transaction
-import co.nilin.opex.wallet.core.model.TransactionHistory
-import co.nilin.opex.wallet.core.model.TransactionWithDetailHistory
-import co.nilin.opex.wallet.core.model.TransferCategory
+import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.spi.TransactionManager
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepositoryV2
 import co.nilin.opex.wallet.ports.postgres.dao.TransactionRepository
@@ -135,7 +132,22 @@ class TransactionManagerImpl(
             }
     }
 
-
+    override suspend fun findTransactionsForAdmin(
+        coin: String?,
+        category: TransferCategory?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        asc: Boolean,
+        limit: Int,
+        offset: Int
+    ): List<AdminTransactionHistory> {
+        return if (asc)
+            transactionRepository.findTransactionsForAdminAsc(coin, category, startTime, endTime, limit, offset)
+                .collectList().awaitFirstOrElse { emptyList() }
+        else
+            transactionRepository.findTransactionsForAdminDesc(coin, category, startTime, endTime, limit, offset)
+                .collectList().awaitFirstOrElse { emptyList() }
+    }
 }
 
 
