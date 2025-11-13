@@ -1,6 +1,4 @@
-package co.nilin.opex.profile.core.data.profile
-
-import co.nilin.opex.profile.core.data.kyc.KycLevel
+package co.nilin.opex.api.core.inout
 
 data class ProfileRequest(
     var userId: String? = null,

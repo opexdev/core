@@ -18,7 +18,6 @@ import co.nilin.opex.profile.ports.postgres.dao.ProfileRepository
 import co.nilin.opex.profile.ports.postgres.model.entity.ProfileModel
 import co.nilin.opex.profile.ports.postgres.utils.RegexPatterns
 import co.nilin.opex.profile.ports.postgres.utils.toProfileModel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
@@ -30,7 +29,9 @@ import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Mono
+import java.time.Instant
 import java.time.LocalDateTime
+import java.time.ZoneId
 
 @Service
 class ProfileManagementImp(
@@ -127,12 +128,11 @@ class ProfileManagementImp(
         return Mono.just(saved.convert(Profile::class.java))
     }
 
-    override suspend fun getProfile(userId: String): Mono<Profile>? {
-
-        return profileRepository.findByUserId(userId)?.map {
-            it.convert(Profile::class.java)
-        } ?: throw OpexError.UserNotFound.exception()
-
+    override suspend fun getProfile(userId: String): Profile {
+        return profileRepository.findByUserId(userId)
+            .awaitFirstOrNull()
+            ?.convert(Profile::class.java)
+            ?: throw OpexError.ProfileNotfound.exception()
     }
 
     override suspend fun getProfileId(userId: String): Long {
@@ -148,22 +148,37 @@ class ProfileManagementImp(
         return Mono.just(profile)
     }
 
-    override suspend fun getAllProfile(offset: Int, size: Int, profileRequest: ProfileRequest): Flow<Profile>? {
-        if (profileRequest.partialSearch == false)
-            return profileRepository.findUsersBy(
-                profileRequest.userId, profileRequest.mobile,
-                profileRequest.email, profileRequest.firstName, profileRequest.lastName,
-                profileRequest.nationalCode, profileRequest.createDateFrom, profileRequest.createDateTo,
-                PageRequest.of(offset, size, Sort.by(Sort.Direction.ASC, "id"))
-            )?.map { p -> p.convert(Profile::class.java) }
-        else {
-            return profileRepository.searchUsersBy(
-                profileRequest.userId, profileRequest.mobile,
-                profileRequest.email, profileRequest.firstName, profileRequest.lastName,
-                profileRequest.nationalCode, profileRequest.createDateFrom, profileRequest.createDateTo,
-                PageRequest.of(offset, size, Sort.by(Sort.Direction.ASC, "id"))
-            )?.map { p -> p.convert(Profile::class.java) }
+    override suspend fun getAllProfile(
+        profileRequest: ProfileRequest,
+        limit: Int,
+        offset: Int,
+    ): List<Profile> {
+        val createDateFrom = profileRequest.createDateFrom?.let {
+            LocalDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneId.systemDefault())
         }
+        val createDateTo = profileRequest.createDateTo?.let {
+            LocalDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneId.systemDefault())
+        }
+
+        return profileRepository.findByCriteria(
+            userId = profileRequest.userId,
+            firstName = profileRequest.firstName,
+            lastName = profileRequest.lastName,
+            mobile = profileRequest.mobile,
+            email = profileRequest.email,
+            identifier = profileRequest.identifier,
+            nationality = profileRequest.nationality,
+            gender = profileRequest.gender,
+            status = profileRequest.status,
+            kycLevel = profileRequest.kycLevel,
+            createDateFrom = createDateFrom,
+            createDateTo = createDateTo,
+            limit = limit,
+            offset = offset
+        )
+            .map { it.convert(Profile::class.java) }
+            .collectList()
+            .awaitSingle()
     }
 
     override suspend fun getHistory(userId: String, offset: Int, size: Int): List<ProfileHistory> {

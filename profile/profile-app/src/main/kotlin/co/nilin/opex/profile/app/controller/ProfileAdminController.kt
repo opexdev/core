@@ -47,14 +47,14 @@ class ProfileAdminController(
     suspend fun getProfiles(
         @RequestParam offset: Int?, @RequestParam size: Int?,
         @RequestBody profileRequest: ProfileRequest
-    ): List<Profile?>? {
-        return profileManagement.getAllProfiles(offset ?: 0, size ?: 1000, profileRequest)?.toList()
+    ): List<Profile> {
+        return profileManagement.getAllProfiles(profileRequest, size ?: 10, offset ?: 0)
     }
 
 
     @GetMapping("/{userId}")
-    suspend fun getProfile(@PathVariable("userId") userId: String): Profile? {
-        return profileManagement.getProfile(userId)?.awaitFirstOrNull()
+    suspend fun getProfile(@PathVariable("userId") userId: String): Profile {
+        return profileManagement.getProfile(userId)
     }
 
     // =====================================Approval Requests====================================

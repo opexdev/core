@@ -13,11 +13,7 @@ import co.nilin.opex.profile.core.spi.*
 import co.nilin.opex.profile.core.utils.handleComparativeError
 import co.nilin.opex.profile.core.utils.handleShahkarError
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
-import kotlinx.coroutines.reactive.awaitFirstOrNull
-import kotlinx.coroutines.reactive.awaitSingle
-import kotlinx.coroutines.reactor.awaitSingle
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -62,11 +58,11 @@ class ProfileManagement(
         }
     }
 
-    suspend fun getAllProfiles(offset: Int, size: Int, profileRequest: ProfileRequest): List<Profile?>? {
-        return profilePersister.getAllProfile(offset, size, profileRequest)?.toList()
+    suspend fun getAllProfiles(profileRequest: ProfileRequest, limit: Int, offset: Int): List<Profile> {
+        return profilePersister.getAllProfile(profileRequest, limit, offset)
     }
 
-    suspend fun getProfile(userId: String): Mono<Profile>? {
+    suspend fun getProfile(userId: String): Profile {
         return profilePersister.getProfile(userId)
     }
 
@@ -136,8 +132,7 @@ class ProfileManagement(
     }
 
     suspend fun completeProfile(userId: String, request: CompleteProfileRequest): Profile {
-        val profile = profilePersister.getProfile(userId)?.awaitFirstOrNull()
-            ?: throw OpexError.ProfileNotfound.exception()
+        val profile = profilePersister.getProfile(userId)
 
         if (profile.kycLevel == KycLevel.LEVEL_2) {
             throw OpexError.ProfileAlreadyCompleted.exception()

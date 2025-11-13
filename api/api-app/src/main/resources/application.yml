@@ -103,6 +103,8 @@ app:
     url: http://opex-matching-gateway
   wallet:
     url: http://opex-wallet
+  profile:
+    url: http://opex-profile
   market:
     url: http://opex-market
   opex-bc-gateway:
