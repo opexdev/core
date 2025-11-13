@@ -2,7 +2,7 @@ package co.nilin.opex.wallet.core.inout
 
 import java.math.BigDecimal
 
-class WithdrawAcceptCommand(
+class WithdrawDoneCommand(
     val withdrawId: Long,
     val destAmount: BigDecimal?,
     val destTransactionRef: String,
