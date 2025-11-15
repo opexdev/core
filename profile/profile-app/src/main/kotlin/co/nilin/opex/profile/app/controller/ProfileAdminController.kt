@@ -1,12 +1,12 @@
 package co.nilin.opex.profile.app.controller
 
+import co.nilin.opex.profile.app.dto.UpdateApprovalRequestBody
 import co.nilin.opex.profile.app.service.ProfileApprovalRequestManagement
 import co.nilin.opex.profile.app.service.ProfileManagement
 import co.nilin.opex.profile.core.data.limitation.*
 import co.nilin.opex.profile.core.data.profile.*
 import co.nilin.opex.profile.ports.postgres.imp.LimitationManagementImp
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
@@ -20,29 +20,6 @@ class ProfileAdminController(
     val limitManagement: LimitationManagementImp
 ) {
 
-    data class ChangeRequestStatusBody(
-        val id: Long,
-        val description: String?
-    )
-
-    @PostMapping("/{userId}")
-    suspend fun createManually(@PathVariable("userId") userId: String, @RequestBody newProfile: Profile): Profile? {
-        return profileManagement.create(userId, newProfile)?.awaitFirstOrNull()
-    }
-
-    @PutMapping("/{userId}")
-    suspend fun updateAsAdmin(@PathVariable("userId") userId: String, @RequestBody newProfile: Profile): Profile? {
-        return profileManagement.updateAsAdmin(userId, newProfile)?.awaitFirstOrNull()
-    }
-
-    @GetMapping("/history/{userId}")
-    suspend fun getHistory(
-        @PathVariable("userId") userId: String,
-        @RequestParam offset: Int?, @RequestParam limit: Int?
-    ): List<ProfileHistory>? {
-        return profileManagement.getHistory(userId, offset ?: 0, limit ?: 10)
-    }
-
     @PostMapping("")
     suspend fun getProfiles(@RequestBody profileRequest: ProfileRequest): List<Profile> {
         return profileManagement.getAllProfiles(profileRequest)
@@ -53,11 +30,19 @@ class ProfileAdminController(
         return profileManagement.getProfile(userId)
     }
 
+    @GetMapping("/history/{userId}")
+    suspend fun getProfileHistory(
+        @PathVariable("userId") userId: String,
+        @RequestParam offset: Int?, @RequestParam limit: Int?
+    ): List<ProfileHistory>? {
+        return profileManagement.getHistory(userId, offset ?: 0, limit ?: 10)
+    }
+
     // =====================================Approval Requests====================================
 
-    @GetMapping("/approval-requests/{status}")
-    suspend fun getApprovalRequests(@PathVariable("status") status: ProfileApprovalRequestStatus): List<ProfileApprovalAdminResponse> {
-        return profileApprovalRequestManagement.getApprovalRequests(status)
+    @PostMapping("/approval-requests")
+    suspend fun getApprovalRequests(@RequestBody request: ProfileApprovalRequestFilter): List<ProfileApprovalAdminResponse> {
+        return profileApprovalRequestManagement.getApprovalRequests(request)
     }
 
     @GetMapping("/approval-request/{id}")
@@ -65,27 +50,16 @@ class ProfileAdminController(
         return profileApprovalRequestManagement.getApprovalRequestById(id)
     }
 
-    @PostMapping("/approve-request")
-    suspend fun approveRequest(
-        @RequestBody changeRequestStatusBody: ChangeRequestStatusBody,
+    @PutMapping("/approval-request")
+    suspend fun updateRequestStatus(
+        @RequestBody changeRequestStatusBody: UpdateApprovalRequestBody,
         @CurrentSecurityContext securityContext: SecurityContext
     ): ProfileApprovalAdminResponse {
-        return profileApprovalRequestManagement.approveRequest(
+        return profileApprovalRequestManagement.changeRequestStatus(
             changeRequestStatusBody.id,
             securityContext.authentication.name,
-            changeRequestStatusBody.description
-        )
-    }
-
-    @PostMapping("/reject-request")
-    suspend fun rejectRequest(
-        @RequestBody changeRequestStatusBody: ChangeRequestStatusBody,
-        @CurrentSecurityContext securityContext: SecurityContext
-    ): ProfileApprovalAdminResponse {
-        return profileApprovalRequestManagement.rejectRequest(
-            changeRequestStatusBody.id,
-            securityContext.authentication.name,
-            changeRequestStatusBody.description
+            changeRequestStatusBody.description,
+            changeRequestStatusBody.status
         )
     }
 

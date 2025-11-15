@@ -1,7 +1,6 @@
 package co.nilin.opex.profile.core.data.profile
 
 import co.nilin.opex.profile.core.data.kyc.KycLevel
-import co.nilin.opex.profile.core.data.limitation.Limitation
 import java.time.LocalDateTime
 
 data class Profile(

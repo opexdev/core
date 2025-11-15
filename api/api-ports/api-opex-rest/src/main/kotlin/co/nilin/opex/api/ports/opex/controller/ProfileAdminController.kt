@@ -1,8 +1,6 @@
 package co.nilin.opex.api.ports.opex.controller
 
-import co.nilin.opex.api.core.inout.Profile
-import co.nilin.opex.api.core.inout.ProfileHistory
-import co.nilin.opex.api.core.inout.ProfileRequest
+import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.ProfileProxy
 import co.nilin.opex.api.ports.opex.util.jwtAuthentication
 import co.nilin.opex.api.ports.opex.util.tokenValue
@@ -44,6 +42,33 @@ class ProfileAdminController(private val profileProxy: ProfileProxy) {
             uuid,
             limit ?: 10,
             offset ?: 0
+        )
+    }
+
+    @PostMapping("/approval-requests")
+    suspend fun getApprovalRequests(
+        @RequestBody request: ProfileApprovalRequestFilter,
+        @CurrentSecurityContext securityContext: SecurityContext,
+    ): List<ProfileApprovalAdminResponse> {
+        return profileProxy.getProfileApprovalRequests(securityContext.jwtAuthentication().tokenValue(), request)
+    }
+
+    @GetMapping("/approval-request/{id}")
+    suspend fun getApprovalRequest(
+        @PathVariable("id") id: Long,
+        @CurrentSecurityContext securityContext: SecurityContext,
+    ): ProfileApprovalAdminResponse {
+        return profileProxy.getProfileApprovalRequest(securityContext.jwtAuthentication().tokenValue(), id)
+    }
+
+    @PutMapping("/approval-request")
+    suspend fun updateApprovalRequestStatus(
+        @RequestBody changeRequestStatusBody: UpdateApprovalRequestBody,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): ProfileApprovalAdminResponse {
+        return profileProxy.updateProfileApprovalRequest(
+            securityContext.jwtAuthentication().tokenValue(),
+            changeRequestStatusBody
         )
     }
 }

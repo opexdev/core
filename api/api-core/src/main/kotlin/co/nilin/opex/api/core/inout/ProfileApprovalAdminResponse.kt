@@ -1,4 +1,4 @@
-package co.nilin.opex.profile.core.data.profile
+package co.nilin.opex.api.core.inout
 
 import java.time.LocalDateTime
 

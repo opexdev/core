@@ -20,8 +20,8 @@ class SecurityConfig {
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
         return http.csrf { it.disable() }
             .authorizeExchange() {
-//                it.pathMatchers("/admin/**").hasAuthority("ROLE_admin")
-                    it.pathMatchers("/bank-account/**").hasAuthority("PERM_bank_account:write")
+                it.pathMatchers("/admin/**").hasAuthority("ROLE_admin")
+                    .pathMatchers("/bank-account/**").hasAuthority("PERM_bank_account:write")
                     .pathMatchers("/actuator/**").permitAll()
                     .anyExchange().authenticated()
             }

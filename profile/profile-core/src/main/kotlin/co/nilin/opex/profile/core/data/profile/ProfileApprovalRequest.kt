@@ -3,7 +3,7 @@ package co.nilin.opex.profile.core.data.profile
 import java.time.LocalDateTime
 
 data class ProfileApprovalRequest(
-    var profileId: Long,
+    var userId: String,
     var status: ProfileApprovalRequestStatus? = ProfileApprovalRequestStatus.PENDING,
     var createDate: LocalDateTime? = null,
     var updateDate: LocalDateTime? = null,

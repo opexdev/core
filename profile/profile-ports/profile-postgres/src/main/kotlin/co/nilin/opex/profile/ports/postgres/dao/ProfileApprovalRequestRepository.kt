@@ -7,17 +7,55 @@ import kotlinx.coroutines.flow.Flow
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import reactor.core.publisher.Mono
+import java.time.LocalDateTime
 
 interface ProfileApprovalRequestRepository : ReactiveCrudRepository<ProfileApprovalRequestModel, Long> {
 
-    fun findByProfileIdAndStatus(
-        profileId: Long,
+    fun findByUserIdAndStatus(
+        userId: String,
         status: ProfileApprovalRequestStatus
     ): Mono<ProfileApprovalRequestModel>
 
-    @Query("select * from profile_approval_request p where p.status = :status order by create_date desc")
-    fun findByStatus(status: ProfileApprovalRequestStatus): Flow<ProfileApprovalRequestModel>?
+    @Query(
+        """
+    SELECT * FROM profile_approval_request p
+    WHERE (:userId IS NULL OR p.user_id = :userId)
+      AND (:status IS NULL OR p.status = :status)
+      AND (:createDateFrom IS NULL OR p.create_date >= :createDateFrom)
+      AND (:createDateTo IS NULL OR p.create_date <= :createDateTo)
+    ORDER BY create_date 
+    LIMIT :limit OFFSET :offset
+"""
+    )
+    fun findByCriteriaAsc(
+        userId: String?,
+        status: ProfileApprovalRequestStatus?,
+        createDateFrom: LocalDateTime?,
+        createDateTo: LocalDateTime?,
+        limit: Int,
+        offset: Int,
+    ): Flow<ProfileApprovalRequestModel>
 
-    @Query("select * from profile_approval_request p where p.profile_id = :profileId order by id desc limit 1")
-    fun findByProfileId(profileId: Long): Mono<ProfileApprovalUserResponse>
+    @Query(
+        """
+    SELECT * FROM profile_approval_request p
+    WHERE (:userId IS NULL OR p.user_id = :userId)
+      AND (:status IS NULL OR p.status = :status)
+      AND (:createDateFrom IS NULL OR p.create_date >= :createDateFrom)
+      AND (:createDateTo IS NULL OR p.create_date <= :createDateTo)
+    ORDER BY create_date desc
+    LIMIT :limit OFFSET :offset
+"""
+    )
+    fun findByCriteriaDesc(
+        userId: String?,
+        status: ProfileApprovalRequestStatus?,
+        createDateFrom: LocalDateTime?,
+        createDateTo: LocalDateTime?,
+        limit: Int,
+        offset: Int,
+    ): Flow<ProfileApprovalRequestModel>
+
+    @Query("select * from profile_approval_request p where p.user_id = :userId order by create_date desc limit 1")
+    fun findByUserId(userId: String): Mono<ProfileApprovalUserResponse>
 }

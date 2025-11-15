@@ -17,7 +17,6 @@ import kotlinx.coroutines.reactive.awaitFirst
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 
 @Component
@@ -64,15 +63,6 @@ class ProfileManagement(
 
     suspend fun getProfile(userId: String): Profile {
         return profilePersister.getProfile(userId)
-    }
-
-    suspend fun updateAsAdmin(userId: String, newProfile: Profile): Mono<Profile>? {
-        return profilePersister.updateProfileAsAdmin(userId, newProfile)
-    }
-
-    suspend fun create(userId: String, newProfile: Profile): Mono<Profile>? {
-        newProfile.userId = userId
-        return profilePersister.createProfile(newProfile)
     }
 
     suspend fun getHistory(userId: String, offset: Int, limit: Int): List<ProfileHistory>? {
@@ -218,7 +208,7 @@ class ProfileManagement(
     private suspend fun saveProfileApprovalRequest(userId: String) {
         profileApprovalRequestPersister.save(
             ProfileApprovalRequest(
-                profileId = profilePersister.getProfileId(userId),
+                userId = userId,
                 status = ProfileApprovalRequestStatus.PENDING,
                 createDate = LocalDateTime.now()
             )
