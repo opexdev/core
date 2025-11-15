@@ -38,19 +38,15 @@ class ProfileAdminController(
     @GetMapping("/history/{userId}")
     suspend fun getHistory(
         @PathVariable("userId") userId: String,
-        @RequestParam offset: Int?, @RequestParam size: Int?
+        @RequestParam offset: Int?, @RequestParam limit: Int?
     ): List<ProfileHistory>? {
-        return profileManagement.getHistory(userId, offset ?: 0, size ?: 1000)
+        return profileManagement.getHistory(userId, offset ?: 0, limit ?: 10)
     }
 
     @PostMapping("")
-    suspend fun getProfiles(
-        @RequestParam offset: Int?, @RequestParam size: Int?,
-        @RequestBody profileRequest: ProfileRequest
-    ): List<Profile> {
-        return profileManagement.getAllProfiles(profileRequest, size ?: 10, offset ?: 0)
+    suspend fun getProfiles(@RequestBody profileRequest: ProfileRequest): List<Profile> {
+        return profileManagement.getAllProfiles(profileRequest)
     }
-
 
     @GetMapping("/{userId}")
     suspend fun getProfile(@PathVariable("userId") userId: String): Profile {

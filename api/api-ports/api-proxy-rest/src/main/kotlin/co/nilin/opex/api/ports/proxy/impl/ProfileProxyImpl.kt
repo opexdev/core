@@ -1,6 +1,7 @@
 package co.nilin.opex.api.ports.proxy.impl
 
 import co.nilin.opex.api.core.inout.Profile
+import co.nilin.opex.api.core.inout.ProfileHistory
 import co.nilin.opex.api.core.inout.ProfileRequest
 import co.nilin.opex.api.core.spi.ProfileProxy
 import co.nilin.opex.common.OpexError
@@ -27,11 +28,9 @@ class ProfileProxyImpl(@Qualifier("generalWebClient") private val webClient: Web
     override suspend fun getProfiles(
         token: String,
         profileRequest: ProfileRequest,
-        limit: Int,
-        offset: Int
     ): List<Profile> {
         return webClient.post()
-            .uri("$baseUrl/admin/profile?limit=$limit&offset=$offset")
+            .uri("$baseUrl/admin/profile")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .body(Mono.just(profileRequest))
@@ -49,7 +48,23 @@ class ProfileProxyImpl(@Qualifier("generalWebClient") private val webClient: Web
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<Profile>()
-            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get profile $uuid") }
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get profile of $uuid") }
+    }
+
+    override suspend fun getProfileHistory(
+        token: String,
+        uuid: String,
+        limit: Int,
+        offset: Int
+    ): List<ProfileHistory> {
+        return webClient.get()
+            .uri("$baseUrl/admin/profile/history/$uuid?limit=$limit&offset=$offset")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<List<ProfileHistory>>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get profile history of $uuid") }
     }
 }
 

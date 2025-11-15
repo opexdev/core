@@ -15,4 +15,7 @@ data class ProfileRequest(
     var kycLevel: KycLevel? = null,
     var createDateFrom: Long? = null,
     var createDateTo: Long? = null,
+    var limit : Int = 10,
+    var offset: Int = 0,
+    var ascendingByTime: Boolean = false,
 )

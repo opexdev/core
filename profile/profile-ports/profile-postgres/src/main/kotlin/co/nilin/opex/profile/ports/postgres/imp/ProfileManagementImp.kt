@@ -148,11 +148,7 @@ class ProfileManagementImp(
         return Mono.just(profile)
     }
 
-    override suspend fun getAllProfile(
-        profileRequest: ProfileRequest,
-        limit: Int,
-        offset: Int,
-    ): List<Profile> {
+    override suspend fun getAllProfile(profileRequest: ProfileRequest): List<Profile> {
         val createDateFrom = profileRequest.createDateFrom?.let {
             LocalDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneId.systemDefault())
         }
@@ -160,34 +156,54 @@ class ProfileManagementImp(
             LocalDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneId.systemDefault())
         }
 
-        return profileRepository.findByCriteria(
-            userId = profileRequest.userId,
-            firstName = profileRequest.firstName,
-            lastName = profileRequest.lastName,
-            mobile = profileRequest.mobile,
-            email = profileRequest.email,
-            identifier = profileRequest.identifier,
-            nationality = profileRequest.nationality,
-            gender = profileRequest.gender,
-            status = profileRequest.status,
-            kycLevel = profileRequest.kycLevel,
-            createDateFrom = createDateFrom,
-            createDateTo = createDateTo,
-            limit = limit,
-            offset = offset
-        )
+        val profiles = if (profileRequest.ascendingByTime) {
+            profileRepository.findByCriteriaAsc(
+                userId = profileRequest.userId,
+                firstName = profileRequest.firstName,
+                lastName = profileRequest.lastName,
+                mobile = profileRequest.mobile,
+                email = profileRequest.email,
+                identifier = profileRequest.identifier,
+                nationality = profileRequest.nationality,
+                gender = profileRequest.gender,
+                status = profileRequest.status,
+                kycLevel = profileRequest.kycLevel,
+                createDateFrom = createDateFrom,
+                createDateTo = createDateTo,
+                limit = profileRequest.limit,
+                offset = profileRequest.offset
+            )
+        } else {
+            profileRepository.findByCriteriaDesc(
+                userId = profileRequest.userId,
+                firstName = profileRequest.firstName,
+                lastName = profileRequest.lastName,
+                mobile = profileRequest.mobile,
+                email = profileRequest.email,
+                identifier = profileRequest.identifier,
+                nationality = profileRequest.nationality,
+                gender = profileRequest.gender,
+                status = profileRequest.status,
+                kycLevel = profileRequest.kycLevel,
+                createDateFrom = createDateFrom,
+                createDateTo = createDateTo,
+                limit = profileRequest.limit,
+                offset = profileRequest.offset
+            )
+        }
+        return profiles
             .map { it.convert(Profile::class.java) }
             .collectList()
             .awaitSingle()
     }
 
-    override suspend fun getHistory(userId: String, offset: Int, size: Int): List<ProfileHistory> {
+    override suspend fun getHistory(userId: String, offset: Int, limit: Int): List<ProfileHistory> {
         val resp: MutableList<ProfileHistory> = ArrayList()
 
         profileRepository.findByUserId(userId)?.awaitFirstOrNull() ?: throw OpexError.UserNotFound.exception()
         profileHistoryRepository.findByUserId(
             userId,
-            PageRequest.of(offset, size, Sort.by(Sort.Direction.DESC, "changeRequestDate"))
+            PageRequest.of(offset, limit, Sort.by(Sort.Direction.DESC, "changeRequestDate"))
         )
             .map { p ->
                 p.convert(ProfileHistory::class.java)

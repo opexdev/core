@@ -37,7 +37,7 @@ interface ProfileRepository : ReactiveCrudRepository<ProfileModel, Long> {
     LIMIT :limit OFFSET :offset
     """
     )
-    fun findByCriteria(
+    fun findByCriteriaDesc(
         userId: String?,
         firstName: String?,
         lastName: String?,
@@ -54,6 +54,42 @@ interface ProfileRepository : ReactiveCrudRepository<ProfileModel, Long> {
         offset: Int
     ): Flux<ProfileModel>
 
+    @Query(
+        """
+    SELECT * 
+    FROM profile p 
+    WHERE (:userId IS NULL OR p.user_id = :userId)
+      AND (:firstName IS NULL OR p.first_name ILIKE CONCAT('%', :firstName, '%'))
+      AND (:lastName IS NULL OR p.last_name ILIKE CONCAT('%', :lastName, '%'))
+      AND (:mobile IS NULL OR p.mobile ILIKE CONCAT('%', :mobile, '%'))
+      AND (:email IS NULL OR p.email ILIKE CONCAT('%', :email, '%'))
+      AND (:identifier IS NULL OR p.identifier = :identifier)
+      AND (:nationality IS NULL OR p.nationality = :nationality)
+      AND (:gender IS NULL OR p.gender = :gender)
+      AND (:status IS NULL OR p.status = :status)
+      AND (:kycLevel IS NULL OR p.kyc_level = :kycLevel)
+      AND (:createDateFrom IS NULL OR p.create_date >= :createDateFrom)
+      AND (:createDateTo IS NULL OR p.create_date <= :createDateTo)
+    ORDER BY p.create_date
+    LIMIT :limit OFFSET :offset
+    """
+    )
+    fun findByCriteriaAsc(
+        userId: String?,
+        firstName: String?,
+        lastName: String?,
+        mobile: String?,
+        email: String?,
+        identifier: String?,
+        nationality: NationalityType?,
+        gender: Gender?,
+        status: ProfileStatus?,
+        kycLevel: KycLevel?,
+        createDateFrom: LocalDateTime?,
+        createDateTo: LocalDateTime?,
+        limit: Int,
+        offset: Int
+    ): Flux<ProfileModel>
 
     @Query(
         """

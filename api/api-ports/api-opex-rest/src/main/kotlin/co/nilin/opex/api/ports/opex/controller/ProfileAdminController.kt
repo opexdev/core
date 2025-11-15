@@ -1,6 +1,8 @@
 package co.nilin.opex.api.ports.opex.controller
 
-import co.nilin.opex.api.core.inout.*
+import co.nilin.opex.api.core.inout.Profile
+import co.nilin.opex.api.core.inout.ProfileHistory
+import co.nilin.opex.api.core.inout.ProfileRequest
 import co.nilin.opex.api.core.spi.ProfileProxy
 import co.nilin.opex.api.ports.opex.util.jwtAuthentication
 import co.nilin.opex.api.ports.opex.util.tokenValue
@@ -14,23 +16,34 @@ class ProfileAdminController(private val profileProxy: ProfileProxy) {
 
     @PostMapping
     suspend fun getProfiles(
-        @RequestParam offset: Int?, @RequestParam size: Int?,
         @RequestBody profileRequest: ProfileRequest,
         @CurrentSecurityContext securityContext: SecurityContext,
     ): List<Profile> {
         return profileProxy.getProfiles(
             securityContext.jwtAuthentication().tokenValue(),
-            profileRequest,
-            size ?: 10,
-            offset ?: 0
+            profileRequest
         )
     }
 
-    @GetMapping("{uuid}")
+    @GetMapping("/{uuid}")
     suspend fun getProfile(
         @PathVariable uuid: String,
         @CurrentSecurityContext securityContext: SecurityContext,
     ): Profile {
         return profileProxy.getProfile(securityContext.jwtAuthentication().tokenValue(), uuid)
+    }
+
+    @GetMapping("/history/{uuid}")
+    suspend fun getProfileHistory(
+        @PathVariable uuid: String,
+        @RequestParam offset: Int?, @RequestParam limit: Int?,
+        @CurrentSecurityContext securityContext: SecurityContext,
+    ): List<ProfileHistory> {
+        return profileProxy.getProfileHistory(
+            securityContext.jwtAuthentication().tokenValue(),
+            uuid,
+            limit ?: 10,
+            offset ?: 0
+        )
     }
 }

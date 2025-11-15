@@ -58,8 +58,8 @@ class ProfileManagement(
         }
     }
 
-    suspend fun getAllProfiles(profileRequest: ProfileRequest, limit: Int, offset: Int): List<Profile> {
-        return profilePersister.getAllProfile(profileRequest, limit, offset)
+    suspend fun getAllProfiles(profileRequest: ProfileRequest): List<Profile> {
+        return profilePersister.getAllProfile(profileRequest)
     }
 
     suspend fun getProfile(userId: String): Profile {
@@ -75,8 +75,8 @@ class ProfileManagement(
         return profilePersister.createProfile(newProfile)
     }
 
-    suspend fun getHistory(userId: String, offset: Int, size: Int): List<ProfileHistory>? {
-        return profilePersister.getHistory(userId, offset, size)
+    suspend fun getHistory(userId: String, offset: Int, limit: Int): List<ProfileHistory>? {
+        return profilePersister.getHistory(userId, offset, limit)
     }
 
     suspend fun updateUserLevel(userId: String, userLevel: KycLevel) {
