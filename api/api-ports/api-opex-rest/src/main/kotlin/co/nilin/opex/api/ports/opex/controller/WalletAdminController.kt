@@ -19,7 +19,7 @@ class WalletAdminController(
 ) {
 
     @GetMapping("/users")
-    suspend fun walletData(
+    suspend fun getUsersWallets(
         @CurrentSecurityContext securityContext: SecurityContext,
         @RequestParam(required = false) uuid: String?,
         @RequestParam(required = false) currency: String?,
@@ -38,12 +38,12 @@ class WalletAdminController(
     }
 
     @GetMapping("/system/total")
-    suspend fun systemWalletTotal(@CurrentSecurityContext securityContext: SecurityContext): List<WalletTotal> {
+    suspend fun getSystemWalletsTotal(@CurrentSecurityContext securityContext: SecurityContext): List<WalletTotal> {
         return walletProxy.getSystemWalletsTotal(securityContext.jwtAuthentication().tokenValue())
     }
 
     @GetMapping("/users/total")
-    suspend fun userWalletTotal(@CurrentSecurityContext securityContext: SecurityContext): List<WalletTotal>? {
+    suspend fun getUsersWalletsTotal(@CurrentSecurityContext securityContext: SecurityContext): List<WalletTotal>? {
         return walletProxy.getUsersWalletsTotal(securityContext.jwtAuthentication().tokenValue())
     }
 }
