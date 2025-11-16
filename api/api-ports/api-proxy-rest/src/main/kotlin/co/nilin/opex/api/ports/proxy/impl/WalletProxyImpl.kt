@@ -278,15 +278,16 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
     ): List<TransactionSummary> {
         return withContext(ProxyDispatchers.wallet) {
             webClient.get()
-                .uri("$baseUrl/v2/transaction/trade/summary/$uuid") {
-                    it.queryParam("startTime", startTime)
-                    it.queryParam("endTime", endTime)
-                    it.queryParam("limit", limit)
-                    it.build()
-                }.accept(MediaType.APPLICATION_JSON)
+                .uri("$baseUrl/v2/transaction/trade/summary/$uuid") { builder ->
+                    startTime?.let { builder.queryParam("startTime", it) }
+                    endTime?.let { builder.queryParam("endTime", it) }
+                    limit?.let { builder.queryParam("limit", it) }
+                    builder.build()
+                }
+                .accept(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
                 .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
+                .onStatus({ status -> status.isError }, { it.createException() })
                 .bodyToFlux<TransactionSummary>()
                 .collectList()
                 .awaitFirstOrElse { emptyList() }
@@ -302,12 +303,13 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
     ): List<TransactionSummary> {
         return withContext(ProxyDispatchers.wallet) {
             webClient.get()
-                .uri("$baseUrl/deposit/summary/$uuid") {
-                    it.queryParam("startTime", startTime)
-                    it.queryParam("endTime", endTime)
-                    it.queryParam("limit", limit)
-                    it.build()
-                }.accept(MediaType.APPLICATION_JSON)
+                .uri("$baseUrl/deposit/summary/$uuid") { builder ->
+                    startTime?.let { builder.queryParam("startTime", it) }
+                    endTime?.let { builder.queryParam("endTime", it) }
+                    limit?.let { builder.queryParam("limit", it) }
+                    builder.build()
+                }
+                .accept(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
@@ -326,12 +328,13 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
     ): List<TransactionSummary> {
         return withContext(ProxyDispatchers.wallet) {
             webClient.get()
-                .uri("$baseUrl/withdraw/summary/$uuid") {
-                    it.queryParam("startTime", startTime)
-                    it.queryParam("endTime", endTime)
-                    it.queryParam("limit", limit)
-                    it.build()
-                }.accept(MediaType.APPLICATION_JSON)
+                .uri("$baseUrl/withdraw/summary/$uuid") { builder ->
+                    startTime?.let { builder.queryParam("startTime", it) }
+                    endTime?.let { builder.queryParam("endTime", it) }
+                    limit?.let { builder.queryParam("limit", it) }
+                    builder.build()
+                }
+                .accept(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
@@ -484,6 +487,62 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<WithdrawActionResult>()
             .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun getUsersWallets(
+        token: String,
+        uuid: String?,
+        currency: String?,
+        excludeSystem: Boolean,
+        limit: Int,
+        offset: Int
+    ): List<WalletDataResponse> {
+        return withContext(ProxyDispatchers.wallet) {
+            webClient.get()
+                .uri("$baseUrl/stats/v2/wallets") { builder ->
+                    uuid?.let { builder.queryParam("uuid", it) }
+                    currency?.let { builder.queryParam("currency", it) }
+                    builder.queryParam("excludeSystem", excludeSystem)
+                    builder.queryParam("limit", limit)
+                    builder.queryParam("offset", offset)
+                    builder.build()
+                }
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<WalletDataResponse>()
+                .collectList()
+                .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get users wallets") }
+        }
+    }
+
+    override suspend fun getSystemWalletsTotal(token: String): List<WalletTotal> {
+        return withContext(ProxyDispatchers.wallet) {
+            webClient.get()
+                .uri("$baseUrl/stats/wallets/system/total")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<WalletTotal>()
+                .collectList()
+                .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get system wallets total") }
+        }
+    }
+
+    override suspend fun getUsersWalletsTotal(token: String): List<WalletTotal> {
+        return withContext(ProxyDispatchers.wallet) {
+            webClient.get()
+                .uri("$baseUrl/stats/wallets/user/total")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<WalletTotal>()
+                .collectList()
+                .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get users wallets total") }
+        }
     }
 }
 
