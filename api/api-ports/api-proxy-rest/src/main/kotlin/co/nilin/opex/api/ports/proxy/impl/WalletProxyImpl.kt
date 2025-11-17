@@ -486,12 +486,12 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
             .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
     }
 
-    override suspend fun getWithdrawTransactionsForMonitoring(
+    override suspend fun getWithdrawTransactionsForAdmin(
         token: String,
-        request: InquiryRequest
+        request: AdminSearchWithdrawRequest
     ): List<WithdrawHistoryResponse> {
         return webClient.post()
-            .uri("$baseUrl/admin/withdraw/search?offset=0&size=10000")
+            .uri("$baseUrl/admin/withdraw/search?offset=${request.offset}&size=${request.limit}")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .body(Mono.just(request))
@@ -502,12 +502,12 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
             .awaitFirstOrElse { emptyList() }
     }
 
-    override suspend fun getDepositTransactionsForMonitoring(
+    override suspend fun getDepositTransactionsForAdmin(
         token: String,
-        request: InquiryRequest
+        request: AdminSearchDepositRequest
     ): List<DepositHistoryResponse> {
         return webClient.post()
-            .uri("$baseUrl/admin/deposit/search?offset=0&size=10000")
+            .uri("$baseUrl/admin/deposit/search?offset=${request.offset}&size=${request.limit}")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .body(Mono.just(request))
@@ -518,31 +518,15 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
             .awaitFirstOrElse { emptyList() }
     }
 
-    override suspend fun getSwapTransactionsForMonitoring(
+    override suspend fun getSwapTransactionsForAdmin(
         token: String,
-        request: InquiryRequest
+        request: UserTransactionRequest
     ): List<SwapHistoryResponse> {
         return webClient.post()
             .uri("$baseUrl/admin/v1/swap/history")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-            .body(
-                Mono.just(
-                    UserTransactionRequest(
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        request.startTime,
-                        null,
-                        10000,
-                        0,
-                        false,
-                        ReservedStatus.Committed
-                    )
-                )
-            )
+            .body(Mono.just(request))
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToFlux<SwapHistoryResponse>()
@@ -550,30 +534,34 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
             .awaitFirstOrElse { emptyList() }
     }
 
-    override suspend fun getRecentTradesForMonitoring(
+    override suspend fun getTransactionHistoryForAdmin(
         token: String,
-        request: InquiryRequest
+        request: AdminTransactionHistoryRequest
     ): List<AdminTransactionHistory> {
         return webClient.post()
             .uri("$baseUrl/admin/v2/transaction/history")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-            .body(
-                Mono.just(
-                    AdminTransactionHistoryRequest(
-                        null,
-                        TransferCategory.TRADE,
-                        request.startTime,
-                        null,
-                        10000,
-                        0,
-                        false
-                    )
-                )
-            )
+            .body(Mono.just(request))
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToFlux<AdminTransactionHistory>()
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+    }
+
+    override suspend fun getUserTransactionHistoryForAdmin(
+        token: String,
+        request: UserTransactionRequest
+    ): List<UserTransactionHistory> {
+        return webClient.post()
+            .uri("$baseUrl/admin/v2/transaction")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToFlux<UserTransactionHistory>()
             .collectList()
             .awaitFirstOrElse { emptyList() }
     }

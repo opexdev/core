@@ -13,17 +13,17 @@ import org.springframework.web.bind.annotation.RestController
 
 
 @RestController
-@RequestMapping("/opex/v1/monitoring")
-class MonitoringController(
+@RequestMapping("/opex/v1/admin/transactions")
+class TransactionAdminController(
     private val walletProxy: WalletProxy,
 ) {
 
     @PostMapping("/deposits")
     suspend fun getDepositTransactions(
         @CurrentSecurityContext securityContext: SecurityContext,
-        @RequestBody request: InquiryRequest,
+        @RequestBody request: AdminSearchDepositRequest
     ): List<DepositHistoryResponse> {
-        return walletProxy.getDepositTransactionsForMonitoring(
+        return walletProxy.getDepositTransactionsForAdmin(
             securityContext.jwtAuthentication().tokenValue(),
             request
         )
@@ -32,9 +32,9 @@ class MonitoringController(
     @PostMapping("/withdraws")
     suspend fun getWithdrawTransactions(
         @CurrentSecurityContext securityContext: SecurityContext,
-        @RequestBody request: InquiryRequest,
+        @RequestBody request: AdminSearchWithdrawRequest
     ): List<WithdrawHistoryResponse> {
-        return walletProxy.getWithdrawTransactionsForMonitoring(
+        return walletProxy.getWithdrawTransactionsForAdmin(
             securityContext.jwtAuthentication().tokenValue(),
             request
         )
@@ -43,16 +43,27 @@ class MonitoringController(
     @PostMapping("/swaps")
     suspend fun getSwapTransactions(
         @CurrentSecurityContext securityContext: SecurityContext,
-        @RequestBody request: InquiryRequest,
+        @RequestBody request: UserTransactionRequest,
     ): List<SwapHistoryResponse> {
-        return walletProxy.getSwapTransactionsForMonitoring(securityContext.jwtAuthentication().tokenValue(), request)
+        return walletProxy.getSwapTransactionsForAdmin(
+            securityContext.jwtAuthentication().tokenValue(),
+            request
+        )
     }
 
-    @PostMapping("/trades")
-    suspend fun getTradeTransactions(
+    @PostMapping("/history")
+    suspend fun getTransactionsHistory(
         @CurrentSecurityContext securityContext: SecurityContext,
-        @RequestBody request: InquiryRequest,
+        @RequestBody request: AdminTransactionHistoryRequest,
     ): List<AdminTransactionHistory> {
-        return walletProxy.getRecentTradesForMonitoring(securityContext.jwtAuthentication().tokenValue(), request)
+        return walletProxy.getTransactionHistoryForAdmin(securityContext.jwtAuthentication().tokenValue(), request)
+    }
+
+    @PostMapping("/history/user")
+    suspend fun getUserTransactionsHistory(
+        @CurrentSecurityContext securityContext: SecurityContext,
+        @RequestBody request: UserTransactionRequest,
+    ): List<UserTransactionHistory> {
+        return walletProxy.getUserTransactionHistoryForAdmin(securityContext.jwtAuthentication().tokenValue(), request)
     }
 }

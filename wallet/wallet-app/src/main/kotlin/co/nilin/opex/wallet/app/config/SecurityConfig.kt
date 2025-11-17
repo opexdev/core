@@ -36,7 +36,7 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/withdraw").authenticated()
             .pathMatchers("/withdraw/**").authenticated()
             .pathMatchers("/transaction/**").authenticated()
-            .pathMatchers("/admin/v2/transaction/history").hasAnyAuthority("ROLE_monitoring", "ROLE_admin")
+            .pathMatchers("/admin/v2/transaction").hasAnyAuthority("ROLE_monitoring", "ROLE_admin")
             .pathMatchers("/admin/withdraw/search").hasAnyAuthority("ROLE_monitoring", "ROLE_admin")
             .pathMatchers("/admin/deposit/search").hasAnyAuthority("ROLE_monitoring", "ROLE_admin")
             .pathMatchers("/admin/v1/swap/history").hasAnyAuthority("ROLE_monitoring", "ROLE_admin")

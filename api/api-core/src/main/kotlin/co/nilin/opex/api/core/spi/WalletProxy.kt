@@ -134,20 +134,28 @@ interface WalletProxy {
         otpCode: String
     ): WithdrawActionResult
 
-    suspend fun getWithdrawTransactionsForMonitoring(
+    suspend fun getWithdrawTransactionsForAdmin(
         token: String,
-        request: InquiryRequest
+        request: AdminSearchWithdrawRequest
     ): List<WithdrawHistoryResponse>
 
-    suspend fun getDepositTransactionsForMonitoring(
+    suspend fun getDepositTransactionsForAdmin(
         token: String,
-        request: InquiryRequest
+        request: AdminSearchDepositRequest
     ): List<DepositHistoryResponse>
 
-    suspend fun getSwapTransactionsForMonitoring(token: String, request: InquiryRequest): List<SwapHistoryResponse>
-
-    suspend fun getRecentTradesForMonitoring(
+    suspend fun getSwapTransactionsForAdmin(
         token: String,
-        request: InquiryRequest
+        request: UserTransactionRequest
+    ): List<SwapHistoryResponse>
+
+    suspend fun getTransactionHistoryForAdmin(
+        token: String,
+        request: AdminTransactionHistoryRequest
     ): List<AdminTransactionHistory>
+
+    suspend fun getUserTransactionHistoryForAdmin(
+        token: String,
+        request: UserTransactionRequest
+    ): List<UserTransactionHistory>
 }
