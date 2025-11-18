@@ -132,20 +132,19 @@ class TransactionManagerImpl(
             }
     }
 
-    override suspend fun findTransactionsForAdmin(
+    override suspend fun findTradesForAdmin(
         coin: String?,
-        category: TransferCategory?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
         asc: Boolean,
         limit: Int,
         offset: Int
-    ): List<AdminTransactionHistory> {
+    ): List<TradeAdminResponse> {
         return if (asc)
-            transactionRepository.findTransactionsForAdminAsc(coin, category, startTime, endTime, limit, offset)
+            transactionRepository.findTradesForAdminAsc(coin, startTime, endTime, limit, offset)
                 .collectList().awaitFirstOrElse { emptyList() }
         else
-            transactionRepository.findTransactionsForAdminDesc(coin, category, startTime, endTime, limit, offset)
+            transactionRepository.findTradesForAdminDesc(coin, startTime, endTime, limit, offset)
                 .collectList().awaitFirstOrElse { emptyList() }
     }
 }

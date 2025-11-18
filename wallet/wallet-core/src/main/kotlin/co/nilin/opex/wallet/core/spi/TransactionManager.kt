@@ -37,13 +37,12 @@ interface TransactionManager {
         offset: Int
     ): List<TransactionWithDetailHistory>
 
-    suspend fun findTransactionsForAdmin(
+    suspend fun findTradesForAdmin(
         coin: String?,
-        category: TransferCategory?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
         asc: Boolean,
         limit: Int,
         offset: Int
-    ): List<AdminTransactionHistory>
+    ): List<TradeAdminResponse>
 }

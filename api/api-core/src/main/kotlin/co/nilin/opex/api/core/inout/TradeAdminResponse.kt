@@ -1,9 +1,9 @@
-package co.nilin.opex.wallet.core.model
+package co.nilin.opex.api.core.inout
 
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
-data class AdminTransactionHistory(
+data class TradeAdminResponse(
     val id: Long,
     val currency: String,
     val sourceOwnerUuid: String,
@@ -14,5 +14,4 @@ data class AdminTransactionHistory(
     val description: String?,
     val ref: String?,
     val date: LocalDateTime,
-    val category: TransferCategory?
 )

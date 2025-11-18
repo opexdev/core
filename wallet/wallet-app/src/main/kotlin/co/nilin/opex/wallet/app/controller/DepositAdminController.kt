@@ -52,8 +52,33 @@ class DepositAdminController(
         )
     }
 
+    @Deprecated("endpoint changed")
     @PostMapping("/search")
     suspend fun search(
+        @RequestParam offset: Int,
+        @RequestParam size: Int,
+        @RequestBody body: AdminSearchDepositRequest
+    ): List<DepositAdminResponse> {
+        return depositService.searchDeposit(
+            body.uuid,
+            body.currency,
+            body.sourceAddress,
+            body.transactionRef,
+            body.startTime?.let {
+                LocalDateTime.ofInstant(Instant.ofEpochMilli(body.startTime), ZoneId.systemDefault())
+            },
+            body.endTime?.let {
+                LocalDateTime.ofInstant(Instant.ofEpochMilli(body.endTime), ZoneId.systemDefault())
+            },
+            body.status,
+            offset,
+            size,
+            body.ascendingByTime,
+        )
+    }
+
+    @PostMapping("/history")
+    suspend fun getDepositHistory(
         @RequestParam offset: Int,
         @RequestParam size: Int,
         @RequestBody body: AdminSearchDepositRequest

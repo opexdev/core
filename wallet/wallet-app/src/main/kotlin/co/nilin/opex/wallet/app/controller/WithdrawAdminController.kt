@@ -36,8 +36,33 @@ class WithdrawAdminController(
         return withdrawService.findWithdraw(id) ?: throw OpexError.WithdrawNotFound.exception()
     }
 
+    @Deprecated("endpoint changed")
     @PostMapping("/search")
     suspend fun search(
+        @RequestParam offset: Int,
+        @RequestParam size: Int,
+        @RequestBody body: AdminSearchWithdrawRequest
+    ): List<WithdrawAdminResponse> {
+        return withdrawService.findByCriteria(
+            body.uuid,
+            body.currency,
+            body.destTxRef,
+            body.destAddress,
+            body.status,
+            body.startTime?.let {
+                LocalDateTime.ofInstant(Instant.ofEpochMilli(body.startTime), ZoneId.systemDefault())
+            },
+            body.endTime?.let {
+                LocalDateTime.ofInstant(Instant.ofEpochMilli(body.endTime), ZoneId.systemDefault())
+            },
+            body.ascendingByTime,
+            offset,
+            size
+        )
+    }
+
+    @PostMapping("/history")
+    suspend fun getWithdrawHistory(
         @RequestParam offset: Int,
         @RequestParam size: Int,
         @RequestBody body: AdminSearchWithdrawRequest

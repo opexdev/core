@@ -489,15 +489,15 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
     override suspend fun getWithdrawTransactionsForAdmin(
         token: String,
         request: AdminSearchWithdrawRequest
-    ): List<WithdrawHistoryResponse> {
+    ): List<WithdrawAdminResponse> {
         return webClient.post()
-            .uri("$baseUrl/admin/withdraw/search?offset=${request.offset}&size=${request.limit}")
+            .uri("$baseUrl/admin/withdraw/history?offset=${request.offset}&size=${request.limit}")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .body(Mono.just(request))
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
-            .bodyToFlux<WithdrawHistoryResponse>()
+            .bodyToFlux<WithdrawAdminResponse>()
             .collectList()
             .awaitFirstOrElse { emptyList() }
     }
@@ -505,15 +505,15 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
     override suspend fun getDepositTransactionsForAdmin(
         token: String,
         request: AdminSearchDepositRequest
-    ): List<DepositHistoryResponse> {
+    ): List<DepositAdminResponse> {
         return webClient.post()
-            .uri("$baseUrl/admin/deposit/search?offset=${request.offset}&size=${request.limit}")
+            .uri("$baseUrl/admin/deposit/history?offset=${request.offset}&size=${request.limit}")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .body(Mono.just(request))
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
-            .bodyToFlux<DepositHistoryResponse>()
+            .bodyToFlux<DepositAdminResponse>()
             .collectList()
             .awaitFirstOrElse { emptyList() }
     }
@@ -521,7 +521,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
     override suspend fun getSwapTransactionsForAdmin(
         token: String,
         request: UserTransactionRequest
-    ): List<SwapHistoryResponse> {
+    ): List<AdminSwapResponse> {
         return webClient.post()
             .uri("$baseUrl/admin/v1/swap/history")
             .accept(MediaType.APPLICATION_JSON)
@@ -529,23 +529,23 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
             .body(Mono.just(request))
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
-            .bodyToFlux<SwapHistoryResponse>()
+            .bodyToFlux<AdminSwapResponse>()
             .collectList()
             .awaitFirstOrElse { emptyList() }
     }
 
-    override suspend fun getTransactionHistoryForAdmin(
+    override suspend fun getTradeHistoryForAdmin(
         token: String,
-        request: AdminTransactionHistoryRequest
-    ): List<AdminTransactionHistory> {
+        request: AdminTradeHistoryRequest
+    ): List<TradeAdminResponse> {
         return webClient.post()
-            .uri("$baseUrl/admin/v2/transaction/history")
+            .uri("$baseUrl/admin/v2/transaction/trades")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .body(Mono.just(request))
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
-            .bodyToFlux<AdminTransactionHistory>()
+            .bodyToFlux<TradeAdminResponse>()
             .collectList()
             .awaitFirstOrElse { emptyList() }
     }
@@ -555,7 +555,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
         request: UserTransactionRequest
     ): List<UserTransactionHistory> {
         return webClient.post()
-            .uri("$baseUrl/admin/v2/transaction")
+            .uri("$baseUrl/admin/v2/transaction/history/user")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .body(Mono.just(request))

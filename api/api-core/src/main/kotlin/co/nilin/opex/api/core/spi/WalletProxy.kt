@@ -137,22 +137,22 @@ interface WalletProxy {
     suspend fun getWithdrawTransactionsForAdmin(
         token: String,
         request: AdminSearchWithdrawRequest
-    ): List<WithdrawHistoryResponse>
+    ): List<WithdrawAdminResponse>
 
     suspend fun getDepositTransactionsForAdmin(
         token: String,
         request: AdminSearchDepositRequest
-    ): List<DepositHistoryResponse>
+    ): List<DepositAdminResponse>
 
     suspend fun getSwapTransactionsForAdmin(
         token: String,
         request: UserTransactionRequest
-    ): List<SwapHistoryResponse>
+    ): List<AdminSwapResponse>
 
-    suspend fun getTransactionHistoryForAdmin(
+    suspend fun getTradeHistoryForAdmin(
         token: String,
-        request: AdminTransactionHistoryRequest
-    ): List<AdminTransactionHistory>
+        request: AdminTradeHistoryRequest
+    ): List<TradeAdminResponse>
 
     suspend fun getUserTransactionHistoryForAdmin(
         token: String,
