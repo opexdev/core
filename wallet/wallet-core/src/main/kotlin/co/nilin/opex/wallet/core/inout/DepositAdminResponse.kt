@@ -6,7 +6,7 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 data class DepositAdminResponse(
-    val id: Long,
+    val id: String,
     val uuid: String,
     val ownerName: String?,
     val currency: String,

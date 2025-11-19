@@ -43,7 +43,7 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
     @Query(
         """
     select 
-        d.id as id,
+        d.duid as id,
         d.uuid as uuid,
         split_part(wo.title, '|', 2) as owner_name,
         d.currency as currency,
@@ -87,7 +87,7 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
     @Query(
         """
     select 
-        d.id as id,
+        d.duid as id,
         d.uuid as uuid,
         split_part(wo.title, '|', 2) as owner_name,
         d.currency as currency,

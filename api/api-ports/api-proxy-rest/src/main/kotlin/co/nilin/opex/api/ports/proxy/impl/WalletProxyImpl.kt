@@ -555,7 +555,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
         request: UserTransactionRequest
     ): List<UserTransactionHistory> {
         return webClient.post()
-            .uri("$baseUrl/admin/v2/transaction/history/user")
+            .uri("$baseUrl/admin/v2/transaction/history")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .body(Mono.just(request))

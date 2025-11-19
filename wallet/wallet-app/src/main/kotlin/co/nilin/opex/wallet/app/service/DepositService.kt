@@ -210,7 +210,7 @@ class DepositService(
         return depositPersister.findDepositHistory(uuid, symbol, startTime, endTime, limit, size, ascendingByTime)
             .map {
                 DepositResponse(
-                    it.id!!,
+                    it.depositUuid,
                     it.ownerUuid,
                     it.currency,
                     it.amount,
