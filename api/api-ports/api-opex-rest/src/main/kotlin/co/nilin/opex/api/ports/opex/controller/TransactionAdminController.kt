@@ -29,7 +29,7 @@ class TransactionAdminController(
     @PostMapping("/deposits")
     suspend fun getDepositTransactions(
         @CurrentSecurityContext securityContext: SecurityContext,
-        @RequestBody request: AdminSearchDepositRequest
+        @RequestBody request: AdminDepositHistoryRequest
     ): List<DepositAdminResponse> {
         return walletProxy.getDepositTransactionsForAdmin(
             securityContext.jwtAuthentication().tokenValue(),
@@ -40,7 +40,7 @@ class TransactionAdminController(
     @PostMapping("/withdraws")
     suspend fun getWithdrawTransactions(
         @CurrentSecurityContext securityContext: SecurityContext,
-        @RequestBody request: AdminSearchWithdrawRequest
+        @RequestBody request: AdminWithdrawHistoryRequest
     ): List<WithdrawAdminResponse> {
         return walletProxy.getWithdrawTransactionsForAdmin(
             securityContext.jwtAuthentication().tokenValue(),
@@ -52,7 +52,7 @@ class TransactionAdminController(
     suspend fun getSwapTransactions(
         @CurrentSecurityContext securityContext: SecurityContext,
         @RequestBody request: UserTransactionRequest,
-    ): List<AdminSwapResponse> {
+    ): List<SwapAdminResponse> {
         return walletProxy.getSwapTransactionsForAdmin(
             securityContext.jwtAuthentication().tokenValue(),
             request

@@ -31,9 +31,9 @@ class WithdrawAdminController(
         val attachment: String?
     )
 
-    @GetMapping("/{id}")
-    suspend fun getWithdraw(@PathVariable id: Long): WithdrawResponse {
-        return withdrawService.findWithdraw(id) ?: throw OpexError.WithdrawNotFound.exception()
+    @GetMapping("/{withdrawUuid}")
+    suspend fun getWithdraw(@PathVariable withdrawUuid: String): WithdrawResponse {
+        return withdrawService.findWithdraw(withdrawUuid) ?: throw OpexError.WithdrawNotFound.exception()
     }
 
     @Deprecated("endpoint changed")
@@ -85,15 +85,15 @@ class WithdrawAdminController(
         )
     }
 
-    @PostMapping("/{withdrawId}/accept")
+    @PostMapping("/{withdrawUuid}/accept")
     suspend fun acceptWithdraw(
-        @PathVariable withdrawId: Long,
+        @PathVariable withdrawUuid: String,
         @RequestBody request: WithdrawAcceptRequest,
         @CurrentSecurityContext securityContext: SecurityContext
     ): WithdrawActionResult {
         return withdrawService.acceptWithdraw(
             WithdrawAcceptCommand(
-                withdrawId,
+                withdrawUuid,
                 request.destAmount,
                 request.destTransactionRef,
                 request.destNote,
@@ -103,22 +103,22 @@ class WithdrawAdminController(
         )
     }
 
-    @PostMapping("/{withdrawId}/done")
+    @PostMapping("/{withdrawUuid}/done")
     suspend fun doneWithdraw(
-        @PathVariable withdrawId: Long,
+        @PathVariable withdrawUuid: String,
     ): WithdrawActionResult {
-        return withdrawService.doneWithdraw(withdrawId)
+        return withdrawService.doneWithdraw(withdrawUuid)
     }
 
-    @PostMapping("/{withdrawId}/reject")
+    @PostMapping("/{withdrawUuid}/reject")
     suspend fun rejectWithdraw(
-        @PathVariable withdrawId: Long,
+        @PathVariable withdrawUuid: String,
         @RequestBody request: WithdrawRejectRequest,
         @CurrentSecurityContext securityContext: SecurityContext
     ): WithdrawActionResult {
         return withdrawService.rejectWithdraw(
             WithdrawRejectCommand(
-                withdrawId,
+                withdrawUuid,
                 request.reason,
                 request.attachment,
                 securityContext.authentication.name

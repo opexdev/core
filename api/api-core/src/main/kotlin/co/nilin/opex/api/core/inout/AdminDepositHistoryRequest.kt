@@ -1,6 +1,6 @@
 package co.nilin.opex.api.core.inout
 
-data class AdminSearchDepositRequest(
+data class AdminDepositHistoryRequest(
     val uuid: String?,
     val currency: String?,
     val sourceAddress: String?,

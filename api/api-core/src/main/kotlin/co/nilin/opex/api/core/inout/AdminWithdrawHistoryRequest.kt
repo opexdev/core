@@ -1,6 +1,6 @@
 package co.nilin.opex.api.core.inout
 
-data class AdminSearchWithdrawRequest(
+data class AdminWithdrawHistoryRequest(
     val uuid: String? = null,
     val currency: String?= null,
     val destTxRef: String?= null,

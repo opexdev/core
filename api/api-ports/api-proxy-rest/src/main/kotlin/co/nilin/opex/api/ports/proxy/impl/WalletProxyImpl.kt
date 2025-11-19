@@ -127,7 +127,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
         limit: Int,
         offset: Int,
         ascendingByTime: Boolean?,
-    ): List<WithdrawHistoryResponse> {
+    ): List<WithdrawResponse> {
         logger.info("fetching withdraw transaction history for $uuid")
         return withContext(ProxyDispatchers.wallet) {
             webClient.post()
@@ -137,7 +137,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
                 .body(Mono.just(TransactionRequest(currency, startTime, endTime, limit, offset, ascendingByTime)))
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<WithdrawHistoryResponse>()
+                .bodyToFlux<WithdrawResponse>()
                 .collectList()
                 .awaitFirstOrElse { emptyList() }
         }
@@ -488,7 +488,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
 
     override suspend fun getWithdrawTransactionsForAdmin(
         token: String,
-        request: AdminSearchWithdrawRequest
+        request: AdminWithdrawHistoryRequest
     ): List<WithdrawAdminResponse> {
         return webClient.post()
             .uri("$baseUrl/admin/withdraw/history?offset=${request.offset}&size=${request.limit}")
@@ -504,7 +504,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
 
     override suspend fun getDepositTransactionsForAdmin(
         token: String,
-        request: AdminSearchDepositRequest
+        request: AdminDepositHistoryRequest
     ): List<DepositAdminResponse> {
         return webClient.post()
             .uri("$baseUrl/admin/deposit/history?offset=${request.offset}&size=${request.limit}")
@@ -521,7 +521,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
     override suspend fun getSwapTransactionsForAdmin(
         token: String,
         request: UserTransactionRequest
-    ): List<AdminSwapResponse> {
+    ): List<SwapAdminResponse> {
         return webClient.post()
             .uri("$baseUrl/admin/v1/swap/history")
             .accept(MediaType.APPLICATION_JSON)
@@ -529,7 +529,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
             .body(Mono.just(request))
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
-            .bodyToFlux<AdminSwapResponse>()
+            .bodyToFlux<SwapAdminResponse>()
             .collectList()
             .awaitFirstOrElse { emptyList() }
     }

@@ -1,7 +1,7 @@
 package co.nilin.opex.api.core.inout
 
 class WithdrawActionResult(
-    val withdrawId: Long, val status: WithdrawStatus, val nextAction: WithdrawNextAction? = null
+    val withdrawId: String, val status: WithdrawStatus, val nextAction: WithdrawNextAction? = null
 )
 
 enum class WithdrawNextAction() {

@@ -107,21 +107,22 @@ class WithdrawService(
         )
 
         return if (otpRequiredCount <= 0) {
-            createWithdraw(withdraw.withdrawId!!)
-            WithdrawActionResult(withdraw.withdrawId, WithdrawStatus.CREATED, WithdrawNextAction.WAITING_FOR_ADMIN)
+            createWithdraw(withdraw.withdrawUuid!!)
+            WithdrawActionResult(withdraw.withdrawUuid, WithdrawStatus.CREATED, WithdrawNextAction.WAITING_FOR_ADMIN)
         } else {
-            WithdrawActionResult(withdraw.withdrawId!!, WithdrawStatus.REQUESTED, WithdrawNextAction.fromOrder(1))
+            WithdrawActionResult(withdraw.withdrawUuid!!, WithdrawStatus.REQUESTED, WithdrawNextAction.fromOrder(1))
         }
     }
 
-    suspend fun requestOTP(token: String, uuid: String, withdrawId: Long, otpType: OTPType): TempOtpResponse {
-        val withdraw = withdrawPersister.findById(withdrawId) ?: throw OpexError.WithdrawNotFound.exception()
+    suspend fun requestOTP(token: String, uuid: String, withdrawUuid: String, otpType: OTPType): TempOtpResponse {
+        val withdraw =
+            withdrawPersister.findByWithdrawUuid(withdrawUuid) ?: throw OpexError.WithdrawNotFound.exception()
         if (withdraw.ownerUuid != uuid) throw OpexError.Forbidden.exception()
         if (withdraw.status != WithdrawStatus.REQUESTED) {
             throw OpexError.OTPCannotBeRequested.exception()
         }
-        withdrawOtpPersister.findByWithdrawId(withdrawId).find { t -> t.otpType == otpType }?.let {
-            throw OpexError.OTPAlreadyRequested.exception("OTP with type : $otpType already exists for withdraw : $withdrawId")
+        withdrawOtpPersister.findByWithdrawId(withdrawUuid).find { t -> t.otpType == otpType }?.let {
+            throw OpexError.OTPAlreadyRequested.exception("OTP with type : $otpType already exists for withdraw : $withdrawUuid")
         }
         if (Duration.between(withdraw.createDate, LocalDateTime.now()).toMinutes() > 10) {
             throw OpexError.WithdrawRequestExpired.exception("Withdraw request expired after 10 minutes")
@@ -140,7 +141,7 @@ class WithdrawService(
         return otpProxy.requestOTP(request).apply { receivers = listOf(OTPReceiver(receiver, otpType)) }
     }
 
-    suspend fun verifyOTP(token: String, withdrawId: Long, otpType: OTPType, otpCode: String): WithdrawActionResult {
+    suspend fun verifyOTP(token: String, withdrawId: String, otpType: OTPType, otpCode: String): WithdrawActionResult {
         val profile = profileProxy.getProfile(token)
         val (receiver, nextAction) = when (otpType) {
             OTPType.EMAIL -> Pair(profile.email, WithdrawNextAction.OTP_MOBILE)
@@ -164,8 +165,9 @@ class WithdrawService(
 
     }
 
-    private suspend fun createWithdraw(withdrawId: Long) {
-        val withdraw = withdrawPersister.findById(withdrawId) ?: throw OpexError.WithdrawNotFound.exception()
+    private suspend fun createWithdraw(withdrawUuid: String) {
+        val withdraw =
+            withdrawPersister.findByWithdrawUuid(withdrawUuid) ?: throw OpexError.WithdrawNotFound.exception()
         val currency = currencyService.fetchCurrency(FetchCurrency(symbol = withdraw.currency))
             ?: throw OpexError.CurrencyNotFound.exception()
         val owner =
@@ -265,7 +267,8 @@ class WithdrawService(
     @Transactional
     suspend fun acceptWithdraw(acceptCommand: WithdrawAcceptCommand): WithdrawActionResult {
         val withdraw =
-            withdrawPersister.findById(acceptCommand.withdrawId) ?: throw OpexError.WithdrawNotFound.exception()
+            withdrawPersister.findByWithdrawUuid(acceptCommand.withdrawId)
+                ?: throw OpexError.WithdrawNotFound.exception()
         if (!withdraw.canBeAccepted()) throw OpexError.WithdrawCannotBeAccepted.exception()
 
         val system = walletOwnerManager.findWalletOwner(systemUuid) ?: throw OpexError.WalletOwnerNotFound.exception()
@@ -291,6 +294,7 @@ class WithdrawService(
         val updateWithdraw = withdrawPersister.persist(
             Withdraw(
                 withdraw.withdrawId,
+                withdraw.withdrawUuid,
                 withdraw.ownerUuid,
                 withdraw.currency,
                 withdraw.wallet,
@@ -315,13 +319,13 @@ class WithdrawService(
                 otpRequired = otpRequiredCount
             )
         )
-        return WithdrawActionResult(updateWithdraw.withdrawId!!, WithdrawStatus.ACCEPTED)
+        return WithdrawActionResult(updateWithdraw.withdrawUuid!!, WithdrawStatus.ACCEPTED)
     }
 
 
     @Transactional
-    suspend fun cancelWithdraw(uuid: String, withdrawId: Long) {
-        val withdraw = withdrawPersister.findById(withdrawId) ?: throw OpexError.WithdrawNotFound.exception()
+    suspend fun cancelWithdraw(uuid: String, withdrawId: String) {
+        val withdraw = withdrawPersister.findByWithdrawUuid(withdrawId) ?: throw OpexError.WithdrawNotFound.exception()
         if (withdraw.ownerUuid != uuid) throw OpexError.Forbidden.exception()
         if (!withdraw.canBeCanceled()) throw OpexError.WithdrawCannotBeCanceled.exception()
 
@@ -356,7 +360,8 @@ class WithdrawService(
     @Transactional
     suspend fun rejectWithdraw(rejectCommand: WithdrawRejectCommand): WithdrawActionResult {
         val withdraw =
-            withdrawPersister.findById(rejectCommand.withdrawId) ?: throw OpexError.WithdrawNotFound.exception()
+            withdrawPersister.findByWithdrawUuid(rejectCommand.withdrawId)
+                ?: throw OpexError.WithdrawNotFound.exception()
 
         if (!withdraw.canBeRejected()) throw OpexError.WithdrawCannotBeRejected.exception()
 
@@ -379,6 +384,7 @@ class WithdrawService(
         withdrawPersister.persist(
             Withdraw(
                 withdraw.withdrawId,
+                withdraw.withdrawUuid,
                 withdraw.ownerUuid,
                 withdraw.currency,
                 withdraw.wallet,
@@ -405,11 +411,11 @@ class WithdrawService(
         )
         publishWithdrawEvent(withdraw, WithdrawStatus.REJECTED)
 
-        return WithdrawActionResult(withdraw.withdrawId!!, WithdrawStatus.REJECTED)
+        return WithdrawActionResult(withdraw.withdrawUuid!!, WithdrawStatus.REJECTED)
     }
 
-    suspend fun doneWithdraw(withdrawId: Long): WithdrawActionResult {
-        val withdraw = withdrawPersister.findById(withdrawId) ?: throw OpexError.WithdrawNotFound.exception()
+    suspend fun doneWithdraw(withdrawId: String): WithdrawActionResult {
+        val withdraw = withdrawPersister.findByWithdrawUuid(withdrawId) ?: throw OpexError.WithdrawNotFound.exception()
 
         if (!withdraw.canBeDone()) throw OpexError.WithdrawCannotBeDone.exception()
 
@@ -419,8 +425,8 @@ class WithdrawService(
         return WithdrawActionResult(withdrawId, WithdrawStatus.DONE)
     }
 
-    suspend fun findWithdraw(id: Long): WithdrawResponse? {
-        return withdrawPersister.findWithdrawResponseById(id)
+    suspend fun findWithdraw(withdrawUuid: String): WithdrawResponse? {
+        return withdrawPersister.findWithdrawResponseById(withdrawUuid)
     }
 
     suspend fun findByCriteria(

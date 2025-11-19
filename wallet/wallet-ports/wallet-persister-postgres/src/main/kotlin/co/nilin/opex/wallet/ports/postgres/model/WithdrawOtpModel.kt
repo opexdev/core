@@ -8,7 +8,7 @@ import java.time.LocalDateTime
 @Table("withdraws_otp")
 data class WithdrawOtpModel(
     @Id var id: Long?,
-    val withdraw: Long,
+    val withdraw: String,
     val otpTracingCode: String,
     val otpType: OTPType,
     val createDate: LocalDateTime = LocalDateTime.now(),

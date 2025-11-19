@@ -15,6 +15,7 @@ import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
+import java.util.UUID
 
 @Service
 class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) : WithdrawPersister {
@@ -23,6 +24,7 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
         return withdrawRepository.save(
             WithdrawModel(
                 withdraw.withdrawId,
+                UUID.randomUUID().toString(),
                 withdraw.ownerUuid,
                 withdraw.currency,
                 withdraw.wallet,
@@ -50,14 +52,14 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
     }
 
 
-    override suspend fun findById(withdrawId: Long): Withdraw? {
-        return withdrawRepository.findById(withdrawId)
+    override suspend fun findByWithdrawUuid(withdrawUuid: String): Withdraw? {
+        return withdrawRepository.findByWithdrawUuid(withdrawUuid)
             .map { it.asWithdraw() }
             .awaitFirstOrNull()
     }
 
-    override suspend fun findWithdrawResponseById(withdrawId: Long): WithdrawResponse? {
-        return withdrawRepository.findById(withdrawId)
+    override suspend fun findWithdrawResponseById(withdrawUuid: String): WithdrawResponse? {
+        return withdrawRepository.findByWithdrawUuid(withdrawUuid)
             .awaitFirstOrNull()
             ?.asWithdrawResponse()
     }
@@ -169,7 +171,7 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
 
     private suspend fun WithdrawModel.asWithdrawResponse(): WithdrawResponse {
         return WithdrawResponse(
-            id!!,
+            withdrawUuid!!,
             ownerUuid,
             amount,
             currency,
@@ -195,6 +197,7 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
     private fun WithdrawModel.asWithdraw(): Withdraw {
         return Withdraw(
             id,
+            withdrawUuid,
             ownerUuid,
             currency,
             wallet,

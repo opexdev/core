@@ -11,9 +11,9 @@ interface WithdrawPersister {
 
     suspend fun persist(withdraw: Withdraw): Withdraw
 
-    suspend fun findById(withdrawId: Long): Withdraw?
+    suspend fun findByWithdrawUuid(withdrawUuid: String): Withdraw?
 
-    suspend fun findWithdrawResponseById(withdrawId: Long): WithdrawResponse?
+    suspend fun findWithdrawResponseById(withdrawUuid: String): WithdrawResponse?
 
     suspend fun findByCriteria(
         ownerUuid: String?,

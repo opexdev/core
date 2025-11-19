@@ -14,22 +14,13 @@ import java.time.LocalDateTime
 @Repository
 interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
 
-    @Query("select * from withdraws where wallet = :wallet")
-    fun findByWallet(wallet: Long): Flow<WithdrawModel>
-
-    @Query(
-        """
-        select * from withdraws wth
-        join wallet wm on wm.id = wth.wallet
-        where wm.owner = :owner
-        """
-    )
-    fun findByOwner(owner: Long): Flow<WithdrawModel>
+    @Query("select * from withdraws where withdraw_uuid = :id")
+    fun findByWithdrawUuid(id: String): Mono<WithdrawModel>
 
     @Query(
         """
     select 
-        wth.id as withdraw_id,
+        wth.withdraw_uuid as withdraw_id,
         wth.uuid as uuid,
         split_part(wo.title, '|', 2) as owner_name,
         wth.amount as amount,
@@ -81,7 +72,7 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
     @Query(
         """
     select 
-        wth.id as withdraw_id,
+        wth.withdraw_uuid as withdraw_id,
         wth.uuid as uuid,
         split_part(wo.title, '|', 2) as owner_name,
         wth.amount as amount,

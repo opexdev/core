@@ -3,7 +3,7 @@ package co.nilin.opex.api.core.inout
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
-data class AdminSwapResponse(
+data class SwapAdminResponse(
     var reserveNumber: String,
     var sourceSymbol: String,
     var destSymbol: String,

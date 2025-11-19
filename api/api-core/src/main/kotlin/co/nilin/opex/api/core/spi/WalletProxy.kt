@@ -38,7 +38,7 @@ interface WalletProxy {
         limit: Int,
         offset: Int,
         ascendingByTime: Boolean?,
-    ): List<WithdrawHistoryResponse>
+    ): List<WithdrawResponse>
 
     suspend fun getWithdrawTransactionsCount(
         uuid: String,
@@ -136,18 +136,18 @@ interface WalletProxy {
 
     suspend fun getWithdrawTransactionsForAdmin(
         token: String,
-        request: AdminSearchWithdrawRequest
+        request: AdminWithdrawHistoryRequest
     ): List<WithdrawAdminResponse>
 
     suspend fun getDepositTransactionsForAdmin(
         token: String,
-        request: AdminSearchDepositRequest
+        request: AdminDepositHistoryRequest
     ): List<DepositAdminResponse>
 
     suspend fun getSwapTransactionsForAdmin(
         token: String,
         request: UserTransactionRequest
-    ): List<AdminSwapResponse>
+    ): List<SwapAdminResponse>
 
     suspend fun getTradeHistoryForAdmin(
         token: String,
