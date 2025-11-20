@@ -710,11 +710,10 @@ class WithdrawServiceTest {
 
         @Test
         fun `should throw WithdrawNotFound when withdraw does not exist`() = runBlocking {
-            val command = WithdrawAcceptCommand(WITHDRAW_UUID, BigDecimal.ONE, "tx-ref-123", "test", "test", "test")
             coEvery { withdrawPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns null
 
             val ex = Assertions.assertThrows(OpexException::class.java) {
-                runBlocking { withdrawService.acceptWithdraw(command) }
+                runBlocking { withdrawService.acceptWithdraw(WITHDRAW_UUID) }
             }
 
             Assertions.assertEquals(OpexError.WithdrawNotFound, ex.error)
@@ -722,12 +721,11 @@ class WithdrawServiceTest {
 
         @Test
         fun `should throw WithdrawCannotBeAccepted when status does not allow acceptance`() = runBlocking {
-            val command = WithdrawAcceptCommand(WITHDRAW_UUID, BigDecimal.ONE, "tx-ref-123", "test", "test", "test")
             val withdraw = createWithdraw(WithdrawStatus.REQUESTED)
             coEvery { withdrawPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns withdraw
 
             val ex = Assertions.assertThrows(OpexException::class.java) {
-                runBlocking { withdrawService.acceptWithdraw(command) }
+                runBlocking { withdrawService.acceptWithdraw(WITHDRAW_UUID) }
             }
 
             Assertions.assertEquals(OpexError.WithdrawCannotBeAccepted, ex.error)
@@ -735,54 +733,15 @@ class WithdrawServiceTest {
 
         @Test
         fun `should accept withdraw successfully`() = runBlocking {
-            val command = WithdrawAcceptCommand(WITHDRAW_UUID, BigDecimal.ONE, "tx-ref-123", "test", "test", "test")
             val withdraw = createWithdraw(WithdrawStatus.CREATED)
-            val systemOwner = createSystemOwner()
-            val currency = createCurrency()
-            val sourceWallet = createWallet(createOwner(), WalletType.CASHOUT)
-            val receiverWallet = createWallet(systemOwner, WalletType.MAIN)
-
-            coEvery { walletOwnerManager.findWalletOwner(SYSTEM_UUID) } returns systemOwner
             coEvery { withdrawPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns withdraw
-            coEvery { walletManager.findWalletById(WALLET_ID) } returns sourceWallet
-            coEvery {
-                walletManager.findWalletByOwnerAndCurrencyAndType(any(), any(), any())
-            } returns receiverWallet
-            coEvery { transferManager.transfer(any()) } returns TransferResultDetailed(mockk(), "tx-test")
             coEvery { withdrawPersister.persist(any()) } returns withdraw.copy(status = WithdrawStatus.ACCEPTED)
 
-            val result = withdrawService.acceptWithdraw(command)
+            val result = withdrawService.acceptWithdraw(WITHDRAW_UUID)
 
             Assertions.assertEquals(WITHDRAW_UUID, result.withdrawId)
             Assertions.assertEquals(WithdrawStatus.ACCEPTED, result.status)
-            coVerify { transferManager.transfer(any()) }
             coVerify { withdrawPersister.persist(match { it.status == WithdrawStatus.ACCEPTED }) }
-        }
-
-        @Test
-        fun `should create system wallet if not exists when accepting withdraw`() = runBlocking {
-            val command = WithdrawAcceptCommand(WITHDRAW_UUID, BigDecimal.ONE, "tx-ref-123", "test", "test", "test")
-            val withdraw = createWithdraw(WithdrawStatus.CREATED)
-            val systemOwner = createSystemOwner()
-            val currency = createCurrency()
-            val sourceWallet = createWallet(createOwner(), WalletType.CASHOUT)
-            val newWallet = createWallet(systemOwner, WalletType.MAIN)
-
-            coEvery { walletOwnerManager.findWalletOwner(SYSTEM_UUID) } returns systemOwner
-            coEvery { withdrawPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns withdraw
-            coEvery { walletManager.findWalletById(WALLET_ID) } returns sourceWallet
-            coEvery {
-                walletManager.findWalletByOwnerAndCurrencyAndType(any(), any(), any())
-            } returns null
-            coEvery { walletManager.createWallet(any(), any(), any(), any()) } returns newWallet
-            coEvery { transferManager.transfer(any()) } returns TransferResultDetailed(mockk(), "tx-test")
-            coEvery { withdrawPersister.persist(any()) } returns withdraw.copy(status = WithdrawStatus.ACCEPTED)
-
-            withdrawService.acceptWithdraw(command)
-
-            coVerify {
-                walletManager.createWallet(systemOwner, any(), match { it.symbol == currency.symbol }, WalletType.MAIN)
-            }
         }
     }
 
@@ -954,40 +913,85 @@ class WithdrawServiceTest {
 
         @Test
         fun `should throw WithdrawNotFound when withdraw does not exist`() = runBlocking {
+            val command = WithdrawDoneCommand(WITHDRAW_UUID, BigDecimal.ONE, "tx-ref-123", "test", "test", "test")
             coEvery { withdrawPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns null
 
             val ex = Assertions.assertThrows(OpexException::class.java) {
-                runBlocking { withdrawService.doneWithdraw(WITHDRAW_UUID) }
+                runBlocking { withdrawService.doneWithdraw(command) }
             }
 
             Assertions.assertEquals(OpexError.WithdrawNotFound, ex.error)
+            coVerify(exactly = 0) { transferManager.transfer(any()) }
         }
 
         @Test
         fun `should throw WithdrawCannotBeDone when status does not allow completion`() = runBlocking {
+            val command = WithdrawDoneCommand(WITHDRAW_UUID, BigDecimal.ONE, "tx-ref-123", "test", "test", "test")
             val withdraw = createWithdraw(WithdrawStatus.REQUESTED)
             coEvery { withdrawPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns withdraw
 
             val ex = Assertions.assertThrows(OpexException::class.java) {
-                runBlocking { withdrawService.doneWithdraw(WITHDRAW_UUID) }
+                runBlocking { withdrawService.doneWithdraw(command) }
             }
 
             Assertions.assertEquals(OpexError.WithdrawCannotBeDone, ex.error)
+            coVerify(exactly = 0) { transferManager.transfer(any()) }
         }
 
         @Test
         fun `should mark withdraw as done successfully`() = runBlocking {
+            val command = WithdrawDoneCommand(WITHDRAW_UUID, BigDecimal.ONE, "tx-ref-123", "test", "test", "test")
             val withdraw = createWithdraw(WithdrawStatus.ACCEPTED)
+            val systemOwner = createSystemOwner()
+            val sourceWallet = createWallet(createOwner(), WalletType.CASHOUT)
+            val receiverWallet = createWallet(systemOwner, WalletType.MAIN)
+
             coEvery { withdrawPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns withdraw
+            coEvery { walletOwnerManager.findWalletOwner(SYSTEM_UUID) } returns systemOwner
+            coEvery { walletManager.findWalletById(WALLET_ID) } returns sourceWallet
+            coEvery {
+                walletManager.findWalletByOwnerAndCurrencyAndType(any(), any(), any())
+            } returns receiverWallet
+            coEvery { transferManager.transfer(any()) } returns TransferResultDetailed(mockk(), "tx-test")
             coEvery { withdrawPersister.persist(any()) } returns withdraw.copy(status = WithdrawStatus.DONE)
 
-            val result = withdrawService.doneWithdraw(WITHDRAW_UUID)
+            val result = withdrawService.doneWithdraw(command)
 
-            Assertions.assertEquals(WITHDRAW_UUID, result.withdrawId)
+            Assertions.assertEquals(WITHDRAW_ID, result.withdrawId)
             Assertions.assertEquals(WithdrawStatus.DONE, result.status)
+            coVerify { transferManager.transfer(any()) }
             coVerify { withdrawPersister.persist(match { it.status == WithdrawStatus.DONE }) }
         }
+
+        @Test
+        fun `should create system wallet if not exists when doing withdraw`() = runBlocking {
+            val command = WithdrawDoneCommand(WITHDRAW_ID, BigDecimal.ONE, "tx-ref-123", "test", "test", "test")
+            val withdraw = createWithdraw(WithdrawStatus.ACCEPTED)
+            val systemOwner = createSystemOwner()
+            val sourceWallet = createWallet(createOwner(), WalletType.CASHOUT)
+            val newWallet = createWallet(systemOwner, WalletType.MAIN)
+
+            coEvery { withdrawPersister.findById(WITHDRAW_ID) } returns withdraw
+            coEvery { walletOwnerManager.findWalletOwner(SYSTEM_UUID) } returns systemOwner
+            coEvery { walletManager.findWalletById(WALLET_ID) } returns sourceWallet
+            coEvery { walletManager.findWalletByOwnerAndCurrencyAndType(any(), any(), any()) } returns null
+            coEvery { walletManager.createWallet(any(), any(), any(), any()) } returns newWallet
+            coEvery { transferManager.transfer(any()) } returns TransferResultDetailed(mockk(), "tx-test")
+            coEvery { withdrawPersister.persist(any()) } returns withdraw.copy(status = WithdrawStatus.DONE)
+
+            withdrawService.doneWithdraw(command)
+
+            coVerify {
+                walletManager.createWallet(
+                    systemOwner,
+                    any(),
+                    match { it.symbol == sourceWallet.currency.symbol },
+                    WalletType.MAIN
+                )
+            }
+        }
     }
+
 
     @Nested
     inner class FindWithdrawTests {

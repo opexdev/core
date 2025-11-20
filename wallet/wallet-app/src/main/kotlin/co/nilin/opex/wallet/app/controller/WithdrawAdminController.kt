@@ -88,11 +88,18 @@ class WithdrawAdminController(
     @PostMapping("/{withdrawUuid}/accept")
     suspend fun acceptWithdraw(
         @PathVariable withdrawUuid: String,
+    ): WithdrawActionResult {
+        return withdrawService.acceptWithdraw(withdrawUuid)
+    }
+
+    @PostMapping("/{withdrawUuid}/done")
+    suspend fun doneWithdraw(
+        @PathVariable withdrawUuid: String,
         @RequestBody request: WithdrawAcceptRequest,
         @CurrentSecurityContext securityContext: SecurityContext
     ): WithdrawActionResult {
-        return withdrawService.acceptWithdraw(
-            WithdrawAcceptCommand(
+        return withdrawService.doneWithdraw(
+            WithdrawDoneCommand(
                 withdrawUuid,
                 request.destAmount,
                 request.destTransactionRef,
@@ -101,13 +108,6 @@ class WithdrawAdminController(
                 securityContext.authentication.name
             )
         )
-    }
-
-    @PostMapping("/{withdrawUuid}/done")
-    suspend fun doneWithdraw(
-        @PathVariable withdrawUuid: String,
-    ): WithdrawActionResult {
-        return withdrawService.doneWithdraw(withdrawUuid)
     }
 
     @PostMapping("/{withdrawUuid}/reject")
