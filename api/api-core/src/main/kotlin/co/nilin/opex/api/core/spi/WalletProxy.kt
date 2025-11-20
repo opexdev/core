@@ -111,12 +111,12 @@ interface WalletProxy {
 
     suspend fun cancelWithdraw(
         token: String,
-        withdrawId: Long
+        withdrawUuid: String
     ): Void?
 
     suspend fun findWithdraw(
         token: String,
-        withdrawId: Long
+        withdrawUuid: String
     ): WithdrawResponse
 
     suspend fun submitVoucher(code: String, token: String): SubmitVoucherResponse
@@ -126,10 +126,10 @@ interface WalletProxy {
     suspend fun getSwapTransactions(token: String, request: UserTransactionRequest): List<SwapResponse>
     suspend fun getSwapTransactionsCount(token: String, request: UserTransactionRequest): Long
 
-    suspend fun requestWithdrawOTP(token: String, withdrawId: Long, otpType: OTPType): TempOtpResponse
+    suspend fun requestWithdrawOTP(token: String, withdrawUuid: String, otpType: OTPType): TempOtpResponse
     suspend fun verifyWithdrawOTP(
         token: String,
-        withdrawId: Long,
+        withdrawUuid: String,
         otpType: OTPType,
         otpCode: String
     ): WithdrawActionResult

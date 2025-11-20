@@ -14,7 +14,7 @@ class WithdrawOtpPersisterImpl(private val withdrawOtpRepository: WithdrawOtpRep
         withdrawOtpRepository.save(withdrawOtp.asWithdrawOtpModel()).awaitFirst()
     }
 
-    override suspend fun findByWithdrawId(withdrawUuid: String): List<WithdrawOtp> {
+    override suspend fun findByWithdrawUuid(withdrawUuid: String): List<WithdrawOtp> {
         return withdrawOtpRepository.findByWithdrawId(withdrawUuid)
             .map { it.asWithdrawOtp() }
             .collectList()

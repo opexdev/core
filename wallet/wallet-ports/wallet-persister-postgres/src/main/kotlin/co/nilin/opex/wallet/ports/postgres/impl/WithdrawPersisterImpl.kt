@@ -24,7 +24,7 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
         return withdrawRepository.save(
             WithdrawModel(
                 withdraw.withdrawId,
-                UUID.randomUUID().toString(),
+                withdraw.withdrawUuid,
                 withdraw.ownerUuid,
                 withdraw.currency,
                 withdraw.wallet,

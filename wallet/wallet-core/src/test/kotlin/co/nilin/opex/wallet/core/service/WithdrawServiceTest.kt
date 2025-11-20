@@ -541,7 +541,7 @@ class WithdrawServiceTest {
             val existingOtp = WithdrawOtp(WITHDRAW_UUID, "trace-123", OTPType.SMS, LocalDateTime.now())
 
             coEvery { withdrawPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns withdraw
-            coEvery { withdrawOtpPersister.findByWithdrawId(WITHDRAW_UUID) } returns listOf(existingOtp)
+            coEvery { withdrawOtpPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns listOf(existingOtp)
 
             val ex = Assertions.assertThrows(OpexException::class.java) {
                 runBlocking { withdrawService.requestOTP(TOKEN, USER_UUID, WITHDRAW_UUID, OTPType.SMS) }
@@ -555,7 +555,7 @@ class WithdrawServiceTest {
             val withdraw = createWithdraw().apply { createDate = LocalDateTime.now().minusMinutes(11) }
 
             coEvery { withdrawPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns withdraw
-            coEvery { withdrawOtpPersister.findByWithdrawId(WITHDRAW_UUID) } returns listOf()
+            coEvery { withdrawOtpPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns listOf()
 
             val ex = Assertions.assertThrows(OpexException::class.java) {
                 runBlocking { withdrawService.requestOTP(TOKEN, USER_UUID, WITHDRAW_UUID, OTPType.SMS) }
@@ -571,7 +571,7 @@ class WithdrawServiceTest {
             val otpResponse = TempOtpResponse(VALID_OTP, listOf())
 
             coEvery { withdrawPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns withdraw
-            coEvery { withdrawOtpPersister.findByWithdrawId(WITHDRAW_UUID) } returns emptyList()
+            coEvery { withdrawOtpPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns emptyList()
             coEvery { profileProxy.getProfile(TOKEN) } returns profile
             coEvery { otpProxy.requestOTP(any()) } returns otpResponse
 
@@ -588,7 +588,7 @@ class WithdrawServiceTest {
             val otpResponse = TempOtpResponse(VALID_OTP, listOf())
 
             coEvery { withdrawPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns withdraw
-            coEvery { withdrawOtpPersister.findByWithdrawId(WITHDRAW_UUID) } returns emptyList()
+            coEvery { withdrawOtpPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns emptyList()
             coEvery { profileProxy.getProfile(TOKEN) } returns profile
             coEvery { otpProxy.requestOTP(any()) } returns otpResponse
 
@@ -637,7 +637,7 @@ class WithdrawServiceTest {
             coEvery { profileProxy.getProfile(TOKEN) } returns profile
             coEvery { otpProxy.verifyOTP(any()) } returns OTPVerifyResponse(true, OTPResultType.VALID, "trace-321")
             coEvery { withdrawOtpPersister.save(any()) } returns Unit
-            coEvery { withdrawOtpPersister.findByWithdrawId(WITHDRAW_UUID) } returns listOf(mockk())
+            coEvery { withdrawOtpPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns listOf(mockk())
 
             val result = withdrawService.verifyOTP(TOKEN, WITHDRAW_UUID, OTPType.SMS, VALID_OTP)
 
@@ -660,7 +660,7 @@ class WithdrawServiceTest {
             coEvery { profileProxy.getProfile(TOKEN) } returns profile
             coEvery { otpProxy.verifyOTP(any()) } returns OTPVerifyResponse(true, OTPResultType.VALID, "trace-456")
             coEvery { withdrawOtpPersister.save(any()) } returns Unit
-            coEvery { withdrawOtpPersister.findByWithdrawId(WITHDRAW_UUID) } returns listOf(mockk())
+            coEvery { withdrawOtpPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns listOf(mockk())
 
             val result = withdrawService.verifyOTP(TOKEN, WITHDRAW_UUID, OTPType.EMAIL, VALID_OTP)
 
@@ -687,7 +687,7 @@ class WithdrawServiceTest {
             coEvery { profileProxy.getProfile(TOKEN) } returns profile
             coEvery { otpProxy.verifyOTP(any()) } returns OTPVerifyResponse(true, OTPResultType.VALID, "trace-789")
             coEvery { withdrawOtpPersister.save(any()) } returns Unit
-            coEvery { withdrawOtpPersister.findByWithdrawId(WITHDRAW_UUID) } returns listOf(mockk(), mockk())
+            coEvery { withdrawOtpPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns listOf(mockk(), mockk())
             coEvery { withdrawPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns withdraw
             coEvery { currencyService.fetchCurrency(any()) } returns currency
             coEvery { walletOwnerManager.findWalletOwner(USER_UUID) } returns owner
@@ -957,7 +957,7 @@ class WithdrawServiceTest {
 
             val result = withdrawService.doneWithdraw(command)
 
-            Assertions.assertEquals(WITHDRAW_ID, result.withdrawId)
+            Assertions.assertEquals(WITHDRAW_UUID, result.withdrawId)
             Assertions.assertEquals(WithdrawStatus.DONE, result.status)
             coVerify { transferManager.transfer(any()) }
             coVerify { withdrawPersister.persist(match { it.status == WithdrawStatus.DONE }) }
@@ -965,13 +965,13 @@ class WithdrawServiceTest {
 
         @Test
         fun `should create system wallet if not exists when doing withdraw`() = runBlocking {
-            val command = WithdrawDoneCommand(WITHDRAW_ID, BigDecimal.ONE, "tx-ref-123", "test", "test", "test")
+            val command = WithdrawDoneCommand(WITHDRAW_UUID, BigDecimal.ONE, "tx-ref-123", "test", "test", "test")
             val withdraw = createWithdraw(WithdrawStatus.ACCEPTED)
             val systemOwner = createSystemOwner()
             val sourceWallet = createWallet(createOwner(), WalletType.CASHOUT)
             val newWallet = createWallet(systemOwner, WalletType.MAIN)
 
-            coEvery { withdrawPersister.findById(WITHDRAW_ID) } returns withdraw
+            coEvery { withdrawPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns withdraw
             coEvery { walletOwnerManager.findWalletOwner(SYSTEM_UUID) } returns systemOwner
             coEvery { walletManager.findWalletById(WALLET_ID) } returns sourceWallet
             coEvery { walletManager.findWalletByOwnerAndCurrencyAndType(any(), any(), any()) } returns null

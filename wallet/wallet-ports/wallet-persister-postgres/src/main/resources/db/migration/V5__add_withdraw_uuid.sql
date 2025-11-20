@@ -5,6 +5,9 @@ ALTER TABLE withdraws_otp
     DROP CONSTRAINT withdraws_otp_withdraw_fkey;
 
 ALTER TABLE withdraws_otp
+    DROP CONSTRAINT withdraws_otp_withdraw_otp_type_key;
+
+ALTER TABLE withdraws_otp
     RENAME COLUMN withdraw TO withdraw_uuid;
 
 ALTER TABLE withdraws_otp
@@ -78,3 +81,5 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
+
