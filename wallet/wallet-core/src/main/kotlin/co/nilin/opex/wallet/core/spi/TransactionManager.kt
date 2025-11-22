@@ -1,9 +1,6 @@
 package co.nilin.opex.wallet.core.spi
 
-import co.nilin.opex.wallet.core.model.Transaction
-import co.nilin.opex.wallet.core.model.TransactionHistory
-import co.nilin.opex.wallet.core.model.TransactionWithDetailHistory
-import co.nilin.opex.wallet.core.model.TransferCategory
+import co.nilin.opex.wallet.core.model.*
 import java.time.LocalDateTime
 
 interface TransactionManager {
@@ -39,4 +36,13 @@ interface TransactionManager {
         limit: Int,
         offset: Int
     ): List<TransactionWithDetailHistory>
+
+    suspend fun findTradesForAdmin(
+        coin: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        asc: Boolean,
+        limit: Int,
+        offset: Int
+    ): List<TradeAdminResponse>
 }

@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.core.spi
 
 import co.nilin.opex.wallet.core.inout.TransactionSummary
+import co.nilin.opex.wallet.core.inout.WithdrawAdminResponse
 import co.nilin.opex.wallet.core.inout.WithdrawResponse
 import co.nilin.opex.wallet.core.model.Withdraw
 import co.nilin.opex.wallet.core.model.WithdrawStatus
@@ -10,9 +11,9 @@ interface WithdrawPersister {
 
     suspend fun persist(withdraw: Withdraw): Withdraw
 
-    suspend fun findById(withdrawId: Long): Withdraw?
+    suspend fun findByWithdrawUuid(withdrawUuid: String): Withdraw?
 
-    suspend fun findWithdrawResponseById(withdrawId: Long): WithdrawResponse?
+    suspend fun findWithdrawResponseById(withdrawUuid: String): WithdrawResponse?
 
     suspend fun findByCriteria(
         ownerUuid: String?,
@@ -25,7 +26,7 @@ interface WithdrawPersister {
         ascendingByTime: Boolean?,
         offset: Int,
         size: Int,
-    ): List<WithdrawResponse>
+    ): List<WithdrawAdminResponse>
 
     suspend fun countByCriteria(
         ownerUuid: String?,

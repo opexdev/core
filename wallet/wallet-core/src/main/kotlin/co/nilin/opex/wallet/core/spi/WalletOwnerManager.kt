@@ -12,4 +12,5 @@ interface WalletOwnerManager {
     suspend fun findWalletOwner(uuid: String): WalletOwner?
     suspend fun createWalletOwner(uuid: String, title: String, userLevel: String): WalletOwner
     suspend fun findAllWalletOwners(): List<WalletOwner>
+    suspend fun updateWalletOwnerName(uuid: String, name: String)
 }

@@ -6,7 +6,7 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 class WithdrawResponse(
-    val withdrawId: Long,
+    val withdrawId: String,
     val uuid: String,
     val amount: BigDecimal,
     val currency: String,
