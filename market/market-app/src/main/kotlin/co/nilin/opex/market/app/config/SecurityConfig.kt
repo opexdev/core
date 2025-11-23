@@ -23,7 +23,7 @@ class SecurityConfig(private val webClient: WebClient) {
             .authorizeExchange() {
                 it.pathMatchers(HttpMethod.GET, "/v1/admin/**").hasAnyAuthority("ROLE_monitoring", "ROLE_admin")
                     .pathMatchers("/actuator/**").permitAll()
-                    .anyExchange().authenticated()
+                    .anyExchange().permitAll()
             }
             .oauth2ResourceServer { it.jwt { jwt -> jwt.jwtAuthenticationConverter(ReactiveCustomJwtConverter()) } }
             .build()
