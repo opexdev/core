@@ -38,7 +38,7 @@ interface WalletProxy {
         limit: Int,
         offset: Int,
         ascendingByTime: Boolean?,
-    ): List<WithdrawHistoryResponse>
+    ): List<WithdrawResponse>
 
     suspend fun getWithdrawTransactionsCount(
         uuid: String,
@@ -111,12 +111,12 @@ interface WalletProxy {
 
     suspend fun cancelWithdraw(
         token: String,
-        withdrawId: Long
+        withdrawUuid: String
     ): Void?
 
     suspend fun findWithdraw(
         token: String,
-        withdrawId: Long
+        withdrawUuid: String
     ): WithdrawResponse
 
     suspend fun submitVoucher(code: String, token: String): SubmitVoucherResponse
@@ -126,6 +126,36 @@ interface WalletProxy {
     suspend fun getSwapTransactions(token: String, request: UserTransactionRequest): List<SwapResponse>
     suspend fun getSwapTransactionsCount(token: String, request: UserTransactionRequest): Long
 
-    suspend fun requestWithdrawOTP(token: String, withdrawId: Long, otpType: OTPType) : TempOtpResponse
-    suspend fun verifyWithdrawOTP(token: String, withdrawId: Long, otpType: OTPType , otpCode: String) : WithdrawActionResult
+    suspend fun requestWithdrawOTP(token: String, withdrawUuid: String, otpType: OTPType): TempOtpResponse
+    suspend fun verifyWithdrawOTP(
+        token: String,
+        withdrawUuid: String,
+        otpType: OTPType,
+        otpCode: String
+    ): WithdrawActionResult
+
+    suspend fun getWithdrawTransactionsForAdmin(
+        token: String,
+        request: AdminWithdrawHistoryRequest
+    ): List<WithdrawAdminResponse>
+
+    suspend fun getDepositTransactionsForAdmin(
+        token: String,
+        request: AdminDepositHistoryRequest
+    ): List<DepositAdminResponse>
+
+    suspend fun getSwapTransactionsForAdmin(
+        token: String,
+        request: UserTransactionRequest
+    ): List<SwapAdminResponse>
+
+    suspend fun getTradeHistoryForAdmin(
+        token: String,
+        request: AdminTradeHistoryRequest
+    ): List<TradeAdminResponse>
+
+    suspend fun getUserTransactionHistoryForAdmin(
+        token: String,
+        request: UserTransactionRequest
+    ): List<UserTransactionHistory>
 }

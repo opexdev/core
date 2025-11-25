@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.ports.postgres.dao
 
+import co.nilin.opex.wallet.core.model.TradeAdminResponse
 import co.nilin.opex.wallet.core.model.TransferCategory
 import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.ports.postgres.dto.DepositWithdrawTransaction
@@ -264,5 +265,77 @@ interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long>
         limit: Int,
         offset: Int,
     ): Flux<TransactionWithDetail>
+
+    @Query(
+        """
+    select distinct 
+        t.id as id,
+        sw.currency as currency,
+        swo.uuid as source_owner_uuid,
+        split_part(swo.title, '|', 2) as source_owner_name,
+        dwo.uuid as dest_owner_uuid,
+        split_part(dwo.title, '|', 2) as dest_owner_name,
+        t.dest_amount as amount,
+        t.description as description,
+        t.transfer_ref as ref,
+        t.transaction_date as date,
+        t.transfer_category as category
+    from transaction t
+    inner join wallet sw on sw.id = t.source_wallet
+    inner join wallet_owner swo on sw.owner = swo.id
+    inner join wallet dw on dw.id = t.dest_wallet
+    inner join wallet_owner dwo on dw.owner = dwo.id
+    where (t.transfer_category = 'TRADE')
+      and  (:startTime is null or t.transaction_date > :startTime)
+      and (:endTime is null or t.transaction_date <= :endTime)
+      and (:currency is null or sw.currency = :currency)
+    order by transaction_date
+    limit :limit
+    offset :offset
+    """
+    )
+    fun findTradesForAdminAsc(
+        currency: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        limit: Int,
+        offset: Int,
+    ): Flux<TradeAdminResponse>
+
+    @Query(
+        """
+    select distinct 
+        t.id as id,
+        sw.currency as currency,
+        swo.uuid as source_owner_uuid,
+        split_part(swo.title, '|', 2) as source_owner_name,
+        dwo.uuid as dest_owner_uuid,
+        split_part(dwo.title, '|', 2) as dest_owner_name,
+        t.dest_amount as amount,
+        t.description as description,
+        t.transfer_ref as ref,
+        t.transaction_date as date,
+        t.transfer_category as category
+    from transaction t
+    inner join wallet sw on sw.id = t.source_wallet
+    inner join wallet_owner swo on sw.owner = swo.id
+    inner join wallet dw on dw.id = t.dest_wallet
+    inner join wallet_owner dwo on dw.owner = dwo.id
+    where (t.transfer_category = 'TRADE')
+      and  (:startTime is null or t.transaction_date > :startTime)
+      and (:endTime is null or t.transaction_date <= :endTime)
+      and (:currency is null or sw.currency = :currency)
+    order by  transaction_date desc
+    limit :limit
+    offset :offset
+    """
+    )
+    fun findTradesForAdminDesc(
+        currency: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        limit: Int,
+        offset: Int,
+    ): Flux<TradeAdminResponse>
 
 }

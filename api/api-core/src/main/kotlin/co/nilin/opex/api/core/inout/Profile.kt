@@ -24,3 +24,22 @@ data class Profile(
     var personalIdentityMatch: Boolean? = null
 
 )
+
+enum class NationalityType {
+    IRANIAN,
+    NON_IRANIAN
+}
+
+enum class Gender {
+    FEMALE, MALE
+}
+
+enum class ProfileStatus {
+    CREATED,
+    CONTACT_INFO_COMPLETED,
+    PROFILE_COMPLETED,
+    SYSTEM_APPROVED,
+    PENDING_ADMIN_APPROVAL,
+    ADMIN_REJECTED,
+    ADMIN_APPROVED
+}

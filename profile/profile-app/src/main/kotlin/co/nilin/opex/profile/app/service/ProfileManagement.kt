@@ -24,8 +24,8 @@ class ProfileManagement(
     private val profilePersister: ProfilePersister, private val limitationPersister: LimitationPersister,
     private val profileApprovalRequestPersister: ProfileApprovalRequestPersister,
     private val kycLevelUpdatedPublisher: KycLevelUpdatedPublisher,
+    private val profileUpdatedPublisher: ProfileUpdatedPublisher,
     private val otpProxy: OtpProxy,
-    private val authProxy: AuthProxy,
     private val inquiryProxy: InquiryProxy,
 
     @Value("\${app.inquiry.mobile-indentiy}")
@@ -92,7 +92,7 @@ class ProfileManagement(
             )
         )
         if (verifyResponse.result) {
-            authProxy.updateMobile(userId, mobile)
+            profileUpdatedPublisher.publish(ProfileUpdatedEvent(userId = userId, mobile = mobile))
             profilePersister.updateMobile(userId, mobile)
         } else throw OpexError.InvalidOTP.exception()
     }
@@ -116,7 +116,7 @@ class ProfileManagement(
             )
         )
         if (verifyResponse.result) {
-            authProxy.updateEmail(userId, email)
+            profileUpdatedPublisher.publish(ProfileUpdatedEvent(userId = userId, email = email))
             profilePersister.updateEmail(userId, email)
         } else throw OpexError.InvalidOTP.exception()
     }
@@ -155,7 +155,13 @@ class ProfileManagement(
 
         val completedProfile = updateProfile(userId, request, isMobileIdentityMatch, isPersonalIdentityMatch)
 
-        authProxy.updateName(userId, request.firstName, request.lastName)
+        profileUpdatedPublisher.publish(
+            ProfileUpdatedEvent(
+                userId = userId,
+                firstName = request.firstName,
+                lastName = request.lastName
+            )
+        )
 
         validateInquiryResponses(shahkarResponse, comparativeResponse)
 

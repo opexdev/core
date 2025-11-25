@@ -99,6 +99,8 @@ logging:
 app:
   accountant:
     url: http://opex-accountant
+  profile:
+    url: http://opex-profile
   matching-gateway:
     url: http://opex-matching-gateway
   wallet:

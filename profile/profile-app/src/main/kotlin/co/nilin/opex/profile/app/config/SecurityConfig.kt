@@ -3,6 +3,7 @@ package co.nilin.opex.profile.app.config
 import co.nilin.opex.common.security.ReactiveCustomJwtConverter
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
+import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder
@@ -20,7 +21,8 @@ class SecurityConfig {
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
         return http.csrf { it.disable() }
             .authorizeExchange() {
-                it.pathMatchers("/admin/**").hasAuthority("ROLE_admin")
+                it.pathMatchers(HttpMethod.GET, "/admin/**").hasAnyAuthority("ROLE_monitoring", "ROLE_admin")
+                    .pathMatchers("/admin/**").hasAuthority("ROLE_admin")
                     .pathMatchers("/bank-account/**").hasAuthority("PERM_bank_account:write")
                     .pathMatchers("/actuator/**").permitAll()
                     .anyExchange().authenticated()

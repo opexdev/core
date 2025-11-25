@@ -90,10 +90,6 @@
             <artifactId>profile-otp-proxy</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.profile.ports</groupId>
-            <artifactId>profile-auth-proxy</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-tx</artifactId>
             <scope>provided</scope>

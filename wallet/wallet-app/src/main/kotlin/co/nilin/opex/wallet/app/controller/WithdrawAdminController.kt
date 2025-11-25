@@ -31,17 +31,18 @@ class WithdrawAdminController(
         val attachment: String?
     )
 
-    @GetMapping("/{id}")
-    suspend fun getWithdraw(@PathVariable id: Long): WithdrawResponse {
-        return withdrawService.findWithdraw(id) ?: throw OpexError.WithdrawNotFound.exception()
+    @GetMapping("/{withdrawUuid}")
+    suspend fun getWithdraw(@PathVariable withdrawUuid: String): WithdrawResponse {
+        return withdrawService.findWithdraw(withdrawUuid) ?: throw OpexError.WithdrawNotFound.exception()
     }
 
+    @Deprecated("endpoint changed")
     @PostMapping("/search")
     suspend fun search(
         @RequestParam offset: Int,
         @RequestParam size: Int,
         @RequestBody body: AdminSearchWithdrawRequest
-    ): List<WithdrawResponse> {
+    ): List<WithdrawAdminResponse> {
         return withdrawService.findByCriteria(
             body.uuid,
             body.currency,
@@ -60,15 +61,46 @@ class WithdrawAdminController(
         )
     }
 
-    @PostMapping("/{withdrawId}/accept")
+    @PostMapping("/history")
+    suspend fun getWithdrawHistory(
+        @RequestParam offset: Int,
+        @RequestParam size: Int,
+        @RequestBody body: AdminSearchWithdrawRequest
+    ): List<WithdrawAdminResponse> {
+        return withdrawService.findByCriteria(
+            body.uuid,
+            body.currency,
+            body.destTxRef,
+            body.destAddress,
+            body.status,
+            body.startTime?.let {
+                LocalDateTime.ofInstant(Instant.ofEpochMilli(body.startTime), ZoneId.systemDefault())
+            },
+            body.endTime?.let {
+                LocalDateTime.ofInstant(Instant.ofEpochMilli(body.endTime), ZoneId.systemDefault())
+            },
+            body.ascendingByTime,
+            offset,
+            size
+        )
+    }
+
+    @PostMapping("/{withdrawUuid}/accept")
     suspend fun acceptWithdraw(
-        @PathVariable withdrawId: Long,
+        @PathVariable withdrawUuid: String,
+    ): WithdrawActionResult {
+        return withdrawService.acceptWithdraw(withdrawUuid)
+    }
+
+    @PostMapping("/{withdrawUuid}/done")
+    suspend fun doneWithdraw(
+        @PathVariable withdrawUuid: String,
         @RequestBody request: WithdrawAcceptRequest,
         @CurrentSecurityContext securityContext: SecurityContext
     ): WithdrawActionResult {
-        return withdrawService.acceptWithdraw(
-            WithdrawAcceptCommand(
-                withdrawId,
+        return withdrawService.doneWithdraw(
+            WithdrawDoneCommand(
+                withdrawUuid,
                 request.destAmount,
                 request.destTransactionRef,
                 request.destNote,
@@ -78,22 +110,15 @@ class WithdrawAdminController(
         )
     }
 
-    @PostMapping("/{withdrawId}/done")
-    suspend fun doneWithdraw(
-        @PathVariable withdrawId: Long,
-    ): WithdrawActionResult {
-        return withdrawService.doneWithdraw(withdrawId)
-    }
-
-    @PostMapping("/{withdrawId}/reject")
+    @PostMapping("/{withdrawUuid}/reject")
     suspend fun rejectWithdraw(
-        @PathVariable withdrawId: Long,
+        @PathVariable withdrawUuid: String,
         @RequestBody request: WithdrawRejectRequest,
         @CurrentSecurityContext securityContext: SecurityContext
     ): WithdrawActionResult {
         return withdrawService.rejectWithdraw(
             WithdrawRejectCommand(
-                withdrawId,
+                withdrawUuid,
                 request.reason,
                 request.attachment,
                 securityContext.authentication.name

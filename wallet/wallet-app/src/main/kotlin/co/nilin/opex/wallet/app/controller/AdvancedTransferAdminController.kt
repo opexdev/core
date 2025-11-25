@@ -1,7 +1,7 @@
 package co.nilin.opex.wallet.app.controller
 
-import co.nilin.opex.wallet.app.dto.*
-import co.nilin.opex.wallet.core.inout.SwapResponse
+import co.nilin.opex.wallet.app.dto.UserTransactionRequest
+import co.nilin.opex.wallet.core.inout.AdminSwapResponse
 import co.nilin.opex.wallet.core.spi.ReservedTransferManager
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
@@ -9,7 +9,9 @@ import io.swagger.annotations.ExampleProperty
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RestController
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -36,9 +38,9 @@ class AdvancedTransferAdminController {
         @CurrentSecurityContext securityContext: SecurityContext,
         @RequestBody request: UserTransactionRequest
 
-    ): List<SwapResponse>? {
+    ): List<AdminSwapResponse>? {
         return with(request) {
-            reservedTransferManager.findByCriteria(
+            reservedTransferManager.findByCriteriaForAdmin(
                 userId,
                 sourceSymbol,
                 destSymbol,

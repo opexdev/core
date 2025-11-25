@@ -12,6 +12,7 @@ import java.time.LocalDateTime
 @Table("withdraws")
 data class WithdrawModel(
     @Id var id: Long?,
+    var withdrawUuid: String?,
     @Column("uuid") val ownerUuid: String,
     val currency: String,
     val wallet: Long,

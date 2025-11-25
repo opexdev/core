@@ -363,20 +363,30 @@ class KeycloakProxy(
         return this
     }
 
-    suspend fun updateUserMobile(userId: String, newMobile: String) {
-        updateUserFields(userId, mapOf("attributes" to mapOf("mobile" to newMobile)))
-    }
-
-    suspend fun updateUserEmail(userId: String, newEmail: String) {
-        updateUserFields(userId, mapOf("email" to newEmail, "emailVerified" to true))
-    }
-
-    suspend fun updateUserName(userId: String, firstName: String?, lastName: String?) {
+    suspend fun updateUserInfo(
+        userId: String,
+        newMobile: String? = null,
+        newEmail: String? = null,
+        firstName: String? = null,
+        lastName: String? = null
+    ) {
         val updates = mutableMapOf<String, Any>()
+
+        newEmail?.let {
+            updates["email"] = it
+            updates["emailVerified"] = true
+        }
+
+        newMobile?.let {
+            updates["attributes"] = mapOf("mobile" to it)
+        }
+
         firstName?.let { updates["firstName"] = it }
         lastName?.let { updates["lastName"] = it }
-        updateUserFields(userId, updates)
 
+        if (updates.isNotEmpty()) {
+            updateUserFields(userId, updates)
+        }
     }
 
     private suspend fun updateUserFields(userId: String, updates: Map<String, Any>) {
