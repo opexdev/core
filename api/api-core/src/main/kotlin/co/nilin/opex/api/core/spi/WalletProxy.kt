@@ -158,6 +158,7 @@ interface WalletProxy {
         token: String,
         request: UserTransactionRequest
     ): List<UserTransactionHistory>
+
     suspend fun getUsersWallets(
         token: String,
         uuid: String?,
