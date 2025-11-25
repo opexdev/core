@@ -31,8 +31,7 @@ class BankAccountManagement(
 
     suspend fun addBankAccount(uuid: String, request: AddBankAccountRequest): BankAccountResponse {
         validateBankAccountOwnership(uuid, request.cardNumber, request.iban)
-        val profile =
-            profilePersister.getProfile(uuid)?.awaitFirstOrNull() ?: throw OpexError.ProfileNotfound.exception()
+        val profile = profilePersister.getProfile(uuid)
 
         var cardNumber: String? = request.cardNumber
         var iban: String? = request.iban

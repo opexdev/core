@@ -1,6 +1,4 @@
-package co.nilin.opex.profile.core.data.profile
-
-import co.nilin.opex.profile.core.data.kyc.KycLevel
+package co.nilin.opex.api.core.inout
 
 data class ProfileRequest(
     var userId: String? = null,
@@ -17,5 +15,4 @@ data class ProfileRequest(
     var createDateTo: Long? = null,
     var limit : Int = 10,
     var offset: Int = 0,
-    var ascendingByTime: Boolean = false,
-)
+    var ascendingByTime: Boolean = false,)

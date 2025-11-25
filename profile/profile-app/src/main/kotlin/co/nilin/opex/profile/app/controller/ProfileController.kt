@@ -23,8 +23,8 @@ class ProfileController(
 ) {
 
     @GetMapping("/personal-data")
-    suspend fun getProfile(@CurrentSecurityContext securityContext: SecurityContext): Profile? {
-        return profileManagement.getProfile(securityContext.authentication.name)?.awaitFirstOrNull()
+    suspend fun getProfile(@CurrentSecurityContext securityContext: SecurityContext): Profile {
+        return profileManagement.getProfile(securityContext.authentication.name)
     }
 
     @PutMapping("/completion")

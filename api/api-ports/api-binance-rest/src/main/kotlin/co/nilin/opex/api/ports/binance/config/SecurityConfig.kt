@@ -44,6 +44,7 @@ class SecurityConfig(
 
                     // Opex endpoints
                     .pathMatchers("/opex/v1/admin/transactions/**").hasAnyAuthority("ROLE_monitoring", "ROLE_admin")
+                    .pathMatchers("/opex/v1/admin/**").hasAuthority("ROLE_admin")
                     .pathMatchers("/opex/v1/deposit/**").hasAuthority("DEPOSIT_deposit:write")
                     .pathMatchers(HttpMethod.POST, "/opex/v1/order").hasAuthority("PERM_order:write")
                     .pathMatchers(HttpMethod.PUT, "/opex/v1/order").hasAuthority("PERM_order:write")

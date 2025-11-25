@@ -14,13 +14,10 @@ import co.nilin.opex.profile.core.spi.*
 import co.nilin.opex.profile.core.utils.handleComparativeError
 import co.nilin.opex.profile.core.utils.handleShahkarError
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
-import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 
 @Component
@@ -61,25 +58,16 @@ class ProfileManagement(
         }
     }
 
-    suspend fun getAllProfiles(offset: Int, size: Int, profileRequest: ProfileRequest): List<Profile?>? {
-        return profilePersister.getAllProfile(offset, size, profileRequest)?.toList()
+    suspend fun getAllProfiles(profileRequest: ProfileRequest): List<Profile> {
+        return profilePersister.getAllProfile(profileRequest)
     }
 
-    suspend fun getProfile(userId: String): Mono<Profile>? {
+    suspend fun getProfile(userId: String): Profile {
         return profilePersister.getProfile(userId)
     }
 
-    suspend fun updateAsAdmin(userId: String, newProfile: Profile): Mono<Profile>? {
-        return profilePersister.updateProfileAsAdmin(userId, newProfile)
-    }
-
-    suspend fun create(userId: String, newProfile: Profile): Mono<Profile>? {
-        newProfile.userId = userId
-        return profilePersister.createProfile(newProfile)
-    }
-
-    suspend fun getHistory(userId: String, offset: Int, size: Int): List<ProfileHistory>? {
-        return profilePersister.getHistory(userId, offset, size)
+    suspend fun getHistory(userId: String, offset: Int, limit: Int): List<ProfileHistory>? {
+        return profilePersister.getHistory(userId, offset, limit)
     }
 
     suspend fun updateUserLevel(userId: String, userLevel: KycLevel) {
@@ -135,8 +123,7 @@ class ProfileManagement(
     }
 
     suspend fun completeProfile(userId: String, request: CompleteProfileRequest): Profile {
-        val profile = profilePersister.getProfile(userId)?.awaitFirstOrNull()
-            ?: throw OpexError.ProfileNotfound.exception()
+        val profile = profilePersister.getProfile(userId)
 
         if (profile.kycLevel == KycLevel.LEVEL_2) {
             throw OpexError.ProfileAlreadyCompleted.exception()
@@ -228,7 +215,7 @@ class ProfileManagement(
     private suspend fun saveProfileApprovalRequest(userId: String) {
         profileApprovalRequestPersister.save(
             ProfileApprovalRequest(
-                profileId = profilePersister.getProfileId(userId),
+                userId = userId,
                 status = ProfileApprovalRequestStatus.PENDING,
                 createDate = LocalDateTime.now()
             )
