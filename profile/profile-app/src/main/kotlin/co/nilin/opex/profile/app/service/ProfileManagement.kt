@@ -3,6 +3,7 @@ package co.nilin.opex.profile.app.service
 
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.profile.core.data.event.KycLevelUpdatedEvent
+import co.nilin.opex.profile.core.data.event.ProfileUpdatedEvent
 import co.nilin.opex.profile.core.data.event.UserCreatedEvent
 import co.nilin.opex.profile.core.data.inquiry.ComparativeResponse
 import co.nilin.opex.profile.core.data.inquiry.ShahkarResponse
