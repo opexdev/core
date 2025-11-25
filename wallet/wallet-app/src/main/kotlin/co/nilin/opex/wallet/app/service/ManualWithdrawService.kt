@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.time.LocalDateTime
+import java.util.UUID
 
 @Service
 class ManualWithdrawService(
@@ -69,6 +70,7 @@ class ManualWithdrawService(
         withdrawPersister.persist(
             Withdraw(
                 null,
+                UUID.randomUUID().toString(),
                 sourceUuid,
                 symbol,
                 tx.transferResult.destWallet!!,

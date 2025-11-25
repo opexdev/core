@@ -1,10 +1,8 @@
 package co.nilin.opex.profile.core.data.profile
 
 import co.nilin.opex.profile.core.data.kyc.KycLevel
-import com.fasterxml.jackson.annotation.JsonInclude
 import java.time.LocalDateTime
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
 data class ProfileHistory(
     var email: String?,
     var userId: String?,
@@ -22,11 +20,11 @@ data class ProfileHistory(
     var createDate: LocalDateTime? = null,
     var lastUpdateDate: LocalDateTime? = null,
     var creator: String? = null,
-    var issuer: String?,
     var changeRequestDate: LocalDateTime?,
     var changeRequestType: String?,
     var updatedItem: List<String>?,
     var kycLevel: KycLevel? = null,
-    var verificationStatus : Boolean? = false
+    var mobileIdentityMatch: Boolean? = null,
+    var personalIdentityMatch: Boolean? = null
 
 )

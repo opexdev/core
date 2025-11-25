@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 class WithdrawActionResult(
-    val withdrawId: Long,
+    val withdrawId: String,
     val status: WithdrawStatus,
     val nextAction: WithdrawNextAction? = null
 ) {

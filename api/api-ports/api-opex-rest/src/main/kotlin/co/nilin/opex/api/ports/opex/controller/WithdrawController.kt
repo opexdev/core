@@ -25,47 +25,47 @@ class WithdrawController(
         )
     }
 
-    @PutMapping("/{withdrawId}/cancel")
+    @PutMapping("/{withdrawUuid}/cancel")
     suspend fun cancelWithdraw(
         @CurrentSecurityContext securityContext: SecurityContext,
-        @PathVariable withdrawId: Long
+        @PathVariable withdrawUuid: String
     ) {
         walletProxy.cancelWithdraw(
             securityContext.jwtAuthentication().tokenValue(),
-            withdrawId
+            withdrawUuid
         )
     }
 
-    @GetMapping("/{withdrawId}")
+    @GetMapping("/{withdrawUuid}")
     suspend fun findWithdraw(
         @CurrentSecurityContext securityContext: SecurityContext,
-        @PathVariable withdrawId: Long
+        @PathVariable withdrawUuid: String
     ): WithdrawResponse {
         return walletProxy.findWithdraw(
             securityContext.jwtAuthentication().tokenValue(),
-            withdrawId
+            withdrawUuid
         )
     }
 
-    @PostMapping("/{withdrawId}/otp/{otpType}/request")
+    @PostMapping("/{withdrawUuid}/otp/{otpType}/request")
     suspend fun requestOTP(
         @CurrentSecurityContext securityContext: SecurityContext,
-        @PathVariable withdrawId: Long,
+        @PathVariable withdrawUuid: String,
         @PathVariable otpType: OTPType
     ): TempOtpResponse {
-        return walletProxy.requestWithdrawOTP(securityContext.jwtAuthentication().tokenValue(), withdrawId, otpType)
+        return walletProxy.requestWithdrawOTP(securityContext.jwtAuthentication().tokenValue(), withdrawUuid, otpType)
     }
 
-    @PostMapping("/{withdrawId}/otp/{otpType}/verify")
+    @PostMapping("/{withdrawUuid}/otp/{otpType}/verify")
     suspend fun verifyOTP(
         @CurrentSecurityContext securityContext: SecurityContext,
-        @PathVariable withdrawId: Long,
+        @PathVariable withdrawUuid: String,
         @PathVariable otpType: OTPType,
         @RequestParam otpCode: String,
     ): WithdrawActionResult {
         return walletProxy.verifyWithdrawOTP(
             securityContext.jwtAuthentication().tokenValue(),
-            withdrawId,
+            withdrawUuid,
             otpType,
             otpCode
         )

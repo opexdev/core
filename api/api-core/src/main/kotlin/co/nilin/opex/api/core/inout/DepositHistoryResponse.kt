@@ -4,7 +4,7 @@ import java.math.BigDecimal
 import java.util.*
 
 data class DepositHistoryResponse(
-    val id: Long,
+    val id: String,
     val uuid: String,
     val currency: String,
     val amount: BigDecimal,

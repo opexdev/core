@@ -4,7 +4,7 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 class WithdrawResponse(
-    val withdrawId: Long,
+    val withdrawId: String,
     val uuid: String,
     val amount: BigDecimal,
     val currency: String,
@@ -25,3 +25,6 @@ class WithdrawResponse(
     var transferMethod: TransferMethod?,
     val otpRequired: Int? = 0,
 )
+enum class WithdrawType {
+    CARD_TO_CARD, SHEBA, ON_CHAIN, OFF_CHAIN
+}

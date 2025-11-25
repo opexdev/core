@@ -1,7 +1,6 @@
 package co.nilin.opex.profile.core.data.profile
 
 import co.nilin.opex.profile.core.data.kyc.KycLevel
-import co.nilin.opex.profile.core.data.limitation.Limitation
 import java.time.LocalDateTime
 
 data class Profile(
@@ -22,7 +21,6 @@ data class Profile(
     var lastUpdateDate: LocalDateTime? = null,
     var creator: String? = null,
     var kycLevel: KycLevel? = null,
-    var limitations: List<Limitation>? = null,
     var mobileIdentityMatch: Boolean? = null,
     var personalIdentityMatch: Boolean? = null
 
