@@ -1,6 +1,7 @@
 package co.nilin.opex.api.core.spi
 
 import co.nilin.opex.api.core.inout.*
+import java.math.BigDecimal
 
 interface WalletProxy {
 
@@ -170,4 +171,28 @@ interface WalletProxy {
 
     suspend fun getSystemWalletsTotal(token: String): List<WalletTotal>
     suspend fun getUsersWalletsTotal(token: String): List<WalletTotal>
+
+    suspend fun acceptWithdraw(token: String, withdrawUuid: String): WithdrawActionResult
+    suspend fun doneWithdraw(token: String, withdrawUuid: String, request: WithdrawDoneRequest): WithdrawActionResult
+    suspend fun rejectWithdraw(
+        token: String,
+        withdrawUuid: String,
+        request: WithdrawRejectRequest
+    ): WithdrawActionResult
+
+    suspend fun withdrawManually(
+        token: String,
+        symbol: String,
+        sourceUuid: String,
+        amount: BigDecimal,
+        request: ManualTransferRequest
+    ): TransferResult
+
+    suspend fun depositManually(
+        token: String,
+        symbol: String,
+        receiverUuid: String,
+        amount: BigDecimal,
+        request: ManualTransferRequest
+    ): TransferResult
 }

@@ -24,7 +24,7 @@ class WithdrawAdminController(
     private val manualWithdrawService: ManualWithdrawService
 ) {
     data class WithdrawRejectRequest(val reason: String, val attachment: String?)
-    data class WithdrawAcceptRequest(
+    data class WithdrawDoneRequest(
         val destTransactionRef: String,
         val destNote: String?,
         val destAmount: BigDecimal?,
@@ -88,14 +88,15 @@ class WithdrawAdminController(
     @PostMapping("/{withdrawUuid}/accept")
     suspend fun acceptWithdraw(
         @PathVariable withdrawUuid: String,
+        @CurrentSecurityContext securityContext: SecurityContext
     ): WithdrawActionResult {
-        return withdrawService.acceptWithdraw(withdrawUuid)
+        return withdrawService.acceptWithdraw(withdrawUuid, securityContext.authentication.name)
     }
 
     @PostMapping("/{withdrawUuid}/done")
     suspend fun doneWithdraw(
         @PathVariable withdrawUuid: String,
-        @RequestBody request: WithdrawAcceptRequest,
+        @RequestBody request: WithdrawDoneRequest,
         @CurrentSecurityContext securityContext: SecurityContext
     ): WithdrawActionResult {
         return withdrawService.doneWithdraw(
