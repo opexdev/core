@@ -713,7 +713,7 @@ class WithdrawServiceTest {
             coEvery { withdrawPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns null
 
             val ex = Assertions.assertThrows(OpexException::class.java) {
-                runBlocking { withdrawService.acceptWithdraw(WITHDRAW_UUID) }
+                runBlocking { withdrawService.acceptWithdraw(WITHDRAW_UUID,"applicator") }
             }
 
             Assertions.assertEquals(OpexError.WithdrawNotFound, ex.error)
@@ -725,7 +725,7 @@ class WithdrawServiceTest {
             coEvery { withdrawPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns withdraw
 
             val ex = Assertions.assertThrows(OpexException::class.java) {
-                runBlocking { withdrawService.acceptWithdraw(WITHDRAW_UUID) }
+                runBlocking { withdrawService.acceptWithdraw(WITHDRAW_UUID,"applicator") }
             }
 
             Assertions.assertEquals(OpexError.WithdrawCannotBeAccepted, ex.error)
@@ -737,7 +737,7 @@ class WithdrawServiceTest {
             coEvery { withdrawPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns withdraw
             coEvery { withdrawPersister.persist(any()) } returns withdraw.copy(status = WithdrawStatus.ACCEPTED)
 
-            val result = withdrawService.acceptWithdraw(WITHDRAW_UUID)
+            val result = withdrawService.acceptWithdraw(WITHDRAW_UUID,"applicator")
 
             Assertions.assertEquals(WITHDRAW_UUID, result.withdrawId)
             Assertions.assertEquals(WithdrawStatus.ACCEPTED, result.status)
