@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 @Service
 class WithdrawService(
@@ -268,13 +268,14 @@ class WithdrawService(
     }
 
     @Transactional
-    suspend fun acceptWithdraw(withdrawUuid: String): WithdrawActionResult {
+    suspend fun acceptWithdraw(withdrawUuid: String, applicator: String): WithdrawActionResult {
         val withdraw =
             withdrawPersister.findByWithdrawUuid(withdrawUuid) ?: throw OpexError.WithdrawNotFound.exception()
 
         if (!withdraw.canBeAccepted()) throw OpexError.WithdrawCannotBeAccepted.exception()
 
         withdraw.status = WithdrawStatus.ACCEPTED
+        withdraw.applicator = applicator
         withdrawPersister.persist(withdraw)
 
         return WithdrawActionResult(withdrawUuid, WithdrawStatus.ACCEPTED)
