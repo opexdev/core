@@ -5,7 +5,6 @@ import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -20,6 +19,8 @@ import java.util.function.Supplier
 object KafkaTopics {
     const val AUTH = "auth"
     const val LOGIN = "login"
+    const val LOGOUT = "logout"
+
 }
 
 @Configuration
@@ -35,7 +36,7 @@ class KafkaProducerConfig(
             ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
             ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JsonSerializer::class.java,
             ProducerConfig.ACKS_CONFIG to "all",
-            JsonSerializer.TYPE_MAPPINGS to "userCreatedEvent:co.nilin.opex.auth.data.UserCreatedEvent"
+            JsonSerializer.TYPE_MAPPINGS to "userCreatedEvent:co.nilin.opex.auth.data.UserCreatedEvent,loginEvent:co.nilin.opex.auth.data.LoginEvent,logoutEvent:co.nilin.opex.auth.data.LogoutEvent"
         )
     }
 
@@ -49,13 +50,4 @@ class KafkaProducerConfig(
         return KafkaTemplate(producerFactory)
     }
 
-    @Autowired
-    fun createUserCreatedTopics(applicationContext: GenericApplicationContext) {
-        applicationContext.registerBean("topic_auth", NewTopic::class.java, Supplier {
-            TopicBuilder.name(KafkaTopics.AUTH)
-                .partitions(1)
-                .replicas(1)
-                .build()
-        })
-    }
 }

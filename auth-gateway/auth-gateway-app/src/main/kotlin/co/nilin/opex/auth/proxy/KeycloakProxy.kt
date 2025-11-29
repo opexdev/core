@@ -66,6 +66,8 @@ class KeycloakProxy(
             .awaitBody<Token>()
     }
 
+
+
     suspend fun checkUserCredentials(user: KeycloakUser, password: String) {
         keycloakClient.post()
             .uri("${keycloakConfig.url}/realms/${keycloakConfig.realm}/password/validate")

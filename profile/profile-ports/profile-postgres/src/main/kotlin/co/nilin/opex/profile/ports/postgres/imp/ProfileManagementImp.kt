@@ -17,6 +17,7 @@ import co.nilin.opex.profile.ports.postgres.dao.ProfileHistoryRepository
 import co.nilin.opex.profile.ports.postgres.dao.ProfileRepository
 import co.nilin.opex.profile.ports.postgres.model.entity.ProfileModel
 import co.nilin.opex.profile.ports.postgres.utils.toProfileModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -194,16 +195,21 @@ class ProfileManagementImp(
     }
 
     //todo add version column to profile table
-    override suspend fun updateUserLevelAndStatus(userId: String, userLevel: KycLevel) {
+    override suspend fun updateUserLevelAndStatus(userId: String, userLevel: KycLevel, retry: Boolean) {
         profileRepository.findByUserId(userId)?.awaitFirstOrNull()?.let { profileModel ->
             profileModel.kycLevel = userLevel
             profileRepository.updateKycLevelByUserId(userId, userLevel.name).awaitFirstOrNull()
-        } ?: throw OpexError.UserNotFound.exception()
+        } ?: run {
+            if (retry) {
+                delay(50)
+                updateUserLevelAndStatus(userId, userLevel, false)
+            } else
+                throw OpexError.UserNotFound.exception()
+        }
     }
 
     override suspend fun validateEmailForUpdate(userId: String, email: String) {
         validateEmailFormat(email)
-
         val profile = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
             ?: throw OpexError.ProfileNotfound.exception()
 

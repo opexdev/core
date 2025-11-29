@@ -5,6 +5,12 @@ import co.nilin.opex.device.core.data.UserDevice
 import reactor.core.publisher.Mono
 
 interface DevicePersister {
-    suspend fun upsertDevice(userId: Long, device: Device, ip: String?, userAgent: String?): Mono<UserDevice>
-    suspend fun findUserDevice(userId: Long, deviceUuid: String): Mono<UserDevice>?
+
+        suspend fun upsertDevice(device: Device): Device?
+
+        suspend fun fetchDeviceByUuid(deviceUuid: String): Device?
+
+        suspend fun fetchDevicesByIds(deviceIds: List<Long>): List<Device>
+
+        suspend fun fetchAllDevices(): List<Device>
 }

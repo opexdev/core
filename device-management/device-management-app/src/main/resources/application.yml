@@ -1,35 +1,29 @@
 server:
-  forward-headers-strategy: NATIVE
   port: 8080
 spring:
   application:
     name: opex-device-management
-  main:
-    allow-bean-definition-overriding: false
   kafka:
     bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
     consumer:
-      group-id: auth
-  datasource:
-    platform: postgres
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${DB_IP_PORT:localhost}/opex
+      group-id: device-management
+  r2dbc:
+    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
     initialization-mode: always
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        jdbc.lob.non_contextual_creation: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        show_sql: false
-        default_schema: schema.sql
-    open-in-view: false
-    show-sql: false
-
-
+    pool:
+      initial-size: 5
+      max-size: 32
+      max-idle-time: 10m
+      max-life-time: 30m
+      max-acquire-time: 10s
+      max-create-connection-time: 10s
+      validation-query: SELECT 1
+  datasource:
+    url: jdbc:postgresql://${DB_IP_PORT:localhost}/opex
+    username: ${dbusername:opex}
+    password: ${dbpassword:hiopex}
   cloud:
     bootstrap:
       enabled: true
@@ -39,7 +33,7 @@ spring:
       scheme: http
       authentication: APPID
       app-id:
-        user-id: co.nilin.opex.auth.gateway.utils.VaultUserIdMechanism
+        user-id: co.nilin.opex.device.app.utils.VaultUserIdMechanism
       fail-fast: true
       kv:
         enabled: true
@@ -56,6 +50,8 @@ spring:
         prefer-ip-address: true
   config:
     import: vault://secret/${spring.application.name}
+  codec:
+    max-in-memory-size: 20MB
 management:
   endpoints:
     web:
@@ -69,23 +65,47 @@ management:
       enabled: true
     prometheus:
       enabled: true
-keycloak:
-  adminUrl: ${ADMIN_URL:http://localhost:8080/auth}
-  frontendUrl: ${FRONTEND_URL:http://localhost:8080/auth}
-  server:
-    contextPath: "/auth"
-    adminUser:
-      username: ${admin_username:opex-admin}
-      password: ${admin_password:hiopex}
-    realmImportFile: /opex-realm.json
-  migration:
-    action: import
-    provider: singleFile
-    file: /opex-master-realm.json
-    strategy: OVERWRITE_EXISTING
-  profile:
-    feature:
-      admin_fine_grained_authz: enabled
-      token_exchange: enabled
-  hashicorp:
-    url: ${VAULT_URL}
+logbook:
+  secure-filter:
+    enabled: true
+  format:
+    style: http
+  filter:
+    enabled: true
+    form-request-mode: BODY
+  attribute-extractors:
+    - type: JwtFirstMatchingClaimExtractor
+      claim-names: [ "sub", "subject" ]
+  obfuscate:
+    headers:
+      - Authorization
+    parameters:
+      - password
+    json-body-fields:
+      - password
+    replacement: "***"
+  write:
+    max-body-size: 10_000 #kb
+  predicate:
+    exclude:
+      - path: /auth**
+      - path: /actuator/**
+      - path: /swagger**
+    include:
+      - path: /test**
+      - path: /admin/**
+        methods:
+          - POST
+          - PUT
+logging:
+  level:
+    org.apache.kafka: ERROR
+    co.nilin: INFO
+    org.zalando.logbook: TRACE
+
+app:
+  auth:
+    url: lb://opex-auth
+    cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
+    client-id: none
+    client-secret: none

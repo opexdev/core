@@ -1,5 +1,6 @@
 package co.nilin.opex.auth.model
 
+import co.nilin.opex.auth.data.Device
 import com.fasterxml.jackson.annotation.JsonProperty
 
 data class PasswordFlowTokenRequest(
@@ -11,27 +12,27 @@ data class PasswordFlowTokenRequest(
     val rememberMe: Boolean = true,
     val captchaType: CaptchaType? = CaptchaType.INTERNAL,
     val captchaCode: String?,
-)
+):Device()
 
 data class RefreshTokenRequest(
     val clientId: String,
     val clientSecret: String?,
     val refreshToken: String
-)
+):Device()
 
 data class ExternalIdpTokenRequest(
     val idToken: String,
     val accessToken: String,
     val idp: String,
     val otpVerifyRequest: OTPVerifyRequest?
-)
+):Device()
 
 data class Token(
     @JsonProperty("access_token")
     val accessToken: String,          // The access token
 
     @JsonProperty("expires_in")
-    val expiresIn: Int?,               // Expiration time of the access token in seconds
+    val expiresIn: Int,               // Expiration time of the access token in seconds
 
     @JsonProperty("refresh_expires_in")
     val refreshExpiresIn: Int?,        // Expiration time of the refresh token in seconds

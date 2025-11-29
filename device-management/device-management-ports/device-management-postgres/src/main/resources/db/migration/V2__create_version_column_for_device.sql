@@ -1,0 +1,1 @@
+Alter TABLE devices add column version BIGINT;
