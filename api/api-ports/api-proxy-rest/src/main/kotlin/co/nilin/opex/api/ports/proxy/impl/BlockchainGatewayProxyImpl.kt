@@ -2,6 +2,7 @@ package co.nilin.opex.api.ports.proxy.impl
 
 import co.nilin.opex.api.core.inout.AssignAddressRequest
 import co.nilin.opex.api.core.inout.AssignResponse
+import co.nilin.opex.api.core.inout.ChainInfo
 import co.nilin.opex.api.core.inout.DepositDetails
 import co.nilin.opex.api.core.spi.BlockchainGatewayProxy
 import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
@@ -55,6 +56,20 @@ class BlockchainGatewayProxyImpl(@Qualifier("generalWebClient") private val clie
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToFlux<DepositDetails>()
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
+        }
+    }
+
+    override suspend fun getChainInfo(): List<ChainInfo> {
+        logger.info("calling bc-gateway chains info")
+        return withContext(ProxyDispatchers.general) {
+            client.get()
+                .uri(URI.create("$baseUrl/crypto-currency/chain"))
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<ChainInfo>()
                 .collectList()
                 .awaitFirstOrElse { emptyList() }
         }

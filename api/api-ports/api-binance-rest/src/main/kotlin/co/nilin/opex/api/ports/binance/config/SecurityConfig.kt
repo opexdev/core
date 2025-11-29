@@ -52,6 +52,7 @@ class SecurityConfig(
                     .pathMatchers(HttpMethod.PUT, "/opex/v1/withdraw").hasAuthority("PERM_withdraw:write")
                     .pathMatchers("/opex/v1/voucher").hasAuthority("PERM_voucher:submit")
                     .pathMatchers("/opex/v1/market/**").permitAll()
+                    .pathMatchers(HttpMethod.GET,"/opex/v1/market/chain").permitAll()
                     .anyExchange().authenticated()
             }
             .addFilterBefore(apiKeyFilter as WebFilter, SecurityWebFiltersOrder.AUTHENTICATION)

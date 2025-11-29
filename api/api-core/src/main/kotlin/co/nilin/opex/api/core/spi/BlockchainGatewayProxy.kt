@@ -2,11 +2,13 @@ package co.nilin.opex.api.core.spi
 
 import co.nilin.opex.api.core.inout.AssignAddressRequest
 import co.nilin.opex.api.core.inout.AssignResponse
+import co.nilin.opex.api.core.inout.ChainInfo
 import co.nilin.opex.api.core.inout.DepositDetails
 
 interface BlockchainGatewayProxy {
 
-   suspend fun assignAddress(assignAddressRequest: AssignAddressRequest): AssignResponse?
+    suspend fun assignAddress(assignAddressRequest: AssignAddressRequest): AssignResponse?
+    suspend fun getDepositDetails(refs: List<String>): List<DepositDetails>
+    suspend fun getChainInfo(): List<ChainInfo>
 
-   suspend fun getDepositDetails(refs: List<String>): List<DepositDetails>
 }

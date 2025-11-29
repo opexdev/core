@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 import java.time.ZoneId
+import kotlin.collections.mapNotNull
 
 @RestController("opexMarketController")
 @RequestMapping("/opex/v1/market")
@@ -23,6 +24,7 @@ class MarketController(
     private val marketDataProxy: MarketDataProxy,
     private val walletProxy: WalletProxy,
     private val matchingGatewayProxy: MatchingGatewayProxy,
+    private val blockChainGatewayProxy: BlockchainGatewayProxy,
     @Value("\${app.trade-volume-calculation-currency}")
     private val tradeVolumeCalculationCurrency: String,
     @Value("\${app.withdraw-volume-calculation-currency}")
@@ -55,6 +57,11 @@ class MarketController(
                 )
             }
         }
+    }
+
+    @GetMapping("/chain")
+    suspend fun getChains(): List<ChainInfo> {
+       return blockChainGatewayProxy.getChainInfo()
     }
 
     @GetMapping("/currency/gateway")
