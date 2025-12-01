@@ -9,6 +9,6 @@ import reactor.core.publisher.Flux
 @Repository
 interface WithdrawOtpRepository : ReactiveCrudRepository<WithdrawOtpModel, Long> {
 
-    @Query("select * from withdraws_otp where withdraw=:withdrawId order by id desc")
-    suspend fun findByWithdrawId(withdrawId: Long): Flux<WithdrawOtpModel>
+    @Query("select * from withdraws_otp where withdraw_uuid=:withdrawUuid order by id desc")
+    suspend fun findByWithdrawId(withdrawUuid: String): Flux<WithdrawOtpModel>
 }

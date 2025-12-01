@@ -156,18 +156,6 @@ class UserService(
         keycloakProxy.resetPassword(user.id, request.newPassword)
     }
 
-    suspend fun updateMobile(request: UpdateMobileRequest) {
-        keycloakProxy.updateUserMobile(request.userId, request.mobile)
-    }
-
-    suspend fun updateEmail(request: UpdateEmailRequest) {
-        keycloakProxy.updateUserEmail(request.userId, request.email)
-    }
-
-    suspend fun updateName(request: UpdateNameRequest) {
-        keycloakProxy.updateUserName(request.userId, request.firstName, request.lastName)
-    }
-
     suspend fun fetchActiveSessions(uuid: String, currentSessionId: String): List<ActiveSession> {
         return keycloakProxy.fetchActiveSessions(uuid, currentSessionId)
     }

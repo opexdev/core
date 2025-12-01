@@ -1,6 +1,7 @@
 package co.nilin.opex.api.core.spi
 
 import co.nilin.opex.api.core.inout.*
+import java.math.BigDecimal
 
 interface WalletProxy {
 
@@ -38,7 +39,7 @@ interface WalletProxy {
         limit: Int,
         offset: Int,
         ascendingByTime: Boolean?,
-    ): List<WithdrawHistoryResponse>
+    ): List<WithdrawResponse>
 
     suspend fun getWithdrawTransactionsCount(
         uuid: String,
@@ -111,12 +112,12 @@ interface WalletProxy {
 
     suspend fun cancelWithdraw(
         token: String,
-        withdrawId: Long
+        withdrawUuid: String
     ): Void?
 
     suspend fun findWithdraw(
         token: String,
-        withdrawId: Long
+        withdrawUuid: String
     ): WithdrawResponse
 
     suspend fun submitVoucher(code: String, token: String): SubmitVoucherResponse
@@ -125,4 +126,73 @@ interface WalletProxy {
 
     suspend fun getSwapTransactions(token: String, request: UserTransactionRequest): List<SwapResponse>
     suspend fun getSwapTransactionsCount(token: String, request: UserTransactionRequest): Long
+
+    suspend fun requestWithdrawOTP(token: String, withdrawUuid: String, otpType: OTPType): TempOtpResponse
+    suspend fun verifyWithdrawOTP(
+        token: String,
+        withdrawUuid: String,
+        otpType: OTPType,
+        otpCode: String
+    ): WithdrawActionResult
+
+    suspend fun getWithdrawTransactionsForAdmin(
+        token: String,
+        request: AdminWithdrawHistoryRequest
+    ): List<WithdrawAdminResponse>
+
+    suspend fun getDepositTransactionsForAdmin(
+        token: String,
+        request: AdminDepositHistoryRequest
+    ): List<DepositAdminResponse>
+
+    suspend fun getSwapTransactionsForAdmin(
+        token: String,
+        request: UserTransactionRequest
+    ): List<SwapAdminResponse>
+
+    suspend fun getTradeHistoryForAdmin(
+        token: String,
+        request: AdminTradeHistoryRequest
+    ): List<TradeAdminResponse>
+
+    suspend fun getUserTransactionHistoryForAdmin(
+        token: String,
+        request: UserTransactionRequest
+    ): List<UserTransactionHistory>
+
+    suspend fun getUsersWallets(
+        token: String,
+        uuid: String?,
+        currency: String?,
+        excludeSystem: Boolean,
+        limit: Int,
+        offset: Int
+    ): List<WalletDataResponse>
+
+    suspend fun getSystemWalletsTotal(token: String): List<WalletTotal>
+    suspend fun getUsersWalletsTotal(token: String): List<WalletTotal>
+
+    suspend fun acceptWithdraw(token: String, withdrawUuid: String): WithdrawActionResult
+    suspend fun doneWithdraw(token: String, withdrawUuid: String, request: WithdrawDoneRequest): WithdrawActionResult
+    suspend fun rejectWithdraw(
+        token: String,
+        withdrawUuid: String,
+        request: WithdrawRejectRequest
+    ): WithdrawActionResult
+
+    suspend fun withdrawManually(
+        token: String,
+        symbol: String,
+        sourceUuid: String,
+        amount: BigDecimal,
+        request: ManualTransferRequest
+    ): TransferResult
+
+    suspend fun depositManually(
+        token: String,
+        symbol: String,
+        receiverUuid: String,
+        amount: BigDecimal,
+        request: ManualTransferRequest
+    ): TransferResult
 }

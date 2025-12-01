@@ -25,9 +25,9 @@ import java.time.ZoneId
 @RequestMapping("/withdraw")
 class WithdrawController(private val withdrawService: WithdrawService) {
 
-    @GetMapping("/{withdrawId}")
-    suspend fun findWithdraw(@PathVariable withdrawId: Long): WithdrawResponse {
-        return withdrawService.findWithdraw(withdrawId) ?: throw OpexError.WithdrawNotFound.exception()
+    @GetMapping("/{withdrawUuid}")
+    suspend fun findWithdraw(@PathVariable withdrawUuid: String): WithdrawResponse {
+        return withdrawService.findWithdraw(withdrawUuid) ?: throw OpexError.WithdrawNotFound.exception()
     }
 
     @PostMapping
@@ -56,7 +56,7 @@ class WithdrawController(private val withdrawService: WithdrawService) {
     @PostMapping("/{withdrawId}/otp/{otpType}/request")
     suspend fun requestOTP(
         @CurrentSecurityContext securityContext: SecurityContext,
-        @PathVariable withdrawId: Long,
+        @PathVariable withdrawId: String,
         @PathVariable otpType: OTPType
     ): TempOtpResponse {
         return withdrawService.requestOTP(
@@ -70,7 +70,7 @@ class WithdrawController(private val withdrawService: WithdrawService) {
     @PostMapping("/{withdrawId}/otp/{otpType}/verify")
     suspend fun verifyOTP(
         @CurrentSecurityContext securityContext: SecurityContext,
-        @PathVariable withdrawId: Long,
+        @PathVariable withdrawId: String,
         @PathVariable otpType: OTPType,
         @RequestParam otpCode: String,
     ): WithdrawActionResult {
@@ -78,7 +78,7 @@ class WithdrawController(private val withdrawService: WithdrawService) {
     }
 
     @PostMapping("/{withdrawId}/cancel")
-    suspend fun cancelWithdraw(principal: Principal, @PathVariable withdrawId: Long) {
+    suspend fun cancelWithdraw(principal: Principal, @PathVariable withdrawId: String) {
         withdrawService.cancelWithdraw(principal.name, withdrawId)
     }
 
@@ -92,11 +92,10 @@ class WithdrawController(private val withdrawService: WithdrawService) {
             request.currency,
             request.startTime?.let {
                 LocalDateTime.ofInstant(Instant.ofEpochMilli(request.startTime), ZoneId.systemDefault())
-            }
-                ?: null,
+            },
             request.endTime?.let {
                 LocalDateTime.ofInstant(Instant.ofEpochMilli(request.endTime), ZoneId.systemDefault())
-            } ?: null,
+            },
             request.limit!!,
             request.offset!!,
             request.ascendingByTime
@@ -136,11 +135,10 @@ class WithdrawController(private val withdrawService: WithdrawService) {
             request.currency,
             request.startTime?.let {
                 LocalDateTime.ofInstant(Instant.ofEpochMilli(request.startTime), ZoneId.systemDefault())
-            }
-                ?: null,
+            },
             request.endTime?.let {
                 LocalDateTime.ofInstant(Instant.ofEpochMilli(request.endTime), ZoneId.systemDefault())
-            } ?: null,
+            },
         )
     }
 

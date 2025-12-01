@@ -2,7 +2,9 @@ package co.nilin.opex.auth.config
 
 
 import co.nilin.opex.auth.data.KycLevelUpdatedEvent
+import co.nilin.opex.auth.data.ProfileUpdatedEvent
 import co.nilin.opex.auth.kafka.KycLevelUpdatedKafkaListener
+import co.nilin.opex.auth.kafka.ProfileUpdatedKafkaListener
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.serialization.StringDeserializer
@@ -10,7 +12,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.kafka.core.ConsumerFactory
@@ -41,16 +42,18 @@ class KafkaListenerConfig {
             ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
             ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JsonDeserializer::class.java,
             JsonDeserializer.TRUSTED_PACKAGES to "co.nilin.opex.*",
-            JsonDeserializer.TYPE_MAPPINGS to "kyc_level_updated_event:co.nilin.opex.auth.data.KycLevelUpdatedEvent"
+            JsonDeserializer.TYPE_MAPPINGS to "kyc_level_updated_event:co.nilin.opex.auth.data.KycLevelUpdatedEvent,profile_updated_event:co.nilin.opex.auth.data.ProfileUpdatedEvent"
         )
     }
 
+    // ------------------ KYC Event Beans ------------------
+
     @Bean("kycLevelKafkaTemplate")
-    fun kafkaTemplate(consumerConfigs: Map<String, Any?>): KafkaTemplate<String, KycLevelUpdatedEvent> {
+    fun kycKafkaTemplate(@Qualifier("consumerConfigs") consumerConfigs: Map<String, Any?>): KafkaTemplate<String, KycLevelUpdatedEvent> {
         return KafkaTemplate(DefaultKafkaProducerFactory(consumerConfigs))
     }
 
-    @Bean
+    @Bean("kycConsumerFactory")
     fun kycConsumerFactory(@Qualifier("consumerConfigs") consumerConfigs: Map<String, Any?>): ConsumerFactory<String, KycLevelUpdatedEvent> {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
@@ -59,8 +62,8 @@ class KafkaListenerConfig {
     @Bean
     fun kycLevelUpdatedListenerContainer(
         listener: KycLevelUpdatedKafkaListener,
-        consumerFactory: ConsumerFactory<String, KycLevelUpdatedEvent>,
-       @Qualifier("kycLevelKafkaTemplate") template: KafkaTemplate<String, KycLevelUpdatedEvent>
+        @Qualifier("kycConsumerFactory") consumerFactory: ConsumerFactory<String, KycLevelUpdatedEvent>,
+        @Qualifier("kycLevelKafkaTemplate") template: KafkaTemplate<String, KycLevelUpdatedEvent>
     ): ConcurrentMessageListenerContainer<String, KycLevelUpdatedEvent> {
         val containerProps = ContainerProperties(Pattern.compile("kyc_level_updated"))
         containerProps.messageListener = listener
@@ -70,6 +73,36 @@ class KafkaListenerConfig {
         container.start()
         return container
     }
+
+    // ------------------ Profile Updated Event Beans ------------------
+
+    @Bean("profileUpdatedKafkaTemplate")
+    fun profileKafkaTemplate(@Qualifier("consumerConfigs") consumerConfigs: Map<String, Any?>): KafkaTemplate<String, ProfileUpdatedEvent> {
+        return KafkaTemplate(DefaultKafkaProducerFactory(consumerConfigs))
+    }
+
+    @Bean("profileConsumerFactory")
+    fun profileConsumerFactory(@Qualifier("consumerConfigs") consumerConfigs: Map<String, Any?>): ConsumerFactory<String, ProfileUpdatedEvent> {
+        return DefaultKafkaConsumerFactory(consumerConfigs)
+    }
+
+    @Autowired
+    @Bean
+    fun profileUpdatedListenerContainer(
+        listener: ProfileUpdatedKafkaListener,
+        @Qualifier("profileConsumerFactory") consumerFactory: ConsumerFactory<String, ProfileUpdatedEvent>,
+        @Qualifier("profileUpdatedKafkaTemplate") template: KafkaTemplate<String, ProfileUpdatedEvent>
+    ): ConcurrentMessageListenerContainer<String, ProfileUpdatedEvent> {
+        val containerProps = ContainerProperties(Pattern.compile("profile_updated"))
+        containerProps.messageListener = listener
+        val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
+        container.setBeanName("ProfileUpdatedKafkaListenerContainer")
+        container.commonErrorHandler = createConsumerErrorHandler(template, "profile_updated.DLT")
+        container.start()
+        return container
+    }
+
+    // ------------------ Shared Error Handler ------------------
 
     private fun createConsumerErrorHandler(kafkaTemplate: KafkaTemplate<*, *>, dltTopic: String): CommonErrorHandler {
         val recoverer = DeadLetterPublishingRecoverer(kafkaTemplate) { cr, _ ->

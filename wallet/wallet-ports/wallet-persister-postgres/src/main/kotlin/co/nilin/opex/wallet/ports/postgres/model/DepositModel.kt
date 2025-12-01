@@ -14,7 +14,6 @@ data class DepositModel(
     @Id var id: Long?,
     @Column("uuid")
     val ownerUuid: String,
-    @Column("duid")
     val depositUuid: String,
     val currency: String,
     val amount: BigDecimal,

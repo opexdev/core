@@ -1,5 +1,7 @@
 package co.nilin.opex.api.core.spi
 
+import co.nilin.opex.api.core.inout.Chain
+import co.nilin.opex.api.core.inout.ChainInfo
 import co.nilin.opex.api.core.inout.FeeConfig
 import co.nilin.opex.api.core.inout.PairConfigResponse
 import co.nilin.opex.api.core.inout.UserFee

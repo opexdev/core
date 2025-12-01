@@ -1,13 +1,15 @@
 package co.nilin.opex.auth.config
 
 import co.nilin.opex.auth.kafka.KycLevelUpdatedKafkaListener
+import co.nilin.opex.auth.kafka.ProfileUpdatedKafkaListener
 import co.nilin.opex.auth.spi.KycLevelUpdatedEventListener
+import co.nilin.opex.auth.spi.ProfileUpdatedEventListener
 import jakarta.annotation.PostConstruct
-import org.springframework.context.annotation.Configuration
 import org.bouncycastle.util.io.pem.PemObject
 import org.bouncycastle.util.io.pem.PemWriter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStreamWriter
@@ -73,9 +75,11 @@ class AppConfig {
     @Autowired
     fun configureEventListeners(
         kycLevelUpdatedKafkaListener: KycLevelUpdatedKafkaListener,
-        kycLevelUpdatedEventListener: KycLevelUpdatedEventListener
+        kycLevelUpdatedEventListener: KycLevelUpdatedEventListener,
+        profileUpdatedKafkaListener: ProfileUpdatedKafkaListener,
+        profileUpdatedEventListener: ProfileUpdatedEventListener,
     ) {
         kycLevelUpdatedKafkaListener.addEventListener(kycLevelUpdatedEventListener)
-
+        profileUpdatedKafkaListener.addEventListener(profileUpdatedEventListener)
     }
 }

@@ -6,6 +6,7 @@ import java.time.LocalDateTime
 data class UserTransactionHistory(
     val id: String,
     val userId: String,
+    val ownerName : String?,
     val currency: String,
     var balance: BigDecimal,
     val balanceChange: BigDecimal,

@@ -1,7 +1,9 @@
 package co.nilin.opex.bcgateway.app.controller
 
 import co.nilin.opex.bcgateway.app.dto.ChainResponse
-import co.nilin.opex.bcgateway.core.model.*
+import co.nilin.opex.bcgateway.core.model.CryptoCurrencyCommand
+import co.nilin.opex.bcgateway.core.model.FetchGateways
+import co.nilin.opex.bcgateway.core.model.WithdrawData
 import co.nilin.opex.bcgateway.core.spi.ChainLoader
 import co.nilin.opex.bcgateway.core.spi.CryptoCurrencyHandlerV2
 import org.springframework.web.bind.annotation.*
@@ -67,7 +69,8 @@ class CryptoCurrencyController(
 
     @GetMapping("/chain")
     suspend fun getChains(): List<ChainResponse> {
-        return chainLoader.fetchAllChains().map { c -> ChainResponse(c.name, c.addressTypes.map { it.type }) }
+        return chainLoader.fetchAllChains()
+            .map { c -> ChainResponse(c.name, c.addressTypes.map { it.type }.getOrNull(0), c.externalChinScannerUrl, c.addressRegx) }
     }
 
 

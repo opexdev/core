@@ -4,10 +4,10 @@ import co.nilin.opex.profile.core.data.profile.ProfileApprovalRequestStatus
 import java.time.LocalDateTime
 
 open class ProfileApprovalRequest {
-    var profileId: Long = 0L
+    lateinit var userId: String
     var status: ProfileApprovalRequestStatus? = ProfileApprovalRequestStatus.PENDING
     var createDate: LocalDateTime? = null
     var updateDate: LocalDateTime? = null
     var updater: String? = null
-    var description: String?=null
+    var description: String? = null
 }

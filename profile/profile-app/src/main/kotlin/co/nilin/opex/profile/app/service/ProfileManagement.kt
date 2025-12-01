@@ -3,7 +3,10 @@ package co.nilin.opex.profile.app.service
 
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.profile.core.data.event.KycLevelUpdatedEvent
+import co.nilin.opex.profile.core.data.event.ProfileUpdatedEvent
 import co.nilin.opex.profile.core.data.event.UserCreatedEvent
+import co.nilin.opex.profile.core.data.inquiry.ComparativeResponse
+import co.nilin.opex.profile.core.data.inquiry.ShahkarResponse
 import co.nilin.opex.profile.core.data.kyc.KycLevel
 import co.nilin.opex.profile.core.data.otp.*
 import co.nilin.opex.profile.core.data.profile.*
@@ -11,27 +14,19 @@ import co.nilin.opex.profile.core.spi.*
 import co.nilin.opex.profile.core.utils.handleComparativeError
 import co.nilin.opex.profile.core.utils.handleShahkarError
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
-import kotlinx.coroutines.reactive.awaitFirstOrNull
-import kotlinx.coroutines.reactive.awaitSingle
-import kotlinx.coroutines.reactor.awaitSingle
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 
 @Component
 class ProfileManagement(
-    private val profilePersister: ProfilePersister,
-    private val linkedAccountPersister: LinkedAccountPersister,
-    private val limitationPersister: LimitationPersister,
+    private val profilePersister: ProfilePersister, private val limitationPersister: LimitationPersister,
     private val profileApprovalRequestPersister: ProfileApprovalRequestPersister,
     private val kycLevelUpdatedPublisher: KycLevelUpdatedPublisher,
+    private val profileUpdatedPublisher: ProfileUpdatedPublisher,
     private val otpProxy: OtpProxy,
-    private val authProxy: AuthProxy,
     private val inquiryProxy: InquiryProxy,
 
     @Value("\${app.inquiry.mobile-indentiy}")
@@ -63,57 +58,16 @@ class ProfileManagement(
         }
     }
 
-    suspend fun getAllProfiles(offset: Int, size: Int, profileRequest: ProfileRequest): List<Profile?>? {
-        profileRequest.accountNumber?.let {
-            val res = profilePersister.getAllProfile(offset, size, profileRequest)?.toList()
-            val accountOwner =
-                linkedAccountPersister.getOwner(profileRequest.accountNumber!!, profileRequest.partialSearch)
-                    ?.map { profilePersister.getProfile(it.userId)?.awaitFirstOrNull() }?.toList()
-            if (res?.isEmpty() == true || accountOwner?.isEmpty() == true) {
-                return null
-            } else {
-                return addDetail(accountOwner!!::contains?.let { it1 -> res?.filter(it1) }, profileRequest)
-            }
-        } ?: run {
-            return addDetail(profilePersister.getAllProfile(offset, size, profileRequest)?.toList(), profileRequest)
-
-        }
+    suspend fun getAllProfiles(profileRequest: ProfileRequest): List<Profile> {
+        return profilePersister.getAllProfile(profileRequest)
     }
 
-
-    private suspend fun addDetail(res: List<Profile?>?, profileRequest: ProfileRequest): List<Profile?>? {
-        if (profileRequest.includeLinkedAccount == true) {
-            res?.forEach {
-                it?.linkedAccounts = linkedAccountPersister.getAccounts(it?.userId!!)?.toList()
-            }
-        }
-        if (profileRequest.includeLimitation == true) {
-            res?.forEach {
-                it?.limitations = limitationPersister.getLimitation(it?.userId)?.toList()
-            }
-        }
-        return res;
-    }
-
-    suspend fun getProfile(userId: String): Mono<Profile>? {
+    suspend fun getProfile(userId: String): Profile {
         return profilePersister.getProfile(userId)
     }
 
-    suspend fun update(userId: String, newProfile: UpdateProfileRequest): Mono<Profile>? {
-        return profilePersister.updateProfile(userId, newProfile)
-    }
-
-    suspend fun updateAsAdmin(userId: String, newProfile: Profile): Mono<Profile>? {
-        return profilePersister.updateProfileAsAdmin(userId, newProfile)
-    }
-
-    suspend fun create(userId: String, newProfile: Profile): Mono<Profile>? {
-        newProfile.userId = userId
-        return profilePersister.createProfile(newProfile)
-    }
-
-    suspend fun getHistory(userId: String, offset: Int, size: Int): List<ProfileHistory>? {
-        return profilePersister.getHistory(userId, offset, size)
+    suspend fun getHistory(userId: String, offset: Int, limit: Int): List<ProfileHistory>? {
+        return profilePersister.getHistory(userId, offset, limit)
     }
 
     suspend fun updateUserLevel(userId: String, userLevel: KycLevel) {
@@ -128,7 +82,7 @@ class ProfileManagement(
                 listOf(OTPReceiver(mobile, OTPType.SMS)),
                 OTPAction.UPDATE_MOBILE.name
             )
-        )
+        ).apply { otpReceiver = OTPReceiver(mobile, OTPType.SMS) }
     }
 
     suspend fun updateMobile(userId: String, mobile: String, otpCode: String) {
@@ -139,7 +93,7 @@ class ProfileManagement(
             )
         )
         if (verifyResponse.result) {
-            authProxy.updateMobile(userId, mobile)
+            profileUpdatedPublisher.publish(ProfileUpdatedEvent(userId = userId, mobile = mobile))
             profilePersister.updateMobile(userId, mobile)
         } else throw OpexError.InvalidOTP.exception()
     }
@@ -152,7 +106,7 @@ class ProfileManagement(
                 listOf(OTPReceiver(email, OTPType.EMAIL)),
                 OTPAction.UPDATE_EMAIL.name
             )
-        )
+        ).apply { otpReceiver = OTPReceiver(email, OTPType.EMAIL) }
     }
 
     suspend fun updateEmail(userId: String, email: String, otpCode: String) {
@@ -163,14 +117,13 @@ class ProfileManagement(
             )
         )
         if (verifyResponse.result) {
-            authProxy.updateEmail(userId, email)
+            profileUpdatedPublisher.publish(ProfileUpdatedEvent(userId = userId, email = email))
             profilePersister.updateEmail(userId, email)
         } else throw OpexError.InvalidOTP.exception()
     }
 
     suspend fun completeProfile(userId: String, request: CompleteProfileRequest): Profile {
-        val profile = profilePersister.getProfile(userId)?.awaitFirstOrNull()
-            ?: throw OpexError.ProfileNotfound.exception()
+        val profile = profilePersister.getProfile(userId)
 
         if (profile.kycLevel == KycLevel.LEVEL_2) {
             throw OpexError.ProfileAlreadyCompleted.exception()
@@ -203,7 +156,13 @@ class ProfileManagement(
 
         val completedProfile = updateProfile(userId, request, isMobileIdentityMatch, isPersonalIdentityMatch)
 
-        authProxy.updateName(userId, request.firstName, request.lastName)
+        profileUpdatedPublisher.publish(
+            ProfileUpdatedEvent(
+                userId = userId,
+                firstName = request.firstName,
+                lastName = request.lastName
+            )
+        )
 
         validateInquiryResponses(shahkarResponse, comparativeResponse)
 
@@ -256,7 +215,7 @@ class ProfileManagement(
     private suspend fun saveProfileApprovalRequest(userId: String) {
         profileApprovalRequestPersister.save(
             ProfileApprovalRequest(
-                profileId = profilePersister.getProfileId(userId),
+                userId = userId,
                 status = ProfileApprovalRequestStatus.PENDING,
                 createDate = LocalDateTime.now()
             )

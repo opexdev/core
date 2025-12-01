@@ -151,4 +151,15 @@ class WalletOwnerManagerImpl(
                 )
             }
     }
+
+    override suspend fun updateWalletOwnerName(uuid: String, name: String) {
+        val owner = walletOwnerRepository.findByUuid(uuid).awaitFirstOrNull()
+        if (owner != null) {
+            owner.title = owner.title.split('|')[0] + "|" + name
+            walletOwnerRepository.save(owner).awaitFirstOrNull()
+                ?: logger.warn("Failed to update wallet owner name for UUID: $uuid")
+        } else {
+            logger.warn("Wallet owner not found for UUID: $uuid")
+        }
+    }
 }

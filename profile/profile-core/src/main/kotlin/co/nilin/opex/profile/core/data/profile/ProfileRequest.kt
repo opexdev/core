@@ -1,19 +1,21 @@
 package co.nilin.opex.profile.core.data.profile
 
-import java.time.LocalDateTime
+import co.nilin.opex.profile.core.data.kyc.KycLevel
 
 data class ProfileRequest(
-    var userId: String?,
-    var mobile: String?,
-    var email: String?,
-    var linkedAccount: String?,
-    var nationalCode: String?,
-    var firstName: String?,
-    var lastName: String?,
-    var createDateFrom: LocalDateTime?,
-    var accountNumber: String?,
-    var createDateTo: LocalDateTime?,
-    var includeLimitation: Boolean?,
-    var includeLinkedAccount: Boolean?,
-    var partialSearch: Boolean? = false
+    var userId: String? = null,
+    var firstName: String? = null,
+    var lastName: String? = null,
+    var mobile: String? = null,
+    var email: String? = null,
+    var identifier: String? = null,
+    var nationality: NationalityType? = null,
+    var gender: Gender? = null,
+    var status: ProfileStatus? = null,
+    var kycLevel: KycLevel? = null,
+    var createDateFrom: Long? = null,
+    var createDateTo: Long? = null,
+    var limit : Int = 10,
+    var offset: Int = 0,
+    var ascendingByTime: Boolean = false,
 )

@@ -97,7 +97,7 @@ class UserHistoryController(
         @RequestParam offset: Int?,
         @RequestParam ascendingByTime: Boolean?,
         @CurrentSecurityContext securityContext: SecurityContext,
-    ): List<WithdrawHistoryResponse> {
+    ): List<WithdrawResponse> {
         return walletProxy.getWithdrawTransactions(
             securityContext.jwtAuthentication().name,
             securityContext.jwtAuthentication().tokenValue(),

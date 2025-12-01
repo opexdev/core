@@ -20,6 +20,7 @@ import org.springframework.web.reactive.function.client.body
 import org.springframework.web.reactive.function.client.bodyToFlux
 import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
+import java.math.BigDecimal
 
 @Component
 class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebClient) : WalletProxy {
@@ -127,7 +128,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
         limit: Int,
         offset: Int,
         ascendingByTime: Boolean?,
-    ): List<WithdrawHistoryResponse> {
+    ): List<WithdrawResponse> {
         logger.info("fetching withdraw transaction history for $uuid")
         return withContext(ProxyDispatchers.wallet) {
             webClient.post()
@@ -137,7 +138,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
                 .body(Mono.just(TransactionRequest(currency, startTime, endTime, limit, offset, ascendingByTime)))
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToFlux<WithdrawHistoryResponse>()
+                .bodyToFlux<WithdrawResponse>()
                 .collectList()
                 .awaitFirstOrElse { emptyList() }
         }
@@ -376,9 +377,9 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
             .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
     }
 
-    override suspend fun cancelWithdraw(token: String, withdrawId: Long): Void? {
+    override suspend fun cancelWithdraw(token: String, withdrawUuid: String): Void? {
         return webClient.post()
-            .uri("$baseUrl/withdraw/$withdrawId/cancel")
+            .uri("$baseUrl/withdraw/$withdrawUuid/cancel")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .retrieve()
@@ -387,9 +388,9 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
             .awaitFirstOrNull()
     }
 
-    override suspend fun findWithdraw(token: String, withdrawId: Long): WithdrawResponse {
+    override suspend fun findWithdraw(token: String, withdrawUuid: String): WithdrawResponse {
         return webClient.get()
-            .uri("$baseUrl/withdraw/$withdrawId")
+            .uri("$baseUrl/withdraw/$withdrawUuid")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .retrieve()
@@ -453,6 +454,255 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<Long>()
             .awaitFirstOrElse { 0L }
+    }
+
+    override suspend fun requestWithdrawOTP(
+        token: String,
+        withdrawUuid: String,
+        otpType: OTPType
+    ): TempOtpResponse {
+        return webClient.post()
+            .uri("$baseUrl/withdraw/${withdrawUuid}/otp/${otpType}/request")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<TempOtpResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun verifyWithdrawOTP(
+        token: String,
+        withdrawUuid: String,
+        otpType: OTPType,
+        otpCode: String
+    ): WithdrawActionResult {
+        return webClient.post()
+            .uri("$baseUrl/withdraw/${withdrawUuid}/otp/${otpType}/verify?otpCode=${otpCode}")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<WithdrawActionResult>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun getWithdrawTransactionsForAdmin(
+        token: String,
+        request: AdminWithdrawHistoryRequest
+    ): List<WithdrawAdminResponse> {
+        return webClient.post()
+            .uri("$baseUrl/admin/withdraw/history?offset=${request.offset}&size=${request.limit}")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToFlux<WithdrawAdminResponse>()
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+    }
+
+    override suspend fun getDepositTransactionsForAdmin(
+        token: String,
+        request: AdminDepositHistoryRequest
+    ): List<DepositAdminResponse> {
+        return webClient.post()
+            .uri("$baseUrl/admin/deposit/history?offset=${request.offset}&size=${request.limit}")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToFlux<DepositAdminResponse>()
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+    }
+
+    override suspend fun getSwapTransactionsForAdmin(
+        token: String,
+        request: UserTransactionRequest
+    ): List<SwapAdminResponse> {
+        return webClient.post()
+            .uri("$baseUrl/admin/v1/swap/history")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToFlux<SwapAdminResponse>()
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+    }
+
+    override suspend fun getTradeHistoryForAdmin(
+        token: String,
+        request: AdminTradeHistoryRequest
+    ): List<TradeAdminResponse> {
+        return webClient.post()
+            .uri("$baseUrl/admin/v2/transaction/trades")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToFlux<TradeAdminResponse>()
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+    }
+
+    override suspend fun getUserTransactionHistoryForAdmin(
+        token: String,
+        request: UserTransactionRequest
+    ): List<UserTransactionHistory> {
+        return webClient.post()
+            .uri("$baseUrl/admin/v2/transaction/history")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToFlux<UserTransactionHistory>()
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+    }
+
+    override suspend fun getUsersWallets(
+        token: String,
+        uuid: String?,
+        currency: String?,
+        excludeSystem: Boolean,
+        limit: Int,
+        offset: Int
+    ): List<WalletDataResponse> {
+        return withContext(ProxyDispatchers.wallet) {
+            webClient.get()
+                .uri("$baseUrl/stats/v2/wallets") { builder ->
+                    uuid?.let { builder.queryParam("uuid", it) }
+                    currency?.let { builder.queryParam("currency", it) }
+                    builder.queryParam("excludeSystem", excludeSystem)
+                    builder.queryParam("limit", limit)
+                    builder.queryParam("offset", offset)
+                    builder.build()
+                }
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<WalletDataResponse>()
+                .collectList()
+                .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get users wallets") }
+        }
+    }
+
+    override suspend fun getSystemWalletsTotal(token: String): List<WalletTotal> {
+        return withContext(ProxyDispatchers.wallet) {
+            webClient.get()
+                .uri("$baseUrl/stats/wallets/system/total")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<WalletTotal>()
+                .collectList()
+                .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get system wallets total") }
+        }
+    }
+
+    override suspend fun getUsersWalletsTotal(token: String): List<WalletTotal> {
+        return withContext(ProxyDispatchers.wallet) {
+            webClient.get()
+                .uri("$baseUrl/stats/wallets/user/total")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<WalletTotal>()
+                .collectList()
+                .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get users wallets total") }
+        }
+    }
+
+    override suspend fun acceptWithdraw(
+        token: String,
+        withdrawUuid: String
+    ): WithdrawActionResult {
+        return webClient.post()
+            .uri("$baseUrl/admin/withdraw/${withdrawUuid}/accept")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<WithdrawActionResult>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun doneWithdraw(
+        token: String,
+        withdrawUuid: String,
+        request: WithdrawDoneRequest
+    ): WithdrawActionResult {
+        return webClient.post()
+            .uri("$baseUrl/admin/withdraw/${withdrawUuid}/done")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<WithdrawActionResult>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun rejectWithdraw(
+        token: String,
+        withdrawUuid: String,
+        request: WithdrawRejectRequest
+    ): WithdrawActionResult {
+        return webClient.post()
+            .uri("$baseUrl/admin/withdraw/${withdrawUuid}/reject")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<WithdrawActionResult>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun withdrawManually(
+        token: String,
+        symbol: String,
+        sourceUuid: String,
+        amount: BigDecimal,
+        request: ManualTransferRequest
+    ): TransferResult {
+        return webClient.post()
+            .uri("$baseUrl/admin/withdraw/manually/${amount}_${symbol}/${sourceUuid}")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<TransferResult>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun depositManually(
+        token: String,
+        symbol: String,
+        receiverUuid: String,
+        amount: BigDecimal,
+        request: ManualTransferRequest
+    ): TransferResult {
+        return webClient.post()
+            .uri("$baseUrl/admin/deposit/manually/${amount}_${symbol}/${receiverUuid}")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<TransferResult>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
     }
 }
 

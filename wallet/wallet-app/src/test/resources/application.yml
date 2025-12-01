@@ -71,6 +71,7 @@ app:
     limit:
       enabled: false
     otp-required-count: 0
+    bank-account-validation : false
 testcontainers:
   db:
     username: ${dbusername:opex}

@@ -1,18 +1,12 @@
 package co.nilin.opex.profile.app.controller
 
-import co.nilin.opex.profile.app.service.LinkAccountManagement
+import co.nilin.opex.profile.app.dto.UpdateApprovalRequestBody
 import co.nilin.opex.profile.app.service.ProfileApprovalRequestManagement
 import co.nilin.opex.profile.app.service.ProfileManagement
 import co.nilin.opex.profile.core.data.limitation.*
-import co.nilin.opex.profile.core.data.linkedbankAccount.LinkedAccountHistoryResponse
-import co.nilin.opex.profile.core.data.linkedbankAccount.LinkedAccountResponse
-import co.nilin.opex.profile.core.data.linkedbankAccount.LinkedBankAccountRequest
-import co.nilin.opex.profile.core.data.linkedbankAccount.VerifyLinkedAccountRequest
 import co.nilin.opex.profile.core.data.profile.*
 import co.nilin.opex.profile.ports.postgres.imp.LimitationManagementImp
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
@@ -22,53 +16,33 @@ import org.springframework.web.bind.annotation.*
 
 class ProfileAdminController(
     val profileManagement: ProfileManagement,
-    val linkAccountManagement: LinkAccountManagement,
     val profileApprovalRequestManagement: ProfileApprovalRequestManagement,
     val limitManagement: LimitationManagementImp
 ) {
 
-    data class ChangeRequestStatusBody(
-        val id: Long,
-        val description: String?
-    )
-
-    @PostMapping("/{userId}")
-    suspend fun createManually(@PathVariable("userId") userId: String, @RequestBody newProfile: Profile): Profile? {
-        return profileManagement.create(userId, newProfile)?.awaitFirstOrNull()
+    @PostMapping("")
+    suspend fun getProfiles(@RequestBody profileRequest: ProfileRequest): List<Profile> {
+        return profileManagement.getAllProfiles(profileRequest)
     }
 
-    @PutMapping("/{userId}")
-    suspend fun updateAsAdmin(@PathVariable("userId") userId: String, @RequestBody newProfile: Profile): Profile? {
-        return profileManagement.updateAsAdmin(userId, newProfile)?.awaitFirstOrNull()
+    @GetMapping("/{userId}")
+    suspend fun getProfile(@PathVariable("userId") userId: String): Profile {
+        return profileManagement.getProfile(userId)
     }
 
     @GetMapping("/history/{userId}")
-    suspend fun getHistory(
+    suspend fun getProfileHistory(
         @PathVariable("userId") userId: String,
-        @RequestParam offset: Int?, @RequestParam size: Int?
+        @RequestParam offset: Int?, @RequestParam limit: Int?
     ): List<ProfileHistory>? {
-        return profileManagement.getHistory(userId, offset ?: 0, size ?: 1000)
-    }
-
-    @PostMapping("")
-    suspend fun getProfiles(
-        @RequestParam offset: Int?, @RequestParam size: Int?,
-        @RequestBody profileRequest: ProfileRequest
-    ): List<Profile?>? {
-        return profileManagement.getAllProfiles(offset ?: 0, size ?: 1000, profileRequest)?.toList()
-    }
-
-
-    @GetMapping("/{userId}")
-    suspend fun getProfile(@PathVariable("userId") userId: String): Profile? {
-        return profileManagement.getProfile(userId)?.awaitFirstOrNull()
+        return profileManagement.getHistory(userId, offset ?: 0, limit ?: 10)
     }
 
     // =====================================Approval Requests====================================
 
-    @GetMapping("/approval-requests/{status}")
-    suspend fun getApprovalRequests(@PathVariable("status") status: ProfileApprovalRequestStatus): List<ProfileApprovalAdminResponse> {
-        return profileApprovalRequestManagement.getApprovalRequests(status)
+    @PostMapping("/approval-requests")
+    suspend fun getApprovalRequests(@RequestBody request: ProfileApprovalRequestFilter): List<ProfileApprovalAdminResponse> {
+        return profileApprovalRequestManagement.getApprovalRequests(request)
     }
 
     @GetMapping("/approval-request/{id}")
@@ -76,62 +50,17 @@ class ProfileAdminController(
         return profileApprovalRequestManagement.getApprovalRequestById(id)
     }
 
-    @PostMapping("/approve-request")
-    suspend fun approveRequest(
-        @RequestBody changeRequestStatusBody: ChangeRequestStatusBody,
+    @PutMapping("/approval-request")
+    suspend fun updateRequestStatus(
+        @RequestBody changeRequestStatusBody: UpdateApprovalRequestBody,
         @CurrentSecurityContext securityContext: SecurityContext
     ): ProfileApprovalAdminResponse {
-        return profileApprovalRequestManagement.approveRequest(
+        return profileApprovalRequestManagement.changeRequestStatus(
             changeRequestStatusBody.id,
             securityContext.authentication.name,
-            changeRequestStatusBody.description
+            changeRequestStatusBody.description,
+            changeRequestStatusBody.status
         )
-    }
-
-    @PostMapping("/reject-request")
-    suspend fun rejectRequest(
-        @RequestBody changeRequestStatusBody: ChangeRequestStatusBody,
-        @CurrentSecurityContext securityContext: SecurityContext
-    ): ProfileApprovalAdminResponse {
-        return profileApprovalRequestManagement.rejectRequest(
-            changeRequestStatusBody.id,
-            securityContext.authentication.name,
-            changeRequestStatusBody.description
-        )
-    }
-    // =====================================linked accounts====================================
-
-    @GetMapping("/linked-account/{userId}")
-    suspend fun getLinkedAccount(@PathVariable userId: String): Flow<LinkedAccountResponse>? {
-        return linkAccountManagement.getAccounts(userId)
-    }
-
-    @GetMapping("/linked-account/history/{accountId}")
-    suspend fun getHistoryLinkedAccount(@PathVariable accountId: String): Flow<LinkedAccountHistoryResponse>? {
-
-        return linkAccountManagement.getHistoryLinkedAccount(accountId)
-    }
-
-    @PostMapping("/linked-account/{userId}")
-    suspend fun addLinkedAccount(
-        @PathVariable userId: String,
-        @RequestBody linkedBankAccountRequest: LinkedBankAccountRequest,
-        @CurrentSecurityContext securityContext: SecurityContext
-    ): LinkedAccountResponse? {
-        linkedBankAccountRequest.userId = userId
-        linkedBankAccountRequest.description = "Inserted by admin: ${securityContext.authentication.name}"
-        return linkAccountManagement.addNewAccount(linkedBankAccountRequest)?.awaitFirstOrNull()
-    }
-
-    @PutMapping("/linked-account/verify/{accountId}")
-    suspend fun verifyLinkedAccount(
-        @PathVariable accountId: String, @RequestBody verifyRequest: VerifyLinkedAccountRequest,
-        @CurrentSecurityContext securityContext: SecurityContext
-    ): LinkedAccountResponse? {
-        verifyRequest.accountId = accountId
-        verifyRequest.verifier = securityContext.authentication.name
-        return linkAccountManagement.verifyAccount(verifyRequest)?.awaitFirstOrNull()
-
     }
 
     //==============================================limitation services=================================================

@@ -1,8 +1,9 @@
 package co.nilin.opex.profile.app.config
 
-import co.nilin.opex.profile.app.utils.hasRole
+import co.nilin.opex.common.security.ReactiveCustomJwtConverter
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
+import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder
@@ -11,22 +12,23 @@ import org.springframework.security.web.server.SecurityWebFilterChain
 import org.springframework.web.reactive.function.client.WebClient
 
 @EnableWebFluxSecurity
-class SecurityConfig(private val webClient: WebClient) {
+class SecurityConfig {
 
     @Value("\${app.auth.cert-url}")
     private lateinit var jwkUrl: String
 
     @Bean
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
-        http.csrf().disable()
-            .authorizeExchange()
-            .pathMatchers("/admin/**").hasAuthority("ROLE_admin")
-            .pathMatchers("/actuator/**").permitAll()
-            .anyExchange().authenticated()
-            .and()
-            .oauth2ResourceServer()
-            .jwt()
-        return http.build()
+        return http.csrf { it.disable() }
+            .authorizeExchange() {
+                it.pathMatchers(HttpMethod.GET, "/admin/**").hasAnyAuthority("ROLE_monitoring", "ROLE_admin")
+                    .pathMatchers("/admin/**").hasAuthority("ROLE_admin")
+                    .pathMatchers("/bank-account/**").hasAuthority("PERM_bank_account:write")
+                    .pathMatchers("/actuator/**").permitAll()
+                    .anyExchange().authenticated()
+            }
+            .oauth2ResourceServer { it.jwt { jwt -> jwt.jwtAuthenticationConverter(ReactiveCustomJwtConverter()) } }
+            .build()
     }
 
     @Bean

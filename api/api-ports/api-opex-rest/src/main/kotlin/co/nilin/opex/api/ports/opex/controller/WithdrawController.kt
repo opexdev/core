@@ -1,8 +1,6 @@
 package co.nilin.opex.api.ports.opex.controller
 
-import co.nilin.opex.api.core.inout.RequestWithdrawBody
-import co.nilin.opex.api.core.inout.WithdrawActionResult
-import co.nilin.opex.api.core.inout.WithdrawResponse
+import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.WalletProxy
 import co.nilin.opex.api.ports.opex.util.jwtAuthentication
 import co.nilin.opex.api.ports.opex.util.tokenValue
@@ -27,25 +25,49 @@ class WithdrawController(
         )
     }
 
-    @PutMapping("/{withdrawId}/cancel")
+    @PutMapping("/{withdrawUuid}/cancel")
     suspend fun cancelWithdraw(
         @CurrentSecurityContext securityContext: SecurityContext,
-        @PathVariable withdrawId: Long
+        @PathVariable withdrawUuid: String
     ) {
         walletProxy.cancelWithdraw(
             securityContext.jwtAuthentication().tokenValue(),
-            withdrawId
+            withdrawUuid
         )
     }
 
-    @GetMapping("/{withdrawId}")
+    @GetMapping("/{withdrawUuid}")
     suspend fun findWithdraw(
         @CurrentSecurityContext securityContext: SecurityContext,
-        @PathVariable withdrawId: Long
+        @PathVariable withdrawUuid: String
     ): WithdrawResponse {
         return walletProxy.findWithdraw(
             securityContext.jwtAuthentication().tokenValue(),
-            withdrawId
+            withdrawUuid
+        )
+    }
+
+    @PostMapping("/{withdrawUuid}/otp/{otpType}/request")
+    suspend fun requestOTP(
+        @CurrentSecurityContext securityContext: SecurityContext,
+        @PathVariable withdrawUuid: String,
+        @PathVariable otpType: OTPType
+    ): TempOtpResponse {
+        return walletProxy.requestWithdrawOTP(securityContext.jwtAuthentication().tokenValue(), withdrawUuid, otpType)
+    }
+
+    @PostMapping("/{withdrawUuid}/otp/{otpType}/verify")
+    suspend fun verifyOTP(
+        @CurrentSecurityContext securityContext: SecurityContext,
+        @PathVariable withdrawUuid: String,
+        @PathVariable otpType: OTPType,
+        @RequestParam otpCode: String,
+    ): WithdrawActionResult {
+        return walletProxy.verifyWithdrawOTP(
+            securityContext.jwtAuthentication().tokenValue(),
+            withdrawUuid,
+            otpType,
+            otpCode
         )
     }
 }

@@ -5,4 +5,5 @@ data class MarketBasicData(
     val referenceCurrencies: List<String>,
     val withdrawReferenceCurrency: String,
     val tradeReferenceCurrency: String,
+    val totalAssetReferenceCurrency: String,
 )

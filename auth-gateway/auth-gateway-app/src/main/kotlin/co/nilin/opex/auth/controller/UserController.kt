@@ -1,9 +1,6 @@
 package co.nilin.opex.auth.controller
 
 import co.nilin.opex.auth.data.ActiveSession
-import co.nilin.opex.auth.model.UpdateEmailRequest
-import co.nilin.opex.auth.model.UpdateMobileRequest
-import co.nilin.opex.auth.model.UpdateNameRequest
 import co.nilin.opex.auth.service.UserService
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.security.jwtAuthentication
@@ -21,21 +18,6 @@ class UserController(private val userService: UserService) {
         val sid = securityContext.jwtAuthentication().tokenAttributes["sid"] as String?
             ?: throw OpexError.InvalidToken.exception()
         userService.logout(userId, sid)
-    }
-
-    @PutMapping("/update/email")
-    suspend fun updateEmail(@RequestBody request: UpdateEmailRequest) {
-        userService.updateEmail(request)
-    }
-
-    @PutMapping("/update/mobile")
-    suspend fun updateMobile(@RequestBody request: UpdateMobileRequest) {
-        userService.updateMobile(request)
-    }
-
-    @PutMapping("/update/name")
-    suspend fun updateName(@RequestBody request: UpdateNameRequest) {
-        userService.updateName(request)
     }
 
     @GetMapping("/session")

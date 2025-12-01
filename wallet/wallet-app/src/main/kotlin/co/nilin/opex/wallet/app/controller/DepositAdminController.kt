@@ -3,7 +3,9 @@ package co.nilin.opex.wallet.app.controller
 import co.nilin.opex.wallet.app.dto.AdminSearchDepositRequest
 import co.nilin.opex.wallet.app.dto.ManualTransferRequest
 import co.nilin.opex.wallet.app.service.DepositService
-import co.nilin.opex.wallet.core.inout.*
+import co.nilin.opex.wallet.core.inout.DepositAdminResponse
+import co.nilin.opex.wallet.core.inout.TerminalCommand
+import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.spi.TerminalManager
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
@@ -50,12 +52,37 @@ class DepositAdminController(
         )
     }
 
+    @Deprecated("endpoint changed")
     @PostMapping("/search")
     suspend fun search(
         @RequestParam offset: Int,
         @RequestParam size: Int,
         @RequestBody body: AdminSearchDepositRequest
-    ): List<DepositResponse> {
+    ): List<DepositAdminResponse> {
+        return depositService.searchDeposit(
+            body.uuid,
+            body.currency,
+            body.sourceAddress,
+            body.transactionRef,
+            body.startTime?.let {
+                LocalDateTime.ofInstant(Instant.ofEpochMilli(body.startTime), ZoneId.systemDefault())
+            },
+            body.endTime?.let {
+                LocalDateTime.ofInstant(Instant.ofEpochMilli(body.endTime), ZoneId.systemDefault())
+            },
+            body.status,
+            offset,
+            size,
+            body.ascendingByTime,
+        )
+    }
+
+    @PostMapping("/history")
+    suspend fun getDepositHistory(
+        @RequestParam offset: Int,
+        @RequestParam size: Int,
+        @RequestBody body: AdminSearchDepositRequest
+    ): List<DepositAdminResponse> {
         return depositService.searchDeposit(
             body.uuid,
             body.currency,

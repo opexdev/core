@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.wallet.core.inout.Deposit
+import co.nilin.opex.wallet.core.inout.DepositAdminResponse
 import co.nilin.opex.wallet.core.inout.TransactionSummary
 import co.nilin.opex.wallet.core.model.DepositStatus
 import co.nilin.opex.wallet.core.spi.DepositPersister
@@ -23,16 +24,16 @@ class DepositPersisterImpl(private val depositRepository: DepositRepository) : D
     }
 
     override suspend fun findDepositHistory(
-            uuid: String,
-            currency: String?,
-            startTime: LocalDateTime?,
-            endTime: LocalDateTime?,
-            limit: Int?,
-            offset: Int?,
-            ascendingByTime: Boolean?
+        uuid: String,
+        currency: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        limit: Int?,
+        offset: Int?,
+        ascendingByTime: Boolean?
     ): List<Deposit> {
         val deposits =
-                depositRepository.findDepositHistory(uuid, currency, startTime, endTime, limit, offset, ascendingByTime)
+            depositRepository.findDepositHistory(uuid, currency, startTime, endTime, limit, offset, ascendingByTime)
         return deposits.map { it.toDto() }.toList()
     }
 
@@ -46,41 +47,41 @@ class DepositPersisterImpl(private val depositRepository: DepositRepository) : D
     }
 
     override suspend fun findByCriteria(
-            ownerUuid: String?,
-            symbol: String?,
-            sourceAddress: String?,
-            transactionRef: String?,
-            startTime: LocalDateTime?,
-            endTime: LocalDateTime?,
-            status: List<DepositStatus>?,
-            offset: Int?,
-            size: Int?,
-            ascendingByTime: Boolean?
-    ): List<Deposit> {
+        ownerUuid: String?,
+        symbol: String?,
+        sourceAddress: String?,
+        transactionRef: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        status: List<DepositStatus>?,
+        offset: Int?,
+        size: Int?,
+        ascendingByTime: Boolean?
+    ): List<DepositAdminResponse> {
         return if (status.isNullOrEmpty())
             depositRepository.findByCriteria(
-                    ownerUuid,
-                    symbol,
-                    sourceAddress,
-                    transactionRef,
-                    startTime,
-                    endTime,
-                    ascendingByTime,
-                    offset,
-                    size
-            ).map { it.toDto() }.toList()
-        else depositRepository.findByCriteria(
                 ownerUuid,
                 symbol,
                 sourceAddress,
                 transactionRef,
                 startTime,
                 endTime,
-                status,
                 ascendingByTime,
                 offset,
                 size
-        ).map { it.toDto() }.toList()
+            ).toList()
+        else depositRepository.findByCriteria(
+            ownerUuid,
+            symbol,
+            sourceAddress,
+            transactionRef,
+            startTime,
+            endTime,
+            status,
+            ascendingByTime,
+            offset,
+            size
+        ).toList()
     }
 
     override suspend fun getDepositSummary(
@@ -88,7 +89,7 @@ class DepositPersisterImpl(private val depositRepository: DepositRepository) : D
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
         limit: Int?,
-    ) : List<TransactionSummary>{
+    ): List<TransactionSummary> {
         return depositRepository.getDepositSummary(
             uuid,
             startTime,
