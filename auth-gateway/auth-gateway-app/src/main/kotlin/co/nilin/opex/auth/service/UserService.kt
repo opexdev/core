@@ -7,7 +7,6 @@ import co.nilin.opex.auth.proxy.GoogleProxy
 import co.nilin.opex.auth.proxy.KeycloakProxy
 import co.nilin.opex.auth.proxy.OTPProxy
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.common.security.JwtUtils
 import co.nilin.opex.common.utils.LoggerDelegate
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
@@ -179,7 +178,7 @@ class UserService(
 
     suspend fun logoutOthers(uuid: String, currentSessionId: String) {
         keycloakProxy.logoutOthers(uuid, currentSessionId)
-        sendLogoutEvent(uuid,currentSessionId, true)
+        sendLogoutEvent(uuid, currentSessionId, true)
     }
 
     suspend fun logoutAll(uuid: String) {
@@ -223,7 +222,7 @@ class UserService(
         }
     }
 
-    private fun sendLogoutEvent(userId: String, sessionState: String?, others: Boolean?=false) {
+    private fun sendLogoutEvent(userId: String, sessionState: String?, others: Boolean? = false) {
         authEventProducer.send(
             LogoutEvent(
                 userId,

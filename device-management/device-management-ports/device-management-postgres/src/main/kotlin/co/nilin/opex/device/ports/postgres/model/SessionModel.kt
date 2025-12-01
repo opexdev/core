@@ -2,6 +2,7 @@ package co.nilin.opex.device.ports.postgres.model
 
 import co.nilin.opex.device.core.data.SessionStatus
 import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.Version
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import java.time.LocalDateTime
@@ -14,6 +15,7 @@ data class SessionModel(
     @Column("device_id") val deviceId: Long,
     @Column("status") val status: SessionStatus,
     @Column("create_date") val createDate: LocalDateTime? = LocalDateTime.now(),
-    @Column("expire_date") val expireDate: LocalDateTime? = LocalDateTime.now()
+    @Column("expire_date") val expireDate: LocalDateTime? = LocalDateTime.now(),
+    @Column @Version var version: Long? = null
 )
 

@@ -1,6 +1,5 @@
 package co.nilin.opex.auth.data
 
-import org.keycloak.services.scheduled.ClearExpiredEvents
 import java.time.LocalDateTime
 
 data class LoginEvent(

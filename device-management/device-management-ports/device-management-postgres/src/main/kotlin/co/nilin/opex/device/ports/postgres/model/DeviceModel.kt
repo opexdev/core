@@ -1,5 +1,6 @@
 package co.nilin.opex.device.ports.postgres.model
 
+import co.nilin.opex.device.core.data.Os
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Version
 import org.springframework.data.relational.core.mapping.Column
@@ -11,7 +12,7 @@ import java.time.LocalDateTime
 data class DeviceModel(
     @Id val id: Long?=null,
     @Column("device_uuid") val deviceUuid: String,
-    @Column("os") val os: String?,
+    @Column("os") val os: Os?,
     @Column("os_version") val osVersion: String?,
     @Column("app_version") val appVersion: String?,
     @Column("push_token") val pushToken: String?,

@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 data class Device(
     val id: Long? = null,
     val deviceUuid: String,
-    val os: String? = null,
+    val os: Os? = null,
     val osVersion: String? = null,
     val appVersion: String? = null,
     val pushToken: String? = null,

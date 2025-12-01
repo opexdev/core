@@ -1,6 +1,7 @@
 package co.nilin.opex.device.app.controller
 
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.device.core.data.SessionsRequest
 import co.nilin.opex.device.core.data.UserSessionDevice
 import co.nilin.opex.device.core.service.DeviceService
 import co.nilin.opex.device.core.service.UserSessionDeviceService
@@ -14,14 +15,12 @@ import org.springframework.web.bind.annotation.*
 class DeviceController(
     private val deviceService: DeviceService,
     private val userSessionDeviceService: UserSessionDeviceService) {
-    @GetMapping("/user/{userId}/sessions")
+    @PostMapping
     suspend fun getLastSessions(
-        @PathVariable userId: String,
+        @RequestBody sessionsRequest: SessionsRequest,
         @CurrentSecurityContext securityContext: SecurityContext,
     ): ResponseEntity<List<UserSessionDevice>?> {
-        if (userId != securityContext.authentication.name)
-            throw OpexError.Forbidden.exception()
-        val sessions = userSessionDeviceService.getUserSessionsWithDevices(userId, 10)
+        val sessions = userSessionDeviceService.getUserSessionsWithDevices(securityContext.authentication.name,sessionsRequest)
         return ResponseEntity.ok(sessions)
     }
 

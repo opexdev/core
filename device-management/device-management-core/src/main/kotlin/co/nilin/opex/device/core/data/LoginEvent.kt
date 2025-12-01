@@ -1,5 +1,7 @@
 package co.nilin.opex.device.core.data
 
+import java.time.LocalDateTime
+
 
 data class LoginEvent(
     val uuid: String,
@@ -7,7 +9,8 @@ data class LoginEvent(
     val appVersion: String?,
     val osVersion: String?,
     val pushToken: String?,
-    val os: String?,
-    val sessionId: String
-): SessionEvent()
+    val os: Os?,
+    val sessionId: String,
+    val expireDate: LocalDateTime,
+    ) : SessionEvent()
 

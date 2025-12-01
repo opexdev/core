@@ -42,7 +42,7 @@ class KafkaListenerConfig {
             ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
             ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JsonDeserializer::class.java,
             JsonDeserializer.TRUSTED_PACKAGES to "co.nilin.opex.*",
-            JsonDeserializer.TYPE_MAPPINGS to "loginEvent:co.nilin.opex.device.core.data.LoginEvent"
+            JsonDeserializer.TYPE_MAPPINGS to "loginEvent:co.nilin.opex.device.core.data.LoginEvent,logoutEvent:co.nilin.opex.device.core.data.LogoutEvent"
 
         )
     }
