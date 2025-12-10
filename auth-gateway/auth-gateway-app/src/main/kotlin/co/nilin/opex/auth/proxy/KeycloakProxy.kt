@@ -65,6 +65,31 @@ class KeycloakProxy(
             }
             .awaitBody<Token>()
     }
+    suspend fun exchangeUserToken(
+        token: String,
+        clientId: String,
+        clientSecret: String?,
+        targetClientId: String
+    ): Token {
+        val userTokenUrl = "${keycloakConfig.url}/realms/${keycloakConfig.realm}/protocol/openid-connect/token"
+
+        return keycloakClient.post()
+            .uri(userTokenUrl)
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .bodyValue(
+                "client_id=${clientId}" +
+                        "&client_secret=${clientSecret}" +
+                        "&grant_type=urn:ietf:params:oauth:grant-type:token-exchange" +
+                        "&subject_token=${token}" +
+                        "&audience=${targetClientId}" +
+                        "&requested_token_type=urn:ietf:params:oauth:token-type:access_token"
+            )
+            .retrieve()
+            .onStatus({ it == HttpStatus.valueOf(401) }) {
+                throw OpexError.InvalidUserCredentials.exception()
+            }
+            .awaitBody<Token>()
+    }
 
     suspend fun checkUserCredentials(user: KeycloakUser, password: String) {
         keycloakClient.post()
@@ -174,7 +199,7 @@ class KeycloakProxy(
                     ).apply {
                         if (username.type == UsernameType.MOBILE)
                             put("mobile", username.value)
-                        put(Attributes.OTP, OTPType.NONE.name)
+                        put(Attributes.OTP, OTPType.EMAIL.name + "," + OTPType.SMS.name)
                     }
                 ).apply { if (username.type == UsernameType.EMAIL) put("email", username.value) }
             )
@@ -419,7 +444,7 @@ class KeycloakProxy(
         var internalId: String;
         var attempts = 0
         do {
-            if (attempts >= 10) {
+            if (attempts >= 30) {
                 throw OpexError.InternalIdGenerateFailed.exception()
             }
             internalId = generateRandomID()
