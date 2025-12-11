@@ -160,7 +160,7 @@ class UserService(
 
     suspend fun fetchActiveSessions(sessionRequest: SessionRequest, currentSessionId: String): List<Sessions> {
         return deviceManagementProxy.getLastSessions(sessionRequest).stream()
-            .map { if (it.sessionState == currentSessionId) it.apply { currentSession = true } else it }.toList()
+            .map { if (it.sessionState == currentSessionId) it.apply { isCurrentSession = true } else it }.toList()
     }
 
     suspend fun logoutSession(uuid: String, sessionId: String) {
