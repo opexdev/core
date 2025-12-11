@@ -9,6 +9,7 @@ data class ProfileApprovalAdminResponse(
     var createDate: LocalDateTime,
     var updateDate: LocalDateTime? = null,
     var updater: String? = null,
-    var description: String? = null
-
+    var description: String? = null,
+    var firstName: String? = null,
+    var lastName: String? = null
 )

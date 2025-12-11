@@ -18,9 +18,8 @@ class DeviceController(
     @PostMapping
     suspend fun getLastSessions(
         @RequestBody sessionsRequest: SessionsRequest,
-        @CurrentSecurityContext securityContext: SecurityContext,
     ): ResponseEntity<List<UserSessionDevice>?> {
-        val sessions = userSessionDeviceService.getUserSessionsWithDevices(securityContext.authentication.name,sessionsRequest)
+        val sessions = userSessionDeviceService.getUserSessionsWithDevices(sessionsRequest)
         return ResponseEntity.ok(sessions)
     }
 

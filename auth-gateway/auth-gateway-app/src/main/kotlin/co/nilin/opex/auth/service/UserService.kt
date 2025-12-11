@@ -3,6 +3,7 @@ package co.nilin.opex.auth.service
 import co.nilin.opex.auth.data.*
 import co.nilin.opex.auth.kafka.AuthEventProducer
 import co.nilin.opex.auth.model.*
+import co.nilin.opex.auth.proxy.DeviceManagementProxy
 import co.nilin.opex.auth.proxy.GoogleProxy
 import co.nilin.opex.auth.proxy.KeycloakProxy
 import co.nilin.opex.auth.proxy.OTPProxy
@@ -26,7 +27,8 @@ class UserService(
     private val publicKey: PublicKey,
     private val authProducer: AuthEventProducer,
     private val captchaHandler: CaptchaHandler,
-    private val authEventProducer: AuthEventProducer
+    private val authEventProducer: AuthEventProducer,
+    private val deviceManagementProxy: DeviceManagementProxy
 ) {
 
     private val logger by LoggerDelegate()
@@ -156,8 +158,9 @@ class UserService(
         keycloakProxy.resetPassword(user.id, request.newPassword)
     }
 
-    suspend fun fetchActiveSessions(uuid: String, currentSessionId: String): List<ActiveSession> {
-        return keycloakProxy.fetchActiveSessions(uuid, currentSessionId)
+    suspend fun fetchActiveSessions(sessionRequest: SessionRequest, currentSessionId: String): List<Sessions> {
+        return deviceManagementProxy.getLastSessions(sessionRequest).stream()
+            .map { if (it.sessionState == currentSessionId) it.apply { currentSession = true } else it }.toList()
     }
 
     suspend fun logoutSession(uuid: String, sessionId: String) {

@@ -15,8 +15,8 @@ class UserSessionDeviceService(
     private val sessionPersister: SessionPersister
 ) {
 
-    suspend fun getUserSessionsWithDevices(uuid: String, sessionsRequest: SessionsRequest): List<UserSessionDevice> {
-        return sessionPersister.fetchUserDeviceSession(uuid, sessionsRequest)
+    suspend fun getUserSessionsWithDevices(sessionsRequest: SessionsRequest): List<UserSessionDevice> {
+        return sessionPersister.fetchUserDeviceSession( sessionsRequest)
     }
 
     @Transactional

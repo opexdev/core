@@ -42,12 +42,11 @@ class SessionManagerImpl(
     }
 
     override suspend fun fetchUserDeviceSession(
-        userId: String,
         sessionsRequest: SessionsRequest
     ): List<UserSessionDevice> {
         val pageable: Pageable = PageRequest.of(sessionsRequest.offset, sessionsRequest.limit)
         return sessionRepository.findUserSessionsWithDevices(
-            userId,
+            sessionsRequest.uuid,
             sessionsRequest.os?.name,
             sessionsRequest.status?.name,
             sessionsRequest.ascendingByTime,

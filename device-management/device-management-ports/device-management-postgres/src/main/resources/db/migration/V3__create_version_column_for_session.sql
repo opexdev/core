@@ -1,1 +1,1 @@
-Alter TABLE sessions add column version BIGINT;
+Alter TABLE sessions add column version BIGINT default 0;

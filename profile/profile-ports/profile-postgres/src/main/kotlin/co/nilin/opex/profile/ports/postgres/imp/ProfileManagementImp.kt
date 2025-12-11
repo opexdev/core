@@ -158,9 +158,8 @@ class ProfileManagementImp(
         return resp.toList()
     }
 
-    //todo add version column to profile table
     override suspend fun updateUserLevelAndStatus(userId: String, userLevel: KycLevel, retry: Boolean) {
-        profileRepository.findByUserId(userId)?.awaitFirstOrNull()?.let { profileModel ->
+        profileRepository.findByUserId(userId).awaitFirstOrNull()?.let { profileModel ->
             profileModel.kycLevel = userLevel
             profileRepository.updateKycLevelByUserId(userId, userLevel.name).awaitFirstOrNull()
         } ?: run {

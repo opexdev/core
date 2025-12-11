@@ -71,6 +71,8 @@ app:
   captcha:
     url: http://opex-captcha
     enabled: false
+  device-management:
+    url:  http://opex-device-management
   custom-message:
     enabled: ${CUSTOM_MESSAGE_ENABLED:false}
     base-url: ${CUSTOM_MESSAGE_URL}

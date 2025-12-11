@@ -22,7 +22,7 @@ class SecurityConfig {
         return http.csrf { it.disable() }
             .authorizeExchange {
                 it.pathMatchers("/actuator/**").permitAll()
-                    .anyExchange().authenticated()
+                    .anyExchange().permitAll()
             }
             .oauth2ResourceServer { it.jwt(Customizer.withDefaults()) }
             .build()

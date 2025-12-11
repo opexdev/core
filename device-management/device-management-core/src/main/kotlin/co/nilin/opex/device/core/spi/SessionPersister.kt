@@ -13,7 +13,7 @@ interface SessionPersister {
 
     suspend fun fetchSessionByState(sessionState: String): Session?
 
-    suspend fun fetchUserDeviceSession(userId: String, sessionsRequest: SessionsRequest): List<UserSessionDevice>
+    suspend fun fetchUserDeviceSession(sessionsRequest: SessionsRequest): List<UserSessionDevice>
 
     suspend fun fetchActiveSessions(userId: String): List<Session>
 
