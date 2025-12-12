@@ -18,7 +18,9 @@ class UserWithdrawVolumePersisterImpl(
     private val repository: UserWithdrawVolumeRepository,
     private val currencyRatePersister: CurrencyRatePersister,
     @Value("\${app.zone-offset}") private val zoneOffsetString: String,
-    @Value("\${app.withdraw-volume-calculation-currency}") private val calculationCurrency: String
+    @Value("\${app.withdraw-volume-calculation-currency}") private val calculationCurrency: String,
+    @Value("\${app.withdraw-volume-calculation-currency-precision:2}") private val calculationCurrencyPrecision: Int
+
 ) : UserWithdrawVolumePersister {
 
     override suspend fun update(
@@ -31,7 +33,7 @@ class UserWithdrawVolumePersisterImpl(
         val rate = if (currency == calculationCurrency) BigDecimal.ONE
         else currencyRatePersister.getRate(currency, calculationCurrency)
 
-        val signedAmount = amount.multiply(rate)
+        val signedAmount = amount.multiply(rate).setScale(calculationCurrencyPrecision)
             .let { if (withdrawStatus == WithdrawStatus.CANCELED || withdrawStatus == WithdrawStatus.REJECTED) it.negate() else it }
 
         repository.insertOrUpdate(

@@ -38,7 +38,7 @@ class WithdrawLimitManagerImpl(
             calculationCurrency
         ).awaitFirstOrNull()
 
-        return ((userWithdrawVolume ?: BigDecimal.ZERO) + (amount.multiply(rate))) < withdrawLimitConfig.dailyMaxAmount
+        return ((userWithdrawVolume ?: BigDecimal.ZERO) + (amount.multiply(rate))) <= withdrawLimitConfig.dailyMaxAmount
     }
 
     override suspend fun getAll(): List<WithdrawLimitConfig> {
