@@ -46,7 +46,6 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>co.nilin.opex.profile</groupId>
             <artifactId>profile-core</artifactId>

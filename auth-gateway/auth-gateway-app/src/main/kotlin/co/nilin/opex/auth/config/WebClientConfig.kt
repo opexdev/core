@@ -63,4 +63,17 @@ class WebClientConfig {
         return builder.build()
     }
 
+    @LoadBalanced
+    @Bean("deviceManagementWebclientBuilder")
+    fun deviceManagementWebClientBuilder(deviceManagement: DeviceManagementConfig): WebClient.Builder {
+        return WebClient.builder().baseUrl(deviceManagement.url)
+    }
+
+
+    @Bean("deviceManagementClient")
+    fun deviceManagementWebClient(@Qualifier("deviceManagementWebclientBuilder") builder: WebClient.Builder): WebClient {
+        return builder.build()
+    }
+
+
 } 

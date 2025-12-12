@@ -1,0 +1,111 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: opex-device-management
+  kafka:
+    bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
+    consumer:
+      group-id: device-management
+  r2dbc:
+    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
+    username: ${dbusername:opex}
+    password: ${dbpassword:hiopex}
+    initialization-mode: always
+    pool:
+      initial-size: 5
+      max-size: 32
+      max-idle-time: 10m
+      max-life-time: 30m
+      max-acquire-time: 10s
+      max-create-connection-time: 10s
+      validation-query: SELECT 1
+  datasource:
+    url: jdbc:postgresql://${DB_IP_PORT:localhost}/opex
+    username: ${dbusername:opex}
+    password: ${dbpassword:hiopex}
+  cloud:
+    bootstrap:
+      enabled: true
+    vault:
+      host: ${VAULT_HOST}
+      port: 8200
+      scheme: http
+      authentication: APPID
+      app-id:
+        user-id: co.nilin.opex.device.app.utils.VaultUserIdMechanism
+      fail-fast: true
+      kv:
+        enabled: true
+        backend: secret
+        profile-separator: '/'
+        application-name: ${spring.application.name}
+    consul:
+      host: ${CONSUL_HOST:localhost}
+      port: 8500
+      discovery:
+        #healthCheckPath: ${management.context-path}/health
+        instance-id: ${spring.application.name}:${server.port}
+        healthCheckInterval: 20s
+        prefer-ip-address: true
+  config:
+    import: vault://secret/${spring.application.name}
+  codec:
+    max-in-memory-size: 20MB
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: [ "health", "prometheus", "metrics" ]
+  endpoint:
+    health:
+      show-details: when_authorized
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+logbook:
+  secure-filter:
+    enabled: true
+  format:
+    style: http
+  filter:
+    enabled: true
+    form-request-mode: BODY
+  attribute-extractors:
+    - type: JwtFirstMatchingClaimExtractor
+      claim-names: [ "sub", "subject" ]
+  obfuscate:
+    headers:
+      - Authorization
+    parameters:
+      - password
+    json-body-fields:
+      - password
+    replacement: "***"
+  write:
+    max-body-size: 10_000 #kb
+  predicate:
+    exclude:
+      - path: /auth**
+      - path: /actuator/**
+      - path: /swagger**
+    include:
+      - path: /test**
+      - path: /admin/**
+        methods:
+          - POST
+          - PUT
+logging:
+  level:
+    org.apache.kafka: ERROR
+    co.nilin: INFO
+    org.zalando.logbook: TRACE
+
+app:
+  auth:
+    url: lb://opex-auth
+    cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
+    client-id: none
+    client-secret: none

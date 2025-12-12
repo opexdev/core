@@ -71,7 +71,7 @@ class ProfileManagement(
     }
 
     suspend fun updateUserLevel(userId: String, userLevel: KycLevel) {
-        profilePersister.updateUserLevelAndStatus(userId, userLevel)
+        profilePersister.updateUserLevelAndStatus(userId, userLevel, true)
     }
 
     suspend fun requestUpdateMobile(userId: String, mobile: String): TempOtpResponse {

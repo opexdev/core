@@ -1,13 +1,17 @@
 package co.nilin.opex.auth.service
 
 import co.nilin.opex.auth.data.ActionType
+import co.nilin.opex.auth.data.Device
+import co.nilin.opex.auth.data.LoginEvent
+import co.nilin.opex.auth.kafka.AuthEventProducer
 import co.nilin.opex.auth.model.*
 import co.nilin.opex.auth.proxy.GoogleProxy
 import co.nilin.opex.auth.proxy.KeycloakProxy
 import co.nilin.opex.auth.proxy.OTPProxy
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.common.utils.LoggerDelegate
+import co.nilin.opex.common.security.JwtUtils
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 
 @Service
 class TokenService(
@@ -15,6 +19,7 @@ class TokenService(
     private val keycloakProxy: KeycloakProxy,
     private val googleProxy: GoogleProxy,
     private val captchaHandler: CaptchaHandler,
+    private val authEventProducer: AuthEventProducer,
 ) {
     private val logger by LoggerDelegate()
     private val PRE_AUTH_CLIENT_SECRET_KEY = "pY1uVemXFIgVwubP1QM31YxRFh87NRp8"
@@ -80,6 +85,7 @@ class TokenService(
             PRE_AUTH_CLIENT_SECRET_KEY,
             request.clientId
         ).apply { if (!request.rememberMe) refreshToken = null }
+        sendLoginEvent(user.id, token.sessionState, request, token.expiresIn)
 
         return TokenResponse(token, null, null)
     }
@@ -103,6 +109,27 @@ class TokenService(
 
     suspend fun refreshToken(request: RefreshTokenRequest): TokenResponse {
         val token = keycloakProxy.refreshUserToken(request.refreshToken, request.clientId, request.clientSecret)
+        sendLoginEvent(extractUserUuidFromToken(token.accessToken), token.sessionState, request,token.expiresIn)
         return TokenResponse(token, null, null)
     }
+
+    private fun sendLoginEvent(userId: String, sessionState: String?, request: Device, expiresIn: Int) {
+        authEventProducer.send(
+            LoginEvent(
+                userId,
+                sessionState,
+                request.deviceUuid,
+                request.appVersion,
+                request.osVersion,
+                LocalDateTime.now().plusSeconds(expiresIn.toLong()),
+                request.os
+            )
+        )
+    }
+
+
+    private fun extractUserUuidFromToken(token: String): String {
+        return JwtUtils.decodePayload(token)["sub"].toString()
+    }
+
 }

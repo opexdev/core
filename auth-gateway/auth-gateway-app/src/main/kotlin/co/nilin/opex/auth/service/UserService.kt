@@ -1,11 +1,9 @@
 package co.nilin.opex.auth.service
 
-import co.nilin.opex.auth.data.ActionType
-import co.nilin.opex.auth.data.ActiveSession
-import co.nilin.opex.auth.data.UserCreatedEvent
-import co.nilin.opex.auth.data.UserRole
+import co.nilin.opex.auth.data.*
 import co.nilin.opex.auth.kafka.AuthEventProducer
 import co.nilin.opex.auth.model.*
+import co.nilin.opex.auth.proxy.DeviceManagementProxy
 import co.nilin.opex.auth.proxy.GoogleProxy
 import co.nilin.opex.auth.proxy.KeycloakProxy
 import co.nilin.opex.auth.proxy.OTPProxy
@@ -28,7 +26,9 @@ class UserService(
     private val privateKey: PrivateKey,
     private val publicKey: PublicKey,
     private val authProducer: AuthEventProducer,
-    private val captchaHandler: CaptchaHandler
+    private val captchaHandler: CaptchaHandler,
+    private val authEventProducer: AuthEventProducer,
+    private val deviceManagementProxy: DeviceManagementProxy
 ) {
 
     private val logger by LoggerDelegate()
@@ -90,8 +90,11 @@ class UserService(
 
         return if (request.clientId.isNullOrBlank() || request.clientSecret.isNullOrBlank())
             null
-        else
-            keycloakProxy.getUserToken(username, request.password, request.clientId, request.clientSecret)
+        else {
+            val token = keycloakProxy.getUserToken(username, request.password, request.clientId, request.clientSecret)
+            sendLoginEvent(user.id, token.sessionState, request, token.expiresIn)
+            return token
+        }
     }
 
     suspend fun registerExternalIdpUser(externalIdpUserRegisterRequest: ExternalIdpUserRegisterRequest) {
@@ -110,6 +113,7 @@ class UserService(
 
     suspend fun logout(userId: String, sessionId: String) {
         keycloakProxy.logoutSession(userId, sessionId)
+        sendLogoutEvent(userId, sessionId)
     }
 
     suspend fun forgetPassword(request: ForgotPasswordRequest): TempOtpResponse {
@@ -154,8 +158,9 @@ class UserService(
         keycloakProxy.resetPassword(user.id, request.newPassword)
     }
 
-    suspend fun fetchActiveSessions(uuid: String, currentSessionId: String): List<ActiveSession> {
-        return keycloakProxy.fetchActiveSessions(uuid, currentSessionId)
+    suspend fun fetchActiveSessions(sessionRequest: SessionRequest, currentSessionId: String): List<Sessions> {
+        return deviceManagementProxy.getLastSessions(sessionRequest).stream()
+            .map { if (it.sessionState == currentSessionId) it.apply { isCurrentSession = true } else it }.toList()
     }
 
     suspend fun logoutSession(uuid: String, sessionId: String) {
@@ -164,6 +169,7 @@ class UserService(
 
     suspend fun logoutOthers(uuid: String, currentSessionId: String) {
         keycloakProxy.logoutOthers(uuid, currentSessionId)
+        sendLogoutEvent(uuid, currentSessionId, true)
     }
 
     suspend fun logoutAll(uuid: String) {
@@ -207,4 +213,27 @@ class UserService(
         }
     }
 
+    private fun sendLogoutEvent(userId: String, sessionState: String?, others: Boolean? = false) {
+        authEventProducer.send(
+            LogoutEvent(
+                userId,
+                sessionState,
+                others
+            )
+        )
+    }
+
+    private fun sendLoginEvent(userId: String, sessionState: String?, request: Device, expiresIn: Int) {
+        authEventProducer.send(
+            LoginEvent(
+                userId,
+                sessionState,
+                request.deviceUuid,
+                request.appVersion,
+                request.osVersion,
+                LocalDateTime.now().plusSeconds(expiresIn.toLong()),
+                request.os
+            )
+        )
+    }
 }

@@ -17,7 +17,7 @@ interface ProfilePersister {
     suspend fun getProfile(userId: String): Profile
     suspend fun getAllProfile(profileRequest: ProfileRequest): List<Profile>
     suspend fun getHistory(userId: String, offset: Int, limit: Int): List<ProfileHistory>
-    suspend fun updateUserLevelAndStatus(userId: String, userLevel: KycLevel)
+    suspend fun updateUserLevelAndStatus(userId: String, userLevel: KycLevel, retry: Boolean)
     suspend fun validateEmailForUpdate(userId: String, email: String)
     suspend fun validateMobileForUpdate(userId: String, mobile: String)
     suspend fun updateMobile(userId: String, mobile: String)
