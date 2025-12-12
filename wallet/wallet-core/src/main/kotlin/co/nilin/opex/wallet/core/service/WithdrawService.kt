@@ -209,7 +209,7 @@ class WithdrawService(
                 withdraw.ownerUuid,
                 withdraw.withdrawId!!,
                 withdraw.currency,
-                withdraw.amount,
+                withdraw.amount + withdraw.appliedFee,
                 withdrawStatus,
                 withdraw.createDate
             )
