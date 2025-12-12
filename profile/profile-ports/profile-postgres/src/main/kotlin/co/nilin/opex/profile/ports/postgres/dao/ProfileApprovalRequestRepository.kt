@@ -1,5 +1,6 @@
 package co.nilin.opex.profile.ports.postgres.dao
 
+import co.nilin.opex.profile.core.data.profile.ProfileApprovalAdminResponse
 import co.nilin.opex.profile.core.data.profile.ProfileApprovalRequestStatus
 import co.nilin.opex.profile.core.data.profile.ProfileApprovalUserResponse
 import co.nilin.opex.profile.ports.postgres.model.entity.ProfileApprovalRequestModel
@@ -14,11 +15,22 @@ interface ProfileApprovalRequestRepository : ReactiveCrudRepository<ProfileAppro
     fun findByUserIdAndStatus(
         userId: String,
         status: ProfileApprovalRequestStatus
-    ): Mono<ProfileApprovalRequestModel>
+    ): Mono<ProfileApprovalAdminResponse>
 
     @Query(
         """
-    SELECT * FROM profile_approval_request p
+    SELECT 
+    p.id,
+    p.user_id,
+    p.status,
+    p.create_date,
+    p.update_date,
+    p.updater,
+    p.description,
+    u.first_name,
+    u.last_name
+    FROM profile_approval_request p
+    LEFT JOIN profile u ON u.user_id = p.user_id 
     WHERE (:userId IS NULL OR p.user_id = :userId)
       AND (:status IS NULL OR p.status = :status)
       AND (:createDateFrom IS NULL OR p.create_date >= :createDateFrom)
@@ -34,11 +46,22 @@ interface ProfileApprovalRequestRepository : ReactiveCrudRepository<ProfileAppro
         createDateTo: LocalDateTime?,
         limit: Int,
         offset: Int,
-    ): Flow<ProfileApprovalRequestModel>
+    ): Flow<ProfileApprovalAdminResponse>
 
     @Query(
         """
-    SELECT * FROM profile_approval_request p
+    SELECT 
+    p.id,
+    p.user_id,
+    p.status,
+    p.create_date,
+    p.update_date,
+    p.updater,
+    p.description,
+    u.first_name,
+    u.last_name
+    FROM profile_approval_request p
+    LEFT JOIN profile u ON u.user_id = p.user_id
     WHERE (:userId IS NULL OR p.user_id = :userId)
       AND (:status IS NULL OR p.status = :status)
       AND (:createDateFrom IS NULL OR p.create_date >= :createDateFrom)

@@ -246,6 +246,10 @@ services:
     <<: *postgres-db
     volumes:
       - profile-data:/var/lib/postgresql/data/
+  postgres-device-management:
+    <<: *postgres-db
+    volumes:
+      - device-management-data:/var/lib/postgresql/data/
   accountant:
     image: ghcr.io/opexdev/accountant
     environment:
@@ -565,6 +569,32 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  device-management:
+    image: ghcr.io/opexdev/device-management
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - CONSUL_HOST=consul
+      - DB_USER=${DB_USER:-opex}
+      - DB_PASS=${DB_PASS:-hiopex}
+      - DB_IP_PORT=postgres-device-management
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_HOST=vault
+      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - consul
+      - postgres-device-management
+      - vault
+    labels:
+      collect_logs: "true"
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
 volumes:
   zookeeper-data:
   zookeeper-log:
@@ -589,6 +619,7 @@ volumes:
   otp-data:
   auth-gateway-keys:
   profile-data:
+  device-management-data:
 networks:
   opex:
     external: true

@@ -1,6 +1,7 @@
 package co.nilin.opex.auth.controller
 
-import co.nilin.opex.auth.data.ActiveSession
+import co.nilin.opex.auth.data.SessionRequest
+import co.nilin.opex.auth.data.Sessions
 import co.nilin.opex.auth.service.UserService
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.security.jwtAuthentication
@@ -20,12 +21,16 @@ class UserController(private val userService: UserService) {
         userService.logout(userId, sid)
     }
 
-    @GetMapping("/session")
-    suspend fun getSessions(@CurrentSecurityContext securityContext: SecurityContext): List<ActiveSession> {
+    @PostMapping("/session")
+    suspend fun getSessions(
+        @CurrentSecurityContext securityContext: SecurityContext,
+        @RequestBody sessionRequest: SessionRequest
+    ): List<Sessions> {
         val uuid = securityContext.authentication.name
         val sid = securityContext.jwtAuthentication().tokenAttributes["sid"] as String?
             ?: throw OpexError.InvalidToken.exception()
-        return userService.fetchActiveSessions(uuid, sid)
+        sessionRequest.uuid = uuid
+        return userService.fetchActiveSessions(sessionRequest, sid)
     }
 
     @DeleteMapping("/session/{sessionId}")

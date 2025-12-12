@@ -24,3 +24,5 @@ services:
     build: bc-gateway/bc-gateway-app
   profile:
     build: profile/profile-app
+  device-management:
+    build: device-management/device-management-app

@@ -1,5 +1,7 @@
 package co.nilin.opex.auth.model
 
+import co.nilin.opex.auth.data.Device
+
 data class RegisterUserRequest(
     val username: String,
     val firstName: String? = null,
@@ -22,7 +24,7 @@ data class ConfirmRegisterRequest(
     val token: String,
     val clientId: String?,
     val clientSecret: String?,
-)
+) : Device()
 
 data class TokenData(
     val isValid: Boolean,

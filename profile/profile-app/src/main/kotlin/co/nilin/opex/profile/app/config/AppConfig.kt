@@ -19,8 +19,5 @@ class AppConfig {
     ) {
         useCreatedKafkaListener.addEventListener(userCreatedEventListener)
         kycLevelUpdatedKafkaListener.addEventListener(kycLevelUpdatedEventListener)
-
     }
-
-
 }

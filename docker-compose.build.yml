@@ -57,3 +57,6 @@ services:
   profile:
     image: ghcr.io/opexdev/profile:$TAG
     build: profile/profile-app
+  device-management:
+    image: ghcr.io/opexdev/device-management:$TAG
+    build: device-management/device-management-app

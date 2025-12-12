@@ -1,7 +1,7 @@
 package co.nilin.opex.auth.proxy
 
 import co.nilin.opex.auth.config.KeycloakConfig
-import co.nilin.opex.auth.data.ActiveSession
+import co.nilin.opex.auth.data.Sessions
 import co.nilin.opex.auth.data.UserRole
 import co.nilin.opex.auth.model.*
 import co.nilin.opex.auth.utils.generateRandomID
@@ -65,6 +65,8 @@ class KeycloakProxy(
             }
             .awaitBody<Token>()
     }
+
+
 
     suspend fun checkUserCredentials(user: KeycloakUser, password: String) {
         keycloakClient.post()
@@ -306,22 +308,6 @@ class KeycloakProxy(
             .awaitSingleOrNull()
     }
 
-    suspend fun fetchActiveSessions(uuid: String, currentSessionId: String): List<ActiveSession> {
-        val user = findUser(uuid) ?: throw OpexError.BadRequest.exception()
-        val sessions = user.userSessions
-        return sessions.map {
-            ActiveSession(
-                it.id,
-                it.username,
-                it.userId,
-                it.ipAddress,
-                it.start,
-                it.lastAccess,
-                it.clients.values.firstOrNull(),
-                it.id == currentSessionId
-            )
-        }
-    }
 
     suspend fun logoutSession(uuid: String, sessionId: String) {
         val user = findUser(uuid) ?: throw OpexError.BadRequest.exception()
