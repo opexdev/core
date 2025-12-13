@@ -217,7 +217,7 @@ services:
   postgres-keycloak:
     <<: *postgres-db
     volumes:
-      - keycloak-data:/var/lib/postgresql/data/
+      - keycloak-data-new:/var/lib/postgresql/data/
   postgres-wallet:
     <<: *postgres-db
     volumes:
@@ -610,7 +610,7 @@ volumes:
   accountant-data:
   eventlog-data:
   auth-data:
-  keycloak-data:
+  keycloak-data-new:
   wallet-data:
   market-data:
   api-data:

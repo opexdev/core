@@ -10,6 +10,7 @@ import co.nilin.opex.auth.proxy.KeycloakProxy
 import co.nilin.opex.auth.proxy.OTPProxy
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.security.JwtUtils
+import co.nilin.opex.common.utils.LoggerDelegate
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -85,7 +86,7 @@ class TokenService(
             PRE_AUTH_CLIENT_SECRET_KEY,
             request.clientId
         ).apply { if (!request.rememberMe) refreshToken = null }
-        sendLoginEvent(user.id, token.sessionState, request, token.expiresIn)
+        sendLoginEvent(extractUserUuidFromToken(token.accessToken), token.sessionState, request, token.expiresIn)
 
         return TokenResponse(token, null, null)
     }

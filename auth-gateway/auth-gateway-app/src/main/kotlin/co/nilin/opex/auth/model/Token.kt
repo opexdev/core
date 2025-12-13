@@ -20,7 +20,7 @@ data class ConfirmPasswordFlowTokenRequest(
     val clientSecret: String?,
     val otp: String,
     val rememberMe: Boolean = true,
-)
+): Device()
 
 data class RefreshTokenRequest(
     val clientId: String,

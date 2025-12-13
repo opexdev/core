@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/v1/oauth/protocol/openid-connect/")
 class AuthController(private val tokenService: TokenService) {
 
-    @PostMapping("/token/request")
+    @PostMapping("/token")
     suspend fun requestGetToken(@RequestBody tokenRequest: PasswordFlowTokenRequest): ResponseEntity<TokenResponse> {
         val tokenResponse = tokenService.requestGetToken(tokenRequest)
         return ResponseEntity.ok().body(tokenResponse)
