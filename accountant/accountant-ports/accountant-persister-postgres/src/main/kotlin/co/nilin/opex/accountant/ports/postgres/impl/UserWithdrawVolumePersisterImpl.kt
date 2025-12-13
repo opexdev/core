@@ -33,7 +33,7 @@ class UserWithdrawVolumePersisterImpl(
         val rate = if (currency == calculationCurrency) BigDecimal.ONE
         else currencyRatePersister.getRate(currency, calculationCurrency)
 
-        val signedAmount = amount.multiply(rate).setScale(calculationCurrencyPrecision)
+        val signedAmount = amount.multiply(rate).setScale(calculationCurrencyPrecision, RoundingMode.DOWN)
             .let { if (withdrawStatus == WithdrawStatus.CANCELED || withdrawStatus == WithdrawStatus.REJECTED) it.negate() else it }
 
         repository.insertOrUpdate(
