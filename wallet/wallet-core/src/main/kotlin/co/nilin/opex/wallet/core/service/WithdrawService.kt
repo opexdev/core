@@ -448,7 +448,17 @@ class WithdrawService(
         size: Int,
     ): List<WithdrawAdminResponse> {
         return withdrawPersister.findByCriteria(
-            ownerUuid,withdrawUuid, currency, destTxRef, destAddress, status, startTime, endTime, ascendingByTime, offset, size
+            ownerUuid,
+            withdrawUuid,
+            currency,
+            destTxRef,
+            destAddress,
+            status,
+            startTime,
+            endTime,
+            ascendingByTime,
+            offset,
+            size
         )
     }
 
@@ -462,7 +472,16 @@ class WithdrawService(
         ascendingByTime: Boolean? = false,
         status: WithdrawStatus?
     ): List<WithdrawResponse> {
-        return withdrawPersister.findWithdrawHistory(uuid, currency, startTime, endTime, limit, offset, ascendingByTime,status)
+        return withdrawPersister.findWithdrawHistory(
+            uuid,
+            currency,
+            startTime,
+            endTime,
+            limit,
+            offset,
+            ascendingByTime,
+            status
+        )
     }
 
     suspend fun findWithdrawHistoryCount(
@@ -472,7 +491,7 @@ class WithdrawService(
         endTime: LocalDateTime?,
         status: WithdrawStatus?
     ): Long {
-        return withdrawPersister.findWithdrawHistoryCount(uuid, currency, startTime, endTime,status)
+        return withdrawPersister.findWithdrawHistoryCount(uuid, currency, startTime, endTime, status)
     }
 
     suspend fun getWithdrawSummary(

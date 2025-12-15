@@ -137,7 +137,19 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
                 .uri("$baseUrl/withdraw/history")
                 .accept(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-                .body(Mono.just(WithdrawTransactionRequest(currency, startTime, endTime, limit, offset, ascendingByTime,staus)))
+                .body(
+                    Mono.just(
+                        WithdrawTransactionRequest(
+                            currency,
+                            startTime,
+                            endTime,
+                            limit,
+                            offset,
+                            ascendingByTime,
+                            staus
+                        )
+                    )
+                )
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToFlux<WithdrawResponse>()
@@ -160,7 +172,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
                 .uri("$baseUrl/withdraw/history/count")
                 .accept(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-                .body(Mono.just(WithdrawTransactionRequest(currency, startTime, endTime, null, null,null,status)))
+                .body(Mono.just(WithdrawTransactionRequest(currency, startTime, endTime, null, null, null, status)))
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToMono<Long>()
