@@ -4,6 +4,7 @@ import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.WalletProxy
 import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
 import co.nilin.opex.api.ports.proxy.data.TransactionRequest
+import co.nilin.opex.api.ports.proxy.data.WithdrawTransactionRequest
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.utils.LoggerDelegate
 import kotlinx.coroutines.reactive.awaitFirstOrElse
@@ -123,6 +124,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
         uuid: String,
         token: String,
         currency: String?,
+        staus: WithdrawStatus?,
         startTime: Long?,
         endTime: Long?,
         limit: Int,
@@ -135,7 +137,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
                 .uri("$baseUrl/withdraw/history")
                 .accept(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-                .body(Mono.just(TransactionRequest(currency, startTime, endTime, limit, offset, ascendingByTime)))
+                .body(Mono.just(WithdrawTransactionRequest(currency, startTime, endTime, limit, offset, ascendingByTime,staus)))
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToFlux<WithdrawResponse>()
@@ -148,6 +150,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
         uuid: String,
         token: String,
         currency: String?,
+        status: WithdrawStatus?,
         startTime: Long?,
         endTime: Long?,
     ): Long {
@@ -157,7 +160,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
                 .uri("$baseUrl/withdraw/history/count")
                 .accept(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-                .body(Mono.just(TransactionRequest(currency, startTime, endTime, null, null)))
+                .body(Mono.just(WithdrawTransactionRequest(currency, startTime, endTime, null, null,null,status)))
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToMono<Long>()

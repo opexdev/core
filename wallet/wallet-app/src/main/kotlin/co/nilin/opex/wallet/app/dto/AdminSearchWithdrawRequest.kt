@@ -5,6 +5,7 @@ import co.nilin.opex.wallet.core.model.WithdrawStatus
 
 data class AdminSearchWithdrawRequest(
     val uuid: String?,
+    val withdrawUuid: String?,
     val currency: String?,
     val destTxRef: String?,
     val destAddress: String?,

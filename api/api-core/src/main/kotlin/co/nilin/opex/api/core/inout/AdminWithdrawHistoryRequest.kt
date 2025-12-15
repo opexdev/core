@@ -2,6 +2,7 @@ package co.nilin.opex.api.core.inout
 
 data class AdminWithdrawHistoryRequest(
     val uuid: String? = null,
+    val withdrawUuid: String? = null,
     val currency: String?= null,
     val destTxRef: String?= null,
     val destAddress: String?= null,
