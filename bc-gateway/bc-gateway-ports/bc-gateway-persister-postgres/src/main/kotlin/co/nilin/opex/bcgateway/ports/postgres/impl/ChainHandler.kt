@@ -44,7 +44,7 @@ class ChainHandler(
                     .map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }
                     .toList()
 
-                Chain(c.name, addressTypes, c.externalChainScannerUrl, c.addressRegex)
+                Chain(c.name, addressTypes, c.externalChainScannerUrl)
             }
     }
 
