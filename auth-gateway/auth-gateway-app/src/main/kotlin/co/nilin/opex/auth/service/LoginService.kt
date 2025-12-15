@@ -11,19 +11,22 @@ import co.nilin.opex.auth.proxy.OTPProxy
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.security.JwtUtils
 import co.nilin.opex.common.utils.LoggerDelegate
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
 @Service
-class TokenService(
+class LoginService(
     private val otpProxy: OTPProxy,
     private val keycloakProxy: KeycloakProxy,
     private val googleProxy: GoogleProxy,
     private val captchaHandler: CaptchaHandler,
     private val authEventProducer: AuthEventProducer,
+    @Value("\${app.pre-auth-client-secret}")
+    private val preAuthClientSecretKey: String,
 ) {
     private val logger by LoggerDelegate()
-    private val PRE_AUTH_CLIENT_SECRET_KEY = "pY1uVemXFIgVwubP1QM31YxRFh87NRp8"
+
     private val PRE_AUTH_CLIENT_ID = "pre-auth-client"
 
     suspend fun requestGetToken(request: PasswordFlowTokenRequest): TokenResponse {
@@ -63,7 +66,7 @@ class TokenService(
             username,
             request.password,
             PRE_AUTH_CLIENT_ID,
-            PRE_AUTH_CLIENT_SECRET_KEY,
+            preAuthClientSecretKey,
         ).apply { if (!request.rememberMe) refreshToken = null }
 
         return TokenResponse(token, RequiredOTP(usernameType, receiver), res.otp)
@@ -83,7 +86,7 @@ class TokenService(
         val token = keycloakProxy.exchangeUserToken(
             request.token,
             PRE_AUTH_CLIENT_ID,
-            PRE_AUTH_CLIENT_SECRET_KEY,
+            preAuthClientSecretKey,
             request.clientId
         ).apply { if (!request.rememberMe) refreshToken = null }
         sendLoginEvent(extractUserUuidFromToken(token.accessToken), token.sessionState, request, token.expiresIn)

@@ -76,3 +76,4 @@ app:
   custom-message:
     enabled: ${CUSTOM_MESSAGE_ENABLED:false}
     base-url: ${CUSTOM_MESSAGE_URL}
+  pre-auth-client-secret: ${PRE_AUTH_CLIENT_SECRET}
