@@ -24,7 +24,14 @@ class AdminController(
     @GetMapping("/chain")
     suspend fun getChains(): List<ChainResponse> {
         return chainLoader.fetchAllChains()
-            .map { c -> ChainResponse(c.name, c.addressTypes.map { it.type }.getOrNull(0), c.externalChinScannerUrl, c.addressRegx) }
+            .map { c ->
+                ChainResponse(
+                    c.name,
+                    c.addressTypes.map { it.type }.getOrNull(0),
+                    c.externalChinScannerUrl,
+                    c.addressTypes.map { it.addressRegex }.getOrNull(0)
+                )
+            }
     }
 
     @PostMapping("/chain")

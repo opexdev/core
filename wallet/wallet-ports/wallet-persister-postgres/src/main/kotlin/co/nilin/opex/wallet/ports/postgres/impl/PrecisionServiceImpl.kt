@@ -15,7 +15,7 @@ class PrecisionServiceImpl(
 ) : PrecisionService {
 
     //TODO optimize this
-    override fun calculatePrecision(amount: BigDecimal, symbol: String): BigDecimal {
+    override fun calculatePrecision(amount: BigDecimal, symbol: String, allowSubPrecision: Boolean): BigDecimal {
         val precision = redisCacheHelper.get<BigDecimal>("$symbol-precision")?.toInt() ?: return amount
         if (precision == 0) {
             return amount.setScale(0, RoundingMode.DOWN)
@@ -24,6 +24,10 @@ class PrecisionServiceImpl(
         if (scaledAmount != BigDecimal.ZERO.setScale(precision)) {
             return scaledAmount
         }
+        if (!allowSubPrecision) {
+            return BigDecimal.ZERO.setScale(precision)
+        }
+
         val decimalPart = amount.stripTrailingZeros().toPlainString().substringAfter('.', "")
 
         val zeroPrefixCount = decimalPart.indexOfFirst { it != '0' }.takeIf { it >= 0 } ?: 0

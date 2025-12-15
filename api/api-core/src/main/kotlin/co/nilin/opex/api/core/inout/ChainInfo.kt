@@ -4,5 +4,5 @@ data class ChainInfo(
     val name: String,
     val addressTypes: String?,
     val externalChainScannerUrl: String? = null,
-    val addressRegx: String? = null
+    val addressRegex: String? = null
 )

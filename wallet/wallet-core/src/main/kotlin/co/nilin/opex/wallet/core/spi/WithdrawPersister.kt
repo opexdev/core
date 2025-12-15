@@ -17,6 +17,7 @@ interface WithdrawPersister {
 
     suspend fun findByCriteria(
         ownerUuid: String?,
+        withdrawUuid: String?,
         currency: String?,
         destTxRef: String?,
         destAddress: String?,
@@ -44,6 +45,7 @@ interface WithdrawPersister {
         limit: Int,
         offset: Int,
         ascendingByTime: Boolean?,
+        status: WithdrawStatus?
     ): List<WithdrawResponse>
 
     suspend fun findWithdrawHistoryCount(
@@ -51,6 +53,7 @@ interface WithdrawPersister {
         currency: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
+        status: WithdrawStatus?
     ): Long
 
     suspend fun getWithdrawSummary(

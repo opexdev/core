@@ -91,6 +91,7 @@ class UserHistoryController(
     @GetMapping("/history/withdraw")
     suspend fun getWithdrawHistory(
         @RequestParam currency: String?,
+        @RequestParam status: WithdrawStatus?,
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
         @RequestParam limit: Int?,
@@ -102,6 +103,7 @@ class UserHistoryController(
             securityContext.jwtAuthentication().name,
             securityContext.jwtAuthentication().tokenValue(),
             currency,
+            status,
             startTime,
             endTime,
             limit ?: 10,
@@ -113,6 +115,7 @@ class UserHistoryController(
     @GetMapping("/history/withdraw/count")
     suspend fun getWithdrawHistoryCount(
         @RequestParam currency: String?,
+        @RequestParam status: WithdrawStatus?,
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
         @CurrentSecurityContext securityContext: SecurityContext,
@@ -121,6 +124,7 @@ class UserHistoryController(
             securityContext.jwtAuthentication().name,
             securityContext.jwtAuthentication().tokenValue(),
             currency,
+            status,
             startTime,
             endTime,
         )

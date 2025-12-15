@@ -34,6 +34,7 @@ interface WalletProxy {
         uuid: String,
         token: String,
         currency: String?,
+        status: WithdrawStatus?,
         startTime: Long?,
         endTime: Long?,
         limit: Int,
@@ -45,6 +46,7 @@ interface WalletProxy {
         uuid: String,
         token: String,
         currency: String?,
+        status: WithdrawStatus?,
         startTime: Long?,
         endTime: Long?,
     ): Long

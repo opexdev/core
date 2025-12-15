@@ -66,6 +66,7 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
 
     override suspend fun findByCriteria(
         ownerUuid: String?,
+        withdrawUuid: String?,
         currency: String?,
         destTxRef: String?,
         destAddress: String?,
@@ -79,6 +80,7 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
         return if (status.isEmpty())
             withdrawRepository.findByCriteria(
                 ownerUuid,
+                withdrawUuid,
                 currency,
                 destTxRef,
                 destAddress,
@@ -92,6 +94,7 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
         else
             withdrawRepository.findByCriteria(
                 ownerUuid,
+                withdrawUuid,
                 currency,
                 destTxRef,
                 destAddress,
@@ -136,7 +139,8 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
         endTime: LocalDateTime?,
         limit: Int,
         offset: Int,
-        ascendingByTime: Boolean?
+        ascendingByTime: Boolean?,
+        status: WithdrawStatus?
     ): List<WithdrawResponse> {
 
         val withdraws = withdrawRepository.findWithdrawHistory(
@@ -146,7 +150,8 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
             endTime,
             ascendingByTime ?: true,
             limit,
-            offset
+            offset,
+            status
         )
 
         return withdraws.map { it.asWithdrawResponse() }.toList()
@@ -157,6 +162,7 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
         currency: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
+        status: WithdrawStatus?
     ): Long {
 
         return withdrawRepository.findWithdrawHistoryCount(
@@ -164,6 +170,7 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
             currency,
             startTime,
             endTime,
+            status
         ).awaitFirstOrElse { 0L }
 
     }
