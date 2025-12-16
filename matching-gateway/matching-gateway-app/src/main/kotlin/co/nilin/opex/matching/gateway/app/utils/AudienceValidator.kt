@@ -1,4 +1,4 @@
-package co.nilin.opex.auth.utils
+package co.nilin.opex.matching.gateway.app.utils
 
 import org.springframework.security.oauth2.core.OAuth2Error
 import org.springframework.security.oauth2.core.OAuth2TokenValidator

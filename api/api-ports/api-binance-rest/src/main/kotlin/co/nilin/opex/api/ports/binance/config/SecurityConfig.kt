@@ -1,7 +1,7 @@
 package co.nilin.opex.api.ports.binance.config
 
 import co.nilin.opex.api.core.spi.APIKeyFilter
-import co.nilin.opex.common.security.ReactiveAudienceValidator
+import co.nilin.opex.api.ports.binance.util.AudienceValidator
 import co.nilin.opex.common.security.ReactiveCustomJwtConverter
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -23,7 +23,9 @@ import org.springframework.web.server.WebFilter
 class SecurityConfig(
     private val apiKeyFilter: APIKeyFilter,
     @Value("\${app.auth.cert-url}")
-    private val jwkUrl: String
+    private val certUrl: String,
+    @Value("\${app.auth.iss-url}")
+    private val issUrl: String
 ) {
 
     @Bean
@@ -66,11 +68,11 @@ class SecurityConfig(
     @Bean
     @Throws(Exception::class)
     fun reactiveJwtDecoder(): ReactiveJwtDecoder? {
-        val decoder = NimbusReactiveJwtDecoder.withJwkSetUri(jwkUrl)
+        val decoder = NimbusReactiveJwtDecoder.withJwkSetUri(certUrl)
             .webClient(WebClient.create())
             .build()
-        val issuerValidator = JwtValidators.createDefaultWithIssuer(jwkUrl)
-        val audienceValidator = ReactiveAudienceValidator(
+        val issuerValidator = JwtValidators.createDefaultWithIssuer(issUrl)
+        val audienceValidator = AudienceValidator(
             setOf(
                 "ios-app",
                 "web-app",
@@ -86,4 +88,5 @@ class SecurityConfig(
         )
         return decoder
     }
+
 }

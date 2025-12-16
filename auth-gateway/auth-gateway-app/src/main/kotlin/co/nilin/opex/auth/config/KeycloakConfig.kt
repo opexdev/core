@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component
 class KeycloakConfig {
     lateinit var url: String
     lateinit var certUrl: String
+    lateinit var issUrl: String
     lateinit var realm: String
     lateinit var adminClient: Client
 }

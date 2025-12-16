@@ -50,7 +50,7 @@ class SecurityConfig(
         val decoder = NimbusReactiveJwtDecoder.withJwkSetUri(keycloakConfig.certUrl)
             .webClient(webClient)
             .build()
-        val issuerValidator = JwtValidators.createDefaultWithIssuer(keycloakConfig.certUrl)
+        val issuerValidator = JwtValidators.createDefaultWithIssuer(keycloakConfig.issUrl)
         val audienceValidator = AudienceValidator(
             setOf(
                 "ios-app",
