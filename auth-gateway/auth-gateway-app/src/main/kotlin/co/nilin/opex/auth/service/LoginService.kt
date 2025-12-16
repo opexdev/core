@@ -52,6 +52,15 @@ class LoginService(
         }
 
         keycloakProxy.checkUserCredentials(user, request.password)
+
+        val token = keycloakProxy.getUserToken(
+            username,
+            request.password,
+            PRE_AUTH_CLIENT_ID,
+            preAuthClientSecretKey,
+        ).apply { if (!request.rememberMe) refreshToken = null }
+
+
         val usernameType = username.type.otpType
         if (!otpTypes.contains((usernameType.name))) throw OpexError.OTPCannotBeRequested.exception()
         val requiredOtpTypes = listOf(OTPReceiver(username.value, usernameType))
@@ -62,12 +71,7 @@ class LoginService(
             else -> null
         }
 
-        val token = keycloakProxy.getUserToken(
-            username,
-            request.password,
-            PRE_AUTH_CLIENT_ID,
-            preAuthClientSecretKey,
-        ).apply { if (!request.rememberMe) refreshToken = null }
+
 
         return TokenResponse(token, RequiredOTP(usernameType, receiver), res.otp)
     }

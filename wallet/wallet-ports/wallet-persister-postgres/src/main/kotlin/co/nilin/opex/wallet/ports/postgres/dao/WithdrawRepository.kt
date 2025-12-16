@@ -46,6 +46,7 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         join wallet_owner wo on wm.owner = wo.id
     where (:owner is null or wo.uuid = :owner)
       and (:destTxRef is null or wth.dest_transaction_ref = :destTxRef)
+      and (:withdrawUuid is null or wth.withdraw_uuid = :withdrawUuid)
       and (:destAddress is null or wth.dest_address = :destAddress)
       and (:currency is null or wm.currency in (:currency))
       and (:startTime is null or wth.create_date > :startTime)
@@ -58,6 +59,7 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
     )
     fun findByCriteria(
         owner: String?,
+        withdrawUuid: String?,
         currency: String?,
         destTxRef: String?,
         destAddress: String?,
@@ -98,6 +100,7 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         join wallet_owner wo on wm.owner = wo.id
     where (:owner is null or wo.uuid = :owner)
       and (:destTxRef is null or wth.dest_transaction_ref = :destTxRef)
+      and (:withdrawUuid is null or wth.withdraw_uuid = :withdrawUuid)
       and (:destAddress is null or wth.dest_address = :destAddress)
       and (:currency is null or wm.currency in (:currency))
       and wth.status in (:status)
@@ -111,6 +114,7 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
     )
     fun findByCriteria(
         owner: String?,
+        withdrawUuid: String?,
         currency: String?,
         destTxRef: String?,
         destAddress: String?,
@@ -166,8 +170,10 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
     @Query(
         """
         select * from withdraws 
-        where uuid = :uuid and status != 'REQUESTED'
+        where uuid = :uuid
             and (:currency is null or currency = :currency)
+            and status != 'REQUESTED'
+            and (:status is null or status = :status)
             and (:startTime is null or create_date > :startTime )
             and (:endTime is null or create_date <= :endTime)
         order by  CASE WHEN :ascendingByTime=true THEN create_date END ASC,
@@ -183,14 +189,17 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         endTime: LocalDateTime?,
         ascendingByTime: Boolean,
         limit: Int? = 0,
-        offset: Int? = 10000
+        offset: Int? = 10000,
+        status: WithdrawStatus?
     ): Flow<WithdrawModel>
 
     @Query(
         """
         select count(*) from withdraws 
-        where uuid = :uuid and status != 'REQUESTED'
+        where uuid = :uuid
             and (:currency is null or currency = :currency)
+            and status != 'REQUESTED'
+            and (:status is null or status = :status)
             and (:startTime is null or create_date > :startTime )
             and (:endTime is null or create_date <= :endTime)
         """
@@ -200,6 +209,7 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         currency: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
+        status: WithdrawStatus?
     ): Mono<Long>
 
 

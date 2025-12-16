@@ -19,9 +19,9 @@ class BalanceParser(
         for (w in list) {
             result.addOrGet(w.currency.symbol).apply {
                 when (w.type) {
-                    WalletType.MAIN -> balance = precisionService.calculatePrecision(w.balance.amount, w.currency.symbol)
-                    WalletType.EXCHANGE -> locked = precisionService.calculatePrecision(w.balance.amount, w.currency.symbol)
-                    WalletType.CASHOUT -> withdraw = precisionService.calculatePrecision(w.balance.amount, w.currency.symbol)
+                    WalletType.MAIN -> balance = precisionService.calculatePrecision(w.balance.amount, w.currency.symbol , false)
+                    WalletType.EXCHANGE -> locked = precisionService.calculatePrecision(w.balance.amount, w.currency.symbol , false)
+                    WalletType.CASHOUT -> withdraw = precisionService.calculatePrecision(w.balance.amount, w.currency.symbol , false)
                 }
             }
         }
@@ -38,12 +38,12 @@ class BalanceParser(
                 throw IllegalStateException("Found multiple currencies while parsing for single")
 
             when (w.type) {
-                WalletType.MAIN -> result.balance = precisionService.calculatePrecision(w.balance.amount, w.currency.symbol)
+                WalletType.MAIN -> result.balance = precisionService.calculatePrecision(w.balance.amount, w.currency.symbol, false)
                 WalletType.EXCHANGE -> result.locked =
-                    precisionService.calculatePrecision(w.balance.amount, w.currency.symbol)
+                    precisionService.calculatePrecision(w.balance.amount, w.currency.symbol, false)
 
                 WalletType.CASHOUT -> result.withdraw =
-                    precisionService.calculatePrecision(w.balance.amount, w.currency.symbol)
+                    precisionService.calculatePrecision(w.balance.amount, w.currency.symbol, false)
             }
         }
         return result

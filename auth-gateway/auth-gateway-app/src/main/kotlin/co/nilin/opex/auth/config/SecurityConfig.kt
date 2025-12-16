@@ -1,5 +1,6 @@
 package co.nilin.opex.auth.config
 
+import co.nilin.opex.auth.utils.AudienceValidator
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -7,6 +8,12 @@ import org.springframework.http.HttpMethod
 import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.ServerHttpSecurity
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator
+import org.springframework.security.oauth2.core.OAuth2Error
+import org.springframework.security.oauth2.core.OAuth2TokenValidator
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult
+import org.springframework.security.oauth2.jwt.Jwt
+import org.springframework.security.oauth2.jwt.JwtValidators
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder
 import org.springframework.security.web.server.SecurityWebFilterChain
@@ -35,11 +42,31 @@ class SecurityConfig(
             .build()
     }
 
+
+
     @Bean
     @Throws(Exception::class)
     fun reactiveJwtDecoder(): ReactiveJwtDecoder? {
-        return NimbusReactiveJwtDecoder.withJwkSetUri(keycloakConfig.certUrl)
+        val decoder = NimbusReactiveJwtDecoder.withJwkSetUri(keycloakConfig.certUrl)
             .webClient(webClient)
             .build()
+        val issuerValidator = JwtValidators.createDefaultWithIssuer(keycloakConfig.certUrl)
+        val audienceValidator = AudienceValidator(
+            setOf(
+                "ios-app",
+                "web-app",
+                "android-app",
+                "opex-api-key"
+            )
+        )
+        decoder.setJwtValidator(
+            DelegatingOAuth2TokenValidator(
+                issuerValidator,
+                audienceValidator
+            )
+        )
+        return decoder
     }
 }
+
+

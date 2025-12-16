@@ -122,6 +122,9 @@ services:
       KC_METRICS_ENABLED: true
       GOOGLE_CLIENT_ID: ${KC_GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${KC_GOOGLE_CLIENT_SECRET}
+      KC_SPI_SCRIPT_UPLOAD_ENABLED: "true"
+    volumes:
+      - ./realms:/opt/keycloak/data/import
     command:
       - start-dev
       - --import-realm
@@ -400,7 +403,7 @@ services:
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - CONSUL_HOST=consul
       - ADMIN_CLIENT_SECRET=${KC_ADMIN_CLIENT_SECRET}
-      - PRE_AUTH_CLIENT_SECRET= ${KC_PRE_AUTH_CLIENT_SECRET}
+      - PRE_AUTH_CLIENT_SECRET=${KC_PRE_AUTH_CLIENT_SECRET}
     volumes:
       - auth-gateway-keys:/app/keys
     depends_on:

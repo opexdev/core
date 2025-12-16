@@ -45,6 +45,7 @@ class WithdrawAdminController(
     ): List<WithdrawAdminResponse> {
         return withdrawService.findByCriteria(
             body.uuid,
+            body.withdrawUuid,
             body.currency,
             body.destTxRef,
             body.destAddress,
@@ -69,6 +70,7 @@ class WithdrawAdminController(
     ): List<WithdrawAdminResponse> {
         return withdrawService.findByCriteria(
             body.uuid,
+            body.withdrawUuid,
             body.currency,
             body.destTxRef,
             body.destAddress,

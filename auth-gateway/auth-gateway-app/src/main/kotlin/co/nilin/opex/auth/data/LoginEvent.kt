@@ -9,5 +9,5 @@ data class LoginEvent(
     val appVersion: String?,
     val osVersion: String?,
     val expireDate: LocalDateTime,
-    val os: String?,
+    val os: Os?,
 ) : AuthEvent()

@@ -1026,18 +1026,19 @@ class WithdrawServiceTest {
 
             coEvery {
                 withdrawPersister.findByCriteria(
-                    USER_UUID, CURRENCY, null, null, statuses, null, null, true, 0, 10
+                    USER_UUID,null, CURRENCY, null, null, statuses, null, null, true, 0, 10
                 )
             } returns withdrawList
 
             val result = withdrawService.findByCriteria(
-                USER_UUID, CURRENCY, null, null, statuses, null, null, true, 0, 10
+                USER_UUID,null, CURRENCY, null, null, statuses, null, null, true, 0, 10
             )
 
             Assertions.assertEquals(2, result.size)
             coVerify {
                 withdrawPersister.findByCriteria(
                     USER_UUID,
+                    null,
                     CURRENCY,
                     null,
                     null,
@@ -1060,12 +1061,12 @@ class WithdrawServiceTest {
 
             coEvery {
                 withdrawPersister.findByCriteria(
-                    USER_UUID, CURRENCY, "tx-ref", DEST_ADDRESS, statuses, startTime, endTime, false, 10, 20
+                    USER_UUID,null, CURRENCY, "tx-ref", DEST_ADDRESS, statuses, startTime, endTime, false, 10, 20
                 )
             } returns withdrawList
 
             val result = withdrawService.findByCriteria(
-                USER_UUID, CURRENCY, "tx-ref", DEST_ADDRESS, statuses, startTime, endTime, false, 10, 20
+                USER_UUID,null, CURRENCY, "tx-ref", DEST_ADDRESS, statuses, startTime, endTime, false, 10, 20
             )
 
             Assertions.assertEquals(1, result.size)
@@ -1080,13 +1081,13 @@ class WithdrawServiceTest {
             val withdrawList = listOf(mockk<WithdrawResponse>(), mockk(), mockk())
 
             coEvery {
-                withdrawPersister.findWithdrawHistory(USER_UUID, CURRENCY, null, null, 10, 0, false)
+                withdrawPersister.findWithdrawHistory(USER_UUID, CURRENCY, null, null, 10, 0, false,null)
             } returns withdrawList
 
-            val result = withdrawService.findWithdrawHistory(USER_UUID, CURRENCY, null, null, 10, 0, false)
+            val result = withdrawService.findWithdrawHistory(USER_UUID, CURRENCY, null, null, 10, 0, false,null)
 
             Assertions.assertEquals(3, result.size)
-            coVerify { withdrawPersister.findWithdrawHistory(USER_UUID, CURRENCY, null, null, 10, 0, false) }
+            coVerify { withdrawPersister.findWithdrawHistory(USER_UUID, CURRENCY, null, null, 10, 0, false,null) }
         }
 
         @Test
@@ -1096,10 +1097,10 @@ class WithdrawServiceTest {
             val withdrawList = listOf(mockk<WithdrawResponse>())
 
             coEvery {
-                withdrawPersister.findWithdrawHistory(USER_UUID, null, startTime, endTime, 50, 5, true)
+                withdrawPersister.findWithdrawHistory(USER_UUID, null, startTime, endTime, 50, 5, true,null)
             } returns withdrawList
 
-            val result = withdrawService.findWithdrawHistory(USER_UUID, null, startTime, endTime, 50, 5, true)
+            val result = withdrawService.findWithdrawHistory(USER_UUID, null, startTime, endTime, 50, 5, true,null)
 
             Assertions.assertEquals(1, result.size)
         }
@@ -1111,10 +1112,10 @@ class WithdrawServiceTest {
         @Test
         fun `should return withdraw history count`() = runBlocking {
             coEvery {
-                withdrawPersister.findWithdrawHistoryCount(USER_UUID, CURRENCY, null, null)
+                withdrawPersister.findWithdrawHistoryCount(USER_UUID, CURRENCY, null, null,null)
             } returns 42L
 
-            val result = withdrawService.findWithdrawHistoryCount(USER_UUID, CURRENCY, null, null)
+            val result = withdrawService.findWithdrawHistoryCount(USER_UUID, CURRENCY, null, null,null)
 
             Assertions.assertEquals(42L, result)
         }
@@ -1125,10 +1126,10 @@ class WithdrawServiceTest {
             val endTime = LocalDateTime.now()
 
             coEvery {
-                withdrawPersister.findWithdrawHistoryCount(USER_UUID, null, startTime, endTime)
+                withdrawPersister.findWithdrawHistoryCount(USER_UUID, null, startTime, endTime,null)
             } returns 15L
 
-            val result = withdrawService.findWithdrawHistoryCount(USER_UUID, null, startTime, endTime)
+            val result = withdrawService.findWithdrawHistoryCount(USER_UUID, null, startTime, endTime,null)
 
             Assertions.assertEquals(15L, result)
         }

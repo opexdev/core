@@ -98,7 +98,8 @@ class WithdrawController(private val withdrawService: WithdrawService) {
             },
             request.limit!!,
             request.offset!!,
-            request.ascendingByTime
+            request.ascendingByTime,
+            request.status
         ).map {
             WithdrawResponse(
                 it.withdrawId,
@@ -139,6 +140,7 @@ class WithdrawController(private val withdrawService: WithdrawService) {
             request.endTime?.let {
                 LocalDateTime.ofInstant(Instant.ofEpochMilli(request.endTime), ZoneId.systemDefault())
             },
+            request.status
         )
     }
 
