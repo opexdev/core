@@ -22,6 +22,13 @@ data class ConfirmPasswordFlowTokenRequest(
     val rememberMe: Boolean = true,
 ): Device()
 
+data class ResendOtpRequest(
+    val username: String,
+    val token: String,
+    val clientId: String
+)
+
+
 data class RefreshTokenRequest(
     val clientId: String,
     val clientSecret: String?,
@@ -72,4 +79,10 @@ data class TokenResponse(
 data class RequiredOTP(
     val type: OTPType,
     val receiver: String?
+)
+
+data class ResendOtpResponse(
+    val otp: RequiredOTP?,
+    //TODO IMPORTANT: remove in production
+    val otpCode: String?,
 )

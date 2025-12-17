@@ -6,11 +6,13 @@ import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
 @Repository
 interface AddressBookRepository : ReactiveCrudRepository<AddressBookModel, Long> {
 
     @Query("select * from address_book where uuid = :uuid")
     suspend fun findAllByUuid(uuid: String): Flux<AddressBook>
+    suspend fun findByUuidAndAddressAndAddressType(uuid: String, address: String, type: String): Mono<AddressBook>?
 
 }

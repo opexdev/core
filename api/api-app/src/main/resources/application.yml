@@ -111,7 +111,7 @@ app:
     url: http://opex-bc-gateway
   auth:
     cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
-    iss-url: http://keycloak:8080/realms/opex
+    iss-url: ${TOKEN_ISSUER_URL:http://keycloak:8080}/realms/opex
     token-url: http://keycloak:8080/realms/opex/protocol/openid-connect/token
     api-key-client:
       secret: ${API_KEY_CLIENT_SECRET}

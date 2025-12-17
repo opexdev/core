@@ -194,7 +194,6 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     BankAccountAlreadyExist(13046, "Bank account already exist", HttpStatus.BAD_REQUEST),
     BankAccountNotFound(13047, "Bank account not found", HttpStatus.NOT_FOUND),
     AddressBookNotFound(13048, "Address book not found", HttpStatus.NOT_FOUND)
-
     ;
 
     override fun code() = this.code

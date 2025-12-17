@@ -13,6 +13,8 @@ class AddressBookManagement(
     private val addressBookPersister: AddressBookPersister,
 ) {
     suspend fun addAddressBook(uuid: String, request: AddAddressBookItemRequest): AddressBookResponse {
+        addressBookPersister.findSavedAddress(uuid, request.address, request.addressType)
+            ?.let { return it.toAddressBookResponse() }
         return addressBookPersister.save(
             AddressBook(
                 uuid = uuid,

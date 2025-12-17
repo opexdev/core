@@ -60,7 +60,6 @@ services:
       - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - KAFKA_LISTENERS=CLIENT://kafka-2:29092,EXTERNAL://kafka-2:9092,CONTROLLER://kafka-2:29093
       - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
-
     networks:
       - default
     deploy:
@@ -351,6 +350,7 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SYMBOLS=BTC_USDT,ETH_USDT,BTC_IRT,ETH_IRT,USDT_IRT,ETH_BUSD,BTC_BUSD,BNB_BUSD
+      - TOKEN_ISSUER_URL=${KC_ISSUER_URL}
     networks:
       - default
     depends_on:
@@ -404,6 +404,7 @@ services:
       - CONSUL_HOST=consul
       - ADMIN_CLIENT_SECRET=${KC_ADMIN_CLIENT_SECRET}
       - PRE_AUTH_CLIENT_SECRET=${KC_PRE_AUTH_CLIENT_SECRET}
+      - TOKEN_ISSUER_URL=${KC_ISSUER_URL}
     volumes:
       - auth-gateway-keys:/app/keys
     depends_on:
@@ -432,6 +433,7 @@ services:
       - WITHDRAW_OTP_REQUIRED_COUNT=${WITHDRAW_OTP_REQUIRED_COUNT}
       - WITHDRAW_BANK_ACCOUNT_VALIDATION=${WITHDRAW_BANK_ACCOUNT_VALIDATION}
       - TOTAL_ASSET_CALCULATION_CURRENCY=${TOTAL_ASSET_CALCULATION_CURRENCY}
+      - TOKEN_ISSUER_URL=${KC_ISSUER_URL}
     depends_on:
       - kafka-1
       - kafka-2
@@ -456,6 +458,7 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
+      - TOKEN_ISSUER_URL=${KC_ISSUER_URL}
     depends_on:
       - kafka-1
       - kafka-2
@@ -484,6 +487,7 @@ services:
       - TRADE_VOLUME_CALCULATION_CURRENCY=${TRADE_VOLUME_CALCULATION_CURRENCY}
       - WITHDRAW_VOLUME_CALCULATION_CURRENCY=${WITHDRAW_VOLUME_CALCULATION_CURRENCY}
       - TOTAL_ASSET_CALCULATION_CURRENCY=${TOTAL_ASSET_CALCULATION_CURRENCY}
+      - TOKEN_ISSUER_URL=${KC_ISSUER_URL}
     depends_on:
       - consul
       - vault
@@ -506,6 +510,7 @@ services:
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
       - ADDRESS_EXP_TIME=100
+      - TOKEN_ISSUER_URL=${KC_ISSUER_URL}
     depends_on:
       - kafka-1
       - kafka-2
@@ -536,6 +541,7 @@ services:
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASS=${SMTP_PASS}
       - SMTP_FROM=${SMTP_FROM}
+      - TOKEN_ISSUER_URL=${KC_ISSUER_URL}
     depends_on:
       - consul
       - postgres-otp
@@ -561,6 +567,7 @@ services:
       - JIBIT_SECRET_KEY=${JIBIT_SECRET_KEY}
       - ADMIN_APPROVAL_PROFILE_COMPLETION_REQUEST=${ADMIN_APPROVAL_PROFILE_COMPLETION_REQUEST}
       - ADMIN_APPROVAL_BANK_ACCOUNT=${ADMIN_APPROVAL_BANK_ACCOUNT}
+      - TOKEN_ISSUER_URL=${KC_ISSUER_URL}
     depends_on:
       - kafka-1
       - kafka-2

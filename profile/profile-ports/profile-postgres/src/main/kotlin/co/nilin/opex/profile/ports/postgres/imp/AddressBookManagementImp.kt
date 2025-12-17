@@ -51,4 +51,8 @@ class AddressBookManagementImp(
             addressBookRepository.deleteById(id).awaitFirstOrNull()
         else throw OpexError.Forbidden.exception()
     }
+
+    override suspend fun findSavedAddress(uuid: String, address: String, addressType: String): AddressBook? {
+        return addressBookRepository.findByUuidAndAddressAndAddressType(uuid, address, addressType)?.awaitFirstOrNull()
+    }
 }
