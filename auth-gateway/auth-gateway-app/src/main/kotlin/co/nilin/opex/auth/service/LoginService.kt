@@ -76,6 +76,7 @@ class LoginService(
         return TokenResponse(token, RequiredOTP(usernameType, receiver), res.otp)
     }
 
+
     suspend fun confirmGetToken(request: ConfirmPasswordFlowTokenRequest): TokenResponse {
         val username = Username.create(request.username)
         val otpRequest = OTPVerifyRequest(username.value, listOf(OTPCode(request.otp, username.type.otpType)))
@@ -117,7 +118,7 @@ class LoginService(
 
     suspend fun refreshToken(request: RefreshTokenRequest): TokenResponse {
         val token = keycloakProxy.refreshUserToken(request.refreshToken, request.clientId, request.clientSecret)
-        sendLoginEvent(extractUserUuidFromToken(token.accessToken), token.sessionState, request,token.expiresIn)
+        sendLoginEvent(extractUserUuidFromToken(token.accessToken), token.sessionState, request, token.expiresIn)
         return TokenResponse(token, null, null)
     }
 

@@ -125,7 +125,7 @@ app:
   auth:
     url: lb://opex-auth
     cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
-    iss-url: http://keycloak:8080/realms/opex
+    iss-url: ${TOKEN_ISSUER_URL:http://keycloak:8080}/realms/opex
     client-id: none
     client-secret: none
   system:
