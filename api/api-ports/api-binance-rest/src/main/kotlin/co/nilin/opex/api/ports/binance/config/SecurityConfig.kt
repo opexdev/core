@@ -1,6 +1,7 @@
 package co.nilin.opex.api.ports.binance.config
 
 import co.nilin.opex.api.core.spi.APIKeyFilter
+import co.nilin.opex.api.ports.binance.util.AudienceValidator
 import co.nilin.opex.common.security.ReactiveCustomJwtConverter
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -9,6 +10,8 @@ import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder
 import org.springframework.security.config.web.server.ServerHttpSecurity
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator
+import org.springframework.security.oauth2.jwt.JwtValidators
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder
 import org.springframework.security.web.server.SecurityWebFilterChain
@@ -20,7 +23,9 @@ import org.springframework.web.server.WebFilter
 class SecurityConfig(
     private val apiKeyFilter: APIKeyFilter,
     @Value("\${app.auth.cert-url}")
-    private val jwkUrl: String
+    private val certUrl: String,
+    @Value("\${app.auth.iss-url}")
+    private val issUrl: String
 ) {
 
     @Bean
@@ -52,7 +57,7 @@ class SecurityConfig(
                     .pathMatchers(HttpMethod.PUT, "/opex/v1/withdraw").hasAuthority("PERM_withdraw:write")
                     .pathMatchers("/opex/v1/voucher").hasAuthority("PERM_voucher:submit")
                     .pathMatchers("/opex/v1/market/**").permitAll()
-                    .pathMatchers(HttpMethod.GET,"/opex/v1/market/chain").permitAll()
+                    .pathMatchers(HttpMethod.GET, "/opex/v1/market/chain").permitAll()
                     .anyExchange().authenticated()
             }
             .addFilterBefore(apiKeyFilter as WebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
@@ -63,8 +68,25 @@ class SecurityConfig(
     @Bean
     @Throws(Exception::class)
     fun reactiveJwtDecoder(): ReactiveJwtDecoder? {
-        return NimbusReactiveJwtDecoder.withJwkSetUri(jwkUrl)
+        val decoder = NimbusReactiveJwtDecoder.withJwkSetUri(certUrl)
             .webClient(WebClient.create())
             .build()
+        val issuerValidator = JwtValidators.createDefaultWithIssuer(issUrl)
+        val audienceValidator = AudienceValidator(
+            setOf(
+                "ios-app",
+                "web-app",
+                "android-app",
+                "opex-api-key"
+            )
+        )
+        decoder.setJwtValidator(
+            DelegatingOAuth2TokenValidator(
+                issuerValidator,
+                audienceValidator
+            )
+        )
+        return decoder
     }
+
 }

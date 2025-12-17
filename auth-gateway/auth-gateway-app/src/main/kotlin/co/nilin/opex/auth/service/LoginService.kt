@@ -10,19 +10,26 @@ import co.nilin.opex.auth.proxy.KeycloakProxy
 import co.nilin.opex.auth.proxy.OTPProxy
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.security.JwtUtils
+import co.nilin.opex.common.utils.LoggerDelegate
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
 @Service
-class TokenService(
+class LoginService(
     private val otpProxy: OTPProxy,
     private val keycloakProxy: KeycloakProxy,
     private val googleProxy: GoogleProxy,
     private val captchaHandler: CaptchaHandler,
     private val authEventProducer: AuthEventProducer,
+    @Value("\${app.pre-auth-client-secret}")
+    private val preAuthClientSecretKey: String,
 ) {
+    private val logger by LoggerDelegate()
 
-    suspend fun getToken(request: PasswordFlowTokenRequest): TokenResponse {
+    private val PRE_AUTH_CLIENT_ID = "pre-auth-client"
+
+    suspend fun requestGetToken(request: PasswordFlowTokenRequest): TokenResponse {
         captchaHandler.validateCaptchaWithActionCache(
             username = request.username,
             captchaCode = request.captchaCode,
@@ -32,32 +39,45 @@ class TokenService(
         val username = Username.create(request.username)
         val user = keycloakProxy.findUserByUsername(username) ?: throw OpexError.UserNotFound.exception()
 
-        val otpType = OTPType.valueOf(user.attributes?.get(Attributes.OTP)?.get(0) ?: OTPType.NONE.name)
+        val otpTypes = (user.attributes?.get(Attributes.OTP)?.get(0) ?: OTPType.NONE.name).split(",")
 
-        if (otpType == OTPType.NONE) {
+        if (otpTypes.contains(OTPType.NONE.name)) {
             val token = keycloakProxy.getUserToken(
                 username,
                 request.password,
                 request.clientId,
                 request.clientSecret
             ).apply { if (!request.rememberMe) refreshToken = null }
-            sendLoginEvent(user.id, token.sessionState, request, token.expiresIn)
             return TokenResponse(token, null, null)
         }
 
-        if (request.otp.isNullOrBlank()) {
-            keycloakProxy.checkUserCredentials(user, request.password)
+        keycloakProxy.checkUserCredentials(user, request.password)
 
-            val requiredOtpTypes = listOf(OTPReceiver(username.value, otpType))
-            val res = otpProxy.requestOTP(username.value, requiredOtpTypes)
-            val receiver = when (otpType) {
-                OTPType.EMAIL -> user.email
-                OTPType.SMS -> user.mobile
-                else -> null
-            }
-            return TokenResponse(null, RequiredOTP(otpType, receiver), res.otp)
+        val token = keycloakProxy.getUserToken(
+            username,
+            request.password,
+            PRE_AUTH_CLIENT_ID,
+            preAuthClientSecretKey,
+        ).apply { if (!request.rememberMe) refreshToken = null }
+
+
+        val usernameType = username.type.otpType
+        if (!otpTypes.contains((usernameType.name))) throw OpexError.OTPCannotBeRequested.exception()
+        val requiredOtpTypes = listOf(OTPReceiver(username.value, usernameType))
+        val res = otpProxy.requestOTP(username.value, requiredOtpTypes)
+        val receiver = when (usernameType) {
+            OTPType.EMAIL -> user.email
+            OTPType.SMS -> user.mobile
+            else -> null
         }
 
+
+
+        return TokenResponse(token, RequiredOTP(usernameType, receiver), res.otp)
+    }
+
+    suspend fun confirmGetToken(request: ConfirmPasswordFlowTokenRequest): TokenResponse {
+        val username = Username.create(request.username)
         val otpRequest = OTPVerifyRequest(username.value, listOf(OTPCode(request.otp, username.type.otpType)))
         val otpResult = otpProxy.verifyOTP(otpRequest)
         if (!otpResult.result) {
@@ -67,13 +87,14 @@ class TokenService(
             }
         }
 
-        val token = keycloakProxy.getUserToken(
-            username,
-            request.password,
-            request.clientId,
-            request.clientSecret
+        val token = keycloakProxy.exchangeUserToken(
+            request.token,
+            PRE_AUTH_CLIENT_ID,
+            preAuthClientSecretKey,
+            request.clientId
         ).apply { if (!request.rememberMe) refreshToken = null }
-        sendLoginEvent(user.id, token.sessionState, request,token.expiresIn)
+        sendLoginEvent(extractUserUuidFromToken(token.accessToken), token.sessionState, request, token.expiresIn)
+
         return TokenResponse(token, null, null)
     }
 

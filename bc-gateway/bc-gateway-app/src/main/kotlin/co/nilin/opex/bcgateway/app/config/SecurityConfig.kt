@@ -1,5 +1,6 @@
 package co.nilin.opex.bcgateway.app.config
 
+import co.nilin.opex.bcgateway.app.utils.AudienceValidator
 import co.nilin.opex.bcgateway.app.utils.hasRoleAndLevel
 import co.nilin.opex.common.security.ReactiveCustomJwtConverter
 import org.springframework.beans.factory.annotation.Value
@@ -8,6 +9,8 @@ import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.ServerHttpSecurity
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator
+import org.springframework.security.oauth2.jwt.JwtValidators
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder
 import org.springframework.security.web.server.SecurityWebFilterChain
@@ -17,7 +20,9 @@ import org.springframework.web.reactive.function.client.WebClient
 class SecurityConfig(private val webClient: WebClient) {
 
     @Value("\${app.auth.cert-url}")
-    private lateinit var jwkUrl: String
+    private lateinit var certUrl: String
+    @Value("\${app.auth.iss-url}")
+    private lateinit var issUrl: String
 
     @Bean
     @Profile("!otc")
@@ -78,13 +83,41 @@ class SecurityConfig(private val webClient: WebClient) {
         return http.build()
     }
 
+
+
     @Bean
+    @Profile("!otc")
     @Throws(Exception::class)
     fun reactiveJwtDecoder(): ReactiveJwtDecoder? {
-        return NimbusReactiveJwtDecoder.withJwkSetUri(jwkUrl)
+        val decoder = NimbusReactiveJwtDecoder.withJwkSetUri(certUrl)
+            .webClient(WebClient.create())
+            .build()
+        val issuerValidator = JwtValidators.createDefaultWithIssuer(issUrl)
+        val audienceValidator = AudienceValidator(
+            setOf(
+                "ios-app",
+                "web-app",
+                "android-app",
+                "opex-api-key"
+            )
+        )
+        decoder.setJwtValidator(
+            DelegatingOAuth2TokenValidator(
+                issuerValidator,
+                audienceValidator
+            )
+        )
+        return decoder
+    }
+
+
+    @Bean
+    @Profile("otc")
+    @Throws(Exception::class)
+    fun otcReactiveJwtDecoder(): ReactiveJwtDecoder? {
+        return NimbusReactiveJwtDecoder.withJwkSetUri(certUrl)
             .webClient(WebClient.create())
             .build()
     }
-
 
 }

@@ -8,6 +8,13 @@ spring:
     username: ${DB_USER}
     password: ${DB_PASS}
     initialization-mode: always
+    pool:
+      enabled: true
+      initial-size: 5
+      max-size: 20
+      max-idle-time: 60s
+      validation-query: SELECT 1
+    # initialization-mode: always
   cloud:
     bootstrap:
       enabled: true
@@ -39,6 +46,7 @@ logging:
 app:
   auth:
     cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
+    iss-url: http://keycloak:8080/realms/opex
 otp:
   sms:
     provider:

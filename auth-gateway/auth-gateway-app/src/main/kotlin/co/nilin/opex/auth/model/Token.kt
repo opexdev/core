@@ -8,11 +8,19 @@ data class PasswordFlowTokenRequest(
     val password: String,
     val clientId: String,
     val clientSecret: String?,
-    val otp: String?,
     val rememberMe: Boolean = true,
     val captchaType: CaptchaType? = CaptchaType.INTERNAL,
     val captchaCode: String?,
 ):Device()
+
+data class ConfirmPasswordFlowTokenRequest(
+    val username: String,
+    val token: String,
+    val clientId: String,
+    val clientSecret: String?,
+    val otp: String,
+    val rememberMe: Boolean = true,
+): Device()
 
 data class RefreshTokenRequest(
     val clientId: String,

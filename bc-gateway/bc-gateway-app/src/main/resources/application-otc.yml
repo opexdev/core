@@ -83,6 +83,7 @@ app:
   auth:
     url: ${auth_url}
     cert-url: ${auth_jwk_endpoint}
+    iss-url:
     client-id: ${client_id}
     client-secret: ${client_secret}
   wallet:
