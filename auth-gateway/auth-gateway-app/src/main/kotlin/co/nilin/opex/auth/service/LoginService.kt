@@ -37,8 +37,7 @@ class LoginService(
             action = ActionType.LOGIN
         )
         val username = Username.create(request.username)
-        val user =
-            keycloakProxy.findUserByUsername(username) ?: throw OpexError.UsernameOrPasswordIsIncorrect.exception()
+        val user = keycloakProxy.findUserByUsername(username) ?: throw OpexError.UsernameOrPasswordIsIncorrect.exception()
         val otpTypes = (user.attributes?.get(Attributes.OTP)?.get(0) ?: OTPType.NONE.name).split(",")
 
         if (otpTypes.contains(OTPType.NONE.name)) {
