@@ -56,7 +56,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     InvalidToken(5018, "Invalid token", HttpStatus.BAD_REQUEST),
     InternalIdGenerateFailed(5019, "Internal id generate failed", HttpStatus.INTERNAL_SERVER_ERROR),
     CaptchaRequired(5020, "Captcha required", HttpStatus.BAD_REQUEST),
-
+    UsernameOrPasswordIsIncorrect(5021, "Username or password is incorrect", HttpStatus.BAD_REQUEST),
 
     // code 6000: wallet
     WalletOwnerNotFound(6001, null, HttpStatus.NOT_FOUND),

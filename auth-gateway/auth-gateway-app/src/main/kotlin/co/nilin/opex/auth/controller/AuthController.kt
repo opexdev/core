@@ -3,6 +3,8 @@ package co.nilin.opex.auth.controller;
 import co.nilin.opex.auth.model.*
 import co.nilin.opex.auth.service.LoginService
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -22,6 +24,15 @@ class AuthController(private val loginService: LoginService) {
     suspend fun confirmGetToken(@RequestBody tokenRequest: ConfirmPasswordFlowTokenRequest): ResponseEntity<TokenResponse> {
         val tokenResponse = loginService.confirmGetToken(tokenRequest)
         return ResponseEntity.ok().body(tokenResponse)
+    }
+
+    @PostMapping("/token/resend-otp")
+    suspend fun confirmGetToken(
+        @RequestBody resendOtpRequest: ResendOtpRequest,
+        @CurrentSecurityContext securityContext: SecurityContext,
+    ): ResponseEntity<ResendOtpResponse> {
+        val response = loginService.resendLoginOtp(resendOtpRequest, securityContext.authentication.name)
+        return ResponseEntity.ok().body(response)
     }
 
     @PostMapping("/token-external")

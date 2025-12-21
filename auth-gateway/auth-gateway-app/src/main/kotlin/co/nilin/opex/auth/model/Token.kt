@@ -24,7 +24,6 @@ data class ConfirmPasswordFlowTokenRequest(
 
 data class ResendOtpRequest(
     val username: String,
-    val token: String,
     val clientId: String
 )
 
@@ -50,7 +49,7 @@ data class Token(
     val expiresIn: Int,               // Expiration time of the access token in seconds
 
     @JsonProperty("refresh_expires_in")
-    val refreshExpiresIn: Int?,        // Expiration time of the refresh token in seconds
+    var refreshExpiresIn: Int?,        // Expiration time of the refresh token in seconds
 
     @JsonProperty("refresh_token")
     var refreshToken: String?,         // The refresh token
