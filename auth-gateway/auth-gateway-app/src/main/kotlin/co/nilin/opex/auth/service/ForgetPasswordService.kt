@@ -32,8 +32,8 @@ class ForgetPasswordService(
             action = ActionType.FORGET
         )
         val uName = Username.create(request.username)
-        val user = keycloakProxy.findUserByUsername(uName) ?: return TempOtpResponse("", null)
         val otpReceiver = OTPReceiver(uName.value, uName.type.otpType)
+        val user = keycloakProxy.findUserByUsername(uName) ?: return TempOtpResponse("", otpReceiver)
         //TODO IMPORTANT: remove in production
         val result = otpProxy.requestOTP(uName.value, listOf(otpReceiver))
         return TempOtpResponse(result.otp, otpReceiver)

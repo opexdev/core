@@ -1,7 +1,6 @@
 package co.nilin.opex.auth.proxy
 
 import co.nilin.opex.auth.config.KeycloakConfig
-import co.nilin.opex.auth.data.Sessions
 import co.nilin.opex.auth.data.UserRole
 import co.nilin.opex.auth.model.*
 import co.nilin.opex.auth.utils.generateRandomID
@@ -65,6 +64,7 @@ class KeycloakProxy(
             }
             .awaitBody<Token>()
     }
+
     suspend fun exchangeUserToken(
         token: String,
         clientId: String,
@@ -82,15 +82,15 @@ class KeycloakProxy(
                         "&grant_type=urn:ietf:params:oauth:grant-type:token-exchange" +
                         "&subject_token=${token}" +
                         "&audience=${targetClientId}" +
-                        "&requested_token_type=urn:ietf:params:oauth:token-type:access_token"
+                        "&scope=offline_access" +
+                        "&requested_token_type=urn:ietf:params:oauth:token-type:refresh_token"
             )
             .retrieve()
             .onStatus({ it == HttpStatus.valueOf(401) }) {
-                throw OpexError.InvalidUserCredentials.exception()
+                throw OpexError.UsernameOrPasswordIsIncorrect.exception()
             }
             .awaitBody<Token>()
     }
-
 
 
     suspend fun checkUserCredentials(user: KeycloakUser, password: String) {

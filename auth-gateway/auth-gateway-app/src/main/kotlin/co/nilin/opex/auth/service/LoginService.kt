@@ -37,8 +37,7 @@ class LoginService(
             action = ActionType.LOGIN
         )
         val username = Username.create(request.username)
-        val user = keycloakProxy.findUserByUsername(username) ?: throw OpexError.UserNotFound.exception()
-
+        val user = keycloakProxy.findUserByUsername(username) ?: throw OpexError.UsernameOrPasswordIsIncorrect.exception()
         val otpTypes = (user.attributes?.get(Attributes.OTP)?.get(0) ?: OTPType.NONE.name).split(",")
 
         if (otpTypes.contains(OTPType.NONE.name)) {
@@ -58,7 +57,10 @@ class LoginService(
             request.password,
             PRE_AUTH_CLIENT_ID,
             preAuthClientSecretKey,
-        ).apply { if (!request.rememberMe) refreshToken = null }
+        ).apply {
+            refreshToken = null
+            refreshExpiresIn = 0
+        }
 
 
         val usernameType = username.type.otpType
@@ -74,6 +76,22 @@ class LoginService(
 
 
         return TokenResponse(token, RequiredOTP(usernameType, receiver), res.otp)
+    }
+
+    suspend fun resendLoginOtp(request: ResendOtpRequest, uuid: String): ResendOtpResponse {
+        val username = Username.create(request.username)
+        val usernameType = username.type.otpType
+        val user = keycloakProxy.findUserByUsername(username) ?: throw OpexError.UserNotFound.exception()
+        if (user.id != uuid) throw OpexError.UnAuthorized.exception()
+        val requiredOtpTypes = listOf(OTPReceiver(username.value, usernameType))
+        val res = otpProxy.requestOTP(request.username, requiredOtpTypes)
+        val receiver = when (usernameType) {
+            OTPType.EMAIL -> user.email
+            OTPType.SMS -> user.mobile
+            else -> null
+        }
+        return ResendOtpResponse(RequiredOTP(usernameType, receiver), res.otp)
+
     }
 
 
@@ -107,7 +125,7 @@ class LoginService(
         try {
             keycloakProxy.findUserByEmail(email)
         } catch (e: Exception) {
-            throw OpexError.UserNotFound.exception()
+            throw OpexError.UsernameOrPasswordIsIncorrect.exception()
         }
         return TokenResponse(
             keycloakProxy.exchangeGoogleTokenForKeycloakToken(
