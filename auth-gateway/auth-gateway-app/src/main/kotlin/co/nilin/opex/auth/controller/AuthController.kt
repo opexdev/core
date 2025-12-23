@@ -27,7 +27,7 @@ class AuthController(private val loginService: LoginService) {
     }
 
     @PostMapping("/token/resend-otp")
-    suspend fun confirmGetToken(
+    suspend fun resendOtp(
         @RequestBody resendOtpRequest: ResendOtpRequest,
         @CurrentSecurityContext securityContext: SecurityContext,
     ): ResponseEntity<ResendOtpResponse> {
