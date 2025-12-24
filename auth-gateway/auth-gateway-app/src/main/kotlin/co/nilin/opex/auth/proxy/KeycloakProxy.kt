@@ -439,4 +439,35 @@ class KeycloakProxy(
         return internalId
 
     }
+
+    suspend fun getClientBTokenWithBootstrap(
+        bootstrapToken: String,
+        clientId: String,
+        clientSecret: String?,
+        rememberMe: Boolean
+    ): Token {
+        // There is no way to define a custom grant type in keycloak, so we use a password grant with a custom Bootstrap token field, we defined a custom factory to pars this request
+        val tokenUrl = "${keycloakConfig.url}/realms/${keycloakConfig.realm}/protocol/openid-connect/token"
+
+        val token = keycloakClient.post()
+            .uri(tokenUrl)
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .bodyValue(
+                "grant_type=password" +
+                        "&client_id=$clientId" +
+                        "&client_secret=$clientSecret" +
+                        "&bootstrap_token=$bootstrapToken" +
+                        "&username=bootstrap_user" + // Required dummy field
+                        "&password=bootstrap_pass" + // Required dummy field
+                        "&scope=offline_access"
+            )
+            .retrieve()
+            .onStatus({ it == HttpStatus.valueOf(401) }) {
+                throw OpexError.InvalidUserCredentials.exception()
+            }
+            .awaitBody<Token>()
+
+        if (!rememberMe) token.refreshToken = null
+        return token
+    }
 }

@@ -47,6 +47,7 @@ class LoginService(
                 request.clientId,
                 request.clientSecret
             ).apply { if (!request.rememberMe) refreshToken = null }
+            sendLoginEvent(user.id, token.sessionState, request, token.expiresIn)
             return TokenResponse(token, null, null)
         }
 
@@ -106,12 +107,18 @@ class LoginService(
             }
         }
 
-        val token = keycloakProxy.exchangeUserToken(
-            request.token,
-            PRE_AUTH_CLIENT_ID,
-            preAuthClientSecretKey,
-            request.clientId
-        ).apply { if (!request.rememberMe) refreshToken = null }
+//        val token = keycloakProxy.exchangeUserToken(
+//            request.token, request.clientId,
+//            request.clientSecret,
+//            request.clientId
+//        ).apply { if (!request.rememberMe) refreshToken = null }
+        val token = keycloakProxy.getClientBTokenWithBootstrap(
+            bootstrapToken = request.token,
+            clientId = request.clientId,
+            clientSecret = request.clientSecret,
+            rememberMe = request.rememberMe
+        )
+
         sendLoginEvent(extractUserUuidFromToken(token.accessToken), token.sessionState, request, token.expiresIn)
 
         return TokenResponse(token, null, null)
