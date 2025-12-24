@@ -82,7 +82,6 @@ class KeycloakProxy(
                         "&grant_type=urn:ietf:params:oauth:grant-type:token-exchange" +
                         "&subject_token=${token}" +
                         "&audience=${targetClientId}" +
-                        "&scope=offline_access" +
                         "&requested_token_type=urn:ietf:params:oauth:token-type:refresh_token"
             )
             .retrieve()
@@ -458,8 +457,7 @@ class KeycloakProxy(
                         "&client_secret=$clientSecret" +
                         "&bootstrap_token=$bootstrapToken" +
                         "&username=bootstrap_user" + // Required dummy field
-                        "&password=bootstrap_pass" + // Required dummy field
-                        "&scope=offline_access"
+                        "&password=bootstrap_pass" // Required dummy field
             )
             .retrieve()
             .onStatus({ it == HttpStatus.valueOf(401) }) {
