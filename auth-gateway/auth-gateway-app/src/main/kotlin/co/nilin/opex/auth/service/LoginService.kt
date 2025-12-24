@@ -47,6 +47,7 @@ class LoginService(
                 request.clientId,
                 request.clientSecret
             ).apply { if (!request.rememberMe) refreshToken = null }
+            sendLoginEvent(user.id, token.sessionState, request, token.expiresIn)
             return TokenResponse(token, null, null)
         }
 
