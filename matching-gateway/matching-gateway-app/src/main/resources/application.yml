@@ -93,7 +93,7 @@ app:
     url: lb://opex-accountant
   auth:
     cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
-    iss-url: ${TOKEN_ISSUER_URL:http://keycloak:8080}/realms/opex
+    iss-url: ${TOKEN_ISSUER_URL:http://keycloak:8080/realms/opex}
   custom-message:
     enabled: ${CUSTOM_MESSAGE_ENABLED:false}
     base-url: ${CUSTOM_MESSAGE_URL}

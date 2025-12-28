@@ -58,6 +58,8 @@ class SecurityConfig(
                     .pathMatchers("/opex/v1/voucher").hasAuthority("PERM_voucher:submit")
                     .pathMatchers("/opex/v1/market/**").permitAll()
                     .pathMatchers(HttpMethod.GET, "/opex/v1/market/chain").permitAll()
+                    .pathMatchers(HttpMethod.POST,"/v1/api-key").authenticated()
+                    .pathMatchers("/v1/api-key").hasAuthority("ROLE_admin")
                     .anyExchange().authenticated()
             }
             .addFilterBefore(apiKeyFilter as WebFilter, SecurityWebFiltersOrder.AUTHENTICATION)

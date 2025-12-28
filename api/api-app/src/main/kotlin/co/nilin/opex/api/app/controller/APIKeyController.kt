@@ -1,56 +1,148 @@
 package co.nilin.opex.api.app.controller
 
-import co.nilin.opex.api.app.data.APIKeyResponse
-import co.nilin.opex.api.app.data.CreateAPIKeyRequest
-import co.nilin.opex.api.app.service.APIKeyServiceImpl
-import co.nilin.opex.common.security.jwtAuthentication
-import org.springframework.security.core.annotation.CurrentSecurityContext
-import org.springframework.security.core.context.SecurityContext
+import co.nilin.opex.api.app.data.ApiKeyResponse
+import co.nilin.opex.api.app.data.CreateApiKeyRequest
+import co.nilin.opex.api.app.data.UpdateApiKeyRequest
+import co.nilin.opex.common.security.JwtUtils
 import org.springframework.web.bind.annotation.*
-import java.security.Principal
+import java.security.SecureRandom
+import java.util.*
 
 @RestController
 @RequestMapping("/v1/api-key")
-class APIKeyController(private val apiKeyService: APIKeyServiceImpl) {
+class APIKeyController(
+    private val apiKeyService: co.nilin.opex.api.core.spi.APIKeyService
+) {
 
-    @GetMapping
-    suspend fun getKeys(principal: Principal): List<APIKeyResponse> {
-        return apiKeyService.getKeysByUserId(principal.name)
-            .map { APIKeyResponse(it.label, it.expirationTime, it.allowedIPs, it.key, it.isEnabled) }
+    private val rng = SecureRandom()
+
+    private fun generateSecretBase64(bytes: Int = 48): String {
+        val b = ByteArray(bytes)
+        rng.nextBytes(b)
+        return Base64.getEncoder().encodeToString(b)
     }
 
+    private fun canonicalTemplate(): String = "METHOD\nPATH\nQUERY\nBODY_SHA256\nTIMESTAMP_MS"
+
+    private fun headersTemplate(apiKeyId: String): Map<String, String> = mapOf(
+        "X-API-KEY" to apiKeyId,
+        "X-API-SIGNATURE" to "Base64(HMAC-SHA256(secret, canonical))",
+        "X-API-TIMESTAMP" to "<epoch_ms>",
+        "X-API-BODY-SHA256" to "<hex_sha256_body> (optional)"
+    )
+
+    // Create a new API key. Caller must provide a user access token; we bind the key to that user. Returns one-time secret and usage hints.
     @PostMapping
     suspend fun create(
-        @RequestBody request: CreateAPIKeyRequest,
-        @CurrentSecurityContext securityContext: SecurityContext
-    ): Any {
-        val jwt = securityContext.jwtAuthentication()
-        val response = apiKeyService.createAPIKey(
-            jwt.name,
-            request.label,
-            request.expiration?.getLocalDateTime(),
-            request.allowedIPs,
-            jwt.token.tokenValue
+        @RequestHeader(name = "Authorization", required = false) authorization: String?,
+        @RequestBody req: CreateApiKeyRequest
+    ): ApiKeyResponse {
+        require(!authorization.isNullOrBlank() && authorization.startsWith("Bearer ")) { "Authorization Bearer user token is required" }
+        val userToken = authorization.substringAfter("Bearer ").trim()
+        val (userId, preferredUsername) = parseJwtUser(userToken)
+
+        val apiKeyId = req.apiKeyId?.takeIf { it.isNotBlank() } ?: UUID.randomUUID().toString()
+        val secret = generateSecretBase64()
+        val stored = apiKeyService.createApiKeyRecord(
+            apiKeyId = apiKeyId,
+            label = req.label,
+            plaintextSecret = secret,
+            allowedIps = req.allowedIps,
+            allowedEndpoints = req.allowedEndpoints,
+            keycloakUserId = userId,
+            keycloakUsername = preferredUsername,
+            enabled = true
         )
-        return object {
-            val apiKey = response.second.key
-            val secret = response.first
-        }
+        return ApiKeyResponse(
+            apiKeyId = apiKeyId,
+            label = stored.record.label,
+            enabled = stored.record.enabled,
+            allowedIps = stored.record.allowedIps,
+            allowedEndpoints = stored.record.allowedEndpoints,
+            keycloakUsername = stored.record.keycloakUsername,
+            secret = secret
+        )
     }
 
-    @PutMapping("/{key}/enable")
-    suspend fun enableKey(principal: Principal, @PathVariable key: String) {
-        apiKeyService.changeKeyState(principal.name, key, true)
+    private fun parseJwtUser(token: String): Pair<String, String?> {
+        // Decode JWT payload using common JwtUtils (no signature verification here).
+        val payload = JwtUtils.decodePayload(token)
+        val sub = payload["sub"] as? String
+        val preferred = payload["username"] as? String
+        require(!sub.isNullOrBlank()) { "JWT missing sub" }
+        return Pair(sub!!, preferred)
     }
 
-    @PutMapping("/{key}/disable")
-    suspend fun disableKey(principal: Principal, @PathVariable key: String) {
-        apiKeyService.changeKeyState(principal.name, key, false)
+    // List all API keys (admin-only) — secret is not returned
+    @GetMapping
+    suspend fun list(): List<ApiKeyResponse> = apiKeyService.listApiKeyRecords().stream().map {
+        ApiKeyResponse(
+            apiKeyId = it.apiKeyId,
+            label = it.label,
+            enabled = it.enabled,
+            allowedIps = it.allowedIps,
+            allowedEndpoints = it.allowedEndpoints,
+            keycloakUsername = it.keycloakUsername,
+            secret = null
+        )
+    }.toList()
+
+
+    // Get one API key (admin-only) — secret is not returned
+    @GetMapping("/{apiKeyId}")
+    suspend fun get(@PathVariable apiKeyId: String): ApiKeyResponse {
+        val it = apiKeyService.getApiKeyRecord(apiKeyId) ?: throw NoSuchElementException("API key not found: $apiKeyId")
+        return ApiKeyResponse(
+            apiKeyId = it.apiKeyId,
+            label = it.label,
+            enabled = it.enabled,
+            allowedIps = it.allowedIps,
+            allowedEndpoints = it.allowedEndpoints,
+            keycloakUsername = it.keycloakUsername,
+            secret = null
+        )
     }
 
-    @DeleteMapping("/{key}")
-    suspend fun deleteKey(principal: Principal, @PathVariable key: String) {
-        apiKeyService.deleteKey(principal.name, key)
+    // Rotate secret (admin-only). Returns new one-time secret
+    @PostMapping("/{apiKeyId}/rotate")
+    suspend fun rotate(@PathVariable apiKeyId: String): ApiKeyResponse {
+        val newSecret = generateSecretBase64()
+        val stored = apiKeyService.rotateApiKeySecret(apiKeyId, newSecret)
+        return ApiKeyResponse(
+            apiKeyId = stored.record.apiKeyId,
+            label = stored.record.label,
+            enabled = stored.record.enabled,
+            allowedIps = stored.record.allowedIps,
+            allowedEndpoints = stored.record.allowedEndpoints,
+            keycloakUsername = stored.record.keycloakUserId,
+            secret = newSecret
+        )
     }
 
+    // Update metadata or enable/disable (admin-only)
+    @PutMapping("/{apiKeyId}")
+    suspend fun update(@PathVariable apiKeyId: String, @RequestBody req: UpdateApiKeyRequest): ApiKeyResponse {
+        val s = apiKeyService.updateApiKeyRecord(
+            apiKeyId = apiKeyId,
+            label = req.label,
+            enabled = req.enabled,
+            allowedIps = req.allowedIps,
+            allowedEndpoints = req.allowedEndpoints,
+            keycloakUsername = req.keycloakUsername
+        )
+        return ApiKeyResponse(
+            apiKeyId = s.apiKeyId,
+            label = s.label,
+            enabled = s.enabled,
+            allowedIps = s.allowedIps,
+            allowedEndpoints = s.allowedEndpoints,
+            keycloakUsername = s.keycloakUserId
+        )
+    }
+
+    // Delete/revoke (admin-only)
+    @DeleteMapping("/{apiKeyId}")
+    suspend fun delete(@PathVariable apiKeyId: String) {
+        apiKeyService.deleteApiKeyRecord(apiKeyId)
+    }
 }

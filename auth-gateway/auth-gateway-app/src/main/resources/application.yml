@@ -60,7 +60,7 @@ logging:
 keycloak:
   url: http://keycloak:8080
   cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
-  iss-url: ${TOKEN_ISSUER_URL:http://keycloak:8080}/realms/opex
+  iss-url: ${TOKEN_ISSUER_URL:http://keycloak:8080/realms/opex}
   realm: opex
   admin-client:
     id: "opex-admin"

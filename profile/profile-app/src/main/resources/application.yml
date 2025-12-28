@@ -55,7 +55,7 @@ app:
     bank-account: ${ADMIN_APPROVAL_BANK_ACCOUNT:false}
   auth:
     cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
-    iss-url: ${TOKEN_ISSUER_URL:http://keycloak:8080}/realms/opex
+    iss-url: ${TOKEN_ISSUER_URL:http://keycloak:8080/realms/opex}
   kyc:
     url: lb://opex-kyc/v2/admin/kyc/internal
   otp:

@@ -46,7 +46,7 @@ logging:
 app:
   auth:
     cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
-    iss-url: ${TOKEN_ISSUER_URL:http://keycloak:8080}/realms/opex
+    iss-url: ${TOKEN_ISSUER_URL:http://keycloak:8080/realms/opex}
 otp:
   sms:
     provider:
