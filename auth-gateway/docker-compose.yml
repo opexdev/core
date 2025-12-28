@@ -18,7 +18,7 @@ services:
     command:
       - start-dev
       - --import-realm
-      - --features=admin-fine-grained-authz,token-exchange,client-policies,client-profiles
+      - --features=admin-fine-grained-authz,token-exchange
     volumes:
       - ./keycloak-setup/realms:/opt/keycloak/data/import
     ports:

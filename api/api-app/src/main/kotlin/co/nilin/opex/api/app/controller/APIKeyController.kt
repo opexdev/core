@@ -4,7 +4,6 @@ import co.nilin.opex.api.app.data.ApiKeyResponse
 import co.nilin.opex.api.app.data.CreateApiKeyRequest
 import co.nilin.opex.api.app.data.UpdateApiKeyRequest
 import co.nilin.opex.common.security.JwtUtils
-import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import java.security.SecureRandom
 import java.util.*
@@ -76,7 +75,6 @@ class APIKeyController(
 
     // List all API keys (admin-only) — secret is not returned
     @GetMapping
-    @PreAuthorize("hasAuthority('ROLE_admin')")
     suspend fun list(): List<ApiKeyResponse> = apiKeyService.listApiKeyRecords().stream().map {
         ApiKeyResponse(
             apiKeyId = it.apiKeyId,
@@ -92,7 +90,6 @@ class APIKeyController(
 
     // Get one API key (admin-only) — secret is not returned
     @GetMapping("/{apiKeyId}")
-    @PreAuthorize("hasAuthority('ROLE_admin')")
     suspend fun get(@PathVariable apiKeyId: String): ApiKeyResponse {
         val it = apiKeyService.getApiKeyRecord(apiKeyId) ?: throw NoSuchElementException("API key not found: $apiKeyId")
         return ApiKeyResponse(
@@ -108,7 +105,6 @@ class APIKeyController(
 
     // Rotate secret (admin-only). Returns new one-time secret
     @PostMapping("/{apiKeyId}/rotate")
-    @PreAuthorize("hasAuthority('ROLE_admin')")
     suspend fun rotate(@PathVariable apiKeyId: String): ApiKeyResponse {
         val newSecret = generateSecretBase64()
         val stored = apiKeyService.rotateApiKeySecret(apiKeyId, newSecret)
@@ -125,7 +121,6 @@ class APIKeyController(
 
     // Update metadata or enable/disable (admin-only)
     @PutMapping("/{apiKeyId}")
-    @PreAuthorize("hasAuthority('ROLE_admin')")
     suspend fun update(@PathVariable apiKeyId: String, @RequestBody req: UpdateApiKeyRequest): ApiKeyResponse {
         val s = apiKeyService.updateApiKeyRecord(
             apiKeyId = apiKeyId,
@@ -147,7 +142,6 @@ class APIKeyController(
 
     // Delete/revoke (admin-only)
     @DeleteMapping("/{apiKeyId}")
-    @PreAuthorize("hasAuthority('ROLE_admin')")
     suspend fun delete(@PathVariable apiKeyId: String) {
         apiKeyService.deleteApiKeyRecord(apiKeyId)
     }
