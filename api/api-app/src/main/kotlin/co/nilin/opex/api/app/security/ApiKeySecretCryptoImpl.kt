@@ -1,6 +1,7 @@
 package co.nilin.opex.api.app.security
 
 import co.nilin.opex.api.core.spi.ApiKeySecretCrypto
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.security.SecureRandom
@@ -16,6 +17,7 @@ class ApiKeySecretCryptoImpl(
 ) : ApiKeySecretCrypto {
     private val key: SecretKey
     private val rng = SecureRandom()
+    private val logger = LoggerFactory.getLogger(ApiKeySecretCryptoImpl::class.java)
 
     init {
         val decoded = Base64.getDecoder().decode(base64Key)

@@ -126,6 +126,6 @@ app:
     base-url: ${CUSTOM_MESSAGE_URL}
   api:
     crypto:
-      key: 0e1fd29572ec8c85970d76e3433e96ee
+      key: ${api_crypto_key:0e1fd29572ec8c85970d76e3433e96ee}
 swagger:
   authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
