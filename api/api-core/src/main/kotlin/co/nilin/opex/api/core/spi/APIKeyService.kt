@@ -1,24 +1,58 @@
 package co.nilin.opex.api.core.spi
 
-import co.nilin.opex.api.core.inout.APIKey
-import java.time.LocalDateTime
-
 interface APIKeyService {
 
-    suspend fun createAPIKey(
-        userId: String,
-        label: String,
-        expirationTime: LocalDateTime?,
-        allowedIPs: String?,
-        currentToken: String
-    ): Pair<String, APIKey>
+    data class ApiKeyRecord(
+        val apiKeyId: String,
+        val label: String?,
+        val enabled: Boolean,
+        val allowedIps: Set<String>?,
+        val allowedEndpoints: Set<String>?,
+        val keycloakUserId: String?,
+        val keycloakUsername: String?
+    )
 
-    suspend fun getAPIKey(key: String, secret: String): APIKey?
+    data class ApiKeyCreateResult(
+        val secret: String,
+        val record: ApiKeyRecord
+    )
 
-    suspend fun getKeysByUserId(userId: String): List<APIKey>
+    data class ApiKeyVerification(
+        val apiKeyId: String,
+        val secret: String,
+        val enabled: Boolean,
+        val allowedEndpoints: Set<String>?,
+        val allowedIps: Set<String>?,
+        val keycloakUserId: String?
+    )
 
-    suspend fun changeKeyState(userId: String, key: String, isEnabled: Boolean)
+    suspend fun createApiKeyRecord(
+        apiKeyId: String,
+        label: String?,
+        plaintextSecret: String,
+        allowedIps: Set<String>?,
+        allowedEndpoints: Set<String>?,
+        keycloakUserId: String?,
+        keycloakUsername: String?,
+        enabled: Boolean
+    ): ApiKeyCreateResult
 
-    suspend fun deleteKey(userId: String, key: String)
+    suspend fun rotateApiKeySecret(apiKeyId: String, newPlaintextSecret: String): ApiKeyCreateResult
 
+    suspend fun updateApiKeyRecord(
+        apiKeyId: String,
+        label: String?,
+        enabled: Boolean?,
+        allowedIps: Set<String>?,
+        allowedEndpoints: Set<String>?,
+        keycloakUsername: String?
+    ): ApiKeyRecord
+
+    suspend fun getApiKeyRecord(apiKeyId: String): ApiKeyRecord?
+
+    suspend fun listApiKeyRecords(): List<ApiKeyRecord>
+
+    suspend fun deleteApiKeyRecord(apiKeyId: String)
+
+    suspend fun getApiKeyForVerification(apiKeyId: String): ApiKeyVerification?
 }
