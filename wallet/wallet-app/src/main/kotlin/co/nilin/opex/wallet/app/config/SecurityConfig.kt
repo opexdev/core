@@ -60,6 +60,7 @@ class SecurityConfig(private val webClient: WebClient) {
             //otc
             .pathMatchers("/admin/**").hasAuthority("ROLE_admin")
             .pathMatchers(HttpMethod.GET, "/otc/**").permitAll()
+            .pathMatchers(HttpMethod.PUT, "/otc/rate").hasAnyAuthority("ROLE_rate_bot","ROLE_admin")
             .pathMatchers(HttpMethod.PUT, "/otc/**").hasAuthority("ROLE_admin")
             .pathMatchers(HttpMethod.POST, "/otc/**").hasAuthority("ROLE_admin")
             .pathMatchers(HttpMethod.DELETE, "/otc/**").hasAuthority("ROLE_admin")

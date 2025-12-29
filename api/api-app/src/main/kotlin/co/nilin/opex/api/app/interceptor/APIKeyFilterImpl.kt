@@ -2,8 +2,8 @@ package co.nilin.opex.api.app.interceptor
 
 import co.nilin.opex.api.app.security.ClientCredentialsTokenService
 import co.nilin.opex.api.app.security.HmacVerifier
-import co.nilin.opex.api.core.spi.APIKeyService
 import co.nilin.opex.api.core.spi.APIKeyFilter
+import co.nilin.opex.api.core.spi.APIKeyService
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -28,6 +28,7 @@ class APIKeyFilterImpl(
         val signature = request.headers["X-API-SIGNATURE"]?.firstOrNull()
         val tsHeader = request.headers["X-API-TIMESTAMP"]?.firstOrNull()
         val uri = request.uri
+        val path = "/api" + uri.rawPath
 
         // HMAC path when signature present
         if (!apiKeyId.isNullOrBlank() && !signature.isNullOrBlank() && !tsHeader.isNullOrBlank()) {
@@ -43,8 +44,8 @@ class APIKeyFilterImpl(
                         logger.warn("API key {} request from disallowed IP {}", apiKeyId, sourceIp)
                         null
                     }
-                    if (!entry.allowedEndpoints.isNullOrEmpty() && ( !entry.allowedEndpoints!!.contains(uri.rawPath))) {
-                        logger.warn("API key {} request to unauthorized resource {}", apiKeyId, uri.rawPath)
+                    if (!entry.allowedEndpoints.isNullOrEmpty() && (!entry.allowedEndpoints!!.contains(path))) {
+                        logger.warn("API key {} request to unauthorized resource {}", apiKeyId, path)
                         null
                     } else {
                         val ts = tsHeader.toLongOrNull()
@@ -58,7 +59,7 @@ class APIKeyFilterImpl(
                                 signature,
                                 HmacVerifier.VerificationInput(
                                     method = request.method.name(),
-                                    path = uri.rawPath,
+                                    path = path,
                                     query = uri.rawQuery,
                                     timestampMillis = ts,
                                     bodySha256 = bodyHash

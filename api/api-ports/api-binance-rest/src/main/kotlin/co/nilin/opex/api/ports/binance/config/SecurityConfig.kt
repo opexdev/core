@@ -21,72 +21,75 @@ import org.springframework.web.server.WebFilter
 @EnableWebFluxSecurity
 @Configuration("binanceSecurityConfig")
 class SecurityConfig(
-    private val apiKeyFilter: APIKeyFilter,
-    @Value("\${app.auth.cert-url}")
-    private val certUrl: String,
-    @Value("\${app.auth.iss-url}")
-    private val issUrl: String
+        private val apiKeyFilter: APIKeyFilter,
+        @Value("\${app.auth.cert-url}")
+        private val certUrl: String,
+        @Value("\${app.auth.iss-url}")
+        private val issUrl: String
 ) {
 
     @Bean
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain {
         return http.csrf { it.disable() }
-            .authorizeExchange {
-                it.pathMatchers("/actuator/**").permitAll()
-                    .pathMatchers("/swagger-ui/**").permitAll()
-                    .pathMatchers("/swagger-resources/**").permitAll()
-                    .pathMatchers("/v2/api-docs").permitAll()
-                    .pathMatchers("/v3/depth").permitAll()
-                    .pathMatchers("/v3/trades").permitAll()
-                    .pathMatchers("/v3/ticker/**").permitAll()
-                    .pathMatchers("/v3/exchangeInfo").permitAll()
-                    .pathMatchers("/v3/currencyInfo/**").permitAll()
-                    .pathMatchers("/v3/klines").permitAll()
-                    .pathMatchers("/socket").permitAll()
-                    .pathMatchers("/v1/landing/**").permitAll()
-                    .pathMatchers(HttpMethod.POST, "/v3/order").hasAuthority("PERM_order:write")
-                    .pathMatchers(HttpMethod.DELETE, "/v3/order").hasAuthority("PERM_order:write")
+                .authorizeExchange {
+                    it.pathMatchers("/actuator/**").permitAll()
+                            .pathMatchers("/swagger-ui/**").permitAll()
+                            .pathMatchers("/swagger-resources/**").permitAll()
+                            .pathMatchers("/v2/api-docs").permitAll()
+                            .pathMatchers("/v3/depth").permitAll()
+                            .pathMatchers("/v3/trades").permitAll()
+                            .pathMatchers("/v3/ticker/**").permitAll()
+                            .pathMatchers("/v3/exchangeInfo").permitAll()
+                            .pathMatchers("/v3/currencyInfo/**").permitAll()
+                            .pathMatchers("/v3/klines").permitAll()
+                            .pathMatchers("/socket").permitAll()
+                            .pathMatchers("/v1/landing/**").permitAll()
+                            .pathMatchers(HttpMethod.POST, "/v3/order").hasAuthority("PERM_order:write")
+                            .pathMatchers(HttpMethod.DELETE, "/v3/order").hasAuthority("PERM_order:write")
 
-                    // Opex endpoints
-                    .pathMatchers("/opex/v1/admin/transactions/**").hasAnyAuthority("ROLE_monitoring", "ROLE_admin")
-                    .pathMatchers("/opex/v1/admin/**").hasAuthority("ROLE_admin")
-                    .pathMatchers("/opex/v1/deposit/**").hasAuthority("DEPOSIT_deposit:write")
-                    .pathMatchers(HttpMethod.POST, "/opex/v1/order").hasAuthority("PERM_order:write")
-                    .pathMatchers(HttpMethod.PUT, "/opex/v1/order").hasAuthority("PERM_order:write")
-                    .pathMatchers(HttpMethod.POST, "/opex/v1/withdraw").hasAuthority("PERM_withdraw:write")
-                    .pathMatchers(HttpMethod.PUT, "/opex/v1/withdraw").hasAuthority("PERM_withdraw:write")
-                    .pathMatchers("/opex/v1/voucher").hasAuthority("PERM_voucher:submit")
-                    .pathMatchers("/opex/v1/market/**").permitAll()
-                    .pathMatchers(HttpMethod.GET, "/opex/v1/market/chain").permitAll()
-                    .pathMatchers(HttpMethod.POST,"/v1/api-key").authenticated()
-                    .pathMatchers("/v1/api-key").hasAuthority("ROLE_admin")
-                    .anyExchange().authenticated()
-            }
-            .addFilterBefore(apiKeyFilter as WebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
-            .oauth2ResourceServer { it.jwt { jwt -> jwt.jwtAuthenticationConverter(ReactiveCustomJwtConverter()) } }
-            .build()
+                            // Opex endpoints
+                            .pathMatchers("/opex/v1/admin/transactions/**").hasAnyAuthority("ROLE_monitoring", "ROLE_admin")
+                            .pathMatchers("/opex/v1/admin/**").hasAuthority("ROLE_admin")
+                            .pathMatchers("/opex/v1/deposit/**").hasAuthority("PERM_deposit:write")
+                            .pathMatchers(HttpMethod.POST, "/opex/v1/order").hasAuthority("PERM_order:write")
+                            .pathMatchers(HttpMethod.PUT, "/opex/v1/order").hasAuthority("PERM_order:write")
+                            .pathMatchers(HttpMethod.POST, "/opex/v1/withdraw").hasAuthority("PERM_withdraw:write")
+                            .pathMatchers(HttpMethod.PUT, "/opex/v1/withdraw").hasAuthority("PERM_withdraw:write")
+                            .pathMatchers("/opex/v1/voucher").hasAuthority("PERM_voucher:submit")
+                            .pathMatchers("/opex/v1/market/**").permitAll()
+                            .pathMatchers(HttpMethod.GET, "/opex/v1/market/chain").permitAll()
+                            .pathMatchers(HttpMethod.POST, "/v1/api-key").authenticated()
+                            .pathMatchers("/v1/api-key").hasAuthority("ROLE_admin")
+                            .pathMatchers(HttpMethod.PUT, "/opex/v1/otc/rate").hasAnyAuthority("ROLE_admin", "ROLE_rate_bot")
+                            .pathMatchers(HttpMethod.GET, "/opex/v1/otc/**").permitAll()
+                            .pathMatchers("/opex/v1/otc/**").hasAuthority("ROLE_admin")
+                            .anyExchange().authenticated()
+                }
+                .addFilterBefore(apiKeyFilter as WebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
+                .oauth2ResourceServer { it.jwt { jwt -> jwt.jwtAuthenticationConverter(ReactiveCustomJwtConverter()) } }
+                .build()
     }
 
     @Bean
     @Throws(Exception::class)
     fun reactiveJwtDecoder(): ReactiveJwtDecoder? {
         val decoder = NimbusReactiveJwtDecoder.withJwkSetUri(certUrl)
-            .webClient(WebClient.create())
-            .build()
+                .webClient(WebClient.create())
+                .build()
         val issuerValidator = JwtValidators.createDefaultWithIssuer(issUrl)
         val audienceValidator = AudienceValidator(
-            setOf(
-                "ios-app",
-                "web-app",
-                "android-app",
-                "opex-api-key"
-            )
+                setOf(
+                        "ios-app",
+                        "web-app",
+                        "android-app",
+                        "opex-api-key"
+                )
         )
         decoder.setJwtValidator(
-            DelegatingOAuth2TokenValidator(
-                issuerValidator,
-                audienceValidator
-            )
+                DelegatingOAuth2TokenValidator(
+                        issuerValidator,
+                        audienceValidator
+                )
         )
         return decoder
     }
