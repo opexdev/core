@@ -50,7 +50,7 @@ class SecurityConfig(
                     // Opex endpoints
                     .pathMatchers("/opex/v1/admin/transactions/**").hasAnyAuthority("ROLE_monitoring", "ROLE_admin")
                     .pathMatchers("/opex/v1/admin/**").hasAuthority("ROLE_admin")
-                    .pathMatchers("/opex/v1/deposit/**").hasAuthority("DEPOSIT_deposit:write")
+                    .pathMatchers("/opex/v1/deposit/**").hasAuthority("PERM_deposit:write")
                     .pathMatchers(HttpMethod.POST, "/opex/v1/order").hasAuthority("PERM_order:write")
                     .pathMatchers(HttpMethod.PUT, "/opex/v1/order").hasAuthority("PERM_order:write")
                     .pathMatchers(HttpMethod.POST, "/opex/v1/withdraw").hasAuthority("PERM_withdraw:write")
@@ -58,8 +58,11 @@ class SecurityConfig(
                     .pathMatchers("/opex/v1/voucher").hasAuthority("PERM_voucher:submit")
                     .pathMatchers("/opex/v1/market/**").permitAll()
                     .pathMatchers(HttpMethod.GET, "/opex/v1/market/chain").permitAll()
-                    .pathMatchers(HttpMethod.POST,"/v1/api-key").authenticated()
+                    .pathMatchers(HttpMethod.POST, "/v1/api-key").authenticated()
                     .pathMatchers("/v1/api-key").hasAuthority("ROLE_admin")
+                    .pathMatchers(HttpMethod.PUT, "/opex/v1/otc/rate").hasAnyAuthority("ROLE_admin", "ROLE_rate_bot")
+                    .pathMatchers(HttpMethod.GET, "/opex/v1/otc/**").permitAll()
+                    .pathMatchers("/opex/v1/otc/**").hasAuthority("ROLE_admin")
                     .anyExchange().authenticated()
             }
             .addFilterBefore(apiKeyFilter as WebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
