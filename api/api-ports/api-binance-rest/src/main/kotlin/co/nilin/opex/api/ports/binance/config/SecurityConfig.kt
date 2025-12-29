@@ -31,21 +31,21 @@ class SecurityConfig(
     @Bean
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain {
         return http.csrf { it.disable() }
-            .authorizeExchange {
-                it.pathMatchers("/actuator/**").permitAll()
-                    .pathMatchers("/swagger-ui/**").permitAll()
-                    .pathMatchers("/swagger-resources/**").permitAll()
-                    .pathMatchers("/v2/api-docs").permitAll()
-                    .pathMatchers("/v3/depth").permitAll()
-                    .pathMatchers("/v3/trades").permitAll()
-                    .pathMatchers("/v3/ticker/**").permitAll()
-                    .pathMatchers("/v3/exchangeInfo").permitAll()
-                    .pathMatchers("/v3/currencyInfo/**").permitAll()
-                    .pathMatchers("/v3/klines").permitAll()
-                    .pathMatchers("/socket").permitAll()
-                    .pathMatchers("/v1/landing/**").permitAll()
-                    .pathMatchers(HttpMethod.POST, "/v3/order").hasAuthority("PERM_order:write")
-                    .pathMatchers(HttpMethod.DELETE, "/v3/order").hasAuthority("PERM_order:write")
+                .authorizeExchange {
+                    it.pathMatchers("/actuator/**").permitAll()
+                            .pathMatchers("/swagger-ui/**").permitAll()
+                            .pathMatchers("/swagger-resources/**").permitAll()
+                            .pathMatchers("/v2/api-docs").permitAll()
+                            .pathMatchers("/v3/depth").permitAll()
+                            .pathMatchers("/v3/trades").permitAll()
+                            .pathMatchers("/v3/ticker/**").permitAll()
+                            .pathMatchers("/v3/exchangeInfo").permitAll()
+                            .pathMatchers("/v3/currencyInfo/**").permitAll()
+                            .pathMatchers("/v3/klines").permitAll()
+                            .pathMatchers("/socket").permitAll()
+                            .pathMatchers("/v1/landing/**").permitAll()
+                            .pathMatchers(HttpMethod.POST, "/v3/order").hasAuthority("PERM_order:write")
+                            .pathMatchers(HttpMethod.DELETE, "/v3/order").hasAuthority("PERM_order:write")
 
                             // Opex endpoints
                             .pathMatchers("/opex/v1/admin/transactions/**").hasAnyAuthority("ROLE_monitoring", "ROLE_admin")
@@ -74,22 +74,22 @@ class SecurityConfig(
     @Throws(Exception::class)
     fun reactiveJwtDecoder(): ReactiveJwtDecoder? {
         val decoder = NimbusReactiveJwtDecoder.withJwkSetUri(certUrl)
-            .webClient(WebClient.create())
-            .build()
+                .webClient(WebClient.create())
+                .build()
         val issuerValidator = JwtValidators.createDefaultWithIssuer(issUrl)
         val audienceValidator = AudienceValidator(
-            setOf(
-                "ios-app",
-                "web-app",
-                "android-app",
-                "opex-api-key"
-            )
+                setOf(
+                        "ios-app",
+                        "web-app",
+                        "android-app",
+                        "opex-api-key"
+                )
         )
         decoder.setJwtValidator(
-            DelegatingOAuth2TokenValidator(
-                issuerValidator,
-                audienceValidator
-            )
+                DelegatingOAuth2TokenValidator(
+                        issuerValidator,
+                        audienceValidator
+                )
         )
         return decoder
     }
