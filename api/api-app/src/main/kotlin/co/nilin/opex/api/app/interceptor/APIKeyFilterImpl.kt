@@ -2,8 +2,8 @@ package co.nilin.opex.api.app.interceptor
 
 import co.nilin.opex.api.app.security.ClientCredentialsTokenService
 import co.nilin.opex.api.app.security.HmacVerifier
-import co.nilin.opex.api.core.spi.APIKeyFilter
 import co.nilin.opex.api.core.spi.APIKeyService
+import co.nilin.opex.api.core.spi.APIKeyFilter
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -30,6 +30,69 @@ class APIKeyFilterImpl(
         val uri = request.uri
         val path = "/api" + uri.rawPath
 
+        // HMAC path when signature present
+        if (!apiKeyId.isNullOrBlank() && !signature.isNullOrBlank() && !tsHeader.isNullOrBlank()) {
+            return mono {
+                val entry = apiKeyService.getApiKeyForVerification(apiKeyId)
+                if (entry == null || !entry.enabled) {
+                    logger.warn("Unknown or disabled API key: {}", apiKeyId)
+                    null
+                } else {
+                    // Optional IP allowlist
+                    val sourceIp = request.remoteAddress?.address?.hostAddress
+                    if (!entry.allowedIps.isNullOrEmpty() && (sourceIp == null || !entry.allowedIps!!.contains(sourceIp))) {
+                        logger.warn("API key {} request from disallowed IP {}", apiKeyId, sourceIp)
+                        null
+                    }
+                    if (!entry.allowedEndpoints.isNullOrEmpty() && ( !entry.allowedEndpoints!!.contains(path))) {
+                        logger.warn("API key {} request to unauthorized resource {}", apiKeyId, path)
+                        null
+                    } else {
+                        val ts = tsHeader.toLongOrNull()
+                        val bodyHash = request.headers["X-API-BODY-SHA256"]?.firstOrNull()
+                        if (ts == null) {
+                            logger.warn("Invalid timestamp header for bot {}", apiKeyId)
+                            null
+                        } else {
+                            val ok = hmacVerifier.verify(
+                                entry.secret,
+                                signature,
+                                HmacVerifier.VerificationInput(
+                                    method = request.method.name(),
+                                    path = path,
+                                    query = uri.rawQuery,
+                                    timestampMillis = ts,
+                                    bodySha256 = bodyHash
+                                )
+                            )
+                            if (!ok) {
+                                logger.warn("Invalid signature for apiKey {}", apiKeyId)
+                                null
+                            } else {
+                                val userId = entry.keycloakUserId
+                                if (userId.isNullOrBlank()) {
+                                    logger.warn("API key {} has no mapped Keycloak userId; rejecting", apiKeyId)
+                                    null
+                                } else {
+                                    val bearer = clientTokenService.exchangeToUserToken(userId)
+                                    val req = request.mutate()
+                                        .header("Authorization", "Bearer $bearer")
+                                        .build()
+                                    exchange.mutate().request(req).build()
+                                }
+                            }
+                        }
+                    }
+                }
+            }.flatMap { updatedExchange ->
+                if (updatedExchange != null) chain.filter(updatedExchange) else chain.filter(exchange)
+            }
+        }
+
+        // Secret-only path with X-API-SECRET (kept as requested). We validate the provided secret
+        // against the stored HMAC secret for the apiKey, then proceed to exchange to the mapped user token.
+        val legacySecret = request.headers["X-API-SECRET"]?.firstOrNull()
+        if (apiKeyId.isNullOrBlank() || legacySecret.isNullOrBlank()) {
         // HMAC path when signature present
         if (!apiKeyId.isNullOrBlank() && !signature.isNullOrBlank() && !tsHeader.isNullOrBlank()) {
             return mono {
