@@ -10,7 +10,19 @@ spring:
     url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
-    initialization-mode: always
+#    initialization-mode: always
+    pool:
+      enabled: true
+      initial-size: 5
+      max-size: 20
+      max-idle-time: 60s
+      validation-query: SELECT 1
+  datasource:
+    url: jdbc:postgresql://${DB_IP_PORT:localhost}/opex
+    username: ${dbusername:opex}
+    password: ${dbpassword:hiopex}
+  cache:
+    type: redis
   cloud:
     bootstrap:
       enabled: true
@@ -37,6 +49,10 @@ spring:
         prefer-ip-address: true
   config:
     import: vault://secret/${spring.application.name}
+  data:
+    redis:
+      port: 6379
+      host: redis-cache
 management:
   endpoints:
     web:
