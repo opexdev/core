@@ -13,9 +13,7 @@ import java.math.BigDecimal
 
 @RestController
 class TransferController(
-    private val transferService: TransferService,
-    private val depositService: DepositService
-) {
+    private val transferService: TransferService) {
 
     data class TransferBody(
         val description: String?,

@@ -157,4 +157,12 @@ class AppConfig(
         withdrawRequestKafkaListener.addListener(withdrawRequestEventListener)
     }
 
+
+    @Autowired
+    fun configureDepositEventListener(
+        depositKafkaListener: DepositKafkaListener,
+        depositEventListener: DepositEventListener
+    ) {
+        depositKafkaListener.addListener(depositEventListener)
+    }
 }

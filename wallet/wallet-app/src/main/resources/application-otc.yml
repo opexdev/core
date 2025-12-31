@@ -110,10 +110,12 @@ app:
       enabled: ${WITHDRAW_LIMIT_ENABLED:false}
     otp-required-count: ${WITHDRAW_OTP_REQUIRED_COUNT:0}
     bank-account-validation: ${WITHDRAW_BANK_ACCOUNT_VALIDATION:false}
+  deposit:
+    snapshot:
+      enabled: ${DEPOSIT_SNAPSHOT_ENABLED:false}
   custom-message:
     enabled: ${CUSTOM_MESSAGE_ENABLED:false}
     base-url: ${CUSTOM_MESSAGE_URL}
-
 logging:
   level:
     root: INFO

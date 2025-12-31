@@ -29,7 +29,7 @@ class KafkaProducerConfig {
             ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
             ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JsonSerializer::class.java,
             ProducerConfig.ACKS_CONFIG to "all",
-            JsonSerializer.TYPE_MAPPINGS to "fiAction_response_event:co.nilin.opex.wallet.core.inout.FinancialActionResponseEvent,withdrawRequestEvent:co.nilin.opex.wallet.ports.kafka.listener.model.WithdrawRequestEvent"
+            JsonSerializer.TYPE_MAPPINGS to "fiAction_response_event:co.nilin.opex.wallet.core.inout.FinancialActionResponseEvent,withdrawRequestEvent:co.nilin.opex.wallet.ports.kafka.listener.model.WithdrawRequestEvent,depositEvent:co.nilin.opex.wallet.ports.kafka.listener.model.DepositEvent"
         )
     }
 
@@ -65,6 +65,16 @@ class KafkaProducerConfig {
 
     @Bean
     fun withdrawRequestProducerFactory(@Qualifier("producerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, WithdrawRequestEvent> {
+        return DefaultKafkaProducerFactory(producerConfigs)
+    }
+
+    @Bean
+    fun depositKafkaTemplate(@Qualifier("depositProducerFactory") factory: ProducerFactory<String?, DepositEvent>): KafkaTemplate<String?, DepositEvent> {
+        return KafkaTemplate(factory)
+    }
+
+    @Bean
+    fun depositProducerFactory(@Qualifier("producerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, DepositEvent> {
         return DefaultKafkaProducerFactory(producerConfigs)
     }
 
