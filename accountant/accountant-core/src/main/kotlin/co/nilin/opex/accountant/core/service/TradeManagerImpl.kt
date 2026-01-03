@@ -9,7 +9,6 @@ import co.nilin.opex.accountant.core.model.*
 import co.nilin.opex.accountant.core.spi.*
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.time.LocalDateTime
@@ -25,7 +24,7 @@ open class TradeManagerImpl(
     private val feeCalculator: FeeCalculator,
     private val financialActionPublisher: FinancialActionPublisher,
     private val currencyRatePersister: CurrencyRatePersister,
-    private val userVolumePersister: UserVolumePersister,
+    private val userVolumePersister: UserTradeVolumePersister,
     private val tradeVolumeCalculationCurrency: String,
     private val zoneOffsetString: String,
 ) : TradeManager {

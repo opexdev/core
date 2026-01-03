@@ -108,6 +108,7 @@ app:
   zone-offset: +03:30
   trade-volume-calculation-currency: ${TRADE_VOLUME_CALCULATION_CURRENCY:USDT}
   withdraw-volume-calculation-currency: ${WITHDRAW_VOLUME_CALCULATION_CURRENCY:USDT}
+  deposit-volume-calculation-currency: ${DEPOSIT_VOLUME_CALCULATION_CURRENCY:USDT}
   custom-message:
     enabled: ${CUSTOM_MESSAGE_ENABLED:false}
     base-url: ${CUSTOM_MESSAGE_URL}

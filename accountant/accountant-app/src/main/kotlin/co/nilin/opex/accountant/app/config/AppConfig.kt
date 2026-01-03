@@ -74,7 +74,7 @@ class AppConfig(
         feeCalculator: FeeCalculator,
         financialActionPublisher: FinancialActionPublisher,
         currencyRatePersister: CurrencyRatePersister,
-        userVolumePersister: UserVolumePersister
+        userVolumePersister: UserTradeVolumePersister
     ): TradeManager {
         return TradeManagerImpl(
             financeActionPersister,

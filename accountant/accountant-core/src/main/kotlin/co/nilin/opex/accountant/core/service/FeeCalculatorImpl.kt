@@ -4,7 +4,7 @@ import co.nilin.opex.accountant.core.api.FeeCalculator
 import co.nilin.opex.accountant.core.model.*
 import co.nilin.opex.accountant.core.spi.FeeConfigService
 import co.nilin.opex.accountant.core.spi.JsonMapper
-import co.nilin.opex.accountant.core.spi.UserVolumePersister
+import co.nilin.opex.accountant.core.spi.UserTradeVolumePersister
 import co.nilin.opex.accountant.core.spi.WalletProxy
 import co.nilin.opex.common.utils.CacheManager
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit
 class FeeCalculatorImpl(
     private val walletProxy: WalletProxy,
     private val feeConfigService: FeeConfigService,
-    private val userVolumePersister: UserVolumePersister,
+    private val userVolumePersister: UserTradeVolumePersister,
     @Qualifier("appCacheManager") private val cacheManager: CacheManager<String, UserFee>,
     @Value("\${app.address}") private val platformAddress: String,
     @Value("\${app.zone-offset}") private val zoneOffsetString: String,

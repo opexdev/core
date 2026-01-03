@@ -2,7 +2,7 @@ package co.nilin.opex.accountant.app.controller
 
 import co.nilin.opex.accountant.core.api.FeeCalculator
 import co.nilin.opex.accountant.core.model.UserFee
-import co.nilin.opex.accountant.core.spi.UserVolumePersister
+import co.nilin.opex.accountant.core.spi.UserTradeVolumePersister
 import co.nilin.opex.accountant.core.spi.UserWithdrawVolumePersister
 import co.nilin.opex.common.utils.Interval
 import org.springframework.beans.factory.annotation.Value
@@ -13,7 +13,7 @@ import java.time.LocalDateTime
 @RestController
 @RequestMapping("/user/data")
 class UserDataController(
-    private val userVolumePersister: UserVolumePersister,
+    private val userVolumePersister: UserTradeVolumePersister,
     private val feeCalculator: FeeCalculator,
     private val userWithdrawVolumePersister: UserWithdrawVolumePersister,
     @Value("\${app.trade-volume-calculation-currency}")
@@ -60,4 +60,5 @@ class UserDataController(
             (interval?.getLocalDateTime() ?: LocalDateTime.now())
         )
     }
+
 }

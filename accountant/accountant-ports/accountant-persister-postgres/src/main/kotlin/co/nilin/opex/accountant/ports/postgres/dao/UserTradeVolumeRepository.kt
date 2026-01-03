@@ -1,9 +1,11 @@
 package co.nilin.opex.accountant.ports.postgres.dao
 
+import co.nilin.opex.accountant.core.model.DailyAmount
 import co.nilin.opex.accountant.ports.postgres.model.UserTradeVolumeModel
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -58,4 +60,20 @@ interface UserTradeVolumeRepository : ReactiveCrudRepository<UserTradeVolumeMode
         startDate: LocalDate,
         quoteCurrency: String
     ): Mono<BigDecimal>
+
+    @Query(
+        """
+        select date, total_amount
+        from user_trade_volume
+        where user_id = :userId
+          and date >= :startDate
+          and quote_currency = :quoteCurrency
+        order by date desc
+        """
+    )
+    fun findDailyTradeVolume(
+        userId: String,
+        startDate: LocalDate,
+        quoteCurrency: String
+    ): Flux<DailyAmount>
 }
