@@ -347,7 +347,7 @@ class DepositService(
     ): PaymentDepositResponse {
 
         val currency = currencyService
-            .fetchCurrency(FetchCurrency(symbol = request.currency.name))
+            .fetchCurrency(FetchCurrency(symbol = request.currency))
             ?: throw OpexError.CurrencyNotFound.exception()
 
         val sourceOwner = walletOwnerManager
