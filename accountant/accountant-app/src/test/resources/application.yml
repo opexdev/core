@@ -58,3 +58,4 @@ app:
   zone-offset: +03:30
   trade-volume-calculation-currency: USDT
   withdraw-volume-calculation-currency: USDT
+  deposit-volume-calculation-currency: USDT
