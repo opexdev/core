@@ -381,8 +381,9 @@ class DepositService(
             depositType = co.nilin.opex.wallet.core.model.DepositType.OFF_CHAIN,
             network = null,
             attachment = null,
-            transferMethod =
+            transferMethod =  if (request.transferMethod == TransferMethod.REWARD) TransferMethod.REWARD else {
                 if (request.isIPG == true) TransferMethod.IPG else TransferMethod.MPG
+            }
         )
 
         traceDepositService.saveDepositInNewTransaction(deposit)
