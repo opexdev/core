@@ -1,9 +1,9 @@
 package co.nilin.opex.api.ports.proxy.impl
 
-import co.nilin.opex.api.core.CompleteProfileRequest
-import co.nilin.opex.api.core.ContactUpdateConfirmRequest
-import co.nilin.opex.api.core.ContactUpdateRequest
-import co.nilin.opex.api.core.ProfileApprovalUserResponse
+import co.nilin.opex.api.core.inout.CompleteProfileRequest
+import co.nilin.opex.api.core.inout.ContactUpdateConfirmRequest
+import co.nilin.opex.api.core.inout.ContactUpdateRequest
+import co.nilin.opex.api.core.inout.ProfileApprovalRequestUser
 import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.ProfileProxy
 import co.nilin.opex.common.OpexError
@@ -266,14 +266,14 @@ class ProfileProxyImpl(@Qualifier("generalWebClient") private val webClient: Web
             .awaitBodilessEntity()
     }
 
-    override suspend fun getUserProfileApprovalRequest(token: String): ProfileApprovalUserResponse {
+    override suspend fun getUserProfileApprovalRequest(token: String): ProfileApprovalRequestUser {
         return webClient.get()
             .uri("$baseUrl/approval-request")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
-            .bodyToMono<ProfileApprovalUserResponse>()
+            .bodyToMono<ProfileApprovalRequestUser>()
             .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get profile approval request") }
     }
 }

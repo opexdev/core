@@ -719,5 +719,51 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
             .bodyToMono<TransferResult>()
             .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
     }
+
+    override suspend fun reserveSwap(
+        token: String,
+        request: TransferReserveRequest
+    ): ReservedTransferResponse {
+        return webClient.post()
+            .uri("$baseUrl/v3/transfer/reserve")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<ReservedTransferResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun finalizeSwap(
+        token: String,
+        reserveUuid: String,
+        description: String?,
+        transferRef: String?
+    ): TransferResult {
+        return webClient.post()
+            .uri("$baseUrl/v3/transfer/{$reserveUuid}") {
+                it.queryParam("description", description)
+                it.queryParam("transferRef", transferRef)
+                it.build()
+            }
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<TransferResult>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun getGatewayTerminal(gatewayUuid: String): List<TerminalCommand> {
+        return webClient.get()
+            .uri("$baseUrl/gateway/{$gatewayUuid}/terminal")
+            .accept(MediaType.APPLICATION_JSON)
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<List<TerminalCommand>>()
+            .awaitFirstOrElse { throw OpexError.WithdrawNotFound.exception() }
+
+    }
 }
 

@@ -1,9 +1,9 @@
 package co.nilin.opex.api.core.spi
 
-import co.nilin.opex.api.core.CompleteProfileRequest
-import co.nilin.opex.api.core.ContactUpdateConfirmRequest
-import co.nilin.opex.api.core.ContactUpdateRequest
-import co.nilin.opex.api.core.ProfileApprovalUserResponse
+import co.nilin.opex.api.core.inout.CompleteProfileRequest
+import co.nilin.opex.api.core.inout.ContactUpdateConfirmRequest
+import co.nilin.opex.api.core.inout.ContactUpdateRequest
+import co.nilin.opex.api.core.inout.ProfileApprovalRequestUser
 import co.nilin.opex.api.core.inout.*
 
 interface ProfileProxy {
@@ -11,7 +11,7 @@ interface ProfileProxy {
     suspend fun completeProfile(token: String, request: CompleteProfileRequest): Profile?
     suspend fun requestContactUpdate(token: String, request: ContactUpdateRequest): TempOtpResponse
     suspend fun confirmContactUpdate(token: String, request: ContactUpdateConfirmRequest)
-    suspend fun getUserProfileApprovalRequest(token: String): ProfileApprovalUserResponse
+    suspend fun getUserProfileApprovalRequest(token: String): ProfileApprovalRequestUser
 
     // Admin
     suspend fun getProfiles(token: String, profileRequest: ProfileRequest): List<Profile>

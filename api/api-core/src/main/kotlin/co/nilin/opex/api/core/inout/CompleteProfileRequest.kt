@@ -1,7 +1,4 @@
-package co.nilin.opex.api.core
-
-import co.nilin.opex.api.core.inout.Gender
-import co.nilin.opex.api.core.inout.NationalityType
+package co.nilin.opex.api.core.inout
 
 data class CompleteProfileRequest(
     var firstName: String,

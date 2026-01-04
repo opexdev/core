@@ -197,4 +197,8 @@ interface WalletProxy {
         amount: BigDecimal,
         request: ManualTransferRequest
     ): TransferResult
+
+    suspend fun reserveSwap(token: String, request: TransferReserveRequest) :ReservedTransferResponse
+    suspend fun finalizeSwap(token: String,reserveUuid: String,description: String?,transferRef: String?) : TransferResult
+    suspend fun getGatewayTerminal(gatewayUuid: String):List<TerminalCommand>
 }

@@ -1,13 +1,10 @@
 package co.nilin.opex.api.ports.opex.controller
 
-import co.nilin.opex.api.core.CompleteProfileRequest
-import co.nilin.opex.api.core.ContactUpdateConfirmRequest
-import co.nilin.opex.api.core.ContactUpdateRequest
-import co.nilin.opex.api.core.ProfileApprovalUserResponse
-import co.nilin.opex.api.core.inout.Profile
-import co.nilin.opex.api.core.inout.TempOtpResponse
+import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.ProfileProxy
 import co.nilin.opex.api.ports.opex.util.jwtAuthentication
+import co.nilin.opex.api.ports.opex.util.toProfileApprovalRequestUserResponse
+import co.nilin.opex.api.ports.opex.util.toProfileResponse
 import co.nilin.opex.api.ports.opex.util.tokenValue
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
@@ -21,16 +18,17 @@ class ProfileController(
 ) {
 
     @GetMapping("/personal-data")
-    suspend fun getProfile(@CurrentSecurityContext securityContext: SecurityContext): Profile {
-        return profileProxy.getProfile(securityContext.jwtAuthentication().tokenValue())
+    suspend fun getProfile(@CurrentSecurityContext securityContext: SecurityContext): ProfileResponse {
+        return profileProxy.getProfile(securityContext.jwtAuthentication().tokenValue()).toProfileResponse()
     }
 
     @PutMapping("/completion")
     suspend fun completeProfile(
         @RequestBody completeProfileRequest: CompleteProfileRequest,
         @CurrentSecurityContext securityContext: SecurityContext
-    ): Profile? {
+    ): ProfileResponse? {
         return profileProxy.completeProfile(securityContext.jwtAuthentication().tokenValue(), completeProfileRequest)
+            ?.toProfileResponse()
     }
 
     @PostMapping("/contact/update/otp-request")
@@ -51,7 +49,8 @@ class ProfileController(
     }
 
     @GetMapping("/approval-request")
-    suspend fun getApprovalRequest(@CurrentSecurityContext securityContext: SecurityContext): ProfileApprovalUserResponse {
+    suspend fun getApprovalRequest(@CurrentSecurityContext securityContext: SecurityContext): ProfileApprovalRequestUserResponse {
         return profileProxy.getUserProfileApprovalRequest(securityContext.jwtAuthentication().tokenValue())
+            .toProfileApprovalRequestUserResponse()
     }
 }

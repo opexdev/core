@@ -1,4 +1,4 @@
-package co.nilin.opex.api.core
+package co.nilin.opex.api.core.inout
 
 data class ContactUpdateConfirmRequest(
     val email: String? = null,

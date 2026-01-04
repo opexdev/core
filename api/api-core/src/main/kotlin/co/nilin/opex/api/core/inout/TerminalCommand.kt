@@ -1,4 +1,4 @@
-package co.nilin.opex.wallet.core.inout
+package co.nilin.opex.api.core.inout
 
 data class  TerminalCommand(
     var uuid: String?,

@@ -1,9 +1,8 @@
-package co.nilin.opex.api.core
+package co.nilin.opex.api.core.inout
 
-import co.nilin.opex.api.core.inout.ProfileApprovalRequestStatus
 import java.time.LocalDateTime
 
-data class ProfileApprovalUserResponse(
+data class ProfileApprovalRequestUser(
     var status: ProfileApprovalRequestStatus,
     var createDate: LocalDateTime,
     var description: String? = null
