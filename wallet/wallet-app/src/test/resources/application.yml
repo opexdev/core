@@ -72,6 +72,9 @@ app:
       enabled: false
     otp-required-count: 0
     bank-account-validation : false
+  deposit:
+    snapshot:
+      enabled: ${DEPOSIT_SNAPSHOT_ENABLED:false}
 testcontainers:
   db:
     username: ${dbusername:opex}
