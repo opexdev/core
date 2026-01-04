@@ -7,19 +7,20 @@ CREATE TABLE IF NOT EXISTS symbol_maps
     UNIQUE (symbol, alias_key, alias)
 );
 
-CREATE TABLE IF NOT EXISTS api_key
+DROP TABLE IF EXISTS api_key;
+
+CREATE TABLE IF NOT EXISTS api_key_registry
 (
-    id                    SERIAL PRIMARY KEY,
-    user_id               VARCHAR(36)  NOT NULL,
-    label                 VARCHAR(200) NOT NULL,
-    access_token          TEXT         NOT NULL,
-    refresh_token         TEXT         NOT NULL,
-    expiration_time       TIMESTAMP,
-    allowed_ips           TEXT,
-    token_expiration_time TIMESTAMP    NOT NULL,
-    key                   VARCHAR(36)  NOT NULL UNIQUE,
-    is_enabled            BOOLEAN      NOT NULL DEFAULT true,
-    is_expired            BOOLEAN      NOT NULL DEFAULT false
+    api_key_id         VARCHAR(128) PRIMARY KEY,
+    label              VARCHAR(200),
+    encrypted_secret   TEXT         NOT NULL,
+    enabled            BOOLEAN      NOT NULL DEFAULT TRUE,
+    allowed_ips        TEXT,
+    allowed_endpoints  TEXT,
+    keycloak_user_id   VARCHAR(128),
+    keycloak_username  VARCHAR(256),
+    created_at         TIMESTAMP    NOT NULL,
+    updated_at         TIMESTAMP    NOT NULL
 );
 CREATE TABLE IF NOT EXISTS rate_limit_group
 (
