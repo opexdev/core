@@ -1,6 +1,7 @@
 package co.nilin.opex.api.core.spi
 
 import co.nilin.opex.api.core.inout.*
+import co.nilin.opex.api.core.inout.analytics.DailyAmount
 import java.math.BigDecimal
 
 interface WalletProxy {
@@ -197,4 +198,6 @@ interface WalletProxy {
         amount: BigDecimal,
         request: ManualTransferRequest
     ): TransferResult
+
+    suspend fun getDailyBalanceLast31Days(token: String, uuid: String): List<DailyAmount>
 }

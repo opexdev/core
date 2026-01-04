@@ -118,9 +118,7 @@ app:
       id: opex-api-key
   binance:
     api-url: https://api1.binance.com
-  trade-volume-calculation-currency: ${TRADE_VOLUME_CALCULATION_CURRENCY:USDT}
-  withdraw-volume-calculation-currency: ${WITHDRAW_VOLUME_CALCULATION_CURRENCY:USDT}
-  total-asset-calculation-currency: ${TOTAL_ASSET_CALCULATION_CURRENCY:USDT}
+  user-activity-reference-currency: ${USER_ACTIVITY_REFERENCE_CURRENCY:USDT}
   custom-message:
     enabled: ${CUSTOM_MESSAGE_ENABLED:false}
     base-url: ${CUSTOM_MESSAGE_URL}

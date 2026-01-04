@@ -1,6 +1,7 @@
 package co.nilin.opex.api.ports.proxy.impl
 
 import co.nilin.opex.api.core.inout.*
+import co.nilin.opex.api.core.inout.analytics.DailyAmount
 import co.nilin.opex.api.core.spi.WalletProxy
 import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
 import co.nilin.opex.api.ports.proxy.data.TransactionRequest
@@ -718,6 +719,25 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<TransferResult>()
             .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun getDailyBalanceLast31Days(
+        token: String,
+        uuid: String
+    ): List<DailyAmount> {
+
+        logger.info("fetching daily balance stats for {}", uuid)
+
+        return withContext(ProxyDispatchers.wallet) {
+            webClient.get()
+                .uri("$baseUrl/stats/balance/$uuid")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .retrieve()
+                .onStatus({ it.isError }) { it.createException() }
+                .bodyToMono<List<DailyAmount>>()
+                .awaitSingle()
+        }
     }
 }
 

@@ -1,12 +1,15 @@
 package co.nilin.opex.wallet.ports.postgres.dao
 
+import co.nilin.opex.wallet.core.inout.DailyAmount
 import co.nilin.opex.wallet.ports.postgres.model.TotalAssetsSnapshotModel
 import org.springframework.data.r2dbc.repository.Modifying
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
+import java.time.LocalDate
 
 @Repository
 interface TotalAssetsSnapshotRepository : ReactiveCrudRepository<TotalAssetsSnapshotModel, Long> {
@@ -46,4 +49,21 @@ interface TotalAssetsSnapshotRepository : ReactiveCrudRepository<TotalAssetsSnap
     fun findLastSnapshotByUuid(
         uuid: String,
     ): Mono<TotalAssetsSnapshotModel>
+
+    @Query(
+        """
+        select snapshot_date as date, total_amount
+        from total_assets_snapshot
+        where uuid = :userId
+          and snapshot_date >= :startDate
+          and quote_currency = :quoteCurrency
+        order by snapshot_date desc
+        """
+    )
+    fun findDailyBalance(
+        userId: String,
+        startDate: LocalDate,
+        quoteCurrency: String
+    ): Flux<DailyAmount>
+
 }

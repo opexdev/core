@@ -11,6 +11,7 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 import java.util.concurrent.TimeUnit
 import java.util.stream.Collectors
+
 @Service
 class DepositActivityManagerImpl(
     private val cacheManager: CacheManager<String, BigDecimal>,
@@ -42,7 +43,7 @@ class DepositActivityManagerImpl(
         if (missingDates.isNotEmpty()) {
             val startDate = missingDates.minOrNull()!!
 
-            val dbData = depositVolumePersister.getLastDaysDeposit(userId, startDate,quoteCurrency)
+            val dbData = depositVolumePersister.getLastDaysDeposit(userId, startDate, quoteCurrency)
                 .stream().collect(Collectors.toMap(DailyAmount::date, DailyAmount::totalAmount));
 
             for (date in missingDates) {

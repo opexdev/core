@@ -1,11 +1,10 @@
 package co.nilin.opex.api.core.spi
 
-import co.nilin.opex.api.core.inout.Chain
-import co.nilin.opex.api.core.inout.ChainInfo
 import co.nilin.opex.api.core.inout.FeeConfig
 import co.nilin.opex.api.core.inout.PairConfigResponse
 import co.nilin.opex.api.core.inout.UserFee
 import co.nilin.opex.api.core.inout.WithdrawLimitConfig
+import co.nilin.opex.api.core.inout.analytics.DailyAmount
 import co.nilin.opex.common.utils.Interval
 import java.math.BigDecimal
 
@@ -24,4 +23,7 @@ interface AccountantProxy {
     suspend fun getWithdrawLimitConfigs(): List<WithdrawLimitConfig>
 
     suspend fun getTotalWithdrawVolumeValue(uuid: String, interval: Interval?): BigDecimal
+    suspend fun getDailyDepositLast31Days(uuid: String): List<DailyAmount>
+    suspend fun getDailyWithdrawLast31Days(uuid: String): List<DailyAmount>
+    suspend fun getDailyTradeLast31Days(uuid: String): List<DailyAmount>
 }

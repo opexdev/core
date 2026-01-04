@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.app.controller
 
+import co.nilin.opex.wallet.core.inout.DailyAmount
 import co.nilin.opex.wallet.core.inout.WalletData
 import co.nilin.opex.wallet.core.inout.WalletDataResponse
 import co.nilin.opex.wallet.core.inout.WalletTotal
@@ -54,5 +55,14 @@ class WalletStatController(
         @PathVariable uuid: String,
     ): TotalAssetsSnapshot? {
         return totalAssetsSnapshotManager.getUserLastSnapshot(uuid)
+    }
+
+    @GetMapping("/balance/{userId}")
+    suspend fun getDailyBalanceLast31Days(
+        @PathVariable userId: String
+    ): List<DailyAmount> {
+        return walletDataManager.getLastDaysBalance(
+            userId = userId
+        )
     }
 }

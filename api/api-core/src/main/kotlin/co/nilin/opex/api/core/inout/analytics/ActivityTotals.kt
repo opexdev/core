@@ -10,5 +10,5 @@ data class ActivityTotals(
     val totalWithdraw: BigDecimal,
     val totalDeposit: BigDecimal,
     val totalTrade: BigDecimal,
-    val totalSwap: BigDecimal
+    val totalOrder: BigDecimal
 )

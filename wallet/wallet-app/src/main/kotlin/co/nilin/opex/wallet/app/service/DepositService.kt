@@ -9,7 +9,6 @@ import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.model.DepositType
 import co.nilin.opex.wallet.core.spi.*
-import co.nilin.opex.wallet.ports.kafka.listener.submitter.DepositSubmitter
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -30,7 +29,8 @@ class DepositService(
     private val transferManager: TransferManager,
     private val currencyService: CurrencyServiceManager,
     @Value("\${app.deposit.snapshot.enabled:true}")
-    private val depositSnapshotEnabled: Boolean) {
+    private val depositSnapshotEnabled: Boolean
+) {
 
     private val logger = LoggerFactory.getLogger(DepositService::class.java)
 
@@ -123,7 +123,7 @@ class DepositService(
         transferRef: String?,
         chain: String?,
         attachment: String?,
-        depositType: co.nilin.opex.wallet.core.model.DepositType,
+        depositType: DepositType,
         gatewayUuid: String?,
         transferMethod: TransferMethod?,
     ): TransferResult? {
@@ -166,12 +166,12 @@ class DepositService(
         }
 
         // todo add statusReason field
-        if (isValid || depositCommand.depositType == co.nilin.opex.wallet.core.model.DepositType.ON_CHAIN) {
+        if (isValid || depositCommand.depositType == DepositType.ON_CHAIN) {
             traceDepositService.saveDepositInNewTransaction(depositCommand)
         }
 
-        if (depositCommand.status != DepositStatus.DONE) {
-            throw OpexError.InvalidDeposit.exception()
+        if (!isValid && depositCommand.depositType != DepositType.OFF_CHAIN) {
+            return null
         }
 
         logger.info(
