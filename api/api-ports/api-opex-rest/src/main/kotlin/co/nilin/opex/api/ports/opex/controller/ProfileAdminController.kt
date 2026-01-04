@@ -28,7 +28,7 @@ class ProfileAdminController(private val profileProxy: ProfileProxy) {
         @PathVariable uuid: String,
         @CurrentSecurityContext securityContext: SecurityContext,
     ): Profile {
-        return profileProxy.getProfile(securityContext.jwtAuthentication().tokenValue(), uuid)
+        return profileProxy.getProfileAdmin(securityContext.jwtAuthentication().tokenValue(), uuid)
     }
 
     @GetMapping("/history/{uuid}")
