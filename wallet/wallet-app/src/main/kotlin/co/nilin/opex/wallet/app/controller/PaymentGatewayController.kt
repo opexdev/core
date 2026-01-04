@@ -41,7 +41,7 @@ class PaymentGatewayController(
         val receiverWalletType = WalletType.MAIN
 
         val currency =
-            currencyService.fetchCurrency(FetchCurrency(symbol = request.currency.name))
+            currencyService.fetchCurrency(FetchCurrency(symbol = request.currency))
                 ?: throw OpexError.CurrencyNotFound.exception()
         val sourceOwner = walletOwnerManager.findWalletOwner(walletOwnerManager.systemUuid)
             ?: throw OpexError.WalletOwnerNotFound.exception()
@@ -82,7 +82,9 @@ class PaymentGatewayController(
             depositType = DepositType.OFF_CHAIN,
             network = null,
             attachment = null,
-            transferMethod = if (request.isIPG == true) TransferMethod.IPG else TransferMethod.MPG
+            transferMethod = if (request.transferMethod == TransferMethod.REWARD) TransferMethod.REWARD else {
+                if (request.isIPG == true) TransferMethod.IPG else TransferMethod.MPG
+            }
         )
         traceDepositService.saveDepositInNewTransaction(depositCommand)
 
