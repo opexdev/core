@@ -61,8 +61,11 @@ class WalletStatController(
     suspend fun getDailyBalanceLast31Days(
         @PathVariable userId: String
     ): List<DailyAmount> {
+        if (securityContext.authentication.name != userId)
+            throw OpexError.UnAuthorized.exception()
         return walletDataManager.getLastDaysBalance(
             userId = userId
         )
     }
+
 }
