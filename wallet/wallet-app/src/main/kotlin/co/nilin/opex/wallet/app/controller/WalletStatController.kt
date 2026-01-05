@@ -62,7 +62,8 @@ class WalletStatController(
 
     @GetMapping("/balance/{userId}")
     suspend fun getDailyBalanceLast31Days(
-        @PathVariable userId: String
+        @PathVariable userId: String,
+        @CurrentSecurityContext securityContext: SecurityContext
     ): List<DailyAmount> {
         if (securityContext.authentication.name != userId)
             throw OpexError.UnAuthorized.exception()
@@ -72,4 +73,5 @@ class WalletStatController(
     }
 
 }
+
 
