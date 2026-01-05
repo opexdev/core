@@ -149,4 +149,14 @@ CREATE TABLE IF NOT EXISTS withdraw_limit_config
     daily_max_amount decimal     not null
 );
 
+CREATE TABLE IF NOT EXISTS user_deposit_volume
+(
+    id         SERIAL PRIMARY KEY,
+    user_id    VARCHAR(36) NOT NULL,
+    date       DATE        not null,
+    total_amount decimal     not null,
+    quote_currency       VARCHAR(50) NOT NULL,
+    unique (user_id, date,quote_currency)
+);
+
 COMMIT;

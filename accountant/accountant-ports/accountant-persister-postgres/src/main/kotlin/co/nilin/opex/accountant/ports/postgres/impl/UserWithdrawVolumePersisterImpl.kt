@@ -1,17 +1,20 @@
 package co.nilin.opex.accountant.ports.postgres.impl
 
+import co.nilin.opex.accountant.core.model.DailyAmount
 import co.nilin.opex.accountant.core.model.WithdrawStatus
 import co.nilin.opex.accountant.core.spi.CurrencyRatePersister
 import co.nilin.opex.accountant.core.spi.UserWithdrawVolumePersister
 import co.nilin.opex.accountant.ports.postgres.dao.UserWithdrawVolumeRepository
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
+import java.math.RoundingMode
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
-import java.math.RoundingMode
 
 
 @Component
@@ -54,5 +57,28 @@ class UserWithdrawVolumePersisterImpl(
             startDate.atOffset(ZoneOffset.of(zoneOffsetString)).toLocalDate(),
             calculationCurrency
         ).awaitFirstOrNull() ?: BigDecimal.ZERO
+    }
+
+    override suspend fun getLastDaysWithdraw(
+        userId: String,
+        startDate: LocalDate?,
+        quatCurrency: String?,
+        lastDays: Long
+    ): List<DailyAmount> {
+
+        val startDate = startDate ?: LocalDate
+            .now(ZoneOffset.of(zoneOffsetString))
+            .minusDays(lastDays)
+
+        return repository
+            .findDailyWithdrawVolume(userId, startDate, quatCurrency?:calculationCurrency)
+            .map {
+                DailyAmount(
+                    date = it.date,
+                    totalAmount = it.totalAmount
+                )
+            }
+            .collectList()
+            .awaitSingle()
     }
 }

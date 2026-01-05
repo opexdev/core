@@ -60,7 +60,7 @@ class KeycloakProxy(
             .bodyValue("client_id=${clientId}&client_secret=${clientSecret}&grant_type=password&username=${users[0].username}&password=${password}")
             .retrieve()
             .onStatus({ it == HttpStatus.valueOf(401) }) {
-                throw OpexError.InvalidUserCredentials.exception()
+                throw OpexError.UsernameOrPasswordIsIncorrect.exception()
             }
             .awaitBody<Token>()
     }

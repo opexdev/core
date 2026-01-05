@@ -33,6 +33,4 @@ class MarketStatsController(private val marketQueryHandler: MarketQueryHandler) 
     suspend fun getMostTrades(@RequestParam interval: Interval): TradeVolumeStat? {
         return marketQueryHandler.mostTrades(interval)
     }
-
-
 }

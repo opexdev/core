@@ -1,9 +1,7 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
-import co.nilin.opex.wallet.core.inout.WalletCurrencyData
-import co.nilin.opex.wallet.core.inout.WalletData
-import co.nilin.opex.wallet.core.inout.WalletDataResponse
-import co.nilin.opex.wallet.core.inout.WalletTotal
+import co.nilin.opex.common.utils.CacheManager
+import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.spi.WalletDataManager
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepositoryV2
@@ -13,14 +11,23 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
+import java.math.BigDecimal
+import java.time.LocalDate
+import java.time.ZoneOffset
+import java.util.concurrent.TimeUnit
+import java.util.stream.Collectors
 
 @Component
 class WalletDataManagerImpl(
     private val walletRepository: WalletRepository,
+    private val totalAssetsSnapshotImpl: TotalAssetsSnapshotImpl,
     private val currencyRepositoryV2: CurrencyRepositoryV2,
-    private val objectMapper: ObjectMapper
-) : WalletDataManager {
+    private val objectMapper: ObjectMapper,
+    private val cacheManager: CacheManager<String, BigDecimal>,
+    @Value("\${app.zone-offset}") private val zoneOffsetString: String,
+    ) : WalletDataManager {
 
     override suspend fun findWalletDataByCriteria(
         uuid: String?,
@@ -89,4 +96,56 @@ class WalletDataManagerImpl(
             WalletTotal(c, (allDepositedCurrency.filter { it.currency == c }?.firstOrNull()?.balance) ?: 0.0)
         }?.collectList()?.awaitFirstOrNull()
     }
+
+    override suspend fun getLastDaysBalance(
+        userId: String,
+        quoteCurrency: String?,
+        n: Int
+    ): List<DailyAmount> {
+        val today = LocalDate.now(ZoneOffset.of(zoneOffsetString))
+        val dates = (0..n - 1).map { today.minusDays(it.toLong()) }
+
+        val result = mutableMapOf<LocalDate, BigDecimal>()
+        val missingDates = mutableListOf<LocalDate>()
+
+        for (date in dates) {
+            val cacheKey = "trade:daily:$userId:$date"
+            val cached = cacheManager.get(cacheKey)
+
+            if (cached != null) {
+                result[date] = cached
+            } else {
+                missingDates.add(date)
+            }
+        }
+
+        if (missingDates.isNotEmpty()) {
+            val startDate = missingDates.minOrNull()!!
+
+            val dbData = totalAssetsSnapshotImpl.getLastDaysBalance(userId, startDate, quoteCurrency)
+                .stream().collect(Collectors.toMap(DailyAmount::date, DailyAmount::totalAmount));
+
+            for (date in missingDates) {
+                val value = dbData[date] ?: BigDecimal.ZERO
+                val (ttl, unit) = ttlFor(date, today)
+                val cacheKey = "trade:daily:$userId:$date"
+
+                cacheManager.put(cacheKey, value, ttl, unit)
+                result[date] = value
+            }
+        }
+
+        return result
+            .map { DailyAmount(it.key, it.value) }
+            .sortedBy { it.date }
+
+    }
+
+
+    private fun ttlFor(date: LocalDate, today: LocalDate): Pair<Long, TimeUnit> =
+        if (date == today) {
+            15L to TimeUnit.MINUTES
+        } else {
+            100L to TimeUnit.DAYS
+        }
 }

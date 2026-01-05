@@ -2,6 +2,7 @@ package co.nilin.opex.accountant.ports.kafka.listener.config
 
 import co.nilin.opex.accountant.core.inout.KycLevelUpdatedEvent
 import co.nilin.opex.accountant.ports.kafka.listener.consumer.*
+import co.nilin.opex.accountant.ports.kafka.listener.inout.DepositEvent
 import co.nilin.opex.accountant.ports.kafka.listener.inout.FinancialActionResponseEvent
 import co.nilin.opex.accountant.ports.kafka.listener.inout.WithdrawRequestEvent
 import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
@@ -37,7 +38,7 @@ class AccountantKafkaConfig {
             ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
             ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JsonDeserializer::class.java,
             JsonDeserializer.TRUSTED_PACKAGES to "co.nilin.opex.*",
-            JsonDeserializer.TYPE_MAPPINGS to "order_request_event:co.nilin.opex.accountant.ports.kafka.listener.inout.OrderRequestEvent,order_request_submit:co.nilin.opex.accountant.ports.kafka.listener.inout.OrderSubmitRequestEvent,order_request_cancel:co.nilin.opex.accountant.ports.kafka.listener.inout.OrderCancelRequestEvent,kyc_level_updated_event:co.nilin.opex.accountant.core.inout.KycLevelUpdatedEvent,fiAction_response_event:co.nilin.opex.accountant.ports.kafka.listener.inout.FinancialActionResponseEvent,withdrawRequestEvent:co.nilin.opex.accountant.ports.kafka.listener.inout.WithdrawRequestEvent"
+            JsonDeserializer.TYPE_MAPPINGS to "order_request_event:co.nilin.opex.accountant.ports.kafka.listener.inout.OrderRequestEvent,order_request_submit:co.nilin.opex.accountant.ports.kafka.listener.inout.OrderSubmitRequestEvent,order_request_cancel:co.nilin.opex.accountant.ports.kafka.listener.inout.OrderCancelRequestEvent,kyc_level_updated_event:co.nilin.opex.accountant.core.inout.KycLevelUpdatedEvent,fiAction_response_event:co.nilin.opex.accountant.ports.kafka.listener.inout.FinancialActionResponseEvent,withdrawRequestEvent:co.nilin.opex.accountant.ports.kafka.listener.inout.WithdrawRequestEvent,depositEvent:co.nilin.opex.accountant.ports.kafka.listener.inout.DepositEvent"
         )
     }
 
@@ -58,6 +59,10 @@ class AccountantKafkaConfig {
 
     @Bean("withdrawRequestConsumerFactory")
     fun withdrawRequestConsumerFactory(@Qualifier("consumerConfig") consumerConfigs: Map<String, Any?>): ConsumerFactory<String, WithdrawRequestEvent> {
+        return DefaultKafkaConsumerFactory(consumerConfigs)
+    }
+    @Bean("depositConsumerFactory")
+    fun depositConsumerFactory(@Qualifier("consumerConfig") consumerConfigs: Map<String, Any?>): ConsumerFactory<String, DepositEvent> {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
 
@@ -157,6 +162,16 @@ class AccountantKafkaConfig {
         return KafkaTemplate(producerFactory)
     }
 
+    @Bean("depositProducerFactory")
+    fun depositProducerFactory(@Qualifier("consumerConfig") producerConfigs: Map<String, Any>): ProducerFactory<String, DepositEvent> {
+        return DefaultKafkaProducerFactory(producerConfigs)
+    }
+
+    @Bean("depositKafkaTemplate")
+    fun depositKafkaTemplate(@Qualifier("depositProducerFactory") producerFactory: ProducerFactory<String, DepositEvent>): KafkaTemplate<String, DepositEvent> {
+        return KafkaTemplate(producerFactory)
+    }
+
     @Autowired
     @ConditionalOnBean(KycLevelUpdatedKafkaListener::class)
     fun configureKycLevelUpdatedListener(
@@ -184,6 +199,21 @@ class AccountantKafkaConfig {
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
         container.setBeanName("WithdrawRequestKafkaListenerContainer")
         container.commonErrorHandler = createConsumerErrorHandler(template, "withdraw_request.DLT")
+        container.start()
+    }
+
+    @Autowired
+    @ConditionalOnBean(DepositKafkaListener::class)
+    fun configureDepositRequestEventListener(
+        listener: DepositKafkaListener,
+        @Qualifier("depositKafkaTemplate") template: KafkaTemplate<String, DepositEvent>,
+        @Qualifier("depositConsumerFactory") consumerFactory: ConsumerFactory<String, DepositEvent>
+    ) {
+        val containerProps = ContainerProperties(Pattern.compile("deposit"))
+        containerProps.messageListener = listener
+        val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
+        container.setBeanName("DepositKafkaListenerContainer")
+        container.commonErrorHandler = createConsumerErrorHandler(template, "deposit.DLT")
         container.start()
     }
 

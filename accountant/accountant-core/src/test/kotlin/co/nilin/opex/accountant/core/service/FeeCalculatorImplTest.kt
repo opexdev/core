@@ -5,7 +5,7 @@ import co.nilin.opex.accountant.core.model.FinancialActionCategory
 import co.nilin.opex.accountant.core.model.UserFee
 import co.nilin.opex.accountant.core.model.WalletType
 import co.nilin.opex.accountant.core.spi.FeeConfigService
-import co.nilin.opex.accountant.core.spi.UserVolumePersister
+import co.nilin.opex.accountant.core.spi.UserTradeVolumePersister
 import co.nilin.opex.accountant.core.spi.WalletProxy
 import co.nilin.opex.common.utils.CacheManager
 import co.nilin.opex.matching.engine.core.eventh.events.TradeEvent
@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit
 internal class FeeCalculatorImplTest {
     private val walletProxy = mockk<WalletProxy>()
     private val feeConfigService = mockk<FeeConfigService>()
-    private val userVolumePersister = mockk<UserVolumePersister>()
+    private val userVolumePersister = mockk<UserTradeVolumePersister>()
     @Qualifier("appCacheManager") private val cacheManager = mockk<CacheManager<String, UserFee>>()
 
 

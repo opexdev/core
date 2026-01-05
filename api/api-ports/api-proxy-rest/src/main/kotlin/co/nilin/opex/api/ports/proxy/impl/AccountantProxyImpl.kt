@@ -4,6 +4,7 @@ import co.nilin.opex.api.core.inout.FeeConfig
 import co.nilin.opex.api.core.inout.PairConfigResponse
 import co.nilin.opex.api.core.inout.UserFee
 import co.nilin.opex.api.core.inout.WithdrawLimitConfig
+import co.nilin.opex.api.core.inout.analytics.DailyAmount
 import co.nilin.opex.api.core.spi.AccountantProxy
 import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
 import co.nilin.opex.common.utils.Interval
@@ -139,5 +140,50 @@ class AccountantProxyImpl(@Qualifier("generalWebClient") private val webClient: 
         }
     }
 
+    override suspend fun getDailyWithdrawLast31Days(
+        uuid: String): List<DailyAmount> {
 
+        logger.info("fetching daily withdraw stats for {}", uuid)
+        return withContext(ProxyDispatchers.general) {
+            webClient.get()
+                .uri("$baseUrl/user-activity/withdraw/$uuid")
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .onStatus({ it.isError }) { it.createException() }
+                .bodyToMono<List<DailyAmount>>()
+                .awaitSingle()
+        }
+    }
+
+    override suspend fun getDailyDepositLast31Days(
+        uuid: String): List<DailyAmount> {
+
+        logger.info("fetching daily deposit stats for {}", uuid)
+
+        return withContext(ProxyDispatchers.general) {
+            webClient.get()
+                .uri("$baseUrl/user-activity/deposit/$uuid")
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .onStatus({ it.isError }) { it.createException() }
+                .bodyToMono<List<DailyAmount>>()
+                .awaitSingle()
+        }
+    }
+
+    override suspend fun getDailyTradeLast31Days(
+        uuid: String): List<DailyAmount> {
+
+        logger.info("fetching daily trade stats for {}", uuid)
+
+        return withContext(ProxyDispatchers.general) {
+            webClient.get()
+                .uri("$baseUrl/user-activity/trade/$uuid")
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .onStatus({ it.isError }) { it.createException() }
+                .bodyToMono<List<DailyAmount>>()
+                .awaitSingle()
+        }
+    }
 }

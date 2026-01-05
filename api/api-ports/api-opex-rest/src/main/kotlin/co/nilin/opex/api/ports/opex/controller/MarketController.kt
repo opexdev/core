@@ -25,12 +25,8 @@ class MarketController(
     private val walletProxy: WalletProxy,
     private val matchingGatewayProxy: MatchingGatewayProxy,
     private val blockChainGatewayProxy: BlockchainGatewayProxy,
-    @Value("\${app.trade-volume-calculation-currency}")
-    private val tradeVolumeCalculationCurrency: String,
-    @Value("\${app.withdraw-volume-calculation-currency}")
-    private val withdrawVolumeCalculationCurrency: String,
-    @Value("\${app.total-asset-calculation-currency}")
-    private val totalAssetCalculationCurrency: String
+    @Value("\${app.user-activity-reference-currency}")
+    private val userActivityReferenceCurrency: String,
 ) {
     private val orderBookValidLimits = arrayListOf(5, 10, 20, 50, 100, 500, 1000, 5000)
     private val validDurations = arrayListOf("24h", "7d", "1M")
@@ -266,9 +262,8 @@ class MarketController(
         return MarketBasicData(
             (quoteCurrencies.map { it.currency }),
             (quoteCurrencies.filter { it.isReference }.map { it.currency }),
-            withdrawVolumeCalculationCurrency,
-            tradeVolumeCalculationCurrency,
-            totalAssetCalculationCurrency
+            userActivityReferenceCurrency
+
         )
     }
 
