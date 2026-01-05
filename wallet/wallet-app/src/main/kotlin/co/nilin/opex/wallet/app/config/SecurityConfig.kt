@@ -71,6 +71,7 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/manually/**").hasAuthority("ROLE_admin")
             .pathMatchers("/deposit/**").hasAuthority("ROLE_system")
             .pathMatchers("/internal/deposit/**").hasAuthority("ROLE_system")
+            .pathMatchers("/stats/balance/**").authenticated()
             .pathMatchers("/stats/**").hasAuthority("ROLE_admin")
             .pathMatchers("/storage/**").hasAuthority("ROLE_admin")
             .anyExchange().authenticated()

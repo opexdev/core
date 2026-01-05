@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.app.controller
 
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.inout.DailyAmount
 import co.nilin.opex.wallet.core.inout.WalletData
 import co.nilin.opex.wallet.core.inout.WalletDataResponse
@@ -8,6 +9,8 @@ import co.nilin.opex.wallet.core.model.TotalAssetsSnapshot
 import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.spi.TotalAssetsSnapshotManager
 import co.nilin.opex.wallet.core.spi.WalletDataManager
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -59,10 +62,16 @@ class WalletStatController(
 
     @GetMapping("/balance/{userId}")
     suspend fun getDailyBalanceLast31Days(
-        @PathVariable userId: String
+        @PathVariable userId: String,
+        @CurrentSecurityContext securityContext: SecurityContext
     ): List<DailyAmount> {
+        if (securityContext.authentication.name != userId)
+            throw OpexError.UnAuthorized.exception()
         return walletDataManager.getLastDaysBalance(
             userId = userId
         )
     }
+
 }
+
+
