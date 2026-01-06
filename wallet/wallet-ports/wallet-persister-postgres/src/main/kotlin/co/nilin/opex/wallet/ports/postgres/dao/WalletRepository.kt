@@ -133,7 +133,7 @@ interface WalletRepository : ReactiveCrudRepository<WalletModel, Long> {
         """
         select currency, sum(balance) as balance from wallet w
         join wallet_owner wo on w.owner = wo.id
-        where wallet_type in ('MAIN', 'EXCHANGE')
+        where wallet_type in ('MAIN', 'EXCHANGE', 'CASHOUT')
             and wo.uuid != '1'
             and w.id not in (select wallet_id from wallet_stat_exclusion) 
         group by currency

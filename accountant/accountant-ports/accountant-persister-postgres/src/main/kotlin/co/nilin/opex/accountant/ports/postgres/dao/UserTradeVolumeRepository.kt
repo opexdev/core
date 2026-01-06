@@ -63,12 +63,12 @@ interface UserTradeVolumeRepository : ReactiveCrudRepository<UserTradeVolumeMode
 
     @Query(
         """
-        select date, total_amount
+        select date, sum(total_amount) as total_amount
         from user_trade_volume
         where user_id = :userId
           and date >= :startDate
           and quote_currency = :quoteCurrency
-        order by date desc
+         group by date
         """
     )
     fun findDailyTradeVolume(
