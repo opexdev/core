@@ -4,8 +4,10 @@ import co.nilin.opex.api.app.security.ClientCredentialsTokenService
 import co.nilin.opex.api.app.security.HmacVerifier
 import co.nilin.opex.api.core.spi.APIKeyService
 import co.nilin.opex.api.core.spi.APIKeyFilter
+import co.nilin.opex.common.OpexError
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.server.ServerWebExchange
 import org.springframework.web.server.WebFilter
@@ -42,17 +44,17 @@ class APIKeyFilterImpl(
                     val sourceIp = request.remoteAddress?.address?.hostAddress
                     if (!entry.allowedIps.isNullOrEmpty() && (sourceIp == null || !entry.allowedIps!!.contains(sourceIp))) {
                         logger.warn("API key {} request from disallowed IP {}", apiKeyId, sourceIp)
-                        null
+                        throw OpexError.Forbidden.exception()
                     }
                     if (!entry.allowedEndpoints.isNullOrEmpty() && ( !entry.allowedEndpoints!!.contains(path))) {
                         logger.warn("API key {} request to unauthorized resource {}", apiKeyId, path)
-                        null
+                        throw OpexError.Forbidden.exception()
                     } else {
                         val ts = tsHeader.toLongOrNull()
                         val bodyHash = request.headers["X-API-BODY-SHA256"]?.firstOrNull()
                         if (ts == null) {
                             logger.warn("Invalid timestamp header for bot {}", apiKeyId)
-                            null
+                            throw OpexError.InvalidTime.exception()
                         } else {
                             val ok = hmacVerifier.verify(
                                 entry.secret,
@@ -67,12 +69,12 @@ class APIKeyFilterImpl(
                             )
                             if (!ok) {
                                 logger.warn("Invalid signature for apiKey {}", apiKeyId)
-                                null
+                                throw OpexError.InvalidSignature.exception()
                             } else {
                                 val userId = entry.keycloakUserId
                                 if (userId.isNullOrBlank()) {
                                     logger.warn("API key {} has no mapped Keycloak userId; rejecting", apiKeyId)
-                                    null
+                                    throw OpexError.UnAuthorized.exception()
                                 } else {
                                     val bearer = clientTokenService.exchangeToUserToken(userId)
                                     val req = request.mutate()
