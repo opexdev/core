@@ -18,6 +18,10 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     InvalidRequestBody(1021, "Request body is invalid", HttpStatus.BAD_REQUEST),
     NoRecordFound(1022, "No record found for this service", HttpStatus.NOT_FOUND),
     ServiceDeprecated(1023, "Service deprecated", HttpStatus.SERVICE_UNAVAILABLE),
+    RateLimit(1024, null, HttpStatus.TOO_MANY_REQUESTS),
+    InvalidSignature(1025, null, HttpStatus.BAD_REQUEST),
+    InvalidTime(1026, null, HttpStatus.BAD_REQUEST),
+
 
     // code 2000: accountant
     InvalidPair(2001, "%s is not available", HttpStatus.BAD_REQUEST),

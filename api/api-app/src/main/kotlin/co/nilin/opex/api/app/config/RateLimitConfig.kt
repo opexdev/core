@@ -108,12 +108,13 @@ class RateLimitConfig(
         retryAfterSeconds: Int
     ): Mono<Void> {
         logger.info("Rate limit exceeded ($identity) -- $method:$url")
-        exchange.response.statusCode = HttpStatus.TOO_MANY_REQUESTS
-        return exchange.response.writeWith(
-            Mono.just(
-                exchange.response.bufferFactory()
-                    .wrap("Rate limit exceeded ($identity) -- $method:$url --  Retry-After, $retryAfterSeconds".toByteArray())
-            )
-        )
+//        exchange.response.statusCode = HttpStatus.TOO_MANY_REQUESTS
+        throw OpexError.RateLimit.exception()
+//        return exchange.response.writeWith(
+//            Mono.just(
+//                exchange.response.bufferFactory()
+//                    .wrap("Rate limit exceeded ($identity) -- $method:$url --  Retry-After, $retryAfterSeconds".toByteArray())
+//            )
+//        )
     }
 }

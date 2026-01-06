@@ -165,12 +165,9 @@ class DepositService(
             depositCommand.status = DepositStatus.INVALID
         }
 
-        // todo add statusReason field
-        if (isValid || depositCommand.depositType == DepositType.ON_CHAIN) {
-            traceDepositService.saveDepositInNewTransaction(depositCommand)
-        }
+        traceDepositService.saveDepositInNewTransaction(depositCommand)
 
-        if (!isValid && depositCommand.depositType != DepositType.OFF_CHAIN) {
+        if (!isValid) {
             return null
         }
 
@@ -381,7 +378,7 @@ class DepositService(
             depositType = co.nilin.opex.wallet.core.model.DepositType.OFF_CHAIN,
             network = null,
             attachment = null,
-            transferMethod =  if (request.transferMethod == TransferMethod.REWARD) TransferMethod.REWARD else {
+            transferMethod = if (request.transferMethod == TransferMethod.REWARD) TransferMethod.REWARD else {
                 if (request.isIPG == true) TransferMethod.IPG else TransferMethod.MPG
             }
         )
