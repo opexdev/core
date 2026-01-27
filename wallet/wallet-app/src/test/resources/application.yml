@@ -61,6 +61,8 @@ app:
     url: http://opex-otp:8080/v1
   profile:
     url: http://profile:8080
+  storage:
+    url: http://storage:8080
   system:
     uuid: 1
   reserved-transfer:

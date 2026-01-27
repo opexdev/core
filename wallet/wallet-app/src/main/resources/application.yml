@@ -36,7 +36,7 @@ spring:
       max-size: 20
       max-idle-time: 60s
       validation-query: SELECT 1
-   # initialization-mode: always
+    # initialization-mode: always
   datasource:
     url: jdbc:postgresql://${DB_IP_PORT:localhost}/opex
     username: ${dbusername:opex}
@@ -131,8 +131,11 @@ app:
   system:
     uuid: 1
   backup:
-    enabled: ${BACKUP_ENABLED:false}
-    drive:
+    storage:
+      enabled: ${BACKUP_ENABLED_STORAGE:false}
+      folder: ${STORAGE_FOLDER_ID:-}
+    google-drive:
+      enabled: ${BACKUP_ENABLED_GOOGLE_DRIVE:false}
       folder: ${DRIVE_FOLDER_ID:-}
   bc-gateway:
     url: lb://opex-bc-gateway
@@ -144,6 +147,8 @@ app:
     url: lb://opex-otp/v1
   profile:
     url: lb://opex-profile
+  storage:
+    url: lb://storage
   reserved-transfer:
     life-time: 15 #minutes
   symbols: ${SYMBOLS}

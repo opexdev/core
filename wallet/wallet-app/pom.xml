@@ -104,6 +104,10 @@
             <artifactId>wallet-profile-proxy</artifactId>
         </dependency>
         <dependency>
+            <groupId>co.nilin.opex.wallet.ports.storage</groupId>
+            <artifactId>wallet-storage-proxy</artifactId>
+        </dependency>
+        <dependency>
             <groupId>co.nilin.opex.wallet.ports.auth</groupId>
             <artifactId>wallet-auth-proxy</artifactId>
         </dependency>
