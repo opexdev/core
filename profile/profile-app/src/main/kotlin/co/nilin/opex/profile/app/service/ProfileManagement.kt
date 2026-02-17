@@ -13,6 +13,7 @@ import co.nilin.opex.profile.core.data.profile.*
 import co.nilin.opex.profile.core.spi.*
 import co.nilin.opex.profile.core.utils.handleComparativeError
 import co.nilin.opex.profile.core.utils.handleShahkarError
+import co.nilin.opex.utility.error.data.OpexException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.reactive.awaitFirst
 import org.slf4j.LoggerFactory
@@ -29,10 +30,10 @@ class ProfileManagement(
     private val otpProxy: OtpProxy,
     private val inquiryProxy: InquiryProxy,
 
-    @Value("\${app.inquiry.mobile-indentiy}")
+    @Value("\${app.inquiry.mobile-identity}")
     private var mobileIdentityEnabled: Boolean,
 
-    @Value("\${app.inquiry.personal-indentiy}")
+    @Value("\${app.inquiry.personal-identity}")
     private var personalIdentityEnabled: Boolean,
 
     @Value("\${app.admin-approval.profile-completion-request}")
@@ -164,16 +165,32 @@ class ProfileManagement(
             )
         )
 
-        validateInquiryResponses(shahkarResponse, comparativeResponse)
+        try {
+            validateInquiryResponses(shahkarResponse, comparativeResponse)
+        } catch (e: OpexException) {
+            if (!isAdminApprovalRequired ||
+                (e.error != OpexError.ShahkarInquiryError && e.error != OpexError.ComparativeInquiryError)
+            ) throw e
+        }
 
-        if (isIranian && !isAdminApprovalRequired)
-            return approveProfileAutomatically(userId, completedProfile)
+        val shahkarRequested = isIranian && mobileIdentityEnabled
+        val comparativeRequested = isIranian && personalIdentityEnabled
 
-        return requestAdminApproval(userId)
+        val shahkarOk = !shahkarRequested || (shahkarResponse != null && !shahkarResponse.isError())
+        val comparativeOk = !comparativeRequested || (comparativeResponse != null && !comparativeResponse.isError())
 
+        val allRequestedInquiriesOk = shahkarOk && comparativeOk
+        val anyInquiryRequested = shahkarRequested || comparativeRequested
+
+        return when {
+            !isAdminApprovalRequired -> approveProfileAutomatically(userId, completedProfile)
+            isAdminApprovalRequired && !anyInquiryRequested -> requestAdminApproval(userId)
+            isAdminApprovalRequired && allRequestedInquiriesOk -> approveProfileAutomatically(userId, completedProfile)
+            else -> requestAdminApproval(userId) // At least one active inquiry has failed.
+        }
     }
 
-    private suspend fun approveProfileAutomatically(userId: String, completedProfile: Profile): Profile {
+    private suspend fun  approveProfileAutomatically(userId: String, completedProfile: Profile): Profile {
         kycLevelUpdatedPublisher.publish(
             KycLevelUpdatedEvent(userId, KycLevel.LEVEL_2, LocalDateTime.now())
         )
