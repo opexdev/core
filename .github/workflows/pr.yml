@@ -2,7 +2,7 @@ name: Build and test on pull request
 
 on:
   pull_request:
-    types: [ opened, synchronize, reopen ]
+    types: [ opened, synchronize, reopened ]
 
 jobs:
   build:
