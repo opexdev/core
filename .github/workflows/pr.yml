@@ -17,10 +17,10 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v2
         with:
-          distribution: 'adopt'
-          java-package: jdk
+          distribution: temurin
           java-version: ${{ matrix.java }}
-#          cache: maven
+      - name: Verify Docker
+        run: docker info
       - name: Build
         run: mvn -B -T 1C clean install -Potc
       - name: Run Tests
