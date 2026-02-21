@@ -63,8 +63,8 @@ app:
   auth-gateway:
     url: lb://opex-auth-gateway
   inquiry:
-    mobile-indentiy: true
-    personal-indentiy: false
+    mobile-identity: ${MOBILE_IDENTITY_INQUIRY}
+    personal-identity: ${PERSONAL_IDENTITY_INQUIRY}
     url: ${JIBIT_URL}
     api-key: ${JIBIT_API_KEY}
     secret-key: ${JIBIT_SECRET_KEY}

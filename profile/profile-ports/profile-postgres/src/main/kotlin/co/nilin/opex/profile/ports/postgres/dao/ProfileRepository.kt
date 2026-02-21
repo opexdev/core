@@ -17,6 +17,9 @@ interface ProfileRepository : ReactiveCrudRepository<ProfileModel, Long> {
 
     fun findByUserId(userId: String): Mono<ProfileModel>
 
+    @Query("select * from profile where identifier = :identifier order by last_update_date desc limit 1")
+    fun findLatestByIdentifier(identifier: String ): Mono<ProfileModel>
+
     @Query(
         """
     SELECT * 

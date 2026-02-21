@@ -197,7 +197,8 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     CardIbanInfoInquiryError(13045, "Card-IBAN info inquiry failed", HttpStatus.INTERNAL_SERVER_ERROR),
     BankAccountAlreadyExist(13046, "Bank account already exist", HttpStatus.BAD_REQUEST),
     BankAccountNotFound(13047, "Bank account not found", HttpStatus.NOT_FOUND),
-    AddressBookNotFound(13048, "Address book not found", HttpStatus.NOT_FOUND)
+    AddressBookNotFound(13048, "Address book not found", HttpStatus.NOT_FOUND),
+    InvalidProfileData(13049, "Invalid profile data", HttpStatus.BAD_REQUEST)
     ;
 
     override fun code() = this.code

@@ -15,7 +15,7 @@ interface ProfileApprovalRequestRepository : ReactiveCrudRepository<ProfileAppro
     fun findByUserIdAndStatus(
         userId: String,
         status: ProfileApprovalRequestStatus
-    ): Mono<ProfileApprovalAdminResponse>
+    ): Mono<ProfileApprovalRequestModel>
 
     @Query(
         """

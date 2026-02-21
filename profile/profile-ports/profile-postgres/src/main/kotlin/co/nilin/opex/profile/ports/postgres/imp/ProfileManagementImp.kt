@@ -19,7 +19,6 @@ import co.nilin.opex.profile.ports.postgres.model.entity.ProfileModel
 import co.nilin.opex.profile.ports.postgres.utils.RegexPatterns
 import co.nilin.opex.profile.ports.postgres.utils.toProfileModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirstOrNull
@@ -51,6 +50,12 @@ class ProfileManagementImp(
     ): Mono<Profile> {
         val existingProfile = profileRepository.findByUserId(id)?.awaitFirstOrNull()
             ?: throw OpexError.ProfileNotfound.exception()
+
+        val latestProfileByIdentifier = profileRepository.findLatestByIdentifier(data.identifier).awaitFirstOrNull()
+        if (latestProfileByIdentifier != null && (latestProfileByIdentifier.status !=
+                    ProfileStatus.PROFILE_COMPLETED && latestProfileByIdentifier.status !=
+                    ProfileStatus.ADMIN_REJECTED)
+        ) throw OpexError.InvalidProfileData.exception()
 
         val newProfileModel = data.toProfileModel(
             existing = existingProfile,
