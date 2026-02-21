@@ -9,7 +9,6 @@ import co.nilin.opex.profile.core.data.otp.TempOtpResponse
 import co.nilin.opex.profile.core.data.profile.CompleteProfileRequest
 import co.nilin.opex.profile.core.data.profile.Profile
 import co.nilin.opex.profile.core.data.profile.ProfileApprovalUserResponse
-import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*

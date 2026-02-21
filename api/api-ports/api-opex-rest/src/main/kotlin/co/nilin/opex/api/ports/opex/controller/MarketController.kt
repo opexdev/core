@@ -272,6 +272,13 @@ class MarketController(
         return accountantProxy.getWithdrawLimitConfigs()
     }
 
+    @GetMapping("/gateway/{gatewayUuid}/terminal")
+    suspend fun getGatewayTerminal(
+        @PathVariable("gatewayUuid") gatewayUuid: String,
+    ): List<TerminalCommand>? {
+        return walletProxy.getGatewayTerminal(gatewayUuid)
+    }
+
     private fun getValidLimit(limit: Int?): Int = when {
         limit == null -> 100
         limit > 1000 -> 1000
