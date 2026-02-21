@@ -10,7 +10,19 @@ spring:
     url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
-    initialization-mode: always
+#    initialization-mode: always
+    pool:
+      enabled: true
+      initial-size: 5
+      max-size: 20
+      max-idle-time: 60s
+      validation-query: SELECT 1
+  datasource:
+    url: jdbc:postgresql://${DB_IP_PORT:localhost}/opex
+    username: ${dbusername:opex}
+    password: ${dbpassword:hiopex}
+  cache:
+    type: redis
   cloud:
     bootstrap:
       enabled: true
@@ -37,6 +49,10 @@ spring:
         prefer-ip-address: true
   config:
     import: vault://secret/${spring.application.name}
+  data:
+    redis:
+      port: 6379
+      host: redis-cache
 management:
   endpoints:
     web:
@@ -118,9 +134,7 @@ app:
       id: opex-api-key
   binance:
     api-url: https://api1.binance.com
-  trade-volume-calculation-currency: ${TRADE_VOLUME_CALCULATION_CURRENCY:USDT}
-  withdraw-volume-calculation-currency: ${WITHDRAW_VOLUME_CALCULATION_CURRENCY:USDT}
-  total-asset-calculation-currency: ${TOTAL_ASSET_CALCULATION_CURRENCY:USDT}
+  user-activity-reference-currency: ${USER_ACTIVITY_REFERENCE_CURRENCY:USDT}
   custom-message:
     enabled: ${CUSTOM_MESSAGE_ENABLED:false}
     base-url: ${CUSTOM_MESSAGE_URL}

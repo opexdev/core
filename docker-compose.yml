@@ -220,7 +220,7 @@ services:
   postgres-keycloak:
     <<: *postgres-db
     volumes:
-      - keycloak-data-new:/var/lib/postgresql/data/
+      - keycloak-data:/var/lib/postgresql/data/
   postgres-wallet:
     <<: *postgres-db
     volumes:
@@ -569,6 +569,8 @@ services:
       - ADMIN_APPROVAL_PROFILE_COMPLETION_REQUEST=${ADMIN_APPROVAL_PROFILE_COMPLETION_REQUEST}
       - ADMIN_APPROVAL_BANK_ACCOUNT=${ADMIN_APPROVAL_BANK_ACCOUNT}
       - TOKEN_ISSUER_URL=${KC_ISSUER_URL}
+      - MOBILE_IDENTITY_INQUIRY=${MOBILE_IDENTITY_INQUIRY}
+      - PERSONAL_IDENTITY_INQUIRY=${PERSONAL_IDENTITY_INQUIRY}
     depends_on:
       - kafka-1
       - kafka-2
@@ -622,7 +624,7 @@ volumes:
   accountant-data:
   eventlog-data:
   auth-data:
-  keycloak-data-new:
+  keycloak-data:
   wallet-data:
   market-data:
   api-data:

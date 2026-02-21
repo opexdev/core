@@ -30,6 +30,17 @@ class KafkaTopicConfig {
                 .replicas(1)
                 .build()
         })
+
+    }
+
+    @Autowired
+    fun depositTopics(applicationContext: GenericApplicationContext) {
+        applicationContext.registerBean("topic_deposit", NewTopic::class.java, Supplier {
+            TopicBuilder.name("deposit")
+                .partitions(1)
+                .replicas(1)
+                .build()
+        })
     }
 
 }

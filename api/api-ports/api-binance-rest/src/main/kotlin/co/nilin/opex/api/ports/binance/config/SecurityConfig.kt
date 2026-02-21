@@ -35,6 +35,7 @@ class SecurityConfig(
                 it.pathMatchers("/actuator/**").permitAll()
                     .pathMatchers("/swagger-ui/**").permitAll()
                     .pathMatchers("/swagger-resources/**").permitAll()
+                    .pathMatchers("/v1/rate-limit").hasAuthority("ROLE_admin")
                     .pathMatchers("/v2/api-docs").permitAll()
                     .pathMatchers("/v3/depth").permitAll()
                     .pathMatchers("/v3/trades").permitAll()

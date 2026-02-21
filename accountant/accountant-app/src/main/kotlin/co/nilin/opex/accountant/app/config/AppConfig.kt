@@ -74,7 +74,7 @@ class AppConfig(
         feeCalculator: FeeCalculator,
         financialActionPublisher: FinancialActionPublisher,
         currencyRatePersister: CurrencyRatePersister,
-        userVolumePersister: UserVolumePersister
+        userVolumePersister: UserTradeVolumePersister
     ): TradeManager {
         return TradeManagerImpl(
             financeActionPersister,
@@ -157,4 +157,12 @@ class AppConfig(
         withdrawRequestKafkaListener.addListener(withdrawRequestEventListener)
     }
 
+
+    @Autowired
+    fun configureDepositEventListener(
+        depositKafkaListener: DepositKafkaListener,
+        depositEventListener: DepositEventListener
+    ) {
+        depositKafkaListener.addListener(depositEventListener)
+    }
 }

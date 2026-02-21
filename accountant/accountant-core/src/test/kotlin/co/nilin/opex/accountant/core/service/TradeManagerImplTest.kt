@@ -30,7 +30,7 @@ internal class TradeManagerImplTest {
     private val richTradePublisher = mockk<RichTradePublisher>()
     private val financialActionPublisher = mockk<FinancialActionPublisher>()
     private val currencyRatePersister = mockk<CurrencyRatePersister>()
-    private val userVolumePersister = mockk<UserVolumePersister>()
+    private val userVolumePersister = mockk<UserTradeVolumePersister>()
     private val feeCalculator = mockk<FeeCalculator>()
     private val walletProxy = mockk<WalletProxy>()
     private val feeConfigService = mockk<FeeConfigService>()

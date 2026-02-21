@@ -1,8 +1,10 @@
 package co.nilin.opex.wallet.core.spi
 
 import co.nilin.opex.wallet.core.inout.CurrencyCommand
+import co.nilin.opex.wallet.core.inout.DailyAmount
 import co.nilin.opex.wallet.core.model.*
 import java.math.BigDecimal
+import java.time.LocalDate
 
 interface WalletManager {
 
@@ -40,4 +42,6 @@ interface WalletManager {
     suspend fun findWalletById(walletId: Long): Wallet?
 
     suspend fun findAllWalletsBriefNotZero(ownerId: Long): List<BriefWallet>
+
+
 }
