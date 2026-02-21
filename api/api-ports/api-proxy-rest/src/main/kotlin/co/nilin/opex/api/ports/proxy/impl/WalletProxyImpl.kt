@@ -1,6 +1,7 @@
 package co.nilin.opex.api.ports.proxy.impl
 
 import co.nilin.opex.api.core.inout.*
+import co.nilin.opex.api.core.inout.analytics.DailyAmount
 import co.nilin.opex.api.core.spi.WalletProxy
 import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
 import co.nilin.opex.api.ports.proxy.data.TransactionRequest
