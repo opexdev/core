@@ -22,6 +22,7 @@
         <module>wallet-ports/wallet-eventlistener-kafka</module>
         <module>wallet-ports/wallet-bcgateway-proxy</module>
         <module>wallet-ports/wallet-profile-proxy</module>
+        <module>wallet-ports/wallet-storage-proxy</module>
         <module>wallet-ports/wallet-auth-proxy</module>
         <module>wallet-ports/wallet-accountant-proxy</module>
         <module>wallet-ports/wallet-otp-proxy</module>
@@ -58,6 +59,11 @@
             <dependency>
                 <groupId>co.nilin.opex.wallet.ports.profile</groupId>
                 <artifactId>wallet-profile-proxy</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.wallet.ports.storage</groupId>
+                <artifactId>wallet-storage-proxy</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
