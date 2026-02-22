@@ -375,12 +375,11 @@ class DepositService(
             note = request.description,
             transactionRef = request.reference,
             status = DepositStatus.DONE,
-            depositType = co.nilin.opex.wallet.core.model.DepositType.OFF_CHAIN,
+            depositType = DepositType.OFF_CHAIN,
             network = null,
             attachment = null,
-            transferMethod = if (request.transferMethod == TransferMethod.REWARD) TransferMethod.REWARD else {
-                if (request.isIPG == true) TransferMethod.IPG else TransferMethod.MPG
-            }
+            transferMethod = request.transferMethod
+
         )
 
         traceDepositService.saveDepositInNewTransaction(deposit)
