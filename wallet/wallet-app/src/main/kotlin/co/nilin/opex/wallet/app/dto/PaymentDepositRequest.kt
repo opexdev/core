@@ -9,6 +9,5 @@ data class PaymentDepositRequest(
     val currency: String,
     val reference: String,
     val description: String?,
-    val isIPG: Boolean? = true,
     val transferMethod: TransferMethod? = null
 )
