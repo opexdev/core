@@ -1,14 +1,22 @@
 package co.nilin.opex.wallet.core.spi
 
 import co.nilin.opex.wallet.core.inout.DailyAmount
+import co.nilin.opex.wallet.core.model.UserDetailAssetsSnapshot
 import co.nilin.opex.wallet.core.model.TotalAssetsSnapshot
 import java.time.LocalDate
 
-interface TotalAssetsSnapshotManager {
-    suspend fun createSnapshot()
-    suspend fun getUserLastSnapshot(
+interface UserAssetsSnapshotManager {
+    suspend fun createTotalAssetsSnapshot()
+    suspend fun createDetailAssetsSnapshot()
+    suspend fun getUserLastTotalAssetsSnapshot(
         uuid: String
     ): TotalAssetsSnapshot?
+
+    suspend fun getUsersLastDetailAssetsSnapshot(
+        limit: Int,
+        offset: Int,
+    ): List<UserDetailAssetsSnapshot>
+
     suspend fun getLastDaysBalance(
         userId: String,
         startDate: LocalDate?,

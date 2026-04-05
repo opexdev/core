@@ -2,6 +2,7 @@ package co.nilin.opex.api.core.spi
 
 import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.inout.analytics.DailyAmount
+import org.springframework.security.core.userdetails.UserDetails
 import java.math.BigDecimal
 
 interface WalletProxy {
@@ -204,4 +205,5 @@ interface WalletProxy {
     suspend fun reserveSwap(token: String, request: TransferReserveRequest) :ReservedTransferResponse
     suspend fun finalizeSwap(token: String,reserveUuid: String,description: String?,transferRef: String?) : TransferResult
     suspend fun getGatewayTerminal(gatewayUuid: String):List<TerminalCommand>
+    suspend fun getUsersDetailAssets(limit: Int, offset: Int): List<UserDetailAssetsSnapshot>
 }

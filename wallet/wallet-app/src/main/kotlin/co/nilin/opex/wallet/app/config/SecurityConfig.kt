@@ -47,6 +47,7 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/admin/v1/swap/history").hasAnyAuthority("ROLE_monitoring", "ROLE_admin")
             .pathMatchers("/admin/**").hasAuthority("ROLE_admin")
             .pathMatchers("/stats/total-assets/**").permitAll()
+            .pathMatchers("/stats/detail-assets/**").permitAll()
             .pathMatchers(HttpMethod.GET, "/currency/**").permitAll()
             .pathMatchers("/actuator/**").permitAll()
             .pathMatchers("/storage/**").hasAuthority("ROLE_admin")

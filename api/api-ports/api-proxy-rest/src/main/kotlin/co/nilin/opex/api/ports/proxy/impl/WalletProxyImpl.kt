@@ -785,5 +785,24 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
             .awaitFirstOrElse { throw OpexError.WithdrawNotFound.exception() }
 
     }
+
+    override suspend fun getUsersDetailAssets(
+        limit: Int,
+        offset: Int
+    ): List<UserDetailAssetsSnapshot> {
+        return withContext(ProxyDispatchers.wallet) {
+            webClient.get()
+                .uri("$baseUrl/stats/detail-assets") {
+                    it.queryParam("limit", limit)
+                    it.queryParam("offset", offset)
+                    it.build()
+                }.accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<UserDetailAssetsSnapshot>()
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
+        }
+    }
 }
 

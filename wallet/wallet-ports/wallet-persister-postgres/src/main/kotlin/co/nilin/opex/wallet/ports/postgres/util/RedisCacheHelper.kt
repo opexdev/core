@@ -85,6 +85,20 @@ class RedisCacheHelper(private val redisTemplate: RedisTemplate<String, Any>) {
         }
     }
 
+    fun evictWithPrefix(prefix: String) {
+        try {
+            val keys = redisTemplate.keys("$prefix*")
+            if (!keys.isNullOrEmpty()) {
+                redisTemplate.delete(keys)
+                logger.info("Evicted ${keys.size} cache keys with prefix '$prefix'")
+            } else {
+                logger.info("No cache keys found with prefix '$prefix'")
+            }
+        } catch (e: Exception) {
+            logger.warn("Unable to evict cache with prefix '$prefix'", e)
+        }
+    }
+
     fun setExpiration(key: String, interval: DynamicInterval) {
         try {
             redisTemplate.expireAt(key, interval.dateInFuture())

@@ -22,7 +22,7 @@ import java.util.stream.Collectors
 @Component
 class WalletDataManagerImpl(
     private val walletRepository: WalletRepository,
-    private val totalAssetsSnapshotImpl: TotalAssetsSnapshotImpl,
+    private val totalAssetsSnapshotImpl: UserAssetsSnapshotImpl,
     private val currencyRepositoryV2: CurrencyRepositoryV2,
     private val objectMapper: ObjectMapper,
     private val cacheManager: CacheManager<String, BigDecimal>,

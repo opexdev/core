@@ -30,8 +30,7 @@ interface TotalAssetsSnapshotRepository : ReactiveCrudRepository<TotalAssetsSnap
     FROM wallet w
          INNER JOIN public.wallet_owner wo on wo.id = w.owner
          LEFT JOIN price p ON w.currency = p.base_currency and p.quote_currency = :quoteCurrency
-    WHERE w.wallet_type != 'CASHOUT'
-     AND w.balance > 0
+    WHERE w.balance > 0
     GROUP BY wo.uuid
     """
     )
