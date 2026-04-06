@@ -29,7 +29,7 @@ class WalletSnapshotService(
         }
     }
 
-    @Scheduled(cron = "0 40 16 * * ?", zone = "GMT" + "\${app.zone-offset}")
+    @Scheduled(cron = "0 0 0 * * ?", zone = "GMT" + "\${app.zone-offset}")
     fun createDetailAssetsSnapshot() {
         runBlocking {
             updatePrices()

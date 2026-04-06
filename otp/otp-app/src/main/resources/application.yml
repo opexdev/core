@@ -48,6 +48,7 @@ app:
     cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
     iss-url: ${TOKEN_ISSUER_URL:http://keycloak:8080/realms/opex}
 otp:
+  response-enabled: ${OTP_CODE_RESPONSE_ENABLED:false}
   sms:
     provider:
       url: ${SMS_PROVIDER_URL}
