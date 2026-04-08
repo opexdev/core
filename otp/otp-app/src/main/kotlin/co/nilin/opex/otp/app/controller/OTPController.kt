@@ -6,6 +6,7 @@ import co.nilin.opex.otp.app.data.OTPResult
 import co.nilin.opex.otp.app.data.VerifyOTPRequest
 import co.nilin.opex.otp.app.model.OTPType
 import co.nilin.opex.otp.app.service.OTPService
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -15,10 +16,13 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/v1/otp")
-class OTPController(private val otpService: OTPService) {
+class OTPController(
+    private val otpService: OTPService,
+    @Value("\${otp.response-enabled}") private val otpCodeResponseEnabled: Boolean,
+) {
 
     //TODO IMPORTANT: remove in production
-    data class TempOtpResponse(val otp: String)
+    data class TempOtpResponse(val otp: String?)
     //TODO IMPORTANT: remove in production
 
     //TODO IMPORTANT: remove in production
@@ -34,7 +38,8 @@ class OTPController(private val otpService: OTPService) {
             )
         else
             otpService.requestCompositeOTP(request.receivers.toSet(), request.userId, request.action)
-        return ResponseEntity.status(HttpStatus.CREATED).body(TempOtpResponse(code))
+        val tempOtpResponse = if (otpCodeResponseEnabled) code else null
+        return ResponseEntity.status(HttpStatus.CREATED).body(TempOtpResponse(tempOtpResponse))
     }
 
     @PostMapping("/verify")

@@ -545,6 +545,7 @@ services:
       - SMTP_PASS=${SMTP_PASS}
       - SMTP_FROM=${SMTP_FROM}
       - TOKEN_ISSUER_URL=${KC_ISSUER_URL}
+      - OTP_CODE_RESPONSE_ENABLED=${OTP_CODE_RESPONSE_ENABLED}
     depends_on:
       - consul
       - postgres-otp
