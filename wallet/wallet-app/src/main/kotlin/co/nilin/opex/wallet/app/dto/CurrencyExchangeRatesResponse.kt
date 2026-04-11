@@ -7,7 +7,7 @@ data class CurrencyExchangeRate(
     val sourceSymbol: String,
     val destSymbol: String,
     val rate: BigDecimal,
-    val isSwappable: Boolean
+    val isSwappable: Boolean =true
 )
 
 data class CurrencyExchangeRatesResponse(val rates: List<CurrencyExchangeRate>)
