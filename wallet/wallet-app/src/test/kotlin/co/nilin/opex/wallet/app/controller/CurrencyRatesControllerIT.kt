@@ -91,7 +91,8 @@ class CurrencyRatesControllerIT : KafkaEnabledTest() {
                         CurrencyExchangeRate(
                             "E",
                             "U",
-                            BigDecimal.TEN
+                            BigDecimal.TEN,
+                            true
                         )
                     )
                 ), routes
@@ -121,7 +122,8 @@ class CurrencyRatesControllerIT : KafkaEnabledTest() {
             Assertions.assertEquals(
                 CurrencyExchangeRatesResponse(
                     listOf(
-                        CurrencyExchangeRate("E", "U", BigDecimal.TEN), CurrencyExchangeRate("B", "U", BigDecimal.TEN)
+                        CurrencyExchangeRate("E", "U", BigDecimal.TEN, true),
+                        CurrencyExchangeRate("B", "U", BigDecimal.TEN, true)
                     )
                 ), allRates
             )
