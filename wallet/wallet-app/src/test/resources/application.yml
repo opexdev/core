@@ -81,7 +81,7 @@ testcontainers:
   db:
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
-    name: wallet
+    name: opex
     version: "postgres:14.9"
 logging:
   level:

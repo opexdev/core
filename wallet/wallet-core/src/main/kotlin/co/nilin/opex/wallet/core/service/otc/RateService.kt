@@ -20,6 +20,11 @@ interface RateService {
 
     suspend fun getForbiddenPairs(): ForbiddenPairs
 
+    suspend fun addForbiddenSwapPair(forbiddenPair: ForbiddenSwapPair)
+
+    suspend fun deleteForbiddenSwapPair(forbiddenPair: ForbiddenSwapPair): ForbiddenSwapPairs
+
+    suspend fun getForbiddenSwapPairs(): ForbiddenSwapPairs
 
     suspend fun addTransitiveSymbols(symbols: Symbols)
 

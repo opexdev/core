@@ -1,9 +1,11 @@
 package co.nilin.opex.wallet.app.service.otc
 
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.wallet.app.dto.CurrencyExchangeRate
 import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import co.nilin.opex.wallet.core.inout.CurrencyPrice
 import co.nilin.opex.wallet.core.model.otc.ForbiddenPair
+import co.nilin.opex.wallet.core.model.otc.ForbiddenSwapPair
 import co.nilin.opex.wallet.core.model.otc.Rate
 import co.nilin.opex.wallet.core.service.otc.RateService
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
@@ -33,7 +35,27 @@ class GraphService(
                 accumulator.multiply(element)
             }
         }
+    }
 
+    suspend fun getCurrencyExchangeRates(source: String? = null, dest: String? = null): List<CurrencyExchangeRate> {
+        val forbiddenSet = rateService
+            .getForbiddenSwapPairs()
+            .forbiddenSwapPairs
+            ?.toSet()
+            ?: emptySet()
+
+        val routes = buildRoutes(source, dest)
+
+        val exchangeRates = routes.map { route ->
+            val isSwappable = ForbiddenSwapPair(route.getSourceSymbol(), route.getDestSymbol()) !in forbiddenSet
+            CurrencyExchangeRate(
+                sourceSymbol = route.getSourceSymbol(),
+                destSymbol = route.getDestSymbol(),
+                rate = route.getRate(),
+                isSwappable = isSwappable
+            )
+        }
+        return exchangeRates
     }
 
     suspend fun buildRoutes(source: String? = null, dest: String? = null): MutableList<Route> {
@@ -57,6 +79,7 @@ class GraphService(
             }
         }
         return routesWithMax2StepV2
+//            .applyForbiddenSwapPairs()
     }
 
 
