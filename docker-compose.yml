@@ -406,6 +406,7 @@ services:
       - ADMIN_CLIENT_SECRET=${KC_ADMIN_CLIENT_SECRET}
       - PRE_AUTH_CLIENT_SECRET=${KC_PRE_AUTH_CLIENT_SECRET}
       - TOKEN_ISSUER_URL=${KC_ISSUER_URL}
+      - CAPTCHA_ENABLED=${CAPTCHA_ENABLED}
     volumes:
       - auth-gateway-keys:/app/keys
     depends_on:

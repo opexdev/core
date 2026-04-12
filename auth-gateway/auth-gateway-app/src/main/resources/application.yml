@@ -71,7 +71,7 @@ app:
     url: http://opex-otp/v1
   captcha:
     url: http://opex-captcha
-    enabled: false
+    enabled: ${CAPTCHA_ENABLED:true}
   device-management:
     url:  http://opex-device-management
   custom-message:
