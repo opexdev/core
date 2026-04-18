@@ -1,13 +1,15 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.common.data.UserLanguage
+import co.nilin.opex.common.utils.LanguageUtils.getUserLanguage
 import co.nilin.opex.wallet.core.inout.TerminalCommand
 import co.nilin.opex.wallet.core.spi.GatewayTerminalManager
-import co.nilin.opex.wallet.ports.postgres.dao.TerminalRepository
 import co.nilin.opex.wallet.ports.postgres.dao.GatewayTerminalRepository
 import co.nilin.opex.wallet.ports.postgres.dao.OffChainGatewayRepository
+import co.nilin.opex.wallet.ports.postgres.dao.TerminalRepository
 import co.nilin.opex.wallet.ports.postgres.model.GatewayTerminalModel
-import co.nilin.opex.wallet.ports.postgres.util.toDto
+import co.nilin.opex.wallet.ports.postgres.util.toCommand
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -39,7 +41,10 @@ class GatewayTerminalImpl(
 
     override suspend fun getAssignedTerminalToGateway(gatewayUuid: String): List<TerminalCommand>? {
         return gatewayRepository.findByGatewayUuid(gatewayUuid)?.awaitSingleOrNull()?.let { gateway ->
-            gatewayTerminalRepository.findByGatewayId(gateway.id!!)?.map { it.toDto() }?.collectList()
+            gatewayTerminalRepository.findByGatewayId(
+                gateway.id!!,
+                UserLanguage.safeValueOf(getUserLanguage().awaitSingleOrNull()).toString()
+            )?.map { it.toCommand() }?.collectList()
                 ?.awaitSingleOrNull()
         } ?: throw OpexError.GatewayNotFount.exception()
     }
