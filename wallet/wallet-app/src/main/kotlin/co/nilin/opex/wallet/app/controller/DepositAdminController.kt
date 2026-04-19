@@ -7,6 +7,7 @@ import co.nilin.opex.wallet.app.dto.TerminalLocalizationResponse
 import co.nilin.opex.wallet.app.service.DepositService
 import co.nilin.opex.wallet.core.inout.DepositAdminResponse
 import co.nilin.opex.wallet.core.inout.TerminalCommand
+import co.nilin.opex.wallet.core.inout.TerminalLocalizationCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.spi.TerminalManager
 import io.swagger.annotations.ApiResponse
@@ -163,6 +164,13 @@ class DepositAdminController(
         @PathVariable("id") id: Long,
     ) {
         terminalManager.deleteTerminalLocalizations(id)
+    }
+
+    @PutMapping("/terminal/localization")
+    suspend fun updateTerminalLocalization(
+        @RequestBody body: TerminalLocalizationCommand
+    ): TerminalLocalizationCommand {
+        return terminalManager.updateTerminalLocalization(body)
     }
 
 }

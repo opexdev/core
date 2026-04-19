@@ -137,4 +137,15 @@ class TerminalManagerImpl(
             ?.toModel()
 
     }
+
+    override suspend fun updateTerminalLocalization(terminalLocalization: TerminalLocalizationCommand): TerminalLocalizationCommand {
+        if (terminalLocalization.id != null) {
+            val localizationModel =
+                terminalLocalizationsRepository.findById(terminalLocalization.id!!).awaitSingleOrNull()
+                    ?: throw OpexError.TerminalLocalizationNotFound.exception()
+            localizationModel.apply { description = terminalLocalization.description }
+            return terminalLocalizationsRepository.save(localizationModel).awaitSingle().toCommand()
+        }
+        throw OpexError.TerminalLocalizationNotFound.exception()
+    }
 }

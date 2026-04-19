@@ -13,4 +13,5 @@ interface TerminalManager {
     suspend fun saveTerminalLocalizations(terminalUuid : String , terminalLocalizations : List<TerminalLocalizationCommand>) : List<TerminalLocalizationCommand>
     suspend fun fetchTerminalLocalizations(terminalUuid : String) : List<TerminalLocalizationCommand>
     suspend fun deleteTerminalLocalizations(id : Long)
+    suspend fun updateTerminalLocalization(terminalLocalization : TerminalLocalizationCommand):TerminalLocalizationCommand
 }
