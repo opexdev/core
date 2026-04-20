@@ -113,6 +113,8 @@ logging:
     co.nilin.opex.api.ports.proxy.impl: DEBUG
 
 app:
+  base:
+    url: ${APP_BASE_URL:api}
   accountant:
     url: http://opex-accountant
   profile:

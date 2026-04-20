@@ -3,6 +3,7 @@ package co.nilin.opex.api.ports.opex.controller
 import co.nilin.opex.api.core.spi.StorageProxy
 import co.nilin.opex.api.ports.opex.util.jwtAuthentication
 import co.nilin.opex.api.ports.opex.util.tokenValue
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.ResponseEntity
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.security.core.annotation.CurrentSecurityContext
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/opex/v1/admin/storage")
 class StorageAdminController(
     private val storageProxy: StorageProxy,
+    @Value("\${app.base.url}")
+    private val appBaseUrl: String
 ) {
     @GetMapping
     suspend fun download(
@@ -30,8 +33,9 @@ class StorageAdminController(
         @RequestParam("key") key: String,
         @RequestPart("file") file: FilePart,
         @RequestParam("isPublic") isPublic: Boolean? = false,
-    ) {
+    ): String {
         storageProxy.adminUpload(securityContext.jwtAuthentication().tokenValue(), bucket, key, file, isPublic)
+        return "$appBaseUrl/opex/v1/storage?bucket=$bucket&key=$key"
     }
 
     @DeleteMapping
