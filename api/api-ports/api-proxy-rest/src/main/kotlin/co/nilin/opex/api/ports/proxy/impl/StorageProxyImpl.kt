@@ -94,4 +94,28 @@ class StorageProxyImpl(@Qualifier("generalWebClient") private val webClient: Web
             .onStatus({ it.isError }) { it.createException() }
             .awaitBodilessEntity()
     }
+
+    override suspend fun publicDownload(
+        bucket: String,
+        key: String
+    ): ResponseEntity<ByteArray> {
+        return webClient.get()
+            .uri("$baseUrl/v2/public") {
+                it.queryParam("bucket", bucket)
+                it.queryParam("key", key)
+                it.build()
+            }
+            .accept(
+                MediaType.APPLICATION_OCTET_STREAM,
+                MediaType.APPLICATION_JSON
+            )
+            .exchangeToMono { response ->
+                if (response.statusCode().isError) {
+                    response.createException().flatMap { Mono.error(it) }
+                } else {
+                    response.toEntity(ByteArray::class.java)
+                }
+            }
+            .awaitSingle()
+    }
 }

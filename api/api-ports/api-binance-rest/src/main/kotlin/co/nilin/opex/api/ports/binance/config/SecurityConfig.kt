@@ -50,6 +50,7 @@ class SecurityConfig(
 
                     // Opex endpoints
                     .pathMatchers("/opex/v1/admin/transactions/**").hasAnyAuthority("ROLE_monitoring", "ROLE_admin")
+                    .pathMatchers("/opex/v1/storage/**").permitAll()
                     .pathMatchers("/opex/v1/admin/**").hasAuthority("ROLE_admin")
                     .pathMatchers("/opex/v1/deposit/**").hasAuthority("PERM_deposit:write")
                     .pathMatchers(HttpMethod.POST, "/opex/v1/order").hasAuthority("PERM_order:write")
@@ -65,7 +66,7 @@ class SecurityConfig(
                     .pathMatchers(HttpMethod.PUT, "/opex/v1/otc/rate").hasAnyAuthority("ROLE_admin", "ROLE_rate_bot")
                     .pathMatchers(HttpMethod.GET, "/opex/v1/otc/**").permitAll()
                     .pathMatchers("/opex/v1/otc/**").hasAuthority("ROLE_admin")
-                    .pathMatchers(HttpMethod.GET,"/opex/v1/bank-account").permitAll()
+                    .pathMatchers(HttpMethod.GET, "/opex/v1/bank-account").permitAll()
                     .pathMatchers("/opex/v1/bank-account/**").hasAuthority("PERM_bank_account:write")
                     .anyExchange().authenticated()
             }
