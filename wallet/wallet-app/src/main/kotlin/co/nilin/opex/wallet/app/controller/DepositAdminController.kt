@@ -2,9 +2,12 @@ package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.wallet.app.dto.AdminSearchDepositRequest
 import co.nilin.opex.wallet.app.dto.ManualTransferRequest
+import co.nilin.opex.wallet.app.dto.TerminalLocalizationRequest
+import co.nilin.opex.wallet.app.dto.TerminalLocalizationResponse
 import co.nilin.opex.wallet.app.service.DepositService
 import co.nilin.opex.wallet.core.inout.DepositAdminResponse
 import co.nilin.opex.wallet.core.inout.TerminalCommand
+import co.nilin.opex.wallet.core.inout.TerminalLocalizationCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.spi.TerminalManager
 import io.swagger.annotations.ApiResponse
@@ -139,5 +142,35 @@ class DepositAdminController(
         terminalManager.fetchTerminal(terminalUuid)
     }
 
+    @PostMapping("/terminal/{uuid}/localization")
+    suspend fun saveTerminalLocalization(
+        @PathVariable("uuid") terminalUuid: String,
+        @RequestBody body: TerminalLocalizationRequest
+    ): TerminalLocalizationResponse {
+        val terminalLocalizations = terminalManager.saveTerminalLocalizations(terminalUuid, body.terminalLocalizations)
+        return TerminalLocalizationResponse(terminalUuid, terminalLocalizations)
+    }
+
+    @GetMapping("/terminal/{uuid}/localization")
+    suspend fun getTerminalLocalization(
+        @PathVariable("uuid") terminalUuid: String
+    ): TerminalLocalizationResponse {
+        val terminalLocalizations = terminalManager.fetchTerminalLocalizations(terminalUuid)
+        return TerminalLocalizationResponse(terminalUuid, terminalLocalizations)
+    }
+
+    @DeleteMapping("/terminal/localization/{id}")
+    suspend fun deleteTerminalLocalization(
+        @PathVariable("id") id: Long,
+    ) {
+        terminalManager.deleteTerminalLocalizations(id)
+    }
+
+    @PutMapping("/terminal/localization")
+    suspend fun updateTerminalLocalization(
+        @RequestBody body: TerminalLocalizationCommand
+    ): TerminalLocalizationCommand {
+        return terminalManager.updateTerminalLocalization(body)
+    }
 
 }

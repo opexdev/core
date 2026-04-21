@@ -1,12 +1,12 @@
 package co.nilin.opex.common.translation
 
+import co.nilin.opex.common.utils.LanguageUtils.getUserLanguage
 import co.nilin.opex.utility.error.data.DefaultExceptionResponse
 import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.utility.error.spi.ErrorTranslator
 import co.nilin.opex.utility.error.spi.ExceptionResponse
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 
@@ -31,9 +31,6 @@ class CustomErrorTranslator() : ErrorTranslator {
             )
         }
     }
-
-    fun getUserLanguage(): Mono<String> =
-        Mono.deferContextual { ctx -> Mono.just(ctx.getOrDefault("lang", "EN")!!) }
 }
 
 

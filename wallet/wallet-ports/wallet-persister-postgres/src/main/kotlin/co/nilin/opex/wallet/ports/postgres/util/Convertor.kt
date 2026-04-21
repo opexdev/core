@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.ports.postgres.util
 
 import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.TotalAssetsSnapshot
+import co.nilin.opex.wallet.ports.postgres.dto.TerminalView
 import co.nilin.opex.wallet.ports.postgres.model.*
 import java.time.ZoneId
 import java.util.*
@@ -143,7 +144,7 @@ fun TerminalCommand.toModel(): TerminalModel {
         null,
         uuid,
         owner,
-        identifier, active, type, metaData, description, displayOrder
+        identifier, active, type, metaData, displayOrder
     )
 }
 
@@ -151,7 +152,32 @@ fun TerminalModel.toDto(): TerminalCommand {
     return TerminalCommand(
         uuid!!,
         owner,
+        identifier, active, type, metaData, null, displayOrder
+    )
+}
+
+fun TerminalView.toModel(): TerminalModel {
+    return TerminalModel(
+        id,
+        uuid,
+        owner,
+        identifier, active, type, metaData, displayOrder
+    )
+}
+
+fun TerminalView.toCommand(): TerminalCommand {
+    return TerminalCommand(
+        uuid,
+        owner,
         identifier, active, type, metaData, description, displayOrder
+    )
+}
+
+fun TerminalLocalizationModel.toCommand(): TerminalLocalizationCommand {
+    return TerminalLocalizationCommand(
+        id,
+        description,
+        language
     )
 }
 
