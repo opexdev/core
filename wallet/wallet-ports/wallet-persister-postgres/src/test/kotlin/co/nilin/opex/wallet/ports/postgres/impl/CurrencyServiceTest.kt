@@ -28,8 +28,9 @@ private class CurrencyServiceTest {
 
     @Test
     fun givenCurrency_whenGetCurrency_thenReturnCurrency(): Unit = runBlocking {
-        every { currencyRepository.fetchCurrency(symbol = VALID.CURRENCY.symbol) } returns Mono.just(VALID.CURRENCY.toView())
-
+        every {
+            currencyRepository.fetchCurrency(null, VALID.CURRENCY.symbol, any())
+        } returns Mono.just(VALID.CURRENCY.toView())
         val c = currencyService.fetchCurrency(FetchCurrency(symbol = VALID.CURRENCY.symbol))
 
         assertThat(c).isNotNull
