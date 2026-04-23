@@ -154,13 +154,13 @@ class CurrencyController(
         quoteCurrencyManager.update(currency, isReference, displayOrder)
     }
 
-    @GetMapping("/localization/{currency}")
+    @GetMapping("/{currency}/localization")
     suspend fun getCurrencyLocalizations(@PathVariable("currency") currency: String): CurrencyLocalizationResponse {
         val localizations = currencyService.fetchCurrencyLocalizations(currency)
         return CurrencyLocalizationResponse(currency, localizations)
     }
 
-    @PostMapping("/localization/{currency}")
+    @PostMapping("/{currency}/localization")
     suspend fun saveCurrencyLocalizations(
         @PathVariable("currency") currency: String,
         @RequestBody request: CurrencyLocalizationRequest

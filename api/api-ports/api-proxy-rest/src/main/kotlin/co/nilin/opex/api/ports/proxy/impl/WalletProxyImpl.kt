@@ -807,7 +807,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
         currency: String
     ): CurrencyLocalizationResponse {
         return webClient.get()
-            .uri("$baseUrl/currency/localization/${currency}")
+            .uri("$baseUrl/currency/${currency}/localization")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .retrieve()
@@ -822,7 +822,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
         request: CurrencyLocalizationRequest
     ): CurrencyLocalizationResponse {
         return webClient.post()
-            .uri("$baseUrl/currency/localization/${currency}")
+            .uri("$baseUrl/currency/${currency}/localization")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .body(Mono.just(request))

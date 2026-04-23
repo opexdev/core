@@ -9,11 +9,11 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/opex/v1/admin/localization")
+@RequestMapping("/opex/v1/admin")
 class LocalizationAdminController(
     private val walletProxy: WalletProxy,
 ) {
-    @GetMapping("/currency/{currency}")
+    @GetMapping("/currency/{currency}/localization")
     suspend fun getCurrencyLocalizations(
         @CurrentSecurityContext securityContext: SecurityContext,
         @PathVariable("currency") currency: String
@@ -21,7 +21,7 @@ class LocalizationAdminController(
         return walletProxy.getCurrencyLocalizations(securityContext.jwtAuthentication().tokenValue(), currency)
     }
 
-    @PostMapping("/currency/{currency}")
+    @PostMapping("/currency/{currency}/localization")
     suspend fun saveCurrencyLocalizations(
         @CurrentSecurityContext securityContext: SecurityContext,
         @PathVariable("currency") currency: String,
@@ -34,7 +34,7 @@ class LocalizationAdminController(
         )
     }
 
-    @PutMapping("/currency")
+    @PutMapping("/currency/localization")
     suspend fun updateCurrencyLocalization(
         @CurrentSecurityContext securityContext: SecurityContext,
         @RequestBody request: CurrencyLocalizationCommand
@@ -42,7 +42,7 @@ class LocalizationAdminController(
         return walletProxy.updateCurrencyLocalization(securityContext.jwtAuthentication().tokenValue(), request)
     }
 
-    @DeleteMapping("/currency/{id}")
+    @DeleteMapping("/currency/localization/{id}")
     suspend fun deleteCurrencyLocalization(
         @CurrentSecurityContext securityContext: SecurityContext,
         @PathVariable("id") id: Long
@@ -50,7 +50,7 @@ class LocalizationAdminController(
         walletProxy.deleteCurrencyLocalization(securityContext.jwtAuthentication().tokenValue(), id)
     }
 
-    @GetMapping("/terminal/{terminalUuid}")
+    @GetMapping("/terminal/{terminalUuid}/localization")
     suspend fun getTerminalLocalizations(
         @CurrentSecurityContext securityContext: SecurityContext,
         @PathVariable("terminalUuid") terminalUuid: String
@@ -58,7 +58,7 @@ class LocalizationAdminController(
         return walletProxy.getTerminalLocalizations(securityContext.jwtAuthentication().tokenValue(), terminalUuid)
     }
 
-    @PostMapping("/terminal/{terminalUuid}")
+    @PostMapping("/terminal/{terminalUuid}/localization")
     suspend fun saveTerminalLocalizations(
         @CurrentSecurityContext securityContext: SecurityContext,
         @PathVariable("terminalUuid") terminalUuid: String,
@@ -71,7 +71,7 @@ class LocalizationAdminController(
         )
     }
 
-    @PutMapping("/terminal")
+    @PutMapping("/terminal/localization")
     suspend fun updateTerminalLocalization(
         @CurrentSecurityContext securityContext: SecurityContext,
         @RequestBody request: TerminalLocalizationCommand
@@ -79,7 +79,7 @@ class LocalizationAdminController(
         return walletProxy.updateTerminalLocalization(securityContext.jwtAuthentication().tokenValue(), request)
     }
 
-    @DeleteMapping("/terminal/{id}")
+    @DeleteMapping("/terminal/localization/{id}")
     suspend fun deleteTerminalLocalization(
         @CurrentSecurityContext securityContext: SecurityContext,
         @PathVariable("id") id: Long
