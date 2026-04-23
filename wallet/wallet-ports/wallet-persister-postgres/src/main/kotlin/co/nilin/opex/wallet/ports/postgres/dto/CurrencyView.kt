@@ -1,12 +1,11 @@
-package co.nilin.opex.api.core.inout
+package co.nilin.opex.wallet.ports.postgres.dto
 
 
 import java.math.BigDecimal
-import java.util.*
 
-data class CurrencyData(
+data class CurrencyView(
     var symbol: String,
-    var uuid: String? = UUID.randomUUID().toString(),
+    var uuid: String,
     var name: String? = null,
     var precision: BigDecimal,
     var title: String? = null,
@@ -20,5 +19,4 @@ data class CurrencyData(
     var externalUrl: String? = null,
     var displayOrder: Int? = null,
     var maxOrder: BigDecimal? = null,
-
-    )
+)

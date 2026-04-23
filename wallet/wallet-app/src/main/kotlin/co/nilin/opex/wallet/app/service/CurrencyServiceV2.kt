@@ -4,11 +4,7 @@ import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.CurrenciesDto
 import co.nilin.opex.wallet.app.dto.CurrencyDto
 import co.nilin.opex.wallet.app.utils.toDto
-import co.nilin.opex.wallet.core.inout.CurrencyData
-import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
-import co.nilin.opex.wallet.core.inout.GatewayType
-import co.nilin.opex.wallet.core.inout.OffChainGatewayCommand
-import co.nilin.opex.wallet.core.inout.OnChainGatewayCommand
+import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.service.GatewayService
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
@@ -69,10 +65,12 @@ class CurrencyServiceV2(
                 var gateways = gatewayService.fetchGateways(currencySymbol, includeGateways)
                 return it.apply {
                     it.depositAllowed =
-                        gateways?.stream()?.filter { it.isDepositActive == true }?.map(CurrencyGatewayCommand::depositAllowed)
+                        gateways?.stream()?.filter { it.isDepositActive == true }
+                            ?.map(CurrencyGatewayCommand::depositAllowed)
                             ?.reduce { t, u -> t ?: false || u ?: false }?.orElseGet { false }
                     it.withdrawAllowed =
-                        gateways?.stream()?.filter { it.isWithdrawActive == true }?.map(CurrencyGatewayCommand::withdrawAllowed)
+                        gateways?.stream()?.filter { it.isWithdrawActive == true }
+                            ?.map(CurrencyGatewayCommand::withdrawAllowed)
                             ?.reduce { t, u -> t ?: false || u ?: false }?.orElseGet { false }
                     it.gateways = gateways
                     //It is a stupid field for resolving front-end developers need
@@ -119,12 +117,14 @@ class CurrencyServiceV2(
         return CurrenciesDto(currencies?.stream()?.map {
             it.apply {
                 it.gateways = groupedByGateways?.get(it.symbol)
-                it.depositAllowed = groupedByGateways?.get(it.symbol)?.stream()?.filter { g -> g.isDepositActive == true }
-                    ?.map(CurrencyGatewayCommand::depositAllowed)?.reduce { t, u -> t ?: false || u ?: false }
-                    ?.orElseGet { false }
-                it.withdrawAllowed = groupedByGateways?.get(it.symbol)?.stream()?.filter { g -> g.isWithdrawActive == true }
-                    ?.map(CurrencyGatewayCommand::withdrawAllowed)?.reduce { t, u -> t ?: false || u ?: false }
-                    ?.orElseGet { false }
+                it.depositAllowed =
+                    groupedByGateways?.get(it.symbol)?.stream()?.filter { g -> g.isDepositActive == true }
+                        ?.map(CurrencyGatewayCommand::depositAllowed)?.reduce { t, u -> t ?: false || u ?: false }
+                        ?.orElseGet { false }
+                it.withdrawAllowed =
+                    groupedByGateways?.get(it.symbol)?.stream()?.filter { g -> g.isWithdrawActive == true }
+                        ?.map(CurrencyGatewayCommand::withdrawAllowed)?.reduce { t, u -> t ?: false || u ?: false }
+                        ?.orElseGet { false }
                 it.gateways?.forEach { gateway ->
                     when (gateway) {
                         is OnChainGatewayCommand -> {
@@ -156,5 +156,23 @@ class CurrencyServiceV2(
         return currencyServiceManager.fetchAllCurrencies()
     }
 
+    suspend fun fetchCurrencyLocalizations(currency: String): List<CurrencyLocalizationCommand> {
+        return currencyServiceManager.fetchCurrencyLocalizations(currency)
+    }
+
+    suspend fun saveCurrencyLocalizations(
+        currency: String,
+        request: List<CurrencyLocalizationCommand>
+    ): List<CurrencyLocalizationCommand> {
+        return currencyServiceManager.saveCurrencyLocalizations(currency, request);
+    }
+
+    suspend fun updateCurrencyLocalization(request: CurrencyLocalizationCommand): CurrencyLocalizationCommand {
+        return currencyServiceManager.updateCurrencyLocalization(request)
+    }
+
+    suspend fun deleteCurrencyLocalization(id: Long) {
+        currencyServiceManager.deleteCurrencyLocalization(id)
+    }
 
 }

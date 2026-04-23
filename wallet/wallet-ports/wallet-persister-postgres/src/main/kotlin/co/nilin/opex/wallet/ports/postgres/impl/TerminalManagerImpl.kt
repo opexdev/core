@@ -27,31 +27,33 @@ class TerminalManagerImpl(
 
 ) : TerminalManager {
     override suspend fun save(terminalCommand: TerminalCommand): TerminalCommand? {
+        return transactionalOperator.executeAndAwait {
 
-        terminalRepository.findByIdentifier(terminalCommand.identifier)
-            ?.awaitSingleOrNull()
-            ?.let { throw OpexError.TerminalIsExist.exception() }
+            terminalRepository.findByIdentifier(terminalCommand.identifier)
+                ?.awaitSingleOrNull()
+                ?.let { throw OpexError.TerminalIsExist.exception() }
 
-        val terminal = terminalRepository
-            .save(terminalCommand.toModel())
-            .awaitSingleOrNull()
-            ?: return null
+            val terminal = terminalRepository
+                .save(terminalCommand.toModel())
+                .awaitSingleOrNull()
+                ?: return@executeAndAwait null
 
-        val terminalId = terminal.id ?: return null
+            val terminalId = terminal.id ?: return@executeAndAwait null
 
-        terminalCommand.description
-            ?.takeIf { it.isNotBlank() }
-            ?.let { description ->
-                terminalLocalizationsRepository.save(
-                    TerminalLocalizationModel(
-                        terminalId = terminalId,
-                        description = description,
-                        language = getDefaultUserLanguage()
-                    )
-                ).awaitSingleOrNull()
-            }
+            terminalCommand.description
+                ?.takeIf { it.isNotBlank() }
+                ?.let { description ->
+                    terminalLocalizationsRepository.save(
+                        TerminalLocalizationModel(
+                            terminalId = terminalId,
+                            description = description,
+                            language = getDefaultUserLanguage()
+                        )
+                    ).awaitSingleOrNull()
+                }
 
-        return terminalCommand.apply { uuid = terminal.uuid }
+            terminalCommand.apply { uuid = terminal.uuid }
+        }
     }
 
     override suspend fun update(terminalCommand: TerminalCommand): TerminalCommand? {
@@ -112,7 +114,7 @@ class TerminalManagerImpl(
                 .collectList()
                 .awaitSingleOrNull()
                 ?: emptyList()
-        } ?: emptyList()
+        } ?: throw OpexError.BadRequest.exception("Failed to save terminal localizations")
     }
 
     override suspend fun fetchTerminalLocalizations(terminalUuid: String): List<TerminalLocalizationCommand> {

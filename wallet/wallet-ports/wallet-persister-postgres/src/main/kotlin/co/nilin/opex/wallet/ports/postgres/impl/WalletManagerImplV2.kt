@@ -3,7 +3,6 @@ package co.nilin.opex.wallet.ports.postgres.impl
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.exc.ConcurrentBalanceChangException
 import co.nilin.opex.wallet.core.inout.CurrencyCommand
-import co.nilin.opex.wallet.core.inout.DailyAmount
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.ports.postgres.dao.*
@@ -13,18 +12,13 @@ import co.nilin.opex.wallet.ports.postgres.util.toCommand
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
-import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
-import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.ZoneOffset
-import java.util.concurrent.TimeUnit
-import java.util.stream.Collectors
 
 @Service
 class WalletManagerImplV2(
@@ -300,6 +294,7 @@ class WalletManagerImplV2(
                 )
             }
     }
+
     override suspend fun findWallet(ownerId: Long, currency: String, walletType: WalletType): BriefWallet? {
         val wallet = walletRepository.findByOwnerAndTypeAndCurrency(ownerId, walletType, currency)
             .awaitSingleOrNull() ?: return null
