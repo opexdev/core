@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*
 class LocalizationAdminController(
     private val walletProxy: WalletProxy,
 ) {
-
     @GetMapping("/currency/{currency}")
     suspend fun getCurrencyLocalizations(
         @CurrentSecurityContext securityContext: SecurityContext,
