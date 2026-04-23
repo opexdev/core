@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS currency_localization
 (
     id                SERIAL PRIMARY KEY,
-    currency          VARCHAR(25) NOT NULL REFERENCES currency (symbol),
+    currency          VARCHAR(25) NOT NULL REFERENCES currency (symbol) ON DELETE CASCADE,
     name              VARCHAR(25),
     title             VARCHAR(25),
     alias             VARCHAR(25),
