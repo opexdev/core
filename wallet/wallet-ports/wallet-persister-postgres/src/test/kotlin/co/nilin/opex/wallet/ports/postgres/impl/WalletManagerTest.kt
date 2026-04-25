@@ -5,7 +5,7 @@ import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.ports.postgres.dao.*
 import co.nilin.opex.wallet.ports.postgres.dto.toModel
 import co.nilin.opex.wallet.ports.postgres.impl.sample.VALID
-import co.nilin.opex.wallet.ports.postgres.util.toModel
+import co.nilin.opex.wallet.ports.postgres.util.toView
 import io.mockk.MockKException
 import io.mockk.every
 import io.mockk.mockk
@@ -319,7 +319,7 @@ private class WalletManagerTest {
         } returns Mono.just(VALID.WALLET.toModel())
         every {
             currencyRepository.fetchCurrency(symbol = VALID.CURRENCY.symbol)
-        } returns Mono.just(VALID.CURRENCY.toModel())
+        } returns Mono.just(VALID.CURRENCY.toView())
 
         println(
             walletRepository.findByOwnerAndTypeAndCurrency(
@@ -464,7 +464,7 @@ private class WalletManagerTest {
         } returns Mono.just(VALID.WALLET_OWNER.toModel())
         every {
             currencyRepository.fetchCurrency(symbol = VALID.CURRENCY.symbol)
-        } returns Mono.just(VALID.CURRENCY.toModel())
+        } returns Mono.just(VALID.CURRENCY.toView())
 
         val wallet = walletManagerImpl.findWalletById(VALID.WALLET.id!!)
 

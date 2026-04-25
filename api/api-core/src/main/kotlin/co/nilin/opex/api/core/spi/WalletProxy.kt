@@ -2,7 +2,6 @@ package co.nilin.opex.api.core.spi
 
 import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.inout.analytics.DailyAmount
-import org.springframework.security.core.userdetails.UserDetails
 import java.math.BigDecimal
 
 interface WalletProxy {
@@ -202,8 +201,40 @@ interface WalletProxy {
 
     suspend fun getDailyBalanceLast31Days(token: String, uuid: String): List<DailyAmount>
 
-    suspend fun reserveSwap(token: String, request: TransferReserveRequest) :ReservedTransferResponse
-    suspend fun finalizeSwap(token: String,reserveUuid: String,description: String?,transferRef: String?) : TransferResult
-    suspend fun getGatewayTerminal(gatewayUuid: String):List<TerminalCommand>
+    suspend fun reserveSwap(token: String, request: TransferReserveRequest): ReservedTransferResponse
+    suspend fun finalizeSwap(
+        token: String,
+        reserveUuid: String,
+        description: String?,
+        transferRef: String?
+    ): TransferResult
+
+    suspend fun getGatewayTerminal(gatewayUuid: String): List<TerminalCommand>
     suspend fun getUsersDetailAssets(limit: Int, offset: Int): List<UserDetailAssetsSnapshot>
+    suspend fun getCurrencyLocalizations(token: String, currency: String): CurrencyLocalizationResponse
+    suspend fun saveCurrencyLocalizations(
+        token: String,
+        currency: String,
+        request: CurrencyLocalizationRequest
+    ): CurrencyLocalizationResponse
+
+    suspend fun updateCurrencyLocalization(
+        token: String,
+        request: CurrencyLocalizationCommand
+    ): CurrencyLocalizationCommand
+
+    suspend fun deleteCurrencyLocalization(token: String, id: Long)
+    suspend fun getTerminalLocalizations(token: String, terminalUuid: String): TerminalLocalizationResponse
+    suspend fun saveTerminalLocalizations(
+        token: String,
+        terminalUuid: String,
+        request: TerminalLocalizationRequest
+    ): TerminalLocalizationResponse
+
+    suspend fun updateTerminalLocalization(
+        token: String,
+        request: TerminalLocalizationCommand
+    ): TerminalLocalizationCommand
+
+    suspend fun deleteTerminalLocalization(token: String, id: Long)
 }

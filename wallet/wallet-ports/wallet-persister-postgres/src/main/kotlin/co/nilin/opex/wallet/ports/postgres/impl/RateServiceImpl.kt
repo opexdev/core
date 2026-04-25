@@ -11,6 +11,7 @@ import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
 import co.nilin.opex.wallet.ports.postgres.model.ForbiddenPairModel
 import co.nilin.opex.wallet.ports.postgres.model.ForbiddenSwapPairModel
 import co.nilin.opex.wallet.ports.postgres.model.RateModel
+import co.nilin.opex.wallet.ports.postgres.util.toModel
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -157,7 +158,7 @@ class RateServiceImpl(
         symbols.symbols?.forEach {
             currencyRepository.fetchCurrency(symbol = it)?.awaitFirstOrNull()?.let {
                 if (it.isActive == true)
-                    currencyRepository.save(it.apply { isTransitive = true }).awaitFirstOrNull()
+                    currencyRepository.save(it.apply { isTransitive = true }.toModel()).awaitFirstOrNull()
             }
         }
     }
@@ -165,7 +166,7 @@ class RateServiceImpl(
     override suspend fun deleteTransitiveSymbols(symbols: Symbols): Symbols {
         symbols.symbols?.forEach {
             currencyRepository.fetchCurrency(symbol = it)?.awaitFirstOrNull()?.let {
-                currencyRepository.save(it.apply { isTransitive = false }).awaitFirstOrNull()
+                currencyRepository.save(it.apply { isTransitive = false }.toModel()).awaitFirstOrNull()
             }
         }
         return Symbols(

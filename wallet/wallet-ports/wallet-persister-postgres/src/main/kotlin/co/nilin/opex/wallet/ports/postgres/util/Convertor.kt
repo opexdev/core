@@ -2,16 +2,17 @@ package co.nilin.opex.wallet.ports.postgres.util
 
 import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.TotalAssetsSnapshot
+import co.nilin.opex.wallet.ports.postgres.dto.CurrencyView
 import co.nilin.opex.wallet.ports.postgres.dto.TerminalView
 import co.nilin.opex.wallet.ports.postgres.model.*
 import java.time.ZoneId
 import java.util.*
 
 
-fun CurrencyCommand.toModel(): CurrencyModel {
-    return CurrencyModel(
+fun CurrencyCommand.toView(): CurrencyView {
+    return CurrencyView(
         symbol,
-        uuid,
+        uuid!!,
         name,
         precision,
         title,
@@ -23,12 +24,42 @@ fun CurrencyCommand.toModel(): CurrencyModel {
         description,
         shortDescription,
         externalUrl,
-        order,
+        displayOrder,
         maxOrder
     )
 }
 
-fun CurrencyModel.toCommand(): CurrencyCommand {
+fun CurrencyView.toModel(): CurrencyModel {
+    return CurrencyModel(
+        symbol,
+        uuid,
+        precision,
+        icon,
+        isTransitive,
+        isActive,
+        sign,
+        externalUrl,
+        displayOrder,
+        maxOrder
+    )
+}
+
+fun CurrencyCommand.toModel(): CurrencyModel {
+    return CurrencyModel(
+        symbol,
+        uuid,
+        precision,
+        icon,
+        isTransitive,
+        isActive,
+        sign,
+        externalUrl,
+        displayOrder,
+        maxOrder
+    )
+}
+
+fun CurrencyView.toCommand(): CurrencyCommand {
     return CurrencyCommand(
         symbol,
         uuid,
@@ -47,8 +78,20 @@ fun CurrencyModel.toCommand(): CurrencyCommand {
         externalUrl,
         null,
         null,
-        order,
+        displayOrder,
         maxOrder
+    )
+}
+
+fun CurrencyLocalizationModel.toCommand(): CurrencyLocalizationCommand {
+    return CurrencyLocalizationCommand(
+        id,
+        name,
+        title,
+        alias,
+        description,
+        shortDescription,
+        language
     )
 }
 
@@ -181,7 +224,7 @@ fun TerminalLocalizationModel.toCommand(): TerminalLocalizationCommand {
     )
 }
 
-fun CurrencyModel.toCurrencyData(): CurrencyData {
+fun CurrencyView.toCurrencyData(): CurrencyData {
     return CurrencyData(
         symbol,
         uuid,
@@ -196,7 +239,7 @@ fun CurrencyModel.toCurrencyData(): CurrencyData {
         description,
         shortDescription,
         externalUrl,
-        order,
+        displayOrder,
         maxOrder,
     )
 }

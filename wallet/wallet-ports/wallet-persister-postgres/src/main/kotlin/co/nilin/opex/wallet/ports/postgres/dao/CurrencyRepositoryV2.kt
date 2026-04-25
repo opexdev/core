@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.ports.postgres.dao
 
 import co.nilin.opex.wallet.core.inout.CurrencyPrecision
+import co.nilin.opex.wallet.ports.postgres.dto.CurrencyView
 import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
@@ -8,45 +9,117 @@ import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
-import java.util.*
 
 @Repository
 interface CurrencyRepositoryV2 : ReactiveCrudRepository<CurrencyModel, String> {
 
-
     fun findByIsTransitive(isTransitive: Boolean): Flux<CurrencyModel>?
 
-    @Query("select * from currency where (:symbol is null or symbol=:symbol ) and (:uuid is null or uuid=:uuid ) order by display_order ")
-    fun fetchCurrency(uuid: String? = null, symbol: String? = null): Mono<CurrencyModel>?
+    @Query(
+        """
+    SELECT 
+        c.symbol,
+        c.uuid,
+        cl.name,
+        c.precision,
+        cl.title,
+        cl.alias,
+        c.icon,
+        c.is_transitive,
+        c.is_active,
+        c.sign,
+        cl.description,
+        cl.short_description,
+        c.external_url ,
+        c.display_order,
+        c.max_order
+    FROM currency c
+    LEFT JOIN currency_localization cl 
+        ON cl.currency = c.symbol AND cl.language = :lang
+    WHERE (:symbol IS NULL OR c.symbol = :symbol)
+      AND (:uuid IS NULL OR c.uuid = :uuid)
+    ORDER BY c.display_order
+"""
+    )
+    fun fetchCurrency(
+        uuid: String? = null,
+        symbol: String? = null,
+        lang: String? = null
+    ): Mono<CurrencyView>?
 
 
-    fun findBySymbol(symbol: String? = null): Mono<CurrencyModel>?
+    @Query(
+        """
+    SELECT 
+        c.symbol,
+        c.uuid,
+        cl.name,
+        c.precision,
+        cl.title,
+        cl.alias,
+        c.icon,
+        c.is_transitive,
+        c.is_active,
+        c.sign,
+        cl.description,
+        cl.short_description,
+        c.external_url,
+        c.display_order,
+        c.max_order
+    FROM currency c
+    LEFT JOIN currency_localization cl 
+        ON cl.currency = c.symbol AND cl.language = :lang
+    WHERE (:symbol IS NULL OR c.symbol = :symbol)
+      AND (:name IS NULL OR cl.name = :name)
+    ORDER BY c.display_order
+"""
+    )
+    fun fetchSemiCurrencies(
+        symbol: String? = null,
+        name: String? = null,
+        lang: String? = null
+    ): Flux<CurrencyView>?
 
-    @Query("select * from currency where  (:symbol is null  or symbol=:symbol) and (:name is null or name =:name  ) order by display_order")
-    fun fetchSemiCurrencies(symbol: String? = null, name: String? = null): Flux<CurrencyModel>?
 
-
-    @Query("insert into currency(symbol,uuid,name,precision,title,alias,icon,is_transitive,is_active,sign,description,short_description,external_url,display_order) values(:symbol,:uuid,:name,:precision,:title,:alias,:icon,:isTransitive,:isActive,:sign,:description,:shortDescription,:externalUrl,:order)  ")
+    @Query("insert into currency(symbol,uuid,precision,icon,is_transitive,is_active,sign,external_url,display_order) values(:symbol,:uuid,:precision,:icon,:isTransitive,:isActive,:sign,:externalUrl,:displayOrder)  ")
     fun insert(
         symbol: String,
         uuid: String,
-        name: String,
         precision: BigDecimal,
-        title: String? = null,
-        alias: String? = null,
         icon: String? = null,
         isTransitive: Boolean? = false,
         isActive: Boolean? = true,
         sign: String? = null,
-        description: String? = null,
-        shortDescription: String? = null,
         externalUrl: String? = null,
-        order: Int? = null
+        displayOrder: Int? = null
     ): Mono<Void>
 
 
-    @Query("select * from currency order by display_order ")
-    fun fetchAll(): Flux<CurrencyModel>
+    @Query(
+        """
+    SELECT 
+        c.symbol,
+        c.uuid,
+        cl.name,
+        c.precision,
+        cl.title,
+        cl.alias,
+        c.icon,
+        c.is_transitive,
+        c.is_active,
+        c.sign,
+        cl.description,
+        cl.short_description,
+        c.external_url,
+        c.display_order,
+        c.max_order
+    FROM currency c
+    LEFT JOIN currency_localization cl 
+        ON cl.currency = c.symbol AND cl.language = :lang
+    ORDER BY c.display_order
+"""
+    )
+    fun fetchAll(lang: String): Flux<CurrencyView>
 
     @Query("select symbol,precision from currency")
     fun fetchAllCurrenciesPrecision(): Flux<CurrencyPrecision>

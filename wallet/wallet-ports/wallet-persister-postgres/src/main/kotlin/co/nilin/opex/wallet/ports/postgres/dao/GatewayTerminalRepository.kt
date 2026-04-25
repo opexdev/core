@@ -28,7 +28,7 @@ interface GatewayTerminalRepository : ReactiveCrudRepository<GatewayTerminalMode
     JOIN terminal t ON gt.terminal_id=t.id
     LEFT JOIN terminal_localization tl ON tl.terminal_id = t.id 
       AND tl.language = :lang 
-      WHERE gt.gateway_id=:gatewayI
+      WHERE gt.gateway_id=:gatewayId
     """
     )
     fun findByGatewayId(gatewayId: Long, lang: String? = null): Flux<TerminalView>?

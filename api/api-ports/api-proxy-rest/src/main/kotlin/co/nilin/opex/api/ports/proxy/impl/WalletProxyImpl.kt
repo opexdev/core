@@ -17,10 +17,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.body
-import org.springframework.web.reactive.function.client.bodyToFlux
-import org.springframework.web.reactive.function.client.bodyToMono
+import org.springframework.web.reactive.function.client.*
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
 
@@ -803,6 +800,120 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
                 .collectList()
                 .awaitFirstOrElse { emptyList() }
         }
+    }
+
+    override suspend fun getCurrencyLocalizations(
+        token: String,
+        currency: String
+    ): CurrencyLocalizationResponse {
+        return webClient.get()
+            .uri("$baseUrl/currency/${currency}/localization")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<CurrencyLocalizationResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun saveCurrencyLocalizations(
+        token: String,
+        currency: String,
+        request: CurrencyLocalizationRequest
+    ): CurrencyLocalizationResponse {
+        return webClient.post()
+            .uri("$baseUrl/currency/${currency}/localization")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<CurrencyLocalizationResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun updateCurrencyLocalization(
+        token: String,
+        request: CurrencyLocalizationCommand
+    ): CurrencyLocalizationCommand {
+        return webClient.put()
+            .uri("$baseUrl/currency/localization")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<CurrencyLocalizationCommand>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun deleteCurrencyLocalization(token: String, id: Long) {
+        webClient.delete()
+            .uri("$baseUrl/currency/localization/${id}")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ it.isError }) { response ->
+                response.createException()
+            }
+            .awaitBodilessEntity()
+    }
+
+    override suspend fun getTerminalLocalizations(
+        token: String,
+        terminalUuid: String
+    ): TerminalLocalizationResponse {
+        return webClient.get()
+            .uri("$baseUrl/admin/deposit/terminal/${terminalUuid}/localization")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<TerminalLocalizationResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun saveTerminalLocalizations(
+        token: String,
+        terminalUuid: String,
+        request: TerminalLocalizationRequest
+    ): TerminalLocalizationResponse {
+        return webClient.post()
+            .uri("$baseUrl/admin/deposit/terminal/${terminalUuid}/localization")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<TerminalLocalizationResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun updateTerminalLocalization(
+        token: String,
+        request: TerminalLocalizationCommand
+    ): TerminalLocalizationCommand {
+        return webClient.put()
+            .uri("$baseUrl/admin/deposit/terminal/localization")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<TerminalLocalizationCommand>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun deleteTerminalLocalization(token: String, id: Long) {
+        webClient.delete()
+            .uri("$baseUrl/admin/deposit/terminal/localization/${id}")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ it.isError }) { response ->
+                response.createException()
+            }
+            .awaitBodilessEntity()
     }
 }
 

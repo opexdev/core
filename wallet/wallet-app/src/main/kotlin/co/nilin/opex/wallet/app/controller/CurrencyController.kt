@@ -1,12 +1,8 @@
 package co.nilin.opex.wallet.app.controller
 
-import co.nilin.opex.wallet.app.dto.CurrenciesDto
-import co.nilin.opex.wallet.app.dto.CurrencyDto
+import co.nilin.opex.wallet.app.dto.*
 import co.nilin.opex.wallet.app.service.CurrencyServiceV2
-import co.nilin.opex.wallet.core.inout.CurrencyData
-import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
-import co.nilin.opex.wallet.core.inout.GatewayType
-import co.nilin.opex.wallet.core.inout.TerminalCommand
+import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.QuoteCurrency
 import co.nilin.opex.wallet.core.spi.GatewayTerminalManager
 import co.nilin.opex.wallet.core.spi.QuoteCurrencyManager
@@ -28,9 +24,9 @@ class CurrencyController(
     @PutMapping("/{currencySymbol}")
     suspend fun updateCurrency(
         @PathVariable("currencySymbol") currencySymbol: String,
-        @RequestBody request: CurrencyDto,
+        @RequestBody request: UpdateCurrencyRequest,
     ): CurrencyDto? {
-        return currencyService.updateCurrency(request.apply { symbol = currencySymbol })
+        return currencyService.updateCurrency(request.apply { symbol = currencySymbol }.toCurrencyDto())
     }
 
 
@@ -158,4 +154,28 @@ class CurrencyController(
         quoteCurrencyManager.update(currency, isReference, displayOrder)
     }
 
+    @GetMapping("/{currency}/localization")
+    suspend fun getCurrencyLocalizations(@PathVariable("currency") currency: String): CurrencyLocalizationResponse {
+        val localizations = currencyService.fetchCurrencyLocalizations(currency)
+        return CurrencyLocalizationResponse(currency, localizations)
+    }
+
+    @PostMapping("/{currency}/localization")
+    suspend fun saveCurrencyLocalizations(
+        @PathVariable("currency") currency: String,
+        @RequestBody request: CurrencyLocalizationRequest
+    ): CurrencyLocalizationResponse {
+        val localizations = currencyService.saveCurrencyLocalizations(currency, request.currencyLocalizations)
+        return CurrencyLocalizationResponse(currency, localizations)
+    }
+
+    @PutMapping("/localization")
+    suspend fun updateCurrencyLocalization(@RequestBody request: CurrencyLocalizationCommand): CurrencyLocalizationCommand {
+        return currencyService.updateCurrencyLocalization(request)
+    }
+
+    @DeleteMapping("/localization/{id}")
+    suspend fun deleteCurrencyLocalization(@PathVariable("id") id: Long) {
+        currencyService.deleteCurrencyLocalization(id)
+    }
 }

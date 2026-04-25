@@ -7,7 +7,7 @@ import java.util.*
 data class CurrencyCommand(
     var symbol: String,
     var uuid: String? = UUID.randomUUID().toString(),
-    var name: String,
+    var name: String? = null,
     var precision: BigDecimal,
     var title: String? = null,
     var alias: String? = null,
@@ -22,7 +22,7 @@ data class CurrencyCommand(
     var externalUrl: String? = null,
     var gateways: List<CurrencyGatewayCommand>? = null,
     var availableGatewayType: String? = null,
-    var order: Int? = null
+    var displayOrder: Int? = null
 
 ) {
     fun updateTo(newData: CurrencyCommand): CurrencyCommand {
