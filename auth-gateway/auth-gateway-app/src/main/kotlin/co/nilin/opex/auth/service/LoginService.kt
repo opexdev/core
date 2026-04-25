@@ -1,10 +1,10 @@
 package co.nilin.opex.auth.service
 
-import co.nilin.opex.auth.data.ActionType
 import co.nilin.opex.auth.data.Device
 import co.nilin.opex.auth.data.LoginEvent
 import co.nilin.opex.auth.kafka.AuthEventProducer
 import co.nilin.opex.auth.model.*
+import co.nilin.opex.auth.proxy.CaptchaProxy
 import co.nilin.opex.auth.proxy.GoogleProxy
 import co.nilin.opex.auth.proxy.KeycloakProxy
 import co.nilin.opex.auth.proxy.OTPProxy
@@ -20,7 +20,7 @@ class LoginService(
     private val otpProxy: OTPProxy,
     private val keycloakProxy: KeycloakProxy,
     private val googleProxy: GoogleProxy,
-    private val captchaHandler: CaptchaHandler,
+    private val captchaProxy: CaptchaProxy,
     private val authEventProducer: AuthEventProducer,
     @Value("\${app.pre-auth-client-secret}")
     private val preAuthClientSecretKey: String,
@@ -30,14 +30,13 @@ class LoginService(
     private val PRE_AUTH_CLIENT_ID = "pre-auth-client"
 
     suspend fun requestGetToken(request: PasswordFlowTokenRequest): TokenResponse {
-        captchaHandler.validateCaptchaWithActionCache(
-            username = request.username,
-            captchaCode = request.captchaCode,
-            captchaType = request.captchaType,
-            action = ActionType.LOGIN
+        captchaProxy.validateCaptcha(
+            request.captchaCode,
+            request.captchaType ?: CaptchaType.INTERNAL
         )
         val username = Username.create(request.username)
-        val user = keycloakProxy.findUserByUsername(username) ?: throw OpexError.UsernameOrPasswordIsIncorrect.exception()
+        val user =
+            keycloakProxy.findUserByUsername(username) ?: throw OpexError.UsernameOrPasswordIsIncorrect.exception()
         val otpTypes = (user.attributes?.get(Attributes.OTP)?.get(0) ?: OTPType.NONE.name).split(",")
 
         if (otpTypes.contains(OTPType.NONE.name)) {

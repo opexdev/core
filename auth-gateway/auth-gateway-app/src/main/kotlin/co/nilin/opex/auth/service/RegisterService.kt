@@ -1,12 +1,12 @@
 package co.nilin.opex.auth.service
 
-import co.nilin.opex.auth.data.ActionType
 import co.nilin.opex.auth.data.Device
 import co.nilin.opex.auth.data.LoginEvent
 import co.nilin.opex.auth.data.UserCreatedEvent
 import co.nilin.opex.auth.data.UserRole
 import co.nilin.opex.auth.kafka.AuthEventProducer
 import co.nilin.opex.auth.model.*
+import co.nilin.opex.auth.proxy.CaptchaProxy
 import co.nilin.opex.auth.proxy.GoogleProxy
 import co.nilin.opex.auth.proxy.KeycloakProxy
 import co.nilin.opex.auth.proxy.OTPProxy
@@ -18,19 +18,17 @@ import java.time.LocalDateTime
 class RegisterService(
     private val otpProxy: OTPProxy,
     private val keycloakProxy: KeycloakProxy,
-    private val captchaHandler: CaptchaHandler,
+    private val captchaProxy: CaptchaProxy,
     private val googleProxy: GoogleProxy,
     private val authProducer: AuthEventProducer,
-   private val tempTokenService: TempTokenService
+    private val tempTokenService: TempTokenService
 
-    ) {
+) {
     //TODO IMPORTANT: remove in production
     suspend fun registerUser(request: RegisterUserRequest): TempOtpResponse {
-        captchaHandler.validateCaptchaWithActionCache(
-            username = request.username,
-            captchaCode = request.captchaCode,
-            captchaType = request.captchaType,
-            action = ActionType.REGISTER
+        captchaProxy.validateCaptcha(
+            request.captchaCode,
+            request.captchaType ?: CaptchaType.INTERNAL
         )
         val username = Username.create(request.username)
         val userStatus = isUserDuplicate(username)
