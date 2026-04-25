@@ -10,7 +10,7 @@ data class PasswordFlowTokenRequest(
     val clientSecret: String?,
     val rememberMe: Boolean = true,
     val captchaType: CaptchaType? = CaptchaType.INTERNAL,
-    val captchaCode: String?,
+    val captchaCode: String,
 ):Device()
 
 data class ConfirmPasswordFlowTokenRequest(
