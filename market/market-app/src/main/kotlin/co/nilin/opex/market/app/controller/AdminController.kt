@@ -1,6 +1,7 @@
 package co.nilin.opex.market.app.controller
 
 import co.nilin.opex.market.app.data.RecentTradesRequest
+import co.nilin.opex.market.app.data.AdminTradesHistoryRequest
 import co.nilin.opex.market.app.utils.asLocalDateTime
 import co.nilin.opex.market.core.inout.TradeData
 import co.nilin.opex.market.core.spi.MarketQueryHandler
@@ -26,6 +27,24 @@ class AdminController(private val marketQueryHandler: MarketQueryHandler) {
             request.excludeSelfTrade,
             request.limit,
             request.offset
+        )
+    }
+
+    @PostMapping("/trades/history")
+    suspend fun searchTradesAdmin(
+        @RequestBody request: AdminTradesHistoryRequest,
+    ): List<TradeData> {
+        return marketQueryHandler.recentTradesAdmin(
+            baseAsset = request.baseAsset,
+            quoteAsset = request.quoteAsset,
+            makerUuid = request.makerUuid,
+            takerUuid = request.takerUuid,
+            fromDate = request.fromDate?.asLocalDateTime(),
+            toDate = request.toDate?.asLocalDateTime(),
+            excludeSelfTrade = request.excludeSelfTrade,
+            ascendingByTime = request.ascendingByTime,
+            limit = request.limit,
+            offset = request.offset
         )
     }
 }

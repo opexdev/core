@@ -131,7 +131,10 @@ class MarketQueryHandlerImpl(
             .map {
                 TradeData(
                     tradeId = it.tradeId,
+                    dbTradeId = it.id ?: -1,
                     symbol = it.symbol,
+                    baseAsset = it.baseAsset,
+                    quoteAsset = it.quoteAsset,
                     matchedPrice = it.matchedPrice,
                     matchedQuantity = it.matchedQuantity,
                     takerPrice = it.takerPrice,
@@ -139,11 +142,79 @@ class MarketQueryHandlerImpl(
                     tradeDate = it.tradeDate,
                     makerUuid = it.makerUuid,
                     takerUuid = it.takerUuid,
+                    makerOuid = it.makerOuid,
+                    takerOuid = it.takerOuid,
+                    makerCommission = it.makerCommission,
+                    takerCommission = it.takerCommission,
+                    makerCommissionAsset = it.makerCommissionAsset,
+                    takerCommissionAsset = it.takerCommissionAsset,
                 )
             }
             .toList()
     }
 
+
+    override suspend fun recentTradesAdmin(
+        baseAsset: String?,
+        quoteAsset: String?,
+        makerUuid: String?,
+        takerUuid: String?,
+        fromDate: LocalDateTime?,
+        toDate: LocalDateTime?,
+        excludeSelfTrade: Boolean,
+        ascendingByTime: Boolean,
+        limit: Int,
+        offset: Int,
+    ): List<TradeData> {
+        val flow = if (ascendingByTime) {
+            tradeRepository.findByCriteriaByBaseQuoteAsc(
+                baseAsset,
+                quoteAsset,
+                makerUuid,
+                takerUuid,
+                fromDate,
+                toDate,
+                excludeSelfTrade,
+                limit,
+                offset
+            )
+        } else {
+            tradeRepository.findByCriteriaByBaseQuoteDesc(
+                baseAsset,
+                quoteAsset,
+                makerUuid,
+                takerUuid,
+                fromDate,
+                toDate,
+                excludeSelfTrade,
+                limit,
+                offset
+            )
+        }
+        return flow
+            .map {
+                TradeData(
+                    tradeId = it.tradeId,
+                    symbol = it.symbol,
+                    baseAsset = it.baseAsset,
+                    quoteAsset = it.quoteAsset,
+                    matchedPrice = it.matchedPrice,
+                    matchedQuantity = it.matchedQuantity,
+                    takerPrice = it.takerPrice,
+                    makerPrice = it.makerPrice,
+                    tradeDate = it.tradeDate,
+                    makerUuid = it.makerUuid,
+                    takerUuid = it.takerUuid,
+                    makerOuid = it.makerOuid,
+                    takerOuid = it.takerOuid,
+                    makerCommission = it.makerCommission,
+                    takerCommission = it.takerCommission,
+                    makerCommissionAsset = it.makerCommissionAsset,
+                    takerCommissionAsset = it.takerCommissionAsset,
+                )
+            }
+            .toList()
+    }
 
     override suspend fun lastPrice(symbol: String?): List<PriceTicker> {
         val list = redisCacheHelper.getOrElse("lastPrice", 1.minutes()) {

@@ -3,6 +3,7 @@ package co.nilin.opex.api.ports.proxy.impl
 import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.MarketDataProxy
 import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
+import co.nilin.opex.api.ports.proxy.data.RecentTradesProxyRequest
 import co.nilin.opex.common.utils.Interval
 import co.nilin.opex.common.utils.LoggerDelegate
 import kotlinx.coroutines.reactive.awaitFirstOrElse
@@ -14,8 +15,10 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.body
 import org.springframework.web.reactive.function.client.bodyToFlux
 import org.springframework.web.reactive.function.client.bodyToMono
+import reactor.core.publisher.Mono
 import java.util.*
 
 @Component
@@ -255,6 +258,34 @@ class MarketDataProxyImpl(@Qualifier("generalWebClient") private val webClient: 
                 .bodyToMono<CountResponse>()
                 .awaitSingleOrNull()
                 ?.value ?: 0
+        }
+    }
+
+    override suspend fun recentTrades(token: String, request: AdminTradesHistoryRequest): List<TradeAdminItem> {
+        logger.info("admin recent trades wrapper for symbol=${request.baseAsset}-${request.quoteAsset}")
+        return withContext(ProxyDispatchers.market) {
+            webClient.post()
+                .uri("$baseUrl/v1/admin/trades/history")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .body(Mono.just(
+                    RecentTradesProxyRequest(
+                        baseAsset = request.baseAsset,
+                        quoteAsset=request.quoteAsset,
+                        makerUuid = request.makerUuid,
+                        takerUuid = request.takerUuid,
+                        fromDate = request.fromDate,
+                        toDate = request.toDate,
+                        excludeSelfTrade = request.excludeSelfTrade,
+                        limit = request.limit,
+                        offset = request.offset,
+                    )
+                ))
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<TradeAdminItem>()
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
         }
     }
 }

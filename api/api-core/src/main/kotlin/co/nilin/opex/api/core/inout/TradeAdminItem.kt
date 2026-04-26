@@ -1,10 +1,10 @@
-package co.nilin.opex.market.core.inout
+package co.nilin.opex.api.core.inout
 
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
-// Trade data for admin
-data class TradeData(
+
+data class TradeAdminItem(
     val tradeId: Long,
     val symbol: String,
     val baseAsset: String?,
@@ -22,4 +22,7 @@ data class TradeData(
     val takerCommission: BigDecimal?,
     val makerCommissionAsset: String?,
     val takerCommissionAsset: String?,
+    // Enriched in API when includeNames=true
+    val makerOwnerName: String? = null,
+    val takerOwnerName: String? = null,
 )

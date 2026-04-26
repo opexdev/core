@@ -564,6 +564,60 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         offset: Int,
     ): Flow<TradeModel>
 
+    @Query(
+        """
+        select * from trades where
+             (:baseAsset is null or base_asset = :baseAsset)
+            and (:quoteAsset is null or quote_asset = :quoteAsset)
+            and (:makerUuid is null or maker_uuid = :makerUuid) 
+            and (:takerUuid is null or taker_uuid = :takerUuid) 
+            and (:fromDate is null or trade_date >= :fromDate) 
+            and (:toDate is null or trade_date <= :toDate) 
+            and (:excludeSelfTrade is false or maker_uuid != taker_uuid)
+        order by trade_date ASC 
+        limit :limit
+        offset :offset
+        """
+    )
+    suspend fun findByCriteriaByBaseQuoteAsc(
+        baseAsset: String?,
+        quoteAsset: String?,
+        makerUuid: String?,
+        takerUuid: String?,
+        fromDate: LocalDateTime?,
+        toDate: LocalDateTime?,
+        excludeSelfTrade: Boolean,
+        limit: Int,
+        offset: Int,
+    ): Flow<TradeModel>
+
+    @Query(
+        """
+        select * from trades where
+             (:baseAsset is null or base_asset = :baseAsset)
+            and (:quoteAsset is null or quote_asset = :quoteAsset)
+            and (:makerUuid is null or maker_uuid = :makerUuid) 
+            and (:takerUuid is null or taker_uuid = :takerUuid) 
+            and (:fromDate is null or trade_date >= :fromDate) 
+            and (:toDate is null or trade_date <= :toDate) 
+            and (:excludeSelfTrade is false or maker_uuid != taker_uuid)
+        order by trade_date DESC 
+        limit :limit
+        offset :offset
+        """
+    )
+    suspend fun findByCriteriaByBaseQuoteDesc(
+        baseAsset: String?,
+        quoteAsset: String?,
+        makerUuid: String?,
+        takerUuid: String?,
+        fromDate: LocalDateTime?,
+        toDate: LocalDateTime?,
+        excludeSelfTrade: Boolean,
+        limit: Int,
+        offset: Int,
+    ): Flow<TradeModel>
+
 
     @Query(
         """

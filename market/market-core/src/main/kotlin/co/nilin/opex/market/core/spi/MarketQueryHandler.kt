@@ -29,6 +29,19 @@ interface MarketQueryHandler {
         offset: Int,
     ): List<TradeData>
 
+    suspend fun recentTradesAdmin(
+        baseAsset: String?,
+        quoteAsset: String?,
+        makerUuid: String?,
+        takerUuid: String?,
+        fromDate: LocalDateTime?,
+        toDate: LocalDateTime?,
+        excludeSelfTrade: Boolean,
+        ascendingByTime: Boolean,
+        limit: Int,
+        offset: Int,
+    ): List<TradeData>
+
     suspend fun lastPrice(symbol: String?): List<PriceTicker>
 
     suspend fun getBestPriceForSymbols(symbols: List<String>): List<BestPrice>
