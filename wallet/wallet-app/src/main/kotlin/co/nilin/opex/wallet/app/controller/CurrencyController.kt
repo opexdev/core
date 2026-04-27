@@ -163,15 +163,10 @@ class CurrencyController(
     @PostMapping("/{currency}/localization")
     suspend fun saveCurrencyLocalizations(
         @PathVariable("currency") currency: String,
-        @RequestBody request: CurrencyLocalizationRequest
+        @RequestBody currencyLocalizations: List<CurrencyLocalizationCommand>
     ): CurrencyLocalizationResponse {
-        val localizations = currencyService.saveCurrencyLocalizations(currency, request.currencyLocalizations)
+        val localizations = currencyService.saveCurrencyLocalizations(currency, currencyLocalizations)
         return CurrencyLocalizationResponse(currency, localizations)
-    }
-
-    @PutMapping("/localization")
-    suspend fun updateCurrencyLocalization(@RequestBody request: CurrencyLocalizationCommand): CurrencyLocalizationCommand {
-        return currencyService.updateCurrencyLocalization(request)
     }
 
     @DeleteMapping("/localization/{id}")

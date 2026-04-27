@@ -21,7 +21,6 @@ interface CurrencyServiceManager {
         localizations: List<CurrencyLocalizationCommand>
     ): List<CurrencyLocalizationCommand>
 
-    suspend fun updateCurrencyLocalization(request: CurrencyLocalizationCommand): CurrencyLocalizationCommand
     suspend fun deleteCurrencyLocalization(id: Long)
 
 }
