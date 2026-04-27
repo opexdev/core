@@ -8,4 +8,5 @@ import reactor.core.publisher.Flux
 @Repository
 interface CurrencyLocalizationsRepository : ReactiveCrudRepository<CurrencyLocalizationModel, Long> {
     suspend fun findByCurrency(currency: String): Flux<CurrencyLocalizationModel>
+
 }
