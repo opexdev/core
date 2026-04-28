@@ -10,7 +10,6 @@ data class TerminalModel(
     @Id
     var id: Long?,
     var uuid: String? = UUID.randomUUID().toString(),
-    var owner: String,
     var identifier: String,
     var active: Boolean? = true,
     var type: TransferMethod,

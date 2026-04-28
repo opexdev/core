@@ -16,7 +16,7 @@ interface TerminalRepository : ReactiveCrudRepository<TerminalModel, Long> {
         """
     SELECT t.id,
        t.uuid,
-       t.owner,
+       tl.owner,
        t.identifier,
        t.active,
        t.type,
@@ -36,7 +36,7 @@ interface TerminalRepository : ReactiveCrudRepository<TerminalModel, Long> {
         """
     SELECT t.id,
        t.uuid,
-       t.owner,
+       tl.owner,
        t.identifier,
        t.active,
        t.type,

@@ -215,26 +215,16 @@ interface WalletProxy {
     suspend fun saveCurrencyLocalizations(
         token: String,
         currency: String,
-        request: CurrencyLocalizationRequest
+        currencyLocalizations: List<CurrencyLocalizationCommand>
     ): CurrencyLocalizationResponse
-
-    suspend fun updateCurrencyLocalization(
-        token: String,
-        request: CurrencyLocalizationCommand
-    ): CurrencyLocalizationCommand
 
     suspend fun deleteCurrencyLocalization(token: String, id: Long)
     suspend fun getTerminalLocalizations(token: String, terminalUuid: String): TerminalLocalizationResponse
     suspend fun saveTerminalLocalizations(
         token: String,
         terminalUuid: String,
-        request: TerminalLocalizationRequest
+        terminalLocalizations: List<TerminalLocalizationCommand>
     ): TerminalLocalizationResponse
-
-    suspend fun updateTerminalLocalization(
-        token: String,
-        request: TerminalLocalizationCommand
-    ): TerminalLocalizationCommand
 
     suspend fun deleteTerminalLocalization(token: String, id: Long)
 }

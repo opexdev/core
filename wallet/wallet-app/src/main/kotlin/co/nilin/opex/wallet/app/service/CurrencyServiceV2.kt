@@ -167,10 +167,6 @@ class CurrencyServiceV2(
         return currencyServiceManager.saveCurrencyLocalizations(currency, request);
     }
 
-    suspend fun updateCurrencyLocalization(request: CurrencyLocalizationCommand): CurrencyLocalizationCommand {
-        return currencyServiceManager.updateCurrencyLocalization(request)
-    }
-
     suspend fun deleteCurrencyLocalization(id: Long) {
         currencyServiceManager.deleteCurrencyLocalization(id)
     }
