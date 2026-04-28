@@ -1,6 +1,9 @@
 package co.nilin.opex.api.ports.opex.controller
 
-import co.nilin.opex.api.core.inout.*
+import co.nilin.opex.api.core.inout.CurrencyLocalizationCommand
+import co.nilin.opex.api.core.inout.CurrencyLocalizationResponse
+import co.nilin.opex.api.core.inout.TerminalLocalizationCommand
+import co.nilin.opex.api.core.inout.TerminalLocalizationResponse
 import co.nilin.opex.api.core.spi.WalletProxy
 import co.nilin.opex.api.ports.opex.util.jwtAuthentication
 import co.nilin.opex.api.ports.opex.util.tokenValue
@@ -25,21 +28,13 @@ class LocalizationAdminController(
     suspend fun saveCurrencyLocalizations(
         @CurrentSecurityContext securityContext: SecurityContext,
         @PathVariable("currency") currency: String,
-        @RequestBody request: CurrencyLocalizationRequest
+        @RequestBody currencyLocalizations: List<CurrencyLocalizationCommand>
     ): CurrencyLocalizationResponse {
         return walletProxy.saveCurrencyLocalizations(
             securityContext.jwtAuthentication().tokenValue(),
             currency,
-            request
+            currencyLocalizations
         )
-    }
-
-    @PutMapping("/currency/localization")
-    suspend fun updateCurrencyLocalization(
-        @CurrentSecurityContext securityContext: SecurityContext,
-        @RequestBody request: CurrencyLocalizationCommand
-    ): CurrencyLocalizationCommand {
-        return walletProxy.updateCurrencyLocalization(securityContext.jwtAuthentication().tokenValue(), request)
     }
 
     @DeleteMapping("/currency/localization/{id}")
@@ -62,21 +57,13 @@ class LocalizationAdminController(
     suspend fun saveTerminalLocalizations(
         @CurrentSecurityContext securityContext: SecurityContext,
         @PathVariable("terminalUuid") terminalUuid: String,
-        @RequestBody request: TerminalLocalizationRequest
+        @RequestBody terminalLocalizations: List<TerminalLocalizationCommand>
     ): TerminalLocalizationResponse {
         return walletProxy.saveTerminalLocalizations(
             securityContext.jwtAuthentication().tokenValue(),
             terminalUuid,
-            request
+            terminalLocalizations
         )
-    }
-
-    @PutMapping("/terminal/localization")
-    suspend fun updateTerminalLocalization(
-        @CurrentSecurityContext securityContext: SecurityContext,
-        @RequestBody request: TerminalLocalizationCommand
-    ): TerminalLocalizationCommand {
-        return walletProxy.updateTerminalLocalization(securityContext.jwtAuthentication().tokenValue(), request)
     }
 
     @DeleteMapping("/terminal/localization/{id}")

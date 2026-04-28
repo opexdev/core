@@ -186,16 +186,7 @@ fun TerminalCommand.toModel(): TerminalModel {
     return TerminalModel(
         null,
         uuid,
-        owner,
         identifier, active, type, metaData, displayOrder
-    )
-}
-
-fun TerminalModel.toDto(): TerminalCommand {
-    return TerminalCommand(
-        uuid!!,
-        owner,
-        identifier, active, type, metaData, null, displayOrder
     )
 }
 
@@ -203,7 +194,6 @@ fun TerminalView.toModel(): TerminalModel {
     return TerminalModel(
         id,
         uuid,
-        owner,
         identifier, active, type, metaData, displayOrder
     )
 }
@@ -220,6 +210,7 @@ fun TerminalLocalizationModel.toCommand(): TerminalLocalizationCommand {
     return TerminalLocalizationCommand(
         id,
         description,
+        owner,
         language
     )
 }

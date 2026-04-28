@@ -108,8 +108,15 @@ class CurrencyServiceImplV2(
                 ?: throw OpexError.CurrencyNotFound.exception()
 
             localizations.forEach { c ->
-                currencyLocalizationsRepository.save(
-                    CurrencyLocalizationModel(
+                if (listOf(
+                        c.name,
+                        c.title,
+                        c.alias,
+                        c.description,
+                        c.shortDescription
+                    ).any { !it.isNullOrBlank() }
+                )
+                    currencyLocalizationsRepository.upsert(
                         currency = symbol,
                         name = c.name,
                         title = c.title,
@@ -117,30 +124,12 @@ class CurrencyServiceImplV2(
                         description = c.description,
                         shortDescription = c.shortDescription,
                         language = UserLanguage.safeValueOf(c.language).toString()
-                    )
-                ).awaitSingle()
+                    ).awaitSingleOrNull()
             }
 
             currencyLocalizationsRepository.findByCurrency(symbol).map { it.toCommand() }.collectList()
                 .awaitSingleOrNull() ?: emptyList()
         } ?: throw OpexError.BadRequest.exception("Failed to save currency localizations")
-    }
-
-    override suspend fun updateCurrencyLocalization(request: CurrencyLocalizationCommand): CurrencyLocalizationCommand {
-        if (request.id != null) {
-            val localizationModel =
-                currencyLocalizationsRepository.findById(request.id!!).awaitSingleOrNull()
-                    ?: throw OpexError.CurrencyLocalizationNotFound.exception()
-            localizationModel.apply {
-                name = request.name
-                title = request.title
-                alias = request.alias
-                description = request.description
-                shortDescription = request.shortDescription
-            }
-            return currencyLocalizationsRepository.save(localizationModel).awaitSingle().toCommand()
-        }
-        throw OpexError.CurrencyLocalizationNotFound.exception()
     }
 
     override suspend fun deleteCurrencyLocalization(id: Long) {

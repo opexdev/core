@@ -819,31 +819,16 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
     override suspend fun saveCurrencyLocalizations(
         token: String,
         currency: String,
-        request: CurrencyLocalizationRequest
+        currencyLocalizations: List<CurrencyLocalizationCommand>
     ): CurrencyLocalizationResponse {
         return webClient.post()
             .uri("$baseUrl/currency/${currency}/localization")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-            .body(Mono.just(request))
+            .body(Mono.just(currencyLocalizations))
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<CurrencyLocalizationResponse>()
-            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
-    }
-
-    override suspend fun updateCurrencyLocalization(
-        token: String,
-        request: CurrencyLocalizationCommand
-    ): CurrencyLocalizationCommand {
-        return webClient.put()
-            .uri("$baseUrl/currency/localization")
-            .accept(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-            .body(Mono.just(request))
-            .retrieve()
-            .onStatus({ t -> t.isError }, { it.createException() })
-            .bodyToMono<CurrencyLocalizationCommand>()
             .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
     }
 
@@ -876,31 +861,16 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
     override suspend fun saveTerminalLocalizations(
         token: String,
         terminalUuid: String,
-        request: TerminalLocalizationRequest
+        terminalLocalizations: List<TerminalLocalizationCommand>
     ): TerminalLocalizationResponse {
         return webClient.post()
             .uri("$baseUrl/admin/deposit/terminal/${terminalUuid}/localization")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-            .body(Mono.just(request))
+            .body(Mono.just(terminalLocalizations))
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<TerminalLocalizationResponse>()
-            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
-    }
-
-    override suspend fun updateTerminalLocalization(
-        token: String,
-        request: TerminalLocalizationCommand
-    ): TerminalLocalizationCommand {
-        return webClient.put()
-            .uri("$baseUrl/admin/deposit/terminal/localization")
-            .accept(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-            .body(Mono.just(request))
-            .retrieve()
-            .onStatus({ t -> t.isError }, { it.createException() })
-            .bodyToMono<TerminalLocalizationCommand>()
             .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
     }
 

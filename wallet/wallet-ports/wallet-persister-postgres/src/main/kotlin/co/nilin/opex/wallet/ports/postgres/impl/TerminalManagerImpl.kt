@@ -40,17 +40,17 @@ class TerminalManagerImpl(
 
             val terminalId = terminal.id ?: return@executeAndAwait null
 
-            terminalCommand.description
-                ?.takeIf { it.isNotBlank() }
-                ?.let { description ->
-                    terminalLocalizationsRepository.save(
-                        TerminalLocalizationModel(
-                            terminalId = terminalId,
-                            description = description,
-                            language = getDefaultUserLanguage()
-                        )
-                    ).awaitSingleOrNull()
-                }
+
+            if (!terminalCommand.description.isNullOrBlank() || !terminalCommand.owner.isNullOrBlank()) {
+                terminalLocalizationsRepository.save(
+                    TerminalLocalizationModel(
+                        terminalId = terminalId,
+                        description = terminalCommand.description,
+                        owner = terminalCommand.owner,
+                        language = getDefaultUserLanguage()
+                    )
+                ).awaitSingleOrNull()
+            }
 
             terminalCommand.apply { uuid = terminal.uuid }
         }
@@ -100,13 +100,13 @@ class TerminalManagerImpl(
                 ?: throw OpexError.TerminalNotFound.exception()
 
             terminalLocalizations.forEach { t ->
-                terminalLocalizationsRepository.save(
-                    TerminalLocalizationModel(
+                if (!t.description.isNullOrBlank() || !t.owner.isNullOrBlank())
+                    terminalLocalizationsRepository.upsert(
                         terminalId = terminal.id!!,
                         description = t.description,
+                        owner = t.owner,
                         language = UserLanguage.safeValueOf(t.language).toString()
-                    )
-                ).awaitSingle()
+                    ).awaitSingleOrNull()
             }
 
             terminalLocalizationsRepository.findByTerminalId(terminal.id!!)
@@ -138,16 +138,5 @@ class TerminalManagerImpl(
         )?.awaitSingleOrNull()
             ?.toModel()
 
-    }
-
-    override suspend fun updateTerminalLocalization(terminalLocalization: TerminalLocalizationCommand): TerminalLocalizationCommand {
-        if (terminalLocalization.id != null) {
-            val localizationModel =
-                terminalLocalizationsRepository.findById(terminalLocalization.id!!).awaitSingleOrNull()
-                    ?: throw OpexError.TerminalLocalizationNotFound.exception()
-            localizationModel.apply { description = terminalLocalization.description }
-            return terminalLocalizationsRepository.save(localizationModel).awaitSingle().toCommand()
-        }
-        throw OpexError.TerminalLocalizationNotFound.exception()
     }
 }

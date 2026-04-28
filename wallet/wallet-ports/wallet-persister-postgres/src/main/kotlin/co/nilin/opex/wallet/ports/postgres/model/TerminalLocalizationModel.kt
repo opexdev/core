@@ -8,6 +8,7 @@ data class TerminalLocalizationModel(
     @Id
     var id: Long? = null,
     var terminalId: Long,
-    var description: String,
+    var description: String?=null,
+    var owner: String?=null,
     var language: String,
 )

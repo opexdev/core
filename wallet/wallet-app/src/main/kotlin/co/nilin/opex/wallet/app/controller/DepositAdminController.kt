@@ -2,7 +2,6 @@ package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.wallet.app.dto.AdminSearchDepositRequest
 import co.nilin.opex.wallet.app.dto.ManualTransferRequest
-import co.nilin.opex.wallet.app.dto.TerminalLocalizationRequest
 import co.nilin.opex.wallet.app.dto.TerminalLocalizationResponse
 import co.nilin.opex.wallet.app.service.DepositService
 import co.nilin.opex.wallet.core.inout.DepositAdminResponse
@@ -145,9 +144,9 @@ class DepositAdminController(
     @PostMapping("/terminal/{uuid}/localization")
     suspend fun saveTerminalLocalization(
         @PathVariable("uuid") terminalUuid: String,
-        @RequestBody body: TerminalLocalizationRequest
+        @RequestBody terminalLocalizations: List<TerminalLocalizationCommand>
     ): TerminalLocalizationResponse {
-        val terminalLocalizations = terminalManager.saveTerminalLocalizations(terminalUuid, body.terminalLocalizations)
+        val terminalLocalizations = terminalManager.saveTerminalLocalizations(terminalUuid, terminalLocalizations)
         return TerminalLocalizationResponse(terminalUuid, terminalLocalizations)
     }
 
@@ -165,12 +164,4 @@ class DepositAdminController(
     ) {
         terminalManager.deleteTerminalLocalizations(id)
     }
-
-    @PutMapping("/terminal/localization")
-    suspend fun updateTerminalLocalization(
-        @RequestBody body: TerminalLocalizationCommand
-    ): TerminalLocalizationCommand {
-        return terminalManager.updateTerminalLocalization(body)
-    }
-
 }

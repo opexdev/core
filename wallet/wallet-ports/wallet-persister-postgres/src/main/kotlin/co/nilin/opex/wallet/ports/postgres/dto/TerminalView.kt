@@ -5,7 +5,7 @@ import co.nilin.opex.wallet.core.inout.TransferMethod
 data class TerminalView(
     var id: Long?,
     val uuid: String,
-    val owner: String,
+    val owner: String?,
     val identifier: String,
     val active: Boolean,
     val type: TransferMethod,
