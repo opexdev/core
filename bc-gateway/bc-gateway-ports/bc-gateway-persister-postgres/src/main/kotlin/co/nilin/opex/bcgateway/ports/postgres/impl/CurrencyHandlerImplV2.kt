@@ -94,7 +94,7 @@ class CurrencyHandlerImplV2(
             request?.gatewayUuid,
             request?.chain,
             request?.currencyImplementationName,
-            language ?: getDefaultUserLanguage()
+            language
         )
         return resp
             ?: throw OpexError.ImplNotFound.exception()

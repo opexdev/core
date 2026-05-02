@@ -117,7 +117,7 @@ class OffChainGatewayManagerImpl(
         fetchGateways: FetchGateways, language: String? = null
     ): List<OffChainGatewayView>? {
         return offChainGatewayRepository.findGateways(
-            fetchGateways.currencySymbol, language ?: getDefaultUserLanguage()
+            currencySymbol = fetchGateways.currencySymbol, language = language ?: getDefaultUserLanguage()
         )?.collectList()?.awaitFirstOrNull()
     }
 }
