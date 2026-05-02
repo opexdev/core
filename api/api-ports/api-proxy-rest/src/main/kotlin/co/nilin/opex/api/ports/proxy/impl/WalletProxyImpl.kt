@@ -927,5 +927,89 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
             }
             .awaitBodilessEntity()
     }
+
+    override suspend fun saveTerminal(
+        token: String,
+        terminal: TerminalCommand
+    ): TerminalCommand? {
+        return webClient.post()
+            .uri("$baseUrl/admin/deposit/terminal")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(terminal))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<TerminalCommand>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun updateTerminal(
+        token: String,
+        terminalUuid: String,
+        terminal: TerminalCommand
+    ): TerminalCommand? {
+        return webClient.put()
+            .uri("$baseUrl/admin/deposit/terminal/${terminalUuid}")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(terminal))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<TerminalCommand>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun deleteTerminal(token: String, terminalUuid: String) {
+        webClient.delete()
+            .uri("$baseUrl/admin/deposit/terminal/${terminalUuid}")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ it.isError }) { response ->
+                response.createException()
+            }
+            .awaitBodilessEntity()
+    }
+
+    override suspend fun getTerminals(token: String): List<TerminalCommand>? {
+        return webClient.get()
+            .uri("$baseUrl/admin/deposit/terminal")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToFlux<TerminalCommand>()
+            .collectList()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun getTerminal(
+        token: String,
+        terminalUuid: String
+    ): TerminalCommand? {
+        return webClient.get()
+            .uri("$baseUrl/admin/deposit/terminal/${terminalUuid}")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<TerminalCommand>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun getAssignedGatewayToTerminal(
+        token: String,
+        terminalUuid: String
+    ): List<CurrencyGatewayCommand>? {
+        return webClient.get()
+            .uri("$baseUrl/admin/deposit/terminal/${terminalUuid}/gateway")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToFlux<CurrencyGatewayCommand>()
+            .collectList()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
 }
 
