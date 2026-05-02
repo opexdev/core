@@ -1,6 +1,6 @@
-package co.nilin.opex.bcgateway.ports.postgres.dao
+package co.nilin.opex.wallet.ports.postgres.dao
 
-import co.nilin.opex.bcgateway.ports.postgres.model.CurrencyOnChainGatewayLocalizationModel
+import co.nilin.opex.wallet.ports.postgres.model.OffChainGatewayLocalizationModel
 import org.springframework.data.r2dbc.repository.Modifying
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
@@ -9,12 +9,12 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @Repository
-interface CurrencyOnChainGatewayLocalizationRepository :
-    ReactiveCrudRepository<CurrencyOnChainGatewayLocalizationModel, Long> {
+interface OffChainGatewayLocalizationRepository : ReactiveCrudRepository<OffChainGatewayLocalizationModel, Long> {
+
     @Modifying
     @Query(
         """
-    INSERT INTO currency_on_chain_gateway_localization (gateway_id, deposit_description, withdraw_description, language)
+    INSERT INTO currency_off_chain_gateway_localization (gateway_id, deposit_description, withdraw_description, language)
     VALUES (:gatewayId, :depositDescription, :withdrawDescription, :language)
     ON CONFLICT (gateway_id, language)
     DO UPDATE SET
@@ -29,5 +29,5 @@ interface CurrencyOnChainGatewayLocalizationRepository :
         language: String
     ): Mono<Void>
 
-    suspend fun findByGatewayId(gatewayId: Long): Flux<CurrencyOnChainGatewayLocalizationModel>
+    fun findByGatewayId(gatewayId: Long): Flux<OffChainGatewayLocalizationModel>
 }

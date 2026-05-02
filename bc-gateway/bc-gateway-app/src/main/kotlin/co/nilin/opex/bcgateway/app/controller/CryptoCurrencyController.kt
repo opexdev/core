@@ -1,7 +1,9 @@
 package co.nilin.opex.bcgateway.app.controller
 
 import co.nilin.opex.bcgateway.app.dto.ChainResponse
+import co.nilin.opex.bcgateway.app.dto.OnChainGatewayLocalizationResponse
 import co.nilin.opex.bcgateway.core.model.CryptoCurrencyCommand
+import co.nilin.opex.bcgateway.core.model.CurrencyOnChainGatewayLocalizationCommand
 import co.nilin.opex.bcgateway.core.model.FetchGateways
 import co.nilin.opex.bcgateway.core.model.WithdrawData
 import co.nilin.opex.bcgateway.core.spi.ChainLoader
@@ -84,6 +86,30 @@ class CryptoCurrencyController(
     @GetMapping("/{currency}/network/{network}/withdrawData")
     suspend fun getFeeForCurrency(@PathVariable currency: String, @PathVariable network: String): WithdrawData {
         return cryptoCurrencyHandler.getWithdrawData(currency, network)
+    }
+
+    @PostMapping("/gateway/{uuid}/localization")
+    suspend fun saveGatewayLocalization(
+        @PathVariable("uuid") gatewayUuid: String,
+        @RequestBody localizations: List<CurrencyOnChainGatewayLocalizationCommand>
+    ): OnChainGatewayLocalizationResponse {
+        val gatewayLocalizations = cryptoCurrencyHandler.saveOnChainGatewayLocalization(gatewayUuid, localizations)
+        return OnChainGatewayLocalizationResponse(gatewayUuid, gatewayLocalizations)
+    }
+
+    @GetMapping("/gateway/{uuid}/localization")
+    suspend fun getGatewayLocalization(
+        @PathVariable("uuid") gatewayUuid: String
+    ): OnChainGatewayLocalizationResponse {
+        val gatewayLocalizations = cryptoCurrencyHandler.fetchOnChainGatewayLocalizations(gatewayUuid)
+        return OnChainGatewayLocalizationResponse(gatewayUuid, gatewayLocalizations)
+    }
+
+    @DeleteMapping("/gateway/localization/{id}")
+    suspend fun deleteGatewayLocalization(
+        @PathVariable("id") id: Long,
+    ) {
+        cryptoCurrencyHandler.deleteOnChainGatewayLocalizations(id)
     }
 
 }

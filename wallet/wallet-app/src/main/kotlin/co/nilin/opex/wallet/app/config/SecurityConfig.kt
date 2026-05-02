@@ -35,6 +35,7 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/owner/**").authenticated()
             .pathMatchers("/withdraw").authenticated()
             .pathMatchers("/currency/localization/**").hasAuthority("ROLE_admin")
+            .pathMatchers("/offchain-gateway/**").hasAuthority("ROLE_admin")
             .pathMatchers(HttpMethod.PUT, "/currency/**").hasAuthority("ROLE_admin")
             .pathMatchers(HttpMethod.POST, "/currency/**").hasAuthority("ROLE_admin")
             .pathMatchers(HttpMethod.DELETE, "/currency/**").hasAuthority("ROLE_admin")

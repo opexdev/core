@@ -885,5 +885,47 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
             }
             .awaitBodilessEntity()
     }
+
+    override suspend fun getOffChainGatewayLocalizations(
+        token: String,
+        gatewayUuid: String
+    ): GatewayLocalizationResponse {
+        return webClient.get()
+            .uri("$baseUrl/offchain-gateway/${gatewayUuid}/localization")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<GatewayLocalizationResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun saveOffChainGatewayLocalizations(
+        token: String,
+        gatewayUuid: String,
+        gatewayLocalizations: List<GatewayLocalizationCommand>
+    ): GatewayLocalizationResponse {
+        return webClient.post()
+            .uri("$baseUrl/offchain-gateway/${gatewayUuid}/localization")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(gatewayLocalizations))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<GatewayLocalizationResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun deleteOffChainGatewayLocalization(token: String, id: Long) {
+        webClient.delete()
+            .uri("$baseUrl/offchain-gateway/localization/${id}")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ it.isError }) { response ->
+                response.createException()
+            }
+            .awaitBodilessEntity()
+    }
 }
 

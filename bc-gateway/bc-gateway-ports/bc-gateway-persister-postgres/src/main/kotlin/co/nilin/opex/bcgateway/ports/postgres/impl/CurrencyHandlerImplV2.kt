@@ -1,15 +1,13 @@
 package co.nilin.opex.bcgateway.ports.postgres.impl
 
-import co.nilin.opex.bcgateway.core.model.CryptoCurrencyCommand
-import co.nilin.opex.bcgateway.core.model.CurrencyOnChainGatewayView
-import co.nilin.opex.bcgateway.core.model.FetchGateways
-import co.nilin.opex.bcgateway.core.model.WithdrawData
+import co.nilin.opex.bcgateway.core.model.*
 import co.nilin.opex.bcgateway.core.spi.CryptoCurrencyHandlerV2
 import co.nilin.opex.bcgateway.ports.postgres.dao.ChainRepository
 import co.nilin.opex.bcgateway.ports.postgres.dao.CurrencyImplementationRepository
 import co.nilin.opex.bcgateway.ports.postgres.dao.CurrencyOnChainGatewayLocalizationRepository
 import co.nilin.opex.bcgateway.ports.postgres.model.CurrencyOnChainGatewayLocalizationModel
 import co.nilin.opex.bcgateway.ports.postgres.model.CurrencyOnChainGatewayModel
+import co.nilin.opex.bcgateway.ports.postgres.util.toCommand
 import co.nilin.opex.bcgateway.ports.postgres.util.toDto
 import co.nilin.opex.bcgateway.ports.postgres.util.toModel
 import co.nilin.opex.common.OpexError
@@ -72,7 +70,10 @@ class CurrencyHandlerImplV2(
 
     override suspend fun fetchCurrencyOnChainGateways(data: FetchGateways?): List<CryptoCurrencyCommand>? {
         logger.info("going to fetch impls of ${data?.currencySymbol ?: "all currencies"}")
-        return loadImpls(data)?.map { it.toDto() }
+        return loadImpls(
+            data,
+            UserLanguage.safeValueOf(getUserLanguage().awaitSingleOrNull()).toString()
+        )?.map { it.toDto() }
             ?.collect(Collectors.toList())?.awaitFirstOrNull()
     }
 
@@ -84,12 +85,16 @@ class CurrencyHandlerImplV2(
         )?.awaitFirstOrNull()?.toDto()
     }
 
-    private suspend fun loadImpls(request: FetchGateways?): Flux<CurrencyOnChainGatewayView>? {
+    private suspend fun loadImpls(
+        request: FetchGateways?,
+        language: String? = null
+    ): Flux<CurrencyOnChainGatewayView>? {
         var resp = currencyImplementationRepository.findGateways(
             request?.currencySymbol,
             request?.gatewayUuid,
             request?.chain,
-            request?.currencyImplementationName
+            request?.currencyImplementationName,
+            language ?: getDefaultUserLanguage()
         )
         return resp
             ?: throw OpexError.ImplNotFound.exception()
@@ -163,5 +168,47 @@ class CurrencyHandlerImplV2(
             currencyImplementationRepository.findTokenGateway(chain, tokenAddress!!).awaitSingleOrNull()?.toDto()
         else
             currencyImplementationRepository.findMainAssetGateway(chain).awaitSingleOrNull()?.toDto()
+    }
+
+    override suspend fun saveOnChainGatewayLocalization(
+        gatewayUuid: String,
+        localizations: List<CurrencyOnChainGatewayLocalizationCommand>
+    ): List<CurrencyOnChainGatewayLocalizationCommand> {
+        return transactionalOperator.executeAndAwait {
+
+            val gateway = currencyImplementationRepository.findByGatewayUuid(gatewayUuid)?.awaitSingleOrNull()
+                ?: throw OpexError.GatewayNotFount.exception()
+
+            localizations.forEach { g ->
+                if (!g.depositDescription.isNullOrBlank() || !g.withdrawDescription.isNullOrBlank())
+                    currencyOnChainGatewayLocalizationRepository.upsert(
+                        gatewayId = gateway.id!!,
+                        depositDescription = g.depositDescription,
+                        withdrawDescription = g.withdrawDescription,
+                        language = UserLanguage.safeValueOf(g.language).toString()
+                    ).awaitSingleOrNull()
+            }
+
+            currencyOnChainGatewayLocalizationRepository.findByGatewayId(gateway.id!!)
+                .map { it.toCommand() }
+                .collectList()
+                .awaitSingleOrNull()
+                ?: emptyList()
+        } ?: throw OpexError.BadRequest.exception("Failed to save gateway localizations")
+    }
+
+
+    override suspend fun fetchOnChainGatewayLocalizations(gatewayUuid: String): List<CurrencyOnChainGatewayLocalizationCommand> {
+        val gateway = currencyImplementationRepository.findByGatewayUuid(gatewayUuid)?.awaitSingleOrNull()
+            ?: throw OpexError.GatewayNotFount.exception()
+        return currencyOnChainGatewayLocalizationRepository.findByGatewayId(gateway.id!!)
+            .map { it.toCommand() }
+            .collectList()
+            .awaitSingleOrNull()
+            ?: emptyList()
+    }
+
+    override suspend fun deleteOnChainGatewayLocalizations(id: Long) {
+        currencyOnChainGatewayLocalizationRepository.deleteById(id).awaitSingleOrNull()
     }
 }

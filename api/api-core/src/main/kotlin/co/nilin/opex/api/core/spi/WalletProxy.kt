@@ -227,4 +227,13 @@ interface WalletProxy {
     ): TerminalLocalizationResponse
 
     suspend fun deleteTerminalLocalization(token: String, id: Long)
+
+    suspend fun getOffChainGatewayLocalizations(token: String, gatewayUuid: String): GatewayLocalizationResponse
+    suspend fun saveOffChainGatewayLocalizations(
+        token: String,
+        gatewayUuid: String,
+        gatewayLocalizations: List<GatewayLocalizationCommand>
+    ): GatewayLocalizationResponse
+
+    suspend fun deleteOffChainGatewayLocalization(token: String, id: Long)
 }

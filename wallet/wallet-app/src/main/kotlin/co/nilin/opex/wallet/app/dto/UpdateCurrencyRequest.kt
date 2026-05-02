@@ -10,7 +10,7 @@ data class UpdateCurrencyRequest(
     var isActive: Boolean? = true,
     var sign: String? = null,
     var externalUrl: String? = null,
-    var order: Int? = null,
+    var displayOrder: Int? = null,
     var maxOrder: BigDecimal? = null,
 
     ) {
@@ -23,7 +23,7 @@ data class UpdateCurrencyRequest(
             isActive = isActive,
             sign = sign,
             externalUrl = externalUrl,
-            displayOrder = order,
+            displayOrder = displayOrder,
             maxOrder = maxOrder,
         )
     }

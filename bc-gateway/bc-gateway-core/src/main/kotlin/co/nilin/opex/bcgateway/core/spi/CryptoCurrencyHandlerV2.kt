@@ -1,6 +1,7 @@
 package co.nilin.opex.bcgateway.core.spi
 
 import co.nilin.opex.bcgateway.core.model.CryptoCurrencyCommand
+import co.nilin.opex.bcgateway.core.model.CurrencyOnChainGatewayLocalizationCommand
 import co.nilin.opex.bcgateway.core.model.FetchGateways
 import co.nilin.opex.bcgateway.core.model.WithdrawData
 
@@ -25,5 +26,13 @@ interface CryptoCurrencyHandlerV2 {
         isToken: Boolean,
         tokenAddress: String?
     ): CryptoCurrencyCommand?
+
+    suspend fun saveOnChainGatewayLocalization(
+        gatewayUuid: String,
+        localizations: List<CurrencyOnChainGatewayLocalizationCommand>
+    ): List<CurrencyOnChainGatewayLocalizationCommand>
+
+    suspend fun fetchOnChainGatewayLocalizations(gatewayUuid: String): List<CurrencyOnChainGatewayLocalizationCommand>
+    suspend fun deleteOnChainGatewayLocalizations(id: Long)
 
 }
