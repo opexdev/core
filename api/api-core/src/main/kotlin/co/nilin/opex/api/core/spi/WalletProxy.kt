@@ -227,4 +227,39 @@ interface WalletProxy {
     ): TerminalLocalizationResponse
 
     suspend fun deleteTerminalLocalization(token: String, id: Long)
+
+    suspend fun getOffChainGatewayLocalizations(token: String, gatewayUuid: String): GatewayLocalizationResponse
+    suspend fun saveOffChainGatewayLocalizations(
+        token: String,
+        gatewayUuid: String,
+        gatewayLocalizations: List<GatewayLocalizationCommand>
+    ): GatewayLocalizationResponse
+
+    suspend fun deleteOffChainGatewayLocalization(token: String, id: Long)
+    suspend fun saveTerminal(token: String, terminal: TerminalCommand): TerminalCommand?
+    suspend fun updateTerminal(token: String, terminalUuid: String, terminal: TerminalCommand): TerminalCommand?
+    suspend fun deleteTerminal(token: String, terminalUuid: String)
+    suspend fun getTerminals(token: String): List<TerminalCommand>?
+    suspend fun getTerminal(token: String, terminalUuid: String): TerminalCommand?
+    suspend fun getAssignedGatewayToTerminal(token: String, terminalUuid: String): List<CurrencyGatewayCommand>?
+    suspend fun assignTerminalsToGateway(token: String, gatewayUuid: String, terminal: List<String>)
+    suspend fun revokeTerminalsToGateway(token: String, gatewayUuid: String, terminal: List<String>)
+    suspend fun addCurrencyToGateway(
+        token: String,
+        currencySymbol: String,
+        gatewayCommand: CurrencyGatewayCommand
+    ): CurrencyGatewayCommand?
+
+    suspend fun updateGateway(
+        token: String,
+        gatewayUuid: String,
+        currencySymbol: String,
+        gatewayCommand: CurrencyGatewayCommand
+    ): CurrencyGatewayCommand?
+
+    suspend fun getGateway(token: String, gatewayUuid: String, currencySymbol: String): CurrencyGatewayCommand?
+
+    suspend fun deleteGateway(token: String, gatewayUuid: String, currencySymbol: String)
+
+
 }

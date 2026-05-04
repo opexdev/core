@@ -15,6 +15,7 @@ import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.*
@@ -877,6 +878,230 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
     override suspend fun deleteTerminalLocalization(token: String, id: Long) {
         webClient.delete()
             .uri("$baseUrl/admin/deposit/terminal/localization/${id}")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ it.isError }) { response ->
+                response.createException()
+            }
+            .awaitBodilessEntity()
+    }
+
+    override suspend fun getOffChainGatewayLocalizations(
+        token: String,
+        gatewayUuid: String
+    ): GatewayLocalizationResponse {
+        return webClient.get()
+            .uri("$baseUrl/offchain-gateway/${gatewayUuid}/localization")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<GatewayLocalizationResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun saveOffChainGatewayLocalizations(
+        token: String,
+        gatewayUuid: String,
+        gatewayLocalizations: List<GatewayLocalizationCommand>
+    ): GatewayLocalizationResponse {
+        return webClient.post()
+            .uri("$baseUrl/offchain-gateway/${gatewayUuid}/localization")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(gatewayLocalizations))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<GatewayLocalizationResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun deleteOffChainGatewayLocalization(token: String, id: Long) {
+        webClient.delete()
+            .uri("$baseUrl/offchain-gateway/localization/${id}")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ it.isError }) { response ->
+                response.createException()
+            }
+            .awaitBodilessEntity()
+    }
+
+    override suspend fun saveTerminal(
+        token: String,
+        terminal: TerminalCommand
+    ): TerminalCommand? {
+        return webClient.post()
+            .uri("$baseUrl/admin/deposit/terminal")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(terminal))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<TerminalCommand>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun updateTerminal(
+        token: String,
+        terminalUuid: String,
+        terminal: TerminalCommand
+    ): TerminalCommand? {
+        return webClient.put()
+            .uri("$baseUrl/admin/deposit/terminal/${terminalUuid}")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(terminal))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<TerminalCommand>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun deleteTerminal(token: String, terminalUuid: String) {
+        webClient.delete()
+            .uri("$baseUrl/admin/deposit/terminal/${terminalUuid}")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ it.isError }) { response ->
+                response.createException()
+            }
+            .awaitBodilessEntity()
+    }
+
+    override suspend fun getTerminals(token: String): List<TerminalCommand>? {
+        return webClient.get()
+            .uri("$baseUrl/admin/deposit/terminal")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToFlux<TerminalCommand>()
+            .collectList()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun getTerminal(
+        token: String,
+        terminalUuid: String
+    ): TerminalCommand? {
+        return webClient.get()
+            .uri("$baseUrl/admin/deposit/terminal/${terminalUuid}")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<TerminalCommand>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun getAssignedGatewayToTerminal(
+        token: String,
+        terminalUuid: String
+    ): List<CurrencyGatewayCommand>? {
+        return webClient.get()
+            .uri("$baseUrl/admin/deposit/terminal/${terminalUuid}/gateway")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToFlux<CurrencyGatewayCommand>()
+            .collectList()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun assignTerminalsToGateway(
+        token: String,
+        gatewayUuid: String,
+        terminal: List<String>
+    ) {
+        webClient.post()
+            .uri("$baseUrl/currency/gateway/${gatewayUuid}/terminal")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(terminal))
+            .retrieve()
+            .onStatus({ it.isError }) { response ->
+                response.createException()
+            }
+            .awaitBodilessEntity()
+    }
+
+    override suspend fun revokeTerminalsToGateway(
+        token: String,
+        gatewayUuid: String,
+        terminal: List<String>
+    ) {
+        webClient.method(HttpMethod.DELETE)
+            .uri("$baseUrl/currency/gateway/${gatewayUuid}/terminal")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .bodyValue(terminal)
+            .retrieve()
+            .onStatus({ it.isError }) { response ->
+                response.createException()
+            }
+            .awaitBodilessEntity()
+    }
+
+    override suspend fun addCurrencyToGateway(
+        token: String,
+        currencySymbol: String,
+        gatewayCommand: CurrencyGatewayCommand
+    ): CurrencyGatewayCommand? {
+        return webClient.post()
+            .uri("$baseUrl/currency/${currencySymbol}/gateway")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(gatewayCommand))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<CurrencyGatewayCommand>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun updateGateway(
+        token: String,
+        gatewayUuid: String,
+        currencySymbol: String,
+        gatewayCommand: CurrencyGatewayCommand
+    ): CurrencyGatewayCommand? {
+        return webClient.put()
+            .uri("$baseUrl/currency/${currencySymbol}/gateway/${gatewayUuid}")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(gatewayCommand))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<CurrencyGatewayCommand>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun getGateway(
+        token: String,
+        gatewayUuid: String,
+        currencySymbol: String
+    ): CurrencyGatewayCommand? {
+        return webClient.get()
+            .uri("$baseUrl/currency/${currencySymbol}/gateway/${gatewayUuid}")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<CurrencyGatewayCommand>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun deleteGateway(
+        token: String,
+        gatewayUuid: String,
+        currencySymbol: String
+    ) {
+        webClient.delete()
+            .uri("$baseUrl/currency/${currencySymbol}/gateway/${gatewayUuid}")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .retrieve()

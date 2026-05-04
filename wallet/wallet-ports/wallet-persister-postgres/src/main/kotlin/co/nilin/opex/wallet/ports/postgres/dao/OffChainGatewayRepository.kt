@@ -1,6 +1,8 @@
 package co.nilin.opex.wallet.ports.postgres.dao
 
+import co.nilin.opex.common.data.UserLanguage
 import co.nilin.opex.wallet.core.inout.TransferMethod
+import co.nilin.opex.wallet.ports.postgres.dto.OffChainGatewayView
 import co.nilin.opex.wallet.ports.postgres.model.OffChainGatewayModel
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
@@ -12,12 +14,61 @@ import reactor.core.publisher.Mono
 interface OffChainGatewayRepository : ReactiveCrudRepository<OffChainGatewayModel, Long> {
     fun findByGatewayUuid(uuid: String): Mono<OffChainGatewayModel>?
 
-    fun findByGatewayUuidAndCurrencySymbol(uuid: String, symbol: String): Mono<OffChainGatewayModel>?
+    @Query("""
+    select g.id,
+       g.gateway_uuid,
+       g.currency_symbol,
+       g.deposit_allowed,
+       g.withdraw_fee,
+       g.withdraw_min,
+       g.withdraw_max,
+       g.deposit_min,
+       g.deposit_max,
+       g.transfer_method,
+       g.is_deposit_active,
+       g.is_withdraw_active,
+       gl.deposit_description,
+       gl.withdraw_description,
+       g.display_order
+    from currency_off_chain_gateway g
+             left join currency_off_chain_gateway_localization gl on g.id = gl.gateway_id and gl.language = :lang
+    where g.currency_symbol = :currencySymbol and g.gateway_uuid = :gatewayUuid
+    """)
+    fun findByGatewayUuidAndCurrencySymbol(
+        uuid: String,
+        symbol: String,
+        language: String? = UserLanguage.getDefault().toString()
+    ): Mono<OffChainGatewayView>?
 
     fun deleteByGatewayUuid(uuid: String): Mono<Void>
 
-    @Query("select * from currency_off_chain_gateway where (:gatewayUuid is null or gateway_uuid=:gatewayUuid) and (:currencySymbol is null or currency_symbol=:currencySymbol ) order by display_order")
-    fun findGateways(currencySymbol: String? = null, gatewayUuid: String? = null): Flux<OffChainGatewayModel>?
+    @Query("""
+    select g.id,
+       g.gateway_uuid,
+       g.currency_symbol,
+       g.deposit_allowed,
+       g.withdraw_fee,
+       g.withdraw_min,
+       g.withdraw_max,
+       g.deposit_min,
+       g.deposit_max,
+       g.transfer_method,
+       g.is_deposit_active,
+       g.is_withdraw_active,
+       gl.deposit_description,
+       gl.withdraw_description,
+       g.display_order
+    from currency_off_chain_gateway g
+             left join currency_off_chain_gateway_localization gl on g.id = gl.gateway_id and gl.language = :lang
+    where (:currencySymbol is null or g.currency_symbol = :currencySymbol)
+      and (:gatewayUuid is null or g.gateway_uuid = :gatewayUuid)
+    order by g.display_order
+    """)
+    fun findGateways(
+        currencySymbol: String? = null,
+        gatewayUuid: String? = null,
+        language: String? = UserLanguage.getDefault().toString()
+    ): Flux<OffChainGatewayView>?
 
     fun findByCurrencySymbolAndAndTransferMethod(
         currencySymbol: String,
