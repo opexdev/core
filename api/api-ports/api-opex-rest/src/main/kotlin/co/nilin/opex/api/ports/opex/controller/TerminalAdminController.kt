@@ -61,4 +61,31 @@ class TerminalAdminController(
     ): List<CurrencyGatewayCommand>? {
         return walletProxy.getAssignedGatewayToTerminal(securityContext.jwtAuthentication().tokenValue(), terminalUuid)
     }
+
+    @PostMapping("/gateway/{uuid}")
+    suspend fun assignTerminalToGateway(
+        @CurrentSecurityContext securityContext: SecurityContext,
+        @PathVariable("uuid") gatewayUuid: String,
+        @RequestBody terminal: List<String>,
+    ) {
+        return walletProxy.assignTerminalsToGateway(
+            securityContext.jwtAuthentication().tokenValue(),
+            gatewayUuid,
+            terminal
+        )
+    }
+
+    @DeleteMapping("/gateway/{uuid}")
+    suspend fun revokeTerminalFromGateway(
+        @CurrentSecurityContext securityContext: SecurityContext,
+        @PathVariable("uuid") gatewayUuid: String,
+        @RequestBody terminal: List<String>,
+    ) {
+        return walletProxy.revokeTerminalsToGateway(
+            securityContext.jwtAuthentication().tokenValue(),
+            gatewayUuid,
+            terminal
+        )
+    }
+
 }

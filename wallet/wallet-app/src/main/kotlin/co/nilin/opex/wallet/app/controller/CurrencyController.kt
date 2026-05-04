@@ -75,7 +75,7 @@ class CurrencyController(
         })
     }
 
-    @PutMapping("{currencySymbol}/gateway/{gatewayUuid}")
+    @PutMapping("/{currencySymbol}/gateway/{gatewayUuid}")
     suspend fun updateGateway(
         @PathVariable("gatewayUuid") gatewayUuid: String,
         @PathVariable("currencySymbol") currencySymbol: String,
@@ -87,7 +87,7 @@ class CurrencyController(
         })
     }
 
-    @GetMapping("{currencySymbol}/gateway/{gatewayUuid}")
+    @GetMapping("/{currencySymbol}/gateway/{gatewayUuid}")
     suspend fun getGateway(
         @PathVariable("gatewayUuid") gatewayUuid: String,
         @PathVariable("currencySymbol") currencySymbol: String,
@@ -95,7 +95,7 @@ class CurrencyController(
         return currencyService.fetchCurrencyGateway(gatewayUuid, currencySymbol)
     }
 
-    @DeleteMapping("{currencySymbol}/gateway/{gatewayUuid}")
+    @DeleteMapping("/{currencySymbol}/gateway/{gatewayUuid}")
     suspend fun deleteGateway(
         @PathVariable("gatewayUuid") gatewayUuid: String,
         @PathVariable("currencySymbol") currencySymbol: String,

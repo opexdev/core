@@ -242,5 +242,24 @@ interface WalletProxy {
     suspend fun getTerminals(token: String): List<TerminalCommand>?
     suspend fun getTerminal(token: String, terminalUuid: String): TerminalCommand?
     suspend fun getAssignedGatewayToTerminal(token: String, terminalUuid: String): List<CurrencyGatewayCommand>?
+    suspend fun assignTerminalsToGateway(token: String, gatewayUuid: String, terminal: List<String>)
+    suspend fun revokeTerminalsToGateway(token: String, gatewayUuid: String, terminal: List<String>)
+    suspend fun addCurrencyToGateway(
+        token: String,
+        currencySymbol: String,
+        gatewayCommand: CurrencyGatewayCommand
+    ): CurrencyGatewayCommand?
+
+    suspend fun updateGateway(
+        token: String,
+        gatewayUuid: String,
+        currencySymbol: String,
+        gatewayCommand: CurrencyGatewayCommand
+    ): CurrencyGatewayCommand?
+
+    suspend fun getGateway(token: String, gatewayUuid: String, currencySymbol: String): CurrencyGatewayCommand?
+
+    suspend fun deleteGateway(token: String, gatewayUuid: String, currencySymbol: String)
+
 
 }

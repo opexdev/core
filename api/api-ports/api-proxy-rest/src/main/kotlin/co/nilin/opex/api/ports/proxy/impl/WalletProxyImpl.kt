@@ -15,6 +15,7 @@ import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.*
@@ -1010,6 +1011,104 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
             .bodyToFlux<CurrencyGatewayCommand>()
             .collectList()
             .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun assignTerminalsToGateway(
+        token: String,
+        gatewayUuid: String,
+        terminal: List<String>
+    ) {
+        webClient.post()
+            .uri("$baseUrl/currency/gateway/${gatewayUuid}/terminal")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(terminal))
+            .retrieve()
+            .onStatus({ it.isError }) { response ->
+                response.createException()
+            }
+            .awaitBodilessEntity()
+    }
+
+    override suspend fun revokeTerminalsToGateway(
+        token: String,
+        gatewayUuid: String,
+        terminal: List<String>
+    ) {
+        webClient.method(HttpMethod.DELETE)
+            .uri("$baseUrl/currency/gateway/${gatewayUuid}/terminal")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .bodyValue(terminal)
+            .retrieve()
+            .onStatus({ it.isError }) { response ->
+                response.createException()
+            }
+            .awaitBodilessEntity()
+    }
+
+    override suspend fun addCurrencyToGateway(
+        token: String,
+        currencySymbol: String,
+        gatewayCommand: CurrencyGatewayCommand
+    ): CurrencyGatewayCommand? {
+        return webClient.post()
+            .uri("$baseUrl/currency/${currencySymbol}/gateway")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(gatewayCommand))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<CurrencyGatewayCommand>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun updateGateway(
+        token: String,
+        gatewayUuid: String,
+        currencySymbol: String,
+        gatewayCommand: CurrencyGatewayCommand
+    ): CurrencyGatewayCommand? {
+        return webClient.put()
+            .uri("$baseUrl/currency/${currencySymbol}/gateway/${gatewayUuid}")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(gatewayCommand))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<CurrencyGatewayCommand>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun getGateway(
+        token: String,
+        gatewayUuid: String,
+        currencySymbol: String
+    ): CurrencyGatewayCommand? {
+        return webClient.get()
+            .uri("$baseUrl/currency/${currencySymbol}/gateway/${gatewayUuid}")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<CurrencyGatewayCommand>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun deleteGateway(
+        token: String,
+        gatewayUuid: String,
+        currencySymbol: String
+    ) {
+        webClient.delete()
+            .uri("$baseUrl/currency/${currencySymbol}/gateway/${gatewayUuid}")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ it.isError }) { response ->
+                response.createException()
+            }
+            .awaitBodilessEntity()
     }
 }
 
