@@ -45,7 +45,7 @@ interface CurrencyRepositoryV2 : ReactiveCrudRepository<CurrencyModel, String> {
     fun fetchCurrency(
         uuid: String? = null,
         symbol: String? = null,
-        lang: String?,
+        lang: String? = null
     ): Mono<CurrencyView>?
 
 
