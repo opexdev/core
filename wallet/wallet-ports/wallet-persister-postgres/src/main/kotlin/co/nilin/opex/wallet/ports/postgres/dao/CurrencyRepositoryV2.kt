@@ -1,6 +1,5 @@
 package co.nilin.opex.wallet.ports.postgres.dao
 
-import co.nilin.opex.common.data.UserLanguage
 import co.nilin.opex.wallet.core.inout.CurrencyPrecision
 import co.nilin.opex.wallet.ports.postgres.dto.CurrencyView
 import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
