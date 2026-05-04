@@ -1,8 +1,10 @@
 package co.nilin.opex.wallet.ports.postgres.util
 
 import co.nilin.opex.wallet.core.inout.*
+import co.nilin.opex.wallet.core.model.OffChainGatewayLocalizationCommand
 import co.nilin.opex.wallet.core.model.TotalAssetsSnapshot
 import co.nilin.opex.wallet.ports.postgres.dto.CurrencyView
+import co.nilin.opex.wallet.ports.postgres.dto.OffChainGatewayView
 import co.nilin.opex.wallet.ports.postgres.dto.TerminalView
 import co.nilin.opex.wallet.ports.postgres.model.*
 import java.time.ZoneId
@@ -141,7 +143,7 @@ fun DepositModel.toDto(): Deposit {
 }
 
 
-fun OffChainGatewayModel.toDto(): CurrencyGatewayCommand {
+fun OffChainGatewayView.toDto(): CurrencyGatewayCommand {
     return OffChainGatewayCommand(
         TransferMethod.valueOf(transferMethod),
         currencySymbol,
@@ -176,9 +178,16 @@ fun OffChainGatewayCommand.toModel(): OffChainGatewayModel {
         transferMethod.name,
         isDepositActive,
         isWithdrawActive,
-        depositDescription,
-        withdrawDescription,
         displayOrder
+    )
+}
+
+fun OffChainGatewayLocalizationModel.toCommand(): OffChainGatewayLocalizationCommand {
+    return OffChainGatewayLocalizationCommand(
+        id = id,
+        depositDescription = depositDescription,
+        withdrawDescription = withdrawDescription,
+        language = language,
     )
 }
 

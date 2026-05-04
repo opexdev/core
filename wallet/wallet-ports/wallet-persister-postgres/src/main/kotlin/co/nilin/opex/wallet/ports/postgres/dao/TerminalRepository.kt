@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.ports.postgres.dao
 
+import co.nilin.opex.common.data.UserLanguage
 import co.nilin.opex.wallet.ports.postgres.dto.TerminalView
 import co.nilin.opex.wallet.ports.postgres.model.TerminalModel
 import org.springframework.data.r2dbc.repository.Query
@@ -30,7 +31,7 @@ interface TerminalRepository : ReactiveCrudRepository<TerminalModel, Long> {
     WHERE t.uuid = :uuid;
     """
     )
-    fun findByUuid(uuid: String, lang: String? = null): Mono<TerminalView>?
+    fun findByUuid(uuid: String, lang: String? = UserLanguage.getDefault().toString()): Mono<TerminalView>?
 
     @Query(
         """
@@ -50,7 +51,7 @@ interface TerminalRepository : ReactiveCrudRepository<TerminalModel, Long> {
     order by t.display_order
     """
     )
-    fun findAllByOrderByDisplayOrder(lang: String?= null): Flux<TerminalView>
+    fun findAllByOrderByDisplayOrder(lang: String?= UserLanguage.getDefault().toString()): Flux<TerminalView>
 
 
 }

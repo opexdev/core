@@ -1,23 +1,20 @@
 package co.nilin.opex.api.ports.proxy.impl
 
-import co.nilin.opex.api.core.inout.AssignAddressRequest
-import co.nilin.opex.api.core.inout.AssignResponse
-import co.nilin.opex.api.core.inout.ChainInfo
-import co.nilin.opex.api.core.inout.DepositDetails
+import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.BlockchainGatewayProxy
 import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
 import co.nilin.opex.api.ports.proxy.data.DepositDetailsRequest
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.utils.LoggerDelegate
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.body
-import org.springframework.web.reactive.function.client.bodyToFlux
+import org.springframework.web.reactive.function.client.*
 import reactor.core.publisher.Mono
 import java.net.URI
 
@@ -73,6 +70,48 @@ class BlockchainGatewayProxyImpl(@Qualifier("generalWebClient") private val clie
                 .collectList()
                 .awaitFirstOrElse { emptyList() }
         }
+    }
+
+    override suspend fun getOnChainGatewayLocalizations(
+        token: String,
+        gatewayUuid: String
+    ): GatewayLocalizationResponse {
+        return client.get()
+            .uri("$baseUrl/crypto-currency/gateway/${gatewayUuid}/localization")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<GatewayLocalizationResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun saveOnChainGatewayLocalizations(
+        token: String,
+        gatewayUuid: String,
+        gatewayLocalizations: List<GatewayLocalizationCommand>
+    ): GatewayLocalizationResponse {
+        return client.post()
+            .uri("$baseUrl/crypto-currency/gateway/${gatewayUuid}/localization")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(gatewayLocalizations))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<GatewayLocalizationResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun deleteOnChainGatewayLocalization(token: String, id: Long) {
+        client.delete()
+            .uri("$baseUrl/crypto-currency/gateway/localization/${id}")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ it.isError }) { response ->
+                response.createException()
+            }
+            .awaitBodilessEntity()
     }
 
 //    override suspend fun getCurrencyImplementations(currency: String?): List<CurrencyImplementation> {

@@ -22,11 +22,10 @@ class CurrencyOnChainGatewayModel(
     @Column("withdraw_min") var withdrawMin: BigDecimal? = BigDecimal.ZERO,
     @Column("withdraw_max") var withdrawMax: BigDecimal? = BigDecimal.ZERO,
     @Column("deposit_min") var depositMin: BigDecimal? = BigDecimal.ZERO,
-    @Column("deposit_max") var depositMax: BigDecimal? = BigDecimal.ZERO, @Column("decimal") var decimal: Int,
+    @Column("deposit_max") var depositMax: BigDecimal? = BigDecimal.ZERO,
+    @Column("decimal") var decimal: Int,
     @Column("is_deposit_active") var isDepositActive: Boolean? = true,
     @Column("is_withdraw_active") var isWithdrawActive: Boolean? = true,
-    @Column("deposit_description") val depositDescription: String?,
-    @Column("withdraw_description") val withdrawDescription: String?,
     @Column("display_order") val displayOrder: Int? = null,
 
     )

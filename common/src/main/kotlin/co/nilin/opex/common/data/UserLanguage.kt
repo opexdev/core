@@ -14,5 +14,9 @@ enum class UserLanguage {
                 EN
             }
         }
+
+        fun getDefault(): UserLanguage {
+            return EN
+        }
     }
 }

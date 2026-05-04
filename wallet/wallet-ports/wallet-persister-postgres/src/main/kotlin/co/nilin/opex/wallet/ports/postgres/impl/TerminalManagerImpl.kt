@@ -13,7 +13,6 @@ import co.nilin.opex.wallet.ports.postgres.model.TerminalLocalizationModel
 import co.nilin.opex.wallet.ports.postgres.model.TerminalModel
 import co.nilin.opex.wallet.ports.postgres.util.toCommand
 import co.nilin.opex.wallet.ports.postgres.util.toModel
-import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.stereotype.Component
 import org.springframework.transaction.reactive.TransactionalOperator
