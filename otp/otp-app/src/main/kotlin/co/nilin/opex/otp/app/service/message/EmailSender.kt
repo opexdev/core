@@ -7,8 +7,7 @@ import jakarta.mail.internet.InternetAddress
 import jakarta.mail.internet.MimeMessage
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-import java.net.Authenticator
-import java.net.PasswordAuthentication
+
 
 @Component
 class EmailSender(
