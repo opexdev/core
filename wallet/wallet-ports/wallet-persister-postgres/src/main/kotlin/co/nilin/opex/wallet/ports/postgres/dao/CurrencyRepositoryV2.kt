@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.ports.postgres.dao
 
+import co.nilin.opex.common.data.UserLanguage
 import co.nilin.opex.wallet.core.inout.CurrencyPrecision
 import co.nilin.opex.wallet.ports.postgres.dto.CurrencyView
 import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
@@ -44,7 +45,7 @@ interface CurrencyRepositoryV2 : ReactiveCrudRepository<CurrencyModel, String> {
     fun fetchCurrency(
         uuid: String? = null,
         symbol: String? = null,
-        lang: String? = null
+        lang: String? = UserLanguage.safeValueOf(null).name
     ): Mono<CurrencyView>?
 
 

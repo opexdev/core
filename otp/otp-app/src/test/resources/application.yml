@@ -1,0 +1,42 @@
+spring:
+  main:
+    web-application-type: none
+
+  # 🚫 disable everything noisy
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration
+
+  cloud:
+    consul:
+      enabled: false
+      config:
+        enabled: false
+
+    vault:
+      enabled: false
+
+  kafka:
+    bootstrap-servers: ""
+otp:
+  response-enabled: ${OTP_CODE_RESPONSE_ENABLED:false}
+  sms:
+    provider:
+      url: ${SMS_PROVIDER_URL}
+      api-key: ${SMS_PROVIDER_API_KEY}
+      template: ${SMS_PROVIDER_TEMPLATE}
+  email:
+    host: ${SMTP_HOST}
+    port: ${SMTP_PORT}
+    username: ${SMTP_USER}
+    password: ${SMTP_PASS}
+    from: ${SMTP_FROM}
+    proxy:
+      enabled: ${SMTP_PROXY_ENABLED:false}
+      host: ${SMTP_PROXY_HOST}
+      port: ${SMTP_PROXY_PORT}
+  custom-message:
+    enabled: ${CUSTOM_MESSAGE_ENABLED:false}
+    base-url: ${CUSTOM_MESSAGE_URL}

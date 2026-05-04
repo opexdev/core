@@ -7,6 +7,8 @@ import jakarta.mail.internet.InternetAddress
 import jakarta.mail.internet.MimeMessage
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
+import java.net.Authenticator
+import java.net.PasswordAuthentication
 
 @Component
 class EmailSender(
@@ -19,7 +21,13 @@ class EmailSender(
     @Value("\${otp.email.password}")
     private val password: String,
     @Value("\${otp.email.from}")
-    private val from: String
+    private val from: String,
+    @Value("\${otp.email.proxy.enabled}")
+    private val proxyIsEnabled: Boolean,
+    @Value("\${otp.email.proxy.host}")
+    private val proxyHost: String?,
+    @Value("\${otp.email.proxy.port}")
+    private val proxyPort: String?
 ) : MessageSender {
 
     private val logger by LoggerDelegate()
@@ -34,6 +42,11 @@ class EmailSender(
         properties["mail.smtp.starttls.enable"] = "true"
         properties["mail.smtp.from"] = from
         properties["mail.smtp.ssl.protocols"] = "TLSv1.2"
+        if (proxyIsEnabled) {
+            properties["mail.smtp.socks.host"] = proxyHost
+            properties["mail.smtp.socks.port"] = proxyPort
+        }
+
         val session = Session.getDefaultInstance(properties)
 
         return try {
