@@ -1,4 +1,4 @@
-package co.nilin.opex.otp.app
+package co.nilin.opex.otp.app.controller
 
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.otp.app.data.NewOTPRequest
