@@ -775,7 +775,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
 
     override suspend fun getGatewayTerminal(gatewayUuid: String): List<TerminalCommand> {
         return webClient.get()
-            .uri("$baseUrl/gateway/${gatewayUuid}/terminal")
+            .uri("$baseUrl/currenncy/gateway/${gatewayUuid}/terminal")
             .accept(MediaType.APPLICATION_JSON)
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
