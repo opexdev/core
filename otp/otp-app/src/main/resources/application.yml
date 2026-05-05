@@ -60,6 +60,10 @@ otp:
     username: ${SMTP_USER}
     password: ${SMTP_PASS}
     from: ${SMTP_FROM}
+    proxy:
+      enabled: ${SMTP_PROXY_ENABLED:false}
+      host: ${SMTP_PROXY_HOST}
+      port: ${SMTP_PROXY_PORT}
   custom-message:
     enabled: ${CUSTOM_MESSAGE_ENABLED:false}
     base-url: ${CUSTOM_MESSAGE_URL}
