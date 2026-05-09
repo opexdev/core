@@ -79,6 +79,10 @@
             <artifactId>error-handler</artifactId>
         </dependency>
         <dependency>
+            <groupId>co.nilin.opex.utility</groupId>
+            <artifactId>interceptors</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
         </dependency>

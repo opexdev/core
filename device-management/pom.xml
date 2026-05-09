@@ -57,6 +57,11 @@
                 <version>${error-hanlder.version}</version>
             </dependency>
             <dependency>
+                <groupId>co.nilin.opex.utility</groupId>
+                <artifactId>interceptors</artifactId>
+                <version>${interceptor.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>co.nilin.opex.device-management</groupId>
                 <artifactId>device-management-core</artifactId>
                 <version>${project.version}</version>
