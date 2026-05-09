@@ -68,6 +68,11 @@
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.utility</groupId>
+                <artifactId>error-handler</artifactId>
+                <version>${error-hanlder.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.utility</groupId>
                 <artifactId>interceptors</artifactId>
                 <version>${interceptor.version}</version>
             </dependency>
