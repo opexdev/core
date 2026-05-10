@@ -25,15 +25,31 @@ class SecurityConfig(
     @Value("\${app.auth.cert-url}")
     private val certUrl: String,
     @Value("\${app.auth.iss-url}")
-    private val issUrl: String
+    private val issUrl: String,
 ) {
+    @Value("\${swagger.auth.enabled:false}")
+    private var swaggerAuthEnabled: Boolean = false
+
+    @Value("\${swagger.auth.authority:ROLE_admin}")
+    private lateinit var swaggerAuthority: String
 
     @Bean
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain {
+        val swaggerPaths = arrayOf(
+            "/swagger-ui.html",
+            "/swagger-ui/**",
+            "/v3/api-docs",
+            "/v3/api-docs/**",
+            "/webjars/**"
+        )
         return http.csrf { it.disable() }
             .authorizeExchange {
+                if (swaggerAuthEnabled) {
+                    it.pathMatchers(*swaggerPaths).hasAuthority(swaggerAuthority)
+                } else {
+                    it.pathMatchers(*swaggerPaths).permitAll()
+                }
                 it.pathMatchers("/actuator/**").permitAll()
-                    .pathMatchers("/swagger-ui.html").permitAll()
                     .pathMatchers("/v1/rate-limit").hasAuthority("ROLE_admin")
                     .pathMatchers("/v2/api-docs").permitAll()
                     .pathMatchers("/v3/depth").permitAll()

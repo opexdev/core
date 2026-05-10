@@ -40,58 +40,769 @@
         "key": "logo.png"
       }
     },
-
-    { "_id": "fld_api_opex_rest", "_type": "request_group", "parentId": "wrk_opex", "name": "api-ports / api-opex-rest" },
-
-    { "_id": "fld_addressbook", "_type": "request_group", "parentId": "fld_api_opex_rest", "name": "Address Book" },
-    { "_id": "req_addr_add", "_type": "request", "parentId": "fld_addressbook", "name": "POST /opex/v1/address-book", "method": "POST", "description": "Body = AddAddressBookItemRequest { name:String, address:String, addressType:String }.\nNotes: addressType: CRYPTO | BANK (NEEDS REVIEW if more types exist).", "url": "{{ _['api-host'] }}/opex/v1/address-book", "body": { "mimeType": "application/json", "text": "{\n  \"name\": \"Home Wallet\",\n  \"address\": \"0x...\",\n  \"addressType\": \"CRYPTO\"\n}" }, "headers": [ { "name": "Content-Type", "value": "application/json" } ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['user-token']}}", "prefix": "" } },
-    { "_id": "req_addr_list", "_type": "request", "parentId": "fld_addressbook", "name": "GET /opex/v1/address-book", "method": "GET", "description": "Returns List<AddressBookResponse> for authenticated user.", "url": "{{ _['api-host'] }}/opex/v1/address-book", "headers": [ ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['user-token']}}", "prefix": "" } },
-    { "_id": "req_addr_delete", "_type": "request", "parentId": "fld_addressbook", "name": "DELETE /opex/v1/address-book/{id}", "method": "DELETE", "description": "Path param: id (int64). Deletes address book entry.", "url": "{{ _['api-host'] }}/opex/v1/address-book/{{ _['id'] }}", "headers": [ ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['user-token']}}", "prefix": "" } },
-    { "_id": "req_addr_update", "_type": "request", "parentId": "fld_addressbook", "name": "PUT /opex/v1/address-book/{id}", "method": "PUT", "description": "Path param: id (int64). Body = AddAddressBookItemRequest.", "url": "{{ _['api-host'] }}/opex/v1/address-book/{{ _['id'] }}", "body": { "mimeType": "application/json", "text": "{\n  \"name\": \"Updated Name\",\n  \"address\": \"0x...\",\n  \"addressType\": \"CRYPTO\"\n}" }, "headers": [ { "name": "Content-Type", "value": "application/json" } ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['user-token']}}", "prefix": "" } },
-
-    { "_id": "fld_storage_admin", "_type": "request_group", "parentId": "fld_api_opex_rest", "name": "Storage Admin" },
-    { "_id": "req_storage_get", "_type": "request", "parentId": "fld_storage_admin", "name": "GET /opex/v1/admin/storage", "method": "GET", "description": "Query params: bucket:string, key:string. Returns file bytes.", "url": "{{ _['api-host'] }}/opex/v1/admin/storage", "parameters": [ { "name": "bucket", "value": "{{ _['bucket'] }}", "description": "Bucket name" }, { "name": "key", "value": "{{ _['key'] }}", "description": "Object key" } ], "headers": [ ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['admin-token']}}", "prefix": "" } },
-    { "_id": "req_storage_post", "_type": "request", "parentId": "fld_storage_admin", "name": "POST /opex/v1/admin/storage", "method": "POST", "description": "Multipart upload. Params: bucket, key, isPublic (bool). Part: file.", "url": "{{ _['api-host'] }}/opex/v1/admin/storage", "parameters": [ { "name": "bucket", "value": "{{ _['bucket'] }}", "description": "Bucket name" }, { "name": "key", "value": "{{ _['key'] }}", "description": "Object key" }, { "name": "isPublic", "value": "false", "description": "Publicly accessible if true" } ], "headers": [ ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['admin-token']}}", "prefix": "" }, "body": { "mimeType": "multipart/form-data", "params": [ { "name": "file", "type": "file", "fileName": "/path/to/file.png" } ], "paramsOrder": [ "file" ] } },
-    { "_id": "req_storage_delete", "_type": "request", "parentId": "fld_storage_admin", "name": "DELETE /opex/v1/admin/storage", "method": "DELETE", "description": "Query params: bucket, key. Deletes file.", "url": "{{ _['api-host'] }}/opex/v1/admin/storage", "parameters": [ { "name": "bucket", "value": "{{ _['bucket'] }}", "description": "Bucket name" }, { "name": "key", "value": "{{ _['key'] }}", "description": "Object key" } ], "headers": [ ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['admin-token']}}", "prefix": "" } },
-
-    { "_id": "fld_withdraw", "_type": "request_group", "parentId": "fld_api_opex_rest", "name": "Withdraw" },
-    { "_id": "req_withdraw_post", "_type": "request", "parentId": "fld_withdraw", "name": "POST /opex/v1/withdraw", "method": "POST", "description": "Body = RequestWithdrawBody { currency:String, amount:BigDecimal, destSymbol:String?, destAddress:String, destNetwork:String?, destNote:String?, gatewayUuid:String? }.", "url": "{{ _['api-host'] }}/opex/v1/withdraw", "body": { "mimeType": "application/json", "text": "{\n  \"currency\": \"USDT\",\n  \"amount\": 50.00,\n  \"destSymbol\": null,\n  \"destAddress\": \"0x...\",\n  \"destNetwork\": null,\n  \"destNote\": null,\n  \"gatewayUuid\": null\n}" }, "headers": [ { "name": "Content-Type", "value": "application/json" } ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['user-token']}}", "prefix": "" } },
-    { "_id": "req_withdraw_cancel", "_type": "request", "parentId": "fld_withdraw", "name": "PUT /opex/v1/withdraw/{withdrawUuid}/cancel", "method": "PUT", "description": "Path param: withdrawUuid (string). Cancels withdraw.", "url": "{{ _['api-host'] }}/opex/v1/withdraw/{{ _['withdrawUuid'] }}/cancel", "headers": [ ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['user-token']}}", "prefix": "" } },
-    { "_id": "req_withdraw_find", "_type": "request", "parentId": "fld_withdraw", "name": "GET /opex/v1/withdraw/{withdrawUuid}", "method": "GET", "description": "Path param: withdrawUuid (string). Returns WithdrawResponse.", "url": "{{ _['api-host'] }}/opex/v1/withdraw/{{ _['withdrawUuid'] }}", "headers": [ ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['user-token']}}", "prefix": "" } },
-    { "_id": "req_withdraw_otp_req", "_type": "request", "parentId": "fld_withdraw", "name": "POST /opex/v1/withdraw/{withdrawUuid}/otp/{otpType}/request", "method": "POST", "description": "Path params: withdrawUuid (string), otpType: OTPType = SMS | EMAIL. Triggers OTP send.", "url": "{{ _['api-host'] }}/opex/v1/withdraw/{{ _['withdrawUuid'] }}/otp/{{ _['otpType'] }}/request", "headers": [ ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['user-token']}}", "prefix": "" } },
-    { "_id": "req_withdraw_otp_verify", "_type": "request", "parentId": "fld_withdraw", "name": "POST /opex/v1/withdraw/{withdrawUuid}/otp/{otpType}/verify", "method": "POST", "description": "Path params: withdrawUuid, otpType: OTPType = SMS | EMAIL. Query param: otpCode (string). Verifies OTP.", "url": "{{ _['api-host'] }}/opex/v1/withdraw/{{ _['withdrawUuid'] }}/otp/{{ _['otpType'] }}/verify", "parameters": [ { "name": "otpCode", "value": "{{ _['otpCode'] }}", "description": "OTP code" } ], "headers": [ ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['user-token']}}", "prefix": "" } },
-
-    { "_id": "fld_deposit", "_type": "request_group", "parentId": "fld_api_opex_rest", "name": "Deposit" },
-    { "_id": "req_deposit_post", "_type": "request", "parentId": "fld_deposit", "name": "POST /opex/v1/deposit", "method": "POST", "description": "Body = RequestDepositBody { symbol:String, receiverUuid:String, receiverWalletType:WalletType, amount:BigDecimal, description:String?, transferRef:String?, gatewayUuid:String?, chain:String? }. WalletType values depend on implementation (e.g., MAIN).", "url": "{{ _['api-host'] }}/opex/v1/deposit", "body": { "mimeType": "application/json", "text": "{\n  \"symbol\": \"USDT\",\n  \"receiverUuid\": \"{{ _['id'] }}\",\n  \"receiverWalletType\": \"MAIN\",\n  \"amount\": 100.00,\n  \"description\": null,\n  \"transferRef\": null,\n  \"gatewayUuid\": null,\n  \"chain\": null\n}" }, "headers": [ { "name": "Content-Type", "value": "application/json" } ] },
-
-    { "_id": "fld_wallet_admin", "_type": "request_group", "parentId": "fld_api_opex_rest", "name": "Wallet Admin" },
-    { "_id": "req_wallet_admin_users", "_type": "request", "parentId": "fld_wallet_admin", "name": "GET /opex/v1/admin/wallet/users", "method": "GET", "description": "Query: uuid?, currency?, excludeSystem=false, limit?, offset?. Returns List<WalletDataResponse>.", "url": "{{ _['api-host'] }}/opex/v1/admin/wallet/users", "parameters": [ { "name": "excludeSystem", "value": "false", "description": "Exclude system wallets" }, { "name": "limit", "value": "10", "description": "Page size" }, { "name": "offset", "value": "0", "description": "Page offset" } ], "headers": [ ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['admin-token']}}", "prefix": "" } },
-    { "_id": "req_wallet_admin_system_total", "_type": "request", "parentId": "fld_wallet_admin", "name": "GET /opex/v1/admin/wallet/system/total", "method": "GET", "description": "Returns List<WalletTotal>.", "url": "{{ _['api-host'] }}/opex/v1/admin/wallet/system/total", "headers": [ ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['admin-token']}}", "prefix": "" } },
-    { "_id": "req_wallet_admin_users_total", "_type": "request", "parentId": "fld_wallet_admin", "name": "GET /opex/v1/admin/wallet/users/total", "method": "GET", "description": "Returns List<WalletTotal>.", "url": "{{ _['api-host'] }}/opex/v1/admin/wallet/users/total", "headers": [ ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['admin-token']}}", "prefix": "" } },
-
-    { "_id": "fld_voucher", "_type": "request_group", "parentId": "fld_api_opex_rest", "name": "Voucher" },
-    { "_id": "req_voucher_put", "_type": "request", "parentId": "fld_voucher", "name": "PUT /opex/v1/voucher/{code}", "method": "PUT", "description": "Path param: code (string). Returns SubmitVoucherResponse.", "url": "{{ _['api-host'] }}/opex/v1/voucher/{{ _['code'] }}", "headers": [ ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['user-token']}}", "prefix": "" } },
-
-    { "_id": "fld_user_data", "_type": "request_group", "parentId": "fld_api_opex_rest", "name": "User Data" },
-    { "_id": "req_user_data_trade_volume", "_type": "request", "parentId": "fld_user_data", "name": "GET /opex/v1/user/data/trade/volume", "method": "GET", "description": "Query: symbol (string), interval (Interval = Day | Week | Month | Year). Returns BigDecimal.", "url": "{{ _['api-host'] }}/opex/v1/user/data/trade/volume", "parameters": [ { "name": "symbol", "value": "{{ _['symbol'] }}", "description": "Symbol, e.g., BTCUSDT" }, { "name": "interval", "value": "{{ _['interval'] }}", "description": "Interval: Day | Week | Month | Year" } ], "headers": [ ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['user-token']}}", "prefix": "" } },
-    { "_id": "req_user_data_trade_volume_total", "_type": "request", "parentId": "fld_user_data", "name": "GET /opex/v1/user/data/trade/volume/total", "method": "GET", "description": "Query: interval (Interval = Day | Week | Month | Year). Returns BigDecimal.", "url": "{{ _['api-host'] }}/opex/v1/user/data/trade/volume/total", "parameters": [ { "name": "interval", "value": "{{ _['interval'] }}", "description": "Interval: Day | Week | Month | Year" } ], "headers": [ ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['user-token']}}", "prefix": "" } },
-    { "_id": "req_user_data_fee", "_type": "request", "parentId": "fld_user_data", "name": "GET /opex/v1/user/data/fee", "method": "GET", "description": "Returns UserFee.", "url": "{{ _['api-host'] }}/opex/v1/user/data/fee", "headers": [ ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['user-token']}}", "prefix": "" } },
-    { "_id": "req_user_data_withdraw_total", "_type": "request", "parentId": "fld_user_data", "name": "GET /opex/v1/user/data/withdraw/volume/total", "method": "GET", "description": "Query: interval? (label mapped to Interval). Returns BigDecimal.", "url": "{{ _['api-host'] }}/opex/v1/user/data/withdraw/volume/total", "parameters": [ { "name": "interval", "value": "{{ _['interval'] }}", "description": "Optional label: Day | Week | Month | Year" } ], "headers": [ ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['user-token']}}", "prefix": "" } },
-
-    { "_id": "fld_bank_account", "_type": "request_group", "parentId": "fld_api_opex_rest", "name": "Bank Account" },
-    { "_id": "req_bank_add", "_type": "request", "parentId": "fld_bank_account", "name": "POST /opex/v1/bank-account", "method": "POST", "description": "Body = AddBankAccountRequest { name?:String, cardNumber?:String, iban?:String }.", "url": "{{ _['api-host'] }}/opex/v1/bank-account", "body": { "mimeType": "application/json", "text": "{\n  \"name\": \"My Bank\",\n  \"cardNumber\": null,\n  \"iban\": \"IRxxxxxxxxxxxx\"\n}" }, "headers": [ { "name": "Content-Type", "value": "application/json" } ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['user-token']}}", "prefix": "" } },
-    { "_id": "req_bank_list", "_type": "request", "parentId": "fld_bank_account", "name": "GET /opex/v1/bank-account", "method": "GET", "description": "Returns List<BankAccountResponse>.", "url": "{{ _['api-host'] }}/opex/v1/bank-account", "headers": [ ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['user-token']}}", "prefix": "" } },
-    { "_id": "req_bank_delete", "_type": "request", "parentId": "fld_bank_account", "name": "DELETE /opex/v1/bank-account/{id}", "method": "DELETE", "description": "Path param: id (int64). Deletes bank account.", "url": "{{ _['api-host'] }}/opex/v1/bank-account/{{ _['id'] }}", "headers": [ ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['user-token']}}", "prefix": "" } },
-
-    { "_id": "fld_localization_admin", "_type": "request_group", "parentId": "fld_api_opex_rest", "name": "Localization Admin" },
-    { "_id": "req_loc_currency_get", "_type": "request", "parentId": "fld_localization_admin", "name": "GET /opex/v1/admin/currency/{currency}/localization", "method": "GET", "description": "Path: currency (string). Returns CurrencyLocalizationResponse.", "url": "{{ _['api-host'] }}/opex/v1/admin/currency/{{ _['currency'] }}/localization", "headers": [ ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['admin-token']}}", "prefix": "" } },
-    { "_id": "req_loc_currency_post", "_type": "request", "parentId": "fld_localization_admin", "name": "POST /opex/v1/admin/currency/{currency}/localization", "method": "POST", "description": "Path: currency. Body = List<CurrencyLocalizationCommand> { id?:Long, name?:String, title?:String, alias?:String, description?:String, shortDescription?:String, language:String }.", "url": "{{ _['api-host'] }}/opex/v1/admin/currency/{{ _['currency'] }}/localization", "body": { "mimeType": "application/json", "text": "[\n  {\n    \"id\": null,\n    \"name\": \"USDT\",\n    \"title\": \"Tether USD\",\n    \"alias\": \"Tether\",\n    \"description\": \"Stablecoin description\",\n    \"shortDescription\": \"Stablecoin\",\n    \"language\": \"en\"\n  }\n]" }, "headers": [ { "name": "Content-Type", "value": "application/json" } ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['admin-token']}}", "prefix": "" } },
-    { "_id": "req_loc_currency_delete", "_type": "request", "parentId": "fld_localization_admin", "name": "DELETE /opex/v1/admin/currency/localization/{id}", "method": "DELETE", "description": "Path: id (int64). Deletes one currency localization.", "url": "{{ _['api-host'] }}/opex/v1/admin/currency/localization/{{ _['id'] }}", "headers": [ ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['admin-token']}}", "prefix": "" } },
-    { "_id": "req_loc_terminal_get", "_type": "request", "parentId": "fld_localization_admin", "name": "GET /opex/v1/admin/terminal/{terminalUuid}/localization", "method": "GET", "description": "Path: terminalUuid. Returns TerminalLocalizationResponse.", "url": "{{ _['api-host'] }}/opex/v1/admin/terminal/{{ _['terminalUuid'] }}/localization", "headers": [ ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['admin-token']}}", "prefix": "" } },
-    { "_id": "req_loc_terminal_post", "_type": "request", "parentId": "fld_localization_admin", "name": "POST /opex/v1/admin/terminal/{terminalUuid}/localization", "method": "POST", "description": "Path: terminalUuid. Body = List<TerminalLocalizationCommand> { id?:Long, description?:String, owner?:String, language:String }.", "url": "{{ _['api-host'] }}/opex/v1/admin/terminal/{{ _['terminalUuid'] }}/localization", "body": { "mimeType": "application/json", "text": "[\n  {\n    \"id\": null,\n    \"description\": \"Terminal description\",\n    \"owner\": \"OPEX\",\n    \"language\": \"en\"\n  }\n]" }, "headers": [ { "name": "Content-Type", "value": "application/json" } ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['admin-token']}}", "prefix": "" } },
-    { "_id": "req_loc_terminal_delete", "_type": "request", "parentId": "fld_localization_admin", "name": "DELETE /opex/v1/admin/terminal/localization/{id}", "method": "DELETE", "description": "Path: id (int64). Deletes one terminal localization.", "url": "{{ _['api-host'] }}/opex/v1/admin/terminal/localization/{{ _['id'] }}", "headers": [ ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['admin-token']}}", "prefix": "" } },
-    { "_id": "req_loc_gateway_get", "_type": "request", "parentId": "fld_localization_admin", "name": "GET /opex/v1/admin/gateway/{gatewayUuid}/localization", "method": "GET", "description": "Path: gatewayUuid. Returns GatewayLocalizationResponse. Route based on prefix of UUID (ofg | ong).", "url": "{{ _['api-host'] }}/opex/v1/admin/gateway/{{ _['gatewayUuid'] }}/localization", "headers": [ ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['admin-token']}}", "prefix": "" } },
-    { "_id": "req_loc_gateway_post", "_type": "request", "parentId": "fld_localization_admin", "name": "POST /opex/v1/admin/gateway/{gatewayUuid}/localization", "method": "POST", "description": "Path: gatewayUuid. Body = List<GatewayLocalizationCommand> { id?:Long, depositDescription?:String, withdrawDescription?:String, language:String }.", "url": "{{ _['api-host'] }}/opex/v1/admin/gateway/{{ _['gatewayUuid'] }}/localization", "body": { "mimeType": "application/json", "text": "[\n  {\n    \"id\": null,\n    \"depositDescription\": \"Deposit via this gateway\",\n    \"withdrawDescription\": \"Withdraw via this gateway\",\n    \"language\": \"en\"\n  }\n]" }, "headers": [ { "name": "Content-Type", "value": "application/json" } ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['admin-token']}}", "prefix": "" } },
-    { "_id": "req_loc_gateway_delete", "_type": "request", "parentId": "fld_localization_admin", "name": "DELETE /opex/v1/admin/gateway/{gatewayUuid}/localization/{id}", "method": "DELETE", "description": "Path: gatewayUuid, id (int64). Deletes one gateway localization.", "url": "{{ _['api-host'] }}/opex/v1/admin/gateway/{{ _['gatewayUuid'] }}/localization/{{ _['id'] }}", "headers": [ ], "authentication": { "type": "bearer", "disabled": false, "token": "{{_['admin-token']}}", "prefix": "" } }
+    {
+      "_id": "fld_api_opex_rest",
+      "_type": "request_group",
+      "parentId": "wrk_opex",
+      "name": "api-ports / api-opex-rest"
+    },
+    {
+      "_id": "fld_addressbook",
+      "_type": "request_group",
+      "parentId": "fld_api_opex_rest",
+      "name": "Address Book"
+    },
+    {
+      "_id": "req_addr_add",
+      "_type": "request",
+      "parentId": "fld_addressbook",
+      "name": "POST /opex/v1/address-book",
+      "method": "POST",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: authenticated() only; no specific role/permission matcher is defined for /opex/v1/address-book.\n- Insomnia token: {{ _['user-token'] }}.\n- Effective matcher: anyExchange().authenticated().\n\nRequest body: AddAddressBookItemRequest\n{\n  \"name\": \"string\",\n  \"address\": \"string\",\n  \"addressType\": \"string\"\n}\n\nNotes:\n- addressType is implemented as string, not a strict enum in AddAddressBookItemRequest.\n- Known examples: CRYPTO, BANK.\n\nResponse 200: AddressBookResponse\n{\n  \"id\": \"Long | null\",\n  \"name\": \"string\",\n  \"address\": \"string\",\n  \"addressType\": \"string\"\n}",
+      "url": "{{ _['api-host'] }}/opex/v1/address-book",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Home Wallet\",\n  \"address\": \"0x...\",\n  \"addressType\": \"CRYPTO\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['user-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_addr_list",
+      "_type": "request",
+      "parentId": "fld_addressbook",
+      "name": "GET /opex/v1/address-book",
+      "method": "GET",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: authenticated() only; no specific role/permission matcher is defined for /opex/v1/address-book.\n- Insomnia token: {{ _['user-token'] }}.\n- Effective matcher: anyExchange().authenticated().\n\nResponse 200: List<AddressBookResponse>\n[\n  {\n    \"id\": \"Long | null\",\n    \"name\": \"string\",\n    \"address\": \"string\",\n    \"addressType\": \"string\"\n  }\n]",
+      "url": "{{ _['api-host'] }}/opex/v1/address-book",
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['user-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_addr_delete",
+      "_type": "request",
+      "parentId": "fld_addressbook",
+      "name": "DELETE /opex/v1/address-book/{id}",
+      "method": "DELETE",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: authenticated() only; no specific role/permission matcher is defined for /opex/v1/address-book.\n- Insomnia token: {{ _['user-token'] }}.\n- Effective matcher: anyExchange().authenticated().\n\nPath params:\n- id: Long\n\nResponse 200:\nNo response body.",
+      "url": "{{ _['api-host'] }}/opex/v1/address-book/{{ _['id'] }}",
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['user-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_addr_update",
+      "_type": "request",
+      "parentId": "fld_addressbook",
+      "name": "PUT /opex/v1/address-book/{id}",
+      "method": "PUT",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: authenticated() only; no specific role/permission matcher is defined for /opex/v1/address-book.\n- Insomnia token: {{ _['user-token'] }}.\n- Effective matcher: anyExchange().authenticated().\n\nPath params:\n- id: Long\n\nRequest body: AddAddressBookItemRequest\n{\n  \"name\": \"string\",\n  \"address\": \"string\",\n  \"addressType\": \"string\"\n}\n\nNotes:\n- addressType is implemented as string, not a strict enum in AddAddressBookItemRequest.\n- Known examples: CRYPTO, BANK.\n\nResponse 200: AddressBookResponse\n{\n  \"id\": \"Long | null\",\n  \"name\": \"string\",\n  \"address\": \"string\",\n  \"addressType\": \"string\"\n}",
+      "url": "{{ _['api-host'] }}/opex/v1/address-book/{{ _['id'] }}",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Updated Name\",\n  \"address\": \"0x...\",\n  \"addressType\": \"CRYPTO\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['user-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "fld_storage_admin",
+      "_type": "request_group",
+      "parentId": "fld_api_opex_rest",
+      "name": "Storage Admin"
+    },
+    {
+      "_id": "req_storage_get",
+      "_type": "request",
+      "parentId": "fld_storage_admin",
+      "name": "GET /opex/v1/admin/storage",
+      "method": "GET",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nQuery params:\n- bucket: string\n- key: string\n\nResponse 200:\nBinary file stream.\nContent-Type: application/octet-stream\nSchema:\n{\n  \"type\": \"string\",\n  \"format\": \"binary\"\n}",
+      "url": "{{ _['api-host'] }}/opex/v1/admin/storage",
+      "parameters": [
+        {
+          "name": "bucket",
+          "value": "{{ _['bucket'] }}",
+          "description": "Bucket name"
+        },
+        {
+          "name": "key",
+          "value": "{{ _['key'] }}",
+          "description": "Object key"
+        }
+      ],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['admin-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_storage_post",
+      "_type": "request",
+      "parentId": "fld_storage_admin",
+      "name": "POST /opex/v1/admin/storage",
+      "method": "POST",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nQuery params:\n- bucket: string\n- key: string\n- isPublic: boolean | null, default false\n\nMultipart form-data parts:\n- file: binary file\n\nResponse 200: string\nExample:\n\"http://localhost:8094/opex/v1/storage?bucket=public&key=logo.png\"",
+      "url": "{{ _['api-host'] }}/opex/v1/admin/storage",
+      "parameters": [
+        {
+          "name": "bucket",
+          "value": "{{ _['bucket'] }}",
+          "description": "Bucket name"
+        },
+        {
+          "name": "key",
+          "value": "{{ _['key'] }}",
+          "description": "Object key"
+        },
+        {
+          "name": "isPublic",
+          "value": "false",
+          "description": "Publicly accessible if true"
+        }
+      ],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['admin-token']}}",
+        "prefix": ""
+      },
+      "body": {
+        "mimeType": "multipart/form-data",
+        "params": [
+          {
+            "name": "file",
+            "type": "file",
+            "fileName": "/path/to/file.png"
+          }
+        ],
+        "paramsOrder": [
+          "file"
+        ]
+      }
+    },
+    {
+      "_id": "req_storage_delete",
+      "_type": "request",
+      "parentId": "fld_storage_admin",
+      "name": "DELETE /opex/v1/admin/storage",
+      "method": "DELETE",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nQuery params:\n- bucket: string\n- key: string\n\nResponse 200:\nNo response body.",
+      "url": "{{ _['api-host'] }}/opex/v1/admin/storage",
+      "parameters": [
+        {
+          "name": "bucket",
+          "value": "{{ _['bucket'] }}",
+          "description": "Bucket name"
+        },
+        {
+          "name": "key",
+          "value": "{{ _['key'] }}",
+          "description": "Object key"
+        }
+      ],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['admin-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "fld_withdraw",
+      "_type": "request_group",
+      "parentId": "fld_api_opex_rest",
+      "name": "Withdraw"
+    },
+    {
+      "_id": "req_withdraw_post",
+      "_type": "request",
+      "parentId": "fld_withdraw",
+      "name": "POST /opex/v1/withdraw",
+      "method": "POST",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: PERM_withdraw:write.\n- Insomnia token: {{ _['user-token'] }}.\n- Security matcher: POST /opex/v1/withdraw.\n\nRequest body: RequestWithdrawBody\n{\n  \"currency\": \"string\",\n  \"amount\": \"BigDecimal\",\n  \"destSymbol\": \"string | null\",\n  \"destAddress\": \"string\",\n  \"destNetwork\": \"string | null\",\n  \"destNote\": \"string | null\",\n  \"gatewayUuid\": \"string | null\"\n}\n\nResponse 200: WithdrawActionResult | null\n{\n  \"withdrawId\": \"string\",\n  \"status\": \"REQUESTED | CREATED | ACCEPTED | CANCELED | REJECTED | DONE\",\n  \"nextAction\": \"OTP_EMAIL | OTP_MOBILE | WAITING_FOR_ADMIN | null\"\n}\n\nEnums:\n- status: REQUESTED | CREATED | ACCEPTED | CANCELED | REJECTED | DONE\n- nextAction: OTP_EMAIL | OTP_MOBILE | WAITING_FOR_ADMIN | null",
+      "url": "{{ _['api-host'] }}/opex/v1/withdraw",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"currency\": \"USDT\",\n  \"amount\": 50.00,\n  \"destSymbol\": null,\n  \"destAddress\": \"0x...\",\n  \"destNetwork\": null,\n  \"destNote\": null,\n  \"gatewayUuid\": null\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['user-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_withdraw_cancel",
+      "_type": "request",
+      "parentId": "fld_withdraw",
+      "name": "PUT /opex/v1/withdraw/{withdrawUuid}/cancel",
+      "method": "PUT",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: authenticated() only for this exact URL, because the config only defines PUT /opex/v1/withdraw, not PUT /opex/v1/withdraw/{withdrawUuid}/cancel.\n- Insomnia token: {{ _['user-token'] }}.\n- Effective matcher: anyExchange().authenticated().\n- Review note: if cancel should require withdraw permission, add a matcher such as PUT /opex/v1/withdraw/** with PERM_withdraw:write.\n\nPath params:\n- withdrawUuid: string\n\nResponse 200:\nNo response body.",
+      "url": "{{ _['api-host'] }}/opex/v1/withdraw/{{ _['withdrawUuid'] }}/cancel",
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['user-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_withdraw_find",
+      "_type": "request",
+      "parentId": "fld_withdraw",
+      "name": "GET /opex/v1/withdraw/{withdrawUuid}",
+      "method": "GET",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: authenticated() only; no specific GET matcher is defined for /opex/v1/withdraw/{withdrawUuid}.\n- Insomnia token: {{ _['user-token'] }}.\n- Effective matcher: anyExchange().authenticated().\n\nPath params:\n- withdrawUuid: string\n\nResponse 200: WithdrawResponse\n{\n  \"withdrawId\": \"string\",\n  \"uuid\": \"string\",\n  \"amount\": \"BigDecimal\",\n  \"currency\": \"string\",\n  \"appliedFee\": \"BigDecimal\",\n  \"destAmount\": \"BigDecimal | null\",\n  \"destSymbol\": \"string | null\",\n  \"destAddress\": \"string | null\",\n  \"destNetwork\": \"string | null\",\n  \"destNote\": \"string | null\",\n  \"destTransactionRef\": \"string | null\",\n  \"statusReason\": \"string | null\",\n  \"status\": \"REQUESTED | CREATED | ACCEPTED | CANCELED | REJECTED | DONE\",\n  \"applicator\": \"string | null\",\n  \"withdrawType\": \"CARD_TO_CARD | SHEBA | ON_CHAIN | OFF_CHAIN\",\n  \"attachment\": \"string | null\",\n  \"createDate\": \"LocalDateTime\",\n  \"lastUpdateDate\": \"LocalDateTime | null\",\n  \"transferMethod\": \"CARD | SHEBA | IPG | EXCHANGE | MANUALLY | VOUCHER | MPG | REWARD | null\",\n  \"otpRequired\": \"integer | null\"\n}",
+      "url": "{{ _['api-host'] }}/opex/v1/withdraw/{{ _['withdrawUuid'] }}",
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['user-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_withdraw_otp_req",
+      "_type": "request",
+      "parentId": "fld_withdraw",
+      "name": "POST /opex/v1/withdraw/{withdrawUuid}/otp/{otpType}/request",
+      "method": "POST",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: authenticated() only for this exact URL, because the config only defines POST /opex/v1/withdraw, not POST /opex/v1/withdraw/{withdrawUuid}/otp/{otpType}/request.\n- Insomnia token: {{ _['user-token'] }}.\n- Effective matcher: anyExchange().authenticated().\n\nPath params:\n- withdrawUuid: string\n- otpType: SMS | EMAIL\n\nResponse 200: TempOtpResponse\n{\n  \"otp\": \"string | null\",\n  \"receivers\": [\n    {\n      \"receiver\": \"string\",\n      \"type\": \"SMS | EMAIL\"\n    }\n  ]\n}",
+      "url": "{{ _['api-host'] }}/opex/v1/withdraw/{{ _['withdrawUuid'] }}/otp/{{ _['otpType'] }}/request",
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['user-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_withdraw_otp_verify",
+      "_type": "request",
+      "parentId": "fld_withdraw",
+      "name": "POST /opex/v1/withdraw/{withdrawUuid}/otp/{otpType}/verify",
+      "method": "POST",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: authenticated() only for this exact URL, because the config only defines POST /opex/v1/withdraw, not POST /opex/v1/withdraw/{withdrawUuid}/otp/{otpType}/verify.\n- Insomnia token: {{ _['user-token'] }}.\n- Effective matcher: anyExchange().authenticated().\n\nPath params:\n- withdrawUuid: string\n- otpType: SMS | EMAIL\n\nQuery params:\n- otpCode: string\n\nResponse 200: WithdrawActionResult\n{\n  \"withdrawId\": \"string\",\n  \"status\": \"REQUESTED | CREATED | ACCEPTED | CANCELED | REJECTED | DONE\",\n  \"nextAction\": \"OTP_EMAIL | OTP_MOBILE | WAITING_FOR_ADMIN | null\"\n}\n\nEnums:\n- status: REQUESTED | CREATED | ACCEPTED | CANCELED | REJECTED | DONE\n- nextAction: OTP_EMAIL | OTP_MOBILE | WAITING_FOR_ADMIN | null",
+      "url": "{{ _['api-host'] }}/opex/v1/withdraw/{{ _['withdrawUuid'] }}/otp/{{ _['otpType'] }}/verify",
+      "parameters": [
+        {
+          "name": "otpCode",
+          "value": "{{ _['otpCode'] }}",
+          "description": "OTP code"
+        }
+      ],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['user-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "fld_deposit",
+      "_type": "request_group",
+      "parentId": "fld_api_opex_rest",
+      "name": "Deposit"
+    },
+    {
+      "_id": "req_deposit_post",
+      "_type": "request",
+      "parentId": "fld_deposit",
+      "name": "POST /opex/v1/deposit",
+      "method": "POST",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: PERM_deposit:write.\n- Insomnia token: {{ _['user-token'] }}; paste a user/API-key JWT that contains PERM_deposit:write.\n- Security matcher: /opex/v1/deposit/**.\n\nRequest body: RequestDepositBody\n{\n  \"symbol\": \"string\",\n  \"receiverUuid\": \"string\",\n  \"receiverWalletType\": \"WalletType\",\n  \"amount\": \"BigDecimal\",\n  \"description\": \"string | null\",\n  \"transferRef\": \"string | null\",\n  \"gatewayUuid\": \"string | null\",\n  \"chain\": \"string | null\"\n}\n\nNotes:\n- receiverWalletType uses WalletType. The current request DTO references WalletType, but this collection does not lock specific enum values.\n\nResponse 200: TransferResult | null\n{\n  \"date\": \"Long\",\n  \"sourceUuid\": \"string\",\n  \"sourceWalletType\": \"WalletType\",\n  \"sourceBalanceBeforeAction\": {\n    \"currency\": {\n      \"symbol\": \"string\",\n      \"uuid\": \"string | null\",\n      \"name\": \"string | null\",\n      \"precision\": \"BigDecimal\",\n      \"title\": \"string | null\",\n      \"alias\": \"string | null\",\n      \"icon\": \"string | null\",\n      \"isTransitive\": \"boolean | null\",\n      \"isActive\": \"boolean | null\",\n      \"sign\": \"string | null\",\n      \"description\": \"string | null\",\n      \"shortDescription\": \"string | null\",\n      \"withdrawAllowed\": \"boolean | null\",\n      \"depositAllowed\": \"boolean | null\",\n      \"externalUrl\": \"string | null\",\n      \"gateways\": \"array | null\",\n      \"availableGatewayType\": \"string | null\",\n      \"displayOrder\": \"integer | null\"\n    },\n    \"amount\": \"BigDecimal\"\n  },\n  \"sourceBalanceAfterAction\": Amount,\n  \"amount\": Amount,\n  \"destUuid\": \"string\",\n  \"destWalletType\": \"WalletType\",\n  \"receivedAmount\": Amount,\n  \"sourceWallet\": \"Long | null\",\n  \"destWallet\": \"Long | null\"\n}\n\nNested Amount:\n{\n  \"currency\": CurrencyCommand,\n  \"amount\": \"BigDecimal\"\n}\n\nNested CurrencyCommand:\n{\n  \"symbol\": \"string\",\n  \"uuid\": \"string | null\",\n  \"name\": \"string | null\",\n  \"precision\": \"BigDecimal\",\n  \"title\": \"string | null\",\n  \"alias\": \"string | null\",\n  \"icon\": \"string | null\",\n  \"isTransitive\": \"boolean | null\",\n  \"isActive\": \"boolean | null\",\n  \"sign\": \"string | null\",\n  \"description\": \"string | null\",\n  \"shortDescription\": \"string | null\",\n  \"withdrawAllowed\": \"boolean | null\",\n  \"depositAllowed\": \"boolean | null\",\n  \"externalUrl\": \"string | null\",\n  \"gateways\": \"array | null\",\n  \"availableGatewayType\": \"string | null\",\n  \"displayOrder\": \"integer | null\"\n}",
+      "url": "{{ _['api-host'] }}/opex/v1/deposit",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"symbol\": \"USDT\",\n  \"receiverUuid\": \"{{ _['id'] }}\",\n  \"receiverWalletType\": \"MAIN\",\n  \"amount\": 100.00,\n  \"description\": null,\n  \"transferRef\": null,\n  \"gatewayUuid\": null,\n  \"chain\": null\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['user-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "fld_wallet_admin",
+      "_type": "request_group",
+      "parentId": "fld_api_opex_rest",
+      "name": "Wallet Admin"
+    },
+    {
+      "_id": "req_wallet_admin_users",
+      "_type": "request",
+      "parentId": "fld_wallet_admin",
+      "name": "GET /opex/v1/admin/wallet/users",
+      "method": "GET",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nQuery params:\n- uuid: string | null\n- currency: string | null\n- excludeSystem: boolean, default false\n- limit: integer | null, default 10\n- offset: integer | null, default 0\n\nResponse 200: List<WalletDataResponse>\n[\n  {\n    \"uuid\": \"string\",\n    \"title\": \"string\",\n    \"wallets\": [\n      {\n        \"currency\": \"string\",\n        \"free\": \"double\",\n        \"locked\": \"double\",\n        \"pendingWithdraw\": \"double\"\n      }\n    ]\n  }\n]",
+      "url": "{{ _['api-host'] }}/opex/v1/admin/wallet/users",
+      "parameters": [
+        {
+          "name": "excludeSystem",
+          "value": "false",
+          "description": "Exclude system wallets"
+        },
+        {
+          "name": "limit",
+          "value": "10",
+          "description": "Page size"
+        },
+        {
+          "name": "offset",
+          "value": "0",
+          "description": "Page offset"
+        }
+      ],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['admin-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_wallet_admin_system_total",
+      "_type": "request",
+      "parentId": "fld_wallet_admin",
+      "name": "GET /opex/v1/admin/wallet/system/total",
+      "method": "GET",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nResponse 200: List<WalletTotal>\n[\n  {\n    \"currency\": \"string\",\n    \"balance\": \"double\"\n  }\n]",
+      "url": "{{ _['api-host'] }}/opex/v1/admin/wallet/system/total",
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['admin-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_wallet_admin_users_total",
+      "_type": "request",
+      "parentId": "fld_wallet_admin",
+      "name": "GET /opex/v1/admin/wallet/users/total",
+      "method": "GET",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nResponse 200: List<WalletTotal> | null\n[\n  {\n    \"currency\": \"string\",\n    \"balance\": \"double\"\n  }\n]",
+      "url": "{{ _['api-host'] }}/opex/v1/admin/wallet/users/total",
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['admin-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "fld_voucher",
+      "_type": "request_group",
+      "parentId": "fld_api_opex_rest",
+      "name": "Voucher"
+    },
+    {
+      "_id": "req_voucher_put",
+      "_type": "request",
+      "parentId": "fld_voucher",
+      "name": "PUT /opex/v1/voucher/{code}",
+      "method": "PUT",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Insomnia token: {{ _['user-token'] }}.\n- Config note: SecurityConfig defines PERM_voucher:submit for /opex/v1/voucher, but this request calls /opex/v1/voucher/{code}.\n- Effective matcher for this exact URL may fall back to anyExchange().authenticated() unless the matcher is changed to /opex/v1/voucher/**.\n- Intended authority to use for voucher-submit tokens: PERM_voucher:submit.\n\nPath params:\n- code: string\n\nResponse 200: SubmitVoucherResponse\n{\n  \"amount\": \"BigDecimal\",\n  \"currency\": \"string\",\n  \"issuer\": \"string | null\",\n  \"description\": \"string | null\"\n}",
+      "url": "{{ _['api-host'] }}/opex/v1/voucher/{{ _['code'] }}",
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['user-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "fld_user_data",
+      "_type": "request_group",
+      "parentId": "fld_api_opex_rest",
+      "name": "User Data"
+    },
+    {
+      "_id": "req_user_data_trade_volume",
+      "_type": "request",
+      "parentId": "fld_user_data",
+      "name": "GET /opex/v1/user/data/trade/volume",
+      "method": "GET",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: authenticated() only; no specific role/permission matcher is defined for /opex/v1/user/data/**.\n- Insomnia token: {{ _['user-token'] }}.\n- Effective matcher: anyExchange().authenticated().\n\nQuery params:\n- symbol: string, e.g. BTCUSDT\n- interval: Day | Week | Month | Year\n\nResponse 200: BigDecimal\nExample:\n12345.6789",
+      "url": "{{ _['api-host'] }}/opex/v1/user/data/trade/volume",
+      "parameters": [
+        {
+          "name": "symbol",
+          "value": "{{ _['symbol'] }}",
+          "description": "Symbol, e.g., BTCUSDT"
+        },
+        {
+          "name": "interval",
+          "value": "{{ _['interval'] }}",
+          "description": "Interval: Day | Week | Month | Year"
+        }
+      ],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['user-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_user_data_trade_volume_total",
+      "_type": "request",
+      "parentId": "fld_user_data",
+      "name": "GET /opex/v1/user/data/trade/volume/total",
+      "method": "GET",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: authenticated() only; no specific role/permission matcher is defined for /opex/v1/user/data/**.\n- Insomnia token: {{ _['user-token'] }}.\n- Effective matcher: anyExchange().authenticated().\n\nQuery params:\n- interval: Day | Week | Month | Year\n\nResponse 200: BigDecimal\nExample:\n12345.6789",
+      "url": "{{ _['api-host'] }}/opex/v1/user/data/trade/volume/total",
+      "parameters": [
+        {
+          "name": "interval",
+          "value": "{{ _['interval'] }}",
+          "description": "Interval: Day | Week | Month | Year"
+        }
+      ],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['user-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_user_data_fee",
+      "_type": "request",
+      "parentId": "fld_user_data",
+      "name": "GET /opex/v1/user/data/fee",
+      "method": "GET",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: authenticated() only; no specific role/permission matcher is defined for /opex/v1/user/data/**.\n- Insomnia token: {{ _['user-token'] }}.\n- Effective matcher: anyExchange().authenticated().\n\nResponse 200: UserFee\n{\n  \"name\": \"string\",\n  \"makerFee\": \"BigDecimal\",\n  \"takerFee\": \"BigDecimal\"\n}",
+      "url": "{{ _['api-host'] }}/opex/v1/user/data/fee",
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['user-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_user_data_withdraw_total",
+      "_type": "request",
+      "parentId": "fld_user_data",
+      "name": "GET /opex/v1/user/data/withdraw/volume/total",
+      "method": "GET",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: authenticated() only; no specific role/permission matcher is defined for /opex/v1/user/data/**.\n- Insomnia token: {{ _['user-token'] }}.\n- Effective matcher: anyExchange().authenticated().\n\nQuery params:\n- interval: string | null\n- Accepted labels map to Interval, commonly: Day | Week | Month | Year\n\nResponse 200: BigDecimal\nExample:\n12345.6789",
+      "url": "{{ _['api-host'] }}/opex/v1/user/data/withdraw/volume/total",
+      "parameters": [
+        {
+          "name": "interval",
+          "value": "{{ _['interval'] }}",
+          "description": "Optional label: Day | Week | Month | Year"
+        }
+      ],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['user-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "fld_bank_account",
+      "_type": "request_group",
+      "parentId": "fld_api_opex_rest",
+      "name": "Bank Account"
+    },
+    {
+      "_id": "req_bank_add",
+      "_type": "request",
+      "parentId": "fld_bank_account",
+      "name": "POST /opex/v1/bank-account",
+      "method": "POST",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: PERM_bank_account:write.\n- Insomnia token: {{ _['user-token'] }}; paste a user/API-key JWT that contains PERM_bank_account:write.\n- Security matcher: /opex/v1/bank-account/**.\n\nRequest body: AddBankAccountRequest\n{\n  \"name\": \"string | null\",\n  \"cardNumber\": \"string | null\",\n  \"iban\": \"string | null\"\n}\n\nResponse 200: BankAccountResponse\n{\n  \"id\": \"Long | null\",\n  \"name\": \"string | null\",\n  \"cardNumber\": \"string | null\",\n  \"iban\": \"string | null\",\n  \"accountNumber\": \"string | null\",\n  \"bank\": \"string | null\",\n  \"status\": \"WAITING | VERIFIED | REJECTED\"\n}",
+      "url": "{{ _['api-host'] }}/opex/v1/bank-account",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"My Bank\",\n  \"cardNumber\": null,\n  \"iban\": \"IRxxxxxxxxxxxx\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['user-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_bank_list",
+      "_type": "request",
+      "parentId": "fld_bank_account",
+      "name": "GET /opex/v1/bank-account",
+      "method": "GET",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: none.\n- Required authority: permitAll for GET /opex/v1/bank-account.\n- Insomnia token: optional; the collection currently sends {{ _['user-token'] }}, but the endpoint is public according to SecurityConfig.\n- Security matcher: GET /opex/v1/bank-account.\n\nResponse 200: List<BankAccountResponse>\n[\n  {\n    \"id\": \"Long | null\",\n    \"name\": \"string | null\",\n    \"cardNumber\": \"string | null\",\n    \"iban\": \"string | null\",\n    \"accountNumber\": \"string | null\",\n    \"bank\": \"string | null\",\n    \"status\": \"WAITING | VERIFIED | REJECTED\"\n  }\n]",
+      "url": "{{ _['api-host'] }}/opex/v1/bank-account",
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['user-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_bank_delete",
+      "_type": "request",
+      "parentId": "fld_bank_account",
+      "name": "DELETE /opex/v1/bank-account/{id}",
+      "method": "DELETE",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: PERM_bank_account:write.\n- Insomnia token: {{ _['user-token'] }}; paste a user/API-key JWT that contains PERM_bank_account:write.\n- Security matcher: /opex/v1/bank-account/**.\n\nPath params:\n- id: Long\n\nResponse 200:\nNo response body.",
+      "url": "{{ _['api-host'] }}/opex/v1/bank-account/{{ _['id'] }}",
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['user-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "fld_localization_admin",
+      "_type": "request_group",
+      "parentId": "fld_api_opex_rest",
+      "name": "Localization Admin"
+    },
+    {
+      "_id": "req_loc_currency_get",
+      "_type": "request",
+      "parentId": "fld_localization_admin",
+      "name": "GET /opex/v1/admin/currency/{currency}/localization",
+      "method": "GET",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nPath params:\n- currency: string\n\nResponse 200: CurrencyLocalizationResponse\n{\n  \"currency\": \"string\",\n  \"currencyLocalizations\": [\n    {\n      \"id\": \"Long | null\",\n      \"name\": \"string | null\",\n      \"title\": \"string | null\",\n      \"alias\": \"string | null\",\n      \"description\": \"string | null\",\n      \"shortDescription\": \"string | null\",\n      \"language\": \"string\"\n    }\n  ]\n}",
+      "url": "{{ _['api-host'] }}/opex/v1/admin/currency/{{ _['currency'] }}/localization",
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['admin-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_loc_currency_post",
+      "_type": "request",
+      "parentId": "fld_localization_admin",
+      "name": "POST /opex/v1/admin/currency/{currency}/localization",
+      "method": "POST",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nPath params:\n- currency: string\n\nRequest body: List<CurrencyLocalizationCommand>\n[\n  {\n    \"id\": \"Long | null\",\n    \"name\": \"string | null\",\n    \"title\": \"string | null\",\n    \"alias\": \"string | null\",\n    \"description\": \"string | null\",\n    \"shortDescription\": \"string | null\",\n    \"language\": \"string\"\n  }\n]\n\nResponse 200: CurrencyLocalizationResponse\n{\n  \"currency\": \"string\",\n  \"currencyLocalizations\": [\n    {\n      \"id\": \"Long | null\",\n      \"name\": \"string | null\",\n      \"title\": \"string | null\",\n      \"alias\": \"string | null\",\n      \"description\": \"string | null\",\n      \"shortDescription\": \"string | null\",\n      \"language\": \"string\"\n    }\n  ]\n}",
+      "url": "{{ _['api-host'] }}/opex/v1/admin/currency/{{ _['currency'] }}/localization",
+      "body": {
+        "mimeType": "application/json",
+        "text": "[\n  {\n    \"id\": null,\n    \"name\": \"USDT\",\n    \"title\": \"Tether USD\",\n    \"alias\": \"Tether\",\n    \"description\": \"Stablecoin description\",\n    \"shortDescription\": \"Stablecoin\",\n    \"language\": \"en\"\n  }\n]"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['admin-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_loc_currency_delete",
+      "_type": "request",
+      "parentId": "fld_localization_admin",
+      "name": "DELETE /opex/v1/admin/currency/localization/{id}",
+      "method": "DELETE",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nPath params:\n- id: Long\n\nResponse 200:\nNo response body.",
+      "url": "{{ _['api-host'] }}/opex/v1/admin/currency/localization/{{ _['id'] }}",
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['admin-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_loc_terminal_get",
+      "_type": "request",
+      "parentId": "fld_localization_admin",
+      "name": "GET /opex/v1/admin/terminal/{terminalUuid}/localization",
+      "method": "GET",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nPath params:\n- terminalUuid: string\n\nResponse 200: TerminalLocalizationResponse\n{\n  \"terminalUuid\": \"string\",\n  \"terminalLocalizations\": [\n    {\n      \"id\": \"Long | null\",\n      \"description\": \"string | null\",\n      \"owner\": \"string | null\",\n      \"language\": \"string\"\n    }\n  ]\n}",
+      "url": "{{ _['api-host'] }}/opex/v1/admin/terminal/{{ _['terminalUuid'] }}/localization",
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['admin-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_loc_terminal_post",
+      "_type": "request",
+      "parentId": "fld_localization_admin",
+      "name": "POST /opex/v1/admin/terminal/{terminalUuid}/localization",
+      "method": "POST",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nPath params:\n- terminalUuid: string\n\nRequest body: List<TerminalLocalizationCommand>\n[\n  {\n    \"id\": \"Long | null\",\n    \"description\": \"string | null\",\n    \"owner\": \"string | null\",\n    \"language\": \"string\"\n  }\n]\n\nResponse 200: TerminalLocalizationResponse\n{\n  \"terminalUuid\": \"string\",\n  \"terminalLocalizations\": [\n    {\n      \"id\": \"Long | null\",\n      \"description\": \"string | null\",\n      \"owner\": \"string | null\",\n      \"language\": \"string\"\n    }\n  ]\n}",
+      "url": "{{ _['api-host'] }}/opex/v1/admin/terminal/{{ _['terminalUuid'] }}/localization",
+      "body": {
+        "mimeType": "application/json",
+        "text": "[\n  {\n    \"id\": null,\n    \"description\": \"Terminal description\",\n    \"owner\": \"OPEX\",\n    \"language\": \"en\"\n  }\n]"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['admin-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_loc_terminal_delete",
+      "_type": "request",
+      "parentId": "fld_localization_admin",
+      "name": "DELETE /opex/v1/admin/terminal/localization/{id}",
+      "method": "DELETE",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nPath params:\n- id: Long\n\nResponse 200:\nNo response body.",
+      "url": "{{ _['api-host'] }}/opex/v1/admin/terminal/localization/{{ _['id'] }}",
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['admin-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_loc_gateway_get",
+      "_type": "request",
+      "parentId": "fld_localization_admin",
+      "name": "GET /opex/v1/admin/gateway/{gatewayUuid}/localization",
+      "method": "GET",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nPath params:\n- gatewayUuid: string\n\nRouting rule:\n- gatewayUuid starting with \"ofg\" uses off-chain gateway localization.\n- gatewayUuid starting with \"ong\" uses on-chain gateway localization.\n\nResponse 200: GatewayLocalizationResponse\n{\n  \"gatewayUuid\": \"string\",\n  \"localizations\": [\n    {\n      \"id\": \"Long | null\",\n      \"depositDescription\": \"string | null\",\n      \"withdrawDescription\": \"string | null\",\n      \"language\": \"string\"\n    }\n  ]\n}",
+      "url": "{{ _['api-host'] }}/opex/v1/admin/gateway/{{ _['gatewayUuid'] }}/localization",
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['admin-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_loc_gateway_post",
+      "_type": "request",
+      "parentId": "fld_localization_admin",
+      "name": "POST /opex/v1/admin/gateway/{gatewayUuid}/localization",
+      "method": "POST",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nPath params:\n- gatewayUuid: string\n\nRouting rule:\n- gatewayUuid starting with \"ofg\" saves off-chain gateway localization.\n- gatewayUuid starting with \"ong\" saves on-chain gateway localization.\n\nRequest body: List<GatewayLocalizationCommand>\n[\n  {\n    \"id\": \"Long | null\",\n    \"depositDescription\": \"string | null\",\n    \"withdrawDescription\": \"string | null\",\n    \"language\": \"string\"\n  }\n]\n\nResponse 200: GatewayLocalizationResponse\n{\n  \"gatewayUuid\": \"string\",\n  \"localizations\": [\n    {\n      \"id\": \"Long | null\",\n      \"depositDescription\": \"string | null\",\n      \"withdrawDescription\": \"string | null\",\n      \"language\": \"string\"\n    }\n  ]\n}",
+      "url": "{{ _['api-host'] }}/opex/v1/admin/gateway/{{ _['gatewayUuid'] }}/localization",
+      "body": {
+        "mimeType": "application/json",
+        "text": "[\n  {\n    \"id\": null,\n    \"depositDescription\": \"Deposit via this gateway\",\n    \"withdrawDescription\": \"Withdraw via this gateway\",\n    \"language\": \"en\"\n  }\n]"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['admin-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_loc_gateway_delete",
+      "_type": "request",
+      "parentId": "fld_localization_admin",
+      "name": "DELETE /opex/v1/admin/gateway/{gatewayUuid}/localization/{id}",
+      "method": "DELETE",
+      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nPath params:\n- gatewayUuid: string\n- id: Long\n\nRouting rule:\n- gatewayUuid starting with \"ofg\" deletes off-chain gateway localization.\n- gatewayUuid starting with \"ong\" deletes on-chain gateway localization.\n\nResponse 200:\nNo response body.",
+      "url": "{{ _['api-host'] }}/opex/v1/admin/gateway/{{ _['gatewayUuid'] }}/localization/{{ _['id'] }}",
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['admin-token']}}",
+        "prefix": ""
+      }
+    }
   ]
 }
