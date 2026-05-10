@@ -1,0 +1,31 @@
+Public API Path,Internal Module Path,Method,Module,Through API Layer,Auth Required,Roles/Permissions,Controller,Notes
+/opex/v1/address-book,UNKNOWN,POST,profile-app,YES,YES,NOT CLEAR,AddressBookController,Proxy: ProfileProxy.addAddressBook(token, request)
+/opex/v1/address-book,UNKNOWN,GET,profile-app,YES,YES,NOT CLEAR,AddressBookController,Proxy: ProfileProxy.getAllAddressBooks(token)
+/opex/v1/address-book/{id},UNKNOWN,DELETE,profile-app,YES,YES,NOT CLEAR,AddressBookController,Proxy: ProfileProxy.deleteAddressBook(token, id)
+/opex/v1/address-book/{id},UNKNOWN,PUT,profile-app,YES,YES,NOT CLEAR,AddressBookController,Proxy: ProfileProxy.updateAddressBook(token, id, request)
+/opex/v1/admin/storage,UNKNOWN,GET,storage,YES,YES,ADMIN? (NEEDS REVIEW),StorageAdminController,Download file by bucket/key
+/opex/v1/admin/storage,UNKNOWN,POST,storage,YES,YES,ADMIN? (NEEDS REVIEW),StorageAdminController,Upload multipart file; returns URL
+/opex/v1/admin/storage,UNKNOWN,DELETE,storage,YES,YES,ADMIN? (NEEDS REVIEW),StorageAdminController,Delete file by bucket/key
+/opex/v1/withdraw,UNKNOWN,POST,wallet-app,YES,YES,NOT CLEAR,WithdrawController,Request withdraw
+/opex/v1/withdraw/{withdrawUuid}/cancel,UNKNOWN,PUT,wallet-app,YES,YES,NOT CLEAR,WithdrawController,Cancel withdraw
+/opex/v1/withdraw/{withdrawUuid},UNKNOWN,GET,wallet-app,YES,YES,NOT CLEAR,WithdrawController,Find withdraw
+/opex/v1/withdraw/{withdrawUuid}/otp/{otpType}/request,UNKNOWN,POST,wallet-app,YES,YES,NOT CLEAR,WithdrawController,Request withdraw OTP
+/opex/v1/withdraw/{withdrawUuid}/otp/{otpType}/verify,UNKNOWN,POST,wallet-app,YES,YES,NOT CLEAR,WithdrawController,Verify withdraw OTP (otpCode as query)
+/opex/v1/deposit,UNKNOWN,POST,wallet-app,YES,NOT CLEAR,NOT CLEAR,DepositController,Security not explicit at controller; verify upstream security
+/opex/v1/admin/wallet/users,UNKNOWN,GET,wallet-app,YES,YES,ADMIN? (NEEDS REVIEW),WalletAdminController,List users wallets
+/opex/v1/admin/wallet/system/total,UNKNOWN,GET,wallet-app,YES,YES,ADMIN? (NEEDS REVIEW),WalletAdminController,System wallets total
+/opex/v1/admin/wallet/users/total,UNKNOWN,GET,wallet-app,YES,YES,ADMIN? (NEEDS REVIEW),WalletAdminController,Users wallets total
+/opex/v1/voucher/{code},UNKNOWN,PUT,wallet-app,YES,YES,USER (implicit),VoucherController,Submit voucher using token
+/opex/v1/user/data/trade/volume,UNKNOWN,GET,accountant-app,YES,YES,USER (implicit),UserDataController,Requires symbol and interval
+/opex/v1/user/data/trade/volume/total,UNKNOWN,GET,accountant-app,YES,YES,USER (implicit),UserDataController,Requires interval
+/opex/v1/user/data/fee,UNKNOWN,GET,accountant-app,YES,YES,USER (implicit),UserDataController,Returns UserFee
+/opex/v1/user/data/withdraw/volume/total,UNKNOWN,GET,accountant-app,YES,YES,USER (implicit),UserDataController,Optional interval string mapped to enum
+/opex/v1/admin/currency/{currency}/localization,UNKNOWN,GET,wallet-app,YES,YES,ADMIN? (NEEDS REVIEW),LocalizationAdminController,Get currency localization
+/opex/v1/admin/currency/{currency}/localization,UNKNOWN,POST,wallet-app,YES,YES,ADMIN? (NEEDS REVIEW),LocalizationAdminController,Save currency localizations
+/opex/v1/admin/currency/localization/{id},UNKNOWN,DELETE,wallet-app,YES,YES,ADMIN? (NEEDS REVIEW),LocalizationAdminController,Delete currency localization by id
+/opex/v1/admin/terminal/{terminalUuid}/localization,UNKNOWN,GET,wallet-app,YES,YES,ADMIN? (NEEDS REVIEW),LocalizationAdminController,Get terminal localization
+/opex/v1/admin/terminal/{terminalUuid}/localization,UNKNOWN,POST,wallet-app,YES,YES,ADMIN? (NEEDS REVIEW),LocalizationAdminController,Save terminal localizations
+/opex/v1/admin/terminal/localization/{id},UNKNOWN,DELETE,wallet-app,YES,YES,ADMIN? (NEEDS REVIEW),LocalizationAdminController,Delete terminal localization by id
+/opex/v1/admin/gateway/{gatewayUuid}/localization,UNKNOWN,GET,MIXED(wallet-app;bc-gateway-app),YES,YES,ADMIN? (NEEDS REVIEW),LocalizationAdminController,If uuid starts with ofg → wallet; ong → bc-gateway
+/opex/v1/admin/gateway/{gatewayUuid}/localization,UNKNOWN,POST,MIXED(wallet-app;bc-gateway-app),YES,YES,ADMIN? (NEEDS REVIEW),LocalizationAdminController,If uuid starts with ofg → wallet; ong → bc-gateway
+/opex/v1/admin/gateway/{gatewayUuid}/localization/{id},UNKNOWN,DELETE,MIXED(wallet-app;bc-gateway-app),YES,YES,ADMIN? (NEEDS REVIEW),LocalizationAdminController,If uuid starts with ofg → wallet; ong → bc-gateway

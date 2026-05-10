@@ -147,3 +147,12 @@ app:
       key: ${api_crypto_key:0e1fd29572ec8c85970d76e3433e96ee}
 swagger:
   authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
+
+
+# --- Swagger / SpringDoc (env-driven) ---
+springdoc:
+  api-docs:
+    enabled: ${SWAGGER_API_DOCS_ENABLED:false}
+  swagger-ui:
+    enabled: ${SWAGGER_UI_ENABLED:false}
+    path: ${SWAGGER_UI_PATH:/swagger-ui.html}

@@ -10,7 +10,7 @@ import co.nilin.opex.api.ports.opex.util.*
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.security.jwtAuthentication
 import co.nilin.opex.common.security.tokenValue
-import io.swagger.annotations.ApiParam
+import io.swagger.v3.oas.annotations.Parameter
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
@@ -41,7 +41,7 @@ class OrderController(
         quoteOrderQty: BigDecimal?,
         @RequestParam(required = false)
         price: BigDecimal?,
-        @ApiParam(value = "Used with STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, and TAKE_PROFIT_LIMIT orders.")
+        @Parameter(description = "Used with STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, and TAKE_PROFIT_LIMIT orders.")
         @RequestParam(required = false)
         stopPrice: BigDecimal?,
         @CurrentSecurityContext securityContext: SecurityContext
