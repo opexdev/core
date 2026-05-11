@@ -53,7 +53,7 @@ interface CurrencyImplementationRepository : ReactiveCrudRepository<CurrencyOnCh
         gatewayUuid: String? = null,
         chain: String? = null,
         implementationSymbol: String? = null,
-        lang: String? = UserLanguage.getDefault().toString()
+        lang: String? = UserLanguage.getDefaultLanguage()
     ): Flux<CurrencyOnChainGatewayView>?
 
     fun deleteByGatewayUuid(uuid: String): Mono<Void>
@@ -101,7 +101,7 @@ interface CurrencyImplementationRepository : ReactiveCrudRepository<CurrencyOnCh
     fun findByGatewayUuidAndCurrencySymbol(
         gatewayUuid: String,
         symbol: String,
-        lang: String? = UserLanguage.getDefault().toString()
+        lang: String? = UserLanguage.getDefaultLanguage()
     ): Mono<CurrencyOnChainGatewayView>?
 
     @Query("select * from currency_on_chain_gateway where chain = :chain and is_token is false")

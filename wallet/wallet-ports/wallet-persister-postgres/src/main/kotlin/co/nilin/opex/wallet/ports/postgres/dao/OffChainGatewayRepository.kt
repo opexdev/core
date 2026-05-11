@@ -37,7 +37,7 @@ interface OffChainGatewayRepository : ReactiveCrudRepository<OffChainGatewayMode
     fun findByGatewayUuidAndCurrencySymbol(
         uuid: String,
         symbol: String,
-        language: String? = UserLanguage.getDefault().toString()
+        language: String? = UserLanguage.getDefaultLanguage()
     ): Mono<OffChainGatewayView>?
 
     fun deleteByGatewayUuid(uuid: String): Mono<Void>
@@ -67,7 +67,7 @@ interface OffChainGatewayRepository : ReactiveCrudRepository<OffChainGatewayMode
     fun findGateways(
         currencySymbol: String? = null,
         gatewayUuid: String? = null,
-        language: String? = UserLanguage.getDefault().toString()
+        language: String? = UserLanguage.getDefaultLanguage()
     ): Flux<OffChainGatewayView>?
 
     fun findByCurrencySymbolAndAndTransferMethod(
