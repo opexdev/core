@@ -37,7 +37,11 @@
         "symbol": "BTCUSDT",
         "interval": "Month",
         "bucket": "public",
-        "key": "logo.png"
+        "key": "logo.png",
+        "sourceSymbol": "BTC",
+        "destSymbol": "USDT",
+        "unit": "USDT",
+        "transitiveSymbol": "USDT"
       }
     },
     {
@@ -803,6 +807,292 @@
         "token": "{{_['admin-token']}}",
         "prefix": ""
       }
+    },
+    {
+      "_id": "fld_otc_rates",
+      "_type": "request_group",
+      "parentId": "fld_api_opex_rest",
+      "name": "OTC / Rates"
+    },
+    {
+      "_id": "req_otc_rate_post",
+      "_type": "request",
+      "parentId": "fld_otc_rates",
+      "name": "POST /opex/v1/otc/rate",
+      "method": "POST",
+      "description": "Auth:\n- Bearer admin-token is required.\n- Required role: ROLE_admin.\n\nValidation:\n- `rate` must be greater than zero.\n- `sourceSymbol` and `destSymbol` must be different.\n\nRequest body: SetCurrencyExchangeRateRequest\n{\n  \"sourceSymbol\": \"string\",\n  \"destSymbol\": \"string\",\n  \"rate\": \"BigDecimal\",\n  \"ignoreIfExist\": \"boolean | null\"\n}\n\nResponse 200:\nNo response body.\n\nResponse 401 / 403:\nNo response body.",
+      "url": "{{ _['api-host'] }}/opex/v1/otc/rate",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"sourceSymbol\": \"BTC\",\n  \"destSymbol\": \"USDT\",\n  \"rate\": 65000.00,\n  \"ignoreIfExist\": false\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['admin-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_otc_rate_put",
+      "_type": "request",
+      "parentId": "fld_otc_rates",
+      "name": "PUT /opex/v1/otc/rate",
+      "method": "PUT",
+      "description": "Auth:\n- Bearer admin-token or service token is required.\n- Required role: ROLE_admin or ROLE_rate_bot.\n\nValidation:\n- `rate` must be greater than zero.\n- `sourceSymbol` and `destSymbol` must be different.\n\nRequest body: SetCurrencyExchangeRateRequest\n{\n  \"sourceSymbol\": \"string\",\n  \"destSymbol\": \"string\",\n  \"rate\": \"BigDecimal\",\n  \"ignoreIfExist\": \"boolean | null\"\n}\n\nResponse 200: Rates\n{\n  \"rates\": [\n    {\n      \"sourceSymbol\": \"string\",\n      \"destSymbol\": \"string\",\n      \"rate\": \"BigDecimal\"\n    }\n  ]\n}\n\nResponse 401 / 403:\nNo response body.",
+      "url": "{{ _['api-host'] }}/opex/v1/otc/rate",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"sourceSymbol\": \"BTC\",\n  \"destSymbol\": \"USDT\",\n  \"rate\": 65100.00,\n  \"ignoreIfExist\": false\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['admin-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_otc_rate_delete",
+      "_type": "request",
+      "parentId": "fld_otc_rates",
+      "name": "DELETE /opex/v1/otc/rate/{sourceSymbol}/{destSymbol}",
+      "method": "DELETE",
+      "description": "Auth:\n- Bearer admin-token is required.\n- Required role: ROLE_admin.\n\nPath params:\n- sourceSymbol: string\n- destSymbol: string\n\nResponse 200: Rates\n{\n  \"rates\": [\n    {\n      \"sourceSymbol\": \"string\",\n      \"destSymbol\": \"string\",\n      \"rate\": \"BigDecimal\"\n    }\n  ]\n}\n\nResponse 401 / 403:\nNo response body.",
+      "url": "{{ _['api-host'] }}/opex/v1/otc/rate/{{ _['sourceSymbol'] }}/{{ _['destSymbol'] }}",
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['admin-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_otc_rates_get",
+      "_type": "request",
+      "parentId": "fld_otc_rates",
+      "name": "GET /opex/v1/otc/rate",
+      "method": "GET",
+      "description": "Auth:\n- Public endpoint. No Bearer token is required.\n\nResponse 200: Rates\n{\n  \"rates\": [\n    {\n      \"sourceSymbol\": \"string\",\n      \"destSymbol\": \"string\",\n      \"rate\": \"BigDecimal\"\n    }\n  ]\n}",
+      "url": "{{ _['api-host'] }}/opex/v1/otc/rate",
+      "headers": []
+    },
+    {
+      "_id": "req_otc_rate_get",
+      "_type": "request",
+      "parentId": "fld_otc_rates",
+      "name": "GET /opex/v1/otc/rate/{sourceSymbol}/{destSymbol}",
+      "method": "GET",
+      "description": "Auth:\n- Public endpoint. No Bearer token is required.\n\nPath params:\n- sourceSymbol: string\n- destSymbol: string\n\nResponse 200: Rate, nullable\n{\n  \"sourceSymbol\": \"string\",\n  \"destSymbol\": \"string\",\n  \"rate\": \"BigDecimal\"\n}",
+      "url": "{{ _['api-host'] }}/opex/v1/otc/rate/{{ _['sourceSymbol'] }}/{{ _['destSymbol'] }}",
+      "headers": []
+    },
+    {
+      "_id": "req_otc_forbidden_post",
+      "_type": "request",
+      "parentId": "fld_otc_rates",
+      "name": "POST /opex/v1/otc/forbidden-pairs",
+      "method": "POST",
+      "description": "Auth:\n- Bearer admin-token is required.\n- Required role: ROLE_admin.\n\nValidation:\n- `sourceSymbol` and `destSymbol` must be different.\n\nRequest body: CurrencyPair\n{\n  \"sourceSymbol\": \"string\",\n  \"destSymbol\": \"string\"\n}\n\nResponse 200:\nNo response body.\n\nResponse 401 / 403:\nNo response body.",
+      "url": "{{ _['api-host'] }}/opex/v1/otc/forbidden-pairs",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"sourceSymbol\": \"BTC\",\n  \"destSymbol\": \"IRR\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['admin-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_otc_forbidden_delete",
+      "_type": "request",
+      "parentId": "fld_otc_rates",
+      "name": "DELETE /opex/v1/otc/forbidden-pairs/{sourceSymbol}/{destSymbol}",
+      "method": "DELETE",
+      "description": "Auth:\n- Bearer admin-token is required.\n- Required role: ROLE_admin.\n\nPath params:\n- sourceSymbol: string\n- destSymbol: string\n\nResponse 200: ForbiddenPairs\n{\n  \"forbiddenPairs\": [\n    {\n      \"sourceSymbol\": \"string\",\n      \"destinationSymbol\": \"string\"\n    }\n  ]\n}\n\nResponse 401 / 403:\nNo response body.",
+      "url": "{{ _['api-host'] }}/opex/v1/otc/forbidden-pairs/{{ _['sourceSymbol'] }}/{{ _['destSymbol'] }}",
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['admin-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_otc_forbidden_get",
+      "_type": "request",
+      "parentId": "fld_otc_rates",
+      "name": "GET /opex/v1/otc/forbidden-pairs",
+      "method": "GET",
+      "description": "Auth:\n- Public endpoint. No Bearer token is required.\n\nResponse 200: ForbiddenPairs\n{\n  \"forbiddenPairs\": [\n    {\n      \"sourceSymbol\": \"string\",\n      \"destinationSymbol\": \"string\"\n    }\n  ]\n}",
+      "url": "{{ _['api-host'] }}/opex/v1/otc/forbidden-pairs",
+      "headers": []
+    },
+    {
+      "_id": "req_otc_transitive_post",
+      "_type": "request",
+      "parentId": "fld_otc_rates",
+      "name": "POST /opex/v1/otc/transitive-symbols",
+      "method": "POST",
+      "description": "Auth:\n- Bearer admin-token is required.\n- Required role: ROLE_admin.\n\nRequest body: Symbols\n{\n  \"symbols\": [\"string\"]\n}\n\nResponse 200:\nNo response body.\n\nResponse 401 / 403:\nNo response body.",
+      "url": "{{ _['api-host'] }}/opex/v1/otc/transitive-symbols",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"symbols\": [\n    \"USDT\",\n    \"IRR\"\n  ]\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['admin-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_otc_transitive_delete_one",
+      "_type": "request",
+      "parentId": "fld_otc_rates",
+      "name": "DELETE /opex/v1/otc/transitive-symbols/{symbol}",
+      "method": "DELETE",
+      "description": "Auth:\n- Bearer admin-token is required.\n- Required role: ROLE_admin.\n\nPath params:\n- symbol: string\n\nResponse 200: Symbols\n{\n  \"symbols\": [\"string\"]\n}\n\nResponse 401 / 403:\nNo response body.",
+      "url": "{{ _['api-host'] }}/opex/v1/otc/transitive-symbols/{{ _['transitiveSymbol'] }}",
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['admin-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_otc_transitive_delete_bulk",
+      "_type": "request",
+      "parentId": "fld_otc_rates",
+      "name": "DELETE /opex/v1/otc/transitive-symbols",
+      "method": "DELETE",
+      "description": "Auth:\n- Bearer admin-token is required.\n- Required role: ROLE_admin.\n\nRequest body: Symbols\n{\n  \"symbols\": [\"string\"]\n}\n\nResponse 200: Symbols\n{\n  \"symbols\": [\"string\"]\n}\n\nResponse 401 / 403:\nNo response body.",
+      "url": "{{ _['api-host'] }}/opex/v1/otc/transitive-symbols",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"symbols\": [\n    \"USDT\",\n    \"IRR\"\n  ]\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['admin-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_otc_transitive_get",
+      "_type": "request",
+      "parentId": "fld_otc_rates",
+      "name": "GET /opex/v1/otc/transitive-symbols",
+      "method": "GET",
+      "description": "Auth:\n- Public endpoint. No Bearer token is required.\n\nResponse 200: Symbols\n{\n  \"symbols\": [\"string\"]\n}",
+      "url": "{{ _['api-host'] }}/opex/v1/otc/transitive-symbols",
+      "headers": []
+    },
+    {
+      "_id": "req_otc_route_get",
+      "_type": "request",
+      "parentId": "fld_otc_rates",
+      "name": "GET /opex/v1/otc/route",
+      "method": "GET",
+      "description": "Auth:\n- Public endpoint. No Bearer token is required.\n\nQuery params:\n- sourceSymbol: string, optional. If omitted, all possible source symbols are considered.\n- destSymbol: string, optional. If omitted, all possible destination symbols are considered.\n\nRoute calculation behavior:\n- If both sourceSymbol and destSymbol are provided, routes are calculated for that specific pair.\n- If sourceSymbol is omitted, routes are calculated from all possible source symbols.\n- If destSymbol is omitted, routes are calculated to all possible destination symbols.\n- If both are omitted, routes are calculated for all possible symbol combinations.\n- Do not send the literal string \"null\". Remove/disable the query parameter when it should be treated as null.\n\nUsage examples:\n- Specific pair: keep both sourceSymbol and destSymbol.\n- All destinations from one source: keep sourceSymbol and remove/disable destSymbol.\n- All sources to one destination: keep destSymbol and remove/disable sourceSymbol.\n- All possible combinations: remove/disable both sourceSymbol and destSymbol.\n\nResponse 200: CurrencyExchangeRatesResponse\n{\n  \"rates\": [\n    {\n      \"sourceSymbol\": \"string\",\n      \"destSymbol\": \"string\",\n      \"rate\": \"BigDecimal\",\n      \"isSwappable\": \"boolean\"\n    }\n  ]\n}",
+      "url": "{{ _['api-host'] }}/opex/v1/otc/route",
+      "parameters": [
+        {
+          "name": "sourceSymbol",
+          "value": "{{ _['sourceSymbol'] }}",
+          "description": "Optional source currency symbol. If omitted, all possible source symbols are considered. Remove/disable this parameter instead of sending the literal string \"null\"."
+        },
+        {
+          "name": "destSymbol",
+          "value": "{{ _['destSymbol'] }}",
+          "description": "Optional destination currency symbol. If omitted, all possible destination symbols are considered. Remove/disable this parameter instead of sending the literal string \"null\"."
+        }
+      ],
+      "headers": []
+    },
+    {
+      "_id": "req_otc_route_post",
+      "_type": "request",
+      "parentId": "fld_otc_rates",
+      "name": "POST /opex/v1/otc/route",
+      "method": "POST",
+      "description": "Auth:\n- Bearer admin-token is required.\n- Required role: ROLE_admin.\n\nQuery params:\n- sourceSymbol: string, optional. If omitted, all possible source symbols are considered.\n- destSymbol: string, optional. If omitted, all possible destination symbols are considered.\n\nRoute calculation behavior:\n- If both sourceSymbol and destSymbol are provided, routes are calculated for that specific pair.\n- If sourceSymbol is omitted, routes are calculated from all possible source symbols.\n- If destSymbol is omitted, routes are calculated to all possible destination symbols.\n- If both are omitted, routes are calculated for all possible symbol combinations.\n- Do not send the literal string \"null\". Remove/disable the query parameter when it should be treated as null.\n\nUsage examples:\n- Specific pair: keep both sourceSymbol and destSymbol.\n- All destinations from one source: keep sourceSymbol and remove/disable destSymbol.\n- All sources to one destination: keep destSymbol and remove/disable sourceSymbol.\n- All possible combinations: remove/disable both sourceSymbol and destSymbol.\n\nRequest body:\nNo request body.\n\nResponse 200: CurrencyExchangeRatesResponse\n{\n  \"rates\": [\n    {\n      \"sourceSymbol\": \"string\",\n      \"destSymbol\": \"string\",\n      \"rate\": \"BigDecimal\",\n      \"isSwappable\": \"boolean\"\n    }\n  ]\n}\n\nResponse 401 / 403:\nNo response body.",
+      "url": "{{ _['api-host'] }}/opex/v1/otc/route",
+      "parameters": [
+        {
+          "name": "sourceSymbol",
+          "value": "{{ _['sourceSymbol'] }}",
+          "description": "Optional source currency symbol. If omitted, all possible source symbols are considered. Remove/disable this parameter instead of sending the literal string \"null\"."
+        },
+        {
+          "name": "destSymbol",
+          "value": "{{ _['destSymbol'] }}",
+          "description": "Optional destination currency symbol. If omitted, all possible destination symbols are considered. Remove/disable this parameter instead of sending the literal string \"null\"."
+        }
+      ],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "disabled": false,
+        "token": "{{_['admin-token']}}",
+        "prefix": ""
+      }
+    },
+    {
+      "_id": "req_otc_currency_price_get",
+      "_type": "request",
+      "parentId": "fld_otc_rates",
+      "name": "GET /opex/v1/otc/currency/price",
+      "method": "GET",
+      "description": "Auth:\n- Public endpoint. No Bearer token is required.\n\nQuery params:\n- unit: string, required\n\nResponse 200: Array<CurrencyPrice>\n[\n  {\n    \"currency\": \"string\",\n    \"buyPrice\": \"BigDecimal | null\",\n    \"sellPrice\": \"BigDecimal | null\"\n  }\n]",
+      "url": "{{ _['api-host'] }}/opex/v1/otc/currency/price",
+      "parameters": [
+        {
+          "name": "unit",
+          "value": "{{ _['unit'] }}",
+          "description": "Pricing unit"
+        }
+      ],
+      "headers": []
     }
   ]
 }
