@@ -14,7 +14,7 @@ class GatewayAdminController(
     private val walletProxy: WalletProxy,
 ) {
     @PostMapping("/{currencySymbol}/gateway")
-    suspend fun addCurrencyToGateway(
+    suspend fun addGatewayToCurrency(
         @CurrentSecurityContext securityContext: SecurityContext,
         @PathVariable("currencySymbol") currencySymbol: String,
         @RequestBody body: CurrencyGatewayCommand,

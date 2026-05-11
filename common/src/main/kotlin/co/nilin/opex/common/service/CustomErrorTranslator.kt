@@ -1,4 +1,4 @@
-package co.nilin.opex.common.translation
+package co.nilin.opex.common.service
 
 import co.nilin.opex.common.utils.LanguageUtils.getUserLanguage
 import co.nilin.opex.utility.error.data.DefaultExceptionResponse

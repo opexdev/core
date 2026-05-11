@@ -129,6 +129,8 @@ app:
     url: http://opex-bc-gateway
   storage:
     url: http://storage
+  config:
+      url: http://opex-config
   auth:
     cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
     iss-url: ${TOKEN_ISSUER_URL:http://keycloak:8080/realms/opex}

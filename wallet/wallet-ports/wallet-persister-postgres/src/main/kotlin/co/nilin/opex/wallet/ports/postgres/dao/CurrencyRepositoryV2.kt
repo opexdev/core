@@ -45,7 +45,7 @@ interface CurrencyRepositoryV2 : ReactiveCrudRepository<CurrencyModel, String> {
     fun fetchCurrency(
         uuid: String? = null,
         symbol: String? = null,
-        lang: String? = UserLanguage.getDefault().toString()
+        lang: String? = UserLanguage.getDefaultLanguage()
     ): Mono<CurrencyView>?
 
 
@@ -78,7 +78,7 @@ interface CurrencyRepositoryV2 : ReactiveCrudRepository<CurrencyModel, String> {
     fun fetchSemiCurrencies(
         symbol: String? = null,
         name: String? = null,
-        lang: String? = UserLanguage.getDefault().toString()
+        lang: String? = UserLanguage.getDefaultLanguage()
     ): Flux<CurrencyView>?
 
 
@@ -120,7 +120,7 @@ interface CurrencyRepositoryV2 : ReactiveCrudRepository<CurrencyModel, String> {
     ORDER BY c.display_order
 """
     )
-    fun fetchAll(lang: String? = UserLanguage.getDefault().toString()): Flux<CurrencyView>
+    fun fetchAll(lang: String? = UserLanguage.getDefaultLanguage()): Flux<CurrencyView>
 
     @Query("select symbol,precision from currency")
     fun fetchAllCurrenciesPrecision(): Flux<CurrencyPrecision>

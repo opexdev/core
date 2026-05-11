@@ -1,7 +1,8 @@
-package co.nilin.opex.common.translation
+package co.nilin.opex.common.service
 
 import co.nilin.opex.common.data.MessageTranslation
 import co.nilin.opex.common.data.UserLanguage
+import co.nilin.opex.common.proxy.CustomMessageClient
 import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
 import org.springframework.context.MessageSource
@@ -13,8 +14,8 @@ import javax.annotation.PreDestroy
 
 @Service
 class TranslationCacheService(
-        private val configClient: ConfigClient?,
-        private val messageSource: MessageSource?
+    private val customMessageClient: CustomMessageClient?,
+    private val messageSource: MessageSource?
 ) {
 
     private val cache: MutableMap<Pair<String, UserLanguage>, MessageTranslation> = ConcurrentHashMap()
@@ -28,8 +29,8 @@ class TranslationCacheService(
         job = CoroutineScope(Dispatchers.IO).launch {
             logger.info("Going to get messages which are updated after {}", lastUpdate)
             while (isActive) {
-                if (configClient != null) {
-                    val newMessages = configClient.getMessagesUpdatedAfter(cache?.let { lastUpdate })
+                if (customMessageClient != null) {
+                    val newMessages = customMessageClient.getMessagesUpdatedAfter(cache?.let { lastUpdate })
                     newMessages?.forEach { msg ->
                         cache[Pair(msg.key, msg.language)] =
                                 MessageTranslation(msg.key, msg.message, msg.language)

@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.app.config
 
 import co.nilin.opex.common.data.UserLanguage
+import co.nilin.opex.common.utils.LanguageUtils.getDefaultUserLanguage
 import io.netty.channel.ChannelOption
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.cloud.client.ServiceInstance
@@ -64,7 +65,7 @@ class WebClientConfig(logbook: Logbook) {
 
     private fun languageFilter() = ExchangeFilterFunction { request, next ->
         Mono.deferContextual { ctx ->
-            val lang = ctx.getOrDefault("lang", UserLanguage.EN.toString())
+            val lang = ctx.getOrDefault("lang", getDefaultUserLanguage())
             val mutatedRequest = ClientRequest.from(request)
                 .header("Accept-Language", lang)
                 .build()

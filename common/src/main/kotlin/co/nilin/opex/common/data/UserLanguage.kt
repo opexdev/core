@@ -1,22 +1,22 @@
 package co.nilin.opex.common.data
 
-//After adjusting versions in various modules it should be moved to common project
+import co.nilin.opex.common.service.GlobalWebConfigCache
 
 enum class UserLanguage {
-    EN, FA;
+    EN, FA, AR, UZ;
 
     companion object {
+
+        fun getDefaultLanguage(): String =
+            GlobalWebConfigCache.webConfig?.defaultLanguage?.name ?: EN.name
+
         fun safeValueOf(lang: String?): UserLanguage {
             return try {
-                if (lang.isNullOrBlank()) EN
+                if (lang.isNullOrBlank()) valueOf(getDefaultLanguage())
                 else valueOf(lang.uppercase())
             } catch (e: IllegalArgumentException) {
-                EN
+                valueOf(getDefaultLanguage())
             }
-        }
-
-        fun getDefault(): UserLanguage {
-            return EN
         }
     }
 }

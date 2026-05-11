@@ -31,7 +31,7 @@ interface TerminalRepository : ReactiveCrudRepository<TerminalModel, Long> {
     WHERE t.uuid = :uuid;
     """
     )
-    fun findByUuid(uuid: String, lang: String? = UserLanguage.getDefault().toString()): Mono<TerminalView>?
+    fun findByUuid(uuid: String, lang: String? = UserLanguage.getDefaultLanguage()): Mono<TerminalView>?
 
     @Query(
         """
@@ -51,7 +51,7 @@ interface TerminalRepository : ReactiveCrudRepository<TerminalModel, Long> {
     order by t.display_order
     """
     )
-    fun findAllByOrderByDisplayOrder(lang: String?= UserLanguage.getDefault().toString()): Flux<TerminalView>
+    fun findAllByOrderByDisplayOrder(lang: String?= UserLanguage.getDefaultLanguage()): Flux<TerminalView>
 
 
 }

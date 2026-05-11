@@ -33,7 +33,7 @@ interface GatewayTerminalRepository : ReactiveCrudRepository<GatewayTerminalMode
       WHERE gt.gateway_id=:gatewayId
     """
     )
-    fun findByGatewayId(gatewayId: Long, lang: String? = UserLanguage.getDefault().toString()): Flux<TerminalView>?
+    fun findByGatewayId(gatewayId: Long, lang: String? = UserLanguage.getDefaultLanguage()): Flux<TerminalView>?
 
 
     @Query("""
@@ -57,5 +57,5 @@ interface GatewayTerminalRepository : ReactiveCrudRepository<GatewayTerminalMode
              left join currency_off_chain_gateway_localization gl on g.id = gl.gateway_id and gl.language = :lang
     where gt.terminal_id = :terminalId
     """)
-    fun findByTerminalId(terminalId: Long, lang: String? = UserLanguage.getDefault().toString()): Flux<OffChainGatewayView>?
+    fun findByTerminalId(terminalId: Long, lang: String? = UserLanguage.getDefaultLanguage()): Flux<OffChainGatewayView>?
 }
