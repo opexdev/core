@@ -22,7 +22,6 @@ interface GatewayTerminalRepository : ReactiveCrudRepository<GatewayTerminalMode
        tl.owner,
        t.identifier,
        t.active,
-       t.type,
        t.meta_data,
        t.display_order,
        tl.description

@@ -20,7 +20,6 @@ interface TerminalRepository : ReactiveCrudRepository<TerminalModel, Long> {
        tl.owner,
        t.identifier,
        t.active,
-       t.type,
        t.meta_data,
        t.display_order,
        tl.description
@@ -40,7 +39,6 @@ interface TerminalRepository : ReactiveCrudRepository<TerminalModel, Long> {
        tl.owner,
        t.identifier,
        t.active,
-       t.type,
        t.meta_data,
        t.display_order,
        tl.description
