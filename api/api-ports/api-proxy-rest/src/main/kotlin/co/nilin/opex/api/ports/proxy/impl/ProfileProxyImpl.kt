@@ -188,7 +188,7 @@ class ProfileProxyImpl(@Qualifier("generalWebClient") private val webClient: Web
 
     override suspend fun getBankAccounts(token: String): List<BankAccountResponse> {
         return webClient.get()
-            .uri("$baseUrl/bank-account`")
+            .uri("$baseUrl/bank-account")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .retrieve()

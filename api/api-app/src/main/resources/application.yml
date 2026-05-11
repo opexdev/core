@@ -161,3 +161,4 @@ springdoc:
     display-request-duration: true
     operations-sorter: method
     tags-sorter: alpha
+spring.mvc.pathmatch.matching-strategy: ANT_PATH_MATCHER

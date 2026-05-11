@@ -44,6 +44,7 @@ Request body: AddBankAccountRequest
 - cardNumber: string, nullable
 - iban: string, nullable
 
+
 Response body: BankAccountResponse
 - id: Long, nullable
 - name: string, nullable
@@ -56,7 +57,7 @@ Response body: BankAccountResponse
         security = [SecurityRequirement(name = "bearerAuth")],
         requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
             required = true,
-            description = "Bank account creation payload.",
+            description = "Bank account creation payload, Exactly one of `cardNumber` or `iban` must be provided. Providing both or neither is invalid.",
             content = [
                 Content(
                     mediaType = "application/json",
@@ -68,7 +69,7 @@ Response body: BankAccountResponse
 {
   "name": "My Bank Account",
   "cardNumber": "6037991234567890",
-  "iban": "IR123456789012345678901234"
+  "iban": null
 }
                             """
                         )
@@ -105,16 +106,20 @@ Response body: BankAccountResponse
             ),
             ApiResponse(
                 responseCode = "401",
-                description = "Unauthorized. Bearer token is missing, invalid, or expired."
+                description = "Unauthorized. Bearer token is missing, invalid, or expired.",
+                content = [Content()]
+
             ),
             ApiResponse(
                 responseCode = "403",
-                description = "Forbidden. Required authority is missing: PERM_bank_account:write."
+                description = "Forbidden. Required authority is missing: PERM_bank_account:write.",
+                content = [Content()]
             )
         ]
     )
     suspend fun addBankAccount(
         @RequestBody request: AddBankAccountRequest,
+        @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext
     ): BankAccountResponse {
         return profileProxy.addBankAccount(securityContext.jwtAuthentication().tokenValue(), request)
@@ -173,11 +178,13 @@ Each item:
             ),
             ApiResponse(
                 responseCode = "401",
-                description = "Unauthorized. Bearer token is missing, invalid, or expired."
+                description = "Unauthorized. Bearer token is missing, invalid, or expired.",
+                content = [Content()]
             )
         ]
     )
     suspend fun getBankAccounts(
+        @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext
     ): List<BankAccountResponse> {
         return profileProxy.getBankAccounts(securityContext.jwtAuthentication().tokenValue())
@@ -217,16 +224,19 @@ Response body:
             ),
             ApiResponse(
                 responseCode = "401",
-                description = "Unauthorized. Bearer token is missing, invalid, or expired."
+                description = "Unauthorized. Bearer token is missing, invalid, or expired.",
+                content = [Content()]
             ),
             ApiResponse(
                 responseCode = "403",
-                description = "Forbidden. Required authority is missing: PERM_bank_account:write."
+                description = "Forbidden. Required authority is missing: PERM_bank_account:write.",
+                content = [Content()]
             )
         ]
     )
     suspend fun deleteBankAccount(
         @PathVariable("id") id: Long,
+        @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext
     ) {
         profileProxy.deleteBankAccount(securityContext.jwtAuthentication().tokenValue(), id)
