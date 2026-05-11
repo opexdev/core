@@ -131,7 +131,7 @@ class ProfileProxyImpl(@Qualifier("generalWebClient") private val webClient: Web
 
     override suspend fun getAllAddressBooks(token: String): List<AddressBookResponse> {
         return webClient.get()
-            .uri("$baseUrl/address-book`")
+            .uri("$baseUrl/address-book")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .retrieve()

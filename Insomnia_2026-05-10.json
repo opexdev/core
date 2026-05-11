@@ -58,11 +58,11 @@
       "parentId": "fld_addressbook",
       "name": "POST /opex/v1/address-book",
       "method": "POST",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: authenticated() only; no specific role/permission matcher is defined for /opex/v1/address-book.\n- Insomnia token: {{ _['user-token'] }}.\n- Effective matcher: anyExchange().authenticated().\n\nRequest body: AddAddressBookItemRequest\n{\n  \"name\": \"string\",\n  \"address\": \"string\",\n  \"addressType\": \"string\"\n}\n\nNotes:\n- addressType is implemented as string, not a strict enum in AddAddressBookItemRequest.\n- Known examples: CRYPTO, BANK.\n\nResponse 200: AddressBookResponse\n{\n  \"id\": \"Long | null\",\n  \"name\": \"string\",\n  \"address\": \"string\",\n  \"addressType\": \"string\"\n}",
+      "description": "Auth:\n- Bearer user-token is required.\n- Requires a valid authenticated user JWT.\n- No dedicated address-book permission is required.\n\nRequest body: AddAddressBookItemRequest\n{\n  \"name\": \"string\",\n  \"address\": \"string\",\n  \"addressType\": \"string\"\n}\n\nNotes:\n- addressType is a server-provided string value.\n- Clients should use the exact value returned by the related chain/address-type source service.\n- Do not treat addressType as a fixed enum and do not hardcode a static value list.\n\nResponse 200: AddressBookResponse\n{\n  \"id\": \"Long | null\",\n  \"name\": \"string\",\n  \"address\": \"string\",\n  \"addressType\": \"string\"\n}\n\nResponse 401:\nNo response body.",
       "url": "{{ _['api-host'] }}/opex/v1/address-book",
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"name\": \"Home Wallet\",\n  \"address\": \"0x...\",\n  \"addressType\": \"CRYPTO\"\n}"
+        "text": "{\n  \"name\": \"Home Wallet\",\n  \"address\": \"0x...\",\n  \"addressType\": \"ethereum\"\n}"
       },
       "headers": [
         {
@@ -83,7 +83,7 @@
       "parentId": "fld_addressbook",
       "name": "GET /opex/v1/address-book",
       "method": "GET",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: authenticated() only; no specific role/permission matcher is defined for /opex/v1/address-book.\n- Insomnia token: {{ _['user-token'] }}.\n- Effective matcher: anyExchange().authenticated().\n\nResponse 200: List<AddressBookResponse>\n[\n  {\n    \"id\": \"Long | null\",\n    \"name\": \"string\",\n    \"address\": \"string\",\n    \"addressType\": \"string\"\n  }\n]",
+      "description": "Auth:\n- Bearer user-token is required.\n- Requires a valid authenticated user JWT.\n- No dedicated address-book permission is required.\n\nResponse 200: Array<AddressBookResponse>\n[\n  {\n    \"id\": \"Long | null\",\n    \"name\": \"string\",\n    \"address\": \"string\",\n    \"addressType\": \"string\"\n  }\n]\n\nResponse 401:\nNo response body.",
       "url": "{{ _['api-host'] }}/opex/v1/address-book",
       "headers": [],
       "authentication": {
@@ -99,7 +99,7 @@
       "parentId": "fld_addressbook",
       "name": "DELETE /opex/v1/address-book/{id}",
       "method": "DELETE",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: authenticated() only; no specific role/permission matcher is defined for /opex/v1/address-book.\n- Insomnia token: {{ _['user-token'] }}.\n- Effective matcher: anyExchange().authenticated().\n\nPath params:\n- id: Long\n\nResponse 200:\nNo response body.",
+      "description": "Auth:\n- Bearer user-token is required.\n- Requires a valid authenticated user JWT.\n- No dedicated address-book permission is required.\n\nPath params:\n- id: Long\n\nResponse 200:\nNo response body.\n\nResponse 401:\nNo response body.",
       "url": "{{ _['api-host'] }}/opex/v1/address-book/{{ _['id'] }}",
       "headers": [],
       "authentication": {
@@ -115,11 +115,11 @@
       "parentId": "fld_addressbook",
       "name": "PUT /opex/v1/address-book/{id}",
       "method": "PUT",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: authenticated() only; no specific role/permission matcher is defined for /opex/v1/address-book.\n- Insomnia token: {{ _['user-token'] }}.\n- Effective matcher: anyExchange().authenticated().\n\nPath params:\n- id: Long\n\nRequest body: AddAddressBookItemRequest\n{\n  \"name\": \"string\",\n  \"address\": \"string\",\n  \"addressType\": \"string\"\n}\n\nNotes:\n- addressType is implemented as string, not a strict enum in AddAddressBookItemRequest.\n- Known examples: CRYPTO, BANK.\n\nResponse 200: AddressBookResponse\n{\n  \"id\": \"Long | null\",\n  \"name\": \"string\",\n  \"address\": \"string\",\n  \"addressType\": \"string\"\n}",
+      "description": "Auth:\n- Bearer user-token is required.\n- Requires a valid authenticated user JWT.\n- No dedicated address-book permission is required.\n\nPath params:\n- id: Long\n\nRequest body: AddAddressBookItemRequest\n{\n  \"name\": \"string\",\n  \"address\": \"string\",\n  \"addressType\": \"string\"\n}\n\nNotes:\n- addressType is a server-provided string value.\n- Clients should use the exact value returned by the related chain/address-type source service.\n- Do not treat addressType as a fixed enum and do not hardcode a static value list.\n\nResponse 200: AddressBookResponse\n{\n  \"id\": \"Long | null\",\n  \"name\": \"string\",\n  \"address\": \"string\",\n  \"addressType\": \"string\"\n}\n\nResponse 401:\nNo response body.",
       "url": "{{ _['api-host'] }}/opex/v1/address-book/{{ _['id'] }}",
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"name\": \"Updated Name\",\n  \"address\": \"0x...\",\n  \"addressType\": \"CRYPTO\"\n}"
+        "text": "{\n  \"name\": \"Updated Name\",\n  \"address\": \"0x...\",\n  \"addressType\": \"ethereum\"\n}"
       },
       "headers": [
         {
@@ -146,7 +146,7 @@
       "parentId": "fld_storage_admin",
       "name": "GET /opex/v1/admin/storage",
       "method": "GET",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nQuery params:\n- bucket: string\n- key: string\n\nResponse 200:\nBinary file stream.\nContent-Type: application/octet-stream\nSchema:\n{\n  \"type\": \"string\",\n  \"format\": \"binary\"\n}",
+      "description": "Auth:\n- Bearer admin-token is required.\n- Required authority: ROLE_admin.\n\nQuery params:\n- bucket: string\n- key: string\n\nResponse 200:\nBinary file stream.\nContent-Type: application/octet-stream\nSchema:\n{\n  \"type\": \"string\",\n  \"format\": \"binary\"\n}",
       "url": "{{ _['api-host'] }}/opex/v1/admin/storage",
       "parameters": [
         {
@@ -174,7 +174,7 @@
       "parentId": "fld_storage_admin",
       "name": "POST /opex/v1/admin/storage",
       "method": "POST",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nQuery params:\n- bucket: string\n- key: string\n- isPublic: boolean | null, default false\n\nMultipart form-data parts:\n- file: binary file\n\nResponse 200: string\nExample:\n\"http://localhost:8094/opex/v1/storage?bucket=public&key=logo.png\"",
+      "description": "Auth:\n- Bearer admin-token is required.\n- Required authority: ROLE_admin.\n\nQuery params:\n- bucket: string\n- key: string\n- isPublic: boolean | null, default false\n\nMultipart form-data parts:\n- file: binary file\n\nResponse 200: string\nExample:\n\"http://localhost:8094/opex/v1/storage?bucket=public&key=logo.png\"",
       "url": "{{ _['api-host'] }}/opex/v1/admin/storage",
       "parameters": [
         {
@@ -220,7 +220,7 @@
       "parentId": "fld_storage_admin",
       "name": "DELETE /opex/v1/admin/storage",
       "method": "DELETE",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nQuery params:\n- bucket: string\n- key: string\n\nResponse 200:\nNo response body.",
+      "description": "Auth:\n- Bearer admin-token is required.\n- Required authority: ROLE_admin.\n\nQuery params:\n- bucket: string\n- key: string\n\nResponse 200:\nNo response body.",
       "url": "{{ _['api-host'] }}/opex/v1/admin/storage",
       "parameters": [
         {
@@ -254,7 +254,7 @@
       "parentId": "fld_withdraw",
       "name": "POST /opex/v1/withdraw",
       "method": "POST",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: PERM_withdraw:write.\n- Insomnia token: {{ _['user-token'] }}.\n- Security matcher: POST /opex/v1/withdraw.\n\nRequest body: RequestWithdrawBody\n{\n  \"currency\": \"string\",\n  \"amount\": \"BigDecimal\",\n  \"destSymbol\": \"string | null\",\n  \"destAddress\": \"string\",\n  \"destNetwork\": \"string | null\",\n  \"destNote\": \"string | null\",\n  \"gatewayUuid\": \"string | null\"\n}\n\nResponse 200: WithdrawActionResult | null\n{\n  \"withdrawId\": \"string\",\n  \"status\": \"REQUESTED | CREATED | ACCEPTED | CANCELED | REJECTED | DONE\",\n  \"nextAction\": \"OTP_EMAIL | OTP_MOBILE | WAITING_FOR_ADMIN | null\"\n}\n\nEnums:\n- status: REQUESTED | CREATED | ACCEPTED | CANCELED | REJECTED | DONE\n- nextAction: OTP_EMAIL | OTP_MOBILE | WAITING_FOR_ADMIN | null",
+      "description": "Auth:\n- Bearer user-token is required.\n- Required authority: PERM_withdraw:write.\n\nRequest body: RequestWithdrawBody\n{\n  \"currency\": \"string\",\n  \"amount\": \"BigDecimal\",\n  \"destSymbol\": \"string | null\",\n  \"destAddress\": \"string\",\n  \"destNetwork\": \"string | null\",\n  \"destNote\": \"string | null\",\n  \"gatewayUuid\": \"string | null\"\n}\n\nResponse 200: WithdrawActionResult | null\n{\n  \"withdrawId\": \"string\",\n  \"status\": \"REQUESTED | CREATED | ACCEPTED | CANCELED | REJECTED | DONE\",\n  \"nextAction\": \"OTP_EMAIL | OTP_MOBILE | WAITING_FOR_ADMIN | null\"\n}\n\nEnums:\n- status: REQUESTED | CREATED | ACCEPTED | CANCELED | REJECTED | DONE\n- nextAction: OTP_EMAIL | OTP_MOBILE | WAITING_FOR_ADMIN | null",
       "url": "{{ _['api-host'] }}/opex/v1/withdraw",
       "body": {
         "mimeType": "application/json",
@@ -279,7 +279,7 @@
       "parentId": "fld_withdraw",
       "name": "PUT /opex/v1/withdraw/{withdrawUuid}/cancel",
       "method": "PUT",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: authenticated() only for this exact URL, because the config only defines PUT /opex/v1/withdraw, not PUT /opex/v1/withdraw/{withdrawUuid}/cancel.\n- Insomnia token: {{ _['user-token'] }}.\n- Effective matcher: anyExchange().authenticated().\n- Review note: if cancel should require withdraw permission, add a matcher such as PUT /opex/v1/withdraw/** with PERM_withdraw:write.\n\nPath params:\n- withdrawUuid: string\n\nResponse 200:\nNo response body.",
+      "description": "Auth:\n- Bearer user-token is required.\n- Requires a valid authenticated user JWT.\n\nPath params:\n- withdrawUuid: string\n\nResponse 200:\nNo response body.",
       "url": "{{ _['api-host'] }}/opex/v1/withdraw/{{ _['withdrawUuid'] }}/cancel",
       "headers": [],
       "authentication": {
@@ -295,7 +295,7 @@
       "parentId": "fld_withdraw",
       "name": "GET /opex/v1/withdraw/{withdrawUuid}",
       "method": "GET",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: authenticated() only; no specific GET matcher is defined for /opex/v1/withdraw/{withdrawUuid}.\n- Insomnia token: {{ _['user-token'] }}.\n- Effective matcher: anyExchange().authenticated().\n\nPath params:\n- withdrawUuid: string\n\nResponse 200: WithdrawResponse\n{\n  \"withdrawId\": \"string\",\n  \"uuid\": \"string\",\n  \"amount\": \"BigDecimal\",\n  \"currency\": \"string\",\n  \"appliedFee\": \"BigDecimal\",\n  \"destAmount\": \"BigDecimal | null\",\n  \"destSymbol\": \"string | null\",\n  \"destAddress\": \"string | null\",\n  \"destNetwork\": \"string | null\",\n  \"destNote\": \"string | null\",\n  \"destTransactionRef\": \"string | null\",\n  \"statusReason\": \"string | null\",\n  \"status\": \"REQUESTED | CREATED | ACCEPTED | CANCELED | REJECTED | DONE\",\n  \"applicator\": \"string | null\",\n  \"withdrawType\": \"CARD_TO_CARD | SHEBA | ON_CHAIN | OFF_CHAIN\",\n  \"attachment\": \"string | null\",\n  \"createDate\": \"LocalDateTime\",\n  \"lastUpdateDate\": \"LocalDateTime | null\",\n  \"transferMethod\": \"CARD | SHEBA | IPG | EXCHANGE | MANUALLY | VOUCHER | MPG | REWARD | null\",\n  \"otpRequired\": \"integer | null\"\n}",
+      "description": "Auth:\n- Bearer user-token is required.\n- Requires a valid authenticated user JWT.\n\nPath params:\n- withdrawUuid: string\n\nResponse 200: WithdrawResponse\n{\n  \"withdrawId\": \"string\",\n  \"uuid\": \"string\",\n  \"amount\": \"BigDecimal\",\n  \"currency\": \"string\",\n  \"appliedFee\": \"BigDecimal\",\n  \"destAmount\": \"BigDecimal | null\",\n  \"destSymbol\": \"string | null\",\n  \"destAddress\": \"string | null\",\n  \"destNetwork\": \"string | null\",\n  \"destNote\": \"string | null\",\n  \"destTransactionRef\": \"string | null\",\n  \"statusReason\": \"string | null\",\n  \"status\": \"REQUESTED | CREATED | ACCEPTED | CANCELED | REJECTED | DONE\",\n  \"applicator\": \"string | null\",\n  \"withdrawType\": \"CARD_TO_CARD | SHEBA | ON_CHAIN | OFF_CHAIN\",\n  \"attachment\": \"string | null\",\n  \"createDate\": \"LocalDateTime\",\n  \"lastUpdateDate\": \"LocalDateTime | null\",\n  \"transferMethod\": \"CARD | SHEBA | IPG | EXCHANGE | MANUALLY | VOUCHER | MPG | REWARD | null\",\n  \"otpRequired\": \"integer | null\"\n}",
       "url": "{{ _['api-host'] }}/opex/v1/withdraw/{{ _['withdrawUuid'] }}",
       "headers": [],
       "authentication": {
@@ -311,7 +311,7 @@
       "parentId": "fld_withdraw",
       "name": "POST /opex/v1/withdraw/{withdrawUuid}/otp/{otpType}/request",
       "method": "POST",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: authenticated() only for this exact URL, because the config only defines POST /opex/v1/withdraw, not POST /opex/v1/withdraw/{withdrawUuid}/otp/{otpType}/request.\n- Insomnia token: {{ _['user-token'] }}.\n- Effective matcher: anyExchange().authenticated().\n\nPath params:\n- withdrawUuid: string\n- otpType: SMS | EMAIL\n\nResponse 200: TempOtpResponse\n{\n  \"otp\": \"string | null\",\n  \"receivers\": [\n    {\n      \"receiver\": \"string\",\n      \"type\": \"SMS | EMAIL\"\n    }\n  ]\n}",
+      "description": "Auth:\n- Bearer user-token is required.\n- Requires a valid authenticated user JWT.\n\nPath params:\n- withdrawUuid: string\n- otpType: SMS | EMAIL\n\nResponse 200: TempOtpResponse\n{\n  \"otp\": \"string | null\",\n  \"receivers\": [\n    {\n      \"receiver\": \"string\",\n      \"type\": \"SMS | EMAIL\"\n    }\n  ]\n}",
       "url": "{{ _['api-host'] }}/opex/v1/withdraw/{{ _['withdrawUuid'] }}/otp/{{ _['otpType'] }}/request",
       "headers": [],
       "authentication": {
@@ -327,7 +327,7 @@
       "parentId": "fld_withdraw",
       "name": "POST /opex/v1/withdraw/{withdrawUuid}/otp/{otpType}/verify",
       "method": "POST",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: authenticated() only for this exact URL, because the config only defines POST /opex/v1/withdraw, not POST /opex/v1/withdraw/{withdrawUuid}/otp/{otpType}/verify.\n- Insomnia token: {{ _['user-token'] }}.\n- Effective matcher: anyExchange().authenticated().\n\nPath params:\n- withdrawUuid: string\n- otpType: SMS | EMAIL\n\nQuery params:\n- otpCode: string\n\nResponse 200: WithdrawActionResult\n{\n  \"withdrawId\": \"string\",\n  \"status\": \"REQUESTED | CREATED | ACCEPTED | CANCELED | REJECTED | DONE\",\n  \"nextAction\": \"OTP_EMAIL | OTP_MOBILE | WAITING_FOR_ADMIN | null\"\n}\n\nEnums:\n- status: REQUESTED | CREATED | ACCEPTED | CANCELED | REJECTED | DONE\n- nextAction: OTP_EMAIL | OTP_MOBILE | WAITING_FOR_ADMIN | null",
+      "description": "Auth:\n- Bearer user-token is required.\n- Requires a valid authenticated user JWT.\n\nPath params:\n- withdrawUuid: string\n- otpType: SMS | EMAIL\n\nQuery params:\n- otpCode: string\n\nResponse 200: WithdrawActionResult\n{\n  \"withdrawId\": \"string\",\n  \"status\": \"REQUESTED | CREATED | ACCEPTED | CANCELED | REJECTED | DONE\",\n  \"nextAction\": \"OTP_EMAIL | OTP_MOBILE | WAITING_FOR_ADMIN | null\"\n}\n\nEnums:\n- status: REQUESTED | CREATED | ACCEPTED | CANCELED | REJECTED | DONE\n- nextAction: OTP_EMAIL | OTP_MOBILE | WAITING_FOR_ADMIN | null",
       "url": "{{ _['api-host'] }}/opex/v1/withdraw/{{ _['withdrawUuid'] }}/otp/{{ _['otpType'] }}/verify",
       "parameters": [
         {
@@ -356,7 +356,7 @@
       "parentId": "fld_deposit",
       "name": "POST /opex/v1/deposit",
       "method": "POST",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: PERM_deposit:write.\n- Insomnia token: {{ _['user-token'] }}; paste a user/API-key JWT that contains PERM_deposit:write.\n- Security matcher: /opex/v1/deposit/**.\n\nRequest body: RequestDepositBody\n{\n  \"symbol\": \"string\",\n  \"receiverUuid\": \"string\",\n  \"receiverWalletType\": \"WalletType\",\n  \"amount\": \"BigDecimal\",\n  \"description\": \"string | null\",\n  \"transferRef\": \"string | null\",\n  \"gatewayUuid\": \"string | null\",\n  \"chain\": \"string | null\"\n}\n\nNotes:\n- receiverWalletType uses WalletType. The current request DTO references WalletType, but this collection does not lock specific enum values.\n\nResponse 200: TransferResult | null\n{\n  \"date\": \"Long\",\n  \"sourceUuid\": \"string\",\n  \"sourceWalletType\": \"WalletType\",\n  \"sourceBalanceBeforeAction\": {\n    \"currency\": {\n      \"symbol\": \"string\",\n      \"uuid\": \"string | null\",\n      \"name\": \"string | null\",\n      \"precision\": \"BigDecimal\",\n      \"title\": \"string | null\",\n      \"alias\": \"string | null\",\n      \"icon\": \"string | null\",\n      \"isTransitive\": \"boolean | null\",\n      \"isActive\": \"boolean | null\",\n      \"sign\": \"string | null\",\n      \"description\": \"string | null\",\n      \"shortDescription\": \"string | null\",\n      \"withdrawAllowed\": \"boolean | null\",\n      \"depositAllowed\": \"boolean | null\",\n      \"externalUrl\": \"string | null\",\n      \"gateways\": \"array | null\",\n      \"availableGatewayType\": \"string | null\",\n      \"displayOrder\": \"integer | null\"\n    },\n    \"amount\": \"BigDecimal\"\n  },\n  \"sourceBalanceAfterAction\": Amount,\n  \"amount\": Amount,\n  \"destUuid\": \"string\",\n  \"destWalletType\": \"WalletType\",\n  \"receivedAmount\": Amount,\n  \"sourceWallet\": \"Long | null\",\n  \"destWallet\": \"Long | null\"\n}\n\nNested Amount:\n{\n  \"currency\": CurrencyCommand,\n  \"amount\": \"BigDecimal\"\n}\n\nNested CurrencyCommand:\n{\n  \"symbol\": \"string\",\n  \"uuid\": \"string | null\",\n  \"name\": \"string | null\",\n  \"precision\": \"BigDecimal\",\n  \"title\": \"string | null\",\n  \"alias\": \"string | null\",\n  \"icon\": \"string | null\",\n  \"isTransitive\": \"boolean | null\",\n  \"isActive\": \"boolean | null\",\n  \"sign\": \"string | null\",\n  \"description\": \"string | null\",\n  \"shortDescription\": \"string | null\",\n  \"withdrawAllowed\": \"boolean | null\",\n  \"depositAllowed\": \"boolean | null\",\n  \"externalUrl\": \"string | null\",\n  \"gateways\": \"array | null\",\n  \"availableGatewayType\": \"string | null\",\n  \"displayOrder\": \"integer | null\"\n}",
+      "description": "Auth:\n- Bearer user-token is required.\n- Required authority: PERM_deposit:write.\n\nRequest body: RequestDepositBody\n{\n  \"symbol\": \"string\",\n  \"receiverUuid\": \"string\",\n  \"receiverWalletType\": \"WalletType\",\n  \"amount\": \"BigDecimal\",\n  \"description\": \"string | null\",\n  \"transferRef\": \"string | null\",\n  \"gatewayUuid\": \"string | null\",\n  \"chain\": \"string | null\"\n}\n\nNotes:\n- receiverWalletType uses WalletType. The current request DTO references WalletType, but this collection does not lock specific enum values.\n\nResponse 200: TransferResult | null\n{\n  \"date\": \"Long\",\n  \"sourceUuid\": \"string\",\n  \"sourceWalletType\": \"WalletType\",\n  \"sourceBalanceBeforeAction\": {\n    \"currency\": {\n      \"symbol\": \"string\",\n      \"uuid\": \"string | null\",\n      \"name\": \"string | null\",\n      \"precision\": \"BigDecimal\",\n      \"title\": \"string | null\",\n      \"alias\": \"string | null\",\n      \"icon\": \"string | null\",\n      \"isTransitive\": \"boolean | null\",\n      \"isActive\": \"boolean | null\",\n      \"sign\": \"string | null\",\n      \"description\": \"string | null\",\n      \"shortDescription\": \"string | null\",\n      \"withdrawAllowed\": \"boolean | null\",\n      \"depositAllowed\": \"boolean | null\",\n      \"externalUrl\": \"string | null\",\n      \"gateways\": \"array | null\",\n      \"availableGatewayType\": \"string | null\",\n      \"displayOrder\": \"integer | null\"\n    },\n    \"amount\": \"BigDecimal\"\n  },\n  \"sourceBalanceAfterAction\": Amount,\n  \"amount\": Amount,\n  \"destUuid\": \"string\",\n  \"destWalletType\": \"WalletType\",\n  \"receivedAmount\": Amount,\n  \"sourceWallet\": \"Long | null\",\n  \"destWallet\": \"Long | null\"\n}\n\nNested Amount:\n{\n  \"currency\": CurrencyCommand,\n  \"amount\": \"BigDecimal\"\n}\n\nNested CurrencyCommand:\n{\n  \"symbol\": \"string\",\n  \"uuid\": \"string | null\",\n  \"name\": \"string | null\",\n  \"precision\": \"BigDecimal\",\n  \"title\": \"string | null\",\n  \"alias\": \"string | null\",\n  \"icon\": \"string | null\",\n  \"isTransitive\": \"boolean | null\",\n  \"isActive\": \"boolean | null\",\n  \"sign\": \"string | null\",\n  \"description\": \"string | null\",\n  \"shortDescription\": \"string | null\",\n  \"withdrawAllowed\": \"boolean | null\",\n  \"depositAllowed\": \"boolean | null\",\n  \"externalUrl\": \"string | null\",\n  \"gateways\": \"array | null\",\n  \"availableGatewayType\": \"string | null\",\n  \"displayOrder\": \"integer | null\"\n}",
       "url": "{{ _['api-host'] }}/opex/v1/deposit",
       "body": {
         "mimeType": "application/json",
@@ -387,7 +387,7 @@
       "parentId": "fld_wallet_admin",
       "name": "GET /opex/v1/admin/wallet/users",
       "method": "GET",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nQuery params:\n- uuid: string | null\n- currency: string | null\n- excludeSystem: boolean, default false\n- limit: integer | null, default 10\n- offset: integer | null, default 0\n\nResponse 200: List<WalletDataResponse>\n[\n  {\n    \"uuid\": \"string\",\n    \"title\": \"string\",\n    \"wallets\": [\n      {\n        \"currency\": \"string\",\n        \"free\": \"double\",\n        \"locked\": \"double\",\n        \"pendingWithdraw\": \"double\"\n      }\n    ]\n  }\n]",
+      "description": "Auth:\n- Bearer admin-token is required.\n- Required authority: ROLE_admin.\n\nQuery params:\n- uuid: string | null\n- currency: string | null\n- excludeSystem: boolean, default false\n- limit: integer | null, default 10\n- offset: integer | null, default 0\n\nResponse 200: List<WalletDataResponse>\n[\n  {\n    \"uuid\": \"string\",\n    \"title\": \"string\",\n    \"wallets\": [\n      {\n        \"currency\": \"string\",\n        \"free\": \"double\",\n        \"locked\": \"double\",\n        \"pendingWithdraw\": \"double\"\n      }\n    ]\n  }\n]",
       "url": "{{ _['api-host'] }}/opex/v1/admin/wallet/users",
       "parameters": [
         {
@@ -420,7 +420,7 @@
       "parentId": "fld_wallet_admin",
       "name": "GET /opex/v1/admin/wallet/system/total",
       "method": "GET",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nResponse 200: List<WalletTotal>\n[\n  {\n    \"currency\": \"string\",\n    \"balance\": \"double\"\n  }\n]",
+      "description": "Auth:\n- Bearer admin-token is required.\n- Required authority: ROLE_admin.\n\nResponse 200: List<WalletTotal>\n[\n  {\n    \"currency\": \"string\",\n    \"balance\": \"double\"\n  }\n]",
       "url": "{{ _['api-host'] }}/opex/v1/admin/wallet/system/total",
       "headers": [],
       "authentication": {
@@ -436,7 +436,7 @@
       "parentId": "fld_wallet_admin",
       "name": "GET /opex/v1/admin/wallet/users/total",
       "method": "GET",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nResponse 200: List<WalletTotal> | null\n[\n  {\n    \"currency\": \"string\",\n    \"balance\": \"double\"\n  }\n]",
+      "description": "Auth:\n- Bearer admin-token is required.\n- Required authority: ROLE_admin.\n\nResponse 200: List<WalletTotal> | null\n[\n  {\n    \"currency\": \"string\",\n    \"balance\": \"double\"\n  }\n]",
       "url": "{{ _['api-host'] }}/opex/v1/admin/wallet/users/total",
       "headers": [],
       "authentication": {
@@ -458,7 +458,7 @@
       "parentId": "fld_voucher",
       "name": "PUT /opex/v1/voucher/{code}",
       "method": "PUT",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Insomnia token: {{ _['user-token'] }}.\n- Config note: SecurityConfig defines PERM_voucher:submit for /opex/v1/voucher, but this request calls /opex/v1/voucher/{code}.\n- Effective matcher for this exact URL may fall back to anyExchange().authenticated() unless the matcher is changed to /opex/v1/voucher/**.\n- Intended authority to use for voucher-submit tokens: PERM_voucher:submit.\n\nPath params:\n- code: string\n\nResponse 200: SubmitVoucherResponse\n{\n  \"amount\": \"BigDecimal\",\n  \"currency\": \"string\",\n  \"issuer\": \"string | null\",\n  \"description\": \"string | null\"\n}",
+      "description": "Auth:\n- Bearer user-token is required.\n- Required authority: PERM_voucher:submit.\n\nPath params:\n- code: string\n\nResponse 200: SubmitVoucherResponse\n{\n  \"amount\": \"BigDecimal\",\n  \"currency\": \"string\",\n  \"issuer\": \"string | null\",\n  \"description\": \"string | null\"\n}",
       "url": "{{ _['api-host'] }}/opex/v1/voucher/{{ _['code'] }}",
       "headers": [],
       "authentication": {
@@ -480,7 +480,7 @@
       "parentId": "fld_user_data",
       "name": "GET /opex/v1/user/data/trade/volume",
       "method": "GET",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: authenticated() only; no specific role/permission matcher is defined for /opex/v1/user/data/**.\n- Insomnia token: {{ _['user-token'] }}.\n- Effective matcher: anyExchange().authenticated().\n\nQuery params:\n- symbol: string, e.g. BTCUSDT\n- interval: Day | Week | Month | Year\n\nResponse 200: BigDecimal\nExample:\n12345.6789",
+      "description": "Auth:\n- Bearer user-token is required.\n- Requires a valid authenticated user JWT.\n\nQuery params:\n- symbol: string, e.g. BTCUSDT\n- interval: Day | Week | Month | Year\n\nResponse 200: BigDecimal\nExample:\n12345.6789",
       "url": "{{ _['api-host'] }}/opex/v1/user/data/trade/volume",
       "parameters": [
         {
@@ -508,7 +508,7 @@
       "parentId": "fld_user_data",
       "name": "GET /opex/v1/user/data/trade/volume/total",
       "method": "GET",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: authenticated() only; no specific role/permission matcher is defined for /opex/v1/user/data/**.\n- Insomnia token: {{ _['user-token'] }}.\n- Effective matcher: anyExchange().authenticated().\n\nQuery params:\n- interval: Day | Week | Month | Year\n\nResponse 200: BigDecimal\nExample:\n12345.6789",
+      "description": "Auth:\n- Bearer user-token is required.\n- Requires a valid authenticated user JWT.\n\nQuery params:\n- interval: Day | Week | Month | Year\n\nResponse 200: BigDecimal\nExample:\n12345.6789",
       "url": "{{ _['api-host'] }}/opex/v1/user/data/trade/volume/total",
       "parameters": [
         {
@@ -531,7 +531,7 @@
       "parentId": "fld_user_data",
       "name": "GET /opex/v1/user/data/fee",
       "method": "GET",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: authenticated() only; no specific role/permission matcher is defined for /opex/v1/user/data/**.\n- Insomnia token: {{ _['user-token'] }}.\n- Effective matcher: anyExchange().authenticated().\n\nResponse 200: UserFee\n{\n  \"name\": \"string\",\n  \"makerFee\": \"BigDecimal\",\n  \"takerFee\": \"BigDecimal\"\n}",
+      "description": "Auth:\n- Bearer user-token is required.\n- Requires a valid authenticated user JWT.\n\nResponse 200: UserFee\n{\n  \"name\": \"string\",\n  \"makerFee\": \"BigDecimal\",\n  \"takerFee\": \"BigDecimal\"\n}",
       "url": "{{ _['api-host'] }}/opex/v1/user/data/fee",
       "headers": [],
       "authentication": {
@@ -547,7 +547,7 @@
       "parentId": "fld_user_data",
       "name": "GET /opex/v1/user/data/withdraw/volume/total",
       "method": "GET",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: authenticated() only; no specific role/permission matcher is defined for /opex/v1/user/data/**.\n- Insomnia token: {{ _['user-token'] }}.\n- Effective matcher: anyExchange().authenticated().\n\nQuery params:\n- interval: string | null\n- Accepted labels map to Interval, commonly: Day | Week | Month | Year\n\nResponse 200: BigDecimal\nExample:\n12345.6789",
+      "description": "Auth:\n- Bearer user-token is required.\n- Requires a valid authenticated user JWT.\n\nQuery params:\n- interval: string | null\n- Accepted labels map to Interval, commonly: Day | Week | Month | Year\n\nResponse 200: BigDecimal\nExample:\n12345.6789",
       "url": "{{ _['api-host'] }}/opex/v1/user/data/withdraw/volume/total",
       "parameters": [
         {
@@ -576,7 +576,7 @@
       "parentId": "fld_bank_account",
       "name": "POST /opex/v1/bank-account",
       "method": "POST",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: PERM_bank_account:write.\n- Insomnia token: {{ _['user-token'] }}; paste a user/API-key JWT that contains PERM_bank_account:write.\n - Exactly one of `cardNumber` or `iban` must be provided. Providing both or neither is invalid.\n- Security matcher: /opex/v1/bank-account/**.\n\nRequest body: AddBankAccountRequest\n{\n  \"name\": \"string | null\",\n  \"cardNumber\": \"string | null\",\n  \"iban\": \"string | null\"\n}\n\nResponse 200: BankAccountResponse\n{\n  \"id\": \"Long | null\",\n  \"name\": \"string | null\",\n  \"cardNumber\": \"string | null\",\n  \"iban\": \"string | null\",\n  \"accountNumber\": \"string | null\",\n  \"bank\": \"string | null\",\n  \"status\": \"WAITING | VERIFIED | REJECTED\"\n}",
+      "description": "Auth:\n- Bearer user-token is required.\n- Requires a valid authenticated user JWT.\n\nValidation:\n- Exactly one of `cardNumber` or `iban` must be provided.\n- Providing both or neither is invalid.\n\nRequest body: AddBankAccountRequest\n{\n  \"name\": \"string | null\",\n  \"cardNumber\": \"string | null\",\n  \"iban\": \"string | null\"\n}\n\nValid request with card number:\n{\n  \"name\": \"My Bank Account\",\n  \"cardNumber\": \"6037991234567890\",\n  \"iban\": null\n}\n\nValid request with IBAN:\n{\n  \"name\": \"My Bank Account\",\n  \"cardNumber\": null,\n  \"iban\": \"IR123456789012345678901234\"\n}\n\nInvalid request: both cardNumber and iban are provided.\n{\n  \"name\": \"My Bank Account\",\n  \"cardNumber\": \"6037991234567890\",\n  \"iban\": \"IR123456789012345678901234\"\n}\n\nInvalid request: neither cardNumber nor iban is provided.\n{\n  \"name\": \"My Bank Account\",\n  \"cardNumber\": null,\n  \"iban\": null\n}\n\nResponse 200: BankAccountResponse\n{\n  \"id\": \"Long | null\",\n  \"name\": \"string | null\",\n  \"cardNumber\": \"string | null\",\n  \"iban\": \"string | null\",\n  \"accountNumber\": \"string | null\",\n  \"bank\": \"string | null\",\n  \"status\": \"WAITING | VERIFIED | REJECTED\"\n}\n\nResponse 401:\nNo response body.",
       "url": "{{ _['api-host'] }}/opex/v1/bank-account",
       "body": {
         "mimeType": "application/json",
@@ -601,7 +601,7 @@
       "parentId": "fld_bank_account",
       "name": "GET /opex/v1/bank-account",
       "method": "GET",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: none.\n- Required authority: permitAll for GET /opex/v1/bank-account.\n- Insomnia token: optional; the collection currently sends {{ _['user-token'] }}, but the endpoint is public according to SecurityConfig.\n- Security matcher: GET /opex/v1/bank-account.\n\nResponse 200: List<BankAccountResponse>\n[\n  {\n    \"id\": \"Long | null\",\n    \"name\": \"string | null\",\n    \"cardNumber\": \"string | null\",\n    \"iban\": \"string | null\",\n    \"accountNumber\": \"string | null\",\n    \"bank\": \"string | null\",\n    \"status\": \"WAITING | VERIFIED | REJECTED\"\n  }\n]",
+      "description": "Auth:\n- Bearer user-token is required.\n- Requires a valid authenticated user JWT.\n\nResponse 200: Array<BankAccountResponse>\n[\n  {\n    \"id\": \"Long | null\",\n    \"name\": \"string | null\",\n    \"cardNumber\": \"string | null\",\n    \"iban\": \"string | null\",\n    \"accountNumber\": \"string | null\",\n    \"bank\": \"string | null\",\n    \"status\": \"WAITING | VERIFIED | REJECTED\"\n  }\n]\n\nResponse 401:\nNo response body.",
       "url": "{{ _['api-host'] }}/opex/v1/bank-account",
       "headers": [],
       "authentication": {
@@ -617,7 +617,7 @@
       "parentId": "fld_bank_account",
       "name": "DELETE /opex/v1/bank-account/{id}",
       "method": "DELETE",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: PERM_bank_account:write.\n- Insomnia token: {{ _['user-token'] }}; paste a user/API-key JWT that contains PERM_bank_account:write.\n- Security matcher: /opex/v1/bank-account/**.\n\nPath params:\n- id: Long\n\nResponse 200:\nNo response body.",
+      "description": "Auth:\n- Bearer user-token is required.\n- Required authority: PERM_bank_account:write.\n\nPath params:\n- id: Long\n\nResponse 200:\nNo response body.\n\nResponse 401:\nNo response body.\n\nResponse 403:\nNo response body.",
       "url": "{{ _['api-host'] }}/opex/v1/bank-account/{{ _['id'] }}",
       "headers": [],
       "authentication": {
@@ -639,7 +639,7 @@
       "parentId": "fld_localization_admin",
       "name": "GET /opex/v1/admin/currency/{currency}/localization",
       "method": "GET",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nPath params:\n- currency: string\n\nResponse 200: CurrencyLocalizationResponse\n{\n  \"currency\": \"string\",\n  \"currencyLocalizations\": [\n    {\n      \"id\": \"Long | null\",\n      \"name\": \"string | null\",\n      \"title\": \"string | null\",\n      \"alias\": \"string | null\",\n      \"description\": \"string | null\",\n      \"shortDescription\": \"string | null\",\n      \"language\": \"string\"\n    }\n  ]\n}",
+      "description": "Auth:\n- Bearer admin-token is required.\n- Required authority: ROLE_admin.\n\nPath params:\n- currency: string\n\nResponse 200: CurrencyLocalizationResponse\n{\n  \"currency\": \"string\",\n  \"currencyLocalizations\": [\n    {\n      \"id\": \"Long | null\",\n      \"name\": \"string | null\",\n      \"title\": \"string | null\",\n      \"alias\": \"string | null\",\n      \"description\": \"string | null\",\n      \"shortDescription\": \"string | null\",\n      \"language\": \"string\"\n    }\n  ]\n}",
       "url": "{{ _['api-host'] }}/opex/v1/admin/currency/{{ _['currency'] }}/localization",
       "headers": [],
       "authentication": {
@@ -655,7 +655,7 @@
       "parentId": "fld_localization_admin",
       "name": "POST /opex/v1/admin/currency/{currency}/localization",
       "method": "POST",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nPath params:\n- currency: string\n\nRequest body: List<CurrencyLocalizationCommand>\n[\n  {\n    \"id\": \"Long | null\",\n    \"name\": \"string | null\",\n    \"title\": \"string | null\",\n    \"alias\": \"string | null\",\n    \"description\": \"string | null\",\n    \"shortDescription\": \"string | null\",\n    \"language\": \"string\"\n  }\n]\n\nResponse 200: CurrencyLocalizationResponse\n{\n  \"currency\": \"string\",\n  \"currencyLocalizations\": [\n    {\n      \"id\": \"Long | null\",\n      \"name\": \"string | null\",\n      \"title\": \"string | null\",\n      \"alias\": \"string | null\",\n      \"description\": \"string | null\",\n      \"shortDescription\": \"string | null\",\n      \"language\": \"string\"\n    }\n  ]\n}",
+      "description": "Auth:\n- Bearer admin-token is required.\n- Required authority: ROLE_admin.\n\nPath params:\n- currency: string\n\nRequest body: List<CurrencyLocalizationCommand>\n[\n  {\n    \"id\": \"Long | null\",\n    \"name\": \"string | null\",\n    \"title\": \"string | null\",\n    \"alias\": \"string | null\",\n    \"description\": \"string | null\",\n    \"shortDescription\": \"string | null\",\n    \"language\": \"string\"\n  }\n]\n\nResponse 200: CurrencyLocalizationResponse\n{\n  \"currency\": \"string\",\n  \"currencyLocalizations\": [\n    {\n      \"id\": \"Long | null\",\n      \"name\": \"string | null\",\n      \"title\": \"string | null\",\n      \"alias\": \"string | null\",\n      \"description\": \"string | null\",\n      \"shortDescription\": \"string | null\",\n      \"language\": \"string\"\n    }\n  ]\n}",
       "url": "{{ _['api-host'] }}/opex/v1/admin/currency/{{ _['currency'] }}/localization",
       "body": {
         "mimeType": "application/json",
@@ -680,7 +680,7 @@
       "parentId": "fld_localization_admin",
       "name": "DELETE /opex/v1/admin/currency/localization/{id}",
       "method": "DELETE",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nPath params:\n- id: Long\n\nResponse 200:\nNo response body.",
+      "description": "Auth:\n- Bearer admin-token is required.\n- Required authority: ROLE_admin.\n\nPath params:\n- id: Long\n\nResponse 200:\nNo response body.",
       "url": "{{ _['api-host'] }}/opex/v1/admin/currency/localization/{{ _['id'] }}",
       "headers": [],
       "authentication": {
@@ -696,7 +696,7 @@
       "parentId": "fld_localization_admin",
       "name": "GET /opex/v1/admin/terminal/{terminalUuid}/localization",
       "method": "GET",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nPath params:\n- terminalUuid: string\n\nResponse 200: TerminalLocalizationResponse\n{\n  \"terminalUuid\": \"string\",\n  \"terminalLocalizations\": [\n    {\n      \"id\": \"Long | null\",\n      \"description\": \"string | null\",\n      \"owner\": \"string | null\",\n      \"language\": \"string\"\n    }\n  ]\n}",
+      "description": "Auth:\n- Bearer admin-token is required.\n- Required authority: ROLE_admin.\n\nPath params:\n- terminalUuid: string\n\nResponse 200: TerminalLocalizationResponse\n{\n  \"terminalUuid\": \"string\",\n  \"terminalLocalizations\": [\n    {\n      \"id\": \"Long | null\",\n      \"description\": \"string | null\",\n      \"owner\": \"string | null\",\n      \"language\": \"string\"\n    }\n  ]\n}",
       "url": "{{ _['api-host'] }}/opex/v1/admin/terminal/{{ _['terminalUuid'] }}/localization",
       "headers": [],
       "authentication": {
@@ -712,7 +712,7 @@
       "parentId": "fld_localization_admin",
       "name": "POST /opex/v1/admin/terminal/{terminalUuid}/localization",
       "method": "POST",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nPath params:\n- terminalUuid: string\n\nRequest body: List<TerminalLocalizationCommand>\n[\n  {\n    \"id\": \"Long | null\",\n    \"description\": \"string | null\",\n    \"owner\": \"string | null\",\n    \"language\": \"string\"\n  }\n]\n\nResponse 200: TerminalLocalizationResponse\n{\n  \"terminalUuid\": \"string\",\n  \"terminalLocalizations\": [\n    {\n      \"id\": \"Long | null\",\n      \"description\": \"string | null\",\n      \"owner\": \"string | null\",\n      \"language\": \"string\"\n    }\n  ]\n}",
+      "description": "Auth:\n- Bearer admin-token is required.\n- Required authority: ROLE_admin.\n\nPath params:\n- terminalUuid: string\n\nRequest body: List<TerminalLocalizationCommand>\n[\n  {\n    \"id\": \"Long | null\",\n    \"description\": \"string | null\",\n    \"owner\": \"string | null\",\n    \"language\": \"string\"\n  }\n]\n\nResponse 200: TerminalLocalizationResponse\n{\n  \"terminalUuid\": \"string\",\n  \"terminalLocalizations\": [\n    {\n      \"id\": \"Long | null\",\n      \"description\": \"string | null\",\n      \"owner\": \"string | null\",\n      \"language\": \"string\"\n    }\n  ]\n}",
       "url": "{{ _['api-host'] }}/opex/v1/admin/terminal/{{ _['terminalUuid'] }}/localization",
       "body": {
         "mimeType": "application/json",
@@ -737,7 +737,7 @@
       "parentId": "fld_localization_admin",
       "name": "DELETE /opex/v1/admin/terminal/localization/{id}",
       "method": "DELETE",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nPath params:\n- id: Long\n\nResponse 200:\nNo response body.",
+      "description": "Auth:\n- Bearer admin-token is required.\n- Required authority: ROLE_admin.\n\nPath params:\n- id: Long\n\nResponse 200:\nNo response body.",
       "url": "{{ _['api-host'] }}/opex/v1/admin/terminal/localization/{{ _['id'] }}",
       "headers": [],
       "authentication": {
@@ -753,7 +753,7 @@
       "parentId": "fld_localization_admin",
       "name": "GET /opex/v1/admin/gateway/{gatewayUuid}/localization",
       "method": "GET",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nPath params:\n- gatewayUuid: string\n\nRouting rule:\n- gatewayUuid starting with \"ofg\" uses off-chain gateway localization.\n- gatewayUuid starting with \"ong\" uses on-chain gateway localization.\n\nResponse 200: GatewayLocalizationResponse\n{\n  \"gatewayUuid\": \"string\",\n  \"localizations\": [\n    {\n      \"id\": \"Long | null\",\n      \"depositDescription\": \"string | null\",\n      \"withdrawDescription\": \"string | null\",\n      \"language\": \"string\"\n    }\n  ]\n}",
+      "description": "Auth:\n- Bearer admin-token is required.\n- Required authority: ROLE_admin.\n\nPath params:\n- gatewayUuid: string\n\nRouting rule:\n- gatewayUuid starting with \"ofg\" uses off-chain gateway localization.\n- gatewayUuid starting with \"ong\" uses on-chain gateway localization.\n\nResponse 200: GatewayLocalizationResponse\n{\n  \"gatewayUuid\": \"string\",\n  \"localizations\": [\n    {\n      \"id\": \"Long | null\",\n      \"depositDescription\": \"string | null\",\n      \"withdrawDescription\": \"string | null\",\n      \"language\": \"string\"\n    }\n  ]\n}",
       "url": "{{ _['api-host'] }}/opex/v1/admin/gateway/{{ _['gatewayUuid'] }}/localization",
       "headers": [],
       "authentication": {
@@ -769,7 +769,7 @@
       "parentId": "fld_localization_admin",
       "name": "POST /opex/v1/admin/gateway/{gatewayUuid}/localization",
       "method": "POST",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nPath params:\n- gatewayUuid: string\n\nRouting rule:\n- gatewayUuid starting with \"ofg\" saves off-chain gateway localization.\n- gatewayUuid starting with \"ong\" saves on-chain gateway localization.\n\nRequest body: List<GatewayLocalizationCommand>\n[\n  {\n    \"id\": \"Long | null\",\n    \"depositDescription\": \"string | null\",\n    \"withdrawDescription\": \"string | null\",\n    \"language\": \"string\"\n  }\n]\n\nResponse 200: GatewayLocalizationResponse\n{\n  \"gatewayUuid\": \"string\",\n  \"localizations\": [\n    {\n      \"id\": \"Long | null\",\n      \"depositDescription\": \"string | null\",\n      \"withdrawDescription\": \"string | null\",\n      \"language\": \"string\"\n    }\n  ]\n}",
+      "description": "Auth:\n- Bearer admin-token is required.\n- Required authority: ROLE_admin.\n\nPath params:\n- gatewayUuid: string\n\nRouting rule:\n- gatewayUuid starting with \"ofg\" saves off-chain gateway localization.\n- gatewayUuid starting with \"ong\" saves on-chain gateway localization.\n\nRequest body: List<GatewayLocalizationCommand>\n[\n  {\n    \"id\": \"Long | null\",\n    \"depositDescription\": \"string | null\",\n    \"withdrawDescription\": \"string | null\",\n    \"language\": \"string\"\n  }\n]\n\nResponse 200: GatewayLocalizationResponse\n{\n  \"gatewayUuid\": \"string\",\n  \"localizations\": [\n    {\n      \"id\": \"Long | null\",\n      \"depositDescription\": \"string | null\",\n      \"withdrawDescription\": \"string | null\",\n      \"language\": \"string\"\n    }\n  ]\n}",
       "url": "{{ _['api-host'] }}/opex/v1/admin/gateway/{{ _['gatewayUuid'] }}/localization",
       "body": {
         "mimeType": "application/json",
@@ -794,7 +794,7 @@
       "parentId": "fld_localization_admin",
       "name": "DELETE /opex/v1/admin/gateway/{gatewayUuid}/localization/{id}",
       "method": "DELETE",
-      "description": "Security / Auth (from api-binance-rest SecurityConfig):\n- Required: Bearer JWT.\n- Required authority: ROLE_admin.\n- Insomnia token: {{ _['admin-token'] }}.\n- Security matcher: /opex/v1/admin/**.\n\nPath params:\n- gatewayUuid: string\n- id: Long\n\nRouting rule:\n- gatewayUuid starting with \"ofg\" deletes off-chain gateway localization.\n- gatewayUuid starting with \"ong\" deletes on-chain gateway localization.\n\nResponse 200:\nNo response body.",
+      "description": "Auth:\n- Bearer admin-token is required.\n- Required authority: ROLE_admin.\n\nPath params:\n- gatewayUuid: string\n- id: Long\n\nRouting rule:\n- gatewayUuid starting with \"ofg\" deletes off-chain gateway localization.\n- gatewayUuid starting with \"ong\" deletes on-chain gateway localization.\n\nResponse 200:\nNo response body.",
       "url": "{{ _['api-host'] }}/opex/v1/admin/gateway/{{ _['gatewayUuid'] }}/localization/{{ _['id'] }}",
       "headers": [],
       "authentication": {
