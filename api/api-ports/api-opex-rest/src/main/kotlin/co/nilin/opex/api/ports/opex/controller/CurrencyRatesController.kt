@@ -16,7 +16,6 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
-import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
@@ -43,8 +42,7 @@ class CurrencyRatesController(
     @Operation(
         tags = ["OTC Rates"],
         summary = "Create OTC exchange rate",
-        description = """
-Creates a new OTC exchange rate.
+        description = """Creates a new OTC exchange rate.
 
 Required authentication:
 - Bearer admin-token is required.
@@ -54,15 +52,9 @@ Validation:
 - `rate` must be greater than zero.
 - `sourceSymbol` and `destSymbol` must be different.
 
-Request body: SetCurrencyExchangeRateRequest
-- sourceSymbol: string
-- destSymbol: string
-- rate: BigDecimal
-- ignoreIfExist: boolean, nullable, default false
+Request body: SetCurrencyExchangeRateRequest.
 
-Response body:
-- No response body.
-        """,
+Response body: See schema.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
             required = true,
@@ -70,20 +62,7 @@ Response body:
             content = [
                 Content(
                     mediaType = "application/json",
-                    schema = Schema(implementation = SetCurrencyExchangeRateRequest::class),
-                    examples = [
-                        ExampleObject(
-                            name = "Create OTC rate request",
-                            value = """
-{
-  "sourceSymbol": "BTC",
-  "destSymbol": "USDT",
-  "rate": 65000.00,
-  "ignoreIfExist": false
-}
-                            """
-                        )
-                    ]
+                    schema = Schema(implementation = SetCurrencyExchangeRateRequest::class)
                 )
             ]
         ),
@@ -118,8 +97,7 @@ Response body:
     @Operation(
         tags = ["OTC Rates"],
         summary = "Update OTC exchange rate",
-        description = """
-Updates an existing OTC exchange rate.
+        description = """Updates an existing OTC exchange rate.
 
 Required authentication:
 - Bearer admin-token or service token is required.
@@ -129,20 +107,9 @@ Validation:
 - `rate` must be greater than zero.
 - `sourceSymbol` and `destSymbol` must be different.
 
-Request body: SetCurrencyExchangeRateRequest
-- sourceSymbol: string
-- destSymbol: string
-- rate: BigDecimal
-- ignoreIfExist: boolean, nullable, default false
+Request body: SetCurrencyExchangeRateRequest.
 
-Response body: Rates
-- rates: Array<Rate>, nullable
-
-Rate item:
-- sourceSymbol: string
-- destSymbol: string
-- rate: BigDecimal
-        """,
+Response body: Rates.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
             required = true,
@@ -150,20 +117,7 @@ Rate item:
             content = [
                 Content(
                     mediaType = "application/json",
-                    schema = Schema(implementation = SetCurrencyExchangeRateRequest::class),
-                    examples = [
-                        ExampleObject(
-                            name = "Update OTC rate request",
-                            value = """
-{
-  "sourceSymbol": "BTC",
-  "destSymbol": "USDT",
-  "rate": 65100.00,
-  "ignoreIfExist": false
-}
-                            """
-                        )
-                    ]
+                    schema = Schema(implementation = SetCurrencyExchangeRateRequest::class)
                 )
             ]
         ),
@@ -174,23 +128,7 @@ Rate item:
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = Rates::class),
-                        examples = [
-                            ExampleObject(
-                                name = "Rates response",
-                                value = """
-{
-  "rates": [
-    {
-      "sourceSymbol": "BTC",
-      "destSymbol": "USDT",
-      "rate": 65100.00
-    }
-  ]
-}
-                                """
-                            )
-                        ]
+                        schema = Schema(implementation = Rates::class)
                     )
                 ]
             ),
@@ -219,25 +157,15 @@ Rate item:
     @Operation(
         tags = ["OTC Rates"],
         summary = "Delete OTC exchange rate",
-        description = """
-Deletes an OTC exchange rate by source and destination symbols.
+        description = """Deletes an OTC exchange rate by source and destination symbols.
 
 Required authentication:
 - Bearer admin-token is required.
 - Required role: ROLE_admin.
 
 Path parameters:
-- sourceSymbol: source currency symbol.
-- destSymbol: destination currency symbol.
 
-Response body: Rates
-- rates: Array<Rate>, nullable
-
-Rate item:
-- sourceSymbol: string
-- destSymbol: string
-- rate: BigDecimal
-        """,
+Response body: Rates.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         parameters = [
             Parameter(
@@ -264,23 +192,7 @@ Rate item:
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = Rates::class),
-                        examples = [
-                            ExampleObject(
-                                name = "Rates response",
-                                value = """
-{
-  "rates": [
-    {
-      "sourceSymbol": "ETH",
-      "destSymbol": "USDT",
-      "rate": 3200.00
-    }
-  ]
-}
-                                """
-                            )
-                        ]
+                        schema = Schema(implementation = Rates::class)
                     )
                 ]
             ),
@@ -309,20 +221,12 @@ Rate item:
     @Operation(
         tags = ["OTC Rates"],
         summary = "List OTC exchange rates",
-        description = """
-Returns configured OTC exchange rates.
+        description = """Returns configured OTC exchange rates.
 
 Authentication:
 - Public endpoint. No Bearer token is required.
 
-Response body: Rates
-- rates: Array<Rate>, nullable
-
-Rate item:
-- sourceSymbol: string
-- destSymbol: string
-- rate: BigDecimal
-        """,
+Response body: Rates.""",
         responses = [
             ApiResponse(
                 responseCode = "200",
@@ -330,23 +234,7 @@ Rate item:
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = Rates::class),
-                        examples = [
-                            ExampleObject(
-                                name = "Rates response",
-                                value = """
-{
-  "rates": [
-    {
-      "sourceSymbol": "BTC",
-      "destSymbol": "USDT",
-      "rate": 65000.00
-    }
-  ]
-}
-                                """
-                            )
-                        ]
+                        schema = Schema(implementation = Rates::class)
                     )
                 ]
             )
@@ -360,21 +248,14 @@ Rate item:
     @Operation(
         tags = ["OTC Rates"],
         summary = "Get OTC exchange rate",
-        description = """
-Returns one OTC exchange rate by source and destination symbols.
+        description = """Returns one OTC exchange rate by source and destination symbols.
 
 Authentication:
 - Public endpoint. No Bearer token is required.
 
 Path parameters:
-- sourceSymbol: source currency symbol.
-- destSymbol: destination currency symbol.
 
-Response body: Rate, nullable
-- sourceSymbol: string
-- destSymbol: string
-- rate: BigDecimal
-        """,
+Response body: Rate, nullable.""",
         parameters = [
             Parameter(
                 name = "sourceSymbol",
@@ -400,19 +281,7 @@ Response body: Rate, nullable
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = Rate::class),
-                        examples = [
-                            ExampleObject(
-                                name = "Rate response",
-                                value = """
-{
-  "sourceSymbol": "BTC",
-  "destSymbol": "USDT",
-  "rate": 65000.00
-}
-                                """
-                            )
-                        ]
+                        schema = Schema(implementation = Rate::class)
                     )
                 ]
             )
@@ -430,8 +299,7 @@ Response body: Rate, nullable
     @Operation(
         tags = ["OTC Forbidden Pairs"],
         summary = "Add forbidden OTC pair",
-        description = """
-Adds a forbidden OTC currency pair.
+        description = """Adds a forbidden OTC currency pair.
 
 Required authentication:
 - Bearer admin-token is required.
@@ -440,13 +308,9 @@ Required authentication:
 Validation:
 - `sourceSymbol` and `destSymbol` must be different.
 
-Request body: CurrencyPair
-- sourceSymbol: string
-- destSymbol: string
+Request body: CurrencyPair.
 
-Response body:
-- No response body.
-        """,
+Response body: See schema.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
             required = true,
@@ -454,18 +318,7 @@ Response body:
             content = [
                 Content(
                     mediaType = "application/json",
-                    schema = Schema(implementation = CurrencyPair::class),
-                    examples = [
-                        ExampleObject(
-                            name = "Forbidden pair request",
-                            value = """
-{
-  "sourceSymbol": "BTC",
-  "destSymbol": "IRR"
-}
-                            """
-                        )
-                    ]
+                    schema = Schema(implementation = CurrencyPair::class)
                 )
             ]
         ),
@@ -500,24 +353,15 @@ Response body:
     @Operation(
         tags = ["OTC Forbidden Pairs"],
         summary = "Delete forbidden OTC pair",
-        description = """
-Deletes one forbidden OTC currency pair.
+        description = """Deletes one forbidden OTC currency pair.
 
 Required authentication:
 - Bearer admin-token is required.
 - Required role: ROLE_admin.
 
 Path parameters:
-- sourceSymbol: source currency symbol.
-- destSymbol: destination currency symbol.
 
-Response body: ForbiddenPairs
-- forbiddenPairs: Array<ForbiddenPair>, nullable
-
-ForbiddenPair item:
-- sourceSymbol: string
-- destinationSymbol: string
-        """,
+Response body: ForbiddenPairs.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         parameters = [
             Parameter(
@@ -544,22 +388,7 @@ ForbiddenPair item:
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = ForbiddenPairs::class),
-                        examples = [
-                            ExampleObject(
-                                name = "Forbidden pairs response",
-                                value = """
-{
-  "forbiddenPairs": [
-    {
-      "sourceSymbol": "ETH",
-      "destinationSymbol": "IRR"
-    }
-  ]
-}
-                                """
-                            )
-                        ]
+                        schema = Schema(implementation = ForbiddenPairs::class)
                     )
                 ]
             ),
@@ -588,19 +417,12 @@ ForbiddenPair item:
     @Operation(
         tags = ["OTC Forbidden Pairs"],
         summary = "List forbidden OTC pairs",
-        description = """
-Returns forbidden OTC currency pairs.
+        description = """Returns forbidden OTC currency pairs.
 
 Authentication:
 - Public endpoint. No Bearer token is required.
 
-Response body: ForbiddenPairs
-- forbiddenPairs: Array<ForbiddenPair>, nullable
-
-ForbiddenPair item:
-- sourceSymbol: string
-- destinationSymbol: string
-        """,
+Response body: ForbiddenPairs.""",
         responses = [
             ApiResponse(
                 responseCode = "200",
@@ -608,22 +430,7 @@ ForbiddenPair item:
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = ForbiddenPairs::class),
-                        examples = [
-                            ExampleObject(
-                                name = "Forbidden pairs response",
-                                value = """
-{
-  "forbiddenPairs": [
-    {
-      "sourceSymbol": "BTC",
-      "destinationSymbol": "IRR"
-    }
-  ]
-}
-                                """
-                            )
-                        ]
+                        schema = Schema(implementation = ForbiddenPairs::class)
                     )
                 ]
             )
@@ -638,19 +445,15 @@ ForbiddenPair item:
     @Operation(
         tags = ["OTC Transitive Symbols"],
         summary = "Add transitive OTC symbols",
-        description = """
-Adds transitive symbols used for OTC route calculation.
+        description = """Adds transitive symbols used for OTC route calculation.
 
 Required authentication:
 - Bearer admin-token is required.
 - Required role: ROLE_admin.
 
-Request body: Symbols
-- symbols: Array<string>, nullable
+Request body: Symbols.
 
-Response body:
-- No response body.
-        """,
+Response body: See schema.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
             required = true,
@@ -658,20 +461,7 @@ Response body:
             content = [
                 Content(
                     mediaType = "application/json",
-                    schema = Schema(implementation = Symbols::class),
-                    examples = [
-                        ExampleObject(
-                            name = "Transitive symbols request",
-                            value = """
-{
-  "symbols": [
-    "USDT",
-    "IRR"
-  ]
-}
-                            """
-                        )
-                    ]
+                    schema = Schema(implementation = Symbols::class)
                 )
             ]
         ),
@@ -705,19 +495,15 @@ Response body:
     @Operation(
         tags = ["OTC Transitive Symbols"],
         summary = "Delete one transitive OTC symbol",
-        description = """
-Deletes one transitive symbol used for OTC route calculation.
+        description = """Deletes one transitive symbol used for OTC route calculation.
 
 Required authentication:
 - Bearer admin-token is required.
 - Required role: ROLE_admin.
 
 Path parameters:
-- symbol: symbol to delete.
 
-Response body: Symbols
-- symbols: Array<string>, nullable
-        """,
+Response body: Symbols.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         parameters = [
             Parameter(
@@ -736,19 +522,7 @@ Response body: Symbols
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = Symbols::class),
-                        examples = [
-                            ExampleObject(
-                                name = "Symbols response",
-                                value = """
-{
-  "symbols": [
-    "IRR"
-  ]
-}
-                                """
-                            )
-                        ]
+                        schema = Schema(implementation = Symbols::class)
                     )
                 ]
             ),
@@ -776,19 +550,15 @@ Response body: Symbols
     @Operation(
         tags = ["OTC Transitive Symbols"],
         summary = "Delete multiple transitive OTC symbols",
-        description = """
-Deletes multiple transitive symbols used for OTC route calculation.
+        description = """Deletes multiple transitive symbols used for OTC route calculation.
 
 Required authentication:
 - Bearer admin-token is required.
 - Required role: ROLE_admin.
 
-Request body: Symbols
-- symbols: Array<string>, nullable
+Request body: Symbols.
 
-Response body: Symbols
-- symbols: Array<string>, nullable
-        """,
+Response body: Symbols.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
             required = true,
@@ -796,20 +566,7 @@ Response body: Symbols
             content = [
                 Content(
                     mediaType = "application/json",
-                    schema = Schema(implementation = Symbols::class),
-                    examples = [
-                        ExampleObject(
-                            name = "Delete transitive symbols request",
-                            value = """
-{
-  "symbols": [
-    "USDT",
-    "IRR"
-  ]
-}
-                            """
-                        )
-                    ]
+                    schema = Schema(implementation = Symbols::class)
                 )
             ]
         ),
@@ -820,19 +577,7 @@ Response body: Symbols
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = Symbols::class),
-                        examples = [
-                            ExampleObject(
-                                name = "Symbols response",
-                                value = """
-{
-  "symbols": [
-    "USDT"
-  ]
-}
-                                """
-                            )
-                        ]
+                        schema = Schema(implementation = Symbols::class)
                     )
                 ]
             ),
@@ -860,15 +605,12 @@ Response body: Symbols
     @Operation(
         tags = ["OTC Transitive Symbols"],
         summary = "List transitive OTC symbols",
-        description = """
-Returns transitive symbols used for OTC route calculation.
+        description = """Returns transitive symbols used for OTC route calculation.
 
 Authentication:
 - Public endpoint. No Bearer token is required.
 
-Response body: Symbols
-- symbols: Array<string>, nullable
-        """,
+Response body: Symbols.""",
         responses = [
             ApiResponse(
                 responseCode = "200",
@@ -876,20 +618,7 @@ Response body: Symbols
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = Symbols::class),
-                        examples = [
-                            ExampleObject(
-                                name = "Symbols response",
-                                value = """
-{
-  "symbols": [
-    "USDT",
-    "IRR"
-  ]
-}
-                                """
-                            )
-                        ]
+                        schema = Schema(implementation = Symbols::class)
                     )
                 ]
             )
@@ -904,15 +633,12 @@ Response body: Symbols
     @Operation(
         tags = ["OTC Routes & Prices"],
         summary = "Calculate OTC exchange routes",
-        description = """
-Returns calculated OTC exchange routes.
+        description = """Returns calculated OTC exchange routes.
 
 Authentication:
 - Public endpoint. No Bearer token is required.
 
 Query parameters:
-- sourceSymbol: optional source currency symbol. If omitted, all possible source symbols are considered.
-- destSymbol: optional destination currency symbol. If omitted, all possible destination symbols are considered.
 
 Route calculation behavior:
 - If both sourceSymbol and destSymbol are provided, routes are calculated for that specific pair.
@@ -921,15 +647,7 @@ Route calculation behavior:
 - If both are omitted, routes are calculated for all possible symbol combinations.
 - Do not send the literal string "null". Omit the query parameter when it should be treated as null.
 
-Response body: CurrencyExchangeRatesResponse
-- rates: Array<CurrencyExchangeRate>
-
-CurrencyExchangeRate item:
-- sourceSymbol: string
-- destSymbol: string
-- rate: BigDecimal
-- isSwappable: boolean
-        """,
+Response body: CurrencyExchangeRatesResponse.""",
         parameters = [
             Parameter(
                 name = "sourceSymbol",
@@ -955,24 +673,7 @@ CurrencyExchangeRate item:
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = CurrencyExchangeRatesResponse::class),
-                        examples = [
-                            ExampleObject(
-                                name = "Currency exchange routes response",
-                                value = """
-{
-  "rates": [
-    {
-      "sourceSymbol": "BTC",
-      "destSymbol": "USDT",
-      "rate": 65000.00,
-      "isSwappable": true
-    }
-  ]
-}
-                                """
-                            )
-                        ]
+                        schema = Schema(implementation = CurrencyExchangeRatesResponse::class)
                     )
                 ]
             )
@@ -989,16 +690,13 @@ CurrencyExchangeRate item:
     @Operation(
         tags = ["OTC Routes & Prices"],
         summary = "Calculate OTC exchange routes as admin",
-        description = """
-Returns calculated OTC exchange routes.
+        description = """Returns calculated OTC exchange routes.
 
 Required authentication:
 - Bearer admin-token is required.
 - Required role: ROLE_admin.
 
 Query parameters:
-- sourceSymbol: optional source currency symbol. If omitted, all possible source symbols are considered.
-- destSymbol: optional destination currency symbol. If omitted, all possible destination symbols are considered.
 
 Route calculation behavior:
 - If both sourceSymbol and destSymbol are provided, routes are calculated for that specific pair.
@@ -1007,18 +705,9 @@ Route calculation behavior:
 - If both are omitted, routes are calculated for all possible symbol combinations.
 - Do not send the literal string "null". Omit the query parameter when it should be treated as null.
 
-Request body:
-- No request body.
+Request body: See schema.
 
-Response body: CurrencyExchangeRatesResponse
-- rates: Array<CurrencyExchangeRate>
-
-CurrencyExchangeRate item:
-- sourceSymbol: string
-- destSymbol: string
-- rate: BigDecimal
-- isSwappable: boolean
-        """,
+Response body: CurrencyExchangeRatesResponse.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         parameters = [
             Parameter(
@@ -1045,24 +734,7 @@ CurrencyExchangeRate item:
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = CurrencyExchangeRatesResponse::class),
-                        examples = [
-                            ExampleObject(
-                                name = "Currency exchange routes response",
-                                value = """
-{
-  "rates": [
-    {
-      "sourceSymbol": "BTC",
-      "destSymbol": "USDT",
-      "rate": 65000.00,
-      "isSwappable": true
-    }
-  ]
-}
-                                """
-                            )
-                        ]
+                        schema = Schema(implementation = CurrencyExchangeRatesResponse::class)
                     )
                 ]
             ),
@@ -1089,21 +761,14 @@ CurrencyExchangeRate item:
     @Operation(
         tags = ["OTC Routes & Prices"],
         summary = "Get OTC currency prices",
-        description = """
-Returns OTC currency prices for the requested unit.
+        description = """Returns OTC currency prices for the requested unit.
 
 Authentication:
 - Public endpoint. No Bearer token is required.
 
 Query parameters:
-- unit: pricing unit.
 
-Response body: Array<CurrencyPrice>
-Each item:
-- currency: string
-- buyPrice: BigDecimal, nullable
-- sellPrice: BigDecimal, nullable
-        """,
+Response body: Array<CurrencyPrice>.""",
         parameters = [
             Parameter(
                 name = "unit",
@@ -1121,21 +786,7 @@ Each item:
                 content = [
                     Content(
                         mediaType = "application/json",
-                        array = ArraySchema(schema = Schema(implementation = CurrencyPrice::class)),
-                        examples = [
-                            ExampleObject(
-                                name = "Currency price list response",
-                                value = """
-[
-  {
-    "currency": "BTC",
-    "buyPrice": 65000.00,
-    "sellPrice": 65100.00
-  }
-]
-                                """
-                            )
-                        ]
+                        array = ArraySchema(schema = Schema(implementation = CurrencyPrice::class))
                     )
                 ]
             )
