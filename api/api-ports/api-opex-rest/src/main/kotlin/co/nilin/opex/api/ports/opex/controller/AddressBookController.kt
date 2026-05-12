@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/opex/v1/address-book")
 @Tag(
     name = "Address Book",
-    description = "Manage authenticated user's address book entries."
+    description = "Manage authenticated user's saved destination addresses."
 )
 class AddressBookController(
     val profileProxy: ProfileProxy,
@@ -38,28 +38,20 @@ class AddressBookController(
 
     @PostMapping
     @Operation(
-        summary = "Add address book entry",
+        summary = "Create address book entry",
         description = """
 Creates a new address book entry for the authenticated user.
 
-Required authentication:
-- Bearer JWT
+Security:
+- Bearer user-token is required.
+
+Validation:
+- `name`, `address`, and `addressType` are required.
+- `addressType` is a server-provided string related to the selected chain/address type.
+- Clients should use values returned by server APIs and should not hardcode a fixed enum list.
 
 Request body: AddAddressBookItemRequest
-- name: string, required
-- address: string, required
-- addressType: string, required
-
-Notes:
-- addressType is a server-provided string value.
-- Clients should use the exact value returned by the related chain/address-type source service.
-- Do not treat addressType as a fixed enum and do not hardcode a static value list.
-
-Response body: AddressBookResponse
-- id: Long, nullable
-- name: string
-- address: string
-- addressType: string
+Response 200: AddressBookResponse
         """,
         security = [SecurityRequirement(name = "bearerAuth")],
         requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -129,15 +121,10 @@ Response body: AddressBookResponse
         description = """
 Returns all address book entries for the authenticated user.
 
-Required authentication:
-- Bearer JWT
+Security:
+- Bearer user-token is required.
 
-Response body: Array<AddressBookResponse>
-Each item:
-- id: Long, nullable
-- name: string
-- address: string
-- addressType: string
+Response 200: Array<AddressBookResponse>
         """,
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
@@ -147,9 +134,7 @@ Each item:
                 content = [
                     Content(
                         mediaType = "application/json",
-                        array = ArraySchema(
-                            schema = Schema(implementation = AddressBookResponse::class)
-                        ),
+                        array = ArraySchema(schema = Schema(implementation = AddressBookResponse::class)),
                         examples = [
                             ExampleObject(
                                 name = "Address book list response",
@@ -188,13 +173,13 @@ Each item:
         description = """
 Deletes one address book entry by ID for the authenticated user.
 
-Required authentication:
-- Bearer JWT
+Security:
+- Bearer user-token is required.
 
 Path parameters:
-- id: Address book entry ID.
+- `id`: address book entry ID.
 
-Response body:
+Response 200:
 - No response body.
         """,
         security = [SecurityRequirement(name = "bearerAuth")],
@@ -235,27 +220,19 @@ Response body:
         description = """
 Updates one address book entry by ID for the authenticated user.
 
-Required authentication:
-- Bearer JWT
+Security:
+- Bearer user-token is required.
+
+Validation:
+- `name`, `address`, and `addressType` are required.
+- `addressType` is a server-provided string related to the selected chain/address type.
+- Clients should use values returned by server APIs and should not hardcode a fixed enum list.
 
 Path parameters:
-- id: Address book entry ID.
+- `id`: address book entry ID.
 
 Request body: AddAddressBookItemRequest
-- name: string, required
-- address: string, required
-- addressType: string, required
-
-Notes:
-- addressType is a server-provided string value.
-- Clients should use the exact value returned by the related chain/address-type source service.
-- Do not treat addressType as a fixed enum and do not hardcode a static value list.
-
-Response body: AddressBookResponse
-- id: Long, nullable
-- name: string
-- address: string
-- addressType: string
+Response 200: AddressBookResponse
         """,
         security = [SecurityRequirement(name = "bearerAuth")],
         parameters = [
