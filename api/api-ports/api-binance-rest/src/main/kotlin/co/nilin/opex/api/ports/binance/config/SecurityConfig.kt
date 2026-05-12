@@ -88,6 +88,8 @@ class SecurityConfig(
                     .pathMatchers("/opex/v1/admin/transactions/**").hasAnyAuthority("ROLE_monitoring", "ROLE_admin")
                     .pathMatchers("/opex/v1/storage/**").permitAll()
                     .pathMatchers("/opex/v1/web/config/**").permitAll()
+                    .pathMatchers("/opex/v1/user-level/config/**").permitAll()
+                    .pathMatchers("/opex/v1/user/config/**").authenticated()
                     .pathMatchers("/opex/v1/admin/**").hasAuthority("ROLE_admin")
                     .pathMatchers("/opex/v1/deposit/**").hasAuthority("PERM_deposit:write")
                     .pathMatchers(HttpMethod.POST, "/opex/v1/order").hasAuthority("PERM_order:write")
