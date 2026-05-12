@@ -7,6 +7,5 @@ import co.nilin.opex.common.data.UserLanguage
 data class UpdateUserConfigRequest(
     val theme: Theme?,
     val language: UserLanguage?,
-    val calender: CalenderType?,
-    val favoritePairs: Set<String>?
+    val calender: CalenderType?
 )

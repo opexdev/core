@@ -64,11 +64,16 @@ class ConfigController(private val configProxy: ConfigProxy) {
         return configProxy.updateUserConfig(securityContext.jwtAuthentication().tokenValue(), request)
     }
 
+    @GetMapping("/user/config/pair")
+    suspend fun getUserFavoritePair(@CurrentSecurityContext securityContext: SecurityContext): Set<String> {
+        return configProxy.getUserFavoritePair(securityContext.jwtAuthentication().tokenValue())
+    }
+
     @PostMapping("/user/config/pair")
     suspend fun addUserFavoritePair(
         @CurrentSecurityContext securityContext: SecurityContext,
         @RequestBody pairs: Set<String>
-    ): UserWebConfig {
+    ): Set<String> {
         return configProxy.addUserFavoritePair(securityContext.jwtAuthentication().tokenValue(), pairs)
     }
 
@@ -76,7 +81,7 @@ class ConfigController(private val configProxy: ConfigProxy) {
     suspend fun removeUserFavoritePair(
         @CurrentSecurityContext securityContext: SecurityContext,
         @RequestBody pairs: Set<String>
-    ): UserWebConfig {
+    ): Set<String> {
         return configProxy.removeUserFavoritePair(securityContext.jwtAuthentication().tokenValue(), pairs)
     }
 }

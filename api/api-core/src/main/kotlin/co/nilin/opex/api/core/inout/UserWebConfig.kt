@@ -7,6 +7,5 @@ import co.nilin.opex.common.data.UserLanguage
 data class UserWebConfig(
     var theme: Theme,
     var language: UserLanguage,
-    var calender: CalenderType,
-    val favoritePairs: Set<String> = hashSetOf()
+    var calender: CalenderType
 )

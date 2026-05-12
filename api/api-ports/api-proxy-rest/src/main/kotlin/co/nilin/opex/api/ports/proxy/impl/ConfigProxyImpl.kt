@@ -127,10 +127,21 @@ class ConfigProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
             .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
     }
 
+    override suspend fun getUserFavoritePair(token: String): Set<String> {
+        return webClient.get()
+            .uri("$baseUrl/user/v1/pair")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<Set<String>>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get user favorite pair") }
+    }
+
     override suspend fun addUserFavoritePair(
         token: String,
         pairs: Set<String>
-    ): UserWebConfig {
+    ): Set<String> {
         return webClient.post()
             .uri("$baseUrl/user/v1/pair")
             .accept(MediaType.APPLICATION_JSON)
@@ -138,14 +149,14 @@ class ConfigProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
             .body(Mono.just(pairs))
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
-            .bodyToMono<UserWebConfig>()
+            .bodyToMono<Set<String>>()
             .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
     }
 
     override suspend fun removeUserFavoritePair(
         token: String,
         pairs: Set<String>
-    ): UserWebConfig {
+    ): Set<String> {
         return webClient.method(HttpMethod.DELETE)
             .uri("$baseUrl/user/v1/pair")
             .contentType(MediaType.APPLICATION_JSON)
@@ -154,7 +165,7 @@ class ConfigProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
             .bodyValue(pairs)
             .retrieve()
             .onStatus({ it.isError }) { it.createException() }
-            .bodyToMono<UserWebConfig>()
+            .bodyToMono<Set<String>>()
             .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
     }
 }

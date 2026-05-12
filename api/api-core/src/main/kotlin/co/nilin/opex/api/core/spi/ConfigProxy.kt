@@ -14,7 +14,8 @@ interface ConfigProxy {
     suspend fun deleteUserLevelConfig(token: String, userLevel: String, language: String)
     suspend fun getUserConfig(token: String): UserWebConfig
     suspend fun updateUserConfig(token: String, request: UpdateUserConfigRequest): UserWebConfig
-    suspend fun addUserFavoritePair(token: String, pairs: Set<String>): UserWebConfig
-    suspend fun removeUserFavoritePair(token: String, pairs: Set<String>): UserWebConfig
+    suspend fun getUserFavoritePair(token: String): Set<String>
+    suspend fun addUserFavoritePair(token: String, pairs: Set<String>): Set<String>
+    suspend fun removeUserFavoritePair(token: String, pairs: Set<String>): Set<String>
 
 }
