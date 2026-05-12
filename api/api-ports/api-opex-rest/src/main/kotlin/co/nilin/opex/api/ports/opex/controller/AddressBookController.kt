@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
-import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
@@ -33,26 +32,16 @@ import org.springframework.web.bind.annotation.RestController
     description = "Manage authenticated user's saved destination addresses."
 )
 class AddressBookController(
-    val profileProxy: ProfileProxy,
+    val profileProxy: ProfileProxy
 ) {
 
     @PostMapping
     @Operation(
         summary = "Create address book entry",
-        description = """
-Creates a new address book entry for the authenticated user.
+        description = """Creates a new address book entry for the authenticated user.
+Security: Bearer user-token is required.
 
-Security:
-- Bearer user-token is required.
-
-Validation:
-- `name`, `address`, and `addressType` are required.
-- `addressType` is a server-provided string related to the selected chain/address type.
-- Clients should use values returned by server APIs and should not hardcode a fixed enum list.
-
-Request body: AddAddressBookItemRequest
-Response 200: AddressBookResponse
-        """,
+Behavior: `addressType` is a server-provided string. Clients should use the value returned by the related chain/address-type service and must not hardcode a fixed enum list.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
             required = true,
@@ -60,19 +49,7 @@ Response 200: AddressBookResponse
             content = [
                 Content(
                     mediaType = "application/json",
-                    schema = Schema(implementation = AddAddressBookItemRequest::class),
-                    examples = [
-                        ExampleObject(
-                            name = "Create address book entry",
-                            value = """
-{
-  "name": "Home Wallet",
-  "address": "0x1234567890abcdef1234567890abcdef12345678",
-  "addressType": "ethereum"
-}
-                            """
-                        )
-                    ]
+                    schema = Schema(implementation = AddAddressBookItemRequest::class)
                 )
             ]
         ),
@@ -83,20 +60,7 @@ Response 200: AddressBookResponse
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = AddressBookResponse::class),
-                        examples = [
-                            ExampleObject(
-                                name = "Address book response",
-                                value = """
-{
-  "id": 1,
-  "name": "Home Wallet",
-  "address": "0x1234567890abcdef1234567890abcdef12345678",
-  "addressType": "ethereum"
-}
-                                """
-                            )
-                        ]
+                        schema = Schema(implementation = AddressBookResponse::class)
                     )
                 ]
             ),
@@ -118,14 +82,8 @@ Response 200: AddressBookResponse
     @GetMapping
     @Operation(
         summary = "List address book entries",
-        description = """
-Returns all address book entries for the authenticated user.
-
-Security:
-- Bearer user-token is required.
-
-Response 200: Array<AddressBookResponse>
-        """,
+        description = """Returns all address book entries for the authenticated user.
+Security: Bearer user-token is required.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
             ApiResponse(
@@ -134,22 +92,7 @@ Response 200: Array<AddressBookResponse>
                 content = [
                     Content(
                         mediaType = "application/json",
-                        array = ArraySchema(schema = Schema(implementation = AddressBookResponse::class)),
-                        examples = [
-                            ExampleObject(
-                                name = "Address book list response",
-                                value = """
-[
-  {
-    "id": 1,
-    "name": "Home Wallet",
-    "address": "0x1234567890abcdef1234567890abcdef12345678",
-    "addressType": "ethereum"
-  }
-]
-                                """
-                            )
-                        ]
+                        array = ArraySchema(schema = Schema(implementation = AddressBookResponse::class))
                     )
                 ]
             ),
@@ -170,18 +113,8 @@ Response 200: Array<AddressBookResponse>
     @DeleteMapping("/{id}")
     @Operation(
         summary = "Delete address book entry",
-        description = """
-Deletes one address book entry by ID for the authenticated user.
-
-Security:
-- Bearer user-token is required.
-
-Path parameters:
-- `id`: address book entry ID.
-
-Response 200:
-- No response body.
-        """,
+        description = """Deletes one address book entry by ID for the authenticated user.
+Security: Bearer user-token is required.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         parameters = [
             Parameter(
@@ -217,23 +150,10 @@ Response 200:
     @PutMapping("/{id}")
     @Operation(
         summary = "Update address book entry",
-        description = """
-Updates one address book entry by ID for the authenticated user.
+        description = """Updates one address book entry by ID for the authenticated user.
+Security: Bearer user-token is required.
 
-Security:
-- Bearer user-token is required.
-
-Validation:
-- `name`, `address`, and `addressType` are required.
-- `addressType` is a server-provided string related to the selected chain/address type.
-- Clients should use values returned by server APIs and should not hardcode a fixed enum list.
-
-Path parameters:
-- `id`: address book entry ID.
-
-Request body: AddAddressBookItemRequest
-Response 200: AddressBookResponse
-        """,
+Behavior: `addressType` is a server-provided string. Clients should use the value returned by the related chain/address-type service and must not hardcode a fixed enum list.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         parameters = [
             Parameter(
@@ -251,19 +171,7 @@ Response 200: AddressBookResponse
             content = [
                 Content(
                     mediaType = "application/json",
-                    schema = Schema(implementation = AddAddressBookItemRequest::class),
-                    examples = [
-                        ExampleObject(
-                            name = "Update address book entry",
-                            value = """
-{
-  "name": "Updated Wallet Name",
-  "address": "0x1234567890abcdef1234567890abcdef12345678",
-  "addressType": "ethereum"
-}
-                            """
-                        )
-                    ]
+                    schema = Schema(implementation = AddAddressBookItemRequest::class)
                 )
             ]
         ),
@@ -274,20 +182,7 @@ Response 200: AddressBookResponse
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = AddressBookResponse::class),
-                        examples = [
-                            ExampleObject(
-                                name = "Address book response",
-                                value = """
-{
-  "id": 1,
-  "name": "Updated Wallet Name",
-  "address": "0x1234567890abcdef1234567890abcdef12345678",
-  "addressType": "ethereum"
-}
-                                """
-                            )
-                        ]
+                        schema = Schema(implementation = AddressBookResponse::class)
                     )
                 ]
             ),
