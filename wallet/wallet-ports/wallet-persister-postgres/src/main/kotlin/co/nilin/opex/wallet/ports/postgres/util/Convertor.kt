@@ -195,7 +195,7 @@ fun TerminalCommand.toModel(): TerminalModel {
     return TerminalModel(
         null,
         uuid,
-        identifier, active, type, metaData, displayOrder
+        identifier, active, metaData, displayOrder
     )
 }
 
@@ -203,7 +203,7 @@ fun TerminalView.toModel(): TerminalModel {
     return TerminalModel(
         id,
         uuid,
-        identifier, active, type, metaData, displayOrder
+        identifier, active, metaData, displayOrder
     )
 }
 
@@ -211,7 +211,7 @@ fun TerminalView.toCommand(): TerminalCommand {
     return TerminalCommand(
         uuid,
         owner,
-        identifier, active, type, metaData, description, displayOrder
+        identifier, active, metaData, description, displayOrder
     )
 }
 
