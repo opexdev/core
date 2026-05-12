@@ -33,7 +33,7 @@ Security: Bearer user-token required. Requires authenticated user JWT.
 Validation: Exactly one of `cardNumber` or `iban` must be provided. Providing both or neither is invalid.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
-            ApiResponse(responseCode = "200", description = "Response body: See schema.", content = [Content(mediaType = "application/json", schema = Schema(implementation = BankAccountResponse::class))]),
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", schema = Schema(implementation = BankAccountResponse::class))]),
             ApiResponse(responseCode = "401", description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.", content = [Content()])
         ]
     )
@@ -52,7 +52,7 @@ Validation: Exactly one of `cardNumber` or `iban` must be provided. Providing bo
 Security: Bearer user-token required. Requires authenticated user JWT.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
-            ApiResponse(responseCode = "200", description = "Response body: See schema.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = BankAccountResponse::class)))]),
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = BankAccountResponse::class)))]),
             ApiResponse(responseCode = "401", description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.", content = [Content()])
         ]
     )
