@@ -31,7 +31,7 @@ class DepositAdminController(
 Security: Bearer admin-token required. Required authority: ROLE_admin.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
-            ApiResponse(responseCode = "200", description = "Response body: See schema.", content = [Content(mediaType = "application/json", schema = Schema(implementation = TransferResult::class))]),
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", schema = Schema(implementation = TransferResult::class))]),
             ApiResponse(responseCode = "401", description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.", content = [Content()]),
             ApiResponse(responseCode = "403", description = "Forbidden. Required authority is missing: ROLE_admin. No response body.", content = [Content()])
         ]
