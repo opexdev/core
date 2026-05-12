@@ -52,9 +52,7 @@ Validation:
 - `rate` must be greater than zero.
 - `sourceSymbol` and `destSymbol` must be different.
 
-Request body: SetCurrencyExchangeRateRequest.
-
-Response body: See schema.""",
+Request body: SetCurrencyExchangeRateRequest.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
             required = true,
@@ -308,9 +306,7 @@ Required authentication:
 Validation:
 - `sourceSymbol` and `destSymbol` must be different.
 
-Request body: CurrencyPair.
-
-Response body: See schema.""",
+Request body: CurrencyPair.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
             required = true,
@@ -451,9 +447,7 @@ Required authentication:
 - Bearer admin-token is required.
 - Required role: ROLE_admin.
 
-Request body: Symbols.
-
-Response body: See schema.""",
+Request body: Symbols.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
             required = true,
@@ -704,8 +698,6 @@ Route calculation behavior:
 - If destSymbol is omitted, routes are calculated to all possible destination symbols.
 - If both are omitted, routes are calculated for all possible symbol combinations.
 - Do not send the literal string "null". Omit the query parameter when it should be treated as null.
-
-Request body: See schema.
 
 Response body: CurrencyExchangeRatesResponse.""",
         security = [SecurityRequirement(name = "bearerAuth")],
