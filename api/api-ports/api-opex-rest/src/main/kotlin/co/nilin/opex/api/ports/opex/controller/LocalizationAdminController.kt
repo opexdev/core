@@ -6,36 +6,41 @@ import co.nilin.opex.api.core.spi.WalletProxy
 import co.nilin.opex.api.ports.opex.util.jwtAuthentication
 import co.nilin.opex.api.ports.opex.util.tokenValue
 import co.nilin.opex.common.OpexError
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
+import org.springframework.web.bind.annotation.*
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
-import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.security.core.annotation.CurrentSecurityContext
-import org.springframework.security.core.context.SecurityContext
-import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/opex/v1/admin")
-@Tag(name = "Localization Admin", description = "Admin localization management for currencies, terminals, and gateways")
+@Tag(name = "Localization Admin", description = "Admin localization management for currencies, terminals, and gateways.")
 class LocalizationAdminController(
     private val walletProxy: WalletProxy,
     private val blockchainGatewayProxy: BlockchainGatewayProxy
 ) {
     @GetMapping("/currency/{currency}/localization")
     @Operation(
-        summary = "Admin: get currency localizations",
+        summary = "Get currency localizations",
+        description = """GET /opex/v1/admin/currency/{currency}/localization.
+Security: Bearer admin-token required. Required authority: ROLE_admin.
+
+Behavior: Send one localization object per language. Existing items can include `id`; new items should use null or omit `id`.""",
         security = [SecurityRequirement(name = "bearerAuth")],
-        parameters = [
-            Parameter(name = "currency", `in` = ParameterIn.PATH, required = true, schema = Schema(type = "string"))
-        ],
-        responses = [ ApiResponse(responseCode = "200", description = "OK", content = [ Content(mediaType = "application/json", schema = Schema(implementation = CurrencyLocalizationResponse::class)) ]) ]
+        responses = [
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", schema = Schema(implementation = CurrencyLocalizationResponse::class))]),
+            ApiResponse(responseCode = "401", description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.", content = [Content()]),
+            ApiResponse(responseCode = "403", description = "Forbidden. Required authority is missing: ROLE_admin. No response body.", content = [Content()])
+        ]
     )
     suspend fun getCurrencyLocalizations(
+        @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext,
         @PathVariable("currency") currency: String
     ): CurrencyLocalizationResponse {
@@ -44,13 +49,20 @@ class LocalizationAdminController(
 
     @PostMapping("/currency/{currency}/localization")
     @Operation(
-        summary = "Admin: save currency localizations",
+        summary = "Save currency localizations",
+        description = """POST /opex/v1/admin/currency/{currency}/localization.
+Security: Bearer admin-token required. Required authority: ROLE_admin.
+
+Behavior: Send one localization object per language. Existing items can include `id`; new items should use null or omit `id`.""",
         security = [SecurityRequirement(name = "bearerAuth")],
-        parameters = [ Parameter(name = "currency", `in` = ParameterIn.PATH, required = true, schema = Schema(type = "string")) ],
-        requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(required = true, content = [ Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = CurrencyLocalizationCommand::class))) ]),
-        responses = [ ApiResponse(responseCode = "200", description = "OK", content = [ Content(mediaType = "application/json", schema = Schema(implementation = CurrencyLocalizationResponse::class)) ]) ]
+        responses = [
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", schema = Schema(implementation = CurrencyLocalizationResponse::class))]),
+            ApiResponse(responseCode = "401", description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.", content = [Content()]),
+            ApiResponse(responseCode = "403", description = "Forbidden. Required authority is missing: ROLE_admin. No response body.", content = [Content()])
+        ]
     )
     suspend fun saveCurrencyLocalizations(
+        @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext,
         @PathVariable("currency") currency: String,
         @RequestBody currencyLocalizations: List<CurrencyLocalizationCommand>
@@ -64,12 +76,20 @@ class LocalizationAdminController(
 
     @DeleteMapping("/currency/localization/{id}")
     @Operation(
-        summary = "Admin: delete currency localization",
+        summary = "Delete currency localization",
+        description = """DELETE /opex/v1/admin/currency/localization/{id}.
+Security: Bearer admin-token required. Required authority: ROLE_admin.
+
+Behavior: Send one localization object per language. Existing items can include `id`; new items should use null or omit `id`.""",
         security = [SecurityRequirement(name = "bearerAuth")],
-        parameters = [ Parameter(name = "id", `in` = ParameterIn.PATH, required = true, schema = Schema(type = "integer", format = "int64")) ],
-        responses = [ ApiResponse(responseCode = "200", description = "Deleted") ]
+        responses = [
+            ApiResponse(responseCode = "200", description = "No response body.", content = [Content()]),
+            ApiResponse(responseCode = "401", description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.", content = [Content()]),
+            ApiResponse(responseCode = "403", description = "Forbidden. Required authority is missing: ROLE_admin. No response body.", content = [Content()])
+        ]
     )
     suspend fun deleteCurrencyLocalization(
+        @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext,
         @PathVariable("id") id: Long
     ) {
@@ -78,12 +98,20 @@ class LocalizationAdminController(
 
     @GetMapping("/terminal/{terminalUuid}/localization")
     @Operation(
-        summary = "Admin: get terminal localizations",
+        summary = "Get terminal localizations",
+        description = """GET /opex/v1/admin/terminal/{terminalUuid}/localization.
+Security: Bearer admin-token required. Required authority: ROLE_admin.
+
+Behavior: Send one localization object per language. Existing items can include `id`; new items should use null or omit `id`.""",
         security = [SecurityRequirement(name = "bearerAuth")],
-        parameters = [ Parameter(name = "terminalUuid", `in` = ParameterIn.PATH, required = true, schema = Schema(type = "string")) ],
-        responses = [ ApiResponse(responseCode = "200", description = "OK", content = [ Content(mediaType = "application/json", schema = Schema(implementation = TerminalLocalizationResponse::class)) ]) ]
+        responses = [
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", schema = Schema(implementation = TerminalLocalizationResponse::class))]),
+            ApiResponse(responseCode = "401", description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.", content = [Content()]),
+            ApiResponse(responseCode = "403", description = "Forbidden. Required authority is missing: ROLE_admin. No response body.", content = [Content()])
+        ]
     )
     suspend fun getTerminalLocalizations(
+        @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext,
         @PathVariable("terminalUuid") terminalUuid: String
     ): TerminalLocalizationResponse {
@@ -92,13 +120,20 @@ class LocalizationAdminController(
 
     @PostMapping("/terminal/{terminalUuid}/localization")
     @Operation(
-        summary = "Admin: save terminal localizations",
+        summary = "Save terminal localizations",
+        description = """POST /opex/v1/admin/terminal/{terminalUuid}/localization.
+Security: Bearer admin-token required. Required authority: ROLE_admin.
+
+Behavior: Send one localization object per language. Existing items can include `id`; new items should use null or omit `id`.""",
         security = [SecurityRequirement(name = "bearerAuth")],
-        parameters = [ Parameter(name = "terminalUuid", `in` = ParameterIn.PATH, required = true, schema = Schema(type = "string")) ],
-        requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(required = true, content = [ Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = TerminalLocalizationCommand::class))) ]),
-        responses = [ ApiResponse(responseCode = "200", description = "OK", content = [ Content(mediaType = "application/json", schema = Schema(implementation = TerminalLocalizationResponse::class)) ]) ]
+        responses = [
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", schema = Schema(implementation = TerminalLocalizationResponse::class))]),
+            ApiResponse(responseCode = "401", description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.", content = [Content()]),
+            ApiResponse(responseCode = "403", description = "Forbidden. Required authority is missing: ROLE_admin. No response body.", content = [Content()])
+        ]
     )
     suspend fun saveTerminalLocalizations(
+        @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext,
         @PathVariable("terminalUuid") terminalUuid: String,
         @RequestBody terminalLocalizations: List<TerminalLocalizationCommand>
@@ -112,12 +147,20 @@ class LocalizationAdminController(
 
     @DeleteMapping("/terminal/localization/{id}")
     @Operation(
-        summary = "Admin: delete terminal localization",
+        summary = "Delete terminal localization",
+        description = """DELETE /opex/v1/admin/terminal/localization/{id}.
+Security: Bearer admin-token required. Required authority: ROLE_admin.
+
+Behavior: Send one localization object per language. Existing items can include `id`; new items should use null or omit `id`.""",
         security = [SecurityRequirement(name = "bearerAuth")],
-        parameters = [ Parameter(name = "id", `in` = ParameterIn.PATH, required = true, schema = Schema(type = "integer", format = "int64")) ],
-        responses = [ ApiResponse(responseCode = "200", description = "Deleted") ]
+        responses = [
+            ApiResponse(responseCode = "200", description = "No response body.", content = [Content()]),
+            ApiResponse(responseCode = "401", description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.", content = [Content()]),
+            ApiResponse(responseCode = "403", description = "Forbidden. Required authority is missing: ROLE_admin. No response body.", content = [Content()])
+        ]
     )
     suspend fun deleteTerminalLocalization(
+        @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext,
         @PathVariable("id") id: Long
     ) {
@@ -126,12 +169,20 @@ class LocalizationAdminController(
 
     @GetMapping("/gateway/{gatewayUuid}/localization")
     @Operation(
-        summary = "Admin: get gateway localization",
+        summary = "Get gateway localization",
+        description = """GET /opex/v1/admin/gateway/{gatewayUuid}/localization.
+Security: Bearer admin-token required. Required authority: ROLE_admin.
+
+Behavior: Send one localization object per language. Existing items can include `id`; new items should use null or omit `id`.""",
         security = [SecurityRequirement(name = "bearerAuth")],
-        parameters = [ Parameter(name = "gatewayUuid", `in` = ParameterIn.PATH, required = true, schema = Schema(type = "string")) ],
-        responses = [ ApiResponse(responseCode = "200", description = "OK", content = [ Content(mediaType = "application/json", schema = Schema(implementation = GatewayLocalizationResponse::class)) ]) ]
+        responses = [
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", schema = Schema(implementation = GatewayLocalizationResponse::class))]),
+            ApiResponse(responseCode = "401", description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.", content = [Content()]),
+            ApiResponse(responseCode = "403", description = "Forbidden. Required authority is missing: ROLE_admin. No response body.", content = [Content()])
+        ]
     )
     suspend fun getGatewayLocalization(
+        @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext,
         @PathVariable("gatewayUuid") gatewayUuid: String
     ): GatewayLocalizationResponse {
@@ -149,13 +200,20 @@ class LocalizationAdminController(
 
     @PostMapping("/gateway/{gatewayUuid}/localization")
     @Operation(
-        summary = "Admin: save gateway localizations",
+        summary = "Save gateway localizations",
+        description = """POST /opex/v1/admin/gateway/{gatewayUuid}/localization.
+Security: Bearer admin-token required. Required authority: ROLE_admin.
+
+Behavior: Send one localization object per language. Existing items can include `id`; new items should use null or omit `id`.""",
         security = [SecurityRequirement(name = "bearerAuth")],
-        parameters = [ Parameter(name = "gatewayUuid", `in` = ParameterIn.PATH, required = true, schema = Schema(type = "string")) ],
-        requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(required = true, content = [ Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = GatewayLocalizationCommand::class))) ]),
-        responses = [ ApiResponse(responseCode = "200", description = "OK", content = [ Content(mediaType = "application/json", schema = Schema(implementation = GatewayLocalizationResponse::class)) ]) ]
+        responses = [
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", schema = Schema(implementation = GatewayLocalizationResponse::class))]),
+            ApiResponse(responseCode = "401", description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.", content = [Content()]),
+            ApiResponse(responseCode = "403", description = "Forbidden. Required authority is missing: ROLE_admin. No response body.", content = [Content()])
+        ]
     )
     suspend fun saveGatewayLocalizations(
+        @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext,
         @PathVariable("gatewayUuid") gatewayUuid: String,
         @RequestBody gatewayLocalizations: List<GatewayLocalizationCommand>
@@ -177,15 +235,20 @@ class LocalizationAdminController(
 
     @DeleteMapping("/gateway/{gatewayUuid}/localization/{id}")
     @Operation(
-        summary = "Admin: delete gateway localization",
+        summary = "Delete gateway localization",
+        description = """DELETE /opex/v1/admin/gateway/{gatewayUuid}/localization/{id}.
+Security: Bearer admin-token required. Required authority: ROLE_admin.
+
+Behavior: Send one localization object per language. Existing items can include `id`; new items should use null or omit `id`.""",
         security = [SecurityRequirement(name = "bearerAuth")],
-        parameters = [
-            Parameter(name = "gatewayUuid", `in` = ParameterIn.PATH, required = true, schema = Schema(type = "string")),
-            Parameter(name = "id", `in` = ParameterIn.PATH, required = true, schema = Schema(type = "integer", format = "int64"))
-        ],
-        responses = [ ApiResponse(responseCode = "200", description = "Deleted") ]
+        responses = [
+            ApiResponse(responseCode = "200", description = "No response body.", content = [Content()]),
+            ApiResponse(responseCode = "401", description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.", content = [Content()]),
+            ApiResponse(responseCode = "403", description = "Forbidden. Required authority is missing: ROLE_admin. No response body.", content = [Content()])
+        ]
     )
     suspend fun deleteGatewayLocalization(
+        @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext,
         @PathVariable("id") id: Long,
         @PathVariable("gatewayUuid") gatewayUuid: String
