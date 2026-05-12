@@ -15,9 +15,18 @@ import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 import java.time.ZoneId
 import kotlin.collections.mapNotNull
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.media.ArraySchema
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import io.swagger.v3.oas.annotations.tags.Tag
 
 @RestController("opexMarketController")
 @RequestMapping("/opex/v1/market")
+@Tag(name = "Market", description = "Public market information, order book, trades, tickers, and basic market data.")
 class MarketController(
     private val accountantProxy: AccountantProxy,
     private val marketStatProxy: MarketStatProxy,
@@ -26,17 +35,33 @@ class MarketController(
     private val matchingGatewayProxy: MatchingGatewayProxy,
     private val blockChainGatewayProxy: BlockchainGatewayProxy,
     @Value("\${app.user-activity-reference-currency}")
-    private val userActivityReferenceCurrency: String,
+    private val userActivityReferenceCurrency: String
 ) {
     private val orderBookValidLimits = arrayListOf(5, 10, 20, 50, 100, 500, 1000, 5000)
     private val validDurations = arrayListOf("24h", "7d", "1M")
 
     @GetMapping("/currency")
+    @Operation(
+        summary = "Get currencies",
+        description = """GET /opex/v1/market/currency.
+Security: Public endpoint. No Bearer token is required.""",
+        responses = [
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = CurrencyData::class)))])
+        ]
+    )
     suspend fun getCurrencies(): List<CurrencyData> {
         return walletProxy.getCurrencies()
     }
 
     @GetMapping("/pair")
+    @Operation(
+        summary = "Get pairs",
+        description = """GET /opex/v1/market/pair.
+Security: Public endpoint. No Bearer token is required.""",
+        responses = [
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = PairInfoResponse::class)))])
+        ]
+    )
     suspend fun getPairs(): List<PairInfoResponse> {
         val pairSettings = matchingGatewayProxy.getPairSettings().associateBy { it.pair }
 
@@ -56,24 +81,56 @@ class MarketController(
     }
 
     @GetMapping("/chain")
+    @Operation(
+        summary = "Get chains",
+        description = """GET /opex/v1/market/chain.
+Security: Public endpoint. No Bearer token is required.""",
+        responses = [
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = ChainInfo::class)))])
+        ]
+    )
     suspend fun getChains(): List<ChainInfo> {
-       return blockChainGatewayProxy.getChainInfo()
+        return blockChainGatewayProxy.getChainInfo()
     }
 
     @GetMapping("/currency/gateway")
+    @Operation(
+        summary = "Get currency gateways",
+        description = """GET /opex/v1/market/currency/gateway.
+Security: Public endpoint. No Bearer token is required.""",
+        responses = [
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = CurrencyGatewayCommand::class)))])
+        ]
+    )
     suspend fun getCurrencyGateways(
         @RequestParam(defaultValue = "true") includeOffChainGateways: Boolean,
-        @RequestParam(defaultValue = "true") includeOnChainGateways: Boolean,
+        @RequestParam(defaultValue = "true") includeOnChainGateways: Boolean
     ): List<CurrencyGatewayCommand> {
         return walletProxy.getGateWays(includeOffChainGateways, includeOnChainGateways)
     }
 
     @GetMapping("/fee")
+    @Operation(
+        summary = "Get fee configs",
+        description = """GET /opex/v1/market/fee.
+Security: Public endpoint. No Bearer token is required.""",
+        responses = [
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = FeeConfig::class)))])
+        ]
+    )
     suspend fun getFeeConfigs(): List<FeeConfig> {
         return accountantProxy.getFeeConfigs()
     }
 
     @GetMapping("/stats")
+    @Operation(
+        summary = "Get market stats",
+        description = """GET /opex/v1/market/stats.
+Security: Public endpoint. No Bearer token is required.""",
+        responses = [
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", schema = Schema(implementation = MarketInfoResponse::class))])
+        ]
+    )
     suspend fun getMarketStats(
         @RequestParam interval: String,
         @RequestParam(required = false) limit: Int?
@@ -111,11 +168,19 @@ class MarketController(
         return MarketInfoResponse(
             marketDataProxy.countActiveUsers(intervalEnum),
             marketDataProxy.countTotalOrders(intervalEnum),
-            marketDataProxy.countTotalTrades(intervalEnum),
+            marketDataProxy.countTotalTrades(intervalEnum)
         )
     }
 
     @GetMapping("/depth")
+    @Operation(
+        summary = "Order book",
+        description = """GET /opex/v1/market/depth.
+Security: Public endpoint. No Bearer token is required.""",
+        responses = [
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", schema = Schema(implementation = OrderBookResponse::class))])
+        ]
+    )
     suspend fun orderBook(
         @RequestParam
         symbol: String,
@@ -153,6 +218,14 @@ class MarketController(
     }
 
     @GetMapping("/trades")
+    @Operation(
+        summary = "Recent trades",
+        description = """GET /opex/v1/market/trades.
+Security: Public endpoint. No Bearer token is required.""",
+        responses = [
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = RecentTradeResponse::class)))])
+        ]
+    )
     suspend fun recentTrades(
         @RequestParam
         symbol: String,
@@ -178,6 +251,14 @@ class MarketController(
     }
 
     @GetMapping("/ticker/{duration:24h|7d|1M}")
+    @Operation(
+        summary = "Price change",
+        description = """GET /opex/v1/market/ticker/{duration:24h|7d|1M}.
+Security: Public endpoint. No Bearer token is required.""",
+        responses = [
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = PriceChange::class)))])
+        ]
+    )
     suspend fun priceChange(
         @PathVariable duration: String,
         @RequestParam(required = false) symbol: String?,
@@ -205,16 +286,40 @@ class MarketController(
     }
 
     @GetMapping("/ticker/price")
+    @Operation(
+        summary = "Price ticker",
+        description = """GET /opex/v1/market/ticker/price.
+Security: Public endpoint. No Bearer token is required.""",
+        responses = [
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = PriceTicker::class)))])
+        ]
+    )
     suspend fun priceTicker(@RequestParam(required = false) symbol: String?): List<PriceTicker> {
         return marketDataProxy.lastPrice(symbol)
     }
 
     @GetMapping("/currencyInfo/quotes")
+    @Operation(
+        summary = "Get quote currencies",
+        description = """GET /opex/v1/market/currencyInfo/quotes.
+Security: Public endpoint. No Bearer token is required.""",
+        responses = [
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(type = "string")))])
+        ]
+    )
     suspend fun getQuoteCurrencies(): List<String> {
         return walletProxy.getQuoteCurrencies().map { it.currency }
     }
 
     @GetMapping("/klines")
+    @Operation(
+        summary = "Klines",
+        description = """GET /opex/v1/market/klines.
+Security: Public endpoint. No Bearer token is required.""",
+        responses = [
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = List<Any>::class)))])
+        ]
+    )
     suspend fun klines(
         @RequestParam
         symbol: String,
@@ -257,6 +362,14 @@ class MarketController(
     }
 
     @GetMapping("/basic-data")
+    @Operation(
+        summary = "Get basic data",
+        description = """GET /opex/v1/market/basic-data.
+Security: Public endpoint. No Bearer token is required.""",
+        responses = [
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", schema = Schema(implementation = MarketBasicData::class))])
+        ]
+    )
     suspend fun getBasicData(): MarketBasicData {
         val quoteCurrencies = walletProxy.getQuoteCurrencies()
         return MarketBasicData(
@@ -268,13 +381,29 @@ class MarketController(
     }
 
     @GetMapping("/withdraw-limits")
+    @Operation(
+        summary = "Get withdraw limits",
+        description = """GET /opex/v1/market/withdraw-limits.
+Security: Public endpoint. No Bearer token is required.""",
+        responses = [
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = WithdrawLimitConfig::class)))])
+        ]
+    )
     suspend fun getWithdrawLimits(): List<WithdrawLimitConfig> {
         return accountantProxy.getWithdrawLimitConfigs()
     }
 
     @GetMapping("/gateway/{gatewayUuid}/terminal")
+    @Operation(
+        summary = "Get gateway terminal",
+        description = """GET /opex/v1/market/gateway/{gatewayUuid}/terminal.
+Security: Public endpoint. No Bearer token is required.""",
+        responses = [
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = TerminalCommand::class)))])
+        ]
+    )
     suspend fun getGatewayTerminal(
-        @PathVariable("gatewayUuid") gatewayUuid: String,
+        @PathVariable("gatewayUuid") gatewayUuid: String
     ): List<TerminalCommand>? {
         return walletProxy.getGatewayTerminal(gatewayUuid)
     }
