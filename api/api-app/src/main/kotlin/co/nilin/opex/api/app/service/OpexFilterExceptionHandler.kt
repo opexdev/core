@@ -22,7 +22,7 @@ class OpexFilterExceptionHandler(
 
         if (ex is OpexException) {
             return translator.translate(ex).flatMap { error ->
-                exchange.response.statusCode = HttpStatusCode.valueOf(error.status.value())
+                exchange.response.statusCode = HttpStatusCode.valueOf(error.status?.value() ?: 500)
                 exchange.response.headers.contentType = MediaType.APPLICATION_JSON
 
                 val bytes = objectMapper.writeValueAsBytes(error)

@@ -1,7 +1,7 @@
 package co.nilin.opex.auth.gateway.utils
 
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.common.translation.CustomErrorTranslator
+import co.nilin.opex.common.service.CustomErrorTranslator
 import co.nilin.opex.utility.error.data.OpexException
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response

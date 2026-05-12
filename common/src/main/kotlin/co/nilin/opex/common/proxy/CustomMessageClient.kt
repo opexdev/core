@@ -1,4 +1,4 @@
-package co.nilin.opex.common.translation
+package co.nilin.opex.common.proxy
 
 import co.nilin.opex.common.config.CommonWebClient
 import co.nilin.opex.common.data.MessageTranslation
@@ -9,11 +9,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.stereotype.Component
 
-inline fun <reified T : Any?> typeRef(): ParameterizedTypeReference<T> = object : ParameterizedTypeReference<T>() {}
 
 @Component
 @ConditionalOnProperty(name = ["app.custom-message.enabled"], havingValue = "true", matchIfMissing = false)
-class ConfigClient(
+class CustomMessageClient(
         @Qualifier("CommonWebClient") private val webClient: CommonWebClient
 ) {
     @Value("\${app.custom-message.base-url}")
