@@ -16,15 +16,11 @@ import co.nilin.opex.wallet.ports.postgres.model.OffChainGatewayLocalizationMode
 import co.nilin.opex.wallet.ports.postgres.model.OffChainGatewayModel
 import co.nilin.opex.wallet.ports.postgres.util.toDto
 import co.nilin.opex.wallet.ports.postgres.util.toModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.reactive.awaitFirstOrNull
-import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.reactive.TransactionalOperator
 import org.springframework.transaction.reactive.executeAndAwait
-import java.lang.Thread.sleep
 
 @Service("offChainGateway")
 class OffChainGatewayManagerImpl(
@@ -32,8 +28,6 @@ class OffChainGatewayManagerImpl(
     private val offChainGatewayLocalizationRepository: OffChainGatewayLocalizationRepository,
     private val transactionalOperator: TransactionalOperator
 ) : GatewayPersister {
-    private val logger = LoggerFactory.getLogger(OffChainGatewayManagerImpl::class.java)
-
     override suspend fun createGateway(
         currencyGateway: CurrencyGatewayCommand, internalToken: String?
     ): CurrencyGatewayCommand? {
@@ -84,22 +78,21 @@ class OffChainGatewayManagerImpl(
         return transactionalOperator.executeAndAwait {
 
             val input = currencyGateway as OffChainGatewayCommand
-            val gateway = offChainGatewayRepository.save(input.toModel()).awaitSingle()
+            val gateway = offChainGatewayRepository.save(input.toModel()).awaitFirstOrNull()
                 ?: throw OpexError.BadRequest.exception("Error in saving gateway")
-            var lang: String? = null
+
             if (!currencyGateway.depositDescription.isNullOrEmpty() || !currencyGateway.withdrawDescription.isNullOrEmpty()) {
-                lang = getDefaultUserLanguage()
                 offChainGatewayLocalizationRepository.save(
                     OffChainGatewayLocalizationModel(
                         gatewayId = gateway.id!!,
                         depositDescription = currencyGateway.depositDescription,
                         withdrawDescription = currencyGateway.withdrawDescription,
-                        language = lang
+                        language = getDefaultUserLanguage()
                     )
-                ).awaitSingle()
+                ).awaitSingleOrNull()
             }
-            val savedGateway = _fetchGateway(gateway.currencySymbol, gateway.gatewayUuid, lang)
-            savedGateway
+
+            _fetchGateway(gateway.currencySymbol, gateway.gatewayUuid)
         }
     }
 
@@ -115,22 +108,9 @@ class OffChainGatewayManagerImpl(
         gatewayUuid: String,
         language: String? = null,
     ): OffChainGatewayView? {
-        val resolvedLanguage = language ?: getDefaultUserLanguage()
-
-        logger.info(
-            "FETCH_GATEWAY_START currencySymbol=$currencySymbol, gatewayUuid=$gatewayUuid, language=$resolvedLanguage"
-        )
-        val result = offChainGatewayRepository.findByGatewayUuidAndCurrencySymbol(
-            gatewayUuid.trim(),
-            currencySymbol.trim(),
-            resolvedLanguage.trim()
+        return offChainGatewayRepository.findByGatewayUuidAndCurrencySymbol(
+            gatewayUuid, currencySymbol, language ?: getDefaultUserLanguage()
         )?.awaitFirstOrNull()
-
-        logger.info(
-            "FETCH_GATEWAY_END found=${result != null}, result=$result"
-        )
-
-        return result
     }
 
     private suspend fun _fetchGateways(
