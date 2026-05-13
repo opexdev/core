@@ -19,7 +19,7 @@
         <error-hanlder.version>1.2.23</error-hanlder.version>
         <interceptor.version>1.0.8</interceptor.version>
         <skip.unit.tests>true</skip.unit.tests>
-        <common.version>1.0.1-beta.36</common.version>
+        <common.version>1.0.1-beta.37</common.version>
     </properties>
 
     <modules>
