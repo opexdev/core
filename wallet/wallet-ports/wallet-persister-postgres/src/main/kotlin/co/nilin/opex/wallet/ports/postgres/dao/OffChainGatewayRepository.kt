@@ -15,51 +15,58 @@ interface OffChainGatewayRepository : ReactiveCrudRepository<OffChainGatewayMode
     fun findByGatewayUuid(uuid: String): Mono<OffChainGatewayModel>?
 
     @Query("""
-    select g.id,
-       g.gateway_uuid,
-       g.currency_symbol,
-       g.deposit_allowed,
-       g.withdraw_fee,
-       g.withdraw_min,
-       g.withdraw_max,
-       g.deposit_min,
-       g.deposit_max,
-       g.transfer_method,
-       g.is_deposit_active,
-       g.is_withdraw_active,
-       gl.deposit_description,
-       gl.withdraw_description,
-       g.display_order
+        select g.id as id,
+           g.gateway_uuid as gatewayUuid,
+           g.currency_symbol as currencySymbol,
+           g.withdraw_allowed as withdrawAllowed,
+           g.deposit_allowed as depositAllowed,
+           g.withdraw_fee as withdrawFee,
+           g.withdraw_min as withdrawMin,
+           g.withdraw_max as withdrawMax,
+           g.deposit_min as depositMin,
+           g.deposit_max as depositMax,
+           g.transfer_method as transferMethod,
+           g.is_deposit_active as isDepositActive,
+           g.is_withdraw_active as isWithdrawActive,
+           gl.deposit_description as depositDescription,
+           gl.withdraw_description as withdrawDescription,
+           g.display_order as displayOrder
     from currency_off_chain_gateway g
-             left join currency_off_chain_gateway_localization gl on g.id = gl.gateway_id and gl.language = :lang
-    where g.currency_symbol = :currencySymbol and g.gateway_uuid = :gatewayUuid
+             left join currency_off_chain_gateway_localization gl
+                    on g.id = gl.gateway_id
+                   and gl.language = :lang
+    where g.currency_symbol = :currencySymbol
+      and g.gateway_uuid = :gatewayUuid
     """)
     fun findByGatewayUuidAndCurrencySymbol(
-        uuid: String,
-        symbol: String,
-        language: String? = UserLanguage.getDefaultLanguage()
+        gatewayUuid: String,
+        currencySymbol: String,
+        lang: String? = UserLanguage.getDefaultLanguage()
     ): Mono<OffChainGatewayView>?
 
     fun deleteByGatewayUuid(uuid: String): Mono<Void>
 
     @Query("""
-    select g.id,
-       g.gateway_uuid,
-       g.currency_symbol,
-       g.deposit_allowed,
-       g.withdraw_fee,
-       g.withdraw_min,
-       g.withdraw_max,
-       g.deposit_min,
-       g.deposit_max,
-       g.transfer_method,
-       g.is_deposit_active,
-       g.is_withdraw_active,
-       gl.deposit_description,
-       gl.withdraw_description,
-       g.display_order
+       select g.id as id,
+           g.gateway_uuid as gatewayUuid,
+           g.currency_symbol as currencySymbol,
+           g.withdraw_allowed as withdrawAllowed,
+           g.deposit_allowed as depositAllowed,
+           g.withdraw_fee as withdrawFee,
+           g.withdraw_min as withdrawMin,
+           g.withdraw_max as withdrawMax,
+           g.deposit_min as depositMin,
+           g.deposit_max as depositMax,
+           g.transfer_method as transferMethod,
+           g.is_deposit_active as isDepositActive,
+           g.is_withdraw_active as isWithdrawActive,
+           gl.deposit_description as depositDescription,
+           gl.withdraw_description as withdrawDescription,
+           g.display_order as displayOrder
     from currency_off_chain_gateway g
-             left join currency_off_chain_gateway_localization gl on g.id = gl.gateway_id and gl.language = :lang
+             left join currency_off_chain_gateway_localization gl
+                    on g.id = gl.gateway_id
+                   and gl.language = :language
     where (:currencySymbol is null or g.currency_symbol = :currencySymbol)
       and (:gatewayUuid is null or g.gateway_uuid = :gatewayUuid)
     order by g.display_order

@@ -14,7 +14,7 @@
     <packaging>jar</packaging>
     <artifactId>common</artifactId>
     <description>Common codes and logic</description>
-    <version>1.0.1-beta.36</version>
+    <version>1.0.1-beta.37</version>
 
     <dependencies>
         <dependency>
@@ -28,6 +28,10 @@
         <dependency>
             <groupId>co.nilin.opex.utility</groupId>
             <artifactId>error-handler</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>co.nilin.opex.utility</groupId>
+            <artifactId>interceptors</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -50,6 +54,11 @@
                 <artifactId>error-handler</artifactId>
                 <version>${error-hanlder.version}</version>
             </dependency>
+        <dependency>
+            <groupId>co.nilin.opex.utility</groupId>
+            <artifactId>interceptors</artifactId>
+            <version>${interceptor.version}</version>
+        </dependency>
         </dependencies>
     </dependencyManagement>
 

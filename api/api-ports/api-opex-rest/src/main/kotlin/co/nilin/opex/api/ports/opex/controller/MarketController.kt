@@ -8,21 +8,18 @@ import co.nilin.opex.api.ports.opex.data.OrderBookResponse
 import co.nilin.opex.api.ports.opex.data.RecentTradeResponse
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.utils.Interval
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 import java.time.ZoneId
-import kotlin.collections.mapNotNull
-import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.Parameter
-import io.swagger.v3.oas.annotations.media.ArraySchema
-import io.swagger.v3.oas.annotations.media.Content
-import io.swagger.v3.oas.annotations.media.Schema
-import io.swagger.v3.oas.annotations.responses.ApiResponse
-import io.swagger.v3.oas.annotations.security.SecurityRequirement
-import io.swagger.v3.oas.annotations.tags.Tag
 
 @RestController("opexMarketController")
 @RequestMapping("/opex/v1/market")
@@ -46,7 +43,14 @@ class MarketController(
         description = """GET /opex/v1/market/currency.
 Security: Public endpoint. No Bearer token is required.""",
         responses = [
-            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = CurrencyData::class)))])
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(
+                    mediaType = "application/json",
+                    array = ArraySchema(schema = Schema(implementation = CurrencyData::class))
+                )]
+            )
         ]
     )
     suspend fun getCurrencies(): List<CurrencyData> {
@@ -59,7 +63,14 @@ Security: Public endpoint. No Bearer token is required.""",
         description = """GET /opex/v1/market/pair.
 Security: Public endpoint. No Bearer token is required.""",
         responses = [
-            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = PairInfoResponse::class)))])
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(
+                    mediaType = "application/json",
+                    array = ArraySchema(schema = Schema(implementation = PairInfoResponse::class))
+                )]
+            )
         ]
     )
     suspend fun getPairs(): List<PairInfoResponse> {
@@ -86,7 +97,14 @@ Security: Public endpoint. No Bearer token is required.""",
         description = """GET /opex/v1/market/chain.
 Security: Public endpoint. No Bearer token is required.""",
         responses = [
-            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = ChainInfo::class)))])
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(
+                    mediaType = "application/json",
+                    array = ArraySchema(schema = Schema(implementation = ChainInfo::class))
+                )]
+            )
         ]
     )
     suspend fun getChains(): List<ChainInfo> {
@@ -99,7 +117,14 @@ Security: Public endpoint. No Bearer token is required.""",
         description = """GET /opex/v1/market/currency/gateway.
 Security: Public endpoint. No Bearer token is required.""",
         responses = [
-            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = CurrencyGatewayCommand::class)))])
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(
+                    mediaType = "application/json",
+                    array = ArraySchema(schema = Schema(implementation = CurrencyGatewayCommand::class))
+                )]
+            )
         ]
     )
     suspend fun getCurrencyGateways(
@@ -115,7 +140,14 @@ Security: Public endpoint. No Bearer token is required.""",
         description = """GET /opex/v1/market/fee.
 Security: Public endpoint. No Bearer token is required.""",
         responses = [
-            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = FeeConfig::class)))])
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(
+                    mediaType = "application/json",
+                    array = ArraySchema(schema = Schema(implementation = FeeConfig::class))
+                )]
+            )
         ]
     )
     suspend fun getFeeConfigs(): List<FeeConfig> {
@@ -128,7 +160,14 @@ Security: Public endpoint. No Bearer token is required.""",
         description = """GET /opex/v1/market/stats.
 Security: Public endpoint. No Bearer token is required.""",
         responses = [
-            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", schema = Schema(implementation = MarketInfoResponse::class))])
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = MarketInfoResponse::class)
+                )]
+            )
         ]
     )
     suspend fun getMarketStats(
@@ -178,7 +217,14 @@ Security: Public endpoint. No Bearer token is required.""",
         description = """GET /opex/v1/market/depth.
 Security: Public endpoint. No Bearer token is required.""",
         responses = [
-            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", schema = Schema(implementation = OrderBookResponse::class))])
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = OrderBookResponse::class)
+                )]
+            )
         ]
     )
     suspend fun orderBook(
@@ -223,7 +269,14 @@ Security: Public endpoint. No Bearer token is required.""",
         description = """GET /opex/v1/market/trades.
 Security: Public endpoint. No Bearer token is required.""",
         responses = [
-            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = RecentTradeResponse::class)))])
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(
+                    mediaType = "application/json",
+                    array = ArraySchema(schema = Schema(implementation = RecentTradeResponse::class))
+                )]
+            )
         ]
     )
     suspend fun recentTrades(
@@ -256,7 +309,14 @@ Security: Public endpoint. No Bearer token is required.""",
         description = """GET /opex/v1/market/ticker/{duration:24h|7d|1M}.
 Security: Public endpoint. No Bearer token is required.""",
         responses = [
-            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = PriceChange::class)))])
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(
+                    mediaType = "application/json",
+                    array = ArraySchema(schema = Schema(implementation = PriceChange::class))
+                )]
+            )
         ]
     )
     suspend fun priceChange(
@@ -291,7 +351,14 @@ Security: Public endpoint. No Bearer token is required.""",
         description = """GET /opex/v1/market/ticker/price.
 Security: Public endpoint. No Bearer token is required.""",
         responses = [
-            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = PriceTicker::class)))])
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(
+                    mediaType = "application/json",
+                    array = ArraySchema(schema = Schema(implementation = PriceTicker::class))
+                )]
+            )
         ]
     )
     suspend fun priceTicker(@RequestParam(required = false) symbol: String?): List<PriceTicker> {
@@ -304,7 +371,14 @@ Security: Public endpoint. No Bearer token is required.""",
         description = """GET /opex/v1/market/currencyInfo/quotes.
 Security: Public endpoint. No Bearer token is required.""",
         responses = [
-            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(type = "string")))])
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(
+                    mediaType = "application/json",
+                    array = ArraySchema(schema = Schema(type = "string"))
+                )]
+            )
         ]
     )
     suspend fun getQuoteCurrencies(): List<String> {
@@ -317,7 +391,18 @@ Security: Public endpoint. No Bearer token is required.""",
         description = """GET /opex/v1/market/klines.
 Security: Public endpoint. No Bearer token is required.""",
         responses = [
-            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = List<Any>::class)))])
+            ApiResponse(
+                responseCode = "200",
+                description = "Returned successfully.",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        array = ArraySchema(
+                            schema = Schema(type = "array")
+                        )
+                    )
+                ]
+            )
         ]
     )
     suspend fun klines(
@@ -367,7 +452,14 @@ Security: Public endpoint. No Bearer token is required.""",
         description = """GET /opex/v1/market/basic-data.
 Security: Public endpoint. No Bearer token is required.""",
         responses = [
-            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", schema = Schema(implementation = MarketBasicData::class))])
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = MarketBasicData::class)
+                )]
+            )
         ]
     )
     suspend fun getBasicData(): MarketBasicData {
@@ -386,7 +478,14 @@ Security: Public endpoint. No Bearer token is required.""",
         description = """GET /opex/v1/market/withdraw-limits.
 Security: Public endpoint. No Bearer token is required.""",
         responses = [
-            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = WithdrawLimitConfig::class)))])
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(
+                    mediaType = "application/json",
+                    array = ArraySchema(schema = Schema(implementation = WithdrawLimitConfig::class))
+                )]
+            )
         ]
     )
     suspend fun getWithdrawLimits(): List<WithdrawLimitConfig> {
@@ -399,7 +498,14 @@ Security: Public endpoint. No Bearer token is required.""",
         description = """GET /opex/v1/market/gateway/{gatewayUuid}/terminal.
 Security: Public endpoint. No Bearer token is required.""",
         responses = [
-            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = TerminalCommand::class)))])
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(
+                    mediaType = "application/json",
+                    array = ArraySchema(schema = Schema(implementation = TerminalCommand::class))
+                )]
+            )
         ]
     )
     suspend fun getGatewayTerminal(

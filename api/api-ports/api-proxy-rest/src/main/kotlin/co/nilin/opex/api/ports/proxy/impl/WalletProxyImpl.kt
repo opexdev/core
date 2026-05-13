@@ -1047,7 +1047,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
             .awaitBodilessEntity()
     }
 
-    override suspend fun addCurrencyToGateway(
+    override suspend fun addGatewayToCurrency(
         token: String,
         currencySymbol: String,
         gatewayCommand: CurrencyGatewayCommand
