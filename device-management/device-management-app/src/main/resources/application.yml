@@ -109,3 +109,8 @@ app:
     cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
     client-id: none
     client-secret: none
+  custom-message:
+    enabled: ${CUSTOM_MESSAGE_ENABLED:false}
+    base-url: ${CUSTOM_MESSAGE_URL}
+  custom-user-language:
+    enabled: ${CUSTOM_USER_LANGUAGE_ENABLED:false}

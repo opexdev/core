@@ -121,7 +121,7 @@ class CurrencyHandlerImplV2(
                 return@executeAndAwait null
             }
 
-            if (!request.depositDescription.isNullOrEmpty() && !request.withdrawDescription.isNullOrEmpty()) {
+            if (!request.depositDescription.isNullOrEmpty() || !request.withdrawDescription.isNullOrEmpty()) {
                 currencyOnChainGatewayLocalizationRepository.save(
                     CurrencyOnChainGatewayLocalizationModel(
                         gatewayId = gateway.id!!,

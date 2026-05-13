@@ -38,6 +38,7 @@ services:
       - AUTH_JWK_ENDPOINT=${JWK_ENDPOINT}
       - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL}
       - CUSTOM_MESSAGE_ENABLED=${CUSTOM_MESSAGE_ENABLED}
+      - CUSTOM_USER_LANGUAGE_ENABLED=${CUSTOM_USER_LANGUAGE_ENABLED}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
@@ -99,6 +100,7 @@ services:
       - OMNI_URL=${OMNI_URL}
       - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL}
       - CUSTOM_MESSAGE_ENABLED=${CUSTOM_MESSAGE_ENABLED}
+      - CUSTOM_USER_LANGUAGE_ENABLED=${CUSTOM_USER_LANGUAGE_ENABLED}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
