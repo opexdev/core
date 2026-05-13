@@ -31,12 +31,12 @@ interface OffChainGatewayRepository : ReactiveCrudRepository<OffChainGatewayMode
        gl.withdraw_description,
        g.display_order
     from currency_off_chain_gateway g
-             left join currency_off_chain_gateway_localization gl on g.id = gl.gateway_id and gl.language = :lang
+             left join currency_off_chain_gateway_localization gl on g.id = gl.gateway_id and gl.language = :language
     where g.currency_symbol = :currencySymbol and g.gateway_uuid = :gatewayUuid
     """)
     fun findByGatewayUuidAndCurrencySymbol(
-        uuid: String,
-        symbol: String,
+        gatewayUuid: String,
+        currencySymbol: String,
         language: String? = UserLanguage.getDefaultLanguage()
     ): Mono<OffChainGatewayView>?
 

@@ -81,7 +81,7 @@ class OffChainGatewayManagerImpl(
             val gateway = offChainGatewayRepository.save(input.toModel()).awaitFirstOrNull()
                 ?: throw OpexError.BadRequest.exception("Error in saving gateway")
 
-            if (!currencyGateway.depositDescription.isNullOrEmpty() && !currencyGateway.withdrawDescription.isNullOrEmpty()) {
+            if (!currencyGateway.depositDescription.isNullOrEmpty() || !currencyGateway.withdrawDescription.isNullOrEmpty()) {
                 offChainGatewayLocalizationRepository.save(
                     OffChainGatewayLocalizationModel(
                         gatewayId = gateway.id!!,
