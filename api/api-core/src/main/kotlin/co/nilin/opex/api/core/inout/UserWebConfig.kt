@@ -7,5 +7,5 @@ import co.nilin.opex.common.data.UserLanguage
 data class UserWebConfig(
     var theme: Theme,
     var language: UserLanguage,
-    var calender: CalenderType
+    var calender: CalenderType? = null
 )
