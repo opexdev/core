@@ -69,19 +69,19 @@ class ConfigController(private val configProxy: ConfigProxy) {
         return configProxy.getUserFavoritePair(securityContext.jwtAuthentication().tokenValue())
     }
 
-    @PostMapping("/user/config/pair")
+    @PostMapping("/user/config/pair/{pair}")
     suspend fun addUserFavoritePair(
         @CurrentSecurityContext securityContext: SecurityContext,
-        @RequestBody pairs: Set<String>
+        @PathVariable pair: String
     ): Set<String> {
-        return configProxy.addUserFavoritePair(securityContext.jwtAuthentication().tokenValue(), pairs)
+        return configProxy.addUserFavoritePair(securityContext.jwtAuthentication().tokenValue(), pair)
     }
 
-    @DeleteMapping("/user/config/pair")
+    @DeleteMapping("/user/config/pair/{pair}")
     suspend fun removeUserFavoritePair(
         @CurrentSecurityContext securityContext: SecurityContext,
-        @RequestBody pairs: Set<String>
+        @PathVariable pair: String
     ): Set<String> {
-        return configProxy.removeUserFavoritePair(securityContext.jwtAuthentication().tokenValue(), pairs)
+        return configProxy.removeUserFavoritePair(securityContext.jwtAuthentication().tokenValue(), pair)
     }
 }
