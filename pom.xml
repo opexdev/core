@@ -16,10 +16,10 @@
         <kotlin.version>1.9.0</kotlin.version>
         <spring.version>2.7.6</spring.version>
         <spring-cloud.version>2021.0.5</spring-cloud.version>
-        <error-hanlder.version>1.2.23</error-hanlder.version>
+        <error-hanlder.version>1.2.25</error-hanlder.version>
         <interceptor.version>1.0.8</interceptor.version>
         <skip.unit.tests>true</skip.unit.tests>
-        <common.version>1.0.1-beta.36</common.version>
+        <common.version>1.0.1-beta.38</common.version>
     </properties>
 
     <modules>
