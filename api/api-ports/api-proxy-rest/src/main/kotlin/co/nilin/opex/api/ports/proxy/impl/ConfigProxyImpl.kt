@@ -140,13 +140,12 @@ class ConfigProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
 
     override suspend fun addUserFavoritePair(
         token: String,
-        pairs: Set<String>
+        pair: String
     ): Set<String> {
         return webClient.post()
-            .uri("$baseUrl/user/v1/pair")
+            .uri("$baseUrl/user/v1/pair/${pair}")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-            .body(Mono.just(pairs))
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<Set<String>>()
@@ -155,14 +154,13 @@ class ConfigProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
 
     override suspend fun removeUserFavoritePair(
         token: String,
-        pairs: Set<String>
+        pair: String
     ): Set<String> {
         return webClient.method(HttpMethod.DELETE)
-            .uri("$baseUrl/user/v1/pair")
+            .uri("$baseUrl/user/v1/pair/${pair}")
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-            .bodyValue(pairs)
             .retrieve()
             .onStatus({ it.isError }) { it.createException() }
             .bodyToMono<Set<String>>()
