@@ -49,7 +49,7 @@ Behavior: Send one localization object per language. Existing items can include 
 
     @PostMapping("/currency/{currency}/localization")
     @Operation(
-        summary = "Save currency localizations",
+        summary = "Save or update currency localizations",
         description = """POST /opex/v1/admin/currency/{currency}/localization.
 Security: Bearer admin-token required. Required authority: ROLE_admin.
 
@@ -120,7 +120,7 @@ Behavior: Send one localization object per language. Existing items can include 
 
     @PostMapping("/terminal/{terminalUuid}/localization")
     @Operation(
-        summary = "Save terminal localizations",
+        summary = "Save or update terminal localizations",
         description = """POST /opex/v1/admin/terminal/{terminalUuid}/localization.
 Security: Bearer admin-token required. Required authority: ROLE_admin.
 
@@ -200,7 +200,7 @@ Behavior: Send one localization object per language. Existing items can include 
 
     @PostMapping("/gateway/{gatewayUuid}/localization")
     @Operation(
-        summary = "Save gateway localizations",
+        summary = "Save or update gateway localizations",
         description = """POST /opex/v1/admin/gateway/{gatewayUuid}/localization.
 Security: Bearer admin-token required. Required authority: ROLE_admin.
 

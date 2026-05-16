@@ -356,26 +356,6 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
         }
     }
 
-    override suspend fun deposit(
-        request: RequestDepositBody
-    ): TransferResult? {
-        return withContext(ProxyDispatchers.wallet) {
-            webClient.post()
-                .uri("$baseUrl/deposit/${request.amount}_${request.chain}_${request.symbol}/${request.receiverUuid}_${request.receiverWalletType}") {
-                    it.apply {
-                        request.description?.let { description -> queryParam("description", description) }
-                        request.transferRef?.let { transferRef -> queryParam("transferRef", transferRef) }
-                        request.gatewayUuid?.let { gatewayUuid -> queryParam("gatewayUuid", gatewayUuid) }
-                    }.build()
-                }.accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono<TransferResult>()
-                .awaitFirstOrNull()
-        }
-    }
-
     override suspend fun requestWithdraw(
         token: String,
         request: RequestWithdrawBody

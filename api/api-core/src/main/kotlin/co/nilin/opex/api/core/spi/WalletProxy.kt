@@ -104,9 +104,6 @@ interface WalletProxy {
         limit: Int?,
     ): List<TransactionSummary>
 
-    suspend fun deposit(
-        request: RequestDepositBody
-    ): TransferResult?
 
     suspend fun requestWithdraw(
         token: String,

@@ -216,7 +216,7 @@ class DepositService(
     suspend fun fetchDepositData(
         gatewayUuid: String?,
         symbol: String,
-        depositType: co.nilin.opex.wallet.core.model.DepositType,
+        depositType: DepositType,
         depositCommand: Deposit,
     ): GatewayData {
 
