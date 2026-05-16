@@ -24,7 +24,7 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         wth.uuid as uuid,
         split_part(wo.title, '|', 2) as owner_name,
         wth.amount as amount,
-        wm.currency as currency,
+        wth.currency as currency,
         wth.applied_fee as applied_fee,
         wth.dest_amount as dest_amount,
         wth.dest_symbol as dest_symbol,
@@ -42,13 +42,12 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         wth.transfer_method as transfer_method,
         wth.otp_required as otp_required
     from withdraws wth
-        join wallet wm on wm.id = wth.wallet
-        join wallet_owner wo on wm.owner = wo.id
+        join wallet_owner wo on wth.uuid = wo.uuid
     where (:owner is null or wo.uuid = :owner)
       and (:destTxRef is null or wth.dest_transaction_ref = :destTxRef)
       and (:withdrawUuid is null or wth.withdraw_uuid = :withdrawUuid)
       and (:destAddress is null or wth.dest_address = :destAddress)
-      and (:currency is null or wm.currency in (:currency))
+      and (:currency is null or wth.currency in (:currency))
       and (:startTime is null or wth.create_date > :startTime)
       and (:endTime is null or wth.create_date <= :endTime)
     order by  
@@ -78,7 +77,7 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         wth.uuid as uuid,
         split_part(wo.title, '|', 2) as owner_name,
         wth.amount as amount,
-        wm.currency as currency,
+        wth.currency as currency,
         wth.applied_fee as applied_fee,
         wth.dest_amount as dest_amount,
         wth.dest_symbol as dest_symbol,
@@ -96,13 +95,12 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
         wth.transfer_method as transfer_method,
         wth.otp_required as otp_required
     from withdraws wth
-        join wallet wm on wm.id = wth.wallet
-        join wallet_owner wo on wm.owner = wo.id
+        join wallet_owner wo on wth.uuid = wo.uuid
     where (:owner is null or wo.uuid = :owner)
       and (:destTxRef is null or wth.dest_transaction_ref = :destTxRef)
       and (:withdrawUuid is null or wth.withdraw_uuid = :withdrawUuid)
       and (:destAddress is null or wth.dest_address = :destAddress)
-      and (:currency is null or wm.currency in (:currency))
+      and (:currency is null or wth.currency in (:currency))
       and wth.status in (:status)
       and (:startTime is null or wth.create_date > :startTime)
       and (:endTime is null or wth.create_date <= :endTime)
@@ -129,12 +127,10 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
     @Query(
         """
         select count(*) from withdraws wth  
-        join wallet wm on wm.id = wth.wallet    
-        join wallet_owner wo on wm.owner = wo.id   
-        where ( :owner is null or wo.uuid = :owner)
+        where ( :owner is null or wth.uuid = :owner)
             and (:destTxRef is null or wth.dest_transaction_ref = :destTxRef) 
             and (:destAddress is null or wth.dest_address = :destAddress) 
-            and (:currency is null or wm.currency in (:currency))
+            and (:currency is null or wth.currency in (:currency))
         """
     )
     fun countByCriteria(
@@ -147,12 +143,10 @@ interface WithdrawRepository : ReactiveCrudRepository<WithdrawModel, Long> {
     @Query(
         """
         select count(*) from withdraws wth  
-        join wallet wm on wm.id = wth.wallet    
-        join wallet_owner wo on wm.owner = wo.id   
-        where ( :owner is null or wo.uuid = :owner)
+        where ( :owner is null or wth.uuid = :owner)
             and (:destTxRef is null or wth.dest_transaction_ref = :destTxRef) 
             and (:destAddress is null or wth.dest_address = :destAddress) 
-            and (:currency is null or wm.currency in (:currency)) 
+            and (:currency is null or wth.currency in (:currency)) 
             and wth.status in (:status)
         """
     )
