@@ -1,6 +1,5 @@
 package co.nilin.opex.api.app.config
 
-import co.nilin.opex.common.data.UserLanguage
 import co.nilin.opex.common.utils.LanguageUtils.getDefaultUserLanguage
 import io.netty.channel.ChannelOption
 import io.netty.handler.logging.LogLevel
@@ -35,7 +34,7 @@ class WebClientConfig(private val logbook: Logbook) {
     private val client = HttpClient.create(provider)
         .wiretap("reactor.netty.http.client.HttpClient", LogLevel.DEBUG, AdvancedByteBufFormat.SIMPLE)
         .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
-        .responseTimeout(Duration.ofSeconds(5))
+        .responseTimeout(Duration.ofSeconds(30))
         .keepAlive(true)
         .doOnConnected { it.addHandlerLast(LogbookClientHandler(logbook)) }
 
@@ -49,6 +48,10 @@ class WebClientConfig(private val logbook: Logbook) {
             .filter(ReactorLoadBalancerExchangeFilterFunction(loadBalancerFactory, emptyList()))
             .clientConnector(ReactorClientHttpConnector(client))
             .filter(languageFilter())
+            .codecs { configurer ->
+                configurer.defaultCodecs()
+                    .maxInMemorySize(5 * 1024 * 1024)
+            }
             .build()
     }
 
