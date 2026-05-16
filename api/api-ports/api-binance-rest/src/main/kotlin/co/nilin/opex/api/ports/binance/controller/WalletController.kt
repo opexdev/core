@@ -6,6 +6,7 @@ import co.nilin.opex.api.ports.binance.data.AssetResponse
 import co.nilin.opex.api.ports.binance.data.AssetsEstimatedValue
 import co.nilin.opex.common.security.jwtAuthentication
 import co.nilin.opex.common.security.tokenValue
+import jdk.internal.vm.annotation.Hidden
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.GetMapping
