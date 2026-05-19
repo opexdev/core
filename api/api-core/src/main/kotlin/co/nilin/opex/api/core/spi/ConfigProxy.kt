@@ -15,7 +15,7 @@ interface ConfigProxy {
     suspend fun getUserConfig(token: String): UserWebConfig
     suspend fun updateUserConfig(token: String, request: UpdateUserConfigRequest): UserWebConfig
     suspend fun getUserFavoritePair(token: String): Set<String>
-    suspend fun addUserFavoritePair(token: String, pairs: Set<String>): Set<String>
-    suspend fun removeUserFavoritePair(token: String, pairs: Set<String>): Set<String>
+    suspend fun addUserFavoritePair(token: String, pair: String): Set<String>
+    suspend fun removeUserFavoritePair(token: String, pair: String): Set<String>
 
 }
