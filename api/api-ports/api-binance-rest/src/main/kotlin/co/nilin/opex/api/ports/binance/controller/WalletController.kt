@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController
 import java.math.BigDecimal
 
 @RestController("walletBinanceController")
+@io.swagger.v3.oas.annotations.Hidden
+@Deprecated("")
 class WalletController(
     private val walletProxy: WalletProxy,
     private val marketDataProxy: MarketDataProxy,

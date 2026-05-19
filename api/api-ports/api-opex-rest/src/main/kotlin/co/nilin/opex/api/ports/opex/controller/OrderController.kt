@@ -10,7 +10,6 @@ import co.nilin.opex.api.ports.opex.util.*
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.security.jwtAuthentication
 import co.nilin.opex.common.security.tokenValue
-import io.swagger.v3.oas.annotations.Parameter
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
@@ -18,14 +17,36 @@ import java.math.BigDecimal
 import java.security.Principal
 import java.time.ZoneId
 import java.util.*
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.media.ArraySchema
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import io.swagger.v3.oas.annotations.tags.Tag
 
 @RestController
 @RequestMapping("/opex/v1/order")
+@Tag(name = "Order", description = "Authenticated order creation, cancellation, query, and open order operations.")
 class OrderController(
     val queryHandler: MarketUserDataProxy,
-    val matchingGatewayProxy: MatchingGatewayProxy,
+    val matchingGatewayProxy: MatchingGatewayProxy
 ) {
     @PostMapping
+    @Operation(
+        summary = "Create new order",
+        description = """POST /opex/v1/order.
+Security: Bearer user-token required. Required authority: PERM_order:write.
+
+Validation: For LIMIT orders, price and quantity are expected. For MARKET orders, use the quantity/quoteOrderQty combination supported by the backend validation. Stop order types require stopPrice.""",
+        security = [SecurityRequirement(name = "bearerAuth")],
+        responses = [
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", schema = Schema(implementation = NewOrderResponse::class))]),
+            ApiResponse(responseCode = "401", description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.", content = [Content()]),
+            ApiResponse(responseCode = "403", description = "Forbidden. Required authority is missing: PERM_order:write. No response body.", content = [Content()])
+        ]
+    )
     suspend fun createNewOrder(
         @RequestParam
         symbol: String,
@@ -44,6 +65,7 @@ class OrderController(
         @Parameter(description = "Used with STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, and TAKE_PROFIT_LIMIT orders.")
         @RequestParam(required = false)
         stopPrice: BigDecimal?,
+        @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext
     ): NewOrderResponse {
         validateNewOrderParams(type, price, quantity, timeInForce, stopPrice, quoteOrderQty)
@@ -63,6 +85,19 @@ class OrderController(
     }
 
     @PutMapping
+    @Operation(
+        summary = "Cancel order",
+        description = """PUT /opex/v1/order.
+Security: Bearer user-token required. Required authority: PERM_order:write.
+
+Validation: Either `orderId` or `origClientOrderId` must be provided.""",
+        security = [SecurityRequirement(name = "bearerAuth")],
+        responses = [
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", schema = Schema(implementation = CancelOrderResponse::class))]),
+            ApiResponse(responseCode = "401", description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.", content = [Content()]),
+            ApiResponse(responseCode = "403", description = "Forbidden. Required authority is missing: PERM_order:write. No response body.", content = [Content()])
+        ]
+    )
     suspend fun cancelOrder(
         principal: Principal,
         @RequestParam
@@ -71,6 +106,7 @@ class OrderController(
         orderId: Long?,
         @RequestParam(required = false)
         origClientOrderId: String?,
+        @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext
     ): CancelOrderResponse {
         if (orderId == null && origClientOrderId == null)
@@ -112,6 +148,16 @@ class OrderController(
     }
 
     @GetMapping
+    @Operation(
+        summary = "Query order",
+        description = """GET /opex/v1/order.
+Security: Bearer user-token required. Requires authenticated user JWT.""",
+        security = [SecurityRequirement(name = "bearerAuth")],
+        responses = [
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", schema = Schema(implementation = QueryOrderResponse::class))]),
+            ApiResponse(responseCode = "401", description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.", content = [Content()])
+        ]
+    )
     suspend fun queryOrder(
         principal: Principal,
         @RequestParam
@@ -119,7 +165,7 @@ class OrderController(
         @RequestParam(required = false)
         orderId: Long?,
         @RequestParam(required = false)
-        origClientOrderId: String?,
+        origClientOrderId: String?
     ): QueryOrderResponse {
         return queryHandler.queryOrder(principal, symbol, orderId, origClientOrderId)
             ?.asQueryOrderResponse()
@@ -128,6 +174,16 @@ class OrderController(
     }
 
     @GetMapping("/open")
+    @Operation(
+        summary = "Fetch open orders",
+        description = """GET /opex/v1/order/open.
+Security: Bearer user-token required. Requires authenticated user JWT.""",
+        security = [SecurityRequirement(name = "bearerAuth")],
+        responses = [
+            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = QueryOrderResponse::class)))]),
+            ApiResponse(responseCode = "401", description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.", content = [Content()])
+        ]
+    )
     suspend fun fetchOpenOrders(
         principal: Principal,
         @RequestParam(required = false)
@@ -146,7 +202,7 @@ class OrderController(
         quantity: BigDecimal?,
         timeInForce: TimeInForce?,
         stopPrice: BigDecimal?,
-        quoteOrderQty: BigDecimal?,
+        quoteOrderQty: BigDecimal?
     ) {
         when (type) {
             OrderType.LIMIT -> {
