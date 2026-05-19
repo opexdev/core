@@ -10,6 +10,15 @@ import co.nilin.opex.api.ports.opex.util.*
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.security.jwtAuthentication
 import co.nilin.opex.common.security.tokenValue
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.enums.ParameterIn
+import io.swagger.v3.oas.annotations.media.ArraySchema
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
@@ -17,59 +26,147 @@ import java.math.BigDecimal
 import java.security.Principal
 import java.time.ZoneId
 import java.util.*
-import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.Parameter
-import io.swagger.v3.oas.annotations.media.ArraySchema
-import io.swagger.v3.oas.annotations.media.Content
-import io.swagger.v3.oas.annotations.media.Schema
-import io.swagger.v3.oas.annotations.responses.ApiResponse
-import io.swagger.v3.oas.annotations.security.SecurityRequirement
-import io.swagger.v3.oas.annotations.tags.Tag
 
 @RestController
 @RequestMapping("/opex/v1/order")
-@Tag(name = "Order", description = "Authenticated order creation, cancellation, query, and open order operations.")
+@Tag(
+    name = "Order",
+    description = "Create, cancel, query, and list authenticated user's orders."
+)
 class OrderController(
     val queryHandler: MarketUserDataProxy,
-    val matchingGatewayProxy: MatchingGatewayProxy
+    val matchingGatewayProxy: MatchingGatewayProxy,
 ) {
+
     @PostMapping
     @Operation(
-        summary = "Create new order",
-        description = """POST /opex/v1/order.
-Security: Bearer user-token required. Required authority: PERM_order:write.
+        summary = "Create order",
+        description = """
+Security:
+- Bearer user-token is required.
+- Required permission: PERM_order:write.
 
-Validation: For LIMIT orders, price and quantity are expected. For MARKET orders, use the quantity/quoteOrderQty combination supported by the backend validation. Stop order types require stopPrice.""",
+Validation:
+- symbol, side, and type are required.
+- side values: BUY, SELL.
+- type values: LIMIT, MARKET, STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER.
+- timeInForce values: GTC, IOC, FOK.
+- LIMIT(*) requires price, quantity, and timeInForce.
+- MARKET requires quantity or quoteOrderQty.
+- STOP_LOSS requires quantity and stopPrice.
+- STOP_LOSS_LIMIT requires price, quantity, stopPrice, and timeInForce.
+- TAKE_PROFIT requires quantity and stopPrice.
+- TAKE_PROFIT_LIMIT requires price, quantity, stopPrice, and timeInForce.
+- LIMIT_MAKER requires price and quantity.
+
+Behavior:
+- Optional parameters that are not applicable to the selected order type should be omitted.
+- Do not send the literal string "null" for optional numeric parameters.
+
+Response body:
+- NewOrderResponse.
+        """,
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
-            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", schema = Schema(implementation = NewOrderResponse::class))]),
-            ApiResponse(responseCode = "401", description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.", content = [Content()]),
-            ApiResponse(responseCode = "403", description = "Forbidden. Required authority is missing: PERM_order:write. No response body.", content = [Content()])
+            ApiResponse(
+                responseCode = "200",
+                description = "Order created successfully.",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = NewOrderResponse::class)
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized. No response body.",
+                content = [Content()]
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "Forbidden. No response body.",
+                content = [Content()]
+            )
         ]
     )
     suspend fun createNewOrder(
-        @RequestParam
-        symbol: String,
-        @RequestParam
-        side: OrderSide,
-        @RequestParam
-        type: OrderType,
-        @RequestParam(required = false)
-        timeInForce: TimeInForce?,
-        @RequestParam(required = false)
-        quantity: BigDecimal?,
-        @RequestParam(required = false)
-        quoteOrderQty: BigDecimal?,
-        @RequestParam(required = false)
-        price: BigDecimal?,
-        @Parameter(description = "Used with STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, and TAKE_PROFIT_LIMIT orders.")
-        @RequestParam(required = false)
-        stopPrice: BigDecimal?,
+        @Parameter(
+            name = "symbol",
+            description = "Trading pair symbol.",
+            required = true,
+            `in` = ParameterIn.QUERY,
+            example = "BTC_USDT"
+        )
+        @RequestParam symbol: String,
+
+        @Parameter(
+            name = "side",
+            description = "Order side. Values: BUY, SELL.",
+            required = true,
+            `in` = ParameterIn.QUERY,
+            schema = Schema(implementation = OrderSide::class)
+        )
+        @RequestParam side: OrderSide,
+
+        @Parameter(
+            name = "type",
+            description = "Order type. Values: LIMIT, MARKET, STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER.",
+            required = true,
+            `in` = ParameterIn.QUERY,
+            schema = Schema(implementation = OrderType::class)
+        )
+        @RequestParam type: OrderType,
+
+        @Parameter(
+            name = "timeInForce",
+            description = "Optional time-in-force. Values: GTC, IOC, FOK. Required for LIMIT, STOP_LOSS_LIMIT, and TAKE_PROFIT_LIMIT orders.",
+            required = false,
+            `in` = ParameterIn.QUERY,
+            schema = Schema(implementation = TimeInForce::class)
+        )
+        @RequestParam(required = false) timeInForce: TimeInForce?,
+
+        @Parameter(
+            name = "quantity",
+            description = "Optional base quantity. Required for LIMIT, STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT, and LIMIT_MAKER orders. For MARKET orders, quantity or quoteOrderQty must be provided.",
+            required = false,
+            `in` = ParameterIn.QUERY,
+            example = "0.001"
+        )
+        @RequestParam(required = false) quantity: BigDecimal?,
+
+        @Parameter(
+            name = "quoteOrderQty",
+            description = "Optional quote quantity for MARKET orders when quantity is not provided.",
+            required = false,
+            `in` = ParameterIn.QUERY,
+            example = "10.0"
+        )
+        @RequestParam(required = false) quoteOrderQty: BigDecimal?,
+
+        @Parameter(
+            name = "price",
+            description = "Optional order price. Required for LIMIT, STOP_LOSS_LIMIT, TAKE_PROFIT_LIMIT, and LIMIT_MAKER orders.",
+            required = false,
+            `in` = ParameterIn.QUERY,
+            example = "10.0"
+        )
+        @RequestParam(required = false) price: BigDecimal?,
+
+        @Parameter(
+            name = "stopPrice",
+            description = "Optional stop price. Required for STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, and TAKE_PROFIT_LIMIT orders.",
+            required = false,
+            `in` = ParameterIn.QUERY,
+            example = "9.5"
+        )
+        @RequestParam(required = false) stopPrice: BigDecimal?,
+
         @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext
     ): NewOrderResponse {
         validateNewOrderParams(type, price, quantity, timeInForce, stopPrice, quoteOrderQty)
-
         matchingGatewayProxy.createNewOrder(
             securityContext.jwtAuthentication().name,
             symbol,
@@ -87,34 +184,82 @@ Validation: For LIMIT orders, price and quantity are expected. For MARKET orders
     @PutMapping
     @Operation(
         summary = "Cancel order",
-        description = """PUT /opex/v1/order.
-Security: Bearer user-token required. Required authority: PERM_order:write.
+        description = """
+Security:
+- Bearer user-token is required.
+- Required permission: PERM_order:write.
 
-Validation: Either `orderId` or `origClientOrderId` must be provided.""",
+Validation:
+- symbol is required.
+- At least one lookup identifier is required: orderId or origClientOrderId.
+
+Behavior:
+- Already canceled orders return a canceled response.
+- Rejected, expired, or filled orders cannot be canceled.
+
+Response body:
+- CancelOrderResponse.
+        """,
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
-            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", schema = Schema(implementation = CancelOrderResponse::class))]),
-            ApiResponse(responseCode = "401", description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.", content = [Content()]),
-            ApiResponse(responseCode = "403", description = "Forbidden. Required authority is missing: PERM_order:write. No response body.", content = [Content()])
+            ApiResponse(
+                responseCode = "200",
+                description = "Order canceled successfully.",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = CancelOrderResponse::class)
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized. No response body.",
+                content = [Content()]
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "Forbidden. No response body.",
+                content = [Content()]
+            )
         ]
     )
     suspend fun cancelOrder(
+        @Parameter(hidden = true)
         principal: Principal,
-        @RequestParam
-        symbol: String,
-        @RequestParam(required = false)
-        orderId: Long?,
-        @RequestParam(required = false)
-        origClientOrderId: String?,
+
+        @Parameter(
+            name = "symbol",
+            description = "Trading pair symbol.",
+            required = true,
+            `in` = ParameterIn.QUERY,
+            example = "BTC_USDT"
+        )
+        @RequestParam symbol: String,
+
+        @Parameter(
+            name = "orderId",
+            description = "Optional numeric order ID. Required when origClientOrderId is not provided.",
+            required = false,
+            `in` = ParameterIn.QUERY,
+            example = "1"
+        )
+        @RequestParam(required = false) orderId: Long?,
+
+        @Parameter(
+            name = "origClientOrderId",
+            description = "Optional original client order ID. Required when orderId is not provided.",
+            required = false,
+            `in` = ParameterIn.QUERY,
+            example = "client-order-id-sample"
+        )
+        @RequestParam(required = false) origClientOrderId: String?,
+
         @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext
     ): CancelOrderResponse {
-        if (orderId == null && origClientOrderId == null)
-            throw OpexError.BadRequest.exception("'orderId' or 'origClientOrderId' must be sent")
-
-        val order = queryHandler.queryOrder(principal, symbol, orderId, origClientOrderId)
-            ?: throw OpexError.OrderNotFound.exception()
-
+        if (orderId == null && origClientOrderId == null) throw OpexError.BadRequest.exception("'orderId' or 'origClientOrderId' must be sent")
+        val order = queryHandler.queryOrder(principal, symbol, orderId, origClientOrderId) ?: throw OpexError.OrderNotFound.exception()
         val response = CancelOrderResponse(
             symbol,
             origClientOrderId,
@@ -130,13 +275,9 @@ Validation: Either `orderId` or `origClientOrderId` must be provided.""",
             order.type.asOrderType(),
             order.direction.asOrderSide()
         )
-
-        if (order.status == OrderStatus.CANCELED)
-            return response
-
+        if (order.status == OrderStatus.CANCELED) return response
         if (order.status.equalsAny(OrderStatus.REJECTED, OrderStatus.EXPIRED, OrderStatus.FILLED))
             throw OpexError.CancelOrderNotAllowed.exception()
-
         matchingGatewayProxy.cancelOrder(
             order.ouid,
             principal.name,
@@ -149,23 +290,67 @@ Validation: Either `orderId` or `origClientOrderId` must be provided.""",
 
     @GetMapping
     @Operation(
-        summary = "Query order",
-        description = """GET /opex/v1/order.
-Security: Bearer user-token required. Requires authenticated user JWT.""",
+        summary = "Get order",
+        description = """
+Security:
+- Bearer user-token is required.
+
+Validation:
+- symbol is required.
+- At least one lookup identifier should be provided: orderId or origClientOrderId.
+
+Response body:
+- QueryOrderResponse.
+        """,
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
-            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", schema = Schema(implementation = QueryOrderResponse::class))]),
-            ApiResponse(responseCode = "401", description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.", content = [Content()])
+            ApiResponse(
+                responseCode = "200",
+                description = "Order returned successfully.",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = QueryOrderResponse::class)
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized. No response body.",
+                content = [Content()]
+            )
         ]
     )
     suspend fun queryOrder(
+        @Parameter(hidden = true)
         principal: Principal,
-        @RequestParam
-        symbol: String,
-        @RequestParam(required = false)
-        orderId: Long?,
-        @RequestParam(required = false)
-        origClientOrderId: String?
+
+        @Parameter(
+            name = "symbol",
+            description = "Trading pair symbol.",
+            required = true,
+            `in` = ParameterIn.QUERY,
+            example = "BTC_USDT"
+        )
+        @RequestParam symbol: String,
+
+        @Parameter(
+            name = "orderId",
+            description = "Optional numeric order ID.",
+            required = false,
+            `in` = ParameterIn.QUERY,
+            example = "1"
+        )
+        @RequestParam(required = false) orderId: Long?,
+
+        @Parameter(
+            name = "origClientOrderId",
+            description = "Optional original client order ID.",
+            required = false,
+            `in` = ParameterIn.QUERY,
+            example = "client-order-id-sample"
+        )
+        @RequestParam(required = false) origClientOrderId: String?,
     ): QueryOrderResponse {
         return queryHandler.queryOrder(principal, symbol, orderId, origClientOrderId)
             ?.asQueryOrderResponse()
@@ -175,21 +360,58 @@ Security: Bearer user-token required. Requires authenticated user JWT.""",
 
     @GetMapping("/open")
     @Operation(
-        summary = "Fetch open orders",
-        description = """GET /opex/v1/order/open.
-Security: Bearer user-token required. Requires authenticated user JWT.""",
+        summary = "List open orders",
+        description = """
+Security:
+- Bearer user-token is required.
+
+Behavior:
+- symbol is optional. When omitted, open orders are returned without symbol filtering.
+- limit is optional.
+
+Response body:
+- Array of QueryOrderResponse.
+        """,
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
-            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = QueryOrderResponse::class)))]),
-            ApiResponse(responseCode = "401", description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.", content = [Content()])
+            ApiResponse(
+                responseCode = "200",
+                description = "Open orders returned successfully.",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        array = ArraySchema(schema = Schema(implementation = QueryOrderResponse::class))
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized. No response body.",
+                content = [Content()]
+            )
         ]
     )
     suspend fun fetchOpenOrders(
+        @Parameter(hidden = true)
         principal: Principal,
-        @RequestParam(required = false)
-        symbol: String?,
-        @RequestParam(required = false)
-        limit: Int?
+
+        @Parameter(
+            name = "symbol",
+            description = "Optional trading pair symbol filter.",
+            required = false,
+            `in` = ParameterIn.QUERY,
+            example = "BTC_USDT"
+        )
+        @RequestParam(required = false) symbol: String?,
+
+        @Parameter(
+            name = "limit",
+            description = "Optional maximum number of open orders to return.",
+            required = false,
+            `in` = ParameterIn.QUERY,
+            example = "10"
+        )
+        @RequestParam(required = false) limit: Int?
     ): List<QueryOrderResponse> {
         return queryHandler.openOrders(principal, symbol, limit).map {
             it.asQueryOrderResponse().apply { symbol?.let { s -> this.symbol = s } }
@@ -202,7 +424,7 @@ Security: Bearer user-token required. Requires authenticated user JWT.""",
         quantity: BigDecimal?,
         timeInForce: TimeInForce?,
         stopPrice: BigDecimal?,
-        quoteOrderQty: BigDecimal?
+        quoteOrderQty: BigDecimal?,
     ) {
         when (type) {
             OrderType.LIMIT -> {
@@ -210,38 +432,30 @@ Security: Bearer user-token required. Requires authenticated user JWT.""",
                 checkDecimal(quantity, "quantity")
                 checkNull(timeInForce, "timeInForce")
             }
-
             OrderType.MARKET -> {
-                if (quantity == null)
-                    checkDecimal(quoteOrderQty, "quoteOrderQty")
-                else
-                    checkDecimal(quantity, "quantity")
+                if (quantity == null) checkDecimal(quoteOrderQty, "quoteOrderQty")
+                else checkDecimal(quantity, "quantity")
             }
-
             OrderType.STOP_LOSS -> {
                 checkDecimal(quantity, "quantity")
                 checkDecimal(stopPrice, "stopPrice")
             }
-
             OrderType.STOP_LOSS_LIMIT -> {
                 checkDecimal(price, "price")
                 checkDecimal(quantity, "quantity")
                 checkDecimal(stopPrice, "stopPrice")
                 checkNull(timeInForce, "timeInForce")
             }
-
             OrderType.TAKE_PROFIT -> {
                 checkDecimal(quantity, "quantity")
                 checkDecimal(stopPrice, "stopPrice")
             }
-
             OrderType.TAKE_PROFIT_LIMIT -> {
                 checkDecimal(price, "price")
                 checkDecimal(quantity, "quantity")
                 checkDecimal(stopPrice, "stopPrice")
                 checkNull(timeInForce, "timeInForce")
             }
-
             OrderType.LIMIT_MAKER -> {
                 checkDecimal(price, "price")
                 checkDecimal(quantity, "quantity")
@@ -280,5 +494,4 @@ Security: Bearer user-token required. Requires authenticated user JWT.""",
         status.isWorking(),
         quoteQuantity
     )
-
 }
