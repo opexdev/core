@@ -4,6 +4,7 @@ import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.ReservedTransferResponse
 import co.nilin.opex.wallet.app.dto.TransferPreEvaluateResponse
 import co.nilin.opex.wallet.app.dto.TransferReserveRequest
+import co.nilin.opex.wallet.app.dto.UserSwapTransactionRequest
 import co.nilin.opex.wallet.app.dto.UserTransactionRequest
 import co.nilin.opex.wallet.app.service.TransferService
 import co.nilin.opex.wallet.core.inout.SwapResponse
@@ -140,7 +141,7 @@ class AdvancedTransferController {
     )
     suspend fun getSwapHistory(
         @CurrentSecurityContext securityContext: SecurityContext,
-        @RequestBody request: UserTransactionRequest
+        @RequestBody request: UserSwapTransactionRequest
 
     ): List<SwapResponse>? {
         return with(request) {
@@ -171,7 +172,7 @@ class AdvancedTransferController {
     @PostMapping("/v1/swap/history/count")
     suspend fun getSwapHistoryCount(
         @CurrentSecurityContext securityContext: SecurityContext,
-        @RequestBody request: UserTransactionRequest
+        @RequestBody request: UserSwapTransactionRequest
 
     ): Long {
         return with(request) {

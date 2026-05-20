@@ -32,7 +32,7 @@ data class StorageUploadMultipartRequest(
 
 @RestController
 @RequestMapping("/opex/v1/admin/storage")
-@Tag(name = "Storage Admin", description = "Admin storage upload, download, and delete operations.\n\nAllowed values:\n- isPublic: true, false.")
+@Tag(name = "Storage Admin", description = "Admin storage upload, download, and delete operations.")
 class StorageAdminController(
     private val storageProxy: StorageProxy,
     @Value("\${app.base.url}")

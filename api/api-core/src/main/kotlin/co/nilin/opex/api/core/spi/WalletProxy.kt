@@ -147,7 +147,7 @@ interface WalletProxy {
 
     suspend fun getSwapTransactionsForAdmin(
         token: String,
-        request: UserTransactionRequest
+        request: UserSwapTransactionRequest
     ): List<SwapAdminResponse>
 
     suspend fun getTradeHistoryForAdmin(

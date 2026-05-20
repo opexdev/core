@@ -207,7 +207,6 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
                         limit,
                         offset,
                         ascendingByTime == true,
-                        null
                     )
                 )
             )
@@ -515,7 +514,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
 
     override suspend fun getSwapTransactionsForAdmin(
         token: String,
-        request: UserTransactionRequest
+        request: UserSwapTransactionRequest
     ): List<SwapAdminResponse> {
         return webClient.post()
             .uri("$baseUrl/admin/v1/swap/history")

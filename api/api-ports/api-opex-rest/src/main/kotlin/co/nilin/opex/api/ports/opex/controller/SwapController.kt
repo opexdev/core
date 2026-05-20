@@ -20,7 +20,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 
 @RestController
 @RequestMapping("/opex/v1/swap")
-@Tag(name = "Swap", description = "Authenticated swap reserve and finalize operations.\n\nAllowed values:\n- sourceWalletType and destWalletType where used: MAIN, EXCHANGE, CASHOUT.\nSource of values:\n- sourceSymbol and destSymbol are server-provided currency symbols.")
+@Tag(name = "Swap", description = "Authenticated swap reserve and finalize operations.")
 class SwapController(
     val walletProxy: WalletProxy
 ) {

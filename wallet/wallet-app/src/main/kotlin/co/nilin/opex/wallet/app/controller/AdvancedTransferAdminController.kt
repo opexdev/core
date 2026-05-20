@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.app.controller
 
+import co.nilin.opex.wallet.app.dto.UserSwapTransactionRequest
 import co.nilin.opex.wallet.app.dto.UserTransactionRequest
 import co.nilin.opex.wallet.core.inout.AdminSwapResponse
 import co.nilin.opex.wallet.core.spi.ReservedTransferManager
@@ -35,8 +36,7 @@ class AdvancedTransferAdminController {
         )
     )
     suspend fun getSwapHistory(
-        @CurrentSecurityContext securityContext: SecurityContext,
-        @RequestBody request: UserTransactionRequest
+        @RequestBody request: UserSwapTransactionRequest
 
     ): List<AdminSwapResponse>? {
         return with(request) {

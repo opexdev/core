@@ -18,7 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 
 @RestController
 @RequestMapping("/opex/v1/admin/profile")
-@Tag(name = "Profile Admin", description = "Admin profile and approval request operations.\n\nAllowed values:\n- nationality: IRANIAN, NON_IRANIAN.\n- gender: FEMALE, MALE.\n- status: CREATED, CONTACT_INFO_COMPLETED, PROFILE_COMPLETED, SYSTEM_APPROVED, PENDING_ADMIN_APPROVAL, ADMIN_REJECTED, ADMIN_APPROVED.\n- kycLevel: LEVEL_1, LEVEL_2, LEVEL_3.\n- approval request status: PENDING, APPROVED, REJECTED.")
+@Tag(name = "Profile Admin", description = "Admin profile and approval request operations.")
 class ProfileAdminController(private val profileProxy: ProfileProxy) {
 
     @PostMapping
@@ -34,9 +34,24 @@ Allowed values:
 - approval request status: PENDING, APPROVED, REJECTED.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
-            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = Profile::class)))]),
-            ApiResponse(responseCode = "401", description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.", content = [Content()]),
-            ApiResponse(responseCode = "403", description = "Forbidden. Required authority is missing: ROLE_admin. No response body.", content = [Content()])
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(
+                    mediaType = "application/json",
+                    array = ArraySchema(schema = Schema(implementation = Profile::class))
+                )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.",
+                content = [Content()]
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "Forbidden. Required authority is missing: ROLE_admin. No response body.",
+                content = [Content()]
+            )
         ]
     )
     suspend fun getProfiles(
@@ -63,13 +78,29 @@ Allowed values:
 - approval request status: PENDING, APPROVED, REJECTED.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
-            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", schema = Schema(implementation = Profile::class))]),
-            ApiResponse(responseCode = "401", description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.", content = [Content()]),
-            ApiResponse(responseCode = "403", description = "Forbidden. Required authority is missing: ROLE_admin. No response body.", content = [Content()])
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(mediaType = "application/json", schema = Schema(implementation = Profile::class))]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.",
+                content = [Content()]
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "Forbidden. Required authority is missing: ROLE_admin. No response body.",
+                content = [Content()]
+            )
         ]
     )
     suspend fun getProfile(
-        @Parameter(name = "uuid", description = "User/profile/terminal UUID depending on the endpoint context.", required = true)
+        @Parameter(
+            name = "uuid",
+            description = "User/profile/terminal UUID depending on the endpoint context.",
+            required = true
+        )
         @PathVariable uuid: String,
         @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext
@@ -91,9 +122,24 @@ Allowed values:
 - approval request status: PENDING, APPROVED, REJECTED.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
-            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = ProfileHistory::class)))]),
-            ApiResponse(responseCode = "401", description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.", content = [Content()]),
-            ApiResponse(responseCode = "403", description = "Forbidden. Required authority is missing: ROLE_admin. No response body.", content = [Content()])
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(
+                    mediaType = "application/json",
+                    array = ArraySchema(schema = Schema(implementation = ProfileHistory::class))
+                )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.",
+                content = [Content()]
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "Forbidden. Required authority is missing: ROLE_admin. No response body.",
+                content = [Content()]
+            )
         ]
     )
     suspend fun getProfileHistory(
@@ -127,9 +173,24 @@ Allowed values:
 - approval request status: PENDING, APPROVED, REJECTED.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
-            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = ProfileApprovalAdminResponse::class)))]),
-            ApiResponse(responseCode = "401", description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.", content = [Content()]),
-            ApiResponse(responseCode = "403", description = "Forbidden. Required authority is missing: ROLE_admin. No response body.", content = [Content()])
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(
+                    mediaType = "application/json",
+                    array = ArraySchema(schema = Schema(implementation = ProfileApprovalAdminResponse::class))
+                )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.",
+                content = [Content()]
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "Forbidden. Required authority is missing: ROLE_admin. No response body.",
+                content = [Content()]
+            )
         ]
     )
     suspend fun getApprovalRequests(
@@ -153,9 +214,24 @@ Allowed values:
 - approval request status: PENDING, APPROVED, REJECTED.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
-            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", schema = Schema(implementation = ProfileApprovalAdminResponse::class))]),
-            ApiResponse(responseCode = "401", description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.", content = [Content()]),
-            ApiResponse(responseCode = "403", description = "Forbidden. Required authority is missing: ROLE_admin. No response body.", content = [Content()])
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = ProfileApprovalAdminResponse::class)
+                )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.",
+                content = [Content()]
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "Forbidden. Required authority is missing: ROLE_admin. No response body.",
+                content = [Content()]
+            )
         ]
     )
     suspend fun getApprovalRequest(
@@ -180,9 +256,24 @@ Allowed values:
 - approval request status: PENDING, APPROVED, REJECTED.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
-            ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", schema = Schema(implementation = ProfileApprovalAdminResponse::class))]),
-            ApiResponse(responseCode = "401", description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.", content = [Content()]),
-            ApiResponse(responseCode = "403", description = "Forbidden. Required authority is missing: ROLE_admin. No response body.", content = [Content()])
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = ProfileApprovalAdminResponse::class)
+                )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.",
+                content = [Content()]
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "Forbidden. Required authority is missing: ROLE_admin. No response body.",
+                content = [Content()]
+            )
         ]
     )
     suspend fun updateApprovalRequestStatus(

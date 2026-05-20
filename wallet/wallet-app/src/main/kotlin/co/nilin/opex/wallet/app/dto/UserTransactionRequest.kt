@@ -14,5 +14,5 @@ data class UserTransactionRequest(
     val limit: Int? = 10,
     val offset: Int? = 0,
     val ascendingByTime: Boolean = false,
-    val status: ReservedStatus? = ReservedStatus.Committed
 )
+
