@@ -68,9 +68,11 @@ class TerminalManagerImpl(
     }
 
     override suspend fun delete(uuid: String) {
-        loadTerminal(uuid)?.let {
-            terminalRepository.deleteById(it.id!!).awaitSingleOrNull()
-        } ?: throw OpexError.TerminalNotFound.exception()
+        val terminal = loadTerminal(uuid)
+        if (terminal != null)
+            terminalRepository.deleteById(terminal.id!!).awaitSingleOrNull()
+        else
+            throw OpexError.TerminalNotFound.exception()
     }
 
     override suspend fun fetchTerminal(): List<TerminalCommand>? {

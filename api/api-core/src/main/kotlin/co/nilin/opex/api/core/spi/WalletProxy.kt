@@ -234,7 +234,7 @@ interface WalletProxy {
 
     suspend fun deleteOffChainGatewayLocalization(token: String, id: Long)
     suspend fun saveTerminal(token: String, terminal: TerminalCommand): TerminalCommand?
-    suspend fun updateTerminal(token: String, terminalUuid: String, terminal: TerminalCommand): TerminalCommand?
+    suspend fun updateTerminal(token: String, terminalUuid: String, terminal: TerminalUpdateCommand): TerminalCommand?
     suspend fun deleteTerminal(token: String, terminalUuid: String)
     suspend fun getTerminals(token: String): List<TerminalCommand>?
     suspend fun getTerminal(token: String, terminalUuid: String): TerminalCommand?
@@ -251,7 +251,7 @@ interface WalletProxy {
         token: String,
         gatewayUuid: String,
         currencySymbol: String,
-        gatewayCommand: CurrencyGatewayCommand
+        gatewayCommand: CurrencyGatewayUpdateCommand
     ): CurrencyGatewayCommand?
 
     suspend fun getGateway(token: String, gatewayUuid: String, currencySymbol: String): CurrencyGatewayCommand?

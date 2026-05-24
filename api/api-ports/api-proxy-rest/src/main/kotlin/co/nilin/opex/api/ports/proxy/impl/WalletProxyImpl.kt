@@ -829,7 +829,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
         terminalUuid: String
     ): TerminalLocalizationResponse {
         return webClient.get()
-            .uri("$baseUrl/admin/deposit/terminal/${terminalUuid}/localization")
+            .uri("$baseUrl/admin/terminal/${terminalUuid}/localization")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .retrieve()
@@ -844,7 +844,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
         terminalLocalizations: List<TerminalLocalizationCommand>
     ): TerminalLocalizationResponse {
         return webClient.post()
-            .uri("$baseUrl/admin/deposit/terminal/${terminalUuid}/localization")
+            .uri("$baseUrl/admin/terminal/${terminalUuid}/localization")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .body(Mono.just(terminalLocalizations))
@@ -856,7 +856,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
 
     override suspend fun deleteTerminalLocalization(token: String, id: Long) {
         webClient.delete()
-            .uri("$baseUrl/admin/deposit/terminal/localization/${id}")
+            .uri("$baseUrl/admin/terminal/localization/${id}")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .retrieve()
@@ -913,7 +913,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
         terminal: TerminalCommand
     ): TerminalCommand? {
         return webClient.post()
-            .uri("$baseUrl/admin/deposit/terminal")
+            .uri("$baseUrl/admin/terminal")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .body(Mono.just(terminal))
@@ -926,10 +926,10 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
     override suspend fun updateTerminal(
         token: String,
         terminalUuid: String,
-        terminal: TerminalCommand
+        terminal: TerminalUpdateCommand
     ): TerminalCommand? {
         return webClient.put()
-            .uri("$baseUrl/admin/deposit/terminal/${terminalUuid}")
+            .uri("$baseUrl/admin/terminal/${terminalUuid}")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .body(Mono.just(terminal))
@@ -941,7 +941,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
 
     override suspend fun deleteTerminal(token: String, terminalUuid: String) {
         webClient.delete()
-            .uri("$baseUrl/admin/deposit/terminal/${terminalUuid}")
+            .uri("$baseUrl/admin/terminal/${terminalUuid}")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .retrieve()
@@ -968,13 +968,13 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
         terminalUuid: String
     ): TerminalCommand? {
         return webClient.get()
-            .uri("$baseUrl/admin/deposit/terminal/${terminalUuid}")
+            .uri("$baseUrl/admin/terminal/${terminalUuid}")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<TerminalCommand>()
-            .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+            .awaitFirstOrElse { throw OpexError.NotFound.exception() }
     }
 
     override suspend fun getAssignedGatewayToTerminal(
@@ -982,7 +982,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
         terminalUuid: String
     ): List<CurrencyGatewayCommand>? {
         return webClient.get()
-            .uri("$baseUrl/admin/deposit/terminal/${terminalUuid}/gateway")
+            .uri("$baseUrl/admin/terminal/${terminalUuid}/gateway")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .retrieve()
@@ -1046,7 +1046,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
         token: String,
         gatewayUuid: String,
         currencySymbol: String,
-        gatewayCommand: CurrencyGatewayCommand
+        gatewayCommand: CurrencyGatewayUpdateCommand
     ): CurrencyGatewayCommand? {
         return webClient.put()
             .uri("$baseUrl/currency/${currencySymbol}/gateway/${gatewayUuid}")

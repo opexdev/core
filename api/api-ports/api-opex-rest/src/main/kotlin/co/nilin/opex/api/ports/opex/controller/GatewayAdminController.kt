@@ -1,6 +1,7 @@
 package co.nilin.opex.api.ports.opex.controller
 
 import co.nilin.opex.api.core.inout.CurrencyGatewayCommand
+import co.nilin.opex.api.core.inout.CurrencyGatewayUpdateCommand
 import co.nilin.opex.api.core.inout.OffChainGatewayCommand
 import co.nilin.opex.api.core.inout.OnChainGatewayCommand
 import co.nilin.opex.api.core.spi.WalletProxy
@@ -359,7 +360,7 @@ Response body: CurrencyGatewayCommand.
         @CurrentSecurityContext securityContext: SecurityContext,
         @PathVariable("uuid") gatewayUuid: String,
         @PathVariable("currencySymbol") currencySymbol: String,
-        @RequestBody body: CurrencyGatewayCommand,
+        @RequestBody body: CurrencyGatewayUpdateCommand,
     ): CurrencyGatewayCommand? {
         return walletProxy.updateGateway(
             securityContext.jwtAuthentication().tokenValue(),

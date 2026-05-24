@@ -2,6 +2,7 @@ package co.nilin.opex.api.ports.opex.controller
 
 import co.nilin.opex.api.core.inout.CurrencyGatewayCommand
 import co.nilin.opex.api.core.inout.TerminalCommand
+import co.nilin.opex.api.core.inout.TerminalUpdateCommand
 import co.nilin.opex.api.core.spi.WalletProxy
 import co.nilin.opex.api.ports.opex.util.jwtAuthentication
 import co.nilin.opex.api.ports.opex.util.tokenValue
@@ -47,7 +48,7 @@ Security: Bearer admin-token required. Required authority: ROLE_admin.
     @PutMapping("/{uuid}")
     @Operation(
         summary = "Update terminal",
-        description = """PUT /opex/v1/admin/terminal/{uuid}.
+        description = """PUT /opex/v1/admin/terminal/{terminalUuid}.
 Security: Bearer admin-token required. Required authority: ROLE_admin.
 """,
         security = [SecurityRequirement(name = "bearerAuth")],
@@ -62,7 +63,7 @@ Security: Bearer admin-token required. Required authority: ROLE_admin.
         @CurrentSecurityContext securityContext: SecurityContext,
         @Parameter(name = "uuid", description = "Terminal UUID.", required = true)
         @PathVariable("uuid") terminalUuid: String,
-        @RequestBody body: TerminalCommand
+        @RequestBody body: TerminalUpdateCommand
     ): TerminalCommand? {
         return walletProxy.updateTerminal(securityContext.jwtAuthentication().tokenValue(), terminalUuid, body)
     }
@@ -70,7 +71,7 @@ Security: Bearer admin-token required. Required authority: ROLE_admin.
     @DeleteMapping("/{uuid}")
     @Operation(
         summary = "Delete terminal",
-        description = """DELETE /opex/v1/admin/terminal/{uuid}.
+        description = """DELETE /opex/v1/admin/terminal/{terminalUuid}.
 Security: Bearer admin-token required. Required authority: ROLE_admin.
 """,
         security = [SecurityRequirement(name = "bearerAuth")],
@@ -112,7 +113,7 @@ Security: Bearer admin-token required. Required authority: ROLE_admin.
     @GetMapping("/{uuid}")
     @Operation(
         summary = "Get terminal",
-        description = """GET /opex/v1/admin/terminal/{uuid}.
+        description = """GET /opex/v1/admin/terminal/{terminalUuid}.
 Security: Bearer admin-token required. Required authority: ROLE_admin.
 """,
         security = [SecurityRequirement(name = "bearerAuth")],
@@ -125,7 +126,7 @@ Security: Bearer admin-token required. Required authority: ROLE_admin.
     suspend fun getTerminal(
         @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext,
-        @Parameter(name = "uuid", description = "User/profile/terminal UUID depending on the endpoint context.", required = true)
+        @Parameter(name = "uuid", description = "Terminal UUID depending on the endpoint context.", required = true)
         @PathVariable("uuid") terminalUuid: String
     ): TerminalCommand? {
         return walletProxy.getTerminal(securityContext.jwtAuthentication().tokenValue(), terminalUuid)
@@ -134,7 +135,7 @@ Security: Bearer admin-token required. Required authority: ROLE_admin.
     @GetMapping("/{uuid}/gateway")
     @Operation(
         summary = "Get gateway(s) which the terminal is assigned to",
-        description = """GET /opex/v1/admin/terminal/{uuid}/gateway.
+        description = """GET /opex/v1/admin/terminal/{gatewayUuid}/gateway.
 Security: Bearer admin-token required. Required authority: ROLE_admin.
 """,
         security = [SecurityRequirement(name = "bearerAuth")],
@@ -156,7 +157,7 @@ Security: Bearer admin-token required. Required authority: ROLE_admin.
     @PostMapping("/gateway/{uuid}")
     @Operation(
         summary = "Assign terminal to gateway",
-        description = """POST /opex/v1/admin/terminal/gateway/{uuid}.
+        description = """POST /opex/v1/admin/terminal/gateway/{gatewayUuid}.
 Validation: Request body is a raw JSON array of terminal UUID strings.
 Security: Bearer admin-token required. Required authority: ROLE_admin.
 
@@ -185,7 +186,7 @@ Security: Bearer admin-token required. Required authority: ROLE_admin.
     @DeleteMapping("/gateway/{uuid}")
     @Operation(
         summary = "Revoke terminal from gateway",
-        description = """DELETE /opex/v1/admin/terminal/gateway/{uuid}.
+        description = """DELETE /opex/v1/admin/terminal/gateway/{gatewayUuid}.
 Validation: Request body is a raw JSON array of terminal UUID strings to revoke from the gateway.
 Security: Bearer admin-token required. Required authority: ROLE_admin.
 """,

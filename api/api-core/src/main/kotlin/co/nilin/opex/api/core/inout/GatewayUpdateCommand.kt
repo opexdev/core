@@ -5,6 +5,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import java.math.BigDecimal
 import java.util.*
 
+enum class GatewayType() {
+    OnChain, OffChain
+}
 
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
@@ -15,7 +18,7 @@ import java.util.*
     JsonSubTypes.Type(value = OffChainGatewayCommand::class, name = "OffChain"),
     JsonSubTypes.Type(value = OnChainGatewayCommand::class, name = "OnChain"),
 )
-open abstract class CurrencyGatewayCommand(
+open abstract class CurrencyGatewayUpdateCommand(
     open var currencySymbol: String? = null,
     open var gatewayUuid: String? = UUID.randomUUID().toString(),
     open var isDepositActive: Boolean?,
@@ -27,12 +30,10 @@ open abstract class CurrencyGatewayCommand(
     open var depositMax: BigDecimal? = BigDecimal.ZERO,
     open var withdrawMin: BigDecimal? = BigDecimal.ZERO,
     open var withdrawMax: BigDecimal? = BigDecimal.ZERO,
-    open var depositDescription: String? = null,
-    open var withdrawDescription: String? = null,
     open var displayOrder: Int? = null,
 )
 
-data class OffChainGatewayCommand(
+data class OffChainGatewayUpdateCommand(
     var transferMethod: TransferMethod,
     override var currencySymbol: String? = null,
     override var gatewayUuid: String? = UUID.randomUUID().toString(),
@@ -45,8 +46,6 @@ data class OffChainGatewayCommand(
     override var depositMax: BigDecimal? = BigDecimal.ZERO,
     override var withdrawMin: BigDecimal? = BigDecimal.ZERO,
     override var withdrawMax: BigDecimal? = BigDecimal.ZERO,
-    override var depositDescription: String? = null,
-    override var withdrawDescription: String? = null,
     override var displayOrder: Int? = null,
 
     ) : CurrencyGatewayCommand(
@@ -61,12 +60,12 @@ data class OffChainGatewayCommand(
     depositMax,
     withdrawMin,
     withdrawMax,
-    depositDescription,
-    withdrawDescription,
+    null,
+    null,
     displayOrder
 )
 
-data class OnChainGatewayCommand(
+data class OnChainGatewayUpdateCommand(
 
     var implementationSymbol: String? = null,
     var tokenName: String? = null,
@@ -85,8 +84,6 @@ data class OnChainGatewayCommand(
     override var depositMax: BigDecimal? = BigDecimal.ZERO,
     override var withdrawMin: BigDecimal? = BigDecimal.ZERO,
     override var withdrawMax: BigDecimal? = BigDecimal.ZERO,
-    override var depositDescription: String? = null,
-    override var withdrawDescription: String? = null,
     override var displayOrder: Int? = null,
 ) : CurrencyGatewayCommand(
     currencySymbol,
@@ -100,8 +97,8 @@ data class OnChainGatewayCommand(
     depositMax,
     withdrawMin,
     withdrawMax,
-    depositDescription,
-    withdrawDescription,
+    null,
+    null,
     displayOrder
 )
 
