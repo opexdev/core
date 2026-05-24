@@ -208,9 +208,9 @@ class DepositService(
     // -------------------------------------------------------------------------
 
     fun isValidDeposit(deposit: Deposit, gatewayData: GatewayData): Boolean {
-        return gatewayData.isEnabled &&
+        return deposit.transferMethod == TransferMethod.MANUALLY || (gatewayData.isEnabled &&
                 deposit.amount >= gatewayData.minimum &&
-                deposit.amount <= gatewayData.maximum
+                deposit.amount <= gatewayData.maximum)
     }
 
     suspend fun fetchDepositData(

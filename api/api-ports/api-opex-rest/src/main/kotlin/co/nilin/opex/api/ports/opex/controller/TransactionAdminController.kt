@@ -34,7 +34,6 @@ class TransactionAdminController(
 Security: Bearer admin-token required. Required authority: ROLE_monitoring or ROLE_admin.
 Allowed values:
 - category: TRADE, DEPOSIT, DEPOSIT_TO, WITHDRAW_FROM, WITHDRAW, FEE, SWAP, REFERRAL_COMMISSION, REFERRAL_KYC_REWARD, REFERENT_COMMISSION, KYC_ACCEPTED_REWARD, SYSTEM.
-- ReservedStatus: Created, Expired, Committed
 
 """,
 
@@ -114,8 +113,7 @@ Allowed values:
         summary = "Get withdraw transactions",
         description = """POST /opex/v1/admin/transactions/withdraws.
 Security: Bearer admin-token required. Required authority: ROLE_monitoring or ROLE_admin.
-Allowed values:
-- category: TRADE, DEPOSIT, DEPOSIT_TO, WITHDRAW_FROM, WITHDRAW, FEE, SWAP, REFERRAL_COMMISSION, REFERRAL_KYC_REWARD, REFERENT_COMMISSION, KYC_ACCEPTED_REWARD, SYSTEM.""",
+""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
             ApiResponse(
