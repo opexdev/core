@@ -2,11 +2,10 @@ package co.nilin.opex.api.ports.opex.controller
 
 import co.nilin.opex.api.core.inout.UserFee
 import co.nilin.opex.api.core.spi.AccountantProxy
-import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.utils.Interval
+import co.nilin.opex.common.utils.LimitedInterval
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
-import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -22,81 +21,151 @@ import java.math.BigDecimal
 
 @RestController
 @RequestMapping("/opex/v1/user/data")
-@Tag(name = "User Data", description = "Authenticated user data endpoints")
+@Tag(
+    name = "User Exchange Data",
+    description = "Authenticated user fee, volume, and activity data."
+)
 class UserDataController(
-    private val accountantProxy: AccountantProxy,
+    private val accountantProxy: AccountantProxy
 ) {
 
     @GetMapping("/trade/volume")
     @Operation(
-        summary = "Get user trade volume by currency",
+        summary = "Get trade volume by currency",
+        description = """GET /opex/v1/user/data/trade/volume.
+Validation: `interval` must be one of Day, Week, Month, Year.
+Security: Bearer user-token required. Requires authenticated user JWT.
+Allowed values:
+- interval: Day, Week, Month, Year.""",
         security = [SecurityRequirement(name = "bearerAuth")],
-        parameters = [
-            Parameter(name = "symbol", `in` = ParameterIn.QUERY, required = true, schema = Schema(type = "string")),
-            Parameter(name = "interval", `in` = ParameterIn.QUERY, required = true, schema = Schema(type = "string", description = "Interval: Day|Week|Month|Year"))
-        ],
-        responses = [ ApiResponse(responseCode = "200", description = "OK", content = [ Content(mediaType = "application/json", schema = Schema(type = "number", format = "double")) ]) ]
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(mediaType = "application/json", schema = Schema(type = "number"))]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.",
+                content = [Content()]
+            )
+        ]
     )
     suspend fun getTradeVolumeByCurrency(
+        @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext,
+        @Parameter(
+            name = "symbol",
+            description = "Trading pair or currency symbol, depending on endpoint.",
+            required = true
+        )
         @RequestParam symbol: String,
-        @RequestParam interval: Interval
+        @Parameter(
+            name = "interval",
+            description = "Interval. For user data endpoints allowed values are Day, Week, Month, Year. ",
+            required = true
+        )
+        @RequestParam interval: LimitedInterval
     ): BigDecimal {
-        checkValidInterval(interval)
+        val interval = Interval.valueOf(interval.name)
         val uuid = securityContext.authentication.name
         return accountantProxy.getTradeVolumeByCurrency(uuid, symbol, interval)
     }
 
     @GetMapping("/trade/volume/total")
     @Operation(
-        summary = "Get user total trade volume value",
+        summary = "Get total trade volume value",
+        description = """GET /opex/v1/user/data/trade/volume/total.
+Security: Bearer user-token required. Requires authenticated user JWT.
+Allowed values:
+- interval: Day, Week, Month, Year.""",
         security = [SecurityRequirement(name = "bearerAuth")],
-        parameters = [
-            Parameter(name = "interval", `in` = ParameterIn.QUERY, required = true, schema = Schema(type = "string", description = "Interval: Day|Week|Month|Year"))
-        ],
-        responses = [ ApiResponse(responseCode = "200", description = "OK", content = [ Content(mediaType = "application/json", schema = Schema(type = "number", format = "double")) ]) ]
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(mediaType = "application/json", schema = Schema(type = "number"))]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.",
+                content = [Content()]
+            )
+        ]
     )
     suspend fun getTotalTradeVolumeValue(
+        @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext,
-        @RequestParam interval: Interval
+        @Parameter(
+            name = "interval",
+            description = "Interval. For user data endpoints allowed values are Day, Week, Month, Year.",
+            required = true
+        )
+        @RequestParam interval: LimitedInterval
     ): BigDecimal {
-        checkValidInterval(interval)
+        val interval = Interval.valueOf(interval.name)
         val uuid = securityContext.authentication.name
         return accountantProxy.getTotalTradeVolumeValue(uuid, interval)
     }
 
     @GetMapping("/fee")
     @Operation(
-        summary = "Get user fee settings",
+        summary = "Get user fee",
+        description = """GET /opex/v1/user/data/fee.
+Security: Bearer user-token required. Requires authenticated user JWT.
+""",
         security = [SecurityRequirement(name = "bearerAuth")],
-        responses = [ ApiResponse(responseCode = "200", description = "OK", content = [ Content(mediaType = "application/json", schema = Schema(implementation = UserFee::class)) ]) ]
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(mediaType = "application/json", schema = Schema(implementation = UserFee::class))]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.",
+                content = [Content()]
+            )
+        ]
     )
-    suspend fun getUserFee(@CurrentSecurityContext securityContext: SecurityContext): UserFee {
+    suspend fun getUserFee(
+        @Parameter(hidden = true)
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): UserFee {
         return accountantProxy.getUserFee(securityContext.authentication.name)
     }
 
     @GetMapping("/withdraw/volume/total")
     @Operation(
-        summary = "Get user total withdraw volume value",
+        summary = "Get total withdraw volume value",
+        description = """GET /opex/v1/user/data/withdraw/volume/total.
+Behavior: `interval` is optional. Accepted labels map to Day, Week, Month, Year where supported.
+Security: Bearer user-token required. Requires authenticated user JWT.
+Allowed values:
+- interval: Day, Week, Month, Year.""",
         security = [SecurityRequirement(name = "bearerAuth")],
-        parameters = [
-            Parameter(name = "interval", `in` = ParameterIn.QUERY, required = false, schema = Schema(type = "string", description = "Optional label; maps to Interval by label"))
-        ],
-        responses = [ ApiResponse(responseCode = "200", description = "OK", content = [ Content(mediaType = "application/json", schema = Schema(type = "number", format = "double")) ]) ]
+        responses = [
+            ApiResponse(responseCode = "200", description = "No response body.", content = [Content()]),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.",
+                content = [Content()]
+            )
+        ]
     )
     suspend fun getTotalWithdrawVolumeValue(
+        @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext,
-        @RequestParam(required = false) interval: String?
+        @Parameter(
+            name = "interval",
+            description = "Interval. For user data endpoints allowed values are Day, Week, Month, Year. ",
+            required = false
+        )
+        @RequestParam(required = false) interval: LimitedInterval?
     ): BigDecimal =
         accountantProxy.getTotalWithdrawVolumeValue(
             securityContext.authentication.name,
-            interval?.let(Interval::findByLabel)
+            interval?.let { Interval.valueOf(interval.name) }
         )
 
-
-    private fun checkValidInterval(interval: Interval) {
-        if (interval == Interval.Day || interval == Interval.Week || interval == Interval.Month || interval == Interval.Year)
-            return
-        throw OpexError.BadRequest.exception()
-    }
 }
