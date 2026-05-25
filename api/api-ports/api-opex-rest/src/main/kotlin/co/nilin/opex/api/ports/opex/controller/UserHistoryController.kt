@@ -23,33 +23,38 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/opex/v1/user")
 @Tag(
     name = "User History",
-    description = "Authenticated user order, trade, deposit, withdraw, transaction, and swap history operations."
+    description = """Authenticated user history, summaries, and swap-history operations."""
 )
 class UserHistoryController(
     private val marketUserDataProxy: MarketUserDataProxy,
-    private val walletProxy: WalletProxy
+    private val walletProxy: WalletProxy,
 ) {
 
     @GetMapping("/history/order")
     @Operation(
         summary = "Get order history",
         description = """GET /opex/v1/user/history/order.
-Behavior: Optional filters include symbol, time range, orderType, direction, limit, and offset. `orderType`: LIMIT, MARKET, STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER. `direction`: BUY, SELL.
 Security: Bearer user-token required. Requires authenticated user JWT.
+
+Behavior / Validation:
+- Optional filters are applied only when provided.
+- `startTime` and `endTime` are epoch milliseconds.
+- `limit` defaults to 10 and `offset` defaults to 0 when omitted.
+
 Allowed values:
-- orderType: LIMIT, MARKET, STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER.
-- direction: BUY, SELL.
-- withdraw status: REQUESTED, CREATED, ACCEPTED, CANCELED, REJECTED, DONE.
-- transaction category: TRADE, DEPOSIT, DEPOSIT_TO, WITHDRAW_FROM, WITHDRAW, FEE, SWAP, REFERRAL_COMMISSION, REFERRAL_KYC_REWARD, REFERENT_COMMISSION, KYC_ACCEPTED_REWARD, SYSTEM.""",
+- orderType: LIMIT_ORDER, MARKET_ORDER.
+- direction: ASK, BID.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
             ApiResponse(
                 responseCode = "200",
                 description = "Successful response.",
-                content = [Content(
-                    mediaType = "application/json",
-                    array = ArraySchema(schema = Schema(implementation = OrderDataResponse::class))
-                )]
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        array = ArraySchema(schema = Schema(implementation = OrderDataResponse::class))
+                    )
+                ]
             ),
             ApiResponse(
                 responseCode = "401",
@@ -59,38 +64,34 @@ Allowed values:
         ]
     )
     suspend fun getOrderHistory(
-        @Parameter(
-            name = "symbol",
-            description = "Trading pair or currency symbol, depending on endpoint.",
-            required = false
-        )
-        @RequestParam symbol: String?,
+        @Parameter(name = "symbol", description = "Optional trading pair symbol.", required = false)
+        @RequestParam(name = "symbol", required = false) symbol: String?,
         @Parameter(
             name = "startTime",
             description = "Optional start timestamp in epoch milliseconds.",
             required = false
         )
-        @RequestParam startTime: Long?,
+        @RequestParam(name = "startTime", required = false) startTime: Long?,
         @Parameter(name = "endTime", description = "Optional end timestamp in epoch milliseconds.", required = false)
-        @RequestParam endTime: Long?,
+        @RequestParam(name = "endTime", required = false) endTime: Long?,
         @Parameter(
             name = "orderType",
-            description = "Order type. Allowed values: LIMIT, MARKET, STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER.",
+            description = "Optional order type filter. Allowed values: LIMIT_ORDER, MARKET_ORDER.",
             required = false
         )
-        @RequestParam orderType: MatchingOrderType?,
+        @RequestParam(name = "orderType", required = false) orderType: MatchingOrderType?,
         @Parameter(
             name = "direction",
-            description = "Order/trade direction. Allowed values: BUY, SELL.",
+            description = "Optional order direction filter. Allowed values: ASK, BID.",
             required = false
         )
-        @RequestParam direction: OrderDirection?,
-        @Parameter(name = "limit", description = "Optional page size.", required = false)
-        @RequestParam limit: Int?,
-        @Parameter(name = "offset", description = "Optional page offset.", required = false)
-        @RequestParam offset: Int?,
+        @RequestParam(name = "direction", required = false) direction: OrderDirection?,
+        @Parameter(name = "limit", description = "Optional page size. Defaults to 10 when omitted.", required = false)
+        @RequestParam(name = "limit", required = false) limit: Int?,
+        @Parameter(name = "offset", description = "Optional page offset. Defaults to 0 when omitted.", required = false)
+        @RequestParam(name = "offset", required = false) offset: Int?,
         @Parameter(hidden = true)
-        @CurrentSecurityContext securityContext: SecurityContext
+        @CurrentSecurityContext securityContext: SecurityContext,
     ): List<OrderDataResponse> {
         return marketUserDataProxy.getOrderHistory(
             securityContext.authentication.name,
@@ -100,27 +101,29 @@ Allowed values:
             orderType,
             direction,
             limit ?: 10,
-            offset ?: 0
+            offset ?: 0,
         ).map { it.toResponse() }
     }
 
     @GetMapping("/history/order/count")
     @Operation(
-        summary = "Get order history count",
+        summary = "Count order history",
         description = """GET /opex/v1/user/history/order/count.
-Behavior: Same filters as order history, but returns count only. `orderType`: LIMIT, MARKET, STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER. `direction`: BUY, SELL.
 Security: Bearer user-token required. Requires authenticated user JWT.
+
+Behavior / Validation:
+- Optional filters are applied only when provided.
+- `startTime` and `endTime` are epoch milliseconds.
+
 Allowed values:
-- orderType: LIMIT, MARKET, STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER.
-- direction: BUY, SELL.
-- withdraw status: REQUESTED, CREATED, ACCEPTED, CANCELED, REJECTED, DONE.
-- transaction category: TRADE, DEPOSIT, DEPOSIT_TO, WITHDRAW_FROM, WITHDRAW, FEE, SWAP, REFERRAL_COMMISSION, REFERRAL_KYC_REWARD, REFERENT_COMMISSION, KYC_ACCEPTED_REWARD, SYSTEM.""",
+- orderType: LIMIT_ORDER, MARKET_ORDER.
+- direction: ASK, BID.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
             ApiResponse(
                 responseCode = "200",
                 description = "Successful response.",
-                content = [Content(mediaType = "application/json", schema = Schema(type = "integer", format = "int64"))]
+                content = [Content(mediaType = "application/json", schema = Schema(implementation = Long::class))]
             ),
             ApiResponse(
                 responseCode = "401",
@@ -130,34 +133,30 @@ Allowed values:
         ]
     )
     suspend fun getOrderHistoryCount(
-        @Parameter(
-            name = "symbol",
-            description = "Trading pair or currency symbol, depending on endpoint.",
-            required = false
-        )
-        @RequestParam symbol: String?,
+        @Parameter(name = "symbol", description = "Optional trading pair symbol.", required = false)
+        @RequestParam(name = "symbol", required = false) symbol: String?,
         @Parameter(
             name = "startTime",
             description = "Optional start timestamp in epoch milliseconds.",
             required = false
         )
-        @RequestParam startTime: Long?,
+        @RequestParam(name = "startTime", required = false) startTime: Long?,
         @Parameter(name = "endTime", description = "Optional end timestamp in epoch milliseconds.", required = false)
-        @RequestParam endTime: Long?,
+        @RequestParam(name = "endTime", required = false) endTime: Long?,
         @Parameter(
             name = "orderType",
-            description = "Order type. Allowed values: LIMIT, MARKET, STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER.",
+            description = "Optional order type filter. Allowed values: LIMIT_ORDER, MARKET_ORDER.",
             required = false
         )
-        @RequestParam orderType: MatchingOrderType?,
+        @RequestParam(name = "orderType", required = false) orderType: MatchingOrderType?,
         @Parameter(
             name = "direction",
-            description = "Order/trade direction. Allowed values: BUY, SELL.",
+            description = "Optional order direction filter. Allowed values: ASK, BID.",
             required = false
         )
-        @RequestParam direction: OrderDirection?,
+        @RequestParam(name = "direction", required = false) direction: OrderDirection?,
         @Parameter(hidden = true)
-        @CurrentSecurityContext securityContext: SecurityContext
+        @CurrentSecurityContext securityContext: SecurityContext,
     ): Long {
         return marketUserDataProxy.getOrderHistoryCount(
             securityContext.authentication.name,
@@ -165,7 +164,7 @@ Allowed values:
             startTime,
             endTime,
             orderType,
-            direction
+            direction,
         )
     }
 
@@ -173,22 +172,26 @@ Allowed values:
     @Operation(
         summary = "Get trade history",
         description = """GET /opex/v1/user/history/trade.
-Behavior: Optional filters include symbol, time range, direction, limit, and offset. `direction`: BUY, SELL.
 Security: Bearer user-token required. Requires authenticated user JWT.
+
+Behavior / Validation:
+- Optional filters are applied only when provided.
+- `startTime` and `endTime` are epoch milliseconds.
+- `limit` defaults to 10 and `offset` defaults to 0 when omitted.
+
 Allowed values:
-- orderType: LIMIT, MARKET, STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER.
-- direction: BUY, SELL.
-- withdraw status: REQUESTED, CREATED, ACCEPTED, CANCELED, REJECTED, DONE.
-- transaction category: TRADE, DEPOSIT, DEPOSIT_TO, WITHDRAW_FROM, WITHDRAW, FEE, SWAP, REFERRAL_COMMISSION, REFERRAL_KYC_REWARD, REFERENT_COMMISSION, KYC_ACCEPTED_REWARD, SYSTEM.""",
+- direction: ASK, BID.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
             ApiResponse(
                 responseCode = "200",
                 description = "Successful response.",
-                content = [Content(
-                    mediaType = "application/json",
-                    array = ArraySchema(schema = Schema(implementation = Trade::class))
-                )]
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        array = ArraySchema(schema = Schema(implementation = Trade::class))
+                    )
+                ]
             ),
             ApiResponse(
                 responseCode = "401",
@@ -198,55 +201,58 @@ Allowed values:
         ]
     )
     suspend fun getTradeHistory(
-        @Parameter(
-            name = "symbol",
-            description = "Trading pair or currency symbol, depending on endpoint.",
-            required = false
-        )
-        @RequestParam symbol: String?,
+        @Parameter(name = "symbol", description = "Optional trading pair symbol.", required = false)
+        @RequestParam(name = "symbol", required = false) symbol: String?,
         @Parameter(
             name = "startTime",
             description = "Optional start timestamp in epoch milliseconds.",
             required = false
         )
-        @RequestParam startTime: Long?,
+        @RequestParam(name = "startTime", required = false) startTime: Long?,
         @Parameter(name = "endTime", description = "Optional end timestamp in epoch milliseconds.", required = false)
-        @RequestParam endTime: Long?,
+        @RequestParam(name = "endTime", required = false) endTime: Long?,
         @Parameter(
             name = "direction",
-            description = "Order/trade direction. Allowed values: BUY, SELL.",
+            description = "Optional trade direction filter. Allowed values: ASK, BID.",
             required = false
         )
-        @RequestParam direction: OrderDirection?,
-        @Parameter(name = "limit", description = "Optional page size.", required = false)
-        @RequestParam limit: Int?,
-        @Parameter(name = "offset", description = "Optional page offset.", required = false)
-        @RequestParam offset: Int?,
+        @RequestParam(name = "direction", required = false) direction: OrderDirection?,
+        @Parameter(name = "limit", description = "Optional page size. Defaults to 10 when omitted.", required = false)
+        @RequestParam(name = "limit", required = false) limit: Int?,
+        @Parameter(name = "offset", description = "Optional page offset. Defaults to 0 when omitted.", required = false)
+        @RequestParam(name = "offset", required = false) offset: Int?,
         @Parameter(hidden = true)
-        @CurrentSecurityContext securityContext: SecurityContext
+        @CurrentSecurityContext securityContext: SecurityContext,
     ): List<Trade> {
         return marketUserDataProxy.getTradeHistory(
-            securityContext.authentication.name, symbol, startTime, endTime, direction, limit ?: 10, offset ?: 0
+            securityContext.authentication.name,
+            symbol,
+            startTime,
+            endTime,
+            direction,
+            limit ?: 10,
+            offset ?: 0
         )
     }
 
     @GetMapping("/history/trade/count")
     @Operation(
-        summary = "Get trade history count",
+        summary = "Count trade history",
         description = """GET /opex/v1/user/history/trade/count.
-Behavior: Same filters as trade history, but returns count only. `direction`: BUY, SELL.
 Security: Bearer user-token required. Requires authenticated user JWT.
+
+Behavior / Validation:
+- Optional filters are applied only when provided.
+- `startTime` and `endTime` are epoch milliseconds.
+
 Allowed values:
-- orderType: LIMIT, MARKET, STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER.
-- direction: BUY, SELL.
-- withdraw status: REQUESTED, CREATED, ACCEPTED, CANCELED, REJECTED, DONE.
-- transaction category: TRADE, DEPOSIT, DEPOSIT_TO, WITHDRAW_FROM, WITHDRAW, FEE, SWAP, REFERRAL_COMMISSION, REFERRAL_KYC_REWARD, REFERENT_COMMISSION, KYC_ACCEPTED_REWARD, SYSTEM.""",
+- direction: ASK, BID.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
             ApiResponse(
                 responseCode = "200",
                 description = "Successful response.",
-                content = [Content(mediaType = "application/json", schema = Schema(type = "integer", format = "int64"))]
+                content = [Content(mediaType = "application/json", schema = Schema(implementation = Long::class))]
             ),
             ApiResponse(
                 responseCode = "401",
@@ -256,31 +262,31 @@ Allowed values:
         ]
     )
     suspend fun getTradeHistoryCount(
-        @Parameter(
-            name = "symbol",
-            description = "Trading pair or currency symbol, depending on endpoint.",
-            required = false
-        )
-        @RequestParam symbol: String?,
+        @Parameter(name = "symbol", description = "Optional trading pair symbol.", required = false)
+        @RequestParam(name = "symbol", required = false) symbol: String?,
         @Parameter(
             name = "startTime",
             description = "Optional start timestamp in epoch milliseconds.",
             required = false
         )
-        @RequestParam startTime: Long?,
+        @RequestParam(name = "startTime", required = false) startTime: Long?,
         @Parameter(name = "endTime", description = "Optional end timestamp in epoch milliseconds.", required = false)
-        @RequestParam endTime: Long?,
+        @RequestParam(name = "endTime", required = false) endTime: Long?,
         @Parameter(
             name = "direction",
-            description = "Order/trade direction. Allowed values: BUY, SELL.",
+            description = "Optional trade direction filter. Allowed values: ASK, BID.",
             required = false
         )
-        @RequestParam direction: OrderDirection?,
+        @RequestParam(name = "direction", required = false) direction: OrderDirection?,
         @Parameter(hidden = true)
-        @CurrentSecurityContext securityContext: SecurityContext
+        @CurrentSecurityContext securityContext: SecurityContext,
     ): Long {
         return marketUserDataProxy.getTradeHistoryCount(
-            securityContext.authentication.name, symbol, startTime, endTime, direction
+            securityContext.authentication.name,
+            symbol,
+            startTime,
+            endTime,
+            direction
         )
     }
 
@@ -288,22 +294,28 @@ Allowed values:
     @Operation(
         summary = "Get withdraw history",
         description = """GET /opex/v1/user/history/withdraw.
-Behavior: Optional filters include currency, status, time range, pagination, and sorting. `status`: REQUESTED, CREATED, ACCEPTED, CANCELED, REJECTED, DONE.
 Security: Bearer user-token required. Requires authenticated user JWT.
+
+Behavior / Validation:
+- Optional filters are applied only when provided.
+- `startTime` and `endTime` are epoch milliseconds.
+- `limit` defaults to 10 and `offset` defaults to 0 when omitted.
+- `ascendingByTime` controls time sorting when supported.
+
 Allowed values:
-- orderType: LIMIT, MARKET, STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER.
-- direction: BUY, SELL.
-- withdraw status: REQUESTED, CREATED, ACCEPTED, CANCELED, REJECTED, DONE.
-- transaction category: TRADE, DEPOSIT, DEPOSIT_TO, WITHDRAW_FROM, WITHDRAW, FEE, SWAP, REFERRAL_COMMISSION, REFERRAL_KYC_REWARD, REFERENT_COMMISSION, KYC_ACCEPTED_REWARD, SYSTEM.""",
+- status: REQUESTED, CREATED, ACCEPTED, CANCELED, REJECTED, DONE.
+- transferMethod in response: CARD, SHEBA, IPG, EXCHANGE, MANUALLY, VOUCHER, MPG, REWARD.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
             ApiResponse(
                 responseCode = "200",
                 description = "Successful response.",
-                content = [Content(
-                    mediaType = "application/json",
-                    array = ArraySchema(schema = Schema(implementation = WithdrawResponse::class))
-                )]
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        array = ArraySchema(schema = Schema(implementation = WithdrawResponse::class))
+                    )
+                ]
             ),
             ApiResponse(
                 responseCode = "401",
@@ -313,34 +325,34 @@ Allowed values:
         ]
     )
     suspend fun getWithdrawHistory(
-        @Parameter(name = "currency", description = "Currency symbol, e.g. USDT.", required = false)
-        @RequestParam currency: String?,
+        @Parameter(name = "currency", description = "Optional currency symbol.", required = false)
+        @RequestParam(name = "currency", required = false) currency: String?,
         @Parameter(
             name = "status",
-            description = "Withdraw status. Allowed values: REQUESTED, CREATED, ACCEPTED, CANCELED, REJECTED, DONE.",
+            description = "Optional withdraw status. Allowed values: REQUESTED, CREATED, ACCEPTED, CANCELED, REJECTED, DONE.",
             required = false
         )
-        @RequestParam status: WithdrawStatus?,
+        @RequestParam(name = "status", required = false) status: WithdrawStatus?,
         @Parameter(
             name = "startTime",
             description = "Optional start timestamp in epoch milliseconds.",
             required = false
         )
-        @RequestParam startTime: Long?,
+        @RequestParam(name = "startTime", required = false) startTime: Long?,
         @Parameter(name = "endTime", description = "Optional end timestamp in epoch milliseconds.", required = false)
-        @RequestParam endTime: Long?,
-        @Parameter(name = "limit", description = "Optional page size.", required = false)
-        @RequestParam limit: Int?,
-        @Parameter(name = "offset", description = "Optional page offset.", required = false)
-        @RequestParam offset: Int?,
+        @RequestParam(name = "endTime", required = false) endTime: Long?,
+        @Parameter(name = "limit", description = "Optional page size. Defaults to 10 when omitted.", required = false)
+        @RequestParam(name = "limit", required = false) limit: Int?,
+        @Parameter(name = "offset", description = "Optional page offset. Defaults to 0 when omitted.", required = false)
+        @RequestParam(name = "offset", required = false) offset: Int?,
         @Parameter(
             name = "ascendingByTime",
             description = "Optional sorting flag. true sorts ascending by time; false sorts descending where supported.",
             required = false
         )
-        @RequestParam ascendingByTime: Boolean?,
+        @RequestParam(name = "ascendingByTime", required = false) ascendingByTime: Boolean?,
         @Parameter(hidden = true)
-        @CurrentSecurityContext securityContext: SecurityContext
+        @CurrentSecurityContext securityContext: SecurityContext,
     ): List<WithdrawResponse> {
         return walletProxy.getWithdrawTransactions(
             securityContext.jwtAuthentication().name,
@@ -351,27 +363,28 @@ Allowed values:
             endTime,
             limit ?: 10,
             offset ?: 0,
-            ascendingByTime
+            ascendingByTime,
         )
     }
 
     @GetMapping("/history/withdraw/count")
     @Operation(
-        summary = "Get withdraw history count",
+        summary = "Count withdraw history",
         description = """GET /opex/v1/user/history/withdraw/count.
-Behavior: Same filters as withdraw history, but returns count only. `status`: REQUESTED, CREATED, ACCEPTED, CANCELED, REJECTED, DONE.
 Security: Bearer user-token required. Requires authenticated user JWT.
+
+Behavior / Validation:
+- Optional filters are applied only when provided.
+- `startTime` and `endTime` are epoch milliseconds.
+
 Allowed values:
-- orderType: LIMIT, MARKET, STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER.
-- direction: BUY, SELL.
-- withdraw status: REQUESTED, CREATED, ACCEPTED, CANCELED, REJECTED, DONE.
-- transaction category: TRADE, DEPOSIT, DEPOSIT_TO, WITHDRAW_FROM, WITHDRAW, FEE, SWAP, REFERRAL_COMMISSION, REFERRAL_KYC_REWARD, REFERENT_COMMISSION, KYC_ACCEPTED_REWARD, SYSTEM.""",
+- status: REQUESTED, CREATED, ACCEPTED, CANCELED, REJECTED, DONE.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
             ApiResponse(
                 responseCode = "200",
                 description = "Successful response.",
-                content = [Content(mediaType = "application/json", schema = Schema(type = "integer", format = "int64"))]
+                content = [Content(mediaType = "application/json", schema = Schema(implementation = Long::class))]
             ),
             ApiResponse(
                 responseCode = "401",
@@ -381,24 +394,24 @@ Allowed values:
         ]
     )
     suspend fun getWithdrawHistoryCount(
-        @Parameter(name = "currency", description = "Currency symbol, e.g. USDT.", required = false)
-        @RequestParam currency: String?,
+        @Parameter(name = "currency", description = "Optional currency symbol.", required = false)
+        @RequestParam(name = "currency", required = false) currency: String?,
         @Parameter(
             name = "status",
-            description = "Withdraw status. Allowed values: REQUESTED, CREATED, ACCEPTED, CANCELED, REJECTED, DONE.",
+            description = "Optional withdraw status. Allowed values: REQUESTED, CREATED, ACCEPTED, CANCELED, REJECTED, DONE.",
             required = false
         )
-        @RequestParam status: WithdrawStatus?,
+        @RequestParam(name = "status", required = false) status: WithdrawStatus?,
         @Parameter(
             name = "startTime",
             description = "Optional start timestamp in epoch milliseconds.",
             required = false
         )
-        @RequestParam startTime: Long?,
+        @RequestParam(name = "startTime", required = false) startTime: Long?,
         @Parameter(name = "endTime", description = "Optional end timestamp in epoch milliseconds.", required = false)
-        @RequestParam endTime: Long?,
+        @RequestParam(name = "endTime", required = false) endTime: Long?,
         @Parameter(hidden = true)
-        @CurrentSecurityContext securityContext: SecurityContext
+        @CurrentSecurityContext securityContext: SecurityContext,
     ): Long {
         return walletProxy.getWithdrawTransactionsCount(
             securityContext.jwtAuthentication().name,
@@ -406,7 +419,7 @@ Allowed values:
             currency,
             status,
             startTime,
-            endTime
+            endTime,
         )
     }
 
@@ -414,22 +427,29 @@ Allowed values:
     @Operation(
         summary = "Get deposit history",
         description = """GET /opex/v1/user/history/deposit.
-Behavior: Optional filters include currency, time range, pagination, and sorting.
 Security: Bearer user-token required. Requires authenticated user JWT.
-Allowed values:
-- orderType: LIMIT, MARKET, STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER.
-- direction: BUY, SELL.
-- withdraw status: REQUESTED, CREATED, ACCEPTED, CANCELED, REJECTED, DONE.
-- transaction category: TRADE, DEPOSIT, DEPOSIT_TO, WITHDRAW_FROM, WITHDRAW, FEE, SWAP, REFERRAL_COMMISSION, REFERRAL_KYC_REWARD, REFERENT_COMMISSION, KYC_ACCEPTED_REWARD, SYSTEM.""",
+
+Behavior / Validation:
+- Optional filters are applied only when provided.
+- `startTime` and `endTime` are epoch milliseconds.
+- `limit` defaults to 10 and `offset` defaults to 0 when omitted.
+- `ascendingByTime` controls time sorting when supported.
+
+Allowed values in response:
+- status: PROCESSING, DONE, INVALID.
+- type: ON_CHAIN, OFF_CHAIN.
+- transferMethod: CARD, SHEBA, IPG, EXCHANGE, MANUALLY, VOUCHER, MPG, REWARD.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
             ApiResponse(
                 responseCode = "200",
                 description = "Successful response.",
-                content = [Content(
-                    mediaType = "application/json",
-                    array = ArraySchema(schema = Schema(implementation = DepositHistoryResponse::class))
-                )]
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        array = ArraySchema(schema = Schema(implementation = DepositHistoryResponse::class))
+                    )
+                ]
             ),
             ApiResponse(
                 responseCode = "401",
@@ -439,28 +459,28 @@ Allowed values:
         ]
     )
     suspend fun getDepositHistory(
-        @Parameter(name = "currency", description = "Currency symbol, e.g. USDT.", required = false)
-        @RequestParam currency: String?,
+        @Parameter(name = "currency", description = "Optional currency symbol.", required = false)
+        @RequestParam(name = "currency", required = false) currency: String?,
         @Parameter(
             name = "startTime",
             description = "Optional start timestamp in epoch milliseconds.",
             required = false
         )
-        @RequestParam startTime: Long?,
+        @RequestParam(name = "startTime", required = false) startTime: Long?,
         @Parameter(name = "endTime", description = "Optional end timestamp in epoch milliseconds.", required = false)
-        @RequestParam endTime: Long?,
-        @Parameter(name = "limit", description = "Optional page size.", required = false)
-        @RequestParam limit: Int?,
-        @Parameter(name = "offset", description = "Optional page offset.", required = false)
-        @RequestParam offset: Int?,
+        @RequestParam(name = "endTime", required = false) endTime: Long?,
+        @Parameter(name = "limit", description = "Optional page size. Defaults to 10 when omitted.", required = false)
+        @RequestParam(name = "limit", required = false) limit: Int?,
+        @Parameter(name = "offset", description = "Optional page offset. Defaults to 0 when omitted.", required = false)
+        @RequestParam(name = "offset", required = false) offset: Int?,
         @Parameter(
             name = "ascendingByTime",
             description = "Optional sorting flag. true sorts ascending by time; false sorts descending where supported.",
             required = false
         )
-        @RequestParam ascendingByTime: Boolean?,
+        @RequestParam(name = "ascendingByTime", required = false) ascendingByTime: Boolean?,
         @Parameter(hidden = true)
-        @CurrentSecurityContext securityContext: SecurityContext
+        @CurrentSecurityContext securityContext: SecurityContext,
     ): List<DepositHistoryResponse> {
         return walletProxy.getDepositTransactions(
             securityContext.jwtAuthentication().name,
@@ -470,26 +490,25 @@ Allowed values:
             endTime,
             limit ?: 10,
             offset ?: 0,
-            ascendingByTime
+            ascendingByTime,
         )
     }
 
     @GetMapping("/history/deposit/count")
     @Operation(
-        summary = "Get deposit history count",
+        summary = "Count deposit history",
         description = """GET /opex/v1/user/history/deposit/count.
 Security: Bearer user-token required. Requires authenticated user JWT.
-Allowed values:
-- orderType: LIMIT, MARKET, STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER.
-- direction: BUY, SELL.
-- withdraw status: REQUESTED, CREATED, ACCEPTED, CANCELED, REJECTED, DONE.
-- transaction category: TRADE, DEPOSIT, DEPOSIT_TO, WITHDRAW_FROM, WITHDRAW, FEE, SWAP, REFERRAL_COMMISSION, REFERRAL_KYC_REWARD, REFERENT_COMMISSION, KYC_ACCEPTED_REWARD, SYSTEM.""",
+
+Behavior / Validation:
+- Optional filters are applied only when provided.
+- `startTime` and `endTime` are epoch milliseconds.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
             ApiResponse(
                 responseCode = "200",
                 description = "Successful response.",
-                content = [Content(mediaType = "application/json", schema = Schema(type = "integer", format = "int64"))]
+                content = [Content(mediaType = "application/json", schema = Schema(implementation = Long::class))]
             ),
             ApiResponse(
                 responseCode = "401",
@@ -499,25 +518,25 @@ Allowed values:
         ]
     )
     suspend fun getDepositHistoryCount(
-        @Parameter(name = "currency", description = "Currency symbol, e.g. USDT.", required = false)
-        @RequestParam currency: String?,
+        @Parameter(name = "currency", description = "Optional currency symbol.", required = false)
+        @RequestParam(name = "currency", required = false) currency: String?,
         @Parameter(
             name = "startTime",
             description = "Optional start timestamp in epoch milliseconds.",
             required = false
         )
-        @RequestParam startTime: Long?,
+        @RequestParam(name = "startTime", required = false) startTime: Long?,
         @Parameter(name = "endTime", description = "Optional end timestamp in epoch milliseconds.", required = false)
-        @RequestParam endTime: Long?,
+        @RequestParam(name = "endTime", required = false) endTime: Long?,
         @Parameter(hidden = true)
-        @CurrentSecurityContext securityContext: SecurityContext
+        @CurrentSecurityContext securityContext: SecurityContext,
     ): Long {
         return walletProxy.getDepositTransactionsCount(
             securityContext.jwtAuthentication().name,
             securityContext.jwtAuthentication().tokenValue(),
             currency,
             startTime,
-            endTime
+            endTime,
         )
     }
 
@@ -525,22 +544,27 @@ Allowed values:
     @Operation(
         summary = "Get transaction history",
         description = """GET /opex/v1/user/history/transaction.
-Behavior: Optional filters include currency, category, time range, pagination, and sorting. `category`: TRADE, DEPOSIT, DEPOSIT_TO, WITHDRAW_FROM, WITHDRAW, FEE, SWAP, REFERRAL_COMMISSION, REFERRAL_KYC_REWARD, REFERENT_COMMISSION, KYC_ACCEPTED_REWARD, SYSTEM.
 Security: Bearer user-token required. Requires authenticated user JWT.
+
+Behavior / Validation:
+- Optional filters are applied only when provided.
+- `startTime` and `endTime` are epoch milliseconds.
+- `limit` defaults to 10 and `offset` defaults to 0 when omitted.
+- `ascendingByTime` controls time sorting when supported.
+
 Allowed values:
-- orderType: LIMIT, MARKET, STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER.
-- direction: BUY, SELL.
-- withdraw status: REQUESTED, CREATED, ACCEPTED, CANCELED, REJECTED, DONE.
-- transaction category: TRADE, DEPOSIT, DEPOSIT_TO, WITHDRAW_FROM, WITHDRAW, FEE, SWAP, REFERRAL_COMMISSION, REFERRAL_KYC_REWARD, REFERENT_COMMISSION, KYC_ACCEPTED_REWARD, SYSTEM.""",
+- category: TRADE, DEPOSIT, DEPOSIT_TO, WITHDRAW_FROM, WITHDRAW, FEE, SWAP, REFERRAL_COMMISSION, REFERRAL_KYC_REWARD, REFERENT_COMMISSION, KYC_ACCEPTED_REWARD, SYSTEM.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
             ApiResponse(
                 responseCode = "200",
                 description = "Successful response.",
-                content = [Content(
-                    mediaType = "application/json",
-                    array = ArraySchema(schema = Schema(implementation = UserTransactionHistory::class))
-                )]
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        array = ArraySchema(schema = Schema(implementation = UserTransactionHistory::class))
+                    )
+                ]
             ),
             ApiResponse(
                 responseCode = "401",
@@ -550,34 +574,34 @@ Allowed values:
         ]
     )
     suspend fun getTransactionHistory(
-        @Parameter(name = "currency", description = "Currency symbol, e.g. USDT.", required = false)
-        @RequestParam currency: String?,
+        @Parameter(name = "currency", description = "Optional currency symbol.", required = false)
+        @RequestParam(name = "currency", required = false) currency: String?,
         @Parameter(
             name = "category",
-            description = "Transaction category. Allowed values: TRADE, DEPOSIT, DEPOSIT_TO, WITHDRAW_FROM, WITHDRAW, FEE, SWAP, REFERRAL_COMMISSION, REFERRAL_KYC_REWARD, REFERENT_COMMISSION, KYC_ACCEPTED_REWARD, SYSTEM.",
+            description = "Optional transaction category. Allowed values: TRADE, DEPOSIT, DEPOSIT_TO, WITHDRAW_FROM, WITHDRAW, FEE, SWAP, REFERRAL_COMMISSION, REFERRAL_KYC_REWARD, REFERENT_COMMISSION, KYC_ACCEPTED_REWARD, SYSTEM.",
             required = false
         )
-        @RequestParam category: UserTransactionCategory?,
+        @RequestParam(name = "category", required = false) category: UserTransactionCategory?,
         @Parameter(
             name = "startTime",
             description = "Optional start timestamp in epoch milliseconds.",
             required = false
         )
-        @RequestParam startTime: Long?,
+        @RequestParam(name = "startTime", required = false) startTime: Long?,
         @Parameter(name = "endTime", description = "Optional end timestamp in epoch milliseconds.", required = false)
-        @RequestParam endTime: Long?,
-        @Parameter(name = "limit", description = "Optional page size.", required = false)
-        @RequestParam limit: Int?,
-        @Parameter(name = "offset", description = "Optional page offset.", required = false)
-        @RequestParam offset: Int?,
+        @RequestParam(name = "endTime", required = false) endTime: Long?,
+        @Parameter(name = "limit", description = "Optional page size. Defaults to 10 when omitted.", required = false)
+        @RequestParam(name = "limit", required = false) limit: Int?,
+        @Parameter(name = "offset", description = "Optional page offset. Defaults to 0 when omitted.", required = false)
+        @RequestParam(name = "offset", required = false) offset: Int?,
         @Parameter(
             name = "ascendingByTime",
             description = "Optional sorting flag. true sorts ascending by time; false sorts descending where supported.",
             required = false
         )
-        @RequestParam ascendingByTime: Boolean?,
+        @RequestParam(name = "ascendingByTime", required = false) ascendingByTime: Boolean?,
         @Parameter(hidden = true)
-        @CurrentSecurityContext securityContext: SecurityContext
+        @CurrentSecurityContext securityContext: SecurityContext,
     ): List<UserTransactionHistory> {
         return walletProxy.getTransactions(
             securityContext.jwtAuthentication().name,
@@ -588,27 +612,28 @@ Allowed values:
             endTime,
             limit ?: 10,
             offset ?: 0,
-            ascendingByTime
+            ascendingByTime,
         )
     }
 
     @GetMapping("/history/transaction/count")
     @Operation(
-        summary = "Get transaction history count",
+        summary = "Count transaction history",
         description = """GET /opex/v1/user/history/transaction/count.
-Behavior: Same filters as transaction history, but returns count only. `category`: TRADE, DEPOSIT, DEPOSIT_TO, WITHDRAW_FROM, WITHDRAW, FEE, SWAP, REFERRAL_COMMISSION, REFERRAL_KYC_REWARD, REFERENT_COMMISSION, KYC_ACCEPTED_REWARD, SYSTEM.
 Security: Bearer user-token required. Requires authenticated user JWT.
+
+Behavior / Validation:
+- Optional filters are applied only when provided.
+- `startTime` and `endTime` are epoch milliseconds.
+
 Allowed values:
-- orderType: LIMIT, MARKET, STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER.
-- direction: BUY, SELL.
-- withdraw status: REQUESTED, CREATED, ACCEPTED, CANCELED, REJECTED, DONE.
-- transaction category: TRADE, DEPOSIT, DEPOSIT_TO, WITHDRAW_FROM, WITHDRAW, FEE, SWAP, REFERRAL_COMMISSION, REFERRAL_KYC_REWARD, REFERENT_COMMISSION, KYC_ACCEPTED_REWARD, SYSTEM.""",
+- category: TRADE, DEPOSIT, DEPOSIT_TO, WITHDRAW_FROM, WITHDRAW, FEE, SWAP, REFERRAL_COMMISSION, REFERRAL_KYC_REWARD, REFERENT_COMMISSION, KYC_ACCEPTED_REWARD, SYSTEM.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
             ApiResponse(
                 responseCode = "200",
                 description = "Successful response.",
-                content = [Content(mediaType = "application/json", schema = Schema(type = "integer", format = "int64"))]
+                content = [Content(mediaType = "application/json", schema = Schema(implementation = Long::class))]
             ),
             ApiResponse(
                 responseCode = "401",
@@ -618,24 +643,24 @@ Allowed values:
         ]
     )
     suspend fun getTransactionHistoryCount(
-        @Parameter(name = "currency", description = "Currency symbol, e.g. USDT.", required = false)
-        @RequestParam currency: String?,
+        @Parameter(name = "currency", description = "Optional currency symbol.", required = false)
+        @RequestParam(name = "currency", required = false) currency: String?,
         @Parameter(
             name = "category",
-            description = "Transaction category. Allowed values: TRADE, DEPOSIT, DEPOSIT_TO, WITHDRAW_FROM, WITHDRAW, FEE, SWAP, REFERRAL_COMMISSION, REFERRAL_KYC_REWARD, REFERENT_COMMISSION, KYC_ACCEPTED_REWARD, SYSTEM.",
+            description = "Optional transaction category. Allowed values: TRADE, DEPOSIT, DEPOSIT_TO, WITHDRAW_FROM, WITHDRAW, FEE, SWAP, REFERRAL_COMMISSION, REFERRAL_KYC_REWARD, REFERENT_COMMISSION, KYC_ACCEPTED_REWARD, SYSTEM.",
             required = false
         )
-        @RequestParam category: UserTransactionCategory?,
+        @RequestParam(name = "category", required = false) category: UserTransactionCategory?,
         @Parameter(
             name = "startTime",
             description = "Optional start timestamp in epoch milliseconds.",
             required = false
         )
-        @RequestParam startTime: Long?,
+        @RequestParam(name = "startTime", required = false) startTime: Long?,
         @Parameter(name = "endTime", description = "Optional end timestamp in epoch milliseconds.", required = false)
-        @RequestParam endTime: Long?,
+        @RequestParam(name = "endTime", required = false) endTime: Long?,
         @Parameter(hidden = true)
-        @CurrentSecurityContext securityContext: SecurityContext
+        @CurrentSecurityContext securityContext: SecurityContext,
     ): Long {
         return walletProxy.getTransactionsCount(
             securityContext.jwtAuthentication().name,
@@ -643,29 +668,31 @@ Allowed values:
             currency,
             category,
             startTime,
-            endTime
+            endTime,
         )
     }
 
     @GetMapping("/summary/trade")
     @Operation(
-        summary = "Get trade transaction summary",
+        summary = "Get trade summary",
         description = """GET /opex/v1/user/summary/trade.
 Security: Bearer user-token required. Requires authenticated user JWT.
-Allowed values:
-- orderType: LIMIT, MARKET, STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER.
-- direction: BUY, SELL.
-- withdraw status: REQUESTED, CREATED, ACCEPTED, CANCELED, REJECTED, DONE.
-- transaction category: TRADE, DEPOSIT, DEPOSIT_TO, WITHDRAW_FROM, WITHDRAW, FEE, SWAP, REFERRAL_COMMISSION, REFERRAL_KYC_REWARD, REFERENT_COMMISSION, KYC_ACCEPTED_REWARD, SYSTEM.""",
+
+Behavior / Validation:
+- Optional filters are applied only when provided.
+- `startTime` and `endTime` are epoch milliseconds.
+- `limit` limits the number of summary rows when supported.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
             ApiResponse(
                 responseCode = "200",
                 description = "Successful response.",
-                content = [Content(
-                    mediaType = "application/json",
-                    array = ArraySchema(schema = Schema(implementation = TransactionSummary::class))
-                )]
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        array = ArraySchema(schema = Schema(implementation = TransactionSummary::class))
+                    )
+                ]
             ),
             ApiResponse(
                 responseCode = "401",
@@ -680,20 +707,20 @@ Allowed values:
             description = "Optional start timestamp in epoch milliseconds.",
             required = false
         )
-        @RequestParam startTime: Long?,
+        @RequestParam(name = "startTime", required = false) startTime: Long?,
         @Parameter(name = "endTime", description = "Optional end timestamp in epoch milliseconds.", required = false)
-        @RequestParam endTime: Long?,
-        @Parameter(name = "limit", description = "Optional page size.", required = false)
-        @RequestParam limit: Int?,
+        @RequestParam(name = "endTime", required = false) endTime: Long?,
+        @Parameter(name = "limit", description = "Optional number of summary rows.", required = false)
+        @RequestParam(name = "limit", required = false) limit: Int?,
         @Parameter(hidden = true)
-        @CurrentSecurityContext securityContext: SecurityContext
+        @CurrentSecurityContext securityContext: SecurityContext,
     ): List<TransactionSummary> {
         return walletProxy.getUserTradeTransactionSummary(
             securityContext.jwtAuthentication().name,
             securityContext.jwtAuthentication().tokenValue(),
             startTime,
             endTime,
-            limit
+            limit,
         )
     }
 
@@ -702,20 +729,22 @@ Allowed values:
         summary = "Get deposit summary",
         description = """GET /opex/v1/user/summary/deposit.
 Security: Bearer user-token required. Requires authenticated user JWT.
-Allowed values:
-- orderType: LIMIT, MARKET, STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER.
-- direction: BUY, SELL.
-- withdraw status: REQUESTED, CREATED, ACCEPTED, CANCELED, REJECTED, DONE.
-- transaction category: TRADE, DEPOSIT, DEPOSIT_TO, WITHDRAW_FROM, WITHDRAW, FEE, SWAP, REFERRAL_COMMISSION, REFERRAL_KYC_REWARD, REFERENT_COMMISSION, KYC_ACCEPTED_REWARD, SYSTEM.""",
+
+Behavior / Validation:
+- Optional filters are applied only when provided.
+- `startTime` and `endTime` are epoch milliseconds.
+- `limit` limits the number of summary rows when supported.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
             ApiResponse(
                 responseCode = "200",
                 description = "Successful response.",
-                content = [Content(
-                    mediaType = "application/json",
-                    array = ArraySchema(schema = Schema(implementation = TransactionSummary::class))
-                )]
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        array = ArraySchema(schema = Schema(implementation = TransactionSummary::class))
+                    )
+                ]
             ),
             ApiResponse(
                 responseCode = "401",
@@ -730,20 +759,20 @@ Allowed values:
             description = "Optional start timestamp in epoch milliseconds.",
             required = false
         )
-        @RequestParam startTime: Long?,
+        @RequestParam(name = "startTime", required = false) startTime: Long?,
         @Parameter(name = "endTime", description = "Optional end timestamp in epoch milliseconds.", required = false)
-        @RequestParam endTime: Long?,
-        @Parameter(name = "limit", description = "Optional page size.", required = false)
-        @RequestParam limit: Int?,
+        @RequestParam(name = "endTime", required = false) endTime: Long?,
+        @Parameter(name = "limit", description = "Optional number of summary rows.", required = false)
+        @RequestParam(name = "limit", required = false) limit: Int?,
         @Parameter(hidden = true)
-        @CurrentSecurityContext securityContext: SecurityContext
+        @CurrentSecurityContext securityContext: SecurityContext,
     ): List<TransactionSummary> {
         return walletProxy.getUserDepositSummary(
             securityContext.jwtAuthentication().name,
             securityContext.jwtAuthentication().tokenValue(),
             startTime,
             endTime,
-            limit
+            limit,
         )
     }
 
@@ -752,20 +781,22 @@ Allowed values:
         summary = "Get withdraw summary",
         description = """GET /opex/v1/user/summary/withdraw.
 Security: Bearer user-token required. Requires authenticated user JWT.
-Allowed values:
-- orderType: LIMIT, MARKET, STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER.
-- direction: BUY, SELL.
-- withdraw status: REQUESTED, CREATED, ACCEPTED, CANCELED, REJECTED, DONE.
-- transaction category: TRADE, DEPOSIT, DEPOSIT_TO, WITHDRAW_FROM, WITHDRAW, FEE, SWAP, REFERRAL_COMMISSION, REFERRAL_KYC_REWARD, REFERENT_COMMISSION, KYC_ACCEPTED_REWARD, SYSTEM.""",
+
+Behavior / Validation:
+- Optional filters are applied only when provided.
+- `startTime` and `endTime` are epoch milliseconds.
+- `limit` limits the number of summary rows when supported.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
             ApiResponse(
                 responseCode = "200",
                 description = "Successful response.",
-                content = [Content(
-                    mediaType = "application/json",
-                    array = ArraySchema(schema = Schema(implementation = TransactionSummary::class))
-                )]
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        array = ArraySchema(schema = Schema(implementation = TransactionSummary::class))
+                    )
+                ]
             ),
             ApiResponse(
                 responseCode = "401",
@@ -780,20 +811,20 @@ Allowed values:
             description = "Optional start timestamp in epoch milliseconds.",
             required = false
         )
-        @RequestParam startTime: Long?,
+        @RequestParam(name = "startTime", required = false) startTime: Long?,
         @Parameter(name = "endTime", description = "Optional end timestamp in epoch milliseconds.", required = false)
-        @RequestParam endTime: Long?,
-        @Parameter(name = "limit", description = "Optional page size.", required = false)
-        @RequestParam limit: Int?,
+        @RequestParam(name = "endTime", required = false) endTime: Long?,
+        @Parameter(name = "limit", description = "Optional number of summary rows.", required = false)
+        @RequestParam(name = "limit", required = false) limit: Int?,
         @Parameter(hidden = true)
-        @CurrentSecurityContext securityContext: SecurityContext
+        @CurrentSecurityContext securityContext: SecurityContext,
     ): List<TransactionSummary> {
         return walletProxy.getUserWithdrawSummary(
             securityContext.jwtAuthentication().name,
             securityContext.jwtAuthentication().tokenValue(),
             startTime,
             endTime,
-            limit
+            limit,
         )
     }
 
@@ -801,22 +832,33 @@ Allowed values:
     @Operation(
         summary = "Get swap history",
         description = """POST /opex/v1/user/history/swap.
-Behavior: Request body contains swap history filters. Pagination and time range are handled by the request schema.
 Security: Bearer user-token required. Requires authenticated user JWT.
+
+Behavior / Validation:
+- Optional filters are applied only when provided.
+- `startTime` and `endTime` are epoch milliseconds.
+- `limit` defaults to 10 and `offset` defaults to 0 when omitted.
+
 Allowed values:
-- orderType: LIMIT, MARKET, STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER.
-- direction: BUY, SELL.
-- withdraw status: REQUESTED, CREATED, ACCEPTED, CANCELED, REJECTED, DONE.
-- transaction category: TRADE, DEPOSIT, DEPOSIT_TO, WITHDRAW_FROM, WITHDRAW, FEE, SWAP, REFERRAL_COMMISSION, REFERRAL_KYC_REWARD, REFERENT_COMMISSION, KYC_ACCEPTED_REWARD, SYSTEM.""",
+- status: Created, Expired, Committed.""",
         security = [SecurityRequirement(name = "bearerAuth")],
+        requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
+            required = true,
+            content = [Content(
+                mediaType = "application/json",
+                schema = Schema(implementation = UserSwapTransactionRequest::class)
+            )]
+        ),
         responses = [
             ApiResponse(
                 responseCode = "200",
                 description = "Successful response.",
-                content = [Content(
-                    mediaType = "application/json",
-                    array = ArraySchema(schema = Schema(implementation = SwapResponse::class))
-                )]
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        array = ArraySchema(schema = Schema(implementation = SwapResponse::class))
+                    )
+                ]
             ),
             ApiResponse(
                 responseCode = "401",
@@ -835,21 +877,29 @@ Allowed values:
 
     @PostMapping("/history/swap/count")
     @Operation(
-        summary = "Get swap history count",
+        summary = "Count swap history",
         description = """POST /opex/v1/user/history/swap/count.
-Behavior: Same filter body as swap history, but returns count only.
 Security: Bearer user-token required. Requires authenticated user JWT.
+
+Behavior / Validation:
+- Optional filters are applied only when provided.
+- `startTime` and `endTime` are epoch milliseconds.
+
 Allowed values:
-- orderType: LIMIT, MARKET, STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER.
-- direction: BUY, SELL.
-- withdraw status: REQUESTED, CREATED, ACCEPTED, CANCELED, REJECTED, DONE.
-- transaction category: TRADE, DEPOSIT, DEPOSIT_TO, WITHDRAW_FROM, WITHDRAW, FEE, SWAP, REFERRAL_COMMISSION, REFERRAL_KYC_REWARD, REFERENT_COMMISSION, KYC_ACCEPTED_REWARD, SYSTEM.""",
+- status: Created, Expired, Committed.""",
         security = [SecurityRequirement(name = "bearerAuth")],
+        requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
+            required = true,
+            content = [Content(
+                mediaType = "application/json",
+                schema = Schema(implementation = UserSwapTransactionRequest::class)
+            )]
+        ),
         responses = [
             ApiResponse(
                 responseCode = "200",
                 description = "Successful response.",
-                content = [Content(mediaType = "application/json", schema = Schema(type = "integer", format = "int64"))]
+                content = [Content(mediaType = "application/json", schema = Schema(implementation = Long::class))]
             ),
             ApiResponse(
                 responseCode = "401",
