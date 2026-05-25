@@ -2,7 +2,6 @@ package co.nilin.opex.api.core.inout
 
 data class UserSwapTransactionRequest(
     val userId: String? = null,
-    val currency: String?,
     val sourceSymbol: String?,
     val destSymbol: String?,
     val startTime: Long? = null,

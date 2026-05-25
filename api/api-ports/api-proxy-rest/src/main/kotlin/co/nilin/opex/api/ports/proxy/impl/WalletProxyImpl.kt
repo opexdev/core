@@ -421,7 +421,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
         }
     }
 
-    override suspend fun getSwapTransactions(token: String, request: UserTransactionRequest): List<SwapResponse> {
+    override suspend fun getSwapTransactions(token: String, request: UserSwapTransactionRequest): List<SwapResponse> {
         return webClient.post()
             .uri("$baseUrl/v1/swap/history")
             .accept(MediaType.APPLICATION_JSON)
@@ -436,7 +436,7 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
 
     override suspend fun getSwapTransactionsCount(
         token: String,
-        request: UserTransactionRequest
+        request: UserSwapTransactionRequest
     ): Long {
         return webClient.post()
             .uri("$baseUrl/v1/swap/history/count")
