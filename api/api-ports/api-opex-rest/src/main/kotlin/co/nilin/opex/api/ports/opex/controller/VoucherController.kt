@@ -22,7 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 
 @RestController
 @RequestMapping("/opex/v1/voucher")
-@Tag(name = "Voucher", description = "Authenticated voucher submission operations.")
+@Tag(name = "Voucher", description = "Authenticated voucher submission operations.\n\nSource of values:\n- code is a server-issued voucher code.")
 class VoucherController(private val walletProxy: WalletProxy) {
 
     @PutMapping("/{code}")
