@@ -28,7 +28,9 @@ class DepositAdminController(
     @Operation(
         summary = "Deposit manually",
         description = """POST /opex/v1/admin/deposit/manually/{amount}_{symbol}/{receiverUuid}.
-Security: Bearer admin-token required. Required authority: ROLE_admin.""",
+Security: Bearer admin-token required. Required authority: ROLE_admin.
+Allowed values:
+- receiverWalletType/sourceWalletType where used: MAIN, EXCHANGE, CASHOUT.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
             ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", schema = Schema(implementation = TransferResult::class))]),
