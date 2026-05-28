@@ -68,7 +68,6 @@ jobs:
           echo "PASSWORD=$PASSWORD" >> $GITHUB_OUTPUT
           echo "ENV_PATH=$ENV_PATH" >> $GITHUB_OUTPUT
           echo "SSH_PORT=$SSH_PORT" >> $GITHUB_OUTPUT
-
       - name: Decrypt data
         id: decrypt_data
 
