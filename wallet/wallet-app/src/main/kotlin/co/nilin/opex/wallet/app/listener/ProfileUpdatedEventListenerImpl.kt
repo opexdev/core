@@ -19,8 +19,7 @@ class ProfileUpdatedEventListenerImpl(private val walletOwnerManager: WalletOwne
         if (!event.firstName.isNullOrBlank() && !event.lastName.isNullOrBlank()) {
             runBlocking {
                 logger.info("Incoming ProfileUpdated event $event")
-                walletOwnerManager.updateWalletOwnerName(event.userId, "${event.firstName} ${event.lastName}")
-
+                walletOwnerManager.updateWalletOwnerName(event.userId, "${event.firstName} ${event.lastName}", event.identifier)
             }
         } else Unit
 }

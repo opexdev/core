@@ -1,17 +1,18 @@
 package co.nilin.opex.wallet.app.controller
 
 
+import co.nilin.opex.common.utils.SignVerifier
 import co.nilin.opex.wallet.app.dto.DepositHistoryRequest
 import co.nilin.opex.wallet.app.service.DepositService
 import co.nilin.opex.wallet.app.utils.asLocalDateTime
-import co.nilin.opex.wallet.core.inout.DepositResponse
-import co.nilin.opex.wallet.core.inout.TransactionSummary
-import co.nilin.opex.wallet.core.inout.TransferResult
+import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.DepositType
 import co.nilin.opex.wallet.core.model.WalletType
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
+import org.springframework.core.io.ResourceLoader
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
@@ -24,6 +25,8 @@ import java.time.ZoneId
 @RequestMapping
 class DepositController(
     private val depositService: DepositService,
+    private val resourceLoader: ResourceLoader,
+    private val mapper: ObjectMapper,
 ) {
 
     @PostMapping("/v1/deposit/history")
@@ -113,6 +116,22 @@ class DepositController(
             endTime?.asLocalDateTime(),
             limit,
         )
+    }
+
+    @PostMapping("/v1/deposit/webhook")
+    suspend fun submit(
+        @RequestBody request: DepositWebhookRequest,
+        @RequestHeader(DepositWebhookHeaders.SIGNATURE) signature: String
+    ): DepositWebhookResponse {
+        val publicKeyRawStr = resourceLoader.getResource("classpath:scanner-public.pem").inputStream
+            .readAllBytes()
+            .toString(Charsets.UTF_8)
+        SignVerifier().verify("", publicKeyRawStr, mapper.writeValueAsString(request), signature)
+        return depositService.processExternalDeposit(request)
+    }
+
+    object DepositWebhookHeaders {
+        const val SIGNATURE = "X-Fiat-Scanner-Signature"
     }
 }
 

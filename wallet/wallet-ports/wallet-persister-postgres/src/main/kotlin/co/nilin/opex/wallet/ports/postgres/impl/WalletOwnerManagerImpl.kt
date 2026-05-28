@@ -131,8 +131,22 @@ class WalletOwnerManagerImpl(
         return walletOwnerRepository.findByUuid(uuid).awaitFirstOrNull()?.toPlainObject()
     }
 
-    override suspend fun createWalletOwner(uuid: String, title: String, userLevel: String): WalletOwner {
-        return walletOwnerRepository.save(WalletOwnerModel(null, uuid, title, userLevel)).awaitFirst().toPlainObject()
+    override suspend fun createWalletOwner(
+        uuid: String,
+        title: String,
+        userLevel: String,
+        externalIdentifier: String?
+    ): WalletOwner {
+        return walletOwnerRepository.save(
+            WalletOwnerModel(
+                null,
+                uuid,
+                title,
+                userLevel,
+                externalIdentifier = externalIdentifier
+            )
+        )
+            .awaitFirst().toPlainObject()
     }
 
     override suspend fun findAllWalletOwners(): List<WalletOwner> {
@@ -152,10 +166,11 @@ class WalletOwnerManagerImpl(
             }
     }
 
-    override suspend fun updateWalletOwnerName(uuid: String, name: String) {
+    override suspend fun updateWalletOwnerName(uuid: String, name: String, externalIdentifier: String?) {
         val owner = walletOwnerRepository.findByUuid(uuid).awaitFirstOrNull()
         if (owner != null) {
             owner.title = owner.title.split('|')[0] + "|" + name
+            owner.externalIdentifier = externalIdentifier
             walletOwnerRepository.save(owner).awaitFirstOrNull()
                 ?: logger.warn("Failed to update wallet owner name for UUID: $uuid")
         } else {

@@ -107,6 +107,41 @@ class DepositService(
             transferMethod = TransferMethod.MANUALLY
         )
     }
+    // -------------------------------------------------------------------------
+    // Manual Deposit
+    // -------------------------------------------------------------------------
+
+    @Transactional
+    suspend fun processExternalDeposit(
+        request: DepositWebhookRequest
+    ): DepositWebhookResponse {
+
+        logger.info(
+            "New incoming deposit request : $ to ${request.externalIdentifier} on ${request.symbol} at ${LocalDateTime.now()}"
+        )
+
+        val receiverUuid = walletOwnerManager.findWalletOwnerByExternalIdentifier(request.externalIdentifier)?.uuid
+            ?: throw OpexError.BadRequest.exception("Identifier ${request.externalIdentifier} not fount")
+
+         with(request) {
+            deposit(
+                symbol = symbol,
+                receiverUuid = receiverUuid,
+                receiverWalletType = WalletType.MAIN,
+                senderUuid = walletOwnerManager.systemUuid,
+                amount = amount,
+                description = "Transfer to $depositNumber at $date, payId: $externalIdentifier",
+                transferRef = referenceNumber,
+                chain = null,
+                attachment = null,
+                depositType = DepositType.OFF_CHAIN,
+                gatewayUuid = null,
+                transferMethod = TransferMethod.SHEBA
+            )
+        }
+        return DepositWebhookResponse(request.referenceNumber, DepositStatus.DONE.name, false)
+    }
+
 
     // -------------------------------------------------------------------------
     // Core Deposit

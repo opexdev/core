@@ -1110,5 +1110,23 @@ class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
             }
             .awaitBodilessEntity()
     }
+    override suspend fun submitDepositWebhook(
+        request: DepositWebhookRequest,
+        signature: String
+    ): DepositWebhookResponse {
+        logger.info("proxying deposit webhook to wallet")
+
+        return withContext(ProxyDispatchers.wallet) {
+            webClient.post()
+                .uri("$baseUrl/v1/deposit/webhook")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .header(DepositWebhookHeaders.SIGNATURE, signature)
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono<DepositWebhookResponse>()
+                .awaitSingle()
+        }
+    }
 }
 
