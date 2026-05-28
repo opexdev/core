@@ -12,13 +12,13 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
-import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
+import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody
 
 @RestController
 @RequestMapping("/opex/v1/admin")
@@ -156,7 +156,8 @@ Response body: CurrencyGatewayCommand.
                             discriminatorProperty = "type"
                         ),
                         examples = [
-                            ExampleObject(name = "OffChain gateway response", value = """
+                            ExampleObject(
+                                name = "OffChain gateway response", value = """
 {
   "type": "OffChain",
   "currencySymbol": "IRT",
@@ -175,8 +176,10 @@ Response body: CurrencyGatewayCommand.
   "displayOrder": 1,
   "transferMethod": "CARD"
 }
-                            """),
-                            ExampleObject(name = "OnChain native gateway response", value = """
+                            """
+                            ),
+                            ExampleObject(
+                                name = "OnChain native gateway response", value = """
 {
   "type": "OnChain",
   "currencySymbol": "BTC",
@@ -200,8 +203,10 @@ Response body: CurrencyGatewayCommand.
   "decimal": 8,
   "chain": "bitcoin"
 }
-                            """),
-                            ExampleObject(name = "OnChain token gateway response", value = """
+                            """
+                            ),
+                            ExampleObject(
+                                name = "OnChain token gateway response", value = """
 {
   "type": "OnChain",
   "currencySymbol": "USDT",
@@ -225,7 +230,8 @@ Response body: CurrencyGatewayCommand.
   "decimal": 6,
   "chain": "tron"
 }
-                            """)
+                            """
+                            )
                         ]
                     )
                 ]
@@ -269,9 +275,13 @@ Response body: CurrencyGatewayCommand.
             content = [
                 Content(
                     mediaType = "application/json",
-                    schema = Schema(oneOf = [OffChainGatewayCommand::class, OnChainGatewayCommand::class], discriminatorProperty = "type"),
+                    schema = Schema(
+                        oneOf = [OffChainGatewayCommand::class, OnChainGatewayCommand::class],
+                        discriminatorProperty = "type"
+                    ),
                     examples = [
-                        ExampleObject(name = "OffChain gateway", summary = "OffChainGatewayCommand", value = """
+                        ExampleObject(
+                            name = "OffChain gateway", summary = "OffChainGatewayCommand", value = """
 {
   "type": "OffChain",
   "currencySymbol": "IRT",
@@ -290,8 +300,12 @@ Response body: CurrencyGatewayCommand.
   "displayOrder": 1,
   "transferMethod": "CARD"
 }
-                        """),
-                        ExampleObject(name = "OnChain native gateway", summary = "OnChainGatewayCommand with isToken=false", value = """
+                        """
+                        ),
+                        ExampleObject(
+                            name = "OnChain native gateway",
+                            summary = "OnChainGatewayCommand with isToken=false",
+                            value = """
 {
   "type": "OnChain",
   "currencySymbol": "BTC",
@@ -315,8 +329,12 @@ Response body: CurrencyGatewayCommand.
   "decimal": 8,
   "chain": "bitcoin"
 }
-                        """),
-                        ExampleObject(name = "OnChain token gateway", summary = "OnChainGatewayCommand with isToken=true", value = """
+                        """
+                        ),
+                        ExampleObject(
+                            name = "OnChain token gateway",
+                            summary = "OnChainGatewayCommand with isToken=true",
+                            value = """
 {
   "type": "OnChain",
   "currencySymbol": "USDT",
@@ -340,7 +358,8 @@ Response body: CurrencyGatewayCommand.
   "decimal": 6,
   "chain": "tron"
 }
-                        """)
+                        """
+                        )
                     ]
                 )
             ]
@@ -349,7 +368,13 @@ Response body: CurrencyGatewayCommand.
             ApiResponse(
                 responseCode = "200",
                 description = "Gateway updated successfully.",
-                content = [Content(mediaType = "application/json", schema = Schema(oneOf = [OffChainGatewayCommand::class, OnChainGatewayCommand::class], discriminatorProperty = "type"))]
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(
+                        oneOf = [OffChainGatewayCommand::class, OnChainGatewayCommand::class],
+                        discriminatorProperty = "type"
+                    )
+                )]
             ),
             ApiResponse(responseCode = "401", description = "Unauthorized. No response body.", content = [Content()]),
             ApiResponse(responseCode = "403", description = "Forbidden. No response body.", content = [Content()])
@@ -391,9 +416,13 @@ Response body: CurrencyGatewayCommand.
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(oneOf = [OffChainGatewayCommand::class, OnChainGatewayCommand::class], discriminatorProperty = "type"),
+                        schema = Schema(
+                            oneOf = [OffChainGatewayCommand::class, OnChainGatewayCommand::class],
+                            discriminatorProperty = "type"
+                        ),
                         examples = [
-                            ExampleObject(name = "OffChain gateway response", value = """
+                            ExampleObject(
+                                name = "OffChain gateway response", value = """
 {
   "type": "OffChain",
   "currencySymbol": "IRT",
@@ -412,8 +441,10 @@ Response body: CurrencyGatewayCommand.
   "displayOrder": 1,
   "transferMethod": "CARD"
 }
-                            """),
-                            ExampleObject(name = "OnChain native gateway response", value = """
+                            """
+                            ),
+                            ExampleObject(
+                                name = "OnChain native gateway response", value = """
 {
   "type": "OnChain",
   "currencySymbol": "BTC",
@@ -437,8 +468,10 @@ Response body: CurrencyGatewayCommand.
   "decimal": 8,
   "chain": "bitcoin"
 }
-                            """),
-                            ExampleObject(name = "OnChain token gateway response", value = """
+                            """
+                            ),
+                            ExampleObject(
+                                name = "OnChain token gateway response", value = """
 {
   "type": "OnChain",
   "currencySymbol": "USDT",
@@ -462,7 +495,8 @@ Response body: CurrencyGatewayCommand.
   "decimal": 6,
   "chain": "tron"
 }
-                            """)
+                            """
+                            )
                         ]
                     )
                 ]
@@ -496,7 +530,11 @@ Response body: No response body.
         """,
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
-            ApiResponse(responseCode = "200", description = "Gateway deleted successfully. No response body.", content = [Content()]),
+            ApiResponse(
+                responseCode = "200",
+                description = "Gateway deleted successfully. No response body.",
+                content = [Content()]
+            ),
             ApiResponse(responseCode = "401", description = "Unauthorized. No response body.", content = [Content()]),
             ApiResponse(responseCode = "403", description = "Forbidden. No response body.", content = [Content()])
         ]
