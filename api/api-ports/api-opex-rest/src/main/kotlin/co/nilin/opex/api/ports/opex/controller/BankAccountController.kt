@@ -30,7 +30,9 @@ class BankAccountController(
         description = """POST /opex/v1/bank-account.
 Security: Bearer user-token required. Requires authenticated user JWT.
 
-Validation: Exactly one of `cardNumber` or `iban` must be provided. Providing both or neither is invalid.""",
+Validation: Exactly one of `cardNumber` or `iban` must be provided. Providing both or neither is invalid.
+Allowed values:
+- status: WAITING, VERIFIED, REJECTED.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
             ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", schema = Schema(implementation = BankAccountResponse::class))]),
@@ -49,7 +51,9 @@ Validation: Exactly one of `cardNumber` or `iban` must be provided. Providing bo
     @Operation(
         summary = "Get bank accounts",
         description = """GET /opex/v1/bank-account.
-Security: Bearer user-token required. Requires authenticated user JWT.""",
+Security: Bearer user-token required. Requires authenticated user JWT.
+Allowed values:
+- status: WAITING, VERIFIED, REJECTED.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
             ApiResponse(responseCode = "200", description = "Successful response.", content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = BankAccountResponse::class)))]),
@@ -67,7 +71,9 @@ Security: Bearer user-token required. Requires authenticated user JWT.""",
     @Operation(
         summary = "Delete bank account",
         description = """DELETE /opex/v1/bank-account/{id}.
-Security: Bearer user-token required. Required authority: PERM_bank_account:write.""",
+Security: Bearer user-token required. Required authority: PERM_bank_account:write.
+Allowed values:
+- status: WAITING, VERIFIED, REJECTED.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
             ApiResponse(responseCode = "200", description = "No response body.", content = [Content()]),
