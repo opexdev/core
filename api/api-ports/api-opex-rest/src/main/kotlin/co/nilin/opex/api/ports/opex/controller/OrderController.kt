@@ -259,7 +259,8 @@ Response body:
         @CurrentSecurityContext securityContext: SecurityContext
     ): CancelOrderResponse {
         if (orderId == null && origClientOrderId == null) throw OpexError.BadRequest.exception("'orderId' or 'origClientOrderId' must be sent")
-        val order = queryHandler.queryOrder(principal, symbol, orderId, origClientOrderId) ?: throw OpexError.OrderNotFound.exception()
+        val order = queryHandler.queryOrder(principal, symbol, orderId, origClientOrderId)
+            ?: throw OpexError.OrderNotFound.exception()
         val response = CancelOrderResponse(
             symbol,
             origClientOrderId,
@@ -432,30 +433,36 @@ Response body:
                 checkDecimal(quantity, "quantity")
                 checkNull(timeInForce, "timeInForce")
             }
+
             OrderType.MARKET -> {
                 if (quantity == null) checkDecimal(quoteOrderQty, "quoteOrderQty")
                 else checkDecimal(quantity, "quantity")
             }
+
             OrderType.STOP_LOSS -> {
                 checkDecimal(quantity, "quantity")
                 checkDecimal(stopPrice, "stopPrice")
             }
+
             OrderType.STOP_LOSS_LIMIT -> {
                 checkDecimal(price, "price")
                 checkDecimal(quantity, "quantity")
                 checkDecimal(stopPrice, "stopPrice")
                 checkNull(timeInForce, "timeInForce")
             }
+
             OrderType.TAKE_PROFIT -> {
                 checkDecimal(quantity, "quantity")
                 checkDecimal(stopPrice, "stopPrice")
             }
+
             OrderType.TAKE_PROFIT_LIMIT -> {
                 checkDecimal(price, "price")
                 checkDecimal(quantity, "quantity")
                 checkDecimal(stopPrice, "stopPrice")
                 checkNull(timeInForce, "timeInForce")
             }
+
             OrderType.LIMIT_MAKER -> {
                 checkDecimal(price, "price")
                 checkDecimal(quantity, "quantity")
