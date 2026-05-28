@@ -38,37 +38,34 @@ class UserAnalyticsController(
         summary = "User activity",
         description = """GET /opex/v1/analytics/user-activity.
 Security: Bearer user-token required. Requires authenticated user JWT.
-""",
+
+Behavior:
+- Returns activity totals for the last 31 days.
+- Response object keys are epoch timestamps in milliseconds.
+- All date/time values exposed by the API layer are timestamps.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
             ApiResponse(
                 responseCode = "200",
-                description = "Successful response.",
-                content = [
-                    Content(
-                        mediaType = "application/json",
-                        schema = Schema(
-                            type = "object",
-                            additionalPropertiesSchema = ActivityTotals::class
-                        ),
-                        examples = [
-                            ExampleObject(
-                                name = "User activity response",
-                                value = """
+                description = "Successful response. Map key is epoch timestamp in milliseconds. Map value is daily activity totals.",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(type = "object", additionalPropertiesSchema = ActivityTotals::class),
+                    examples = [ExampleObject(
+                        name = "User activity response",
+                        value = """
 {
-  "1715817600000": {
-    "totalBalance": 1200.00,
-    "totalWithdraw": 0,
-    "totalDeposit": 100.00,
-    "totalTrade": 300.00,
-    "totalOrder": 5
+  "1715731200000": {
+    "totalBalance": 1000.50,
+    "totalWithdraw": 20.00,
+    "totalDeposit": 200.00,
+    "totalTrade": 150.00,
+    "totalOrder": 3
   }
 }
-                    """
-                            )
-                        ]
-                    )
-                ]
+                        """
+                    )]
+                )]
             ),
             ApiResponse(
                 responseCode = "401",
@@ -90,6 +87,11 @@ Security: Bearer user-token required. Requires authenticated user JWT.
         summary = "Get user details assets",
         description = """GET /opex/v1/analytics/users-detail-assets.
 Security: Public endpoint. No Bearer token is required.
+
+Behavior:
+- limit defaults to 10 when omitted.
+- offset defaults to 0 when omitted.
+
 """,
         responses = [
             ApiResponse(
