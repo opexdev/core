@@ -665,21 +665,9 @@ services:
     image: swaggerapi/swagger-ui:latest
     profiles:
       - docs
-    ports:
-      - "8110:8080"
     environment:
-      URLS: >
-        [
-          {
-            "name": "Opex API",
-            "url": "http://localhost:8094/v3/api-docs"
-          },
-          {
-            "name": "Opex Auth Gateway",
-            "url": "http://localhost:8184/v3/api-docs"
-          }
-        ]
-      URLS_PRIMARY_NAME: "Opex API"
+      URLS: ${SWAGGER_DOCS_URLS}
+      URLS_PRIMARY_NAME: ${SWAGGER_DOCS_PRIMARY_NAME:-Opex API}
       DOC_EXPANSION: "none"
       DEFAULT_MODELS_EXPAND_DEPTH: "-1"
       DISPLAY_REQUEST_DURATION: "true"
