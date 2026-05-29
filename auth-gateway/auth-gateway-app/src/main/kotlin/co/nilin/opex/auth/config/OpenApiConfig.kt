@@ -1,4 +1,4 @@
-package co.nilin.opex.api.app.config
+package co.nilin.opex.auth.config
 
 import io.swagger.v3.oas.models.Components
 import io.swagger.v3.oas.models.OpenAPI
@@ -9,30 +9,28 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
-@Configuration
-class OpenApiConfig() {
+@Configuration(proxyBeanMethods = false)
+class AuthGatewayOpenApiConfig() {
 
     @Bean
-    fun opexOpenApi(): OpenAPI {
+    fun authGatewayOpenApi(): OpenAPI {
         return OpenAPI()
             .info(
                 Info()
-                    .title("Opex API")
-                    .description("OpenAPI documentation for Opex REST APIs.")
+                    .title("Opex Auth Gateway API")
+                    .description("OpenAPI documentation for Opex Auth Gateway APIs.")
                     .version("1.0.1-beta.7")
                     .description("Backend for opex exchange.")
             )
             .components(
-                Components()
-                    .addSecuritySchemes(
-                        "bearerAuth",
-                        SecurityScheme()
-                            .type(SecurityScheme.Type.HTTP)
-                            .scheme("bearer")
-                            .bearerFormat("JWT")
-                            .description("JWT Bearer token")
-                    )
+                Components().addSecuritySchemes(
+                    "bearerAuth",
+                    SecurityScheme()
+                        .type(SecurityScheme.Type.HTTP)
+                        .scheme("bearer")
+                        .bearerFormat("JWT")
+                        .description("JWT Bearer token")
+                )
             )
     }
 }
-

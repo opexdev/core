@@ -26,7 +26,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 
 @RestController("walletOpexController")
 @RequestMapping("/opex/v1/wallet")
-@Tag(name = "Wallet", description = "Authenticated user wallet asset, limits, and deposit address operations.\n\nAllowed values:\n- walletType values in related wallet responses/requests: MAIN, EXCHANGE, CASHOUT.\nSource of values:\n- symbol, currency and gatewayUuid are server-provided values.")
+@Tag(name = "Wallet", description = "Authenticated user wallet asset, limits, and deposit address operations.")
 class WalletController(
     private val walletProxy: WalletProxy,
     private val bcGatewayProxy: BlockchainGatewayProxy

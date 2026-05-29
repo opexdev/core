@@ -22,27 +22,6 @@ import org.springframework.web.bind.annotation.*
     description = "User level configuration operations."
 )
 public class UserLevelAdminController(private val configProxy: ConfigProxy) {
-    @GetMapping("/user-level/config")
-    @Operation(
-        summary = "Get user level config",
-        description = """GET /opex/v1/user-level/config.
-Security: Public endpoint. No Bearer token is required.""",
-        responses = [
-            ApiResponse(
-                responseCode = "200",
-                description = "Successful response.",
-                content = [Content(
-                    mediaType = "application/json",
-                    array = ArraySchema(schema = Schema(implementation = UserLevelConfig::class))
-                )]
-            ),
-            ApiResponse(responseCode = "401", description = "Unauthorized. No response body.", content = [Content()])
-        ]
-    )
-    suspend fun getUserLevelConfig(): List<UserLevelConfig> {
-        return configProxy.getUserLevelConfig()
-    }
-
     @PutMapping("/admin/user-level/config")
     @Operation(
         summary = "Update user level config",

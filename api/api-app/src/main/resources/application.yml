@@ -149,14 +149,16 @@ app:
   api:
     crypto:
       key: ${api_crypto_key:0e1fd29572ec8c85970d76e3433e96ee}
-
+  swagger:
+    cors:
+      enabled: true
+      allowed-origins: "http://localhost:8110"
 
 # --- Swagger / SpringDoc (env-driven) ---
 springdoc:
   api-docs:
     enabled: ${SWAGGER_API_DOCS_ENABLED:false}
     path: ${SWAGGER_API_DOCS_PATH:/v3/api-docs}
-
   swagger-ui:
     enabled: ${SWAGGER_UI_ENABLED:false}
     path: ${SWAGGER_UI_PATH:/swagger-ui.html}
@@ -165,4 +167,4 @@ springdoc:
     display-request-duration: true
     operations-sorter: method
     tags-sorter: alpha
-spring.mvc.pathmatch.matching-strategy: ANT_PATH_MATCHER
+

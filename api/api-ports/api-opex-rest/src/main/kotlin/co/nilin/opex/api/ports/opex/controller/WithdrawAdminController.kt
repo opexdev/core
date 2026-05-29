@@ -19,7 +19,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 
 @RestController
 @RequestMapping("/opex/v1/admin/withdraw")
-@Tag(name = "Withdraw Admin", description = "Admin manual withdraw and withdraw workflow operations.\n\nAllowed values:\n- withdraw status: REQUESTED, CREATED, ACCEPTED, CANCELED, REJECTED, DONE.\n- withdrawType: CARD_TO_CARD, SHEBA, ON_CHAIN, OFF_CHAIN.\n- transferMethod: CARD, SHEBA, IPG, EXCHANGE, MANUALLY, VOUCHER, MPG, REWARD.\n- sourceWalletType where used: MAIN, EXCHANGE, CASHOUT.")
+@Tag(name = "Withdraw Admin", description = "Admin manual withdraw and withdraw workflow operations.")
 class WithdrawAdminController(
     private val walletProxy: WalletProxy
 ) {

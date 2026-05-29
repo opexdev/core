@@ -71,6 +71,7 @@ class SecurityConfig(
         return http.csrf { it.disable() }
             .authorizeExchange {
                 it.pathMatchers("/actuator/**").permitAll()
+                    .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .pathMatchers("/v1/rate-limit").hasAuthority("ROLE_admin")
                     .pathMatchers("/v2/api-docs").permitAll()
                     .pathMatchers("/v3/depth").permitAll()

@@ -22,7 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 
 @RestController
 @RequestMapping("/opex/v1/admin/wallet")
-@Tag(name = "Wallet Admin", description = "Admin wallet overview and total balance operations.\n\nSource of values:\n- currency is a server-provided currency symbol.\nAllowed values:\n- excludeSystem: true, false.")
+@Tag(name = "Wallet Admin", description = "Admin wallet overview and total balance operations.")
 class WalletAdminController(
     private val walletProxy: WalletProxy
 ) {
