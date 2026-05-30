@@ -1,5 +1,7 @@
 package co.nilin.opex.api.app.config
 
+import co.nilin.opex.common.utils.LoggerDelegate
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -14,13 +16,16 @@ class CorsConfig(
     @Value("\${app.cors.enabled:false}")
     private val enabled: Boolean,
 
-    @Value("\${app.cors.allowed-origins:http://localhost:8110}")
+    @Value("\${app.cors.allowed-origins}")
     private val allowedOrigins: String
 ) {
 
+    private val logger = LoggerFactory.getLogger(CorsConfig::class.java)
+
+
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    fun swaggerCorsWebFilter(): CorsWebFilter {
+    fun corsWebFilter(): CorsWebFilter {
         val config = CorsConfiguration().apply {
             allowedOrigins = if (enabled) {
                 this@CorsConfig.allowedOrigins
@@ -30,7 +35,9 @@ class CorsConfig(
             } else {
                 emptyList()
             }
-
+            allowedOrigins?.forEach {
+                logger.info("Allowed origin: {}", it)
+            }
             allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
             allowedHeaders = listOf("*")
             exposedHeaders = listOf("Location", "Content-Disposition")
