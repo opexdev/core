@@ -6,6 +6,7 @@ import co.nilin.opex.common.security.ReactiveCustomJwtConverter
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.annotation.Order
 import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder
@@ -15,6 +16,7 @@ import org.springframework.security.oauth2.jwt.JwtValidators
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder
 import org.springframework.security.web.server.SecurityWebFilterChain
+import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.server.WebFilter
 
@@ -25,16 +27,51 @@ class SecurityConfig(
     @Value("\${app.auth.cert-url}")
     private val certUrl: String,
     @Value("\${app.auth.iss-url}")
-    private val issUrl: String
+    private val issUrl: String,
 ) {
+    @Value("\${swagger.auth.enabled:false}")
+    private var swaggerAuthEnabled: Boolean = false
+
+    @Value("\${swagger.auth.authority:ROLE_admin}")
+    private lateinit var swaggerAuthority: String
 
     @Bean
-    fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain {
+    @Order(0)
+    fun swaggerSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain {
+        val swaggerPaths = arrayOf(
+            "/swagger-ui.html",
+            "/swagger-ui/**",
+            "/v3/api-docs",
+            "/v3/api-docs/**",
+            "/webjars/**"
+        )
+
+        return http
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers(*swaggerPaths))
+            .csrf { it.disable() }
+            .authorizeExchange {
+                if (swaggerAuthEnabled) {
+                    it.anyExchange().hasAuthority(swaggerAuthority)
+                } else {
+                    it.anyExchange().permitAll()
+                }
+            }
+            .oauth2ResourceServer {
+                it.jwt { jwt ->
+                    jwt.jwtAuthenticationConverter(ReactiveCustomJwtConverter())
+                }
+            }
+            .build()
+    }
+
+    @Bean
+    @Order(1)
+    fun apiSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain {
+
         return http.csrf { it.disable() }
             .authorizeExchange {
                 it.pathMatchers("/actuator/**").permitAll()
-                    .pathMatchers("/swagger-ui/**").permitAll()
-                    .pathMatchers("/swagger-resources/**").permitAll()
+                    .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .pathMatchers("/v1/rate-limit").hasAuthority("ROLE_admin")
                     .pathMatchers("/v2/api-docs").permitAll()
                     .pathMatchers("/v3/depth").permitAll()
@@ -69,7 +106,7 @@ class SecurityConfig(
                     .pathMatchers(HttpMethod.PUT, "/opex/v1/otc/rate").hasAnyAuthority("ROLE_admin", "ROLE_rate_bot")
                     .pathMatchers(HttpMethod.GET, "/opex/v1/otc/**").permitAll()
                     .pathMatchers("/opex/v1/otc/**").hasAuthority("ROLE_admin")
-                    .pathMatchers(HttpMethod.GET, "/opex/v1/bank-account").permitAll()
+                    .pathMatchers(HttpMethod.GET, "/opex/v1/bank-account").authenticated()
                     .pathMatchers("/opex/v1/bank-account/**").hasAuthority("PERM_bank_account:write")
                     .anyExchange().authenticated()
             }
@@ -101,5 +138,6 @@ class SecurityConfig(
         )
         return decoder
     }
+
 
 }

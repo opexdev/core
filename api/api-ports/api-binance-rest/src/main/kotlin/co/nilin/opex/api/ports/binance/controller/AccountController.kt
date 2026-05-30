@@ -14,6 +14,7 @@ import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
+import io.swagger.v3.oas.annotations.Hidden
 import org.springframework.http.MediaType
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
@@ -24,6 +25,8 @@ import java.time.ZoneId
 import java.util.*
 
 @RestController
+@Hidden
+@Deprecated("")
 class AccountController(
     val queryHandler: MarketUserDataProxy,
     val matchingGatewayProxy: MatchingGatewayProxy,

@@ -10,7 +10,7 @@ object LanguageUtils {
         Mono.deferContextual { ctx -> Mono.just(ctx.getOrDefault("lang", getDefaultUserLanguage())!!) }
 
     fun getDefaultUserLanguage(): String {
-        return try {
+       return try {
             GlobalWebConfigCache.webConfig?.defaultLanguage?.toString() ?: UserLanguage.EN.toString()
         } catch (e: Exception) {
             UserLanguage.EN.toString()

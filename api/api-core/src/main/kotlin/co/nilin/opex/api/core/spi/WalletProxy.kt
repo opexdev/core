@@ -104,9 +104,6 @@ interface WalletProxy {
         limit: Int?,
     ): List<TransactionSummary>
 
-    suspend fun deposit(
-        request: RequestDepositBody
-    ): TransferResult?
 
     suspend fun requestWithdraw(
         token: String,
@@ -127,8 +124,8 @@ interface WalletProxy {
 
     suspend fun getQuoteCurrencies(): List<QuoteCurrency>
 
-    suspend fun getSwapTransactions(token: String, request: UserTransactionRequest): List<SwapResponse>
-    suspend fun getSwapTransactionsCount(token: String, request: UserTransactionRequest): Long
+    suspend fun getSwapTransactions(token: String, request: UserSwapTransactionRequest): List<SwapResponse>
+    suspend fun getSwapTransactionsCount(token: String, request: UserSwapTransactionRequest): Long
 
     suspend fun requestWithdrawOTP(token: String, withdrawUuid: String, otpType: OTPType): TempOtpResponse
     suspend fun verifyWithdrawOTP(
@@ -150,7 +147,7 @@ interface WalletProxy {
 
     suspend fun getSwapTransactionsForAdmin(
         token: String,
-        request: UserTransactionRequest
+        request: UserSwapTransactionRequest
     ): List<SwapAdminResponse>
 
     suspend fun getTradeHistoryForAdmin(
@@ -237,14 +234,14 @@ interface WalletProxy {
 
     suspend fun deleteOffChainGatewayLocalization(token: String, id: Long)
     suspend fun saveTerminal(token: String, terminal: TerminalCommand): TerminalCommand?
-    suspend fun updateTerminal(token: String, terminalUuid: String, terminal: TerminalCommand): TerminalCommand?
+    suspend fun updateTerminal(token: String, terminalUuid: String, terminal: TerminalUpdateCommand): TerminalCommand?
     suspend fun deleteTerminal(token: String, terminalUuid: String)
     suspend fun getTerminals(token: String): List<TerminalCommand>?
     suspend fun getTerminal(token: String, terminalUuid: String): TerminalCommand?
     suspend fun getAssignedGatewayToTerminal(token: String, terminalUuid: String): List<CurrencyGatewayCommand>?
     suspend fun assignTerminalsToGateway(token: String, gatewayUuid: String, terminal: List<String>)
     suspend fun revokeTerminalsToGateway(token: String, gatewayUuid: String, terminal: List<String>)
-    suspend fun addCurrencyToGateway(
+    suspend fun addGatewayToCurrency(
         token: String,
         currencySymbol: String,
         gatewayCommand: CurrencyGatewayCommand
@@ -254,7 +251,7 @@ interface WalletProxy {
         token: String,
         gatewayUuid: String,
         currencySymbol: String,
-        gatewayCommand: CurrencyGatewayCommand
+        gatewayCommand: CurrencyGatewayUpdateCommand
     ): CurrencyGatewayCommand?
 
     suspend fun getGateway(token: String, gatewayUuid: String, currencySymbol: String): CurrencyGatewayCommand?
