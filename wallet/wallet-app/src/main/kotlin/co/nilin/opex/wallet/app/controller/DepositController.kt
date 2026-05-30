@@ -126,12 +126,12 @@ class DepositController(
         val publicKeyRawStr = resourceLoader.getResource("classpath:scanner-public.pem").inputStream
             .readAllBytes()
             .toString(Charsets.UTF_8)
-        SignVerifier().verify("", publicKeyRawStr, mapper.writeValueAsString(request), signature)
+        SignVerifier().verify("SHA512withRSA", publicKeyRawStr, mapper.writeValueAsString(request), signature)
         return depositService.processExternalDeposit(request)
     }
 
     object DepositWebhookHeaders {
-        const val SIGNATURE = "X-Fiat-Scanner-Signature"
+        const val SIGNATURE = "X-Signature"
     }
 }
 

@@ -177,4 +177,8 @@ class WalletOwnerManagerImpl(
             logger.warn("Wallet owner not found for UUID: $uuid")
         }
     }
+
+    override suspend fun findWalletOwnerByExternalIdentifier(externalIdentifier: String): WalletOwner? {
+        return walletOwnerRepository.findByExternalIdentifier(externalIdentifier).awaitFirstOrNull()?.toPlainObject()
+    }
 }

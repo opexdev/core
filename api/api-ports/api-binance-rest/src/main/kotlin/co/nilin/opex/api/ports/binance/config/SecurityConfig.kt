@@ -49,6 +49,7 @@ class SecurityConfig(
                     .pathMatchers(HttpMethod.DELETE, "/v3/order").hasAuthority("PERM_order:write")
 
                     // Opex endpoints
+                    .pathMatchers("/v1/deposit/webhook").permitAll()
                     .pathMatchers("/opex/v1/admin/transactions/**").hasAnyAuthority("ROLE_monitoring", "ROLE_admin")
                     .pathMatchers("/opex/v1/storage/**").permitAll()
                     .pathMatchers("/opex/v1/web/config/**").permitAll()

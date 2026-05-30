@@ -7,6 +7,6 @@ data class DepositWebhookRequest(
     val depositNumber: String,
     val symbol: String,
     val amount: BigDecimal,
-    val payId: String,
+    val externalIdentifier: String,
     val date: Long
 )
