@@ -151,7 +151,7 @@ app:
       key: ${api_crypto_key:0e1fd29572ec8c85970d76e3433e96ee}
   cors:
     enabled: true
-    allowed-origins: ${ALLOWED_ORIGINS}
+    allowed-origins: ${ALLOWED_ORIGINS:"http://localhost:8110"}
 
 # --- Swagger / SpringDoc (env-driven) ---
 springdoc:

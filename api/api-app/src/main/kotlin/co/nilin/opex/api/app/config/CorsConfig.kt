@@ -1,6 +1,5 @@
 package co.nilin.opex.api.app.config
 
-import co.nilin.opex.common.utils.LoggerDelegate
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -25,7 +24,7 @@ class CorsConfig(
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    fun corsWebFilter(): CorsWebFilter {
+    fun swaggerCorsWebFilter(): CorsWebFilter {
         val config = CorsConfiguration().apply {
             allowedOrigins = if (enabled) {
                 this@CorsConfig.allowedOrigins
