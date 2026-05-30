@@ -426,6 +426,7 @@ services:
       - SWAGGER_UI_ENABLED=${SWAGGER_UI_ENABLED}
       - SWAGGER_AUTH_ENABLED=${SWAGGER_AUTH_ENABLED}
       - SWAGGER_AUTH_AUTHORITY=${SWAGGER_AUTH_AUTHORITY}
+      - ALLOWED_ORIGINS:${ALLOWED_ORIGINS}
     volumes:
       - auth-gateway-keys:/app/keys
     depends_on:
@@ -525,6 +526,7 @@ services:
       - SWAGGER_UI_ENABLED=${SWAGGER_UI_ENABLED}
       - SWAGGER_AUTH_ENABLED=${SWAGGER_AUTH_ENABLED}
       - SWAGGER_AUTH_AUTHORITY=${SWAGGER_AUTH_AUTHORITY}
+      - ALLOWED_ORIGINS:${ALLOWED_ORIGINS}
     depends_on:
       - consul
       - vault
@@ -663,8 +665,6 @@ services:
         condition: on-failure
   swagger-docs:
     image: swaggerapi/swagger-ui:latest
-    profiles:
-      - docs
     environment:
       URLS: ${SWAGGER_DOCS_URLS}
       URLS_PRIMARY_NAME: ${SWAGGER_DOCS_PRIMARY_NAME:-Opex API}

@@ -1,4 +1,4 @@
-package co.nilin.opex.auth.config
+package co.nilin.opex.api.app.config
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -10,11 +10,11 @@ import org.springframework.web.cors.reactive.CorsWebFilter
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource
 
 @Configuration(proxyBeanMethods = false)
-class OpenApiCorsConfig(
-    @Value("\${app.swagger.cors.enabled:false}")
+class CorsConfig(
+    @Value("\${app.cors.enabled:false}")
     private val enabled: Boolean,
 
-    @Value("\${app.swagger.cors.allowed-origins:http://localhost:8110}")
+    @Value("\${app.cors.allowed-origins:http://localhost:8110}")
     private val allowedOrigins: String
 ) {
 
@@ -23,7 +23,7 @@ class OpenApiCorsConfig(
     fun swaggerCorsWebFilter(): CorsWebFilter {
         val config = CorsConfiguration().apply {
             allowedOrigins = if (enabled) {
-                this@OpenApiCorsConfig.allowedOrigins
+                this@CorsConfig.allowedOrigins
                     .split(",")
                     .map { it.trim() }
                     .filter { it.isNotBlank() }
