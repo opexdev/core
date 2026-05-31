@@ -20,6 +20,7 @@ class CorsConfig(
 ) {
     private val logger = LoggerFactory.getLogger(CorsConfig::class.java)
 
+
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
     fun corsWebFilter(): CorsWebFilter {
