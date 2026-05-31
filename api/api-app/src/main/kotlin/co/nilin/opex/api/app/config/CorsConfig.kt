@@ -18,13 +18,14 @@ class CorsConfig(
     @Value("\${app.cors.allowed-origins}")
     private val allowedOrigins: String
 ) {
+    private val logger = LoggerFactory.getLogger(CorsConfig::class.java)
 
     private val logger = LoggerFactory.getLogger(CorsConfig::class.java)
 
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    fun swaggerCorsWebFilter(): CorsWebFilter {
+    fun corsWebFilter(): CorsWebFilter {
         val config = CorsConfiguration().apply {
             allowedOrigins = if (enabled) {
                 this@CorsConfig.allowedOrigins

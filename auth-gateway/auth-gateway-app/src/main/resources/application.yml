@@ -83,7 +83,6 @@ app:
   cors:
     enabled: true
     allowed-origins: ${ALLOWED_ORIGINS:"http://localhost:8110"}
-
 # --- Swagger / SpringDoc (env-driven) ---
 springdoc:
   api-docs:
