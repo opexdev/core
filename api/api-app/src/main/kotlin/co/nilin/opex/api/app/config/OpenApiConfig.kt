@@ -10,11 +10,14 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-class OpenApiConfig() {
+class OpenApiConfig(
+    @Value("\${app.openapi.server-url:}")
+    private val serverUrl: String
+) {
 
     @Bean
     fun opexOpenApi(): OpenAPI {
-        return OpenAPI()
+        val openApi= OpenAPI()
             .info(
                 Info()
                     .title("Opex API")
@@ -33,6 +36,16 @@ class OpenApiConfig() {
                             .description("JWT Bearer token")
                     )
             )
+        if (serverUrl.isNotBlank()) {
+            openApi.servers(
+                listOf(
+                    Server()
+                        .url(serverUrl)
+                        .description("Public API server")
+                )
+            )
+        }
+        return openApi
     }
 }
 

@@ -20,8 +20,6 @@ class CorsConfig(
 ) {
     private val logger = LoggerFactory.getLogger(CorsConfig::class.java)
 
-    private val logger = LoggerFactory.getLogger(CorsConfig::class.java)
-
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)

@@ -10,11 +10,14 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration(proxyBeanMethods = false)
-class AuthGatewayOpenApiConfig() {
+class AuthGatewayOpenApiConfig(
+    @Value("\${app.openapi.server-url:}")
+    private val serverUrl: String
+) {
 
     @Bean
     fun authGatewayOpenApi(): OpenAPI {
-        return OpenAPI()
+        val openApi = OpenAPI()
             .info(
                 Info()
                     .title("Opex Auth Gateway API")
@@ -32,5 +35,15 @@ class AuthGatewayOpenApiConfig() {
                         .description("JWT Bearer token")
                 )
             )
+        if (serverUrl.isNotBlank()) {
+            openApi.servers(
+                listOf(
+                    Server()
+                        .url(serverUrl)
+                        .description("Public API server")
+                )
+            )
+        }
+        return openApi
     }
 }
