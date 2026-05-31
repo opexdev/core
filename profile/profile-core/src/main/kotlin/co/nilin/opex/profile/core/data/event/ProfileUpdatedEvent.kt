@@ -5,5 +5,6 @@ data class ProfileUpdatedEvent(
     var firstName: String? = null,
     var lastName: String? = null,
     var email: String? = null,
-    var mobile: String? = null
+    var mobile: String? = null,
+    var identifier: String? = null
 )

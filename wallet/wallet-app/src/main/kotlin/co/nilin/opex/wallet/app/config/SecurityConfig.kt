@@ -31,6 +31,7 @@ class SecurityConfig(private val webClient: WebClient) {
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
         http.csrf().disable()
             .authorizeExchange()
+            .pathMatchers("/v1/deposit/webhook").permitAll()
             .pathMatchers("/balanceOf/**").authenticated()
             .pathMatchers("/owner/**").authenticated()
             .pathMatchers("/withdraw").authenticated()

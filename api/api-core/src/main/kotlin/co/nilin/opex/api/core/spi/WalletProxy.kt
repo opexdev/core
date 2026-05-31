@@ -258,5 +258,5 @@ interface WalletProxy {
 
     suspend fun deleteGateway(token: String, gatewayUuid: String, currencySymbol: String)
 
-
+    suspend fun submitDepositWebhook(request: DepositWebhookRequest, signature: String): DepositWebhookResponse
 }

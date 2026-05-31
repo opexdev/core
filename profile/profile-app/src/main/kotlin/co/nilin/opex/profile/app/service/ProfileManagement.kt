@@ -161,7 +161,8 @@ class ProfileManagement(
             ProfileUpdatedEvent(
                 userId = userId,
                 firstName = request.firstName,
-                lastName = request.lastName
+                lastName = request.lastName,
+                identifier = request.identifier
             )
         )
 
