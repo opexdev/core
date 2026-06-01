@@ -26,7 +26,8 @@ class CurrentUserProvider {
             ).joinToString(" "),
             mobile = jwt.getClaimAsString("mobile"),
             roles = jwt.getClaimAsStringList("roles") ?: emptyList(),
-            level = jwt.getClaimAsString("level")
+            level = jwt.getClaimAsString("level"),
+            identityId = jwt.getClaimAsString("identity_id")
         )
     }
 }

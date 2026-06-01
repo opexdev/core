@@ -41,7 +41,7 @@ class WalletOwnerController(
         val owner = walletOwnerManager.findWalletOwner(uuid) ?: run {
             if (currentUserProvider.getCurrentUser()?.uuid.equals(uuid) && environment.activeProfiles.contains("otc"))
                 walletOwnerManager.createWalletOwner(
-                    uuid, currentUserProvider.getCurrentUser()?.mobile ?: "not set", ""
+                    uuid, currentUserProvider.getCurrentUser()?.mobile ?: "not set", "", currentUserProvider.getCurrentUser()?.identityId
                 )
             throw OpexError.WalletOwnerNotFound.exception()
         }

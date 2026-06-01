@@ -5,9 +5,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import java.math.BigDecimal
 import java.util.*
 
-enum class GatewayType() {
-    OnChain, OffChain
-}
 
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,

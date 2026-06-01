@@ -16,4 +16,6 @@ data class WalletOwnerModel(
     var isWithdrawAllowed: Boolean = true,
     @Column("deposit_allowed")
     var isDepositAllowed: Boolean = true,
+    @Column("external_identifier")
+    var externalIdentifier: String?=null
 )

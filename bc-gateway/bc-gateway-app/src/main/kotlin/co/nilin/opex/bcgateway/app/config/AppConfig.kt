@@ -48,20 +48,5 @@ class AppConfig(private val resourceLoader: ResourceLoader) {
         adminKafkaEventListener.addEventListener(adminEventListener)
     }
 
-    @Bean("webhookPublicKey")
-    fun webhookPublicKey(): PublicKey {
-        val publicKeyString = resourceLoader.getResource("classpath:scanner-public.pem").inputStream
-            .readAllBytes()
-            .toString(Charsets.UTF_8)
-            .replace("-----BEGIN PUBLIC KEY-----", "")
-            .replace("-----END PUBLIC KEY-----", "")
-            .replace("\n", "")
-            .replace("\r", "")
-
-        val keyBytes = Base64.getDecoder().decode(publicKeyString)
-        val keySpec = X509EncodedKeySpec(keyBytes)
-        val keyFactory = KeyFactory.getInstance("RSA")
-        return keyFactory.generatePublic(keySpec)
-    }
 
 }

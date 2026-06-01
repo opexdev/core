@@ -422,6 +422,12 @@ services:
       - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL}
       - CUSTOM_MESSAGE_ENABLED=${CUSTOM_MESSAGE_ENABLED}
       - CUSTOM_USER_LANGUAGE_ENABLED=${CUSTOM_USER_LANGUAGE_ENABLED}
+      - SWAGGER_API_DOCS_ENABLED=${SWAGGER_API_DOCS_ENABLED}
+      - SWAGGER_UI_ENABLED=${SWAGGER_UI_ENABLED}
+      - SWAGGER_AUTH_ENABLED=${SWAGGER_AUTH_ENABLED}
+      - SWAGGER_AUTH_AUTHORITY=${SWAGGER_AUTH_AUTHORITY}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+      - OPEN_API_SERVER_URL=${OPEN_API_SERVER_URL_AUTH}
     volumes:
       - auth-gateway-keys:/app/keys
     depends_on:
@@ -517,6 +523,12 @@ services:
       - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL}
       - CUSTOM_MESSAGE_ENABLED=${CUSTOM_MESSAGE_ENABLED}
       - CUSTOM_USER_LANGUAGE_ENABLED=${CUSTOM_USER_LANGUAGE_ENABLED}
+      - SWAGGER_API_DOCS_ENABLED=${SWAGGER_API_DOCS_ENABLED}
+      - SWAGGER_UI_ENABLED=${SWAGGER_UI_ENABLED}
+      - SWAGGER_AUTH_ENABLED=${SWAGGER_AUTH_ENABLED}
+      - SWAGGER_AUTH_AUTHORITY=${SWAGGER_AUTH_AUTHORITY}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+      - OPEN_API_SERVER_URL=${OPEN_API_SERVER_URL_API}
     depends_on:
       - consul
       - vault
@@ -653,6 +665,19 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  swagger-docs:
+    image: swaggerapi/swagger-ui:latest
+    environment:
+      URLS: ${SWAGGER_DOCS_URLS}
+      URLS_PRIMARY_NAME: ${SWAGGER_DOCS_PRIMARY_NAME:-Opex API}
+      DOC_EXPANSION: "none"
+      DEFAULT_MODELS_EXPAND_DEPTH: "-1"
+      DISPLAY_REQUEST_DURATION: "true"
+      DEEP_LINKING: "true"
+      PERSIST_AUTHORIZATION: "true"
+      TRY_IT_OUT_ENABLED: "true"
+      FILTER: "true"
+      VALIDATOR_URL: "none"
 volumes:
   zookeeper-data:
   zookeeper-log:

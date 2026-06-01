@@ -11,4 +11,5 @@ interface WalletOwnerRepository : ReactiveCrudRepository<WalletOwnerModel, Long>
 
     @Query("select * from wallet_owner where uuid = :uuid")
     fun findByUuid(uuid: String): Mono<WalletOwnerModel>
+    fun findByExternalIdentifier(externalIdentifier: String): Mono<WalletOwnerModel>
 }
