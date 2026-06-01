@@ -95,6 +95,7 @@ class SecurityConfig(private val webClient: WebClient) {
         http.csrf().disable()
             .authorizeExchange()
 //                .pathMatchers("/transaction/**").hasAuthority("SCOPE_trust")
+            .pathMatchers("/v1/deposit/webhook").permitAll()
             .pathMatchers("/admin/**").hasRoleAndLevel("Admin")
             .pathMatchers(HttpMethod.PUT, "/otc/**").hasRoleAndLevel("Admin")
             .pathMatchers(HttpMethod.POST, "/otc/**").hasRoleAndLevel("Admin")

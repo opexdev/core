@@ -33,7 +33,7 @@ class DepositService(
 ) {
 
     private val logger = LoggerFactory.getLogger(DepositService::class.java)
-    
+
     // -------------------------------------------------------------------------
     // Helpers (NO LOGIC CHANGE)
     // -------------------------------------------------------------------------
@@ -121,7 +121,7 @@ class DepositService(
         )
 
         val receiverUuid = walletOwnerManager.findWalletOwnerByExternalIdentifier(request.externalIdentifier)?.uuid
-            ?: throw OpexError.BadRequest.exception("Identifier ${request.externalIdentifier} not fount")
+            ?: throw OpexError.IdentifierNotFound.exception("Identifier ${request.externalIdentifier} not found")
 
         with(request) {
             deposit(
