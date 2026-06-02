@@ -6,7 +6,8 @@ import java.math.BigDecimal
 data class OffChainGatewayView(
     var id: Long?,
     val gatewayUuid: String,
-    val currencySymbol: String, var withdrawAllowed: Boolean? = true,
+    val currencySymbol: String,
+    var withdrawAllowed: Boolean? = true,
     var depositAllowed: Boolean? = true,
     var withdrawFee: BigDecimal? = BigDecimal.ZERO,
     var withdrawMin: BigDecimal? = BigDecimal.ZERO,
