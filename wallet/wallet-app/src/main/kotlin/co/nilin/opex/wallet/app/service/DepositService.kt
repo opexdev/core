@@ -122,7 +122,7 @@ class DepositService(
 
         val receiverUuid = walletOwnerManager.findWalletOwnerByExternalIdentifier(request.externalIdentifier)?.uuid
             ?: throw OpexError.IdentifierNotFound.exception("Identifier ${request.externalIdentifier} not found")
-
+        //todo to have meaningful transfer labels in deposits section we have added BANK_DEPOSIT to cover sheba and account transfers in this service
         with(request) {
             deposit(
                 symbol = symbol,
@@ -136,7 +136,7 @@ class DepositService(
                 attachment = null,
                 depositType = DepositType.OFF_CHAIN,
                 gatewayUuid = null,
-                transferMethod = TransferMethod.SHEBA,
+                transferMethod = TransferMethod.BANK_DEPOSIT,
                 persistInvalidDeposit = false
             )
         }
