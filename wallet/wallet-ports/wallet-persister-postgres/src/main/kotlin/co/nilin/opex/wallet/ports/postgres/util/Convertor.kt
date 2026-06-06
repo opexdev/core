@@ -1,16 +1,20 @@
 package co.nilin.opex.wallet.ports.postgres.util
 
 import co.nilin.opex.wallet.core.inout.*
+import co.nilin.opex.wallet.core.model.OffChainGatewayLocalizationCommand
 import co.nilin.opex.wallet.core.model.TotalAssetsSnapshot
+import co.nilin.opex.wallet.ports.postgres.dto.CurrencyView
+import co.nilin.opex.wallet.ports.postgres.dto.OffChainGatewayView
+import co.nilin.opex.wallet.ports.postgres.dto.TerminalView
 import co.nilin.opex.wallet.ports.postgres.model.*
 import java.time.ZoneId
 import java.util.*
 
 
-fun CurrencyCommand.toModel(): CurrencyModel {
-    return CurrencyModel(
+fun CurrencyCommand.toView(): CurrencyView {
+    return CurrencyView(
         symbol,
-        uuid,
+        uuid!!,
         name,
         precision,
         title,
@@ -22,12 +26,42 @@ fun CurrencyCommand.toModel(): CurrencyModel {
         description,
         shortDescription,
         externalUrl,
-        order,
+        displayOrder,
         maxOrder
     )
 }
 
-fun CurrencyModel.toCommand(): CurrencyCommand {
+fun CurrencyView.toModel(): CurrencyModel {
+    return CurrencyModel(
+        symbol,
+        uuid,
+        precision,
+        icon,
+        isTransitive,
+        isActive,
+        sign,
+        externalUrl,
+        displayOrder,
+        maxOrder
+    )
+}
+
+fun CurrencyCommand.toModel(): CurrencyModel {
+    return CurrencyModel(
+        symbol,
+        uuid,
+        precision,
+        icon,
+        isTransitive,
+        isActive,
+        sign,
+        externalUrl,
+        displayOrder,
+        maxOrder
+    )
+}
+
+fun CurrencyView.toCommand(): CurrencyCommand {
     return CurrencyCommand(
         symbol,
         uuid,
@@ -46,8 +80,20 @@ fun CurrencyModel.toCommand(): CurrencyCommand {
         externalUrl,
         null,
         null,
-        order,
+        displayOrder,
         maxOrder
+    )
+}
+
+fun CurrencyLocalizationModel.toCommand(): CurrencyLocalizationCommand {
+    return CurrencyLocalizationCommand(
+        id,
+        name,
+        title,
+        alias,
+        description,
+        shortDescription,
+        language
     )
 }
 
@@ -97,7 +143,7 @@ fun DepositModel.toDto(): Deposit {
 }
 
 
-fun OffChainGatewayModel.toDto(): CurrencyGatewayCommand {
+fun OffChainGatewayView.toDto(): CurrencyGatewayCommand {
     return OffChainGatewayCommand(
         TransferMethod.valueOf(transferMethod),
         currencySymbol,
@@ -132,9 +178,16 @@ fun OffChainGatewayCommand.toModel(): OffChainGatewayModel {
         transferMethod.name,
         isDepositActive,
         isWithdrawActive,
-        depositDescription,
-        withdrawDescription,
         displayOrder
+    )
+}
+
+fun OffChainGatewayLocalizationModel.toCommand(): OffChainGatewayLocalizationCommand {
+    return OffChainGatewayLocalizationCommand(
+        id = id,
+        depositDescription = depositDescription,
+        withdrawDescription = withdrawDescription,
+        language = language,
     )
 }
 
@@ -142,20 +195,36 @@ fun TerminalCommand.toModel(): TerminalModel {
     return TerminalModel(
         null,
         uuid,
-        owner,
-        identifier, active, type, metaData, description, displayOrder
+        identifier, active, metaData, displayOrder
     )
 }
 
-fun TerminalModel.toDto(): TerminalCommand {
+fun TerminalView.toModel(): TerminalModel {
+    return TerminalModel(
+        id,
+        uuid,
+        identifier, active, metaData, displayOrder
+    )
+}
+
+fun TerminalView.toCommand(): TerminalCommand {
     return TerminalCommand(
-        uuid!!,
+        uuid,
         owner,
-        identifier, active, type, metaData, description, displayOrder
+        identifier, active, metaData, description, displayOrder
     )
 }
 
-fun CurrencyModel.toCurrencyData(): CurrencyData {
+fun TerminalLocalizationModel.toCommand(): TerminalLocalizationCommand {
+    return TerminalLocalizationCommand(
+        id,
+        description,
+        owner,
+        language
+    )
+}
+
+fun CurrencyView.toCurrencyData(): CurrencyData {
     return CurrencyData(
         symbol,
         uuid,
@@ -170,7 +239,7 @@ fun CurrencyModel.toCurrencyData(): CurrencyData {
         description,
         shortDescription,
         externalUrl,
-        order,
+        displayOrder,
         maxOrder,
     )
 }

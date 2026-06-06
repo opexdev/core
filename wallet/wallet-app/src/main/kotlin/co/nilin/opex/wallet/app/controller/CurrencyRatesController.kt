@@ -1,14 +1,11 @@
 package co.nilin.opex.wallet.app.controller
 
-import co.nilin.opex.wallet.app.dto.CurrencyExchangeRate
 import co.nilin.opex.wallet.app.dto.CurrencyExchangeRatesResponse
 import co.nilin.opex.wallet.app.dto.CurrencyPair
 import co.nilin.opex.wallet.app.dto.SetCurrencyExchangeRateRequest
 import co.nilin.opex.wallet.app.service.otc.GraphService
 import co.nilin.opex.wallet.core.inout.CurrencyPrice
-
 import co.nilin.opex.wallet.core.model.otc.*
-
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
@@ -127,6 +124,44 @@ class CurrencyRatesController(
         return rateService.getForbiddenPairs()
     }
 
+    @PostMapping("/forbidden-swap-pairs")
+    @ApiResponse(
+        message = "OK",
+        code = 200,
+    )
+    suspend fun addForbiddenSwapPair(@RequestBody request: CurrencyPair) {
+        request.validate()
+        rateService.addForbiddenSwapPair(ForbiddenSwapPair(request.sourceSymbol, request.destSymbol))
+    }
+
+    @DeleteMapping("/forbidden-swap-pairs/{sourceSymbol}/{destSymbol}")
+    @ApiResponse(
+        message = "OK",
+        code = 200,
+    )
+    suspend fun deleteForbiddenSwapPair(
+        @PathVariable sourceSymbol: String,
+        @PathVariable destSymbol: String
+    ): ForbiddenSwapPairs {
+        return rateService.deleteForbiddenSwapPair(ForbiddenSwapPair(sourceSymbol, destSymbol))
+    }
+
+    @GetMapping("/forbidden-swap-pairs")
+    @ApiResponse(
+        message = "OK",
+        code = 200,
+        examples = Example(
+            ExampleProperty(
+                value = "[{\"sourceSymbol\": \"BTC\",\n" +
+                        "               \"destSymbol\": \"ETH\" }]",
+                mediaType = "application/json"
+            )
+        )
+    )
+    suspend fun fetchForbiddenSwapPairs(): ForbiddenSwapPairs {
+        return rateService.getForbiddenSwapPairs()
+    }
+
     @PostMapping("/transitive-symbols")
     @ApiResponse(
         message = "OK",
@@ -175,10 +210,7 @@ class CurrencyRatesController(
         @RequestParam("sourceSymbol") sourceSymbol: String? = null,
         @RequestParam("destSymbol") destSymbol: String? = null
     ): CurrencyExchangeRatesResponse {
-        return CurrencyExchangeRatesResponse(
-            graphService.buildRoutes(sourceSymbol, destSymbol)
-                .map { CurrencyExchangeRate(it.getSourceSymbol(), it.getDestSymbol(), it.getRate()) }
-        )
+        return CurrencyExchangeRatesResponse(graphService.getCurrencyExchangeRates(sourceSymbol, destSymbol))
     }
 
     @GetMapping("/currency/price")

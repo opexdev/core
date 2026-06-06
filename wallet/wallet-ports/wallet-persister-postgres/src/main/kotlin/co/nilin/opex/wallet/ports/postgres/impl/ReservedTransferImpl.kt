@@ -1,21 +1,27 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.core.inout.AdminSwapResponse
 import co.nilin.opex.wallet.core.inout.SwapResponse
 import co.nilin.opex.wallet.core.model.otc.ReservedStatus
 import co.nilin.opex.wallet.core.model.otc.ReservedTransfer
 import co.nilin.opex.wallet.core.spi.ReservedTransferManager
+import co.nilin.opex.wallet.ports.postgres.dao.ForbiddenSwapPairRepository
 import co.nilin.opex.wallet.ports.postgres.dao.ReservedTransferRepository
 import co.nilin.opex.wallet.ports.postgres.model.ReservedTransferModel
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirstOrElse
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 
 @Component
-class ReservedTransferImpl(private val reservedTransferRepository: ReservedTransferRepository) :
+class ReservedTransferImpl(
+    private val reservedTransferRepository: ReservedTransferRepository,
+    private val forbiddenSwapPairRepository: ForbiddenSwapPairRepository
+) :
     ReservedTransferManager {
     @Value("\${app.reserved-transfer.life-time}")
     private var reservedTransferLifeTime: Long? = null
@@ -33,6 +39,10 @@ class ReservedTransferImpl(private val reservedTransferRepository: ReservedTrans
     }
 
     override suspend fun reserve(request: ReservedTransfer): ReservedTransfer {
+        forbiddenSwapPairRepository.findBySourceSymbolAndDestinationSymbol(request.sourceSymbol, request.destSymbol)
+            ?.awaitFirstOrNull()?.let {
+                throw OpexError.ForbiddenSwapPair.exception()
+            }
         request.apply {
             reserveDate = LocalDateTime.now()
             status = ReservedStatus.Created

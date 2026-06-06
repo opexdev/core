@@ -7,7 +7,7 @@ import java.util.*
 data class CurrencyData(
     var symbol: String,
     var uuid: String? = UUID.randomUUID().toString(),
-    var name: String,
+    var name: String? = null,
     var precision: BigDecimal,
     var title: String? = null,
     var alias: String? = null,
@@ -18,7 +18,7 @@ data class CurrencyData(
     var description: String? = null,
     var shortDescription: String? = null,
     var externalUrl: String? = null,
-    var order: Int? = null,
-    var maxOrder : BigDecimal? = null,
+    var displayOrder: Int? = null,
+    var maxOrder: BigDecimal? = null,
 
     )

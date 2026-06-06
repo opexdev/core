@@ -112,3 +112,14 @@ app:
   custom-message:
     enabled: ${CUSTOM_MESSAGE_ENABLED:false}
     base-url: ${CUSTOM_MESSAGE_URL}
+  custom-user-language:
+    enabled: ${CUSTOM_USER_LANGUAGE_ENABLED:false}
+
+
+# --- Swagger / SpringDoc (env-driven) ---
+springdoc:
+  api-docs:
+    enabled: ${SWAGGER_API_DOCS_ENABLED:false}
+  swagger-ui:
+    enabled: ${SWAGGER_UI_ENABLED:false}
+    path: ${SWAGGER_UI_PATH:/swagger-ui.html}

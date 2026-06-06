@@ -10,6 +10,7 @@ import co.nilin.opex.api.ports.binance.data.GlobalPriceResponse
 import co.nilin.opex.api.ports.binance.data.MarketInfoResponse
 import co.nilin.opex.api.ports.binance.data.MarketStatResponse
 import co.nilin.opex.common.utils.Interval
+import io.swagger.v3.oas.annotations.Hidden
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.slf4j.LoggerFactory
@@ -19,7 +20,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.math.BigDecimal
 
-@RestController // Custom service
+@RestController
+@Hidden
+@Deprecated("")// Custom service
 @RequestMapping("/v1/landing")
 class LandingController(
     private val marketStatProxy: MarketStatProxy,

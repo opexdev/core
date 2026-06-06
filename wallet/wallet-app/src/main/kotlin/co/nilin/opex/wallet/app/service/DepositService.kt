@@ -33,7 +33,7 @@ class DepositService(
 ) {
 
     private val logger = LoggerFactory.getLogger(DepositService::class.java)
-
+    
     // -------------------------------------------------------------------------
     // Helpers (NO LOGIC CHANGE)
     // -------------------------------------------------------------------------
@@ -107,6 +107,42 @@ class DepositService(
             transferMethod = TransferMethod.MANUALLY
         )
     }
+    // -------------------------------------------------------------------------
+    // Manual Deposit
+    // -------------------------------------------------------------------------
+
+    @Transactional
+    suspend fun processExternalDeposit(
+        request: DepositWebhookRequest
+    ): DepositWebhookResponse {
+
+        logger.info(
+            "New incoming deposit request : $ to ${request.externalIdentifier} on ${request.symbol} at ${LocalDateTime.now()}"
+        )
+
+        val receiverUuid = walletOwnerManager.findWalletOwnerByExternalIdentifier(request.externalIdentifier)?.uuid
+            ?: throw OpexError.BadRequest.exception("Identifier ${request.externalIdentifier} not fount")
+
+        with(request) {
+            deposit(
+                symbol = symbol,
+                receiverUuid = receiverUuid,
+                receiverWalletType = WalletType.MAIN,
+                senderUuid = walletOwnerManager.systemUuid,
+                amount = amount,
+                description = "Transfer to $depositNumber at $date, payId: $externalIdentifier",
+                transferRef = referenceNumber,
+                chain = null,
+                attachment = null,
+                depositType = DepositType.OFF_CHAIN,
+                gatewayUuid = null,
+                transferMethod = TransferMethod.SHEBA,
+                persistInvalidDeposit = false
+            )
+        }
+        return DepositWebhookResponse(request.referenceNumber, DepositStatus.DONE.name, false)
+    }
+
 
     // -------------------------------------------------------------------------
     // Core Deposit
@@ -126,6 +162,7 @@ class DepositService(
         depositType: DepositType,
         gatewayUuid: String?,
         transferMethod: TransferMethod?,
+        persistInvalidDeposit: Boolean = true,
     ): TransferResult? {
 
         logger.info(
@@ -165,7 +202,10 @@ class DepositService(
             depositCommand.status = DepositStatus.INVALID
         }
 
-        traceDepositService.saveDepositInNewTransaction(depositCommand)
+        if (persistInvalidDeposit)
+            traceDepositService.saveDepositInNewTransaction(depositCommand)
+        else
+            depositPersister.persist(depositCommand)
 
         if (!isValid) {
             return null
@@ -208,20 +248,20 @@ class DepositService(
     // -------------------------------------------------------------------------
 
     fun isValidDeposit(deposit: Deposit, gatewayData: GatewayData): Boolean {
-        return gatewayData.isEnabled &&
+        return deposit.transferMethod == TransferMethod.MANUALLY || (gatewayData.isEnabled &&
                 deposit.amount >= gatewayData.minimum &&
-                deposit.amount <= gatewayData.maximum
+                deposit.amount <= gatewayData.maximum)
     }
 
     suspend fun fetchDepositData(
         gatewayUuid: String?,
         symbol: String,
-        depositType: co.nilin.opex.wallet.core.model.DepositType,
+        depositType: DepositType,
         depositCommand: Deposit,
     ): GatewayData {
 
         if (gatewayUuid == null) {
-            return GatewayData(true, BigDecimal.ZERO, BigDecimal.ZERO, null)
+            return GatewayData(true, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.valueOf(Long.MAX_VALUE))
         }
 
         val gateway = currencyServiceV2

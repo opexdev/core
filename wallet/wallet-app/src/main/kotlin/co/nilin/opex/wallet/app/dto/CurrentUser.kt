@@ -7,5 +7,6 @@ data class CurrentUser(
     val fullName: String?,
     val mobile: String?,
     val roles: List<String>,
-    val level: String?
+    val level: String?,
+    val identityId: String?
 )

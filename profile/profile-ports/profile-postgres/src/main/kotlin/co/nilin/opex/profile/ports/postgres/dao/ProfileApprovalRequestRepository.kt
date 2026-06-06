@@ -77,7 +77,7 @@ interface ProfileApprovalRequestRepository : ReactiveCrudRepository<ProfileAppro
         createDateTo: LocalDateTime?,
         limit: Int,
         offset: Int,
-    ): Flow<ProfileApprovalRequestModel>
+    ): Flow<ProfileApprovalAdminResponse>
 
     @Query("select * from profile_approval_request p where p.user_id = :userId order by create_date desc limit 1")
     fun findByUserId(userId: String): Mono<ProfileApprovalUserResponse>

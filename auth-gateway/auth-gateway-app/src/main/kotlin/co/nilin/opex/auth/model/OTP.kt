@@ -25,8 +25,7 @@ data class OTPVerifyResponse(
     val type: OTPResultType
 )
 
-//TODO IMPORTANT: remove in production
-data class TempOtpResponse(val otp: String, val otpReceiver: OTPReceiver?)
+data class TempOtpResponse(val otp: String?, val otpReceiver: OTPReceiver?)
 
 enum class OTPAction {
     REGISTER, FORGET, NONE

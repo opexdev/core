@@ -26,5 +26,5 @@ class WithdrawResponse(
     val otpRequired: Int? = 0,
 )
 enum class WithdrawType {
-    CARD_TO_CARD, SHEBA, ON_CHAIN, OFF_CHAIN
+     ON_CHAIN, OFF_CHAIN
 }

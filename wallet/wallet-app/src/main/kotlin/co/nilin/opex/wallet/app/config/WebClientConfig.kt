@@ -1,5 +1,7 @@
 package co.nilin.opex.wallet.app.config
 
+import co.nilin.opex.common.data.UserLanguage
+import co.nilin.opex.common.utils.LanguageUtils.getDefaultUserLanguage
 import io.netty.channel.ChannelOption
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.cloud.client.ServiceInstance
@@ -9,9 +11,12 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import org.springframework.http.client.reactive.ReactorClientHttpConnector
+import org.springframework.web.reactive.function.client.ClientRequest
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction
 import org.springframework.web.reactive.function.client.WebClient
 import org.zalando.logbook.Logbook
 import org.zalando.logbook.netty.LogbookClientHandler
+import reactor.core.publisher.Mono
 import reactor.netty.http.client.HttpClient
 import reactor.netty.resources.ConnectionProvider
 import java.time.Duration
@@ -44,6 +49,7 @@ class WebClientConfig(logbook: Logbook) {
         return WebClient.builder()
             .filter(ReactorLoadBalancerExchangeFilterFunction(loadBalancerFactory, emptyList()))
             .clientConnector(ReactorClientHttpConnector(client))
+            .filter(languageFilter())
             .build()
     }
 
@@ -53,7 +59,17 @@ class WebClientConfig(logbook: Logbook) {
     fun webClient(): WebClient {
         return WebClient.builder()
             .clientConnector(ReactorClientHttpConnector(client))
+            .filter(languageFilter())
             .build()
     }
 
+    private fun languageFilter() = ExchangeFilterFunction { request, next ->
+        Mono.deferContextual { ctx ->
+            val lang = ctx.getOrDefault("lang", getDefaultUserLanguage())
+            val mutatedRequest = ClientRequest.from(request)
+                .header("Accept-Language", lang)
+                .build()
+            next.exchange(mutatedRequest)
+        }
+    }
 }

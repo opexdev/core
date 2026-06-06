@@ -8,7 +8,7 @@ import java.util.*
 data class CurrencyDto(
     var symbol: String? = null,
     var uuid: String? = UUID.randomUUID().toString(),
-    var name: String,
+    var name: String? = null,
     var precision: BigDecimal,
     var title: String? = null,
     var alias: String? = null,
@@ -23,11 +23,11 @@ data class CurrencyDto(
     var externalUrl: String? = null,
     var gateways: List<CurrencyGatewayCommand>? = null,
     var availableGatewayType: String? = null,
-    var order: Int? = null,
+    var displayOrder: Int? = null,
     var systemBalance: BigDecimal? = null,
     var maxOrder: BigDecimal? = null,
 
-) {
+    ) {
 
     // Separated them just to support having "id" field in currency table.
     //Now it is unnecessary
@@ -51,7 +51,7 @@ data class CurrencyDto(
             externalUrl,
             gateways,
             availableGatewayType,
-            order,
+            displayOrder,
             maxOrder
         )
     }

@@ -22,7 +22,7 @@
         <kotlin.version>2.1.0</kotlin.version>
         <spring.version>3.4.2</spring.version>
         <spring-cloud.version>2024.0.0</spring-cloud.version>
-        <error-hanlder.version>1.2.19</error-hanlder.version>
+        <error-hanlder.version>1.2.25</error-hanlder.version>
     </properties>
 
 
@@ -55,6 +55,11 @@
                 <groupId>co.nilin.opex.utility</groupId>
                 <artifactId>error-handler</artifactId>
                 <version>${error-hanlder.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.nilin.opex.utility</groupId>
+                <artifactId>interceptors</artifactId>
+                <version>${interceptor.version}</version>
             </dependency>
             <dependency>
                 <groupId>co.nilin.opex.device-management</groupId>

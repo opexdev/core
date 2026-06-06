@@ -6,7 +6,6 @@ import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.spi.WalletDataManager
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepositoryV2
 import co.nilin.opex.wallet.ports.postgres.dao.WalletRepository
-import co.nilin.opex.wallet.ports.postgres.model.CurrencyModel
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import kotlinx.coroutines.reactive.awaitFirstOrElse
@@ -22,12 +21,12 @@ import java.util.stream.Collectors
 @Component
 class WalletDataManagerImpl(
     private val walletRepository: WalletRepository,
-    private val totalAssetsSnapshotImpl: TotalAssetsSnapshotImpl,
+    private val totalAssetsSnapshotImpl: UserAssetsSnapshotImpl,
     private val currencyRepositoryV2: CurrencyRepositoryV2,
     private val objectMapper: ObjectMapper,
     private val cacheManager: CacheManager<String, BigDecimal>,
     @Value("\${app.zone-offset}") private val zoneOffsetString: String,
-    ) : WalletDataManager {
+) : WalletDataManager {
 
     override suspend fun findWalletDataByCriteria(
         uuid: String?,
@@ -89,7 +88,7 @@ class WalletDataManagerImpl(
     }
 
     override suspend fun findUserWalletsTotal(): List<WalletTotal>? {
-        val allCurrencies = currencyRepositoryV2.fetchSemiCurrencies()?.map(CurrencyModel::symbol)
+        val allCurrencies = currencyRepositoryV2.fetchSemiCurrencies()?.map { it.symbol }
         val allDepositedCurrency =
             walletRepository.findUserWalletsTotal().collectList().awaitFirstOrElse { emptyList() }
         return allCurrencies?.map { c ->

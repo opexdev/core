@@ -50,6 +50,11 @@
                 <version>${error-hanlder.version}</version>
             </dependency>
             <dependency>
+                <groupId>co.nilin.opex.utility</groupId>
+                <artifactId>interceptors</artifactId>
+                <version>${interceptor.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>co.nilin.opex.auth</groupId>
                 <artifactId>user-management-core</artifactId>
                 <version>${project.version}</version>

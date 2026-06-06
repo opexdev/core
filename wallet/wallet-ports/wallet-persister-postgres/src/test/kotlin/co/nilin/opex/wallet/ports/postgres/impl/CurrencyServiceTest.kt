@@ -1,26 +1,36 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.wallet.core.model.FetchCurrency
+import co.nilin.opex.wallet.ports.postgres.dao.CurrencyLocalizationsRepository
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepositoryV2
 import co.nilin.opex.wallet.ports.postgres.impl.sample.VALID
 import co.nilin.opex.wallet.ports.postgres.util.RedisCacheHelper
-import co.nilin.opex.wallet.ports.postgres.util.toModel
+import co.nilin.opex.wallet.ports.postgres.util.toView
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.springframework.transaction.reactive.TransactionalOperator
 import reactor.core.publisher.Mono
 
 private class CurrencyServiceTest {
     private val currencyRepository: CurrencyRepositoryV2 = mockk()
     private val redisCacheHelper: RedisCacheHelper = mockk()
-    private val currencyService: CurrencyServiceImplV2 = CurrencyServiceImplV2(currencyRepository,redisCacheHelper)
+    private val currencyLocalizationsRepository: CurrencyLocalizationsRepository = mockk()
+    private val transactionalOperator: TransactionalOperator = mockk()
+    private val currencyService: CurrencyServiceImplV2 = CurrencyServiceImplV2(
+        currencyRepository,
+        redisCacheHelper,
+        currencyLocalizationsRepository,
+        transactionalOperator
+    )
 
     @Test
     fun givenCurrency_whenGetCurrency_thenReturnCurrency(): Unit = runBlocking {
-        every { currencyRepository.fetchCurrency(symbol = VALID.CURRENCY.symbol) } returns Mono.just(VALID.CURRENCY.toModel())
-
+        every {
+            currencyRepository.fetchCurrency(null, VALID.CURRENCY.symbol, any())
+        } returns Mono.just(VALID.CURRENCY.toView())
         val c = currencyService.fetchCurrency(FetchCurrency(symbol = VALID.CURRENCY.symbol))
 
         assertThat(c).isNotNull

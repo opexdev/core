@@ -114,6 +114,10 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     WithdrawCannotBeRequested(6049, "Withdraw cannot be requested", HttpStatus.BAD_REQUEST),
     OTPCannotBeRequested(6050, "OTP cannot be requested", HttpStatus.BAD_REQUEST),
     WithdrawRequestExpired(6051,"Withdraw request expired", HttpStatus.BAD_REQUEST),
+    ForbiddenSwapPair(6052, null, HttpStatus.BAD_REQUEST),
+    TerminalLocalizationNotFound(6053, "Terminal localization not found", HttpStatus.NOT_FOUND),
+    CurrencyLocalizationNotFound(6051, "Currency localization not found", HttpStatus.NOT_FOUND),
+
 
     // code 7000: api
     OrderNotFound(7001, "No order found", HttpStatus.NOT_FOUND),

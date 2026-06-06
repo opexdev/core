@@ -71,10 +71,31 @@ app:
     url: http://opex-otp/v1
   captcha:
     url: http://opex-captcha
-    enabled: false
+    enabled: ${CAPTCHA_ENABLED:true}
   device-management:
     url:  http://opex-device-management
   custom-message:
     enabled: ${CUSTOM_MESSAGE_ENABLED:false}
     base-url: ${CUSTOM_MESSAGE_URL}
+  custom-user-language:
+    enabled: ${CUSTOM_USER_LANGUAGE_ENABLED:false}
   pre-auth-client-secret: ${PRE_AUTH_CLIENT_SECRET}
+  cors:
+    enabled: true
+    allowed-origins: ${ALLOWED_ORIGINS:"http://localhost:8110"}
+  openapi:
+    server-url: ${OPEN_API_SERVER_URL}
+# --- Swagger / SpringDoc (env-driven) ---
+springdoc:
+  api-docs:
+    enabled: ${SWAGGER_API_DOCS_ENABLED:false}
+    path: ${SWAGGER_API_DOCS_PATH:/v3/api-docs}
+
+  swagger-ui:
+    enabled: ${SWAGGER_UI_ENABLED:false}
+    path: ${SWAGGER_UI_PATH:/swagger-ui.html}
+    try-it-out-enabled: ${SWAGGER_TRY_IT_OUT_ENABLED:true}
+    persist-authorization: ${SWAGGER_PERSIST_AUTHORIZATION:true}
+    display-request-duration: true
+    operations-sorter: method
+    tags-sorter: alpha

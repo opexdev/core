@@ -2,11 +2,10 @@ package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.wallet.app.dto.CurrenciesDto
 import co.nilin.opex.wallet.app.dto.CurrencyDto
+import co.nilin.opex.wallet.app.dto.CurrencyLocalizationResponse
+import co.nilin.opex.wallet.app.dto.UpdateCurrencyRequest
 import co.nilin.opex.wallet.app.service.CurrencyServiceV2
-import co.nilin.opex.wallet.core.inout.CurrencyData
-import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
-import co.nilin.opex.wallet.core.inout.GatewayType
-import co.nilin.opex.wallet.core.inout.TerminalCommand
+import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.QuoteCurrency
 import co.nilin.opex.wallet.core.spi.GatewayTerminalManager
 import co.nilin.opex.wallet.core.spi.QuoteCurrencyManager
@@ -28,9 +27,9 @@ class CurrencyController(
     @PutMapping("/{currencySymbol}")
     suspend fun updateCurrency(
         @PathVariable("currencySymbol") currencySymbol: String,
-        @RequestBody request: CurrencyDto,
+        @RequestBody request: UpdateCurrencyRequest,
     ): CurrencyDto? {
-        return currencyService.updateCurrency(request.apply { symbol = currencySymbol })
+        return currencyService.updateCurrency(request.apply { symbol = currencySymbol }.toCurrencyDto())
     }
 
 
@@ -76,7 +75,7 @@ class CurrencyController(
         })
     }
 
-    @PutMapping("{currencySymbol}/gateway/{gatewayUuid}")
+    @PutMapping("/{currencySymbol}/gateway/{gatewayUuid}")
     suspend fun updateGateway(
         @PathVariable("gatewayUuid") gatewayUuid: String,
         @PathVariable("currencySymbol") currencySymbol: String,
@@ -88,7 +87,7 @@ class CurrencyController(
         })
     }
 
-    @GetMapping("{currencySymbol}/gateway/{gatewayUuid}")
+    @GetMapping("/{currencySymbol}/gateway/{gatewayUuid}")
     suspend fun getGateway(
         @PathVariable("gatewayUuid") gatewayUuid: String,
         @PathVariable("currencySymbol") currencySymbol: String,
@@ -96,7 +95,7 @@ class CurrencyController(
         return currencyService.fetchCurrencyGateway(gatewayUuid, currencySymbol)
     }
 
-    @DeleteMapping("{currencySymbol}/gateway/{gatewayUuid}")
+    @DeleteMapping("/{currencySymbol}/gateway/{gatewayUuid}")
     suspend fun deleteGateway(
         @PathVariable("gatewayUuid") gatewayUuid: String,
         @PathVariable("currencySymbol") currencySymbol: String,
@@ -158,4 +157,23 @@ class CurrencyController(
         quoteCurrencyManager.update(currency, isReference, displayOrder)
     }
 
+    @GetMapping("/{currency}/localization")
+    suspend fun getCurrencyLocalizations(@PathVariable("currency") currency: String): CurrencyLocalizationResponse {
+        val localizations = currencyService.fetchCurrencyLocalizations(currency)
+        return CurrencyLocalizationResponse(currency, localizations)
+    }
+
+    @PostMapping("/{currency}/localization")
+    suspend fun saveCurrencyLocalizations(
+        @PathVariable("currency") currency: String,
+        @RequestBody currencyLocalizations: List<CurrencyLocalizationCommand>
+    ): CurrencyLocalizationResponse {
+        val localizations = currencyService.saveCurrencyLocalizations(currency, currencyLocalizations)
+        return CurrencyLocalizationResponse(currency, localizations)
+    }
+
+    @DeleteMapping("/localization/{id}")
+    suspend fun deleteCurrencyLocalization(@PathVariable("id") id: Long) {
+        currencyService.deleteCurrencyLocalization(id)
+    }
 }

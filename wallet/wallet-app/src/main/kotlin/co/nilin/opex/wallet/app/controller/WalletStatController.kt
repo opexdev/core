@@ -6,8 +6,9 @@ import co.nilin.opex.wallet.core.inout.WalletData
 import co.nilin.opex.wallet.core.inout.WalletDataResponse
 import co.nilin.opex.wallet.core.inout.WalletTotal
 import co.nilin.opex.wallet.core.model.TotalAssetsSnapshot
+import co.nilin.opex.wallet.core.model.UserDetailAssetsSnapshot
 import co.nilin.opex.wallet.core.model.WalletType
-import co.nilin.opex.wallet.core.spi.TotalAssetsSnapshotManager
+import co.nilin.opex.wallet.core.spi.UserAssetsSnapshotManager
 import co.nilin.opex.wallet.core.spi.WalletDataManager
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/stats")
 class WalletStatController(
     private val walletDataManager: WalletDataManager,
-    private val totalAssetsSnapshotManager: TotalAssetsSnapshotManager
+    private val totalAssetsSnapshotManager: UserAssetsSnapshotManager
 ) {
 
     @GetMapping("/wallets")
@@ -57,7 +58,15 @@ class WalletStatController(
     suspend fun getWalletTotalAssetsSnapshot(
         @PathVariable uuid: String,
     ): TotalAssetsSnapshot? {
-        return totalAssetsSnapshotManager.getUserLastSnapshot(uuid)
+        return totalAssetsSnapshotManager.getUserLastTotalAssetsSnapshot(uuid)
+    }
+
+    @GetMapping("/detail-assets")
+    suspend fun getWalletsDetailAssetsSnapshot(
+        @RequestParam limit: Int?,
+        @RequestParam offset: Int?
+    ): List<UserDetailAssetsSnapshot> {
+        return totalAssetsSnapshotManager.getUsersLastDetailAssetsSnapshot(getValidLimit(limit), offset ?: 0)
     }
 
     @GetMapping("/balance/{userId}")
@@ -70,6 +79,13 @@ class WalletStatController(
         return walletDataManager.getLastDaysBalance(
             userId = userId
         )
+    }
+
+    private fun getValidLimit(limit: Int?): Int = when {
+        limit == null -> 10
+        limit > 100 -> 100
+        limit < 1 -> 1
+        else -> limit
     }
 
 }

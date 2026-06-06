@@ -83,6 +83,11 @@
                 <version>${error-hanlder.version}</version>
             </dependency>
             <dependency>
+                <groupId>co.nilin.opex.utility</groupId>
+                <artifactId>interceptors</artifactId>
+                <version>${interceptor.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
                 <version>${spring-cloud.version}</version>

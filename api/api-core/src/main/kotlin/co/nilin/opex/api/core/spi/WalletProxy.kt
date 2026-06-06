@@ -104,9 +104,6 @@ interface WalletProxy {
         limit: Int?,
     ): List<TransactionSummary>
 
-    suspend fun deposit(
-        request: RequestDepositBody
-    ): TransferResult?
 
     suspend fun requestWithdraw(
         token: String,
@@ -127,8 +124,8 @@ interface WalletProxy {
 
     suspend fun getQuoteCurrencies(): List<QuoteCurrency>
 
-    suspend fun getSwapTransactions(token: String, request: UserTransactionRequest): List<SwapResponse>
-    suspend fun getSwapTransactionsCount(token: String, request: UserTransactionRequest): Long
+    suspend fun getSwapTransactions(token: String, request: UserSwapTransactionRequest): List<SwapResponse>
+    suspend fun getSwapTransactionsCount(token: String, request: UserSwapTransactionRequest): Long
 
     suspend fun requestWithdrawOTP(token: String, withdrawUuid: String, otpType: OTPType): TempOtpResponse
     suspend fun verifyWithdrawOTP(
@@ -150,7 +147,7 @@ interface WalletProxy {
 
     suspend fun getSwapTransactionsForAdmin(
         token: String,
-        request: UserTransactionRequest
+        request: UserSwapTransactionRequest
     ): List<SwapAdminResponse>
 
     suspend fun getTradeHistoryForAdmin(
@@ -201,7 +198,65 @@ interface WalletProxy {
 
     suspend fun getDailyBalanceLast31Days(token: String, uuid: String): List<DailyAmount>
 
-    suspend fun reserveSwap(token: String, request: TransferReserveRequest) :ReservedTransferResponse
-    suspend fun finalizeSwap(token: String,reserveUuid: String,description: String?,transferRef: String?) : TransferResult
-    suspend fun getGatewayTerminal(gatewayUuid: String):List<TerminalCommand>
+    suspend fun reserveSwap(token: String, request: TransferReserveRequest): ReservedTransferResponse
+    suspend fun finalizeSwap(
+        token: String,
+        reserveUuid: String,
+        description: String?,
+        transferRef: String?
+    ): TransferResult
+
+    suspend fun getGatewayTerminal(gatewayUuid: String): List<TerminalCommand>
+    suspend fun getUsersDetailAssets(limit: Int, offset: Int): List<UserDetailAssetsSnapshot>
+    suspend fun getCurrencyLocalizations(token: String, currency: String): CurrencyLocalizationResponse
+    suspend fun saveCurrencyLocalizations(
+        token: String,
+        currency: String,
+        currencyLocalizations: List<CurrencyLocalizationCommand>
+    ): CurrencyLocalizationResponse
+
+    suspend fun deleteCurrencyLocalization(token: String, id: Long)
+    suspend fun getTerminalLocalizations(token: String, terminalUuid: String): TerminalLocalizationResponse
+    suspend fun saveTerminalLocalizations(
+        token: String,
+        terminalUuid: String,
+        terminalLocalizations: List<TerminalLocalizationCommand>
+    ): TerminalLocalizationResponse
+
+    suspend fun deleteTerminalLocalization(token: String, id: Long)
+
+    suspend fun getOffChainGatewayLocalizations(token: String, gatewayUuid: String): GatewayLocalizationResponse
+    suspend fun saveOffChainGatewayLocalizations(
+        token: String,
+        gatewayUuid: String,
+        gatewayLocalizations: List<GatewayLocalizationCommand>
+    ): GatewayLocalizationResponse
+
+    suspend fun deleteOffChainGatewayLocalization(token: String, id: Long)
+    suspend fun saveTerminal(token: String, terminal: TerminalCommand): TerminalCommand?
+    suspend fun updateTerminal(token: String, terminalUuid: String, terminal: TerminalUpdateCommand): TerminalCommand?
+    suspend fun deleteTerminal(token: String, terminalUuid: String)
+    suspend fun getTerminals(token: String): List<TerminalCommand>?
+    suspend fun getTerminal(token: String, terminalUuid: String): TerminalCommand?
+    suspend fun getAssignedGatewayToTerminal(token: String, terminalUuid: String): List<CurrencyGatewayCommand>?
+    suspend fun assignTerminalsToGateway(token: String, gatewayUuid: String, terminal: List<String>)
+    suspend fun revokeTerminalsToGateway(token: String, gatewayUuid: String, terminal: List<String>)
+    suspend fun addGatewayToCurrency(
+        token: String,
+        currencySymbol: String,
+        gatewayCommand: CurrencyGatewayCommand
+    ): CurrencyGatewayCommand?
+
+    suspend fun updateGateway(
+        token: String,
+        gatewayUuid: String,
+        currencySymbol: String,
+        gatewayCommand: CurrencyGatewayUpdateCommand
+    ): CurrencyGatewayCommand?
+
+    suspend fun getGateway(token: String, gatewayUuid: String, currencySymbol: String): CurrencyGatewayCommand?
+
+    suspend fun deleteGateway(token: String, gatewayUuid: String, currencySymbol: String)
+
+    suspend fun submitDepositWebhook(request: DepositWebhookRequest, signature: String): DepositWebhookResponse
 }

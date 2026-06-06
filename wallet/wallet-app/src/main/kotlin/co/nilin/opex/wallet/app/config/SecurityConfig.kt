@@ -22,6 +22,7 @@ class SecurityConfig(private val webClient: WebClient) {
 
     @Value("\${app.auth.cert-url}")
     private lateinit var certUrl: String
+
     @Value("\${app.auth.iss-url}")
     private lateinit var issUrl: String
 
@@ -30,9 +31,12 @@ class SecurityConfig(private val webClient: WebClient) {
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain? {
         http.csrf().disable()
             .authorizeExchange()
+            .pathMatchers("/v1/deposit/webhook").permitAll()
             .pathMatchers("/balanceOf/**").authenticated()
             .pathMatchers("/owner/**").authenticated()
             .pathMatchers("/withdraw").authenticated()
+            .pathMatchers("/currency/localization/**").hasAuthority("ROLE_admin")
+            .pathMatchers("/offchain-gateway/**").hasAuthority("ROLE_admin")
             .pathMatchers(HttpMethod.PUT, "/currency/**").hasAuthority("ROLE_admin")
             .pathMatchers(HttpMethod.POST, "/currency/**").hasAuthority("ROLE_admin")
             .pathMatchers(HttpMethod.DELETE, "/currency/**").hasAuthority("ROLE_admin")
@@ -47,6 +51,7 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/admin/v1/swap/history").hasAnyAuthority("ROLE_monitoring", "ROLE_admin")
             .pathMatchers("/admin/**").hasAuthority("ROLE_admin")
             .pathMatchers("/stats/total-assets/**").permitAll()
+            .pathMatchers("/stats/detail-assets/**").permitAll()
             .pathMatchers(HttpMethod.GET, "/currency/**").permitAll()
             .pathMatchers("/actuator/**").permitAll()
             .pathMatchers("/storage/**").hasAuthority("ROLE_admin")
@@ -59,7 +64,7 @@ class SecurityConfig(private val webClient: WebClient) {
             //otc
             .pathMatchers("/admin/**").hasAuthority("ROLE_admin")
             .pathMatchers(HttpMethod.GET, "/otc/**").permitAll()
-            .pathMatchers(HttpMethod.PUT, "/otc/rate").hasAnyAuthority("ROLE_rate_bot","ROLE_admin")
+            .pathMatchers(HttpMethod.PUT, "/otc/rate").hasAnyAuthority("ROLE_rate_bot", "ROLE_admin")
             .pathMatchers(HttpMethod.PUT, "/otc/**").hasAuthority("ROLE_admin")
             .pathMatchers(HttpMethod.POST, "/otc/**").hasAuthority("ROLE_admin")
             .pathMatchers(HttpMethod.DELETE, "/otc/**").hasAuthority("ROLE_admin")
