@@ -191,7 +191,7 @@ class ProfileManagement(
         }
     }
 
-    private suspend fun  approveProfileAutomatically(userId: String, completedProfile: Profile): Profile {
+    private suspend fun approveProfileAutomatically(userId: String, completedProfile: Profile): Profile {
         kycLevelUpdatedPublisher.publish(
             KycLevelUpdatedEvent(userId, KycLevel.LEVEL_2, LocalDateTime.now())
         )
@@ -238,5 +238,9 @@ class ProfileManagement(
                 createDate = LocalDateTime.now()
             )
         )
+    }
+
+    suspend fun resolveUsers(request: List<String>): Map<String, String?> {
+        return profilePersister.resolveUsers(request)
     }
 }

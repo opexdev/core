@@ -19,6 +19,8 @@ interface MarketDataProxy {
 
     suspend fun recentTrades(token: String, request: AdminTradesHistoryRequest): List<TradeAdminItem>
 
+    suspend fun recentOrders(token: String, request: AdminOrdersHistoryRequest): List<OrderAdminItem>
+
     suspend fun lastPrice(symbol: String?): List<PriceTicker>
 
     suspend fun getBestPriceForSymbols(symbols: List<String>): List<BestPrice>

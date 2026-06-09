@@ -26,3 +26,5 @@ data class TradeAdminItem(
     val makerOwnerName: String? = null,
     val takerOwnerName: String? = null,
 )
+
+

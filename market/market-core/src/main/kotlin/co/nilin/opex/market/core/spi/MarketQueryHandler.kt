@@ -6,17 +6,17 @@ import java.time.LocalDateTime
 
 interface MarketQueryHandler {
 
-    suspend fun getTradeTickerData(interval: Interval): List<PriceChange>
+    suspend fun getTradeTickerData(interval: Interval): List<PriceChange>?
 
     suspend fun getTradeTickerDateBySymbol(symbol: String, interval: Interval): PriceChange?
 
-    suspend fun openBidOrders(symbol: String, limit: Int): List<OrderBook>
+    suspend fun openBidOrders(symbol: String, limit: Int): List<OrderBook>?
 
-    suspend fun openAskOrders(symbol: String, limit: Int): List<OrderBook>
+    suspend fun openAskOrders(symbol: String, limit: Int): List<OrderBook>?
 
     suspend fun lastOrder(symbol: String): Order?
 
-    suspend fun recentTrades(symbol: String, limit: Int): List<MarketTrade>
+    suspend fun recentTrades(symbol: String, limit: Int): List<MarketTrade>?
 
     suspend fun recentTrades(
         symbol: String?,
@@ -27,24 +27,42 @@ interface MarketQueryHandler {
         excludeSelfTrade: Boolean,
         limit: Int,
         offset: Int,
-    ): List<TradeData>
+    ): List<TradeData>?
 
     suspend fun recentTradesAdmin(
+        symbol: String?,
         baseAsset: String?,
         quoteAsset: String?,
+        uuid: String?,
         makerUuid: String?,
         takerUuid: String?,
+        ouid: String?,
+        makerOuid: String?,
+        takerOuid: String?,
         fromDate: LocalDateTime?,
         toDate: LocalDateTime?,
         excludeSelfTrade: Boolean,
         ascendingByTime: Boolean,
-        limit: Int,
-        offset: Int,
-    ): List<TradeData>
+        limit: Int?,
+        offset: Int?,
+    ): List<TradeData>?
+
+    suspend fun recentOrdersAdmin(
+        uuid: String?,
+        symbol: String?,
+        ouid: String?,
+        fromDate: LocalDateTime?,
+        toDate: LocalDateTime?,
+        orderType: MatchingOrderType?,
+        direction: OrderDirection?,
+        ascendingByTime: Boolean,
+        limit: Int?,
+        offset: Int?,
+    ): List<OrderData>?
 
     suspend fun lastPrice(symbol: String?): List<PriceTicker>
 
-    suspend fun getBestPriceForSymbols(symbols: List<String>): List<BestPrice>
+    suspend fun getBestPriceForSymbols(symbols: List<String>): List<BestPrice>?
 
     suspend fun getCandleInfo(
         symbol: String,
@@ -60,9 +78,9 @@ interface MarketQueryHandler {
 
     suspend fun numberOfOrders(interval: Interval, pair: String? = null): Long
 
-    suspend fun mostIncreasePrice(interval: Interval, limit: Int): List<PriceStat>
+    suspend fun mostIncreasePrice(interval: Interval, limit: Int): List<PriceStat>?
 
-    suspend fun mostDecreasePrice(interval: Interval, limit: Int): List<PriceStat>
+    suspend fun mostDecreasePrice(interval: Interval, limit: Int): List<PriceStat>?
 
     suspend fun mostVolume(interval: Interval): TradeVolumeStat?
 

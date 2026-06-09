@@ -13,7 +13,6 @@ import co.nilin.opex.market.ports.postgres.util.RedisCacheHelper
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -60,8 +59,8 @@ class MarketQueryHandlerTest {
         val orderBookResponses = marketQueryHandler.openBidOrders(VALID.ETH_USDT, 1)
 
         assertThat(orderBookResponses).isNotNull
-        assertThat(orderBookResponses.size).isEqualTo(1)
-        assertThat(orderBookResponses.first()).isEqualTo(VALID.ORDER_BOOK_RESPONSE)
+        assertThat(orderBookResponses?.size).isEqualTo(1)
+        assertThat(orderBookResponses?.first()).isEqualTo(VALID.ORDER_BOOK_RESPONSE)
     }
 
     @Test
@@ -114,9 +113,7 @@ class MarketQueryHandlerTest {
         every { redisCacheHelper.getList<MarketTrade>(any()) } returns null
         every {
             tradeRepository.findBySymbolSortDescendingByCreateDate(VALID.ETH_USDT, 1)
-        } returns flow {
-            emit(VALID.TRADE_MODEL)
-        }
+        } returns Flux.just(VALID.TRADE_MODEL)
         every {
             orderRepository.findByOuid(VALID.TRADE_MODEL.makerOuid)
         } returns Mono.just(VALID.MAKER_ORDER_MODEL)

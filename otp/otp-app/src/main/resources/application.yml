@@ -61,7 +61,7 @@ otp:
     password: ${SMTP_PASS}
     from: ${SMTP_FROM}
     proxy:
-      enabled: ${SMTP_PROXY_ENABLED:false}
+      enabled: ${SMTP_PROXY_ENABLED}
       host: ${SMTP_PROXY_HOST}
       port: ${SMTP_PROXY_PORT}
   custom-message:

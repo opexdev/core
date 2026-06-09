@@ -8,7 +8,7 @@ import java.util.*
 data class Trade(
     val symbol: String,
     val id: Long,
-    val orderId: Long,
+    val ouid: String,
     val price: BigDecimal,
     val quantity: BigDecimal,
     val quoteQuantity: BigDecimal,

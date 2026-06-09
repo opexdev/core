@@ -7,66 +7,82 @@ import jakarta.mail.internet.InternetAddress
 import jakarta.mail.internet.MimeMessage
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-
+import java.util.Properties
 
 @Component
 class EmailSender(
     @Value("\${otp.email.host}")
     private val host: String,
+
     @Value("\${otp.email.port}")
     private val port: String,
+
     @Value("\${otp.email.username}")
     private val username: String,
+
     @Value("\${otp.email.password}")
     private val password: String,
+
     @Value("\${otp.email.from}")
-    private val from: String,
+    private val fromAddress: String,
+
     @Value("\${otp.email.proxy.enabled}")
-    private val proxyIsEnabled: Boolean,
+    private val proxyEnabled: Boolean,
+
     @Value("\${otp.email.proxy.host}")
     private val proxyHost: String?,
+
     @Value("\${otp.email.proxy.port}")
     private val proxyPort: String?
 ) : MessageSender {
 
     private val logger by LoggerDelegate()
 
-    override suspend fun send(receiver: String, message: String, metadata: Map<String, Any>): Boolean {
+    override suspend fun send(
+        receiver: String,
+        message: String,
+        metadata: Map<String, Any>
+    ): Boolean {
+
         val subject = "Your otp code"
 
-        val properties = System.getProperties()
-        properties.setProperty("mail.smtp.host", host)
-        properties["mail.smtp.port"] = port
-        properties["mail.smtp.auth"] = "true"
-        properties["mail.smtp.starttls.enable"] = "true"
-        properties["mail.smtp.from"] = from
-        properties["mail.smtp.ssl.protocols"] = "TLSv1.2"
-        if (proxyIsEnabled) {
-            properties["mail.smtp.socks.host"] = proxyHost
-            properties["mail.smtp.socks.port"] = proxyPort
-        }
+        try {
+            // 🔥 SOCKS must be JVM-level (NOT JavaMail props)
+            if (proxyEnabled) {
+                System.setProperty("socksProxyHost", proxyHost)
+                System.setProperty("socksProxyPort", proxyPort)
+            }
 
-        val session = Session.getDefaultInstance(properties)
+            val props = Properties().apply {
+                put("mail.smtp.host", host)
+                put("mail.smtp.port", port)
+                put("mail.smtp.auth", "true")
+                put("mail.smtp.starttls.enable", "true")
+                put("mail.smtp.starttls.required", "true")
+                put("mail.smtp.from", fromAddress)
+                put("mail.smtp.ssl.protocols", "TLSv1.2")
+            }
 
-        return try {
+            val session = Session.getInstance(props)
+
             val msg = MimeMessage(session).apply {
                 setSubject(subject)
-                setFrom(InternetAddress(this@EmailSender.from))
+                setFrom(InternetAddress(fromAddress ))
                 addRecipient(Message.RecipientType.TO, InternetAddress(receiver))
                 setContent(message, "text/html; charset=utf-8")
             }
 
-            with(session.getTransport("smtp")) {
-                connect(host, port.toInt(), username, password)
-                sendMessage(msg, msg.allRecipients)
-                close()
+            session.getTransport("smtp").use { transport ->
+                transport.connect(host, port.toInt(), username, password)
+                transport.sendMessage(msg, msg.allRecipients)
             }
 
             logger.info("Successfully sent email message")
-            true
+            return true
+
         } catch (e: Exception) {
             logger.error("Failed to send email message", e)
-            false
+            return false
         }
     }
 }

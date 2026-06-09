@@ -2,6 +2,7 @@ package co.nilin.opex.api.ports.opex.service
 
 import co.nilin.opex.api.core.inout.ResolveUsersRequest
 import co.nilin.opex.api.core.spi.ProfileProxy
+import co.nilin.opex.common.utils.LoggerDelegate
 import org.springframework.stereotype.Component
 import java.time.Duration
 import java.time.Instant
@@ -12,6 +13,8 @@ class OwnerNameResolver(
     private val profileProxy: ProfileProxy,
 ) {
     private data class CacheEntry(val name: String?, val expiresAt: Long)
+
+    private val logger by LoggerDelegate()
 
     private val cache = ConcurrentHashMap<String, CacheEntry>()
     private val ttl: Duration = Duration.ofDays(1)
@@ -36,13 +39,15 @@ class OwnerNameResolver(
             try {
                 val result = profileProxy.resolveUsers(token, ResolveUsersRequest(missing))
                 val expiry = Instant.now().plus(ttl).toEpochMilli()
-                result.forEach { (uuid, name) ->
+                result.filter { (uuid, name) -> name != null }.forEach { (uuid, name) ->
                     cache[uuid] = CacheEntry(name, expiry)
                 }
                 val notReturned = missing.filterNot { result.containsKey(it) }
                 notReturned.forEach { uuid -> cache[uuid] = CacheEntry(null, expiry) }
+
                 cached.putAll(result)
             } catch (t: Throwable) {
+                logger.debug("Error in fetching users data $t")
             }
         }
 

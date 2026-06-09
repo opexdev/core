@@ -1,4 +1,4 @@
-package co.nilin.opex.common.translation
+package co.nilin.opex.common.service
 
 import co.nilin.opex.common.data.MessageTranslation
 import co.nilin.opex.common.data.UserLanguage
@@ -30,8 +30,8 @@ class TranslationCacheService(
             logger.info("Going to get messages which are updated after: {}", lastUpdate)
             while (isActive) {
                 try {
-                    if (configClient != null) {
-                        val newMessages = configClient.getMessagesUpdatedAfter(lastUpdate)
+                    if (customMessageClient != null) {
+                        val newMessages = customMessageClient.getMessagesUpdatedAfter(lastUpdate)
                         newMessages?.forEach { msg ->
                             cache[Pair(msg.key, msg.language)] =
                                 MessageTranslation(msg.key, msg.message, msg.language)

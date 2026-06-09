@@ -19,7 +19,7 @@ fun OrderData.toResponse(): OrderDataResponse {
         executedQuantity = this.executedQuantity,
         takerFee = this.takerFee,
         makerFee = this.makerFee,
-        status = OrderStatus.fromCode(this.status) ?: OrderStatus.REJECTED,
+        status = this.status,
         createDate = this.createDate,
         updateDate = this.updateDate,
     )

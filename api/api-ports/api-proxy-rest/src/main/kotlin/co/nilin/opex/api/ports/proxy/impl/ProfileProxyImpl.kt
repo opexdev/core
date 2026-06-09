@@ -117,7 +117,7 @@ class ProfileProxyImpl(@Qualifier("generalWebClient") private val webClient: Web
     override suspend fun resolveUsers(token: String, request: ResolveUsersRequest): Map<String, String?> {
         return try {
             webClient.post()
-                .uri("$baseUrl/admin/users/resolve")
+                .uri("$baseUrl/admin/profile/users/resolve")
                 .accept(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
                 .body(Mono.just(request))

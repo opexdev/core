@@ -15,12 +15,12 @@ interface UserQueryHandler {
 
     suspend fun allOrders(uuid: String, allOrderRequest: AllOrderRequest): List<Order>
 
-    suspend fun allTrades(uuid: String, request: TradeRequest): List<Trade>
+    suspend fun allTrades(uuid: String, request: TradeRequest): List<Trade>?
 
     suspend fun txOfTrades(transactionRequest: TransactionRequest): TransactionResponse?
 
     suspend fun getOrderHistory(
-        uuid: String,
+        uuid: String?,
         symbol: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
@@ -31,7 +31,7 @@ interface UserQueryHandler {
     ): List<OrderData>
 
     suspend fun getOrderHistoryCount(
-        uuid: String,
+        uuid: String?,
         symbol: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
@@ -40,17 +40,17 @@ interface UserQueryHandler {
     ): Long
 
     suspend fun getTradeHistory(
-        uuid: String,
+        uuid: String?,
         symbol: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
         direction: OrderDirection?,
         limit: Int?,
         offset: Int?,
-    ): List<Trade>
+    ): List<Trade>?
 
     suspend fun getTradeHistoryCount(
-        uuid: String,
+        uuid: String?,
         symbol: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,

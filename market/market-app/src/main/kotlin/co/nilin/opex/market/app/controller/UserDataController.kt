@@ -15,17 +15,32 @@ class UserDataController(
 ) {
 
     @GetMapping("/{uuid}/order/{ouid}")
-    suspend fun getOrder(@PathVariable uuid: String, @PathVariable ouid: String): Order {
+    suspend fun getOrder(
+        @PathVariable uuid: String,
+        @PathVariable ouid: String,
+        @CurrentSecurityContext securityContext: SecurityContext,
+    ): Order {
+        if (securityContext.authentication.name != uuid)
+            throw OpexError.Forbidden.exception()
         return userQueryHandler.getOrder(uuid, ouid) ?: throw OpexError.NotFound.exception()
     }
 
     @PostMapping("/{uuid}/order/query")
-    suspend fun queryUserOrder(@PathVariable uuid: String, @RequestBody request: QueryOrderRequest): Order {
+    suspend fun queryUserOrder(
+        @PathVariable uuid: String, @RequestBody request: QueryOrderRequest,
+        @CurrentSecurityContext securityContext: SecurityContext,
+    ): Order {
+        if (securityContext.authentication.name != uuid)
+            throw OpexError.Forbidden.exception()
         return userQueryHandler.queryOrder(uuid, request) ?: throw OpexError.NotFound.exception()
     }
 
     @GetMapping("/{uuid}/orders/open")
-    suspend fun getUserOpenOrders(@PathVariable uuid: String, @RequestParam limit: Int): List<Order> {
+    suspend fun getUserOpenOrders(
+        @PathVariable uuid: String, @RequestParam limit: Int, @CurrentSecurityContext securityContext: SecurityContext,
+    ): List<Order> {
+        if (securityContext.authentication.name != uuid)
+            throw OpexError.Forbidden.exception()
         return userQueryHandler.openOrders(uuid, limit)
     }
 
@@ -34,17 +49,33 @@ class UserDataController(
         @PathVariable uuid: String,
         @PathVariable symbol: String,
         @RequestParam limit: Int,
-    ): List<Order> {
+        @CurrentSecurityContext securityContext: SecurityContext,
+
+        ): List<Order> {
+        if (securityContext.authentication.name != uuid)
+            throw OpexError.Forbidden.exception()
         return userQueryHandler.openOrders(uuid, symbol, limit)
     }
 
     @PostMapping("/{uuid}/orders")
-    suspend fun getUserOrders(@PathVariable uuid: String, @RequestBody request: AllOrderRequest): List<Order> {
+    suspend fun getUserOrders(
+        @PathVariable uuid: String,
+        @RequestBody request: AllOrderRequest,
+        @CurrentSecurityContext securityContext: SecurityContext,
+    ): List<Order> {
+        if (securityContext.authentication.name != uuid)
+            throw OpexError.Forbidden.exception()
         return userQueryHandler.allOrders(uuid, request)
     }
 
     @PostMapping("/{uuid}/trades")
-    suspend fun getUserTrades(@PathVariable uuid: String, @RequestBody request: TradeRequest): List<Trade> {
+    suspend fun getUserTrades(
+        @PathVariable uuid: String,
+        @RequestBody request: TradeRequest,
+        @CurrentSecurityContext securityContext: SecurityContext,
+    ): List<Trade>? {
+        if (securityContext.authentication.name != uuid)
+            throw OpexError.Forbidden.exception()
         return userQueryHandler.allTrades(uuid, request)
     }
 
@@ -59,7 +90,7 @@ class UserDataController(
         return userQueryHandler.txOfTrades(transactionRequest.apply { owner = user })
     }
 
-    @GetMapping("/order/history/{uuid}")
+    @GetMapping("/order/history")
     suspend fun getOrderHistory(
         @RequestParam symbol: String?,
         @RequestParam startTime: Long?,
@@ -68,10 +99,10 @@ class UserDataController(
         @RequestParam direction: OrderDirection?,
         @RequestParam limit: Int?,
         @RequestParam offset: Int?,
-        @PathVariable uuid: String,
+        @CurrentSecurityContext securityContext: SecurityContext,
     ): List<OrderData> {
         return userQueryHandler.getOrderHistory(
-            uuid,
+            securityContext.authentication.name,
             symbol,
             startTime?.let { startTime.asLocalDateTime() },
             endTime?.let { endTime.asLocalDateTime() },
@@ -82,17 +113,17 @@ class UserDataController(
         )
     }
 
-    @GetMapping("/order/history/count/{uuid}")
+    @GetMapping("/order/history/count")
     suspend fun getOrderHistoryCount(
         @RequestParam symbol: String?,
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
         @RequestParam orderType: MatchingOrderType?,
         @RequestParam direction: OrderDirection?,
-        @PathVariable uuid: String,
+        @CurrentSecurityContext securityContext: SecurityContext,
     ): Long {
         return userQueryHandler.getOrderHistoryCount(
-            uuid,
+            securityContext.authentication.name,
             symbol,
             startTime?.let { startTime.asLocalDateTime() },
             endTime?.let { endTime.asLocalDateTime() },
@@ -101,18 +132,18 @@ class UserDataController(
         )
     }
 
-    @GetMapping("/trade/history/{uuid}")
+    @GetMapping("/trade/history")
     suspend fun getTradeHistory(
-        @PathVariable uuid: String,
         @RequestParam symbol: String?,
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
         @RequestParam direction: OrderDirection?,
         @RequestParam limit: Int?,
         @RequestParam offset: Int?,
-    ): List<Trade> {
+        @CurrentSecurityContext securityContext: SecurityContext,
+    ): List<Trade>? {
         return userQueryHandler.getTradeHistory(
-            uuid,
+            securityContext.authentication.name,
             symbol,
             startTime?.let { startTime.asLocalDateTime() },
             endTime?.let { endTime.asLocalDateTime() },
@@ -122,16 +153,17 @@ class UserDataController(
         )
     }
 
-    @GetMapping("/trade/history/count/{uuid}")
+    @GetMapping("/trade/history/count")
     suspend fun getTradeHistoryCount(
-        @PathVariable uuid: String,
         @RequestParam symbol: String?,
         @RequestParam startTime: Long?,
         @RequestParam endTime: Long?,
         @RequestParam direction: OrderDirection?,
+        @CurrentSecurityContext securityContext: SecurityContext,
     ): Long {
+
         return userQueryHandler.getTradeHistoryCount(
-            uuid,
+            securityContext.authentication.name,
             symbol,
             startTime?.let { startTime.asLocalDateTime() },
             endTime?.let { endTime.asLocalDateTime() },
