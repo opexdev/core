@@ -36,7 +36,7 @@ class RegisterService(
         val otpType = username.type.otpType
         val otpReceiver = OTPReceiver(request.username, otpType)
         val res = otpProxy.requestOTP(request.username, listOf(otpReceiver))
-
+// todo we have to check for duplication usernames after verifying the register otp
         if (!userStatus)
             keycloakProxy.createUser(
                 username,

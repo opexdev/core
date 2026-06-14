@@ -108,6 +108,24 @@ object VALID {
         UPDATE_DATE
     )
 
+
+    val TRADE_USER_CONTEXT = TradeUserContextProjection(
+        ETH_USDT,
+        "ETH",
+        "USDT",
+        1,
+        BigDecimal.valueOf(100000),
+        BigDecimal.valueOf(0.001), // Minimum of orders quantities
+        BigDecimal.valueOf(100).stripTrailingZeros(),
+        UPDATE_DATE,
+        false,
+        MAKER_ORDER_MODEL.ouid,
+        BigDecimal.valueOf(0.001),
+        "USDT",
+        true,
+        true
+    )
+
     val LAST_PRICE_MODEL = LastPrice("ETH_USDT", BigDecimal.valueOf(100000))
 
     val AGGREGATED_ORDER_PRICE_MODEL = AggregatedOrderPriceModel(

@@ -14,12 +14,12 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.stereotype.Component
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.util.*
 
 @Component
 class UserQueryHandlerImpl(
@@ -84,82 +84,84 @@ class UserQueryHandlerImpl(
             .toList()
     }
 
-    override suspend fun allTrades(uuid: String, request: TradeRequest): List<Trade> {
-        return tradeRepository.findByUuidAndSymbolAndTimeBetweenAndTradeIdGreaterThan(
-            uuid, request.symbol, request.fromTrade, request.startTime, request.endTime, request.limit
-        ).map {
-            val takerOrder = orderRepository.findByOuid(it.takerOuid).awaitFirst()
-            val makerOrder = orderRepository.findByOuid(it.makerOuid).awaitFirst()
-            val isMakerBuyer = makerOrder.direction == OrderDirection.BID
-            Trade(
-                it.symbol,
-                it.tradeId,
-                if (it.takerUuid == uuid) takerOrder.orderId!! else makerOrder.orderId!!,
-                if (it.takerUuid == uuid) it.takerPrice else it.makerPrice,
-                it.matchedQuantity,
-                if (isMakerBuyer) makerOrder.quoteQuantity!! else takerOrder.quoteQuantity!!,
-                if (it.takerUuid == uuid) it.takerCommission!! else it.makerCommission!!,
-                if (it.takerUuid == uuid) it.takerCommissionAsset!! else it.makerCommissionAsset!!,
-                it.createDate,
-                if (it.takerUuid == uuid)
-                    OrderDirection.ASK == takerOrder.direction
-                else
-                    OrderDirection.ASK == makerOrder.direction,
-                it.makerUuid == uuid,
-                true,
-                isMakerBuyer
-            )
-        }.toList()
+    override suspend fun allTrades(
+        uuid: String,
+        request: TradeRequest
+    ): List<Trade>? {
+
+        return tradeRepository.findTradesWithUserContext(
+            uuid,
+            request.symbol,
+            request.fromTrade,
+            request.startTime,
+            request.endTime,
+            request.limit
+        )
+            .map {
+                Trade(
+                    it.symbol,
+                    it.id,
+                    requireNotNull(it.ouid),
+                    it.price,
+                    it.quantity,
+                    it.quoteQuantity,
+                    requireNotNull(it.commission),
+                    requireNotNull(it.commissionAsset),
+                    it.createDate,
+                    requireNotNull(it.isBuyer),
+                    requireNotNull(it.isMaker),
+                    true,
+                    it.isMakerBuyer
+                )
+            }
+            .collectList()
+            .awaitSingle()
     }
 
     override suspend fun txOfTrades(transactionRequest: TransactionRequest): TransactionResponse? {
 
-        if (transactionRequest.ascendingByTime == true)
-            return TransactionResponse(
-                tradeRepository.findTxOfTradesAsc(
-                    transactionRequest.owner!!,
-                    transactionRequest.startTime?.let {
-                        LocalDateTime.ofInstant(
-                            Instant.ofEpochMilli(transactionRequest.startTime!!),
-                            ZoneId.systemDefault()
-                        )
-                    }
-                        ?: null,
-                    transactionRequest.endTime?.let {
-                        LocalDateTime.ofInstant(
-                            Instant.ofEpochMilli(transactionRequest.endTime!!),
-                            ZoneId.systemDefault()
-                        )
-                    }
-                        ?: null,
-                    transactionRequest.offset, transactionRequest.limit
-                ).map { it.toDto() }.collectList()?.awaitFirstOrNull()
-            )
+        val trades = if (transactionRequest.ascendingByTime == true)
+
+            tradeRepository.findTxOfTradesAsc(
+                transactionRequest.owner!!,
+                transactionRequest.startTime?.let {
+                    LocalDateTime.ofInstant(
+                        Instant.ofEpochMilli(transactionRequest.startTime!!),
+                        ZoneId.systemDefault()
+                    )
+                },
+                transactionRequest.endTime?.let {
+                    LocalDateTime.ofInstant(
+                        Instant.ofEpochMilli(transactionRequest.endTime!!),
+                        ZoneId.systemDefault()
+                    )
+                },
+                transactionRequest.offset, transactionRequest.limit
+            ).map { it.toDto() }.collectList().awaitFirstOrNull()
         else
-            return TransactionResponse(
-                tradeRepository.findTxOfTradesDesc(
-                    transactionRequest.owner!!,
-                    transactionRequest.startTime?.let {
-                        LocalDateTime.ofInstant(
-                            Instant.ofEpochMilli(transactionRequest.startTime!!),
-                            ZoneId.systemDefault()
-                        )
-                    }
-                        ?: null,
-                    transactionRequest.endTime?.let {
-                        LocalDateTime.ofInstant(
-                            Instant.ofEpochMilli(transactionRequest.endTime!!),
-                            ZoneId.systemDefault()
-                        )
-                    }
-                        ?: null,
-                    transactionRequest.offset, transactionRequest.limit
-                ).map { it.toDto() }.collectList()?.awaitFirstOrNull()
-            )
+
+            tradeRepository.findTxOfTradesDesc(
+                transactionRequest.owner!!,
+                transactionRequest.startTime?.let {
+                    LocalDateTime.ofInstant(
+                        Instant.ofEpochMilli(transactionRequest.startTime!!),
+                        ZoneId.systemDefault()
+                    )
+                },
+                transactionRequest.endTime?.let {
+                    LocalDateTime.ofInstant(
+                        Instant.ofEpochMilli(transactionRequest.endTime!!),
+                        ZoneId.systemDefault()
+                    )
+                },
+                transactionRequest.offset, transactionRequest.limit
+            ).map { it.toDto() }.collectList()?.awaitFirstOrNull()
+
+        return TransactionResponse(trades)
     }
 
     override suspend fun getOrderHistory(
-        uuid: String,
+        uuid: String?,
         symbol: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
@@ -177,11 +179,11 @@ class UserQueryHandlerImpl(
             direction,
             limit,
             offset,
-        ).toList()
+        ).map { it.copy(status = OrderStatus.fromCode(it.statusCode)) }.toList()
     }
 
     override suspend fun getOrderHistoryCount(
-        uuid: String,
+        uuid: String?,
         symbol: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
@@ -199,14 +201,14 @@ class UserQueryHandlerImpl(
     }
 
     override suspend fun getTradeHistory(
-        uuid: String,
+        uuid: String?,
         symbol: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
         direction: OrderDirection?,
         limit: Int?,
         offset: Int?,
-    ): List<Trade> {
+    ): List<Trade>? {
         return tradeRepository.findByCriteria(
             uuid,
             symbol,
@@ -215,11 +217,11 @@ class UserQueryHandlerImpl(
             direction,
             limit,
             offset
-        ).toList()
+        ).collectList().awaitSingleOrNull()
     }
 
     override suspend fun getTradeHistoryCount(
-        uuid: String,
+        uuid: String?,
         symbol: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,

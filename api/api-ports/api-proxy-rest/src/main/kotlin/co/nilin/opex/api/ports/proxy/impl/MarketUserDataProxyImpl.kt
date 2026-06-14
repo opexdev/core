@@ -44,16 +44,17 @@ class MarketUserDataProxyImpl(@Qualifier("generalWebClient") private val webClie
     private val mgLimiter = Semaphore(permits = 16, acquiredPermits = 0)
 
     override suspend fun queryOrder(
-        principal: Principal,
+        token: String,
         symbol: String,
         orderId: Long?,
         origClientOrderId: String?,
     ): Order? {
         return withContext(ProxyDispatchers.market) {
             webClient.post()
-                .uri("$baseUrl/v1/user/${principal.name}/order/query")
+                .uri("$baseUrl/v1/user/order/query")
                 .accept(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token" )
                 .body(Mono.just(QueryOrderRequest(symbol, orderId, origClientOrderId)))
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
@@ -62,16 +63,17 @@ class MarketUserDataProxyImpl(@Qualifier("generalWebClient") private val webClie
         }
     }
 
-    override suspend fun openOrders(principal: Principal, symbol: String?, limit: Int?): List<Order> {
+    override suspend fun openOrders(token: String, symbol: String?, limit: Int?): List<Order> {
         return withContext(ProxyDispatchers.market) {
             mgLimiter.withPermit {
                 retryOnce {
                     webClient.get()
-                        .uri("$baseUrl/v1/user/${principal.name}/orders/$symbol/open") {
+                        .uri("$baseUrl/v1/user/orders/$symbol/open") {
                             it.queryParam("limit", limit ?: 100)
                             it.build()
                         }.accept(MediaType.APPLICATION_JSON)
                         .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $token" )
                         .retrieve()
                         .onStatus({ t -> t.isError }, { it.createException() })
                         .bodyToFlux<Order>()
@@ -83,7 +85,7 @@ class MarketUserDataProxyImpl(@Qualifier("generalWebClient") private val webClie
     }
 
     override suspend fun allOrders(
-        principal: Principal,
+        token: String,
         symbol: String?,
         startTime: Date?,
         endTime: Date?,
@@ -91,9 +93,10 @@ class MarketUserDataProxyImpl(@Qualifier("generalWebClient") private val webClie
     ): List<Order> {
         return withContext(ProxyDispatchers.market) {
             webClient.post()
-                .uri("$baseUrl/v1/user/${principal.name}/orders")
+                .uri("$baseUrl/v1/user/orders")
                 .accept(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token" )
                 .body(Mono.just(AllOrderRequest(symbol, startTime, endTime, limit ?: 500)))
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
@@ -104,7 +107,7 @@ class MarketUserDataProxyImpl(@Qualifier("generalWebClient") private val webClie
     }
 
     override suspend fun allTrades(
-        principal: Principal,
+        token: String,
         symbol: String?,
         fromTrade: Long?,
         startTime: Date?,
@@ -113,9 +116,10 @@ class MarketUserDataProxyImpl(@Qualifier("generalWebClient") private val webClie
     ): List<Trade> {
         return withContext(ProxyDispatchers.market) {
             webClient.post()
-                .uri("$baseUrl/v1/user/${principal.name}/trades")
+                .uri("$baseUrl/v1/user/trades")
                 .accept(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token" )
                 .body(Mono.just(TradeRequest(symbol, fromTrade, startTime, endTime, limit ?: 500)))
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
@@ -126,7 +130,7 @@ class MarketUserDataProxyImpl(@Qualifier("generalWebClient") private val webClie
     }
 
     override suspend fun getOrderHistory(
-        uuid: String,
+        token: String,
         symbol: String?,
         startTime: Long?,
         endTime: Long?,
@@ -137,7 +141,7 @@ class MarketUserDataProxyImpl(@Qualifier("generalWebClient") private val webClie
     ): List<OrderData> {
         return withContext(ProxyDispatchers.market) {
             webClient.get()
-                .uri("$baseUrl/v1/user/order/history/$uuid") {
+                .uri("$baseUrl/v1/user/order/history") {
                     it.queryParam("symbol", symbol)
                     it.queryParam("startTime", startTime)
                     it.queryParam("endTime", endTime)
@@ -148,6 +152,7 @@ class MarketUserDataProxyImpl(@Qualifier("generalWebClient") private val webClie
                     it.build()
                 }.accept(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token" )
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToFlux<OrderData>()
@@ -157,7 +162,7 @@ class MarketUserDataProxyImpl(@Qualifier("generalWebClient") private val webClie
     }
 
     override suspend fun getOrderHistoryCount(
-        uuid: String,
+        token: String,
         symbol: String?,
         startTime: Long?,
         endTime: Long?,
@@ -166,7 +171,7 @@ class MarketUserDataProxyImpl(@Qualifier("generalWebClient") private val webClie
     ): Long {
         return withContext(ProxyDispatchers.market) {
             webClient.get()
-                .uri("$baseUrl/v1/user/order/history/count/$uuid") {
+                .uri("$baseUrl/v1/user/order/history/count") {
                     it.queryParam("symbol", symbol)
                     it.queryParam("startTime", startTime)
                     it.queryParam("endTime", endTime)
@@ -175,6 +180,7 @@ class MarketUserDataProxyImpl(@Qualifier("generalWebClient") private val webClie
                     it.build()
                 }.accept(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token" )
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToMono<Long>()
@@ -183,7 +189,7 @@ class MarketUserDataProxyImpl(@Qualifier("generalWebClient") private val webClie
     }
 
     override suspend fun getTradeHistory(
-        uuid: String,
+        token: String,
         symbol: String?,
         startTime: Long?,
         endTime: Long?,
@@ -193,7 +199,7 @@ class MarketUserDataProxyImpl(@Qualifier("generalWebClient") private val webClie
     ): List<Trade> {
         return withContext(ProxyDispatchers.market) {
             webClient.get()
-                .uri("$baseUrl/v1/user/trade/history/$uuid") {
+                .uri("$baseUrl/v1/user/trade/history") {
                     it.queryParam("symbol", symbol)
                     it.queryParam("startTime", startTime)
                     it.queryParam("endTime", endTime)
@@ -203,6 +209,7 @@ class MarketUserDataProxyImpl(@Qualifier("generalWebClient") private val webClie
                     it.build()
                 }.accept(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token" )
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToFlux<Trade>()
@@ -212,7 +219,7 @@ class MarketUserDataProxyImpl(@Qualifier("generalWebClient") private val webClie
     }
 
     override suspend fun getTradeHistoryCount(
-        uuid: String,
+        token: String,
         symbol: String?,
         startTime: Long?,
         endTime: Long?,
@@ -220,7 +227,7 @@ class MarketUserDataProxyImpl(@Qualifier("generalWebClient") private val webClie
     ): Long {
         return withContext(ProxyDispatchers.market) {
             webClient.get()
-                .uri("$baseUrl/v1/user/trade/history/count/$uuid") {
+                .uri("$baseUrl/v1/user/trade/history/count") {
                     it.queryParam("symbol", symbol)
                     it.queryParam("startTime", startTime)
                     it.queryParam("endTime", endTime)
@@ -228,6 +235,7 @@ class MarketUserDataProxyImpl(@Qualifier("generalWebClient") private val webClie
                     it.build()
                 }.accept(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token" )
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToMono<Long>()

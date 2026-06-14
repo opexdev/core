@@ -2,7 +2,7 @@ package co.nilin.opex.api.core.inout
 
 import java.math.BigDecimal
 import java.time.LocalDateTime
-
+@Deprecated("Use TradeResponseItem")
 data class TradeAdminResponse(
     val id: Long,
     val currency: String,

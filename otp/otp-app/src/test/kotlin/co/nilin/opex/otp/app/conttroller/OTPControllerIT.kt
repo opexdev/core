@@ -18,8 +18,8 @@ class EmailSenderIT {
             port = requireEnv("SMTP_PORT"),
             username = requireEnv("SMTP_USER"),
             password = requireEnv("SMTP_PASS"),
-            from = requireEnv("SMTP_FROM"),
-            proxyIsEnabled = true,
+            fromAddress = requireEnv("SMTP_FROM"),
+            proxyEnabled = true,
             proxyHost = requireEnv("SMTP_SOCKS_HOST"),
             proxyPort = requireEnv("SMTP_SOCKS_PORT")
         )

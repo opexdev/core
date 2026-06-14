@@ -12,6 +12,7 @@ import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+
 import java.time.LocalDateTime
 import java.util.*
 
@@ -138,7 +139,7 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
     @Query(
         """
 select o.symbol,
-       o.order_id,
+       o.ouid,
        o.order_type,
        o.side,
        o.price,
@@ -147,17 +148,18 @@ select o.symbol,
        os.executed_quantity,
        o.taker_fee,
        o.maker_fee,
-       os.status,
+       os.status as status_code,
        os.appearance,
        o.create_date,
-       os.date as update_date
+       os.date as update_date,
+       o.uuid
 from orders o
          left join (select *
                     from order_status os1
                     where os1.date = (select max(os2.date)
                                       from order_status os2
                                       where os2.ouid = os1.ouid)) os on o.ouid = os.ouid
- WHERE uuid = :uuid
+ WHERE (:uuid is null or o.uuid = :uuid)
    and (:symbol is null or o.symbol = :symbol)
    and (:startTime is null or o.create_date >= :startTime)
    and (:endTime is null or o.create_date <= :endTime)
@@ -168,7 +170,7 @@ order by create_date desc
     """
     )
     fun findByCriteria(
-        uuid: String,
+        uuid: String?,
         symbol: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
@@ -182,7 +184,7 @@ order by create_date desc
         """
 select count(*)
 from orders o
- WHERE uuid = :uuid
+ WHERE (:uuid is null or o.uuid = :uuid)
    and (:symbol is null or o.symbol = :symbol)
    and (:startTime is null or o.create_date >= :startTime)
    and (:endTime is null or o.create_date <= :endTime)
@@ -191,7 +193,7 @@ from orders o
     """
     )
     fun countByCriteria(
-        uuid: String,
+        uuid: String?,
         symbol: String?,
         startTime: LocalDateTime?,
         endTime: LocalDateTime?,
@@ -199,4 +201,75 @@ from orders o
         direction: OrderDirection?,
     ): Mono<Long>
 
+    @Query("""
+SELECT
+    o.symbol ,
+    o.ouid ,
+    o.order_type ,
+    o.side ,
+
+    o.price AS price,
+    o.quantity AS quantity,
+    o.quote_quantity ,
+
+    os.executed_quantity,
+
+    o.taker_fee,
+    o.maker_fee,
+
+    os.status as status_code,
+    os.appearance,
+
+    o.create_date ,
+    o.update_date,
+
+    o.uuid
+
+FROM orders o
+
+LEFT JOIN (
+    SELECT DISTINCT ON (ouid)
+        ouid,
+        executed_quantity,
+        status,
+        appearance,
+        date
+    FROM order_status
+    ORDER BY ouid, date DESC
+) os
+ON os.ouid = o.ouid
+
+WHERE
+    (:uuid IS NULL OR o.uuid = :uuid)
+    AND (:symbol IS NULL OR o.symbol = :symbol)
+    AND (:ouid IS NULL OR o.ouid = :ouid)
+    AND (:fromDate IS NULL OR o.create_date >= :fromDate)
+    AND (:toDate IS NULL OR o.create_date <= :toDate)
+    AND (:orderType IS NULL OR o.order_type = :orderType)
+    AND (:direction IS NULL OR o.side = :direction)
+
+ORDER BY
+CASE WHEN :ascendingByTime = true
+     THEN o.create_date
+END ASC,
+
+CASE WHEN :ascendingByTime = false
+     THEN o.create_date
+END DESC
+
+LIMIT :limit
+OFFSET :offset
+""")
+    fun findRecentOrdersAdmin(
+        uuid: String?,
+        symbol: String?,
+        ouid: String?,
+        fromDate: LocalDateTime?,
+        toDate: LocalDateTime?,
+        orderType: MatchingOrderType?,
+        direction: OrderDirection?,
+        ascendingByTime: Boolean,
+        limit: Int?,
+        offset: Int?
+    ): Flux<OrderData>
 }

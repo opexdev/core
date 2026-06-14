@@ -116,4 +116,15 @@ class ProfileAdminController(
         }
     }
 
+    data class ResolveUsersRequest(
+        val uuids: List<String>
+    )
+
+    @PostMapping("/users/resolve")
+    suspend fun resolveUsers(
+        @RequestBody request: ResolveUsersRequest
+    ): Map<String, String?> {
+        return profileManagement.resolveUsers(request.uuids)
+    }
+
 }

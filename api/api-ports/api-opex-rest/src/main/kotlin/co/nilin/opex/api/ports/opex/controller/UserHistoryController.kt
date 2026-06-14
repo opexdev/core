@@ -94,7 +94,7 @@ Allowed values:
         @CurrentSecurityContext securityContext: SecurityContext,
     ): List<OrderDataResponse> {
         return marketUserDataProxy.getOrderHistory(
-            securityContext.authentication.name,
+            securityContext.jwtAuthentication().tokenValue(),
             symbol,
             startTime,
             endTime,
@@ -159,7 +159,7 @@ Allowed values:
         @CurrentSecurityContext securityContext: SecurityContext,
     ): Long {
         return marketUserDataProxy.getOrderHistoryCount(
-            securityContext.authentication.name,
+            securityContext.jwtAuthentication().tokenValue(),
             symbol,
             startTime,
             endTime,
@@ -225,7 +225,7 @@ Allowed values:
         @CurrentSecurityContext securityContext: SecurityContext,
     ): List<Trade> {
         return marketUserDataProxy.getTradeHistory(
-            securityContext.authentication.name,
+            securityContext.jwtAuthentication().tokenValue(),
             symbol,
             startTime,
             endTime,
@@ -282,7 +282,7 @@ Allowed values:
         @CurrentSecurityContext securityContext: SecurityContext,
     ): Long {
         return marketUserDataProxy.getTradeHistoryCount(
-            securityContext.authentication.name,
+            securityContext.jwtAuthentication().tokenValue(),
             symbol,
             startTime,
             endTime,

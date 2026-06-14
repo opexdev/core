@@ -15,12 +15,12 @@ import java.util.*
 class MarketStatsController(private val marketQueryHandler: MarketQueryHandler) {
 
     @GetMapping("/price/most-increased")
-    suspend fun getMostIncreasedPrices(@RequestParam interval: Interval, @RequestParam limit: Int): List<PriceStat> {
+    suspend fun getMostIncreasedPrices(@RequestParam interval: Interval, @RequestParam limit: Int): List<PriceStat>? {
         return marketQueryHandler.mostIncreasePrice(interval, limit)
     }
 
     @GetMapping("/price/most-decreased")
-    suspend fun getMostDecreasedPrices(@RequestParam interval: Interval, @RequestParam limit: Int): List<PriceStat> {
+    suspend fun getMostDecreasedPrices(@RequestParam interval: Interval, @RequestParam limit: Int): List<PriceStat>? {
         return marketQueryHandler.mostDecreasePrice(interval, limit)
     }
 

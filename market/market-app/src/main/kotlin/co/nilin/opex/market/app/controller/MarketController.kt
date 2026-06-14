@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*
 class MarketController(private val marketQueryHandler: MarketQueryHandler) {
 
     @GetMapping("/ticker")
-    suspend fun priceChangeSince(@RequestParam interval: Interval): List<PriceChange> {
+    suspend fun priceChangeSince(@RequestParam interval: Interval): List<PriceChange>? {
         return marketQueryHandler.getTradeTickerData(interval)
     }
 
@@ -28,7 +28,7 @@ class MarketController(private val marketQueryHandler: MarketQueryHandler) {
         @PathVariable symbol: String,
         @RequestParam direction: OrderDirection,
         @RequestParam(required = false) limit: Int = 500
-    ): List<OrderBook> {
+    ): List<OrderBook>? {
         return if (direction == OrderDirection.BID)
             marketQueryHandler.openBidOrders(symbol, limit)
         else
@@ -39,7 +39,7 @@ class MarketController(private val marketQueryHandler: MarketQueryHandler) {
     suspend fun getRecentTradesForSymbol(
         @PathVariable symbol: String,
         @RequestParam(required = false) limit: Int = 500
-    ): List<MarketTrade> {
+    ): List<MarketTrade>? {
         return marketQueryHandler.recentTrades(symbol, limit)
     }
 
@@ -54,7 +54,7 @@ class MarketController(private val marketQueryHandler: MarketQueryHandler) {
     }
 
     @GetMapping("/best-prices")
-    suspend fun getOrderBookForSymbol(@RequestParam symbols: List<String>): List<BestPrice> {
+    suspend fun getOrderBookForSymbol(@RequestParam symbols: List<String>): List<BestPrice>? {
         return marketQueryHandler.getBestPriceForSymbols(symbols)
     }
 

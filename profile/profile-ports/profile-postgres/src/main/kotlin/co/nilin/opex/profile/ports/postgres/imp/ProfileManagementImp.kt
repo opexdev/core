@@ -137,6 +137,15 @@ class ProfileManagementImp(
             .awaitSingle()
     }
 
+    override suspend fun resolveUsers(uuids: List<String>): Map<String, String?> {
+
+        return profileRepository.findFullNameByUuid(uuids).collectMap(
+            { it.uuid },
+            { it.fullName }
+        ).awaitSingle()
+
+    }
+
     override suspend fun getHistory(userId: String, offset: Int, limit: Int): List<ProfileHistory> {
         val resp: MutableList<ProfileHistory> = ArrayList()
 

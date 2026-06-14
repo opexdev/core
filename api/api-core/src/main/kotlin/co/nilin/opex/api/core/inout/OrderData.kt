@@ -15,7 +15,7 @@ data class OrderData(
     val executedQuantity: BigDecimal,
     val takerFee: BigDecimal,
     val makerFee: BigDecimal,
-    val status: Int,
+    val status: OrderStatus,
     val appearance: Int,
     val createDate: LocalDateTime,
     val updateDate: LocalDateTime,
