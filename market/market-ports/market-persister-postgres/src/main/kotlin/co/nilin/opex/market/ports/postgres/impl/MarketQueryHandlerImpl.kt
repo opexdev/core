@@ -82,7 +82,7 @@ class MarketQueryHandlerImpl(
         }.also { redisCacheHelper.put("lastOrder", it) }
     }
 
-    override suspend fun recentTrades(symbol: String, limit: Int): List<MarketTrade> {
+    override suspend fun recentTrades(symbol: String, limit: Int): List<MarketTrade>? {
 
         return tradeRepository
             .findRecentMarketTrades(symbol, limit)
@@ -101,7 +101,7 @@ class MarketQueryHandlerImpl(
                 )
             }
             .collectList()
-            .awaitSingle()
+            .awaitSingleOrNull()
     }
 
     override suspend fun recentTrades(

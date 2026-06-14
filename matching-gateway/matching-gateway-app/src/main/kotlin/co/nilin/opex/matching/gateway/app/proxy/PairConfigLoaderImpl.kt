@@ -7,10 +7,7 @@ import co.nilin.opex.matching.gateway.app.spi.AccountantApiProxy
 import co.nilin.opex.matching.gateway.app.spi.PairConfigLoader
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
-import java.util.concurrent.TimeUnit
-
-@Service
-class PairConfigLoaderImpl(
+import java.util.concurrent.TimeUn(
     private val accountantApiProxy: AccountantApiProxy,
     @Qualifier("appCacheManager") private val cacheManager: CacheManager<String, PairConfig>
 ) : PairConfigLoader {

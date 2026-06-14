@@ -57,14 +57,21 @@ class EmailSender(
                 put("mail.smtp.host", host)
                 put("mail.smtp.port", port)
                 put("mail.smtp.auth", "true")
-                put("mail.smtp.starttls.enable", "true")
-                put("mail.smtp.starttls.required", "true")
+                put("mail.smtp.starttls.enable", "false")
+                put("mail.smtp.ssl.enable", "true")
                 put("mail.smtp.from", fromAddress)
-                put("mail.smtp.ssl.protocols", "TLSv1.2")
+                put("mail.smtp.starttls.enable", "false")
+                put("mail.smtp.starttls.required", "false")
+
+                put("mail.smtp.socketFactory.port", port)
+                put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory")
+                put("mail.smtp.socketFactory.fallback", "false")
+
+                put("mail.smtp.ssl.protocols", "TLSv1.2 TLSv1.3")
             }
 
             val session = Session.getInstance(props)
-
+            session.debug=true
             val msg = MimeMessage(session).apply {
                 setSubject(subject)
                 setFrom(InternetAddress(fromAddress ))

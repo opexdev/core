@@ -14,80 +14,62 @@ class UserDataController(
     private val userQueryHandler: UserQueryHandler
 ) {
 
-    @GetMapping("/{uuid}/order/{ouid}")
+    @GetMapping("/order/{ouid}")
     suspend fun getOrder(
-        @PathVariable uuid: String,
         @PathVariable ouid: String,
         @CurrentSecurityContext securityContext: SecurityContext,
     ): Order {
-        if (securityContext.authentication.name != uuid)
-            throw OpexError.Forbidden.exception()
-        return userQueryHandler.getOrder(uuid, ouid) ?: throw OpexError.NotFound.exception()
+        return userQueryHandler.getOrder(securityContext.authentication.name, ouid)
+            ?: throw OpexError.NotFound.exception()
     }
 
-    @PostMapping("/{uuid}/order/query")
+    @PostMapping("/order/query")
     suspend fun queryUserOrder(
-        @PathVariable uuid: String, @RequestBody request: QueryOrderRequest,
+        @RequestBody request: QueryOrderRequest,
         @CurrentSecurityContext securityContext: SecurityContext,
     ): Order {
-        if (securityContext.authentication.name != uuid)
-            throw OpexError.Forbidden.exception()
-        return userQueryHandler.queryOrder(uuid, request) ?: throw OpexError.NotFound.exception()
+        return userQueryHandler.queryOrder(securityContext.authentication.name, request)
+            ?: throw OpexError.NotFound.exception()
     }
 
-    @GetMapping("/{uuid}/orders/open")
+    @GetMapping("/orders/open")
     suspend fun getUserOpenOrders(
-        @PathVariable uuid: String, @RequestParam limit: Int, @CurrentSecurityContext securityContext: SecurityContext,
+        @RequestParam limit: Int, @CurrentSecurityContext securityContext: SecurityContext,
     ): List<Order> {
-        if (securityContext.authentication.name != uuid)
-            throw OpexError.Forbidden.exception()
-        return userQueryHandler.openOrders(uuid, limit)
+        return userQueryHandler.openOrders(securityContext.authentication.name, limit)
     }
 
-    @GetMapping("/{uuid}/orders/{symbol}/open")
+    @GetMapping("/orders/{symbol}/open")
     suspend fun getUserOpenOrders(
-        @PathVariable uuid: String,
         @PathVariable symbol: String,
         @RequestParam limit: Int,
         @CurrentSecurityContext securityContext: SecurityContext,
-
-        ): List<Order> {
-        if (securityContext.authentication.name != uuid)
-            throw OpexError.Forbidden.exception()
-        return userQueryHandler.openOrders(uuid, symbol, limit)
+    ): List<Order> {
+        return userQueryHandler.openOrders(securityContext.authentication.name, symbol, limit)
     }
 
-    @PostMapping("/{uuid}/orders")
+    @PostMapping("/orders")
     suspend fun getUserOrders(
-        @PathVariable uuid: String,
         @RequestBody request: AllOrderRequest,
         @CurrentSecurityContext securityContext: SecurityContext,
     ): List<Order> {
-        if (securityContext.authentication.name != uuid)
-            throw OpexError.Forbidden.exception()
-        return userQueryHandler.allOrders(uuid, request)
+        return userQueryHandler.allOrders(securityContext.authentication.name, request)
     }
 
-    @PostMapping("/{uuid}/trades")
+    @PostMapping("/trades")
     suspend fun getUserTrades(
-        @PathVariable uuid: String,
         @RequestBody request: TradeRequest,
         @CurrentSecurityContext securityContext: SecurityContext,
     ): List<Trade>? {
-        if (securityContext.authentication.name != uuid)
-            throw OpexError.Forbidden.exception()
-        return userQueryHandler.allTrades(uuid, request)
+        return userQueryHandler.allTrades(securityContext.authentication.name, request)
     }
 
-    @PostMapping("/tx/{user}/history")
+    @PostMapping("/tx/history")
     suspend fun getTxOfTrades(
-        @PathVariable user: String,
         @RequestBody transactionRequest: TransactionRequest,
         @CurrentSecurityContext securityContext: SecurityContext,
     ): TransactionResponse? {
-        if (securityContext.authentication.name != user)
-            throw OpexError.Forbidden.exception()
-        return userQueryHandler.txOfTrades(transactionRequest.apply { owner = user })
+        return userQueryHandler.txOfTrades(transactionRequest.apply { owner = securityContext.authentication.name })
     }
 
     @GetMapping("/order/history")

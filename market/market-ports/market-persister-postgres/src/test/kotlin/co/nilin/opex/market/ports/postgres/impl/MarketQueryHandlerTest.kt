@@ -126,8 +126,8 @@ class MarketQueryHandlerTest {
         val marketTradeResponses = marketQueryHandler.recentTrades(VALID.ETH_USDT, 1)
 
         assertThat(marketTradeResponses).isNotNull
-        assertThat(marketTradeResponses.count()).isEqualTo(1)
-        assertThat(marketTradeResponses.first()).isEqualTo(VALID.MARKET_TRADE_RESPONSE)
+        assertThat(marketTradeResponses?.count()).isEqualTo(1)
+        assertThat(marketTradeResponses?.first()).isEqualTo(VALID.MARKET_TRADE_RESPONSE)
     }
 }
 
