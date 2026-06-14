@@ -95,7 +95,7 @@ class MarketQueryHandlerImpl(
                     price = it.price,
                     quantity = it.quantity,
                     quoteQuantity = it.quoteQuantity,
-                    Date.from(it.time.atZone(ZoneId.systemDefault()).toInstant()),
+                    Date.from(it.createDate.atZone(ZoneId.systemDefault()).toInstant()),
                     isBestMatch = true,
                     isMakerBuyer = it.isMakerBuyer
                 )

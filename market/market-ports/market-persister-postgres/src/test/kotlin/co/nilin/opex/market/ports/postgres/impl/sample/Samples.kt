@@ -116,9 +116,9 @@ object VALID {
         1,
         BigDecimal.valueOf(100000),
         BigDecimal.valueOf(0.001), // Minimum of orders quantities
-        BigDecimal.valueOf(100000),
+        BigDecimal.valueOf(100).stripTrailingZeros(),
         CREATE_DATE,
-        true,
+        false,
         MAKER_ORDER_MODEL.ouid,
         BigDecimal.valueOf(0.001),
         "USDT",

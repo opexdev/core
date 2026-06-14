@@ -107,7 +107,7 @@ class UserQueryHandlerImpl(
                     it.quoteQuantity,
                     requireNotNull(it.commission),
                     requireNotNull(it.commissionAsset),
-                    it.time,
+                    it.createDate,
                     requireNotNull(it.isBuyer),
                     requireNotNull(it.isMaker),
                     true,

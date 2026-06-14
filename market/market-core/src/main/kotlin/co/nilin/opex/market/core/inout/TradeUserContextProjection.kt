@@ -11,7 +11,7 @@ data class TradeUserContextProjection(
     val price: BigDecimal,
     val quantity: BigDecimal,
     val quoteQuantity: BigDecimal,
-    val time: LocalDateTime,
+    val createDate: LocalDateTime,
     val isMakerBuyer: Boolean,
     val ouid: String? = null,
     val commission: BigDecimal? = null,

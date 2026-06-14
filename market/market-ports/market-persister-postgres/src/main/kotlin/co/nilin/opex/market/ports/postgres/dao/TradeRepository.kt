@@ -45,7 +45,7 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
                     ELSE to2.quote_quantity
                 END AS quoteQuantity,
             
-                t.create_date AS time,
+                t.create_date ,
             
                 CASE
                     WHEN mo.side = 'BID'
@@ -104,7 +104,7 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
                         ELSE to2.quote_quantity
                     END AS quoteQuantity,
                 
-                    t.create_date AS time,
+                    t.create_date ,
                 
                     CASE
                         WHEN mo.side = 'BID'
