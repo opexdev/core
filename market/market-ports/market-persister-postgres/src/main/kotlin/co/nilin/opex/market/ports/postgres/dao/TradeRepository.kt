@@ -30,136 +30,145 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
 
     @Query(
         """
-            SELECT
-                t.symbol AS symbol,
-                t.base_asset AS baseAsset,
-                t.quote_asset AS quoteAsset,
-            
-                t.trade_id AS id,
-                t.matched_price AS price,
-                t.matched_quantity AS quantity,
-            
-                CASE
-                    WHEN mo.side = 'BID'
-                    THEN mo.quote_quantity
-                    ELSE to2.quote_quantity
-                END AS quoteQuantity,
-            
-                t.create_date ,
-            
-                CASE
-                    WHEN mo.side = 'BID'
-                    THEN TRUE
-                    ELSE FALSE
-                END AS isMakerBuyer,
-            
-                NULL AS orderId,
-                NULL AS commission,
-                NULL AS commissionAsset,
-                NULL AS isBuyer,
-                NULL AS isMaker
-            
-            FROM trades t
-            
-            JOIN orders mo
-                ON mo.ouid = t.maker_ouid
-            
-            JOIN orders to2
-                ON to2.ouid = t.taker_ouid
-            
-            WHERE (:symbol IS NULL OR t.symbol = :symbol)
-            
-            ORDER BY t.trade_date DESC
-            LIMIT :limit
-     """
+    SELECT
+        t.symbol AS symbol,
+        t.base_asset AS baseAsset,
+        t.quote_asset AS quoteAsset,
+
+        t.trade_id AS id,
+        t.matched_price AS price,
+        t.matched_quantity AS quantity,
+
+        COALESCE(
+            CASE
+                WHEN mo.side = 'BID'
+                THEN mo.quote_quantity
+                ELSE to2.quote_quantity
+            END,
+            0
+        ) AS quoteQuantity,
+
+        t.create_date AS createDate,
+
+        COALESCE(
+            CASE
+                WHEN mo.side = 'BID'
+                THEN TRUE
+                ELSE FALSE
+            END,
+            FALSE
+        ) AS isMakerBuyer,
+
+        NULL AS ouid,
+        NULL AS commission,
+        NULL AS commissionAsset,
+        NULL AS isBuyer,
+        NULL AS isMaker
+
+    FROM trades t
+
+    LEFT JOIN orders mo
+        ON mo.ouid = t.maker_ouid
+
+    LEFT JOIN orders to2
+        ON to2.ouid = t.taker_ouid
+
+    WHERE (:symbol IS NULL OR t.symbol = :symbol)
+
+    ORDER BY t.trade_date DESC
+    LIMIT :limit
+    """
     )
     fun findRecentMarketTrades(
         @Param("symbol")
         symbol: String?,
+
         @Param("limit")
         limit: Int
     ): Flux<TradeUserContextProjection>
 
-    @Query(
-        """
-                SELECT
-                    t.symbol AS symbol,
-                
-                    NULL AS baseAsset,
-                    NULL AS quoteAsset,
-                
-                    t.trade_id AS id,
-                
-                    CASE
-                        WHEN t.taker_uuid = :uuid
-                        THEN t.taker_price
-                        ELSE t.maker_price
-                    END AS price,
-                
-                    t.matched_quantity AS quantity,
-                
-                    CASE
-                        WHEN mo.side = 'BID'
-                        THEN mo.quote_quantity
-                        ELSE to2.quote_quantity
-                    END AS quoteQuantity,
-                
-                    t.create_date ,
-                
-                    CASE
-                        WHEN mo.side = 'BID'
-                        THEN TRUE
-                        ELSE FALSE
-                    END AS isMakerBuyer,
-                
-                    CASE
-                        WHEN t.taker_uuid = :uuid
-                        THEN to2.ouid
-                        ELSE mo.ouid
-                    END AS ouid,
-                
-                    CASE
-                        WHEN t.taker_uuid = :uuid
-                        THEN t.taker_commission
-                        ELSE t.maker_commission
-                    END AS commission,
-                
-                    CASE
-                        WHEN t.taker_uuid = :uuid
-                        THEN t.taker_commission_asset
-                        ELSE t.maker_commission_asset
-                    END AS commissionAsset,
-                
-                    CASE
-                        WHEN t.taker_uuid = :uuid
-                        THEN to2.side = 'ASK'
-                        ELSE mo.side = 'ASK'
-                    END AS isBuyer,
-                
-                    CASE
-                        WHEN t.maker_uuid = :uuid
-                        THEN TRUE
-                        ELSE FALSE
-                    END AS isMaker
-                
-                FROM trades t
-                
-                JOIN orders mo
-                    ON mo.ouid = t.maker_ouid
-                
-                JOIN orders to2
-                    ON to2.ouid = t.taker_ouid
-                
-                WHERE :uuid IN (t.taker_uuid, t.maker_uuid)
-                    AND (:fromTrade IS NULL OR t.id > :fromTrade)
-                    AND (:symbol IS NULL OR t.symbol = :symbol)
-                    AND (:startTime IS NULL OR t.trade_date >= :startTime)
-                    AND (:endTime IS NULL OR t.trade_date < :endTime)
-                
-                ORDER BY t.trade_date DESC
-                LIMIT :limit
-"""
-    )
+
+    @Query("""
+        SELECT
+        t.symbol AS symbol,
+    
+        NULL AS baseAsset,
+        NULL AS quoteAsset,
+    
+        t.trade_id AS id,
+    
+        CASE
+            WHEN t.taker_uuid = :uuid
+            THEN t.taker_price
+            ELSE t.maker_price
+        END AS price,
+    
+        t.matched_quantity AS quantity,
+    
+        COALESCE(
+            CASE
+                WHEN mo.side = 'BID'
+                THEN mo.quote_quantity
+                ELSE to2.quote_quantity
+            END,
+            0
+        ) AS quoteQuantity,
+    
+        t.create_date AS createDate,
+    
+        COALESCE(
+            CASE
+                WHEN mo.side = 'BID'
+                THEN TRUE
+                ELSE FALSE
+            END,
+            FALSE
+        ) AS isMakerBuyer,
+    
+        CASE
+            WHEN t.taker_uuid = :uuid
+            THEN to2.ouid
+            ELSE mo.ouid
+        END AS ouid,
+    
+        CASE
+            WHEN t.taker_uuid = :uuid
+            THEN t.taker_commission
+            ELSE t.maker_commission
+        END AS commission,
+    
+        CASE
+            WHEN t.taker_uuid = :uuid
+            THEN t.taker_commission_asset
+            ELSE t.maker_commission_asset
+        END AS commissionAsset,
+    
+        CASE
+            WHEN t.taker_uuid = :uuid
+            THEN (to2.side = 'ASK')
+            ELSE (mo.side = 'ASK')
+        END AS isBuyer,
+    
+        (t.maker_uuid = :uuid) AS isMaker
+    
+    FROM trades t
+    
+    LEFT JOIN orders mo
+        ON mo.ouid = t.maker_ouid
+    
+    LEFT JOIN orders to2
+        ON to2.ouid = t.taker_ouid
+    
+    WHERE :uuid IN (t.taker_uuid, t.maker_uuid)
+        AND (:fromTrade IS NULL OR t.trade_id > :fromTrade)
+        AND (:symbol IS NULL OR t.symbol = :symbol)
+        AND (:startTime IS NULL OR t.trade_date >= :startTime)
+        AND (:endTime IS NULL OR t.trade_date < :endTime)
+    
+    ORDER BY t.trade_date DESC
+    LIMIT :limit
+    """
+        )
     fun findTradesWithUserContext(
         @Param("uuid")
         uuid: String,
