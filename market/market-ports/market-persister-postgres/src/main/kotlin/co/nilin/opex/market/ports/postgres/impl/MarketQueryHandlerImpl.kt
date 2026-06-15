@@ -89,8 +89,8 @@ class MarketQueryHandlerImpl(
             .map {
                 MarketTrade(
                     symbol = it.symbol,
-                    baseAsset = it.baseAsset!!,
-                    quoteAsset = it.quoteAsset!!,
+                    baseAsset = it.baseAsset,
+                    quoteAsset = it.quoteAsset,
                     id = it.id,
                     price = it.price,
                     quantity = it.quantity,
