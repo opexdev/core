@@ -1,6 +1,8 @@
 package co.nilin.opex.market.ports.postgres.dao
 
 import co.nilin.opex.market.core.inout.*
+import co.nilin.opex.market.ports.postgres.data.MarketTradeProjection
+import co.nilin.opex.market.ports.postgres.data.TradeUserContextProjection
 import co.nilin.opex.market.ports.postgres.model.*
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.query.Param
@@ -32,9 +34,8 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         """
     SELECT
         t.symbol AS symbol,
-        t.base_asset AS baseAsset,
-        t.quote_asset AS quoteAsset,
-
+        t.base_asset AS base_asset,
+        t.quote_asset AS quote_asset,
         t.trade_id AS id,
         t.matched_price AS price,
         t.matched_quantity AS quantity,
@@ -46,24 +47,15 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
                 ELSE to2.quote_quantity
             END,
             0
-        ) AS quoteQuantity,
+        ) AS quote_quantity,
 
-        t.create_date AS createDate,
+        t.create_date AS create_date,
 
-        COALESCE(
-            CASE
-                WHEN mo.side = 'BID'
-                THEN TRUE
-                ELSE FALSE
-            END,
-            FALSE
-        ) AS isMakerBuyer,
-
-        NULL AS ouid,
-        NULL AS commission,
-        NULL AS commissionAsset,
-        NULL AS isBuyer,
-        NULL AS isMaker
+        CASE
+            WHEN mo.side = 'BID'
+            THEN TRUE
+            ELSE FALSE
+        END AS is_maker_buyer
 
     FROM trades t
 
@@ -80,12 +72,9 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
     """
     )
     fun findRecentMarketTrades(
-        @Param("symbol")
-        symbol: String?,
-
-        @Param("limit")
-        limit: Int
-    ): Flux<TradeUserContextProjection>
+        @Param("symbol") symbol: String?,
+        @Param("limit") limit: Int
+    ): Flux<MarketTradeProjection>
 
 
     @Query("""

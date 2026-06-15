@@ -116,7 +116,7 @@ class MarketQueryHandlerTest {
         } returns Flux.just(VALID.TRADE_MODEL)
         every {
             tradeRepository.findRecentMarketTrades(VALID.ETH_USDT, 1)
-        } returns Flux.just(VALID.TRADE_USER_CONTEXT)
+        } returns Flux.just(VALID.MARKET_TRADE)
         every {
             orderRepository.findByOuid(VALID.TRADE_MODEL.makerOuid)
         } returns Mono.just(VALID.MAKER_ORDER_MODEL)

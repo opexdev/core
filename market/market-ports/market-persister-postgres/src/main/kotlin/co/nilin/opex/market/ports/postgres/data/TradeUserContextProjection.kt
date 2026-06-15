@@ -1,4 +1,4 @@
-package co.nilin.opex.market.core.inout
+package co.nilin.opex.market.ports.postgres.data
 
 import java.math.BigDecimal
 import java.time.LocalDateTime
@@ -19,4 +19,3 @@ data class TradeUserContextProjection(
     val isBuyer: Boolean? = null,
     val isMaker: Boolean? = null
 )
-
