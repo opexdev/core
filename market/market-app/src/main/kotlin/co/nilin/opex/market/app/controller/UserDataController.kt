@@ -32,11 +32,12 @@ class UserDataController(
             ?: throw OpexError.NotFound.exception()
     }
 
-    @GetMapping("/orders/open")
+    //todo should be authenticated as soon as possible
+    @GetMapping("/{uuid}/orders/open")
     suspend fun getUserOpenOrders(
-        @RequestParam limit: Int, @CurrentSecurityContext securityContext: SecurityContext,
+        @RequestParam limit: Int, @PathVariable uuid: String,
     ): List<Order> {
-        return userQueryHandler.openOrders(securityContext.authentication.name, limit)
+        return userQueryHandler.openOrders(uuid, limit)
     }
 
     @GetMapping("/orders/{symbol}/open")
