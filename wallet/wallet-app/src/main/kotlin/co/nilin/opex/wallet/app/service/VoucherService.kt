@@ -10,6 +10,7 @@ import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.model.DepositType
 import co.nilin.opex.wallet.core.service.GatewayService
 import co.nilin.opex.wallet.core.spi.VoucherManager
+import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -22,6 +23,7 @@ class VoucherService(
     private val voucherManager: VoucherManager,
     private val depositService: DepositService,
     private val gatewayService: GatewayService,
+    private val walletOwnerManager: WalletOwnerManager
 ) {
     private val logger = LoggerFactory.getLogger(VoucherService::class.java)
 
@@ -141,7 +143,7 @@ class VoucherService(
         when (voucherGroup.type) {
             VoucherGroupType.GIFT -> validateGiftVoucher(voucherId)
             VoucherGroupType.CAMPAIGN -> validateCampaignVoucher(voucherGroup)
-            VoucherGroupType.SALE -> validateSaleVoucher(voucherId)
+            VoucherGroupType.SALE -> validateSaleVoucher(voucher, uuid)
             else -> throw OpexError.BadRequest.exception("Unsupported voucher group type: ${voucherGroup.type}")
         }
     }
@@ -170,14 +172,18 @@ class VoucherService(
         }
     }
 
-    private suspend fun validateSaleVoucher(voucherId: Long) {
-        if (voucherManager.isExistVoucherUsage(voucherId)) {
+    private suspend fun validateSaleVoucher(voucher: Voucher, uuid: String) {
+        if (voucherManager.isExistVoucherUsage(voucher.id!!)) {
             throw OpexError.VoucherAlreadyUsed.exception()
         }
-
-        if (!voucherManager.isExistVoucherSaleData(voucherId)) {
+        if (!voucherManager.isExistVoucherSaleData(voucher.id!!)) {
             throw OpexError.VoucherSaleDataNotFound.exception("Voucher sale data not found")
         }
+        val receiver = walletOwnerManager.findWalletOwner(uuid) ?: throw OpexError.UserNotFound.exception()
+        logger.info(voucherManager.getVoucherSaleData(voucher.id!!).nationalCode)
+        logger.info( receiver.externalIdentifier)
+        if (voucherManager.getVoucherSaleData(voucher.id!!).nationalCode != receiver.externalIdentifier)
+            throw OpexError.VoucherIsNotYours.exception()
     }
 
     private suspend fun deposit(voucher: Voucher, uuid: String) {

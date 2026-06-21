@@ -10,7 +10,8 @@ fun WalletOwnerModel.toPlainObject() = WalletOwner(
     level,
     isTradeAllowed,
     isWithdrawAllowed,
-    isDepositAllowed
+    isDepositAllowed,
+    externalIdentifier
 )
 
 fun WalletOwner.toModel() = WalletOwnerModel(
@@ -20,5 +21,6 @@ fun WalletOwner.toModel() = WalletOwnerModel(
     level,
     isTradeAllowed,
     isWithdrawAllowed,
-    isDepositAllowed
+    isDepositAllowed,
+    externalIdentifier
 )
