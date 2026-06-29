@@ -2,13 +2,12 @@ package co.nilin.opex.market.core.inout
 
 import java.math.BigDecimal
 import java.time.LocalDateTime
-import java.util.*
 
 // User trade data
 data class Trade(
     val symbol: String,
     val id: Long,
-    val ouid: String,
+    val ouid: String? = null,
     val price: BigDecimal,
     val quantity: BigDecimal,
     val quoteQuantity: BigDecimal,

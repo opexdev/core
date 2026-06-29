@@ -49,7 +49,7 @@ class ProfileController(
         }
     }
 
-    @PatchMapping("/contact/update/otp-verification")
+    @PostMapping("/contact/update/otp-verification")
     suspend fun confirmContactUpdate(
         @RequestBody request: ContactUpdateConfirmRequest,
         @CurrentSecurityContext securityContext: SecurityContext

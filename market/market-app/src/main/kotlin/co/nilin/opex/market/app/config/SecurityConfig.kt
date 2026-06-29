@@ -28,6 +28,7 @@ class SecurityConfig(private val webClient: WebClient) {
             .authorizeExchange() {
                 it.pathMatchers(HttpMethod.GET, "/v1/admin/**").hasAnyAuthority("ROLE_monitoring", "ROLE_admin")
                     .pathMatchers("/actuator/**").permitAll()
+                    .pathMatchers("/v1/user/*/orders/open").permitAll()
                     .pathMatchers("/v1/user/**").authenticated()
                     .anyExchange().permitAll()
             }
