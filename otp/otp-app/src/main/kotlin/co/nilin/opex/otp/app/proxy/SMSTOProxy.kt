@@ -5,40 +5,47 @@ import co.nilin.opex.common.utils.LoggerDelegate
 import co.nilin.opex.otp.app.data.SMSProviderType
 import co.nilin.opex.otp.app.repository.SMSProviderRepository
 import kotlinx.coroutines.reactor.awaitSingleOrNull
-import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
-import org.springframework.web.util.UriComponentsBuilder
 
 @Component
-class KaveNegarProxy(
+class SMSTOProxy(
     private val webClient: WebClient,
     private val smsProviderRepository: SMSProviderRepository,
 ) : SMSProvider {
 
-    override val type = SMSProviderType.KAVENEGAR
-
+    override val type = SMSProviderType.SMSTO
 
     private val logger by LoggerDelegate()
 
-    override suspend fun send(receiver: String, message: String): Boolean {
-        val config = smsProviderRepository.findById(type.name) ?: throw OpexError.UnableToSendOTP.exception()
-        val baseUrl = "${config.baseUrl}/${config.apiKey}/"
+    override suspend fun send(
+        receiver: String,
+        message: String,
+    ): Boolean {
 
-        val uri = UriComponentsBuilder.fromUriString("$baseUrl/verify/lookup.json")
-            .queryParam("receptor", receiver)
-            .queryParam("template", config.template)
-            .queryParam("token", message)
-            .build().toUri()
+        val config = smsProviderRepository.findById(type.name)
+            ?: throw OpexError.UnableToSendOTP.exception()
+
+        val request = SMSRequest(
+            to = receiver,
+            message = message,
+            sender_id = config.sender
+        )
 
         return try {
-            val response = webClient.get()
-                .uri(uri)
+            val response = webClient.post()
+                .uri("${config.baseUrl}/sms/send")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer ${config.apiKey}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
                 .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
+                .onStatus({ it.isError }) { it.createException() }
                 .bodyToMono<String>()
                 .awaitSingleOrNull()
+
             logger.debug("Message sent to receiver $receiver.\n$response")
             true
         } catch (e: Exception) {
@@ -46,4 +53,10 @@ class KaveNegarProxy(
             false
         }
     }
+
+    data class SMSRequest(
+        val to: String,
+        val message: String,
+        val sender_id: String? = null,
+    )
 }
