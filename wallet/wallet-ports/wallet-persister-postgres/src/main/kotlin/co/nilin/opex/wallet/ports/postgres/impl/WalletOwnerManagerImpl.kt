@@ -161,7 +161,8 @@ class WalletOwnerManagerImpl(
                     it.level,
                     it.isTradeAllowed,
                     it.isWithdrawAllowed,
-                    it.isDepositAllowed
+                    it.isDepositAllowed,
+                    it.externalIdentifier
                 )
             }
     }
@@ -175,6 +176,14 @@ class WalletOwnerManagerImpl(
                 ?: logger.warn("Failed to update wallet owner name for UUID: $uuid")
         } else {
             logger.warn("Wallet owner not found for UUID: $uuid")
+        }
+    }
+    override suspend fun updateWalletOwnerExternalIdentifier(uuid: String,externalIdentifier: String?) {
+        val owner = walletOwnerRepository.findByUuid(uuid).awaitFirstOrNull()
+        if (owner != null) {
+            owner.externalIdentifier = externalIdentifier
+            walletOwnerRepository.save(owner).awaitFirstOrNull()
+                ?: logger.warn("Failed to update wallet externalIdentifier for UUID: $uuid")
         }
     }
 

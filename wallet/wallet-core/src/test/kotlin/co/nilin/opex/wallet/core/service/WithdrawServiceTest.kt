@@ -64,7 +64,7 @@ class WithdrawServiceTest {
         private fun createCurrency() =
             CurrencyCommand("BTC", UUID.randomUUID().toString(), "Bitcoin", BigDecimal.valueOf(0.0001))
 
-        private fun createOwner() = WalletOwner(1L, USER_UUID, "User", "registered", true, true, true)
+        private fun createOwner() = WalletOwner(1L, USER_UUID, "User", "registered", true, true, true )
 
         private fun createSystemOwner() = WalletOwner(2L, SYSTEM_UUID, "System", "registered", true, true, true)
 
