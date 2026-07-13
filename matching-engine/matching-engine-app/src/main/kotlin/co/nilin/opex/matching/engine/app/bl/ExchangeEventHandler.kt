@@ -27,12 +27,14 @@ class ExchangeEventHandler(
         EventDispatcher.register(OrderBookPublishedEvent::class.java, localHandler)
     }
 
-    val handler: (CoreEvent) -> Unit = {
-        CoroutineScope(AppSchedulers.generalExecutor).launch {
-            eventsSubmitter.submit(it)
-        }
+//    val handler: (CoreEvent) -> Unit = {
+//        CoroutineScope(AppSchedulers.generalExecutor).launch {
+//            eventsSubmitter.submit(it)
+//        }
+//    }
+    val handler: suspend (CoreEvent) -> Unit = {
+        eventsSubmitter.submit(it)
     }
-
     val localHandler: (OrderBookPublishedEvent) -> Unit = {
         CoroutineScope(AppSchedulers.generalExecutor).launch {
             orderBookPersister.storeLastState(it.persistentOrderBook)

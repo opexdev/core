@@ -9,7 +9,7 @@ interface OrderBook {
     fun startReplayMode()
     fun stopReplayMode()
     fun lastOrder(): Order?
-    fun handleNewOrderCommand(orderCommand: OrderCreateCommand): Order?
-    fun handleCancelCommand(orderCommand: OrderCancelCommand)
-    fun handleEditCommand(orderCommand: OrderEditCommand): Order?
+    suspend fun handleNewOrderCommand(orderCommand: OrderCreateCommand): Order?
+    suspend fun handleCancelCommand(orderCommand: OrderCancelCommand)
+    suspend fun handleEditCommand(orderCommand: OrderEditCommand): Order?
 }

@@ -14,11 +14,15 @@ object EventDispatcher {
     fun <T> register(type: Class<T>, lambda: (T) -> Unit) = register(type, EventListener(lambda))
 
     @JvmStatic
+    fun <T> register(type: Class<T>, lambda: suspend (T) -> Unit) = register(type, EventListener(lambda))
+
+
+    @JvmStatic
     fun <T> register(type: Class<T>, listener: EventListener<T>) {
         eventsHandler.getOrPut(type, { LinkedList() }).add(listener)
     }
 
-    fun emit(event: CoreEvent) {
+     suspend fun emit(event: CoreEvent) {
         var type: Class<*>? = event::class.java
         while (type != null) {
             eventsHandler[type]?.forEach { eventsHandler ->
@@ -30,10 +34,11 @@ object EventDispatcher {
         }
     }
 
+
     open class EventListener<T>(
-        val lambda: (T) -> Unit
+        val lambda: suspend (T) -> Unit
     ) {
-        operator fun invoke(event: Any) {
+        suspend operator fun invoke(event: Any) {
             lambda(event as T)
         }
     }

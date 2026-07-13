@@ -25,7 +25,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
 
     var lastOrder: SimpleOrder? = null
 
-    override fun handleNewOrderCommand(orderCommand: OrderCreateCommand): Order? {
+    override suspend fun handleNewOrderCommand(orderCommand: OrderCreateCommand): Order? {
         logNewOrder(orderCommand)
         val order = when (orderCommand.matchConstraint) {
             MatchConstraint.GTC -> {
@@ -161,7 +161,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
         return order
     }
 
-    override fun handleCancelCommand(orderCommand: OrderCancelCommand) {
+    override suspend fun handleCancelCommand(orderCommand: OrderCancelCommand) {
         logger.info(
             """
             ---- CANCEL ${orderCommand.pair.leftSideName}-${orderCommand.pair.rightSideName} ----
@@ -215,7 +215,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
         logCurrentState()
     }
 
-    override fun handleEditCommand(orderCommand: OrderEditCommand): Order? {
+    override suspend fun handleEditCommand(orderCommand: OrderEditCommand): Order? {
         val order = orders.remove(orderCommand.orderId)
         if (order == null /*check for userid*/) {
             if (!replayMode) {
@@ -366,7 +366,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
             setBestOrder(bestOrder.worse)
     }
 
-    private fun matchInstantly(order: SimpleOrder): SimpleOrder {
+    private suspend fun matchInstantly(order: SimpleOrder): SimpleOrder {
         if (order.direction == OrderDirection.BID) {
             return matchInstantly(order, bestAskOrder, askOrders, { makerPrice: Long ->
                 makerPrice <= order.price
@@ -382,7 +382,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
         }
     }
 
-    private fun matchIocInstantly(order: SimpleOrder): SimpleOrder {
+    private suspend fun matchIocInstantly(order: SimpleOrder): SimpleOrder {
         if (order.direction == OrderDirection.BID) {
             return matchInstantly(order, bestAskOrder, askOrders, { makerPrice: Long ->
                 order.orderType == OrderType.MARKET_ORDER || makerPrice <= order.price
@@ -415,7 +415,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
         }
     }
 
-    private fun matchInstantly(
+    private suspend fun matchInstantly(
         order: SimpleOrder,
         makerOrder: SimpleOrder?,
         queue: LongAdaptiveRadixTreeMap<Bucket>,

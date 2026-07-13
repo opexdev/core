@@ -10,6 +10,7 @@ import co.nilin.opex.matching.engine.core.model.MatchConstraint
 import co.nilin.opex.matching.engine.core.model.OrderDirection
 import co.nilin.opex.matching.engine.core.model.OrderType
 import co.nilin.opex.matching.engine.core.model.PersistentOrderBook
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -30,7 +31,7 @@ class OrderBookEventEmitsUnitTest {
     }
 
     @Test
-    fun givenOrderBook_whenOrderCreated_thenOrderBookEventPublished() {
+    fun givenOrderBook_whenOrderCreated_thenOrderBookEventPublished() : Unit = runBlocking {
         //given
         val orderBook = SimpleOrderBook(pair, false)
         //when
@@ -52,7 +53,7 @@ class OrderBookEventEmitsUnitTest {
 
 
     @Test
-    fun givenOrderBook_whenCancelOrder_thenOrderBookEventPublished() {
+    fun givenOrderBook_whenCancelOrder_thenOrderBookEventPublished():Unit = runBlocking{
         //given
         val orderBook = SimpleOrderBook(pair, false)
         val firstOrderId = UUID.randomUUID().toString()
@@ -91,7 +92,7 @@ class OrderBookEventEmitsUnitTest {
 
 
     @Test
-    fun givenOrderBook_whenEditOrder_thenOrderBookEventPublished() {
+    fun givenOrderBook_whenEditOrder_thenOrderBookEventPublished():Unit = runBlocking{
         //given
         val orderBook = SimpleOrderBook(pair, false)
         orderBook.handleNewOrderCommand(
