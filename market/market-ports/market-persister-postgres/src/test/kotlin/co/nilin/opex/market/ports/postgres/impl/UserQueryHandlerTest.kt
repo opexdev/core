@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 class UserQueryHandlerTest {
@@ -47,7 +48,7 @@ class UserQueryHandlerTest {
     @Test
     fun givenOrderAndTrade_whenAllTrades_thenTradeResponseList(): Unit = runBlocking {
         every {
-            tradeRepository.findByUuidAndSymbolAndTimeBetweenAndTradeIdGreaterThan(
+            tradeRepository.findTradesWithUserContext(
                 VALID.PRINCIPAL.name,
                 VALID.TRADE_REQUEST.symbol,
                 1,
@@ -55,9 +56,7 @@ class UserQueryHandlerTest {
                 VALID.TRADE_REQUEST.endTime,
                 VALID.TRADE_REQUEST.limit
             )
-        } returns flow {
-            emit(VALID.TRADE_MODEL)
-        }
+        } returns Flux.just(VALID.TRADE_USER_CONTEXT)
         every {
             orderRepository.findByOuid(VALID.TRADE_MODEL.makerOuid)
         } returns Mono.just(VALID.MAKER_ORDER_MODEL)
@@ -68,7 +67,7 @@ class UserQueryHandlerTest {
         val tradeResponses = userQueryHandler.allTrades(VALID.PRINCIPAL.name, VALID.TRADE_REQUEST)
 
         assertThat(tradeResponses).isNotNull
-        assertThat(tradeResponses.count()).isEqualTo(1)
+        assertThat(tradeResponses?.count()).isEqualTo(1)
     }
 
     @Test

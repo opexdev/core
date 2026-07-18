@@ -1,6 +1,9 @@
 package co.nilin.opex.otp.app.proxy
 
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.utils.LoggerDelegate
+import co.nilin.opex.otp.app.data.SMSProviderType
+import co.nilin.opex.otp.app.repository.SMSProviderRepository
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -10,22 +13,22 @@ import org.springframework.web.util.UriComponentsBuilder
 
 @Component
 class KaveNegarProxy(
-    @Value("\${otp.sms.provider.url}")
-    private val url: String,
-    @Value("\${otp.sms.provider.api-key}")
-    private val apiKey: String,
-    @Value("\${otp.sms.provider.template}")
-    private val template: String,
-    private val webClient: WebClient
-) {
+    private val webClient: WebClient,
+    private val smsProviderRepository: SMSProviderRepository,
+) : SMSProvider {
+
+    override val type = SMSProviderType.KAVENEGAR
+
 
     private val logger by LoggerDelegate()
-    private val baseUrl = "${url}/$apiKey/"
 
-    suspend fun send(receiver: String, message: String, sender: String? = null, type: String? = null): Boolean {
+    override suspend fun send(receiver: String, message: String): Boolean {
+        val config = smsProviderRepository.findById(type.name) ?: throw OpexError.UnableToSendOTP.exception()
+        val baseUrl = "${config.baseUrl}/${config.apiKey}/"
+
         val uri = UriComponentsBuilder.fromUriString("$baseUrl/verify/lookup.json")
             .queryParam("receptor", receiver)
-            .queryParam("template", template)
+            .queryParam("template", config.template)
             .queryParam("token", message)
             .build().toUri()
 

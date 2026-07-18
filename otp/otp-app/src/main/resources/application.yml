@@ -51,9 +51,7 @@ otp:
   response-enabled: ${OTP_CODE_RESPONSE_ENABLED:false}
   sms:
     provider:
-      url: ${SMS_PROVIDER_URL}
-      api-key: ${SMS_PROVIDER_API_KEY}
-      template: ${SMS_PROVIDER_TEMPLATE}
+      default: ${DEFAULT_SMS_PROVIDER}
   email:
     host: ${SMTP_HOST}
     port: ${SMTP_PORT}
@@ -61,7 +59,7 @@ otp:
     password: ${SMTP_PASS}
     from: ${SMTP_FROM}
     proxy:
-      enabled: ${SMTP_PROXY_ENABLED:false}
+      enabled: ${SMTP_PROXY_ENABLED}
       host: ${SMTP_PROXY_HOST}
       port: ${SMTP_PROXY_PORT}
   custom-message:

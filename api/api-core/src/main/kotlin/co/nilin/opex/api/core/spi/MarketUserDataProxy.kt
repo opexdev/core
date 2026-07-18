@@ -10,12 +10,12 @@ import java.util.*
 
 interface MarketUserDataProxy {
 
-    suspend fun queryOrder(principal: Principal, symbol: String, orderId: Long?, origClientOrderId: String?): Order?
+    suspend fun queryOrder(token: String, symbol: String, orderId: Long?, origClientOrderId: String?): Order?
 
-    suspend fun openOrders(principal: Principal, symbol: String?, limit: Int?): List<Order>
+    suspend fun openOrders(token: String, symbol: String?, limit: Int?): List<Order>
 
     suspend fun allOrders(
-        principal: Principal,
+        token: String,
         symbol: String?,
         startTime: Date?,
         endTime: Date?,
@@ -23,7 +23,7 @@ interface MarketUserDataProxy {
     ): List<Order>
 
     suspend fun allTrades(
-        principal: Principal,
+        token: String,
         symbol: String?,
         fromTrade: Long?,
         startTime: Date?,
@@ -32,7 +32,7 @@ interface MarketUserDataProxy {
     ): List<Trade>
 
     suspend fun getOrderHistory(
-        uuid: String,
+        token: String,
         symbol: String?,
         startTime: Long?,
         endTime: Long?,
@@ -43,7 +43,7 @@ interface MarketUserDataProxy {
     ): List<OrderData>
 
     suspend fun getOrderHistoryCount(
-        uuid: String,
+        token: String,
         symbol: String?,
         startTime: Long?,
         endTime: Long?,
@@ -52,7 +52,7 @@ interface MarketUserDataProxy {
     ): Long
 
     suspend fun getTradeHistory(
-        uuid: String,
+        token: String,
         symbol: String?,
         startTime: Long?,
         endTime: Long?,
@@ -62,7 +62,7 @@ interface MarketUserDataProxy {
     ): List<Trade>
 
     suspend fun getTradeHistoryCount(
-        uuid: String,
+        token: String,
         symbol: String?,
         startTime: Long?,
         endTime: Long?,

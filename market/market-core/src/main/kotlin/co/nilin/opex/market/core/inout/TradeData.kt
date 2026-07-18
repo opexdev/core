@@ -7,6 +7,8 @@ import java.time.LocalDateTime
 data class TradeData(
     val tradeId: Long,
     val symbol: String,
+    val baseAsset: String?,
+    val quoteAsset: String?,
     val matchedPrice: BigDecimal,
     val matchedQuantity: BigDecimal,
     val takerPrice: BigDecimal,
@@ -14,4 +16,10 @@ data class TradeData(
     val tradeDate: LocalDateTime,
     val makerUuid: String,
     val takerUuid: String,
+    val makerOuid: String?,
+    val takerOuid: String?,
+    val makerCommission: BigDecimal?,
+    val takerCommission: BigDecimal?,
+    val makerCommissionAsset: String?,
+    val takerCommissionAsset: String?,
 )

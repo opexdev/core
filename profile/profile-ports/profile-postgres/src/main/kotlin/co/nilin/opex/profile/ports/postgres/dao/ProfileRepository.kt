@@ -4,6 +4,7 @@ import co.nilin.opex.profile.core.data.kyc.KycLevel
 import co.nilin.opex.profile.core.data.profile.Gender
 import co.nilin.opex.profile.core.data.profile.NationalityType
 import co.nilin.opex.profile.core.data.profile.ProfileStatus
+import co.nilin.opex.profile.ports.postgres.ProfileFullNameProjection
 import co.nilin.opex.profile.ports.postgres.model.entity.ProfileModel
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
@@ -19,6 +20,9 @@ interface ProfileRepository : ReactiveCrudRepository<ProfileModel, Long> {
 
     @Query("select * from profile where identifier = :identifier order by last_update_date desc limit 1")
     fun findLatestByIdentifier(identifier: String ): Mono<ProfileModel>
+
+    @Query("select p.user_id AS uuid, CONCAT (p.first_name, ' ', p.last_name) AS full_name  from profile p where p.user_id in (:uuids)")
+    fun findFullNameByUuid(uuids: List<String>): Flux<ProfileFullNameProjection>
 
     @Query(
         """

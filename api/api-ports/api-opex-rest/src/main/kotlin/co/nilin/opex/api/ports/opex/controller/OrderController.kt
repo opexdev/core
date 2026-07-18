@@ -259,7 +259,7 @@ Response body:
         @CurrentSecurityContext securityContext: SecurityContext
     ): CancelOrderResponse {
         if (orderId == null && origClientOrderId == null) throw OpexError.BadRequest.exception("'orderId' or 'origClientOrderId' must be sent")
-        val order = queryHandler.queryOrder(principal, symbol, orderId, origClientOrderId)
+        val order = queryHandler.queryOrder(securityContext.jwtAuthentication().tokenValue(), symbol, orderId, origClientOrderId)
             ?: throw OpexError.OrderNotFound.exception()
         val response = CancelOrderResponse(
             symbol,
@@ -323,8 +323,9 @@ Response body:
         ]
     )
     suspend fun queryOrder(
+
         @Parameter(hidden = true)
-        principal: Principal,
+        @CurrentSecurityContext securityContext: SecurityContext,
 
         @Parameter(
             name = "symbol",
@@ -353,7 +354,7 @@ Response body:
         )
         @RequestParam(required = false) origClientOrderId: String?,
     ): QueryOrderResponse {
-        return queryHandler.queryOrder(principal, symbol, orderId, origClientOrderId)
+        return queryHandler.queryOrder(securityContext.jwtAuthentication().tokenValue(), symbol, orderId, origClientOrderId)
             ?.asQueryOrderResponse()
             ?.apply { this.symbol = symbol }
             ?: throw OpexError.OrderNotFound.exception()
@@ -394,7 +395,7 @@ Response body:
     )
     suspend fun fetchOpenOrders(
         @Parameter(hidden = true)
-        principal: Principal,
+        @CurrentSecurityContext securityContext: SecurityContext,
 
         @Parameter(
             name = "symbol",
@@ -414,7 +415,7 @@ Response body:
         )
         @RequestParam(required = false) limit: Int?
     ): List<QueryOrderResponse> {
-        return queryHandler.openOrders(principal, symbol, limit).map {
+        return queryHandler.openOrders(securityContext.jwtAuthentication().tokenValue(), symbol, limit).map {
             it.asQueryOrderResponse().apply { symbol?.let { s -> this.symbol = s } }
         }
     }

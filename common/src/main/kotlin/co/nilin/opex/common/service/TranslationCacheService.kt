@@ -19,25 +19,29 @@ class TranslationCacheService(
 ) {
 
     private val cache: MutableMap<Pair<String, UserLanguage>, MessageTranslation> = ConcurrentHashMap()
-    private var lastUpdate: Long = System.currentTimeMillis()
+    private var lastUpdate: Long? = null
     private var job: Job? = null
     private val logger = LoggerFactory.getLogger(TranslationCacheService::class.java)
-
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     @PostConstruct
     fun start() {
-        job = CoroutineScope(Dispatchers.IO).launch {
-            logger.info("Going to get messages which are updated after {}", lastUpdate)
+        job = scope.launch {
+            logger.info("Going to get messages which are updated after: {}", lastUpdate)
             while (isActive) {
-                if (customMessageClient != null) {
-                    val newMessages = customMessageClient.getMessagesUpdatedAfter(cache?.let { lastUpdate })
-                    newMessages?.forEach { msg ->
-                        cache[Pair(msg.key, msg.language)] =
+                try {
+                    if (customMessageClient != null) {
+                        val newMessages = customMessageClient.getMessagesUpdatedAfter(lastUpdate)
+                        newMessages?.forEach { msg ->
+                            cache[Pair(msg.key, msg.language)] =
                                 MessageTranslation(msg.key, msg.message, msg.language)
+                        }
                     }
+                    lastUpdate = System.currentTimeMillis()
+                    delay(30_000)
+                } catch (e: Exception) {
+                    logger.error("Error fetching messages", e)
                 }
-                lastUpdate = System.currentTimeMillis()
-                delay(30_000)
             }
         }
     }

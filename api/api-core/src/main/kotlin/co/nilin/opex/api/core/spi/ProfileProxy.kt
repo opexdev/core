@@ -28,6 +28,7 @@ interface ProfileProxy {
         request: UpdateApprovalRequestBody
     ): ProfileApprovalAdminResponse
 
+    suspend fun resolveUsers(token: String, request: ResolveUsersRequest): Map<String, String?>
 
     // Address Book
     suspend fun addAddressBook(token: String, request: AddAddressBookItemRequest): AddressBookResponse

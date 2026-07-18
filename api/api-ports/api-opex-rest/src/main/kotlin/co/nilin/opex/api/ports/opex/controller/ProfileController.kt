@@ -128,7 +128,7 @@ Security: Bearer user-token required. Requires authenticated user JWT.
         return profileProxy.requestContactUpdate(securityContext.jwtAuthentication().tokenValue(), request)
     }
 
-    @PatchMapping("/contact/update/otp-verification")
+    @PostMapping("/contact/update/otp-verification")
     @Operation(
         summary = "Confirm contact update",
         description = """PATCH /opex/v1/profile/contact/update/otp-verification.

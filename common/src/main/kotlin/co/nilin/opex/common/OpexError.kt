@@ -117,6 +117,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     ForbiddenSwapPair(6052, null, HttpStatus.BAD_REQUEST),
     TerminalLocalizationNotFound(6053, "Terminal localization not found", HttpStatus.NOT_FOUND),
     CurrencyLocalizationNotFound(6051, "Currency localization not found", HttpStatus.NOT_FOUND),
+    IdentifierNotFound(6052, "Identifier not found", HttpStatus.NOT_FOUND),
 
 
     // code 7000: api
