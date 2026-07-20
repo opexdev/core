@@ -250,7 +250,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
             order.matchConstraint,
             order.orderType,
             order.direction,
-            order.filledQuantity,
+            0,
             null,
             null,
             null
