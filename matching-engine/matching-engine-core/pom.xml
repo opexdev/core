@@ -40,5 +40,9 @@
             <groupId>org.jetbrains.kotlinx</groupId>
             <artifactId>kotlinx-coroutines-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>co.nilin.opex.utility</groupId>
+            <artifactId>error-handler</artifactId>
+        </dependency>
     </dependencies>
 </project>

@@ -1,17 +1,61 @@
 package co.nilin.opex.matching.engine.core.factory
 
-import co.nilin.opex.matching.engine.core.model.OrderBook
-import co.nilin.opex.matching.engine.core.model.PersistentOrderBook
+import co.nilin.opex.matching.engine.core.engine.SimpleOrderBook
+import co.nilin.opex.matching.engine.core.eventh.NoOpOrderBookEventSink
+import co.nilin.opex.matching.engine.core.eventh.OrderBookEventSink
+import co.nilin.opex.matching.engine.core.model.*
 
 object OrderBookFactory {
-    fun createOrderBook(pair: co.nilin.opex.matching.engine.core.model.Pair): OrderBook {
-        return co.nilin.opex.matching.engine.core.engine.SimpleOrderBook(pair, false)
+
+    /**
+     * Creates an empty committed/live order book.
+     */
+    fun createOrderBook(pair: Pair): SimpleOrderBook {
+        return SimpleOrderBook(
+            pair = pair,
+            replayMode = false,
+            eventSink = NoOpOrderBookEventSink
+        )
     }
 
-    fun createOrderBook(persistentOrderBook: PersistentOrderBook): OrderBook {
-        val orderBook = co.nilin.opex.matching.engine.core.engine.SimpleOrderBook(persistentOrderBook.pair, true)
+    /**
+     * Restores a committed/live order book from a snapshot.
+     */
+    fun createOrderBook(
+        persistentOrderBook: PersistentOrderBook
+    ): SimpleOrderBook {
+        val orderBook = SimpleOrderBook(
+            pair = persistentOrderBook.pair,
+            replayMode = true,
+            eventSink = NoOpOrderBookEventSink
+        )
+
         orderBook.rebuild(persistentOrderBook)
         orderBook.stopReplayMode()
+
         return orderBook
+    }
+
+    /**
+     * Creates a temporary working book.
+     *
+     * CREATE and CANCEL commands are executed against this book.
+     * Generated events are sent to the provided collecting sink.
+     */
+    fun createWorkingOrderBook(
+        snapshot: PersistentOrderBook,
+        eventSink: OrderBookEventSink
+    ): SimpleOrderBook {
+
+        val workingBook = SimpleOrderBook(
+            pair = snapshot.pair,
+            replayMode = true,
+            eventSink = eventSink
+        )
+
+        workingBook.rebuild(snapshot)
+        workingBook.stopReplayMode()
+
+        return workingBook
     }
 }

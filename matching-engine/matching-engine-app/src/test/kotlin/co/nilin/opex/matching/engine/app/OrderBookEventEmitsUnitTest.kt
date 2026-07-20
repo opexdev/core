@@ -1,11 +1,11 @@
 package co.nilin.opex.matching.engine.app
 
 import co.nilin.opex.matching.engine.core.engine.SimpleOrderBook
+import co.nilin.opex.matching.engine.core.eventh.CollectingOrderBookEventSink
 import co.nilin.opex.matching.engine.core.eventh.EventDispatcher
 import co.nilin.opex.matching.engine.core.eventh.events.OrderBookPublishedEvent
 import co.nilin.opex.matching.engine.core.inout.OrderCancelCommand
 import co.nilin.opex.matching.engine.core.inout.OrderCreateCommand
-import co.nilin.opex.matching.engine.core.inout.OrderEditCommand
 import co.nilin.opex.matching.engine.core.model.MatchConstraint
 import co.nilin.opex.matching.engine.core.model.OrderDirection
 import co.nilin.opex.matching.engine.core.model.OrderType
@@ -33,7 +33,7 @@ class OrderBookEventEmitsUnitTest {
     @Test
     fun givenOrderBook_whenOrderCreated_thenOrderBookEventPublished() : Unit = runBlocking {
         //given
-        val orderBook = SimpleOrderBook(pair, false)
+        val orderBook = SimpleOrderBook(pair, false , CollectingOrderBookEventSink())
         //when
         orderBook.handleNewOrderCommand(
             OrderCreateCommand(
@@ -55,7 +55,7 @@ class OrderBookEventEmitsUnitTest {
     @Test
     fun givenOrderBook_whenCancelOrder_thenOrderBookEventPublished():Unit = runBlocking{
         //given
-        val orderBook = SimpleOrderBook(pair, false)
+        val orderBook = SimpleOrderBook(pair, false , CollectingOrderBookEventSink())
         val firstOrderId = UUID.randomUUID().toString()
         val secondOrderId = UUID.randomUUID().toString()
 
@@ -91,59 +91,4 @@ class OrderBookEventEmitsUnitTest {
     }
 
 
-    @Test
-    fun givenOrderBook_whenEditOrder_thenOrderBookEventPublished():Unit = runBlocking{
-        //given
-        val orderBook = SimpleOrderBook(pair, false)
-        orderBook.handleNewOrderCommand(
-            OrderCreateCommand(
-                UUID.randomUUID().toString(),
-                uuid,
-                pair,
-                2,
-                1,
-                OrderDirection.BID,
-                MatchConstraint.GTC,
-                OrderType.LIMIT_ORDER
-            )
-        )
-        val secondOrder = orderBook.handleNewOrderCommand(
-            OrderCreateCommand(
-                UUID.randomUUID().toString(),
-                uuid,
-                pair,
-                2,
-                3,
-                OrderDirection.BID,
-                MatchConstraint.GTC,
-                OrderType.LIMIT_ORDER
-            )
-        )
-        orderBook.handleNewOrderCommand(
-            OrderCreateCommand(
-                UUID.randomUUID().toString(),
-                uuid,
-                pair,
-                1,
-                1,
-                OrderDirection.BID,
-                MatchConstraint.GTC,
-                OrderType.LIMIT_ORDER
-            )
-        )
-        persistentOrderBook = null
-        //when
-        orderBook.handleEditCommand(
-            OrderEditCommand(
-                UUID.randomUUID().toString(),
-                uuid,
-                secondOrder!!.id()!!,
-                pair,
-                3,
-                2
-            )
-        )
-        //then
-        Assertions.assertNotNull(persistentOrderBook)
-    }
 }

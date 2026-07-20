@@ -26,7 +26,7 @@ object EventDispatcher {
         var type: Class<*>? = event::class.java
         while (type != null) {
             eventsHandler[type]?.forEach { eventsHandler ->
-                kotlin.runCatching {
+                run {
                     eventsHandler(event)
                 }
             }
