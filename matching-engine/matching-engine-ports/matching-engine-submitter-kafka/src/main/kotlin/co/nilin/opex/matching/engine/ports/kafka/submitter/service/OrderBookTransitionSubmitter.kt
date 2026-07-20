@@ -61,7 +61,7 @@ class OrderBookTransitionSubmitter(
                 futures += operations.send(
                     ORDER_BOOK_CHANGELOG_TOPIC,
                     pairKey(prepared.pair),
-                    transition.preparedBook
+                    transition.snapshot
                 )
             }
 

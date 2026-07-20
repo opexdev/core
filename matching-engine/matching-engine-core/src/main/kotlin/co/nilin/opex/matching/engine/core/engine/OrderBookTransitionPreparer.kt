@@ -25,7 +25,7 @@ class OrderBookTransitionPreparer(
         val workingBook =
             SimpleOrderBook(
                 pair = currentBook.pair,
-                replayMode = false,
+                replayMode = true,
                 eventCollector
             )
 
@@ -37,6 +37,12 @@ class OrderBookTransitionPreparer(
             book = workingBook,
             command = command
         )
+        val nextSequence =
+            beforeSnapshot.sequence + 1
+
+        workingBook.sequence =
+            nextSequence
+
 
         val afterSnapshot =
             workingBook.snapshot()
@@ -53,7 +59,7 @@ class OrderBookTransitionPreparer(
             PreparedStateTransition(
                 beforeSnapshot.sequence,
                 workingBook.sequence,
-                null,
+                afterSnapshot,
                 workingBook
             )
         )
