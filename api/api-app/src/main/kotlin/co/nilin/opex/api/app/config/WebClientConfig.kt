@@ -3,6 +3,7 @@ package co.nilin.opex.api.app.config
 import co.nilin.opex.common.utils.LanguageUtils.getDefaultUserLanguage
 import io.netty.channel.ChannelOption
 import io.netty.handler.logging.LogLevel
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.cloud.client.ServiceInstance
 import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalancer
 import org.springframework.cloud.client.loadbalancer.reactive.ReactorLoadBalancerExchangeFilterFunction
@@ -21,7 +22,11 @@ import reactor.netty.transport.logging.AdvancedByteBufFormat
 import java.time.Duration
 
 @Configuration
-class WebClientConfig(private val logbook: Logbook) {
+class WebClientConfig(
+    private val logbook: Logbook,
+    @Value("\${app.auth.url}")
+    private val url: String,
+) {
     private val provider = ConnectionProvider.builder("apiPool")
         .maxConnections(150)
         .pendingAcquireMaxCount(100)
@@ -57,17 +62,17 @@ class WebClientConfig(private val logbook: Logbook) {
 
     @Bean("keycloakWebClient")
     fun keycloakWebClient(logbook: Logbook): WebClient {
-        val provider = ConnectionProvider.builder("apiKeycloakPool")
-            .maxConnections(150)
+        val provider = ConnectionProvider.builder("keycloakPool")
+            .maxConnections(100)
             .maxIdleTime(Duration.ofSeconds(30))
             .maxLifeTime(Duration.ofMinutes(2))
-            .pendingAcquireTimeout(Duration.ofSeconds(5))
+            .pendingAcquireTimeout(Duration.ofSeconds(60))
             .evictInBackground(Duration.ofMinutes(1))
             .build()
 
         val client = HttpClient.create(provider)
-            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
-            .responseTimeout(Duration.ofSeconds(5))
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
+            .responseTimeout(Duration.ofSeconds(10))
             .keepAlive(true)
             .doOnConnected { it.addHandlerLast(LogbookClientHandler(logbook)) }
 
@@ -75,6 +80,7 @@ class WebClientConfig(private val logbook: Logbook) {
 
         return WebClient.builder()
             .clientConnector(ReactorClientHttpConnector(client))
+            .baseUrl(url)
             .build()
     }
 

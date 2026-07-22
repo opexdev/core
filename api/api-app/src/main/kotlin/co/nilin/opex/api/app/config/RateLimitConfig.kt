@@ -4,7 +4,6 @@ import co.nilin.opex.api.app.service.RateLimitCoordinatorService
 import co.nilin.opex.api.core.spi.RateLimitConfigService
 import co.nilin.opex.common.OpexError
 import org.slf4j.LoggerFactory
-import org.springframework.http.HttpStatus
 import org.springframework.security.core.context.ReactiveSecurityContextHolder
 import org.springframework.stereotype.Component
 import org.springframework.web.server.ServerWebExchange
@@ -45,7 +44,6 @@ class RateLimitConfig(
         )
     }
 
-
     private fun applyRateLimitIfAuthenticated(
         exchange: ServerWebExchange,
         chain: WebFilterChain,
@@ -56,16 +54,12 @@ class RateLimitConfig(
             .mapNotNull { it.authentication }
             .filter { it.isAuthenticated }
             .flatMap { auth ->
-                if (auth != null && !auth.name.isNullOrBlank())
-                    applyRateLimit(
-                        auth.name, exchange, chain, groupId
-                    )
-                else
-                    chain.filter(exchange)
+                applyRateLimit(auth.name, exchange, chain, groupId)
             }
-
+            .switchIfEmpty(
+                chain.filter(exchange)
+            )
     }
-
 
     private fun applyRateLimit(
         identity: String,
@@ -87,34 +81,9 @@ class RateLimitConfig(
         )
 
         return if (result.blocked) {
-            tooManyRequests(
-                exchange,
-                identity,
-                exchange.request.uri.path,
-                exchange.request.method.name(),
-                result.retryAfterSeconds
-            )
+            throw OpexError.RateLimit.exception()
         } else {
             chain.filter(exchange)
         }
-    }
-
-    //TODO should throw opex error
-    private fun tooManyRequests(
-        exchange: ServerWebExchange,
-        identity: String,
-        url: String,
-        method: String,
-        retryAfterSeconds: Int
-    ): Mono<Void> {
-        logger.info("Rate limit exceeded ($identity) -- $method:$url")
-//        exchange.response.statusCode = HttpStatus.TOO_MANY_REQUESTS
-        throw OpexError.RateLimit.exception()
-//        return exchange.response.writeWith(
-//            Mono.just(
-//                exchange.response.bufferFactory()
-//                    .wrap("Rate limit exceeded ($identity) -- $method:$url --  Retry-After, $retryAfterSeconds".toByteArray())
-//            )
-//        )
     }
 }
