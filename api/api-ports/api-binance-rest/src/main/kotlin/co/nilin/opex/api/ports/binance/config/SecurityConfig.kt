@@ -86,6 +86,10 @@ class SecurityConfig(
                     .pathMatchers(HttpMethod.DELETE, "/v3/order").hasAuthority("PERM_order:write")
 
                     // Opex endpoints
+                    .pathMatchers("/opex/v1/oauth/protocol/openid-connect/**").permitAll()
+                    .pathMatchers("/opex/v1/oauth.***").permitAll()
+                    .pathMatchers("/opex/v1/user/public/**").permitAll()
+                    .pathMatchers("/opex/v1/user/update/**").permitAll()
                     .pathMatchers("/v1/deposit/webhook").permitAll()
                     .pathMatchers("/opex/v1/admin/transactions/**").hasAnyAuthority("ROLE_monitoring", "ROLE_admin")
                     .pathMatchers("/opex/v1/storage/**").permitAll()
