@@ -4,6 +4,8 @@ import co.nilin.opex.api.core.inout.ManualRateLimitGroupType
 import co.nilin.opex.api.core.inout.auth.*
 import co.nilin.opex.api.core.spi.AuthProxy
 import co.nilin.opex.api.core.spi.ManualRateLimiterService
+import co.nilin.opex.api.ports.opex.util.jwtAuthentication
+import co.nilin.opex.api.ports.opex.util.tokenValue
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
@@ -110,7 +112,7 @@ Source of values: Use the pre-auth token returned by the token request flow.""",
         @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext,
     ): ResponseEntity<ResendOtpResponse> {
-        val response = authProxy.resendLoginOtp(resendOtpRequest, securityContext.authentication.name)
+        val response = authProxy.resendLoginOtp(resendOtpRequest, securityContext.jwtAuthentication().tokenValue())
         return ResponseEntity.ok().body(response)
     }
 

@@ -3,9 +3,11 @@ package co.nilin.opex.api.ports.binance.config
 import co.nilin.opex.api.core.spi.APIKeyFilter
 import co.nilin.opex.api.ports.binance.util.AudienceValidator
 import co.nilin.opex.common.security.ReactiveCustomJwtConverter
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Primary
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
@@ -28,6 +30,7 @@ class SecurityConfig(
     private val certUrl: String,
     @Value("\${app.auth.iss-url}")
     private val issUrl: String,
+    @Qualifier("keycloakWebClient") private val webClient: WebClient,
 ) {
     @Value("\${swagger.auth.enabled:false}")
     private var swaggerAuthEnabled: Boolean = false
@@ -66,6 +69,21 @@ class SecurityConfig(
 
     @Bean
     @Order(1)
+    fun preAuthSecurityChain(http: ServerHttpSecurity): SecurityWebFilterChain {
+        return http
+            .securityMatcher(
+                ServerWebExchangeMatchers.pathMatchers(
+                    "/opex/v1/oauth/protocol/openid-connect/token/resend-otp"
+                )
+            )
+            .csrf { it.disable() }
+            .authorizeExchange { it.anyExchange().authenticated() }
+            .oauth2ResourceServer { it.jwt { jwt -> jwt.jwtDecoder(preAuthJwtDecoder()) } }
+            .build()
+    }
+
+    @Bean
+    @Order(2)
     fun apiSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain {
 
         return http.csrf { it.disable() }
@@ -122,6 +140,7 @@ class SecurityConfig(
 
     @Bean
     @Throws(Exception::class)
+    @Primary
     fun reactiveJwtDecoder(): ReactiveJwtDecoder? {
         val decoder = NimbusReactiveJwtDecoder.withJwkSetUri(certUrl)
             .webClient(WebClient.create())
@@ -133,6 +152,27 @@ class SecurityConfig(
                 "web-app",
                 "android-app",
                 "opex-api-key"
+            )
+        )
+        decoder.setJwtValidator(
+            DelegatingOAuth2TokenValidator(
+                issuerValidator,
+                audienceValidator
+            )
+        )
+        return decoder
+    }
+
+    @Bean("preAuthJwtDecoder")
+    @Throws(Exception::class)
+    fun preAuthJwtDecoder(): ReactiveJwtDecoder? {
+        val decoder = NimbusReactiveJwtDecoder.withJwkSetUri(certUrl)
+            .webClient(webClient)
+            .build()
+        val issuerValidator = JwtValidators.createDefaultWithIssuer(issUrl)
+        val audienceValidator = AudienceValidator(
+            setOf(
+                "pre-auth-client",
             )
         )
         decoder.setJwtValidator(

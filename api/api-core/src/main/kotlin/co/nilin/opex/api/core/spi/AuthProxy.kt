@@ -6,7 +6,7 @@ interface AuthProxy {
 
     suspend fun requestGetToken(request: PasswordFlowTokenRequest): TokenResponse
     suspend fun confirmGetToken(request: ConfirmPasswordFlowTokenRequest): TokenResponse
-    suspend fun resendLoginOtp(request: ResendOtpRequest, uuid: String): ResendOtpResponse
+    suspend fun resendLoginOtp(request: ResendOtpRequest, token: String): ResendOtpResponse
     suspend fun getToken(request: ExternalIdpTokenRequest): TokenResponse
     suspend fun refreshToken(request: RefreshTokenRequest): TokenResponse
     suspend fun registerUser(request: RegisterUserRequest): TempOtpResponse
