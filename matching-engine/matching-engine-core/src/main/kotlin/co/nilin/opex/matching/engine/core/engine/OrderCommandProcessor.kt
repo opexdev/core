@@ -1,5 +1,6 @@
 package co.nilin.opex.matching.engine.core.engine
 
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.matching.engine.core.inout.InputKafkaMetadata
 import co.nilin.opex.matching.engine.core.inout.OrderCommand
 import co.nilin.opex.matching.engine.core.model.*
@@ -51,7 +52,7 @@ class OrderCommandProcessor(
          */
         prepared.stateTransition?.let { transition ->
             try {
-                orderBookStore.swapOrderBook(
+                orderBookStore.replace(
                     pairKey = pairKey,
                     expected = currentBook,
                     replacement = transition.preparedBook
@@ -63,7 +64,7 @@ class OrderCommandProcessor(
                     expectedSequence = transition.nextSequence
                 )
 
-                throw exception
+                throw OpexError.TemporaryInUnavailable.exception()
             }
         }
     }

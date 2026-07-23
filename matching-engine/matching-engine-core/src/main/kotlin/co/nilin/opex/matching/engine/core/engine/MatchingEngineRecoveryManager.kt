@@ -19,7 +19,7 @@ class MatchingEngineRecoveryManager {
         val currentState = state.get()
 
         if (currentState != MatchingEngineState.RUNNING) {
-            throw OpexError.BadRequest.exception("Matching engine is not running. Current state=$currentState")
+            throw OpexError.TemporaryInUnavailable.exception()
         }
     }
 

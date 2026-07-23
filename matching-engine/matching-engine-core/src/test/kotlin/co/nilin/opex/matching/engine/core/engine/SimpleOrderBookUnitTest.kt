@@ -1,4 +1,4 @@
-package co.nilin.opex.matching.engine.core
+package co.nilin.opex.matching.engine.core.engine
 
 import co.nilin.opex.matching.engine.core.engine.SimpleOrderBook
 import co.nilin.opex.matching.engine.core.eventh.CollectingOrderBookEventSink

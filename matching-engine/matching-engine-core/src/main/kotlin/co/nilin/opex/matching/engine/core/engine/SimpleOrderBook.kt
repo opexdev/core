@@ -2,7 +2,10 @@ package co.nilin.opex.matching.engine.core.engine
 
 import co.nilin.opex.matching.engine.core.eventh.OrderBookEventSink
 import co.nilin.opex.matching.engine.core.eventh.events.*
-import co.nilin.opex.matching.engine.core.inout.*
+import co.nilin.opex.matching.engine.core.inout.OrderCancelCommand
+import co.nilin.opex.matching.engine.core.inout.OrderCreateCommand
+import co.nilin.opex.matching.engine.core.inout.RejectReason
+import co.nilin.opex.matching.engine.core.inout.RequestedOperation
 import co.nilin.opex.matching.engine.core.model.*
 import exchange.core2.collections.art.LongAdaptiveRadixTreeMap
 import org.slf4j.LoggerFactory
@@ -415,28 +418,39 @@ class SimpleOrderBook(
 
 
     fun rebuild(persistentOrderBook: PersistentOrderBook) {
-        persistentOrderBook.orders?.map { order ->
-            SimpleOrder(
-                order.id,
-                order.ouid,
-                order.uuid,
-                order.price,
-                order.quantity,
-                order.matchConstraint,
-                order.orderType,
-                order.direction,
-                order.filledQuantity,
-                null,
-                null,
-                null
-            )
-        }?.filter { order ->
-            order.matchConstraint == MatchConstraint.GTC
-        }?.forEach { order -> putGtcInQueue(order) }
+        persistentOrderBook.orders
+            ?.filter { order ->
+                order.matchConstraint == MatchConstraint.GTC
+            }
+            ?.map { order ->
+                order.toSimpleOrderBook()
+            }?.forEach { order -> putGtcInQueue(order) }
 
-        orderCounter.set(persistentOrderBook.lastOrder?.id ?: 0)
+        orderCounter.set(persistentOrderBook.orderCounter)
         tradeCounter.set(persistentOrderBook.tradeCounter)
+        sequence = persistentOrderBook.sequence
+// Reuse the existing in-memory order instance when available instead of creating a duplicate object.
+        lastOrder = persistentOrderBook.lastOrder?.let { lo ->
+            orders.getOrDefault(lo.id, lo.toSimpleOrderBook())
+        }
     }
+
+    private fun PersistentOrder.toSimpleOrderBook(): SimpleOrder =
+        SimpleOrder(
+            id,
+            ouid,
+            uuid,
+            price,
+            quantity,
+            matchConstraint,
+            orderType,
+            direction,
+            filledQuantity,
+            null,
+            null,
+            null
+        )
+
 
     private fun logNewOrder(orderCommand: OrderCreateCommand) {
         logger.info(

@@ -1,6 +1,7 @@
 package co.nilin.opex.matching.engine.app.listener
 
 import co.nilin.opex.matching.engine.app.bl.OrderBooks
+import co.nilin.opex.matching.engine.core.engine.MatchingEngineRecoveryManager
 import co.nilin.opex.matching.engine.core.engine.OrderCommandProcessor
 import co.nilin.opex.matching.engine.core.inout.InputKafkaMetadata
 import co.nilin.opex.matching.engine.core.inout.OrderRequestEvent
@@ -9,9 +10,11 @@ import co.nilin.opex.matching.engine.core.util.toCommand
 import co.nilin.opex.matching.engine.ports.kafka.listener.spi.OrderRequestEventListener
 import org.slf4j.LoggerFactory
 
-class OrderListener() : OrderRequestEventListener {
+class OrderListener(
+    private val orderCommandProcessor: OrderCommandProcessor,
+    private val recoveryManager: MatchingEngineRecoveryManager
+) : OrderRequestEventListener {
 
-    lateinit var orderCommandProcessor: OrderCommandProcessor
     private val logger = LoggerFactory.getLogger(OrderListener::class.java)
 
     override fun id(): String {
@@ -37,12 +40,11 @@ class OrderListener() : OrderRequestEventListener {
 
         val command = order.toCommand()
         val currentBook = OrderBooks.lookupOrderBook(pairKey(order.pair))
-        orderCommandProcessor.process(
-            command = command,
-            currentBook,
-            InputKafkaMetadata(topic, partition, offset, consumerGroupId)
-        )
-
+            orderCommandProcessor.process(
+                command = command,
+                currentBook,
+                InputKafkaMetadata(topic, partition, offset, consumerGroupId)
+            )
     }
 
 

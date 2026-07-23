@@ -25,7 +25,7 @@ class OrderBookTransitionPreparer(
         val workingBook =
             SimpleOrderBook(
                 pair = currentBook.pair,
-                replayMode = true,
+                replayMode = false,
                 eventCollector
             )
 
@@ -51,7 +51,7 @@ class OrderBookTransitionPreparer(
 //        TODO(
 //            "Compare before/after and create PreparedCommandResult"
 //        )
-       // val delta = OrderBookDelta()
+
         return PreparedCommandResult(
             currentBook.pair,
             commandId = command.ouid,

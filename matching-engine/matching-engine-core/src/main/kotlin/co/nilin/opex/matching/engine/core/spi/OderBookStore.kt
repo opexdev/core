@@ -12,10 +12,4 @@ interface OrderBookStore {
         replacement: SimpleOrderBook
     ): Boolean
 
-    fun swapOrderBook(
-        pairKey : String,
-        expected : SimpleOrderBook,
-        replacement : SimpleOrderBook
-    )
-
 }

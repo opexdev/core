@@ -83,20 +83,4 @@ object OrderBooks : OrderBookStore {
 
     }
 
-    override fun swapOrderBook(
-        pairKey: String,
-        expected: SimpleOrderBook,
-        replacement: SimpleOrderBook
-    ) {
-        val replaced = orderBooks.replace(
-            pairKey,
-            expected,
-            replacement
-        )
-
-        check(replaced) {
-            "Order book changed unexpectedly for pair=$pairKey"
-        }
-    }
-
 }
