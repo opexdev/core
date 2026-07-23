@@ -1,5 +1,7 @@
 package co.nilin.opex.api.core.inout.auth
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+
 data class RegisterUserRequest(
     val username: String,
     val firstName: String? = null,
@@ -8,6 +10,7 @@ data class RegisterUserRequest(
     val captchaCode: String,
 )
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class VerifyOTPRequest(
     val username: String,
     val otp: String,
