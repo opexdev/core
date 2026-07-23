@@ -3,8 +3,8 @@ package co.nilin.opex.api.ports.opex.controller
 import co.nilin.opex.api.core.inout.auth.SessionRequest
 import co.nilin.opex.api.core.inout.auth.Sessions
 import co.nilin.opex.api.core.spi.AuthProxy
-import co.nilin.opex.common.OpexError
-import co.nilin.opex.common.security.jwtAuthentication
+import co.nilin.opex.api.ports.opex.util.jwtAuthentication
+import co.nilin.opex.api.ports.opex.util.tokenValue
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn
@@ -42,8 +42,7 @@ Response body: No response body.""", security = [SecurityRequirement(name = "bea
     suspend fun logout(
         @Parameter(hidden = true) @CurrentSecurityContext securityContext: SecurityContext
     ) {
-        val userId = securityContext.jwtAuthentication().name
-        authProxy.logout(userId)
+        authProxy.logout(securityContext.jwtAuthentication().tokenValue())
     }
 
     @PostMapping("/session")
@@ -71,9 +70,7 @@ Allowed values:
         @Parameter(hidden = true) @CurrentSecurityContext securityContext: SecurityContext,
         @RequestBody sessionRequest: SessionRequest
     ): List<Sessions> {
-        val uuid = securityContext.authentication.name
-        sessionRequest.uuid = uuid
-        return authProxy.getSessions(sessionRequest, uuid)
+        return authProxy.getSessions(sessionRequest, securityContext.jwtAuthentication().tokenValue())
     }
 
     @DeleteMapping("/session/{sessionId}")
@@ -96,8 +93,7 @@ Response body: No response body.""", security = [SecurityRequirement(name = "bea
         @Parameter(hidden = true) @CurrentSecurityContext securityContext: SecurityContext,
         @PathVariable sessionId: String
     ) {
-        val uuid = securityContext.authentication.name
-        authProxy.logout(uuid, sessionId)
+        authProxy.logout(sessionId, securityContext.jwtAuthentication().tokenValue())
     }
 
     @PostMapping("/session/delete-others")
@@ -117,8 +113,7 @@ Response body: No response body.""", security = [SecurityRequirement(name = "bea
     suspend fun logoutOthers(
         @Parameter(hidden = true) @CurrentSecurityContext securityContext: SecurityContext
     ) {
-        val uuid = securityContext.authentication.name
-        authProxy.logoutOthers(uuid)
+        authProxy.logoutOthers(securityContext.jwtAuthentication().tokenValue())
     }
 
     @PostMapping("/session/delete-all")
@@ -138,7 +133,6 @@ Response body: No response body.""", security = [SecurityRequirement(name = "bea
     suspend fun logoutAll(
         @Parameter(hidden = true) @CurrentSecurityContext securityContext: SecurityContext
     ) {
-        val uuid = securityContext.authentication.name
-        authProxy.logoutAll(uuid)
+        authProxy.logoutAll(securityContext.jwtAuthentication().tokenValue())
     }
 }
