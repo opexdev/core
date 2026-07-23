@@ -21,13 +21,20 @@ class RateLimitConfigImpl(
 ) : RateLimitConfigService {
 
     private val groupCache = mutableMapOf<Long, RateLimitGroup>()
+    private val groupNameCache = mutableMapOf<String, RateLimitGroup>()
     private val penaltyCache = mutableMapOf<Long, List<RateLimitPenalty>>()
     private val endpointCache = mutableListOf<RateLimitEndpoint>()
 
     override suspend fun loadConfig() {
         val groups = groupRepo.findByEnabledTrue().collectList().awaitFirstOrElse { emptyList() }
         groupCache.clear()
-        groups.forEach { groupCache[it.id!!] = it.toRateLimitGroup() }
+        groupNameCache.clear()
+
+        groups.forEach {
+            val group = it.toRateLimitGroup()
+            groupCache[it.id!!] = group
+            groupNameCache[group.name] = group
+        }
 
         penaltyCache.clear()
         groups.forEach { group ->
@@ -42,6 +49,7 @@ class RateLimitConfigImpl(
     }
 
     override fun getGroup(groupId: Long): RateLimitGroup? = groupCache[groupId]
+    override fun getGroup(groupName: String): RateLimitGroup? = groupNameCache[groupName]
     override fun getPenalties(groupId: Long): List<RateLimitPenalty> = penaltyCache[groupId] ?: emptyList()
     override fun getEndpoints(): List<RateLimitEndpoint> = endpointCache
 

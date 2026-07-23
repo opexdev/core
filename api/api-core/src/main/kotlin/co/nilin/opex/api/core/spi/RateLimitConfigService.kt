@@ -7,6 +7,7 @@ import co.nilin.opex.api.core.inout.RateLimitPenalty
 interface RateLimitConfigService {
     suspend fun loadConfig()
     fun getGroup(groupId: Long): RateLimitGroup?
+    fun getGroup(groupName: String): RateLimitGroup?
     fun getPenalties(groupId: Long): List<RateLimitPenalty>
     fun getEndpoints(): List<RateLimitEndpoint>
 }

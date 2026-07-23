@@ -61,14 +61,14 @@ insert into totp_config
 values (true, 128, 'Opex')
 on conflict do nothing;
 
-CREATE TABLE sms_provider_route (
+CREATE TABLE if not exists sms_provider_route (
     id BIGSERIAL PRIMARY KEY,
     prefix VARCHAR(32) NOT NULL,
     provider VARCHAR(64) NOT NULL,
     enabled BOOLEAN NOT NULL DEFAULT TRUE
 );
 
-CREATE TABLE sms_provider (
+CREATE TABLE if not exists sms_provider (
     id VARCHAR(64) PRIMARY KEY,
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
     base_url TEXT NOT NULL,
