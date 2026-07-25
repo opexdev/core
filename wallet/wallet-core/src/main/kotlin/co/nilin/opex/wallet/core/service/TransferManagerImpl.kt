@@ -240,6 +240,28 @@ class TransferManagerImpl(
                 )
                 userTransactionManager.save(dstTx)
             }
+            TransferCategory.IMPERSONATED_PURCHASE_FINALIZED -> {
+                val srcTx = UserTransaction(
+                    command.sourceWallet.owner.id!!,
+                    txId,
+                    currency,
+                    command.sourceWallet.balance.amount - amount,
+                    -amount,
+                    UserTransactionCategory.IMPERSONATED_SWAP,
+                    command.description
+                )
+                userTransactionManager.save(srcTx)
+
+                val dstTx = UserTransaction(
+                    command.destWallet.owner.id!!,
+                    txId,
+                    currency,
+                    command.destWallet.balance.amount + amount,
+                    amount,
+                    UserTransactionCategory.IMPERSONATED_SWAP
+                )
+                userTransactionManager.save(dstTx)
+            }
 
             TransferCategory.KYC_ACCEPTED_REWARD -> {
                 val loserOwner = command.sourceWallet.owner.id!!
