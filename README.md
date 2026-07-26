@@ -189,7 +189,7 @@ SWAGGER_AUTH_AUTHORITY="ROLE_admin"
 
 ## <a name="live-demo"></a>Live Demo
 
-Deployed at [app.opex.dev](https://app.opex.dev).
+Deployed at [beta.opex.dev](https://beta.opex.dev).
 
 ## <a name="overview"></a>Architecture Overview
 
