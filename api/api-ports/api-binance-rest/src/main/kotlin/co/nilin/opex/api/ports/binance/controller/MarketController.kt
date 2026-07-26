@@ -9,6 +9,8 @@ import co.nilin.opex.api.core.spi.SymbolMapper
 import co.nilin.opex.api.ports.binance.data.*
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.utils.Interval
+import io.swagger.v3.oas.annotations.Hidden
+import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.springframework.web.bind.annotation.GetMapping
@@ -18,8 +20,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.math.BigDecimal
 import java.security.Principal
 import java.time.ZoneId
-
-@RestController
+@RestController("binanceMarketController")
 class MarketController(
     private val accountantProxy: AccountantProxy,
     private val marketDataProxy: MarketDataProxy,
@@ -35,6 +36,8 @@ class MarketController(
     // 500 - 5
     // 1000 - 10
     // 5000 - 50
+    @Hidden
+    @Deprecated("Deprecated")
     @GetMapping("/v3/depth")
     suspend fun orderBook(
         @RequestParam
@@ -72,7 +75,8 @@ class MarketController(
         val lastOrder = marketDataProxy.lastOrder(localSymbol)
         return OrderBookResponse(lastOrder?.orderId ?: -1, mappedBidOrders, mappedAskOrders)
     }
-
+    @Hidden
+    @Deprecated("Deprecated")
     @GetMapping("/v3/trades")
     suspend fun recentTrades(
         principal: Principal,
@@ -99,7 +103,8 @@ class MarketController(
                 )
             }
     }
-
+    @Hidden
+    @Deprecated("Deprecated")
     @GetMapping("/v3/ticker/{duration:24h|7d|1M}")
     suspend fun priceChange(
         @PathVariable duration: String,
@@ -137,7 +142,8 @@ class MarketController(
 
         return if (quote.isNullOrEmpty()) result else result.filter { it.quote.equals(quote, true) }
     }
-
+    @Hidden
+    @Deprecated("Deprecated")
     // Weight
     // 1 for a single symbol
     // 2 when the symbol parameter is omitted
@@ -150,7 +156,8 @@ class MarketController(
             symbolMapper.toInternalSymbol(symbol) ?: throw OpexError.SymbolNotFound.exception()
         return marketDataProxy.lastPrice(localSymbol).onEach { symbols[it.symbol]?.let { s -> it.symbol = s } }
     }
-
+    @Hidden
+    @Deprecated("Deprecated")
     @GetMapping("/v3/exchangeInfo")
     suspend fun pairInfo(
         @RequestParam(required = false)
@@ -176,29 +183,30 @@ class MarketController(
     }
 
     // Custom service
-    @GetMapping("/v3/currencyInfo")
-    suspend fun getNetworks(@RequestParam(required = false) currency: String?): List<CurrencyNetworkResponse> {
-        return blockchainGatewayProxy.getCurrencyImplementations(currency)
-            .groupBy { it.currency }
-            .toList()
-            .map { pair ->
-                CurrencyNetworkResponse(
-                    pair.first.symbol,
-                    pair.first.name,
-                    pair.second.map {
-                        CurrencyNetwork(
-                            it.chain.name,
-                            it.implCurrency.symbol,
-                            it.withdrawMin,
-                            it.withdrawFee,
-                            it.token,
-                            it.tokenAddress
-                        )
-                    }
-                )
-            }
-    }
-
+//    @GetMapping("/v3/currencyInfo")
+//    suspend fun getNetworks(@RequestParam(required = false) currency: String?): List<CurrencyNetworkResponse> {
+//        return blockchainGatewayProxy.getCurrencyImplementations(currency)
+//            .groupBy { it.currency }
+//            .toList()
+//            .map { pair ->
+//                CurrencyNetworkResponse(
+//                    pair.first.symbol,
+//                    pair.first.name,
+//                    pair.second.map {
+//                        CurrencyNetwork(
+//                            it.chain.name,
+//                            it.implCurrency.symbol,
+//                            it.withdrawMin,
+//                            it.withdrawFee,
+//                            it.token,
+//                            it.tokenAddress
+//                        )
+//                    }
+//                )
+//            }
+//    }
+    @Hidden
+    @Deprecated("Deprecated")
     // Custom service
     @GetMapping("/v3/currencyInfo/quotes")
     suspend fun getQuoteCurrencies(): List<String> {
@@ -206,8 +214,8 @@ class MarketController(
             .map { it.rightSideWalletSymbol }
             .distinct()
     }
-
     // Weight(IP): 1
+    @Tag(name = "Internal Charts")
     @GetMapping("/v3/klines")
     suspend fun klines(
         @RequestParam

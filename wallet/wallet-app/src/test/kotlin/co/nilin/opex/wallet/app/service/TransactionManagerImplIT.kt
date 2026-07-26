@@ -1,8 +1,10 @@
 package co.nilin.opex.wallet.app.service
 
 import co.nilin.opex.wallet.app.KafkaEnabledTest
+import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.model.TransferCategory
 import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.spi.*
@@ -17,12 +19,11 @@ import java.time.LocalDateTime
 import java.util.*
 
 class TransactionManagerImplIT : KafkaEnabledTest() {
-
     @Autowired
     lateinit var transferManager: TransferManager
 
     @Autowired
-    lateinit var currencyService: CurrencyService
+    lateinit var currencyService: CurrencyServiceManager
 
     @Autowired
     lateinit var walletManager: WalletManager
@@ -47,7 +48,7 @@ class TransactionManagerImplIT : KafkaEnabledTest() {
     @Test
     fun givenMultipleTransfer_whenFindTransactions_thenOrderedAndPaginated() {
         runBlocking {
-            val currency = currencyService.getCurrency(cc)!!
+            val currency = currencyService.fetchCurrency(FetchCurrency(symbol = cc))!!
 
             destUuid = UUID.randomUUID().toString()
             setupWallets(destUuid!!)
@@ -114,12 +115,12 @@ class TransactionManagerImplIT : KafkaEnabledTest() {
     fun setupWallets(sourceUuid: String) {
         runBlocking {
             try {
-                currencyService.deleteCurrency(cc)
+                currencyService.deleteCurrency(FetchCurrency(symbol = cc))
             } catch (_: Exception) {
-            }
 
-            currencyService.addCurrency(cc, cc, BigDecimal.ONE)
-            val currency = currencyService.getCurrency(cc)
+            }
+            currencyService.createNewCurrency(CurrencyCommand(name = cc, symbol = cc, precision = BigDecimal.ONE), true)
+            val currency = currencyService.fetchCurrency(FetchCurrency(symbol = cc))
             val sourceOwner = walletOwnerManager.createWalletOwner(sourceUuid, "not set", "")
             walletManager.createWallet(
                 sourceOwner,
@@ -133,7 +134,10 @@ class TransactionManagerImplIT : KafkaEnabledTest() {
                 currency,
                 WalletType.EXCHANGE
             )
+
         }
     }
+
+
 }
 

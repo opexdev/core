@@ -1,7 +1,9 @@
 package co.nilin.opex.auth.gateway.model
 
 
-import javax.persistence.*
+import javax.persistence.Entity
+import javax.persistence.Id
+import javax.persistence.Table
 
 
 @Entity(name = "whitelist")

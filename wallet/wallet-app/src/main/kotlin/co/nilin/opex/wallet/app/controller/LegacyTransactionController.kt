@@ -29,7 +29,7 @@ class LegacyTransactionController(private val manager: TransactionManager) {
             },
             request.limit!!,
             request.offset!!,
-                request.ascendingByTime?:false
+            request.ascendingByTime ?: false
         )
     }
 

@@ -23,4 +23,9 @@ class AddressTypeHandlerImpl(private val repository: AddressTypeRepository) : Ad
             repository.save(AddressTypeModel(null, name, addressRegex, memoRegex)).awaitFirstOrNull()
         }
     }
+
+    override suspend fun fetchAddressType(name: String): AddressType? {
+        return repository.findByType(name)
+            .map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }.awaitFirstOrNull()
+    }
 }

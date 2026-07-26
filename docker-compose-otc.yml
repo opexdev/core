@@ -29,14 +29,18 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
-      - PREFERENCES=$PREFERENCES
       - DRIVE_FOLDER_ID=$DRIVE_FOLDER_ID
-      - BACKUP_ENABLED=$WALLET_BACKUP_ENABLED
+      - STORAGE_FOLDER_ID=$STORAGE_FOLDER_ID
+      - BACKUP_ENABLED_STORAGE=$WALLET_BACKUP_ENABLED_STORAGE
+      - BACKUP_ENABLED_GOOGLE_DRIVE=$WALLET_BACKUP_ENABLED_GOOGLE_DRIVE
       - SPRING_PROFILES_ACTIVE=otc
-      - auth_url=${AUTH_URL}
-      - auth_jwk_endpoint=${JWK_ENDPOINT}
-    configs:
-      - preferences.yml
+      - AUTH_URL=${AUTH_URL}
+      - AUTH_JWK_ENDPOINT=${JWK_ENDPOINT}
+      - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL}
+      - CUSTOM_MESSAGE_ENABLED=${CUSTOM_MESSAGE_ENABLED}
+      - CUSTOM_USER_LANGUAGE_ENABLED=${CUSTOM_USER_LANGUAGE_ENABLED}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       - postgres-wallet
       - vault
@@ -51,6 +55,8 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+    volumes:
+      - documents:/Documents
   vault:
     image: ghcr.io/opexdev/vault-opex:${TAG}
     volumes:
@@ -70,7 +76,6 @@ services:
       - VANDAR_API_KEY=$VANDAR_API_KEY
       - CLIENT_SECRET=${CLIENT_SECRET}
       - CLIENT_ID=${CLIENT_ID}
-
     cap_add:
       - IPC_LOCK
     deploy:
@@ -88,15 +93,16 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
-      - PREFERENCES=$PREFERENCES
-      - ADDRESS_EXP_TIME=120
+      - ADDRESS_EXP_TIME=7200
       - SPRING_PROFILES_ACTIVE=otc
-      - auth_url=${AUTH_URL}
-      - auth_jwk_endpoint=${JWK_ENDPOINT}
-    dns:
-      - "8.8.8.8"
-    configs:
-      - preferences.yml
+      - AUTH_URL=${AUTH_URL}
+      - AUTH_JWK_ENDPOINT=${JWK_ENDPOINT}
+      - OMNI_URL=${OMNI_URL}
+      - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL}
+      - CUSTOM_MESSAGE_ENABLED=${CUSTOM_MESSAGE_ENABLED}
+      - CUSTOM_USER_LANGUAGE_ENABLED=${CUSTOM_USER_LANGUAGE_ENABLED}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       - vault
       - postgres-bc-gateway
@@ -114,12 +120,24 @@ services:
     <<: *postgres-db
     volumes:
       - bc-gateway-data:/var/lib/postgresql/data/
-
-
+  redis-cache:
+    image: redis/redis-stack:latest
+    volumes:
+      - redis-cache-data:/data
+    environment:
+      - REDIS_REPLICATION_MODE=master
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
 volumes:
   wallet-data:
   vault-data:
   bc-gateway-data:
+  documents:
+  redis-cache-data:
+
 
 networks:
   default:
@@ -131,6 +149,3 @@ secrets:
     file: opex.dev.crt
   private_pem:
     file: private.pem
-configs:
-  preferences.yml:
-    file: preferences.yml

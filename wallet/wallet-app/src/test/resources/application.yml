@@ -7,7 +7,7 @@ management:
     web:
       base-path: /actuator
       exposure:
-        include: ["health", "metrics"]
+        include: [ "health", "metrics" ]
   endpoint:
     health:
       show-details: always
@@ -28,9 +28,6 @@ spring:
     consumer:
       auto-offset-reset: earliest
       group-id: wallet
-  r2dbc:
-    url: r2dbc:tc:postgresql:///wallet?TC_IMAGE_TAG=9.6.8
-    initialization-mode: always
   jpa:
     show-sql: true
     properties:
@@ -48,6 +45,7 @@ spring:
     vault:
       enabled: false
 app:
+  symbols: BTC_USDT,ETH_USDT,BTC_IRT,ETH_IRT,USDT_IRT,ETH_BUSD,BTC_BUSD,BNB_BUSD
   auth:
     url: none
     cert-url: none
@@ -55,10 +53,36 @@ app:
     client-secret: none
   bc-gateway:
     url: http://bc-gateway:8080
+  market:
+    url:  http://market:8080
+  accountant:
+    url:  http://accountant:8080
+  otp:
+    url: http://opex-otp:8080/v1
+  profile:
+    url: http://profile:8080
+  storage:
+    url: http://storage:8080
   system:
     uuid: 1
   reserved-transfer:
     life-time: 15 #minutes
+  zone-offset: +03:30
+  snapshot-currency: USDT
+  withdraw:
+    limit:
+      enabled: false
+    otp-required-count: 0
+    bank-account-validation : false
+  deposit:
+    snapshot:
+      enabled: ${DEPOSIT_SNAPSHOT_ENABLED:false}
+testcontainers:
+  db:
+    username: ${dbusername:opex}
+    password: ${dbpassword:hiopex}
+    name: opex
+    version: "postgres:14.9"
 logging:
   level:
     org.apache.kafka: ERROR

@@ -18,7 +18,7 @@ class KafkaTopicConfig {
             registerBean("topic_richTrade.DLT", NewTopic::class.java, "richTrade.DLT", 10, 1)
             registerBean("topic_richOrder.DLT", NewTopic::class.java, "richOrder.DLT", 10, 1)
             registerBean("topic_admin_event.DLT", NewTopic::class.java, "admin_event.DLT", 10, 1)
-            registerBean("topic_auth_user_created.DLT", NewTopic::class.java, "auth_user_created.DLT", 10, 1)
+            registerBean("topic_auth.DLT", NewTopic::class.java, "auth.DLT", 10, 1)
         }
     }
 

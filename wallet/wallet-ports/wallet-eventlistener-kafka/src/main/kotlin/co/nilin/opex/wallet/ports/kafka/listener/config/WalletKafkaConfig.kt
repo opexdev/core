@@ -2,9 +2,11 @@ package co.nilin.opex.wallet.ports.kafka.listener.config
 
 import co.nilin.opex.wallet.ports.kafka.listener.consumer.AdminEventKafkaListener
 import co.nilin.opex.wallet.ports.kafka.listener.consumer.FinancialActionKafkaListener
+import co.nilin.opex.wallet.ports.kafka.listener.consumer.ProfileUpdatedKafkaListener
 import co.nilin.opex.wallet.ports.kafka.listener.consumer.UserCreatedKafkaListener
 import co.nilin.opex.wallet.ports.kafka.listener.model.AdminEvent
 import co.nilin.opex.wallet.ports.kafka.listener.model.FinancialActionEvent
+import co.nilin.opex.wallet.ports.kafka.listener.model.ProfileUpdatedEvent
 import co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.TopicPartition
@@ -14,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
@@ -41,18 +42,13 @@ class WalletKafkaConfig(private val environment: Environment) {
 
     @Bean("consumerConfigs")
     fun consumerConfigs(): Map<String, Any?> {
-        logger.info("=======================")
-        this.environment.activeProfiles.toList().forEach {
-            (logger.info(it));
-            logger.info("------------")
-        }
         return mapOf(
-                ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
-                ConsumerConfig.GROUP_ID_CONFIG to groupId,
-                ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
-                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JsonDeserializer::class.java,
-                JsonDeserializer.TRUSTED_PACKAGES to "co.nilin.opex.*",
-                JsonDeserializer.TYPE_MAPPINGS to "user_created_event:co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent,admin_add_currency:co.nilin.opex.wallet.ports.kafka.listener.model.AddCurrencyEvent,admin_edit_currency:co.nilin.opex.wallet.ports.kafka.listener.model.EditCurrencyEvent,admin_delete_currency:co.nilin.opex.wallet.ports.kafka.listener.model.DeleteCurrencyEvent,financial_action:co.nilin.opex.wallet.ports.kafka.listener.model.FinancialActionEvent"
+            ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
+            ConsumerConfig.GROUP_ID_CONFIG to groupId,
+            ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
+            ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JsonDeserializer::class.java,
+            JsonDeserializer.TRUSTED_PACKAGES to "co.nilin.opex.*",
+            JsonDeserializer.TYPE_MAPPINGS to "userCreatedEvent:co.nilin.opex.wallet.ports.kafka.listener.model.UserCreatedEvent,admin_add_currency:co.nilin.opex.wallet.ports.kafka.listener.model.AddCurrencyEvent,admin_edit_currency:co.nilin.opex.wallet.ports.kafka.listener.model.EditCurrencyEvent,admin_delete_currency:co.nilin.opex.wallet.ports.kafka.listener.model.DeleteCurrencyEvent,financial_action:co.nilin.opex.wallet.ports.kafka.listener.model.FinancialActionEvent,profile_updated_event:co.nilin.opex.wallet.ports.kafka.listener.model.ProfileUpdatedEvent"
         )
     }
 
@@ -71,28 +67,32 @@ class WalletKafkaConfig(private val environment: Environment) {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
 
+    @Bean("profileUpdatedConsumerFactory")
+    fun profileUpdatedConsumerFactory(@Qualifier("consumerConfigs") consumerConfigs: Map<String, Any?>): ConsumerFactory<String?, ProfileUpdatedEvent> {
+        return DefaultKafkaConsumerFactory(consumerConfigs)
+    }
+
     @Autowired
     @ConditionalOnBean(UserCreatedKafkaListener::class)
-
     fun configureUserCreatedListener(
-            listener: UserCreatedKafkaListener,
-            template: KafkaTemplate<String, UserCreatedEvent>,
-            @Qualifier("walletConsumerFactory") consumerFactory: ConsumerFactory<String, UserCreatedEvent>
+        listener: UserCreatedKafkaListener,
+        template: KafkaTemplate<String, UserCreatedEvent>,
+        @Qualifier("walletConsumerFactory") consumerFactory: ConsumerFactory<String, UserCreatedEvent>
     ) {
-        val containerProps = ContainerProperties(Pattern.compile("auth_user_created"))
+        val containerProps = ContainerProperties(Pattern.compile("auth"))
         containerProps.messageListener = listener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
         container.setBeanName("UserCreatedKafkaListenerContainer")
-        container.commonErrorHandler = createConsumerErrorHandler(template, "auth_user_created.DLT")
+        container.commonErrorHandler = createConsumerErrorHandler(template, "auth.DLT")
         container.start()
     }
 
     @Autowired
     @ConditionalOnBean(FinancialActionKafkaListener::class)
     fun configureFinancialActionListener(
-            listener: FinancialActionKafkaListener,
-            template: KafkaTemplate<String, FinancialActionEvent>,
-            @Qualifier("financialActionConsumerFactory") consumerFactory: ConsumerFactory<String, FinancialActionEvent>
+        listener: FinancialActionKafkaListener,
+        template: KafkaTemplate<String, FinancialActionEvent>,
+        @Qualifier("financialActionConsumerFactory") consumerFactory: ConsumerFactory<String, FinancialActionEvent>
     ) {
         val containerProps = ContainerProperties(Pattern.compile("fiAction"))
         containerProps.messageListener = listener
@@ -105,9 +105,9 @@ class WalletKafkaConfig(private val environment: Environment) {
     @Autowired
     @ConditionalOnBean(AdminEventKafkaListener::class)
     fun configureAdminEventListener(
-            listener: AdminEventKafkaListener,
-            template: KafkaTemplate<String, AdminEvent>,
-            consumerFactory: ConsumerFactory<String?, AdminEvent>
+        listener: AdminEventKafkaListener,
+        template: KafkaTemplate<String, AdminEvent>,
+        consumerFactory: ConsumerFactory<String?, AdminEvent>
     ) {
         val containerProps = ContainerProperties(Pattern.compile("admin_event"))
         containerProps.messageListener = listener
@@ -116,6 +116,22 @@ class WalletKafkaConfig(private val environment: Environment) {
         container.commonErrorHandler = createConsumerErrorHandler(template, "admin_event.DLT")
         container.start()
     }
+
+    @Autowired
+    @ConditionalOnBean(ProfileUpdatedKafkaListener::class)
+    fun configureProfileUpdatedListener(
+        listener: ProfileUpdatedKafkaListener,
+        template: KafkaTemplate<String, ProfileUpdatedEvent>,
+        @Qualifier("profileUpdatedConsumerFactory") consumerFactory: ConsumerFactory<String, ProfileUpdatedEvent>
+    ) {
+        val containerProps = ContainerProperties(Pattern.compile("profile_updated"))
+        containerProps.messageListener = listener
+        val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
+        container.setBeanName("ProfileUpdatedKafkaListenerContainer")
+        container.commonErrorHandler = createConsumerErrorHandler(template, "profile_updated.DLT")
+        container.start()
+    }
+
 
     private fun createConsumerErrorHandler(kafkaTemplate: KafkaTemplate<*, *>, dltTopic: String): CommonErrorHandler {
         val recoverer = DeadLetterPublishingRecoverer(kafkaTemplate) { cr, _ ->

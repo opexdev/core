@@ -10,16 +10,16 @@
     <version>1.0.1-beta.7</version>
 
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <java.version>11</java.version>
-        <kotlin.version>1.6.0</kotlin.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <java.version>17</java.version>
+        <kotlin.version>1.9.0</kotlin.version>
         <spring.version>2.7.6</spring.version>
         <spring-cloud.version>2021.0.5</spring-cloud.version>
-        <error-hanlder.version>1.0.1</error-hanlder.version>
-        <preferences.version>1.0.0</preferences.version>
-        <interceptor.version>1.0.0</interceptor.version>
+        <error-hanlder.version>1.2.25</error-hanlder.version>
+        <interceptor.version>1.0.8</interceptor.version>
         <skip.unit.tests>true</skip.unit.tests>
+        <common.version>1.0.1-beta.38</common.version>
     </properties>
 
     <modules>
@@ -32,7 +32,11 @@
         <module>user-management</module>
         <module>wallet</module>
         <module>bc-gateway</module>
+        <module>otp</module>
         <module>common</module>
+        <module>auth-gateway</module>
+        <module>profile</module>
+        <module>device-management</module>
     </modules>
 
     <dependencies>
@@ -87,7 +91,7 @@
             <dependency>
                 <groupId>co.nilin.opex</groupId>
                 <artifactId>common</artifactId>
-                <version>${project.version}</version>
+                <version>${common.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

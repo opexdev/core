@@ -12,15 +12,18 @@ import co.nilin.opex.matching.gateway.ports.kafka.submitter.inout.OrderSubmitReq
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.inout.OrderSubmitResult
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.KafkaHealthIndicator
 import co.nilin.opex.matching.gateway.ports.kafka.submitter.service.OrderRequestEventSubmitter
+import co.nilin.opex.matching.gateway.ports.postgres.service.PairSettingService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 @Service
 class OrderService(
     val accountantApiProxy: AccountantApiProxy,
     val orderRequestEventSubmitter: OrderRequestEventSubmitter,
     val pairConfigLoader: PairConfigLoader,
+    val pairSettingService: PairSettingService,
     private val kafkaHealthIndicator: KafkaHealthIndicator,
 ) {
 
@@ -28,13 +31,25 @@ class OrderService(
 
     suspend fun submitNewOrder(createOrderRequest: CreateOrderRequest): OrderSubmitResult {
         require(createOrderRequest.price >= BigDecimal.ZERO)
+
+        val pairSetting = pairSettingService.load(createOrderRequest.pair)
+        if (!pairSetting.isAvailable)
+            throw OpexError.PairIsNotAvailable.exception()
+        if (!pairSetting.orderTypes.split(",").contains(createOrderRequest.orderType.name)) {
+            throw OpexError.InvalidOrderType.exception()
+        }
+        if ((createOrderRequest.quantity * createOrderRequest.price) > pairSetting.maxOrder ||
+            (createOrderRequest.quantity * createOrderRequest.price) < pairSetting.minOrder) {
+            throw OpexError.InvalidQuantity.exception()
+        }
+
+
         val symbolSides = createOrderRequest.pair.split("_")
         val symbol = if (createOrderRequest.direction == OrderDirection.ASK)
             symbolSides[0]
         else
             symbolSides[1]
 
-        //TODO cache
         val pairConfig = pairConfigLoader.load(createOrderRequest.pair, createOrderRequest.direction)
 
         val canCreateOrder = runCatching {

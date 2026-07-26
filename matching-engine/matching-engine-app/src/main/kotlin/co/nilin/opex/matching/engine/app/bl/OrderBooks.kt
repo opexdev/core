@@ -6,12 +6,13 @@ import co.nilin.opex.matching.engine.core.model.Pair
 import co.nilin.opex.matching.engine.core.model.PersistentOrderBook
 
 object OrderBooks {
+
     private val orderBooks = mutableMapOf<String, OrderBook>()
 
     fun createOrderBook(pair: String) {
         println("Going to add order book:" + pair + ", current order books#" + orderBooks.size)
         if (orderBooks.containsKey(pair))
-            throw IllegalArgumentException("${pair} has an order book right now!")
+            throw IllegalArgumentException("$pair has an order book right now!")
         val pairs = pair.split("_")
         orderBooks[pair] = OrderBookFactory.createOrderBook(Pair(pairs[0], pairs[1]))
         println("order book:" + pair + " added, current order books#" + orderBooks.size)

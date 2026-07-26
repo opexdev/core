@@ -16,7 +16,7 @@ management:
     web:
       base-path: /actuator
       exposure:
-        include: ["health", "prometheus", "metrics"]
+        include: [ "health", "prometheus", "metrics" ]
   endpoint:
     health:
       show-details: when_authorized
@@ -26,3 +26,8 @@ management:
       enabled: true
 app:
   symbols: ${SYMBOLS}
+  custom-message:
+    enabled: ${CUSTOM_MESSAGE_ENABLED:false}
+    base-url: ${CUSTOM_MESSAGE_URL}
+  custom-user-language:
+    enabled: ${CUSTOM_USER_LANGUAGE_ENABLED:false}

@@ -5,7 +5,12 @@ on:
   #    branches:
   #      - dev
   workflow_dispatch:
-
+#    inputs:
+#      partner_name:
+#        type: string
+#        description: 'The name of the partner (provided during workflow execution)'
+#        required: true
+#        default: default
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -17,10 +22,9 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v2
       - name: Setup Java
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v4
         with:
-          distribution: 'adopt'
-          java-package: jdk
+          distribution: temurin
           java-version: ${{ matrix.java }}
       #          cache: maven
       - name: Build

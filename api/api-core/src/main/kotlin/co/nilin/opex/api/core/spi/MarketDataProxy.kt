@@ -2,7 +2,6 @@ package co.nilin.opex.api.core.spi
 
 import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.common.utils.Interval
-import java.time.LocalDateTime
 
 interface MarketDataProxy {
 
@@ -17,6 +16,10 @@ interface MarketDataProxy {
     suspend fun lastOrder(symbol: String): Order?
 
     suspend fun recentTrades(symbol: String, limit: Int): List<MarketTrade>
+
+    suspend fun recentTrades(token: String, request: AdminTradesHistoryRequest): List<TradeAdminItem>
+
+    suspend fun recentOrders(token: String, request: AdminOrdersHistoryRequest): List<OrderAdminItem>
 
     suspend fun lastPrice(symbol: String?): List<PriceTicker>
 

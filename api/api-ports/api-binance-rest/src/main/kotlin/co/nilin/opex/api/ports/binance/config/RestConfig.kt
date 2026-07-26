@@ -7,7 +7,7 @@ import org.springframework.format.Formatter
 import org.springframework.web.server.WebFilter
 import java.util.*
 
-@Configuration
+@Configuration("binanceRestConfig")
 class RestConfig {
     @Bean
     fun dateFormatter(): Formatter<Date?>? {

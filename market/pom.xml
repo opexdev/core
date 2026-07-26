@@ -19,6 +19,7 @@
         <module>market-app</module>
         <module>market-core</module>
         <module>market-ports/market-eventlistener-kafka</module>
+        <module>market-ports/market-eventproducer-kafka</module>
         <module>market-ports/market-persister-postgres</module>
     </modules>
 
@@ -51,6 +52,11 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
+                <groupId>co.nilin.opex.market.ports.kafka.producer</groupId>
+                <artifactId>market-eventproducer-kafka</artifactId>
+                <version>1.0.1-beta.7</version>
+            </dependency>
+            <dependency>
                 <groupId>co.nilin.opex.market.ports.binance</groupId>
                 <artifactId>market-binance-rest</artifactId>
                 <version>${project.version}</version>
@@ -69,11 +75,6 @@
                 <groupId>co.nilin.opex.utility</groupId>
                 <artifactId>interceptors</artifactId>
                 <version>${interceptor.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>co.nilin.opex.utility</groupId>
-                <artifactId>preferences</artifactId>
-                <version>${preferences.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.cloud</groupId>

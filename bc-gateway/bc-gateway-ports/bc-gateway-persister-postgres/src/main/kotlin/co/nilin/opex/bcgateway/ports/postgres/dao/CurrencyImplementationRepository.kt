@@ -1,29 +1,112 @@
 package co.nilin.opex.bcgateway.ports.postgres.dao
 
+import co.nilin.opex.bcgateway.core.model.CurrencyOnChainGatewayView
 import co.nilin.opex.bcgateway.core.model.WithdrawData
-import co.nilin.opex.bcgateway.ports.postgres.model.CurrencyImplementationModel
-import kotlinx.coroutines.flow.Flow
+import co.nilin.opex.bcgateway.ports.postgres.model.CurrencyOnChainGatewayModel
+import co.nilin.opex.common.data.UserLanguage
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import java.math.BigDecimal
 
 @Repository
-interface CurrencyImplementationRepository : ReactiveCrudRepository<CurrencyImplementationModel, Long> {
+interface CurrencyImplementationRepository : ReactiveCrudRepository<CurrencyOnChainGatewayModel, Long> {
 
-    fun findByCurrencySymbol(currencySymbol: String): Flow<CurrencyImplementationModel>
+    fun findByGatewayUuid(uuid: String): Mono<CurrencyOnChainGatewayModel>?
 
-    fun findByChain(chain: String): Flow<CurrencyImplementationModel>
+    @Query(
+        """
+    SELECT c.id,
+       c.gateway_uuid,
+       c.currency_symbol,
+       c.implementation_symbol,
+       c.chain,
+       c.is_token,
+       c.token_address,
+       c.token_name,
+       c.withdraw_allowed,
+       c.deposit_allowed,
+       c.withdraw_fee,
+       c.withdraw_min,
+       c.withdraw_max,
+       c.deposit_min,
+       c.deposit_max,
+       c.decimal,
+       c.is_deposit_active,
+       c.is_withdraw_active,
+       cl.deposit_description,
+       cl.withdraw_description,
+       c.display_order
+    FROM currency_on_chain_gateway c
+             LEFT JOIN public.currency_on_chain_gateway_localization cl ON c.id = cl.gateway_id AND cl.language = :lang
+    where (:gatewayUuid is null or gateway_uuid=:gatewayUuid)
+     and (:currencySymbol is null or currency_symbol=:currencySymbol )
+     and (:implementationSymbol is null or implementation_symbol=:implementationSymbol )
+     and (:chain is null or chain=:chain )
+     order by display_order   
+    """
+    )
 
-    fun findByCurrencySymbolAndChain(currencySymbol: String, chain: String): Mono<CurrencyImplementationModel>
+    fun findGateways(
+        currencySymbol: String? = null,
+        gatewayUuid: String? = null,
+        chain: String? = null,
+        implementationSymbol: String? = null,
+        lang: String? = UserLanguage.getDefaultLanguage()
+    ): Flux<CurrencyOnChainGatewayView>?
 
-    fun findByChainAndTokenAddress(chain: String, tokenAddress: String?): Mono<CurrencyImplementationModel>
+    fun deleteByGatewayUuid(uuid: String): Mono<Void>
 
-    @Query("""
+    @Query(
+        """
         select withdraw_enabled as is_enabled, withdraw_fee as fee, withdraw_min as minimum 
-        from currency_implementations 
+        from currency_on_chain_gateway 
         where implementation_symbol = :symbol and chain = :chain
-    """)
+    """
+    )
     fun findWithdrawDataBySymbolAndChain(symbol: String, chain: String): Mono<WithdrawData>
+
+    fun findByCurrencySymbolAndChain(symbol: String, chain: String): Mono<CurrencyOnChainGatewayModel>
+
+    @Query(
+        """
+    SELECT c.id,
+       c.gateway_uuid,
+       c.currency_symbol,
+       c.implementation_symbol,
+       c.chain,
+       c.is_token,
+       c.token_address,
+       c.token_name,
+       c.withdraw_allowed,
+       c.deposit_allowed,
+       c.withdraw_fee,
+       c.withdraw_min,
+       c.withdraw_max,
+       c.deposit_min,
+       c.deposit_max,
+       c.decimal,
+       c.is_deposit_active,
+       c.is_withdraw_active,
+       cl.deposit_description,
+       cl.withdraw_description,
+       c.display_order
+    FROM currency_on_chain_gateway c
+             LEFT JOIN public.currency_on_chain_gateway_localization cl ON c.id = cl.gateway_id AND cl.language = :lang
+    where c.gateway_uuid = :gatewayUuid
+      and c.currency_symbol = :symbol;    
+    """
+    )
+    fun findByGatewayUuidAndCurrencySymbol(
+        gatewayUuid: String,
+        symbol: String,
+        lang: String? = UserLanguage.getDefaultLanguage()
+    ): Mono<CurrencyOnChainGatewayView>?
+
+    @Query("select * from currency_on_chain_gateway where chain = :chain and is_token is false")
+    fun findMainAssetGateway(chain: String): Mono<CurrencyOnChainGatewayModel>
+
+    @Query("select * from currency_on_chain_gateway where chain = :chain and is_token is true and token_address = :tokenAddress")
+    fun findTokenGateway(chain: String, tokenAddress: String): Mono<CurrencyOnChainGatewayModel>
 }

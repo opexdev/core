@@ -1,0 +1,84 @@
+package co.nilin.opex.accountant.ports.postgres.impl
+
+import co.nilin.opex.accountant.core.model.DailyAmount
+import co.nilin.opex.accountant.core.model.WithdrawStatus
+import co.nilin.opex.accountant.core.spi.CurrencyRatePersister
+import co.nilin.opex.accountant.core.spi.UserWithdrawVolumePersister
+import co.nilin.opex.accountant.ports.postgres.dao.UserWithdrawVolumeRepository
+import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Component
+import java.math.BigDecimal
+import java.math.RoundingMode
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+
+
+@Component
+class UserWithdrawVolumePersisterImpl(
+    private val repository: UserWithdrawVolumeRepository,
+    private val currencyRatePersister: CurrencyRatePersister,
+    @Value("\${app.zone-offset}") private val zoneOffsetString: String,
+    @Value("\${app.withdraw-volume-calculation-currency}") private val calculationCurrency: String,
+    @Value("\${app.withdraw-volume-calculation-currency-precision:2}") private val calculationCurrencyPrecision: Int
+
+) : UserWithdrawVolumePersister {
+
+    override suspend fun update(
+        userId: String,
+        currency: String,
+        amount: BigDecimal,
+        date: LocalDateTime,
+        withdrawStatus: WithdrawStatus
+    ) {
+        val rate = if (currency == calculationCurrency) BigDecimal.ONE
+        else currencyRatePersister.getRate(currency, calculationCurrency)
+
+        val signedAmount = amount.multiply(rate).setScale(calculationCurrencyPrecision, RoundingMode.DOWN)
+            .let { if (withdrawStatus == WithdrawStatus.CANCELED || withdrawStatus == WithdrawStatus.REJECTED) it.negate() else it }
+
+        repository.insertOrUpdate(
+            userId,
+            date.atOffset(ZoneOffset.of(zoneOffsetString)).toLocalDate(),
+            signedAmount,
+            calculationCurrency
+        ).awaitSingleOrNull()
+    }
+
+    override suspend fun getTotalValueByUserAndDateAfter(
+        uuid: String,
+        startDate: LocalDateTime
+    ): BigDecimal {
+        return repository.findTotalValueByUserAndAndDateAfter(
+            uuid,
+            startDate.atOffset(ZoneOffset.of(zoneOffsetString)).toLocalDate(),
+            calculationCurrency
+        ).awaitFirstOrNull() ?: BigDecimal.ZERO
+    }
+
+    override suspend fun getLastDaysWithdraw(
+        userId: String,
+        startDate: LocalDate?,
+        quatCurrency: String?,
+        lastDays: Long
+    ): List<DailyAmount> {
+
+        val startDate = startDate ?: LocalDate
+            .now(ZoneOffset.of(zoneOffsetString))
+            .minusDays(lastDays)
+
+        return repository
+            .findDailyWithdrawVolume(userId, startDate, quatCurrency?:calculationCurrency)
+            .map {
+                DailyAmount(
+                    date = it.date,
+                    totalAmount = it.totalAmount
+                )
+            }
+            .collectList()
+            .awaitSingle()
+    }
+}

@@ -1,8 +1,8 @@
-name:  Build, Test, and Deploy otc (DEV env) services for specific partner
+name: Build, Test, and Deploy otc (DEV env) services for specific partner
 on:
-#  push:
-#    branches:
-#      - dev
+  #  push:
+  #    branches:
+  #      - dev
 
   workflow_dispatch:
     inputs:
@@ -29,10 +29,9 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Setup Java
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v4
         with:
-          distribution: 'adopt'
-          java-package: jdk
+          distribution: temurin
           java-version: ${{ matrix.java }}
 
       - name: Fetch partners config
@@ -69,7 +68,6 @@ jobs:
           echo "PASSWORD=$PASSWORD" >> $GITHUB_OUTPUT
           echo "ENV_PATH=$ENV_PATH" >> $GITHUB_OUTPUT
           echo "SSH_PORT=$SSH_PORT" >> $GITHUB_OUTPUT
-
       - name: Decrypt data
         id: decrypt_data
 
@@ -107,9 +105,9 @@ jobs:
           echo "password=$server_pass" >> $GITHUB_OUTPUT
 
       - name: Build
-        run:  |
-          mvn -pl common -am  -B -T 1C clean install -Potc
-          mvn -pl wallet,bc-gateway -amd  -B -T 1C clean install -Potc
+        run: |
+          mvn -pl common -am  -B  clean install -Potc
+          mvn -pl wallet,bc-gateway -amd  -B  clean install -Potc
 
       - name: Run Tests
         run: |

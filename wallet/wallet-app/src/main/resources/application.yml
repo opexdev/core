@@ -1,5 +1,4 @@
-server:
-  port: 8080
+server.port: 8080
 management:
   endpoints:
     web:
@@ -31,6 +30,22 @@ spring:
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
     initialization-mode: always
+    pool:
+      enabled: true
+      initial-size: 5
+      max-size: 20
+      max-idle-time: 60s
+      validation-query: SELECT 1
+    # initialization-mode: always
+  datasource:
+    url: jdbc:postgresql://${DB_IP_PORT:localhost}/opex
+    username: ${dbusername:opex}
+    password: ${dbpassword:hiopex}
+  cache:
+    type: redis
+  redis:
+    host: redis-cache
+    port: 6379
   cloud:
     bootstrap:
       enabled: true
@@ -105,27 +120,60 @@ logbook:
           - POST
           - PUT
           - DELETE
-logging:
-  level:
-    root: INFO
-    org.apache.kafka: ERROR
-    co.nilin: INFO
-    org.zalando.logbook: TRACE
+
 app:
   auth:
     url: lb://opex-auth
-    cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
+    cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
+    iss-url: ${TOKEN_ISSUER_URL:http://keycloak:8080/realms/opex}
     client-id: none
     client-secret: none
   system:
     uuid: 1
   backup:
-    enabled: ${BACKUP_ENABLED:false}
-    drive:
+    storage:
+      enabled: ${BACKUP_ENABLED_STORAGE:false}
+      folder: ${STORAGE_FOLDER_ID:-}
+    google-drive:
+      enabled: ${BACKUP_ENABLED_GOOGLE_DRIVE:false}
       folder: ${DRIVE_FOLDER_ID:-}
   bc-gateway:
     url: lb://opex-bc-gateway
+  market:
+    url: lb://opex-market
+  accountant:
+    url: lb://opex-accountant
+  otp:
+    url: lb://opex-otp/v1
+  profile:
+    url: lb://opex-profile
+  storage:
+    url: lb://storage
   reserved-transfer:
     life-time: 15 #minutes
-swagger:
-  authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token}
+  symbols: ${SYMBOLS}
+  zone-offset: +03:30
+  snapshot-currency: ${TOTAL_ASSET_CALCULATION_CURRENCY:USDT}
+  withdraw:
+    limit:
+      enabled: ${WITHDRAW_LIMIT_ENABLED:false}
+    otp-required-count: ${WITHDRAW_OTP_REQUIRED_COUNT:0}
+    bank-account-validation: ${WITHDRAW_BANK_ACCOUNT_VALIDATION:false}
+  deposit:
+    snapshot:
+      enabled: ${DEPOSIT_SNAPSHOT_ENABLED:true}
+  custom-message:
+    enabled: ${CUSTOM_MESSAGE_ENABLED:false}
+    base-url: ${CUSTOM_MESSAGE_URL}
+  custom-user-language:
+    enabled: ${CUSTOM_USER_LANGUAGE_ENABLED:false}
+logging:
+  level:
+    root: INFO
+    org.apache.kafka: ERROR
+    co.nilin: INFO
+    reactor.netty.http.client: INFO
+    org.zalando.logbook: TRACE
+    org.hibernate.SQL: DEBUG
+    logging.level.org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token

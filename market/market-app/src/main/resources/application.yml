@@ -91,6 +91,12 @@ logging:
     co.nilin: INFO
 app:
   auth:
-    cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
+    cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
+    iss-url: ${TOKEN_ISSUER_URL:http://keycloak:8080/realms/opex}
+  custom-message:
+    enabled: ${CUSTOM_MESSAGE_ENABLED:false}
+    base-url: ${CUSTOM_MESSAGE_URL}
+  custom-user-language:
+    enabled: ${CUSTOM_USER_LANGUAGE_ENABLED:false}
 swagger:
   authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token}

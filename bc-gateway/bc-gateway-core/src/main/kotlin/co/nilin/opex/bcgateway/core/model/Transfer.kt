@@ -5,7 +5,6 @@ import java.math.BigInteger
 
 data class Transfer(
     val txHash: String,
-    val blockNumber: BigInteger,
     val receiver: Wallet,
     val isTokenTransfer: Boolean,
     val amount: BigDecimal,

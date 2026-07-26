@@ -1,10 +1,6 @@
 package co.nilin.opex.accountant.app.config
 
 import co.nilin.opex.accountant.app.listener.*
-import co.nilin.opex.accountant.app.listener.AccountantEventListener
-import co.nilin.opex.accountant.app.listener.AccountantTempEventListener
-import co.nilin.opex.accountant.app.listener.AccountantTradeListener
-import co.nilin.opex.accountant.app.listener.OrderListener
 import co.nilin.opex.accountant.core.api.FeeCalculator
 import co.nilin.opex.accountant.core.api.FinancialActionJobManager
 import co.nilin.opex.accountant.core.api.OrderManager
@@ -14,19 +10,21 @@ import co.nilin.opex.accountant.core.service.OrderManagerImpl
 import co.nilin.opex.accountant.core.service.TradeManagerImpl
 import co.nilin.opex.accountant.core.spi.*
 import co.nilin.opex.accountant.ports.kafka.listener.consumer.*
-import co.nilin.opex.accountant.ports.kafka.listener.consumer.EventKafkaListener
-import co.nilin.opex.accountant.ports.kafka.listener.consumer.OrderKafkaListener
-import co.nilin.opex.accountant.ports.kafka.listener.consumer.TempEventKafkaListener
-import co.nilin.opex.accountant.ports.kafka.listener.consumer.TradeKafkaListener
 import co.nilin.opex.accountant.ports.kafka.listener.spi.FAResponseListener
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.EnableScheduling
 
 @Configuration
 @EnableScheduling
-class AppConfig {
+class AppConfig(
+    @Value("\${app.trade-volume-calculation-currency}")
+    private val tradeVolumeCalculationCurrency: String,
+    @Value("\${app.zone-offset}")
+    private val zoneOffsetString: String,
+) {
 
     @Bean
     fun getFinancialActionJobManager(
@@ -44,7 +42,6 @@ class AppConfig {
     @Bean
     fun orderManager(
         pairConfigLoader: PairConfigLoader,
-        userLevelLoader: UserLevelLoader,
         financialActionPersister: FinancialActionPersister,
         financeActionLoader: FinancialActionLoader,
         orderPersister: OrderPersister,
@@ -52,18 +49,17 @@ class AppConfig {
         tempEventRepublisher: TempEventRepublisher,
         richOrderPublisher: RichOrderPublisher,
         financialActionPublisher: FinancialActionPublisher,
-        jsonMapper: JsonMapper
+        feeCalculator: FeeCalculator
     ): OrderManager {
         return OrderManagerImpl(
             pairConfigLoader,
-            userLevelLoader,
             financialActionPersister,
             financeActionLoader,
             orderPersister,
             tempEventPersister,
             richOrderPublisher,
             financialActionPublisher,
-            jsonMapper
+            feeCalculator
         )
     }
 
@@ -77,7 +73,8 @@ class AppConfig {
         richOrderPublisher: RichOrderPublisher,
         feeCalculator: FeeCalculator,
         financialActionPublisher: FinancialActionPublisher,
-        jsonMapper: JsonMapper
+        currencyRatePersister: CurrencyRatePersister,
+        userVolumePersister: UserTradeVolumePersister
     ): TradeManager {
         return TradeManagerImpl(
             financeActionPersister,
@@ -88,7 +85,10 @@ class AppConfig {
             richOrderPublisher,
             feeCalculator,
             financialActionPublisher,
-            jsonMapper
+            currencyRatePersister,
+            userVolumePersister,
+            tradeVolumeCalculationCurrency,
+            zoneOffsetString
         )
     }
 
@@ -137,18 +137,32 @@ class AppConfig {
     fun configureEventListener(
         eventKafkaListener: EventKafkaListener,
         accountantEventListener: AccountantEventListener,
-        kycLevelUpdatedKafkaListener: KycLevelUpdatedKafkaListener,
-        kycLevelUpdatedEventListener: KycLevelUpdatedListener
     ) {
         eventKafkaListener.addListener(accountantEventListener)
-        kycLevelUpdatedKafkaListener.addEventListener(kycLevelUpdatedEventListener)
     }
 
     @Autowired
     fun configureTempEventListener(
         tempEventKafkaListener: TempEventKafkaListener,
-        accountantTempEventListener: AccountantTempEventListener) {
+        accountantTempEventListener: AccountantTempEventListener
+    ) {
         tempEventKafkaListener.addListener(accountantTempEventListener)
     }
 
+    @Autowired
+    fun configureWithdrawRequestEventListener(
+        withdrawRequestKafkaListener: WithdrawRequestKafkaListener,
+        withdrawRequestEventListener: WithdrawRequestEventListener
+    ) {
+        withdrawRequestKafkaListener.addListener(withdrawRequestEventListener)
+    }
+
+
+    @Autowired
+    fun configureDepositEventListener(
+        depositKafkaListener: DepositKafkaListener,
+        depositEventListener: DepositEventListener
+    ) {
+        depositKafkaListener.addListener(depositEventListener)
+    }
 }

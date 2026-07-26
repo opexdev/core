@@ -4,11 +4,12 @@ import co.nilin.opex.market.core.event.RichOrder
 import co.nilin.opex.market.core.event.RichOrderUpdate
 import co.nilin.opex.market.core.event.RichTrade
 import co.nilin.opex.market.core.inout.*
+import co.nilin.opex.market.ports.postgres.data.MarketTradeProjection
+import co.nilin.opex.market.ports.postgres.data.TradeUserContextProjection
 import co.nilin.opex.market.ports.postgres.model.LastPrice
 import co.nilin.opex.market.ports.postgres.model.OrderModel
 import co.nilin.opex.market.ports.postgres.model.OrderStatusModel
 import co.nilin.opex.market.ports.postgres.model.TradeModel
-import co.nilin.opex.market.ports.postgres.util.isWorking
 import java.math.BigDecimal
 import java.security.Principal
 import java.time.LocalDateTime
@@ -107,6 +108,37 @@ object VALID {
         PRINCIPAL.name,
         PRINCIPAL.name,
         UPDATE_DATE
+    )
+
+
+    val TRADE_USER_CONTEXT = TradeUserContextProjection(
+        ETH_USDT,
+        "ETH",
+        "USDT",
+        1,
+        BigDecimal.valueOf(100000),
+        BigDecimal.valueOf(0.001), // Minimum of orders quantities
+        BigDecimal.valueOf(100).stripTrailingZeros(),
+        UPDATE_DATE,
+        false,
+        MAKER_ORDER_MODEL.ouid,
+        BigDecimal.valueOf(0.001),
+        "USDT",
+        true,
+        true
+    )
+
+    val MARKET_TRADE = MarketTradeProjection(
+        ETH_USDT,
+        "ETH",
+        "USDT",
+        1,
+        BigDecimal.valueOf(100000),
+        BigDecimal.valueOf(0.001), // Minimum of orders quantities
+        BigDecimal.valueOf(100).stripTrailingZeros(),
+        UPDATE_DATE,
+        false,
+
     )
 
     val LAST_PRICE_MODEL = LastPrice("ETH_USDT", BigDecimal.valueOf(100000))

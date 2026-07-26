@@ -14,6 +14,18 @@ spring:
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
     initialization-mode: always
+    pool:
+      initial-size: 5
+      max-size: 32
+      max-idle-time: 10m
+      max-life-time: 30m
+      max-acquire-time: 10s
+      max-create-connection-time: 10s
+      validation-query: SELECT 1
+  datasource:
+    url: jdbc:postgresql://${DB_IP_PORT:localhost}/opex
+    username: ${dbusername:opex}
+    password: ${dbpassword:hiopex}
   cloud:
     bootstrap:
       enabled: true
@@ -66,13 +78,20 @@ logging:
 swagger:
   authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
 app:
+  omni-wallet:
+    url: http://app:8080 #todo ->env
   auth:
     url: ${auth_url}
     cert-url: ${auth_jwk_endpoint}
+    iss-url:
     client-id: ${client_id}
     client-secret: ${client_secret}
   wallet:
     url: http://wallet:8080
   address:
-    life-time:
-      value: ${ADDRESS_EXP_TIME}  #    second
+    life-time: ${ADDRESS_EXP_TIME}  #    second
+  custom-message:
+    enabled: ${CUSTOM_MESSAGE_ENABLED:false}
+    base-url: ${CUSTOM_MESSAGE_URL}
+  custom-user-language:
+    enabled: ${CUSTOM_USER_LANGUAGE_ENABLED:false}

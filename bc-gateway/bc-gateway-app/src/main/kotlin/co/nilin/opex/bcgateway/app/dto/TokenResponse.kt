@@ -11,5 +11,6 @@ data class TokenResponse(
     val isWithdrawEnabled: Boolean,
     val withdrawFee: BigDecimal,
     val withdrawMin: BigDecimal,
-    val decimal: Int
+    val decimal: Int,
+    val isActive: Boolean
 )

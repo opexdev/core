@@ -1,10 +1,13 @@
 package co.nilin.opex.accountant.ports.walletproxy.proxy
 
+import co.nilin.opex.accountant.core.model.CurrencyPrice
+import co.nilin.opex.accountant.core.model.TotalAssetsSnapshot
 import co.nilin.opex.accountant.core.model.WalletType
 import co.nilin.opex.accountant.core.spi.WalletProxy
 import co.nilin.opex.accountant.ports.walletproxy.data.BooleanResponse
 import co.nilin.opex.accountant.ports.walletproxy.data.TransferResult
 import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
@@ -55,5 +58,27 @@ class WalletProxyImpl(
             .bodyToMono<BooleanResponse>()
             .awaitFirst()
             .result
+    }
+
+    override suspend fun getUserTotalAssets(
+        uuid: String,
+    ): TotalAssetsSnapshot? {
+        return webClient.get()
+            .uri("$walletBaseUrl/stats/total-assets/$uuid")
+            .header("Content-Type", "application/json")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<TotalAssetsSnapshot>()
+            .awaitFirstOrNull()
+    }
+
+    override suspend fun getPrices(quote: String): List<CurrencyPrice> {
+        return webClient.get()
+            .uri("$walletBaseUrl/otc/currency/price?unit=$quote")
+            .header("Content-Type", "application/json")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<List<CurrencyPrice>>()
+            .awaitFirst()
     }
 }

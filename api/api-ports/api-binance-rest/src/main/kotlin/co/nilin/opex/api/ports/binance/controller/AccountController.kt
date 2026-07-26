@@ -8,10 +8,13 @@ import co.nilin.opex.api.core.spi.WalletProxy
 import co.nilin.opex.api.ports.binance.data.*
 import co.nilin.opex.api.ports.binance.util.*
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.common.security.jwtAuthentication
+import co.nilin.opex.common.security.tokenValue
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
+import io.swagger.v3.oas.annotations.Hidden
 import org.springframework.http.MediaType
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
@@ -22,6 +25,8 @@ import java.time.ZoneId
 import java.util.*
 
 @RestController
+@Hidden
+@Deprecated("")
 class AccountController(
     val queryHandler: MarketUserDataProxy,
     val matchingGatewayProxy: MatchingGatewayProxy,
@@ -146,7 +151,7 @@ class AccountController(
         if (orderId == null && origClientOrderId == null)
             throw OpexError.BadRequest.exception("'orderId' or 'origClientOrderId' must be sent")
 
-        val order = queryHandler.queryOrder(principal, localSymbol, orderId, origClientOrderId)
+        val order = queryHandler.queryOrder(securityContext.jwtAuthentication().tokenValue(), localSymbol, orderId, origClientOrderId)
             ?: throw OpexError.OrderNotFound.exception()
 
         val response = CancelOrderResponse(
@@ -215,10 +220,11 @@ class AccountController(
         @RequestParam(required = false)
         recvWindow: Long?, //The value cannot be greater than 60000
         @RequestParam
-        timestamp: Long
-    ): QueryOrderResponse {
+        timestamp: Long,
+        @CurrentSecurityContext securityContext: SecurityContext,
+        ): QueryOrderResponse {
         val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexError.SymbolNotFound.exception()
-        return queryHandler.queryOrder(principal, internalSymbol, orderId, origClientOrderId)
+        return queryHandler.queryOrder(securityContext.jwtAuthentication().tokenValue(), internalSymbol, orderId, origClientOrderId)
             ?.asQueryOrderResponse()
             ?.apply { this.symbol = symbol }
             ?: throw OpexError.OrderNotFound.exception()
@@ -256,10 +262,11 @@ class AccountController(
         @RequestParam
         timestamp: Long,
         @RequestParam(required = false)
-        limit: Int?
-    ): List<QueryOrderResponse> {
+        limit: Int?,
+        @CurrentSecurityContext securityContext: SecurityContext,
+        ): List<QueryOrderResponse> {
         val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexError.SymbolNotFound.exception()
-        return queryHandler.openOrders(principal, internalSymbol, limit).map {
+        return queryHandler.openOrders(securityContext.jwtAuthentication().tokenValue(), internalSymbol, limit).map {
             it.asQueryOrderResponse().apply { symbol?.let { s -> this.symbol = s } }
         }
     }
@@ -299,10 +306,13 @@ class AccountController(
         @RequestParam(required = false)
         recvWindow: Long?, //The value cannot be greater than 60000
         @RequestParam
-        timestamp: Long
-    ): List<QueryOrderResponse> {
+        timestamp: Long,
+        @CurrentSecurityContext securityContext: SecurityContext,
+
+
+        ): List<QueryOrderResponse> {
         val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexError.SymbolNotFound.exception()
-        return queryHandler.allOrders(principal, internalSymbol, startTime, endTime, limit).map {
+        return queryHandler.allOrders(securityContext.jwtAuthentication().tokenValue(), internalSymbol, startTime, endTime, limit).map {
             it.asQueryOrderResponse().apply { symbol?.let { s -> this.symbol = s } }
         }
     }
@@ -346,11 +356,12 @@ class AccountController(
         @RequestParam(required = false)
         recvWindow: Long?, //The value cannot be greater than 60000
         @RequestParam
-        timestamp: Long
+        timestamp: Long,
+        @CurrentSecurityContext securityContext: SecurityContext,
     ): List<TradeResponse> {
         val internalSymbol = symbolMapper.toInternalSymbol(symbol) ?: throw OpexError.SymbolNotFound.exception()
 
-        return queryHandler.allTrades(principal, internalSymbol, fromId, startTime, endTime, limit)
+        return queryHandler.allTrades(securityContext.jwtAuthentication().tokenValue(), internalSymbol, fromId, startTime, endTime, limit)
             .map {
                 TradeResponse(
                     symbol ?: "",

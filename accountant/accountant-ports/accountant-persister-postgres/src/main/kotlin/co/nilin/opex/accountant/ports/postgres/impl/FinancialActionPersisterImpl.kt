@@ -3,7 +3,6 @@ package co.nilin.opex.accountant.ports.postgres.impl
 import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.FinancialActionStatus
 import co.nilin.opex.accountant.core.spi.FinancialActionPersister
-import co.nilin.opex.accountant.core.spi.JsonMapper
 import co.nilin.opex.accountant.ports.postgres.dao.FinancialActionErrorRepository
 import co.nilin.opex.accountant.ports.postgres.dao.FinancialActionRepository
 import co.nilin.opex.accountant.ports.postgres.dao.FinancialActionRetryRepository

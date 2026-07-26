@@ -12,7 +12,9 @@ data class TransferResult(
     val amount: Amount,
     val destUuid: String,
     val destWalletType: WalletType,
-    val receivedAmount: Amount
+    val receivedAmount: Amount,
+    val sourceWallet: Long? = null,
+    val destWallet: Long? = null
 )
 
 data class TransferResultDetailed(

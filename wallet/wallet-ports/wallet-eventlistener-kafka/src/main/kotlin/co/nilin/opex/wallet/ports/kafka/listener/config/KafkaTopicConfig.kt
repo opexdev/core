@@ -14,8 +14,29 @@ class KafkaTopicConfig {
 
     @Autowired
     fun createTopics(applicationContext: GenericApplicationContext) {
-        applicationContext.registerBean("topic_auth_user_created", NewTopic::class.java, Supplier {
-            TopicBuilder.name("auth_user_created")
+        applicationContext.registerBean("topic_auth", NewTopic::class.java, Supplier {
+            TopicBuilder.name("auth")
+                .partitions(1)
+                .replicas(1)
+                .build()
+        })
+    }
+
+    @Autowired
+    fun withdrawRequestTopics(applicationContext: GenericApplicationContext) {
+        applicationContext.registerBean("topic_withdrawRequest", NewTopic::class.java, Supplier {
+            TopicBuilder.name("withdraw_request")
+                .partitions(1)
+                .replicas(1)
+                .build()
+        })
+
+    }
+
+    @Autowired
+    fun depositTopics(applicationContext: GenericApplicationContext) {
+        applicationContext.registerBean("topic_deposit", NewTopic::class.java, Supplier {
+            TopicBuilder.name("deposit")
                 .partitions(1)
                 .replicas(1)
                 .build()

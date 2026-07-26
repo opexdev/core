@@ -9,9 +9,33 @@ spring:
     bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
     consumer:
       group-id: gateway
+  r2dbc:
+    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
+    username: ${dbusername:opex}
+    password: ${dbpassword:hiopex}
+    initialization-mode: always
+    pool:
+      enabled: true
+      initial-size: 5
+      max-size: 20
+      max-idle-time: 60s
+      validation-query: SELECT 1
   cloud:
     bootstrap:
       enabled: true
+    vault:
+      host: ${VAULT_HOST}
+      port: 8200
+      scheme: http
+      authentication: APPID
+      app-id:
+        user-id: co.nilin.opex.matching.gateway.app.utils.VaultUserIdMechanism
+      fail-fast: true
+      kv:
+        enabled: true
+        backend: secret
+        profile-separator: '/'
+        application-name: ${spring.application.name}
     consul:
       host: ${CONSUL_HOST:localhost}
       port: 8500
@@ -25,7 +49,7 @@ management:
     web:
       base-path: /actuator
       exposure:
-        include: ["health", "prometheus", "metrics"]
+        include: [ "health", "prometheus", "metrics" ]
   endpoint:
     health:
       show-details: when_authorized
@@ -64,9 +88,18 @@ logging:
     co.nilin: INFO
     org.zalando.logbook: TRACE
 app:
+  symbols: ${SYMBOLS}
   accountant:
     url: lb://opex-accountant
   auth:
-    cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
+    cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
+    iss-url: ${TOKEN_ISSUER_URL:http://keycloak:8080/realms/opex}
+  custom-message:
+    enabled: ${CUSTOM_MESSAGE_ENABLED:false}
+    base-url: ${CUSTOM_MESSAGE_URL}
+  custom-user-language:
+    enabled: ${CUSTOM_USER_LANGUAGE_ENABLED:false}
 swagger:
   authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token}
+
+

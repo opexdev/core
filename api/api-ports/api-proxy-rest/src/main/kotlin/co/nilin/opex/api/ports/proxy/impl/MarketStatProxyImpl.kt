@@ -8,6 +8,7 @@ import co.nilin.opex.common.utils.Interval
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.withContext
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -18,6 +19,7 @@ import org.springframework.web.reactive.function.client.bodyToMono
 
 @Component
 class MarketStatProxyImpl(
+    @Qualifier("generalWebClient")
     private val webClient: WebClient,
     @Value("\${app.market.url}")
     private val baseUrl: String

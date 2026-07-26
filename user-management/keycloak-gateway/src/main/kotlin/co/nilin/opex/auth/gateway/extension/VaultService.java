@@ -15,20 +15,11 @@ import java.nio.charset.StandardCharsets;
  */
 public class VaultService {
 
-    private final KeycloakSession session;
     private static final Logger logger = Logger.getLogger(VaultService.class);
+    private final KeycloakSession session;
 
     public VaultService(KeycloakSession session) {
         this.session = session;
-    }
-
-    static class UserId {
-        @JsonProperty("user_id")
-        public String userId;
-
-        public UserId(String userId) {
-            this.userId = userId;
-        }
     }
 
     public ByteBuffer getSecretFromVault(String vaultUrl, String realm, String vaultSecretEngineName, String secretName, String vaultAppId, String vaultUserId, int secretVersion) {
@@ -54,6 +45,15 @@ public class VaultService {
         } catch (IOException e) {
             logger.error("vault service unavailable", e);
             return false;
+        }
+    }
+
+    static class UserId {
+        @JsonProperty("user_id")
+        public String userId;
+
+        public UserId(String userId) {
+            this.userId = userId;
         }
     }
 

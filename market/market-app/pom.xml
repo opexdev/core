@@ -68,6 +68,10 @@
 			<artifactId>market-eventlistener-kafka</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>co.nilin.opex.market.ports.kafka.producer</groupId>
+			<artifactId>market-eventproducer-kafka</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
@@ -85,13 +89,19 @@
 			<artifactId>spring-cloud-starter-vault-config</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>co.nilin.opex.utility</groupId>
-			<artifactId>preferences</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>io.micrometer</groupId>
 			<artifactId>micrometer-registry-prometheus</artifactId>
 			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jfree</groupId>
+			<artifactId>jfreechart</artifactId>
+			<version>1.5.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jfree</groupId>
+			<artifactId>jfreesvg</artifactId>
+			<version>3.4.3</version>
 		</dependency>
 	</dependencies>
 

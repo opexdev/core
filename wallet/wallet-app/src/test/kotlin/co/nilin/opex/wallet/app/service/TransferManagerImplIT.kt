@@ -2,8 +2,10 @@ package co.nilin.opex.wallet.app.service
 
 import co.nilin.opex.wallet.app.KafkaEnabledTest
 import co.nilin.opex.wallet.core.exc.ConcurrentBalanceChangException
+import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.model.TransferCategory
 import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.spi.*
@@ -21,12 +23,11 @@ import java.util.*
 
 
 class TransferManagerImplIT : KafkaEnabledTest() {
-
     @Autowired
     lateinit var transferManager: TransferManager
 
     @Autowired
-    lateinit var currencyService: CurrencyService
+    lateinit var currencyService: CurrencyServiceManager
 
     @Autowired
     lateinit var walletManager: WalletManager
@@ -53,7 +54,7 @@ class TransferManagerImplIT : KafkaEnabledTest() {
 
         val block: () -> Unit = {
             runBlocking {
-                val currency = currencyService.getCurrency(cc)!!
+                val currency = currencyService.fetchCurrency(FetchCurrency(symbol = cc))!!
                 val owner = walletOwnerManager.findWalletOwner(sourceUuid!!)
                 val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner!!, WalletType.MAIN, currency)
                 val receiverWallet =
@@ -65,7 +66,9 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                             sourceWallet!!,
                             receiverWallet!!,
                             Amount(sourceWallet.currency, amount),
-                            "Amount1 ${System.currentTimeMillis()}", "Ref1 ${System.currentTimeMillis()}", TransferCategory.NORMAL
+                            "Amount1 ${System.currentTimeMillis()}",
+                            "Ref1 ${System.currentTimeMillis()}",
+                            TransferCategory.NORMAL
                         )
                     )
                 }
@@ -75,7 +78,9 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                             sourceWallet!!,
                             receiverWallet!!,
                             Amount(sourceWallet.currency, amount),
-                            "Amount2 ${System.currentTimeMillis()}", "Ref2 ${System.currentTimeMillis()}", TransferCategory.NORMAL
+                            "Amount2 ${System.currentTimeMillis()}",
+                            "Ref2 ${System.currentTimeMillis()}",
+                            TransferCategory.NORMAL
                         )
                     )
                 }
@@ -87,7 +92,7 @@ class TransferManagerImplIT : KafkaEnabledTest() {
 
         }
         runBlocking {
-            val currency = currencyService.getCurrency(cc)!!
+            val currency = currencyService.fetchCurrency(FetchCurrency(symbol = cc))!!
             val owner = walletOwnerManager.findWalletOwner(sourceUuid!!)
             val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner!!, WalletType.MAIN, currency)
             val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, WalletType.EXCHANGE, currency)
@@ -100,7 +105,7 @@ class TransferManagerImplIT : KafkaEnabledTest() {
     @Test
     fun givenSameReceiverWallet_whenConcurrentTransfers_thenTransfersSuccess() {
         runBlocking {
-            val currency = currencyService.getCurrency(cc)!!
+            val currency = currencyService.fetchCurrency(FetchCurrency(symbol = cc))!!
             val owner = walletOwnerManager.findWalletOwner(sourceUuid!!)
             val receiverWallet =
                 walletManager.findWalletByOwnerAndCurrencyAndType(owner!!, WalletType.EXCHANGE, currency)
@@ -116,7 +121,9 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                         sourceWallet1!!,
                         receiverWallet!!,
                         Amount(sourceWallet1.currency, amount),
-                        "Amount1 ${System.currentTimeMillis()}", "Ref1 ${System.currentTimeMillis()}", TransferCategory.NORMAL
+                        "Amount1 ${System.currentTimeMillis()}",
+                        "Ref1 ${System.currentTimeMillis()}",
+                        TransferCategory.NORMAL
                     )
                 )
             }
@@ -128,7 +135,9 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                         sourceWallet2!!,
                         receiverWallet!!,
                         Amount(sourceWallet2.currency, amount),
-                        "Amount2 ${System.currentTimeMillis()}", "Ref2 ${System.currentTimeMillis()}", TransferCategory.NORMAL
+                        "Amount2 ${System.currentTimeMillis()}",
+                        "Ref2 ${System.currentTimeMillis()}",
+                        TransferCategory.NORMAL
                     )
                 )
             }
@@ -153,7 +162,7 @@ class TransferManagerImplIT : KafkaEnabledTest() {
     @Test
     fun givenSameSenderWallet_whenSequentialTransfers_thenTransfersSuccess() {
         runBlocking {
-            val currency = currencyService.getCurrency(cc)!!
+            val currency = currencyService.fetchCurrency(FetchCurrency(symbol = cc))!!
             val owner = walletOwnerManager.findWalletOwner(sourceUuid!!)
 
             async {
@@ -166,8 +175,11 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                         sourceWallet!!,
                         receiverWallet!!,
                         Amount(sourceWallet.currency, amount),
-                        "Amount1 ${System.currentTimeMillis()}", "Ref1 ${System.currentTimeMillis()}", TransferCategory.NORMAL
+                        "Amount1 ${System.currentTimeMillis()}",
+                        "Ref1 ${System.currentTimeMillis()}",
+                        TransferCategory.NORMAL
                     )
+
                 )
             }.await()
             async {
@@ -180,7 +192,9 @@ class TransferManagerImplIT : KafkaEnabledTest() {
                         sourceWallet!!,
                         receiverWallet!!,
                         Amount(sourceWallet.currency, amount),
-                        "Amount2 ${System.currentTimeMillis()}", "Ref2 ${System.currentTimeMillis()}", TransferCategory.NORMAL,
+                        "Amount2 ${System.currentTimeMillis()}",
+                        "Ref2 ${System.currentTimeMillis()}",
+                        TransferCategory.NORMAL,
                     )
                 )
             }.await()
@@ -193,13 +207,14 @@ class TransferManagerImplIT : KafkaEnabledTest() {
     }
 
     @Test
-    fun dwhenTransferWithAdditionalData_thenDataIsPersistedAndRetrievable() {
+    fun whenTransferWithAdditionalData_thenDataIsPersistedAndRetrievable() {
         runBlocking {
-            val currency = currencyService.getCurrency(cc)!!
+            val currency = currencyService.fetchCurrency(FetchCurrency(symbol = cc))!!
             val owner = walletOwnerManager.findWalletOwner(sourceUuid!!)
 
             val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner!!, WalletType.MAIN, currency)
             val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, WalletType.EXCHANGE, currency)
+
 
             val additionalData = mapOf(Pair("key1", "value"), Pair("key2", "value"))
             val result = transferManager.transfer(
@@ -225,6 +240,7 @@ class TransferManagerImplIT : KafkaEnabledTest() {
             val thdMatch = thd.find { th -> th.id.toString().equals(result.tx) }
             assertNotNull(thdMatch)
 
+
             val th = transactionManager.findTransactions(
                 owner.uuid,
                 currency.symbol,
@@ -243,7 +259,7 @@ class TransferManagerImplIT : KafkaEnabledTest() {
     @Test
     fun whenTransfer_thenWithdrawFlagIsCorrect() {
         runBlocking {
-            val currency = currencyService.getCurrency(cc)!!
+            val currency = currencyService.fetchCurrency(FetchCurrency(symbol = cc))!!
 
             destUuid = UUID.randomUUID().toString()
             setupWallets(destUuid!!)
@@ -317,12 +333,16 @@ class TransferManagerImplIT : KafkaEnabledTest() {
     fun setupWallets(sourceUuid: String) {
         runBlocking {
             try {
-                currencyService.deleteCurrency(cc)
+                currencyService.deleteCurrency(FetchCurrency(symbol = cc))
             } catch (_: Exception) {
 
             }
-            currencyService.addCurrency(cc, cc, BigDecimal.ONE)
-            val currency = currencyService.getCurrency(cc)
+            val currency = currencyService.fetchCurrency(FetchCurrency(symbol = cc))?.let { it } ?: run {
+                currencyService.createNewCurrency(CurrencyCommand(name = cc, symbol = cc, precision = BigDecimal.ONE))
+            }
+
+
+//            val currency = currencyService.fetchCurrency(FetchCurrency(symbol = cc))
 
             val sourceOwner = walletOwnerManager.createWalletOwner(sourceUuid, "not set", "")
             walletManager.createWallet(

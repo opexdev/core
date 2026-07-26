@@ -52,26 +52,32 @@
             <artifactId>api-binance-rest</artifactId>
         </dependency>
         <dependency>
+            <groupId>co.nilin.opex.api.ports.opex</groupId>
+            <artifactId>api-opex-rest</artifactId>
+            <version>1.0.1-beta.7</version>
+        </dependency>
+        <dependency>
             <groupId>co.nilin.opex.api.ports.postgres</groupId>
             <artifactId>api-persister-postgres</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-boot-starter</artifactId>
-            <version>3.0.0</version>
-        </dependency>
+
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-vault-config</artifactId>
         </dependency>
         <dependency>
-            <groupId>co.nilin.opex.utility</groupId>
-            <artifactId>preferences</artifactId>
-        </dependency>
-        <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.vladimir-bukhtoyarov</groupId>
+            <artifactId>bucket4j-core</artifactId>
+            <version>8.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
     </dependencies>
 

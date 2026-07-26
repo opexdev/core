@@ -20,6 +20,15 @@ public class HashicorpVaultProvider implements VaultProvider {
     private String vaultSecretEngineName;
     private VaultService service;
 
+    public HashicorpVaultProvider(String vaultUrl, String vaultAppId, String vaultUserId, String realmName, String vaultSecretEngineName, VaultService service) {
+        this.vaultUrl = vaultUrl;
+        this.vaultAppId = vaultAppId;
+        this.vaultUserId = vaultUserId;
+        this.realmName = realmName;
+        this.vaultSecretEngineName = vaultSecretEngineName;
+        this.service = service;
+    }
+
     @Override
     public VaultRawSecret obtainSecret(String vaultSecretId) {
         int secretVersion = 0;
@@ -38,15 +47,6 @@ public class HashicorpVaultProvider implements VaultProvider {
 
     @Override
     public void close() {
-    }
-
-    public HashicorpVaultProvider(String vaultUrl, String vaultAppId, String vaultUserId, String realmName, String vaultSecretEngineName, VaultService service) {
-        this.vaultUrl = vaultUrl;
-        this.vaultAppId = vaultAppId;
-        this.vaultUserId = vaultUserId;
-        this.realmName = realmName;
-        this.vaultSecretEngineName = vaultSecretEngineName;
-        this.service = service;
     }
 
 }

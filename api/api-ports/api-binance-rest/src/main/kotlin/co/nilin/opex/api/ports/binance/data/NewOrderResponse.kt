@@ -4,7 +4,6 @@ import co.nilin.opex.api.core.inout.OrderSide
 import co.nilin.opex.api.core.inout.OrderStatus
 import co.nilin.opex.api.core.inout.OrderType
 import co.nilin.opex.api.core.inout.TimeInForce
-import co.nilin.opex.api.ports.binance.controller.AccountController
 import com.fasterxml.jackson.annotation.JsonInclude
 import java.math.BigDecimal
 import java.util.*

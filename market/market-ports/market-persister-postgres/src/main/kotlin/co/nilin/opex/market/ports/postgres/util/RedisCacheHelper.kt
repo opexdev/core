@@ -24,8 +24,6 @@ class RedisCacheHelper(private val redisTemplate: RedisTemplate<String, Any>) {
     }
 
     fun putList(key: String, values: List<Any>, expireAt: DynamicInterval? = null) {
-        // Why the fuck this doesn't work?
-        // listOps.rightPushAll(key, values)
         try {
             values.forEach { listOps.rightPush(key, it) }
             expireAt?.let { redisTemplate.expireAt(key, it.dateInFuture()) }

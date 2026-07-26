@@ -1,6 +1,9 @@
 package co.nilin.opex.market.ports.postgres.impl
 
-import co.nilin.opex.market.core.inout.*
+import co.nilin.opex.market.core.inout.MarketTrade
+import co.nilin.opex.market.core.inout.Order
+import co.nilin.opex.market.core.inout.OrderDirection
+import co.nilin.opex.market.core.inout.OrderStatus
 import co.nilin.opex.market.ports.postgres.dao.OrderRepository
 import co.nilin.opex.market.ports.postgres.dao.OrderStatusRepository
 import co.nilin.opex.market.ports.postgres.dao.TradeRepository
@@ -10,7 +13,6 @@ import co.nilin.opex.market.ports.postgres.util.RedisCacheHelper
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -57,8 +59,8 @@ class MarketQueryHandlerTest {
         val orderBookResponses = marketQueryHandler.openBidOrders(VALID.ETH_USDT, 1)
 
         assertThat(orderBookResponses).isNotNull
-        assertThat(orderBookResponses.size).isEqualTo(1)
-        assertThat(orderBookResponses.first()).isEqualTo(VALID.ORDER_BOOK_RESPONSE)
+        assertThat(orderBookResponses?.size).isEqualTo(1)
+        assertThat(orderBookResponses?.first()).isEqualTo(VALID.ORDER_BOOK_RESPONSE)
     }
 
     @Test
@@ -111,9 +113,10 @@ class MarketQueryHandlerTest {
         every { redisCacheHelper.getList<MarketTrade>(any()) } returns null
         every {
             tradeRepository.findBySymbolSortDescendingByCreateDate(VALID.ETH_USDT, 1)
-        } returns flow {
-            emit(VALID.TRADE_MODEL)
-        }
+        } returns Flux.just(VALID.TRADE_MODEL)
+        every {
+            tradeRepository.findRecentMarketTrades(VALID.ETH_USDT, 1)
+        } returns Flux.just(VALID.MARKET_TRADE)
         every {
             orderRepository.findByOuid(VALID.TRADE_MODEL.makerOuid)
         } returns Mono.just(VALID.MAKER_ORDER_MODEL)
@@ -126,8 +129,8 @@ class MarketQueryHandlerTest {
         val marketTradeResponses = marketQueryHandler.recentTrades(VALID.ETH_USDT, 1)
 
         assertThat(marketTradeResponses).isNotNull
-        assertThat(marketTradeResponses.count()).isEqualTo(1)
-        assertThat(marketTradeResponses.first()).isEqualTo(VALID.MARKET_TRADE_RESPONSE)
+        assertThat(marketTradeResponses?.count()).isEqualTo(1)
+        assertThat(marketTradeResponses?.first()).isEqualTo(VALID.MARKET_TRADE_RESPONSE)
     }
 }
 

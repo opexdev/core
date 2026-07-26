@@ -45,10 +45,10 @@ CREATE TABLE IF NOT EXISTS fi_actions
     create_date          TIMESTAMP   NOT NULL,
     status               VARCHAR(20)
 );
-CREATE INDEX IF NOT EXISTS idx_fi_actions_symbol ON fi_actions(symbol);
-CREATE INDEX IF NOT EXISTS idx_fi_event_type ON fi_actions(event_type);
-CREATE INDEX IF NOT EXISTS idx_fi_actions_status ON fi_actions(status);
-CREATE INDEX IF NOT EXISTS idx_fi_actions_pointer ON fi_actions(pointer);
+CREATE INDEX IF NOT EXISTS idx_fi_actions_symbol ON fi_actions (symbol);
+CREATE INDEX IF NOT EXISTS idx_fi_event_type ON fi_actions (event_type);
+CREATE INDEX IF NOT EXISTS idx_fi_actions_status ON fi_actions (status);
+CREATE INDEX IF NOT EXISTS idx_fi_actions_pointer ON fi_actions (pointer);
 
 ALTER TABLE fi_actions
     ADD COLUMN IF NOT EXISTS category_name VARCHAR(36);
@@ -84,29 +84,6 @@ CREATE TABLE IF NOT EXISTS pair_config
     UNIQUE (left_side_wallet_symbol, right_side_wallet_symbol)
 );
 
-CREATE TABLE IF NOT EXISTS user_level
-(
-    level VARCHAR(36) PRIMARY KEY
-);
-
-CREATE TABLE IF NOT EXISTS pair_fee_config
-(
-    id             SERIAL PRIMARY KEY,
-    pair_config_id VARCHAR(72) NOT NULL REFERENCES pair_config (pair),
-    direction      VARCHAR(36) NOT NULL,
-    user_level     VARCHAR(36) NOT NULL REFERENCES user_level (level),
-    maker_fee      DECIMAL     NOT NULL,
-    taker_fee      DECIMAL     NOT NULL,
-    UNIQUE (direction, user_level, pair_config_id)
-);
-
-CREATE TABLE IF NOT EXISTS user_level_mapper
-(
-    id         SERIAL PRIMARY KEY,
-    uuid       VARCHAR(36) NOT NULL UNIQUE,
-    user_level VARCHAR(36) NOT NULL REFERENCES user_level (level)
-);
-
 CREATE TABLE IF NOT EXISTS temp_events
 (
     id         SERIAL PRIMARY KEY,
@@ -114,6 +91,72 @@ CREATE TABLE IF NOT EXISTS temp_events
     event_type VARCHAR(72) NOT NULL,
     event_body TEXT        NOT NULL,
     event_date TIMESTAMP   NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS user_trade_volume
+(
+    id         SERIAL PRIMARY KEY,
+    user_id    VARCHAR(36) NOT NULL,
+    currency   TEXT        NOT NULL,
+    date       DATE        not null,
+    volume     decimal     not null,
+    total_amount decimal     not null,
+    quote_currency       VARCHAR(50) NOT NULL,
+    unique (user_id, currency, date , quote_currency)
+);
+
+CREATE TABLE IF NOT EXISTS currency_rate
+(
+    id    SERIAL PRIMARY KEY,
+    base  VARCHAR(25) NOT NULL,
+    quote VARCHAR(25) NOT NULL,
+    rate  DECIMAL     NOT NULL DEFAULT 0,
+    update_date TIMESTAMP   NOT NULL,
+    UNIQUE (base, quote)
+);
+
+    CREATE TABLE IF NOT EXISTS fee_config (
+    name VARCHAR(50) PRIMARY KEY,
+    display_order INTEGER NOT NULL UNIQUE,
+    min_asset_volume Decimal NOT NULL,
+    max_asset_volume Decimal,
+    min_trade_volume Decimal NOT NULL,
+    max_trade_volume Decimal,
+    maker_fee Decimal NOT NULL,
+    taker_fee Decimal NOT NULL,
+    condition VARCHAR(10) NOT NULL
+    );
+
+    DROP TABLE IF EXISTS pair_fee_config;
+    DROP TABLE IF EXISTS user_fee;
+    DROP TABLE IF EXISTS user_level_mapper;
+    DROP TABLE IF EXISTS user_level;
+
+CREATE TABLE IF NOT EXISTS user_withdraw_volume
+(
+    id         SERIAL PRIMARY KEY,
+    user_id    VARCHAR(36) NOT NULL,
+    date       DATE        not null,
+    total_amount decimal     not null,
+    quote_currency       VARCHAR(50) NOT NULL,
+    unique (user_id, date,quote_currency)
+);
+
+CREATE TABLE IF NOT EXISTS withdraw_limit_config
+(
+    name VARCHAR(50) PRIMARY KEY,
+    user_level    VARCHAR(20) NOT NULL UNIQUE,
+    daily_max_amount decimal     not null
+);
+
+CREATE TABLE IF NOT EXISTS user_deposit_volume
+(
+    id         SERIAL PRIMARY KEY,
+    user_id    VARCHAR(36) NOT NULL,
+    date       DATE        not null,
+    total_amount decimal     not null,
+    quote_currency       VARCHAR(50) NOT NULL,
+    unique (user_id, date,quote_currency)
 );
 
 COMMIT;

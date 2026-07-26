@@ -1,29 +1,34 @@
 package co.nilin.opex.bcgateway.core.service
 
+//import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
 import co.nilin.opex.bcgateway.core.model.*
-import co.nilin.opex.bcgateway.core.model.Currency
 import co.nilin.opex.bcgateway.core.spi.AssignedAddressHandler
-import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
+import co.nilin.opex.bcgateway.core.spi.ChainLoader
+import co.nilin.opex.bcgateway.core.spi.CryptoCurrencyHandlerV2
 import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Test
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.util.*
 
 class AssignAddressServiceImplUnitTest {
 
-    private val currencyHandler = mockk<CurrencyHandler>()
+    private val currencyHandler = mockk<CryptoCurrencyHandlerV2>()
     private val assignedAddressHandler = mockk<AssignedAddressHandler>()
     private val reservedAddressHandler = mockk<ReservedAddressHandler>()
+    private val chainLoader = mockk<ChainLoader>()
+
 
     private val assignAddressServiceImpl =
-        AssignAddressServiceImpl(currencyHandler, assignedAddressHandler, reservedAddressHandler)
+        AssignAddressServiceImpl(currencyHandler, assignedAddressHandler, reservedAddressHandler, chainLoader)
 
-    private val currency = Currency("ETH", "Ethereum")
+    //    private val currency = Currency("ETH", "Ethereum")
     private val chain = "ETH_MAINNET"
+    private val gatewayUuid = "1"
+    private val currency = "ETH"
     private val ethAddressType = AddressType(1, "ETH", "+*", ".*")
     private val ethMemoAddressType = AddressType(2, "ETH", "+*", "+*")
     private val ethChain = Chain("ETH_MAINNET", arrayListOf(ethAddressType))
@@ -31,39 +36,77 @@ class AssignAddressServiceImplUnitTest {
 
 
     init {
-        val eth = CurrencyImplementation(
+        val eth = CryptoCurrencyCommand(
             currency,
+            UUID.randomUUID().toString(),
             currency,
-            ethChain,
+            true,
+            true,
             false,
             null,
             null,
+            BigDecimal.ZERO,
             true,
-            BigDecimal.ONE,
-            BigDecimal.TEN,
-            18
+            true,
+            BigDecimal.ZERO,
+            BigDecimal.ZERO,
+            BigDecimal.ZERO,
+            BigDecimal.ZERO,
+            18,
+            ethChain.name,
+            null
+//                ethChain
         )
 
-        val wrappedEth = CurrencyImplementation(
+
+        val wrappedEth = CryptoCurrencyCommand(
             currency,
+            UUID.randomUUID().toString(),
             currency,
-            bscChain,
+            true,
+            true,
             false,
-            "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "WETH",
+            "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            BigDecimal.ZERO,
             true,
-            BigDecimal.ONE,
-            BigDecimal.ONE,
-            18
+            true,
+            BigDecimal.ZERO,
+            BigDecimal.ZERO,
+            BigDecimal.ZERO,
+            BigDecimal.ZERO,
+            18,
+            bscChain.name,
+            null
+//                bscChain
+
         )
 
-        coEvery { currencyHandler.fetchCurrencyInfo(currency.symbol) } returns CurrencyInfo(
-            currency,
-            listOf(eth, wrappedEth)
-        )
+        coEvery {
+            currencyHandler.fetchCurrencyOnChainGateways(
+                FetchGateways(
+                    currencySymbol = currency,
+                    gatewayUuid = gatewayUuid
+                )
+            )
+        } returns
+                listOf(eth, wrappedEth)
+
+        coEvery { currencyHandler.fetchCurrencyOnChainGateways(FetchGateways(currencySymbol = currency)) } returns
+                listOf(eth, wrappedEth)
+
+        coEvery { chainLoader.fetchChainInfo(chain = ethChain.name) } returns ethChain
+
+        coEvery { chainLoader.fetchChainInfo(chain = bscChain.name) } returns bscChain
+
+        coEvery { currencyHandler.fetchOnChainGateway(currency = currency, gatewayUuid = gatewayUuid) } returns eth
+
+
 
         coEvery { assignedAddressHandler.persist(any()) } returns Unit
         coEvery { reservedAddressHandler.remove(any()) } returns Unit
+
+
     }
 
     @Test
@@ -89,7 +132,7 @@ class AssignAddressServiceImplUnitTest {
                 ethMemoAddressType
             )
 
-            val assignedAddress = assignAddressServiceImpl.assignAddress(user, currency, chain)
+            val assignedAddress = assignAddressServiceImpl.assignAddress(user, currency, gatewayUuid)
             assertThat(assignedAddress).isEqualTo(
                 listOf(
                     AssignedAddress(
@@ -114,7 +157,7 @@ class AssignAddressServiceImplUnitTest {
             )
         } returns emptyList()
         coEvery { reservedAddressHandler.peekReservedAddress(ethAddressType) } returns null
-        coEvery { assignAddressServiceImpl.assignAddress(user, currency, chain) } throws RuntimeException()
+        coEvery { assignAddressServiceImpl.assignAddress(user, currency, gatewayUuid) } throws RuntimeException()
     }
 
     @Test
@@ -146,7 +189,7 @@ class AssignAddressServiceImplUnitTest {
                 ethMemoAddressType
             )
 
-            val assignedAddress = assignAddressServiceImpl.assignAddress(user, currency, chain)
+            val assignedAddress = assignAddressServiceImpl.assignAddress(user, currency, gatewayUuid)
             assertThat(assignedAddress).isEqualTo(
                 listOf(
                     AssignedAddress(

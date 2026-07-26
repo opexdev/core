@@ -1,0 +1,69 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: opex-otp
+  r2dbc:
+    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
+    username: ${DB_USER}
+    password: ${DB_PASS}
+    initialization-mode: always
+    pool:
+      enabled: true
+      initial-size: 5
+      max-size: 20
+      max-idle-time: 60s
+      validation-query: SELECT 1
+    # initialization-mode: always
+  cloud:
+    bootstrap:
+      enabled: true
+    consul:
+      host: ${CONSUL_HOST:localhost}
+      port: 8500
+      discovery:
+        #healthCheckPath: ${management.context-path}/health
+        instance-id: ${spring.application.name}:${server.port}
+        healthCheckInterval: 20s
+        prefer-ip-address: true
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: [ "health", "prometheus", "metrics", "logging" ]
+  endpoint:
+    health:
+      show-details: when_authorized
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+logging:
+  level:
+    co.nilin: INFO
+    # org.zalando.logbook: TRACE
+app:
+  auth:
+    cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
+    iss-url: ${TOKEN_ISSUER_URL:http://keycloak:8080/realms/opex}
+otp:
+  response-enabled: ${OTP_CODE_RESPONSE_ENABLED:false}
+  sms:
+    provider:
+      default: ${DEFAULT_SMS_PROVIDER}
+  email:
+    host: ${SMTP_HOST}
+    port: ${SMTP_PORT}
+    username: ${SMTP_USER}
+    password: ${SMTP_PASS}
+    from: ${SMTP_FROM}
+    proxy:
+      enabled: ${SMTP_PROXY_ENABLED}
+      host: ${SMTP_PROXY_HOST}
+      port: ${SMTP_PROXY_PORT}
+  custom-message:
+    enabled: ${CUSTOM_MESSAGE_ENABLED:false}
+    base-url: ${CUSTOM_MESSAGE_URL}
+  custom-user-language:
+    enabled: ${CUSTOM_USER_LANGUAGE_ENABLED:false}

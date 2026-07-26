@@ -1,0 +1,30 @@
+package co.nilin.opex.accountant.ports.postgres.dao
+
+import co.nilin.opex.accountant.ports.postgres.model.CurrencyRateModel
+import org.springframework.data.r2dbc.repository.Query
+import org.springframework.data.repository.reactive.ReactiveCrudRepository
+import org.springframework.stereotype.Repository
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
+import java.math.BigDecimal
+
+@Repository
+interface CurrencyRateRepository : ReactiveCrudRepository<CurrencyRateModel, Long> {
+
+    @Query(
+        """
+        insert into currency_rate (base, quote, rate,update_date)
+        values (:base, :quote, :rate , now())
+        on conflict (base, quote)
+        do update set rate = excluded.rate , update_date = now()
+        """
+    )
+    fun createOrUpdate(base: String, quote: String, rate: BigDecimal): Mono<Void>
+
+    @Query("select rate from currency_rate where base = :base and quote = :quote")
+    fun findByBaseAndQuote(base: String, quote: String): Mono<BigDecimal>
+
+    @Query("select * from currency_rate where quote = :quote")
+    fun findAllByQuote(quote: String): Flux<CurrencyRateModel>
+
+}

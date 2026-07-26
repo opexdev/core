@@ -11,30 +11,27 @@ import co.nilin.opex.market.ports.postgres.dao.TradeRepository
 import co.nilin.opex.market.ports.postgres.model.TradeTickerData
 import co.nilin.opex.market.ports.postgres.util.RedisCacheHelper
 import co.nilin.opex.market.ports.postgres.util.asOrderDTO
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.singleOrNull
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.stereotype.Component
-import java.lang.StringBuilder
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
 
+
 @Component
 class MarketQueryHandlerImpl(
     private val orderRepository: OrderRepository,
     private val tradeRepository: TradeRepository,
     private val orderStatusRepository: OrderStatusRepository,
-    private val redisCacheHelper: RedisCacheHelper
+    private val redisCacheHelper: RedisCacheHelper,
 ) : MarketQueryHandler {
 
-    //TODO merge order and status fetching in query
 
     override suspend fun getTradeTickerData(interval: Interval): List<PriceChange> {
         return redisCacheHelper.getOrElse("tradeTickerData:${interval.label}", 2.minutes()) {
@@ -49,20 +46,19 @@ class MarketQueryHandlerImpl(
         val cacheId = "tradeTickerData:$symbol:${interval.label}"
         return redisCacheHelper.getOrElse(cacheId, 2.minutes()) {
             tradeRepository.tradeTickerBySymbol(symbol, interval.getLocalDateTime())
-                .awaitFirstOrNull()
+                .awaitSingleOrNull()
                 ?.asPriceChangeResponse(Date().time, interval.getTime())
         }
     }
 
-    override suspend fun openBidOrders(symbol: String, limit: Int): List<OrderBook> {
+    override suspend fun openBidOrders(symbol: String, limit: Int): List<OrderBook>? {
         return orderRepository.findBySymbolAndDirectionAndStatusSortDescendingByPrice(
             symbol,
             OrderDirection.BID,
             limit,
             listOf(OrderStatus.NEW.code, OrderStatus.PARTIALLY_FILLED.code)
-        ).collectList()
-            .awaitFirstOrElse { emptyList() }
-            .map { OrderBook(it.price, it.quantity) }
+        ).collectList().awaitSingleOrNull()
+            ?.map { OrderBook(it.price, it.quantity) }
     }
 
     override suspend fun openAskOrders(symbol: String, limit: Int): List<OrderBook> {
@@ -80,42 +76,185 @@ class MarketQueryHandlerImpl(
     // @Cacheable(cacheNames = ["marketCache"], key = "'lastOrder'")
     override suspend fun lastOrder(symbol: String): Order? {
         return redisCacheHelper.get<Order>("lastOrder") ?: run {
-            val order = orderRepository.findLastOrderBySymbol(symbol).awaitFirstOrNull() ?: return@run null
-            val status = orderStatusRepository.findMostRecentByOUID(order.ouid).awaitFirstOrNull()
+            val order = orderRepository.findLastOrderBySymbol(symbol).awaitSingleOrNull() ?: return@run null
+            val status = orderStatusRepository.findMostRecentByOUID(order.ouid).awaitSingleOrNull()
             order.asOrderDTO(status)
         }.also { redisCacheHelper.put("lastOrder", it) }
     }
 
-    //TODO need better query
-    override suspend fun recentTrades(symbol: String, limit: Int): List<MarketTrade> {
-        val cacheKey = "recentTrades:${symbol.lowercase()}"
-        val recentTradesCache = redisCacheHelper.getList<MarketTrade>(cacheKey)
-        if (!recentTradesCache.isNullOrEmpty())
-            return recentTradesCache.toList()
+    override suspend fun recentTrades(symbol: String, limit: Int): List<MarketTrade>? {
 
-        return tradeRepository.findBySymbolSortDescendingByCreateDate(symbol, limit)
+        return tradeRepository
+            .findRecentMarketTrades(symbol, limit)
             .map {
-                val takerOrder = orderRepository.findByOuid(it.takerOuid).awaitFirst()
-                val makerOrder = orderRepository.findByOuid(it.makerOuid).awaitFirst()
-                val isMakerBuyer = makerOrder.direction == OrderDirection.BID
                 MarketTrade(
-                    it.symbol,
-                    it.baseAsset,
-                    it.quoteAsset,
-                    it.tradeId,
-                    it.matchedPrice,
-                    it.matchedQuantity,
-                    if (isMakerBuyer)
-                        makerOrder.quoteQuantity!!
-                    else
-                        takerOrder.quoteQuantity!!,
+                    symbol = it.symbol,
+                    baseAsset = it.baseAsset,
+                    quoteAsset = it.quoteAsset,
+                    id = it.id,
+                    price = it.price,
+                    quantity = it.quantity,
+                    quoteQuantity = it.quoteQuantity,
                     Date.from(it.createDate.atZone(ZoneId.systemDefault()).toInstant()),
-                    true,
-                    isMakerBuyer
+                    isBestMatch = true,
+                    isMakerBuyer = it.isMakerBuyer
                 )
-            }.toList()
-            .onEach { redisCacheHelper.putListItem(cacheKey, it) }
-            .also { redisCacheHelper.setExpiration(cacheKey, 60.minutes()) }
+            }
+            .collectList()
+            .awaitSingleOrNull()
+    }
+
+    override suspend fun recentTrades(
+        symbol: String?,
+        makerUuid: String?,
+        takerUuid: String?,
+        fromDate: LocalDateTime?,
+        toDate: LocalDateTime?,
+        excludeSelfTrade: Boolean,
+        limit: Int,
+        offset: Int,
+    ): List<TradeData>? {
+        return tradeRepository.findByCriteria(
+            symbol,
+            makerUuid,
+            takerUuid,
+            fromDate,
+            toDate,
+            excludeSelfTrade,
+            limit,
+            offset
+        )
+            .map {
+                TradeData(
+                    tradeId = it.tradeId,
+                    symbol = it.symbol,
+                    baseAsset = it.baseAsset,
+                    quoteAsset = it.quoteAsset,
+                    matchedPrice = it.matchedPrice,
+                    matchedQuantity = it.matchedQuantity,
+                    takerPrice = it.takerPrice,
+                    makerPrice = it.makerPrice,
+                    tradeDate = it.tradeDate,
+                    makerUuid = it.makerUuid,
+                    takerUuid = it.takerUuid,
+                    makerOuid = it.makerOuid,
+                    takerOuid = it.takerOuid,
+                    makerCommission = it.makerCommission,
+                    takerCommission = it.takerCommission,
+                    makerCommissionAsset = it.makerCommissionAsset,
+                    takerCommissionAsset = it.takerCommissionAsset,
+                )
+            }
+            .collectList().awaitSingleOrNull()
+    }
+
+
+    override suspend fun recentTradesAdmin(
+        symbol: String?,
+        baseAsset: String?,
+        quoteAsset: String?,
+        uuid: String?,
+        makerUuid: String?,
+        takerUuid: String?,
+        ouid: String?,
+        makerOuid: String?,
+        takerOuid: String?,
+        fromDate: LocalDateTime?,
+        toDate: LocalDateTime?,
+        excludeSelfTrade: Boolean,
+        ascendingByTime: Boolean,
+        limit: Int?,
+        offset: Int?,
+    ): List<TradeData>? {
+        val flow = if (ascendingByTime) {
+            tradeRepository.findByCriteriaByBaseQuoteAsc(
+                symbol,
+                baseAsset,
+                quoteAsset,
+                uuid,
+                makerUuid,
+                takerUuid,
+                ouid,
+                makerOuid,
+                takerOuid,
+                fromDate,
+                toDate,
+                excludeSelfTrade,
+                limit,
+                offset
+            )
+        } else {
+            tradeRepository.findByCriteriaByBaseQuoteDesc(
+                symbol,
+                baseAsset,
+                quoteAsset,
+                uuid,
+                makerUuid,
+                takerUuid,
+                ouid,
+                makerOuid,
+                takerOuid,
+                fromDate,
+                toDate,
+                excludeSelfTrade,
+                limit,
+                offset
+            )
+        }
+        return flow
+            .map {
+                TradeData(
+                    tradeId = it.tradeId,
+                    symbol = it.symbol,
+                    baseAsset = it.baseAsset,
+                    quoteAsset = it.quoteAsset,
+                    matchedPrice = it.matchedPrice,
+                    matchedQuantity = it.matchedQuantity,
+                    takerPrice = it.takerPrice,
+                    makerPrice = it.makerPrice,
+                    tradeDate = it.tradeDate,
+                    makerUuid = it.makerUuid,
+                    takerUuid = it.takerUuid,
+                    makerOuid = it.makerOuid,
+                    takerOuid = it.takerOuid,
+                    makerCommission = it.makerCommission,
+                    takerCommission = it.takerCommission,
+                    makerCommissionAsset = it.makerCommissionAsset,
+                    takerCommissionAsset = it.takerCommissionAsset,
+                )
+            }.collectList().awaitSingleOrNull()
+
+    }
+
+    override suspend fun recentOrdersAdmin(
+        uuid: String?,
+        symbol: String?,
+        ouid: String?,
+        fromDate: LocalDateTime?,
+        toDate: LocalDateTime?,
+        orderType: MatchingOrderType?,
+        direction: OrderDirection?,
+        ascendingByTime: Boolean,
+        limit: Int?,
+        offset: Int?
+    ): List<OrderData> {
+
+        return orderRepository
+            .findRecentOrdersAdmin(
+                uuid,
+                symbol,
+                ouid,
+                fromDate,
+                toDate,
+                orderType,
+                direction,
+                ascendingByTime,
+                limit,
+                offset
+            )
+            .map { it.copy(status = OrderStatus.fromCode(it.statusCode)) }
+            .collectList()
+            .awaitSingle()
     }
 
     override suspend fun lastPrice(symbol: String?): List<PriceTicker> {
@@ -142,17 +281,17 @@ class MarketQueryHandlerImpl(
         interval: String,
         startTime: Long?,
         endTime: Long?,
-        limit: Int
+        limit: Int,
     ): List<CandleData> {
         val st = if (startTime == null)
-            tradeRepository.findFirstByCreateDate().awaitFirstOrNull()?.createDate ?: LocalDateTime.now()
+            tradeRepository.findFirstByCreateDate().awaitSingleOrNull()?.createDate ?: LocalDateTime.now()
         else
             with(Instant.ofEpochMilli(startTime)) {
                 LocalDateTime.ofInstant(this, ZoneId.systemDefault())
             }
 
         val et = if (endTime == null)
-            tradeRepository.findLastByCreateDate().awaitFirstOrNull()?.createDate ?: LocalDateTime.now()
+            tradeRepository.findLastByCreateDate().awaitSingleOrNull()?.createDate ?: LocalDateTime.now()
         else
             with(Instant.ofEpochMilli(endTime)) {
                 LocalDateTime.ofInstant(this, ZoneId.systemDefault())
@@ -190,12 +329,13 @@ class MarketQueryHandlerImpl(
     override suspend fun numberOfTrades(interval: Interval, pair: String?): Long {
         return if (pair != null)
             redisCacheHelper.getOrElse("tradeCount:$pair:${interval.label}", 1.hours()) {
-                tradeRepository.countBySymbolNewerThan(interval.getLocalDateTime(), pair).singleOrNull()?.approximate()
+                tradeRepository.countBySymbolNewerThan(interval.getLocalDateTime(), pair).awaitFirstOrNull()
+                    ?.approximate()
                     ?: 0
             }
         else
             redisCacheHelper.getOrElse("tradeCount:${interval.label}", 1.hours()) {
-                tradeRepository.countNewerThan(interval.getLocalDateTime()).singleOrNull()?.approximate() ?: 0
+                tradeRepository.countNewerThan(interval.getLocalDateTime()).awaitFirstOrNull()?.approximate() ?: 0
             }
     }
 
@@ -237,6 +377,64 @@ class MarketQueryHandlerImpl(
         return redisCacheHelper.getOrElse("mostTrades:${interval.label}", 1.minutes()) {
             tradeRepository.findByMostTrades(interval.getLocalDateTime()).awaitSingleOrNull()
         }
+    }
+
+    override suspend fun getWeeklyPriceData(symbol: String): List<PriceTime> {
+        return getPriceDataWithCache(
+            symbol = symbol,
+            cacheKeyPrefix = "weeklyPriceData",
+            interval = "4h",
+            fromDate = LocalDateTime.now().minusDays(7)
+        )
+    }
+
+    override suspend fun getMonthlyPriceData(symbol: String): List<PriceTime> {
+        return getPriceDataWithCache(
+            symbol = symbol,
+            cacheKeyPrefix = "monthlyPriceData",
+            interval = "24h",
+            fromDate = LocalDateTime.now().minusDays(30)
+        )
+    }
+
+    override suspend fun getDailyPriceData(symbol: String): List<PriceTime> {
+        return getPriceDataWithCache(
+            symbol = symbol,
+            cacheKeyPrefix = "dailyPriceData",
+            interval = "1h",
+            fromDate = LocalDateTime.now().minusDays(1)
+        )
+    }
+
+    private suspend fun getPriceDataWithCache(
+        symbol: String,
+        cacheKeyPrefix: String,
+        interval: String,
+        fromDate: LocalDateTime,
+    ): List<PriceTime> {
+        val cacheKey = "${cacheKeyPrefix}:${symbol.lowercase()}"
+        val cachedData = redisCacheHelper.getList<PriceTime>(cacheKey)
+        if (!cachedData.isNullOrEmpty()) {
+            return cachedData.toList()
+        }
+
+        return tradeRepository.getPriceTimeData(symbol, interval, fromDate, LocalDateTime.now())
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+            .let { priceTimes ->
+                var lastNonNullPrice: BigDecimal? = null
+                val firstNonNullPrice = priceTimes.firstOrNull { it.closePrice != null }?.closePrice ?: BigDecimal.ZERO
+                priceTimes.map { item ->
+                    val price = item.closePrice ?: lastNonNullPrice ?: firstNonNullPrice
+                    lastNonNullPrice = price
+                    PriceTime(
+                        item.closeTime,
+                        price
+                    )
+                }
+                    .onEach { redisCacheHelper.putListItem(cacheKey, it) }
+                    .also { redisCacheHelper.setExpiration(cacheKey, 1.hours()) }
+            }
     }
 
     private fun TradeTickerData.asPriceChangeResponse(openTime: Long, closeTime: Long) = PriceChange(

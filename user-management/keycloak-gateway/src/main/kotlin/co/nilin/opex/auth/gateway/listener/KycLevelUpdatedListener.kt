@@ -27,8 +27,10 @@ class KycLevelUpdatedListener : KycLevelUpdatedEventListener {
         return "KycLevelUpdatedListener"
     }
 
-    override fun onEvent(event: KycLevelUpdatedEvent,
-                         partition: Int, offset: Long, timestamp: Long, eventId: String) {
+    override fun onEvent(
+        event: KycLevelUpdatedEvent,
+        partition: Int, offset: Long, timestamp: Long, eventId: String
+    ) {
         val factory: KeycloakSessionFactory = KeycloakApplication.getSessionFactory()
         this.kcSession = factory.create()
         kcSession!!.transactionManager.begin()

@@ -13,12 +13,12 @@ class SymbolMapperImpl(val symbolMapRepository: SymbolMapRepository) : SymbolMap
 
     override suspend fun fromInternalSymbol(symbol: String?): String? {
         if (symbol == null) return null
-        return symbolMapRepository.findByAliasKeyAndSymbol("binance", symbol).awaitFirstOrNull()?.alias
+        return symbolMapRepository.findByAliasKeyAndSymbol("binance", symbol)?.awaitFirstOrNull()?.alias
     }
 
     override suspend fun toInternalSymbol(alias: String?): String? {
         if (alias == null) return null
-        return symbolMapRepository.findByAliasKeyAndAlias("binance", alias).awaitFirstOrNull()?.symbol
+        return symbolMapRepository.findByAliasKeyAndAlias("binance", alias)?.awaitFirstOrNull()?.symbol
     }
 
     override suspend fun symbolToAliasMap(): Map<String, String> {

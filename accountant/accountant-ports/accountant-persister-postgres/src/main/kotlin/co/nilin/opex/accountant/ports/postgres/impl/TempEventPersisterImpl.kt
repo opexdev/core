@@ -6,7 +6,6 @@ import co.nilin.opex.accountant.ports.postgres.dao.TempEventRepository
 import co.nilin.opex.accountant.ports.postgres.model.TempEventModel
 import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirstOrNull

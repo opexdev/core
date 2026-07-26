@@ -1,15 +1,9 @@
 package co.nilin.opex.market.ports.postgres.dao
 
-import co.nilin.opex.market.core.inout.BestPrice
-import co.nilin.opex.market.core.inout.PriceStat
-import co.nilin.opex.market.core.inout.TradeVolumeStat
-import co.nilin.opex.market.core.inout.Transaction
-import co.nilin.opex.market.ports.postgres.model.CandleInfoData
-import co.nilin.opex.market.ports.postgres.model.LastPrice
-import co.nilin.opex.market.ports.postgres.model.TradeModel
-import co.nilin.opex.market.ports.postgres.model.TradeTickerData
-import kotlinx.coroutines.flow.Flow
-import org.springframework.data.domain.Pageable
+import co.nilin.opex.market.core.inout.*
+import co.nilin.opex.market.ports.postgres.data.MarketTradeProjection
+import co.nilin.opex.market.ports.postgres.data.TradeUserContextProjection
+import co.nilin.opex.market.ports.postgres.model.*
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
@@ -23,46 +17,165 @@ import java.util.*
 interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
 
     @Query("select * from trades where :ouid in (taker_ouid, maker_ouid)")
-    fun findByOuid(@Param("ouid") ouid: String): Flow<TradeModel>
+    fun findByOuid(@Param("ouid") ouid: String): Flux<TradeModel>
 
     @Query("select * from trades where symbol = :symbol order by create_date desc limit 1")
-    fun findMostRecentBySymbol(symbol: String): Flow<TradeModel>
-
-    @Query(
-            """
-        select * from trades where :uuid in (taker_uuid, maker_uuid) 
-            and (:fromTrade is null or id > :fromTrade) 
-            and (:symbol is null or symbol = :symbol) 
-            and (:startTime is null or trade_date >= :startTime) 
-            and (:endTime is null or trade_date < :endTime)
-        order by trade_date DESC 
-        limit :limit
-        """
-    )
-    fun findByUuidAndSymbolAndTimeBetweenAndTradeIdGreaterThan(
-            @Param("uuid")
-            uuid: String,
-            @Param("symbol")
-            symbol: String?,
-            @Param("fromTrade")
-            fromTrade: Long?,
-            @Param("startTime")
-            startTime: Date?,
-            @Param("endTime")
-            endTime: Date?,
-            limit: Int
-    ): Flow<TradeModel>
+    fun findMostRecentBySymbol(symbol: String): Flux<TradeModel>
 
     @Query("select * from trades where symbol = :symbol order by create_date desc limit :limit")
     fun findBySymbolSortDescendingByCreateDate(
-            @Param("symbol")
-            symbol: String,
-            @Param("limit")
-            limit: Int
-    ): Flow<TradeModel>
+        @Param("symbol")
+        symbol: String,
+        @Param("limit")
+        limit: Int,
+    ): Flux<TradeModel>
 
     @Query(
-            """
+        """
+    SELECT
+        t.symbol AS symbol,
+        t.base_asset AS base_asset,
+        t.quote_asset AS quote_asset,
+        t.trade_id AS id,
+        t.matched_price AS price,
+        t.matched_quantity AS quantity,
+
+        COALESCE(
+            CASE
+                WHEN mo.side = 'BID'
+                THEN mo.quote_quantity
+                ELSE to2.quote_quantity
+            END,
+            0
+        ) AS quote_quantity,
+
+        t.create_date AS create_date,
+
+        CASE
+            WHEN mo.side = 'BID'
+            THEN TRUE
+            ELSE FALSE
+        END AS is_maker_buyer
+
+    FROM trades t
+
+    LEFT JOIN orders mo
+        ON mo.ouid = t.maker_ouid
+
+    LEFT JOIN orders to2
+        ON to2.ouid = t.taker_ouid
+
+    WHERE (:symbol IS NULL OR t.symbol = :symbol)
+
+    ORDER BY t.trade_date DESC
+    LIMIT :limit
+    """
+    )
+    fun findRecentMarketTrades(
+        @Param("symbol") symbol: String?,
+        @Param("limit") limit: Int
+    ): Flux<MarketTradeProjection>
+
+
+    @Query("""
+        SELECT
+        t.symbol AS symbol,
+    
+        NULL AS baseAsset,
+        NULL AS quoteAsset,
+    
+        t.trade_id AS id,
+    
+        CASE
+            WHEN t.taker_uuid = :uuid
+            THEN t.taker_price
+            ELSE t.maker_price
+        END AS price,
+    
+        t.matched_quantity AS quantity,
+    
+        COALESCE(
+            CASE
+                WHEN mo.side = 'BID'
+                THEN mo.quote_quantity
+                ELSE to2.quote_quantity
+            END,
+            0
+        ) AS quoteQuantity,
+    
+        t.create_date AS createDate,
+    
+        COALESCE(
+            CASE
+                WHEN mo.side = 'BID'
+                THEN TRUE
+                ELSE FALSE
+            END,
+            FALSE
+        ) AS isMakerBuyer,
+    
+        CASE
+            WHEN t.taker_uuid = :uuid
+            THEN to2.ouid
+            ELSE mo.ouid
+        END AS ouid,
+    
+        CASE
+            WHEN t.taker_uuid = :uuid
+            THEN t.taker_commission
+            ELSE t.maker_commission
+        END AS commission,
+    
+        CASE
+            WHEN t.taker_uuid = :uuid
+            THEN t.taker_commission_asset
+            ELSE t.maker_commission_asset
+        END AS commissionAsset,
+    
+        CASE
+            WHEN t.taker_uuid = :uuid
+            THEN (to2.side = 'ASK')
+            ELSE (mo.side = 'ASK')
+        END AS isBuyer,
+    
+        (t.maker_uuid = :uuid) AS isMaker
+    
+    FROM trades t
+    
+    LEFT JOIN orders mo
+        ON mo.ouid = t.maker_ouid
+    
+    LEFT JOIN orders to2
+        ON to2.ouid = t.taker_ouid
+    
+    WHERE :uuid IN (t.taker_uuid, t.maker_uuid)
+        AND (:fromTrade IS NULL OR t.trade_id > :fromTrade)
+        AND (:symbol IS NULL OR t.symbol = :symbol)
+        AND (:startTime IS NULL OR t.trade_date >= :startTime)
+        AND (:endTime IS NULL OR t.trade_date < :endTime)
+    
+    ORDER BY t.trade_date DESC
+    LIMIT :limit
+    """
+        )
+    fun findTradesWithUserContext(
+        @Param("uuid")
+        uuid: String,
+        @Param("symbol")
+        symbol: String?,
+        @Param("fromTrade")
+        fromTrade: Long?,
+        @Param("startTime")
+        startTime: Date?,
+        @Param("endTime")
+        endTime: Date?,
+        @Param("limit")
+        limit: Int
+    ): Flux<TradeUserContextProjection>
+
+
+    @Query(
+        """
         with first_trade as (select id, symbol, matched_price, matched_quantity from trades where id in (select min(id) from trades where create_date > :date group by symbol)),
             last_trade as (select id, symbol, matched_price, matched_quantity from trades where id in (select max(id) from trades where create_date > :date group by symbol))
         select symbol, 
@@ -103,7 +216,7 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
     fun tradeTicker(@Param("date") createDate: LocalDateTime): Flux<TradeTickerData>
 
     @Query(
-            """
+        """
         with first_trade as (select * from trades where create_date > :date and symbol = :symbol order by create_date limit 1),
              last_trade as (select * from trades where create_date > :date and symbol = :symbol order by create_date desc limit 1)
         select symbol, 
@@ -142,14 +255,14 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         """
     )
     fun tradeTickerBySymbol(
-            @Param("symbol")
-            symbol: String,
-            @Param("date")
-            createDate: LocalDateTime,
+        @Param("symbol")
+        symbol: String,
+        @Param("date")
+        createDate: LocalDateTime,
     ): Mono<TradeTickerData>
 
     @Query(
-            """
+        """
             select symbol, 
             (
                 select price from orders
@@ -170,7 +283,7 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
     fun bestAskAndBidPrice(): Flux<BestPrice>
 
     @Query(
-            """
+        """
             select symbol,
             (
                 select price from orders
@@ -192,7 +305,7 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
     fun bestAskAndBidPrice(symbols: List<String>): Flux<BestPrice>
 
     @Query(
-            """
+        """
             select symbol, 
             (
                 select price from orders
@@ -220,20 +333,43 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
     fun findAllGroupBySymbol(): Flux<LastPrice>
 
     @Query(
-            """
-        WITH intervals AS (SELECT * FROM interval_generator((:startTime), (:endTime), :interval ::INTERVAL)), 
-        first_trade AS (
-            SELECT DISTINCT ON (f.start_time) f.start_time, f.end_time, t.matched_price AS open_price FROM intervals f 
-            LEFT JOIN trades t ON t.create_date >= f.start_time AND t.create_date < f.end_time AND t.symbol = :symbol
-            ORDER BY f.start_time, t.create_date
-        ), last_trade AS (
-            SELECT DISTINCT ON (f.start_time) f.start_time,  f.end_time,  t.matched_price AS close_price FROM intervals f
-            LEFT JOIN trades t ON t.create_date >= f.start_time AND t.create_date < f.end_time AND t.symbol = :symbol
-            ORDER BY f.start_time, t.create_date DESC
+        """
+    WITH intervals AS (
+        SELECT *
+        FROM interval_generator(
+            (:startTime)::TIMESTAMP WITHOUT TIME ZONE,
+            (:endTime)::TIMESTAMP WITHOUT TIME ZONE,
+            :interval::INTERVAL
         )
+    ),
+    first_trade AS (
+        SELECT DISTINCT ON (f.start_time)
+            f.start_time,
+            f.end_time,
+            t.matched_price AS open_price
+        FROM intervals f
+        LEFT JOIN trades t
+            ON t.create_date >= f.start_time
+           AND t.create_date < f.end_time
+           AND t.symbol = :symbol
+        ORDER BY f.start_time, t.create_date
+    ),
+    last_trade AS (
+        SELECT DISTINCT ON (f.start_time)
+            f.start_time,
+            f.end_time,
+            t.matched_price AS close_price
+        FROM intervals f
+        LEFT JOIN trades t
+            ON t.create_date >= f.start_time
+           AND t.create_date < f.end_time
+           AND t.symbol = :symbol
+        ORDER BY f.start_time, t.create_date DESC
+    ),
+    ohlcv AS (
         SELECT 
             i.start_time AS open_time,
-            i.end_time AS close_time, 
+            i.end_time   AS close_time,
             ft.open_price AS open,
             MAX(t.matched_price) AS high,
             MIN(t.matched_price) AS low,
@@ -242,26 +378,36 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
             COUNT(t.id) AS trades
         FROM intervals i
         LEFT JOIN trades t
-        ON t.create_date >= i.start_time AND t.create_date < i.end_time AND t.symbol = :symbol
+            ON t.create_date >= i.start_time
+           AND t.create_date < i.end_time
+           AND t.symbol = :symbol
         LEFT JOIN first_trade ft
-        ON i.start_time = ft.start_time
+            ON i.start_time = ft.start_time
         LEFT JOIN last_trade lt
-        ON i.start_time = lt.start_time
+            ON i.start_time = lt.start_time
         GROUP BY i.start_time, i.end_time, ft.open_price, lt.close_price
-        ORDER BY i.start_time;
-        """
+    )
+    SELECT *
+    FROM (
+        SELECT *
+        FROM ohlcv
+        ORDER BY open_time DESC
+        limit :limit
+    ) sub
+    ORDER BY open_time ASC
+"""
     )
     suspend fun candleData(
-            @Param("symbol")
-            symbol: String,
-            @Param("interval")
-            interval: String,
-            @Param("startTime")
-            startTime: LocalDateTime,
-            @Param("endTime")
-            endTime: LocalDateTime,
-            @Param("limit")
-            limit: Int,
+        @Param("symbol")
+        symbol: String,
+        @Param("interval")
+        interval: String,
+        @Param("startTime")
+        startTime: LocalDateTime,
+        @Param("endTime")
+        endTime: LocalDateTime,
+        @Param("limit")
+        limit: Int,
     ): Flux<CandleInfoData>
 
     @Query("select * from trades order by create_date desc limit 1")
@@ -271,13 +417,13 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
     suspend fun findFirstByCreateDate(): Mono<TradeModel>
 
     @Query("select count(*) from trades where create_date >= :interval")
-    fun countNewerThan(interval: LocalDateTime): Flow<Long>
+    fun countNewerThan(interval: LocalDateTime): Flux<Long>
 
     @Query("select count(*) from trades where symbol = :symbol and create_date >= :interval")
-    fun countBySymbolNewerThan(interval: LocalDateTime, symbol: String): Flow<Long>
+    fun countBySymbolNewerThan(interval: LocalDateTime, symbol: String): Flux<Long>
 
     @Query(
-            """
+        """
         WITH first_trade AS (SELECT symbol, MIN(id) AS min_id FROM trades WHERE create_date > :since GROUP BY symbol),
         last_trade AS (SELECT symbol, MAX(id) AS max_id FROM trades WHERE create_date > :since GROUP BY symbol),
         first_trade_details AS (SELECT ft.symbol, t.matched_price AS first_price FROM first_trade ft JOIN trades t ON ft.min_id = t.id),
@@ -299,7 +445,7 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
     fun findByMostIncreasedPrice(since: LocalDateTime, limit: Int): Flux<PriceStat>
 
     @Query(
-            """
+        """
         WITH first_trade AS (SELECT symbol, MIN(id) AS min_id FROM trades WHERE create_date > :since GROUP BY symbol),
         last_trade AS (SELECT symbol, MAX(id) AS max_id FROM trades WHERE create_date > :since GROUP BY symbol),
         first_trade_details AS (SELECT ft.symbol, t.matched_price AS first_price FROM first_trade ft JOIN trades t ON ft.min_id = t.id),
@@ -321,7 +467,7 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
     fun findByMostDecreasedPrice(since: LocalDateTime, limit: Int): Flux<PriceStat>
 
     @Query(
-            """
+        """
         with first_trade as (select symbol, matched_quantity mq from trades where id in (select min(id) from trades where create_date > :since group by symbol)),
              last_trade as (select  symbol, matched_quantity mq from trades where id in (select max(id) from trades where create_date > :since group by symbol))
         select 
@@ -345,7 +491,7 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
     fun findByMostVolume(since: LocalDateTime): Mono<TradeVolumeStat>
 
     @Query(
-            """
+        """
         with first_trade as (select symbol, matched_quantity mq from trades where id in (select min(id) from trades where create_date > :since group by symbol)),
              last_trade as (select  symbol, matched_quantity mq from trades where id in (select max(id) from trades where create_date > :since group by symbol))
         select 
@@ -369,7 +515,8 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
     fun findByMostTrades(since: LocalDateTime): Mono<TradeVolumeStat>
 
 
-    @Query(""" select t.trade_date As create_date,
+    @Query(
+        """ select t.trade_date As create_date,
             t.matched_quantity AS volume,
             t.matched_price AS matched_price,
             CASE
@@ -411,13 +558,20 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
             and (:startDate is null or trade_date >=:startDate) 
             and (:endDate is null or trade_date <=:endDate)            
             
-            order by create_date ASC offset :offset limit :limit  """)
+            order by create_date ASC offset :offset limit :limit  """
+    )
 
-    fun findTxOfTradesAsc(user: String, startDate: LocalDateTime?, endDate: LocalDateTime?, offset: Int?, limit: Int?): Flux<Transaction>
+    fun findTxOfTradesAsc(
+        user: String,
+        startDate: LocalDateTime?,
+        endDate: LocalDateTime?,
+        offset: Int?,
+        limit: Int?,
+    ): Flux<Transaction>
 
 
-
-    @Query(""" select t.trade_date As create_date,
+    @Query(
+        """ select t.trade_date As create_date,
             t.matched_quantity AS volume,
             t.matched_price AS matched_price,
             CASE
@@ -459,9 +613,209 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
             and (:startDate is null or trade_date >=:startDate) 
             and (:endDate is null or trade_date <=:endDate)            
             
-            order by create_date DESC offset :offset limit :limit  """)
+            order by create_date DESC offset :offset limit :limit  """
+    )
 
-    fun findTxOfTradesDesc(user: String, startDate: LocalDateTime?, endDate: LocalDateTime?, offset: Int?, limit: Int?): Flux<Transaction>
+    fun findTxOfTradesDesc(
+        user: String,
+        startDate: LocalDateTime?,
+        endDate: LocalDateTime?,
+        offset: Int?,
+        limit: Int?,
+    ): Flux<Transaction>
+
+    @Query(
+        """
+         WITH intervals AS (SELECT * FROM interval_generator((:startTime), (:endTime), :interval ::INTERVAL)),
+        last_trade AS (
+            SELECT DISTINCT ON (f.start_time) f.start_time,  f.end_time,  t.matched_price AS close_price FROM intervals f
+            LEFT JOIN trades t ON t.create_date >= f.start_time AND t.create_date < f.end_time AND t.symbol = :symbol
+            ORDER BY f.start_time, t.create_date DESC
+        )
+        SELECT
+            i.end_time AS close_time,
+            lt.close_price AS close_price
+        FROM intervals i
+        LEFT JOIN trades t
+        ON t.create_date >= i.start_time AND t.create_date < i.end_time AND t.symbol = :symbol
+        LEFT JOIN last_trade lt
+        ON i.start_time = lt.start_time
+        GROUP BY i.start_time, i.end_time, lt.close_price
+        ORDER BY i.start_time;
+        """
+    )
+    suspend fun getPriceTimeData(
+        @Param("symbol")
+        symbol: String,
+        @Param("interval")
+        interval: String,
+        @Param("startTime")
+        startTime: LocalDateTime,
+        @Param("endTime")
+        endTime: LocalDateTime,
+    ): Flux<PriceTimeData>
 
 
+    @Query(
+        """
+        select * from trades where
+             (:symbol is null or symbol = :symbol) 
+            and (:makerUuid is null or maker_uuid = :makerUuid) 
+            and (:takerUuid is null or taker_uuid = :takerUuid) 
+            and (:fromDate is null or trade_date >= :fromDate) 
+            and (:toDate is null or trade_date <= :toDate) 
+            and (:excludeSelfTrade is false or maker_uuid != taker_uuid)
+        order by trade_date DESC 
+        limit :limit
+        offset :offset
+        """
+    )
+    suspend fun findByCriteria(
+        symbol: String?,
+        makerUuid: String?,
+        takerUuid: String?,
+        fromDate: LocalDateTime?,
+        toDate: LocalDateTime?,
+        excludeSelfTrade: Boolean,
+        limit: Int,
+        offset: Int,
+    ): Flux<TradeModel>
+
+    @Query(
+        """
+        select * from trades where
+            (:symbol is null or symbol=:symbol)
+            and  (:baseAsset is null or base_asset = :baseAsset)
+            and (:quoteAsset is null or quote_asset = :quoteAsset)
+            and (:uuid is null or :uuid in (maker_uuid, taker_uuid))
+            and (:makerUuid is null or maker_uuid = :makerUuid) 
+            and (:takerUuid is null or taker_uuid = :takerUuid) 
+            and (:ouid is null or :ouid in (maker_ouid, taker_ouid))
+            and (:makerOuid is null or maker_ouid = :makerOuid) 
+            and (:takerOuid is null or taker_ouid = :takerOuid) 
+            and (:fromDate is null or trade_date >= :fromDate) 
+            and (:toDate is null or trade_date <= :toDate) 
+            and (:excludeSelfTrade is false or maker_uuid != taker_uuid)
+        order by trade_date ASC 
+        limit :limit
+        offset :offset
+        """
+    )
+    suspend fun findByCriteriaByBaseQuoteAsc(
+        symbol: String?,
+        baseAsset: String?,
+        quoteAsset: String?,
+        uuid: String?,
+        makerUuid: String?,
+        takerUuid: String?,
+        ouid: String?,
+        makerOuid: String?,
+        takerOuid: String?,
+        fromDate: LocalDateTime?,
+        toDate: LocalDateTime?,
+        excludeSelfTrade: Boolean,
+        limit: Int? = 10,
+        offset: Int? = 0,
+    ): Flux<TradeModel>
+
+    @Query(
+        """
+        select * from trades where
+             (:symbol is null or symbol=:symbol)
+            and (:baseAsset is null or base_asset = :baseAsset)
+            and (:quoteAsset is null or quote_asset = :quoteAsset)
+            and (:uuid is null or :uuid in (maker_uuid, taker_uuid))
+            and (:makerUuid is null or maker_uuid = :makerUuid) 
+            and (:takerUuid is null or taker_uuid = :takerUuid) 
+            and (:ouid is null or :ouid in (maker_ouid, taker_ouid))
+            and (:makerOuid is null or maker_ouid = :makerOuid) 
+            and (:takerOuid is null or taker_ouid = :takerOuid) 
+            and (:fromDate is null or trade_date >= :fromDate) 
+            and (:toDate is null or trade_date <= :toDate) 
+            and (:excludeSelfTrade is false or maker_uuid != taker_uuid)
+        order by trade_date DESC 
+        limit :limit
+        offset :offset
+        """
+    )
+    suspend fun findByCriteriaByBaseQuoteDesc(
+        symbol: String?,
+        baseAsset: String?,
+        quoteAsset: String?,
+        uuid: String?,
+        makerUuid: String?,
+        takerUuid: String?,
+        ouid: String?,
+        makerOuid: String?,
+        takerOuid: String?,
+        fromDate: LocalDateTime?,
+        toDate: LocalDateTime?,
+        excludeSelfTrade: Boolean,
+        limit: Int? = 10,
+        offset: Int? = 0,
+    ): Flux<TradeModel>
+
+
+    @Query(
+        """
+select t.symbol,
+       t.id,
+       o.order_id,
+       case when :uuid = t.maker_uuid then t.maker_price else t.taker_price end           as price,
+       t.matched_quantity as quantity,
+       o.quote_quantity,
+       case when :uuid = t.maker_uuid then t.maker_commission else t.taker_commission end as commission,
+       case
+           when :uuid = t.maker_uuid then t.maker_commission_asset
+           else t.taker_commission_asset end                                              as commission_asset,
+       t.trade_date as time,
+       o.side = 'BID'                                                                     as is_buyer,
+       t.maker_uuid = :uuid                                                               as is_maker,
+       true                                                                               as is_best_match,
+       case when o.side = 'BID' and t.maker_uuid = :uuid then true else false end         as is_maker_buyer
+from trades t
+         inner join orders o on
+        (t.maker_uuid = :uuid and o.ouid = t.maker_ouid) or
+        (t.taker_uuid = :uuid and o.ouid = t.taker_ouid)
+where (:uuid is null or :uuid in (t.maker_uuid, t.taker_uuid))
+            and (:symbol is null or t.symbol = :symbol) 
+            and (:startTime is null or t.trade_date >= :startTime) 
+            and (:endTime is null or t.trade_date <= :endTime) 
+            and (:direction is null or o.side = :direction)
+        order by t.trade_date desc 
+        limit :limit
+        offset :offset
+        """
+    )
+    suspend fun findByCriteria(
+        uuid: String?,
+        symbol: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        direction: OrderDirection?,
+        limit: Int?,
+        offset: Int?,
+    ): Flux<Trade>
+
+    @Query(
+        """
+select count(*)
+from trades t
+         inner join orders o on
+        (t.maker_uuid = :uuid and o.ouid = t.maker_ouid) or
+        (t.taker_uuid = :uuid and o.ouid = t.taker_ouid)
+where (:uuid is null or :uuid in (t.maker_uuid, t.taker_uuid) )   
+            and (:symbol is null or t.symbol = :symbol) 
+            and (:startTime is null or t.trade_date >= :startTime) 
+            and (:endTime is null or t.trade_date <= :endTime) 
+            and (:direction is null or o.side = :direction)
+        """
+    )
+    suspend fun countByCriteria(
+        uuid: String?,
+        symbol: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        direction: OrderDirection?,
+    ): Mono<Long>
 }

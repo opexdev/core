@@ -8,14 +8,14 @@ import org.springframework.kafka.listener.MessageListener
 import org.springframework.stereotype.Component
 
 @Component
-class KycLevelUpdatedKafkaListener  : MessageListener<String, KycLevelUpdatedEvent> {
+class KycLevelUpdatedKafkaListener : MessageListener<String, KycLevelUpdatedEvent> {
     val eventListeners = arrayListOf<KycLevelUpdatedEventListener>()
     private val logger = LoggerFactory.getLogger(KycLevelUpdatedKafkaListener::class.java)
     override fun onMessage(data: ConsumerRecord<String, KycLevelUpdatedEvent>) {
 
         eventListeners.forEach { tl ->
-            logger.info("incoming new event "+tl.id())
-            tl.onEvent(data.value(), data.partition(), data.offset(), data.timestamp(),tl.id())
+            logger.info("incoming new event " + tl.id())
+            tl.onEvent(data.value(), data.partition(), data.offset(), data.timestamp(), tl.id())
         }
     }
 
@@ -29,7 +29,6 @@ class KycLevelUpdatedKafkaListener  : MessageListener<String, KycLevelUpdatedEve
         }
 
     }
-
 
 
 }

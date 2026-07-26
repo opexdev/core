@@ -1,8 +1,8 @@
-name:  Build, Test, and Deploy otc (PRD env) services for specific partner
+name: Build, Test, and Deploy otc (PRD env) services for specific partner
 on:
-#  push:
-#    branches:
-#      - main
+  #  push:
+  #    branches:
+  #      - main
 
   workflow_dispatch:
     inputs:
@@ -29,10 +29,9 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Setup Java
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v4
         with:
-          distribution: 'adopt'
-          java-package: jdk
+          distribution: temurin
           java-version: ${{ matrix.java }}
 
       - name: Fetch partners config
@@ -107,14 +106,14 @@ jobs:
           echo "password=$server_pass" >> $GITHUB_OUTPUT
 
       - name: Build
-        run:  |
+        run: |
           mvn -pl common -am  -B -T 1C clean install -Potc
           mvn -pl wallet,bc-gateway -amd  -B -T 1C clean install -Potc
 
       - name: Run Tests
         run: |
-          mvn -pl common -am -B -T 1C -Dskip.unit.tests=false surefire:test
-          mvn -pl wallet,bc-gateway -amd  -B -T 1C -Dskip.unit.tests=false surefire:test
+          mvn -pl common -am -B -Dskip.unit.tests=false surefire:test
+          mvn -pl wallet,bc-gateway -amd  -B -Dskip.unit.tests=false surefire:test
 
       - name: Build Docker images
         run: docker compose -f docker-compose-otc.build.yml build

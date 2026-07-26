@@ -1,16 +1,17 @@
 package co.nilin.opex.wallet.app.controller
 
 import co.nilin.opex.common.OpexError
-import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.core.model.Amount
+import co.nilin.opex.wallet.core.model.FetchCurrency
 import co.nilin.opex.wallet.core.model.WalletType
-import co.nilin.opex.wallet.core.spi.CurrencyService
+import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
 import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.GetMapping
@@ -24,7 +25,7 @@ import java.math.BigDecimal
 class InquiryController(
     private val walletManager: WalletManager,
     private val walletOwnerManager: WalletOwnerManager,
-    private val currencyService: CurrencyService
+    @Qualifier("newVersion") private val currencyService: CurrencyServiceManager
 ) {
     private val logger = LoggerFactory.getLogger(InquiryController::class.java)
 
@@ -47,6 +48,7 @@ class InquiryController(
         @PathVariable("wallet_type") walletType: WalletType,
         @PathVariable amount: BigDecimal,
         @CurrentSecurityContext securityContext: SecurityContext?
+
     ): BooleanResponse {
         securityContext?.let {
             if (uuid != securityContext.authentication.name)
@@ -56,7 +58,8 @@ class InquiryController(
         logger.info("canFullFill: {} {} {} {}", uuid, currency, walletType, amount)
         val owner = walletOwnerManager.findWalletOwner(uuid)
         if (owner != null) {
-            val c = currencyService.getCurrency(currency) ?: throw OpexError.CurrencyNotFound.exception()
+            val c = currencyService.fetchCurrency(FetchCurrency(symbol = currency))
+                ?: throw OpexError.CurrencyNotFound.exception()
             val wallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, walletType, c)
             if (wallet != null) {
                 return BooleanResponse(

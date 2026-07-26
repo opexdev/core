@@ -3,9 +3,7 @@ package co.nilin.opex.market.ports.postgres.impl
 import co.nilin.opex.market.core.event.RichTrade
 import co.nilin.opex.market.core.inout.MarketTrade
 import co.nilin.opex.market.core.inout.OrderDirection
-import co.nilin.opex.market.core.inout.RateSource
 import co.nilin.opex.market.core.spi.TradePersister
-import co.nilin.opex.market.ports.postgres.dao.CurrencyRateRepository
 import co.nilin.opex.market.ports.postgres.dao.TradeRepository
 import co.nilin.opex.market.ports.postgres.model.TradeModel
 import co.nilin.opex.market.ports.postgres.util.RedisCacheHelper
@@ -20,7 +18,6 @@ import java.util.*
 @Component
 class TradePersisterImpl(
     private val tradeRepository: TradeRepository,
-    private val currencyRateRepository: CurrencyRateRepository,
     private val redisCacheHelper: RedisCacheHelper,
 ) : TradePersister {
 
@@ -54,15 +51,12 @@ class TradePersisterImpl(
             )
         ).awaitFirstOrNull()
         logger.info("RichTrade ${trade.id} saved")
+        //calculateTradeVolume(trade, pair[0].uppercase(), pair[1].uppercase()) // Moved to accountant
+        updateCache(trade, tradeEntity)
+    }
 
-        currencyRateRepository.createOrUpdate(
-            pair[0].uppercase(),
-            pair[1].uppercase(),
-            RateSource.MARKET,
-            trade.matchedPrice
-        ).awaitFirstOrNull()
-        logger.info("Rate between ${pair[0]} and ${pair[1]} updated")
 
+    private fun updateCache(trade: RichTrade, tradeEntity: TradeModel?) {
         try {
             if (tradeEntity == null || !redisCacheHelper.hasKey("recentTrades:${trade.pair.lowercase()}")) return
             val isMakerBuyer = trade.makerDirection == OrderDirection.BID
@@ -90,6 +84,5 @@ class TradePersisterImpl(
         } catch (e: Exception) {
             logger.info("Could not update recentTrades cache")
         }
-
     }
 }

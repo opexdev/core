@@ -6,6 +6,10 @@ x-postgres-db: &postgres-db
     - POSTGRES_DB=${DB_USER:-opex}
     - POSTGRES_READ_ONLY_USER=${DB_READ_ONLY_USER:-opex_reader}
     - POSTGRES_READ_ONLY_PASSWORD=${DB_READ_ONLY_PASS:-hiopex}
+  healthcheck:
+    test: [ "CMD", "pg_isready", "-U", "opex" ]
+    interval: 5s
+    retries: 10
   networks:
     - default
   deploy:
@@ -14,36 +18,25 @@ x-postgres-db: &postgres-db
 
 version: '3.8'
 services:
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.1.1
-    hostname: zookeeper
-    volumes:
-      - zookeeper-data:/var/lib/zookeeper/data
-      - zookeeper-log:/var/lib/zookeeper/log
-    environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
-      - ZOOKEEPER_CLIENT_PORT=2181
-    networks:
-      - default
-    deploy:
-      restart_policy:
-        condition: on-failure
   kafka-1:
     image: ghcr.io/opexdev/kafka
     hostname: kafka-1
     volumes:
       - kafka-1:/var/lib/kafka/data
     environment:
-      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_NODE_ID=1
+      - KAFKA_PROCESS_ROLES=broker,controller
+      - CLUSTER_ID=${KAFKA_CLUSTER_ID}
       - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
-      - KAFKA_LISTENERS=CLIENT://kafka-1:29092,EXTERNAL://kafka-1:9092
       - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-1:29092,EXTERNAL://kafka-1:9092
       - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
       - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
       - KAFKA_OPTS=-javaagent:/opt/prometheus/jmx-exporter.jar=1234:/opt/prometheus/kafka-jmx-exporter.yml
-    depends_on:
-      - zookeeper
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka-1:29093,2@kafka-2:29093,3@kafka-3:29093
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_LISTENERS=CLIENT://kafka-1:29092,EXTERNAL://kafka-1:9092,CONTROLLER://kafka-1:29093
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+
     networks:
       - default
     deploy:
@@ -55,16 +48,18 @@ services:
     volumes:
       - kafka-2:/var/lib/kafka/data
     environment:
-      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_NODE_ID=2
+      - KAFKA_PROCESS_ROLES=broker,controller
+      - CLUSTER_ID=${KAFKA_CLUSTER_ID}
       - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
-      - KAFKA_LISTENERS=CLIENT://kafka-2:29092,EXTERNAL://kafka-2:9092
       - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-2:29092,EXTERNAL://kafka-2:9092
       - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
       - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
       - KAFKA_OPTS=-javaagent:/opt/prometheus/jmx-exporter.jar=1234:/opt/prometheus/kafka-jmx-exporter.yml
-    depends_on:
-      - zookeeper
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka-1:29093,2@kafka-2:29093,3@kafka-3:29093
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_LISTENERS=CLIENT://kafka-2:29092,EXTERNAL://kafka-2:9092,CONTROLLER://kafka-2:29093
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
     networks:
       - default
     deploy:
@@ -76,16 +71,19 @@ services:
     volumes:
       - kafka-3:/var/lib/kafka/data
     environment:
-      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_NODE_ID=3
+      - KAFKA_PROCESS_ROLES=broker,controller
+      - CLUSTER_ID=${KAFKA_CLUSTER_ID}
       - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
-      - KAFKA_LISTENERS=CLIENT://kafka-3:29092,EXTERNAL://kafka-3:9092
       - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-3:29092,EXTERNAL://kafka-3:9092
       - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
       - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
       - KAFKA_OPTS=-javaagent:/opt/prometheus/jmx-exporter.jar=1234:/opt/prometheus/kafka-jmx-exporter.yml
-    depends_on:
-      - zookeeper
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka-1:29093,2@kafka-2:29093,3@kafka-3:29093
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_LISTENERS=CLIENT://kafka-3:29092,EXTERNAL://kafka-3:9092,CONTROLLER://kafka-3:29093
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+
     networks:
       - default
     deploy:
@@ -109,6 +107,35 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  keycloak:
+    image: ghcr.io/opexdev/keycloak
+    container_name: keycloak
+    environment:
+      KEYCLOAK_ADMIN: ${KC_PANEL_USERNAME}
+      KEYCLOAK_ADMIN_PASSWORD: ${KC_PANEL_PASSWORD}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres-keycloak:5432/opex
+      KC_DB_USERNAME: ${DB_USER}
+      KC_DB_PASSWORD: ${DB_PASS}
+      KC_HEALTH_ENABLED: true
+      KC_METRICS_ENABLED: true
+      GOOGLE_CLIENT_ID: ${KC_GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${KC_GOOGLE_CLIENT_SECRET}
+      KC_SPI_SCRIPT_UPLOAD_ENABLED: "true"
+    volumes:
+      - ./realms:/opt/keycloak/data/import
+    command:
+      - start-dev
+      - --import-realm
+      - --features=admin-fine-grained-authz,token-exchange,scripts,token-exchange
+      - --log-level=INFO
+    depends_on:
+      - postgres-keycloak
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
   vault:
     image: ghcr.io/opexdev/vault-opex
     volumes:
@@ -126,6 +153,7 @@ services:
       - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-hiopex}
       - OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET=${OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET}
       - VANDAR_API_KEY=$VANDAR_API_KEY
+      - API_CRYPTO_KEY=${API_CRYPTO_KEY}
     cap_add:
       - IPC_LOCK
     deploy:
@@ -189,6 +217,10 @@ services:
     <<: *postgres-db
     volumes:
       - auth-data:/var/lib/postgresql/data/
+  postgres-keycloak:
+    <<: *postgres-db
+    volumes:
+      - keycloak-data:/var/lib/postgresql/data/
   postgres-wallet:
     <<: *postgres-db
     volumes:
@@ -205,6 +237,22 @@ services:
     <<: *postgres-db
     volumes:
       - bc-gateway-data:/var/lib/postgresql/data/
+  postgres-matching-gateway:
+    <<: *postgres-db
+    volumes:
+      - matching-gateway-data:/var/lib/postgresql/data/
+  postgres-otp:
+    <<: *postgres-db
+    volumes:
+      - otp-data:/var/lib/postgresql/data/
+  postgres-profile:
+    <<: *postgres-db
+    volumes:
+      - profile-data:/var/lib/postgresql/data/
+  postgres-device-management:
+    <<: *postgres-db
+    volumes:
+      - device-management-data:/var/lib/postgresql/data/
   accountant:
     image: ghcr.io/opexdev/accountant
     environment:
@@ -216,16 +264,17 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
-      - PREFERENCES=$PREFERENCES
-    configs:
-      - preferences.yml
+      - TRADE_VOLUME_CALCULATION_CURRENCY=${TRADE_VOLUME_CALCULATION_CURRENCY}
+      - WITHDRAW_VOLUME_CALCULATION_CURRENCY=${WITHDRAW_VOLUME_CALCULATION_CURRENCY}
+      - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL}
+      - CUSTOM_MESSAGE_ENABLED=${CUSTOM_MESSAGE_ENABLED}
+      - CUSTOM_USER_LANGUAGE_ENABLED=${CUSTOM_USER_LANGUAGE_ENABLED}
     networks:
       - default
     depends_on:
       - kafka-1
       - kafka-2
       - kafka-3
-      - wallet
       - consul
       - vault
       - postgres-accountant
@@ -264,9 +313,9 @@ services:
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - REDIS_HOST=redis
       - SYMBOLS=BTC_USDT,ETH_USDT,BTC_IRT,ETH_IRT,USDT_IRT,ETH_BUSD,BTC_BUSD,BNB_BUSD
-      - PREFERENCES=$PREFERENCES
-    configs:
-      - preferences.yml
+      - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL}
+      - CUSTOM_MESSAGE_ENABLED=${CUSTOM_MESSAGE_ENABLED}
+      - CUSTOM_USER_LANGUAGE_ENABLED=${CUSTOM_USER_LANGUAGE_ENABLED}
     networks:
       - default
     depends_on:
@@ -286,9 +335,9 @@ services:
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - REDIS_HOST=redis-duo
       - SYMBOLS=SOL_USDT,DOGE_USDT,TON_USDT
-      - PREFERENCES=$PREFERENCES
-    configs:
-      - preferences.yml
+      - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL}
+      - CUSTOM_MESSAGE_ENABLED=${CUSTOM_MESSAGE_ENABLED}
+      - CUSTOM_USER_LANGUAGE_ENABLED=${CUSTOM_USER_LANGUAGE_ENABLED}
     networks:
       - default
     depends_on:
@@ -307,15 +356,22 @@ services:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - CONSUL_HOST=consul
+      - DB_IP_PORT=postgres-matching-gateway
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_HOST=vault
+      - SYMBOLS=BTC_USDT,ETH_USDT,BTC_IRT,ETH_IRT,USDT_IRT,ETH_BUSD,BTC_BUSD,BNB_BUSD
+      - TOKEN_ISSUER_URL=${KC_ISSUER_URL}
+      - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL}
+      - CUSTOM_MESSAGE_ENABLED=${CUSTOM_MESSAGE_ENABLED}
+      - CUSTOM_USER_LANGUAGE_ENABLED=${CUSTOM_USER_LANGUAGE_ENABLED}
     networks:
       - default
     depends_on:
       - kafka-1
       - kafka-2
       - kafka-3
-      - auth
       - consul
-      - matching-engine
+      - postgres-matching-gateway
     labels:
       collect_logs: "true"
     deploy:
@@ -335,7 +391,6 @@ services:
       - FORGOT_REDIRECT_URL=$KEYCLOAK_FORGOT_REDIRECT_URL
       - VAULT_URL=http://vault:8200
       - VAULT_HOST=vault
-      - PREFERENCES=$PREFERENCES
       - APP_NAME=$APP_NAME
       - APP_BASE_URL=$APP_BASE_URL
       - WHITELIST_REGISTER_ENABLED=$WHITELIST_REGISTER_ENABLED
@@ -354,6 +409,36 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  auth-gateway:
+    image: ghcr.io/opexdev/auth-gateway
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - CONSUL_HOST=consul
+      - ADMIN_CLIENT_SECRET=${KC_ADMIN_CLIENT_SECRET}
+      - PRE_AUTH_CLIENT_SECRET=${KC_PRE_AUTH_CLIENT_SECRET}
+      - TOKEN_ISSUER_URL=${KC_ISSUER_URL}
+      - CAPTCHA_ENABLED=${CAPTCHA_ENABLED}
+      - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL}
+      - CUSTOM_MESSAGE_ENABLED=${CUSTOM_MESSAGE_ENABLED}
+      - CUSTOM_USER_LANGUAGE_ENABLED=${CUSTOM_USER_LANGUAGE_ENABLED}
+      - SWAGGER_API_DOCS_ENABLED=${SWAGGER_API_DOCS_ENABLED}
+      - SWAGGER_UI_ENABLED=${SWAGGER_UI_ENABLED}
+      - SWAGGER_AUTH_ENABLED=${SWAGGER_AUTH_ENABLED}
+      - SWAGGER_AUTH_AUTHORITY=${SWAGGER_AUTH_AUTHORITY}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+      - OPEN_API_SERVER_URL=${OPEN_API_SERVER_URL_AUTH}
+    volumes:
+      - auth-gateway-keys:/app/keys
+    depends_on:
+      - keycloak
+    networks:
+      - default
+    labels:
+      collect_logs: "true"
+    deploy:
+      restart_policy:
+        condition: on-failure
   wallet:
     image: ghcr.io/opexdev/wallet
     environment:
@@ -364,16 +449,23 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
-      - PREFERENCES=$PREFERENCES
       - DRIVE_FOLDER_ID=$DRIVE_FOLDER_ID
-      - BACKUP_ENABLED=$WALLET_BACKUP_ENABLED
-    configs:
-      - preferences.yml
+      - STORAGE_FOLDER_ID=$STORAGE_FOLDER_ID
+      - BACKUP_ENABLED_STORAGE=$WALLET_BACKUP_ENABLED_STORAGE
+      - BACKUP_ENABLED_GOOGLE_DRIVE=$WALLET_BACKUP_ENABLED_GOOGLE_DRIVE
+      - SYMBOLS=BTC_USDT,ETH_USDT,BTC_IRT,ETH_IRT,USDT_IRT,ETH_BUSD,BTC_BUSD,BNB_BUSD
+      - WITHDRAW_LIMIT_ENABLED=${WITHDRAW_LIMIT_ENABLED}
+      - WITHDRAW_OTP_REQUIRED_COUNT=${WITHDRAW_OTP_REQUIRED_COUNT}
+      - WITHDRAW_BANK_ACCOUNT_VALIDATION=${WITHDRAW_BANK_ACCOUNT_VALIDATION}
+      - TOTAL_ASSET_CALCULATION_CURRENCY=${TOTAL_ASSET_CALCULATION_CURRENCY}
+      - TOKEN_ISSUER_URL=${KC_ISSUER_URL}
+      - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL}
+      - CUSTOM_MESSAGE_ENABLED=${CUSTOM_MESSAGE_ENABLED}
+      - CUSTOM_USER_LANGUAGE_ENABLED=${CUSTOM_USER_LANGUAGE_ENABLED}
     depends_on:
       - kafka-1
       - kafka-2
       - kafka-3
-      - auth
       - consul
       - vault
       - postgres-wallet
@@ -394,12 +486,14 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
-      - PREFERENCES=$PREFERENCES
+      - TOKEN_ISSUER_URL=${KC_ISSUER_URL}
+      - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL}
+      - CUSTOM_MESSAGE_ENABLED=${CUSTOM_MESSAGE_ENABLED}
+      - CUSTOM_USER_LANGUAGE_ENABLED=${CUSTOM_USER_LANGUAGE_ENABLED}
     depends_on:
       - kafka-1
       - kafka-2
       - kafka-3
-      - auth
       - consul
       - vault
       - postgres-market
@@ -420,16 +514,22 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
-      - PREFERENCES=$PREFERENCES
       - API_KEY_CLIENT_SECRET=$API_KEY_CLIENT_SECRET
-    configs:
-      - preferences.yml
+      - TRADE_VOLUME_CALCULATION_CURRENCY=${TRADE_VOLUME_CALCULATION_CURRENCY}
+      - WITHDRAW_VOLUME_CALCULATION_CURRENCY=${WITHDRAW_VOLUME_CALCULATION_CURRENCY}
+      - TOTAL_ASSET_CALCULATION_CURRENCY=${TOTAL_ASSET_CALCULATION_CURRENCY}
+      - TOKEN_ISSUER_URL=${KC_ISSUER_URL}
+      - APP_BASE_URL=${APP_BASE_URL}
+      - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL}
+      - CUSTOM_MESSAGE_ENABLED=${CUSTOM_MESSAGE_ENABLED}
+      - CUSTOM_USER_LANGUAGE_ENABLED=${CUSTOM_USER_LANGUAGE_ENABLED}
+      - SWAGGER_API_DOCS_ENABLED=${SWAGGER_API_DOCS_ENABLED}
+      - SWAGGER_UI_ENABLED=${SWAGGER_UI_ENABLED}
+      - SWAGGER_AUTH_ENABLED=${SWAGGER_AUTH_ENABLED}
+      - SWAGGER_AUTH_AUTHORITY=${SWAGGER_AUTH_AUTHORITY}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+      - OPEN_API_SERVER_URL=${OPEN_API_SERVER_URL_API}
     depends_on:
-      - accountant
-      - matching-gateway
-      - wallet
-      - market
-      - auth
       - consul
       - vault
       - postgres-api
@@ -450,16 +550,15 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=vault
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
-      - PREFERENCES=$PREFERENCES
       - ADDRESS_EXP_TIME=100
-    configs:
-      - preferences.yml
+      - TOKEN_ISSUER_URL=${KC_ISSUER_URL}
+      - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL}
+      - CUSTOM_MESSAGE_ENABLED=${CUSTOM_MESSAGE_ENABLED}
+      - CUSTOM_USER_LANGUAGE_ENABLED=${CUSTOM_USER_LANGUAGE_ENABLED}
     depends_on:
       - kafka-1
       - kafka-2
       - kafka-3
-      - auth
-      - wallet
       - consul
       - vault
       - postgres-bc-gateway
@@ -470,6 +569,116 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  otp:
+    image: ghcr.io/opexdev/otp
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - CONSUL_HOST=consul
+      - DB_IP_PORT=postgres-otp
+      - DB_USER=${DB_USER:-opex}
+      - DB_PASS=${DB_PASS:-hiopex}
+      - SMS_PROVIDER_URL=${SMS_PROVIDER_URL}
+      - SMS_PROVIDER_API_KEY=${SMS_PROVIDER_API_KEY}
+      - SMS_PROVIDER_TEMPLATE=${SMS_PROVIDER_TEMPLATE}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_FROM=${SMTP_FROM}
+      - SMTP_PROXY_HOST=${SMTP_PROXY_HOST}
+      - SMTP_PROXY_PORT=${SMTP_PROXY_PORT}
+      - SMTP_PROXY_ENABLED=${SMTP_PROXY_ENABLED}
+      - TOKEN_ISSUER_URL=${KC_ISSUER_URL}
+      - OTP_CODE_RESPONSE_ENABLED=${OTP_CODE_RESPONSE_ENABLED}
+      - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL}
+      - CUSTOM_MESSAGE_ENABLED=${CUSTOM_MESSAGE_ENABLED}
+      - CUSTOM_USER_LANGUAGE_ENABLED=${CUSTOM_USER_LANGUAGE_ENABLED}
+      - DEFAULT_SMS_PROVIDER=${DEFAULT_SMS_PROVIDER}
+    depends_on:
+      - consul
+      - postgres-otp
+    networks:
+      - default
+    labels:
+      collect_logs: "true"
+    deploy:
+      restart_policy:
+        condition: on-failure
+  profile:
+    image: ghcr.io/opexdev/profile
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - CONSUL_HOST=consul
+      - DB_IP_PORT=postgres-profile
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_HOST=vault
+      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
+      - JIBIT_URL=${JIBIT_URL}
+      - JIBIT_API_KEY=${JIBIT_API_KEY}
+      - JIBIT_SECRET_KEY=${JIBIT_SECRET_KEY}
+      - ADMIN_APPROVAL_PROFILE_COMPLETION_REQUEST=${ADMIN_APPROVAL_PROFILE_COMPLETION_REQUEST}
+      - ADMIN_APPROVAL_BANK_ACCOUNT=${ADMIN_APPROVAL_BANK_ACCOUNT}
+      - TOKEN_ISSUER_URL=${KC_ISSUER_URL}
+      - MOBILE_IDENTITY_INQUIRY=${MOBILE_IDENTITY_INQUIRY}
+      - PERSONAL_IDENTITY_INQUIRY=${PERSONAL_IDENTITY_INQUIRY}
+      - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL}
+      - CUSTOM_MESSAGE_ENABLED=${CUSTOM_MESSAGE_ENABLED}
+      - CUSTOM_USER_LANGUAGE_ENABLED=${CUSTOM_USER_LANGUAGE_ENABLED}
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - consul
+      - postgres-profile
+      - vault
+    labels:
+      collect_logs: "true"
+    deploy:
+      restart_policy:
+        condition: on-failure
+  device-management:
+    image: ghcr.io/opexdev/device-management
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - CONSUL_HOST=consul
+      - DB_USER=${DB_USER:-opex}
+      - DB_PASS=${DB_PASS:-hiopex}
+      - DB_IP_PORT=postgres-device-management
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_HOST=vault
+      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
+      - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL}
+      - CUSTOM_MESSAGE_ENABLED=${CUSTOM_MESSAGE_ENABLED}
+      - CUSTOM_USER_LANGUAGE_ENABLED=${CUSTOM_USER_LANGUAGE_ENABLED}
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - consul
+      - postgres-device-management
+      - vault
+    labels:
+      collect_logs: "true"
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
+  swagger-docs:
+    image: swaggerapi/swagger-ui:latest
+    environment:
+      URLS: ${SWAGGER_DOCS_URLS}
+      URLS_PRIMARY_NAME: ${SWAGGER_DOCS_PRIMARY_NAME:-Opex API}
+      DOC_EXPANSION: "none"
+      DEFAULT_MODELS_EXPAND_DEPTH: "-1"
+      DISPLAY_REQUEST_DURATION: "true"
+      DEEP_LINKING: "true"
+      PERSIST_AUTHORIZATION: "true"
+      TRY_IT_OUT_ENABLED: "true"
+      FILTER: "true"
+      VALIDATOR_URL: "none"
 volumes:
   zookeeper-data:
   zookeeper-log:
@@ -485,10 +694,16 @@ volumes:
   accountant-data:
   eventlog-data:
   auth-data:
+  keycloak-data:
   wallet-data:
   market-data:
   api-data:
   bc-gateway-data:
+  matching-gateway-data:
+  otp-data:
+  auth-gateway-keys:
+  profile-data:
+  device-management-data:
 networks:
   opex:
     external: true
@@ -499,6 +714,3 @@ secrets:
     file: opex.dev.crt
   private_pem:
     file: private.pem
-configs:
-  preferences.yml:
-    file: preferences.yml

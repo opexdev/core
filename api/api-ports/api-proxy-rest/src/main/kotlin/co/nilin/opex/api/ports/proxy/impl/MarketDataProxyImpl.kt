@@ -8,17 +8,20 @@ import co.nilin.opex.common.utils.LoggerDelegate
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.withContext
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.body
 import org.springframework.web.reactive.function.client.bodyToFlux
 import org.springframework.web.reactive.function.client.bodyToMono
+import reactor.core.publisher.Mono
 import java.util.*
 
 @Component
-class MarketDataProxyImpl(private val webClient: WebClient) : MarketDataProxy {
+class MarketDataProxyImpl(@Qualifier("generalWebClient") private val webClient: WebClient) : MarketDataProxy {
 
     private val logger by LoggerDelegate()
 
@@ -254,6 +257,38 @@ class MarketDataProxyImpl(private val webClient: WebClient) : MarketDataProxy {
                 .bodyToMono<CountResponse>()
                 .awaitSingleOrNull()
                 ?.value ?: 0
+        }
+    }
+
+    override suspend fun recentTrades(token: String, request: AdminTradesHistoryRequest): List<TradeAdminItem> {
+        logger.info("admin recent trades wrapper for symbol=${request.baseAsset}-${request.quoteAsset}")
+        return withContext(ProxyDispatchers.market) {
+            webClient.post()
+                .uri("$baseUrl/v1/admin/trades/history")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .body(Mono.just(request))
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<TradeAdminItem>()
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
+        }
+    }
+
+    override suspend fun recentOrders(token: String, request: AdminOrdersHistoryRequest): List<OrderAdminItem> {
+        logger.info("admin recent orders wrapper for symbol=${request.symbol}")
+        return withContext(ProxyDispatchers.market) {
+            webClient.post()
+                .uri("$baseUrl/v1/admin/orders/history")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .body(Mono.just(request))
+                .retrieve()
+                .onStatus({ t -> t.isError }, { it.createException() })
+                .bodyToFlux<OrderAdminItem>()
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
         }
     }
 }

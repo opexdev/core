@@ -1,12 +1,13 @@
 package co.nilin.opex.api.app.data
 
 import java.time.LocalDateTime
-import java.util.*
 
-data class APIKeyResponse(
-    val label: String,
-    val expirationTime: LocalDateTime?,
-    val allowedIPs: String?,
-    val key: String,
-    val enabled: Boolean
+data class ApiKeyResponse(
+    val apiKeyId: String,
+    val label: String?,
+    val enabled: Boolean,
+    val allowedIps: Set<String>?,
+    val allowedEndpoints: Set<String>?,
+    val keycloakUsername: String?,
+    val secret: String? = null, // only present on create/rotate
 )

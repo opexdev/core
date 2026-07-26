@@ -1,10 +1,8 @@
 package co.nilin.opex.wallet.ports.postgres.impl
 
-import co.nilin.opex.wallet.core.model.Transaction
-import co.nilin.opex.wallet.core.model.TransactionHistory
-import co.nilin.opex.wallet.core.model.TransactionWithDetailHistory
-import co.nilin.opex.wallet.core.model.TransferCategory
+import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.spi.TransactionManager
+import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepositoryV2
 import co.nilin.opex.wallet.ports.postgres.dao.TransactionRepository
 import co.nilin.opex.wallet.ports.postgres.model.TransactionModel
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -16,7 +14,12 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 
 @Service
-class TransactionManagerImpl(private val transactionRepository: TransactionRepository) : TransactionManager {
+class TransactionManagerImpl(
+    private val transactionRepository: TransactionRepository,
+    private val currencyRepositoryV2: CurrencyRepositoryV2,
+    private val objectMapper: ObjectMapper
+) : TransactionManager {
+    private val logger = LoggerFactory.getLogger(TransactionManagerImpl::class.java)
 
     override suspend fun save(transaction: Transaction): Long {
         return transactionRepository.save(
@@ -32,6 +35,7 @@ class TransactionManagerImpl(private val transactionRepository: TransactionRepos
             )
         ).awaitSingle().id!!
     }
+
 
     override suspend fun findDepositTransactions(
         uuid: String,
@@ -127,4 +131,23 @@ class TransactionManagerImpl(private val transactionRepository: TransactionRepos
                 )
             }
     }
+
+    override suspend fun findTradesForAdmin(
+        coin: String?,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?,
+        asc: Boolean,
+        limit: Int,
+        offset: Int
+    ): List<TradeAdminResponse> {
+        return if (asc)
+            transactionRepository.findTradesForAdminAsc(coin, startTime, endTime, limit, offset)
+                .collectList().awaitFirstOrElse { emptyList() }
+        else
+            transactionRepository.findTradesForAdminDesc(coin, startTime, endTime, limit, offset)
+                .collectList().awaitFirstOrElse { emptyList() }
+    }
 }
+
+
+

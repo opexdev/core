@@ -4,9 +4,11 @@ import co.nilin.opex.wallet.core.model.Amount
 import co.nilin.opex.wallet.core.model.WalletLimitAction
 import co.nilin.opex.wallet.core.model.WalletOwner
 import co.nilin.opex.wallet.core.spi.WalletOwnerManager
-import co.nilin.opex.wallet.ports.postgres.dao.*
+import co.nilin.opex.wallet.ports.postgres.dao.TransactionRepository
+import co.nilin.opex.wallet.ports.postgres.dao.WalletConfigRepository
+import co.nilin.opex.wallet.ports.postgres.dao.WalletLimitsRepository
+import co.nilin.opex.wallet.ports.postgres.dao.WalletOwnerRepository
 import co.nilin.opex.wallet.ports.postgres.dto.toPlainObject
-import co.nilin.opex.wallet.ports.postgres.model.WalletConfigModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletLimitsModel
 import co.nilin.opex.wallet.ports.postgres.model.WalletOwnerModel
 import kotlinx.coroutines.flow.map
@@ -129,8 +131,22 @@ class WalletOwnerManagerImpl(
         return walletOwnerRepository.findByUuid(uuid).awaitFirstOrNull()?.toPlainObject()
     }
 
-    override suspend fun createWalletOwner(uuid: String, title: String, userLevel: String): WalletOwner {
-        return walletOwnerRepository.save(WalletOwnerModel(null, uuid, title, userLevel)).awaitFirst().toPlainObject()
+    override suspend fun createWalletOwner(
+        uuid: String,
+        title: String,
+        userLevel: String,
+        externalIdentifier: String?
+    ): WalletOwner {
+        return walletOwnerRepository.save(
+            WalletOwnerModel(
+                null,
+                uuid,
+                title,
+                userLevel,
+                externalIdentifier = externalIdentifier
+            )
+        )
+            .awaitFirst().toPlainObject()
     }
 
     override suspend fun findAllWalletOwners(): List<WalletOwner> {
@@ -148,5 +164,21 @@ class WalletOwnerManagerImpl(
                     it.isDepositAllowed
                 )
             }
+    }
+
+    override suspend fun updateWalletOwnerName(uuid: String, name: String, externalIdentifier: String?) {
+        val owner = walletOwnerRepository.findByUuid(uuid).awaitFirstOrNull()
+        if (owner != null) {
+            owner.title = owner.title.split('|')[0] + "|" + name
+            owner.externalIdentifier = externalIdentifier
+            walletOwnerRepository.save(owner).awaitFirstOrNull()
+                ?: logger.warn("Failed to update wallet owner name for UUID: $uuid")
+        } else {
+            logger.warn("Wallet owner not found for UUID: $uuid")
+        }
+    }
+
+    override suspend fun findWalletOwnerByExternalIdentifier(externalIdentifier: String): WalletOwner? {
+        return walletOwnerRepository.findByExternalIdentifier(externalIdentifier).awaitFirstOrNull()?.toPlainObject()
     }
 }

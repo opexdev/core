@@ -48,6 +48,13 @@ class KafkaTopicConfig {
                         .build()
                 })
             }
+
+        applicationContext.registerBean("topic_orderBookUpdate", NewTopic::class.java, Supplier {
+            TopicBuilder.name("orderBookUpdate")
+                .partitions(10)
+                .replicas(1)
+                .build()
+        })
     }
 
 }

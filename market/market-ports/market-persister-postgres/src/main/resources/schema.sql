@@ -67,16 +67,6 @@ CREATE TABLE IF NOT EXISTS trades
 CREATE INDEX IF NOT EXISTS idx_trades_symbol on trades (symbol);
 CREATE INDEX IF NOT EXISTS idx_trades_create_date on trades (create_date);
 
-CREATE TABLE IF NOT EXISTS currency_rate
-(
-    id     SERIAL PRIMARY KEY,
-    base   VARCHAR(25) NOT NULL,
-    quote  VARCHAR(25) NOT NULL,
-    source VARCHAR(25) NOT NULL,
-    rate   DECIMAL     NOT NULL,
-    UNIQUE (base, quote, source)
-);
-
 CREATE OR REPLACE FUNCTION interval_generator(
     start_ts TIMESTAMP without TIME ZONE,
     end_ts TIMESTAMP without TIME ZONE,
@@ -90,14 +80,8 @@ CREATE OR REPLACE FUNCTION interval_generator(
 as
 $$
 BEGIN
-    RETURN QUERY
-        SELECT (n)                  start_time,
-               (n + round_interval) end_time
-        FROM generate_series(
-                     date_trunc('minute', start_ts),
-                     end_ts,
-                     round_interval
-             ) n;
+    RETURN QUERY SELECT (n) start_time, (n + round_interval) end_time
+                 FROM generate_series(date_trunc('minute', start_ts), end_ts, round_interval) n;
 END;
 
 $$ LANGUAGE 'plpgsql';

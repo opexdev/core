@@ -15,6 +15,18 @@ spring:
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
     initialization-mode: always
+    pool:
+      initial-size: 5
+      max-size: 32
+      max-idle-time: 10m
+      max-life-time: 30m
+      max-acquire-time: 10s
+      max-create-connection-time: 10s
+      validation-query: SELECT 1
+  datasource:
+    url: jdbc:postgresql://${DB_IP_PORT:localhost}/opex
+    username: ${dbusername:opex}
+    password: ${dbpassword:hiopex}
   cloud:
     bootstrap:
       enabled: true
@@ -48,7 +60,7 @@ management:
     web:
       base-path: /actuator
       exposure:
-        include: ["health", "prometheus", "metrics"]
+        include: [ "health", "prometheus", "metrics" ]
   endpoint:
     health:
       show-details: when_authorized
@@ -99,16 +111,23 @@ logging:
     co.nilin: INFO
     org.zalando.logbook: TRACE
 app:
+  omni-wallet:
+    url: localhost:8080   #todo -> env
   auth:
     url: lb://opex-auth
-    cert-url: lb://opex-auth/auth/realms/opex/protocol/openid-connect/certs
+    cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
+    iss-url: ${TOKEN_ISSUER_URL:http://keycloak:8080/realms/opex}
     client-id: none
     client-secret: none
   wallet:
     url: lb://opex-wallet
   address:
-    life-time:
-      value: ${ADDRESS_EXP_TIME}  # second
+    life-time: 167234670
+  custom-message:
+    enabled: ${CUSTOM_MESSAGE_ENABLED:false}
+    base-url: ${CUSTOM_MESSAGE_URL}
+  custom-user-language:
+    enabled: ${CUSTOM_USER_LANGUAGE_ENABLED:false}
 swagger:
   authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token}
 

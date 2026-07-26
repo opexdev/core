@@ -1,9 +1,6 @@
 package co.nilin.opex.api.ports.postgres.impl.sample
 
 import co.nilin.opex.api.ports.postgres.model.SymbolMapModel
-import java.security.Principal
-import java.time.LocalDateTime
-import java.time.ZoneOffset
 
 object VALID {
 

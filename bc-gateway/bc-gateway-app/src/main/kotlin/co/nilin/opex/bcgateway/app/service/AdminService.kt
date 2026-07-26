@@ -1,32 +1,32 @@
 package co.nilin.opex.bcgateway.app.service
 
 import co.nilin.opex.bcgateway.app.dto.AddChainRequest
-import co.nilin.opex.bcgateway.app.dto.TokenRequest
-import co.nilin.opex.bcgateway.core.model.CurrencyImplementation
+import co.nilin.opex.bcgateway.core.model.ReservedAddress
 import co.nilin.opex.bcgateway.core.spi.AddressTypeHandler
 import co.nilin.opex.bcgateway.core.spi.ChainLoader
-import co.nilin.opex.bcgateway.core.spi.CurrencyHandler
+import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
+import co.nilin.opex.common.OpexError
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
 class AdminService(
     private val chainLoader: ChainLoader,
-    private val currencyHandler: CurrencyHandler,
-    private val addressTypeHandler: AddressTypeHandler
+    private val addressTypeHandler: AddressTypeHandler,
+    private val reservedAddressHandler: ReservedAddressHandler,
 ) {
 
-    suspend fun addCurrency(name: String, symbol: String) {
-        currencyHandler.addCurrency(name, symbol)
-    }
-
-    suspend fun editCurrency(name: String, symbol: String) {
-        currencyHandler.editCurrency(name, symbol)
-    }
-
-    suspend fun deleteCurrency(name: String) {
-        currencyHandler.deleteCurrency(name)
-    }
+//    suspend fun addCurrency(name: String, symbol: String) {
+//        currencyHandler.addCurrency(name, symbol)
+//    }
+//
+//    suspend fun editCurrency(name: String, symbol: String) {
+//        currencyHandler.editCurrency(name, symbol)
+//    }
+//
+//    suspend fun deleteCurrency(name: String) {
+//        currencyHandler.deleteCurrency(name)
+//    }
 
     @Transactional
     suspend fun addChain(body: AddChainRequest) {
@@ -37,25 +37,38 @@ class AdminService(
         addressTypeHandler.addAddressType(name, addressRegex, memoRegex)
     }
 
-    suspend fun addToken(body: TokenRequest): CurrencyImplementation {
-        return with(body) {
-            currencyHandler.addCurrencyImplementation(
-                currencySymbol!!,
-                implementationSymbol ?: currencySymbol,
-                chain!!,
-                tokenName,
-                tokenAddress,
-                isToken,
-                withdrawFee,
-                minimumWithdraw,
-                isWithdrawEnabled,
-                decimal
+    suspend fun addAddresses(addresses: List<String>, memos: List<String?>?, addressType: String) {
+        var addressTypeObj =
+            addressTypeHandler.fetchAddressType(addressType) ?: throw OpexError.InvalidAddressType.exception()
+        val reservedAddresses = addresses.mapIndexed { index, address ->
+            ReservedAddress(
+                address = address,
+                memo = memos?.getOrNull(index).orEmpty(),
+                type = addressTypeObj
             )
         }
+        reservedAddressHandler.addReservedAddress(reservedAddresses)
     }
 
-    suspend fun changeTokenWithdrawStatus(symbol: String, chain: String, status: Boolean) {
-        currencyHandler.changeWithdrawStatus(symbol, chain, status)
-    }
+//    suspend fun addToken(body: TokenRequest): CryptoCurrencyCommand {
+//        return with(body) {
+//            currencyHandler.addCurrencyImplementation(
+//                currencySymbol!!,
+//                implementationSymbol ?: currencySymbol,
+//                chain!!,
+//                tokenName,
+//                tokenAddress,
+//                isToken,
+//                withdrawFee,
+//                minimumWithdraw,
+//                isWithdrawEnabled,
+//                decimal
+//            )
+//        }
+//    }
+
+//    suspend fun changeTokenWithdrawStatus(symbol: String, chain: String, status: Boolean) {
+//        currencyHandler.changeWithdrawStatus(symbol, chain, status)
+//    }
 
 }

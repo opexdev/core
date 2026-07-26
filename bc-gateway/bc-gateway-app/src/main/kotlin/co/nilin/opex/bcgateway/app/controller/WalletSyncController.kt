@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
+@Deprecated("ScannerController will be used")
 @RestController
 class WalletSyncController(private val chainHandler: ChainHandler, private val walletSyncService: WalletSyncService) {
 

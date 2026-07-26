@@ -172,20 +172,20 @@ rules:
       "$3": "$4"
 
   # Quotas
-  - pattern : 'kafka.server<type=(Produce|Fetch|Request), user=(.+), client-id=(.+)><>(.+):'
+  - pattern: 'kafka.server<type=(Produce|Fetch|Request), user=(.+), client-id=(.+)><>(.+):'
     name: kafka_server_$1_$4
     type: GAUGE
     labels:
       user: "$2"
       client-id: "$3"
 
-  - pattern : 'kafka.server<type=(Produce|Fetch|Request), user=(.+)><>(.+):'
+  - pattern: 'kafka.server<type=(Produce|Fetch|Request), user=(.+)><>(.+):'
     name: kafka_server_$1_$3
     type: GAUGE
     labels:
       user: "$2"
 
-  - pattern : 'kafka.server<type=(Produce|Fetch|Request), client-id=(.+)><>(.+):'
+  - pattern: 'kafka.server<type=(Produce|Fetch|Request), client-id=(.+)><>(.+):'
     name: kafka_server_$1_$3
     type: GAUGE
     labels:

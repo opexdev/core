@@ -1,12 +1,10 @@
 package co.nilin.opex.market.app.config
 
 import org.springframework.cloud.client.ServiceInstance
-import org.springframework.cloud.client.loadbalancer.LoadBalancerProperties
 import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalancer
 import org.springframework.cloud.client.loadbalancer.reactive.ReactorLoadBalancerExchangeFilterFunction
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.web.reactive.function.client.WebClient
 import org.zalando.logbook.Logbook
 import org.zalando.logbook.netty.LogbookClientHandler
