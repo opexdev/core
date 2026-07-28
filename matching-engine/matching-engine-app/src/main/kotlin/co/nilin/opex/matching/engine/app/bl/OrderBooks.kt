@@ -1,5 +1,6 @@
 package co.nilin.opex.matching.engine.app.bl
 
+import co.nilin.opex.common.OpexError
 import co.nilin.opex.matching.engine.core.engine.SimpleOrderBook
 import co.nilin.opex.matching.engine.core.factory.OrderBookFactory
 import co.nilin.opex.matching.engine.core.model.Pair
@@ -74,7 +75,7 @@ object OrderBooks : OrderBookStore {
             val current = orderBooks[pairKey]
 
             if (current !== expected) {
-                return false
+                throw OpexError.InternalServerError.exception()
             }
 
             orderBooks[pairKey] = replacement

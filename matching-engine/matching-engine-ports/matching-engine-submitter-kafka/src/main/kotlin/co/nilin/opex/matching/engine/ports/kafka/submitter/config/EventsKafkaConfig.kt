@@ -28,8 +28,14 @@ class EventsKafkaConfig {
             ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
             ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JsonSerializer::class.java,
             ProducerConfig.ACKS_CONFIG to "all",
+            ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG to true,
+            ProducerConfig.RETRIES_CONFIG to 10,
+            ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG to 5000,
+            ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG to 5000,
+            ProducerConfig.TRANSACTIONAL_ID_CONFIG to "matching-engine-tx",
             JsonDeserializer.TRUSTED_PACKAGES to "co.nilin.opex.*",
             JsonDeserializer.TYPE_MAPPINGS to "orderBookUpdate:co.nilin.opex.matching.engine.core.inout.OrderBookUpdateEvent"
+
         )
     }
 
