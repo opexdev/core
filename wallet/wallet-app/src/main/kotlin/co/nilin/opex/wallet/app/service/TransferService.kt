@@ -135,49 +135,161 @@ class TransferService(
         }
     }
 
+    suspend fun reserveTransferByAdmin(
+        sourceSymbol: String,
+        destSymbol: String,
+        senderUuid: String,
+        senderWalletType: WalletType,
+        receiverUuid: String,
+        receiverWalletType: WalletType,
+        sourceAmount: BigDecimal,
+        destAmount: BigDecimal? = null,
+        rate: BigDecimal? = null,
+    ): ReservedTransferResponse {
+
+        if ((rate != null && destAmount != null) || (rate == null && destAmount == null)) {
+            throw OpexError.BadRequest.exception("Either 'rate' or 'destAmount' must be provided, but not both")
+        }
+
+        if (rate != null && rate <= BigDecimal.ZERO) {
+            throw OpexError.BadRequest.exception("rate must be greater than zero")
+        }
+
+        if (destAmount != null && destAmount <= BigDecimal.ZERO) {
+            throw OpexError.BadRequest.exception("destAmount must be greater than zero")
+        }
+
+        val (finalRate, rawDestAmount) = if (rate != null) {
+            val calculatedDest = calculateDestAmount(sourceAmount, Rate(sourceSymbol, destSymbol, rate))
+            Pair(rate, calculatedDest)
+        } else {
+            val calculatedRate = destAmount!!.divide(sourceAmount, 28, RoundingMode.HALF_UP)
+            Pair(calculatedRate, destAmount)
+        }
+
+        validateInitialAmountAndPrecision(sourceAmount, sourceSymbol)
+        val scaledDestAmount = precisionService.calculatePrecision(rawDestAmount, destSymbol)
+
+        validateMinimumAmount(sourceSymbol, sourceAmount, scaledDestAmount, destSymbol, finalRate)
+        validateMaximumAmount(sourceSymbol, sourceAmount, destSymbol, scaledDestAmount)
+        precisionService.validatePrecision(scaledDestAmount, destSymbol)
+        checkIfSystemHasEnoughBalance(destSymbol, receiverWalletType, scaledDestAmount)
+        val reserveNumber = UUID.randomUUID().toString()
+        val resp = reservedTransferManager.reserve(
+            ReservedTransfer(
+                reserveNumber = reserveNumber,
+                destSymbol = destSymbol,
+                sourceSymbol = sourceSymbol,
+                sourceAmount = sourceAmount,
+                senderUuid = senderUuid,
+                receiverUuid = receiverUuid,
+                senderWalletType = senderWalletType,
+                receiverWalletType = receiverWalletType,
+                reservedDestAmount = scaledDestAmount,
+                rate = finalRate
+            )
+        )
+
+        return with(resp) {
+            ReservedTransferResponse(
+                reserveNumber,
+                sourceSymbol,
+                destSymbol,
+                receiverUuid,
+                sourceAmount,
+                reservedDestAmount,
+                reserveDate,
+                expDate,
+                status
+            )
+        }
+    }
+
     @Transactional
     suspend fun advanceTransfer(
         reserveNumber: String,
         description: String?,
         transferRef: String?,
         issuer: String? = null,
-        //todo need to review
         transferCategory: TransferCategory = TransferCategory.PURCHASE_FINALIZED,
     ): TransferResultDetailed {
+        return executeAdvanceTransfer(
+            reserveNumber = reserveNumber,
+            description = description,
+            transferRef = transferRef,
+            transferCategory = transferCategory,
+            issuer = issuer,
+            validateIssuer = true
+        )
+    }
+
+    @Transactional
+    suspend fun advanceTransferByAdmin(
+        reserveNumber: String,
+        description: String?,
+        transferRef: String?,
+        transferCategory: TransferCategory = TransferCategory.IMPERSONATED_PURCHASE_FINALIZED,
+    ): TransferResultDetailed {
+        return executeAdvanceTransfer(
+            reserveNumber = reserveNumber,
+            description = description,
+            transferRef = transferRef,
+            transferCategory = transferCategory,
+            issuer = null,
+            validateIssuer = false
+        )
+    }
+
+    private suspend fun executeAdvanceTransfer(
+        reserveNumber: String,
+        description: String?,
+        transferRef: String?,
+        transferCategory: TransferCategory,
+        issuer: String?,
+        validateIssuer: Boolean
+    ): TransferResultDetailed {
+
         val reservations = reservedTransferManager.fetchValidReserve(reserveNumber)
             ?: throw OpexError.InvalidReserveNumber.exception()
-        if (!(issuer == null || reservations.senderUuid == issuer))
+
+        if (validateIssuer && !(issuer == null || reservations.senderUuid == issuer)) {
             throw OpexError.Forbidden.exception()
+        }
+
+        val refPrefix = transferRef?.let { "$it-" } ?: ""
+        val withdrawRef = "${refPrefix}${reserveNumber}-withdraw"
+        val depositRef = "${refPrefix}${reserveNumber}-deposit"
 
         val senderTransfer = _transfer(
-            reservations.sourceSymbol,
-            reservations.senderWalletType,
-            reservations.senderUuid,
-            WalletType.MAIN,
-            walletOwnerManager.systemUuid,
-            reservations.sourceAmount,
-            description,
-            "$transferRef-$reserveNumber-withdraw",
-            transferCategory,
-            reservations.sourceSymbol,
-            reservations.sourceAmount
+            symbol = reservations.sourceSymbol,
+            senderWalletType = reservations.senderWalletType,
+            senderUuid = reservations.senderUuid,
+            receiverWalletType = WalletType.MAIN,
+            receiverUuid = walletOwnerManager.systemUuid,
+            amount = reservations.sourceAmount,
+            description = description,
+            transferRef = withdrawRef,
+            transferCategory = transferCategory,
+            destSymbol = reservations.destSymbol,
+            destAmount = reservations.reservedDestAmount
         ).transferResult
 
         val receiverTransfer = _transfer(
-            reservations.destSymbol,
-            WalletType.MAIN,
-            walletOwnerManager.systemUuid,
-            reservations.receiverWalletType,
-            reservations.receiverUuid,
-            reservations.reservedDestAmount,
-            description,
-            "$transferRef-$reserveNumber-deposit",
-            transferCategory,
-            reservations.destSymbol,
-            reservations.reservedDestAmount
+            symbol = reservations.destSymbol,
+            senderWalletType = WalletType.MAIN,
+            senderUuid = walletOwnerManager.systemUuid,
+            receiverWalletType = reservations.receiverWalletType,
+            receiverUuid = reservations.receiverUuid,
+            amount = reservations.reservedDestAmount,
+            description = description,
+            transferRef = depositRef,
+            transferCategory = transferCategory,
+            destSymbol = reservations.destSymbol,
+            destAmount = reservations.reservedDestAmount
         ).transferResult
 
         reservedTransferManager.commitReserve(reserveNumber)
+
         return TransferResultDetailed(
             transferResult = TransferResult(
                 senderTransfer.date,
@@ -316,7 +428,10 @@ class TransferService(
         val minDestAmount = minPrecisionAmount(destPrecision)
 
         val minimumSource =
-            maxOf(minSourceAmount, minDestAmount.divide(rate, 10, RoundingMode.DOWN)).setScale(sourcePrecision, RoundingMode.DOWN)
+            maxOf(minSourceAmount, minDestAmount.divide(rate, 10, RoundingMode.DOWN)).setScale(
+                sourcePrecision,
+                RoundingMode.DOWN
+            )
         val minimumDest =
             maxOf(minDestAmount, minSourceAmount.multiply(rate)).setScale(destPrecision, RoundingMode.DOWN)
 
@@ -332,7 +447,7 @@ class TransferService(
         destAmount: BigDecimal,
     ) {
         suspend fun getMaxOrder(symbol: String): BigDecimal {
-            return currencyManager.fetchCurrencyMaxOrder(symbol)?: BigDecimal.ZERO
+            return currencyManager.fetchCurrencyMaxOrder(symbol) ?: BigDecimal.ZERO
         }
 
         if (sourceAmount > getMaxOrder(sourceSymbol) || destAmount > getMaxOrder(destSymbol)) {
