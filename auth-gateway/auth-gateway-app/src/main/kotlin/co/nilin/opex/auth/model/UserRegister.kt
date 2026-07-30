@@ -24,6 +24,8 @@ data class ConfirmRegisterRequest(
     val token: String,
     val clientId: String?,
     val clientSecret: String?,
+    val rememberMe: Boolean? = false,
+    val referralCode: String?
 ) : Device()
 
 data class TokenData(
