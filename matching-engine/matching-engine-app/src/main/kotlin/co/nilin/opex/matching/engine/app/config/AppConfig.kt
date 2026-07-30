@@ -4,8 +4,6 @@ import co.nilin.opex.matching.engine.app.bl.ExchangeEventHandler
 import co.nilin.opex.matching.engine.app.bl.OrderBooks
 import co.nilin.opex.matching.engine.app.listener.MatchingEngineEventListener
 import co.nilin.opex.matching.engine.app.listener.OrderListener
-import co.nilin.opex.matching.engine.core.engine.MatchingEngineRecoveryManager
-import co.nilin.opex.matching.engine.core.engine.OrderCommandProcessor
 import co.nilin.opex.matching.engine.core.model.PersistentOrderBook
 import co.nilin.opex.matching.engine.core.spi.OrderBookPersister
 import co.nilin.opex.matching.engine.ports.kafka.listener.consumer.EventKafkaListener
@@ -20,8 +18,6 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 class AppConfig(
-    private val recoveryManager: MatchingEngineRecoveryManager,
-    private val orderCommandProcessor: OrderCommandProcessor
 ) {
     @Autowired
     private lateinit var symbols: List<String>
@@ -60,7 +56,7 @@ class AppConfig(
 
     @Bean
     fun orderListener(): OrderListener {
-        return OrderListener(orderCommandProcessor,recoveryManager)
+        return OrderListener()
     }
 
     @Autowired
