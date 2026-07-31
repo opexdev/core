@@ -10,6 +10,6 @@ interface OrderBookStore {
         pairKey: String,
         expected: SimpleOrderBook,
         replacement: SimpleOrderBook
-    ): Boolean
+    )
 
 }

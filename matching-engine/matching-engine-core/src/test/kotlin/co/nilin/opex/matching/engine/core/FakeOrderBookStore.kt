@@ -24,21 +24,16 @@ class FakeOrderBookStore(
         pairKey: String,
         expected: SimpleOrderBook,
         replacement: SimpleOrderBook
-    ): Boolean {
+    ) {
         replaceCount++
 
         if (currentBook !== expected) {
-            return false
+            throw IllegalStateException("Invalid state, Current book has changed")
         }
 
         failure?.let { throw it }
 
-        if (currentBook !== expected) {
-            throw IllegalStateException("Current book has changed")
-        }
-
         currentBook = replacement
-        return true
     }
 
 }

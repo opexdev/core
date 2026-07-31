@@ -51,7 +51,7 @@ class OrderCommandProcessor(
          * Now make the prepared state live.
          */
         prepared.stateTransition?.let { transition ->
-            try {
+           try {
                 orderBookStore.replace(
                     pairKey = pairKey,
                     expected = currentBook,
@@ -66,6 +66,7 @@ class OrderCommandProcessor(
 
                 throw OpexError.TemporaryInUnavailable.exception()
             }
+
         }
     }
 

@@ -70,7 +70,7 @@ object OrderBooks : OrderBookStore {
         pairKey: String,
         expected: SimpleOrderBook,
         replacement: SimpleOrderBook
-    ): Boolean {
+    ) {
         synchronized(orderBooks) {
             val current = orderBooks[pairKey]
 
@@ -79,7 +79,6 @@ object OrderBooks : OrderBookStore {
             }
 
             orderBooks[pairKey] = replacement
-            return true
         }
 
     }
