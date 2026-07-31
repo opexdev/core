@@ -6,6 +6,8 @@ class PersistentOrderBook {
     var lastOrder: PersistentOrder? = null
     var orders: List<PersistentOrder>? = emptyList()
     var tradeCounter: Long = 0
+    var sequence: Long = 0
+    var orderCounter: Long = 0
 
     constructor() {
     }

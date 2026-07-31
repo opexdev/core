@@ -32,6 +32,8 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     WithdrawAmountExceeds(2006, "The requested withdraw amount exceeds your daily limit", HttpStatus.BAD_REQUEST),
     WithdrawLimitConfigNotFound(2007, "Withdraw limit config not found", HttpStatus.NOT_FOUND),
     // code 3000: matching-engine
+    TemporaryInUnavailable(3000, "Transaction is temporarily unavailable. Please try again later.", HttpStatus.SERVICE_UNAVAILABLE),
+
 
     // code 4000: matching-gateway
     SubmitOrderForbiddenByAccountant(4001, null, HttpStatus.BAD_REQUEST),

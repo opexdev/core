@@ -5,6 +5,7 @@ import co.nilin.opex.matching.engine.ports.kafka.listener.spi.OrderRequestEventL
 import kotlinx.coroutines.runBlocking
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.kafka.listener.MessageListener
+import org.springframework.kafka.support.KafkaUtils
 import org.springframework.stereotype.Component
 
 @Component
@@ -15,7 +16,7 @@ class OrderKafkaListener : MessageListener<String, OrderRequestEvent> {
     override fun onMessage(data: ConsumerRecord<String, OrderRequestEvent>) {
         orderListeners.forEach { tl ->
             runBlocking {
-                tl.onOrder(data.value(), data.partition(), data.offset(), data.timestamp())
+                tl.onOrder(data.value(), data.partition(), data.offset(), data.timestamp(), data.topic(), KafkaUtils.getConsumerGroupId())
             }
         }
     }

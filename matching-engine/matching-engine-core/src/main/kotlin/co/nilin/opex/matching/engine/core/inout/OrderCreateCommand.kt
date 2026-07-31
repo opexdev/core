@@ -7,12 +7,12 @@ import co.nilin.opex.matching.engine.core.model.Pair
 
 
 data class OrderCreateCommand(
-    val ouid: String,
-    val uuid: String,
-    val pair: Pair,
+    override val ouid: String,
+    override val uuid: String,
+    override val pair: Pair,
     val price: Long,
     val quantity: Long,
     val direction: OrderDirection,
     val matchConstraint: MatchConstraint,
     val orderType: OrderType
-)
+): OrderCommand

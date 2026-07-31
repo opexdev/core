@@ -1,18 +1,24 @@
 package co.nilin.opex.matching.engine.core.engine
 
-import co.nilin.opex.matching.engine.core.eventh.EventDispatcher
+import co.nilin.opex.matching.engine.core.eventh.OrderBookEventSink
 import co.nilin.opex.matching.engine.core.eventh.events.*
-import co.nilin.opex.matching.engine.core.inout.*
+import co.nilin.opex.matching.engine.core.inout.OrderCancelCommand
+import co.nilin.opex.matching.engine.core.inout.OrderCreateCommand
+import co.nilin.opex.matching.engine.core.inout.RejectReason
+import co.nilin.opex.matching.engine.core.inout.RequestedOperation
 import co.nilin.opex.matching.engine.core.model.*
 import exchange.core2.collections.art.LongAdaptiveRadixTreeMap
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 
-class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
+class SimpleOrderBook(
+    val pair: Pair,
+    var replayMode: Boolean,
+    var eventSink: OrderBookEventSink
+) : OrderBook {
 
     private val logger = LoggerFactory.getLogger(SimpleOrderBook::class.java)
-
     val askOrders = LongAdaptiveRadixTreeMap<Bucket>()
     val bidOrders = LongAdaptiveRadixTreeMap<Bucket>()
     val orders = TreeMap<Long, SimpleOrder>()
@@ -25,27 +31,28 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
 
     var lastOrder: SimpleOrder? = null
 
-    override fun handleNewOrderCommand(orderCommand: OrderCreateCommand): Order? {
+    var sequence: Long = 0
+
+    override suspend fun handleNewOrderCommand(orderCommand: OrderCreateCommand): Order? {
         logNewOrder(orderCommand)
         val order = when (orderCommand.matchConstraint) {
             MatchConstraint.GTC -> {
                 if (orderCommand.orderType == OrderType.MARKET_ORDER) {
-                    if (!replayMode) {
-                        EventDispatcher.emit(
-                            RejectOrderEvent(
-                                orderCommand.ouid,
-                                orderCommand.uuid,
-                                orderCommand.pair,
-                                orderCommand.price,
-                                orderCommand.quantity,
-                                orderCommand.direction,
-                                orderCommand.matchConstraint,
-                                orderCommand.orderType,
-                                RequestedOperation.PLACE_ORDER,
-                                RejectReason.ORDER_TYPE_NOT_MATCHED_MATCHC
-                            )
+                    emit(
+                        RejectOrderEvent(
+                            orderCommand.ouid,
+                            orderCommand.uuid,
+                            orderCommand.pair,
+                            orderCommand.price,
+                            orderCommand.quantity,
+                            orderCommand.direction,
+                            orderCommand.matchConstraint,
+                            orderCommand.orderType,
+                            RequestedOperation.PLACE_ORDER,
+                            RejectReason.ORDER_TYPE_NOT_MATCHED_MATCHC
                         )
-                    }
+                    )
+
                     return null
                 }
                 val order = SimpleOrder(
@@ -62,22 +69,21 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                     null,
                     null
                 )
-                if (!replayMode) {
-                    EventDispatcher.emit(
-                        CreateOrderEvent(
-                            orderCommand.ouid,
-                            orderCommand.uuid,
-                            order.id!!,
-                            orderCommand.pair,
-                            orderCommand.price,
-                            orderCommand.quantity,
-                            order.remainedQuantity(),
-                            orderCommand.direction,
-                            orderCommand.matchConstraint,
-                            orderCommand.orderType
-                        )
+                emit(
+                    CreateOrderEvent(
+                        orderCommand.ouid,
+                        orderCommand.uuid,
+                        order.id!!,
+                        orderCommand.pair,
+                        orderCommand.price,
+                        orderCommand.quantity,
+                        order.remainedQuantity(),
+                        orderCommand.direction,
+                        orderCommand.matchConstraint,
+                        orderCommand.orderType
                     )
-                }
+                )
+
                 // try to match instantly
                 val queueOrder = matchInstantly(order)
                 // if remained quantity > 0 add to queue
@@ -102,66 +108,59 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                     null,
                     null
                 )
-                if (!replayMode) {
-                    EventDispatcher.emit(
-                        CreateOrderEvent(
-                            orderCommand.ouid, orderCommand.uuid,
-                            order.id!!, orderCommand.pair, orderCommand.price,
-                            orderCommand.quantity, order.remainedQuantity(),
-                            orderCommand.direction, orderCommand.matchConstraint, orderCommand.orderType
-                        )
+                emit(
+                    CreateOrderEvent(
+                        orderCommand.ouid, orderCommand.uuid,
+                        order.id!!, orderCommand.pair, orderCommand.price,
+                        orderCommand.quantity, order.remainedQuantity(),
+                        orderCommand.direction, orderCommand.matchConstraint, orderCommand.orderType
                     )
-                }
+                )
                 // try to match instantly
                 val queueOrder = matchIocInstantly(order)
-                if (!replayMode) {
-                    if (queueOrder.filledQuantity != queueOrder.quantity) {
-                        EventDispatcher.emit(
-                            CancelOrderEvent(
-                                orderCommand.ouid,
-                                orderCommand.uuid,
-                                queueOrder.id!!,
-                                orderCommand.pair,
-                                order.price,
-                                order.quantity,
-                                order.remainedQuantity(),
-                                order.direction,
-                                order.matchConstraint,
-                                order.orderType
-                            )
+                if (queueOrder.filledQuantity != queueOrder.quantity) {
+                    emit(
+                        CancelOrderEvent(
+                            orderCommand.ouid,
+                            orderCommand.uuid,
+                            queueOrder.id!!,
+                            orderCommand.pair,
+                            order.price,
+                            order.quantity,
+                            order.remainedQuantity(),
+                            order.direction,
+                            order.matchConstraint,
+                            order.orderType
                         )
-                    }
+                    )
                 }
                 queueOrder
             }
 
             else -> {
-                if (!replayMode) {
-                    EventDispatcher.emit(
-                        RejectOrderEvent(
-                            orderCommand.ouid,
-                            orderCommand.uuid,
-                            orderCommand.pair,
-                            orderCommand.price,
-                            orderCommand.quantity,
-                            orderCommand.direction,
-                            orderCommand.matchConstraint,
-                            orderCommand.orderType,
-                            RequestedOperation.PLACE_ORDER,
-                            RejectReason.OPERATION_NOT_MATCHED_MATCHC
-                        )
+                emit(
+                    RejectOrderEvent(
+                        orderCommand.ouid,
+                        orderCommand.uuid,
+                        orderCommand.pair,
+                        orderCommand.price,
+                        orderCommand.quantity,
+                        orderCommand.direction,
+                        orderCommand.matchConstraint,
+                        orderCommand.orderType,
+                        RequestedOperation.PLACE_ORDER,
+                        RejectReason.OPERATION_NOT_MATCHED_MATCHC
                     )
-                }
+                )
                 null
             }
         }
         lastOrder = order
-        EventDispatcher.emit(OrderBookPublishedEvent(persistent()))
         logCurrentState()
         return order
     }
 
-    override fun handleCancelCommand(orderCommand: OrderCancelCommand) {
+    override suspend fun handleCancelCommand(orderCommand: OrderCancelCommand) {
         logger.info(
             """
             ---- CANCEL ${orderCommand.pair.leftSideName}-${orderCommand.pair.rightSideName} ----
@@ -174,18 +173,16 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
         val simpleOrder = orders.entries.find { it.value.ouid == orderCommand.ouid }
         val order = simpleOrder?.value
         if (order == null /*check for userid*/) {
-            if (!replayMode) {
-                EventDispatcher.emit(
-                    RejectOrderEvent(
-                        orderCommand.ouid,
-                        orderCommand.uuid,
-                        orderCommand.orderId,
-                        orderCommand.pair,
-                        RequestedOperation.CANCEL_ORDER,
-                        RejectReason.ORDER_NOT_FOUND
-                    )
+            emit(
+                RejectOrderEvent(
+                    orderCommand.ouid,
+                    orderCommand.uuid,
+                    orderCommand.orderId,
+                    orderCommand.pair,
+                    RequestedOperation.CANCEL_ORDER,
+                    RejectReason.ORDER_NOT_FOUND
                 )
-            }
+            )
             return
         } else {
             orders.remove(simpleOrder.key)
@@ -200,149 +197,17 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
                 bestAskOrder = newBestOrder
             }
         }
-        if (!replayMode) {
-            EventDispatcher.emit(
-                CancelOrderEvent(
-                    orderCommand.ouid, orderCommand.uuid,
-                    orderCommand.orderId, orderCommand.pair,
-                    order.price, order.quantity,
-                    order.remainedQuantity(), order.direction,
-                    order.matchConstraint, order.orderType
-                )
+        emit(
+            CancelOrderEvent(
+                orderCommand.ouid, orderCommand.uuid,
+                orderCommand.orderId, orderCommand.pair,
+                order.price, order.quantity,
+                order.remainedQuantity(), order.direction,
+                order.matchConstraint, order.orderType
             )
-        }
-        EventDispatcher.emit(OrderBookPublishedEvent(persistent()))
-        logCurrentState()
-    }
-
-    override fun handleEditCommand(orderCommand: OrderEditCommand): Order? {
-        val order = orders.remove(orderCommand.orderId)
-        if (order == null /*check for userid*/) {
-            if (!replayMode) {
-                EventDispatcher.emit(
-                    RejectOrderEvent(
-                        orderCommand.ouid,
-                        orderCommand.uuid,
-                        orderCommand.orderId,
-                        orderCommand.pair,
-                        RequestedOperation.EDIT_ORDER,
-                        RejectReason.ORDER_NOT_FOUND
-                    )
-                )
-            }
-            return order
-        }
-        if (order.direction == OrderDirection.BID) {
-            handleCancelOrder(order, bidOrders, bestBidOrder) { newBestOrder: SimpleOrder? ->
-                bestBidOrder = newBestOrder
-            }
-        } else {
-            handleCancelOrder(order, askOrders, bestAskOrder) { newBestOrder: SimpleOrder? ->
-                bestAskOrder = newBestOrder
-            }
-        }
-        val newOrder = SimpleOrder(
-            order.id,
-            orderCommand.ouid,
-            orderCommand.uuid,
-            orderCommand.price,
-            orderCommand.quantity,
-            order.matchConstraint,
-            order.orderType,
-            order.direction,
-            order.filledQuantity,
-            null,
-            null,
-            null
         )
 
-        return when (order.matchConstraint) {
-            MatchConstraint.GTC -> {
-                if (!replayMode) {
-                    EventDispatcher.emit(
-                        UpdatedOrderEvent(
-                            orderCommand.ouid, orderCommand.uuid,
-                            order.id!!, orderCommand.pair, order.price, order.quantity,
-                            orderCommand.price, orderCommand.quantity, order.remainedQuantity(),
-                            order.direction, order.matchConstraint, order.orderType
-                        )
-                    )
-                }
-                // try to match instantly
-                val queueOrder = matchInstantly(newOrder)
-                //if remained quantity > 0 add to queue
-                if (queueOrder.filledQuantity != queueOrder.quantity) {
-                    putGtcInQueue(queueOrder)
-                }
-                EventDispatcher.emit(OrderBookPublishedEvent(persistent()))
-                queueOrder
-            }
-
-            MatchConstraint.IOC -> {
-                if (!replayMode) {
-                    EventDispatcher.emit(
-                        UpdatedOrderEvent(
-                            orderCommand.ouid,
-                            orderCommand.uuid,
-                            order.id!!,
-                            orderCommand.pair,
-                            order.price,
-                            order.quantity,
-                            orderCommand.price,
-                            orderCommand.quantity,
-                            order.remainedQuantity(),
-                            order.direction,
-                            order.matchConstraint,
-                            order.orderType
-                        )
-                    )
-                }
-                // try to match instantly
-                val queueOrder = matchIocInstantly(newOrder)
-                if (!replayMode) {
-                    if (queueOrder.filledQuantity != queueOrder.quantity) {
-                        EventDispatcher.emit(
-                            CancelOrderEvent(
-                                orderCommand.ouid,
-                                orderCommand.uuid,
-                                queueOrder.id!!,
-                                orderCommand.pair,
-                                order.price,
-                                order.quantity,
-                                order.remainedQuantity(),
-                                order.direction,
-                                order.matchConstraint,
-                                order.orderType
-                            )
-                        )
-                    }
-                }
-                EventDispatcher.emit(OrderBookPublishedEvent(persistent()))
-                queueOrder
-            }
-
-            else -> {
-                if (!replayMode) {
-                    EventDispatcher.emit(
-                        RejectOrderEvent(
-                            orderCommand.ouid,
-                            orderCommand.uuid,
-                            orderCommand.orderId,
-                            orderCommand.pair,
-                            orderCommand.price,
-                            orderCommand.quantity,
-                            order.direction,
-                            order.matchConstraint,
-                            order.orderType,
-                            RequestedOperation.EDIT_ORDER,
-                            RejectReason.OPERATION_NOT_MATCHED_MATCHC
-                        )
-                    )
-                }
-                null
-            }
-        }
-
+        logCurrentState()
     }
 
     private fun handleCancelOrder(
@@ -366,7 +231,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
             setBestOrder(bestOrder.worse)
     }
 
-    private fun matchInstantly(order: SimpleOrder): SimpleOrder {
+    private suspend fun matchInstantly(order: SimpleOrder): SimpleOrder {
         if (order.direction == OrderDirection.BID) {
             return matchInstantly(order, bestAskOrder, askOrders, { makerPrice: Long ->
                 makerPrice <= order.price
@@ -382,7 +247,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
         }
     }
 
-    private fun matchIocInstantly(order: SimpleOrder): SimpleOrder {
+    private suspend fun matchIocInstantly(order: SimpleOrder): SimpleOrder {
         if (order.direction == OrderDirection.BID) {
             return matchInstantly(order, bestAskOrder, askOrders, { makerPrice: Long ->
                 order.orderType == OrderType.MARKET_ORDER || makerPrice <= order.price
@@ -415,7 +280,7 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
         }
     }
 
-    private fun matchInstantly(
+    private suspend fun matchInstantly(
         order: SimpleOrder,
         makerOrder: SimpleOrder?,
         queue: LongAdaptiveRadixTreeMap<Bucket>,
@@ -433,28 +298,27 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
             order.filledQuantity += instantMatchQuantity
             currentMaker.filledQuantity += instantMatchQuantity
             currentMaker.bucket!!.totalQuantity -= instantMatchQuantity
-            if (!replayMode) {
-                EventDispatcher.emit(
-                    TradeEvent(
-                        tradeCounter.incrementAndGet(),
-                        pair,
-                        order.ouid,
-                        order.uuid,
-                        order.id
-                            ?: 0,
-                        order.direction,
-                        order.price,
-                        order.remainedQuantity(),
-                        currentMaker.ouid,
-                        currentMaker.uuid,
-                        currentMaker.id!!,
-                        currentMaker.direction,
-                        currentMaker.price,
-                        currentMaker.remainedQuantity(),
-                        instantMatchQuantity
-                    )
+            emit(
+                TradeEvent(
+                    tradeCounter.incrementAndGet(),
+                    pair,
+                    order.ouid,
+                    order.uuid,
+                    order.id
+                        ?: 0,
+                    order.direction,
+                    order.price,
+                    order.remainedQuantity(),
+                    currentMaker.ouid,
+                    currentMaker.uuid,
+                    currentMaker.id!!,
+                    currentMaker.direction,
+                    currentMaker.price,
+                    currentMaker.remainedQuantity(),
+                    instantMatchQuantity
                 )
-            }
+            )
+
             if (currentMaker.remainedQuantity() == 0L) {
                 currentMaker.bucket!!.ordersCount--
             }
@@ -552,37 +416,41 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
         return lastOrder
     }
 
-    private fun persistent(): PersistentOrderBook {
-        val persistent = PersistentOrderBook(pair)
-        persistent.lastOrder = lastOrder?.persistent()
-        persistent.orders = orders.values.map { order -> order.persistent() }
-        persistent.tradeCounter = tradeCounter.get()
-        return persistent
-    }
 
     fun rebuild(persistentOrderBook: PersistentOrderBook) {
-        persistentOrderBook.orders?.map { order ->
-            SimpleOrder(
-                order.id,
-                order.ouid,
-                order.uuid,
-                order.price,
-                order.quantity,
-                order.matchConstraint,
-                order.orderType,
-                order.direction,
-                order.filledQuantity,
-                null,
-                null,
-                null
-            )
-        }?.filter { order ->
-            order.matchConstraint == MatchConstraint.GTC
-        }?.forEach { order -> putGtcInQueue(order) }
+        persistentOrderBook.orders
+            ?.filter { order ->
+                order.matchConstraint == MatchConstraint.GTC
+            }
+            ?.map { order ->
+                order.toSimpleOrderBook()
+            }?.forEach { order -> putGtcInQueue(order) }
 
-        orderCounter.set(persistentOrderBook.lastOrder?.id ?: 0)
+        orderCounter.set(persistentOrderBook.orderCounter)
         tradeCounter.set(persistentOrderBook.tradeCounter)
+        sequence = persistentOrderBook.sequence
+// Reuse the existing in-memory order instance when available instead of creating a duplicate object.
+        lastOrder = persistentOrderBook.lastOrder?.let { lo ->
+            orders.getOrDefault(lo.id, lo.toSimpleOrderBook())
+        }
     }
+
+    private fun PersistentOrder.toSimpleOrderBook(): SimpleOrder =
+        SimpleOrder(
+            id,
+            ouid,
+            uuid,
+            price,
+            quantity,
+            matchConstraint,
+            orderType,
+            direction,
+            filledQuantity,
+            null,
+            null,
+            null
+        )
+
 
     private fun logNewOrder(orderCommand: OrderCreateCommand) {
         logger.info(
@@ -613,4 +481,23 @@ class SimpleOrderBook(val pair: Pair, var replayMode: Boolean) : OrderBook {
         """.trimIndent()
         )
     }
+
+    private suspend fun emit(event: CoreEvent) {
+        if (!replayMode) {
+            eventSink.emit(event)
+        }
+    }
+
+    fun snapshot(): PersistentOrderBook {
+        val snapshot = PersistentOrderBook(pair)
+        snapshot.sequence = sequence
+        snapshot.orderCounter = orderCounter.get()
+        snapshot.tradeCounter = tradeCounter.get()
+        snapshot.lastOrder = lastOrder?.persistent()
+        snapshot.orders = orders.values.map { order ->
+            order.persistent()
+        }
+        return snapshot
+    }
+
 }

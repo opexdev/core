@@ -4,5 +4,5 @@ import co.nilin.opex.matching.engine.core.inout.OrderRequestEvent
 
 interface OrderRequestEventListener {
     fun id(): String
-    suspend fun onOrder(order: OrderRequestEvent, partition: Int, offset: Long, timestamp: Long)
+    suspend fun onOrder(order: OrderRequestEvent, partition: Int, offset: Long, timestamp: Long, topic: String, consumerGroupId: String)
 }

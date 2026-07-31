@@ -7,5 +7,6 @@ data class WalletOwner(
     val level: String,
     val isTradeAllowed: Boolean,
     val isWithdrawAllowed: Boolean,
-    val isDepositAllowed: Boolean
+    val isDepositAllowed: Boolean,
+    val externalIdentifier: String? = null
 )

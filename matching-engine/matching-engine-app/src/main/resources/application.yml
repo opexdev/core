@@ -8,6 +8,9 @@ spring:
     bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
     consumer:
       group-id: engine
+    producer:
+      properties:
+        max.request.size: 2097152
   redis:
     host: ${REDIS_HOST:localhost}
     port: 6379

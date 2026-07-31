@@ -10,6 +10,7 @@ import co.nilin.opex.wallet.core.spi.WalletOwnerManager
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
+import org.apache.kafka.common.message.ListOffsetsRequestData
 import org.springframework.core.env.Environment
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -37,14 +38,20 @@ class WalletOwnerController(
             )
         )
     )
-    suspend fun getAllWallets(@PathVariable uuid: String): List<WalletData> {
+    suspend fun getAllWallets(@PathVariable uuid: String): List<WalletData>? {
+        val externalIdentifier= currentUserProvider.getCurrentUser()?.identityId
         val owner = walletOwnerManager.findWalletOwner(uuid) ?: run {
             if (currentUserProvider.getCurrentUser()?.uuid.equals(uuid) && environment.activeProfiles.contains("otc"))
                 walletOwnerManager.createWalletOwner(
-                    uuid, currentUserProvider.getCurrentUser()?.mobile ?: "not set", "", currentUserProvider.getCurrentUser()?.identityId
+                    uuid,
+                    currentUserProvider.getCurrentUser()?.mobile ?: "not set",
+                    "",
+                    externalIdentifier
                 )
-            throw OpexError.WalletOwnerNotFound.exception()
+            return null
         }
+        if (owner.externalIdentifier != externalIdentifier)
+            walletOwnerManager.updateWalletOwnerExternalIdentifier(uuid, externalIdentifier)
         val wallets = walletManager.findWalletsByOwner(owner)
         return balanceParser.parse(wallets)
     }
