@@ -260,7 +260,7 @@ class TransferService(
         val withdrawRef = "${refPrefix}${reserveNumber}-withdraw"
         val depositRef = "${refPrefix}${reserveNumber}-deposit"
 
-        val senderTransfer = _transfer(
+        val senderTransfer = (
             symbol = reservations.sourceSymbol,
             senderWalletType = reservations.senderWalletType,
             senderUuid = reservations.senderUuid,
@@ -271,10 +271,10 @@ class TransferService(
             transferRef = withdrawRef,
             transferCategory = transferCategory,
             destSymbol = reservations.destSymbol,
-            destAmount = reservations.reservedDestAmount
+            destAmount = reservations.sourceAmount
         ).transferResult
 
-        val receiverTransfer = _transfer(
+        val receiverTransfer = (
             symbol = reservations.destSymbol,
             senderWalletType = WalletType.MAIN,
             senderUuid = walletOwnerManager.systemUuid,
