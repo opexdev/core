@@ -107,7 +107,7 @@ class AuthProxyImpl(@Qualifier("generalWebClient") private val webClient: WebCli
 
     override suspend fun confirmRegister(request: ConfirmRegisterRequest): Token {
         return webClient.post()
-            .uri("$baseUrl/v1/user/public/register/ccofirm")
+            .uri("$baseUrl/v1/user/public/register/confirm")
             .accept(MediaType.APPLICATION_JSON)
             .body(Mono.just(request))
             .retrieve()

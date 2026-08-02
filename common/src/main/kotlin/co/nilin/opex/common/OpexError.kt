@@ -48,7 +48,6 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     AlreadyInKYC(5007, "KYC flow for this user has executed", HttpStatus.BAD_REQUEST),
     UserKYCBlocked(5008, "User is blocked from KYC", HttpStatus.BAD_REQUEST),
     InvalidPassword(5009, "Password is not valid", HttpStatus.BAD_REQUEST),
-    UserAlreadyExists(5009, "User is already registered", HttpStatus.BAD_REQUEST),
     LoginIsLimited(5010, "Your email is not in whitelist", HttpStatus.BAD_REQUEST),
     RegisterIsLimited(5011, "Your email is not in whitelist", HttpStatus.BAD_REQUEST),
     GmailNotFoundInToken(5012, "Email not found in Google token", HttpStatus.NOT_FOUND),
@@ -61,6 +60,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     InternalIdGenerateFailed(5019, "Internal id generate failed", HttpStatus.INTERNAL_SERVER_ERROR),
     CaptchaRequired(5020, "Captcha required", HttpStatus.BAD_REQUEST),
     UsernameOrPasswordIsIncorrect(5021, "Username or password is incorrect", HttpStatus.BAD_REQUEST),
+    UserAlreadyExists(5022, "User is already registered", HttpStatus.BAD_REQUEST),
 
     // code 6000: wallet
     WalletOwnerNotFound(6001, null, HttpStatus.NOT_FOUND),
