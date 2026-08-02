@@ -270,8 +270,8 @@ class TransferService(
             description = description,
             transferRef = withdrawRef,
             transferCategory = transferCategory,
-            destSymbol = reservations.destSymbol,
-            destAmount = reservations.reservedDestAmount
+            destSymbol = reservations.sourceSymbol,
+            destAmount = reservations.sourceAmount
         ).transferResult
 
         val receiverTransfer = _transfer(
