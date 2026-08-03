@@ -44,6 +44,8 @@ spring:
         instance-id: ${spring.application.name}:${server.port}
         healthCheckInterval: 20s
         prefer-ip-address: true
+  config:
+    import: vault://secret/${spring.application.name}
 management:
   endpoints:
     web:
