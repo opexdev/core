@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
+import reactor.core.publisher.Flux
 
 class SMSProviderRouterTest {
 
@@ -41,9 +42,9 @@ class SMSProviderRouterTest {
     fun givenNoMatchingRoute_whenGetProvider_thenDefaultProviderReturned(): Unit = runBlocking {
         Mockito.`when`(repository.findAllByEnabledTrue())
             .thenReturn(
-                listOf(
-                    SMSProviderRoute(1,"+98", SMSProviderType.SMSTO.name),
-                    SMSProviderRoute(2,"+989", SMSProviderType.KAVENEGAR.name),
+                Flux.just(
+                    SMSProviderRoute(1, "+98", SMSProviderType.SMSTO.name),
+                    SMSProviderRoute(2, "+989", SMSProviderType.KAVENEGAR.name),
                 )
             )
         val provider = router.getProvider("+447700123456")
@@ -54,9 +55,9 @@ class SMSProviderRouterTest {
     fun givenNoMatchingRoute_whenGetProvider_thenLongestMatchedProviderReturned(): Unit = runBlocking {
         Mockito.`when`(repository.findAllByEnabledTrue())
             .thenReturn(
-                listOf(
-                    SMSProviderRoute(1,"+98", SMSProviderType.SMSTO.name),
-                    SMSProviderRoute(2,"+989", SMSProviderType.KAVENEGAR.name),
+                Flux.just(
+                    SMSProviderRoute(1, "+98", SMSProviderType.SMSTO.name),
+                    SMSProviderRoute(2, "+989", SMSProviderType.KAVENEGAR.name),
                 )
             )
         val provider = router.getProvider("+989556677788")
@@ -67,10 +68,10 @@ class SMSProviderRouterTest {
     fun givenNoMatchingRoute_whenGetProvider_thenMatchedProviderReturned(): Unit = runBlocking {
         Mockito.`when`(repository.findAllByEnabledTrue())
             .thenReturn(
-                listOf(
-                    SMSProviderRoute(1,"+98", SMSProviderType.SMSTO.name),
-                    SMSProviderRoute(2,"+989", SMSProviderType.KAVENEGAR.name),
-                    SMSProviderRoute(3,"+44", SMSProviderType.TWILIO.name),
+                Flux.just(
+                    SMSProviderRoute(1, "+98", SMSProviderType.SMSTO.name),
+                    SMSProviderRoute(2, "+989", SMSProviderType.KAVENEGAR.name),
+                    SMSProviderRoute(3, "+44", SMSProviderType.TWILIO.name),
 
                     )
             )
