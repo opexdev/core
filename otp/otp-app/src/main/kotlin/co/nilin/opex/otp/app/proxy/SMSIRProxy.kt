@@ -32,8 +32,8 @@ class SMSIRProxy(
             .queryParam("password", config.password)
             .queryParam("mobile", receiver)
             .queryParam("line", config.sender)
-            .queryParam("text", "otp code : $message")
-            .build(true)
+            .queryParam("text", "Your OTP code is $message")
+            .build()
             .toUri()
 
         return try {
