@@ -17,6 +17,8 @@ import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
+import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -55,7 +57,15 @@ class OrderPersisterImpl(
             LocalDateTime.now(),
             LocalDateTime.now()
         )
-        orderRepository.save(orderModel).awaitFirstOrNull()
+        try {
+            orderRepository.save(orderModel).awaitFirstOrNull()
+        } catch (e: DuplicateKeyException) {
+            logger.info("order ${order.ouid} is duplicate; skipping create flow")
+            return
+        } catch (e: DataIntegrityViolationException) {
+            logger.info("order ${order.ouid} is duplicate; skipping create flow")
+            return
+        }
         logger.info("order ${order.ouid} saved")
 
         orderStatusRepository.insert(
@@ -83,12 +93,19 @@ class OrderPersisterImpl(
 
     @Transactional
     override suspend fun update(orderUpdate: RichOrderUpdate) {
+        val order = orderRepository.findByOuid(orderUpdate.ouid).awaitFirstOrNull()
+            ?: throw IllegalStateException("Order ${orderUpdate.ouid} not found for update event")
+        val updateTime = orderUpdate.updateDate ?: LocalDateTime.now()
+
+        orderRepository.touchUpdateDateByOuid(orderUpdate.ouid, updateTime).awaitFirstOrNull()
+
         orderStatusRepository.insert(
             orderUpdate.ouid,
             orderUpdate.executedQuantity(),
             orderUpdate.accumulativeQuoteQuantity(),
             orderUpdate.status.code,
-            orderUpdate.status.orderOfAppearance
+            orderUpdate.status.orderOfAppearance,
+            updateTime
         ).awaitFirstOrNull()
         logger.info("OrderStatus ${orderUpdate.ouid} updated with status of ${orderUpdate.status}")
 
@@ -101,7 +118,6 @@ class OrderPersisterImpl(
             openOrderRepository.delete(orderUpdate.ouid).awaitSingleOrNull()
             logger.info("Order ${orderUpdate.ouid} deleted from open orders")
         }
-        val order = orderRepository.findByOuid(orderUpdate.ouid).awaitFirstOrNull() ?: return
         marketOrderProducer.openOrderUpdate(order.uuid, order.symbol)
     }
 

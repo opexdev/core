@@ -253,7 +253,8 @@ open class OrderManagerImpl(
                     OrderStatus.NEW.code
                 } else {
                     OrderStatus.PARTIALLY_FILLED.code
-                }
+                },
+                LocalDateTime.now()
             )
         )
     }
