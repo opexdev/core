@@ -1,6 +1,6 @@
-package co.nilin.opex.auth.model
+package co.nilin.opex.api.core.inout.auth
 
-import co.nilin.opex.auth.data.Device
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
 data class RegisterUserRequest(
     val username: String,
@@ -10,6 +10,7 @@ data class RegisterUserRequest(
     val captchaCode: String,
 )
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class VerifyOTPRequest(
     val username: String,
     val otp: String,
@@ -24,8 +25,8 @@ data class ConfirmRegisterRequest(
     val token: String,
     val clientId: String?,
     val clientSecret: String?,
-    val rememberMe: Boolean? = false,
-    val referralCode: String?
+    val referralCode: String?,
+    val rememberMe: Boolean?
 ) : Device()
 
 data class TokenData(

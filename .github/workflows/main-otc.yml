@@ -112,8 +112,8 @@ jobs:
 
       - name: Run Tests
         run: |
-          mvn -pl common -am -B -T 1C -Dskip.unit.tests=false surefire:test
-          mvn -pl wallet,bc-gateway -amd  -B -T 1C -Dskip.unit.tests=false surefire:test
+          mvn -pl common -am -B -Dskip.unit.tests=false surefire:test
+          mvn -pl wallet,bc-gateway -amd  -B -Dskip.unit.tests=false surefire:test
 
       - name: Build Docker images
         run: docker compose -f docker-compose-otc.build.yml build

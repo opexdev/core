@@ -81,6 +81,8 @@ class RegisterService(
             null
         else {
             val token = keycloakProxy.getUserToken(username, request.password, request.clientId, request.clientSecret)
+            if (request.rememberMe == false)
+                token.refreshToken = null
             sendLoginEvent(user.id, token.sessionState, request, token.expiresIn)
             return token
         }

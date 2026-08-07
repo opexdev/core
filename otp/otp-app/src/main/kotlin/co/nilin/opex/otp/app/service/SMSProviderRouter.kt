@@ -3,6 +3,7 @@ package co.nilin.opex.otp.app.service;
 import co.nilin.opex.otp.app.data.SMSProviderType;
 import co.nilin.opex.otp.app.proxy.SMSProvider;
 import co.nilin.opex.otp.app.repository.SMSProviderRouteRepository
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component;
 
@@ -20,8 +21,10 @@ class SMSProviderRouter(
         val routes = routeRepository.findAllByEnabledTrue()
 
         val providerType = routes
-            .sortedByDescending { it.prefix.length }
-            .firstOrNull { receiver.startsWith(it.prefix) }
+            .collectList()
+            .awaitSingleOrNull()
+            ?.sortedByDescending { it.prefix.length }
+            ?.firstOrNull { receiver.startsWith(it.prefix) }
             ?.provider
             ?.let(SMSProviderType::valueOf)
             ?: defaultSmsProvider

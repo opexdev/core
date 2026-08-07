@@ -196,7 +196,7 @@ class ProfileManagementImp(
     }
 
     override suspend fun validateMobileForUpdate(userId: String, mobile: String) {
-        validateMobileFormat(mobile)
+//        validateMobileFormat(mobile)
 
         val profile = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
             ?: throw OpexError.ProfileNotfound.exception()

@@ -51,43 +51,145 @@ You need to have [Maven](https://maven.apache.org) and [Docker](https://www.dock
 
 ## <a name="environment-variables"></a>Environment Variables
 ```
-APP_NAME=Opex-local
-APP_BASE_URL=localhost:8080
+APP_NAME=Opex
+APP_BASE_URL=http://localhost:8094
 PANEL_PASS=admin
 BACKEND_USER=admin
-KEYCLOAK_ADMIN_USERNAME=opex
-KEYCLOAK_ADMIN_PASSWORD=hiopex
-SMTP_PASSWORD=x
+SMTP_PASS=x
+OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET=x
 API_KEY_CLIENT_SECRET=x
-KEYCLOAK_FRONTEND_URL=http://localhost:8083/auth
-KEYCLOAK_ADMIN_URL=http://localhost:8083/auth
+KEYCLOAK_FRONTEND_URL=http://localhost:8193
+KEYCLOAK_ADMIN_URL=http://localhost:8193/
 KEYCLOAK_VERIFY_REDIRECT_URL=http://localhost:8080/verify
 KEYCLOAK_FORGOT_REDIRECT_URL=http://localhost:8080/forgot
+PREFERENCES=preferences.yml
+LOGSTASH_ELASTIC_USER=x
+LOGSTASH_ELASTIC_PASSWORD=x
+KIBANA_ELASTIC_USER=x
+KIBANA_ELASTIC_PASSWORD=x
+GRAFANA_PASSWORD=x
+DRIVE_FOLDER_ID=x
+STORAGE_FOLDER_ID=x
+WALLET_BACKUP_ENABLED_STORAGE=false
+WALLET_BACKUP_ENABLED_GOOGLE_DRIVE=false
 WHITELIST_REGISTER_ENABLED=true
 WHITELIST_LOGIN_ENABLED=true
-WALLET_BACKUP_ENABLED=false
-OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET=x
+VANDAR_API_KEY=x
 TAG=debug
+KC_DB_USERNAME=admin
+KC_DB_PASSWORD=admin
+KC_PANEL_USERNAME=admin
+KC_PANEL_PASSWORD=admin
+DB_USER=opex
+DB_PASS=hiopex
+SMTP_HOST=x
+SMTP_USER=x
+SMTP_PASS=x
+CLIENT_ID=X
+CLIENT_SECRET=X
+SMS_PROVIDER_API_KEY=x
+KC_GOOGLE_CLIENT_ID=x
+KC_GOOGLE_CLIENT_SECRET=***
+KC_ADMIN_CLIENT_SECRET=x
+KAFKA_CLUSTER_ID=x
+JIBIT_API_KEY=x
+JIBIT_SECRET_KEY=x
+JIBIT_URL=x
+WITHDRAW_LIMIT_ENABLED=true
+WITHDRAW_OTP_REQUIRED_COUNT=0
+WITHDRAW_BANK_ACCOUNT_VALIDATION=false
+TRADE_VOLUME_CALCULATION_CURRENCY= USDT
+WITHDRAW_VOLUME_CALCULATION_CURRENCY= USDT
+TOTAL_ASSET_CALCULATION_CURRENCY= USDT
+ADMIN_APPROVAL_PROFILE_COMPLETION_REQUEST=true
+MOBILE_IDENTITY_INQUIRY= false
+PERSONAL_IDENTITY_INQUIRY= false
+ADMIN_APPROVAL_BANK_ACCOUNT=false
+KC_PRE_AUTH_CLIENT_SECRET=
+KC_ISSUER_URL=http://keycloak:8080/realms/opex
+OTP_CODE_RESPONSE_ENABLED=true
+CAPTCHA_ENABLED=false
+JWK_ENDPOINT=x
+SMTP_PROXY_HOST=x
+SMTP_PROXY_PORT=x
+SMTP_PROXY_ENABLED=false
+SWAGGER_API_DOCS_ENABLED="true"
+SWAGGER_UI_ENABLED="true"
+SWAGGER_AUTH_ENABLED="false"
+SWAGGER_AUTH_AUTHORITY="ROLE_admin"
 ```
-| Variable                                                                                                            | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-|:--------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| APP_NAME<br/>APP_BASE_URL                                                                                           | Application metadata used by Keycloak                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| PANEL_PASS                                                                                                          | Vault's admin panel password                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| BACKEND_USER                                                                                                        | Username used by services to access vault data. Also used as the username for Vault admin panel                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| KEYCLOAK_ADMIN_USERNAME                                                                                             | Username for Keycloak admin panel                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| KEYCLOAK_ADMIN_PASSWORD                                                                                             | Password for Keycloak admin panel                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| SMTP_PASSWORD                                                                                                           | SMTP password used by keycloak to send emails for various operations (e.g. user verification, reset password)                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| API_KEY_CLIENT_SECRET                                                                                               | In order to access the api key feature, please follow the steps below:</br>1. Go to Keycloak admin panel located at http://localhost:8083/auth/admin/master/console/#/realms/opex/clients <br/>2. Login with the username and password you provided in the `.env` file (KEYCLOAK_ADMIN_USERNAME and KEYCLOAK_ADMIN_PASSWORD)<br/>3. Go to `clients` section on the left menu </br>4. Click on `opex-api-key` client </br>5. In the credentials section, click on `Regenerate Secret` button </br>6. Copy the generated secret and paste it into this section |
-| KEYCLOAK_FRONTEND_URL<br/>KEYCLOAK_ADMIN_URL<br/>KEYCLOAK_VERIFY_REDIRECT_URL<br/>KEYCLOAK_FORGOT_REDIRECT_URL      | Replace `localhost` with your server's IP if you're not running on local machine. Do not change the rest.                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| WHITELIST_REGISTER_ENABLED                                                                                          | Allows registration only for whitelisted emails                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| WHITELIST_LOGIN_ENABLED                                                                                             | Allows login only for whitelisted emails                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| WALLET_BACKUP_ENABLED                                                                                               | Enables wallet data backup to google drive folder. In order to use this feature, you need to have `drive-key.json` file (obtained from google drive API panel) in the root directory of project                                                                                                                                                                                                                                                                                                                                                              |
-| OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET                                                                                   | Ignore this for now. Will be removed soon                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| Tag                                                                                                                 | Labels locally built docker images                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| Variable                                    | Description                                                                                                                       |
+| :------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------- |
+| `APP_NAME`                                  | Application name.                                                                                                                 |
+| `APP_BASE_URL`                              | Base URL of the application.                                                                                                      |
+| `PANEL_PASS`                                | Password for the Vault admin panel.                                                                                               |
+| `BACKEND_USER`                              | Username used by backend services to access Vault data and the Vault admin panel.                                                 |
+| `SMTP_PASS`                                 | Password used by Keycloak to authenticate with the SMTP server for sending emails such as verification and password reset emails. |
+| `OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET`         | Ignore this for now. Will be removed soon.                                                                                        |
+| `API_KEY_CLIENT_SECRET`                     | Secret used to access the API key functionality.                                                                                  |
+| `KEYCLOAK_FRONTEND_URL`                     | URL used by the frontend to communicate with Keycloak.                                                                            |
+| `KEYCLOAK_ADMIN_URL`                        | URL used to access the Keycloak admin panel.                                                                                      |
+| `KEYCLOAK_VERIFY_REDIRECT_URL`              | Redirect URL used after successful email verification.                                                                            |
+| `KEYCLOAK_FORGOT_REDIRECT_URL`              | Redirect URL used for the forgot-password flow.                                                                                   |
+| `PREFERENCES`                               | Path to the application's preferences configuration file.                                                                         |
+| `LOGSTASH_ELASTIC_USER`                     | Username used by Logstash to authenticate with Elasticsearch.                                                                     |
+| `LOGSTASH_ELASTIC_PASSWORD`                 | Password used by Logstash to authenticate with Elasticsearch.                                                                     |
+| `KIBANA_ELASTIC_USER`                       | Username used by Kibana to authenticate with Elasticsearch.                                                                       |
+| `KIBANA_ELASTIC_PASSWORD`                   | Password used by Kibana to authenticate with Elasticsearch.                                                                       |
+| `GRAFANA_PASSWORD`                          | Password used to access Grafana.                                                                                                  |
+| `DRIVE_FOLDER_ID`                           | Google Drive folder ID used for storing backups.                                                                                  |
+| `STORAGE_FOLDER_ID`                         | Storage folder ID used for storing backups.                                                                                       |
+| `WALLET_BACKUP_ENABLED_STORAGE`             | Enables or disables wallet backup to the configured storage.                                                                      |
+| `WALLET_BACKUP_ENABLED_GOOGLE_DRIVE`        | Enables or disables wallet backup to Google Drive.                                                                                |
+| `WHITELIST_REGISTER_ENABLED`                | Allows registration only for users whose email addresses are whitelisted.                                                         |
+| `WHITELIST_LOGIN_ENABLED`                   | Allows login only for users whose email addresses are whitelisted.                                                                |
+| `VANDAR_API_KEY`                            | API key used to authenticate with the Vandar service.                                                                             |
+| `TAG`                                       | Tag used for locally built Docker images.                                                                                         |
+| `KC_DB_USERNAME`                            | Username used by Keycloak to connect to its database.                                                                             |
+| `KC_DB_PASSWORD`                            | Password used by Keycloak to connect to its database.                                                                             |
+| `KC_PANEL_USERNAME`                         | Username used to access the Keycloak admin panel.                                                                                 |
+| `KC_PANEL_PASSWORD`                         | Password used to access the Keycloak admin panel.                                                                                 |
+| `DB_USER`                                   | Username used by the application to connect to the database.                                                                      |
+| `DB_PASS`                                   | Password used by the application to connect to the database.                                                                      |
+| `SMTP_HOST`                                 | Hostname or IP address of the SMTP server.                                                                                        |
+| `SMTP_USER`                                 | Username used to authenticate with the SMTP server.                                                                               |
+| `CLIENT_ID`                                 | Client ID used for authentication with the configured external service.                                                           |
+| `CLIENT_SECRET`                             | Client secret used together with `CLIENT_ID` for authentication.                                                                  |
+| `SMS_PROVIDER_API_KEY`                      | API key used to authenticate with the configured SMS provider.                                                                    |
+| `KC_GOOGLE_CLIENT_ID`                       | Google OAuth client ID used by Keycloak for Google authentication.                                                                |
+| `KC_GOOGLE_CLIENT_SECRET`                   | Google OAuth client secret used by Keycloak for Google authentication.                                                            |
+| `KC_ADMIN_CLIENT_SECRET`                    | Client secret used to authenticate with the Keycloak admin API.                                                                   |
+| `KAFKA_CLUSTER_ID`                          | Identifier of the Kafka cluster used by the application.                                                                          |
+| `JIBIT_API_KEY`                             | API key used to authenticate with the Jibit service.                                                                              |
+| `JIBIT_SECRET_KEY`                          | Secret key used together with the Jibit API key for Jibit authentication.                                                         |
+| `JIBIT_URL`                                 | Base URL of the Jibit API.                                                                                                        |
+| `WITHDRAW_LIMIT_ENABLED`                    | Enables or disables withdrawal limits.                                                                                            |
+| `WITHDRAW_OTP_REQUIRED_COUNT`               | Number of withdrawal requests after which OTP verification is required.                                                           |
+| `WITHDRAW_BANK_ACCOUNT_VALIDATION`          | Enables or disables bank account validation during withdrawals.                                                                   |
+| `TRADE_VOLUME_CALCULATION_CURRENCY`         | Currency used to calculate trading volume.                                                                                        |
+| `WITHDRAW_VOLUME_CALCULATION_CURRENCY`      | Currency used to calculate withdrawal volume.                                                                                     |
+| `TOTAL_ASSET_CALCULATION_CURRENCY`          | Currency used to calculate the total value of user assets.                                                                        |
+| `ADMIN_APPROVAL_PROFILE_COMPLETION_REQUEST` | Determines whether profile completion requests require admin approval.                                                            |
+| `MOBILE_IDENTITY_INQUIRY`                   | Enables or disables mobile identity verification.                                                                                 |
+| `PERSONAL_IDENTITY_INQUIRY`                 | Enables or disables personal identity verification.                                                                               |
+| `ADMIN_APPROVAL_BANK_ACCOUNT`               | Determines whether adding or updating a bank account requires admin approval.                                                     |
+| `KC_PRE_AUTH_CLIENT_SECRET`                 | Client secret used by the Keycloak pre-authentication client.                                                                     |
+| `KC_ISSUER_URL`                             | Internal Keycloak issuer URL used by backend services for authentication and token validation.                                    |
+| `OTP_CODE_RESPONSE_ENABLED`                 | Enables or disables returning the OTP code in the API response.                                                                   |
+| `CAPTCHA_ENABLED`                           | Enables or disables CAPTCHA validation.                                                                                           |
+| `JWK_ENDPOINT`                              | Endpoint used to retrieve JSON Web Keys (JWKs) for JWT validation.                                                                |
+| `SMTP_PROXY_HOST`                           | Hostname or IP address of the SMTP proxy.                                                                                         |
+| `SMTP_PROXY_PORT`                           | Port of the SMTP proxy.                                                                                                           |
+| `SMTP_PROXY_ENABLED`                        | Enables or disables the SMTP proxy.                                                                                               |
+| `SWAGGER_API_DOCS_ENABLED`                  | Enables or disables Swagger/OpenAPI API documentation.                                                                            |
+| `SWAGGER_UI_ENABLED`                        | Enables or disables the Swagger UI.                                                                                               |
+| `SWAGGER_AUTH_ENABLED`                      | Enables or disables authentication for Swagger UI.                                                                                |
+| `SWAGGER_AUTH_AUTHORITY`                    | Required authority/role for accessing Swagger UI when authentication is enabled.                                                  |
+
 
 ## <a name="live-demo"></a>Live Demo
 
-Deployed at [app.opex.dev](https://app.opex.dev).
+Deployed at [beta.opex.dev](https://beta.opex.dev).
 
 ## <a name="overview"></a>Architecture Overview
 

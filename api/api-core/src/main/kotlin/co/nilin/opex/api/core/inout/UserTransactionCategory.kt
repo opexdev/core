@@ -9,6 +9,7 @@ enum class UserTransactionCategory {
     WITHDRAW,
     FEE,
     SWAP,
+    IMPERSONATED_SWAP,
     REFERRAL_COMMISSION,
     REFERRAL_KYC_REWARD,
     REFERENT_COMMISSION,
