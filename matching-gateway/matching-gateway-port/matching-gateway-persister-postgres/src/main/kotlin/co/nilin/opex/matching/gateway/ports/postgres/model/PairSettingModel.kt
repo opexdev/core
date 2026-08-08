@@ -1,6 +1,7 @@
 package co.nilin.opex.matching.gateway.ports.postgres.model
 
 import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.Transient
 import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
 import java.time.LocalDateTime
@@ -10,8 +11,13 @@ data class PairSettingModel(
     @Id
     val pair: String,
     var isAvailable: Boolean,
-    var minOrder : BigDecimal,
-    var maxOrder : BigDecimal,
-    var orderTypes : String,
+    var minOrder: BigDecimal,
+    var maxOrder: BigDecimal,
+    var orderTypes: String,
     var updateDate: LocalDateTime? = null,
-)
+    var internalChart: Boolean,
+    var globalChart: Boolean
+) {
+    @Transient
+    var categories: List<PairCategory> = emptyList()
+}

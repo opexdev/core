@@ -12,6 +12,9 @@ fun PairSettingModel.toPairSetting(): PairSetting {
         maxOrder,
         orderTypes,
         updateDate,
+        internalChart,
+        globalChart,
+        categories
     )
 }
 

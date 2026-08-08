@@ -10,4 +10,7 @@ class PairSetting(
     val maxOrder : BigDecimal,
     val orderTypes : String,
     val updateDate: LocalDateTime? = null,
+    val internalChart: Boolean,
+    val globalChart: Boolean,
+    val categories: List<PairCategory> = emptyList()
 )
