@@ -23,5 +23,24 @@ $$
                        WHERE table_name = 'pair_setting' AND column_name = 'order_types') THEN ALTER TABLE pair_setting
             ADD COLUMN order_types varchar(255) NOT NULL default 'LIMIT_ORDER, MARKET_ORDER' ;
         END IF;
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'pair_setting'
+                         AND column_name = 'internal_chart') THEN ALTER TABLE pair_setting
+            ADD COLUMN internal_chart BOOLEAN NOT NULL default true;
+        END IF;
+        IF NOT EXISTS (SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_name = 'pair_setting' AND column_name = 'global_chart') THEN ALTER TABLE pair_setting
+            ADD COLUMN global_chart BOOLEAN NOT NULL default true;
+        END IF;
     END
 $$;
+
+CREATE TABLE IF NOT EXISTS pair_category
+(
+    id       SERIAL PRIMARY KEY,
+    pair     VARCHAR(72)  NOT NULL REFERENCES pair_setting (pair),
+    category VARCHAR(255) NOT NULL,
+    UNIQUE (pair, category)
+);

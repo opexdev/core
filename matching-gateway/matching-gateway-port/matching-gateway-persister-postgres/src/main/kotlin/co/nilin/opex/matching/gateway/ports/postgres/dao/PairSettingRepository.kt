@@ -11,6 +11,14 @@ import java.math.BigDecimal
 interface PairSettingRepository : ReactiveCrudRepository<PairSettingModel, String> {
     fun findByPair(pair: String): Mono<PairSettingModel>
 
-    @Query("insert into pair_setting(pair,is_available,min_order,max_order,order_types) values(:pair,:isAvailable,:minOrder,:maxOrder,:orderTypes) ")
-    fun insert(pair: String, isAvailable: Boolean , minOrder : BigDecimal, maxOrder : BigDecimal,orderTypes : String): Mono<Void>
+    @Query("insert into pair_setting(pair,is_available,min_order,max_order,order_types,internal_chart,global_chart) values(:pair,:isAvailable,:minOrder,:maxOrder,:orderTypes,:internalChart,:globalChart) ")
+    fun insert(
+        pair: String,
+        isAvailable: Boolean,
+        minOrder: BigDecimal,
+        maxOrder: BigDecimal,
+        orderTypes: String,
+        internalChart: Boolean,
+        globalChart: Boolean
+    ): Mono<Void>
 }
