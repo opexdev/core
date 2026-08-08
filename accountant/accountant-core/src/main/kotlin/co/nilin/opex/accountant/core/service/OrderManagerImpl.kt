@@ -164,7 +164,7 @@ open class OrderManagerImpl(
         richOrderPublisher.publish(
             RichOrderUpdate(
                 order.ouid,
-                order.price.toBigDecimal(),
+                order.price.toBigDecimal().multiply(order.rightSideFraction),
                 order.quantity.toBigDecimal(),
                 BigDecimal.ZERO,
                 OrderStatus.REJECTED
@@ -212,12 +212,13 @@ open class OrderManagerImpl(
         richOrderPublisher.publish(
             RichOrderUpdate(
                 order.ouid,
-                order.price.toBigDecimal(),
+                order.price.toBigDecimal().multiply(order.rightSideFraction),
                 order.quantity.toBigDecimal(),
-                cancelOrderEvent.remainedQuantity.toBigDecimal(),
+                cancelOrderEvent.remainedQuantity.toBigDecimal().multiply(order.leftSideFraction),
                 OrderStatus.CANCELED
             )
         )
+
         return financialActionPersister.persist(listOf(financialAction))
         /*publishFinancialAction(financialAction)
         return fa*/
