@@ -93,8 +93,7 @@ class OrderPersisterImpl(
 
     @Transactional
     override suspend fun update(orderUpdate: RichOrderUpdate) {
-        val order = orderRepository.findByOuid(orderUpdate.ouid).awaitFirstOrNull()
-            ?: throw IllegalStateException("Order ${orderUpdate.ouid} not found for update event")
+
         val updateTime = orderUpdate.updateDate ?: LocalDateTime.now()
 
         orderRepository.touchUpdateDateByOuid(orderUpdate.ouid, updateTime).awaitFirstOrNull()
@@ -118,6 +117,11 @@ class OrderPersisterImpl(
             openOrderRepository.delete(orderUpdate.ouid).awaitSingleOrNull()
             logger.info("Order ${orderUpdate.ouid} deleted from open orders")
         }
+        val order = orderRepository.findByOuid(orderUpdate.ouid).awaitFirstOrNull()
+            ?: run {
+                logger.info("Order ${orderUpdate.ouid} not found for update event, SKIPPED")
+                return
+            }
         marketOrderProducer.openOrderUpdate(order.uuid, order.symbol)
     }
 

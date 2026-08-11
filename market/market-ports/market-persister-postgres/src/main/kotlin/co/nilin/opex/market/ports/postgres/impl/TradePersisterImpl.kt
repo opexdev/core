@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
+import java.util.concurrent.atomic.AtomicLong
 
 @Component
 class TradePersisterImpl(
@@ -112,9 +113,11 @@ class TradePersisterImpl(
         // Real ID collision (e.g. Redis counter reset): persist under a new synthetic ID and continue
         logger.error(
             "Trade ID collision for symbol=${incomingTrade.symbol}, tradeId=${incomingTrade.tradeId}. " +
-                "Saving colliding trade under a new synthetic ID."
+                    "Saving colliding trade under a new synthetic ID."
         )
-        val newId = Math.abs(UUID.randomUUID().mostSignificantBits)
+        //todo cast the tradeId to BigInteger
+        val newId = generateUniqueId()
+        logger.info("The old tradeId ${incomingTrade.tradeId} - The new tradeId: $newId")
         val reassigned = TradeModel(
             null,
             newId,
@@ -142,14 +145,14 @@ class TradePersisterImpl(
 
     private fun isSameTradePayload(existing: TradeModel, incoming: TradeModel): Boolean {
         return existing.makerOuid == incoming.makerOuid &&
-            existing.takerOuid == incoming.takerOuid &&
-            existing.matchedPrice.compareTo(incoming.matchedPrice) == 0 &&
-            existing.matchedQuantity.compareTo(incoming.matchedQuantity) == 0 &&
-            existing.tradeDate == incoming.tradeDate &&
-            existing.makerCommission == incoming.makerCommission &&
-            existing.takerCommission == incoming.takerCommission &&
-            existing.makerCommissionAsset == incoming.makerCommissionAsset &&
-            existing.takerCommissionAsset == incoming.takerCommissionAsset
+                existing.takerOuid == incoming.takerOuid &&
+                existing.matchedPrice.compareTo(incoming.matchedPrice) == 0 &&
+                existing.matchedQuantity.compareTo(incoming.matchedQuantity) == 0 &&
+                existing.tradeDate == incoming.tradeDate &&
+                existing.makerCommission == incoming.makerCommission &&
+                existing.takerCommission == incoming.takerCommission &&
+                existing.makerCommissionAsset == incoming.makerCommissionAsset &&
+                existing.takerCommissionAsset == incoming.takerCommissionAsset
     }
 
     private fun isDuplicateTradeViolation(exception: Throwable): Boolean {
@@ -159,6 +162,10 @@ class TradePersisterImpl(
             append(exception.cause?.message.orEmpty())
         }
         return errorText.contains("uq_trades_symbol_trade_id", ignoreCase = true) ||
-            errorText.contains("duplicate key value", ignoreCase = true)
+                errorText.contains("duplicate key value", ignoreCase = true)
+    }
+
+    private fun generateUniqueId(): Long {
+        return AtomicLong(System.currentTimeMillis() * 1000).incrementAndGet()
     }
 }
