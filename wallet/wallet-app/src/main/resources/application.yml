@@ -8,6 +8,8 @@ management:
   endpoint:
     health:
       show-details: when_authorized
+      probes:
+          enabled: true
     metrics:
       enabled: true
     prometheus:
@@ -66,9 +68,10 @@ spring:
       host: ${CONSUL_HOST:localhost}
       port: 8500
       discovery:
-        #healthCheckPath: ${management.context-path}/health
         instance-id: ${spring.application.name}:${server.port}
-        healthCheckInterval: 20s
+        health-check-path: /actuator/health/liveness
+        health-check-interval: 10s
+        health-check-timeout: 5s
         prefer-ip-address: true
   config:
     import: vault://secret/${spring.application.name}
@@ -174,6 +177,4 @@ logging:
     co.nilin: INFO
     reactor.netty.http.client: INFO
     org.zalando.logbook: TRACE
-    org.hibernate.SQL: DEBUG
-    logging.level.org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
