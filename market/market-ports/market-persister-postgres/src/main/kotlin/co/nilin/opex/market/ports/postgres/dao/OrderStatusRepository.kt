@@ -30,7 +30,11 @@ interface OrderStatusRepository : ReactiveCrudRepository<OrderStatusModel, Long>
     @Query(
         """
         WITH ranked_order_status AS (
-            SELECT *, ROW_NUMBER() OVER (PARTITION BY ouid ORDER BY appearance DESC, executed_quantity DESC) AS rnk
+            SELECT *,
+                   ROW_NUMBER() OVER (
+                       PARTITION BY ouid
+                       ORDER BY appearance DESC, executed_quantity DESC NULLS LAST, date DESC, id DESC
+                   ) AS rnk
             FROM order_status
             WHERE ouid = :ouid
         )

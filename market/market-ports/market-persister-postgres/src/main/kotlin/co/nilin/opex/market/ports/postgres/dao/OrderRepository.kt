@@ -41,6 +41,14 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
         origClientOrderId: String,
     ): Mono<OrderModel>
 
+    @Query("update orders set update_date = :updateDate where ouid = :ouid")
+    fun touchUpdateDateByOuid(
+        @Param("ouid")
+        ouid: String,
+        @Param("updateDate")
+        updateDate: LocalDateTime = LocalDateTime.now()
+    ): Mono<Void>
+
     @Query(
         """
         select * from orders
@@ -138,35 +146,55 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
 
     @Query(
         """
-select o.symbol,
-       o.ouid,
-       o.order_type,
-       o.side,
-       o.price,
-       o.quantity,
-       o.quote_quantity,
-       os.executed_quantity,
-       o.taker_fee,
-       o.maker_fee,
-       os.status as status_code,
-       os.appearance,
-       o.create_date,
-       os.date as update_date,
-       o.uuid
-from orders o
-         left join (select *
-                    from order_status os1
-                    where os1.date = (select max(os2.date)
-                                      from order_status os2
-                                      where os2.ouid = os1.ouid)) os on o.ouid = os.ouid
- WHERE (:uuid is null or o.uuid = :uuid)
-   and (:symbol is null or o.symbol = :symbol)
-   and (:startTime is null or o.create_date >= :startTime)
-   and (:endTime is null or o.create_date <= :endTime)
-   and (:orderType is null or o.order_type = :orderType)
-   and (:direction is null or o.side = :direction)
-order by create_date desc
- limit :limit offset :offset;
+with filtered_orders as (
+    select o.symbol,
+          o.ouid,
+          o.order_type,
+          o.side,
+          o.price,
+          o.quantity,
+          o.quote_quantity,
+          o.taker_fee,
+          o.maker_fee,
+          o.create_date,
+          o.uuid
+    from orders o
+    where (:uuid is null or o.uuid = :uuid)
+     and (:symbol is null or o.symbol = :symbol)
+     and (:startTime is null or o.create_date >= :startTime)
+     and (:endTime is null or o.create_date <= :endTime)
+     and (:orderType is null or o.order_type = :orderType)
+     and (:direction is null or o.side = :direction)
+    order by o.create_date desc
+    limit :limit offset :offset
+)
+select fo.symbol,
+      fo.ouid,
+      fo.order_type,
+      fo.side,
+      fo.price,
+      fo.quantity,
+      fo.quote_quantity,
+      os.executed_quantity,
+      fo.taker_fee,
+      fo.maker_fee,
+      os.status as status_code,
+      os.appearance,
+      fo.create_date,
+      os.date as update_date,
+      fo.uuid
+from filtered_orders fo
+left join lateral (
+    select s.executed_quantity,
+          s.status,
+          s.appearance,
+          s.date
+    from order_status s
+    where s.ouid = fo.ouid
+    order by s.appearance desc, s.executed_quantity desc nulls last, s.date desc, s.id desc
+    limit 1
+) os on true
+order by fo.create_date desc;
     """
     )
     fun findByCriteria(
@@ -228,14 +256,20 @@ SELECT
 FROM orders o
 
 LEFT JOIN (
-    SELECT DISTINCT ON (ouid)
-        ouid,
-        executed_quantity,
-        status,
-        appearance,
-        date
-    FROM order_status
-    ORDER BY ouid, date DESC
+    SELECT ranked.ouid,
+           ranked.executed_quantity,
+           ranked.status,
+           ranked.appearance,
+           ranked.date
+    FROM (
+             SELECT os.*,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY os.ouid
+                        ORDER BY os.appearance DESC, os.executed_quantity DESC NULLS LAST, os.date DESC, os.id DESC
+                    ) AS rnk
+             FROM order_status os
+         ) ranked
+    WHERE ranked.rnk = 1
 ) os
 ON os.ouid = o.ouid
 

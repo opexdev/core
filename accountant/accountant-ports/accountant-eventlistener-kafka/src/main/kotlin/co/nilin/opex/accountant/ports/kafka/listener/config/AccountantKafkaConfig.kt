@@ -1,4 +1,4 @@
-package co.nilin.opex.accountant.ports.kafka.listener.config
+﻿package co.nilin.opex.accountant.ports.kafka.listener.config
 
 import co.nilin.opex.accountant.core.inout.KycLevelUpdatedEvent
 import co.nilin.opex.accountant.ports.kafka.listener.consumer.*
@@ -9,7 +9,6 @@ import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.serialization.StringDeserializer
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
@@ -61,85 +60,83 @@ class AccountantKafkaConfig {
     fun withdrawRequestConsumerFactory(@Qualifier("consumerConfig") consumerConfigs: Map<String, Any?>): ConsumerFactory<String, WithdrawRequestEvent> {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
+
     @Bean("depositConsumerFactory")
     fun depositConsumerFactory(@Qualifier("consumerConfig") consumerConfigs: Map<String, Any?>): ConsumerFactory<String, DepositEvent> {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
 
-    @Autowired
+    @Bean("tradeKafkaListenerContainer")
     @ConditionalOnBean(TradeKafkaListener::class)
-    fun configureTradeListener(
+    fun tradeListenerContainer(
         tradeListener: TradeKafkaListener,
         @Qualifier("accountantEventKafkaTemplate") template: KafkaTemplate<String?, CoreEvent>,
         @Qualifier("accountantConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>
-    ) {
+    ): ConcurrentMessageListenerContainer<String, CoreEvent> {
         val containerProps = ContainerProperties(Pattern.compile("trades_.*"))
         containerProps.messageListener = tradeListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
         container.setBeanName("TradeKafkaListenerContainer")
         container.commonErrorHandler = createConsumerErrorHandler(template, "trades.DLT")
-        container.start()
+        return container
     }
 
-    @Autowired
+    @Bean("eventKafkaListenerContainer")
     @ConditionalOnBean(EventKafkaListener::class)
-    fun configureEventListener(
+    fun eventListenerContainer(
         eventListener: EventKafkaListener,
         @Qualifier("accountantEventKafkaTemplate") template: KafkaTemplate<String?, CoreEvent>,
         @Qualifier("accountantConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>
-    ) {
+    ): ConcurrentMessageListenerContainer<String, CoreEvent> {
         val containerProps = ContainerProperties(Pattern.compile("events_.*"))
         containerProps.messageListener = eventListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
         container.setBeanName("EventKafkaListenerContainer")
         container.commonErrorHandler = createConsumerErrorHandler(template, "events.DLT")
-        container.start()
+        return container
     }
 
-    @Autowired
+    @Bean("orderKafkaListenerContainer")
     @ConditionalOnBean(OrderKafkaListener::class)
-    fun configureOrderListener(
+    fun orderListenerContainer(
         orderListener: OrderKafkaListener,
         @Qualifier("accountantEventKafkaTemplate") template: KafkaTemplate<String?, CoreEvent>,
         @Qualifier("accountantConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>
-    ) {
+    ): ConcurrentMessageListenerContainer<String, CoreEvent> {
         val containerProps = ContainerProperties(Pattern.compile("orders_.*"))
         containerProps.messageListener = orderListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
         container.setBeanName("OrderKafkaListenerContainer")
         container.commonErrorHandler = createConsumerErrorHandler(template, "orders.DLT")
-        container.start()
+        return container
     }
 
-    @Autowired
+    @Bean("tempEventKafkaListenerContainer")
     @ConditionalOnBean(TempEventKafkaListener::class)
-    fun configureTempEventListener(
+    fun tempEventListenerContainer(
         eventListener: TempEventKafkaListener,
         @Qualifier("accountantEventKafkaTemplate") template: KafkaTemplate<String?, CoreEvent>,
         @Qualifier("accountantConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>
-    ) {
+    ): ConcurrentMessageListenerContainer<String, CoreEvent> {
         val containerProps = ContainerProperties(Pattern.compile("tempevents"))
         containerProps.messageListener = eventListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
         container.setBeanName("TempEventKafkaListenerContainer")
         container.commonErrorHandler = createConsumerErrorHandler(template, "tempevents.DLT")
-        container.start()
+        return container
     }
 
-    @Autowired
+    @Bean("faResponseKafkaListenerContainer")
     @ConditionalOnBean(FAResponseKafkaListener::class)
-    fun configureEventListener(
+    fun faResponseListenerContainer(
         eventListener: FAResponseKafkaListener,
-        //@Qualifier("accountantEventKafkaTemplate") template: KafkaTemplate<String?, CoreEvent>,
         @Qualifier("faResponseConsumerFactory") consumerFactory: ConsumerFactory<String, FinancialActionResponseEvent>
-    ) {
+    ): ConcurrentMessageListenerContainer<String, FinancialActionResponseEvent> {
         val containerProps = ContainerProperties(Pattern.compile("fiAction_response"))
         containerProps.messageListener = eventListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
         container.setBeanName("FAResponseKafkaListenerContainer")
-        //TODO add error handler
-        //container.commonErrorHandler = createConsumerErrorHandler(template, "events.DLT")
-        container.start()
+        return container
     }
 
     @Bean("kycLevelUpdatedProducerFactory")
@@ -152,6 +149,21 @@ class AccountantKafkaConfig {
         return KafkaTemplate(producerFactory)
     }
 
+    @Bean("kycLevelUpdatedKafkaListenerContainer")
+    @ConditionalOnBean(KycLevelUpdatedKafkaListener::class)
+    fun kycListenerContainer(
+        listener: KycLevelUpdatedKafkaListener,
+        @Qualifier("kycLevelUpdatedKafkaTemplate") template: KafkaTemplate<String, KycLevelUpdatedEvent>,
+        @Qualifier("KycConsumerFactory") consumerFactory: ConsumerFactory<String, KycLevelUpdatedEvent>
+    ): ConcurrentMessageListenerContainer<String, KycLevelUpdatedEvent> {
+        val containerProps = ContainerProperties(Pattern.compile("kyc_level_updated"))
+        containerProps.messageListener = listener
+        val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
+        container.setBeanName("KycLevelUpdatedKafkaListenerContainer")
+        container.commonErrorHandler = createConsumerErrorHandler(template, "kyc_level_updated.DLT")
+        return container
+    }
+
     @Bean("withdrawRequestProducerFactory")
     fun withdrawRequestProducerFactory(@Qualifier("consumerConfig") producerConfigs: Map<String, Any>): ProducerFactory<String, WithdrawRequestEvent> {
         return DefaultKafkaProducerFactory(producerConfigs)
@@ -160,6 +172,21 @@ class AccountantKafkaConfig {
     @Bean("withdrawRequestKafkaTemplate")
     fun withdrawRequestKafkaTemplate(@Qualifier("withdrawRequestProducerFactory") producerFactory: ProducerFactory<String, WithdrawRequestEvent>): KafkaTemplate<String, WithdrawRequestEvent> {
         return KafkaTemplate(producerFactory)
+    }
+
+    @Bean("withdrawRequestKafkaListenerContainer")
+    @ConditionalOnBean(WithdrawRequestKafkaListener::class)
+    fun withdrawRequestListenerContainer(
+        listener: WithdrawRequestKafkaListener,
+        @Qualifier("withdrawRequestKafkaTemplate") template: KafkaTemplate<String, WithdrawRequestEvent>,
+        @Qualifier("withdrawRequestConsumerFactory") consumerFactory: ConsumerFactory<String, WithdrawRequestEvent>
+    ): ConcurrentMessageListenerContainer<String, WithdrawRequestEvent> {
+        val containerProps = ContainerProperties(Pattern.compile("withdraw_request"))
+        containerProps.messageListener = listener
+        val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
+        container.setBeanName("WithdrawRequestKafkaListenerContainer")
+        container.commonErrorHandler = createConsumerErrorHandler(template, "withdraw_request.DLT")
+        return container
     }
 
     @Bean("depositProducerFactory")
@@ -172,49 +199,19 @@ class AccountantKafkaConfig {
         return KafkaTemplate(producerFactory)
     }
 
-    @Autowired
-    @ConditionalOnBean(KycLevelUpdatedKafkaListener::class)
-    fun configureKycLevelUpdatedListener(
-        listener: KycLevelUpdatedKafkaListener,
-        @Qualifier("kycLevelUpdatedKafkaTemplate") template: KafkaTemplate<String, KycLevelUpdatedEvent>,
-        @Qualifier("KycConsumerFactory") consumerFactory: ConsumerFactory<String, KycLevelUpdatedEvent>
-    ) {
-        val containerProps = ContainerProperties(Pattern.compile("kyc_level_updated"))
-        containerProps.messageListener = listener
-        val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.setBeanName("KycLevelUpdatedKafkaListenerContainer")
-        container.commonErrorHandler = createConsumerErrorHandler(template, "kyc_level_updated.DLT")
-        container.start()
-    }
-
-    @Autowired
-    @ConditionalOnBean(WithdrawRequestKafkaListener::class)
-    fun configureWithdrawRequestEventListener(
-        listener: WithdrawRequestKafkaListener,
-        @Qualifier("withdrawRequestKafkaTemplate") template: KafkaTemplate<String, WithdrawRequestEvent>,
-        @Qualifier("withdrawRequestConsumerFactory") consumerFactory: ConsumerFactory<String, WithdrawRequestEvent>
-    ) {
-        val containerProps = ContainerProperties(Pattern.compile("withdraw_request"))
-        containerProps.messageListener = listener
-        val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.setBeanName("WithdrawRequestKafkaListenerContainer")
-        container.commonErrorHandler = createConsumerErrorHandler(template, "withdraw_request.DLT")
-        container.start()
-    }
-
-    @Autowired
+    @Bean("depositKafkaListenerContainer")
     @ConditionalOnBean(DepositKafkaListener::class)
-    fun configureDepositRequestEventListener(
+    fun depositListenerContainer(
         listener: DepositKafkaListener,
         @Qualifier("depositKafkaTemplate") template: KafkaTemplate<String, DepositEvent>,
         @Qualifier("depositConsumerFactory") consumerFactory: ConsumerFactory<String, DepositEvent>
-    ) {
+    ): ConcurrentMessageListenerContainer<String, DepositEvent> {
         val containerProps = ContainerProperties(Pattern.compile("deposit"))
         containerProps.messageListener = listener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
         container.setBeanName("DepositKafkaListenerContainer")
         container.commonErrorHandler = createConsumerErrorHandler(template, "deposit.DLT")
-        container.start()
+        return container
     }
 
     private fun createConsumerErrorHandler(kafkaTemplate: KafkaTemplate<*, *>, dltTopic: String): CommonErrorHandler {
@@ -224,5 +221,4 @@ class AccountantKafkaConfig {
         }
         return DefaultErrorHandler(recoverer, FixedBackOff(5_000, 20))
     }
-
 }

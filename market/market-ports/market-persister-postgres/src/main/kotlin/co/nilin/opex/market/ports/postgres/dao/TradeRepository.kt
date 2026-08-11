@@ -22,6 +22,14 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
     @Query("select * from trades where symbol = :symbol order by create_date desc limit 1")
     fun findMostRecentBySymbol(symbol: String): Flux<TradeModel>
 
+    @Query("select * from trades where symbol = :symbol and trade_id = :tradeId limit 1")
+    fun findBySymbolAndTradeId(
+        @Param("symbol")
+        symbol: String,
+        @Param("tradeId")
+        tradeId: Long
+    ): Mono<TradeModel>
+
     @Query("select * from trades where symbol = :symbol order by create_date desc limit :limit")
     fun findBySymbolSortDescendingByCreateDate(
         @Param("symbol")
@@ -134,8 +142,8 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
     
         CASE
             WHEN t.taker_uuid = :uuid
-            THEN (to2.side = 'ASK')
-            ELSE (mo.side = 'ASK')
+            THEN (to2.side = 'BID')
+            ELSE (mo.side = 'BID')
         END AS isBuyer,
     
         (t.maker_uuid = :uuid) AS isMaker

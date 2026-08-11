@@ -46,7 +46,9 @@ class PairSettingInitializer(
                         false,
                         BigDecimal.ONE,
                         BigDecimal.ONE,
-                        "LIMIT_ORDER,MARKET_ORDER"
+                        "LIMIT_ORDER,MARKET_ORDER",
+                        true,
+                        true
                     ).then(pairSettingRepository.findByPair(pair)).awaitFirstOrNull()
                         .also { if (it == null) logger.warn("Failed to insert pair: $pair") }
                     ?: return@forEach

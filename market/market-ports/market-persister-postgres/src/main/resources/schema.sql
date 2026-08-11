@@ -33,6 +33,8 @@ CREATE TABLE IF NOT EXISTS order_status
     date                   TIMESTAMP   NOT NULL,
     UNIQUE (ouid, status, appearance, executed_quantity)
 );
+CREATE INDEX IF NOT EXISTS idx_order_status_ouid_rank
+    ON order_status (ouid, appearance DESC, executed_quantity DESC, date DESC, id DESC);
 
 CREATE TABLE IF NOT EXISTS open_orders
 (
@@ -41,6 +43,9 @@ CREATE TABLE IF NOT EXISTS open_orders
     executed_quantity DECIMAL,
     status            INTEGER     NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS idx_orders_uuid_create_date ON orders (uuid, create_date DESC);
+CREATE INDEX IF NOT EXISTS idx_orders_uuid_symbol_create_date ON orders (uuid, symbol, create_date DESC);
 
 CREATE TABLE IF NOT EXISTS trades
 (
@@ -67,6 +72,26 @@ CREATE TABLE IF NOT EXISTS trades
 CREATE INDEX IF NOT EXISTS idx_trades_symbol on trades (symbol);
 CREATE INDEX IF NOT EXISTS idx_trades_create_date on trades (create_date);
 
+ALTER TABLE trades
+    ALTER COLUMN id TYPE BIGINT,
+    ALTER COLUMN trade_id TYPE BIGINT;
+ALTER SEQUENCE trades_id_seq AS BIGINT;
+
+WITH duplicate_trades AS (
+    SELECT id
+    FROM (
+             SELECT id,
+                    ROW_NUMBER() OVER (PARTITION BY symbol, trade_id ORDER BY id) AS rn
+             FROM trades
+         ) ranked
+    WHERE rn > 1
+)
+DELETE
+FROM trades t
+    USING duplicate_trades d
+WHERE t.id = d.id;
+CREATE UNIQUE INDEX IF NOT EXISTS uq_trades_symbol_trade_id on trades (symbol, trade_id);
+
 CREATE OR REPLACE FUNCTION interval_generator(
     start_ts TIMESTAMP without TIME ZONE,
     end_ts TIMESTAMP without TIME ZONE,
@@ -85,4 +110,3 @@ BEGIN
 END;
 
 $$ LANGUAGE 'plpgsql';
-

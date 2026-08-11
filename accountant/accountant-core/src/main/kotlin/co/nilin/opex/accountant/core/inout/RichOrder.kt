@@ -4,6 +4,7 @@ import co.nilin.opex.matching.engine.core.model.MatchConstraint
 import co.nilin.opex.matching.engine.core.model.OrderDirection
 import co.nilin.opex.matching.engine.core.model.OrderType
 import java.math.BigDecimal
+import java.time.LocalDateTime
 
 data class RichOrder(
     val orderId: Long? = 0,
@@ -23,5 +24,6 @@ data class RichOrder(
     val quoteQuantity: BigDecimal,
     val executedQuantity: BigDecimal,
     val accumulativeQuoteQty: BigDecimal,
-    val status: Int = 0
+    val status: Int = 0,
+    val createDate: LocalDateTime?
 ) : RichOrderEvent
