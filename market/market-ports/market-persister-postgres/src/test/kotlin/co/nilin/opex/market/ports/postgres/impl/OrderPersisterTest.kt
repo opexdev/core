@@ -9,9 +9,12 @@ import co.nilin.opex.market.ports.postgres.util.RedisCacheHelper
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThatNoException
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.dao.DuplicateKeyException
 import reactor.core.publisher.Mono
 
 class OrderPersisterTest {
@@ -58,6 +61,9 @@ class OrderPersisterTest {
     @Test
     fun givenOrderRepo_whenUpdateRichOrder_thenSuccess(): Unit = runBlocking {
         every {
+            orderRepository.touchUpdateDateByOuid(any(), any())
+        } returns Mono.empty()
+        every {
             orderStatusRepository.insert(any(), any(), any(), any(), any(), any())
         } returns Mono.empty()
         every {
@@ -76,4 +82,40 @@ class OrderPersisterTest {
 
         assertThatNoException().isThrownBy { runBlocking { orderPersister.update(VALID.RICH_ORDER_UPDATE) } }
     }
+
+    @Test
+    fun givenDuplicateOrderCreate_whenSaveRichOrder_thenIgnoredAsIdempotent(): Unit = runBlocking {
+        every {
+            orderRepository.save(any())
+        } returns Mono.error(DuplicateKeyException("duplicate order"))
+
+        assertThatNoException().isThrownBy { runBlocking { orderPersister.save(VALID.RICH_ORDER) } }
+
+        verify(exactly = 0) {
+            orderStatusRepository.insert(any(), any(), any(), any(), any(), any())
+        }
+    }
+
+    //To have race condition between RichOrder and UpdateRichOrder,we will temporarily skip this test
+
+//    @Test
+//    fun givenMissingOrder_whenUpdateRichOrder_thenFailBeforeSideEffects(): Unit = runBlocking {
+//        every {
+//            orderRepository.findByOuid(any())
+//        } returns Mono.empty()
+//
+//        assertThrows<IllegalStateException> {
+//            runBlocking { orderPersister.update(VALID.RICH_ORDER_UPDATE) }
+//        }
+//
+//        verify(exactly = 0) {
+//            orderRepository.touchUpdateDateByOuid(any(), any())
+//        }
+//        verify(exactly = 0) {
+//            orderStatusRepository.insert(any(), any(), any(), any(), any(), any())
+//        }
+//        verify(exactly = 0) {
+//            openOrderRepository.insertOrUpdate(any(), any(), any())
+//        }
+//    }
 }

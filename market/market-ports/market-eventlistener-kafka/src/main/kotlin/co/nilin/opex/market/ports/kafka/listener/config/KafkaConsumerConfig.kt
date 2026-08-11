@@ -7,7 +7,6 @@ import co.nilin.opex.market.ports.kafka.listener.consumer.TradeKafkaListener
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.serialization.StringDeserializer
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
@@ -52,34 +51,34 @@ class KafkaConsumerConfig {
         return DefaultKafkaConsumerFactory(consumerConfigs)
     }
 
-    @Autowired
+    @Bean("marketTradeKafkaListenerContainer")
     @ConditionalOnBean(TradeKafkaListener::class)
-    fun configureTradeListener(
+    fun tradeListenerContainer(
         tradeListener: TradeKafkaListener,
         template: KafkaTemplate<String?, RichTrade>,
         @Qualifier("richTradeConsumerFactory") consumerFactory: ConsumerFactory<String, RichTrade>
-    ) {
+    ): ConcurrentMessageListenerContainer<String, RichTrade> {
         val containerProps = ContainerProperties(Pattern.compile("richTrade"))
         containerProps.messageListener = tradeListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
         container.setBeanName("marketTradeKafkaListenerContainer")
         container.commonErrorHandler = createConsumerErrorHandler(template, "richTrade.DLT")
-        container.start()
+        return container
     }
 
-    @Autowired
+    @Bean("marketOrderKafkaListenerContainer")
     @ConditionalOnBean(OrderKafkaListener::class)
-    fun configureOrderListener(
+    fun orderListenerContainer(
         orderListener: OrderKafkaListener,
         template: KafkaTemplate<String?, RichOrderEvent>,
         @Qualifier("richOrderConsumerFactory") consumerFactory: ConsumerFactory<String, RichOrderEvent>
-    ) {
+    ): ConcurrentMessageListenerContainer<String, RichOrderEvent> {
         val containerProps = ContainerProperties(Pattern.compile("richOrder"))
         containerProps.messageListener = orderListener
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
         container.setBeanName("marketOrderKafkaListenerContainer")
         container.commonErrorHandler = createConsumerErrorHandler(template, "richOrder.DLT")
-        container.start()
+        return container
     }
 
     private fun createConsumerErrorHandler(kafkaTemplate: KafkaTemplate<*, *>, dltTopic: String): CommonErrorHandler {
