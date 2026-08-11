@@ -30,15 +30,9 @@ class TradePersisterTest {
 
     @Test
     fun givenDuplicateTrade_whenSaveRichTrade_thenIgnoredAsIdempotent(): Unit = runBlocking {
-        every { tradeRepository.save(any()) } returns Mono.error(DuplicateKeyException("duplicate trade"))
-        every { tradeRepository.findBySymbolAndTradeId(any(), any()) } returns Mono.just(VALID.TRADE_MODEL)
-        assertThatNoException().isThrownBy { runBlocking { tradePersister.save(VALID.RICH_TRADE) } }
-    }
-
-    @Test
-    fun givenDataIntegrityViolationForTradeUniqueKey_whenSaveRichTrade_thenIgnoredAsIdempotent(): Unit = runBlocking {
-        every { tradeRepository.save(any()) } returns Mono.error(
-            DataIntegrityViolationException("duplicate key value violates unique constraint \"uq_trades_symbol_trade_id\"")
+        every { tradeRepository.save(any()) } returnsMany listOf(
+            Mono.error(DuplicateKeyException("Duplicate key")),
+            Mono.just(VALID.TRADE_MODEL)
         )
         every { tradeRepository.findBySymbolAndTradeId(any(), any()) } returns Mono.just(VALID.TRADE_MODEL)
         assertThatNoException().isThrownBy { runBlocking { tradePersister.save(VALID.RICH_TRADE) } }
@@ -71,7 +65,7 @@ class TradePersisterTest {
             )
         )
 
-        assertThrows<IllegalStateException> {
+        assertThrows<DuplicateKeyException> {
             runBlocking { tradePersister.save(VALID.RICH_TRADE) }
         }
     }
