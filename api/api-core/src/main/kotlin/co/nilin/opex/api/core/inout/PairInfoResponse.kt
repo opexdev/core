@@ -10,7 +10,4 @@ data class PairInfoResponse(
     val minOrder : BigDecimal,
     val maxOrder : BigDecimal,
     val orderTypes : String,
-    val internalChart: Boolean,
-    val globalChart: Boolean,
-    val categories: List<PairCategory> = emptyList()
 )

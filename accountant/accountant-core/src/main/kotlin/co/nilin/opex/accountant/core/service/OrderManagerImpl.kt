@@ -212,12 +212,13 @@ open class OrderManagerImpl(
         richOrderPublisher.publish(
             RichOrderUpdate(
                 order.ouid,
-                order.price.toBigDecimal(),
-                order.quantity.toBigDecimal(),
-                cancelOrderEvent.remainedQuantity.toBigDecimal(),
+                order.price.toBigDecimal().multiply(order.rightSideFraction),
+                order.origQuantity,
+                cancelOrderEvent.remainedQuantity.toBigDecimal().multiply(order.leftSideFraction),
                 OrderStatus.CANCELED
             )
         )
+
         return financialActionPersister.persist(listOf(financialAction))
         /*publishFinancialAction(financialAction)
         return fa*/
@@ -253,7 +254,8 @@ open class OrderManagerImpl(
                     OrderStatus.NEW.code
                 } else {
                     OrderStatus.PARTIALLY_FILLED.code
-                }
+                },
+                LocalDateTime.now()
             )
         )
     }
