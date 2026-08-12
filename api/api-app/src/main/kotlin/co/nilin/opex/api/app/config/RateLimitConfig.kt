@@ -53,12 +53,17 @@ class RateLimitConfig(
         return ReactiveSecurityContextHolder.getContext()
             .mapNotNull { it.authentication }
             .filter { it.isAuthenticated }
-            .flatMap { auth ->
-                applyRateLimit(auth.name, exchange, chain, groupId)
+            .map { auth ->
+                Mono.defer {
+                    applyRateLimit(auth.name, exchange, chain, groupId)
+                }
             }
-            .switchIfEmpty(
-                chain.filter(exchange)
+            .defaultIfEmpty(
+                Mono.defer {
+                    chain.filter(exchange)
+                }
             )
+            .flatMap { it }
     }
 
     private fun applyRateLimit(
