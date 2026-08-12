@@ -4,8 +4,30 @@ import kotlinx.coroutines.reactor.asCoroutineDispatcher
 import reactor.core.scheduler.Schedulers
 
 object ProxyDispatchers {
+    private fun envInt(name: String, default: Int): Int {
+        val value = System.getenv(name)?.toIntOrNull() ?: return default
+        return if (value > 0) value else default
+    }
 
-    val general = Schedulers.newBoundedElastic(8, 16, "general").asCoroutineDispatcher()
-    val market = Schedulers.newBoundedElastic(8, 16, "market").asCoroutineDispatcher()
-    val wallet = Schedulers.newBoundedElastic(10, 20, "wallet").asCoroutineDispatcher()
+    private val cpu = Runtime.getRuntime().availableProcessors().coerceAtLeast(4)
+    private val defaultThreads = cpu * 4
+    private val defaultQueue = 10_000
+
+    val general = Schedulers.newBoundedElastic(
+        envInt("API_PROXY_GENERAL_THREADS", defaultThreads),
+        envInt("API_PROXY_GENERAL_QUEUE", defaultQueue),
+        "general"
+    ).asCoroutineDispatcher()
+
+    val market = Schedulers.newBoundedElastic(
+        envInt("API_PROXY_MARKET_THREADS", defaultThreads),
+        envInt("API_PROXY_MARKET_QUEUE", defaultQueue),
+        "market"
+    ).asCoroutineDispatcher()
+
+    val wallet = Schedulers.newBoundedElastic(
+        envInt("API_PROXY_WALLET_THREADS", defaultThreads),
+        envInt("API_PROXY_WALLET_QUEUE", defaultQueue),
+        "wallet"
+    ).asCoroutineDispatcher()
 }
