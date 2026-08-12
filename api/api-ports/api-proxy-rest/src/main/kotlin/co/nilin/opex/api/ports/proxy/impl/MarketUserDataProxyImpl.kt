@@ -34,6 +34,9 @@ class MarketUserDataProxyImpl(@Qualifier("generalWebClient") private val webClie
 
     @Value("\${app.market.url}")
     private lateinit var baseUrl: String
+
+    @Value("\${app.proxy.market.max-concurrent-requests:64}")
+    private var marketMaxConcurrentRequests: Int = 64
     private suspend fun <T> retryOnce(backoffMs: Long = 200, block: suspend () -> T): T =
         try {
             block()
@@ -41,7 +44,9 @@ class MarketUserDataProxyImpl(@Qualifier("generalWebClient") private val webClie
             delay(backoffMs); block()
         }
 
-    private val mgLimiter = Semaphore(permits = 16, acquiredPermits = 0)
+    private val mgLimiter by lazy {
+        Semaphore(permits = marketMaxConcurrentRequests, acquiredPermits = 0)
+    }
 
     override suspend fun queryOrder(
         token: String,

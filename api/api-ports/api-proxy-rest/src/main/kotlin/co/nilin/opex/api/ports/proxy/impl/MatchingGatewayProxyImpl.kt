@@ -39,7 +39,13 @@ class MatchingGatewayProxyImpl(@Qualifier("generalWebClient") private val client
 
     @Value("\${app.matching-gateway.url}")
     private lateinit var baseUrl: String
-    private val mgLimiter = Semaphore(permits = 16, acquiredPermits = 0) // fair-like behavior
+
+    @Value("\${app.proxy.matching.max-concurrent-requests:64}")
+    private var matchingMaxConcurrentRequests: Int = 64
+
+    private val mgLimiter by lazy {
+        Semaphore(permits = matchingMaxConcurrentRequests, acquiredPermits = 0)
+    }
     override suspend fun createNewOrder(
         uuid: String?,
         pair: String,

@@ -26,22 +26,58 @@ class WebClientConfig(
     private val logbook: Logbook,
     @Value("\${app.auth.url}")
     private val url: String,
+    @Value("\${app.http.client.wiretap.enabled:false}")
+    private val wiretapEnabled: Boolean,
+    @Value("\${app.http.client.general.max-connections:300}")
+    private val generalMaxConnections: Int,
+    @Value("\${app.http.client.general.pending-acquire-max-count:1000}")
+    private val generalPendingAcquireMaxCount: Int,
+    @Value("\${app.http.client.general.max-idle-seconds:30}")
+    private val generalMaxIdleSeconds: Long,
+    @Value("\${app.http.client.general.max-life-seconds:120}")
+    private val generalMaxLifeSeconds: Long,
+    @Value("\${app.http.client.general.pending-acquire-timeout-seconds:30}")
+    private val generalPendingAcquireTimeoutSeconds: Long,
+    @Value("\${app.http.client.general.connect-timeout-millis:5000}")
+    private val generalConnectTimeoutMillis: Int,
+    @Value("\${app.http.client.general.response-timeout-seconds:30}")
+    private val generalResponseTimeoutSeconds: Long,
+    @Value("\${app.http.client.keycloak.max-connections:150}")
+    private val keycloakMaxConnections: Int,
+    @Value("\${app.http.client.keycloak.pending-acquire-max-count:500}")
+    private val keycloakPendingAcquireMaxCount: Int,
+    @Value("\${app.http.client.keycloak.max-idle-seconds:30}")
+    private val keycloakMaxIdleSeconds: Long,
+    @Value("\${app.http.client.keycloak.max-life-seconds:120}")
+    private val keycloakMaxLifeSeconds: Long,
+    @Value("\${app.http.client.keycloak.pending-acquire-timeout-seconds:60}")
+    private val keycloakPendingAcquireTimeoutSeconds: Long,
+    @Value("\${app.http.client.keycloak.connect-timeout-millis:10000}")
+    private val keycloakConnectTimeoutMillis: Int,
+    @Value("\${app.http.client.keycloak.response-timeout-seconds:10}")
+    private val keycloakResponseTimeoutSeconds: Long,
 ) {
     private val provider = ConnectionProvider.builder("apiPool")
-        .maxConnections(150)
-        .pendingAcquireMaxCount(100)
-        .maxIdleTime(Duration.ofSeconds(30))
-        .maxLifeTime(Duration.ofMinutes(2))
-        .pendingAcquireTimeout(Duration.ofSeconds(10))
+        .maxConnections(generalMaxConnections)
+        .pendingAcquireMaxCount(generalPendingAcquireMaxCount)
+        .maxIdleTime(Duration.ofSeconds(generalMaxIdleSeconds))
+        .maxLifeTime(Duration.ofSeconds(generalMaxLifeSeconds))
+        .pendingAcquireTimeout(Duration.ofSeconds(generalPendingAcquireTimeoutSeconds))
         .evictInBackground(Duration.ofMinutes(1))
         .build()
 
-    private val client = HttpClient.create(provider)
-        .wiretap("reactor.netty.http.client.HttpClient", LogLevel.DEBUG, AdvancedByteBufFormat.SIMPLE)
-        .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
-        .responseTimeout(Duration.ofSeconds(30))
-        .keepAlive(true)
-        .doOnConnected { it.addHandlerLast(LogbookClientHandler(logbook)) }
+    private val client = HttpClient.create(provider).let {
+        val configured = if (wiretapEnabled) {
+            it.wiretap("reactor.netty.http.client.HttpClient", LogLevel.DEBUG, AdvancedByteBufFormat.SIMPLE)
+        } else {
+            it
+        }
+        configured
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, generalConnectTimeoutMillis)
+            .responseTimeout(Duration.ofSeconds(generalResponseTimeoutSeconds))
+            .keepAlive(true)
+            .doOnConnected { conn -> conn.addHandlerLast(LogbookClientHandler(logbook)) }
+    }
 
 
     @Bean("generalWebClient")
@@ -63,16 +99,17 @@ class WebClientConfig(
     @Bean("keycloakWebClient")
     fun keycloakWebClient(logbook: Logbook): WebClient {
         val provider = ConnectionProvider.builder("keycloakPool")
-            .maxConnections(100)
-            .maxIdleTime(Duration.ofSeconds(30))
-            .maxLifeTime(Duration.ofMinutes(2))
-            .pendingAcquireTimeout(Duration.ofSeconds(60))
+            .maxConnections(keycloakMaxConnections)
+            .pendingAcquireMaxCount(keycloakPendingAcquireMaxCount)
+            .maxIdleTime(Duration.ofSeconds(keycloakMaxIdleSeconds))
+            .maxLifeTime(Duration.ofSeconds(keycloakMaxLifeSeconds))
+            .pendingAcquireTimeout(Duration.ofSeconds(keycloakPendingAcquireTimeoutSeconds))
             .evictInBackground(Duration.ofMinutes(1))
             .build()
 
         val client = HttpClient.create(provider)
-            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
-            .responseTimeout(Duration.ofSeconds(10))
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, keycloakConnectTimeoutMillis)
+            .responseTimeout(Duration.ofSeconds(keycloakResponseTimeoutSeconds))
             .keepAlive(true)
             .doOnConnected { it.addHandlerLast(LogbookClientHandler(logbook)) }
 
