@@ -49,6 +49,8 @@ CREATE INDEX IF NOT EXISTS idx_fi_actions_symbol ON fi_actions (symbol);
 CREATE INDEX IF NOT EXISTS idx_fi_event_type ON fi_actions (event_type);
 CREATE INDEX IF NOT EXISTS idx_fi_actions_status ON fi_actions (status);
 CREATE INDEX IF NOT EXISTS idx_fi_actions_pointer ON fi_actions (pointer);
+CREATE INDEX IF NOT EXISTS idx_fi_actions_status_create_date ON fi_actions (status, create_date);
+CREATE INDEX IF NOT EXISTS idx_fi_actions_parent_status ON fi_actions (parent_id, status);
 
 ALTER TABLE fi_actions
     ADD COLUMN IF NOT EXISTS category_name VARCHAR(36);
@@ -63,6 +65,11 @@ CREATE TABLE IF NOT EXISTS fi_action_retry
     has_given_up  BOOLEAN   NOT NULL DEFAULT false
 );
 
+CREATE INDEX IF NOT EXISTS idx_fi_action_retry_due
+    ON fi_action_retry (next_run_time)
+    WHERE has_given_up = false
+      AND is_resolved = false;
+
 CREATE TABLE IF NOT EXISTS fi_action_error
 (
     id       SERIAL PRIMARY KEY,
@@ -73,6 +80,58 @@ CREATE TABLE IF NOT EXISTS fi_action_error
     retry_id INTEGER REFERENCES fi_action_retry (id),
     date     TIMESTAMP NOT NULL DEFAULT CURRENT_DATE
 );
+
+CREATE INDEX IF NOT EXISTS idx_fi_action_error_fa_id_date ON fi_action_error (fa_id, date);
+
+CREATE TABLE IF NOT EXISTS fi_actions_archive
+(
+    id                   INTEGER PRIMARY KEY,
+    uuid                 VARCHAR(72) NOT NULL UNIQUE,
+    parent_id            INTEGER,
+    event_type           VARCHAR(72) NOT NULL,
+    pointer              VARCHAR(72) NOT NULL,
+    symbol               VARCHAR(36) NOT NULL,
+    amount               DECIMAL     NOT NULL,
+    sender               VARCHAR(36) NOT NULL,
+    sender_wallet_type   VARCHAR(36) NOT NULL,
+    receiver             VARCHAR(36) NOT NULL,
+    receiver_wallet_type VARCHAR(36) NOT NULL,
+    agent                VARCHAR(20),
+    ip                   VARCHAR(11),
+    create_date          TIMESTAMP   NOT NULL,
+    status               VARCHAR(20),
+    category_name        VARCHAR(36),
+    archived_at          TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_fi_actions_archive_create_date ON fi_actions_archive (create_date);
+
+CREATE TABLE IF NOT EXISTS fi_action_retry_archive
+(
+    id            INTEGER PRIMARY KEY,
+    fa_id         INTEGER   NOT NULL UNIQUE,
+    retries       INTEGER   NOT NULL DEFAULT 0,
+    next_run_time TIMESTAMP NOT NULL,
+    is_resolved   BOOLEAN   NOT NULL DEFAULT false,
+    has_given_up  BOOLEAN   NOT NULL DEFAULT false,
+    archived_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_fi_action_retry_archive_fa_id ON fi_action_retry_archive (fa_id);
+
+CREATE TABLE IF NOT EXISTS fi_action_error_archive
+(
+    id          INTEGER PRIMARY KEY,
+    fa_id       INTEGER   NOT NULL,
+    error       TEXT      NOT NULL,
+    message     TEXT      NOT NULL,
+    body        TEXT,
+    retry_id    INTEGER,
+    date        TIMESTAMP NOT NULL,
+    archived_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_fi_action_error_archive_fa_id ON fi_action_error_archive (fa_id);
 
 CREATE TABLE IF NOT EXISTS pair_config
 (

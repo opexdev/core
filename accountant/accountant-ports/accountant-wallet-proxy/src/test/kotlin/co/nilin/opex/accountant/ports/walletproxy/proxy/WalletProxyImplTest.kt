@@ -22,7 +22,10 @@ class WalletProxyImplTest {
     private lateinit var mockServer: MockServerClient
     private val walletProxyImpl = WalletProxyImpl(
         WebClient.builder().build(),
-        "http://localhost:8089"
+        "http://localhost:8089",
+        1,
+        10,
+        5
     )
     private val objectMapper = ObjectMapper()
 

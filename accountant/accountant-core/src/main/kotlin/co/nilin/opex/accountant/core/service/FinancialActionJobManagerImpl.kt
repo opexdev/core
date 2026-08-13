@@ -23,13 +23,6 @@ class FinancialActionJobManagerImpl(
             .also { if (it.isNotEmpty()) logger.info("Processing ${it.size} financial actions") }
             .forEach {
                 try {
-                    if (it.parent != null) {
-                        val reloadParent = financialActionLoader.loadFinancialAction(it.parent.id)!!
-                        if (reloadParent.status != FinancialActionStatus.PROCESSED) {
-                            logger.warn("Financial job (uuid=${it.uuid}) skipped because of parent status: uuid=${reloadParent.uuid}, status=${reloadParent.status}")
-                            return@forEach
-                        }
-                    }
                     walletProxy.transfer(
                         it.symbol,
                         it.senderWalletType,
@@ -70,7 +63,7 @@ class FinancialActionJobManagerImpl(
                         it.receiver,
                         it.amount,
                         it.eventType + it.pointer,
-                        "accountant:fiActions:${it.id.toString()}",
+                        "accountant:fiActions:${it.uuid}",
                         it.category.toString()
                     )
                     with(financialActionPersister) {
