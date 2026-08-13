@@ -6,6 +6,7 @@ import co.nilin.opex.accountant.core.spi.FinancialActionLoader
 import co.nilin.opex.accountant.ports.postgres.dao.FinancialActionErrorRepository
 import co.nilin.opex.accountant.ports.postgres.dao.FinancialActionRepository
 import co.nilin.opex.accountant.ports.postgres.dao.FinancialActionRetryRepository
+import co.nilin.opex.accountant.ports.postgres.model.FinancialActionModel
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -35,7 +36,7 @@ class FinancialActionLoaderImpl(
     override suspend fun loadReadyToProcess(offset: Long, size: Long): List<FinancialAction> {
         return financialActionRepository.findReadyToProcess(
             PageRequest.of(offset.toInt(), size.toInt(), Sort.by(Sort.Direction.ASC, "createDate"))
-        ).map { loadFinancialAction(it.id)!! }
+        ).map { mapToFinancialAction(it) }
             .toList()
     }
 
@@ -80,25 +81,27 @@ class FinancialActionLoaderImpl(
 
     override suspend fun loadRetries(limit: Int): List<FinancialAction> {
         return faRetryRepository.findAllRetries(LocalDateTime.now(), limit)
-            .map {
-                FinancialAction(
-                    null, // Skipping parent. If it's in retry, it means its parent is already processed
-                    it.eventType,
-                    it.pointer,
-                    it.symbol,
-                    it.amount,
-                    it.sender,
-                    it.senderWalletType,
-                    it.receiver,
-                    it.receiverWalletType,
-                    it.createDate,
-                    it.categoryName,
-                    it.status,
-                    it.uuid,
-                    it.id
-                )
-            }
+            .map { mapToFinancialAction(it) }
             .collectList()
             .awaitFirstOrElse { emptyList() }
+    }
+
+    private fun mapToFinancialAction(financialAction: FinancialActionModel): FinancialAction {
+        return FinancialAction(
+            null,
+            financialAction.eventType,
+            financialAction.pointer,
+            financialAction.symbol,
+            financialAction.amount,
+            financialAction.sender,
+            financialAction.senderWalletType,
+            financialAction.receiver,
+            financialAction.receiverWalletType,
+            financialAction.createDate,
+            financialAction.categoryName,
+            financialAction.status,
+            financialAction.uuid,
+            financialAction.id
+        )
     }
 }
