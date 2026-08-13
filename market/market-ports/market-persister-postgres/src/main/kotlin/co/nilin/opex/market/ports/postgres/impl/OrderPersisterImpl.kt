@@ -17,8 +17,6 @@ import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
-import org.springframework.dao.DataIntegrityViolationException
-import org.springframework.dao.DuplicateKeyException
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -57,12 +55,27 @@ class OrderPersisterImpl(
             LocalDateTime.now(),
             LocalDateTime.now()
         )
-        try {
-            orderRepository.save(orderModel).awaitFirstOrNull()
-        } catch (e: DuplicateKeyException) {
-            logger.info("order ${order.ouid} is duplicate; skipping create flow")
-            return
-        } catch (e: DataIntegrityViolationException) {
+        val inserted = orderRepository.insertOrderIfAbsent(
+            ouid = orderModel.ouid,
+            uuid = orderModel.uuid,
+            clientOrderId = orderModel.clientOrderId,
+            symbol = orderModel.symbol,
+            orderId = orderModel.orderId,
+            makerFee = orderModel.makerFee,
+            takerFee = orderModel.takerFee,
+            leftSideFraction = orderModel.leftSideFraction,
+            rightSideFraction = orderModel.rightSideFraction,
+            userLevel = orderModel.userLevel,
+            side = orderModel.direction?.name,
+            matchConstraint = orderModel.constraint?.name,
+            orderType = orderModel.type?.name,
+            price = orderModel.price,
+            quantity = orderModel.quantity,
+            quoteQuantity = orderModel.quoteQuantity,
+            createDate = orderModel.createDate,
+            updateDate = orderModel.updateDate
+        ).awaitFirstOrNull() != null
+        if (!inserted) {
             logger.info("order ${order.ouid} is duplicate; skipping create flow")
             return
         }
