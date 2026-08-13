@@ -101,11 +101,21 @@ app:
   address: 1
   wallet:
     url: lb://opex-wallet/
+    http:
+      retry:
+        count: 2
+        delay-millis: 250
+      timeout-seconds: 10
   fi-action:
     retry:
       count: 10
       delay-seconds: 5
       delay-multiplier: 3
+    archive:
+      enabled: true
+      retention-days: 30
+      batch-size: 1000
+      fixed-delay-ms: 300000
   zone-offset: +03:30
   trade-volume-calculation-currency: ${TRADE_VOLUME_CALCULATION_CURRENCY:USDT}
   withdraw-volume-calculation-currency: ${WITHDRAW_VOLUME_CALCULATION_CURRENCY:USDT}
