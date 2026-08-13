@@ -35,11 +35,31 @@ class OrderPersisterTest {
     @Test
     fun givenOrderRepo_whenSaveRichOrder_thenSuccess(): Unit = runBlocking {
         every {
-            orderRepository.save(any())
-        } returns Mono.just(VALID.MAKER_ORDER_MODEL)
+            orderRepository.insertOrderIfAbsent(
+                ouid = any(),
+                uuid = any(),
+                clientOrderId = any(),
+                symbol = any(),
+                orderId = any(),
+                makerFee = any(),
+                takerFee = any(),
+                leftSideFraction = any(),
+                rightSideFraction = any(),
+                userLevel = any(),
+                side = any(),
+                matchConstraint = any(),
+                orderType = any(),
+                price = any(),
+                quantity = any(),
+                quoteQuantity = any(),
+                createDate = any(),
+                updateDate = any()
+            )
+        } returns Mono.just(VALID.RICH_ORDER.ouid)
         every {
             orderStatusRepository.insert(any(), any(), any(), any(), any(), any())
         } returns Mono.empty()
+
         every {
             orderStatusRepository.findMostRecentByOUID(any())
         } returns Mono.just(VALID.MAKER_ORDER_STATUS_MODEL)
@@ -86,10 +106,27 @@ class OrderPersisterTest {
     @Test
     fun givenDuplicateOrderCreate_whenSaveRichOrder_thenIgnoredAsIdempotent(): Unit = runBlocking {
         every {
-            orderRepository.save(any())
-        } returns Mono.error(DuplicateKeyException("duplicate order"))
-
-        assertThatNoException().isThrownBy { runBlocking { orderPersister.save(VALID.RICH_ORDER) } }
+            orderRepository.insertOrderIfAbsent(
+                ouid = any(),
+                uuid = any(),
+                clientOrderId = any(),
+                symbol = any(),
+                orderId = any(),
+                makerFee = any(),
+                takerFee = any(),
+                leftSideFraction = any(),
+                rightSideFraction = any(),
+                userLevel = any(),
+                side = any(),
+                matchConstraint = any(),
+                orderType = any(),
+                price = any(),
+                quantity = any(),
+                quoteQuantity = any(),
+                createDate = any(),
+                updateDate = any()
+            )
+        } returns Mono.empty()
 
         verify(exactly = 0) {
             orderStatusRepository.insert(any(), any(), any(), any(), any(), any())
