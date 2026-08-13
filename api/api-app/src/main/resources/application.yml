@@ -107,10 +107,10 @@ logging:
   level:
     co.nilin: INFO
     org.zalando.logbook: TRACE
-    reactor.netty.pool: DEBUG
-    reactor.netty.http.client: DEBUG
-    org.springframework.web.reactive.function.client: DEBUG
-    co.nilin.opex.api.ports.proxy.impl: DEBUG
+    reactor.netty.pool: WARN
+    reactor.netty.http.client: WARN
+    org.springframework.web.reactive.function.client: WARN
+    co.nilin.opex.api.ports.proxy.impl: INFO
 
 app:
   base:
@@ -152,6 +152,31 @@ app:
   api:
     crypto:
       key: ${api_crypto_key:0e1fd29572ec8c85970d76e3433e96ee}
+  http:
+    client:
+      wiretap:
+        enabled: ${HTTP_CLIENT_WIRETAP_ENABLED:false}
+      general:
+        max-connections: ${HTTP_CLIENT_GENERAL_MAX_CONNECTIONS:300}
+        pending-acquire-max-count: ${HTTP_CLIENT_GENERAL_PENDING_ACQUIRE_MAX_COUNT:1000}
+        max-idle-seconds: ${HTTP_CLIENT_GENERAL_MAX_IDLE_SECONDS:30}
+        max-life-seconds: ${HTTP_CLIENT_GENERAL_MAX_LIFE_SECONDS:120}
+        pending-acquire-timeout-seconds: ${HTTP_CLIENT_GENERAL_PENDING_ACQUIRE_TIMEOUT_SECONDS:30}
+        connect-timeout-millis: ${HTTP_CLIENT_GENERAL_CONNECT_TIMEOUT_MILLIS:5000}
+        response-timeout-seconds: ${HTTP_CLIENT_GENERAL_RESPONSE_TIMEOUT_SECONDS:30}
+      keycloak:
+        max-connections: ${HTTP_CLIENT_KEYCLOAK_MAX_CONNECTIONS:150}
+        pending-acquire-max-count: ${HTTP_CLIENT_KEYCLOAK_PENDING_ACQUIRE_MAX_COUNT:500}
+        max-idle-seconds: ${HTTP_CLIENT_KEYCLOAK_MAX_IDLE_SECONDS:30}
+        max-life-seconds: ${HTTP_CLIENT_KEYCLOAK_MAX_LIFE_SECONDS:120}
+        pending-acquire-timeout-seconds: ${HTTP_CLIENT_KEYCLOAK_PENDING_ACQUIRE_TIMEOUT_SECONDS:60}
+        connect-timeout-millis: ${HTTP_CLIENT_KEYCLOAK_CONNECT_TIMEOUT_MILLIS:10000}
+        response-timeout-seconds: ${HTTP_CLIENT_KEYCLOAK_RESPONSE_TIMEOUT_SECONDS:10}
+  proxy:
+    market:
+      max-concurrent-requests: ${API_PROXY_MARKET_MAX_CONCURRENT_REQUESTS:64}
+    matching:
+      max-concurrent-requests: ${API_PROXY_MATCHING_MAX_CONCURRENT_REQUESTS:64}
   cors:
     enabled: true
     allowed-origins: ${ALLOWED_ORIGINS:"http://localhost:8110"}
@@ -170,4 +195,3 @@ springdoc:
     display-request-duration: true
     operations-sorter: method
     tags-sorter: alpha
-
