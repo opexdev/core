@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
+import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.*
 
@@ -48,6 +49,62 @@ interface OrderRepository : ReactiveCrudRepository<OrderModel, Long> {
         @Param("updateDate")
         updateDate: LocalDateTime = LocalDateTime.now()
     ): Mono<Void>
+
+    @Query(
+        """
+        insert into orders (
+            ouid, uuid, client_order_id, symbol, order_id,
+            maker_fee, taker_fee, left_side_fraction, right_side_fraction,
+            user_level, side, match_constraint, order_type,
+            price, quantity, quote_quantity, create_date, update_date
+        ) values (
+            :ouid, :uuid, :clientOrderId, :symbol, :orderId,
+            :makerFee, :takerFee, :leftSideFraction, :rightSideFraction,
+            :userLevel, :side, :matchConstraint, :orderType,
+            :price, :quantity, :quoteQuantity, :createDate, :updateDate
+        )
+        on conflict (ouid) do nothing
+        returning ouid
+        """
+    )
+    fun insertOrderIfAbsent(
+        @Param("ouid")
+        ouid: String,
+        @Param("uuid")
+        uuid: String,
+        @Param("clientOrderId")
+        clientOrderId: String?,
+        @Param("symbol")
+        symbol: String,
+        @Param("orderId")
+        orderId: Long?,
+        @Param("makerFee")
+        makerFee: BigDecimal?,
+        @Param("takerFee")
+        takerFee: BigDecimal?,
+        @Param("leftSideFraction")
+        leftSideFraction: BigDecimal?,
+        @Param("rightSideFraction")
+        rightSideFraction: BigDecimal?,
+        @Param("userLevel")
+        userLevel: String?,
+        @Param("side")
+        side: String?,
+        @Param("matchConstraint")
+        matchConstraint: String?,
+        @Param("orderType")
+        orderType: String?,
+        @Param("price")
+        price: BigDecimal?,
+        @Param("quantity")
+        quantity: BigDecimal?,
+        @Param("quoteQuantity")
+        quoteQuantity: BigDecimal?,
+        @Param("createDate")
+        createDate: LocalDateTime?,
+        @Param("updateDate")
+        updateDate: LocalDateTime
+    ): Mono<String>
 
     @Query(
         """

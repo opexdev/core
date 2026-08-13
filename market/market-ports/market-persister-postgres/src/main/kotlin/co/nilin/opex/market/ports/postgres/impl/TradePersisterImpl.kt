@@ -14,8 +14,10 @@ import org.springframework.dao.DuplicateKeyException
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
+import kotlin.math.abs
 
 @Component
 class TradePersisterImpl(
@@ -144,11 +146,12 @@ class TradePersisterImpl(
     }
 
     private fun isSameTradePayload(existing: TradeModel, incoming: TradeModel): Boolean {
+        val tradeDateDeltaSeconds = abs(ChronoUnit.SECONDS.between(existing.tradeDate, incoming.tradeDate))
         return existing.makerOuid == incoming.makerOuid &&
                 existing.takerOuid == incoming.takerOuid &&
                 existing.matchedPrice.compareTo(incoming.matchedPrice) == 0 &&
                 existing.matchedQuantity.compareTo(incoming.matchedQuantity) == 0 &&
-                existing.tradeDate == incoming.tradeDate &&
+                tradeDateDeltaSeconds <= 5 &&
                 existing.makerCommission == incoming.makerCommission &&
                 existing.takerCommission == incoming.takerCommission &&
                 existing.makerCommissionAsset == incoming.makerCommissionAsset &&
