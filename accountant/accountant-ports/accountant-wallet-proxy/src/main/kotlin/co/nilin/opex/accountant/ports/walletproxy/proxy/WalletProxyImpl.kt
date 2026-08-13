@@ -11,24 +11,15 @@ import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.client.WebClientRequestException
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
-import reactor.core.publisher.Mono
-import reactor.util.retry.Retry
-import java.io.IOException
-import java.net.ConnectException
 import java.math.BigDecimal
-import java.time.Duration
-import java.util.concurrent.TimeoutException
 
 @Component
 class WalletProxyImpl(
     private val webClient: WebClient,
-    @Value("\${app.wallet.url}") private val walletBaseUrl: String,
-    @Value("\${app.wallet.http.retry.count:2}") private val retryCount: Long = 2,
-    @Value("\${app.wallet.http.retry.delay-millis:250}") private val retryDelayMillis: Long = 250,
-    @Value("\${app.wallet.http.timeout-seconds:10}") private val timeoutSeconds: Long = 10
+    @Value("\${app.wallet.url}")
+    private val walletBaseUrl: String
 ) : WalletProxy {
 
     data class TransferBody(
@@ -48,15 +39,14 @@ class WalletProxyImpl(
         transferRef: String?,
         transferCategory: String
     ) {
-        withTransientRetry {
-            webClient.post()
-                .uri("$walletBaseUrl/v2/transfer/${amount}_$symbol/from/${senderUuid}_$senderWalletType/to/${receiverUuid}_$receiverWalletType")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(TransferBody(description, transferRef, transferCategory))
-                .retrieve()
-                .onStatus({ t -> t.isError }, { it.createException() })
-                .bodyToMono<TransferResult>()
-        }.awaitFirst()
+        webClient.post()
+            .uri("$walletBaseUrl/v2/transfer/${amount}_$symbol/from/${senderUuid}_$senderWalletType/to/${receiverUuid}_$receiverWalletType")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(TransferBody(description, transferRef, transferCategory))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<TransferResult>()
+            .awaitFirst()
     }
 
     override suspend fun canFulfil(symbol: String, walletType: WalletType, uuid: String, amount: BigDecimal): Boolean {
@@ -66,7 +56,6 @@ class WalletProxyImpl(
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<BooleanResponse>()
-            .timeout(Duration.ofSeconds(timeoutSeconds))
             .awaitFirst()
             .result
     }
@@ -80,7 +69,6 @@ class WalletProxyImpl(
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<TotalAssetsSnapshot>()
-            .timeout(Duration.ofSeconds(timeoutSeconds))
             .awaitFirstOrNull()
     }
 
@@ -91,27 +79,6 @@ class WalletProxyImpl(
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<List<CurrencyPrice>>()
-            .timeout(Duration.ofSeconds(timeoutSeconds))
             .awaitFirst()
-    }
-
-    private fun <T> withTransientRetry(request: () -> Mono<T>): Mono<T> {
-        return request()
-            .timeout(Duration.ofSeconds(timeoutSeconds))
-            .retryWhen(
-                Retry.backoff(retryCount, Duration.ofMillis(retryDelayMillis))
-                    .filter { error ->
-                        when {
-                            error is WebClientRequestException -> true
-                            error is TimeoutException -> true
-                            error is ConnectException -> true
-                            error is IOException -> true
-                            error.cause is TimeoutException -> true
-                            error.cause is ConnectException -> true
-                            else -> false
-                        }
-                    }
-                    .onRetryExhaustedThrow { _, signal -> signal.failure() }
-            )
     }
 }

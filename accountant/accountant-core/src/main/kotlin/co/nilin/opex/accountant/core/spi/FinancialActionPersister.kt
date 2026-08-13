@@ -2,7 +2,6 @@ package co.nilin.opex.accountant.core.spi
 
 import co.nilin.opex.accountant.core.model.FinancialAction
 import co.nilin.opex.accountant.core.model.FinancialActionStatus
-import java.time.LocalDateTime
 
 interface FinancialActionPersister {
 
@@ -21,6 +20,4 @@ interface FinancialActionPersister {
     suspend fun updateStatusNewTx(financialAction: FinancialAction, status: FinancialActionStatus)
 
     suspend fun retrySuccessful(financialAction: FinancialAction)
-
-    suspend fun archiveProcessedActions(before: LocalDateTime, limit: Int): Int
 }

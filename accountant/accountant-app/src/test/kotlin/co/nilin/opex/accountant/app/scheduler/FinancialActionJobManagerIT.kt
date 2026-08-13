@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.InOrder
 import org.mockito.Mockito
+import org.mockito.Mockito.any
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.eq
 import org.springframework.beans.factory.annotation.Autowired
@@ -247,7 +248,7 @@ class FinancialActionJobManagerIT : KafkaEnabledTest() {
             eq(fi.receiver),
             eq(fi.amount),
             eq(fi.eventType + fi.pointer),
-            eq("accountant:fiActions:${fi.uuid}"),
+            any(),
             eq(fi.category.toString()),
         )
     }

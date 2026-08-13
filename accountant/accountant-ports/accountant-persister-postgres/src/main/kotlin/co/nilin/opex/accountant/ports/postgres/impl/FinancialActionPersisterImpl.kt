@@ -131,10 +131,6 @@ class FinancialActionPersisterImpl(
         faRetryRepository.updateResolvedTrue(financialAction.id!!).awaitSingleOrNull()
     }
 
-    override suspend fun archiveProcessedActions(before: LocalDateTime, limit: Int): Int {
-        return (repository.archiveProcessedActions(before, limit).awaitSingleOrNull() ?: 0).toInt()
-    }
-
     override suspend fun updateStatus(faUuid: String, status: FinancialActionStatus) {
         repository.updateStatus(faUuid, status).awaitSingleOrNull()
     }
