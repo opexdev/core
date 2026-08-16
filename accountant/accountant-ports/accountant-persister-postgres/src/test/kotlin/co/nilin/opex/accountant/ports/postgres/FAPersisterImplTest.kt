@@ -9,10 +9,14 @@ import co.nilin.opex.accountant.ports.postgres.model.FinancialActionModel
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import io.mockk.slot
+import co.nilin.opex.accountant.ports.postgres.model.FinancialActionRetryModel
 import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.time.LocalDateTime
 
 @Suppress("ReactiveStreamsUnusedPublisher")
 class FAPersisterImplTest {
@@ -46,6 +50,31 @@ class FAPersisterImplTest {
                 eq(FinancialActionStatus.CREATED)
             )
         }
+    }
+
+    @Test
+    fun givenRetryableAction_whenUpdateWithError_thenScheduleUsesBackoffDelay(): Unit = runBlocking {
+        val retryModel = FinancialActionRetryModel(
+            faId = Valid.fa.id!!,
+            nextRunTime = LocalDateTime.now(),
+            retries = 0,
+            isResolved = false,
+            hasGivenUp = false,
+            id = 10
+        )
+        val nextRunSlot = slot<LocalDateTime>()
+
+        coEvery { faRetryRepository.findByFaId(Valid.fa.id!!) } returns Mono.just(retryModel)
+        coEvery { faRetryRepository.scheduleNext(eq(10), eq(1), capture(nextRunSlot), eq(false)) } returns Mono.empty()
+        coEvery { financialActionRepository.updateStatus(eq(Valid.fa.id!!), eq(FinancialActionStatus.RETRYING)) } returns Mono.empty()
+        coEvery { faErrorRepository.save(any()) } returns Mono.empty()
+
+        val before = LocalDateTime.now()
+        faPersister.updateWithError(Valid.fa, "ERR", "message", null)
+
+        coVerify(exactly = 1) { faRetryRepository.scheduleNext(eq(10), eq(1), any(), eq(false)) }
+        assertTrue(nextRunSlot.isCaptured)
+        assertTrue(nextRunSlot.captured.isAfter(before.plusSeconds(10)))
     }
 
 }

@@ -8,6 +8,7 @@ import co.nilin.opex.wallet.ports.postgres.model.TransactionModel
 import com.fasterxml.jackson.databind.ObjectMapper
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
@@ -34,6 +35,10 @@ class TransactionManagerImpl(
                 transaction.transferCategory
             )
         ).awaitSingle().id!!
+    }
+
+    override suspend fun findByTransferRef(transferRef: String): Long? {
+        return transactionRepository.findIdByTransferRef(transferRef).awaitSingleOrNull()
     }
 
 
@@ -148,6 +153,5 @@ class TransactionManagerImpl(
                 .collectList().awaitFirstOrElse { emptyList() }
     }
 }
-
 
 

@@ -5,6 +5,7 @@ import co.nilin.opex.wallet.core.service.sample.VALID
 import co.nilin.opex.wallet.core.spi.*
 import io.mockk.MockKException
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
@@ -168,5 +169,23 @@ private class TransferManagerImplTest {
                 transferManager.transfer(VALID.TRANSFER_COMMAND)
             }
         }.isNotInstanceOf(MockKException::class.java)
+    }
+
+    @Test
+    fun givenExistingTransferRef_whenTransfer_thenReturnIdempotentSuccessWithoutBalanceChanges(): Unit = runBlocking {
+        val command = VALID.TRANSFER_COMMAND.copy(transferRef = "accountant:fiActions:abc")
+        coEvery { transactionManager.findByTransferRef(eq(command.transferRef!!)) } returns 100L
+
+        val result = transferManager.transfer(command)
+
+        assertThat(result.tx).isEqualTo("100")
+        assertThat(result.transferResult.sourceUuid).isEqualTo(command.sourceWallet.owner.uuid)
+        assertThat(result.transferResult.destUuid).isEqualTo(command.destWallet.owner.uuid)
+
+        coVerify(exactly = 0) { walletManager.decreaseBalance(any(), any()) }
+        coVerify(exactly = 0) { walletManager.increaseBalance(any(), any()) }
+        coVerify(exactly = 0) { transactionManager.save(any()) }
+        coVerify(exactly = 0) { walletListener.onDeposit(any(), any(), any(), any(), any()) }
+        coVerify(exactly = 0) { walletListener.onWithdraw(any(), any(), any(), any()) }
     }
 }
