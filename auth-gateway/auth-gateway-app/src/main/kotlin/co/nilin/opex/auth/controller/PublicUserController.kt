@@ -49,6 +49,26 @@ Allowed values:
         return ResponseEntity.ok().body(otpResponse)
     }
 
+    @PostMapping("/register/resend-otp")
+    @Operation(
+        summary = "Resend registration OTP",
+        description = """POST /v1/user/public/register/resend-otp.
+Security: Public endpoint. No Bearer token is required.
+
+Behavior: Resends the registration OTP.""",
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(mediaType = "application/json", schema = Schema(type = "object"))]
+            )
+        ]
+    )
+    suspend fun resendRegistrationOtp(@Valid @RequestBody request: ResendOtpRequest): ResponseEntity<TempOtpResponse> {
+        val otpResponse = registerService.resendRegistrationOtp(request)
+        return ResponseEntity.ok().body(otpResponse)
+    }
+
     @PostMapping("/register/verify")
     @Operation(
         summary = "Verify registration OTP",
@@ -137,6 +157,26 @@ Allowed values:
     )
     suspend fun forgetPassword(@RequestBody request: ForgotPasswordRequest): ResponseEntity<TempOtpResponse> {
         val otpResponse = forgetPasswordService.forgetPassword(request)
+        return ResponseEntity.ok().body(otpResponse)
+    }
+
+    @PostMapping("/forget/resend-otp")
+    @Operation(
+        summary = "Resend forgot-password OTP",
+        description = """POST /v1/user/public/forget/resend-otp.
+Security: Public endpoint. No Bearer token is required.
+
+Behavior: Resends the forgot-password OTP.""",
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(mediaType = "application/json", schema = Schema(type = "object"))]
+            )
+        ]
+    )
+    suspend fun resendForgetOtp(@Valid @RequestBody request: ResendOtpRequest): ResponseEntity<TempOtpResponse> {
+        val otpResponse = forgetPasswordService.resendForgetOtp(request)
         return ResponseEntity.ok().body(otpResponse)
     }
 

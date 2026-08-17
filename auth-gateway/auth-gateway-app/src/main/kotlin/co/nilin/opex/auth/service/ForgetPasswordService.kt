@@ -32,7 +32,15 @@ class ForgetPasswordService(
         val otpReceiver = OTPReceiver(uName.value, uName.type.otpType)
         val user = keycloakProxy.findUserByUsername(uName) ?: return TempOtpResponse("", otpReceiver)
         //TODO IMPORTANT: remove in production
-        val result = otpProxy.requestOTP(uName.value, listOf(otpReceiver))
+        val result = otpProxy.requestOTP(uName.value, listOf(otpReceiver),OTPAction.FORGET)
+        return TempOtpResponse(result.otp, otpReceiver)
+    }
+
+    suspend fun resendForgetOtp(request: ResendOtpRequest): TempOtpResponse {
+        val uName = Username.create(request.username)
+        val otpReceiver = OTPReceiver(uName.value, uName.type.otpType)
+        keycloakProxy.findUserByUsername(uName) ?: return TempOtpResponse("", otpReceiver)
+        val result = otpProxy.requestOTP(uName.value, listOf(otpReceiver),OTPAction.FORGET)
         return TempOtpResponse(result.otp, otpReceiver)
     }
 

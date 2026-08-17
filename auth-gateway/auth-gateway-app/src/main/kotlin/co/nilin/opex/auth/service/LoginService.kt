@@ -34,18 +34,23 @@ class LoginService(
             request.captchaCode,
             request.captchaType ?: CaptchaType.INTERNAL
         )
-        val username = Username.create(request.username)
-        val user =
-            keycloakProxy.findUserByUsername(username) ?: throw OpexError.UsernameOrPasswordIsIncorrect.exception()
-        val otpTypes = (user.attributes?.get(Attributes.OTP)?.get(0) ?: OTPType.NONE.name).split(",")
 
-        if (otpTypes.contains(OTPType.NONE.name)) {
+        val username = Username.create(request.username)
+        val user = keycloakProxy.findUserByUsername(username)
+            ?: throw OpexError.UsernameOrPasswordIsIncorrect.exception()
+
+        val otpType = user.attributes?.get(Attributes.OTP)?.firstOrNull()
+            ?.let { runCatching { OTPType.valueOf(it) }.getOrNull() }
+            ?: OTPType.NONE
+
+        if (otpType == OTPType.NONE) {
             val token = keycloakProxy.getUserToken(
                 username,
                 request.password,
                 request.clientId,
                 request.clientSecret
             ).apply { if (!request.rememberMe) refreshToken = null }
+
             sendLoginEvent(user.id, token.sessionState, request, token.expiresIn)
             return TokenResponse(token, null, null)
         }
@@ -56,61 +61,114 @@ class LoginService(
             username,
             request.password,
             PRE_AUTH_CLIENT_ID,
-            preAuthClientSecretKey,
+            preAuthClientSecretKey
         ).apply {
             refreshToken = null
             refreshExpiresIn = 0
         }
 
+        return when (otpType) {
+            OTPType.EMAIL, OTPType.SMS -> {
+                val destination = when (otpType) {
+                    OTPType.EMAIL -> user.email
+                    OTPType.SMS -> user.mobile
+                    else -> null
+                } ?: throw OpexError.BadRequest.exception()
 
-        val usernameType = username.type.otpType
-        if (!otpTypes.contains((usernameType.name))) throw OpexError.OTPCannotBeRequested.exception()
-        val requiredOtpTypes = listOf(OTPReceiver(username.value, usernameType))
-        val res = otpProxy.requestOTP(username.value, requiredOtpTypes)
-        val receiver = when (usernameType) {
-            OTPType.EMAIL -> user.email
-            OTPType.SMS -> user.mobile
-            else -> null
+                val requiredOtpTypes = listOf(OTPReceiver(destination, otpType))
+                val res = otpProxy.requestOTP(destination, requiredOtpTypes, OTPAction.LOGIN)
+
+                TokenResponse(
+                    token = token,
+                    otp = RequiredOTP(otpType, destination),
+                    otpCode = res.otp
+                )
+            }
+
+            OTPType.TOTP -> {
+                TokenResponse(
+                    token = token,
+                    otp = RequiredOTP(OTPType.TOTP, user.id),
+                    otpCode = null
+                )
+            }
+
+            OTPType.NONE -> throw OpexError.InvalidOTPType.exception()
         }
-
-
-
-        return TokenResponse(token, RequiredOTP(usernameType, receiver), res.otp)
     }
 
     suspend fun resendLoginOtp(request: ResendOtpRequest, uuid: String): ResendOtpResponse {
         val username = Username.create(request.username)
-        val usernameType = username.type.otpType
-        val user = keycloakProxy.findUserByUsername(username) ?: throw OpexError.UserNotFound.exception()
+        val user = keycloakProxy.findUserByUsername(username)
+            ?: throw OpexError.UserNotFound.exception()
+
         if (user.id != uuid) throw OpexError.UnAuthorized.exception()
-        val requiredOtpTypes = listOf(OTPReceiver(username.value, usernameType))
-        val res = otpProxy.requestOTP(request.username, requiredOtpTypes)
-        val receiver = when (usernameType) {
-            OTPType.EMAIL -> user.email
-            OTPType.SMS -> user.mobile
-            else -> null
+
+        return when (val otpType = user.currentOtpMethod) {
+            OTPType.EMAIL, OTPType.SMS -> {
+                val destination = when (otpType) {
+                    OTPType.EMAIL -> user.email
+                    OTPType.SMS -> user.mobile
+                    else -> null
+                } ?: throw OpexError.BadRequest.exception()
+
+                val requiredOtpTypes = listOf(OTPReceiver(destination, otpType))
+                val res = otpProxy.requestOTP(destination, requiredOtpTypes, OTPAction.LOGIN)
+
+                ResendOtpResponse(
+                    otp = RequiredOTP(otpType, destination),
+                    otpCode = res.otp
+                )
+            }
+
+            OTPType.TOTP -> {
+                ResendOtpResponse(
+                    otp = RequiredOTP(OTPType.TOTP, user.id),
+                    otpCode = null
+                )
+            }
+
+            OTPType.NONE -> throw OpexError.InvalidOTPType.exception()
         }
-        return ResendOtpResponse(RequiredOTP(usernameType, receiver), res.otp)
-
     }
-
 
     suspend fun confirmGetToken(request: ConfirmPasswordFlowTokenRequest): TokenResponse {
         val username = Username.create(request.username)
-        val otpRequest = OTPVerifyRequest(username.value, listOf(OTPCode(request.otp, username.type.otpType)))
-        val otpResult = otpProxy.verifyOTP(otpRequest)
-        if (!otpResult.result) {
-            when (otpResult.type) {
-                OTPResultType.EXPIRED -> throw OpexError.ExpiredOTP.exception()
-                else -> throw OpexError.InvalidOTP.exception()
+        val user = keycloakProxy.findUserByUsername(username)
+            ?: throw OpexError.UserNotFound.exception()
+
+        when (val otpType = user.currentOtpMethod) {
+            OTPType.EMAIL, OTPType.SMS -> {
+                val destination = when (otpType) {
+                    OTPType.EMAIL -> user.email
+                    OTPType.SMS -> user.mobile
+                    else -> null
+                } ?: throw OpexError.BadRequest.exception()
+
+                val otpRequest = OTPVerifyRequest(
+                    userId = destination,
+                    otpCodes = listOf(OTPCode(request.otp, otpType))
+                )
+                val otpResult = otpProxy.verifyOTP(otpRequest)
+
+                if (!otpResult.result) {
+                    throw when (otpResult.type) {
+                        OTPResultType.EXPIRED -> OpexError.ExpiredOTP.exception()
+                        else -> OpexError.InvalidOTP.exception()
+                    }
+                }
             }
+
+            OTPType.TOTP -> {
+                val totpResult = otpProxy.verifyTOTP(userId = user.id, code = request.otp)
+                if (!totpResult.result) {
+                    throw OpexError.InvalidTOTPCode.exception()
+                }
+            }
+
+            OTPType.NONE -> throw OpexError.InvalidOTPType.exception()
         }
 
-//        val token = keycloakProxy.exchangeUserToken(
-//            request.token, request.clientId,
-//            request.clientSecret,
-//            request.clientId
-//        ).apply { if (!request.rememberMe) refreshToken = null }
         val token = keycloakProxy.getClientBTokenWithBootstrap(
             bootstrapToken = request.token,
             clientId = request.clientId,
@@ -122,6 +180,13 @@ class LoginService(
 
         return TokenResponse(token, null, null)
     }
+
+    // --- Helper Extension ---
+    private val KeycloakUser.currentOtpMethod: OTPType
+        get() = attributes?.get(Attributes.OTP)
+            ?.firstOrNull()
+            ?.let { runCatching { OTPType.valueOf(it) }.getOrNull() }
+            ?: OTPType.NONE
 
     suspend fun getToken(tokenRequest: ExternalIdpTokenRequest): TokenResponse {
         val idToken = tokenRequest.idToken

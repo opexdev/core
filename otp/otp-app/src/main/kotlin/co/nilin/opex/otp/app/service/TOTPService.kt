@@ -2,6 +2,7 @@ package co.nilin.opex.otp.app.service
 
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.otp.app.model.TOTP
+import co.nilin.opex.otp.app.model.TOTPQueryResponse
 import co.nilin.opex.otp.app.repository.TOTPConfigRepository
 import co.nilin.opex.otp.app.repository.TOTPRepository
 import dev.samstevens.totp.code.DefaultCodeGenerator
@@ -55,8 +56,17 @@ class TOTPService(
         }
     }
 
-    suspend fun findTOTP(userId: String): TOTP? {
-        return repository.findByUserId(userId)
+    suspend fun findTOTP(userId: String): TOTPQueryResponse {
+        val totp = repository.findByUserId(userId)
+        val config = configRepository.findOne()
+        val generatedUri = generateUri(userId, config.issuer, totp?.secret ?: "", totp?.label)
+
+        return TOTPQueryResponse(
+            userId = totp?.userId ?: userId,
+            isEnabled = totp?.isEnabled ?: false,
+            isActivated = totp?.isActivated ?: false,
+            uri = generatedUri
+        )
     }
 
     private suspend fun generateSecret(): String {

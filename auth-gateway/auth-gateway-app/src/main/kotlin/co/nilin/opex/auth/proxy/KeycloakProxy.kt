@@ -155,6 +155,28 @@ class KeycloakProxy(
         return users[0].id
     }
 
+    suspend fun findUserByUuid(uuid: String): KeycloakUser? {
+        return try {
+            opexRealm.users()
+                .get(uuid)
+                .toRepresentation()
+                .let { representation ->
+                    KeycloakUser(
+                        id = representation.id,
+                        username = representation.username,
+                        email = representation.email,
+                        firstName = representation.firstName,
+                        lastName = representation.lastName,
+                        emailVerified = representation.isEmailVerified,
+                        enabled = representation.isEnabled,
+                        attributes = representation.attributes
+                    )
+                }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     suspend fun findUserByUsername(username: Username): KeycloakUser? {
         val users = findUserByAttribute(username.asAttribute())
         return if (users.isEmpty()) null else users[0]
@@ -177,8 +199,6 @@ class KeycloakProxy(
 
     suspend fun createUser(
         username: Username,
-        firstName: String?,
-        lastName: String?,
         enabled: Boolean
     ) {
         val keycloakUrl = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users"
@@ -192,15 +212,13 @@ class KeycloakProxy(
                 hashMapOf(
                     "username" to internalID,
                     "emailVerified" to enabled,
-                    "firstName" to firstName,
-                    "lastName" to lastName,
                     "enabled" to enabled,
                     "attributes" to hashMapOf(
                         "kycLevel" to "0"
                     ).apply {
                         if (username.type == UsernameType.MOBILE)
                             put("mobile", username.value)
-                        put(Attributes.OTP, OTPType.EMAIL.name + "," + OTPType.SMS.name)
+                        put(Attributes.OTP, OTPType.NONE.name)
                     }
                 ).apply { if (username.type == UsernameType.EMAIL) put("email", username.value) }
             )
@@ -399,6 +417,20 @@ class KeycloakProxy(
         }
     }
 
+    suspend fun updateOtpConfig(
+        userId: String,
+        otpConfig: String
+    ) {
+        updateUserFields(
+            userId = userId,
+            updates = mapOf(
+                "attributes" to mapOf(
+                    Attributes.OTP to otpConfig
+                )
+            )
+        )
+    }
+
     private suspend fun updateUserFields(userId: String, updates: Map<String, Any>) {
         val url = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users/$userId"
 
@@ -411,7 +443,20 @@ class KeycloakProxy(
             .toMutableMap()
 
         updates.forEach { (key, value) ->
-            existingUser[key] = value
+            if (key == "attributes" && value is Map<*, *>) {
+                val currentAttributes = (existingUser["attributes"] as? Map<String, Any>)
+                    ?.toMutableMap() ?: mutableMapOf()
+
+                value.forEach { (attrKey, attrValue) ->
+                    if (attrKey is String && attrValue != null) {
+                        currentAttributes[attrKey] = attrValue
+                    }
+                }
+
+                existingUser["attributes"] = currentAttributes
+            } else {
+                existingUser[key] = value
+            }
         }
 
         keycloakClient.put()
