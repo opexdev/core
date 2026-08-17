@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.ports.postgres.impl
 
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.spi.TransactionManager
+import co.nilin.opex.wallet.core.spi.WalletManager
 import co.nilin.opex.wallet.ports.postgres.dao.CurrencyRepositoryV2
 import co.nilin.opex.wallet.ports.postgres.dao.TransactionRepository
 import co.nilin.opex.wallet.ports.postgres.model.TransactionModel
@@ -18,6 +19,7 @@ import java.time.ZoneId
 class TransactionManagerImpl(
     private val transactionRepository: TransactionRepository,
     private val currencyRepositoryV2: CurrencyRepositoryV2,
+    private val walletManager: WalletManager,
     private val objectMapper: ObjectMapper
 ) : TransactionManager {
     private val logger = LoggerFactory.getLogger(TransactionManagerImpl::class.java)
@@ -37,8 +39,24 @@ class TransactionManagerImpl(
         ).awaitSingle().id!!
     }
 
-    override suspend fun findByTransferRef(transferRef: String): Long? {
-        return transactionRepository.findIdByTransferRef(transferRef).awaitSingleOrNull()
+    override suspend fun findTransactionByTransferRef(transferRef: String): PersistedTransaction? {
+        val transaction = transactionRepository.findByTransferRef(transferRef).awaitSingleOrNull() ?: return null
+        val sourceWallet = walletManager.findWalletById(transaction.sourceWallet) ?: return null
+        val destWallet = walletManager.findWalletById(transaction.destWallet) ?: return null
+
+        return PersistedTransaction(
+            transaction.id!!,
+            Transaction(
+                sourceWallet,
+                destWallet,
+                transaction.sourceAmount,
+                transaction.destAmount,
+                transaction.description,
+                transaction.transferRef,
+                transaction.transferCategory,
+                transaction.transactionDate
+            )
+        )
     }
 
 
@@ -153,5 +171,3 @@ class TransactionManagerImpl(
                 .collectList().awaitFirstOrElse { emptyList() }
     }
 }
-
-

@@ -16,8 +16,8 @@ import java.time.LocalDateTime
 
 @Repository
 interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long> {
-    @Query("select id from transaction where transfer_ref = :transferRef limit 1")
-    fun findIdByTransferRef(transferRef: String): Mono<Long>
+    @Query("select * from transaction where transfer_ref = :transferRef limit 1")
+    fun findByTransferRef(transferRef: String): Mono<TransactionModel>
 
     @Query(
         """

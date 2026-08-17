@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 interface TransactionManager {
 
     suspend fun save(transaction: Transaction): Long
-    suspend fun findByTransferRef(transferRef: String): Long?
+    suspend fun findTransactionByTransferRef(transferRef: String): PersistedTransaction?
 
     suspend fun findDepositTransactions(
         uuid: String,

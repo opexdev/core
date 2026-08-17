@@ -26,12 +26,7 @@ class TransferManagerImpl(
 
     @Transactional
     override suspend fun transfer(transferCommand: TransferCommand): TransferResultDetailed {
-        transferCommand.transferRef?.let { transferRef ->
-            transactionManager.findByTransferRef(transferRef)?.let { existingTxId ->
-                logger.info("Idempotent transfer hit for transferRef={}", transferRef)
-                return buildIdempotentResult(transferCommand, existingTxId)
-            }
-        }
+        resolveIdempotentTransfer(transferCommand)?.let { return it }
 
         //pre transfer hook (dispatch pre transfer event)
         val srcWallet = transferCommand.sourceWallet
@@ -75,12 +70,8 @@ class TransferManagerImpl(
                 )
             )
         } catch (e: DuplicateKeyException) {
-            val transferRef = transferCommand.transferRef
-                ?: throw e
-            val existingTxId = transactionManager.findByTransferRef(transferRef)
-                ?: throw e
-            logger.info("Duplicate transferRef={} resolved as idempotent success", transferRef)
-            return buildIdempotentResult(transferCommand, existingTxId)
+            resolveIdempotentTransfer(transferCommand)?.let { return it }
+            throw e
         }
 
         walletManager.decreaseBalance(srcWallet, transferCommand.amount.amount)
@@ -111,9 +102,32 @@ class TransferManagerImpl(
         )
     }
 
-    private fun buildIdempotentResult(transferCommand: TransferCommand, existingTxId: Long): TransferResultDetailed {
-        val srcWallet = transferCommand.sourceWallet
-        val destWallet = transferCommand.destWallet
+    private suspend fun resolveIdempotentTransfer(transferCommand: TransferCommand): TransferResultDetailed? {
+        val transferRef = transferCommand.transferRef ?: return null
+        val persistedTransaction = transactionManager.findTransactionByTransferRef(transferRef) ?: return null
+        val existingTxId = persistedTransaction.id
+        val existingTransaction = persistedTransaction.transaction
+
+        if (!matchesIdempotentTransfer(transferCommand, existingTransaction)) {
+            throw OpexError.BadRequest.exception("transferRef=$transferRef already exists with different parameters")
+        }
+
+        logger.info("Idempotent transfer hit for transferRef={}", transferRef)
+        return buildIdempotentResult(existingTransaction, existingTxId)
+    }
+
+    private fun matchesIdempotentTransfer(transferCommand: TransferCommand, existingTransaction: Transaction): Boolean {
+        return transferCommand.sourceWallet.id == existingTransaction.sourceWallet.id &&
+            transferCommand.destWallet.id == existingTransaction.destWallet.id &&
+            transferCommand.amount == Amount(existingTransaction.sourceWallet.currency, existingTransaction.sourceAmount) &&
+            transferCommand.destAmount == Amount(existingTransaction.destWallet.currency, existingTransaction.destAmount) &&
+            transferCommand.transferCategory == existingTransaction.transferCategory &&
+            transferCommand.description == existingTransaction.description
+    }
+
+    private fun buildIdempotentResult(existingTransaction: Transaction, existingTxId: Long): TransferResultDetailed {
+        val srcWallet = existingTransaction.sourceWallet
+        val destWallet = existingTransaction.destWallet
         return TransferResultDetailed(
             TransferResult(
                 Date().time,
@@ -121,10 +135,10 @@ class TransferManagerImpl(
                 srcWallet.type,
                 srcWallet.balance,
                 srcWallet.balance,
-                transferCommand.amount,
+                Amount(srcWallet.currency, existingTransaction.sourceAmount),
                 destWallet.owner.uuid,
                 destWallet.type,
-                transferCommand.destAmount,
+                Amount(destWallet.currency, existingTransaction.destAmount),
                 srcWallet.id,
                 destWallet.id,
             ),
