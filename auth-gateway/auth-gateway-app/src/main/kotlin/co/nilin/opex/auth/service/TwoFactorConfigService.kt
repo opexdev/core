@@ -35,7 +35,7 @@ class TwoFactorConfigService(
                 if (!totpConfig.isActivated || !totpConfig.isEnabled) {
                     throw OpexError.TOTPSetupIncomplete.exception()
                 }
-                TwoFactorResponse(otp = null, otpReceiver = OTPReceiver(uuid, OTPType.TOTP))
+                TwoFactorResponse(otp = null, otpReceiver = OTPReceiver("$appName : ${user.username}", OTPType.TOTP))
             }
 
             OTPType.NONE -> throw OpexError.InvalidOTPType.exception()
@@ -61,7 +61,7 @@ class TwoFactorConfigService(
         }
         return when (method) {
             OTPType.EMAIL, OTPType.SMS -> sendOtpRequest(user, method)
-            OTPType.TOTP -> TwoFactorResponse(otp = null, otpReceiver = OTPReceiver(uuid, OTPType.TOTP))
+            OTPType.TOTP -> TwoFactorResponse(otp = null, otpReceiver = OTPReceiver("$appName : ${user.username}", OTPType.TOTP))
             OTPType.NONE -> throw OpexError.InvalidOTPType.exception()
         }
     }
