@@ -7,6 +7,7 @@ import co.nilin.opex.wallet.core.inout.TransferResultDetailed
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.spi.*
 import org.slf4j.LoggerFactory
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -25,6 +26,8 @@ class TransferManagerImpl(
 
     @Transactional
     override suspend fun transfer(transferCommand: TransferCommand): TransferResultDetailed {
+        resolveIdempotentTransfer(transferCommand)?.let { return it }
+
         //pre transfer hook (dispatch pre transfer event)
         val srcWallet = transferCommand.sourceWallet
         val srcWalletOwner = srcWallet.owner
@@ -53,20 +56,26 @@ class TransferManagerImpl(
         if (!walletManager.isDepositAllowed(destWallet, amountToTransfer))
             throw OpexError.DepositLimitExceeded.exception()
 
+        val tx = try {
+            transactionManager.save(
+                Transaction(
+                    srcWallet,
+                    destWallet,
+                    transferCommand.amount.amount,
+                    amountToTransfer,
+                    transferCommand.description,
+                    transferCommand.transferRef,
+                    transferCommand.transferCategory,
+                    LocalDateTime.now()
+                )
+            )
+        } catch (e: DuplicateKeyException) {
+            resolveIdempotentTransfer(transferCommand)?.let { return it }
+            throw e
+        }
+
         walletManager.decreaseBalance(srcWallet, transferCommand.amount.amount)
         walletManager.increaseBalance(destWallet, amountToTransfer)
-        val tx = transactionManager.save(
-            Transaction(
-                srcWallet,
-                destWallet,
-                transferCommand.amount.amount,
-                amountToTransfer,
-                transferCommand.description,
-                transferCommand.transferRef,
-                transferCommand.transferCategory,
-                LocalDateTime.now()
-            )
-        )
         //TODO make tx long by default
         createUserTX(transferCommand, tx)
 
@@ -90,6 +99,50 @@ class TransferManagerImpl(
                 srcWallet.id,
                 destWallet.id,
             ), tx.toString()
+        )
+    }
+
+    private suspend fun resolveIdempotentTransfer(transferCommand: TransferCommand): TransferResultDetailed? {
+        val transferRef = transferCommand.transferRef ?: return null
+        val persistedTransaction = transactionManager.findTransactionByTransferRef(transferRef) ?: return null
+        val existingTxId = persistedTransaction.id
+        val existingTransaction = persistedTransaction.transaction
+
+        if (!matchesIdempotentTransfer(transferCommand, existingTransaction)) {
+            throw OpexError.BadRequest.exception("transferRef=$transferRef already exists with different parameters")
+        }
+
+        logger.info("Idempotent transfer hit for transferRef={}", transferRef)
+        return buildIdempotentResult(existingTransaction, existingTxId)
+    }
+
+    private fun matchesIdempotentTransfer(transferCommand: TransferCommand, existingTransaction: Transaction): Boolean {
+        return transferCommand.sourceWallet.id == existingTransaction.sourceWallet.id &&
+            transferCommand.destWallet.id == existingTransaction.destWallet.id &&
+            transferCommand.amount == Amount(existingTransaction.sourceWallet.currency, existingTransaction.sourceAmount) &&
+            transferCommand.destAmount == Amount(existingTransaction.destWallet.currency, existingTransaction.destAmount) &&
+            transferCommand.transferCategory == existingTransaction.transferCategory &&
+            transferCommand.description == existingTransaction.description
+    }
+
+    private fun buildIdempotentResult(existingTransaction: Transaction, existingTxId: Long): TransferResultDetailed {
+        val srcWallet = existingTransaction.sourceWallet
+        val destWallet = existingTransaction.destWallet
+        return TransferResultDetailed(
+            TransferResult(
+                Date().time,
+                srcWallet.owner.uuid,
+                srcWallet.type,
+                srcWallet.balance,
+                srcWallet.balance,
+                Amount(srcWallet.currency, existingTransaction.sourceAmount),
+                destWallet.owner.uuid,
+                destWallet.type,
+                Amount(destWallet.currency, existingTransaction.destAmount),
+                srcWallet.id,
+                destWallet.id,
+            ),
+            existingTxId.toString()
         )
     }
 

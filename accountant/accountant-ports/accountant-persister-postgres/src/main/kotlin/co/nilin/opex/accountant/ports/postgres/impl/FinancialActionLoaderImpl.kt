@@ -15,7 +15,6 @@ import kotlinx.coroutines.reactive.awaitFirstOrElse
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Component
-import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Component
@@ -48,12 +47,11 @@ class FinancialActionLoaderImpl(
     }
 
     override suspend fun countUnprocessed(userUuid: String, symbol: String, eventType: String): Long {
-        return financialActionRepository.countByUuidAndSymbolAndEventTypeAndStatusNot(
+        return if (financialActionRepository.existsUnprocessedBySenderAndSymbolAndEventType(
             userUuid,
             symbol,
-            eventType,
-            FinancialActionStatus.PROCESSED
-        ).awaitFirstOrElse { BigDecimal.ZERO }.toLong()
+            eventType
+        ).awaitFirstOrElse { false }) 1L else 0L
     }
 
     override suspend fun loadFinancialAction(id: Long?): FinancialAction? {

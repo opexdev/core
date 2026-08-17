@@ -103,7 +103,7 @@ class FinancialActionPersisterImpl(
                 faRetryRepository.scheduleNext(
                     id!!,
                     retries + 1,
-                    LocalDateTime.now().plusSeconds(retries * delayMultiplier * delaySeconds),
+                    LocalDateTime.now().plusSeconds((retries + 1L) * delayMultiplier * delaySeconds),
                     giveUp
                 ).awaitSingleOrNull()
 

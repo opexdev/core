@@ -51,6 +51,15 @@ CREATE INDEX IF NOT EXISTS idx_fi_actions_status ON fi_actions (status);
 CREATE INDEX IF NOT EXISTS idx_fi_actions_pointer ON fi_actions (pointer);
 CREATE INDEX IF NOT EXISTS idx_fi_actions_status_create_date ON fi_actions (status, create_date);
 CREATE INDEX IF NOT EXISTS idx_fi_actions_parent_status ON fi_actions (parent_id, status);
+CREATE INDEX IF NOT EXISTS idx_fi_actions_unprocessed_lookup
+    ON fi_actions (sender, symbol, event_type)
+    WHERE status <> 'PROCESSED';
+CREATE INDEX IF NOT EXISTS idx_fi_actions_archive_candidates
+    ON fi_actions (create_date, id)
+    WHERE status = 'PROCESSED';
+CREATE INDEX IF NOT EXISTS idx_fi_actions_unprocessed_children_by_parent
+    ON fi_actions (parent_id)
+    WHERE status <> 'PROCESSED';
 
 ALTER TABLE fi_actions
     ADD COLUMN IF NOT EXISTS category_name VARCHAR(36);
