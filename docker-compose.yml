@@ -428,7 +428,7 @@ services:
       - SWAGGER_AUTH_AUTHORITY=${SWAGGER_AUTH_AUTHORITY}
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
       - OPEN_API_SERVER_URL=${OPEN_API_SERVER_URL_AUTH}
-      - APP_NAME=$APP_NAME
+      - APP_NAME=${APP_NAME}
     volumes:
       - auth-gateway-keys:/app/keys
     depends_on:

@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*
     name = "User Two-Factor Configuration",
     description = "Endpoints for managing user two-factor authentication (2FA) settings and TOTP setup."
 )
-class UserTwoFactorConfigController(private val twoFactorConfigService: TwoFactorConfigService) {
+class UserTwoFactorController(private val twoFactorConfigService: TwoFactorConfigService) {
 
 
     @GetMapping

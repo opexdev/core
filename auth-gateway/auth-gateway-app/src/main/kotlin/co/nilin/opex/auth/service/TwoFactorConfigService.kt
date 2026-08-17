@@ -13,7 +13,7 @@ class TwoFactorConfigService(
     private val otpProxy: OTPProxy,
     private val keycloakProxy: KeycloakProxy,
     @Value("\${app.name}")
-    private val appName: Boolean,
+    private val appName: String,
 ) {
     private val logger by LoggerDelegate()
 
@@ -87,7 +87,7 @@ class TwoFactorConfigService(
                 "$appName : ${user.username}"
             )
 
-            totpResponse.isEnabled && !totpResponse.isActivated -> SetupTOTPResponse(totpResponse.uri)
+            totpResponse.isEnabled -> SetupTOTPResponse(totpResponse.uri)
             else -> throw OpexError.BadRequest.exception()
         }
     }

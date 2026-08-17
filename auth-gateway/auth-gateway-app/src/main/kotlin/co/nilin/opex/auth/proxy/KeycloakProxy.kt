@@ -6,6 +6,7 @@ import co.nilin.opex.auth.model.*
 import co.nilin.opex.auth.utils.generateRandomID
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.utils.LoggerDelegate
+import jakarta.ws.rs.NotFoundException
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull

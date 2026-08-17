@@ -59,8 +59,10 @@ class TOTPService(
     suspend fun findTOTP(userId: String): TOTPQueryResponse {
         val totp = repository.findByUserId(userId)
         val config = configRepository.findOne()
-        val generatedUri = generateUri(userId, config.issuer, totp?.secret ?: "", totp?.label)
-
+        val generatedUri = totp?.secret
+            ?.takeIf { it.isNotBlank() }
+            ?.let { secret -> generateUri(userId, config.issuer, secret, totp.label) }
+            ?: ""
         return TOTPQueryResponse(
             userId = totp?.userId ?: userId,
             isEnabled = totp?.isEnabled ?: false,
