@@ -31,24 +31,24 @@ class RegisterService(
             request.captchaType ?: CaptchaType.INTERNAL
         )
         val username = Username.create(request.username)
-        val userStatus = isUserDuplicate(username)
-
         val otpType = username.type.otpType
         val otpReceiver = OTPReceiver(request.username, otpType)
-        val res = otpProxy.requestOTP(request.username, listOf(otpReceiver))
-// todo we have to check for duplication usernames after verifying the register otp
-        if (!userStatus)
-            keycloakProxy.createUser(
-                username,
-                request.firstName,
-                request.lastName,
-                false
-            )
+        val res = otpProxy.requestOTP(request.username, listOf(otpReceiver), OTPAction.REGISTER)
+        return TempOtpResponse(res.otp, otpReceiver)
+    }
+
+    suspend fun resendRegistrationOtp(request: ResendOtpRequest): TempOtpResponse {
+        val username = Username.create(request.username)
+        isUserDuplicate(username)
+        val otpType = username.type.otpType
+        val otpReceiver = OTPReceiver(request.username, otpType)
+        val res = otpProxy.requestOTP(request.username, listOf(otpReceiver),OTPAction.REGISTER)
         return TempOtpResponse(res.otp, otpReceiver)
     }
 
     suspend fun verifyRegister(request: VerifyOTPRequest): String {
         val username = Username.create(request.username)
+        val userStatus = isUserDuplicate(username)
         val otpRequest = OTPVerifyRequest(username.value, listOf(OTPCode(request.otp, username.type.otpType)))
         val otpResult = otpProxy.verifyOTP(otpRequest)
         if (!otpResult.result) {
@@ -57,6 +57,11 @@ class RegisterService(
                 else -> throw OpexError.InvalidOTP.exception()
             }
         }
+        if (!userStatus)
+            keycloakProxy.createUser(
+                username,
+                false
+            )
         return tempTokenService.generateToken(username.value, OTPAction.REGISTER)
     }
 
