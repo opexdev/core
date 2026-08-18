@@ -37,12 +37,7 @@ class TOTPController(private val service: TOTPService) {
 
     @GetMapping("/query/{userId}")
     suspend fun query(@PathVariable userId: String): TOTPQueryResponse {
-        val totp = service.findTOTP(userId)
-        return TOTPQueryResponse(
-            totp?.userId ?: userId,
-            totp?.isEnabled ?: false,
-            totp?.isActivated ?: false,
-        )
+        return service.findTOTP(userId)
     }
 
     @DeleteMapping

@@ -67,6 +67,7 @@ keycloak:
     secret: ${ADMIN_CLIENT_SECRET}
     google-client-id: ${GOOGLE_CLIENT_ID}
 app:
+  name: ${APP_NAME:Opex}
   otp:
     url: http://opex-otp/v1
   captcha:

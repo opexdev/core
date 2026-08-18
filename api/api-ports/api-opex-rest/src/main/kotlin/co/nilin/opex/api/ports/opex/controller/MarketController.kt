@@ -18,11 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 import java.time.ZoneId
 
@@ -104,7 +100,11 @@ Response body:
                     isAvailable = isAvailable,
                     minOrder = minOrder,
                     maxOrder = maxOrder,
-                    orderTypes = orderTypes
+                    orderTypes = orderTypes,
+                    internalChart = internalChart,
+                    globalChart = globalChart,
+                    categories = categories
+
                 )
             }
         }

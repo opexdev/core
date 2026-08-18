@@ -1,5 +1,11 @@
 package co.nilin.opex.api.core.spi
 
+import co.nilin.opex.api.core.inout.ConfirmTwoFactorRequest
+import co.nilin.opex.api.core.inout.OTPType
+import co.nilin.opex.api.core.inout.SetupTOTPResponse
+import co.nilin.opex.api.core.inout.TOTPCode
+import co.nilin.opex.api.core.inout.TwoFactorRequest
+import co.nilin.opex.api.core.inout.TwoFactorResponse
 import co.nilin.opex.api.core.inout.auth.*
 
 interface AuthProxy {
@@ -21,5 +27,13 @@ interface AuthProxy {
     suspend fun getSessions(request: SessionRequest, token: String): List<Sessions>
     suspend fun logoutOthers(token: String)
     suspend fun logoutAll(token: String)
+
+    suspend fun getTwoFactorConfig(token: String): OTPType
+    suspend fun requestEnableTwoFactor(request: TwoFactorRequest, token: String): TwoFactorResponse
+    suspend fun confirmEnableTwoFactor(request: ConfirmTwoFactorRequest, token: String): OTPVerifyResponse
+    suspend fun requestDisableTwoFactor(request: TwoFactorRequest, token: String): TwoFactorResponse
+    suspend fun confirmDisableTwoFactor(request: ConfirmTwoFactorRequest, token: String): OTPVerifyResponse
+    suspend fun setupTOTP(token: String): SetupTOTPResponse
+    suspend fun verifyTOTPSetup(request: TOTPCode, token: String)
 
 }

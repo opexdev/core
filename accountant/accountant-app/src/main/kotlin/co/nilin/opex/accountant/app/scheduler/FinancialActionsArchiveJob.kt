@@ -25,15 +25,26 @@ class FinancialActionsArchiveJob(
     @Value("\${app.fi-action.archive.batch-size:1000}")
     private var batchSize: Int = 1000
 
+    @Value("\${app.fi-action.archive.max-batches-per-run:20}")
+    private var maxBatchesPerRun: Int = 20
+
     @Scheduled(fixedDelayString = "\${app.fi-action.archive.fixed-delay-ms:300000}", initialDelay = 60000)
     fun archiveProcessedActions() {
-        if (!enabled || batchSize <= 0 || retentionDays <= 0) return
+        if (!enabled || batchSize <= 0 || retentionDays <= 0 || maxBatchesPerRun <= 0) return
 
         runBlocking {
             val before = LocalDateTime.now().minusDays(retentionDays)
-            val archived = financialActionPersister.archiveProcessedActions(before, batchSize)
-            if (archived > 0) {
-                log.info("Archived $archived processed financial actions older than $before")
+            var totalArchived = 0
+            var shouldContinue = true
+            repeat(maxBatchesPerRun) {
+                if (!shouldContinue) return@repeat
+                val archived = financialActionPersister.archiveProcessedActions(before, batchSize)
+                totalArchived += archived
+                if (archived < batchSize) shouldContinue = false
+            }
+
+            if (totalArchived > 0) {
+                log.info("Archived $totalArchived processed financial actions older than $before")
             }
         }
     }

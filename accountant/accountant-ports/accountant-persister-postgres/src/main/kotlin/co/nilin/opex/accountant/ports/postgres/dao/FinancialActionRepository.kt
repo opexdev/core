@@ -9,7 +9,6 @@ import org.springframework.data.repository.query.Param
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Mono
-import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Repository
@@ -22,13 +21,23 @@ interface FinancialActionRepository : ReactiveCrudRepository<FinancialActionMode
         paging: Pageable
     ): Flow<FinancialActionModel>
 
-    @Query("select count(1) from fi_actions fi where fi.sender = :uuid and fi.symbol = :symbol and fi.event_type = :eventType and fi.status != :status")
-    fun countByUuidAndSymbolAndEventTypeAndStatusNot(
+    @Query(
+        """
+        select exists(
+            select 1
+            from fi_actions fi
+            where fi.sender = :uuid
+              and fi.symbol = :symbol
+              and fi.event_type = :eventType
+              and fi.status <> 'PROCESSED'
+        )
+        """
+    )
+    fun existsUnprocessedBySenderAndSymbolAndEventType(
         @Param("uuid") uuid: String,
         @Param("symbol") symbol: String,
-        @Param("eventType") eventType: String,
-        @Param("status") financialActionStatus: FinancialActionStatus
-    ): Mono<BigDecimal>
+        @Param("eventType") eventType: String
+    ): Mono<Boolean>
 
     @Query("select * from fi_actions fi where status != :status")
     fun findByStatusNot(@Param("status") status: String, paging: Pageable): Flow<FinancialActionModel>
@@ -68,6 +77,11 @@ interface FinancialActionRepository : ReactiveCrudRepository<FinancialActionMode
               and not exists (
                 select 1 from fi_action_retry far
                 where far.fa_id = fi_actions.id and far.is_resolved = false
+              )
+              and not exists (
+                select 1 from fi_actions child
+                where child.parent_id = fi_actions.id
+                  and child.status <> 'PROCESSED'
               )
             order by create_date
             limit :limit

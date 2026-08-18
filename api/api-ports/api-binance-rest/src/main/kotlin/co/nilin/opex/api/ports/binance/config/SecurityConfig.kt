@@ -106,6 +106,7 @@ class SecurityConfig(
                     // Opex endpoints
                     .pathMatchers("/opex/v1/oauth/protocol/openid-connect/**").permitAll()
                     .pathMatchers("/opex/v1/oauth.***").permitAll()
+                    .pathMatchers("/opex/v1/user/2fa/**").authenticated()
                     .pathMatchers("/opex/v1/user/public/**").permitAll()
                     .pathMatchers("/opex/v1/user/update/**").permitAll()
                     .pathMatchers("/v1/deposit/webhook").permitAll()

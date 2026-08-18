@@ -16,6 +16,9 @@ import java.time.LocalDateTime
 
 @Repository
 interface TransactionRepository : ReactiveCrudRepository<TransactionModel, Long> {
+    @Query("select * from transaction where transfer_ref = :transferRef limit 1")
+    fun findByTransferRef(transferRef: String): Mono<TransactionModel>
+
     @Query(
         """
         SELECT count(1) cnt, COALESCE(sum(source_amount), 0) total

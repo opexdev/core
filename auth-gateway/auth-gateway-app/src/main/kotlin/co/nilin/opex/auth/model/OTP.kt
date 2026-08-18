@@ -28,7 +28,7 @@ data class OTPVerifyResponse(
 data class TempOtpResponse(val otp: String?, val otpReceiver: OTPReceiver?)
 
 enum class OTPAction {
-    REGISTER, FORGET, NONE
+    REGISTER, LOGIN, FORGET, NONE, TWO_FACTOR
 }
 
 enum class OTPResultType {

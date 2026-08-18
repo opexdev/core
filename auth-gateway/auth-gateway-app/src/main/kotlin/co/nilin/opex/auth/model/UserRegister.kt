@@ -4,8 +4,6 @@ import co.nilin.opex.auth.data.Device
 
 data class RegisterUserRequest(
     val username: String,
-    val firstName: String? = null,
-    val lastName: String? = null,
     val captchaType: CaptchaType? = CaptchaType.INTERNAL,
     val captchaCode: String,
 )
