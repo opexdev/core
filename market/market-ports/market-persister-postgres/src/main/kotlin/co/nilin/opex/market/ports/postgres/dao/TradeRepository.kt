@@ -189,26 +189,21 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         select symbol, 
         (select matched_price from last_trade where symbol=t.symbol) - (select matched_price from first_trade where symbol=t.symbol) as price_change,
         ((((select matched_price from last_trade where symbol=t.symbol) - (select matched_price from first_trade where symbol=t.symbol))/(select matched_price from first_trade where symbol=t.symbol))*100) as price_change_percent, 
-        (sum(matched_quantity)/sum(matched_price)) as weighted_avg_price,
+        (sum(matched_price * matched_quantity)/nullif(sum(matched_quantity), 0)) as weighted_avg_price,
         (select matched_price from last_trade where symbol=t.symbol) as last_price, 
         (select matched_quantity from last_trade where symbol=t.symbol) as last_qty, 
         (
-            select price from orders
+            select max(price) from orders
             inner join open_orders oo on orders.ouid = oo.ouid
             where create_date > :date and symbol=t.symbol and side='BID'
-            order by create_date desc limit 1
         ) as bid_price,
         (
-            select price from orders
+            select min(price) from orders
             inner join open_orders oo on orders.ouid = oo.ouid
             where create_date > :date and symbol=t.symbol and side='ASK'
-            order by create_date desc limit 1
         ) as ask_price,
         (
-            select price from orders
-            inner join open_orders oo on orders.ouid = oo.ouid
-            where create_date > :date and symbol=t.symbol
-            order by create_date desc limit 1
+            select matched_price from first_trade where symbol=t.symbol
         ) as open_price,
         max(matched_price) as high_price, 
         min(matched_price) as low_price, 
@@ -230,26 +225,21 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         select symbol, 
         (select matched_price from last_trade) - (select matched_price from first_trade) as price_change,
         ((((select matched_price from last_trade) - (select matched_price from first_trade))/(select matched_price from first_trade))*100) as price_change_percent, 
-        (sum(matched_quantity)/sum(matched_price)) as weighted_avg_price,
+        (sum(matched_price * matched_quantity)/nullif(sum(matched_quantity), 0)) as weighted_avg_price,
         (select matched_price from last_trade) as last_price, 
         (select matched_quantity from last_trade) as last_qty, 
         (
-            select price from orders
+            select max(price) from orders
             inner join open_orders oo on orders.ouid = oo.ouid
             where create_date > :date and symbol=t.symbol and side='BID'
-            order by create_date desc limit 1
         ) as bid_price,
         (
-            select price from orders
+            select min(price) from orders
             inner join open_orders oo on orders.ouid = oo.ouid
             where create_date > :date and symbol=t.symbol and side='ASK'
-            order by create_date desc limit 1
         ) as ask_price,
         (
-            select price from orders
-            inner join open_orders oo on orders.ouid = oo.ouid
-            where create_date > :date and symbol=t.symbol
-            order by create_date desc limit 1
+            select matched_price from first_trade
         ) as open_price,
         max(matched_price) as high_price, 
         min(matched_price) as low_price, 
@@ -350,29 +340,35 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
             :interval::INTERVAL
         )
     ),
+    limited_intervals AS (
+        SELECT *
+        FROM intervals
+        ORDER BY start_time DESC
+        LIMIT :limit
+    ),
     first_trade AS (
-        SELECT DISTINCT ON (f.start_time)
-            f.start_time,
-            f.end_time,
+        SELECT DISTINCT ON (i.start_time)
+            i.start_time,
+            i.end_time,
             t.matched_price AS open_price
-        FROM intervals f
+        FROM limited_intervals i
         LEFT JOIN trades t
-            ON t.create_date >= f.start_time
-           AND t.create_date < f.end_time
+            ON t.create_date >= i.start_time
+           AND t.create_date < i.end_time
            AND t.symbol = :symbol
-        ORDER BY f.start_time, t.create_date
+        ORDER BY i.start_time, t.create_date
     ),
     last_trade AS (
-        SELECT DISTINCT ON (f.start_time)
-            f.start_time,
-            f.end_time,
+        SELECT DISTINCT ON (i.start_time)
+            i.start_time,
+            i.end_time,
             t.matched_price AS close_price
-        FROM intervals f
+        FROM limited_intervals i
         LEFT JOIN trades t
-            ON t.create_date >= f.start_time
-           AND t.create_date < f.end_time
+            ON t.create_date >= i.start_time
+           AND t.create_date < i.end_time
            AND t.symbol = :symbol
-        ORDER BY f.start_time, t.create_date DESC
+        ORDER BY i.start_time, t.create_date DESC
     ),
     ohlcv AS (
         SELECT 
@@ -384,7 +380,7 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
             lt.close_price AS close,
             SUM(t.matched_quantity) AS volume,
             COUNT(t.id) AS trades
-        FROM intervals i
+        FROM limited_intervals i
         LEFT JOIN trades t
             ON t.create_date >= i.start_time
            AND t.create_date < i.end_time
@@ -396,12 +392,7 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         GROUP BY i.start_time, i.end_time, ft.open_price, lt.close_price
     )
     SELECT *
-    FROM (
-        SELECT *
-        FROM ohlcv
-        ORDER BY open_time DESC
-        limit :limit
-    ) sub
+    FROM ohlcv
     ORDER BY open_time ASC
 """
     )
