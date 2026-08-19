@@ -21,7 +21,12 @@ class ChainHandler(
     private val chainAddressRepository: ChainAddressTypeRepository
 ) : ChainLoader {
 
-    override suspend fun addChain(name: String, addressType: String): Chain {
+    override suspend fun addChain(
+        name: String,
+        addressType: String,
+        transactionScannerUrl: String?,
+        addressScannerUrl: String?
+    ): Chain {
         val chain = chainRepository.findByName(name)?.awaitFirstOrNull()
         if (chain != null)
             throw OpexError.BadRequest.exception()
@@ -32,7 +37,7 @@ class ChainHandler(
         chainRepository.insert(name).awaitFirstOrNull()
         val model = chainRepository.findByName(name)?.awaitFirstOrElse { throw OpexError.BadRequest.exception() }
         chainAddressRepository.save(ChainAddressTypeModel(null, model!!.name, type.id!!)).awaitFirstOrNull()
-        return Chain(model.name, emptyList())
+        return Chain(model.name, emptyList(), transactionScannerUrl, addressScannerUrl)
     }
 
     override suspend fun fetchAllChains(): List<Chain> {
@@ -44,7 +49,7 @@ class ChainHandler(
                     .map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }
                     .toList()
 
-                Chain(c.name, addressTypes, c.externalChainScannerUrl)
+                Chain(c.name, addressTypes, c.transactionScannerUrl, c.addressScannerUrl)
             }
     }
 
