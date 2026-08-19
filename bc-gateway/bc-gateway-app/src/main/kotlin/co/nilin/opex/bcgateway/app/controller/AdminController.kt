@@ -28,8 +28,9 @@ class AdminController(
                 ChainResponse(
                     c.name,
                     c.addressTypes.map { it.type }.getOrNull(0),
-                    c.externalChinScannerUrl,
-                    c.addressTypes.map { it.addressRegex }.getOrNull(0)
+                    c.addressTypes.map { it.addressRegex }.getOrNull(0),
+                    c.transactionScannerUrl,
+                    c.addressScannerUrl,
                 )
             }
     }

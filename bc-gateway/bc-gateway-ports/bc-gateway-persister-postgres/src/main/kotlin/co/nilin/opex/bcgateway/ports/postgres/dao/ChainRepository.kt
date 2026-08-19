@@ -11,8 +11,12 @@ import reactor.core.publisher.Mono
 @Repository
 interface ChainRepository : ReactiveCrudRepository<ChainModel, String> {
 
-    @Query("insert into chains values (:name) on conflict do nothing")
-    fun insert(name: String): Mono<Void>
+    @Query("insert into chains values (:name,:transaction_scanner_url,:address_scanner_url) on conflict do nothing")
+    fun insert(
+        name: String,
+        transactionScannerUrl: String?,
+        addressScannerUrl: String?
+    ): Mono<Void>
 
     fun findByName(name: String): Mono<ChainModel>?
 

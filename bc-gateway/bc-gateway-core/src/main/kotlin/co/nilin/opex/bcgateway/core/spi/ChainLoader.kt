@@ -4,7 +4,12 @@ import co.nilin.opex.bcgateway.core.model.Chain
 
 interface ChainLoader {
 
-    suspend fun addChain(name: String, addressType: String): Chain
+    suspend fun addChain(
+        name: String,
+        addressType: String,
+        transactionScannerUrl: String?,
+        addressScannerUrl: String?
+    ): Chain
 
     suspend fun fetchAllChains(): List<Chain>
 

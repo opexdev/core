@@ -8,8 +8,6 @@ import co.nilin.opex.bcgateway.core.model.FetchGateways
 import co.nilin.opex.bcgateway.core.model.WithdrawData
 import co.nilin.opex.bcgateway.core.spi.ChainLoader
 import co.nilin.opex.bcgateway.core.spi.CryptoCurrencyHandlerV2
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.reactor.ReactorContext
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -78,9 +76,10 @@ class CryptoCurrencyController(
                 ChainResponse(
                     c.name,
                     c.addressTypes.map { it.type }.getOrNull(0),
-                    c.externalChinScannerUrl,
-                    c.addressTypes.map { it.addressRegex }.getOrNull(0)
-                )
+                    c.addressTypes.map { it.addressRegex }.getOrNull(0),
+                    c.transactionScannerUrl,
+                    c.addressScannerUrl,
+                    )
             }
     }
 

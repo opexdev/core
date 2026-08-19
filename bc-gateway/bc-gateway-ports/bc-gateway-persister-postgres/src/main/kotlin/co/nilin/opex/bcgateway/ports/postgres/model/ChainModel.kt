@@ -4,4 +4,8 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 
 @Table("chains")
-data class ChainModel(@Id val name: String, val externalChainScannerUrl: String?)
+data class ChainModel(
+    @Id val name: String,
+    val transactionScannerUrl: String?,
+    val addressScannerUrl: String?
+)

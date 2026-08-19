@@ -30,7 +30,7 @@ class AdminService(
 
     @Transactional
     suspend fun addChain(body: AddChainRequest) {
-        chainLoader.addChain(body.name!!, body.addressType!!)
+        chainLoader.addChain(body.name!!, body.addressType!!, body.transactionScannerUrl, body.addressScannerUrl)
     }
 
     suspend fun addAddressType(name: String, addressRegex: String, memoRegex: String?) {
