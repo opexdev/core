@@ -56,7 +56,7 @@ class MarketDataProxyImpl(@Qualifier("generalWebClient") private val webClient: 
                 .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToMono<PriceChange>()
                 .awaitSingleOrNull()
-                ?: PriceChange(symbol, openTime = Date().time, closeTime = interval.getTime())
+                ?: PriceChange(symbol, openTime = interval.getTime(), closeTime = Date().time)
         }
     }
 
