@@ -10,7 +10,12 @@ data class LoginEvent(
     val osVersion: String?,
     val pushToken: String?,
     val os: Os?,
+    val brand: String?,
+    val model: String?,
+    val platform: Platform?,
+    val agent: String?,
+    val buildNumber: Int?,
     val sessionId: String,
-    val expireDate: LocalDateTime,
-    ) : SessionEvent()
+    val expireDate: LocalDateTime
+) : SessionEvent()
 
