@@ -170,7 +170,8 @@ class CurrencyServiceImplV2(
                 request.isActive,
                 request.sign,
                 request.externalUrl,
-                request.displayOrder
+                request.displayOrder,
+                request.maxOrder
             ).awaitFirstOrNull()
 
             if (listOf(
