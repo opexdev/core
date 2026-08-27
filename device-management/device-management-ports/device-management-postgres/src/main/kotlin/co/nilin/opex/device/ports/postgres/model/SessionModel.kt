@@ -13,9 +13,9 @@ data class SessionModel(
     @Column("session_state") val sessionState: String,
     @Column("uuid") val userId: String,
     @Column("device_id") val deviceId: Long,
+    @Column("ip_address") val ipAddress: String? = null,
     @Column("status") val status: SessionStatus,
     @Column("create_date") val createDate: LocalDateTime? = LocalDateTime.now(),
     @Column("expire_date") val expireDate: LocalDateTime? = LocalDateTime.now(),
     @Column @Version var version: Long? = null
 )
-
