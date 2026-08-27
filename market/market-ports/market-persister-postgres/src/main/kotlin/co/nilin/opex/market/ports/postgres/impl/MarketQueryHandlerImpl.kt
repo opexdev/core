@@ -21,6 +21,7 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 
@@ -35,19 +36,23 @@ class MarketQueryHandlerImpl(
 
     override suspend fun getTradeTickerData(interval: Interval): List<PriceChange> {
         return redisCacheHelper.getOrElse("tradeTickerData:${interval.label}", 2.minutes()) {
+            val closeTime = Date().time
+            val openTime = interval.getTime()
             tradeRepository.tradeTicker(interval.getLocalDateTime())
                 .collectList()
                 .awaitFirstOrElse { emptyList() }
-                .map { it.asPriceChangeResponse(Date().time, interval.getTime()) }
+                .map { it.asPriceChangeResponse(openTime, closeTime) }
         }
     }
 
     override suspend fun getTradeTickerDateBySymbol(symbol: String, interval: Interval): PriceChange? {
         val cacheId = "tradeTickerData:$symbol:${interval.label}"
         return redisCacheHelper.getOrElse(cacheId, 2.minutes()) {
+            val closeTime = Date().time
+            val openTime = interval.getTime()
             tradeRepository.tradeTickerBySymbol(symbol, interval.getLocalDateTime())
                 .awaitSingleOrNull()
-                ?.asPriceChangeResponse(Date().time, interval.getTime())
+                ?.asPriceChangeResponse(openTime, closeTime)
         }
     }
 
@@ -283,21 +288,22 @@ class MarketQueryHandlerImpl(
         endTime: Long?,
         limit: Int,
     ): List<CandleData> {
-        val st = if (startTime == null)
-            tradeRepository.findFirstByCreateDate().awaitSingleOrNull()?.createDate ?: LocalDateTime.now()
+        val intervalStep = parseIntervalStep(interval)
+        val latestTradeDate = if (startTime == null || endTime == null)
+            tradeRepository.findLastByCreateDate().awaitSingleOrNull()?.createDate
         else
-            with(Instant.ofEpochMilli(startTime)) {
-                LocalDateTime.ofInstant(this, ZoneId.systemDefault())
-            }
+            null
+        val fallbackDate = latestTradeDate ?: LocalDateTime.now()
+        val startDate = startTime?.asLocalDateTime() ?: when {
+            endTime != null -> shiftByIntervals(endTime.asLocalDateTime(), intervalStep, -(limit - 1).toLong())
+            else -> shiftByIntervals(fallbackDate, intervalStep, -(limit - 1).toLong())
+        }
+        val endDate = endTime?.asLocalDateTime() ?: when {
+            startTime != null -> shiftByIntervals(startDate, intervalStep, (limit - 1).toLong())
+            else -> fallbackDate
+        }
 
-        val et = if (endTime == null)
-            tradeRepository.findLastByCreateDate().awaitSingleOrNull()?.createDate ?: LocalDateTime.now()
-        else
-            with(Instant.ofEpochMilli(endTime)) {
-                LocalDateTime.ofInstant(this, ZoneId.systemDefault())
-            }
-
-        return tradeRepository.candleData(symbol, interval, st, et, limit)
+        return tradeRepository.candleData(symbol, interval, startDate, endDate, limit)
             .collectList()
             .awaitFirstOrElse { emptyList() }
             .map {
@@ -456,6 +462,32 @@ class MarketQueryHandlerImpl(
         lastId ?: -1,
         count ?: 0
     )
+
+    private fun Long.asLocalDateTime(): LocalDateTime = with(Instant.ofEpochMilli(this)) {
+        LocalDateTime.ofInstant(this, ZoneId.systemDefault())
+    }
+
+    private fun parseIntervalStep(interval: String): Pair<Long, ChronoUnit> {
+        val parts = interval.trim().split(Regex("\\s+"), limit = 2)
+        val amount = parts.firstOrNull()?.toLongOrNull()
+            ?: throw IllegalArgumentException("Invalid interval amount: $interval")
+        val unit = when (parts.getOrNull(1)?.uppercase(Locale.US)?.removeSuffix("S")) {
+            "MINUTE" -> ChronoUnit.MINUTES
+            "HOUR" -> ChronoUnit.HOURS
+            "DAY" -> ChronoUnit.DAYS
+            else -> throw IllegalArgumentException("Unsupported interval unit: $interval")
+        }
+        return amount to unit
+    }
+
+    private fun shiftByIntervals(
+        dateTime: LocalDateTime,
+        intervalStep: Pair<Long, ChronoUnit>,
+        intervals: Long,
+    ): LocalDateTime {
+        val (amount, unit) = intervalStep
+        return dateTime.plus(intervals * amount, unit)
+    }
 
     private fun Long.approximate(): Long {
         if (this < 10)

@@ -71,6 +71,7 @@ CREATE TABLE IF NOT EXISTS trades
 );
 CREATE INDEX IF NOT EXISTS idx_trades_symbol on trades (symbol);
 CREATE INDEX IF NOT EXISTS idx_trades_create_date on trades (create_date);
+CREATE INDEX IF NOT EXISTS idx_trades_symbol_create_date on trades (symbol, create_date);
 
 ALTER TABLE trades
     ALTER COLUMN id TYPE BIGINT,

@@ -1,0 +1,13 @@
+{
+  "apiMethods": [
+    "NATIVE",
+    "PODIUM",
+    "GOOGLE"
+  ],
+  "accounts": [
+    "BANK_ACCOUNT",
+    "ADDRESS_BOOK",
+    "DESTINATION_ID",
+    "BANK_CONTRACT"
+  ]
+}

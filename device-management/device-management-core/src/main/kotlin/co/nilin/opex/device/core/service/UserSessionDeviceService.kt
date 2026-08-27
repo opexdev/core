@@ -16,7 +16,7 @@ class UserSessionDeviceService(
 ) {
 
     suspend fun getUserSessionsWithDevices(sessionsRequest: SessionsRequest): List<UserSessionDevice> {
-        return sessionPersister.fetchUserDeviceSession( sessionsRequest)
+        return sessionPersister.fetchUserDeviceSession(sessionsRequest)
     }
 
     @Transactional
@@ -24,11 +24,16 @@ class UserSessionDeviceService(
         val device = with(loginEvent) {
             devicePersister.upsertDevice(
                 Device(
-                    deviceUuid = this.deviceUuid ?: UUID.randomUUID().toString(),
-                    os = this.os,
-                    osVersion = this.osVersion,
-                    appVersion = this.appVersion,
-                    pushToken = this.pushToken,
+                    deviceUuid = deviceUuid ?: UUID.randomUUID().toString(),
+                    os = os,
+                    osVersion = osVersion,
+                    appVersion = appVersion,
+                    brand = brand,
+                    model = model,
+                    platform = platform,
+                    agent = agent,
+                    pushToken = pushToken,
+                    buildNumber = buildNumber
                 )
             )
         }
