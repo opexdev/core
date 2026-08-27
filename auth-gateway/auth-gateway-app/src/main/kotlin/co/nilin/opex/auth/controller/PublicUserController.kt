@@ -115,7 +115,7 @@ Behavior: Completes registration and returns login token data.""",
     )
     suspend fun confirmRegister(
         @RequestBody request: ConfirmRegisterRequest,
-        serverRequest: ServerHttpRequest
+        @io.swagger.v3.oas.annotations.Parameter(hidden = true) serverRequest: ServerHttpRequest
     ): ResponseEntity<Token> {
         request.ipAddress = resolveClientIp(serverRequest)
         val loginToken = registerService.confirmRegister(request)
