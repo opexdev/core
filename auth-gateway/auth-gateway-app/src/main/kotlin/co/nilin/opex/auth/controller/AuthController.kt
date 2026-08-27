@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
+import org.springframework.http.server.reactive.ServerHttpRequest
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.PostMapping
@@ -48,7 +49,11 @@ Allowed values:
             )
         ]
     )
-    suspend fun requestGetToken(@RequestBody tokenRequest: PasswordFlowTokenRequest): ResponseEntity<TokenResponse> {
+    suspend fun requestGetToken(
+        @RequestBody tokenRequest: PasswordFlowTokenRequest,
+        request: ServerHttpRequest
+    ): ResponseEntity<TokenResponse> {
+        tokenRequest.ipAddress = resolveClientIp(request)
         val tokenResponse = loginService.requestGetToken(tokenRequest)
         return ResponseEntity.ok().body(tokenResponse)
     }
@@ -69,7 +74,11 @@ Behavior: Completes password-flow login after OTP verification.""",
             )
         ]
     )
-    suspend fun confirmGetToken(@RequestBody tokenRequest: ConfirmPasswordFlowTokenRequest): ResponseEntity<TokenResponse> {
+    suspend fun confirmGetToken(
+        @RequestBody tokenRequest: ConfirmPasswordFlowTokenRequest,
+        request: ServerHttpRequest
+    ): ResponseEntity<TokenResponse> {
+        tokenRequest.ipAddress = resolveClientIp(request)
         val tokenResponse = loginService.confirmGetToken(tokenRequest)
         return ResponseEntity.ok().body(tokenResponse)
     }
@@ -137,8 +146,21 @@ Behavior: Issues a new access token from a valid refresh token.""",
             )
         ]
     )
-    suspend fun refreshToken(@RequestBody tokenRequest: RefreshTokenRequest): ResponseEntity<TokenResponse> {
+    suspend fun refreshToken(
+        @RequestBody tokenRequest: RefreshTokenRequest,
+        request: ServerHttpRequest
+    ): ResponseEntity<TokenResponse> {
+        tokenRequest.ipAddress = resolveClientIp(request)
         val tokenResponse = loginService.refreshToken(tokenRequest)
         return ResponseEntity.ok().body(tokenResponse)
+    }
+
+    private fun resolveClientIp(request: ServerHttpRequest): String? {
+        val forwardedFor = request.headers.getFirst("X-Forwarded-For")
+        if (!forwardedFor.isNullOrBlank()) {
+            return forwardedFor.substringBefore(",").trim()
+        }
+        return request.headers.getFirst("X-Real-IP")?.takeIf { it.isNotBlank() }
+            ?: request.remoteAddress?.address?.hostAddress
     }
 }

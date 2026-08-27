@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
+import org.springframework.http.server.reactive.ServerHttpRequest
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -112,7 +113,11 @@ Behavior: Completes registration and returns login token data.""",
             )
         ]
     )
-    suspend fun confirmRegister(@RequestBody request: ConfirmRegisterRequest): ResponseEntity<Token> {
+    suspend fun confirmRegister(
+        @RequestBody request: ConfirmRegisterRequest,
+        serverRequest: ServerHttpRequest
+    ): ResponseEntity<Token> {
+        request.ipAddress = resolveClientIp(serverRequest)
         val loginToken = registerService.confirmRegister(request)
         return ResponseEntity.ok(loginToken)
     }
@@ -223,5 +228,14 @@ Response body: No response body.""",
     suspend fun forgetPassword(@RequestBody request: ConfirmForgetRequest): ResponseEntity<Nothing> {
         forgetPasswordService.confirmForget(request)
         return ResponseEntity.ok().build()
+    }
+
+    private fun resolveClientIp(request: ServerHttpRequest): String? {
+        val forwardedFor = request.headers.getFirst("X-Forwarded-For")
+        if (!forwardedFor.isNullOrBlank()) {
+            return forwardedFor.substringBefore(",").trim()
+        }
+        return request.headers.getFirst("X-Real-IP")?.takeIf { it.isNotBlank() }
+            ?: request.remoteAddress?.address?.hostAddress
     }
 }
