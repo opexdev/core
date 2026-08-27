@@ -80,7 +80,7 @@ class RequestAuditFilter(
                             "mobile" to mobile,
                             "email" to email,
                             "deviceUuid" to deviceUuid,
-                            "method" to request.method.name(),
+                            "method" to request.methodValue,
                             "url" to request.uri.toString(),
                             "requestData" to requestBody,
                             "responseStatus" to (decoratedResponse.statusCode?.value() ?: updatedExchange.response.statusCode?.value()),
