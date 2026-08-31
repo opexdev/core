@@ -53,7 +53,7 @@ Allowed values:
         @RequestBody tokenRequest: PasswordFlowTokenRequest,
         request: ServerHttpRequest
     ): ResponseEntity<TokenResponse> {
-        tokenRequest.ipAddress = resolveClientIp(request)
+        tokenRequest.ipAddress = tokenRequest.ipAddress ?: resolveClientIp(request)
         val tokenResponse = loginService.requestGetToken(tokenRequest)
         return ResponseEntity.ok().body(tokenResponse)
     }
@@ -78,7 +78,7 @@ Behavior: Completes password-flow login after OTP verification.""",
         @RequestBody tokenRequest: ConfirmPasswordFlowTokenRequest,
         request: ServerHttpRequest
     ): ResponseEntity<TokenResponse> {
-        tokenRequest.ipAddress = resolveClientIp(request)
+        tokenRequest.ipAddress = tokenRequest.ipAddress ?: resolveClientIp(request)
         val tokenResponse = loginService.confirmGetToken(tokenRequest)
         return ResponseEntity.ok().body(tokenResponse)
     }
@@ -150,7 +150,7 @@ Behavior: Issues a new access token from a valid refresh token.""",
         @RequestBody tokenRequest: RefreshTokenRequest,
         request: ServerHttpRequest
     ): ResponseEntity<TokenResponse> {
-        tokenRequest.ipAddress = resolveClientIp(request)
+        tokenRequest.ipAddress = tokenRequest.ipAddress ?: resolveClientIp(request)
         val tokenResponse = loginService.refreshToken(tokenRequest)
         return ResponseEntity.ok().body(tokenResponse)
     }
