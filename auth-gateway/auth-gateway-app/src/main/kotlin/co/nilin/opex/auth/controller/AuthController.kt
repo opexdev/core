@@ -156,11 +156,14 @@ Behavior: Issues a new access token from a valid refresh token.""",
     }
 
     private fun resolveClientIp(request: ServerHttpRequest): String? {
+        val realIp = request.headers.getFirst("X-Real-IP")?.takeIf { it.isNotBlank() }
+        if (realIp != null) {
+            return realIp
+        }
         val forwardedFor = request.headers.getFirst("X-Forwarded-For")
         if (!forwardedFor.isNullOrBlank()) {
             return forwardedFor.substringBefore(",").trim()
         }
-        return request.headers.getFirst("X-Real-IP")?.takeIf { it.isNotBlank() }
-            ?: request.remoteAddress?.address?.hostAddress
+        return request.remoteAddress?.address?.hostAddress
     }
 }

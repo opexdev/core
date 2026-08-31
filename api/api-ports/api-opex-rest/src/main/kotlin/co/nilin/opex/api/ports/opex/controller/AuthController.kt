@@ -173,11 +173,14 @@ Behavior: Issues a new access token from a valid refresh token.""",
     }
 
     private fun resolveClientIp(exchange: ServerWebExchange): String? {
+        val realIp = exchange.request.headers.getFirst("X-Real-IP")?.takeIf { it.isNotBlank() }
+        if (realIp != null) {
+            return realIp
+        }
         val forwardedFor = exchange.request.headers.getFirst("X-Forwarded-For")
         if (!forwardedFor.isNullOrBlank()) {
             return forwardedFor.substringBefore(",").trim()
         }
-        return exchange.request.headers.getFirst("X-Real-IP")?.takeIf { it.isNotBlank() }
-            ?: exchange.request.remoteAddress?.address?.hostAddress
+        return exchange.request.remoteAddress?.address?.hostAddress
     }
 }
