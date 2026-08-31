@@ -117,7 +117,7 @@ Behavior: Completes registration and returns login token data.""",
         @RequestBody request: ConfirmRegisterRequest,
         @io.swagger.v3.oas.annotations.Parameter(hidden = true) serverRequest: ServerHttpRequest
     ): ResponseEntity<Token> {
-        request.ipAddress = resolveClientIp(serverRequest)
+        request.ipAddress = request.ipAddress ?: resolveClientIp(serverRequest)
         val loginToken = registerService.confirmRegister(request)
         return ResponseEntity.ok(loginToken)
     }

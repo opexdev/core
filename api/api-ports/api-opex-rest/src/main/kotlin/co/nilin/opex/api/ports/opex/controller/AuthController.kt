@@ -49,7 +49,11 @@ Allowed values:
             )
         ]
     )
-    suspend fun requestGetToken(@RequestBody tokenRequest: PasswordFlowTokenRequest): ResponseEntity<TokenResponse> {
+    suspend fun requestGetToken(
+        @RequestBody tokenRequest: PasswordFlowTokenRequest,
+        @Parameter(hidden = true) exchange: ServerWebExchange
+    ): ResponseEntity<TokenResponse> {
+        tokenRequest.ipAddress = resolveClientIp(exchange)
         val tokenResponse = authProxy.requestGetToken(tokenRequest)
         return ResponseEntity.ok().body(tokenResponse)
     }
@@ -77,6 +81,7 @@ Behavior: Completes password-flow login after OTP verification.""",
         @RequestBody tokenRequest: ConfirmPasswordFlowTokenRequest,
         @Parameter(hidden = true) exchange: ServerWebExchange
     ): ResponseEntity<TokenResponse> {
+        tokenRequest.ipAddress = resolveClientIp(exchange)
         manualRateLimiterService.check(tokenRequest.username, ManualRateLimitGroupType.VERIFY_OTP, exchange)
         val tokenResponse = authProxy.confirmGetToken(tokenRequest)
         return ResponseEntity.ok().body(tokenResponse)
@@ -158,8 +163,21 @@ Behavior: Issues a new access token from a valid refresh token.""",
             )
         ]
     )
-    suspend fun refreshToken(@RequestBody tokenRequest: RefreshTokenRequest): ResponseEntity<TokenResponse> {
+    suspend fun refreshToken(
+        @RequestBody tokenRequest: RefreshTokenRequest,
+        @Parameter(hidden = true) exchange: ServerWebExchange
+    ): ResponseEntity<TokenResponse> {
+        tokenRequest.ipAddress = resolveClientIp(exchange)
         val tokenResponse = authProxy.refreshToken(tokenRequest)
         return ResponseEntity.ok().body(tokenResponse)
+    }
+
+    private fun resolveClientIp(exchange: ServerWebExchange): String? {
+        val forwardedFor = exchange.request.headers.getFirst("X-Forwarded-For")
+        if (!forwardedFor.isNullOrBlank()) {
+            return forwardedFor.substringBefore(",").trim()
+        }
+        return exchange.request.headers.getFirst("X-Real-IP")?.takeIf { it.isNotBlank() }
+            ?: exchange.request.remoteAddress?.address?.hostAddress
     }
 }

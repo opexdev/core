@@ -9,6 +9,7 @@ data class Sessions(
     val appVersion: String?,
     val firstLoginDate: LocalDateTime?,
     val lastLoginDate: LocalDateTime?,
+    val ipAddress: String?,
     val sessionState: String?,
     val sessionStatus: SessionStatus?,
     val sessionCreateDate: LocalDateTime?,
