@@ -16,4 +16,3 @@ include:
       - "templates/build-docker-image.yml"
 stages:
   - build
-  #
