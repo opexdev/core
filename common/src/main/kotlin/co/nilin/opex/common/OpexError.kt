@@ -113,7 +113,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     WithdrawCannotBeDone(6048, "Withdraw cannot be done", HttpStatus.BAD_REQUEST),
     WithdrawCannotBeRequested(6049, "Withdraw cannot be requested", HttpStatus.BAD_REQUEST),
     OTPCannotBeRequested(6050, "OTP cannot be requested", HttpStatus.BAD_REQUEST),
-    WithdrawRequestExpired(6051,"Withdraw request expired", HttpStatus.BAD_REQUEST),
+    WithdrawRequestExpired(6051, "Withdraw request expired", HttpStatus.BAD_REQUEST),
     ForbiddenSwapPair(6052, null, HttpStatus.BAD_REQUEST),
     TerminalLocalizationNotFound(6053, "Terminal localization not found", HttpStatus.NOT_FOUND),
     CurrencyLocalizationNotFound(6051, "Currency localization not found", HttpStatus.NOT_FOUND),
@@ -155,7 +155,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     InvalidOTPType(12009, "Invalid OTP type", HttpStatus.BAD_REQUEST),
 
 
-    //code 12000 profile
+    //code 13000 profile
     UserIdAlreadyExists(13001, "User with this id or email is already registered", HttpStatus.BAD_REQUEST),
     InvalidLinkedAccount(13002, "Irrelevant account", HttpStatus.BAD_REQUEST),
     AccountNotFound(13003, " Account not found", HttpStatus.BAD_REQUEST),
@@ -204,7 +204,19 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     BankAccountAlreadyExist(13046, "Bank account already exist", HttpStatus.BAD_REQUEST),
     BankAccountNotFound(13047, "Bank account not found", HttpStatus.NOT_FOUND),
     AddressBookNotFound(13048, "Address book not found", HttpStatus.NOT_FOUND),
-    InvalidProfileData(13049, "Invalid profile data", HttpStatus.BAD_REQUEST)
+    InvalidProfileData(13049, "Invalid profile data", HttpStatus.BAD_REQUEST),
+
+    //code 14000 price-management
+    RateConfigNotFound(14001, "Rate config not found", HttpStatus.NOT_FOUND),
+    PriceNotFound(14002, "No price found for this symbol", HttpStatus.NOT_FOUND),
+    InvalidTimeRange(14003, "startTime must be before endTime", HttpStatus.BAD_REQUEST),
+    StrategyRequired(14004, "strategy is required when priceMode is AUTO", HttpStatus.BAD_REQUEST),
+    InvalidMargin(14005, "margin must be between 0 and 1 when priceMode is AUTO", HttpStatus.BAD_REQUEST),
+    PriceNotAllowedForAutoMode(14006, "price can only be set when priceMode is MANUAL", HttpStatus.BAD_REQUEST),
+    ProvidersRequired(14007, "at least one provider must be selected", HttpStatus.BAD_REQUEST),
+    StrategyNotAllowedForManualMode(14008, "strategy is not used when priceMode is MANUAL", HttpStatus.BAD_REQUEST),
+    MarginNotAllowedForManualMode(14009, "margin is not used when priceMode is MANUAL", HttpStatus.BAD_REQUEST),
+
     ;
 
     override fun code() = this.code

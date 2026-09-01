@@ -253,6 +253,10 @@ services:
     <<: *postgres-db
     volumes:
       - device-management-data:/var/lib/postgresql/data/
+  postgres-price-management:
+    <<: *postgres-db
+    volumes:
+      - price-management-data:/var/lib/postgresql/data/
   accountant:
     image: ghcr.io/opexdev/accountant
     environment:
@@ -334,7 +338,7 @@ services:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - REDIS_HOST=redis-duo
-      - SYMBOLS=SOL_USDT,DOGE_USDT,TON_USDT
+      - SYMBOLS=SOL_USDT,DOGE_USDT,GRAM_USDT
       - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL}
       - CUSTOM_MESSAGE_ENABLED=${CUSTOM_MESSAGE_ENABLED}
       - CUSTOM_USER_LANGUAGE_ENABLED=${CUSTOM_USER_LANGUAGE_ENABLED}
@@ -667,6 +671,34 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  price-management:
+    image: ghcr.io/opexdev/price-management
+    environment:
+      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - CONSUL_HOST=consul
+      - DB_USER=${DB_USER:-opex}
+      - DB_PASS=${DB_PASS:-hiopex}
+      - DB_IP_PORT=postgres-price-management
+      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
+      - BACKEND_USER=${BACKEND_USER}
+      - VAULT_HOST=vault
+      - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
+      - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL}
+      - CUSTOM_MESSAGE_ENABLED=${CUSTOM_MESSAGE_ENABLED}
+      - CUSTOM_USER_LANGUAGE_ENABLED=${CUSTOM_USER_LANGUAGE_ENABLED}
+      - PRICE_PROXY_URL=${PRICE_PROXY_URL}
+      - PRICE_PROXY_API_KEY=${PRICE_PROXY_API_KEY}
+    depends_on:
+      - consul
+      - postgres-price-management
+      - vault
+    labels:
+      collect_logs: "true"
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
   swagger-docs:
     image: swaggerapi/swagger-ui:latest
     environment:
@@ -705,6 +737,7 @@ volumes:
   auth-gateway-keys:
   profile-data:
   device-management-data:
+  price-management-data:
 networks:
   opex:
     external: true
