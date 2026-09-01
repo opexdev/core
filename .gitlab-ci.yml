@@ -10,9 +10,9 @@ variables:
   PRJS: "api,accountant,auth-gateway,bc-gateway,common,device-management,eventlog,market,matching-engine,otp,profile,user-management,wallet"
 
 include:
-  - project: "devops/pipeline-as-code/templates"
+  - project: "devops/pipeline-as-code"
     ref: "main"
     file:
-      - "build-services-docker-image.yaml"
+      - "templates/build-docker-image.yaml"
 stages:
   - build
