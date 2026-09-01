@@ -1,0 +1,18 @@
+variables:
+  DOCKERFILE: Dockerfile
+  STACK_NAME: dorost
+  COMMIT_BRANCH_NAME: 'main'
+  PROJECT_NAME: core
+  REGISTRY: reg.dorost.com
+  IMAGE: $REGISTRY/$STACK_NAME/$PROJECT_NAME
+  RUNNER: shared
+  LVL: default
+  PRJS: "api,accountant,auth-gateway,bc-gateway,common,device-management,eventlog,market,matching-engine,otp,profile,user-management,wallet"
+
+include:
+  - project: "devops/pipeline-as-code/templates"
+    ref: "main"
+    file:
+      - "build-services-docker-image.yaml"
+stages:
+  - build
