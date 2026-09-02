@@ -90,11 +90,6 @@ class RateServiceImpl(
     override suspend fun upsertRate(rate: Rate): Rate {
         try {
             rate.isValid()
-        } catch (e: Exception) {
-            logger.error(
-                "Failed to upsert rate for ${rate.sourceSymbol}-${rate.destSymbol} with value ${rate.rate}"
-            )
-        }
         val existing = ratesRepository
             .findBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destSymbol)
             ?.awaitFirstOrNull()
@@ -116,6 +111,11 @@ class RateServiceImpl(
                     throw OpexError.ForbiddenPair.exception()
                 }
             ratesRepository.save(rate.toModel()).awaitFirstOrNull()
+        }
+        } catch (e: Exception) {
+            logger.error(
+                "Failed to upsert rate for ${rate.sourceSymbol}-${rate.destSymbol} with value ${rate.rate}"
+            )
         }
         return rate
     }

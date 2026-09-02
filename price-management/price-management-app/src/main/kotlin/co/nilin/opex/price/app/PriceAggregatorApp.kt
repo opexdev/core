@@ -14,7 +14,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
 @EnableOpexErrorHandler
 @EnableConfigurationProperties
 @EnableScheduling
-@EntityScan(basePackages = ["co.nilin.opex.device.ports.postgres.model"])
+@EntityScan(basePackages = ["co.nilin.opex.price.ports.postgres.model"])
 class PriceAggregatorApp
 
 fun main(args: Array<String>) {

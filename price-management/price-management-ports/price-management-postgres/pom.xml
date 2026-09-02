@@ -12,7 +12,7 @@
     <groupId>co.nilin.opex.price-management.ports</groupId>
     <artifactId>price-management-postgres</artifactId>
     <name>price-management-postgres</name>
-    <description>Device management Postgres adapter</description>
+    <description>Price management Postgres adapter</description>
 
     <dependencies>
         <dependency>

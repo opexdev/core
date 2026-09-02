@@ -12,7 +12,7 @@
     <groupId>co.nilin.opex.price-management</groupId>
     <artifactId>price-management-app</artifactId>
     <name>price-management-app</name>
-    <description>Device management for core of opex</description>
+    <description>Price management for core of opex</description>
 
     <properties>
         <infinispan.version>11.0.10.Final</infinispan.version>
