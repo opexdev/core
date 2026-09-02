@@ -28,6 +28,35 @@ class PairRateConfigAdminManager(
     }
 
     suspend fun upsertConfig(request: UpsertPairRateConfigRequest): PairRateConfigView {
+        validate(request)
+        val providers = request.providers.orEmpty()
+
+        priceConfigPersister.savePairRateConfig(
+            PairRateConfig(
+                symbol = request.symbol,
+                strategy = request.strategy,
+                margin = request.margin,
+                isActive = request.isActive,
+                priceMode = request.priceMode
+            )
+        )
+        pairProviderIncludePersister.replaceIncludedProviders(request.symbol, providers)
+
+        if (request.priceMode == PriceMode.MANUAL && request.price != null) {
+            recordManualPrice(request.symbol, request.price)
+        }
+
+        return PairRateConfigView(
+            symbol = request.symbol,
+            strategy = request.strategy,
+            margin = request.margin,
+            isActive = request.isActive,
+            priceMode = request.priceMode,
+            providers = providers
+        )
+    }
+
+    private fun validate(request: UpsertPairRateConfigRequest) {
         when (request.priceMode) {
             PriceMode.AUTO -> {
                 // strategy required
@@ -48,39 +77,19 @@ class PairRateConfigAdminManager(
                 if (request.margin != null) throw OpexError.MarginNotAllowedForManualMode.exception()
             }
         }
+    }
 
-        priceConfigPersister.savePairRateConfig(
-            PairRateConfig(
-                symbol = request.symbol,
-                strategy = request.strategy,
-                margin = request.margin,
-                isActive = request.isActive,
-                priceMode = request.priceMode
+    private suspend fun recordManualPrice(symbol: String, price: BigDecimal) {
+        val previousPrice = rateHistoryLoader.loadLatest(symbol)?.price
+        rateHistoryPersister.saveRateHistory(
+            RateHistory(
+                symbol = symbol,
+                price = price,
+                createdDate = LocalDateTime.now(),
+                source = PriceMode.MANUAL
             )
         )
-        pairProviderIncludePersister.replaceIncludedProviders(request.symbol, request.providers ?: emptyList())
-
-        if (request.priceMode == PriceMode.MANUAL && request.price != null) {
-            val previousPrice = rateHistoryLoader.loadLatest(request.symbol)?.price
-            rateHistoryPersister.saveRateHistory(
-                RateHistory(
-                    symbol = request.symbol,
-                    price = request.price,
-                    createdDate = LocalDateTime.now(),
-                    source = PriceMode.MANUAL
-                )
-            )
-            rateSyncService.syncIfChanged(request.symbol, request.price, previousPrice)
-        }
-
-        return PairRateConfigView(
-            symbol = request.symbol,
-            strategy = request.strategy,
-            margin = request.margin,
-            isActive = request.isActive,
-            priceMode = request.priceMode,
-            providers = request.providers ?: emptyList()
-        )
+        rateSyncService.syncIfChanged(symbol, price, previousPrice)
     }
 
     suspend fun getConfig(symbol: String): PairRateConfigView? {
