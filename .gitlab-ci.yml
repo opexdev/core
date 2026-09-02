@@ -1,6 +1,6 @@
 variables:
   DOCKERFILE: Dockerfile
-  STACK_NAME: dorost
+  STACK_NAME: opex
   COMMIT_BRANCH_NAME: 'main'
   PROJECT_NAME: core
   REGISTRY: reg.dorost.com
