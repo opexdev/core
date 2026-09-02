@@ -20,17 +20,13 @@ class PriceAggregationJobManager(
     private val rateHistoryLoader: RateHistoryLoader,
     private val rateHistoryPersister: RateHistoryPersister,
     private val rateSyncService: RateSyncService,
-    /** Provider quotes older than this are dropped before aggregation. */
     private val maxPriceAge: Duration,
-    /** Provider quotes further than this from the group's median are dropped as outliers. */
     private val outlierThresholdPercent: BigDecimal
 ) {
 
     private val logger = LoggerFactory.getLogger(PriceAggregationJobManager::class.java)
 
     suspend fun updatePrices() {
-        // MANUAL symbols are entirely skipped here — no provider calls, no aggregation. Their
-        // price only changes when an admin pushes one via PairRateConfigAdminManager.upsertConfig.
         val configs = priceConfigLoader.loadActiveAutoConfigs()
         if (configs.isEmpty()) return
 
@@ -74,9 +70,6 @@ class PriceAggregationJobManager(
         }
 
         val prices = rejectOutliers(config.symbol, freshPrices)
-
-        // loadActiveAutoConfigs() only returns AUTO configs, and the admin API requires
-        // strategy/margin for AUTO — these should never be null here. Still, don't trust it blindly.
         val strategy = config.strategy
         val margin = config.margin
         if (strategy == null || margin == null) {

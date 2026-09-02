@@ -4,10 +4,6 @@ import co.nilin.opex.price.core.spi.WalletRateProxy
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 
-/**
- * Pushes a symbol's price to wallet's OTC rate table, but only when it actually changed —
- * every AUTO tick would otherwise call wallet even when nothing moved.
- */
 class RateSyncService(
     private val walletRateProxy: WalletRateProxy
 ) {

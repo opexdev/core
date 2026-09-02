@@ -8,10 +8,6 @@ import java.time.LocalDateTime
 
 private val VALID_MARGIN_RANGE = BigDecimal.ZERO..BigDecimal.ONE
 
-/**
- * Admin-facing use cases for managing pair_rate_config: registering a symbol together with its
- * selected providers (and, for MANUAL symbols, its price) in one call.
- */
 class PairRateConfigAdminManager(
     private val priceConfigLoader: PriceConfigLoader,
     private val priceConfigPersister: PriceConfigPersister,
@@ -59,20 +55,15 @@ class PairRateConfigAdminManager(
     private fun validate(request: UpsertPairRateConfigRequest) {
         when (request.priceMode) {
             PriceMode.AUTO -> {
-                // strategy required
                 if (request.strategy == null) throw OpexError.StrategyRequired.exception()
-                // margin required, and within 0..1
                 if (request.margin == null || request.margin !in VALID_MARGIN_RANGE) {
                     throw OpexError.InvalidMargin.exception()
                 }
-                // price only makes sense for MANUAL
                 if (request.price != null) throw OpexError.PriceNotAllowedForAutoMode.exception()
-                // at least one provider must be selected
                 if (request.providers.isNullOrEmpty()) throw OpexError.ProvidersRequired.exception()
             }
 
             PriceMode.MANUAL -> {
-                // strategy/margin are AUTO-only concepts
                 if (request.strategy != null) throw OpexError.StrategyNotAllowedForManualMode.exception()
                 if (request.margin != null) throw OpexError.MarginNotAllowedForManualMode.exception()
             }
