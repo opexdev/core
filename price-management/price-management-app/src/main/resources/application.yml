@@ -105,10 +105,7 @@ logging:
 
 app:
   auth:
-    url: lb://opex-auth
     cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
-    client-id: none
-    client-secret: none
   price-proxy:
     url: ${PRICE_PROXY_URL}
     api-key: ${PRICE_PROXY_API_KEY}
