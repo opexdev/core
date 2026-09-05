@@ -13,7 +13,7 @@ include:
   - project: "devops/pipeline-as-code"
     ref: "main"
     file:
-      - "templates/build-docker-image.yml"
+      - "templates/build-docker-image-multi.yml"
 stages:
   - build
   #
