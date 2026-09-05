@@ -109,6 +109,7 @@ app:
   price-proxy:
     url: ${PRICE_PROXY_URL}
     api-key: ${PRICE_PROXY_API_KEY}
+    secret-key: ${PRICE_PROXY_SECRET_KEY}
   wallet:
     url: http://opex-wallet
   price-management:
