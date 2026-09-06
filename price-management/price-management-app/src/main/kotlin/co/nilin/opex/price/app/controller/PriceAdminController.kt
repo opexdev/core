@@ -7,6 +7,7 @@ import co.nilin.opex.price.core.dto.UpsertPairRateConfigRequest
 import co.nilin.opex.price.core.service.PairRateConfigAdminManager
 import org.springframework.web.bind.annotation.*
 
+
 @RestController
 @RequestMapping("/admin/rate-config")
 class PriceAdminController(

@@ -130,6 +130,7 @@ class SecurityConfig(
                     .pathMatchers(HttpMethod.PUT, "/opex/v1/otc/rate").hasAnyAuthority("ROLE_admin", "ROLE_rate_bot")
                     .pathMatchers(HttpMethod.GET, "/opex/v1/otc/**").permitAll()
                     .pathMatchers("/opex/v1/otc/**").hasAuthority("ROLE_admin")
+                    .pathMatchers("/opex/v1/price-management/**").hasAuthority("ROLE_admin")
                     .pathMatchers(HttpMethod.GET, "/opex/v1/bank-account").authenticated()
                     .pathMatchers("/opex/v1/bank-account/**").hasAuthority("PERM_bank_account:write")
                     .anyExchange().authenticated()
