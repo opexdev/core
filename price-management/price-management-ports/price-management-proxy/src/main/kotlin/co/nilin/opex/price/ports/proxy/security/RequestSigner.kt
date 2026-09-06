@@ -42,5 +42,5 @@ object RequestSigner {
         return mac.doFinal(payload.toByteArray(StandardCharsets.UTF_8)).toHex()
     }
 
-    private fun ByteArray.toHex(): String = joinToString("") { "%02x".format(it) }
+    private fun ByteArray.toHex(): String = joinToString("") { "%02x".format(it.toInt() and 0xff) }
 }
