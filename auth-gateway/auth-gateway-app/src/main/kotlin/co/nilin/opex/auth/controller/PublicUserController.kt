@@ -117,7 +117,7 @@ Behavior: Completes registration and returns login token data.""",
         @RequestBody request: ConfirmRegisterRequest,
         @io.swagger.v3.oas.annotations.Parameter(hidden = true) serverRequest: ServerHttpRequest
     ): ResponseEntity<Token> {
-        request.ipAddress = resolveClientIp(serverRequest)
+        request.ipAddress = request.ipAddress ?: resolveClientIp(serverRequest)
         val loginToken = registerService.confirmRegister(request)
         return ResponseEntity.ok(loginToken)
     }
@@ -231,11 +231,14 @@ Response body: No response body.""",
     }
 
     private fun resolveClientIp(request: ServerHttpRequest): String? {
+        val realIp = request.headers.getFirst("X-Real-IP")?.takeIf { it.isNotBlank() }
+        if (realIp != null) {
+            return realIp
+        }
         val forwardedFor = request.headers.getFirst("X-Forwarded-For")
         if (!forwardedFor.isNullOrBlank()) {
             return forwardedFor.substringBefore(",").trim()
         }
-        return request.headers.getFirst("X-Real-IP")?.takeIf { it.isNotBlank() }
-            ?: request.remoteAddress?.address?.hostAddress
+        return request.remoteAddress?.address?.hostAddress
     }
 }

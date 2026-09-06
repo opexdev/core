@@ -53,7 +53,7 @@ Allowed values:
         @RequestBody tokenRequest: PasswordFlowTokenRequest,
         request: ServerHttpRequest
     ): ResponseEntity<TokenResponse> {
-        tokenRequest.ipAddress = resolveClientIp(request)
+        tokenRequest.ipAddress = tokenRequest.ipAddress ?: resolveClientIp(request)
         val tokenResponse = loginService.requestGetToken(tokenRequest)
         return ResponseEntity.ok().body(tokenResponse)
     }
@@ -78,7 +78,7 @@ Behavior: Completes password-flow login after OTP verification.""",
         @RequestBody tokenRequest: ConfirmPasswordFlowTokenRequest,
         request: ServerHttpRequest
     ): ResponseEntity<TokenResponse> {
-        tokenRequest.ipAddress = resolveClientIp(request)
+        tokenRequest.ipAddress = tokenRequest.ipAddress ?: resolveClientIp(request)
         val tokenResponse = loginService.confirmGetToken(tokenRequest)
         return ResponseEntity.ok().body(tokenResponse)
     }
@@ -150,17 +150,20 @@ Behavior: Issues a new access token from a valid refresh token.""",
         @RequestBody tokenRequest: RefreshTokenRequest,
         request: ServerHttpRequest
     ): ResponseEntity<TokenResponse> {
-        tokenRequest.ipAddress = resolveClientIp(request)
+        tokenRequest.ipAddress = tokenRequest.ipAddress ?: resolveClientIp(request)
         val tokenResponse = loginService.refreshToken(tokenRequest)
         return ResponseEntity.ok().body(tokenResponse)
     }
 
     private fun resolveClientIp(request: ServerHttpRequest): String? {
+        val realIp = request.headers.getFirst("X-Real-IP")?.takeIf { it.isNotBlank() }
+        if (realIp != null) {
+            return realIp
+        }
         val forwardedFor = request.headers.getFirst("X-Forwarded-For")
         if (!forwardedFor.isNullOrBlank()) {
             return forwardedFor.substringBefore(",").trim()
         }
-        return request.headers.getFirst("X-Real-IP")?.takeIf { it.isNotBlank() }
-            ?: request.remoteAddress?.address?.hostAddress
+        return request.remoteAddress?.address?.hostAddress
     }
 }
