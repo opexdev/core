@@ -48,6 +48,8 @@ class WithdrawService(
             fetchWithdrawData(withdrawCommand) ?: throw OpexError.GatewayNotFount.exception()
         if (!withdrawData.isEnabled)
             throw OpexError.WithdrawNotAllowed.exception()
+        if (withdrawCommand.withdrawType != WithdrawType.OFF_CHAIN)
+            validateDestAddress(withdrawCommand)
         if (bankAccountValidation)
             verifyOwnershipForWithdraw(token, withdrawCommand)
 
@@ -545,5 +547,13 @@ class WithdrawService(
 
         val canWithdraw = accountantProxy.canRequestWithdraw(uuid, userRole, currency, amount)
         if (!canWithdraw) throw OpexError.WithdrawAmountExceeds.exception()
+    }
+
+    private suspend fun validateDestAddress(withdrawCommand: WithdrawCommand) {
+        val network = withdrawCommand.destNetwork ?: return
+        val addressRegex = bcGatewayProxy.getAddressRegex(network) ?: return
+        if (!Regex(addressRegex).matches(withdrawCommand.destAddress)) {
+            throw OpexError.InvalidWithdrawAddress.exception()
+        }
     }
 }

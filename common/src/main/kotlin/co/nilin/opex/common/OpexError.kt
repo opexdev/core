@@ -116,8 +116,9 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     WithdrawRequestExpired(6051, "Withdraw request expired", HttpStatus.BAD_REQUEST),
     ForbiddenSwapPair(6052, null, HttpStatus.BAD_REQUEST),
     TerminalLocalizationNotFound(6053, "Terminal localization not found", HttpStatus.NOT_FOUND),
-    CurrencyLocalizationNotFound(6051, "Currency localization not found", HttpStatus.NOT_FOUND),
-    IdentifierNotFound(6052, "Identifier not found", HttpStatus.NOT_FOUND),
+    CurrencyLocalizationNotFound(6054, "Currency localization not found", HttpStatus.NOT_FOUND),
+    IdentifierNotFound(6055, "Identifier not found", HttpStatus.NOT_FOUND),
+    InvalidWithdrawAddress(6056, "Destination address does not match the expected format for this network", HttpStatus.BAD_REQUEST),
 
 
     // code 7000: api
