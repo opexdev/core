@@ -8,7 +8,7 @@ class WithdrawCommand(
     var currency: String,
     val amount: BigDecimal,
     var destSymbol: String?,
-    val destAddress: String,
+    var destAddress: String,
     var destNetwork: String?,
     val destNote: String?,
     val gatewayUuid: String?,
