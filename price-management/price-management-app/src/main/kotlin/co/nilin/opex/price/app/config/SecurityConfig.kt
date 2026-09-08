@@ -25,6 +25,7 @@ class SecurityConfig {
             .authorizeExchange {
                 it.pathMatchers("/actuator/**").permitAll()
                     .pathMatchers("/admin/**").hasAuthority("ROLE_admin")
+                    .pathMatchers("/prices/**").hasAuthority("ROLE_admin")
                     .anyExchange().permitAll()
             }
             .oauth2ResourceServer {
