@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/opex/v1/price-management/rate-config")
+@RequestMapping("/opex/v1/admin/price-management/rate-config")
 class PriceManagementController(
     private val priceManagementProxy: PriceManagementProxy
 ) {
