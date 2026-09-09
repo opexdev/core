@@ -1,11 +1,13 @@
 package co.nilin.opex.price.core.service
 
+import co.nilin.opex.price.core.spi.Notifier
 import co.nilin.opex.price.core.spi.WalletRateProxy
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 
 class RateSyncService(
-    private val walletRateProxy: WalletRateProxy
+    private val walletRateProxy: WalletRateProxy,
+    private val notifier: Notifier,
 ) {
 
     private val logger = LoggerFactory.getLogger(RateSyncService::class.java)
@@ -25,6 +27,7 @@ class RateSyncService(
             logger.info("Synced rate to wallet: $source-$dest = $newPrice")
         } catch (e: Exception) {
             logger.error("Failed to sync rate to wallet for symbol=$symbol: ${e.message}", e)
+            notifier.notify("⚠️ Wallet proxy sync failed\nSymbol: $symbol\nReason: ${e.message}")
         }
     }
 }
