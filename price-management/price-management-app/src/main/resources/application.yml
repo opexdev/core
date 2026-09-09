@@ -113,6 +113,7 @@ app:
   wallet:
     url: http://opex-wallet
   bale:
+    enabled: ${BALE_NOTIFICATIONS_ENABLED:false}
     base-url: ${BALE_API_URL:https://tapi.bale.ai}
     bot-token: ${BALE_BOT_TOKEN:}
     chat-id: ${BALE_CHAT_ID:}

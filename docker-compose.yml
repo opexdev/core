@@ -696,6 +696,7 @@ services:
       - PRICE_FRESHNESS_CHECK_INTERVAL=${PRICE_FRESHNESS_CHECK_INTERVAL}
       - BALE_BOT_TOKEN=${BALE_BOT_TOKEN}
       - BALE_CHAT_ID=${BALE_CHAT_ID}
+      - BALE_NOTIFICATIONS_ENABLED=${BALE_NOTIFICATIONS_ENABLED}
     depends_on:
       - consul
       - postgres-price-management

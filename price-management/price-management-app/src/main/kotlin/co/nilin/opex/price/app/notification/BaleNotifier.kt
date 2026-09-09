@@ -9,6 +9,7 @@ import org.springframework.web.reactive.function.client.WebClient
 
 @Component
 class BaleNotifier(
+    @Value("\${app.bale.enabled:true}") private val enabled: Boolean,
     @Value("\${app.bale.base-url:https://tapi.bale.ai}") baseUrl: String,
     @Value("\${app.bale.bot-token:}") private val botToken: String,
     @Value("\${app.bale.chat-id:}") private val chatId: String,
@@ -18,6 +19,10 @@ class BaleNotifier(
     private val webClient = WebClient.create(baseUrl)
 
     override suspend fun notify(message: String) {
+        if (!enabled) {
+            logger.debug("Bale notifier is disabled; skipping alert: {}", message)
+            return
+        }
         if (botToken.isBlank() || chatId.isBlank()) {
             logger.warn("Bale notifier is not configured; skipping alert: {}", message)
             return
