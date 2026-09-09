@@ -2,6 +2,7 @@ package co.nilin.opex.price.app.config
 
 import co.nilin.opex.price.core.service.PairRateConfigAdminManager
 import co.nilin.opex.price.core.service.PriceAggregationJobManager
+import co.nilin.opex.price.core.service.PriceSyncMonitor
 import co.nilin.opex.price.core.service.RateSyncService
 import co.nilin.opex.price.core.spi.*
 import org.springframework.beans.factory.annotation.Value
@@ -14,8 +15,23 @@ import java.time.Duration
 class AppConfig {
 
     @Bean
-    fun rateSyncService(walletRateProxy: WalletRateProxy): RateSyncService {
-        return RateSyncService(walletRateProxy)
+    fun rateSyncService(walletRateProxy: WalletRateProxy, notifier: Notifier): RateSyncService {
+        return RateSyncService(walletRateProxy, notifier)
+    }
+
+    @Bean
+    fun priceSyncMonitor(
+        priceConfigLoader: PriceConfigLoader,
+        rateHistoryLoader: RateHistoryLoader,
+        notifier: Notifier,
+        @Value("\${app.price-management.stale-alert-age-seconds:120}") staleAlertAgeSeconds: Long,
+    ): PriceSyncMonitor {
+        return PriceSyncMonitor(
+            priceConfigLoader,
+            rateHistoryLoader,
+            notifier,
+            Duration.ofSeconds(staleAlertAgeSeconds)
+        )
     }
 
     @Bean
