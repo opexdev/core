@@ -21,7 +21,7 @@ class PriceSyncMonitor(
     suspend fun checkFreshness() {
         val autoSymbols = priceConfigLoader.loadActiveAutoConfigs().map { it.symbol }
         if (autoSymbols.isEmpty()) return
-
+        staleSymbols.retainAll(autoSymbols.toSet())
         val lastUpdate = rateHistoryLoader.loadLatestForAllSymbols().associate { it.symbol to it.createdDate }
         val now = LocalDateTime.now()
 
