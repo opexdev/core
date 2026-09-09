@@ -24,7 +24,7 @@ class BaleNotifier(
             return
         }
         if (botToken.isBlank() || chatId.isBlank()) {
-            logger.warn("Bale notifier is not configured; skipping alert: {}", message)
+            logger.warn("Bale notifier is not configured; skipping alert")
             return
         }
         runCatching {
