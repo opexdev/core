@@ -37,6 +37,7 @@ interface SessionRepository : R2dbcRepository<SessionModel, Long> {
         d.app_version,
         ud.first_login_date,
         ud.last_login_date,
+        s.ip_address as ip_address,
         s.session_state,
         s.status as session_status,
         s.create_date as session_create_date,

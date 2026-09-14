@@ -67,6 +67,7 @@ fun Session.toModel(): SessionModel {
         sessionState = sessionState,
         userId = userId,
         deviceId = deviceId,
+        ipAddress = ipAddress,
         status = status,
         createDate = createDate ?: LocalDateTime.now(),
         expireDate = expireDate
@@ -78,6 +79,7 @@ fun SessionModel.toDto(): Session {
         sessionState = sessionState,
         userId = userId,
         deviceId = deviceId,
+        ipAddress = ipAddress,
         status = status,
         createDate = createDate,
         expireDate = expireDate

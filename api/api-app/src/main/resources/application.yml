@@ -123,6 +123,8 @@ app:
     url: http://opex-matching-gateway
   wallet:
     url: http://opex-wallet
+  price-management:
+    url: http://opex-price-management
   market:
     url: http://opex-market
   opex-bc-gateway:

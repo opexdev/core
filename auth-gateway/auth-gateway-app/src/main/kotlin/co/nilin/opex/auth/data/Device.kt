@@ -11,4 +11,5 @@ open class Device {
     var pushToken: String? = null
     var deviceUuid: String? = null
     var buildNumber: Int? = null
+    var ipAddress: String? = null
 }

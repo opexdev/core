@@ -83,6 +83,18 @@ class CryptoCurrencyController(
             }
     }
 
+    @GetMapping("/chain/{name}")
+    suspend fun getChain(@PathVariable name: String): ChainResponse {
+        val c = chainLoader.fetchChainInfo(name)
+        return ChainResponse(
+            c.name,
+            c.addressTypes.map { it.type }.getOrNull(0),
+            c.addressTypes.map { it.addressRegex }.getOrNull(0),
+            c.transactionScannerUrl,
+            c.addressScannerUrl,
+        )
+    }
+
 
     @GetMapping("/{currency}/network/{network}/withdrawData")
     suspend fun getFeeForCurrency(@PathVariable currency: String, @PathVariable network: String): WithdrawData {

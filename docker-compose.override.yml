@@ -26,3 +26,5 @@ services:
     build: profile/profile-app
   device-management:
     build: device-management/device-management-app
+  price-management:
+    build: price-management/price-management-app

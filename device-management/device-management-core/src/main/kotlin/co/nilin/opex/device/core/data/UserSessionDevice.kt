@@ -1,6 +1,5 @@
 package co.nilin.opex.device.core.data
 
-import co.nilin.opex.device.core.data.SessionStatus
 import java.time.LocalDateTime
 
 data class UserSessionDevice(
@@ -10,6 +9,7 @@ data class UserSessionDevice(
     val appVersion: String?,
     val firstLoginDate: LocalDateTime?,
     val lastLoginDate: LocalDateTime?,
+    val ipAddress: String?,
     val sessionState: String?,
     val sessionStatus: SessionStatus?,
     val sessionCreateDate: LocalDateTime?,

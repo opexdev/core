@@ -43,6 +43,7 @@ class UserSessionDeviceService(
                 sessionState = loginEvent.sessionId,
                 userId = loginEvent.uuid,
                 deviceId = device.id,
+                ipAddress = loginEvent.ipAddress,
                 expireDate = loginEvent.expireDate
             )
         )
