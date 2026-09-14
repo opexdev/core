@@ -2,6 +2,7 @@ package co.nilin.opex.api.ports.proxy.impl
 
 import co.nilin.opex.api.core.inout.pricemanagement.PairRateConfigView
 import co.nilin.opex.api.core.inout.pricemanagement.ProviderPrice
+import co.nilin.opex.api.core.inout.pricemanagement.SparkLineView
 import co.nilin.opex.api.core.inout.pricemanagement.UpsertPairRateConfigRequest
 import co.nilin.opex.api.core.spi.PriceManagementProxy
 import co.nilin.opex.api.ports.proxy.config.ProxyDispatchers
@@ -67,6 +68,17 @@ class PriceManagementProxyImpl(@Qualifier("generalWebClient") private val webCli
                     .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
                     .retrieve()
                     .bodyToFlux<ProviderPrice>()
+                    .collectList()
+                    .awaitSingle()
+        }
+    }
+
+    override suspend fun getSparkLine(refCurrency: String, period: String): List<SparkLineView> {
+        return withContext(ProxyDispatchers.general) {
+            webClient.get()
+                    .uri("$baseUrl/prices/spark-line?refCurrency=$refCurrency&period=$period")
+                    .retrieve()
+                    .bodyToFlux<SparkLineView>()
                     .collectList()
                     .awaitSingle()
         }

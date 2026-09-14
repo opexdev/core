@@ -2,6 +2,7 @@ package co.nilin.opex.api.core.spi
 
 import co.nilin.opex.api.core.inout.pricemanagement.PairRateConfigView
 import co.nilin.opex.api.core.inout.pricemanagement.ProviderPrice
+import co.nilin.opex.api.core.inout.pricemanagement.SparkLineView
 import co.nilin.opex.api.core.inout.pricemanagement.UpsertPairRateConfigRequest
 
 interface PriceManagementProxy {
@@ -9,4 +10,5 @@ interface PriceManagementProxy {
     suspend fun getConfig(token: String, symbol: String): PairRateConfigView
     suspend fun upsertConfig(token: String, request: UpsertPairRateConfigRequest): PairRateConfigView
     suspend fun getProvidersPrice(token: String, symbol: String): List<ProviderPrice>
+    suspend fun getSparkLine(refCurrency: String, period: String): List<SparkLineView>
 }

@@ -26,3 +26,11 @@ data class AllPriceHistoryResponse(
     val endTime: LocalDateTime,
     val items: List<PriceHistoryResponse>
 )
+
+data class CrossRateSparkline(
+    val symbol: String,
+    val isTrendUp: Boolean,
+    val changePercent: BigDecimal,
+    val prices: List<BigDecimal>,
+    val times: List<LocalDateTime>
+)

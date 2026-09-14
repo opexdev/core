@@ -697,10 +697,12 @@ services:
       - BALE_BOT_TOKEN=${BALE_BOT_TOKEN}
       - BALE_CHAT_ID=${BALE_CHAT_ID}
       - BALE_NOTIFICATIONS_ENABLED=${BALE_NOTIFICATIONS_ENABLED}
+      - REDIS_HOST=redis-cache
     depends_on:
       - consul
       - postgres-price-management
       - vault
+      - redis-cache
     labels:
       collect_logs: "true"
     networks:

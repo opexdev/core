@@ -24,6 +24,11 @@ spring:
     url: jdbc:postgresql://${DB_IP_PORT:localhost}/opex
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
+  cache:
+    type: redis
+  redis:
+    host: ${REDIS_HOST:redis-cache}
+    port: ${REDIS_PORT:6379}
   cloud:
     bootstrap:
       enabled: true
