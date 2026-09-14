@@ -19,12 +19,10 @@ class AppConfig {
     fun rateSyncService(walletRateProxy: WalletRateProxy, notifier: Notifier): RateSyncService {
         return RateSyncService(walletRateProxy, notifier)
     }
-
     @Bean
     fun crossRateService(crossRateSparklineLoader: CrossRateSparklineLoader): CrossRateService {
         return CrossRateService(crossRateSparklineLoader)
     }
-
     @Bean
     fun priceSyncMonitor(
         priceConfigLoader: PriceConfigLoader,
