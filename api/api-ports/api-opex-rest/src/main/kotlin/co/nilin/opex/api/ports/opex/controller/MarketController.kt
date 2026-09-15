@@ -1,7 +1,6 @@
 package co.nilin.opex.api.ports.opex.controller
 
 import co.nilin.opex.api.core.inout.*
-import co.nilin.opex.api.core.inout.pricemanagement.SparkLineView
 import co.nilin.opex.api.core.spi.*
 import co.nilin.opex.api.ports.opex.data.MarketInfoResponse
 import co.nilin.opex.api.ports.opex.data.MarketStatResponse
@@ -33,7 +32,6 @@ class MarketController(
     private val walletProxy: WalletProxy,
     private val matchingGatewayProxy: MatchingGatewayProxy,
     private val blockChainGatewayProxy: BlockchainGatewayProxy,
-    private val priceManagementProxy: PriceManagementProxy,
     @Value("\${app.user-activity-reference-currency}")
     private val userActivityReferenceCurrency: String
 ) {
@@ -868,62 +866,6 @@ Response body:
         gatewayUuid: String
     ): List<TerminalCommand>? {
         return walletProxy.getGatewayTerminal(gatewayUuid)
-    }
-
-    @GetMapping("/spark-line")
-    @Operation(
-        summary = "Get sparklines for a reference currency",
-        description = """
-Security:
-- Public endpoint. No Bearer token is required.
-
-Behavior:
-- Proxies price-management. Returns a sparkline for every base asset it can price against
-  `refCurrency` (e.g. `refCurrency=USDT` -> BTC-USDT, ETH-USDT, ...), reconstructing pairs it
-  does not track directly from other tracked pairs.
-- `period` must be one of: `24h`, `7d`, `1M`.
-- Pairs that cannot be derived are omitted from the response.
-
-Response body:
-- Array of sparkline views: symbol, trend flag, percentage change, and a base64-encoded SVG chart.
-        """,
-        responses = [
-            ApiResponse(
-                responseCode = "200",
-                description = "Sparklines returned successfully.",
-                content = [
-                    Content(
-                        mediaType = "application/json",
-                        array = ArraySchema(schema = Schema(implementation = SparkLineView::class))
-                    )
-                ]
-            ),
-            ApiResponse(responseCode = "400", description = "Invalid period. No response body.", content = [Content()])
-        ]
-    )
-    suspend fun sparkLine(
-        @Parameter(
-            name = "refCurrency",
-            description = "Reference currency (the second side of the pairs).",
-            required = true,
-            example = "USDT"
-        )
-        @RequestParam(name = "refCurrency")
-        refCurrency: String,
-
-        @Parameter(
-            name = "period",
-            description = "Sparkline period.",
-            required = true,
-            schema = Schema(type = "string", allowableValues = ["24h", "7d", "1M"]),
-            example = "24h"
-        )
-        @RequestParam(name = "period")
-        period: String
-    ): List<SparkLineView> {
-        if (!validDurations.contains(period))
-            throw OpexError.InvalidPriceChangeDuration.exception()
-        return priceManagementProxy.getSparkLine(refCurrency, period)
     }
 
     private fun getValidLimit(limit: Int?): Int = when {

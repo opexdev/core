@@ -28,59 +28,59 @@ class PriceManagementProxyImpl(@Qualifier("generalWebClient") private val webCli
     override suspend fun getConfigs(token: String): List<PairRateConfigView> {
         return withContext(ProxyDispatchers.general) {
             webClient.get()
-                    .uri("$baseUrl/admin/rate-config")
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-                    .retrieve()
-                    .bodyToFlux<PairRateConfigView>()
-                    .collectList()
-                    .awaitSingle()
+                .uri("$baseUrl/admin/rate-config")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .retrieve()
+                .bodyToFlux<PairRateConfigView>()
+                .collectList()
+                .awaitSingle()
         }
     }
 
     override suspend fun getConfig(token: String, symbol: String): PairRateConfigView {
         return withContext(ProxyDispatchers.general) {
             webClient.get()
-                    .uri("$baseUrl/admin/rate-config/$symbol")
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-                    .retrieve()
-                    .bodyToMono<PairRateConfigView>()
-                    .awaitSingle()
+                .uri("$baseUrl/admin/rate-config/$symbol")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .retrieve()
+                .bodyToMono<PairRateConfigView>()
+                .awaitSingle()
         }
     }
 
     override suspend fun upsertConfig(token: String, request: UpsertPairRateConfigRequest): PairRateConfigView {
         return withContext(ProxyDispatchers.general) {
             webClient.post()
-                    .uri("$baseUrl/admin/rate-config")
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(Mono.just(request))
-                    .retrieve()
-                    .bodyToMono<PairRateConfigView>()
-                    .awaitSingle()
+                .uri("$baseUrl/admin/rate-config")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(request))
+                .retrieve()
+                .bodyToMono<PairRateConfigView>()
+                .awaitSingle()
         }
     }
 
     override suspend fun getProvidersPrice(token: String, symbol: String): List<ProviderPrice> {
         return withContext(ProxyDispatchers.general) {
             webClient.get()
-                    .uri("$baseUrl/admin/rate-config/$symbol/providers")
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-                    .retrieve()
-                    .bodyToFlux<ProviderPrice>()
-                    .collectList()
-                    .awaitSingle()
+                .uri("$baseUrl/admin/rate-config/$symbol/providers")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                .retrieve()
+                .bodyToFlux<ProviderPrice>()
+                .collectList()
+                .awaitSingle()
         }
     }
 
     override suspend fun getSparkLine(refCurrency: String, period: String): List<SparkLineView> {
         return withContext(ProxyDispatchers.general) {
             webClient.get()
-                    .uri("$baseUrl/prices/spark-line?refCurrency=$refCurrency&period=$period")
-                    .retrieve()
-                    .bodyToFlux<SparkLineView>()
-                    .collectList()
-                    .awaitSingle()
+                .uri("$baseUrl/otc/spark-line?refCurrency=$refCurrency&period=$period")
+                .retrieve()
+                .bodyToFlux<SparkLineView>()
+                .collectList()
+                .awaitSingle()
         }
     }
 }

@@ -27,8 +27,12 @@ spring:
   cache:
     type: redis
   redis:
-    host: ${REDIS_HOST:redis-cache}
-    port: ${REDIS_PORT:6379}
+    host: redis-cache
+    port: 6379
+  data:
+    redis:
+      host: redis-cache
+      port: 6379
   cloud:
     bootstrap:
       enabled: true
@@ -119,7 +123,7 @@ app:
     url: http://opex-wallet
   bale:
     enabled: ${BALE_NOTIFICATIONS_ENABLED:false}
-    base-url: ${BALE_API_URL:https://tapi.bale.ai}
+    base-url: ${BALE_API_URL:}
     bot-token: ${BALE_BOT_TOKEN:}
     chat-id: ${BALE_CHAT_ID:}
   price-management:
@@ -128,6 +132,8 @@ app:
     outlier-threshold-percent: ${PRICE_OUTLIER_THRESHOLD_PERCENT:5}
     stale-alert-age-seconds: ${PRICE_STALE_ALERT_AGE_SECONDS:120}
     freshness-check-interval: ${PRICE_FRESHNESS_CHECK_INTERVAL:60000}
+  cross-rate:
+    preferred-bridge: USDT
   custom-message:
     enabled: ${CUSTOM_MESSAGE_ENABLED:false}
     base-url: ${CUSTOM_MESSAGE_URL}

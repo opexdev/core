@@ -2,8 +2,8 @@ package co.nilin.opex.price.app.controller
 
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.utils.minutes
-import co.nilin.opex.price.app.cache.RedisCacheHelper
 import co.nilin.opex.price.app.data.SparkLineDataResponse
+import co.nilin.opex.price.app.utils.CacheHelper
 import co.nilin.opex.price.app.utils.createLineChart
 import co.nilin.opex.price.core.dto.CrossRateSparkline
 import co.nilin.opex.price.core.service.CrossRateService
@@ -15,12 +15,12 @@ import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDateTime
 
 @RestController
-@RequestMapping("/prices")
-class CrossRateChartController(
+@RequestMapping("/otc")
+class OtcController(
     private val crossRateService: CrossRateService,
-    private val redisCacheHelper: RedisCacheHelper,
+    private val cacheHelper: CacheHelper,
 ) {
-    private val logger = LoggerFactory.getLogger(CrossRateChartController::class.java)
+    private val logger = LoggerFactory.getLogger(OtcController::class.java)
 
     enum class Period(val code: String, val days: Long, val points: Int, val cacheTtlMinutes: Int) {
         DAILY("24h", 1, 24, 30),
@@ -28,28 +28,34 @@ class CrossRateChartController(
         MONTHLY("1M", 30, 30, 720);
 
         companion object {
-            fun fromCode(code: String): Period? = values().find { it.code == code }
+            fun fromCode(code: String): Period? = entries.find { it.code == code }
         }
     }
+
     @GetMapping("/spark-line")
     suspend fun getSparkLine(
         @RequestParam("refCurrency") refCurrency: String,
         @RequestParam("period") periodCode: String
     ): List<SparkLineDataResponse> {
         val period = Period.fromCode(periodCode)
-            ?: throw OpexError.BadRequest.exception("Invalid period, expected one of ${Period.values().map { it.code }}")
+            ?: throw OpexError.BadRequest.exception(
+                "Invalid period, expected one of ${
+                    Period.entries.map { it.code }
+                }"
+            )
 
         val cacheKey = "crossRateSparkline:ref:${refCurrency.lowercase()}:${period.code}"
-        val sparklines: List<CrossRateSparkline> = redisCacheHelper.getOrElse(cacheKey, period.cacheTtlMinutes.minutes()) {
-            val endTime = LocalDateTime.now()
-            val startTime = endTime.minusDays(period.days)
-            runCatching {
-                crossRateService.sparklinesAgainst(refCurrency, startTime, endTime, period.points)
-            }.getOrElse { e ->
-                logger.error("Failed to build sparklines for refCurrency=$refCurrency period=${period.code}", e)
-                emptyList()
+        val sparklines: List<CrossRateSparkline> =
+            cacheHelper.getTimeBasedOrElse(cacheKey, period.cacheTtlMinutes.minutes()) {
+                val endTime = LocalDateTime.now()
+                val startTime = endTime.minusDays(period.days)
+                runCatching {
+                    crossRateService.sparklinesAgainst(refCurrency, startTime, endTime, period.points)
+                }.getOrElse { e ->
+                    logger.error("Failed to build sparklines for refCurrency=$refCurrency period=${period.code}", e)
+                    emptyList()
+                }
             }
-        }
 
         return sparklines.map { s ->
             SparkLineDataResponse(
