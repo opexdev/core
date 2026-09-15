@@ -1,3 +1,5 @@
--- Case-insensitive symbol lookup for cross-rate queries.
-CREATE INDEX IF NOT EXISTS idx_rate_history_upper_symbol_created_date
-    ON rate_history (upper(symbol), created_date DESC);
+CREATE INDEX IF NOT EXISTS idx_rate_history_quote_created_date
+    ON rate_history (split_part(upper(symbol), '-', 2), created_date);
+CREATE INDEX IF NOT EXISTS idx_rate_history_base_created_date
+    ON rate_history (split_part(upper(symbol), '-', 1), created_date);
+
