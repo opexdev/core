@@ -20,8 +20,11 @@ class AppConfig {
         return RateSyncService(walletRateProxy, notifier)
     }
     @Bean
-    fun crossRateService(crossRateSparklineLoader: CrossRateSparklineLoader): CrossRateService {
-        return CrossRateService(crossRateSparklineLoader)
+    fun crossRateService(
+        crossRateSparklineLoader: CrossRateSparklineLoader,
+        @Value("\${app.cross-rate.preferred-bridge}") preferredBridge: String,
+    ): CrossRateService {
+        return CrossRateService(crossRateSparklineLoader, preferredBridge)
     }
     @Bean
     fun priceSyncMonitor(
