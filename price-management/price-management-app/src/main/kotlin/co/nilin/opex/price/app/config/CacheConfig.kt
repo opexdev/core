@@ -1,5 +1,6 @@
 package co.nilin.opex.price.app.config
 
+import co.nilin.opex.price.app.controller.OtcController
 import co.nilin.opex.price.app.utils.CacheHelper
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -29,7 +30,7 @@ class CacheConfig {
             .withCacheConfiguration(
                 "priceCache",
                 RedisCacheConfiguration.defaultCacheConfig()
-                    .entryTtl(Duration.ofMinutes(10))
+                    .entryTtl(Duration.ofMinutes(OtcController.Period.entries.maxOf { it.cacheTtlMinutes }.toLong()))
                     .disableCachingNullValues()
                     .serializeValuesWith(
                         RedisSerializationContext.SerializationPair

@@ -143,6 +143,39 @@ class CrossRateSparkPointsQueryTest {
     }
 
     @Test
+    fun `a directly tracked pair against ref is returned even with no bridge to the hub`(): Unit = runBlocking {
+        val now = LocalDateTime.now()
+        val start = now.minusHours(2)
+        val end = now
+        // no BTC-USDT and no USDT-IRT at all - the only path to BTC-IRT is the direct pair itself
+        seed("BTC-IRT", "47500000000", start.minusMinutes(5))
+
+        val rows = query(refCurrency = "IRT", hub = "USDT", start = start, end = end, points = 3)
+
+        val btcIrt = rows.bySymbol("BTC-IRT")
+        assertThat(btcIrt).hasSize(3)
+        btcIrt.forEach { assertThat(it.price).isEqualByComparingTo(BigDecimal("47500000000")) }
+    }
+
+    @Test
+    fun `a direct pair takes precedence over a hub-bridged reconstruction for the same asset`(): Unit = runBlocking {
+        val now = LocalDateTime.now()
+        val start = now.minusHours(2)
+        val end = now
+        // bridged estimate would be 50000 * 950000 = 47,500,000,000 ...
+        seed("BTC-USDT", "50000", start.minusMinutes(5))
+        seed("USDT-IRT", "950000", start.minusMinutes(5))
+        // ... but the directly tracked BTC-IRT rate disagrees, and must win
+        seed("BTC-IRT", "48000000000", start.minusMinutes(5))
+
+        val rows = query(refCurrency = "IRT", hub = "USDT", start = start, end = end, points = 3)
+
+        val btcIrt = rows.bySymbol("BTC-IRT")
+        assertThat(btcIrt).hasSize(3)
+        btcIrt.forEach { assertThat(it.price).isEqualByComparingTo(BigDecimal("48000000000")) }
+    }
+
+    @Test
     fun `symbol is omitted entirely when the reference currency has no history`(): Unit = runBlocking {
         val now = LocalDateTime.now()
         val start = now.minusHours(2)
