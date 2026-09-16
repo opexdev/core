@@ -701,6 +701,7 @@ services:
       - consul
       - postgres-price-management
       - vault
+      - redis-cache
     labels:
       collect_logs: "true"
     networks:
