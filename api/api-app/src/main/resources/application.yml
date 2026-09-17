@@ -47,8 +47,6 @@ spring:
         instance-id: ${spring.application.name}:${server.port}
         healthCheckInterval: 20s
         prefer-ip-address: true
-  config:
-    import: vault://secret/${spring.application.name}
   data:
     redis:
       port: 6379
@@ -197,3 +195,9 @@ springdoc:
     display-request-duration: true
     operations-sorter: method
     tags-sorter: alpha
+---
+spring:
+  config:
+    activate:
+      on-profile: '!no-vault'
+    import: optional:vault://secret/${spring.application.name}

@@ -51,8 +51,6 @@ spring:
         instance-id: ${spring.application.name}:${server.port}
         healthCheckInterval: 20s
         prefer-ip-address: true
-  config:
-    import: vault://secret/${spring.application.name}
   codec:
     max-in-memory-size: 20MB
 management:
@@ -130,4 +128,10 @@ app:
     enabled: ${CUSTOM_USER_LANGUAGE_ENABLED:false}
 swagger:
   authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token}
+---
+spring:
+  config:
+    activate:
+      on-profile: '!no-vault'
+    import: optional:vault://secret/${spring.application.name}
 

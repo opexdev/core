@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  accountant:
+    environment:
+      - SPRING_PROFILES_ACTIVE=scheduled,no-vault
+  eventlog:
+    environment:
+      - SPRING_PROFILES_ACTIVE=no-vault
+  matching-gateway:
+    environment:
+      - SPRING_PROFILES_ACTIVE=no-vault
+  auth:
+    environment:
+      - SPRING_PROFILES_ACTIVE=no-vault
+  wallet:
+    environment:
+      - SPRING_PROFILES_ACTIVE=no-vault
+  market:
+    environment:
+      - SPRING_PROFILES_ACTIVE=no-vault
+  api:
+    environment:
+      - SPRING_PROFILES_ACTIVE=no-vault
+  bc-gateway:
+    environment:
+      - SPRING_PROFILES_ACTIVE=no-vault
+  profile:
+    environment:
+      - SPRING_PROFILES_ACTIVE=no-vault
+  device-management:
+    environment:
+      - SPRING_PROFILES_ACTIVE=no-vault
+  price-management:
+    environment:
+      - SPRING_PROFILES_ACTIVE=no-vault
