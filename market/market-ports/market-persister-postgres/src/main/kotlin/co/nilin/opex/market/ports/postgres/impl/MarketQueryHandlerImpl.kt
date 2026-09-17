@@ -21,7 +21,6 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.time.temporal.ChronoUnit
 import java.util.*
 
 
@@ -288,22 +287,7 @@ class MarketQueryHandlerImpl(
         endTime: Long?,
         limit: Int,
     ): List<CandleData> {
-        val intervalStep = parseIntervalStep(interval)
-        val latestTradeDate = if (startTime == null || endTime == null)
-            tradeRepository.findLastByCreateDate().awaitSingleOrNull()?.createDate
-        else
-            null
-        val fallbackDate = latestTradeDate ?: LocalDateTime.now()
-        val startDate = startTime?.asLocalDateTime() ?: when {
-            endTime != null -> shiftByIntervals(endTime.asLocalDateTime(), intervalStep, -(limit - 1).toLong())
-            else -> shiftByIntervals(fallbackDate, intervalStep, -(limit - 1).toLong())
-        }
-        val endDate = endTime?.asLocalDateTime() ?: when {
-            startTime != null -> shiftByIntervals(startDate, intervalStep, (limit - 1).toLong())
-            else -> fallbackDate
-        }
-
-        return tradeRepository.candleData(symbol, interval, startDate, endDate, limit)
+        return tradeRepository.candleData(symbol, interval, startTime?.asLocalDateTime(), endTime?.asLocalDateTime(), limit)
             .collectList()
             .awaitFirstOrElse { emptyList() }
             .map {
@@ -465,28 +449,6 @@ class MarketQueryHandlerImpl(
 
     private fun Long.asLocalDateTime(): LocalDateTime = with(Instant.ofEpochMilli(this)) {
         LocalDateTime.ofInstant(this, ZoneId.systemDefault())
-    }
-
-    private fun parseIntervalStep(interval: String): Pair<Long, ChronoUnit> {
-        val parts = interval.trim().split(Regex("\\s+"), limit = 2)
-        val amount = parts.firstOrNull()?.toLongOrNull()
-            ?: throw IllegalArgumentException("Invalid interval amount: $interval")
-        val unit = when (parts.getOrNull(1)?.uppercase(Locale.US)?.removeSuffix("S")) {
-            "MINUTE" -> ChronoUnit.MINUTES
-            "HOUR" -> ChronoUnit.HOURS
-            "DAY" -> ChronoUnit.DAYS
-            else -> throw IllegalArgumentException("Unsupported interval unit: $interval")
-        }
-        return amount to unit
-    }
-
-    private fun shiftByIntervals(
-        dateTime: LocalDateTime,
-        intervalStep: Pair<Long, ChronoUnit>,
-        intervals: Long,
-    ): LocalDateTime {
-        val (amount, unit) = intervalStep
-        return dateTime.plus(intervals * amount, unit)
     }
 
     private fun Long.approximate(): Long {

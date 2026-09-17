@@ -332,85 +332,87 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
 
     @Query(
         """
-    WITH intervals AS (
-        SELECT *
-        FROM interval_generator(
-            (:startTime)::TIMESTAMP WITHOUT TIME ZONE,
-            (:endTime)::TIMESTAMP WITHOUT TIME ZONE,
-            :interval::INTERVAL
-        )
+    WITH p AS (
+        SELECT
+            :interval::INTERVAL AS step,
+            GREATEST(CAST(:limit AS int), 1) AS lim,
+            CAST(:startTime AS TIMESTAMP) AS req_start,
+            CAST(:endTime AS TIMESTAMP) AS req_end,
+            (SELECT MAX(create_date) FROM trades WHERE symbol = :symbol) AS latest_trade_date
+    ),
+    bounds AS (
+        SELECT
+            COALESCE(
+                p.req_start,
+                COALESCE(p.req_end, p.latest_trade_date, LOCALTIMESTAMP) - (p.lim - 1) * p.step
+            ) AS start_time,
+            COALESCE(
+                p.req_end,
+                CASE WHEN p.req_start IS NOT NULL THEN p.req_start + (p.lim - 1) * p.step
+                     ELSE COALESCE(p.latest_trade_date, LOCALTIMESTAMP)
+                END
+            ) AS end_time,
+            p.step
+        FROM p
     ),
     limited_intervals AS (
-        SELECT *
-        FROM intervals
-        ORDER BY start_time DESC
-        LIMIT :limit
+        SELECT ig.start_time, ig.end_time
+        FROM bounds b, interval_generator(b.start_time, b.end_time, b.step) ig
+        ORDER BY ig.start_time DESC
+        LIMIT GREATEST(CAST(:limit AS int), 1)
     ),
-    first_trade AS (
-        SELECT DISTINCT ON (i.start_time)
+    bucketed_trades AS (
+        SELECT
             i.start_time,
             i.end_time,
-            t.matched_price AS open_price
+            t.id,
+            t.matched_price,
+            t.matched_quantity,
+            first_value(t.matched_price) OVER w AS open_price,
+            last_value(t.matched_price) OVER w AS close_price
         FROM limited_intervals i
-        LEFT JOIN trades t
+        JOIN trades t
             ON t.create_date >= i.start_time
            AND t.create_date < i.end_time
            AND t.symbol = :symbol
-        ORDER BY i.start_time, t.create_date
-    ),
-    last_trade AS (
-        SELECT DISTINCT ON (i.start_time)
-            i.start_time,
-            i.end_time,
-            t.matched_price AS close_price
-        FROM limited_intervals i
-        LEFT JOIN trades t
-            ON t.create_date >= i.start_time
-           AND t.create_date < i.end_time
-           AND t.symbol = :symbol
-        ORDER BY i.start_time, t.create_date DESC
+        WINDOW w AS (PARTITION BY i.start_time ORDER BY t.create_date
+                     ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
     ),
     ohlcv AS (
-        SELECT 
-            i.start_time AS open_time,
-            i.end_time   AS close_time,
-            ft.open_price AS open,
-            MAX(t.matched_price) AS high,
-            MIN(t.matched_price) AS low,
-            lt.close_price AS close,
-            SUM(t.matched_quantity) AS volume,
-            COUNT(t.id) AS trades
-        FROM limited_intervals i
-        LEFT JOIN trades t
-            ON t.create_date >= i.start_time
-           AND t.create_date < i.end_time
-           AND t.symbol = :symbol
-        LEFT JOIN first_trade ft
-            ON i.start_time = ft.start_time
-        LEFT JOIN last_trade lt
-            ON i.start_time = lt.start_time
-        GROUP BY i.start_time, i.end_time, ft.open_price, lt.close_price
+        SELECT
+            start_time,
+            end_time,
+            MAX(open_price)     AS open,
+            MAX(close_price)    AS close,
+            MAX(matched_price)  AS high,
+            MIN(matched_price)  AS low,
+            SUM(matched_quantity) AS volume,
+            COUNT(id)           AS trades
+        FROM bucketed_trades
+        GROUP BY start_time, end_time
     )
-    SELECT *
-    FROM ohlcv
+    SELECT
+        i.start_time AS open_time,
+        i.end_time   AS close_time,
+        o.open, o.close, o.high, o.low, o.volume,
+        COALESCE(o.trades, 0) AS trades
+    FROM limited_intervals i
+    LEFT JOIN ohlcv o ON o.start_time = i.start_time
     ORDER BY open_time ASC
 """
     )
-    suspend fun candleData(
+    fun candleData(
         @Param("symbol")
         symbol: String,
         @Param("interval")
         interval: String,
         @Param("startTime")
-        startTime: LocalDateTime,
+        startTime: LocalDateTime?,
         @Param("endTime")
-        endTime: LocalDateTime,
+        endTime: LocalDateTime?,
         @Param("limit")
         limit: Int,
     ): Flux<CandleInfoData>
-
-    @Query("select * from trades order by create_date desc limit 1")
-    suspend fun findLastByCreateDate(): Mono<TradeModel>
 
     @Query("select * from trades order by create_date limit 1")
     suspend fun findFirstByCreateDate(): Mono<TradeModel>
