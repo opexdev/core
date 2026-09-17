@@ -176,9 +176,6 @@ class MarketQueryHandlerTest {
 
     @Test
     fun givenMissingCandleBounds_whenGetCandleInfo_thenNullBoundsArePassedThroughToTheQuery(): Unit = runBlocking {
-        // date-range defaulting (fallback to the symbol's latest trade, shifting by `limit` intervals)
-        // now happens entirely inside the candleData query, so the repository call just forwards
-        // whatever bounds the caller gave - including nulls - unchanged.
         val openTime = LocalDateTime.of(2024, 1, 1, 8, 15)
         val candleInfo = CandleInfoData(
             openTime,
