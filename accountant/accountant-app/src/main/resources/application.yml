@@ -48,8 +48,6 @@ spring:
         healthCheckInterval: 20s
         prefer-ip-address: true
         query-passing: true
-  config:
-    import: vault://secret/${spring.application.name}
 management:
   health:
     db:
@@ -134,3 +132,9 @@ springdoc:
   swagger-ui:
     enabled: ${SWAGGER_UI_ENABLED:false}
     path: ${SWAGGER_UI_PATH:/swagger-ui.html}
+---
+spring:
+  config:
+    activate:
+      on-profile: '!no-vault'
+    import: optional:vault://secret/${spring.application.name}

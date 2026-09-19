@@ -27,8 +27,6 @@ spring:
         backend: secret
         profile-separator: '/'
         application-name: ${spring.application.name}
-  config:
-    import: vault://secret/${spring.application.name}
 management:
   endpoints:
     web:
@@ -46,3 +44,9 @@ app:
   custom-message:
     enabled: ${CUSTOM_MESSAGE_ENABLED:false}
     base-url: ${CUSTOM_MESSAGE_URL}
+---
+spring:
+  config:
+    activate:
+      on-profile: '!no-vault'
+    import: optional:vault://secret/${spring.application.name}
