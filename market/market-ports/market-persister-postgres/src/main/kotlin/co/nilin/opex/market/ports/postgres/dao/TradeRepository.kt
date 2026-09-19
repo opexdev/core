@@ -338,18 +338,19 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
             GREATEST(CAST(:limit AS int), 1) AS lim,
             CAST(:startTime AS TIMESTAMP) AS req_start,
             CAST(:endTime AS TIMESTAMP) AS req_end,
+            CAST(:now AS TIMESTAMP) AS now_ts,
             (SELECT MAX(create_date) FROM trades WHERE symbol = :symbol) AS latest_trade_date
     ),
     bounds AS (
         SELECT
             COALESCE(
                 p.req_start,
-                COALESCE(p.req_end, p.latest_trade_date, LOCALTIMESTAMP) - (p.lim - 1) * p.step
+                COALESCE(p.req_end, p.latest_trade_date, p.now_ts) - (p.lim - 1) * p.step
             ) AS start_time,
             COALESCE(
                 p.req_end,
                 CASE WHEN p.req_start IS NOT NULL THEN p.req_start + (p.lim - 1) * p.step
-                     ELSE COALESCE(p.latest_trade_date, LOCALTIMESTAMP)
+                     ELSE COALESCE(p.latest_trade_date, p.now_ts)
                 END
             ) AS end_time,
             p.step
@@ -410,6 +411,8 @@ interface TradeRepository : ReactiveCrudRepository<TradeModel, Long> {
         startTime: LocalDateTime?,
         @Param("endTime")
         endTime: LocalDateTime?,
+        @Param("now")
+        now: LocalDateTime,
         @Param("limit")
         limit: Int,
     ): Flux<CandleInfoData>

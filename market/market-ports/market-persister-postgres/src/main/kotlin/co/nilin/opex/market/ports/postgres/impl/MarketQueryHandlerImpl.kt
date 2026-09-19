@@ -287,7 +287,14 @@ class MarketQueryHandlerImpl(
         endTime: Long?,
         limit: Int,
     ): List<CandleData> {
-        return tradeRepository.candleData(symbol, interval, startTime?.asLocalDateTime(), endTime?.asLocalDateTime(), limit)
+        return tradeRepository.candleData(
+            symbol,
+            interval,
+            startTime?.asLocalDateTime(),
+            endTime?.asLocalDateTime(),
+            LocalDateTime.now(),
+            limit,
+        )
             .collectList()
             .awaitFirstOrElse { emptyList() }
             .map {
