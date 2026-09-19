@@ -1,5 +1,6 @@
 package co.nilin.opex.price.app.config
 
+import co.nilin.opex.price.core.service.CrossRateService
 import co.nilin.opex.price.core.service.PairRateConfigAdminManager
 import co.nilin.opex.price.core.service.PriceAggregationJobManager
 import co.nilin.opex.price.core.service.PriceSyncMonitor
@@ -18,7 +19,13 @@ class AppConfig {
     fun rateSyncService(walletRateProxy: WalletRateProxy, notifier: Notifier): RateSyncService {
         return RateSyncService(walletRateProxy, notifier)
     }
-
+    @Bean
+    fun crossRateService(
+        crossRateSparklineLoader: CrossRateSparklineLoader,
+        @Value("\${app.cross-rate.preferred-bridge}") preferredBridge: String,
+    ): CrossRateService {
+        return CrossRateService(crossRateSparklineLoader, preferredBridge)
+    }
     @Bean
     fun priceSyncMonitor(
         priceConfigLoader: PriceConfigLoader,

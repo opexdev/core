@@ -21,10 +21,6 @@ class PriceAdminController(
     suspend fun get(@PathVariable symbol: String): PairRateConfigView =
         pairRateConfigAdminManager.getConfig(symbol) ?: throw OpexError.RateConfigNotFound.exception()
 
-    /**
-     * Creates or fully replaces a symbol's config, its selected providers, and — when priceMode
-     * is MANUAL and a price is included — its price, all in one call.
-     */
     @PostMapping
     suspend fun upsert(@RequestBody request: UpsertPairRateConfigRequest): PairRateConfigView =
         pairRateConfigAdminManager.upsertConfig(request)
