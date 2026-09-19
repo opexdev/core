@@ -261,12 +261,13 @@ services:
     image: ghcr.io/opexdev/accountant
     environment:
       - JAVA_OPTS=-Xmx512m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-      - SPRING_PROFILES_ACTIVE=scheduled
+      - SPRING_PROFILES_ACTIVE=${ACCOUNTANT_SPRING_PROFILES_ACTIVE:-scheduled}
+      - SPRING_CLOUD_VAULT_ENABLED=${SPRING_CLOUD_VAULT_ENABLED:-true}
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-accountant
       - BACKEND_USER=${BACKEND_USER}
-      - VAULT_HOST=vault
+      - VAULT_HOST=${VAULT_HOST:-vault}
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
       - TRADE_VOLUME_CALCULATION_CURRENCY=${TRADE_VOLUME_CALCULATION_CURRENCY}
       - WITHDRAW_VOLUME_CALCULATION_CURRENCY=${WITHDRAW_VOLUME_CALCULATION_CURRENCY}
@@ -280,7 +281,6 @@ services:
       - kafka-2
       - kafka-3
       - consul
-      - vault
       - postgres-accountant
     labels:
       collect_logs: "true"
@@ -291,11 +291,13 @@ services:
     image: ghcr.io/opexdev/eventlog
     environment:
       - JAVA_OPTS=-Xmx256m
+      - SPRING_PROFILES_ACTIVE=${EVENTLOG_SPRING_PROFILES_ACTIVE:-}
+      - SPRING_CLOUD_VAULT_ENABLED=${SPRING_CLOUD_VAULT_ENABLED:-true}
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-eventlog
       - BACKEND_USER=${BACKEND_USER}
-      - VAULT_HOST=vault
+      - VAULT_HOST=${VAULT_HOST:-vault}
     networks:
       - default
     depends_on:
@@ -303,7 +305,6 @@ services:
       - kafka-2
       - kafka-3
       - consul
-      - vault
       - postgres-eventlog
     labels:
       collect_logs: "true"
@@ -358,11 +359,13 @@ services:
     image: ghcr.io/opexdev/matching-gateway
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - SPRING_PROFILES_ACTIVE=${MATCHING_GATEWAY_SPRING_PROFILES_ACTIVE:-}
+      - SPRING_CLOUD_VAULT_ENABLED=${SPRING_CLOUD_VAULT_ENABLED:-true}
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-matching-gateway
       - BACKEND_USER=${BACKEND_USER}
-      - VAULT_HOST=vault
+      - VAULT_HOST=${VAULT_HOST:-vault}
       - SYMBOLS=BTC_USDT,ETH_USDT,BTC_IRT,ETH_IRT,USDT_IRT,ETH_BUSD,BTC_BUSD,BNB_BUSD
       - TOKEN_ISSUER_URL=${KC_ISSUER_URL}
       - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL}
@@ -385,6 +388,8 @@ services:
     image: ghcr.io/opexdev/auth
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - SPRING_PROFILES_ACTIVE=${AUTH_SPRING_PROFILES_ACTIVE:-}
+      - SPRING_CLOUD_VAULT_ENABLED=${SPRING_CLOUD_VAULT_ENABLED:-true}
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-auth
@@ -393,8 +398,8 @@ services:
       - FRONTEND_URL=$KEYCLOAK_FRONTEND_URL
       - VERIFY_REDIRECT_URL=$KEYCLOAK_VERIFY_REDIRECT_URL
       - FORGOT_REDIRECT_URL=$KEYCLOAK_FORGOT_REDIRECT_URL
-      - VAULT_URL=http://vault:8200
-      - VAULT_HOST=vault
+      - VAULT_URL=${VAULT_URL:-http://vault:8200}
+      - VAULT_HOST=${VAULT_HOST:-vault}
       - APP_NAME=$APP_NAME
       - APP_BASE_URL=$APP_BASE_URL
       - WHITELIST_REGISTER_ENABLED=$WHITELIST_REGISTER_ENABLED
@@ -404,7 +409,6 @@ services:
       - kafka-2
       - kafka-3
       - consul
-      - vault
       - postgres-auth
     networks:
       - default
@@ -448,11 +452,13 @@ services:
     image: ghcr.io/opexdev/wallet
     environment:
       - JAVA_OPTS=-Xmx512m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - SPRING_PROFILES_ACTIVE=${WALLET_SPRING_PROFILES_ACTIVE:-}
+      - SPRING_CLOUD_VAULT_ENABLED=${SPRING_CLOUD_VAULT_ENABLED:-true}
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-wallet
       - BACKEND_USER=${BACKEND_USER}
-      - VAULT_HOST=vault
+      - VAULT_HOST=${VAULT_HOST:-vault}
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
       - DRIVE_FOLDER_ID=$DRIVE_FOLDER_ID
       - STORAGE_FOLDER_ID=$STORAGE_FOLDER_ID
@@ -472,7 +478,6 @@ services:
       - kafka-2
       - kafka-3
       - consul
-      - vault
       - postgres-wallet
     networks:
       - default
@@ -485,11 +490,13 @@ services:
     image: ghcr.io/opexdev/market
     environment:
       - JAVA_OPTS=-Xmx512m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - SPRING_PROFILES_ACTIVE=${MARKET_SPRING_PROFILES_ACTIVE:-}
+      - SPRING_CLOUD_VAULT_ENABLED=${SPRING_CLOUD_VAULT_ENABLED:-true}
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-market
       - BACKEND_USER=${BACKEND_USER}
-      - VAULT_HOST=vault
+      - VAULT_HOST=${VAULT_HOST:-vault}
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
       - TOKEN_ISSUER_URL=${KC_ISSUER_URL}
       - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL}
@@ -500,7 +507,6 @@ services:
       - kafka-2
       - kafka-3
       - consul
-      - vault
       - postgres-market
       - redis-cache
     networks:
@@ -514,10 +520,12 @@ services:
     image: ghcr.io/opexdev/api
     environment:
       - JAVA_OPTS=-Xmx512m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - SPRING_PROFILES_ACTIVE=${API_SPRING_PROFILES_ACTIVE:-}
+      - SPRING_CLOUD_VAULT_ENABLED=${SPRING_CLOUD_VAULT_ENABLED:-true}
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-api
       - BACKEND_USER=${BACKEND_USER}
-      - VAULT_HOST=vault
+      - VAULT_HOST=${VAULT_HOST:-vault}
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
       - API_KEY_CLIENT_SECRET=$API_KEY_CLIENT_SECRET
       - TRADE_VOLUME_CALCULATION_CURRENCY=${TRADE_VOLUME_CALCULATION_CURRENCY}
@@ -536,7 +544,6 @@ services:
       - OPEN_API_SERVER_URL=${OPEN_API_SERVER_URL_API}
     depends_on:
       - consul
-      - vault
       - postgres-api
     networks:
       - default
@@ -549,11 +556,13 @@ services:
     image: ghcr.io/opexdev/bc-gateway
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - SPRING_PROFILES_ACTIVE=${BC_GATEWAY_SPRING_PROFILES_ACTIVE:-}
+      - SPRING_CLOUD_VAULT_ENABLED=${SPRING_CLOUD_VAULT_ENABLED:-true}
       - CONSUL_HOST=consul
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - DB_IP_PORT=postgres-bc-gateway
       - BACKEND_USER=${BACKEND_USER}
-      - VAULT_HOST=vault
+      - VAULT_HOST=${VAULT_HOST:-vault}
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
       - ADDRESS_EXP_TIME=100
       - TOKEN_ISSUER_URL=${KC_ISSUER_URL}
@@ -565,7 +574,6 @@ services:
       - kafka-2
       - kafka-3
       - consul
-      - vault
       - postgres-bc-gateway
     networks:
       - default
@@ -578,9 +586,11 @@ services:
     image: ghcr.io/opexdev/otp
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - SPRING_PROFILES_ACTIVE=${OTP_SPRING_PROFILES_ACTIVE:-}
+      - SPRING_CLOUD_VAULT_ENABLED=${SPRING_CLOUD_VAULT_ENABLED:-true}
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-otp
-      - VAULT_HOST=vault
+      - VAULT_HOST=${VAULT_HOST:-vault}
       - BACKEND_USER=${BACKEND_USER}
       - SMS_PROVIDER_URL=${SMS_PROVIDER_URL}
       - SMS_PROVIDER_API_KEY=${SMS_PROVIDER_API_KEY}
@@ -613,11 +623,13 @@ services:
     image: ghcr.io/opexdev/profile
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - SPRING_PROFILES_ACTIVE=${PROFILE_SPRING_PROFILES_ACTIVE:-}
+      - SPRING_CLOUD_VAULT_ENABLED=${SPRING_CLOUD_VAULT_ENABLED:-true}
       - CONSUL_HOST=consul
       - DB_IP_PORT=postgres-profile
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - BACKEND_USER=${BACKEND_USER}
-      - VAULT_HOST=vault
+      - VAULT_HOST=${VAULT_HOST:-vault}
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
       - JIBIT_URL=${JIBIT_URL}
       - JIBIT_API_KEY=${JIBIT_API_KEY}
@@ -636,7 +648,6 @@ services:
       - kafka-3
       - consul
       - postgres-profile
-      - vault
     labels:
       collect_logs: "true"
     deploy:
@@ -646,13 +657,15 @@ services:
     image: ghcr.io/opexdev/device-management
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - SPRING_PROFILES_ACTIVE=${DEVICE_MANAGEMENT_SPRING_PROFILES_ACTIVE:-}
+      - SPRING_CLOUD_VAULT_ENABLED=${SPRING_CLOUD_VAULT_ENABLED:-true}
       - CONSUL_HOST=consul
       - DB_USER=${DB_USER:-opex}
       - DB_PASS=${DB_PASS:-hiopex}
       - DB_IP_PORT=postgres-device-management
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - BACKEND_USER=${BACKEND_USER}
-      - VAULT_HOST=vault
+      - VAULT_HOST=${VAULT_HOST:-vault}
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
       - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL}
       - CUSTOM_MESSAGE_ENABLED=${CUSTOM_MESSAGE_ENABLED}
@@ -663,7 +676,6 @@ services:
       - kafka-3
       - consul
       - postgres-device-management
-      - vault
     labels:
       collect_logs: "true"
     networks:
@@ -675,13 +687,15 @@ services:
     image: ghcr.io/opexdev/price-management
     environment:
       - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - SPRING_PROFILES_ACTIVE=${PRICE_MANAGEMENT_SPRING_PROFILES_ACTIVE:-}
+      - SPRING_CLOUD_VAULT_ENABLED=${SPRING_CLOUD_VAULT_ENABLED:-true}
       - CONSUL_HOST=consul
       - DB_USER=${DB_USER:-opex}
       - DB_PASS=${DB_PASS:-hiopex}
       - DB_IP_PORT=postgres-price-management
       - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
       - BACKEND_USER=${BACKEND_USER}
-      - VAULT_HOST=vault
+      - VAULT_HOST=${VAULT_HOST:-vault}
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
       - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL}
       - CUSTOM_MESSAGE_ENABLED=${CUSTOM_MESSAGE_ENABLED}
@@ -700,7 +714,6 @@ services:
     depends_on:
       - consul
       - postgres-price-management
-      - vault
       - redis-cache
     labels:
       collect_logs: "true"
