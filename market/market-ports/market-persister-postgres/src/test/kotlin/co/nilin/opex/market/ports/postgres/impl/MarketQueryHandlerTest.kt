@@ -188,7 +188,7 @@ class MarketQueryHandlerTest {
             1
         )
         every {
-            tradeRepository.candleData(VALID.ETH_USDT, "1 HOURS", null, null, 3)
+            tradeRepository.candleData(VALID.ETH_USDT, "1 HOURS", null, null,LocalDateTime.now(), 3)
         } returns Flux.just(candleInfo)
 
         val candles = marketQueryHandler.getCandleInfo(VALID.ETH_USDT, "1 HOURS", null, null, 3)
