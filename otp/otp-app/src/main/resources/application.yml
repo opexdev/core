@@ -80,3 +80,9 @@ otp:
     base-url: ${CUSTOM_MESSAGE_URL}
   custom-user-language:
     enabled: ${CUSTOM_USER_LANGUAGE_ENABLED:false}
+---
+spring:
+  config:
+    activate:
+      on-profile: '!no-vault'
+    import: optional:vault://secret/${spring.application.name}
