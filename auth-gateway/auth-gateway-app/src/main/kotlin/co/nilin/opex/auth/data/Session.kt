@@ -13,7 +13,7 @@ data class Sessions(
     val sessionStatus: SessionStatus?,
     val sessionCreateDate: LocalDateTime?,
     val sessionExpireDate: LocalDateTime?,
-    var isCurrentSession: Boolean?=false
+    var isCurrentSession: Boolean? = false
 )
 
 enum class SessionStatus {
@@ -24,4 +24,8 @@ enum class SessionStatus {
 
 enum class Os {
     ANDROID, IOS, MOBILE_WEB, DESKTOP_WEB
+}
+
+enum class Platform {
+    WEB_APP, WEB_DESKTOP, ANDROID_NATIVE_APP, IOS_NATIVE_APP, WEB_ADMIN_DESKTOP
 }

@@ -82,7 +82,7 @@ interface CurrencyRepositoryV2 : ReactiveCrudRepository<CurrencyModel, String> {
     ): Flux<CurrencyView>?
 
 
-    @Query("insert into currency(symbol,uuid,precision,icon,is_transitive,is_active,sign,external_url,display_order) values(:symbol,:uuid,:precision,:icon,:isTransitive,:isActive,:sign,:externalUrl,:displayOrder)  ")
+    @Query("insert into currency(symbol,uuid,precision,icon,is_transitive,is_active,sign,external_url,display_order,max_order) values(:symbol,:uuid,:precision,:icon,:isTransitive,:isActive,:sign,:externalUrl,:displayOrder,:maxOrder)  ")
     fun insert(
         symbol: String,
         uuid: String,
@@ -92,7 +92,8 @@ interface CurrencyRepositoryV2 : ReactiveCrudRepository<CurrencyModel, String> {
         isActive: Boolean? = true,
         sign: String? = null,
         externalUrl: String? = null,
-        displayOrder: Int? = null
+        displayOrder: Int? = null,
+        maxOrder: BigDecimal? = null
     ): Mono<Void>
 
 

@@ -42,7 +42,7 @@ class RegisterService(
         isUserDuplicate(username)
         val otpType = username.type.otpType
         val otpReceiver = OTPReceiver(request.username, otpType)
-        val res = otpProxy.requestOTP(request.username, listOf(otpReceiver),OTPAction.REGISTER)
+        val res = otpProxy.requestOTP(request.username, listOf(otpReceiver), OTPAction.REGISTER)
         return TempOtpResponse(res.otp, otpReceiver)
     }
 
@@ -107,16 +107,27 @@ class RegisterService(
         keycloakProxy.linkGoogleIdentity(userId, email, googleUserId)
     }
 
-    private fun sendLoginEvent(userId: String, sessionState: String?, request: Device, expiresIn: Int) {
+    private fun sendLoginEvent(
+        userId: String,
+        sessionState: String?,
+        request: Device,
+        expiresIn: Int
+    ) {
         authProducer.send(
             LoginEvent(
-                userId,
-                sessionState,
-                request.deviceUuid,
-                request.appVersion,
-                request.osVersion,
-                LocalDateTime.now().plusSeconds(expiresIn.toLong()),
-                request.os
+                uuid = userId,
+                deviceUuid = request.deviceUuid,
+                appVersion = request.appVersion,
+                osVersion = request.osVersion,
+                pushToken = request.pushToken,
+                os = request.os,
+                brand = request.brand,
+                model = request.model,
+                platform = request.platform,
+                agent = request.agent,
+                buildNumber = request.buildNumber,
+                sessionId = sessionState ?: "",
+                expireDate = LocalDateTime.now().plusSeconds(expiresIn.toLong())
             )
         )
     }

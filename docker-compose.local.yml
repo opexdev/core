@@ -63,6 +63,9 @@ services:
   postgres-profile:
     ports:
       - "5440:5432"
+  postgres-device-management:
+    ports:
+      - "5441:5432"
   accountant:
     ports:
       - "127.0.0.1:8089:8080"
