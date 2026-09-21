@@ -14,6 +14,7 @@ data class LoginEvent(
     val platform: Platform?,
     val agent: String?,
     val buildNumber: Int?,
+    val ipAddress: String?,
     val sessionId: String,
     val expireDate: LocalDateTime
 ) : AuthEvent()

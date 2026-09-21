@@ -110,6 +110,7 @@ class SecurityConfig(
                     .pathMatchers("/opex/v1/user/public/**").permitAll()
                     .pathMatchers("/opex/v1/user/update/**").permitAll()
                     .pathMatchers("/v1/deposit/webhook").permitAll()
+                    .pathMatchers("/v1/otc/").permitAll()
                     .pathMatchers("/opex/v1/admin/transactions/**").hasAnyAuthority("ROLE_monitoring", "ROLE_admin")
                     .pathMatchers("/opex/v1/storage/**").permitAll()
                     .pathMatchers("/opex/v1/web/config/**").permitAll()

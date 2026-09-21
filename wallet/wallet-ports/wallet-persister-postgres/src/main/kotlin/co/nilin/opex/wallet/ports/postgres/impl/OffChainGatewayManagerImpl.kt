@@ -73,6 +73,10 @@ class OffChainGatewayManagerImpl(
         TODO("Not yet implemented")
     }
 
+    override suspend fun getAddressRegex(network: String): String? {
+        TODO("Not yet implemented")
+    }
+
 
     private suspend fun _save(currencyGateway: CurrencyGatewayCommand): OffChainGatewayView? {
         return transactionalOperator.executeAndAwait {

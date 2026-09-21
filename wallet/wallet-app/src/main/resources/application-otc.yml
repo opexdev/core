@@ -76,8 +76,6 @@ spring:
   #        healthCheckInterval: 20s
   #        prefer-ip-address: true
 
-  config:
-    import: vault://secret/${spring.application.name}
 app:
   auth:
     url: ${AUTH_URL}
@@ -132,3 +130,9 @@ logging:
     org.hibernate.SQL: DEBUG
     logging.level.org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
+---
+spring:
+  config:
+    activate:
+      on-profile: '!no-vault'
+    import: optional:vault://secret/${spring.application.name}

@@ -87,6 +87,39 @@ class RateServiceImpl(
                 ?: throw OpexError.PairNotFound.exception())
     }
 
+    override suspend fun upsertRate(rate: Rate): Rate {
+        try {
+            rate.isValid()
+        val existing = ratesRepository
+            .findBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destSymbol)
+            ?.awaitFirstOrNull()
+
+        if (existing != null) {
+            ratesRepository.save(
+                RateModel(
+                    existing.id,
+                    rate.sourceSymbol,
+                    rate.destSymbol,
+                    rate.rate,
+                    LocalDateTime.now(),
+                    existing.createDate
+                )
+            ).awaitFirstOrNull()
+        } else {
+            forbiddenPairRepository.findBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destSymbol)
+                ?.awaitFirstOrNull()?.let {
+                    throw OpexError.ForbiddenPair.exception()
+                }
+            ratesRepository.save(rate.toModel()).awaitFirstOrNull()
+        }
+        } catch (e: Exception) {
+            logger.error(
+                "Failed to upsert rate for ${rate.sourceSymbol}-${rate.destSymbol} with value ${rate.rate}"
+            )
+        }
+        return rate
+    }
+
     override suspend fun addForbiddenPair(forbiddenPair: ForbiddenPair) {
         isPairValid(forbiddenPair.sourceSymbol, forbiddenPair.destinationSymbol)
         forbiddenPairRepository.findBySourceSymbolAndDestinationSymbol(

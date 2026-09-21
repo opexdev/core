@@ -60,3 +60,6 @@ services:
   device-management:
     image: ghcr.io/opexdev/device-management:$TAG
     build: device-management/device-management-app
+  price-management:
+    image: ghcr.io/opexdev/price-management:$TAG
+    build: price-management/price-management-app

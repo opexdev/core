@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.ports.proxy.bcgateway.impl
 
+import co.nilin.opex.wallet.core.inout.ChainRegexResponse
 import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
 import co.nilin.opex.wallet.core.inout.GatewayData
 import co.nilin.opex.wallet.core.inout.OnChainGatewayCommand
@@ -9,8 +10,10 @@ import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.ParameterizedTypeReference
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.bodyToMono
 import java.net.URI
 
@@ -145,5 +148,21 @@ class OnChainGatewayProxyGateway(private val webClient: WebClient) : GatewayPers
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<GatewayData>()
             .awaitFirst()
+    }
+
+
+    override suspend fun getAddressRegex(network: String): String? {
+        return try {
+            webClient.get()
+                .uri("$baseUrl/crypto-currency/chain/$network")
+                .retrieve()
+                .onStatus({ t -> t.isError && t != HttpStatus.NOT_FOUND }, { it.createException() })
+                .bodyToMono(typeRef<ChainRegexResponse>())
+                .awaitFirstOrNull()
+                ?.addressRegex
+        } catch (e: WebClientResponseException.NotFound) {
+            // No such chain registered in bc-gateway — fail-open, same as a missing addressRegex.
+            null
+        }
     }
 }

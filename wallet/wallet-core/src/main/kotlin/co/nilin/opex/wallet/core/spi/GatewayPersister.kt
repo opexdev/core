@@ -29,6 +29,8 @@ interface GatewayPersister {
     /// TODO:  temporary
     suspend fun getWithdrawData(symbol: String, network: String): GatewayData
 
+    suspend fun getAddressRegex(network: String): String?
+
 }
 
 

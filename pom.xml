@@ -37,6 +37,7 @@
         <module>auth-gateway</module>
         <module>profile</module>
         <module>device-management</module>
+        <module>price-management</module>
     </modules>
 
     <dependencies>
@@ -174,6 +175,11 @@
                             </goals>
                         </execution>
                     </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>3.5.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>

@@ -230,6 +230,7 @@ class LoginService(
                 platform = request.platform,
                 agent = request.agent,
                 buildNumber = request.buildNumber,
+                ipAddress = request.ipAddress,
                 sessionId = sessionState ?: "",
                 expireDate = LocalDateTime.now().plusSeconds(expiresIn.toLong())
             )

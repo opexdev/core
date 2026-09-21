@@ -66,6 +66,9 @@ services:
   postgres-device-management:
     ports:
       - "5441:5432"
+  postgres-price-management:
+    ports:
+      - "5442:5432"
   accountant:
     ports:
       - "127.0.0.1:8089:8080"
@@ -113,6 +116,10 @@ services:
     ports:
       - "0.0.0.0:8099:8080"
       - "127.0.0.1:1057:5005"
+  price-management:
+    ports:
+      - "0.0.0.0:8101:8080"
+      - "127.0.0.1:1058:5005"
   swagger-docs:
     ports:
       - "0.0.0.0:8110:8080"

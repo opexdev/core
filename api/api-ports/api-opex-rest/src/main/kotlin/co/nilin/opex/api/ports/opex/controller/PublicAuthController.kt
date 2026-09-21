@@ -98,7 +98,11 @@ Behavior: Completes registration and returns login token data.""",
             )
         ]
     )
-    suspend fun confirmRegister(@RequestBody request: ConfirmRegisterRequest): ResponseEntity<Token> {
+    suspend fun confirmRegister(
+        @RequestBody request: ConfirmRegisterRequest,
+        @Parameter(hidden = true) exchange: ServerWebExchange
+    ): ResponseEntity<Token> {
+        request.ipAddress = resolveClientIp(exchange)
         val loginToken = authProxy.confirmRegister(request)
         return ResponseEntity.ok(loginToken)
     }
@@ -193,5 +197,17 @@ Response body: No response body.""",
     suspend fun forgetPassword(@RequestBody request: ConfirmForgetRequest): ResponseEntity<Nothing> {
         authProxy.confirmForget(request)
         return ResponseEntity.ok().build()
+    }
+
+    private fun resolveClientIp(exchange: ServerWebExchange): String? {
+        val realIp = exchange.request.headers.getFirst("X-Real-IP")?.takeIf { it.isNotBlank() }
+        if (realIp != null) {
+            return realIp
+        }
+        val forwardedFor = exchange.request.headers.getFirst("X-Forwarded-For")
+        if (!forwardedFor.isNullOrBlank()) {
+            return forwardedFor.substringBefore(",").trim()
+        }
+        return exchange.request.remoteAddress?.address?.hostAddress
     }
 }

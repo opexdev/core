@@ -26,11 +26,12 @@ class SessionManagerImpl(
     private val logger = LoggerFactory.getLogger(SessionManagerImpl::class.java)
 
     override suspend fun createOrUpdateSession(session: Session): Session? {
-        val newOrUpdatedSession = sessionRepository.findBySessionState(session.sessionState)
-            .awaitFirstOrNull()?.copy(
-                expireDate = session.expireDate,
-                status = SessionStatus.ACTIVE
-            ) ?: session.toModel()
+        val existingSession = sessionRepository.findBySessionState(session.sessionState).awaitFirstOrNull()
+        val newOrUpdatedSession = existingSession?.copy(
+            expireDate = session.expireDate,
+            ipAddress = session.ipAddress ?: existingSession.ipAddress,
+            status = SessionStatus.ACTIVE
+        ) ?: session.toModel()
         sessionRepository.save(newOrUpdatedSession).awaitSingle()
         return newOrUpdatedSession.toDto()
     }

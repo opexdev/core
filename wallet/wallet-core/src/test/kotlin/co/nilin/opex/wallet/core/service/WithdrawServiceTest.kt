@@ -163,7 +163,9 @@ class WithdrawServiceTest {
                 withdrawMax = MAX_AMOUNT
             )
             coEvery { currencyService.fetchCurrency(any()) } returns null
-
+            coEvery {
+                gatewayPersister.getAddressRegex(DEST_NETWORK)
+            } returns ".*"
             val ex = Assertions.assertThrows(OpexException::class.java) {
                 runBlocking { withdrawService.requestWithdraw(command, TOKEN) }
             }
@@ -188,6 +190,9 @@ class WithdrawServiceTest {
             )
             coEvery { currencyService.fetchCurrency(any()) } returns createCurrency()
             coEvery { walletOwnerManager.findWalletOwner(USER_UUID) } returns null
+            coEvery {
+                gatewayPersister.getAddressRegex(DEST_NETWORK)
+            } returns ".*"
 
             val ex = Assertions.assertThrows(OpexException::class.java) {
                 runBlocking { withdrawService.requestWithdraw(command, TOKEN) }
@@ -306,6 +311,9 @@ class WithdrawServiceTest {
                 withdrawMin = MIN_AMOUNT,
                 withdrawMax = MAX_AMOUNT
             )
+            coEvery {
+                gatewayPersister.getAddressRegex(DEST_NETWORK)
+            } returns ".*"
 
             val ex = Assertions.assertThrows(OpexException::class.java) {
                 runBlocking { withdrawService.requestWithdraw(command, TOKEN) }
@@ -348,6 +356,9 @@ class WithdrawServiceTest {
                 withdrawMin = MIN_AMOUNT,
                 withdrawMax = MAX_AMOUNT
             )
+            coEvery {
+                gatewayPersister.getAddressRegex(DEST_NETWORK)
+            } returns ".*"
 
             val ex = Assertions.assertThrows(OpexException::class.java) {
                 runBlocking { withdrawService.requestWithdraw(command, TOKEN) }
@@ -390,6 +401,9 @@ class WithdrawServiceTest {
                 withdrawMin = MIN_AMOUNT,
                 withdrawMax = MAX_AMOUNT
             )
+            coEvery {
+                gatewayPersister.getAddressRegex(DEST_NETWORK)
+            } returns ".*"
 
             val ex = Assertions.assertThrows(OpexException::class.java) {
                 runBlocking { withdrawService.requestWithdraw(command, TOKEN) }
@@ -436,6 +450,9 @@ class WithdrawServiceTest {
             coEvery { withdrawPersister.persist(any()) } returns withdraw
             coEvery { withdrawPersister.findByWithdrawUuid(any()) } returns withdraw
             coEvery { transferManager.transfer(any()) } returns TransferResultDetailed(mockk(), "tx-test")
+            coEvery {
+                gatewayPersister.getAddressRegex(DEST_NETWORK)
+            } returns ".*"
 
             val result = withdrawService.requestWithdraw(command, TOKEN)
 
@@ -488,6 +505,9 @@ class WithdrawServiceTest {
                 withdrawMax = MAX_AMOUNT
             )
             coEvery { withdrawPersister.persist(any()) } returns withdraw
+            coEvery {
+                gatewayPersister.getAddressRegex(DEST_NETWORK)
+            } returns ".*"
 
             val result = withdrawService.requestWithdraw(command, TOKEN)
 
@@ -503,6 +523,9 @@ class WithdrawServiceTest {
         @Test
         fun `should throw WithdrawNotFound when withdraw does not exist`() = runBlocking {
             coEvery { withdrawPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns null
+            coEvery {
+                gatewayPersister.getAddressRegex(DEST_NETWORK)
+            } returns ".*"
 
             val ex = Assertions.assertThrows(OpexException::class.java) {
                 runBlocking { withdrawService.requestOTP(TOKEN, USER_UUID, WITHDRAW_UUID, OTPType.SMS) }
@@ -713,7 +736,7 @@ class WithdrawServiceTest {
             coEvery { withdrawPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns null
 
             val ex = Assertions.assertThrows(OpexException::class.java) {
-                runBlocking { withdrawService.acceptWithdraw(WITHDRAW_UUID,"applicator") }
+                runBlocking { withdrawService.acceptWithdraw(WITHDRAW_UUID, "applicator") }
             }
 
             Assertions.assertEquals(OpexError.WithdrawNotFound, ex.error)
@@ -725,7 +748,7 @@ class WithdrawServiceTest {
             coEvery { withdrawPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns withdraw
 
             val ex = Assertions.assertThrows(OpexException::class.java) {
-                runBlocking { withdrawService.acceptWithdraw(WITHDRAW_UUID,"applicator") }
+                runBlocking { withdrawService.acceptWithdraw(WITHDRAW_UUID, "applicator") }
             }
 
             Assertions.assertEquals(OpexError.WithdrawCannotBeAccepted, ex.error)
@@ -737,7 +760,7 @@ class WithdrawServiceTest {
             coEvery { withdrawPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns withdraw
             coEvery { withdrawPersister.persist(any()) } returns withdraw.copy(status = WithdrawStatus.ACCEPTED)
 
-            val result = withdrawService.acceptWithdraw(WITHDRAW_UUID,"applicator")
+            val result = withdrawService.acceptWithdraw(WITHDRAW_UUID, "applicator")
 
             Assertions.assertEquals(WITHDRAW_UUID, result.withdrawId)
             Assertions.assertEquals(WithdrawStatus.ACCEPTED, result.status)
@@ -906,6 +929,96 @@ class WithdrawServiceTest {
 
             coVerify { walletManager.createWallet(owner, any(), any(), WalletType.MAIN) }
         }
+
+        @Test
+        fun `should throw InvalidWithdrawAddress when address does not match network regex`() = runBlocking {
+            val command = createWithdrawCommand().apply { destAddress = "invalid_address" }
+            val owner = createOwner()
+            val currency = createCurrency()
+
+            coEvery { precisionService.validatePrecision(any(), any()) } returns Unit
+            coEvery { currencyService.fetchCurrency(any()) } returns currency
+            coEvery { walletOwnerManager.findWalletOwner(USER_UUID) } returns owner
+            coEvery {
+                walletManager.findWalletByOwnerAndCurrencyAndType(
+                    owner,
+                    WalletType.MAIN,
+                    currency
+                )
+            } returns createWallet(owner, WalletType.MAIN)
+            coEvery {
+                walletManager.findWalletByOwnerAndCurrencyAndType(
+                    owner,
+                    WalletType.CASHOUT,
+                    currency
+                )
+            } returns createWallet(owner, WalletType.CASHOUT)
+            coEvery { gatewayService.fetchGateway(any(), any()) } returns OnChainGatewayCommand(
+                currencySymbol = CURRENCY,
+                implementationSymbol = DEST_SYMBOL,
+                chain = DEST_NETWORK,
+                decimal = DECIMAL,
+                isWithdrawActive = true,
+                withdrawAllowed = true,
+                withdrawFee = WITHDRAW_FEE,
+                withdrawMin = MIN_AMOUNT,
+                withdrawMax = MAX_AMOUNT
+            )
+            coEvery { gatewayPersister.getAddressRegex(DEST_NETWORK) } returns "^0x[a-fA-F0-9]{40}$"
+
+            val ex = Assertions.assertThrows(OpexException::class.java) {
+                runBlocking { withdrawService.requestWithdraw(command, TOKEN) }
+            }
+
+            Assertions.assertEquals(OpexError.InvalidWithdrawAddress, ex.error)
+        }
+
+        @Test
+        fun `should pass validation when address matches network regex`() = runBlocking {
+            val validAddress = "0x1234567890123456789012345678901234567890"
+            val command = createWithdrawCommand().apply { destAddress = validAddress }
+            val owner = createOwner()
+            val currency = createCurrency()
+            val withdraw = createWithdraw().copy(destAddress = validAddress)
+
+            coEvery { precisionService.validatePrecision(any(), any()) } returns Unit
+            coEvery { currencyService.fetchCurrency(any()) } returns currency
+            coEvery { walletOwnerManager.findWalletOwner(USER_UUID) } returns owner
+            coEvery {
+                walletManager.findWalletByOwnerAndCurrencyAndType(
+                    owner,
+                    WalletType.MAIN,
+                    currency
+                )
+            } returns createWallet(owner, WalletType.MAIN)
+            coEvery {
+                walletManager.findWalletByOwnerAndCurrencyAndType(
+                    owner,
+                    WalletType.CASHOUT,
+                    currency
+                )
+            } returns createWallet(owner, WalletType.CASHOUT)
+            coEvery { gatewayService.fetchGateway(any(), any()) } returns OnChainGatewayCommand(
+                currencySymbol = CURRENCY,
+                implementationSymbol = DEST_SYMBOL,
+                chain = DEST_NETWORK,
+                decimal = DECIMAL,
+                isWithdrawActive = true,
+                withdrawAllowed = true,
+                withdrawFee = WITHDRAW_FEE,
+                withdrawMin = MIN_AMOUNT,
+                withdrawMax = MAX_AMOUNT
+            )
+            coEvery { gatewayPersister.getAddressRegex(DEST_NETWORK) } returns "^0x[a-fA-F0-9]{40}$"
+            coEvery { withdrawPersister.persist(any()) } returns withdraw
+            coEvery { withdrawPersister.findByWithdrawUuid(any()) } returns withdraw
+            coEvery { transferManager.transfer(any()) } returns TransferResultDetailed(mockk(), "tx-test")
+
+            val result = withdrawService.requestWithdraw(command, TOKEN)
+
+            Assertions.assertNotNull(result)
+            Assertions.assertEquals(WITHDRAW_UUID, result.withdrawId)
+        }
     }
 
     @Nested
@@ -1026,12 +1139,12 @@ class WithdrawServiceTest {
 
             coEvery {
                 withdrawPersister.findByCriteria(
-                    USER_UUID,null, CURRENCY, null, null, statuses, null, null, true, 0, 10
+                    USER_UUID, null, CURRENCY, null, null, statuses, null, null, true, 0, 10
                 )
             } returns withdrawList
 
             val result = withdrawService.findByCriteria(
-                USER_UUID,null, CURRENCY, null, null, statuses, null, null, true, 0, 10
+                USER_UUID, null, CURRENCY, null, null, statuses, null, null, true, 0, 10
             )
 
             Assertions.assertEquals(2, result.size)
@@ -1061,12 +1174,12 @@ class WithdrawServiceTest {
 
             coEvery {
                 withdrawPersister.findByCriteria(
-                    USER_UUID,null, CURRENCY, "tx-ref", DEST_ADDRESS, statuses, startTime, endTime, false, 10, 20
+                    USER_UUID, null, CURRENCY, "tx-ref", DEST_ADDRESS, statuses, startTime, endTime, false, 10, 20
                 )
             } returns withdrawList
 
             val result = withdrawService.findByCriteria(
-                USER_UUID,null, CURRENCY, "tx-ref", DEST_ADDRESS, statuses, startTime, endTime, false, 10, 20
+                USER_UUID, null, CURRENCY, "tx-ref", DEST_ADDRESS, statuses, startTime, endTime, false, 10, 20
             )
 
             Assertions.assertEquals(1, result.size)
@@ -1081,13 +1194,13 @@ class WithdrawServiceTest {
             val withdrawList = listOf(mockk<WithdrawResponse>(), mockk(), mockk())
 
             coEvery {
-                withdrawPersister.findWithdrawHistory(USER_UUID, CURRENCY, null, null, 10, 0, false,null)
+                withdrawPersister.findWithdrawHistory(USER_UUID, CURRENCY, null, null, 10, 0, false, null)
             } returns withdrawList
 
-            val result = withdrawService.findWithdrawHistory(USER_UUID, CURRENCY, null, null, 10, 0, false,null)
+            val result = withdrawService.findWithdrawHistory(USER_UUID, CURRENCY, null, null, 10, 0, false, null)
 
             Assertions.assertEquals(3, result.size)
-            coVerify { withdrawPersister.findWithdrawHistory(USER_UUID, CURRENCY, null, null, 10, 0, false,null) }
+            coVerify { withdrawPersister.findWithdrawHistory(USER_UUID, CURRENCY, null, null, 10, 0, false, null) }
         }
 
         @Test
@@ -1097,10 +1210,10 @@ class WithdrawServiceTest {
             val withdrawList = listOf(mockk<WithdrawResponse>())
 
             coEvery {
-                withdrawPersister.findWithdrawHistory(USER_UUID, null, startTime, endTime, 50, 5, true,null)
+                withdrawPersister.findWithdrawHistory(USER_UUID, null, startTime, endTime, 50, 5, true, null)
             } returns withdrawList
 
-            val result = withdrawService.findWithdrawHistory(USER_UUID, null, startTime, endTime, 50, 5, true,null)
+            val result = withdrawService.findWithdrawHistory(USER_UUID, null, startTime, endTime, 50, 5, true, null)
 
             Assertions.assertEquals(1, result.size)
         }
@@ -1112,10 +1225,10 @@ class WithdrawServiceTest {
         @Test
         fun `should return withdraw history count`() = runBlocking {
             coEvery {
-                withdrawPersister.findWithdrawHistoryCount(USER_UUID, CURRENCY, null, null,null)
+                withdrawPersister.findWithdrawHistoryCount(USER_UUID, CURRENCY, null, null, null)
             } returns 42L
 
-            val result = withdrawService.findWithdrawHistoryCount(USER_UUID, CURRENCY, null, null,null)
+            val result = withdrawService.findWithdrawHistoryCount(USER_UUID, CURRENCY, null, null, null)
 
             Assertions.assertEquals(42L, result)
         }
@@ -1126,10 +1239,10 @@ class WithdrawServiceTest {
             val endTime = LocalDateTime.now()
 
             coEvery {
-                withdrawPersister.findWithdrawHistoryCount(USER_UUID, null, startTime, endTime,null)
+                withdrawPersister.findWithdrawHistoryCount(USER_UUID, null, startTime, endTime, null)
             } returns 15L
 
-            val result = withdrawService.findWithdrawHistoryCount(USER_UUID, null, startTime, endTime,null)
+            val result = withdrawService.findWithdrawHistoryCount(USER_UUID, null, startTime, endTime, null)
 
             Assertions.assertEquals(15L, result)
         }
@@ -1202,6 +1315,9 @@ class WithdrawServiceTest {
             )
             coEvery { currencyService.fetchCurrency(any()) } returns currency
             coEvery { accountantProxy.canRequestWithdraw(any(), any(), any(), any()) } returns false
+            coEvery {
+                gatewayPersister.getAddressRegex(DEST_NETWORK)
+            } returns ".*"
 
             val ex = Assertions.assertThrows(OpexException::class.java) {
                 runBlocking { withdrawService.requestWithdraw(command, TOKEN) }
@@ -1259,6 +1375,9 @@ class WithdrawServiceTest {
             coEvery { withdrawPersister.findByWithdrawUuid(any()) } returns withdraw
             coEvery { transferManager.transfer(any()) } returns TransferResultDetailed(mockk(), "tx-test")
             coEvery { withdrawRequestEventSubmitter.send(any(), any(), any(), any(), any(), any()) } returns Unit
+            coEvery {
+                gatewayPersister.getAddressRegex(DEST_NETWORK)
+            } returns ".*"
 
             val result = withdrawService.requestWithdraw(command, TOKEN)
 

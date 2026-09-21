@@ -57,6 +57,7 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/storage/**").hasAuthority("ROLE_admin")
             .pathMatchers("/deposit/**").permitAll()
             .pathMatchers("/internal/deposit/**").permitAll()
+            .pathMatchers("/internal/otc/**").permitAll()
             .pathMatchers("/payment/internal/**").permitAll()
             .pathMatchers("/inquiry/**").permitAll()
             .pathMatchers("/v2/transfer/**").permitAll()

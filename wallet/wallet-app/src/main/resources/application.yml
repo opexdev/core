@@ -73,8 +73,6 @@ spring:
         health-check-interval: 10s
         health-check-timeout: 5s
         prefer-ip-address: true
-  config:
-    import: vault://secret/${spring.application.name}
 logbook:
   secure-filter:
     enabled: true
@@ -178,3 +176,9 @@ logging:
     reactor.netty.http.client: INFO
     org.zalando.logbook: TRACE
 swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
+---
+spring:
+  config:
+    activate:
+      on-profile: '!no-vault'
+    import: optional:vault://secret/${spring.application.name}
