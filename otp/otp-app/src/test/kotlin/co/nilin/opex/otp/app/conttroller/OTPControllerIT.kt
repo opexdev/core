@@ -21,7 +21,8 @@ class EmailSenderIT {
             fromAddress = requireEnv("SMTP_FROM"),
             proxyEnabled = true,
             proxyHost = requireEnv("SMTP_SOCKS_HOST"),
-            proxyPort = requireEnv("SMTP_SOCKS_PORT")
+            proxyPort = requireEnv("SMTP_SOCKS_PORT"),
+            appName = requireEnv("APP_NAME")
         )
 
         val result = sender.send(

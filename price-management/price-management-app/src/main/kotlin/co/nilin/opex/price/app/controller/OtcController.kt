@@ -23,9 +23,9 @@ class OtcController(
     private val logger = LoggerFactory.getLogger(OtcController::class.java)
 
     enum class Period(val code: String, val days: Long, val points: Int, val cacheTtlMinutes: Int) {
-        DAILY("24h", 1, 24, 30),
-        WEEKLY("7d", 7, 42, 240),
-        MONTHLY("1M", 30, 30, 720);
+        DAILY("24h", 1, 24, 5),
+        WEEKLY("7d", 7, 42, 5),
+        MONTHLY("1M", 30, 30, 5);
 
         companion object {
             fun fromCode(code: String): Period? = entries.find { it.code == code }
