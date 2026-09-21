@@ -11,7 +11,6 @@ import co.nilin.opex.market.ports.postgres.dao.TradeRepository
 import co.nilin.opex.market.ports.postgres.impl.sample.VALID
 import co.nilin.opex.market.ports.postgres.model.CandleInfoData
 import co.nilin.opex.market.ports.postgres.model.LastPrice
-import co.nilin.opex.market.ports.postgres.model.TradeModel
 import co.nilin.opex.market.ports.postgres.model.TradeTickerData
 import co.nilin.opex.market.ports.postgres.util.RedisCacheHelper
 import io.mockk.coEvery
@@ -176,55 +175,26 @@ class MarketQueryHandlerTest {
     }
 
     @Test
-    fun givenMissingCandleBounds_whenGetCandleInfo_thenOnlyLatestIntervalsAreRequested(): Unit = runBlocking {
-        val latestTradeDate = LocalDateTime.of(2024, 1, 1, 10, 15)
-        val expectedStartDate = latestTradeDate.minusHours(2)
-        val latestTrade = TradeModel(
-            1L,
-            1L,
-            VALID.ETH_USDT,
-            "ETH",
-            "USDT",
-            BigDecimal.TEN,
-            BigDecimal.ONE,
-            BigDecimal.TEN,
-            BigDecimal.TEN,
-            BigDecimal.ZERO,
-            BigDecimal.ZERO,
-            "ETH",
-            "USDT",
-            latestTradeDate,
-            "maker",
-            "taker",
-            "maker-user",
-            "taker-user",
-            latestTradeDate
-        )
+    fun givenMissingCandleBounds_whenGetCandleInfo_thenNullBoundsArePassedThroughToTheQuery(): Unit = runBlocking {
+        val openTime = LocalDateTime.of(2024, 1, 1, 8, 15)
         val candleInfo = CandleInfoData(
-            expectedStartDate,
-            expectedStartDate.plusHours(1),
+            openTime,
+            openTime.plusHours(1),
             BigDecimal.ONE,
-            BigDecimal.TWO,
-            BigDecimal.TWO,
+            BigDecimal("2"),
+            BigDecimal("2"),
             BigDecimal.ONE,
             BigDecimal.TEN,
             1
         )
-        coEvery { tradeRepository.findLastByCreateDate() } returns Mono.just(latestTrade)
-        coEvery {
-            tradeRepository.candleData(
-                VALID.ETH_USDT,
-                "1 HOURS",
-                expectedStartDate,
-                latestTradeDate,
-                3
-            )
+        every {
+            tradeRepository.candleData(VALID.ETH_USDT, "1 HOURS", null, null, any(), 3)
         } returns Flux.just(candleInfo)
 
         val candles = marketQueryHandler.getCandleInfo(VALID.ETH_USDT, "1 HOURS", null, null, 3)
 
         assertThat(candles).hasSize(1)
-        assertThat(candles.first().openTime).isEqualTo(expectedStartDate)
-        assertThat(candles.first().closeTime).isEqualTo(expectedStartDate.plusHours(1))
+        assertThat(candles.first().openTime).isEqualTo(openTime)
+        assertThat(candles.first().closeTime).isEqualTo(openTime.plusHours(1))
     }
 }
