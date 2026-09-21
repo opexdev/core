@@ -6,6 +6,7 @@ import jakarta.mail.Session
 import jakarta.mail.internet.InternetAddress
 import jakarta.mail.internet.MimeMessage
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Component
 import java.util.Properties
 
@@ -33,10 +34,17 @@ class EmailSender(
     private val proxyHost: String?,
 
     @Value("\${otp.email.proxy.port}")
-    private val proxyPort: String?
+    private val proxyPort: String?,
+
+    @Value("\${app.name}")
+    private val appName: String
 ) : MessageSender {
 
     private val logger by LoggerDelegate()
+
+    private val template: String by lazy {
+        ClassPathResource("templates/otp-email.html").inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
+    }
 
     override suspend fun send(
         receiver: String,
@@ -45,6 +53,10 @@ class EmailSender(
     ): Boolean {
 
         val subject = "Your otp code"
+        val code = metadata["code"]?.toString() ?: message
+        val body = template
+            .replace("{{OTP}}", code)
+            .replace("{{APP_NAME}}", appName)
 
         try {
             // 🔥 SOCKS must be JVM-level (NOT JavaMail props)
@@ -76,7 +88,7 @@ class EmailSender(
                 setSubject(subject)
                 setFrom(InternetAddress(fromAddress ))
                 addRecipient(Message.RecipientType.TO, InternetAddress(receiver))
-                setContent(message, "text/html; charset=utf-8")
+                setContent(body, "text/html; charset=utf-8")
             }
 
             session.getTransport("smtp").use { transport ->
