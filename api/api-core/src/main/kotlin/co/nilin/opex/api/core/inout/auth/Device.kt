@@ -1,5 +1,7 @@
 package co.nilin.opex.api.core.inout.auth
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 open class Device {
     var appVersion: String? = null
     var os: Os? = null
