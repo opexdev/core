@@ -1,6 +1,7 @@
 package co.nilin.opex.market.ports.postgres.impl
 
 import co.nilin.opex.common.utils.Interval
+import co.nilin.opex.market.core.inout.CandleData
 import co.nilin.opex.market.core.inout.MarketTrade
 import co.nilin.opex.market.core.inout.Order
 import co.nilin.opex.market.core.inout.OrderDirection
@@ -190,6 +191,11 @@ class MarketQueryHandlerTest {
         every {
             tradeRepository.candleData(VALID.ETH_USDT, "1 HOURS", null, null, any(), 3)
         } returns Flux.just(candleInfo)
+        coEvery {
+            redisCacheHelper.getOrElse<List<CandleData>>(any(), any(), any())
+        } coAnswers {
+            thirdArg<suspend () -> List<CandleData>>().invoke()
+        }
 
         val candles = marketQueryHandler.getCandleInfo(VALID.ETH_USDT, "1 HOURS", null, null, 3)
 

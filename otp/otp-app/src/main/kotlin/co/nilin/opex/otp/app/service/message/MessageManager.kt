@@ -17,7 +17,7 @@ class MessageManager(
     suspend fun sendMessage(config: OTPConfig, otpType: OTPType, code: String, receiver: String) {
         val message = String.format(config.messageTemplate, code)
         if (config.isActivated) {
-            val result = getSender(otpType).send(receiver, message)
+            val result = getSender(otpType).send(receiver, message, mapOf("code" to code))
             if (!result)
                 throw OpexError.UnableToSendOTP.exception()
         } else {
