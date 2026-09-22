@@ -37,7 +37,7 @@ spring:
   cache:
     type: redis
   redis:
-    host: redis-cache
+    host: ${REDIS_HOST:redis-cache}
     port: 6379
   cloud:
     bootstrap:

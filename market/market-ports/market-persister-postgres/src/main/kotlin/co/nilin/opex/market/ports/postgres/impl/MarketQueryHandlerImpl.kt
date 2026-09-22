@@ -3,6 +3,7 @@ package co.nilin.opex.market.ports.postgres.impl
 import co.nilin.opex.common.utils.Interval
 import co.nilin.opex.common.utils.hours
 import co.nilin.opex.common.utils.minutes
+import co.nilin.opex.common.utils.seconds
 import co.nilin.opex.market.core.inout.*
 import co.nilin.opex.market.core.spi.MarketQueryHandler
 import co.nilin.opex.market.ports.postgres.dao.OrderRepository
@@ -287,31 +288,34 @@ class MarketQueryHandlerImpl(
         endTime: Long?,
         limit: Int,
     ): List<CandleData> {
-        return tradeRepository.candleData(
-            symbol,
-            interval,
-            startTime?.asLocalDateTime(),
-            endTime?.asLocalDateTime(),
-            LocalDateTime.now(),
-            limit,
-        )
-            .collectList()
-            .awaitFirstOrElse { emptyList() }
-            .map {
-                CandleData(
-                    it.openTime,
-                    it.closeTime,
-                    it.open ?: BigDecimal.ZERO,
-                    it.close ?: BigDecimal.ZERO,
-                    it.high ?: BigDecimal.ZERO,
-                    it.low ?: BigDecimal.ZERO,
-                    it.volume ?: BigDecimal.ZERO,
-                    BigDecimal.ZERO,
-                    it.trades,
-                    BigDecimal.ZERO,
-                    BigDecimal.ZERO
-                )
-            }
+        val cacheKey = "candleInfo:${symbol.lowercase()}:$interval:${startTime ?: "-"}:${endTime ?: "-"}:$limit"
+        return redisCacheHelper.getOrElse(cacheKey, 5.minutes()) {
+            tradeRepository.candleData(
+                symbol,
+                interval,
+                startTime?.asLocalDateTime(),
+                endTime?.asLocalDateTime(),
+                LocalDateTime.now(),
+                limit,
+            )
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
+                .map {
+                    CandleData(
+                        it.openTime,
+                        it.closeTime,
+                        it.open ?: BigDecimal.ZERO,
+                        it.close ?: BigDecimal.ZERO,
+                        it.high ?: BigDecimal.ZERO,
+                        it.low ?: BigDecimal.ZERO,
+                        it.volume ?: BigDecimal.ZERO,
+                        BigDecimal.ZERO,
+                        it.trades,
+                        BigDecimal.ZERO,
+                        BigDecimal.ZERO
+                    )
+                }
+        }
     }
 
     override suspend fun numberOfActiveUsers(interval: Interval): Long {
@@ -430,7 +434,7 @@ class MarketQueryHandlerImpl(
                     )
                 }
                     .onEach { redisCacheHelper.putListItem(cacheKey, it) }
-                    .also { redisCacheHelper.setExpiration(cacheKey, 1.hours()) }
+                    .also { redisCacheHelper.setExpiration(cacheKey, 5.minutes()) }
             }
     }
 
