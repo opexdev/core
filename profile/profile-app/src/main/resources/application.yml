@@ -14,12 +14,12 @@ spring:
     consumer:
       group-id: profile
   r2dbc:
-    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
+    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/${DB_NAME:opex}
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
     initialization-mode: always
   datasource:
-    url: jdbc:postgresql://${DB_IP_PORT:localhost}/opex
+    url: jdbc:postgresql://${DB_IP_PORT:localhost}/${DB_NAME:opex}
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
   cloud:
@@ -91,4 +91,3 @@ spring:
     activate:
       on-profile: '!no-vault'
     import: optional:vault://secret/${spring.application.name}
-
