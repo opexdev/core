@@ -97,6 +97,8 @@ Response body:
                     pair = config.pair,
                     baseAsset = config.leftSideWalletSymbol,
                     quoteAsset = config.rightSideWalletSymbol,
+                    leftSideFraction = config.leftSideFraction,
+                    rightSideFraction = config.rightSideFraction,
                     isAvailable = isAvailable,
                     minOrder = minOrder,
                     maxOrder = maxOrder,

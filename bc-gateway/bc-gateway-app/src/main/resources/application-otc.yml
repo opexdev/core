@@ -10,7 +10,7 @@ spring:
   #    consumer:
   #      group-id: bc-gateway
   r2dbc:
-    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
+    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/${DB_NAME:opex}
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
     initialization-mode: always
@@ -23,7 +23,7 @@ spring:
       max-create-connection-time: 10s
       validation-query: SELECT 1
   datasource:
-    url: jdbc:postgresql://${DB_IP_PORT:localhost}/opex
+    url: jdbc:postgresql://${DB_IP_PORT:localhost}/${DB_NAME:opex}
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
   cloud:
