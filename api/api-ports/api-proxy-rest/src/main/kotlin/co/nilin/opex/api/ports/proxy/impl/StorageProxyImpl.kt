@@ -118,4 +118,30 @@ class StorageProxyImpl(@Qualifier("generalWebClient") private val webClient: Web
             }
             .awaitSingle()
     }
+
+    override suspend fun ownerDownload(
+        token: String,
+        bucket: String,
+        key: String
+    ): ResponseEntity<ByteArray> {
+        return webClient.get()
+            .uri("$baseUrl/v2/owner") {
+                it.queryParam("bucket", bucket)
+                it.queryParam("key", key)
+                it.build()
+            }
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .accept(
+                MediaType.APPLICATION_OCTET_STREAM,
+                MediaType.APPLICATION_JSON
+            )
+            .exchangeToMono { response ->
+                if (response.statusCode().isError) {
+                    response.createException().flatMap { Mono.error(it) }
+                } else {
+                    response.toEntity(ByteArray::class.java)
+                }
+            }
+            .awaitSingle()
+    }
 }
