@@ -36,6 +36,8 @@ data class TicketDetailDto(
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
     val closedAt: LocalDateTime?,
+    val rating: Int?,
+    val ratedAt: LocalDateTime?,
     val messages: List<MessageDto>
 )
 
@@ -45,7 +47,9 @@ data class TicketSummaryDto(
     val subject: String,
     val status: ConversationStatus,
     val createdAt: LocalDateTime,
-    val updatedAt: LocalDateTime
+    val updatedAt: LocalDateTime,
+    val rating: Int?,
+    val ratedAt: LocalDateTime?
 )
 
 data class AdminTicketSummaryDto(
@@ -54,9 +58,13 @@ data class AdminTicketSummaryDto(
     val userId: String,
     val status: ConversationStatus,
     val createdAt: LocalDateTime,
-    val updatedAt: LocalDateTime
+    val updatedAt: LocalDateTime,
+    val rating: Int?,
+    val ratedAt: LocalDateTime?
 )
 
 data class TicketListResponse(val total: Long, val tickets: List<TicketSummaryDto>)
 
 data class AdminTicketListResponse(val total: Long, val tickets: List<AdminTicketSummaryDto>)
+
+data class RateTicketRequest(val rating: Int)

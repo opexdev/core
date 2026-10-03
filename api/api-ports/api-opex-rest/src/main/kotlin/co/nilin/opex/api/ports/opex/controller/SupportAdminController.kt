@@ -7,6 +7,8 @@ import co.nilin.opex.api.core.inout.TicketDetailDto
 import co.nilin.opex.api.core.spi.SupportProxy
 import co.nilin.opex.api.ports.opex.util.jwtAuthentication
 import co.nilin.opex.api.ports.opex.util.tokenValue
+import co.nilin.opex.common.data.UserLanguage
+import co.nilin.opex.common.utils.LanguageUtils.getUserLanguage
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
@@ -14,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.http.MediaType
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.security.core.annotation.CurrentSecurityContext
@@ -27,6 +30,9 @@ import reactor.core.publisher.Flux
 class SupportAdminController(
     private val supportProxy: SupportProxy
 ) {
+
+    private suspend fun resolveLanguage(): String =
+        UserLanguage.safeValueOf(getUserLanguage().awaitSingleOrNull()).toString()
 
     @GetMapping("/tickets", produces = [MediaType.APPLICATION_JSON_VALUE])
     @Operation(
@@ -55,7 +61,7 @@ Allowed values:
             )
         ]
     )
-    suspend fun list(
+    suspend fun listTickets(
         @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext,
         @Parameter(name = "status", description = "Filter by ticket status. Allowed values: WAITING_FOR_ADMIN, WAITING_FOR_USER, CLOSED.", required = false)
@@ -72,7 +78,8 @@ Allowed values:
             status,
             userId,
             offset,
-            limit
+            limit,
+            resolveLanguage()
         )
     }
 
@@ -100,13 +107,13 @@ Security: Bearer admin-token required. Required authority: ROLE_admin.""",
             )
         ]
     )
-    suspend fun get(
+    suspend fun getTicket(
         @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext,
         @Parameter(name = "ticketId", description = "Ticket number.", required = true)
         @PathVariable ticketId: String
     ): TicketDetailDto {
-        return supportProxy.getAdminTicket(securityContext.jwtAuthentication().tokenValue(), ticketId)
+        return supportProxy.getAdminTicket(securityContext.jwtAuthentication().tokenValue(), ticketId, resolveLanguage())
     }
 
     @PostMapping(
@@ -118,7 +125,7 @@ Security: Bearer admin-token required. Required authority: ROLE_admin.""",
         summary = "Add message",
         description = """POST /opex/v1/admin/support/tickets/{ticketId}/messages.
 Security: Bearer admin-token required. Required authority: ROLE_admin.
-Behavior: Multipart reply. `body` is required. `files` is optional and may contain multiple attachments.""",
+Behavior: Multipart reply. `body` is optional when at least one file is attached. `files` is optional and may contain multiple attachments.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
             ApiResponse(
@@ -138,17 +145,17 @@ Behavior: Multipart reply. `body` is required. `files` is optional and may conta
             )
         ]
     )
-    suspend fun addMessage(
+    suspend fun addTicketMessage(
         @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext,
         @Parameter(name = "ticketId", description = "Ticket number.", required = true)
         @PathVariable ticketId: String,
-        @Parameter(name = "body", description = "Message body.", required = true)
-        @RequestPart("body") body: String,
+        @Parameter(name = "body", description = "Message body.", required = false)
+        @RequestPart(value = "body", required = false) body: String?,
         @Parameter(name = "files", description = "Optional attachments.", required = false)
         @RequestPart(value = "files", required = false) files: Flux<FilePart>
     ): MessageDto {
-        return supportProxy.addAgentMessage(securityContext.jwtAuthentication().tokenValue(), ticketId, body, files)
+        return supportProxy.addAgentTicketMessage(securityContext.jwtAuthentication().tokenValue(), ticketId, body, files)
     }
 
     @PostMapping("/tickets/{ticketId}/close", produces = [MediaType.APPLICATION_JSON_VALUE])
@@ -175,12 +182,12 @@ Security: Bearer admin-token required. Required authority: ROLE_admin.""",
             )
         ]
     )
-    suspend fun close(
+    suspend fun closeTicket(
         @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext,
         @Parameter(name = "ticketId", description = "Ticket number.", required = true)
         @PathVariable ticketId: String
     ): TicketDetailDto {
-        return supportProxy.closeAdminTicket(securityContext.jwtAuthentication().tokenValue(), ticketId)
+        return supportProxy.closeAdminTicket(securityContext.jwtAuthentication().tokenValue(), ticketId, resolveLanguage())
     }
 }

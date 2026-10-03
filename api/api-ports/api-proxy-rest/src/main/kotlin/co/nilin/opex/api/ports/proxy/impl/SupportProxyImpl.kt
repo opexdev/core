@@ -16,8 +16,10 @@ import org.springframework.stereotype.Component
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.body
 import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
 @Component
 class SupportProxyImpl(@Qualifier("generalWebClient") private val webClient: WebClient) : SupportProxy {
@@ -38,10 +40,14 @@ class SupportProxyImpl(@Qualifier("generalWebClient") private val webClient: Web
         token: String,
         subjectCode: String,
         message: String,
-        files: Flux<FilePart>
+        files: Flux<FilePart>,
+        language: String?
     ): TicketDetailDto {
         return webClient.post()
-            .uri("$baseUrl/v1/support/tickets")
+            .uri("$baseUrl/v1/support/tickets") {
+                if (language != null) it.queryParam("language", language)
+                it.build()
+            }
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .contentType(MediaType.MULTIPART_FORM_DATA)
             .body(BodyInserters.fromMultipartData(multipartBody(mapOf("subjectCode" to subjectCode, "message" to message), files)))
@@ -51,11 +57,12 @@ class SupportProxyImpl(@Qualifier("generalWebClient") private val webClient: Web
             .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to create ticket") }
     }
 
-    override suspend fun getUserTickets(token: String, offset: Int, limit: Int): TicketListResponse {
+    override suspend fun getUserTickets(token: String, offset: Int, limit: Int, language: String?): TicketListResponse {
         return webClient.get()
             .uri("$baseUrl/v1/support/tickets") {
                 it.queryParam("offset", offset)
                 it.queryParam("limit", limit)
+                if (language != null) it.queryParam("language", language)
                 it.build()
             }
             .accept(MediaType.APPLICATION_JSON)
@@ -66,9 +73,12 @@ class SupportProxyImpl(@Qualifier("generalWebClient") private val webClient: Web
             .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get tickets") }
     }
 
-    override suspend fun getTicket(token: String, ticketId: String): TicketDetailDto {
+    override suspend fun getTicket(token: String, ticketId: String, language: String?): TicketDetailDto {
         return webClient.get()
-            .uri("$baseUrl/v1/support/tickets/$ticketId")
+            .uri("$baseUrl/v1/support/tickets/$ticketId") {
+                if (language != null) it.queryParam("language", language)
+                it.build()
+            }
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .retrieve()
@@ -77,21 +87,24 @@ class SupportProxyImpl(@Qualifier("generalWebClient") private val webClient: Web
             .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get ticket $ticketId") }
     }
 
-    override suspend fun addUserMessage(token: String, ticketId: String, body: String, files: Flux<FilePart>): MessageDto {
+    override suspend fun addUserTicketMessage(token: String, ticketId: String, body: String?, files: Flux<FilePart>): MessageDto {
         return webClient.post()
             .uri("$baseUrl/v1/support/tickets/$ticketId/messages")
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .contentType(MediaType.MULTIPART_FORM_DATA)
-            .body(BodyInserters.fromMultipartData(multipartBody(mapOf("body" to body), files)))
+            .body(BodyInserters.fromMultipartData(multipartBody(body?.let { mapOf("body" to it) } ?: emptyMap(), files)))
             .retrieve()
             .onStatus({ it.isError }, { it.createException() })
             .bodyToMono<MessageDto>()
             .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to add message to ticket $ticketId") }
     }
 
-    override suspend fun closeTicket(token: String, ticketId: String): TicketDetailDto {
+    override suspend fun closeTicket(token: String, ticketId: String, language: String?): TicketDetailDto {
         return webClient.post()
-            .uri("$baseUrl/v1/support/tickets/$ticketId/close")
+            .uri("$baseUrl/v1/support/tickets/$ticketId/close") {
+                if (language != null) it.queryParam("language", language)
+                it.build()
+            }
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .retrieve()
@@ -100,7 +113,23 @@ class SupportProxyImpl(@Qualifier("generalWebClient") private val webClient: Web
             .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to close ticket $ticketId") }
     }
 
-    override suspend fun getSubjects(token: String, language: String?): TicketSubjectsResponse {
+    override suspend fun rateTicket(token: String, ticketId: String, rating: Int, language: String?): TicketDetailDto {
+        return webClient.post()
+            .uri("$baseUrl/v1/support/tickets/$ticketId/rating") {
+                if (language != null) it.queryParam("language", language)
+                it.build()
+            }
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(Mono.just(RateTicketRequest(rating)))
+            .retrieve()
+            .onStatus({ it.isError }, { it.createException() })
+            .bodyToMono<TicketDetailDto>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to rate ticket $ticketId") }
+    }
+
+    override suspend fun getTicketSubjects(token: String, language: String?): TicketSubjectsResponse {
         return webClient.get()
             .uri("$baseUrl/v1/support/subjects") {
                 if (language != null) it.queryParam("language", language)
@@ -119,7 +148,8 @@ class SupportProxyImpl(@Qualifier("generalWebClient") private val webClient: Web
         status: ConversationStatus?,
         userId: String?,
         offset: Int,
-        limit: Int
+        limit: Int,
+        language: String?
     ): AdminTicketListResponse {
         return webClient.get()
             .uri("$baseUrl/v1/admin/support/tickets") {
@@ -127,6 +157,7 @@ class SupportProxyImpl(@Qualifier("generalWebClient") private val webClient: Web
                 if (userId != null) it.queryParam("userId", userId)
                 it.queryParam("offset", offset)
                 it.queryParam("limit", limit)
+                if (language != null) it.queryParam("language", language)
                 it.build()
             }
             .accept(MediaType.APPLICATION_JSON)
@@ -137,9 +168,12 @@ class SupportProxyImpl(@Qualifier("generalWebClient") private val webClient: Web
             .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get admin tickets") }
     }
 
-    override suspend fun getAdminTicket(token: String, ticketId: String): TicketDetailDto {
+    override suspend fun getAdminTicket(token: String, ticketId: String, language: String?): TicketDetailDto {
         return webClient.get()
-            .uri("$baseUrl/v1/admin/support/tickets/$ticketId")
+            .uri("$baseUrl/v1/admin/support/tickets/$ticketId") {
+                if (language != null) it.queryParam("language", language)
+                it.build()
+            }
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .retrieve()
@@ -148,21 +182,24 @@ class SupportProxyImpl(@Qualifier("generalWebClient") private val webClient: Web
             .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get admin ticket $ticketId") }
     }
 
-    override suspend fun addAgentMessage(token: String, ticketId: String, body: String, files: Flux<FilePart>): MessageDto {
+    override suspend fun addAgentTicketMessage(token: String, ticketId: String, body: String?, files: Flux<FilePart>): MessageDto {
         return webClient.post()
             .uri("$baseUrl/v1/admin/support/tickets/$ticketId/messages")
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .contentType(MediaType.MULTIPART_FORM_DATA)
-            .body(BodyInserters.fromMultipartData(multipartBody(mapOf("body" to body), files)))
+            .body(BodyInserters.fromMultipartData(multipartBody(body?.let { mapOf("body" to it) } ?: emptyMap(), files)))
             .retrieve()
             .onStatus({ it.isError }, { it.createException() })
             .bodyToMono<MessageDto>()
             .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to add agent message to ticket $ticketId") }
     }
 
-    override suspend fun closeAdminTicket(token: String, ticketId: String): TicketDetailDto {
+    override suspend fun closeAdminTicket(token: String, ticketId: String, language: String?): TicketDetailDto {
         return webClient.post()
-            .uri("$baseUrl/v1/admin/support/tickets/$ticketId/close")
+            .uri("$baseUrl/v1/admin/support/tickets/$ticketId/close") {
+                if (language != null) it.queryParam("language", language)
+                it.build()
+            }
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .retrieve()
