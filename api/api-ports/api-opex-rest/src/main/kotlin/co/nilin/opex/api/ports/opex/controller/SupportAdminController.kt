@@ -8,6 +8,7 @@ import co.nilin.opex.api.core.spi.SupportProxy
 import co.nilin.opex.api.ports.opex.service.OwnerNameResolver
 import co.nilin.opex.api.ports.opex.util.jwtAuthentication
 import co.nilin.opex.api.ports.opex.util.tokenValue
+import co.nilin.opex.api.ports.opex.util.withOwnerNames
 import co.nilin.opex.api.ports.opex.util.withSenderNames
 import co.nilin.opex.common.data.UserLanguage
 import co.nilin.opex.common.utils.LanguageUtils.getUserLanguage
@@ -80,7 +81,7 @@ Allowed values:
         @Parameter(name = "limit", description = "Page size.", required = false)
         @RequestParam(defaultValue = "20") limit: Int
     ): AdminTicketListResponse {
-        return supportProxy.getAdminTickets(
+        val response = supportProxy.getAdminTickets(
             securityContext.jwtAuthentication().tokenValue(),
             status,
             userId,
@@ -90,6 +91,7 @@ Allowed values:
             ticketNumber,
             subjectCode
         )
+        return ownerNameResolver.withOwnerNames(response)
     }
 
     @GetMapping("/tickets/{ticketNumber}", produces = [MediaType.APPLICATION_JSON_VALUE])
