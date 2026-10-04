@@ -7,8 +7,10 @@ import co.nilin.opex.api.core.inout.TicketListResponse
 import co.nilin.opex.api.core.inout.TicketSubjectsResponse
 import co.nilin.opex.api.core.spi.StorageProxy
 import co.nilin.opex.api.core.spi.SupportProxy
+import co.nilin.opex.api.ports.opex.service.OwnerNameResolver
 import co.nilin.opex.api.ports.opex.util.jwtAuthentication
 import co.nilin.opex.api.ports.opex.util.tokenValue
+import co.nilin.opex.api.ports.opex.util.withSenderNames
 import co.nilin.opex.common.data.UserLanguage
 import co.nilin.opex.common.utils.LanguageUtils.getUserLanguage
 import io.swagger.v3.oas.annotations.Operation
@@ -34,6 +36,7 @@ import reactor.core.publisher.Flux
 class SupportController(
     private val supportProxy: SupportProxy,
     private val storageProxy: StorageProxy,
+    private val ownerNameResolver: OwnerNameResolver,
     @Value("\${app.support.attachments-bucket}")
     private val attachmentsBucket: String
 ) {
@@ -102,13 +105,15 @@ Behavior: Multipart create. `subjectCode` and `message` are required. `files` is
         @Parameter(name = "files", description = "Optional attachments.", required = false)
         @RequestPart(value = "files", required = false) files: Flux<FilePart>
     ): TicketDetailDto {
-        return supportProxy.createTicket(securityContext.jwtAuthentication().tokenValue(), subjectCode, message, files, resolveLanguage())
+        val token = securityContext.jwtAuthentication().tokenValue()
+        val ticket = supportProxy.createTicket(token, subjectCode, message, files, resolveLanguage())
+        return ownerNameResolver.withSenderNames(token, ticket)
     }
 
-    @GetMapping("/tickets/{ticketId}", produces = [MediaType.APPLICATION_JSON_VALUE])
+    @GetMapping("/tickets/{ticketNumber}", produces = [MediaType.APPLICATION_JSON_VALUE])
     @Operation(
         summary = "Get ticket",
-        description = """GET /opex/v1/support/tickets/{ticketId}.
+        description = """GET /opex/v1/support/tickets/{ticketNumber}.
 Security: Bearer user-token required. Requires authenticated user JWT.
 Behavior: Returns the ticket detail if it belongs to the caller.""",
         security = [SecurityRequirement(name = "bearerAuth")],
@@ -128,20 +133,22 @@ Behavior: Returns the ticket detail if it belongs to the caller.""",
     suspend fun getTicket(
         @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext,
-        @Parameter(name = "ticketId", description = "Ticket number.", required = true)
-        @PathVariable ticketId: String
+        @Parameter(name = "ticketNumber", description = "Ticket number.", required = true)
+        @PathVariable ticketNumber: String
     ): TicketDetailDto {
-        return supportProxy.getTicket(securityContext.jwtAuthentication().tokenValue(), ticketId, resolveLanguage())
+        val token = securityContext.jwtAuthentication().tokenValue()
+        val ticket = supportProxy.getTicket(token, ticketNumber, resolveLanguage())
+        return ownerNameResolver.withSenderNames(token, ticket)
     }
 
     @PostMapping(
-        "/tickets/{ticketId}/messages",
+        "/tickets/{ticketNumber}/messages",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
         produces = [MediaType.APPLICATION_JSON_VALUE]
     )
     @Operation(
         summary = "Add message",
-        description = """POST /opex/v1/support/tickets/{ticketId}/messages.
+        description = """POST /opex/v1/support/tickets/{ticketNumber}/messages.
 Security: Bearer user-token required. Requires authenticated user JWT.
 Behavior: Multipart reply. `body` is optional when at least one file is attached. `files` is optional and may contain multiple attachments.""",
         security = [SecurityRequirement(name = "bearerAuth")],
@@ -161,20 +168,22 @@ Behavior: Multipart reply. `body` is optional when at least one file is attached
     suspend fun addTicketMessage(
         @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext,
-        @Parameter(name = "ticketId", description = "Ticket number.", required = true)
-        @PathVariable ticketId: String,
+        @Parameter(name = "ticketNumber", description = "Ticket number.", required = true)
+        @PathVariable ticketNumber: String,
         @Parameter(name = "body", description = "Message body.", required = false)
         @RequestPart(value = "body", required = false) body: String?,
         @Parameter(name = "files", description = "Optional attachments.", required = false)
         @RequestPart(value = "files", required = false) files: Flux<FilePart>
     ): MessageDto {
-        return supportProxy.addUserTicketMessage(securityContext.jwtAuthentication().tokenValue(), ticketId, body, files)
+        val token = securityContext.jwtAuthentication().tokenValue()
+        val message = supportProxy.addUserTicketMessage(token, ticketNumber, body, files)
+        return ownerNameResolver.withSenderNames(token, message)
     }
 
-    @PostMapping("/tickets/{ticketId}/close", produces = [MediaType.APPLICATION_JSON_VALUE])
+    @PostMapping("/tickets/{ticketNumber}/close", produces = [MediaType.APPLICATION_JSON_VALUE])
     @Operation(
         summary = "Close ticket",
-        description = """POST /opex/v1/support/tickets/{ticketId}/close.
+        description = """POST /opex/v1/support/tickets/{ticketNumber}/close.
 Security: Bearer user-token required. Requires authenticated user JWT.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
@@ -193,16 +202,18 @@ Security: Bearer user-token required. Requires authenticated user JWT.""",
     suspend fun closeTicket(
         @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext,
-        @Parameter(name = "ticketId", description = "Ticket number.", required = true)
-        @PathVariable ticketId: String
+        @Parameter(name = "ticketNumber", description = "Ticket number.", required = true)
+        @PathVariable ticketNumber: String
     ): TicketDetailDto {
-        return supportProxy.closeTicket(securityContext.jwtAuthentication().tokenValue(), ticketId, resolveLanguage())
+        val token = securityContext.jwtAuthentication().tokenValue()
+        val ticket = supportProxy.closeTicket(token, ticketNumber, resolveLanguage())
+        return ownerNameResolver.withSenderNames(token, ticket)
     }
 
-    @PostMapping("/tickets/{ticketId}/rating", produces = [MediaType.APPLICATION_JSON_VALUE])
+    @PostMapping("/tickets/{ticketNumber}/rating", produces = [MediaType.APPLICATION_JSON_VALUE])
     @Operation(
         summary = "Rate ticket",
-        description = """POST /opex/v1/support/tickets/{ticketId}/rating.
+        description = """POST /opex/v1/support/tickets/{ticketNumber}/rating.
 Security: Bearer user-token required. Requires authenticated user JWT.
 Behavior: Rates a closed ticket once. `rating` must be between 1 and 5.""",
         security = [SecurityRequirement(name = "bearerAuth")],
@@ -222,11 +233,13 @@ Behavior: Rates a closed ticket once. `rating` must be between 1 and 5.""",
     suspend fun rateTicket(
         @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext,
-        @Parameter(name = "ticketId", description = "Ticket number.", required = true)
-        @PathVariable ticketId: String,
+        @Parameter(name = "ticketNumber", description = "Ticket number.", required = true)
+        @PathVariable ticketNumber: String,
         @RequestBody request: RateTicketRequest
     ): TicketDetailDto {
-        return supportProxy.rateTicket(securityContext.jwtAuthentication().tokenValue(), ticketId, request.rating, resolveLanguage())
+        val token = securityContext.jwtAuthentication().tokenValue()
+        val ticket = supportProxy.rateTicket(token, ticketNumber, request.rating, resolveLanguage())
+        return ownerNameResolver.withSenderNames(token, ticket)
     }
 
     @GetMapping("/subjects", produces = [MediaType.APPLICATION_JSON_VALUE])

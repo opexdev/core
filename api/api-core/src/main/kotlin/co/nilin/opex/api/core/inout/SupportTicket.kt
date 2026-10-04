@@ -7,7 +7,7 @@ enum class ConversationStatus {
 }
 
 enum class SenderType {
-    USER, AGENT
+    USER, ADMIN
 }
 
 data class AttachmentDto(
@@ -24,7 +24,8 @@ data class MessageDto(
     val senderId: String,
     val body: String,
     val createdAt: LocalDateTime,
-    val attachments: List<AttachmentDto>
+    val attachments: List<AttachmentDto>,
+    val senderName: String? = null
 )
 
 data class TicketDetailDto(

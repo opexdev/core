@@ -128,7 +128,7 @@ app:
   opex-bc-gateway:
     url: http://opex-bc-gateway
   storage:
-    url: http://storage
+    url: http://opex-storage
   support:
     url: http://opex-support
     attachments-bucket: ${SUPPORT_ATTACHMENTS_BUCKET:opex-support-attachments}
