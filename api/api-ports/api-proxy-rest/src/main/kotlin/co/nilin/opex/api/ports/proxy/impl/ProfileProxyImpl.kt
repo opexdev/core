@@ -114,12 +114,11 @@ class ProfileProxyImpl(@Qualifier("generalWebClient") private val webClient: Web
             .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to update profile approval request ${request.id}") }
     }
 
-    override suspend fun resolveUsers(token: String, request: ResolveUsersRequest): Map<String, String?> {
+    override suspend fun resolveUsers(request: ResolveUsersRequest): Map<String, String?> {
         return try {
             webClient.post()
                 .uri("$baseUrl/admin/profile/users/resolve")
                 .accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
                 .body(Mono.just(request))
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })

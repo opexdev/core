@@ -107,7 +107,7 @@ Behavior: Multipart create. `subjectCode` and `message` are required. `files` is
     ): TicketDetailDto {
         val token = securityContext.jwtAuthentication().tokenValue()
         val ticket = supportProxy.createTicket(token, subjectCode, message, files, resolveLanguage())
-        return ownerNameResolver.withSenderNames(token, ticket)
+        return ownerNameResolver.withSenderNames(ticket)
     }
 
     @GetMapping("/tickets/{ticketNumber}", produces = [MediaType.APPLICATION_JSON_VALUE])
@@ -138,7 +138,7 @@ Behavior: Returns the ticket detail if it belongs to the caller.""",
     ): TicketDetailDto {
         val token = securityContext.jwtAuthentication().tokenValue()
         val ticket = supportProxy.getTicket(token, ticketNumber, resolveLanguage())
-        return ownerNameResolver.withSenderNames(token, ticket)
+        return ownerNameResolver.withSenderNames(ticket)
     }
 
     @PostMapping(
@@ -177,7 +177,7 @@ Behavior: Multipart reply. `body` is optional when at least one file is attached
     ): MessageDto {
         val token = securityContext.jwtAuthentication().tokenValue()
         val message = supportProxy.addUserTicketMessage(token, ticketNumber, body, files)
-        return ownerNameResolver.withSenderNames(token, message)
+        return ownerNameResolver.withSenderNames(message)
     }
 
     @PostMapping("/tickets/{ticketNumber}/close", produces = [MediaType.APPLICATION_JSON_VALUE])
@@ -207,7 +207,7 @@ Security: Bearer user-token required. Requires authenticated user JWT.""",
     ): TicketDetailDto {
         val token = securityContext.jwtAuthentication().tokenValue()
         val ticket = supportProxy.closeTicket(token, ticketNumber, resolveLanguage())
-        return ownerNameResolver.withSenderNames(token, ticket)
+        return ownerNameResolver.withSenderNames(ticket)
     }
 
     @PostMapping("/tickets/{ticketNumber}/rating", produces = [MediaType.APPLICATION_JSON_VALUE])
@@ -239,7 +239,7 @@ Behavior: Rates a closed ticket once. `rating` must be between 1 and 5.""",
     ): TicketDetailDto {
         val token = securityContext.jwtAuthentication().tokenValue()
         val ticket = supportProxy.rateTicket(token, ticketNumber, request.rating, resolveLanguage())
-        return ownerNameResolver.withSenderNames(token, ticket)
+        return ownerNameResolver.withSenderNames(ticket)
     }
 
     @GetMapping("/subjects", produces = [MediaType.APPLICATION_JSON_VALUE])

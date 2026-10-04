@@ -3,6 +3,7 @@ package co.nilin.opex.wallet.ports.proxy.profile.impl
 import co.nilin.opex.wallet.core.inout.profile.Profile
 import co.nilin.opex.wallet.core.spi.ProfileProxy
 import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -48,5 +49,15 @@ class ProfileProxyImpl(private val webClient: WebClient) : ProfileProxy {
             .onStatus({ it.isError }, { it.createException() })
             .bodyToMono(Boolean::class.java)
             .awaitFirst()
+    }
+
+    override suspend fun findAccountOwner(accountNumber: String): String? {
+        return webClient.get()
+            .uri("$baseUrl/bank-account/owner?accountNumber=$accountNumber")
+            .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+            .retrieve()
+            .onStatus({ it.isError }, { it.createException() })
+            .bodyToMono(String::class.java)
+            .awaitFirstOrNull()
     }
 }

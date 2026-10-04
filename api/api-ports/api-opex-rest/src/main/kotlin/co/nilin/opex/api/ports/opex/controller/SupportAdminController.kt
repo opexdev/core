@@ -124,7 +124,7 @@ Security: Bearer admin-token required. Required authority: ROLE_admin.""",
     ): TicketDetailDto {
         val token = securityContext.jwtAuthentication().tokenValue()
         val ticket = supportProxy.getAdminTicket(token, ticketNumber, resolveLanguage())
-        return ownerNameResolver.withSenderNames(token, ticket)
+        return ownerNameResolver.withSenderNames(ticket)
     }
 
     @PostMapping(
@@ -168,7 +168,7 @@ Behavior: Multipart reply. `body` is optional when at least one file is attached
     ): MessageDto {
         val token = securityContext.jwtAuthentication().tokenValue()
         val message = supportProxy.addAgentTicketMessage(token, ticketNumber, body, files)
-        return ownerNameResolver.withSenderNames(token, message)
+        return ownerNameResolver.withSenderNames(message)
     }
 
     @PostMapping("/tickets/{ticketNumber}/close", produces = [MediaType.APPLICATION_JSON_VALUE])
@@ -203,6 +203,6 @@ Security: Bearer admin-token required. Required authority: ROLE_admin.""",
     ): TicketDetailDto {
         val token = securityContext.jwtAuthentication().tokenValue()
         val ticket = supportProxy.closeAdminTicket(token, ticketNumber, resolveLanguage())
-        return ownerNameResolver.withSenderNames(token, ticket)
+        return ownerNameResolver.withSenderNames(ticket)
     }
 }
