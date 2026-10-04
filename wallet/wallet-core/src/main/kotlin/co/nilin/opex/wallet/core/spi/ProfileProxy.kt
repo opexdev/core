@@ -12,4 +12,6 @@ interface ProfileProxy {
         cardNumber: String? = null,
         iban: String? = null,
     ): Boolean
+
+    suspend fun findAccountOwner(accountNumber: String): String?
 }
