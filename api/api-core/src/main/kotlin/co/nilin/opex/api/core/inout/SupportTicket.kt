@@ -61,7 +61,8 @@ data class AdminTicketSummaryDto(
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
     val rating: Int?,
-    val ratedAt: LocalDateTime?
+    val ratedAt: LocalDateTime?,
+    val userFullName: String? = null
 )
 
 data class TicketListResponse(val total: Long, val tickets: List<TicketSummaryDto>)
