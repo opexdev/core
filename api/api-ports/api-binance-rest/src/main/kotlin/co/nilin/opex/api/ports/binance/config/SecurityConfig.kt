@@ -116,6 +116,7 @@ class SecurityConfig(
                     .pathMatchers("/opex/v1/support/**").authenticated()
                     .pathMatchers("/opex/v1/web/config/**").permitAll()
                     .pathMatchers("/opex/v1/user-level/config/**").permitAll()
+                    .pathMatchers("/opex/v1/page-messages/**").permitAll()
                     .pathMatchers("/opex/v1/user/config/**").authenticated()
                     .pathMatchers("/opex/v1/admin/**").hasAuthority("ROLE_admin")
                     .pathMatchers("/opex/v1/deposit/**").hasAuthority("PERM_deposit:write")
