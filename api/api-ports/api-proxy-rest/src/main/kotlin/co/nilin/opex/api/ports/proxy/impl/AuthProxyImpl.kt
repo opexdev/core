@@ -324,4 +324,47 @@ class AuthProxyImpl(@Qualifier("generalWebClient") private val webClient: WebCli
             }
             .awaitBodilessEntity()
     }
+
+    override suspend fun requestChangePassword(
+        request: ChangePasswordRequest,
+        token: String
+    ): ChangePasswordResponse {
+        return webClient.post()
+            .uri("$baseUrl/v1/user/password/change")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<ChangePasswordResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to request change password") }
+    }
+
+    override suspend fun resendChangePasswordOtp(
+        request: ResendChangePasswordOtpRequest,
+        token: String
+    ): ResendOtpResponse {
+        return webClient.post()
+            .uri("$baseUrl/v1/user/password/change/resend-otp")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<ResendOtpResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to resend change password otp") }
+    }
+
+    override suspend fun confirmChangePassword(request: ConfirmChangePasswordRequest, token: String) {
+        webClient.post()
+            .uri("$baseUrl/v1/user/password/change/confirm")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ it.isError }) { response ->
+                response.createException()
+            }
+            .awaitBodilessEntity()
+    }
 }
