@@ -6,9 +6,8 @@ import co.nilin.opex.device.core.spi.DevicePersister
 import co.nilin.opex.device.ports.postgres.dao.DeviceRepository
 import co.nilin.opex.device.ports.postgres.utils.toDto
 import co.nilin.opex.device.ports.postgres.utils.toModel
-
-import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
@@ -29,7 +28,12 @@ class DeviceManagerImpl(
                     os = device.os,
                     osVersion = device.osVersion,
                     appVersion = device.appVersion,
+                    brand = device.brand,
+                    model = device.model,
+                    platform = device.platform,
+                    agent = device.agent,
                     pushToken = device.pushToken,
+                    buildNumber = device.buildNumber,
                     lastUpdateDate = now
                 )
             ).awaitFirst()

@@ -15,8 +15,13 @@ fun Device.toModel(): DeviceModel {
         os = os,
         osVersion = osVersion,
         appVersion = appVersion,
+        brand = brand,
+        model = model,
+        platform = platform,
+        agent = agent,
         pushToken = pushToken,
-        creteDate = createDate ?: LocalDateTime.now(),
+        buildNumber = buildNumber,
+        createDate = createDate ?: LocalDateTime.now(),
         lastUpdateDate = lastUpdateDate ?: LocalDateTime.now()
     )
 }
@@ -28,8 +33,13 @@ fun DeviceModel.toDto(): Device {
         os = os,
         osVersion = osVersion,
         appVersion = appVersion,
+        brand = brand,
+        model = model,
+        platform = platform,
+        agent = agent,
         pushToken = pushToken,
-        createDate = creteDate,
+        buildNumber = buildNumber,
+        createDate = createDate,
         lastUpdateDate = lastUpdateDate
     )
 }
@@ -57,6 +67,7 @@ fun Session.toModel(): SessionModel {
         sessionState = sessionState,
         userId = userId,
         deviceId = deviceId,
+        ipAddress = ipAddress,
         status = status,
         createDate = createDate ?: LocalDateTime.now(),
         expireDate = expireDate
@@ -68,6 +79,7 @@ fun SessionModel.toDto(): Session {
         sessionState = sessionState,
         userId = userId,
         deviceId = deviceId,
+        ipAddress = ipAddress,
         status = status,
         createDate = createDate,
         expireDate = expireDate

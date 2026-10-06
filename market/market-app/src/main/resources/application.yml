@@ -11,14 +11,14 @@ spring:
     consumer:
       group-id: market
   r2dbc:
-    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
+    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/${DB_NAME:opex}
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
     initialization-mode: always
   cache:
     type: redis
   redis:
-    host: redis-cache
+    host: ${REDIS_HOST:redis-cache}
     port: 6379
   cloud:
     bootstrap:
@@ -43,8 +43,6 @@ spring:
         instance-id: ${spring.application.name}:${server.port}
         healthCheckInterval: 20s
         prefer-ip-address: true
-  config:
-    import: vault://secret/${spring.application.name}
 management:
   endpoints:
     web:
@@ -100,3 +98,9 @@ app:
     enabled: ${CUSTOM_USER_LANGUAGE_ENABLED:false}
 swagger:
   authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token}
+---
+spring:
+  config:
+    activate:
+      on-profile: '!no-vault'
+    import: optional:vault://secret/${spring.application.name}

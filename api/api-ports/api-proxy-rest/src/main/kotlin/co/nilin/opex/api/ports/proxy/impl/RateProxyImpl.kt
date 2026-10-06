@@ -121,6 +121,41 @@ class RateProxyImpl(@Qualifier("generalWebClient") private val webClient: WebCli
         }
     }
 
+    // Forbidden swap pairs
+    override suspend fun addForbiddenSwapPair(token: String, request: CurrencyPair) {
+        withContext(ProxyDispatchers.wallet) {
+            webClient.post()
+                    .uri("$baseUrl/otc/forbidden-swap-pairs")
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(Mono.just(request))
+                    .retrieve()
+                    .toBodilessEntity()
+                    .awaitFirstOrElse { null }
+        }
+    }
+
+    override suspend fun deleteForbiddenSwapPair(token: String, sourceSymbol: String, destSymbol: String): ForbiddenSwapPairs {
+        return withContext(ProxyDispatchers.wallet) {
+            webClient.delete()
+                    .uri("$baseUrl/otc/forbidden-swap-pairs/$sourceSymbol/$destSymbol")
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+                    .retrieve()
+                    .bodyToMono<ForbiddenSwapPairs>()
+                    .awaitSingle()
+        }
+    }
+
+    override suspend fun fetchForbiddenSwapPairs(): ForbiddenSwapPairs {
+        return withContext(ProxyDispatchers.wallet) {
+            webClient.get()
+                    .uri("$baseUrl/otc/forbidden-swap-pairs")
+                    .retrieve()
+                    .bodyToMono<ForbiddenSwapPairs>()
+                    .awaitSingle()
+        }
+    }
+
     // Transitive symbols
     override suspend fun addTransitiveSymbols(token: String, symbols: Symbols) {
         withContext(ProxyDispatchers.wallet) {

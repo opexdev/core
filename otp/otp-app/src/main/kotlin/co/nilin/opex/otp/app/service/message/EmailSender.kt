@@ -1,13 +1,17 @@
 package co.nilin.opex.otp.app.service.message
 
+import co.nilin.opex.common.data.UserLanguage
+import co.nilin.opex.common.utils.LanguageUtils.getUserLanguage
 import co.nilin.opex.common.utils.LoggerDelegate
 import jakarta.mail.Message
 import jakarta.mail.Session
 import jakarta.mail.internet.InternetAddress
 import jakarta.mail.internet.MimeMessage
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Component
-import java.util.Properties
+import java.util.*
 
 @Component
 class EmailSender(
@@ -33,10 +37,19 @@ class EmailSender(
     private val proxyHost: String?,
 
     @Value("\${otp.email.proxy.port}")
-    private val proxyPort: String?
+    private val proxyPort: String?,
+
+    @Value("\${app.name}")
+    private val appName: String
 ) : MessageSender {
 
     private val logger by LoggerDelegate()
+
+    private val templateEn: String by lazy { loadTemplate("templates/otp-email.html") }
+    private val templateFa: String by lazy { loadTemplate("templates/otp-email-fa.html") }
+
+    private fun loadTemplate(path: String): String =
+        ClassPathResource(path).inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
 
     override suspend fun send(
         receiver: String,
@@ -45,9 +58,14 @@ class EmailSender(
     ): Boolean {
 
         val subject = "Your otp code"
+        val code = metadata["code"]?.toString() ?: message
+        val language = UserLanguage.safeValueOf(getUserLanguage().awaitSingleOrNull())
+        val template = if (language == UserLanguage.FA) templateFa else templateEn
+        val body = template
+            .replace("{{OTP}}", code)
+            .replace("{{APP_NAME}}", appName)
 
         try {
-            // 🔥 SOCKS must be JVM-level (NOT JavaMail props)
             if (proxyEnabled) {
                 System.setProperty("socksProxyHost", proxyHost)
                 System.setProperty("socksProxyPort", proxyPort)
@@ -71,12 +89,12 @@ class EmailSender(
             }
 
             val session = Session.getInstance(props)
-            session.debug=true
+            session.debug = true
             val msg = MimeMessage(session).apply {
                 setSubject(subject)
-                setFrom(InternetAddress(fromAddress ))
+                setFrom(InternetAddress(fromAddress))
                 addRecipient(Message.RecipientType.TO, InternetAddress(receiver))
-                setContent(message, "text/html; charset=utf-8")
+                setContent(body, "text/html; charset=utf-8")
             }
 
             session.getTransport("smtp").use { transport ->

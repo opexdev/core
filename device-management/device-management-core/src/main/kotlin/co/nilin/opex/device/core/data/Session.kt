@@ -6,6 +6,7 @@ data class Session(
     val sessionState: String,
     val userId: String,
     val deviceId: Long,
+    val ipAddress: String? = null,
     val status: SessionStatus = SessionStatus.ACTIVE,
     val createDate: LocalDateTime? = LocalDateTime.now(),
     val expireDate: LocalDateTime?

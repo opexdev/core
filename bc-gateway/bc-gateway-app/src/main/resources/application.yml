@@ -11,7 +11,7 @@ spring:
     consumer:
       group-id: bc-gateway
   r2dbc:
-    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
+    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/${DB_NAME:opex}
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
     initialization-mode: always
@@ -24,7 +24,7 @@ spring:
       max-create-connection-time: 10s
       validation-query: SELECT 1
   datasource:
-    url: jdbc:postgresql://${DB_IP_PORT:localhost}/opex
+    url: jdbc:postgresql://${DB_IP_PORT:localhost}/${DB_NAME:opex}
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
   cloud:
@@ -51,8 +51,6 @@ spring:
         instance-id: ${spring.application.name}:${server.port}
         healthCheckInterval: 20s
         prefer-ip-address: true
-  config:
-    import: vault://secret/${spring.application.name}
   codec:
     max-in-memory-size: 20MB
 management:
@@ -130,4 +128,9 @@ app:
     enabled: ${CUSTOM_USER_LANGUAGE_ENABLED:false}
 swagger:
   authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token}
-
+---
+spring:
+  config:
+    activate:
+      on-profile: '!no-vault'
+    import: optional:vault://secret/${spring.application.name}

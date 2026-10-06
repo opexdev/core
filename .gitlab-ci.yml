@@ -1,0 +1,18 @@
+variables:
+  DOCKERFILE: Dockerfile
+  STACK_NAME: opex
+  COMMIT_BRANCH_NAME: 'main'
+  PROJECT_NAME: core
+  REGISTRY: reg.dorost.com
+  IMAGE: $REGISTRY/$STACK_NAME/$PROJECT_NAME
+  RUNNER: shared
+  LVL: default
+  PRJS: "api,accountant,auth-gateway,bc-gateway,device-management,eventlog,market,matching-engine,otp,profile,wallet"
+
+include:
+  - project: "devops/pipeline-as-code"
+    ref: "main"
+    file:
+      - "templates/build-docker-image-multi.yml"
+stages:
+  - build

@@ -7,7 +7,7 @@ spring:
     allow-bean-definition-overriding: true
     allow-circular-references: true
   r2dbc:
-    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
+    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/${DB_NAME:opex}
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
 #    initialization-mode: always
@@ -18,7 +18,7 @@ spring:
       max-idle-time: 60s
       validation-query: SELECT 1
   datasource:
-    url: jdbc:postgresql://${DB_IP_PORT:localhost}/opex
+    url: jdbc:postgresql://${DB_IP_PORT:localhost}/${DB_NAME:opex}
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
   cache:
@@ -47,12 +47,10 @@ spring:
         instance-id: ${spring.application.name}:${server.port}
         healthCheckInterval: 20s
         prefer-ip-address: true
-  config:
-    import: vault://secret/${spring.application.name}
   data:
     redis:
       port: 6379
-      host: redis-cache
+      host: ${REDIS_HOST:redis-cache}
 management:
   endpoints:
     web:
@@ -123,12 +121,17 @@ app:
     url: http://opex-matching-gateway
   wallet:
     url: http://opex-wallet
+  price-management:
+    url: http://opex-price-management
   market:
     url: http://opex-market
   opex-bc-gateway:
     url: http://opex-bc-gateway
   storage:
-    url: http://storage
+    url: http://opex-storage
+  support:
+    url: http://opex-support
+    attachments-bucket: ${SUPPORT_ATTACHMENTS_BUCKET:opex-support-attachments}
   config:
     url: http://opex-config
   auth-gateway:
@@ -195,3 +198,9 @@ springdoc:
     display-request-duration: true
     operations-sorter: method
     tags-sorter: alpha
+---
+spring:
+  config:
+    activate:
+      on-profile: '!no-vault'
+    import: optional:vault://secret/${spring.application.name}

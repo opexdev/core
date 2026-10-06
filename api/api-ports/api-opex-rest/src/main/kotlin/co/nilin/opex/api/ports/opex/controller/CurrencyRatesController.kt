@@ -4,6 +4,7 @@ import co.nilin.opex.api.core.inout.otc.CurrencyExchangeRatesResponse
 import co.nilin.opex.api.core.inout.otc.CurrencyPair
 import co.nilin.opex.api.core.inout.otc.CurrencyPrice
 import co.nilin.opex.api.core.inout.otc.ForbiddenPairs
+import co.nilin.opex.api.core.inout.otc.ForbiddenSwapPairs
 import co.nilin.opex.api.core.inout.otc.Rate
 import co.nilin.opex.api.core.inout.otc.Rates
 import co.nilin.opex.api.core.inout.otc.SetCurrencyExchangeRateRequest
@@ -434,6 +435,149 @@ Response body: ForbiddenPairs.""",
     )
     suspend fun fetchForbiddenPairs(): ForbiddenPairs {
         return rateProxy.fetchForbiddenPairs()
+    }
+
+    @PostMapping("/forbidden-swap-pairs")
+    @Operation(
+        tags = ["OTC Forbidden Swap Pairs"],
+        summary = "Add forbidden OTC swap pair",
+        description = """Adds a forbidden OTC swap currency pair.
+
+Required authentication:
+- Bearer admin-token is required.
+- Required role: ROLE_admin.
+
+Validation:
+- `sourceSymbol` and `destSymbol` must be different.
+
+Request body: CurrencyPair.""",
+        security = [SecurityRequirement(name = "bearerAuth")],
+        requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
+            required = true,
+            description = "Forbidden OTC swap pair payload.",
+            content = [
+                Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = CurrencyPair::class)
+                )
+            ]
+        ),
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Forbidden swap pair added successfully. No response body.",
+                content = [Content()]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.",
+                content = [Content()]
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "Forbidden. Required role is missing: ROLE_admin. No response body.",
+                content = [Content()]
+            )
+        ]
+    )
+    suspend fun addForbiddenSwapPair(
+        @Parameter(hidden = true)
+        @CurrentSecurityContext securityContext: SecurityContext,
+        @RequestBody request: CurrencyPair
+    ) {
+        request.validate()
+        rateProxy.addForbiddenSwapPair(securityContext.jwtAuthentication().tokenValue(), request)
+    }
+
+    @DeleteMapping("/forbidden-swap-pairs/{sourceSymbol}/{destSymbol}")
+    @Operation(
+        tags = ["OTC Forbidden Swap Pairs"],
+        summary = "Delete forbidden OTC swap pair",
+        description = """Deletes one forbidden OTC swap currency pair.
+
+Required authentication:
+- Bearer admin-token is required.
+- Required role: ROLE_admin.
+
+Path parameters:
+
+Response body: ForbiddenSwapPairs.""",
+        security = [SecurityRequirement(name = "bearerAuth")],
+        parameters = [
+            Parameter(
+                name = "sourceSymbol",
+                `in` = ParameterIn.PATH,
+                required = true,
+                description = "Source currency symbol.",
+                example = "BTC",
+                schema = Schema(type = "string")
+            ),
+            Parameter(
+                name = "destSymbol",
+                `in` = ParameterIn.PATH,
+                required = true,
+                description = "Destination currency symbol.",
+                example = "ETH",
+                schema = Schema(type = "string")
+            )
+        ],
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Forbidden swap pair deleted successfully.",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = ForbiddenSwapPairs::class)
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.",
+                content = [Content()]
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "Forbidden. Required role is missing: ROLE_admin. No response body.",
+                content = [Content()]
+            )
+        ]
+    )
+    suspend fun deleteForbiddenSwapPair(
+        @Parameter(hidden = true)
+        @CurrentSecurityContext securityContext: SecurityContext,
+        @PathVariable sourceSymbol: String,
+        @PathVariable destSymbol: String
+    ): ForbiddenSwapPairs {
+        return rateProxy.deleteForbiddenSwapPair(securityContext.jwtAuthentication().tokenValue(), sourceSymbol, destSymbol)
+    }
+
+    @GetMapping("/forbidden-swap-pairs")
+    @Operation(
+        tags = ["OTC Forbidden Swap Pairs"],
+        summary = "List forbidden OTC swap pairs",
+        description = """Returns forbidden OTC swap currency pairs.
+
+Authentication:
+- Public endpoint. No Bearer token is required.
+
+Response body: ForbiddenSwapPairs.""",
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Forbidden OTC swap pairs returned successfully.",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = ForbiddenSwapPairs::class)
+                    )
+                ]
+            )
+        ]
+    )
+    suspend fun fetchForbiddenSwapPairs(): ForbiddenSwapPairs {
+        return rateProxy.fetchForbiddenSwapPairs()
     }
 
     // Transitive symbols

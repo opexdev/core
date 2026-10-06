@@ -19,7 +19,7 @@ class OwnerNameResolver(
     private val cache = ConcurrentHashMap<String, CacheEntry>()
     private val ttl: Duration = Duration.ofDays(1)
 
-    suspend fun resolve(token: String, uuids: Set<String>): Map<String, String?> {
+    suspend fun resolve(uuids: Set<String>): Map<String, String?> {
         if (uuids.isEmpty()) return emptyMap()
 
         val now = Instant.now().toEpochMilli()
@@ -37,7 +37,7 @@ class OwnerNameResolver(
 
         if (missing.isNotEmpty()) {
             try {
-                val result = profileProxy.resolveUsers(token, ResolveUsersRequest(missing))
+                val result = profileProxy.resolveUsers(ResolveUsersRequest(missing))
                 val expiry = Instant.now().plus(ttl).toEpochMilli()
                 result.filter { (uuid, name) -> name != null }.forEach { (uuid, name) ->
                     cache[uuid] = CacheEntry(name, expiry)

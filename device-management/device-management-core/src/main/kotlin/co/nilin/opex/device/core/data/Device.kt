@@ -9,8 +9,12 @@ data class Device(
     val os: Os? = null,
     val osVersion: String? = null,
     val appVersion: String? = null,
+    val brand: String? = null,
+    val model: String? = null,
+    val platform: Platform? = null,
+    val agent: String? = null,
     val pushToken: String? = null,
-    val createDate: LocalDateTime?= LocalDateTime.now(),
-    val lastUpdateDate: LocalDateTime?= LocalDateTime.now()
-
+    val buildNumber: Int? = null,
+    val createDate: LocalDateTime? = LocalDateTime.now(),
+    val lastUpdateDate: LocalDateTime? = LocalDateTime.now()
 )

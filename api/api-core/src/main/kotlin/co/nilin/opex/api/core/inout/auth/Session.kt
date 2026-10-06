@@ -9,6 +9,7 @@ data class Sessions(
     val appVersion: String?,
     val firstLoginDate: LocalDateTime?,
     val lastLoginDate: LocalDateTime?,
+    val ipAddress: String?,
     val sessionState: String?,
     val sessionStatus: SessionStatus?,
     val sessionCreateDate: LocalDateTime?,
@@ -23,5 +24,8 @@ enum class SessionStatus {
 }
 
 enum class Os {
-    ANDROID, IOS, MOBILE_WEB, DESKTOP_WEB
+    ANDROID, IOS,IPADOS, WINDOWS, MACOS,LINUX,CHROMEOS,OTHER,UNKNOWN
+}
+enum class Platform {
+    ANDROID_APP, IOS_APP, MOBILE_WEB, DESKTOP_WEB, TABLET_WEB,ADMIN_WEB
 }

@@ -14,12 +14,12 @@ spring:
     consumer:
       group-id: profile
   r2dbc:
-    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/opex
+    url: r2dbc:postgresql://${DB_IP_PORT:localhost}/${DB_NAME:opex}
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
     initialization-mode: always
   datasource:
-    url: jdbc:postgresql://${DB_IP_PORT:localhost}/opex
+    url: jdbc:postgresql://${DB_IP_PORT:localhost}/${DB_NAME:opex}
     username: ${dbusername:opex}
     password: ${dbpassword:hiopex}
   cloud:
@@ -46,8 +46,6 @@ spring:
         instance-id: ${spring.application.name}:${server.port}
         healthCheckInterval: 20s
         prefer-ip-address: true
-  config:
-    import: vault://secret/${spring.application.name}
 swagger.authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token
 app:
   admin-approval:
@@ -87,4 +85,9 @@ management:
       enabled: true
     prometheus:
       enabled: true
-
+---
+spring:
+  config:
+    activate:
+      on-profile: '!no-vault'
+    import: optional:vault://secret/${spring.application.name}

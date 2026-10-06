@@ -3,6 +3,7 @@ package co.nilin.opex.market.ports.postgres.impl
 import co.nilin.opex.common.utils.Interval
 import co.nilin.opex.common.utils.hours
 import co.nilin.opex.common.utils.minutes
+import co.nilin.opex.common.utils.seconds
 import co.nilin.opex.market.core.inout.*
 import co.nilin.opex.market.core.spi.MarketQueryHandler
 import co.nilin.opex.market.ports.postgres.dao.OrderRepository
@@ -21,7 +22,6 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.time.temporal.ChronoUnit
 import java.util.*
 
 
@@ -288,39 +288,34 @@ class MarketQueryHandlerImpl(
         endTime: Long?,
         limit: Int,
     ): List<CandleData> {
-        val intervalStep = parseIntervalStep(interval)
-        val latestTradeDate = if (startTime == null || endTime == null)
-            tradeRepository.findLastByCreateDate().awaitSingleOrNull()?.createDate
-        else
-            null
-        val fallbackDate = latestTradeDate ?: LocalDateTime.now()
-        val startDate = startTime?.asLocalDateTime() ?: when {
-            endTime != null -> shiftByIntervals(endTime.asLocalDateTime(), intervalStep, -(limit - 1).toLong())
-            else -> shiftByIntervals(fallbackDate, intervalStep, -(limit - 1).toLong())
+        val cacheKey = "candleInfo:${symbol.lowercase()}:$interval:${startTime ?: "-"}:${endTime ?: "-"}:$limit"
+        return redisCacheHelper.getOrElse(cacheKey, 5.minutes()) {
+            tradeRepository.candleData(
+                symbol,
+                interval,
+                startTime?.asLocalDateTime(),
+                endTime?.asLocalDateTime(),
+                LocalDateTime.now(),
+                limit,
+            )
+                .collectList()
+                .awaitFirstOrElse { emptyList() }
+                .map {
+                    CandleData(
+                        it.openTime,
+                        it.closeTime,
+                        it.open ?: BigDecimal.ZERO,
+                        it.close ?: BigDecimal.ZERO,
+                        it.high ?: BigDecimal.ZERO,
+                        it.low ?: BigDecimal.ZERO,
+                        it.volume ?: BigDecimal.ZERO,
+                        BigDecimal.ZERO,
+                        it.trades,
+                        BigDecimal.ZERO,
+                        BigDecimal.ZERO
+                    )
+                }
         }
-        val endDate = endTime?.asLocalDateTime() ?: when {
-            startTime != null -> shiftByIntervals(startDate, intervalStep, (limit - 1).toLong())
-            else -> fallbackDate
-        }
-
-        return tradeRepository.candleData(symbol, interval, startDate, endDate, limit)
-            .collectList()
-            .awaitFirstOrElse { emptyList() }
-            .map {
-                CandleData(
-                    it.openTime,
-                    it.closeTime,
-                    it.open ?: BigDecimal.ZERO,
-                    it.close ?: BigDecimal.ZERO,
-                    it.high ?: BigDecimal.ZERO,
-                    it.low ?: BigDecimal.ZERO,
-                    it.volume ?: BigDecimal.ZERO,
-                    BigDecimal.ZERO,
-                    it.trades,
-                    BigDecimal.ZERO,
-                    BigDecimal.ZERO
-                )
-            }
     }
 
     override suspend fun numberOfActiveUsers(interval: Interval): Long {
@@ -439,7 +434,7 @@ class MarketQueryHandlerImpl(
                     )
                 }
                     .onEach { redisCacheHelper.putListItem(cacheKey, it) }
-                    .also { redisCacheHelper.setExpiration(cacheKey, 1.hours()) }
+                    .also { redisCacheHelper.setExpiration(cacheKey, 5.minutes()) }
             }
     }
 
@@ -465,28 +460,6 @@ class MarketQueryHandlerImpl(
 
     private fun Long.asLocalDateTime(): LocalDateTime = with(Instant.ofEpochMilli(this)) {
         LocalDateTime.ofInstant(this, ZoneId.systemDefault())
-    }
-
-    private fun parseIntervalStep(interval: String): Pair<Long, ChronoUnit> {
-        val parts = interval.trim().split(Regex("\\s+"), limit = 2)
-        val amount = parts.firstOrNull()?.toLongOrNull()
-            ?: throw IllegalArgumentException("Invalid interval amount: $interval")
-        val unit = when (parts.getOrNull(1)?.uppercase(Locale.US)?.removeSuffix("S")) {
-            "MINUTE" -> ChronoUnit.MINUTES
-            "HOUR" -> ChronoUnit.HOURS
-            "DAY" -> ChronoUnit.DAYS
-            else -> throw IllegalArgumentException("Unsupported interval unit: $interval")
-        }
-        return amount to unit
-    }
-
-    private fun shiftByIntervals(
-        dateTime: LocalDateTime,
-        intervalStep: Pair<Long, ChronoUnit>,
-        intervals: Long,
-    ): LocalDateTime {
-        val (amount, unit) = intervalStep
-        return dateTime.plus(intervals * amount, unit)
     }
 
     private fun Long.approximate(): Long {

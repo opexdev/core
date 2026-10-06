@@ -14,6 +14,8 @@ interface RateService {
 
     suspend fun updateRate(rate: Rate): Rates
 
+    suspend fun upsertRate(rate: Rate): Rate
+
     suspend fun addForbiddenPair(forbiddenPair: ForbiddenPair)
 
     suspend fun deleteForbiddenPair(forbiddenPair: ForbiddenPair): ForbiddenPairs

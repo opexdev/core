@@ -113,11 +113,12 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     WithdrawCannotBeDone(6048, "Withdraw cannot be done", HttpStatus.BAD_REQUEST),
     WithdrawCannotBeRequested(6049, "Withdraw cannot be requested", HttpStatus.BAD_REQUEST),
     OTPCannotBeRequested(6050, "OTP cannot be requested", HttpStatus.BAD_REQUEST),
-    WithdrawRequestExpired(6051,"Withdraw request expired", HttpStatus.BAD_REQUEST),
+    WithdrawRequestExpired(6051, "Withdraw request expired", HttpStatus.BAD_REQUEST),
     ForbiddenSwapPair(6052, null, HttpStatus.BAD_REQUEST),
     TerminalLocalizationNotFound(6053, "Terminal localization not found", HttpStatus.NOT_FOUND),
-    CurrencyLocalizationNotFound(6051, "Currency localization not found", HttpStatus.NOT_FOUND),
-    IdentifierNotFound(6052, "Identifier not found", HttpStatus.NOT_FOUND),
+    CurrencyLocalizationNotFound(6054, "Currency localization not found", HttpStatus.NOT_FOUND),
+    IdentifierNotFound(6055, "Identifier not found", HttpStatus.NOT_FOUND),
+    InvalidWithdrawAddress(6056, "Destination address does not match the expected format for this network", HttpStatus.BAD_REQUEST),
 
 
     // code 7000: api
@@ -125,7 +126,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     SymbolNotFound(7002, "No symbol found", HttpStatus.NOT_FOUND),
     InvalidLimitForOrderBook(7003, "Valid limits: [5, 10, 20, 50, 100, 500, 1000, 5000]", HttpStatus.BAD_REQUEST),
     InvalidLimitForRecentTrades(7004, "Valid limits: 1 min - 1000 max", HttpStatus.BAD_REQUEST),
-    InvalidPriceChangeDuration(7005, "Valid durations: [24h, 7d, 1m]", HttpStatus.BAD_REQUEST),
+    InvalidPriceChangeDuration(7005, "Valid durations: [24h, 7d, 1M]", HttpStatus.BAD_REQUEST),
     CancelOrderNotAllowed(7006, "Canceling this order is not allowed", HttpStatus.FORBIDDEN),
     InvalidInterval(7007, "Invalid interval", HttpStatus.BAD_REQUEST),
     APIKeyLimitReached(7007, "Reached API key limit. Maximum number of API key is 10", HttpStatus.BAD_REQUEST),
@@ -155,7 +156,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     InvalidOTPType(12009, "Invalid OTP type", HttpStatus.BAD_REQUEST),
 
 
-    //code 12000 profile
+    //code 13000 profile
     UserIdAlreadyExists(13001, "User with this id or email is already registered", HttpStatus.BAD_REQUEST),
     InvalidLinkedAccount(13002, "Irrelevant account", HttpStatus.BAD_REQUEST),
     AccountNotFound(13003, " Account not found", HttpStatus.BAD_REQUEST),
@@ -204,7 +205,37 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     BankAccountAlreadyExist(13046, "Bank account already exist", HttpStatus.BAD_REQUEST),
     BankAccountNotFound(13047, "Bank account not found", HttpStatus.NOT_FOUND),
     AddressBookNotFound(13048, "Address book not found", HttpStatus.NOT_FOUND),
-    InvalidProfileData(13049, "Invalid profile data", HttpStatus.BAD_REQUEST)
+    InvalidProfileData(13049, "Invalid profile data", HttpStatus.BAD_REQUEST),
+
+    //Storage 14000
+    BucketNotFound(14001, "Bucket not found", HttpStatus.NOT_FOUND),
+    UploadFailed(14002, "Upload failed", HttpStatus.BAD_REQUEST),
+    DownloadFailed(14003, "Download failed", HttpStatus.BAD_REQUEST),
+    DeleteFailed(14004, "Delete failed", HttpStatus.BAD_REQUEST),
+
+    //code 15000 support
+    TicketNotFound(15001, "Ticket not found", HttpStatus.NOT_FOUND),
+    TicketAlreadyClosed(15002, "Ticket is already closed", HttpStatus.BAD_REQUEST),
+    InvalidAttachmentFormat(15007, "Invalid attachment format", HttpStatus.BAD_REQUEST),
+    TooManyAttachments(15008, "Too many attachments on this ticket", HttpStatus.BAD_REQUEST),
+    InvalidTicketSubject(15009, "Invalid ticket subject code", HttpStatus.BAD_REQUEST),
+    TicketNotClosedForRating(15010, "Ticket must be closed before it can be rated", HttpStatus.BAD_REQUEST),
+    TicketAlreadyRated(15011, "Ticket has already been rated", HttpStatus.BAD_REQUEST),
+    InvalidRating(15012, "Rating must be between 1 and 5", HttpStatus.BAD_REQUEST),
+    EmptyMessage(15013, "Message must contain text or at least one attachment", HttpStatus.BAD_REQUEST),
+    TooManyOpenTickets(15014, "You have too many open tickets, close one before opening a new one", HttpStatus.BAD_REQUEST),
+    TooManyConsecutiveMessages(15015, "Too many messages sent without an admin reply, please wait for a response", HttpStatus.BAD_REQUEST),
+
+    //code 16000 price-management
+    RateConfigNotFound(16001, "Rate config not found", HttpStatus.NOT_FOUND),
+    PriceNotFound(16002, "No price found for this symbol", HttpStatus.NOT_FOUND),
+    InvalidTimeRange(16003, "startTime must be before endTime", HttpStatus.BAD_REQUEST),
+    StrategyRequired(16004, "strategy is required when priceMode is AUTO", HttpStatus.BAD_REQUEST),
+    InvalidMargin(16005, "margin must be between 0 and 1 when priceMode is AUTO", HttpStatus.BAD_REQUEST),
+    PriceNotAllowedForAutoMode(16006, "price can only be set when priceMode is MANUAL", HttpStatus.BAD_REQUEST),
+    ProvidersRequired(16007, "at least one provider must be selected", HttpStatus.BAD_REQUEST),
+    StrategyNotAllowedForManualMode(16008, "strategy is not used when priceMode is MANUAL", HttpStatus.BAD_REQUEST),
+    MarginNotAllowedForManualMode(16009, "margin is not used when priceMode is MANUAL", HttpStatus.BAD_REQUEST),
     ;
 
     override fun code() = this.code
