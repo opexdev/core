@@ -40,7 +40,7 @@ class UserPasswordController(
         description = """POST /opex/v1/user/password/change.
 Security: Bearer token is required.
 
-Validation: `currentPassword`, `newPassword` and `newPasswordConfirmation` are required. `newPassword` must equal `newPasswordConfirmation`.
+Validation: `currentPassword` and `newPassword` are required.
 Behavior: Validates the current password and sends an OTP using the user's active two-factor method (EMAIL if two-factor is not enabled).
 Response: A temporary `token` and the OTP `receiver`. Send this token with the OTP to the confirm endpoint; the new password is not needed again.""",
         responses = [

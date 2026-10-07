@@ -16,7 +16,7 @@ class ChangePasswordService(
     private val logger by LoggerDelegate()
 
     suspend fun requestChangePassword(request: ChangePasswordRequest, uuid: String): ChangePasswordResponse {
-        if (request.newPassword.isBlank() || request.newPassword != request.newPasswordConfirmation)
+        if (request.newPassword.isBlank())
             throw OpexError.InvalidPassword.exception()
 
         val user = getUserByUuid(uuid)

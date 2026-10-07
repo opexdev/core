@@ -3,7 +3,6 @@ package co.nilin.opex.api.core.inout.auth
 data class ChangePasswordRequest(
     val currentPassword: String,
     val newPassword: String,
-    val newPasswordConfirmation: String,
 )
 
 data class ChangePasswordResponse(

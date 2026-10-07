@@ -8,11 +8,14 @@ import co.nilin.opex.common.utils.LoggerDelegate
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
 import org.springframework.stereotype.Service
+import java.security.MessageDigest
 import java.security.PrivateKey
 import java.security.PublicKey
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
+import javax.crypto.SecretKey
+import javax.crypto.spec.SecretKeySpec
 
 @Service
 class TempTokenService(
@@ -21,11 +24,18 @@ class TempTokenService(
 ) {
     private val logger by LoggerDelegate()
 
+    private val changePasswordKey: SecretKey = SecretKeySpec(
+        MessageDigest.getInstance("SHA-256")
+            .apply { update(CHANGE_PASSWORD_KEY_LABEL.toByteArray()) }
+            .digest(privateKey.encoded),
+        "AES"
+    )
+
     fun generateToken(userId: String, action: OTPAction): String {
         val issuedAt = Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant())
         val exp = Date.from(LocalDateTime.now().plusMinutes(2).atZone(ZoneId.systemDefault()).toInstant())
         return Jwts.builder()
-            .issuer("opex-auth")
+            .issuer(ISSUER)
             .claim("userId", userId)
             .claim("action", action)
             .issuedAt(issuedAt)
@@ -52,21 +62,22 @@ class TempTokenService(
         val issuedAt = Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant())
         val exp = Date.from(LocalDateTime.now().plusMinutes(5).atZone(ZoneId.systemDefault()).toInstant())
         return Jwts.builder()
-            .issuer("opex-auth")
+            .issuer(ISSUER)
             .claim("userId", userId)
             .claim("action", OTPAction.CHANGE_PASSWORD)
             .claim("otpType", otpType)
             .claim("newPassword", newPassword)
             .issuedAt(issuedAt)
             .expiration(exp)
-            .encryptWith(publicKey, Jwts.KEY.RSA_OAEP_256, Jwts.ENC.A256GCM)
+            .encryptWith(changePasswordKey, Jwts.ENC.A256GCM)
             .compact()
     }
 
     fun verifyChangePasswordToken(token: String): ChangePasswordTokenData {
         try {
             val claims = Jwts.parser()
-                .decryptWith(privateKey)
+                .requireIssuer(ISSUER)
+                .decryptWith(changePasswordKey)
                 .build()
                 .parseEncryptedClaims(token)
                 .payload
@@ -84,4 +95,8 @@ class TempTokenService(
         }
     }
 
+    private companion object {
+        const val ISSUER = "opex-auth"
+        const val CHANGE_PASSWORD_KEY_LABEL = "opex-auth:change-password-token"
+    }
 }
