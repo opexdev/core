@@ -118,7 +118,11 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     TerminalLocalizationNotFound(6053, "Terminal localization not found", HttpStatus.NOT_FOUND),
     CurrencyLocalizationNotFound(6054, "Currency localization not found", HttpStatus.NOT_FOUND),
     IdentifierNotFound(6055, "Identifier not found", HttpStatus.NOT_FOUND),
-    InvalidWithdrawAddress(6056, "Destination address does not match the expected format for this network", HttpStatus.BAD_REQUEST),
+    InvalidWithdrawAddress(
+        6056,
+        "Destination address does not match the expected format for this network",
+        HttpStatus.BAD_REQUEST
+    ),
 
 
     // code 7000: api
@@ -223,8 +227,16 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     TicketAlreadyRated(15011, "Ticket has already been rated", HttpStatus.BAD_REQUEST),
     InvalidRating(15012, "Rating must be between 1 and 5", HttpStatus.BAD_REQUEST),
     EmptyMessage(15013, "Message must contain text or at least one attachment", HttpStatus.BAD_REQUEST),
-    TooManyOpenTickets(15014, "You have too many open tickets, close one before opening a new one", HttpStatus.BAD_REQUEST),
-    TooManyConsecutiveMessages(15015, "Too many messages sent without an admin reply, please wait for a response", HttpStatus.BAD_REQUEST),
+    TooManyOpenTickets(
+        15014,
+        "You have too many open tickets, close one before opening a new one",
+        HttpStatus.BAD_REQUEST
+    ),
+    TooManyConsecutiveMessages(
+        15015,
+        "Too many messages sent without an admin reply, please wait for a response",
+        HttpStatus.BAD_REQUEST
+    ),
 
     //code 16000 price-management
     RateConfigNotFound(16001, "Rate config not found", HttpStatus.NOT_FOUND),
@@ -236,6 +248,36 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     ProvidersRequired(16007, "at least one provider must be selected", HttpStatus.BAD_REQUEST),
     StrategyNotAllowedForManualMode(16008, "strategy is not used when priceMode is MANUAL", HttpStatus.BAD_REQUEST),
     MarginNotAllowedForManualMode(16009, "margin is not used when priceMode is MANUAL", HttpStatus.BAD_REQUEST),
+
+    //Referral
+    InvalidReferralCommissionShare(
+        17001,
+        "Referral commission share must be one of the valid steps",
+        HttpStatus.BAD_REQUEST
+    ),
+    TooManyReferralCodes(17002, "You have reached the maximum number of referral codes", HttpStatus.FORBIDDEN),
+    DuplicateReferralCommissionShare(
+        17003,
+        "You already have a referral code with this commission share",
+        HttpStatus.BAD_REQUEST
+    ),
+    ReferralCodeGenerationFailed(17004, "Unable to generate a unique referral code", HttpStatus.INTERNAL_SERVER_ERROR),
+    ReferralCodeNotFound(17005, "Referral code not found", HttpStatus.NOT_FOUND),
+    CannotReferSelf(17006, "Can't assign a referral code to its own owner", HttpStatus.BAD_REQUEST),
+    UserAlreadyReferred(17007, "User has already been referred", HttpStatus.BAD_REQUEST),
+    CyclicReferral(17008, "Referrer can't be a child of the referent", HttpStatus.BAD_REQUEST),
+    MissingReferenceQueryParam(17009, "One of (uuid, code) parameters must be provided", HttpStatus.BAD_REQUEST),
+    InvalidTradeOrder(17010, "Order is not correct", HttpStatus.BAD_REQUEST),
+    RewardClaimSaveFailed(17011, "Failed to save reward claim", HttpStatus.BAD_REQUEST),
+    RewardClaimNotFound(17012, "Reward claim not found", HttpStatus.NOT_FOUND),
+    RewardClaimUpdateFailed(17013, "Failed to update reward claim", HttpStatus.BAD_REQUEST),
+    RewardClaimDetailSaveFailed(17014, "Failed to save reward claim detail", HttpStatus.BAD_REQUEST),
+    RewardClaimCheckoutErrorSaveFailed(17015, "Failed to save reward claim checkout error", HttpStatus.BAD_REQUEST),
+    RewardClaimCheckoutDetailsNotFound(17016, "Reward claim checkout details not found", HttpStatus.NOT_FOUND),
+    RewardClaimNotRetryable(17017, "Only failed reward claims can be retried", HttpStatus.BAD_REQUEST),
+    RewardConfigCreateFailed(17018, "Failed to create reward config", HttpStatus.BAD_REQUEST),
+    RewardConfigNotFound(17019, "Reward config not found", HttpStatus.NOT_FOUND),
+    RewardConfigUpdateFailed(17020, "Failed to update reward config", HttpStatus.BAD_REQUEST),
     ;
 
     override fun code() = this.code

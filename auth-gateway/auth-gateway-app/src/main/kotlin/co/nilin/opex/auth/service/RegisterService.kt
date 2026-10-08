@@ -79,7 +79,7 @@ class RegisterService(
         keycloakProxy.assignRole(user.id, UserRole.LEVEL_1)
 
         // Send event to let other services know a user just registered
-        val event = UserCreatedEvent(user.id, user.username, user.email, user.mobile, user.firstName, user.lastName)
+        val event = UserCreatedEvent(user.id, user.username, user.email, user.mobile, user.firstName, user.lastName , request.referralCode)
         authProducer.send(event)
 
         return if (request.clientId.isNullOrBlank() || request.clientSecret.isNullOrBlank())
