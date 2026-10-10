@@ -114,6 +114,8 @@ class SecurityConfig(
                     .pathMatchers("/v1/otc/").permitAll()
                     .pathMatchers("/opex/v1/admin/transactions/**").hasAnyAuthority("ROLE_monitoring", "ROLE_admin")
                     .pathMatchers("/opex/v1/storage/**").permitAll()
+                    .pathMatchers(HttpMethod.GET, "/opex/v1/referral/codes/commission-share-steps").permitAll()
+                    .pathMatchers("/opex/v1/referral/**").authenticated()
                     .pathMatchers("/opex/v1/support/**").authenticated()
                     .pathMatchers("/opex/v1/web/config/**").permitAll()
                     .pathMatchers("/opex/v1/user-level/config/**").permitAll()
