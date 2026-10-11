@@ -113,7 +113,7 @@ app:
     url: localhost:8080   #todo -> env
   auth:
     url: lb://opex-auth
-    cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
+    cert-url: ${KEYCLOAK_BASE_URL:http://keycloak:8080}/realms/opex/protocol/openid-connect/certs
     iss-url: ${TOKEN_ISSUER_URL:http://keycloak:8080/realms/opex}
     client-id: none
     client-secret: none

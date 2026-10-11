@@ -114,30 +114,30 @@ app:
   base:
     url: ${APP_BASE_URL:api}
   accountant:
-    url: http://opex-accountant
+    url: ${ACCOUNTANT_URL:http://opex-accountant}
   profile:
-    url: http://opex-profile
+    url: ${PROFILE_URL:http://opex-profile}
   matching-gateway:
-    url: http://opex-matching-gateway
+    url: ${MATCHING_GATEWAY_URL:http://opex-matching-gateway}
   wallet:
-    url: http://opex-wallet
+    url: ${WALLET_URL:http://opex-wallet}
   price-management:
-    url: http://opex-price-management
+    url: ${PRICE_MANAGEMENT_URL:http://opex-price-management}
   market:
-    url: http://opex-market
+    url: ${MARKET_URL:http://opex-market}
   opex-bc-gateway:
-    url: http://opex-bc-gateway
+    url: ${BC_GATEWAY_URL:http://opex-bc-gateway}
   storage:
-    url: http://storage
+    url: ${STORAGE_URL:http://storage}
   config:
-    url: http://opex-config
+    url: ${CONFIG_URL:http://opex-config}
   auth-gateway:
-    url: http://opex-auth-gateway
+    url: ${AUTH_GATEWAY_URL:http://opex-auth-gateway}
   auth:
-    url: http://keycloak:8080
-    cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
+    url: ${KEYCLOAK_BASE_URL:http://keycloak:8080}
+    cert-url: ${KEYCLOAK_BASE_URL:http://keycloak:8080}/realms/opex/protocol/openid-connect/certs
     iss-url: ${TOKEN_ISSUER_URL:http://keycloak:8080/realms/opex}
-    token-url: http://keycloak:8080/realms/opex/protocol/openid-connect/token
+    token-url: ${KEYCLOAK_BASE_URL:http://keycloak:8080}/realms/opex/protocol/openid-connect/token
     api-key-client:
       secret: ${API_KEY_CLIENT_SECRET}
       id: opex-api-key

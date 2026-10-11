@@ -89,7 +89,7 @@ logging:
     co.nilin: INFO
 app:
   auth:
-    cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
+    cert-url: ${KEYCLOAK_BASE_URL:http://keycloak:8080}/realms/opex/protocol/openid-connect/certs
     iss-url: ${TOKEN_ISSUER_URL:http://keycloak:8080/realms/opex}
   custom-message:
     enabled: ${CUSTOM_MESSAGE_ENABLED:false}

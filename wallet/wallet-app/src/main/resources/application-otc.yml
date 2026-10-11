@@ -93,17 +93,17 @@ app:
       enabled: ${BACKUP_ENABLED_GOOGLE_DRIVE:false}
       folder: ${DRIVE_FOLDER_ID:-}
   bc-gateway:
-    url: http://bc-gateway:8080
+    url: ${BC_GATEWAY_URL:http://bc-gateway:8080}
   market:
-    url: http://market:8080
+    url: ${MARKET_URL:http://market:8080}
   accountant:
-    url: http://accountant:8080
+    url: ${ACCOUNTANT_URL:http://accountant:8080}
   otp:
-    url: http://opex-otp:8080/v1
+    url: ${OTP_URL:http://opex-otp:8080/v1}
   profile:
-    url: http://profile:8080
+    url: ${PROFILE_URL:http://profile:8080}
   storage:
-    url: http://storage:8080
+    url: ${STORAGE_URL:http://storage:8080}
   reserved-transfer:
     life-time: 15 #minutes
   zone-offset: +03:30
