@@ -8,5 +8,6 @@ interface StorageProxy {
     suspend fun adminUpload(token: String, bucket: String, key: String, file: FilePart,isPublic : Boolean? = false)
     suspend fun adminDelete(token: String, bucket: String, key: String)
     suspend fun publicDownload(bucket: String, key: String): ResponseEntity<ByteArray>
+    suspend fun ownerDownload(token: String, bucket: String, key: String): ResponseEntity<ByteArray>
 
 }

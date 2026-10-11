@@ -238,7 +238,7 @@ Security: Bearer admin-token required. Required authority: ROLE_monitoring or RO
         val items = marketDataProxy.recentTrades(token, request)
         if (request.includeNames == false) return items
         val uuids = items.flatMap { listOfNotNull(it.makerUuid, it.takerUuid) }.toSet()
-        val nameMap = ownerNameResolver.resolve(token, uuids)
+        val nameMap = ownerNameResolver.resolve(uuids)
         return items.map {
             it.copy(
                 makerOwnerName = nameMap[it.makerUuid],
@@ -289,7 +289,7 @@ Allowed values:
         )
         if (request.includeNames == false) return items
         val uuids = items.flatMap { listOfNotNull(it.uuid) }.toSet()
-        val nameMap = ownerNameResolver.resolve(token, uuids)
+        val nameMap = ownerNameResolver.resolve(uuids)
         return items.map {
             it.copy(
                 ownerName = nameMap[it.uuid],

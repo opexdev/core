@@ -133,6 +133,11 @@ app:
     url: ${CONFIG_URL:http://opex-config}
   auth-gateway:
     url: ${AUTH_GATEWAY_URL:http://opex-auth-gateway}
+  referral:
+    url: ${REFERRAL_URL:http://opex-referral}
+  support:
+    url: ${SUPPORT_URL:http://opex-support}
+    attachments-bucket: ${SUPPORT_ATTACHMENTS_BUCKET:opex-support-attachments}
   auth:
     url: ${KEYCLOAK_BASE_URL:http://keycloak:8080}
     cert-url: ${KEYCLOAK_BASE_URL:http://keycloak:8080}/realms/opex/protocol/openid-connect/certs

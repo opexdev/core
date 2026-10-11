@@ -19,6 +19,13 @@ interface RateProxy {
     // Forbidden pairs (read is public)
     suspend fun fetchForbiddenPairs(): ForbiddenPairs
 
+    // Forbidden swap pairs
+    suspend fun addForbiddenSwapPair(token: String, request: CurrencyPair)
+    suspend fun deleteForbiddenSwapPair(token: String, sourceSymbol: String, destSymbol: String): ForbiddenSwapPairs
+
+    // Forbidden swap pairs (read is public)
+    suspend fun fetchForbiddenSwapPairs(): ForbiddenSwapPairs
+
     // Transitive symbols
     suspend fun addTransitiveSymbols(token: String, symbols: Symbols)
     suspend fun deleteTransitiveSymbol(token: String, symbol: String): Symbols
