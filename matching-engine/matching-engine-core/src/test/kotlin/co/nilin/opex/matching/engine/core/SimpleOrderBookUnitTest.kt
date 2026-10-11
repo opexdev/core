@@ -565,6 +565,64 @@ class SimpleOrderBookUnitTest {
     }
 
     @Test
+    fun givenPartiallyFilledOrder_whenEditQuantity_thenRequestedQuantityRests() {
+        val orderBook = SimpleOrderBook(pair, false)
+        val ask = orderBook.handleNewOrderCommand(
+            OrderCreateCommand(
+                UUID.randomUUID().toString(),
+                uuid,
+                pair,
+                100,
+                10,
+                OrderDirection.ASK,
+                MatchConstraint.GTC,
+                OrderType.LIMIT_ORDER
+            )
+        )!!
+        orderBook.handleNewOrderCommand(
+            OrderCreateCommand(
+                UUID.randomUUID().toString(),
+                uuid,
+                pair,
+                100,
+                4,
+                OrderDirection.BID,
+                MatchConstraint.GTC,
+                OrderType.LIMIT_ORDER
+            )
+        )
+
+        val edited = orderBook.handleEditCommand(
+            OrderEditCommand(
+                UUID.randomUUID().toString(),
+                uuid,
+                ask.id()!!,
+                pair,
+                101,
+                6
+            )
+        ) as SimpleOrder
+
+        Assertions.assertEquals(0, edited.filledQuantity)
+        Assertions.assertEquals(6, edited.remainedQuantity())
+        Assertions.assertEquals(6, orderBook.askOrders[101]?.totalQuantity)
+
+        val aggressor = orderBook.handleNewOrderCommand(
+            OrderCreateCommand(
+                UUID.randomUUID().toString(),
+                uuid,
+                pair,
+                101,
+                6,
+                OrderDirection.BID,
+                MatchConstraint.IOC,
+                OrderType.LIMIT_ORDER
+            )
+        ) as SimpleOrder
+        Assertions.assertEquals(6, aggressor.filledQuantity)
+    }
+
+    @Test
     fun givenEmptyOrderBook_whenGtcBidMarketOrderCreated_thenRejected() {
         //given
         val orderBook = SimpleOrderBook(pair, false)
