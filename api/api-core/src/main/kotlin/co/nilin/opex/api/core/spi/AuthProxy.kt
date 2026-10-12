@@ -36,4 +36,8 @@ interface AuthProxy {
     suspend fun setupTOTP(token: String): SetupTOTPResponse
     suspend fun verifyTOTPSetup(request: TOTPCode, token: String)
 
+    suspend fun requestChangePassword(request: ChangePasswordRequest, token: String): ChangePasswordResponse
+    suspend fun resendChangePasswordOtp(request: ResendChangePasswordOtpRequest, token: String): ResendOtpResponse
+    suspend fun confirmChangePassword(request: ConfirmChangePasswordRequest, token: String)
+
 }

@@ -2,7 +2,7 @@ package co.nilin.opex.api.core.inout.auth
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
-data class RegisterUserRequest(
+data class  RegisterUserRequest(
     val username: String,
     val firstName: String? = null,
     val lastName: String? = null,

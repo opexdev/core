@@ -1,9 +1,6 @@
 package co.nilin.opex.api.ports.proxy.impl
 
-import co.nilin.opex.api.core.inout.UpdateUserConfigRequest
-import co.nilin.opex.api.core.inout.UpdateWebConfigRequest
-import co.nilin.opex.api.core.inout.UserLevelConfig
-import co.nilin.opex.api.core.inout.UserWebConfig
+import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.spi.ConfigProxy
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.data.UserLanguage
@@ -165,6 +162,64 @@ class ConfigProxyImpl(@Qualifier("generalWebClient") private val webClient: WebC
             .onStatus({ it.isError }) { it.createException() }
             .bodyToMono<Set<String>>()
             .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
+    }
+
+    override suspend fun getLocalizedPageMessages(page: UiPage?,language: String): List<LocalizedPageMessage> {
+        return webClient.get()
+            .uri("$baseUrl/v1/page-messages") {
+                if (page != null) it.queryParam("page", page)
+                it.queryParam("language",language)
+                it.build()
+            }
+            .accept(MediaType.APPLICATION_JSON)
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<List<LocalizedPageMessage>>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get page message") }
+    }
+
+    override suspend fun getAllPageMessages(token: String): List<PageMessage> {
+        return webClient.get()
+            .uri("$baseUrl/admin/v1/page-messages")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ it.isError }, { it.createException() })
+            .bodyToFlux<PageMessage>()
+            .collectList()
+            .awaitSingle()
+    }
+
+    override suspend fun getPageMessage(token: String, page: UiPage): PageMessage? {
+        return webClient.get()
+            .uri("$baseUrl/admin/v1/page-messages/$page")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ it.isError }, { it.createException() })
+            .bodyToMono<PageMessage>()
+            .awaitSingleOrNull()
+    }
+
+    override suspend fun createOrUpdatePageMessage(token: String, request: UpdatePageMessageRequest): PageMessage {
+        return webClient.post()
+            .uri("$baseUrl/admin/v1/page-messages")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ it.isError }, { it.createException() })
+            .bodyToMono<PageMessage>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to create or update page message") }
+    }
+
+    override suspend fun deletePageMessage(token: String, page: UiPage) {
+        webClient.delete()
+            .uri("$baseUrl/admin/v1/page-messages/$page")
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ it.isError }) { it.createException() }
+            .awaitBodilessEntity()
     }
 }
 

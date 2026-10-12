@@ -58,8 +58,8 @@ logging:
     co.nilin: INFO
     org.zalando.logbook: TRACE
 keycloak:
-  url: http://keycloak:8080
-  cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
+  url: ${KEYCLOAK_BASE_URL:http://keycloak:8080}
+  cert-url: ${KEYCLOAK_BASE_URL:http://keycloak:8080}/realms/opex/protocol/openid-connect/certs
   iss-url: ${TOKEN_ISSUER_URL:http://keycloak:8080/realms/opex}
   realm: opex
   admin-client:
@@ -69,12 +69,12 @@ keycloak:
 app:
   name: ${APP_NAME:Opex}
   otp:
-    url: http://opex-otp/v1
+    url: ${OTP_URL:http://opex-otp/v1}
   captcha:
-    url: http://opex-captcha
+    url: ${CAPTCHA_URL:http://opex-captcha}
     enabled: ${CAPTCHA_ENABLED:true}
   device-management:
-    url:  http://opex-device-management
+    url: ${DEVICE_MANAGEMENT_URL:http://opex-device-management}
   custom-message:
     enabled: ${CUSTOM_MESSAGE_ENABLED:false}
     base-url: ${CUSTOM_MESSAGE_URL}

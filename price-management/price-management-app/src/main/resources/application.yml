@@ -112,13 +112,13 @@ logging:
 
 app:
   auth:
-    cert-url: http://keycloak:8080/realms/opex/protocol/openid-connect/certs
+    cert-url: ${KEYCLOAK_BASE_URL:http://keycloak:8080}/realms/opex/protocol/openid-connect/certs
   price-proxy:
     url: ${PRICE_PROXY_URL}
     api-key: ${PRICE_PROXY_API_KEY}
     secret-key: ${PRICE_PROXY_SECRET_KEY}
   wallet:
-    url: http://opex-wallet
+    url: ${WALLET_URL:http://opex-wallet}
   bale:
     enabled: ${BALE_NOTIFICATIONS_ENABLED:false}
     base-url: ${BALE_API_URL:https://tapi.bale.ai}
