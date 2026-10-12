@@ -68,6 +68,8 @@ keycloak:
     google-client-id: ${GOOGLE_CLIENT_ID}
 app:
   name: ${APP_NAME:Opex}
+  config:
+    url: ${CONFIG_URL:http://opex-config}
   otp:
     url: ${OTP_URL:http://opex-otp/v1}
   captcha:
