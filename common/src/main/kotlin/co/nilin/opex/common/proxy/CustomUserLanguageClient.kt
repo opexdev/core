@@ -5,6 +5,7 @@ import co.nilin.opex.common.data.WebConfig
 import co.nilin.opex.common.utils.typeRef
 import kotlinx.coroutines.reactive.awaitFirst
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 
@@ -15,8 +16,11 @@ class CustomUserLanguageClient(
     @Qualifier("CommonWebClient") private val webClient: CommonWebClient
 ) {
 
+    @Value("\${app.config.url}")
+    private lateinit var baseUrl: String
+
     suspend fun getWebConfig(): WebConfig {
-        return webClient.delegate.get().uri("http://config:8080/web/v1") {
+        return webClient.delegate.get().uri("$baseUrl/web/v1") {
             it.build()
         }.retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })

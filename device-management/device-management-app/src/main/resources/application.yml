@@ -102,6 +102,8 @@ logging:
     org.zalando.logbook: TRACE
 
 app:
+  config:
+    url: ${CONFIG_URL:http://opex-config}
   auth:
     url: lb://opex-auth
     cert-url: ${KEYCLOAK_BASE_URL:http://keycloak:8080}/realms/opex/protocol/openid-connect/certs

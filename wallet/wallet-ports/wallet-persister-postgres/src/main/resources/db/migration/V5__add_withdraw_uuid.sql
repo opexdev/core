@@ -83,5 +83,5 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-ALTER TABLE opex.public.deposits
+ALTER TABLE deposits
     RENAME COLUMN duid TO deposit_uuid;

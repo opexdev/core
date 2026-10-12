@@ -88,6 +88,8 @@ logging:
   level:
     co.nilin: INFO
 app:
+  config:
+    url: ${CONFIG_URL:http://opex-config}
   auth:
     cert-url: ${KEYCLOAK_BASE_URL:http://keycloak:8080}/realms/opex/protocol/openid-connect/certs
     iss-url: ${TOKEN_ISSUER_URL:http://keycloak:8080/realms/opex}

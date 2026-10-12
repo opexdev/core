@@ -97,6 +97,8 @@ logging:
     org.zalando.logbook: TRACE
 app:
   address: 1
+  config:
+    url: ${CONFIG_URL:http://opex-config}
   wallet:
     url: lb://opex-wallet/
     http:
