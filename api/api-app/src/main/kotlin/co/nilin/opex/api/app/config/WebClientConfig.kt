@@ -80,7 +80,7 @@ class WebClientConfig(
     }
 
 
-    @Bean("nlbWebClient")
+    @Bean("generalWebClient")
     fun loadBalancedWebClient(
         loadBalancerFactory: ReactiveLoadBalancer.Factory<ServiceInstance>,
 
