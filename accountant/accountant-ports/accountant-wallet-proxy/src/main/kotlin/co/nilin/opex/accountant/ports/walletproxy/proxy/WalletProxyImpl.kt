@@ -8,6 +8,7 @@ import co.nilin.opex.accountant.ports.walletproxy.data.BooleanResponse
 import co.nilin.opex.accountant.ports.walletproxy.data.TransferResult
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
@@ -24,6 +25,7 @@ import java.util.concurrent.TimeoutException
 
 @Component
 class WalletProxyImpl(
+    @Qualifier("nlbWebClient")
     private val webClient: WebClient,
     @Value("\${app.wallet.url}") private val walletBaseUrl: String,
     @Value("\${app.wallet.http.retry.count:2}") private val retryCount: Long = 2,

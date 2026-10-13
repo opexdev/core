@@ -49,4 +49,27 @@ class WebClientConfig {
             )
             .build()
     }
+
+    @Bean("nlbWebClient")
+    fun nlbWebClient(logbook: Logbook): WebClient {
+        val connectionProvider = ConnectionProvider.builder("accountant-wallet-nlb")
+            .maxIdleTime(Duration.ofSeconds(20))
+            .maxLifeTime(Duration.ofMinutes(5))
+            .pendingAcquireTimeout(Duration.ofSeconds(5))
+            .evictInBackground(Duration.ofSeconds(30))
+            .lifo()
+            .build()
+
+        val client = HttpClient.create(connectionProvider)
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3000)
+            .responseTimeout(Duration.ofSeconds(10))
+            .keepAlive(true)
+            .doOnConnected {
+                it.addHandlerLast(LogbookClientHandler(logbook))
+            }
+
+        return WebClient.builder()
+            .clientConnector(ReactorClientHttpConnector(client))
+            .build()
+    }
 }
