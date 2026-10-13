@@ -150,6 +150,8 @@ app:
     url: lb://opex-profile
   storage:
     url: lb://storage
+  config:
+    url: ${CONFIG_URL:http://opex-config}
   reserved-transfer:
     life-time: 15 #minutes
   symbols: ${SYMBOLS}

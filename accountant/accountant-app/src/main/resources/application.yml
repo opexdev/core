@@ -100,7 +100,7 @@ app:
   config:
     url: ${CONFIG_URL:http://opex-config}
   wallet:
-    url: lb://opex-wallet/
+    url: ${WALLET_URL:lb://opex-wallet/}
     http:
       retry:
         count: 2
