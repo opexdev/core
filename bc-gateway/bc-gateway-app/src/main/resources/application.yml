@@ -126,6 +126,8 @@ app:
     base-url: ${CUSTOM_MESSAGE_URL}
   custom-user-language:
     enabled: ${CUSTOM_USER_LANGUAGE_ENABLED:false}
+  config:
+    url: ${CONFIG_URL:http://opex-config}
 swagger:
   authUrl: ${SWAGGER_AUTH_URL:https://api.opex.dev/auth}/realms/opex/protocol/openid-connect/token}
 ---
