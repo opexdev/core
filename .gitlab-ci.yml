@@ -7,7 +7,7 @@ variables:
   IMAGE: $REGISTRY/$STACK_NAME/$PROJECT_NAME
   RUNNER: shared
   LVL: prod
-  PRJS: "api,accountant,auth-gateway,bc-gateway,device-management,eventlog,market,matching-engine,otp,profile,wallet,price-management"
+  PRJS: "api,accountant,auth-gateway,bc-gateway,device-management,eventlog,market,matching-engine,otp,profile,wallet,price-management,matching-gateway"
 
 include:
   - project: "devops/pipeline-as-code"
