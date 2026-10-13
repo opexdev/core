@@ -139,17 +139,17 @@ app:
       enabled: ${BACKUP_ENABLED_GOOGLE_DRIVE:false}
       folder: ${DRIVE_FOLDER_ID:-}
   bc-gateway:
-    url: lb://opex-bc-gateway
+    url: ${BC_GATEWAY_URL:lb://opex-bc-gateway}
   market:
-    url: lb://opex-market
+    url: ${MARKET_URL:lb://opex-market}
   accountant:
-    url: lb://opex-accountant
+    url: ${ACCOUNTANT_URL:lb://opex-accountant}
   otp:
-    url: lb://opex-otp/v1
+    url: ${OTP_URL:lb://opex-otp/v1}
   profile:
-    url: lb://opex-profile
+    url: ${PROFILE_URL:lb://opex-profile}
   storage:
-    url: lb://storage
+    url: ${STORAGE_URL:lb://storage}
   config:
     url: ${CONFIG_URL:http://opex-config}
   reserved-transfer:

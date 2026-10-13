@@ -5,6 +5,7 @@ import co.nilin.opex.wallet.core.inout.otp.OTPVerifyResponse
 import co.nilin.opex.wallet.core.inout.otp.TempOtpResponse
 import co.nilin.opex.wallet.core.inout.otp.VerifyOTPRequest
 import co.nilin.opex.wallet.core.spi.OtpProxy
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
@@ -13,7 +14,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
 
 @Component
-class OtpProxyImpl(private val webClient: WebClient) : OtpProxy {
+class OtpProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClient) : OtpProxy {
 
     @Value("\${app.otp.url}")
     private lateinit var baseUrl: String

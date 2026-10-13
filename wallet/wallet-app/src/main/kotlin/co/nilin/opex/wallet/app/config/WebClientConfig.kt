@@ -63,6 +63,14 @@ class WebClientConfig(logbook: Logbook) {
             .build()
     }
 
+    @Bean("nlbWebClient")
+    fun nlbWebClient(): WebClient {
+        return WebClient.builder()
+            .clientConnector(ReactorClientHttpConnector(client))
+            .filter(languageFilter())
+            .build()
+    }
+
     private fun languageFilter() = ExchangeFilterFunction { request, next ->
         Mono.deferContextual { ctx ->
             val lang = ctx.getOrDefault("lang", getDefaultUserLanguage())

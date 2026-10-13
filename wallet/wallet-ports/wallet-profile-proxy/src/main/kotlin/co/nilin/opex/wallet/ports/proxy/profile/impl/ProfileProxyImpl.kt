@@ -4,6 +4,7 @@ import co.nilin.opex.wallet.core.inout.profile.Profile
 import co.nilin.opex.wallet.core.spi.ProfileProxy
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -13,7 +14,7 @@ import org.springframework.web.reactive.function.client.awaitBody
 import java.net.URI
 
 @Component
-class ProfileProxyImpl(private val webClient: WebClient) : ProfileProxy {
+class ProfileProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClient) : ProfileProxy {
 
     @Value("\${app.profile.url}")
     private lateinit var baseUrl: String

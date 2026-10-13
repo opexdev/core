@@ -2,6 +2,7 @@ package co.nilin.opex.wallet.ports.proxy.accountant.impl
 
 import co.nilin.opex.wallet.core.spi.AccountantProxy
 import kotlinx.coroutines.reactive.awaitFirst
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -11,7 +12,7 @@ import java.math.BigDecimal
 import java.net.URI
 
 @Component
-class AccountantProxyImpl(private val webClient: WebClient) : AccountantProxy {
+class AccountantProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClient) : AccountantProxy {
 
     @Value("\${app.accountant.url}")
     private lateinit var baseUrl: String
