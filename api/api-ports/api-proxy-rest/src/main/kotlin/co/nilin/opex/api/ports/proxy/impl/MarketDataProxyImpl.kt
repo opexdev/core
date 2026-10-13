@@ -21,7 +21,7 @@ import reactor.core.publisher.Mono
 import java.util.*
 
 @Component
-class MarketDataProxyImpl(@Qualifier("generalWebClient") private val webClient: WebClient) : MarketDataProxy {
+class MarketDataProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClient) : MarketDataProxy {
 
     private val logger by LoggerDelegate()
 

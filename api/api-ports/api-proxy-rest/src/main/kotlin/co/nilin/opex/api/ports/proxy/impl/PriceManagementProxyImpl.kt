@@ -20,7 +20,7 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 
 @Component
-class PriceManagementProxyImpl(@Qualifier("generalWebClient") private val webClient: WebClient) : PriceManagementProxy {
+class PriceManagementProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClient) : PriceManagementProxy {
 
     @Value("\${app.price-management.url}")
     private lateinit var baseUrl: String

@@ -20,7 +20,7 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 
 @Component
-class ReferralProxyImpl(@Qualifier("generalWebClient") private val webClient: WebClient) : ReferralProxy {
+class ReferralProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClient) : ReferralProxy {
 
     @Value("\${app.referral.url}")
     private lateinit var baseUrl: String

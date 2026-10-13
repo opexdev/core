@@ -28,7 +28,7 @@ import java.security.Principal
 import java.util.*
 
 @Component
-class MarketUserDataProxyImpl(@Qualifier("generalWebClient") private val webClient: WebClient) : MarketUserDataProxy {
+class MarketUserDataProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClient) : MarketUserDataProxy {
 
     private val logger by LoggerDelegate()
 

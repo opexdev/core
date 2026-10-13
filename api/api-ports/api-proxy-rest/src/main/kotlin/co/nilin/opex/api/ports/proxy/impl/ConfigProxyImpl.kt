@@ -20,7 +20,7 @@ import org.springframework.web.reactive.function.client.*
 import reactor.core.publisher.Mono
 
 @Component
-class ConfigProxyImpl(@Qualifier("generalWebClient") private val webClient: WebClient) : ConfigProxy {
+class ConfigProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClient) : ConfigProxy {
 
     private val logger by LoggerDelegate()
 

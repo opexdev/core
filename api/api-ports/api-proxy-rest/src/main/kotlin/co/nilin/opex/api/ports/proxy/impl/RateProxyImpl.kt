@@ -21,7 +21,7 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 
 @Component
-class RateProxyImpl(@Qualifier("generalWebClient") private val webClient: WebClient) : RateProxy {
+class RateProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClient) : RateProxy {
 
     private val logger by LoggerDelegate()
 
