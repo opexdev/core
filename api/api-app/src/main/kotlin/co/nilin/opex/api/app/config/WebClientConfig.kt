@@ -80,7 +80,7 @@ class WebClientConfig(
     }
 
 
-    @Bean("generalWebClient")
+    @Bean("nlbWebClient")
     fun loadBalancedWebClient(
         loadBalancerFactory: ReactiveLoadBalancer.Factory<ServiceInstance>,
 
@@ -91,6 +91,18 @@ class WebClientConfig(
             .filter(languageFilter())
             .codecs { configurer ->
                 configurer.defaultCodecs()
+                    .maxInMemorySize(5 * 1024 * 1024)
+            }
+            .build()
+    }
+
+    @Bean("nlbWebClient")
+    fun nlbWebClient(): WebClient {
+        return WebClient.builder()
+            .clientConnector(ReactorClientHttpConnector(client))
+            .filter(languageFilter())
+            .codecs {
+                it.defaultCodecs()
                     .maxInMemorySize(5 * 1024 * 1024)
             }
             .build()

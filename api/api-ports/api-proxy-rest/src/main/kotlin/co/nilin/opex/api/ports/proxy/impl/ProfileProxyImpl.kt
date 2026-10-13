@@ -21,7 +21,7 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 
 @Component
-class ProfileProxyImpl(@Qualifier("generalWebClient") private val webClient: WebClient) : ProfileProxy {
+class ProfileProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClient) : ProfileProxy {
 
     private val logger by LoggerDelegate()
 

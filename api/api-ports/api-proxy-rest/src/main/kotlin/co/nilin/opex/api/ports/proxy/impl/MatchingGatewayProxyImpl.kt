@@ -27,7 +27,7 @@ import java.math.BigDecimal
 import java.net.URI
 
 @Component
-class MatchingGatewayProxyImpl(@Qualifier("generalWebClient") private val client: WebClient) : MatchingGatewayProxy {
+class MatchingGatewayProxyImpl(@Qualifier("nlbWebClient") private val client: WebClient) : MatchingGatewayProxy {
 
     private val logger by LoggerDelegate()
     private suspend fun <T> retryOnce(backoffMs: Long = 200, block: suspend () -> T): T =

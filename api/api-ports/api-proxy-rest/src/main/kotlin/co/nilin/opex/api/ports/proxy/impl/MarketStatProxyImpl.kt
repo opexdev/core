@@ -19,7 +19,7 @@ import org.springframework.web.reactive.function.client.bodyToMono
 
 @Component
 class MarketStatProxyImpl(
-    @Qualifier("generalWebClient")
+    @Qualifier("nlbWebClient")
     private val webClient: WebClient,
     @Value("\${app.market.url}")
     private val baseUrl: String

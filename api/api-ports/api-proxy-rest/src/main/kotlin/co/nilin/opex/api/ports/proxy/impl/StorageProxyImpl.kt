@@ -17,7 +17,7 @@ import org.springframework.web.reactive.function.client.awaitBodilessEntity
 import reactor.core.publisher.Mono
 
 @Component
-class StorageProxyImpl(@Qualifier("generalWebClient") private val webClient: WebClient) : StorageProxy {
+class StorageProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClient) : StorageProxy {
 
     private val logger by LoggerDelegate()
 

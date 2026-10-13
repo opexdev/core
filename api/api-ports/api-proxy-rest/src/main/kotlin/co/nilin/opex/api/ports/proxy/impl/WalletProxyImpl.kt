@@ -23,7 +23,7 @@ import reactor.core.publisher.Mono
 import java.math.BigDecimal
 
 @Component
-class WalletProxyImpl(@Qualifier("generalWebClient") private val webClient: WebClient) : WalletProxy {
+class WalletProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClient) : WalletProxy {
 
     private val logger by LoggerDelegate()
 

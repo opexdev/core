@@ -22,7 +22,7 @@ import org.springframework.web.util.UriComponentsBuilder
 import java.math.BigDecimal
 
 @Component
-class AccountantProxyImpl(@Qualifier("generalWebClient") private val webClient: WebClient) : AccountantProxy {
+class AccountantProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClient) : AccountantProxy {
 
     private val logger by LoggerDelegate()
 

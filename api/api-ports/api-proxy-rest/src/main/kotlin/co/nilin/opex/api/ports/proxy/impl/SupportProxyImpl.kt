@@ -22,7 +22,7 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @Component
-class SupportProxyImpl(@Qualifier("generalWebClient") private val webClient: WebClient) : SupportProxy {
+class SupportProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClient) : SupportProxy {
 
     private val logger by LoggerDelegate()
 

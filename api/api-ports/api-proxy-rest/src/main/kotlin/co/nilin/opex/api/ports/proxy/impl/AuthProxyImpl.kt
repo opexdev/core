@@ -23,7 +23,7 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 
 @Component
-class AuthProxyImpl(@Qualifier("generalWebClient") private val webClient: WebClient) : AuthProxy {
+class AuthProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClient) : AuthProxy {
 
     private val logger by LoggerDelegate()
 
