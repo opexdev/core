@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.ports.proxy.storage.impl
 
 import co.nilin.opex.wallet.core.spi.StorageProxy
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.FileSystemResource
 import org.springframework.http.MediaType
@@ -12,7 +13,7 @@ import org.springframework.web.reactive.function.client.awaitBodilessEntity
 import java.io.File
 
 @Component
-class StorageProxyImpl(private val webClient: WebClient) : StorageProxy {
+class StorageProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClient) : StorageProxy {
 
     @Value("\${app.storage.url}")
     private lateinit var baseUrl: String

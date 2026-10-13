@@ -4,6 +4,7 @@ import co.nilin.opex.wallet.core.model.otc.LoginRequest
 import co.nilin.opex.wallet.core.model.otc.LoginResponse
 import co.nilin.opex.wallet.core.spi.AuthProxy
 import kotlinx.coroutines.reactive.awaitFirst
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpHeaders
@@ -16,7 +17,7 @@ import java.net.URI
 inline fun <reified T : Any> typeRef(): ParameterizedTypeReference<T> = object : ParameterizedTypeReference<T>() {}
 
 @Component
-class AuthProxyImp(private val webClient: WebClient) : AuthProxy {
+class AuthProxyImp(@Qualifier("nlbWebClient") private val webClient: WebClient) : AuthProxy {
 
     @Value("\${app.auth.url}")
     private lateinit var baseUrl: String
