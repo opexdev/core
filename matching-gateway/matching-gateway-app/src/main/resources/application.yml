@@ -90,7 +90,9 @@ logging:
 app:
   symbols: ${SYMBOLS}
   accountant:
-    url: lb://opex-accountant
+    url: ${ACCOUNTANT_URL:lb://opex-accountant}
+  config:
+    url: ${CONFIG_URL:lb://opex-config}
   auth:
     cert-url: ${KEYCLOAK_BASE_URL:http://keycloak:8080}/realms/opex/protocol/openid-connect/certs
     iss-url: ${TOKEN_ISSUER_URL:http://keycloak:8080/realms/opex}

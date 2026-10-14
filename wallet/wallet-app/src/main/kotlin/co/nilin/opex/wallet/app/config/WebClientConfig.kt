@@ -63,7 +63,7 @@ class WebClientConfig(logbook: Logbook) {
             .build()
     }
 
-    @Bean("nlbWebClient")
+`    @Bean("nlbWebClient")
     fun nlbWebClient(): WebClient {
         return WebClient.builder()
             .clientConnector(ReactorClientHttpConnector(client))

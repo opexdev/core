@@ -16,7 +16,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain
 import org.springframework.web.reactive.function.client.WebClient
 
 @EnableWebFluxSecurity
-class SecurityConfig(private val webClient: WebClient) {
+class SecurityConfig {
 
     @Value("\${app.auth.cert-url}")
     private lateinit var certUrl: String

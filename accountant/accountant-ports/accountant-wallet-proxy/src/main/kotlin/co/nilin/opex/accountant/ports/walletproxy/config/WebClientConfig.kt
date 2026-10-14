@@ -49,7 +49,7 @@ class WebClientConfig {
             )
             .build()
     }
-
+:wq
     @Bean("nlbWebClient")
     fun nlbWebClient(logbook: Logbook): WebClient {
         val connectionProvider = ConnectionProvider.builder("accountant-wallet-nlb")

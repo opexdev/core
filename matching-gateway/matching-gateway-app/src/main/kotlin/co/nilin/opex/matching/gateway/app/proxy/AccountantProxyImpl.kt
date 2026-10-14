@@ -5,6 +5,7 @@ import co.nilin.opex.matching.gateway.app.inout.BooleanResponse
 import co.nilin.opex.matching.gateway.app.inout.PairConfig
 import co.nilin.opex.matching.gateway.app.spi.AccountantApiProxy
 import kotlinx.coroutines.reactive.awaitFirst
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
@@ -15,6 +16,7 @@ import java.math.BigDecimal
 class AccountantProxyImpl(
     @Value("\${app.accountant.url}")
     private val accountantBaseUrl: String,
+    @Qualifier("nlbWebClient")
     private val webClient: WebClient
 ) : AccountantApiProxy {
 
