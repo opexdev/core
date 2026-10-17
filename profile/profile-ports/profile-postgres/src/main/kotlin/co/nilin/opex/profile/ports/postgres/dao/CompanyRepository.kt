@@ -12,6 +12,8 @@ interface CompanyRepository : ReactiveCrudRepository<CompanyModel, Long> {
     @Query("select * from company where registration_number = :registrationNumber or national_id = :nationalId limit 1")
     fun findByRegistrationNumberOrNationalId(registrationNumber: String, nationalId: String): Mono<CompanyModel>
 
+    fun findByNationalId(nationalId: String): Mono<CompanyModel>
+
     @Query(
         """
         select c.*

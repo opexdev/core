@@ -330,6 +330,17 @@ class ProfileProxyImpl(@Qualifier("generalWebClient") private val webClient: Web
             .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to register legal account") }
     }
 
+    override suspend fun getCompanyByNationalId(token: String, nationalId: String): CompanyAdminResponse {
+        return webClient.get()
+            .uri("$baseUrl/admin/company/by-national-id/$nationalId")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<CompanyAdminResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get company $nationalId") }
+    }
+
     override suspend fun getCompanyAdmin(token: String, uuid: String): CompanyAdminResponse {
         return webClient.get()
             .uri("$baseUrl/admin/company/$uuid")

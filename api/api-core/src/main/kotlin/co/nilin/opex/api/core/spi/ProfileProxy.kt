@@ -41,6 +41,7 @@ interface ProfileProxy {
     suspend fun ensureLegalAccountAvailable(token: String, request: LegalAccountAvailabilityRequest)
     suspend fun registerLegalAccount(token: String, request: RegisterLegalAccountRequest): CompanyAdminResponse
     suspend fun getCompanyAdmin(token: String, uuid: String): CompanyAdminResponse
+    suspend fun getCompanyByNationalId(token: String, nationalId: String): CompanyAdminResponse
 
     //Bank Account
     suspend fun addBankAccount(token: String, request: AddBankAccountRequest): BankAccountResponse

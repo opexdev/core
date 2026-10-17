@@ -167,12 +167,12 @@ Behavior: Returns the company the given profile is a representative of, includin
         return profileProxy.getCompanyAdmin(securityContext.jwtAuthentication().tokenValue(), uuid)
     }
 
-    @GetMapping("/{uuid}/document")
+    @GetMapping("/document")
     @Operation(
         summary = "Download company document",
-        description = """GET /opex/v1/admin/company/{uuid}/document.
+        description = """GET /opex/v1/admin/company/document.
 Security: Bearer admin-token required. Required authority: ROLE_admin.
-Validation: `key` must be one of the document keys of this company, as returned by GET /opex/v1/admin/company/{uuid}.
+Validation: `key` must be one of the document keys of the company identified by `nationalId`.
 Behavior: Streams the stored document. Documents are uploaded private, so this is the only way to read them.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
@@ -196,21 +196,21 @@ Behavior: Streams the stored document. Documents are uploaded private, so this i
             ),
             ApiResponse(
                 responseCode = "404",
-                description = "The profile represents no company, or the key does not belong to it.",
+                description = "No company has this national id, or the key does not belong to it.",
                 content = [Content()]
             )
         ]
     )
     suspend fun downloadDocument(
-        @Parameter(name = "uuid", description = "Profile uuid.", required = true)
-        @PathVariable("uuid") uuid: String,
+        @Parameter(name = "nationalId", description = "Company national id.", required = true)
+        @RequestParam("nationalId") nationalId: String,
         @Parameter(name = "key", description = "Storage key of one of the company documents.", required = true)
         @RequestParam("key") key: String,
         @Parameter(hidden = true)
         @CurrentSecurityContext securityContext: SecurityContext
     ): ResponseEntity<ByteArray> {
         val token = securityContext.jwtAuthentication().tokenValue()
-        val company = profileProxy.getCompanyAdmin(token, uuid)
+        val company = profileProxy.getCompanyByNationalId(token, nationalId)
 
         val ownedKeys = listOfNotNull(
             company.representativeNationalCardKey,

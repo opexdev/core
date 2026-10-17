@@ -85,12 +85,19 @@ class CompanyManagementImp(
     }
 
     override suspend fun findByRepresentativeUuid(uuid: String): Company? {
-        val company = companyRepository.findByRepresentativeUuid(uuid).awaitFirstOrNull() ?: return null
-        val boardMemberKeys = boardMemberDocumentRepository.findByCompanyId(company.id!!)
+        return companyRepository.findByRepresentativeUuid(uuid).awaitFirstOrNull()?.withBoardMembers()
+    }
+
+    override suspend fun findByCompanyNationalId(nationalId: String): Company? {
+        return companyRepository.findByNationalId(nationalId).awaitFirstOrNull()?.withBoardMembers()
+    }
+
+    private suspend fun CompanyModel.withBoardMembers(): Company {
+        val boardMemberKeys = boardMemberDocumentRepository.findByCompanyId(id!!)
             .collectList()
             .awaitFirstOrElse { emptyList() }
             .map { it.s3Key }
-        return company.toCompany(boardMemberKeys)
+        return toCompany(boardMemberKeys)
     }
 
     private suspend fun saveCompanyAndLink(company: Company, representativeUuid: String): CompanyModel {

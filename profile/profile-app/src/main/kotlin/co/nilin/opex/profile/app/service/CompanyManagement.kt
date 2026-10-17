@@ -78,6 +78,11 @@ class CompanyManagement(
         return findCompany(uuid).toAdminResponse()
     }
 
+    suspend fun getCompanyByNationalId(nationalId: String): CompanyAdminResponse {
+        return (companyPersister.findByCompanyNationalId(nationalId)
+            ?: throw OpexError.NotFound.exception("Company not found")).toAdminResponse()
+    }
+
     private suspend fun findCompany(uuid: String): Company {
         return companyPersister.findByRepresentativeUuid(uuid)
             ?: throw OpexError.NotFound.exception("Company not found")

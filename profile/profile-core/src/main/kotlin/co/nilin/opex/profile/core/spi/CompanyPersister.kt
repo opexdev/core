@@ -9,4 +9,5 @@ interface CompanyPersister {
     suspend fun ensureAvailable(availability: LegalAccountAvailability)
     suspend fun registerLegalAccount(registration: LegalAccountRegistration, creator: String): Company
     suspend fun findByRepresentativeUuid(uuid: String): Company?
+    suspend fun findByCompanyNationalId(nationalId: String): Company?
 }
