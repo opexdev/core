@@ -65,6 +65,7 @@ class ChangePasswordService(
         }
 
         keycloakProxy.resetPassword(user.id, data.newPassword)
+        keycloakProxy.setMustChangePassword(user.id, false)
     }
 
     private fun verifyToken(token: String, uuid: String): ChangePasswordTokenData {

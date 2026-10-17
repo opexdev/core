@@ -128,7 +128,7 @@ app:
   opex-bc-gateway:
     url: ${BC_GATEWAY_URL:http://opex-bc-gateway}
   storage:
-    url: ${STORAGE_URL:http://storage}
+    url: ${STORAGE_URL:http://opex-storage}
   config:
     url: ${CONFIG_URL:http://opex-config}
   auth-gateway:
@@ -138,6 +138,8 @@ app:
   support:
     url: ${SUPPORT_URL:http://opex-support}
     attachments-bucket: ${SUPPORT_ATTACHMENTS_BUCKET:opex-support-attachments}
+  company:
+    documents-bucket: ${COMPANY_DOCUMENTS_BUCKET:opex-company-documents}
   auth:
     url: ${KEYCLOAK_BASE_URL:http://keycloak:8080}
     cert-url: ${KEYCLOAK_BASE_URL:http://keycloak:8080}/realms/opex/protocol/openid-connect/certs

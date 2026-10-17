@@ -43,6 +43,11 @@ class LoginService(
             ?.let { runCatching { OTPType.valueOf(it) }.getOrNull() }
             ?: OTPType.NONE
 
+        // A pre-auth token only passes the change password filter chain, so the user cannot
+        // reach anything else until the password is replaced
+        if (user.mustChangePassword)
+            return TokenResponse(preAuthToken(username, request.password), null, null, mustChangePassword = true)
+
         if (otpType == OTPType.NONE) {
             val token = keycloakProxy.getUserToken(
                 username,
@@ -57,15 +62,7 @@ class LoginService(
 
         keycloakProxy.checkUserCredentials(user, request.password)
 
-        val token = keycloakProxy.getUserToken(
-            username,
-            request.password,
-            PRE_AUTH_CLIENT_ID,
-            preAuthClientSecretKey
-        ).apply {
-            refreshToken = null
-            refreshExpiresIn = 0
-        }
+        val token = preAuthToken(username, request.password)
 
         return when (otpType) {
             OTPType.EMAIL, OTPType.SMS -> {
@@ -137,6 +134,9 @@ class LoginService(
         val user = keycloakProxy.findUserByUsername(username)
             ?: throw OpexError.UserNotFound.exception()
 
+        // Never exchange the pre-auth token for a full one while the password is still the generated one
+        if (user.mustChangePassword) throw OpexError.PasswordChangeRequired.exception()
+
         when (val otpType = user.currentOtpMethod) {
             OTPType.EMAIL, OTPType.SMS -> {
                 val destination = when (otpType) {
@@ -179,6 +179,18 @@ class LoginService(
         sendLoginEvent(extractUserUuidFromToken(token.accessToken), token.sessionState, request, token.expiresIn)
 
         return TokenResponse(token, null, null)
+    }
+
+    private suspend fun preAuthToken(username: Username, password: String): Token {
+        return keycloakProxy.getUserToken(
+            username,
+            password,
+            PRE_AUTH_CLIENT_ID,
+            preAuthClientSecretKey
+        ).apply {
+            refreshToken = null
+            refreshExpiresIn = 0
+        }
     }
 
     // --- Helper Extension ---

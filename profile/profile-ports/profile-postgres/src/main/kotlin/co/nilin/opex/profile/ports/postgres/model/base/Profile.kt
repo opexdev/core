@@ -3,6 +3,7 @@ package co.nilin.opex.profile.ports.postgres.model.base
 import co.nilin.opex.profile.core.data.kyc.KycLevel
 import co.nilin.opex.profile.core.data.profile.Gender
 import co.nilin.opex.profile.core.data.profile.NationalityType
+import co.nilin.opex.profile.core.data.profile.PersonType
 import co.nilin.opex.profile.core.data.profile.ProfileStatus
 import java.time.LocalDateTime
 
@@ -26,5 +27,6 @@ open class Profile {
     var kycLevel: KycLevel? = KycLevel.LEVEL_1
     var mobileIdentityMatch: Boolean? = null
     var personalIdentityMatch: Boolean? = null
+    var personType: PersonType? = PersonType.NATURAL
 
 }

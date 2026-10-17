@@ -53,7 +53,8 @@ class ProfileManagement(
                     createDate = LocalDateTime.now(),
                     lastUpdateDate = LocalDateTime.now(),
                     creator = "system",
-                    kycLevel = KycLevel.LEVEL_1
+                    kycLevel = KycLevel.LEVEL_1,
+                    personType = personType
                 )
             )
         }

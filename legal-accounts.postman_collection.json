@@ -1,0 +1,204 @@
+{
+  "info": {
+    "name": "Opex - Company APIs",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    },
+    {
+      "key": "userToken",
+      "value": ""
+    },
+    {
+      "key": "uuid",
+      "value": ""
+    },
+    {
+      "key": "documentKey",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Register legal account",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "firstName",
+              "value": "",
+              "type": "text"
+            },
+            {
+              "key": "lastName",
+              "value": "",
+              "type": "text"
+            },
+            {
+              "key": "nationalCode",
+              "value": "",
+              "type": "text"
+            },
+            {
+              "key": "email",
+              "value": "",
+              "type": "text"
+            },
+            {
+              "key": "mobile",
+              "value": "",
+              "type": "text"
+            },
+            {
+              "key": "companyRegistrationNumber",
+              "value": "",
+              "type": "text"
+            },
+            {
+              "key": "companyNationalId",
+              "value": "",
+              "type": "text"
+            },
+            {
+              "key": "representativeNationalCard",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "introductionLetter",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "articlesOfAssociation",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "officialNewspaper",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "boardMemberNationalCards",
+              "type": "file",
+              "src": []
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/opex/v1/admin/company/legal-account",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "opex",
+            "v1",
+            "admin",
+            "company",
+            "legal-account"
+          ]
+        },
+        "description": "ROLE_admin. multipart/form-data.\n\nThe seven text parts are required. Every file part is optional. Allowed formats: jpg, jpeg, png, webp, svg. Max 5MB per file. Repeat `boardMemberNationalCards` once per board member.\n\nReturns the representative `uuid`, the company with its document keys, and `passwordEmailSent`."
+      }
+    },
+    {
+      "name": "Get company of a profile (admin)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/opex/v1/admin/company/{{uuid}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "opex",
+            "v1",
+            "admin",
+            "company",
+            "{{uuid}}"
+          ]
+        },
+        "description": "ROLE_admin. Includes the storage keys of the company documents."
+      }
+    },
+    {
+      "name": "Download company document (admin)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/opex/v1/admin/company/{{uuid}}/document?key={{documentKey}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "opex",
+            "v1",
+            "admin",
+            "company",
+            "{{uuid}}",
+            "document"
+          ],
+          "query": [
+            {
+              "key": "key",
+              "value": "{{documentKey}}"
+            }
+          ]
+        },
+        "description": "ROLE_admin. Streams the document bytes. `key` must be one of the keys returned by the previous request, otherwise 404. Documents are stored private, so this is the only way to read them."
+      }
+    },
+    {
+      "name": "Get my company",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{userToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/opex/v1/company",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "opex",
+            "v1",
+            "company"
+          ]
+        },
+        "description": "Authenticated user. Returns the company the caller represents, without any document key. 404 for a natural person."
+      }
+    }
+  ]
+}

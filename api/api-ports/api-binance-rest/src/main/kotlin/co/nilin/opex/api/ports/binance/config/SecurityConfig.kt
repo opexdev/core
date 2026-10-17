@@ -82,8 +82,21 @@ class SecurityConfig(
             .build()
     }
 
+    // Reachable with either a full token or the restricted pre-auth token a
+    // must-change-password login hands out
     @Bean
     @Order(2)
+    fun changePasswordSecurityChain(http: ServerHttpSecurity): SecurityWebFilterChain {
+        return http
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers("/opex/v1/user/password/change/**"))
+            .csrf { it.disable() }
+            .authorizeExchange { it.anyExchange().authenticated() }
+            .oauth2ResourceServer { it.jwt { jwt -> jwt.jwtDecoder(changePasswordJwtDecoder()) } }
+            .build()
+    }
+
+    @Bean
+    @Order(3)
     fun apiSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain {
 
         return http.csrf { it.disable() }
@@ -136,6 +149,7 @@ class SecurityConfig(
                     .pathMatchers(HttpMethod.PUT, "/opex/v1/otc/rate").hasAnyAuthority("ROLE_admin", "ROLE_rate_bot")
                     .pathMatchers(HttpMethod.GET, "/opex/v1/otc/**").permitAll()
                     .pathMatchers("/opex/v1/otc/**").hasAuthority("ROLE_admin")
+                    .pathMatchers("/opex/v1/company").authenticated()
                     .pathMatchers(HttpMethod.GET, "/opex/v1/bank-account").authenticated()
                     .pathMatchers("/opex/v1/bank-account/**").hasAuthority("PERM_bank_account:write")
                     .anyExchange().authenticated()
@@ -165,6 +179,29 @@ class SecurityConfig(
             DelegatingOAuth2TokenValidator(
                 issuerValidator,
                 audienceValidator
+            )
+        )
+        return decoder
+    }
+
+    @Bean("changePasswordJwtDecoder")
+    @Throws(Exception::class)
+    fun changePasswordJwtDecoder(): ReactiveJwtDecoder {
+        val decoder = NimbusReactiveJwtDecoder.withJwkSetUri(certUrl)
+            .webClient(webClient)
+            .build()
+        decoder.setJwtValidator(
+            DelegatingOAuth2TokenValidator(
+                JwtValidators.createDefaultWithIssuer(issUrl),
+                AudienceValidator(
+                    setOf(
+                        "ios-app",
+                        "web-app",
+                        "android-app",
+                        "opex-api-key",
+                        "pre-auth-client",
+                    )
+                )
             )
         )
         return decoder

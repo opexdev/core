@@ -36,6 +36,11 @@ interface ProfileProxy {
     suspend fun deleteAddressBook(token: String, id: Long)
     suspend fun updateAddressBook(token: String, id: Long, request: AddAddressBookItemRequest): AddressBookResponse
 
+    //Company
+    suspend fun getCompany(token: String): CompanyResponse
+    suspend fun registerLegalAccount(token: String, request: RegisterLegalAccountRequest): CompanyAdminResponse
+    suspend fun getCompanyAdmin(token: String, uuid: String): CompanyAdminResponse
+
     //Bank Account
     suspend fun addBankAccount(token: String, request: AddBankAccountRequest): BankAccountResponse
     suspend fun getBankAccounts(token: String): List<BankAccountResponse>
