@@ -93,11 +93,22 @@ class AdminUserService(
 
     private fun generatePassword(): String {
         val random = SecureRandom()
-        return (1..PASSWORD_LENGTH).map { PASSWORD_ALPHABET[random.nextInt(PASSWORD_ALPHABET.size)] }.joinToString("")
+        val groups = listOf(
+            ('A'..'Z').toList(),
+            ('a'..'z').toList(),
+            ('0'..'9').toList(),
+            listOf('!', '@', '#', '$', '%')
+        )
+        val characters = groups.map { it[random.nextInt(it.size)] }.toMutableList()
+        val alphabet = groups.flatten()
+        repeat(PASSWORD_LENGTH - characters.size) {
+            characters += alphabet[random.nextInt(alphabet.size)]
+        }
+        java.util.Collections.shuffle(characters, random)
+        return characters.joinToString("")
     }
 
     private companion object {
         const val PASSWORD_LENGTH = 10
-        val PASSWORD_ALPHABET = (('A'..'Z') + ('a'..'z') + ('0'..'9'))
     }
 }
