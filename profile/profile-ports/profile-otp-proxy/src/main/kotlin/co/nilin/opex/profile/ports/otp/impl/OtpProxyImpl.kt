@@ -5,6 +5,7 @@ import co.nilin.opex.profile.core.data.otp.OTPVerifyResponse
 import co.nilin.opex.profile.core.data.otp.TempOtpResponse
 import co.nilin.opex.profile.core.data.otp.VerifyOTPRequest
 import co.nilin.opex.profile.core.spi.OtpProxy
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
@@ -13,13 +14,16 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
 
 @Component
-class OtpProxyImpl(private val webClient: WebClient) : OtpProxy {
+class OtpProxyImpl(
+    @Qualifier("loadBalanced") private val loadBalancedWebClient: WebClient,
+    @Qualifier("plainWebClient") private val plainWebClient: WebClient
+) : OtpProxy {
 
     @Value("\${app.otp.url}")
     private lateinit var baseUrl: String
 
     override suspend fun requestOtp(newOTPRequest: NewOTPRequest): TempOtpResponse {
-        return webClient.post().uri("$baseUrl/otp")
+        return resolveClient().post().uri("$baseUrl/otp")
             .contentType(MediaType.APPLICATION_JSON)
             .body(BodyInserters.fromValue(newOTPRequest))
             .retrieve()
@@ -36,10 +40,14 @@ class OtpProxyImpl(private val webClient: WebClient) : OtpProxy {
                 }
             }
         }
-        return webClient.post().uri("$baseUrl/otp/verify")
+        return resolveClient().post().uri("$baseUrl/otp/verify")
             .contentType(MediaType.APPLICATION_JSON)
             .body(BodyInserters.fromValue(request))
             .retrieve()
             .awaitBody()
+    }
+
+    private fun resolveClient(): WebClient {
+        return if (baseUrl.startsWith("lb://")) loadBalancedWebClient else plainWebClient
     }
 }

@@ -18,14 +18,17 @@ import java.net.URI
 inline fun <reified T : Any> typeRef(): ParameterizedTypeReference<T> = object : ParameterizedTypeReference<T>() {}
 
 @Component
-class KycProxyImp(@Qualifier("loadBalanced") private val webClient: WebClient) : KycProxy {
+class KycProxyImp(
+    @Qualifier("loadBalanced") private val loadBalancedWebClient: WebClient,
+    @Qualifier("plainWebClient") private val plainWebClient: WebClient
+) : KycProxy {
     @Value("\${app.kyc.url}")
     private lateinit var baseUrl: String
     private val logger = LoggerFactory.getLogger(KycProxyImp::class.java)
 
 
     override suspend fun updateKycLevel(updateKycLevelRequest: ManualUpdateRequest) {
-        webClient.put()
+        resolveClient().put()
             .uri(URI.create("$baseUrl/${updateKycLevelRequest.userId}"))
             .contentType(MediaType.APPLICATION_JSON)
             .body(BodyInserters.fromValue(updateKycLevelRequest))
@@ -33,5 +36,9 @@ class KycProxyImp(@Qualifier("loadBalanced") private val webClient: WebClient) :
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<HttpStatus>()
             .awaitFirst()
+    }
+
+    private fun resolveClient(): WebClient {
+        return if (baseUrl.startsWith("lb://")) loadBalancedWebClient else plainWebClient
     }
 }

@@ -55,11 +55,13 @@ app:
     cert-url: ${KEYCLOAK_BASE_URL:http://keycloak:8080}/realms/opex/protocol/openid-connect/certs
     iss-url: ${TOKEN_ISSUER_URL:http://keycloak:8080/realms/opex}
   kyc:
-    url: lb://opex-kyc/v2/admin/kyc/internal
+    url: ${KYC_URL:lb://opex-kyc/v2/admin/kyc/internal}
   otp:
-    url: lb://opex-otp/v1
+    url: ${OTP_URL:lb://opex-otp/v1}
   auth-gateway:
-    url: lb://opex-auth-gateway
+    url: ${AUTH_GATEWAY_URL:lb://opex-auth-gateway}
+  config:
+    url: ${CONFIG_URL:lb://opex-config/v1}
   inquiry:
     mobile-identity: ${MOBILE_IDENTITY_INQUIRY}
     personal-identity: ${PERSONAL_IDENTITY_INQUIRY}
