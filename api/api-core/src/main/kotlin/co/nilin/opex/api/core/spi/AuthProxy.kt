@@ -40,4 +40,9 @@ interface AuthProxy {
     suspend fun resendChangePasswordOtp(request: ResendChangePasswordOtpRequest, token: String): ResendOtpResponse
     suspend fun confirmChangePassword(request: ConfirmChangePasswordRequest, token: String)
 
+    // Admin
+    suspend fun createLegalRepresentative(request: CreateLegalRepresentativeRequest, token: String): CreateLegalRepresentativeResponse
+    suspend fun sendRepresentativeCredentials(uuid: String, token: String): SendCredentialsResponse
+    suspend fun deleteUser(uuid: String, token: String)
+
 }

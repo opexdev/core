@@ -58,7 +58,8 @@ interface DetailAssetsSnapshotRepository : ReactiveCrudRepository<DetailAssetsSn
     FROM detail_assets_snapshot t
         INNER JOIN public.wallet_owner wo ON wo.uuid = t.uuid
         INNER JOIN public.currency c ON c.symbol = t.currency
-    WHERE t.batch_number = (SELECT MAX(batch_number)FROM detail_assets_snapshot) AND wo.level = '1'
+    WHERE t.batch_number = (SELECT MAX(batch_number)FROM detail_assets_snapshot)
+      AND wo.level in ('NATURAL', 'LEGAL')
     GROUP BY t.uuid, t.quote_currency, t.snapshot_date
     ORDER BY total_amount DESC
     limit :limit

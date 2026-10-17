@@ -21,6 +21,7 @@ data class Profile(
     var creator: String? = null,
     var kycLevel: KycLevel? = null,
     var mobileIdentityMatch: Boolean? = null,
-    var personalIdentityMatch: Boolean? = null
+    var personalIdentityMatch: Boolean? = null,
+    var personType: PersonType? = null
 
 )

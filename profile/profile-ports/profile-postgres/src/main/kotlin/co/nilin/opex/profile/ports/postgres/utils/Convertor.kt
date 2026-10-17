@@ -21,6 +21,7 @@ fun CompleteProfileRequest.toProfileModel(
         createDate = existing.createDate
         creator = existing.creator
         kycLevel = existing.kycLevel
+        personType = existing.personType
         lastUpdateDate = LocalDateTime.now()
 
         firstName = this@toProfileModel.firstName

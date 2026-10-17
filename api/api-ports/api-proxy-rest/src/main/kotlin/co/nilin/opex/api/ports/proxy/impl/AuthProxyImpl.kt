@@ -367,4 +367,42 @@ class AuthProxyImpl(@Qualifier("generalWebClient") private val webClient: WebCli
             }
             .awaitBodilessEntity()
     }
+
+    override suspend fun createLegalRepresentative(
+        request: CreateLegalRepresentativeRequest,
+        token: String
+    ): CreateLegalRepresentativeResponse {
+        return webClient.post()
+            .uri("$baseUrl/v1/admin/user/legal-representative")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<CreateLegalRepresentativeResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to create legal representative") }
+    }
+
+    override suspend fun sendRepresentativeCredentials(uuid: String, token: String): SendCredentialsResponse {
+        return webClient.post()
+            .uri("$baseUrl/v1/admin/user/$uuid/credentials")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<SendCredentialsResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to send credentials of $uuid") }
+    }
+
+    override suspend fun deleteUser(uuid: String, token: String) {
+        webClient.delete()
+            .uri("$baseUrl/v1/admin/user/$uuid")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ it.isError }) { response ->
+                response.createException()
+            }
+            .awaitBodilessEntity()
+    }
 }
