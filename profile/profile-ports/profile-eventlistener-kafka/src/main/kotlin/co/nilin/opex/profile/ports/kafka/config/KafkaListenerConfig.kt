@@ -13,8 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
+import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.event.EventListener
 import org.springframework.kafka.core.ConsumerFactory
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory
 import org.springframework.kafka.core.DefaultKafkaProducerFactory
@@ -24,10 +26,13 @@ import org.springframework.kafka.listener.*
 import org.springframework.kafka.support.serializer.JsonDeserializer
 import org.springframework.util.backoff.FixedBackOff
 import java.util.regex.Pattern
+import javax.annotation.PreDestroy
 
 @Configuration
 class KafkaListenerConfig {
     private val logger = LoggerFactory.getLogger(KafkaListenerConfig::class.java)
+    private var userCreatedContainer: ConcurrentMessageListenerContainer<String, UserCreatedEvent>? = null
+    private var kycLevelUpdatedContainer: ConcurrentMessageListenerContainer<String, KycLevelUpdatedEvent>? = null
 
     @Value("\${spring.kafka.bootstrap-servers}")
     private lateinit var bootstrapServers: String
@@ -79,7 +84,7 @@ class KafkaListenerConfig {
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
         container.setBeanName("UserCreatedKafkaListenerContainer")
         container.commonErrorHandler = createConsumerErrorHandler(template, "auth.DLT")
-        container.start()
+        userCreatedContainer = container
     }
 
 
@@ -95,7 +100,20 @@ class KafkaListenerConfig {
         val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
         container.setBeanName("KycLevelUpdatedKafkaListenerContainer")
         container.commonErrorHandler = createConsumerErrorHandler(template, "kyc_level_updated.DLT")
-        container.start()
+        kycLevelUpdatedContainer = container
+    }
+
+    @EventListener(ApplicationReadyEvent::class)
+    fun startKafkaListeners() {
+        userCreatedContainer?.start()
+        kycLevelUpdatedContainer?.start()
+        logger.info("Profile Kafka listeners started after application context refresh")
+    }
+
+    @PreDestroy
+    fun stopKafkaListeners() {
+        userCreatedContainer?.stop()
+        kycLevelUpdatedContainer?.stop()
     }
 
     private fun createConsumerErrorHandler(kafkaTemplate: KafkaTemplate<*, *>, dltTopic: String): CommonErrorHandler {

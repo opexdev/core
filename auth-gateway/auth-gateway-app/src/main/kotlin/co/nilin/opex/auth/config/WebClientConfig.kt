@@ -3,7 +3,6 @@ package co.nilin.opex.auth.config
 import co.nilin.opex.common.utils.LanguageUtils.getDefaultUserLanguage
 import io.netty.channel.ChannelOption
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.cloud.client.loadbalancer.LoadBalanced
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.client.reactive.ReactorClientHttpConnector
@@ -44,39 +43,28 @@ class WebClientConfig {
             .build()
     }
 
-    @LoadBalanced
-    @Bean("otpWebclientBuilder")
-    fun otpWebClientBuilder(otpConfig: OTPConfig): WebClient.Builder {
-        return WebClient.builder().baseUrl(otpConfig.url).filter(languageFilter())
-    }
-
     @Bean("otpWebClient")
-    fun otpWebClient(@Qualifier("otpWebclientBuilder") builder: WebClient.Builder): WebClient {
-        return builder.build()
+    fun otpWebClient(otpConfig: OTPConfig): WebClient {
+        return WebClient.builder()
+            .baseUrl(otpConfig.url)
+            .filter(languageFilter())
+            .build()
     }
-
-    @LoadBalanced
-    @Bean("captchaWebclientBuilder")
-    fun captchaWebClientBuilder(captchaConfig: CaptchaConfig): WebClient.Builder {
-        return WebClient.builder().baseUrl(captchaConfig.url).filter(languageFilter())
-    }
-
 
     @Bean("captchaWebClient")
-    fun captchaWebClient(@Qualifier("captchaWebclientBuilder") builder: WebClient.Builder): WebClient {
-        return builder.build()
+    fun captchaWebClient(captchaConfig: CaptchaConfig): WebClient {
+        return WebClient.builder()
+            .baseUrl(captchaConfig.url)
+            .filter(languageFilter())
+            .build()
     }
-
-    @LoadBalanced
-    @Bean("deviceManagementWebclientBuilder")
-    fun deviceManagementWebClientBuilder(deviceManagement: DeviceManagementConfig): WebClient.Builder {
-        return WebClient.builder().baseUrl(deviceManagement.url).filter(languageFilter())
-    }
-
 
     @Bean("deviceManagementClient")
-    fun deviceManagementWebClient(@Qualifier("deviceManagementWebclientBuilder") builder: WebClient.Builder): WebClient {
-        return builder.build()
+    fun deviceManagementWebClient(deviceManagement: DeviceManagementConfig): WebClient {
+        return WebClient.builder()
+            .baseUrl(deviceManagement.url)
+            .filter(languageFilter())
+            .build()
     }
 
     private fun languageFilter() = ExchangeFilterFunction { request, next ->
