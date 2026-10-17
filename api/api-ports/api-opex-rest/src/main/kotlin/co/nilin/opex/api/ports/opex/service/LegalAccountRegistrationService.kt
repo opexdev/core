@@ -1,5 +1,6 @@
 package co.nilin.opex.api.ports.opex.service
 
+import co.nilin.opex.api.core.inout.LegalAccountAvailabilityRequest
 import co.nilin.opex.api.core.inout.LegalAccountRegistrationResponse
 import co.nilin.opex.api.core.inout.RegisterLegalAccountRequest
 import co.nilin.opex.api.core.inout.auth.CreateLegalRepresentativeRequest
@@ -49,6 +50,17 @@ class LegalAccountRegistrationService(
         documents: LegalAccountDocuments
     ): LegalAccountRegistrationResponse {
         validate(details)
+
+        profileProxy.ensureLegalAccountAvailable(
+            token,
+            LegalAccountAvailabilityRequest(
+                nationalCode = details.nationalCode,
+                email = details.email,
+                mobile = details.mobile,
+                companyRegistrationNumber = details.companyRegistrationNumber,
+                companyNationalId = details.companyNationalId
+            )
+        )
 
         val boardMemberCards = documents.boardMemberNationalCards?.asFlow()?.toList() ?: emptyList()
         val namedDocuments = listOfNotNull(

@@ -10,7 +10,6 @@ data class CompanyResponse(
     val updateDate: LocalDateTime?
 )
 
-// Document keys are admin-only and must never reach the representative
 data class CompanyAdminResponse(
     val id: Long,
     val registrationNumber: String,
@@ -22,6 +21,14 @@ data class CompanyAdminResponse(
     val boardMemberDocumentKeys: List<String>,
     val createDate: LocalDateTime?,
     val updateDate: LocalDateTime?
+)
+
+data class LegalAccountAvailabilityRequest(
+    val nationalCode: String,
+    val email: String,
+    val mobile: String,
+    val companyRegistrationNumber: String,
+    val companyNationalId: String
 )
 
 data class RegisterLegalAccountRequest(

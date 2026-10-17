@@ -212,7 +212,6 @@ Behavior: Streams the stored document. Documents are uploaded private, so this i
         val token = securityContext.jwtAuthentication().tokenValue()
         val company = profileProxy.getCompanyAdmin(token, uuid)
 
-        // Scoped to this company so the route cannot be used to read unrelated objects
         val ownedKeys = listOfNotNull(
             company.representativeNationalCardKey,
             company.introductionLetterKey,

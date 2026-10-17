@@ -42,7 +42,6 @@ class AdminUserService(
             request.mobile
         )
 
-        // Downstream modules build the profile and the wallet owner off this event
         authProducer.send(
             UserCreatedEvent(
                 uuid = uuid,
@@ -63,7 +62,6 @@ class AdminUserService(
         val email = user.email ?: throw OpexError.BadRequest.exception("User has no email address")
 
         val password = generatePassword()
-        // Flagged first so a failure here never leaves a usable generated password behind
         keycloakProxy.setMustChangePassword(uuid, true)
         keycloakProxy.resetPassword(uuid, password)
 

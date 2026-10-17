@@ -3,10 +3,12 @@ package co.nilin.opex.profile.app.service
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.profile.app.dto.CompanyAdminResponse
 import co.nilin.opex.profile.app.dto.CompanyResponse
+import co.nilin.opex.profile.app.dto.LegalAccountAvailabilityRequest
 import co.nilin.opex.profile.app.dto.RegisterLegalAccountRequest
 import co.nilin.opex.profile.core.data.event.KycLevelUpdatedEvent
 import co.nilin.opex.profile.core.data.kyc.KycLevel
 import co.nilin.opex.profile.core.data.profile.Company
+import co.nilin.opex.profile.core.data.profile.LegalAccountAvailability
 import co.nilin.opex.profile.core.data.profile.LegalAccountRegistration
 import co.nilin.opex.profile.core.spi.CompanyPersister
 import co.nilin.opex.profile.core.spi.KycLevelUpdatedPublisher
@@ -19,9 +21,29 @@ class CompanyManagement(
     private val kycLevelUpdatedPublisher: KycLevelUpdatedPublisher
 ) {
 
-    suspend fun registerLegalAccount(request: RegisterLegalAccountRequest, creator: String): CompanyAdminResponse {
-        validate(request)
+    suspend fun ensureAvailable(request: LegalAccountAvailabilityRequest) {
+        val missing = buildList {
+            if (request.nationalCode.isBlank()) add("nationalCode")
+            if (request.email.isBlank()) add("email")
+            if (request.mobile.isBlank()) add("mobile")
+            if (request.companyRegistrationNumber.isBlank()) add("companyRegistrationNumber")
+            if (request.companyNationalId.isBlank()) add("companyNationalId")
+        }
+        if (missing.isNotEmpty())
+            throw OpexError.InvalidRequestBody.exception("Missing required fields: ${missing.joinToString()}")
 
+        companyPersister.ensureAvailable(
+            LegalAccountAvailability(
+                nationalCode = request.nationalCode,
+                email = request.email,
+                mobile = request.mobile,
+                companyRegistrationNumber = request.companyRegistrationNumber,
+                companyNationalId = request.companyNationalId
+            )
+        )
+    }
+
+    suspend fun registerLegalAccount(request: RegisterLegalAccountRequest, creator: String): CompanyAdminResponse {
         val company = companyPersister.registerLegalAccount(
             LegalAccountRegistration(
                 uuid = request.uuid,
@@ -41,7 +63,6 @@ class CompanyManagement(
             creator
         )
 
-        // Propagates to the keycloak role and the profile kyc level, same as automatic approval
         kycLevelUpdatedPublisher.publish(
             KycLevelUpdatedEvent(request.uuid, KycLevel.LEVEL_2, LocalDateTime.now())
         )
@@ -60,21 +81,6 @@ class CompanyManagement(
     private suspend fun findCompany(uuid: String): Company {
         return companyPersister.findByRepresentativeUuid(uuid)
             ?: throw OpexError.NotFound.exception("Company not found")
-    }
-
-    private fun validate(request: RegisterLegalAccountRequest) {
-        val missing = buildList {
-            if (request.uuid.isBlank()) add("uuid")
-            if (request.firstName.isBlank()) add("firstName")
-            if (request.lastName.isBlank()) add("lastName")
-            if (request.nationalCode.isBlank()) add("nationalCode")
-            if (request.email.isBlank()) add("email")
-            if (request.mobile.isBlank()) add("mobile")
-            if (request.companyRegistrationNumber.isBlank()) add("companyRegistrationNumber")
-            if (request.companyNationalId.isBlank()) add("companyNationalId")
-        }
-        if (missing.isNotEmpty())
-            throw OpexError.InvalidRequestBody.exception("Missing required fields: ${missing.joinToString()}")
     }
 
     private fun Company.toResponse() = CompanyResponse(id!!, registrationNumber, nationalId, createDate, updateDate)

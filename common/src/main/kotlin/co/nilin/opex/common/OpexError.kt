@@ -211,6 +211,13 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     BankAccountNotFound(13047, "Bank account not found", HttpStatus.NOT_FOUND),
     AddressBookNotFound(13048, "Address book not found", HttpStatus.NOT_FOUND),
     InvalidProfileData(13049, "Invalid profile data", HttpStatus.BAD_REQUEST),
+    NationalCodeAlreadyExists(13050, "National code already belongs to another profile", HttpStatus.CONFLICT),
+    CompanyAlreadyRegistered(13051, "Company is already registered", HttpStatus.CONFLICT),
+    CompanyIdentifiersMismatch(
+        13052,
+        "Registration number and national id belong to different companies",
+        HttpStatus.CONFLICT
+    ),
 
     //Storage 14000
     BucketNotFound(14001, "Bucket not found", HttpStatus.NOT_FOUND),

@@ -304,6 +304,17 @@ class ProfileProxyImpl(@Qualifier("generalWebClient") private val webClient: Web
             .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get company") }
     }
 
+    override suspend fun ensureLegalAccountAvailable(token: String, request: LegalAccountAvailabilityRequest) {
+        webClient.post()
+            .uri("$baseUrl/admin/company/legal-account/availability")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ it.isError }) { response -> response.createException() }
+            .awaitBodilessEntity()
+    }
+
     override suspend fun registerLegalAccount(
         token: String,
         request: RegisterLegalAccountRequest

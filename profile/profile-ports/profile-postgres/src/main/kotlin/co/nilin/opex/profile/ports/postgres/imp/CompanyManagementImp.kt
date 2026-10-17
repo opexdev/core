@@ -3,6 +3,7 @@ package co.nilin.opex.profile.ports.postgres.imp
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.profile.core.data.kyc.KycLevel
 import co.nilin.opex.profile.core.data.profile.Company
+import co.nilin.opex.profile.core.data.profile.LegalAccountAvailability
 import co.nilin.opex.profile.core.data.profile.LegalAccountRegistration
 import co.nilin.opex.profile.core.data.profile.PersonType
 import co.nilin.opex.profile.core.data.profile.ProfileStatus
@@ -27,6 +28,31 @@ class CompanyManagementImp(
     private val boardMemberDocumentRepository: CompanyBoardMemberDocumentRepository,
     private val profileRepository: ProfileRepository
 ) : CompanyPersister {
+
+    override suspend fun ensureAvailable(availability: LegalAccountAvailability) {
+        profileRepository.findLatestByIdentifier(availability.nationalCode).awaitFirstOrNull()?.let {
+            throw OpexError.NationalCodeAlreadyExists.exception()
+        }
+        profileRepository.findByEmail(availability.email)?.awaitFirstOrNull()?.let {
+            throw OpexError.EmailAlreadyExists.exception()
+        }
+        profileRepository.findByMobile(availability.mobile)?.awaitFirstOrNull()?.let {
+            throw OpexError.MobileAlreadyExists.exception()
+        }
+
+        companyRepository
+            .findByRegistrationNumberOrNationalId(
+                availability.companyRegistrationNumber,
+                availability.companyNationalId
+            )
+            .awaitFirstOrNull()
+            ?.let { found ->
+                if (found.registrationNumber != availability.companyRegistrationNumber ||
+                    found.nationalId != availability.companyNationalId
+                ) throw OpexError.CompanyIdentifiersMismatch.exception()
+                throw OpexError.CompanyAlreadyRegistered.exception()
+            }
+    }
 
     @Transactional
     override suspend fun registerLegalAccount(registration: LegalAccountRegistration, creator: String): Company {
@@ -72,16 +98,17 @@ class CompanyManagementImp(
             throw OpexError.BadRequest.exception("Profile is already a representative of a company")
         }
 
-        val existing = companyRepository
+        companyRepository
             .findByRegistrationNumberOrNationalId(company.registrationNumber, company.nationalId)
             .awaitFirstOrNull()
+            ?.let { found ->
+                if (found.registrationNumber != company.registrationNumber ||
+                    found.nationalId != company.nationalId
+                ) throw OpexError.CompanyIdentifiersMismatch.exception()
+                throw OpexError.CompanyAlreadyRegistered.exception()
+            }
 
-        // A partial match means the two identifiers point at different companies
-        if (existing != null &&
-            (existing.registrationNumber != company.registrationNumber || existing.nationalId != company.nationalId)
-        ) throw OpexError.BadRequest.exception("Registration number and national id belong to different companies")
-
-        val saved = existing ?: companyRepository.save(
+        val saved = companyRepository.save(
             CompanyModel().apply {
                 registrationNumber = company.registrationNumber
                 nationalId = company.nationalId
@@ -106,8 +133,6 @@ class CompanyManagementImp(
         return saved
     }
 
-    // The UserCreated kafka listener creates this same row, and may land either side of this call,
-    // so the write has to be a single upsert rather than a read followed by an insert
     private suspend fun upsertRepresentativeProfile(registration: LegalAccountRegistration, creator: String) {
         profileRepository.upsertLegalRepresentative(
             userId = registration.uuid,

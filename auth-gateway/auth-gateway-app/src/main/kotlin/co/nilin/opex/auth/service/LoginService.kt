@@ -43,8 +43,6 @@ class LoginService(
             ?.let { runCatching { OTPType.valueOf(it) }.getOrNull() }
             ?: OTPType.NONE
 
-        // A pre-auth token only passes the change password filter chain, so the user cannot
-        // reach anything else until the password is replaced
         if (user.mustChangePassword)
             return TokenResponse(preAuthToken(username, request.password), null, null, mustChangePassword = true)
 
@@ -134,7 +132,6 @@ class LoginService(
         val user = keycloakProxy.findUserByUsername(username)
             ?: throw OpexError.UserNotFound.exception()
 
-        // Never exchange the pre-auth token for a full one while the password is still the generated one
         if (user.mustChangePassword) throw OpexError.PasswordChangeRequired.exception()
 
         when (val otpType = user.currentOtpMethod) {
