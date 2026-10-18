@@ -291,5 +291,64 @@ class ProfileProxyImpl(@Qualifier("generalWebClient") private val webClient: Web
             .bodyToMono<ProfileApprovalRequestUser>()
             .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get profile approval request") }
     }
-}
 
+
+    override suspend fun getCompany(token: String): CompanyResponse {
+        return webClient.get()
+            .uri("$baseUrl/company")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<CompanyResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get company") }
+    }
+
+    override suspend fun ensureLegalAccountAvailable(token: String, request: LegalAccountAvailabilityRequest) {
+        webClient.post()
+            .uri("$baseUrl/admin/company/legal-account/availability")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ it.isError }) { response -> response.createException() }
+            .awaitBodilessEntity()
+    }
+
+    override suspend fun registerLegalAccount(
+        token: String,
+        request: RegisterLegalAccountRequest
+    ): CompanyAdminResponse {
+        return webClient.post()
+            .uri("$baseUrl/admin/company/legal-account")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<CompanyAdminResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to register legal account") }
+    }
+
+    override suspend fun getCompanyByNationalId(token: String, nationalId: String): CompanyAdminResponse {
+        return webClient.get()
+            .uri("$baseUrl/admin/company/by-national-id/$nationalId")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<CompanyAdminResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get company $nationalId") }
+    }
+
+    override suspend fun getCompanyAdmin(token: String, uuid: String): CompanyAdminResponse {
+        return webClient.get()
+            .uri("$baseUrl/admin/company/$uuid")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<CompanyAdminResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get company of $uuid") }
+    }
+}

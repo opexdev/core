@@ -10,4 +10,5 @@ object Attributes {
     const val EMAIL = "email"
     const val MOBILE = "mobile"
     const val OTP = "otpConfig"
+    const val MUST_CHANGE_PASSWORD = "mustChangePassword"
 }

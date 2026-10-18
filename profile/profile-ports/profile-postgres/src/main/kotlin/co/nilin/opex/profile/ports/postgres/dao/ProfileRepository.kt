@@ -115,4 +115,36 @@ interface ProfileRepository : ReactiveCrudRepository<ProfileModel, Long> {
     @Query("UPDATE profile SET kyc_level = :level WHERE user_id = :userId")
     fun updateKycLevelByUserId(userId: String, level: String): Mono<Void>
 
+    // Single statement so it cannot race the UserCreated kafka listener, which creates the same row
+    @Query(
+        """
+        INSERT INTO profile (user_id, email, mobile, first_name, last_name, identifier,
+                             person_type, kyc_level, status, create_date, last_update_date, creator)
+        VALUES (:userId, :email, :mobile, :firstName, :lastName, :identifier,
+                :personType, :kycLevel, :status, now(), now(), :creator)
+        ON CONFLICT (user_id) DO UPDATE
+            SET email            = EXCLUDED.email,
+                mobile           = EXCLUDED.mobile,
+                first_name       = EXCLUDED.first_name,
+                last_name        = EXCLUDED.last_name,
+                identifier       = EXCLUDED.identifier,
+                person_type      = EXCLUDED.person_type,
+                kyc_level        = EXCLUDED.kyc_level,
+                status           = EXCLUDED.status,
+                last_update_date = now()
+    """
+    )
+    fun upsertLegalRepresentative(
+        userId: String,
+        email: String,
+        mobile: String,
+        firstName: String,
+        lastName: String,
+        identifier: String,
+        personType: String,
+        kycLevel: String,
+        status: String,
+        creator: String
+    ): Mono<Void>
+
 }
