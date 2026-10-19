@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.app.service
 
+import co.nilin.opex.wallet.ports.kafka.listener.model.PersonType
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.ReservedTransferResponse
 import co.nilin.opex.wallet.app.service.otc.GraphService
@@ -332,7 +333,7 @@ class TransferService(
         val receiverOwner = walletOwnerManager.findWalletOwner(receiverUuid) ?: walletOwnerManager.createWalletOwner(
             receiverUuid,
             "Not Set",
-            "1"
+            PersonType.NATURAL.name
         )
         val receiverCurrency = currencyManager.fetchCurrency(FetchCurrency(symbol = destSymbol))
             ?: throw OpexError.CurrencyNotFound.exception()

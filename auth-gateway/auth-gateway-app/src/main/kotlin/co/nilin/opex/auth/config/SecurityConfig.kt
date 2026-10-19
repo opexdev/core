@@ -1,6 +1,7 @@
 package co.nilin.opex.auth.config
 
 import co.nilin.opex.auth.utils.AudienceValidator
+import co.nilin.opex.common.security.ReactiveCustomJwtConverter
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -74,6 +75,17 @@ class SecurityConfig(
 
     @Bean
     @Order(2)
+    fun changePasswordSecurityChain(http: ServerHttpSecurity): SecurityWebFilterChain {
+        return http
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers("/v1/user/password/change/**"))
+            .csrf { it.disable() }
+            .authorizeExchange { it.anyExchange().authenticated() }
+            .oauth2ResourceServer { it.jwt { jwt -> jwt.jwtDecoder(changePasswordJwtDecoder()) } }
+            .build()
+    }
+
+    @Bean
+    @Order(3)
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain {
         return http
             .csrf { it.disable() }
@@ -84,9 +96,10 @@ class SecurityConfig(
                     .pathMatchers("/v1/user/public/**").permitAll()
                     .pathMatchers("/v1/user/update/**").permitAll()
                     .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                    .pathMatchers("/v1/admin/**").hasAuthority("ROLE_admin")
                     .anyExchange().authenticated()
             }
-            .oauth2ResourceServer { it.jwt(Customizer.withDefaults()) }
+            .oauth2ResourceServer { it.jwt { jwt -> jwt.jwtAuthenticationConverter(ReactiveCustomJwtConverter()) } }
             .build()
     }
 
@@ -131,6 +144,29 @@ class SecurityConfig(
             DelegatingOAuth2TokenValidator(
                 issuerValidator,
                 audienceValidator
+            )
+        )
+        return decoder
+    }
+
+    @Bean("changePasswordJwtDecoder")
+    @Throws(Exception::class)
+    fun changePasswordJwtDecoder(): ReactiveJwtDecoder {
+        val decoder = NimbusReactiveJwtDecoder.withJwkSetUri(keycloakConfig.certUrl)
+            .webClient(webClient)
+            .build()
+        decoder.setJwtValidator(
+            DelegatingOAuth2TokenValidator(
+                JwtValidators.createDefaultWithIssuer(keycloakConfig.issUrl),
+                AudienceValidator(
+                    setOf(
+                        "ios-app",
+                        "web-app",
+                        "android-app",
+                        "opex-api-key",
+                        "pre-auth-client",
+                    )
+                )
             )
         )
         return decoder

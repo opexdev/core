@@ -6,6 +6,7 @@ data class UserCreatedEvent(
     val email: String?,
     val mobile: String?,
     val firstName: String?,
-    val lastName: String?
+    val lastName: String?,
+    val personType: PersonType = PersonType.NATURAL
 ) : AuthEvent()
 
