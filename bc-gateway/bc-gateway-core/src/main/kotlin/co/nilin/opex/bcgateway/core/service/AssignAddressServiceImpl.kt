@@ -30,8 +30,6 @@ open class AssignAddressServiceImpl(
     @Transactional
     override suspend fun assignAddress(user: String, currency: String, gatewayUuid: String): List<AssignedAddress> {
 
-        addressLifeTime = 7200
-
         val requestedGateway = currencyHandler.fetchOnChainGateway(currency = currency, gatewayUuid = gatewayUuid)
             ?: throw OpexError.CurrencyNotFound.exception()
 

@@ -120,7 +120,7 @@ app:
   wallet:
     url: lb://opex-wallet
   address:
-    life-time: 167234670
+    life-time: ${ADDRESS_EXP_TIME:7200}  #    second
   custom-message:
     enabled: ${CUSTOM_MESSAGE_ENABLED:false}
     base-url: ${CUSTOM_MESSAGE_URL}
