@@ -332,7 +332,7 @@ class ProfileProxyImpl(@Qualifier("generalWebClient") private val webClient: Web
 
     override suspend fun getCompanyByNationalId(token: String, nationalId: String): CompanyAdminResponse {
         return webClient.get()
-            .uri("$baseUrl/admin/company/by-national-id/$nationalId")
+            .uri("$baseUrl/admin/company/national-id/$nationalId")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .retrieve()

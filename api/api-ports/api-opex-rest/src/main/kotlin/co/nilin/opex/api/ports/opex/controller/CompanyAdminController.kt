@@ -132,6 +132,41 @@ Rollback: A failure before the password email removes the Keycloak user and the 
         )
     }
 
+    @GetMapping("/national-id/{nationalId}", produces = [MediaType.APPLICATION_JSON_VALUE])
+    @Operation(
+        summary = "Get company by national id",
+        description = """GET /opex/v1/admin/company/national-id/{nationalId}.
+Security: Bearer admin-token required. Required authority: ROLE_admin.
+Behavior: Returns the company with this national id, including the storage keys of its documents.""",
+        security = [SecurityRequirement(name = "bearerAuth")],
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(mediaType = "application/json", schema = Schema(implementation = CompanyAdminResponse::class))]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.",
+                content = [Content()]
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "Forbidden. Required authority is missing: ROLE_admin. No response body.",
+                content = [Content()]
+            ),
+            ApiResponse(responseCode = "404", description = "No company has this national id.", content = [Content()])
+        ]
+    )
+    suspend fun getCompanyByNationalId(
+        @Parameter(name = "nationalId", description = "Company national id.", required = true)
+        @PathVariable("nationalId") nationalId: String,
+        @Parameter(hidden = true)
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): CompanyAdminResponse {
+        return profileProxy.getCompanyByNationalId(securityContext.jwtAuthentication().tokenValue(), nationalId)
+    }
+
     @GetMapping("/{uuid}", produces = [MediaType.APPLICATION_JSON_VALUE])
     @Operation(
         summary = "Get company of user",

@@ -3,6 +3,7 @@ package co.nilin.opex.profile.ports.postgres.dao
 import co.nilin.opex.profile.core.data.kyc.KycLevel
 import co.nilin.opex.profile.core.data.profile.Gender
 import co.nilin.opex.profile.core.data.profile.NationalityType
+import co.nilin.opex.profile.core.data.profile.PersonType
 import co.nilin.opex.profile.core.data.profile.ProfileStatus
 import co.nilin.opex.profile.ports.postgres.ProfileFullNameProjection
 import co.nilin.opex.profile.ports.postgres.model.entity.ProfileModel
@@ -38,6 +39,7 @@ interface ProfileRepository : ReactiveCrudRepository<ProfileModel, Long> {
       AND (:gender IS NULL OR p.gender = :gender)
       AND (:status IS NULL OR p.status = :status)
       AND (:kycLevel IS NULL OR p.kyc_level = :kycLevel)
+      AND (:personType IS NULL OR p.person_type = :personType)
       AND (:createDateFrom IS NULL OR p.create_date >= :createDateFrom)
       AND (:createDateTo IS NULL OR p.create_date <= :createDateTo)
     ORDER BY p.create_date DESC
@@ -55,6 +57,7 @@ interface ProfileRepository : ReactiveCrudRepository<ProfileModel, Long> {
         gender: Gender?,
         status: ProfileStatus?,
         kycLevel: KycLevel?,
+        personType: PersonType?,
         createDateFrom: LocalDateTime?,
         createDateTo: LocalDateTime?,
         limit: Int,
@@ -75,6 +78,7 @@ interface ProfileRepository : ReactiveCrudRepository<ProfileModel, Long> {
       AND (:gender IS NULL OR p.gender = :gender)
       AND (:status IS NULL OR p.status = :status)
       AND (:kycLevel IS NULL OR p.kyc_level = :kycLevel)
+      AND (:personType IS NULL OR p.person_type = :personType)
       AND (:createDateFrom IS NULL OR p.create_date >= :createDateFrom)
       AND (:createDateTo IS NULL OR p.create_date <= :createDateTo)
     ORDER BY p.create_date
@@ -92,6 +96,7 @@ interface ProfileRepository : ReactiveCrudRepository<ProfileModel, Long> {
         gender: Gender?,
         status: ProfileStatus?,
         kycLevel: KycLevel?,
+        personType: PersonType?,
         createDateFrom: LocalDateTime?,
         createDateTo: LocalDateTime?,
         limit: Int,

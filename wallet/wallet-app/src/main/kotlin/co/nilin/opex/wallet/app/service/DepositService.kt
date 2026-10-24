@@ -1,5 +1,6 @@
 package co.nilin.opex.wallet.app.service
 
+import co.nilin.opex.wallet.ports.kafka.listener.model.PersonType
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.app.dto.ManualTransferRequest
@@ -7,7 +8,6 @@ import co.nilin.opex.wallet.app.dto.PaymentDepositRequest
 import co.nilin.opex.wallet.app.dto.PaymentDepositResponse
 import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.*
-import co.nilin.opex.wallet.core.model.DepositType
 import co.nilin.opex.wallet.core.spi.*
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -28,6 +28,7 @@ class DepositService(
     private val depositEventSubmitter: DepositEventSubmitter,
     private val transferManager: TransferManager,
     private val currencyService: CurrencyServiceManager,
+    private val profileProxy: ProfileProxy,
     @Value("\${app.deposit.snapshot.enabled:true}")
     private val depositSnapshotEnabled: Boolean
 ) {
@@ -90,7 +91,7 @@ class DepositService(
 
         walletOwnerManager.findWalletOwner(receiverUuid)
             ?.level
-            ?: walletOwnerManager.createWalletOwner(receiverUuid, "not set", "1").level
+            ?: walletOwnerManager.createWalletOwner(receiverUuid, "not set", PersonType.NATURAL.name).level
 
         return deposit(
             symbol = symbol,
@@ -117,11 +118,23 @@ class DepositService(
     ): DepositWebhookResponse {
 
         logger.info(
-            "New incoming deposit request : $ to ${request.externalIdentifier} on ${request.symbol} at ${LocalDateTime.now()}"
-        )
+            "New incoming deposit request : $ to ${
+                request.sourceDepositNumber?.let { "source: $it" } ?: request.externalIdentifier?.let { "payId: $it" }
+            } on ${request.symbol} at ${LocalDateTime.now()}")
+        val receiverUuid = when {
+            !request.sourceDepositNumber.isNullOrEmpty() -> profileProxy.findAccountOwner(request.sourceDepositNumber!!)
+                ?: throw OpexError.IdentifierNotFound.exception(
+                    "Deposit account ${request.sourceDepositNumber} not found"
+                )
 
-        val receiverUuid = walletOwnerManager.findWalletOwnerByExternalIdentifier(request.externalIdentifier)?.uuid
-            ?: throw OpexError.IdentifierNotFound.exception("Identifier ${request.externalIdentifier} not found")
+            !request.externalIdentifier.isNullOrEmpty() -> walletOwnerManager.findWalletOwnerByExternalIdentifier(
+                request.externalIdentifier!!
+            )?.uuid ?: throw OpexError.IdentifierNotFound.exception(
+                "Identifier ${request.externalIdentifier} not found"
+            )
+
+            else -> throw OpexError.IdentifierNotFound.exception("Deposit identifier not found")
+        }
         //todo to have meaningful transfer labels in deposits section we have added BANK_DEPOSIT to cover sheba and account transfers in this service
         with(request) {
             deposit(
@@ -130,7 +143,10 @@ class DepositService(
                 receiverWalletType = WalletType.MAIN,
                 senderUuid = walletOwnerManager.systemUuid,
                 amount = amount,
-                description = "Transfer to $depositNumber at $date, payId: $externalIdentifier",
+                description = "Transfer to $destDepositNumber at $date, ${
+                    sourceDepositNumber?.let { "source: $it" }
+                        ?: externalIdentifier?.let { "payId: $it" }
+                }",
                 transferRef = referenceNumber,
                 chain = null,
                 attachment = null,

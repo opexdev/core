@@ -11,6 +11,7 @@ data class ProfileRequest(
     var gender: Gender? = null,
     var status: ProfileStatus? = null,
     var kycLevel: KycLevel? = null,
+    var personType: PersonType? = null,
     var createDateFrom: Long? = null,
     var createDateTo: Long? = null,
     var limit : Int = 10,

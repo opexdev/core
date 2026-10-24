@@ -4,9 +4,10 @@ import java.math.BigDecimal
 
 data class DepositWebhookRequest(
     val referenceNumber: String,
-    val depositNumber: String,
+    val destDepositNumber: String,
+    val sourceDepositNumber: String? = null,
     val symbol: String,
     val amount: BigDecimal,
-    val externalIdentifier: String,
+    val externalIdentifier: String? = null,
     val date: Long
 )
