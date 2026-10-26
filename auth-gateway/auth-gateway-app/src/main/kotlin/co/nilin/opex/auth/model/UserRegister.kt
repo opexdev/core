@@ -50,11 +50,11 @@ data class KeycloakUser(
     val attributes: Map<String, List<String>>?,
 ) {
     val mobile: String? = attributes?.get(Attributes.MOBILE)?.get(0)
+    val mustChangePassword: Boolean = attributes?.get(Attributes.MUST_CHANGE_PASSWORD)?.firstOrNull().toBoolean()
 }
 
 data class ConfirmForgetRequest(
     val newPassword: String,
-    val newPasswordConfirmation: String,
     val token: String,
 )
 

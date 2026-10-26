@@ -23,7 +23,7 @@ class UserRegistrationService(
     @Transactional
     suspend fun registerNewUser(event: UserCreatedEvent) {
         val title = "${event.email ?: ""} ${event.mobile ?: ""}|"
-        val owner = walletOwnerManager.createWalletOwner(event.uuid, title, "1") //TODO define proper user levels
+        val owner = walletOwnerManager.createWalletOwner(event.uuid, title, event.personType.name)
 
         val currencies = currencyService.fetchCurrencies()?.currencies ?: run {
             logger.warn("Could not fetch currencies")

@@ -58,7 +58,7 @@ class ForgetPasswordService(
     }
 
     suspend fun confirmForget(request: ConfirmForgetRequest) {
-        if (request.newPassword != request.newPasswordConfirmation)
+        if (request.newPassword.isBlank())
             throw OpexError.InvalidPassword.exception()
 
         val data = tempTokenService.verifyToken(request.token)

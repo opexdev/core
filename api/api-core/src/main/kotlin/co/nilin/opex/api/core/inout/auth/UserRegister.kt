@@ -57,7 +57,6 @@ data class KeycloakUser(
 
 data class ConfirmForgetRequest(
     val newPassword: String,
-    val newPasswordConfirmation: String,
     val token: String,
 )
 

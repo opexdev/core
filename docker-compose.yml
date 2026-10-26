@@ -384,39 +384,6 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-  auth:
-    image: ghcr.io/opexdev/auth
-    environment:
-      - JAVA_OPTS=-Xmx256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-      - SPRING_PROFILES_ACTIVE=${AUTH_SPRING_PROFILES_ACTIVE:-}
-      - SPRING_CLOUD_VAULT_ENABLED=${SPRING_CLOUD_VAULT_ENABLED:-true}
-      - KAFKA_IP_PORT=kafka-1:29092,kafka-2:29092,kafka-3:29092
-      - CONSUL_HOST=consul
-      - DB_IP_PORT=postgres-auth
-      - BACKEND_USER=$BACKEND_USER
-      - ADMIN_URL=$KEYCLOAK_ADMIN_URL
-      - FRONTEND_URL=$KEYCLOAK_FRONTEND_URL
-      - VERIFY_REDIRECT_URL=$KEYCLOAK_VERIFY_REDIRECT_URL
-      - FORGOT_REDIRECT_URL=$KEYCLOAK_FORGOT_REDIRECT_URL
-      - VAULT_URL=${VAULT_URL:-http://vault:8200}
-      - VAULT_HOST=${VAULT_HOST:-vault}
-      - APP_NAME=$APP_NAME
-      - APP_BASE_URL=$APP_BASE_URL
-      - WHITELIST_REGISTER_ENABLED=$WHITELIST_REGISTER_ENABLED
-      - WHITELIST_LOGIN_ENABLED=$WHITELIST_LOGIN_ENABLED
-    depends_on:
-      - kafka-1
-      - kafka-2
-      - kafka-3
-      - consul
-      - postgres-auth
-    networks:
-      - default
-    labels:
-      collect_logs: "true"
-    deploy:
-      restart_policy:
-        condition: on-failure
   auth-gateway:
     image: ghcr.io/opexdev/auth-gateway
     environment:
@@ -437,6 +404,14 @@ services:
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
       - OPEN_API_SERVER_URL=${OPEN_API_SERVER_URL_AUTH}
       - APP_NAME=${APP_NAME}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_FROM=${SMTP_FROM}
+      - SMTP_PROXY_HOST=${SMTP_PROXY_HOST}
+      - SMTP_PROXY_PORT=${SMTP_PROXY_PORT}
+      - SMTP_PROXY_ENABLED=${SMTP_PROXY_ENABLED}
     volumes:
       - auth-gateway-keys:/app/keys
     depends_on:
@@ -543,6 +518,7 @@ services:
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
       - OPEN_API_SERVER_URL=${OPEN_API_SERVER_URL_API}
       - SUPPORT_ATTACHMENTS_BUCKET=${SUPPORT_ATTACHMENTS_BUCKET}
+      - COMPANY_DOCUMENTS_BUCKET=${COMPANY_DOCUMENTS_BUCKET}
     depends_on:
       - consul
       - postgres-api
@@ -565,7 +541,7 @@ services:
       - BACKEND_USER=${BACKEND_USER}
       - VAULT_HOST=${VAULT_HOST:-vault}
       - SWAGGER_AUTH_URL=$KEYCLOAK_FRONTEND_URL
-      - ADDRESS_EXP_TIME=100
+      - ADDRESS_EXP_TIME=${ADDRESS_EXP_TIME}
       - TOKEN_ISSUER_URL=${KC_ISSUER_URL}
       - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL}
       - CUSTOM_MESSAGE_ENABLED=${CUSTOM_MESSAGE_ENABLED}

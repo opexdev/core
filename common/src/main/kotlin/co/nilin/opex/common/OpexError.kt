@@ -61,6 +61,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     CaptchaRequired(5020, "Captcha required", HttpStatus.BAD_REQUEST),
     UsernameOrPasswordIsIncorrect(5021, "Username or password is incorrect", HttpStatus.BAD_REQUEST),
     UserAlreadyExists(5022, "User is already registered", HttpStatus.BAD_REQUEST),
+    PasswordChangeRequired(5023, "Password must be changed before continuing", HttpStatus.FORBIDDEN),
 
     // code 6000: wallet
     WalletOwnerNotFound(6001, null, HttpStatus.NOT_FOUND),
@@ -210,6 +211,13 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     BankAccountNotFound(13047, "Bank account not found", HttpStatus.NOT_FOUND),
     AddressBookNotFound(13048, "Address book not found", HttpStatus.NOT_FOUND),
     InvalidProfileData(13049, "Invalid profile data", HttpStatus.BAD_REQUEST),
+    NationalCodeAlreadyExists(13050, "National code already belongs to another profile", HttpStatus.CONFLICT),
+    CompanyAlreadyRegistered(13051, "Company is already registered", HttpStatus.CONFLICT),
+    CompanyIdentifiersMismatch(
+        13052,
+        "Registration number and national id belong to different companies",
+        HttpStatus.CONFLICT
+    ),
 
     //Storage 14000
     BucketNotFound(14001, "Bucket not found", HttpStatus.NOT_FOUND),

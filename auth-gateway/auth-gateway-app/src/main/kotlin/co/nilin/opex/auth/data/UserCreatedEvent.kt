@@ -7,5 +7,6 @@ data class UserCreatedEvent(
     val mobile: String?,
     val firstName: String?,
     val lastName: String?,
-    val referralCode: String? = null
+    val referralCode: String? = null,
+    val personType: PersonType = PersonType.NATURAL
 ) : AuthEvent()

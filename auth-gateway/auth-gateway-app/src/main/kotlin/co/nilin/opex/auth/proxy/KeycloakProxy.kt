@@ -334,6 +334,68 @@ class KeycloakProxy(
             .awaitSingleOrNull()
     }
 
+    suspend fun setMustChangePassword(userId: String, value: Boolean) {
+        updateUserFields(
+            userId = userId,
+            updates = mapOf(
+                "attributes" to mapOf(
+                    Attributes.MUST_CHANGE_PASSWORD to value.toString()
+                )
+            )
+        )
+    }
+
+    suspend fun createLegalRepresentative(
+        firstName: String,
+        lastName: String,
+        email: String,
+        mobile: String
+    ): String {
+        val url = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users"
+        val internalId = generateRandomInternalID()
+
+        keycloakClient.post()
+            .uri(url)
+            .contentType(MediaType.APPLICATION_JSON)
+            .withAdminToken()
+            .bodyValue(
+                mapOf(
+                    "username" to internalId,
+                    "email" to email,
+                    "firstName" to firstName,
+                    "lastName" to lastName,
+                    "emailVerified" to true,
+                    "enabled" to true,
+                    "attributes" to mapOf(
+                        "kycLevel" to "0",
+                        Attributes.MOBILE to mobile,
+                        Attributes.OTP to OTPType.NONE.name,
+                        // Set before any password exists, so the account can never be used
+                        // with the generated password without replacing it first
+                        Attributes.MUST_CHANGE_PASSWORD to "true"
+                    )
+                )
+            )
+            .retrieve()
+            .onStatus({ it == HttpStatus.valueOf(409) }) {
+                throw OpexError.UserAlreadyExists.exception()
+            }
+            .toBodilessEntity()
+            .awaitSingle()
+
+        return findUserByEmail(email)
+    }
+
+    suspend fun deleteUser(userId: String) {
+        val url = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users/${userId}"
+        keycloakClient.delete()
+            .uri(url)
+            .withAdminToken()
+            .retrieve()
+            .toBodilessEntity()
+            .awaitSingleOrNull()
+    }
+
     suspend fun resetPassword(userId: String, newPassword: String) {
         val url = "${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users/${userId}/reset-password"
         val request = object {
