@@ -43,6 +43,10 @@ class BankAccountManagementImp(
             .awaitFirstOrElse { emptyList() }
     }
 
+    override suspend fun findByAccountNumber(accountNumber: String): List<BankAccount> {
+        return bankAccountRepository.findByAccountNumber(accountNumber).collectList().awaitFirstOrElse { emptyList() }
+    }
+
     override suspend fun delete(id: Long, uuid: String) {
         val bankAccount =
             bankAccountRepository.findById(id).awaitFirstOrNull() ?: throw OpexError.BankAccountNotFound.exception()
