@@ -215,7 +215,7 @@ Behavior: Returns an action token used to confirm password reset.""",
         description = """POST /v1/user/public/forget/confirm.
 Security: Public endpoint. No Bearer token is required.
 
-Validation: `newPassword`, `newPasswordConfirmation`, and password-reset action `token` are required.
+Validation: `newPassword` and password-reset action `token` are required.
 Response body: No response body.""",
         responses = [
             ApiResponse(
