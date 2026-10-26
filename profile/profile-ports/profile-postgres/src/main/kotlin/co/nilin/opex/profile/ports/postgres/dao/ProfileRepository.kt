@@ -3,6 +3,7 @@ package co.nilin.opex.profile.ports.postgres.dao
 import co.nilin.opex.profile.core.data.kyc.KycLevel
 import co.nilin.opex.profile.core.data.profile.Gender
 import co.nilin.opex.profile.core.data.profile.NationalityType
+import co.nilin.opex.profile.core.data.profile.PersonType
 import co.nilin.opex.profile.core.data.profile.ProfileStatus
 import co.nilin.opex.profile.ports.postgres.ProfileFullNameProjection
 import co.nilin.opex.profile.ports.postgres.model.entity.ProfileModel
@@ -38,6 +39,7 @@ interface ProfileRepository : ReactiveCrudRepository<ProfileModel, Long> {
       AND (:gender IS NULL OR p.gender = :gender)
       AND (:status IS NULL OR p.status = :status)
       AND (:kycLevel IS NULL OR p.kyc_level = :kycLevel)
+      AND (:personType IS NULL OR p.person_type = :personType)
       AND (:createDateFrom IS NULL OR p.create_date >= :createDateFrom)
       AND (:createDateTo IS NULL OR p.create_date <= :createDateTo)
     ORDER BY p.create_date DESC
@@ -55,6 +57,7 @@ interface ProfileRepository : ReactiveCrudRepository<ProfileModel, Long> {
         gender: Gender?,
         status: ProfileStatus?,
         kycLevel: KycLevel?,
+        personType: PersonType?,
         createDateFrom: LocalDateTime?,
         createDateTo: LocalDateTime?,
         limit: Int,
@@ -75,6 +78,7 @@ interface ProfileRepository : ReactiveCrudRepository<ProfileModel, Long> {
       AND (:gender IS NULL OR p.gender = :gender)
       AND (:status IS NULL OR p.status = :status)
       AND (:kycLevel IS NULL OR p.kyc_level = :kycLevel)
+      AND (:personType IS NULL OR p.person_type = :personType)
       AND (:createDateFrom IS NULL OR p.create_date >= :createDateFrom)
       AND (:createDateTo IS NULL OR p.create_date <= :createDateTo)
     ORDER BY p.create_date
@@ -92,6 +96,7 @@ interface ProfileRepository : ReactiveCrudRepository<ProfileModel, Long> {
         gender: Gender?,
         status: ProfileStatus?,
         kycLevel: KycLevel?,
+        personType: PersonType?,
         createDateFrom: LocalDateTime?,
         createDateTo: LocalDateTime?,
         limit: Int,
@@ -114,5 +119,37 @@ interface ProfileRepository : ReactiveCrudRepository<ProfileModel, Long> {
 
     @Query("UPDATE profile SET kyc_level = :level WHERE user_id = :userId")
     fun updateKycLevelByUserId(userId: String, level: String): Mono<Void>
+
+    // Single statement so it cannot race the UserCreated kafka listener, which creates the same row
+    @Query(
+        """
+        INSERT INTO profile (user_id, email, mobile, first_name, last_name, identifier,
+                             person_type, kyc_level, status, create_date, last_update_date, creator)
+        VALUES (:userId, :email, :mobile, :firstName, :lastName, :identifier,
+                :personType, :kycLevel, :status, now(), now(), :creator)
+        ON CONFLICT (user_id) DO UPDATE
+            SET email            = EXCLUDED.email,
+                mobile           = EXCLUDED.mobile,
+                first_name       = EXCLUDED.first_name,
+                last_name        = EXCLUDED.last_name,
+                identifier       = EXCLUDED.identifier,
+                person_type      = EXCLUDED.person_type,
+                kyc_level        = EXCLUDED.kyc_level,
+                status           = EXCLUDED.status,
+                last_update_date = now()
+    """
+    )
+    fun upsertLegalRepresentative(
+        userId: String,
+        email: String,
+        mobile: String,
+        firstName: String,
+        lastName: String,
+        identifier: String,
+        personType: String,
+        kycLevel: String,
+        status: String,
+        creator: String
+    ): Mono<Void>
 
 }

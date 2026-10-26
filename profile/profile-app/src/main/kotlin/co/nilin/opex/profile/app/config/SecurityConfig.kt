@@ -28,6 +28,7 @@ class SecurityConfig {
             .authorizeExchange() {
                 it.pathMatchers(HttpMethod.GET, "/admin/**").hasAnyAuthority("ROLE_monitoring", "ROLE_admin")
                     .pathMatchers("/admin/profile/users/resolve").permitAll() // block in nginx
+                    .pathMatchers(HttpMethod.GET,"/bank-account/owner").permitAll()// block in nginx
                     .pathMatchers("/admin/**").hasAuthority("ROLE_admin")
                     .pathMatchers(HttpMethod.GET,"/bank-account").permitAll()
                     .pathMatchers("/bank-account/**").hasAuthority("PERM_bank_account:write")

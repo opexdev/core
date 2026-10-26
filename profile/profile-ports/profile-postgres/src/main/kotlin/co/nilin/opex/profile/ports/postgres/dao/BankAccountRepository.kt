@@ -45,4 +45,7 @@ interface BankAccountRepository : ReactiveCrudRepository<BankAccountModel, Long>
         iban: String?
     ): Flux<BankAccount>
 
+    @Query("select * from bank_account where account_number = :accountNumber")
+    suspend fun findByAccountNumber(accountNumber: String): Flux<BankAccount>
+
 }

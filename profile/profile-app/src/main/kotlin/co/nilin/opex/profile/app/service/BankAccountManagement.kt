@@ -84,7 +84,13 @@ class BankAccountManagement(
     }
 
     suspend fun isBankAccountOwnedByUser(uuid: String, cardNumber: String?, iban: String?): Boolean {
-        return !bankAccountPersister.findAll(uuid, cardNumber, iban).isEmpty()
+        return bankAccountPersister.findAll(uuid, cardNumber, iban).isNotEmpty()
+    }
+
+    suspend fun findAccountOwner(accountNumber: String): String? {
+        val accounts = bankAccountPersister.findByAccountNumber(accountNumber)
+        return accounts.firstOrNull { it.status == BankAccountStatus.VERIFIED }?.uuid
+            ?: accounts.firstOrNull()?.uuid
     }
 
     private suspend fun verifyCardOwnership(

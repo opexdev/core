@@ -55,4 +55,9 @@ class BankAccountController(
         ) throw OpexError.InvalidRequestBody.exception("Either Card Number or IBAN must be provided")
         if (!iban.isNullOrBlank() && !RegexPatterns.IBAN.matches(iban)) throw OpexError.InvalidIban.exception()
     }
+
+    @GetMapping("/owner")
+    suspend fun getBankAccountOwner(@RequestParam accountNumber: String): String? {
+        return bankAccountManagement.findAccountOwner(accountNumber)
+    }
 }
