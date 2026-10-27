@@ -1,10 +1,13 @@
 package co.nilin.opex.bcgateway.app.config
 
 
+import co.nilin.opex.bcgateway.core.api.AddressAdminService
 import co.nilin.opex.bcgateway.core.api.AssignAddressService
 import co.nilin.opex.bcgateway.core.api.InfoService
+import co.nilin.opex.bcgateway.core.service.AddressAdminServiceImpl
 import co.nilin.opex.bcgateway.core.service.AssignAddressServiceImpl
 import co.nilin.opex.bcgateway.core.service.InfoServiceImpl
+import co.nilin.opex.bcgateway.core.spi.AddressTypeHandler
 import co.nilin.opex.bcgateway.core.spi.AssignedAddressHandler
 import co.nilin.opex.bcgateway.core.spi.ChainLoader
 import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
@@ -33,6 +36,14 @@ class AppConfig(private val resourceLoader: ResourceLoader) {
         chainLoader: ChainLoader
     ): AssignAddressService {
         return AssignAddressServiceImpl(currencyHandler, assignedAddressHandler, reservedAddressHandler, chainLoader)
+    }
+
+    @Bean
+    fun addressAdminService(
+        assignedAddressHandler: AssignedAddressHandler,
+        reservedAddressHandler: ReservedAddressHandler
+    ): AddressAdminService {
+        return AddressAdminServiceImpl(assignedAddressHandler, reservedAddressHandler)
     }
 
     @Bean
