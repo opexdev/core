@@ -48,7 +48,7 @@ data class OffChainGatewayUpdateCommand(
     override var withdrawMax: BigDecimal? = BigDecimal.ZERO,
     override var displayOrder: Int? = null,
 
-    ) : CurrencyGatewayCommand(
+    ) : CurrencyGatewayUpdateCommand(
     currencySymbol,
     gatewayUuid,
     isDepositActive,
@@ -60,8 +60,6 @@ data class OffChainGatewayUpdateCommand(
     depositMax,
     withdrawMin,
     withdrawMax,
-    null,
-    null,
     displayOrder
 )
 
@@ -85,7 +83,7 @@ data class OnChainGatewayUpdateCommand(
     override var withdrawMin: BigDecimal? = BigDecimal.ZERO,
     override var withdrawMax: BigDecimal? = BigDecimal.ZERO,
     override var displayOrder: Int? = null,
-) : CurrencyGatewayCommand(
+) : CurrencyGatewayUpdateCommand(
     currencySymbol,
     gatewayUuid,
     isDepositActive,
@@ -97,8 +95,6 @@ data class OnChainGatewayUpdateCommand(
     depositMax,
     withdrawMin,
     withdrawMax,
-    null,
-    null,
     displayOrder
 )
 

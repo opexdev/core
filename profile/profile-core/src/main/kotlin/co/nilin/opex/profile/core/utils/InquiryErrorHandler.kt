@@ -1,10 +1,15 @@
 package co.nilin.opex.profile.core.utils
 
 import co.nilin.opex.common.OpexError
+import org.slf4j.LoggerFactory
+
+private val logger = LoggerFactory.getLogger("co.nilin.opex.profile.core.utils.InquiryErrorHandler")
 
 private fun handleError(code: String?, mapping: Map<String, OpexError>, default: OpexError) {
     if (code.isNullOrEmpty()) return
-    throw mapping[code]?.exception() ?: default.exception()
+    mapping[code]?.let { throw it.exception() }
+    logger.error("Unmapped inquiry error code '$code', falling back to $default")
+    throw default.exception("Unmapped inquiry error code: $code")
 }
 
 object ErrorMappings {

@@ -224,6 +224,64 @@ class ProfileProxyImpl(@Qualifier("generalWebClient") private val webClient: Web
             .awaitBodilessEntity()
     }
 
+    override suspend fun getUserBankAccountApprovalRequest(
+        token: String,
+        bankAccountId: Long
+    ): BankAccountApprovalUserResponse {
+        return webClient.get()
+            .uri("$baseUrl/bank-account/$bankAccountId/approval-request")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<BankAccountApprovalUserResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get bank account approval request of $bankAccountId") }
+    }
+
+    override suspend fun getBankAccountApprovalRequests(
+        token: String,
+        request: BankAccountApprovalRequestFilter
+    ): List<BankAccountApprovalAdminResponse> {
+        return webClient.post()
+            .uri("$baseUrl/admin/bank-account/approval-requests")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<List<BankAccountApprovalAdminResponse>>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get bank account approval requests") }
+    }
+
+    override suspend fun getBankAccountApprovalRequest(
+        token: String,
+        requestId: Long
+    ): BankAccountApprovalAdminResponse {
+        return webClient.get()
+            .uri("$baseUrl/admin/bank-account/approval-request/$requestId")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<BankAccountApprovalAdminResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get bank account approval request $requestId") }
+    }
+
+    override suspend fun updateBankAccountApprovalRequest(
+        token: String,
+        request: UpdateBankAccountApprovalBody
+    ): BankAccountApprovalAdminResponse {
+        return webClient.put()
+            .uri("$baseUrl/admin/bank-account/approval-request")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<BankAccountApprovalAdminResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to update bank account approval request ${request.id}") }
+    }
+
     override suspend fun getProfile(token: String): Profile {
         return webClient.get()
             .uri("$baseUrl/personal-data")
