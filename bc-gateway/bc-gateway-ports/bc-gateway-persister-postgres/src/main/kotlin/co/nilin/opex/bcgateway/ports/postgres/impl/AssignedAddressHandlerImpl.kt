@@ -1,5 +1,7 @@
 package co.nilin.opex.bcgateway.ports.postgres.impl
 
+import co.nilin.opex.bcgateway.core.model.AddressAssignmentFilter
+import co.nilin.opex.bcgateway.core.model.AddressAssignmentRecord
 import co.nilin.opex.bcgateway.core.model.AddressStatus
 import co.nilin.opex.bcgateway.core.model.AddressType
 import co.nilin.opex.bcgateway.core.model.AssignedAddress
@@ -10,6 +12,8 @@ import co.nilin.opex.bcgateway.ports.postgres.dao.AddressTypeRepository
 import co.nilin.opex.bcgateway.ports.postgres.dao.AssignedAddressChainRepository
 import co.nilin.opex.bcgateway.ports.postgres.dao.AssignedAddressRepository
 import co.nilin.opex.bcgateway.ports.postgres.model.AssignedAddressModel
+import co.nilin.opex.bcgateway.ports.postgres.util.toRecord
+import co.nilin.opex.common.OpexError
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -17,8 +21,11 @@ import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
+import java.time.Instant
 import java.time.LocalDateTime
+import java.time.ZoneId
 
 @Service
 class AssignedAddressHandlerImpl(
@@ -117,6 +124,81 @@ class AssignedAddressHandlerImpl(
         val atModel = assignedAddressRepository.findHolderAt(address, memo, at).awaitFirstOrNull()
         return Pair(atModel?.uuid, atModel?.status)
     }
+
+    override suspend fun persistAssignment(assignedAddress: AssignedAddress): AddressAssignmentRecord {
+        val saved = try {
+            assignedAddressRepository.save(
+                AssignedAddressModel(
+                    null,
+                    assignedAddress.uuid,
+                    assignedAddress.address,
+                    assignedAddress.memo,
+                    assignedAddress.type.id,
+                    assignedAddress.expTime,
+                    assignedAddress.assignedDate ?: LocalDateTime.now(),
+                    null,
+                    assignedAddress.status
+                )
+            ).awaitFirstOrNull() ?: throw OpexError.BadRequest.exception("Failed to save address assignment")
+        } catch (e: DataIntegrityViolationException) {
+            logger.warn("Duplicate assignment for ${assignedAddress.address} at ${assignedAddress.expTime}")
+            throw OpexError.AddressAlreadyAssigned.exception()
+        }
+        return saved.toRecord(addressTypes())
+    }
+
+    override suspend fun search(filter: AddressAssignmentFilter): List<AddressAssignmentRecord> {
+        val addressTypeMap = addressTypes()
+        return assignedAddressRepository.searchAssignments(
+            uuid = filter.uuid,
+            address = filter.address,
+            memo = filter.memo,
+            status = filter.status,
+            addressTypeId = filter.addressTypeId,
+            chain = filter.chain,
+            assignedFrom = filter.assignedFrom?.toLocalDateTime(),
+            assignedTo = filter.assignedTo?.toLocalDateTime(),
+            limit = filter.limit,
+            offset = filter.offset
+        ).map { it.toRecord(addressTypeMap) }.toList()
+    }
+
+    override suspend fun count(filter: AddressAssignmentFilter): Long {
+        return assignedAddressRepository.countAssignments(
+            uuid = filter.uuid,
+            address = filter.address,
+            memo = filter.memo,
+            status = filter.status,
+            addressTypeId = filter.addressTypeId,
+            chain = filter.chain,
+            assignedFrom = filter.assignedFrom?.toLocalDateTime(),
+            assignedTo = filter.assignedTo?.toLocalDateTime()
+        ).awaitFirstOrNull() ?: 0
+    }
+
+    override suspend fun findRecordById(id: Long): AddressAssignmentRecord? {
+        val model = assignedAddressRepository.findById(id).awaitFirstOrNull() ?: return null
+        return model.toRecord(addressTypes())
+    }
+
+    override suspend fun revokeById(id: Long, revokedAt: LocalDateTime): AddressAssignmentRecord {
+        val model = assignedAddressRepository.findById(id).awaitFirstOrNull()
+            ?: throw OpexError.IdentifierNotFound.exception()
+        val revoked = assignedAddressRepository.save(
+            model.copy(status = AddressStatus.Revoked, revokedDate = revokedAt)
+        ).awaitFirstOrNull() ?: throw OpexError.BadRequest.exception("Failed to revoke assignment $id")
+        return revoked.toRecord(addressTypes())
+    }
+
+    private suspend fun addressTypes(): Map<Long, AddressType> {
+        return addressTypeRepository.findAll()
+            .map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }
+            .collectMap { it.id }
+            .awaitFirst()
+    }
+
+    private fun Long.toLocalDateTime(): LocalDateTime =
+        LocalDateTime.ofInstant(Instant.ofEpochMilli(this), ZoneId.systemDefault())
 
     private suspend fun AssignedAddressModel.toDto(addressTypeMap: MutableMap<Long, AddressType>): AssignedAddress {
         return AssignedAddress(

@@ -102,6 +102,70 @@ class BlockchainGatewayProxyImpl(@Qualifier("nlbWebClient") private val client: 
             .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
     }
 
+    override suspend fun searchAddressAssignments(
+        token: String,
+        filter: AddressAssignmentFilter
+    ): AddressAssignmentPage {
+        return client.post()
+            .uri("$baseUrl/admin/address/assignments/search")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(filter))
+            .retrieve()
+            .onStatus({ it.isError }, { it.createException() })
+            .bodyToMono<AddressAssignmentPage>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to search address assignments") }
+    }
+
+    override suspend fun getAddressAssignment(token: String, id: Long): AddressAssignmentRecord {
+        return client.get()
+            .uri("$baseUrl/admin/address/assignments/$id")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ it.isError }, { it.createException() })
+            .bodyToMono<AddressAssignmentRecord>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get address assignment $id") }
+    }
+
+    override suspend fun searchReservedAddresses(token: String, filter: ReservedAddressFilter): ReservedAddressPage {
+        return client.post()
+            .uri("$baseUrl/admin/address/reserved/search")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(filter))
+            .retrieve()
+            .onStatus({ it.isError }, { it.createException() })
+            .bodyToMono<ReservedAddressPage>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to search reserved addresses") }
+    }
+
+    override suspend fun assignAddressByAdmin(
+        token: String,
+        request: AdminAssignAddressRequest
+    ): AddressAssignmentRecord {
+        return client.post()
+            .uri("$baseUrl/admin/address/assign")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ it.isError }, { it.createException() })
+            .bodyToMono<AddressAssignmentRecord>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to assign address") }
+    }
+
+    override suspend fun revokeAddressAssignment(token: String, id: Long): AddressAssignmentRecord {
+        return client.post()
+            .uri("$baseUrl/admin/address/assignments/$id/revoke")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ it.isError }, { it.createException() })
+            .bodyToMono<AddressAssignmentRecord>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to revoke address assignment $id") }
+    }
+
     override suspend fun deleteOnChainGatewayLocalization(token: String, id: Long) {
         client.delete()
             .uri("$baseUrl/crypto-currency/gateway/localization/${id}")

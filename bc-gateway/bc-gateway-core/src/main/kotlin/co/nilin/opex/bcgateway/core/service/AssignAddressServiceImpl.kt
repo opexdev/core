@@ -46,7 +46,7 @@ open class AssignAddressServiceImpl(
             if (assigned != null) {
                 result.add(assigned)
             } else {
-                val reservedAddress = reservedAddressHandler.peekReservedAddress(addressType)
+                val reservedAddress = reservedAddressHandler.claimNext(addressType)
                 if (reservedAddress != null) {
                     val newAssigned = AssignedAddress(
                         user,
@@ -61,7 +61,6 @@ open class AssignAddressServiceImpl(
                         AddressStatus.Assigned,
                         null
                     )
-                    reservedAddressHandler.remove(reservedAddress)
                     result.add(newAssigned)
                 } else {
                     logger.info("No reserved address available for $addressType")
