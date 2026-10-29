@@ -15,8 +15,8 @@ enum class GatewayType() {
     property = "type"
 )
 @JsonSubTypes(
-    JsonSubTypes.Type(value = OffChainGatewayCommand::class, name = "OffChain"),
-    JsonSubTypes.Type(value = OnChainGatewayCommand::class, name = "OnChain"),
+    JsonSubTypes.Type(value = OffChainGatewayUpdateCommand::class, name = "OffChain"),
+    JsonSubTypes.Type(value = OnChainGatewayUpdateCommand::class, name = "OnChain"),
 )
 open abstract class CurrencyGatewayUpdateCommand(
     open var currencySymbol: String? = null,

@@ -87,7 +87,7 @@ app:
   wallet:
     url: ${WALLET_URL:http://wallet:8080}
   address:
-    life-time: ${ADDRESS_EXP_TIME}  #    second
+    life-time: ${ADDRESS_EXP_TIME:7200}  #    second
   custom-message:
     enabled: ${CUSTOM_MESSAGE_ENABLED:false}
     base-url: ${CUSTOM_MESSAGE_URL}

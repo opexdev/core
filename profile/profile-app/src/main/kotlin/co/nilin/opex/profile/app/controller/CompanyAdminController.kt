@@ -30,7 +30,7 @@ class CompanyAdminController(val companyManagement: CompanyManagement) {
         return companyManagement.registerLegalAccount(request, securityContext.authentication.name)
     }
 
-    @GetMapping("/by-national-id/{nationalId}")
+    @GetMapping("/national-id/{nationalId}")
     suspend fun getCompanyByNationalId(@PathVariable("nationalId") nationalId: String): CompanyAdminResponse {
         return companyManagement.getCompanyByNationalId(nationalId)
     }
