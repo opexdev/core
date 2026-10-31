@@ -4,7 +4,6 @@ import co.nilin.opex.common.OpexError
 import co.nilin.opex.profile.core.data.profile.BankAccountApprovalAdminResponse
 import co.nilin.opex.profile.core.data.profile.BankAccountApprovalRequest
 import co.nilin.opex.profile.core.data.profile.BankAccountApprovalRequestFilter
-import co.nilin.opex.profile.core.data.profile.BankAccountApprovalRequestStatus
 import co.nilin.opex.profile.core.data.profile.BankAccountApprovalUserResponse
 import co.nilin.opex.profile.core.spi.BankAccountApprovalRequestPersister
 import co.nilin.opex.profile.core.utils.convert
@@ -24,12 +23,10 @@ class BankAccountApprovalRequestManagementImp(
 ) : BankAccountApprovalRequestPersister {
 
     override suspend fun save(request: BankAccountApprovalRequest): BankAccountApprovalRequest {
-        bankAccountApprovalRequestRepository.findByBankAccountIdAndStatus(
-            request.bankAccountId,
-            BankAccountApprovalRequestStatus.PENDING
-        ).awaitFirstOrNull()?.let {
-            throw OpexError.BankAccountApprovalRequestAlreadyExists.exception()
-        } ?: run {
+        bankAccountApprovalRequestRepository.findByBankAccountId(request.bankAccountId)
+            .awaitFirstOrNull()?.let {
+                throw OpexError.BankAccountApprovalRequestAlreadyExists.exception()
+            } ?: run {
             val model: BankAccountApprovalRequestModel =
                 request.convert(BankAccountApprovalRequestModel::class.java)
             return bankAccountApprovalRequestRepository.save(model).awaitFirst()
@@ -70,7 +67,8 @@ class BankAccountApprovalRequestManagementImp(
     }
 
     override suspend fun getRequestByBankAccountId(bankAccountId: Long): BankAccountApprovalUserResponse {
-        return bankAccountApprovalRequestRepository.findByBankAccountId(bankAccountId).awaitFirstOrNull()
+        return bankAccountApprovalRequestRepository.findUserResponseByBankAccountId(bankAccountId)
+            .awaitFirstOrNull()
             ?: throw OpexError.BankAccountApprovalRequestNotFound.exception()
     }
 

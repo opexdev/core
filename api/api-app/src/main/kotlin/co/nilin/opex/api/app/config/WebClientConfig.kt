@@ -96,6 +96,17 @@ class WebClientConfig(
             .build()
     }
 
+    @Bean("fiatScannerWebClient")
+    fun fiatScannerWebClient(
+        @Value("\${app.fiat-scanner.api-key}") apiKey: String
+    ): WebClient {
+        return WebClient.builder()
+            .clientConnector(ReactorClientHttpConnector(client))
+            .defaultHeader("X-API-Key", apiKey)
+            .codecs { it.defaultCodecs().maxInMemorySize(5 * 1024 * 1024) }
+            .build()
+    }
+
     @Bean("nlbWebClient")
     fun nlbWebClient(): WebClient {
         return WebClient.builder()

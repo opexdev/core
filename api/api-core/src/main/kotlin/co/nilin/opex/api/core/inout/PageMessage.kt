@@ -3,7 +3,7 @@ package co.nilin.opex.api.core.inout
 import co.nilin.opex.common.data.UserLanguage
 
 enum class UiPage {
-    MAIN, DASHBOARD, WALLET, LOGIN, REGISTER, SWAP, ADVANCE_MARKET
+    MAIN, DASHBOARD, WALLET, LOGIN, REGISTER, SWAP, ADVANCE_MARKET, DEPOSIT, WITHDRAW
 }
 
 enum class PageMessageType {
