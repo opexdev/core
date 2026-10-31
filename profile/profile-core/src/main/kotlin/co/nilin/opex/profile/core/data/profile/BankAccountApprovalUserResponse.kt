@@ -4,7 +4,7 @@ import java.time.LocalDateTime
 
 data class BankAccountApprovalUserResponse(
     var bankAccountId: Long,
-    var status: BankAccountApprovalRequestStatus,
+    var status: BankAccountStatus,
     var createDate: LocalDateTime,
     var description: String? = null
 )

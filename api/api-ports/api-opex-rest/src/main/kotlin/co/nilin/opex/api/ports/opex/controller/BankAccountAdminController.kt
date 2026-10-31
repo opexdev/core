@@ -43,8 +43,7 @@ Security: Bearer admin-token required. Required authority: ROLE_admin.
 Behavior: Lists bank account review requests, newest first unless `ascendingByTime` is true. Requests exist only while admin approval is enabled: with automatic verification off every account creates one, and with it on only an inquiry the provider could not answer (timeout, provider down) does. A provider answer that rejects the user's data rejects the account instead of creating a request. Each row carries the account under review and the owner's name, so no second call is needed.
 Filters: `userId`, `status`, `createDateFrom` and `createDateTo` (epoch millis), `limit`, `offset`, `ascendingByTime`. Every filter is optional.
 Allowed values:
-- status: PENDING, APPROVED, REJECTED.
-- bankAccountStatus: WAITING, VERIFIED, REJECTED.""",
+- status: WAITING, VERIFIED, REJECTED. This is the bank account's own status; a review has none of its own, so WAITING is a review still open.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
             ApiResponse(
@@ -85,7 +84,7 @@ Allowed values:
 Security: Bearer admin-token required. Required authority: ROLE_admin.
 Behavior: Returns one review request with the account under review and the owner's first and last name.
 Allowed values:
-- status: PENDING, APPROVED, REJECTED.""",
+- status: WAITING, VERIFIED, REJECTED. This is the bank account's own status; a review has none of its own.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
             ApiResponse(
@@ -123,10 +122,10 @@ Allowed values:
         summary = "Update bank account approval request status",
         description = """PUT /opex/v1/admin/bank-account/approval-request.
 Security: Bearer admin-token required. Required authority: ROLE_admin.
-Validation: `id` and `status` are required. `status` must be APPROVED or REJECTED, and only a PENDING request can be decided on.
-Behavior: Closes the review and moves the bank account with it: APPROVED verifies the account, REJECTED rejects it. The acting admin is recorded. Only the status changes; the account data itself is never edited here.
+Validation: `id` and `status` are required. `status` must be VERIFIED or REJECTED, and only an account still WAITING can be decided on.
+Behavior: Closes the review by setting the bank account's status. The acting admin and the note are recorded on the request. A review has no status of its own, so this is the account's own status and there is nothing that could disagree with it. Only the status changes; the account data itself is never edited here.
 Allowed values:
-- status: APPROVED, REJECTED.""",
+- status: VERIFIED, REJECTED.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
             ApiResponse(
@@ -139,7 +138,7 @@ Allowed values:
             ),
             ApiResponse(
                 responseCode = "400",
-                description = "The request is not pending, or the status is not APPROVED or REJECTED, or the same card or iban was verified for another user in the meantime.",
+                description = "The review is already closed, or the status is not VERIFIED or REJECTED, or the same card or iban was verified for another user in the meantime.",
                 content = [Content()]
             ),
             ApiResponse(

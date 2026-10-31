@@ -4,7 +4,6 @@ import co.nilin.opex.common.OpexError
 import co.nilin.opex.profile.app.dto.UpdateBankAccountApprovalBody
 import co.nilin.opex.profile.core.data.profile.BankAccountApprovalAdminResponse
 import co.nilin.opex.profile.core.data.profile.BankAccountApprovalRequestFilter
-import co.nilin.opex.profile.core.data.profile.BankAccountApprovalRequestStatus
 import co.nilin.opex.profile.core.data.profile.BankAccountApprovalUserResponse
 import co.nilin.opex.profile.core.data.profile.BankAccountStatus
 import co.nilin.opex.profile.core.spi.BankAccountApprovalRequestPersister
@@ -46,31 +45,28 @@ class BankAccountApprovalRequestManagement(
         body: UpdateBankAccountApprovalBody,
         adminId: String
     ): BankAccountApprovalAdminResponse {
+        if (body.status != BankAccountStatus.VERIFIED && body.status != BankAccountStatus.REJECTED)
+            throw OpexError.InvalidBankAccountApprovalRequestStatus.exception("Status must be VERIFIED or REJECTED")
+
         val approvalRequest = bankAccountApprovalRequestPersister.getRequestById(body.id)
-
-        if (approvalRequest.status != BankAccountApprovalRequestStatus.PENDING ||
-            body.status == BankAccountApprovalRequestStatus.PENDING
-        ) {
-            throw OpexError.InvalidBankAccountApprovalRequestStatus.exception()
-        }
-
         val bankAccount = bankAccountPersister.findById(approvalRequest.bankAccountId)
 
-        if (body.status == BankAccountApprovalRequestStatus.APPROVED) {
+        if (bankAccount.status != BankAccountStatus.WAITING)
+            throw OpexError.InvalidBankAccountApprovalRequestStatus.exception("This review is already closed")
+
+        if (body.status == BankAccountStatus.VERIFIED)
             assertNotVerifiedForAnotherUser(bankAccount.uuid, bankAccount.cardNumber, bankAccount.iban)
-            bankAccount.status = BankAccountStatus.VERIFIED
-        } else {
-            bankAccount.status = BankAccountStatus.REJECTED
-        }
+
+        bankAccount.status = body.status
         bankAccount.updateDate = LocalDateTime.now()
         bankAccountPersister.update(bankAccount)
 
-        approvalRequest.status = body.status
         approvalRequest.updateDate = LocalDateTime.now()
         approvalRequest.updater = adminId
         approvalRequest.description = body.description
+        bankAccountApprovalRequestPersister.update(approvalRequest)
 
-        return bankAccountApprovalRequestPersister.update(approvalRequest)
+        return bankAccountApprovalRequestPersister.getRequestById(body.id)
     }
 
     private suspend fun assertNotVerifiedForAnotherUser(uuid: String, cardNumber: String?, iban: String?) {
