@@ -47,4 +47,41 @@ interface ProfileProxy {
     suspend fun addBankAccount(token: String, request: AddBankAccountRequest): BankAccountResponse
     suspend fun getBankAccounts(token: String): List<BankAccountResponse>
     suspend fun deleteBankAccount(token: String, id: Long)
+
+    suspend fun getUserBankAccountApprovalRequest(token: String, bankAccountId: Long): BankAccountApprovalUserResponse
+
+    //Bank Account approval requests
+    suspend fun getBankAccountApprovalRequests(
+        token: String,
+        request: BankAccountApprovalRequestFilter
+    ): List<BankAccountApprovalAdminResponse>
+
+    suspend fun getBankAccountApprovalRequest(token: String, requestId: Long): BankAccountApprovalAdminResponse
+
+    suspend fun updateBankAccountApprovalRequest(
+        token: String,
+        request: UpdateBankAccountApprovalBody
+    ): BankAccountApprovalAdminResponse
+
+    //Manual identity inquiries
+    suspend fun shahkarInquiry(token: String, request: ShahkarInquiryRequest): ShahkarInquiryResponse
+
+    suspend fun identitySimilarityInquiry(
+        token: String,
+        request: IdentitySimilarityInquiryRequest
+    ): IdentitySimilarityInquiryResponse
+
+    suspend fun cardOwnershipInquiry(
+        token: String,
+        request: CardOwnershipInquiryRequest
+    ): VerifyOwnershipInquiryResponse
+
+    suspend fun ibanOwnershipInquiry(
+        token: String,
+        request: IbanOwnershipInquiryRequest
+    ): VerifyOwnershipInquiryResponse
+
+    suspend fun cardInfoInquiry(token: String, request: CardInfoInquiryRequest): IbanInfoInquiryResponse
+
+    suspend fun ibanInfoInquiry(token: String, request: IbanInfoInquiryRequest): IbanInfoInquiryResponse
 }

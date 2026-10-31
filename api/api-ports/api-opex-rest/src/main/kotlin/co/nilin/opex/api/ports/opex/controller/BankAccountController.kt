@@ -1,6 +1,7 @@
 package co.nilin.opex.api.ports.opex.controller
 
 import co.nilin.opex.api.core.inout.AddBankAccountRequest
+import co.nilin.opex.api.core.inout.BankAccountApprovalUserResponse
 import co.nilin.opex.api.core.inout.BankAccountResponse
 import co.nilin.opex.api.core.spi.ProfileProxy
 import co.nilin.opex.api.ports.opex.util.jwtAuthentication
@@ -31,6 +32,7 @@ class BankAccountController(
 Security: Bearer user-token required. Requires authenticated user JWT.
 
 Validation: Exactly one of `cardNumber` or `iban` must be provided. Providing both or neither is invalid.
+Behavior: How the account is verified depends on the deployment. With automatic verification on, the card/iban identity inquiry decides: a match returns VERIFIED, and an answer that rejects the user's data fails the request. With automatic verification off, the account is stored as WAITING for an admin. An inquiry the provider could not answer (timeout, provider down) returns WAITING when admin review is enabled, and fails the request otherwise. Follow a WAITING account with GET /opex/v1/bank-account/{id}/approval-request.
 Allowed values:
 - status: WAITING, VERIFIED, REJECTED.""",
         security = [SecurityRequirement(name = "bearerAuth")],
@@ -87,5 +89,49 @@ Allowed values:
         @CurrentSecurityContext securityContext: SecurityContext
     ) {
         profileProxy.deleteBankAccount(securityContext.jwtAuthentication().tokenValue(), id)
+    }
+
+    @GetMapping("/{id}/approval-request")
+    @Operation(
+        summary = "Get the review of a bank account",
+        description = """GET /opex/v1/bank-account/{id}/approval-request.
+Security: Bearer user-token required. Requires authenticated user JWT.
+Behavior: Returns the admin review of the caller's own bank account, including the admin's note once a decision is made. A bank account only has one when its identity inquiry could not be completed. Reading another user's bank account is forbidden.
+Allowed values:
+- status: PENDING, APPROVED, REJECTED.""",
+        security = [SecurityRequirement(name = "bearerAuth")],
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = BankAccountApprovalUserResponse::class)
+                )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.",
+                content = [Content()]
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "Forbidden. The bank account belongs to another user. No response body.",
+                content = [Content()]
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "The bank account does not exist or has no review.",
+                content = [Content()]
+            )
+        ]
+    )
+    suspend fun getApprovalRequest(
+        @Parameter(name = "id", description = "Bank account id.", required = true)
+        @PathVariable("id") id: Long,
+        @Parameter(hidden = true)
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): BankAccountApprovalUserResponse {
+        return profileProxy.getUserBankAccountApprovalRequest(securityContext.jwtAuthentication().tokenValue(), id)
     }
 }

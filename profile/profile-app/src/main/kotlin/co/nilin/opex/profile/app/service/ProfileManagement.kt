@@ -13,7 +13,7 @@ import co.nilin.opex.profile.core.data.profile.*
 import co.nilin.opex.profile.core.spi.*
 import co.nilin.opex.profile.core.utils.handleComparativeError
 import co.nilin.opex.profile.core.utils.handleShahkarError
-import co.nilin.opex.utility.error.data.OpexException
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.reactive.awaitFirst
 import org.slf4j.LoggerFactory
@@ -133,18 +133,34 @@ class ProfileManagement(
 
         val isIranian = request.nationality == NationalityType.IRANIAN
 
-        val shahkarResponse = if (isIranian && mobileIdentityEnabled) {
-            inquiryProxy.getShahkarInquiryResult(request.identifier, profile.mobile!!)
-        } else null
+        val shahkarRequested = isIranian && mobileIdentityEnabled
+        val comparativeRequested = isIranian && personalIdentityEnabled
 
-        val comparativeResponse = if (isIranian && personalIdentityEnabled) {
-            inquiryProxy.getComparativeInquiryResult(
-                request.identifier,
-                request.birthDate,
-                request.firstName,
-                request.lastName
-            )
-        } else null
+        // A provider that could not answer — timeout, refused connection, 5xx, 429 — is a problem
+        // on their side, not a verdict on the user, so it comes back null instead of throwing and
+        // falls back to an admin below. Anything the provider does answer is judged as before.
+        val shahkarResponse = if (shahkarRequested)
+            callInquiry { inquiryProxy.getShahkarInquiryResult(request.identifier, profile.mobile!!) }
+        else null
+
+        val comparativeResponse = if (comparativeRequested)
+            callInquiry {
+                inquiryProxy.getComparativeInquiryResult(
+                    request.identifier,
+                    request.birthDate,
+                    request.firstName,
+                    request.lastName
+                )
+            }
+        else null
+
+        val inquiryUnavailable = (shahkarRequested && shahkarResponse == null) ||
+                (comparativeRequested && comparativeResponse == null)
+
+        // With no admin to fall back on there is nothing that could verify this profile, and
+        // auto-approving an unverified profile is not an option. Fail before anything is written.
+        if (inquiryUnavailable && !isAdminApprovalRequired)
+            throw OpexError.InquiryServiceUnavailable.exception()
 
         val isMobileIdentityMatch = shahkarResponse?.let {
             !it.isError() && it.matched == true
@@ -167,28 +183,39 @@ class ProfileManagement(
             )
         )
 
-        try {
-            validateInquiryResponses(shahkarResponse, comparativeResponse)
-        } catch (e: OpexException) {
-            if (!isAdminApprovalRequired ||
-                (e.error != OpexError.ShahkarInquiryError && e.error != OpexError.ComparativeInquiryError)
-            ) throw e
-        }
+        // Anything the provider answered against the user stops here, including an error code we
+        // have not mapped yet. An admin is only a fallback for a provider that never answered.
+        validateInquiryResponses(shahkarResponse, comparativeResponse)
 
-        val shahkarRequested = isIranian && mobileIdentityEnabled
-        val comparativeRequested = isIranian && personalIdentityEnabled
-
-        val shahkarOk = !shahkarRequested || (shahkarResponse != null && !shahkarResponse.isError())
-        val comparativeOk = !comparativeRequested || (comparativeResponse != null && !comparativeResponse.isError())
+        // A response that survived validation passed, so only an unavailable inquiry is left
+        val shahkarOk = !shahkarRequested || shahkarResponse != null
+        val comparativeOk = !comparativeRequested || comparativeResponse != null
 
         val allRequestedInquiriesOk = shahkarOk && comparativeOk
         val anyInquiryRequested = shahkarRequested || comparativeRequested
 
         return when {
             !isAdminApprovalRequired -> approveProfileAutomatically(userId, completedProfile)
-            isAdminApprovalRequired && !anyInquiryRequested -> requestAdminApproval(userId)
-            isAdminApprovalRequired && allRequestedInquiriesOk -> approveProfileAutomatically(userId, completedProfile)
-            else -> requestAdminApproval(userId) // At least one active inquiry has failed.
+            !anyInquiryRequested -> requestAdminApproval(userId)
+            allRequestedInquiriesOk -> approveProfileAutomatically(userId, completedProfile)
+            else -> requestAdminApproval(userId) // An active inquiry could not be reached.
+        }
+    }
+
+    /**
+     * Runs an inquiry and returns null when the provider never answered. Only the call itself is
+     * wrapped: the proxy raises [OpexError.InquiryServiceUnavailable] for a server-side failure and
+     * transport errors for a timeout, while an answer about the user comes back as a response and
+     * is judged by [validateInquiryResponses].
+     */
+    private suspend fun <T> callInquiry(block: suspend () -> T): T? {
+        return try {
+            block()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            logger.warn("Inquiry provider did not answer: ${e.javaClass.simpleName} ${e.message}")
+            null
         }
     }
 

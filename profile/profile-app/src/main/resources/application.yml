@@ -65,6 +65,7 @@ app:
   inquiry:
     mobile-identity: ${MOBILE_IDENTITY_INQUIRY}
     personal-identity: ${PERSONAL_IDENTITY_INQUIRY}
+    bank-account: ${BANK_ACCOUNT_INQUIRY:true}
     url: ${JIBIT_URL}
     api-key: ${JIBIT_API_KEY}
     secret-key: ${JIBIT_SECRET_KEY}

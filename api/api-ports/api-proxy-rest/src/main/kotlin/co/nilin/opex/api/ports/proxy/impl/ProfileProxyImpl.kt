@@ -224,6 +224,154 @@ class ProfileProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClie
             .awaitBodilessEntity()
     }
 
+    override suspend fun getUserBankAccountApprovalRequest(
+        token: String,
+        bankAccountId: Long
+    ): BankAccountApprovalUserResponse {
+        return webClient.get()
+            .uri("$baseUrl/bank-account/$bankAccountId/approval-request")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<BankAccountApprovalUserResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get bank account approval request of $bankAccountId") }
+    }
+
+    override suspend fun getBankAccountApprovalRequests(
+        token: String,
+        request: BankAccountApprovalRequestFilter
+    ): List<BankAccountApprovalAdminResponse> {
+        return webClient.post()
+            .uri("$baseUrl/admin/bank-account/approval-requests")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<List<BankAccountApprovalAdminResponse>>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get bank account approval requests") }
+    }
+
+    override suspend fun getBankAccountApprovalRequest(
+        token: String,
+        requestId: Long
+    ): BankAccountApprovalAdminResponse {
+        return webClient.get()
+            .uri("$baseUrl/admin/bank-account/approval-request/$requestId")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<BankAccountApprovalAdminResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get bank account approval request $requestId") }
+    }
+
+    override suspend fun updateBankAccountApprovalRequest(
+        token: String,
+        request: UpdateBankAccountApprovalBody
+    ): BankAccountApprovalAdminResponse {
+        return webClient.put()
+            .uri("$baseUrl/admin/bank-account/approval-request")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<BankAccountApprovalAdminResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to update bank account approval request ${request.id}") }
+    }
+
+    override suspend fun shahkarInquiry(
+        token: String,
+        request: ShahkarInquiryRequest
+    ): ShahkarInquiryResponse {
+        return webClient.post()
+            .uri("$baseUrl/admin/inquiry/shahkar")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<ShahkarInquiryResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to run the shahkar inquiry") }
+    }
+
+    override suspend fun identitySimilarityInquiry(
+        token: String,
+        request: IdentitySimilarityInquiryRequest
+    ): IdentitySimilarityInquiryResponse {
+        return webClient.post()
+            .uri("$baseUrl/admin/inquiry/identity-similarity")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<IdentitySimilarityInquiryResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to run the identity similarity inquiry") }
+    }
+
+    override suspend fun cardOwnershipInquiry(
+        token: String,
+        request: CardOwnershipInquiryRequest
+    ): VerifyOwnershipInquiryResponse {
+        return webClient.post()
+            .uri("$baseUrl/admin/inquiry/card-ownership")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<VerifyOwnershipInquiryResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to run the card ownership inquiry") }
+    }
+
+    override suspend fun ibanOwnershipInquiry(
+        token: String,
+        request: IbanOwnershipInquiryRequest
+    ): VerifyOwnershipInquiryResponse {
+        return webClient.post()
+            .uri("$baseUrl/admin/inquiry/iban-ownership")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<VerifyOwnershipInquiryResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to run the iban ownership inquiry") }
+    }
+
+    override suspend fun cardInfoInquiry(
+        token: String,
+        request: CardInfoInquiryRequest
+    ): IbanInfoInquiryResponse {
+        return webClient.post()
+            .uri("$baseUrl/admin/inquiry/card-info")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<IbanInfoInquiryResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to run the card info inquiry") }
+    }
+
+    override suspend fun ibanInfoInquiry(
+        token: String,
+        request: IbanInfoInquiryRequest
+    ): IbanInfoInquiryResponse {
+        return webClient.post()
+            .uri("$baseUrl/admin/inquiry/iban-info")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<IbanInfoInquiryResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to run the iban info inquiry") }
+    }
+
     override suspend fun getProfile(token: String): Profile {
         return webClient.get()
             .uri("$baseUrl/personal-data")
