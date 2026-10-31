@@ -104,7 +104,6 @@ class AssignAddressServiceImplUnitTest {
 
 
         coEvery { assignedAddressHandler.persist(any()) } returns Unit
-        coEvery { reservedAddressHandler.remove(any()) } returns Unit
 
 
     }
@@ -120,13 +119,13 @@ class AssignAddressServiceImplUnitTest {
                 )
             } returns emptyList()
 
-            coEvery { reservedAddressHandler.peekReservedAddress(ethAddressType) } returns ReservedAddress(
+            coEvery { reservedAddressHandler.claimNext(ethAddressType) } returns ReservedAddress(
                 "0x1",
                 null,
                 ethAddressType
             )
 
-            coEvery { reservedAddressHandler.peekReservedAddress(ethMemoAddressType) } returns ReservedAddress(
+            coEvery { reservedAddressHandler.claimNext(ethMemoAddressType) } returns ReservedAddress(
                 "0x2",
                 "Memo",
                 ethMemoAddressType
@@ -156,7 +155,7 @@ class AssignAddressServiceImplUnitTest {
                 listOf(ethAddressType, ethMemoAddressType)
             )
         } returns emptyList()
-        coEvery { reservedAddressHandler.peekReservedAddress(ethAddressType) } returns null
+        coEvery { reservedAddressHandler.claimNext(ethAddressType) } returns null
         coEvery { assignAddressServiceImpl.assignAddress(user, currency, gatewayUuid) } throws RuntimeException()
     }
 
@@ -178,12 +177,12 @@ class AssignAddressServiceImplUnitTest {
                     mutableListOf(ethChain)
                 )
             )
-            coEvery { reservedAddressHandler.peekReservedAddress(ethAddressType) } returns ReservedAddress(
+            coEvery { reservedAddressHandler.claimNext(ethAddressType) } returns ReservedAddress(
                 "0x1",
                 null,
                 ethAddressType
             )
-            coEvery { reservedAddressHandler.peekReservedAddress(ethMemoAddressType) } returns ReservedAddress(
+            coEvery { reservedAddressHandler.claimNext(ethMemoAddressType) } returns ReservedAddress(
                 "0x2",
                 "Memo",
                 ethMemoAddressType

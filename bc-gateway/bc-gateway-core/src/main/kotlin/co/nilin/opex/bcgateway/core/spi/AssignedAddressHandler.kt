@@ -1,5 +1,7 @@
 package co.nilin.opex.bcgateway.core.spi
 
+import co.nilin.opex.bcgateway.core.model.AddressAssignmentFilter
+import co.nilin.opex.bcgateway.core.model.AddressAssignmentRecord
 import co.nilin.opex.bcgateway.core.model.AddressStatus
 import co.nilin.opex.bcgateway.core.model.AddressType
 import co.nilin.opex.bcgateway.core.model.AssignedAddress
@@ -21,4 +23,14 @@ interface AssignedAddressHandler {
      * Returns Pair<uuid, status>, where both can be null when unassigned.
      */
     suspend fun findHolder(address: String, memo: String?, at: LocalDateTime?): Pair<String?, AddressStatus?>
+
+    suspend fun persistAssignment(assignedAddress: AssignedAddress): AddressAssignmentRecord
+
+    suspend fun search(filter: AddressAssignmentFilter): List<AddressAssignmentRecord>
+
+    suspend fun count(filter: AddressAssignmentFilter): Long
+
+    suspend fun findRecordById(id: Long): AddressAssignmentRecord?
+
+    suspend fun revokeById(id: Long, revokedAt: LocalDateTime): AddressAssignmentRecord
 }

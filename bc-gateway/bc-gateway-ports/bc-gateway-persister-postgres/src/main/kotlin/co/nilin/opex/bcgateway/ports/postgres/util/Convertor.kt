@@ -1,8 +1,11 @@
 package co.nilin.opex.bcgateway.ports.postgres.util
 
+import co.nilin.opex.bcgateway.core.model.AddressAssignmentRecord
+import co.nilin.opex.bcgateway.core.model.AddressType
 import co.nilin.opex.bcgateway.core.model.CryptoCurrencyCommand
 import co.nilin.opex.bcgateway.core.model.CurrencyOnChainGatewayLocalizationCommand
 import co.nilin.opex.bcgateway.core.model.CurrencyOnChainGatewayView
+import co.nilin.opex.bcgateway.ports.postgres.model.AssignedAddressModel
 import co.nilin.opex.bcgateway.ports.postgres.model.CurrencyOnChainGatewayLocalizationModel
 import co.nilin.opex.bcgateway.ports.postgres.model.CurrencyOnChainGatewayModel
 
@@ -92,3 +95,15 @@ fun CurrencyOnChainGatewayLocalizationModel.toCommand(): CurrencyOnChainGatewayL
         language = language
     )
 }
+
+fun AssignedAddressModel.toRecord(addressTypeMap: Map<Long, AddressType>) = AddressAssignmentRecord(
+    id = id!!,
+    uuid = uuid,
+    address = address,
+    memo = memo,
+    addressType = addressTypeMap[addressTypeId],
+    assignedDate = assignedDate,
+    expTime = expTime,
+    revokedDate = revokedDate,
+    status = status
+)

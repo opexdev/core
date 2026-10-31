@@ -47,4 +47,58 @@ interface AssignedAddressRepository : ReactiveCrudRepository<AssignedAddressMode
         @Param("memo") memo: String?,
         @Param("at") at: LocalDateTime
     ): Mono<AssignedAddressModel>
+
+    @Query(
+        """
+    SELECT * FROM assigned_addresses a
+    WHERE (:uuid IS NULL OR a.uuid = :uuid)
+      AND (:address IS NULL OR a.address = :address)
+      AND (:memo IS NULL OR a.memo = :memo)
+      AND (:status IS NULL OR a.status = :status)
+      AND (:addressTypeId IS NULL OR a.addr_type_id = :addressTypeId)
+      AND (:chain IS NULL OR a.addr_type_id IN
+           (SELECT addr_type_id FROM chain_address_types WHERE chain_name = :chain))
+      AND (:assignedFrom IS NULL OR a.assigned_date >= :assignedFrom)
+      AND (:assignedTo IS NULL OR a.assigned_date <= :assignedTo)
+    ORDER BY a.assigned_date DESC, a.id DESC
+    LIMIT :limit OFFSET :offset
+"""
+    )
+    fun searchAssignments(
+        @Param("uuid") uuid: String?,
+        @Param("address") address: String?,
+        @Param("memo") memo: String?,
+        @Param("status") status: AddressStatus?,
+        @Param("addressTypeId") addressTypeId: Long?,
+        @Param("chain") chain: String?,
+        @Param("assignedFrom") assignedFrom: LocalDateTime?,
+        @Param("assignedTo") assignedTo: LocalDateTime?,
+        @Param("limit") limit: Int,
+        @Param("offset") offset: Int
+    ): Flow<AssignedAddressModel>
+
+    @Query(
+        """
+    SELECT count(*) FROM assigned_addresses a
+    WHERE (:uuid IS NULL OR a.uuid = :uuid)
+      AND (:address IS NULL OR a.address = :address)
+      AND (:memo IS NULL OR a.memo = :memo)
+      AND (:status IS NULL OR a.status = :status)
+      AND (:addressTypeId IS NULL OR a.addr_type_id = :addressTypeId)
+      AND (:chain IS NULL OR a.addr_type_id IN
+           (SELECT addr_type_id FROM chain_address_types WHERE chain_name = :chain))
+      AND (:assignedFrom IS NULL OR a.assigned_date >= :assignedFrom)
+      AND (:assignedTo IS NULL OR a.assigned_date <= :assignedTo)
+"""
+    )
+    fun countAssignments(
+        @Param("uuid") uuid: String?,
+        @Param("address") address: String?,
+        @Param("memo") memo: String?,
+        @Param("status") status: AddressStatus?,
+        @Param("addressTypeId") addressTypeId: Long?,
+        @Param("chain") chain: String?,
+        @Param("assignedFrom") assignedFrom: LocalDateTime?,
+        @Param("assignedTo") assignedTo: LocalDateTime?
+    ): Mono<Long>
 }

@@ -143,6 +143,11 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     CurrencyNotFoundBC(8004, "Currency not found", HttpStatus.NOT_FOUND),
     TokenNotFound(8005, "Coin/Token not found", HttpStatus.NOT_FOUND),
     InvalidAddressType(8006, "Address type is invalid", HttpStatus.NOT_FOUND),
+    AddressAlreadyAssigned(
+        8007,
+        "This address is already assigned with the same expiration time",
+        HttpStatus.CONFLICT
+    ),
 
     // code 10000: bc-gateway
     InvalidCaptcha(10001, "Captcha is not valid", HttpStatus.BAD_REQUEST),
