@@ -2,10 +2,6 @@ package co.nilin.opex.api.core.inout
 
 import java.time.LocalDateTime
 
-/**
- * A review has no state of its own: the bank account's [BankAccountStatus] is it. WAITING means the
- * review is still open, VERIFIED and REJECTED are how it ended.
- */
 data class BankAccountApprovalRequestFilter(
     val userId: String? = null,
     val status: BankAccountStatus? = null,

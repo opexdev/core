@@ -47,8 +47,6 @@ class FiatScannerProxyImpl(
 
     override suspend fun listWebhooks(status: String?, limit: Int?, offset: Int?): FiatScannerResponse {
         val path = "/v1/admin/webhooks"
-        // Built once and used for both the signature and the URI: the far side hashes the raw
-        // query string it receives, so the two have to be the same text
         val rawQuery = buildList {
             status?.takeIf { it.isNotBlank() }
                 ?.let { add("status=" + URLEncoder.encode(it, StandardCharsets.UTF_8)) }
