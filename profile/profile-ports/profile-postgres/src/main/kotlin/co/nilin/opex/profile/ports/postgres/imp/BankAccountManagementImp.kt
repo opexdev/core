@@ -19,7 +19,7 @@ class BankAccountManagementImp(
         val savedBankAccount =
             bankAccountRepository.save(bankAccount.convert(BankAccountModel::class.java)).awaitFirstOrNull()
                 ?: throw OpexError.BadRequest.exception("Failed to save bank account")
-        return savedBankAccount.convert(BankAccount::class.java)
+        return savedBankAccount.convert(BankAccount::class.java).apply { id = savedBankAccount.id }
     }
 
     override suspend fun findAll(uuid: String): List<BankAccount> {
@@ -53,5 +53,18 @@ class BankAccountManagementImp(
         if (bankAccount.uuid == uuid)
             bankAccountRepository.deleteById(id).awaitFirstOrNull()
         else throw OpexError.Forbidden.exception()
+    }
+
+    override suspend fun findById(id: Long): BankAccount {
+        val model = bankAccountRepository.findById(id).awaitFirstOrNull()
+            ?: throw OpexError.BankAccountNotFound.exception()
+        return model.convert(BankAccount::class.java)
+    }
+
+    override suspend fun update(bankAccount: BankAccount): BankAccount {
+        val id = bankAccount.id ?: throw OpexError.BadRequest.exception("Bank account id is required")
+        val saved = bankAccountRepository.save(bankAccount.convert(BankAccountModel::class.java)).awaitFirstOrNull()
+            ?: throw OpexError.BadRequest.exception("Failed to update bank account $id")
+        return saved.convert(BankAccount::class.java)
     }
 }

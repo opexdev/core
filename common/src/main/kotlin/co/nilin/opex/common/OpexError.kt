@@ -218,6 +218,36 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
         "Registration number and national id belong to different companies",
         HttpStatus.CONFLICT
     ),
+    BankAccountApprovalRequestNotFound(
+        13053,
+        "Bank account approval request not found",
+        HttpStatus.NOT_FOUND
+    ),
+    InvalidBankAccountApprovalRequestStatus(
+        13054,
+        "Invalid bank account approval request status",
+        HttpStatus.BAD_REQUEST
+    ),
+    BankAccountApprovalRequestAlreadyExists(
+        13055,
+        "Bank account approval request already exists",
+        HttpStatus.BAD_REQUEST
+    ),
+    BankAccountVerificationNotConfigured(
+        13056,
+        "Bank account verification is not configured",
+        HttpStatus.SERVICE_UNAVAILABLE
+    ),
+    BankAccountInquiryNotApplicable(
+        13057,
+        "Bank account cannot be verified for this profile",
+        HttpStatus.BAD_REQUEST
+    ),
+    InquiryServiceUnavailable(
+        13058,
+        "Identity inquiry service is unavailable",
+        HttpStatus.SERVICE_UNAVAILABLE
+    ),
 
     //Storage 14000
     BucketNotFound(14001, "Bucket not found", HttpStatus.NOT_FOUND),

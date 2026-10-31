@@ -3,7 +3,9 @@ package co.nilin.opex.profile.app.controller
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.profile.app.dto.AddBankAccountRequest
 import co.nilin.opex.profile.app.dto.BankAccountResponse
+import co.nilin.opex.profile.app.service.BankAccountApprovalRequestManagement
 import co.nilin.opex.profile.app.service.BankAccountManagement
+import co.nilin.opex.profile.core.data.profile.BankAccountApprovalUserResponse
 import co.nilin.opex.profile.ports.postgres.utils.RegexPatterns
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/bank-account")
 class BankAccountController(
     val bankAccountManagement: BankAccountManagement,
+    val bankAccountApprovalRequestManagement: BankAccountApprovalRequestManagement,
 ) {
 
 
@@ -36,6 +39,17 @@ class BankAccountController(
         @CurrentSecurityContext securityContext: SecurityContext
     ) {
         bankAccountManagement.deleteBankAccount(id, securityContext.authentication.name)
+    }
+
+    @GetMapping("/{id}/approval-request")
+    suspend fun getApprovalRequest(
+        @PathVariable("id") id: Long,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): BankAccountApprovalUserResponse {
+        return bankAccountApprovalRequestManagement.getApprovalRequestByBankAccountId(
+            id,
+            securityContext.authentication.name
+        )
     }
 
     @GetMapping("/ownership")
